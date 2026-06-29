@@ -217,6 +217,18 @@ export class SQLiteMaterializer {
     return this.db.prepare("SELECT * FROM events_applied").all() as AppliedEvent[];
   }
 
+  searchNotes(query: string): NoteRecord[] {
+    return this.db
+      .prepare(
+        `SELECT notes.* FROM notes_fts
+         JOIN notes ON notes.rowid = notes_fts.rowid
+         WHERE notes_fts MATCH ?
+         ORDER BY rank
+         LIMIT 50`,
+      )
+      .all(query) as NoteRecord[];
+  }
+
   close(): void {
     this.db.close();
   }

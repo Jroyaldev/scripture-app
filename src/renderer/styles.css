@@ -1,0 +1,645 @@
+/* Design tokens → CSS custom properties */
+:root {
+  /* Colors */
+  --bg-primary: #FAF8F5;
+  --bg-secondary: #F0EDE8;
+  --bg-surface: #FFFFFF;
+  --bg-canvas: #FBF9F7;
+  --bg-sidebar: #F5F2ED;
+  --hl-yellow: rgba(250, 214, 100, 0.35);
+  --hl-green: rgba(120, 200, 120, 0.30);
+  --hl-blue: rgba(120, 170, 230, 0.30);
+  --hl-pink: rgba(230, 140, 170, 0.30);
+  --hl-purple: rgba(170, 140, 220, 0.30);
+
+  --text-primary: #2C2520;
+  --text-secondary: #6B5E52;
+  --text-tertiary: #9A8E82;
+  --text-verse-number: #B5A99A;
+  --text-link: #7B6348;
+  --text-link-hover: #5A4530;
+
+  --border-subtle: #E8E2DA;
+  --border-medium: #D5CEC4;
+  --border-strong: #B5A99A;
+
+  --accent-warm: #8B6F4E;
+  --accent-warm-light: #A58B6B;
+  --accent-user: #7B6348;
+  --accent-source: #6B7F5A;
+  --accent-ai: #5A6B7F;
+  --accent-xref: #7F6B5A;
+
+  --healthy: #5A8B5A;
+  --warning: #B8963A;
+  --error: #B85A5A;
+
+  /* Typography */
+  --font-reading: 'Source Serif 4', 'Georgia', 'Times New Roman', serif;
+  --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.8125rem;
+  --fs-base: 0.9375rem;
+  --fs-reading: 1.0625rem;
+  --fs-lg: 1.1875rem;
+  --fs-xl: 1.375rem;
+  --fs-2xl: 1.625rem;
+  --fs-3xl: 2rem;
+
+  --lh-tight: 1.3;
+  --lh-normal: 1.5;
+  --lh-reading: 1.75;
+  --lh-relaxed: 1.85;
+
+  --fw-normal: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+
+  /* Spacing */
+  --sp-xs: 0.25rem;
+  --sp-sm: 0.5rem;
+  --sp-md: 0.75rem;
+  --sp-lg: 1rem;
+  --sp-xl: 1.5rem;
+  --sp-2xl: 2rem;
+  --sp-3xl: 3rem;
+  --page-gutter: 2.5rem;
+  --margin-width: 320px;
+  --reading-max-width: 680px;
+
+  /* Misc */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --shadow-subtle: 0 1px 3px rgba(44, 37, 32, 0.06);
+  --shadow-medium: 0 2px 8px rgba(44, 37, 32, 0.08);
+  --shadow-elevated: 0 4px 16px rgba(44, 37, 32, 0.10);
+  --transition-fast: 120ms ease;
+  --transition-normal: 200ms ease;
+  --transition-slow: 300ms ease;
+}
+
+/* Reset */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root {
+  height: 100%;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: var(--fs-base);
+  line-height: var(--lh-normal);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- Layout --- */
+
+.app-shell {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 240px;
+  min-width: 200px;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+  -webkit-app-region: drag;
+}
+
+.sidebar-header {
+  padding: var(--sp-lg) var(--sp-xl);
+  padding-top: calc(var(--sp-lg) + env(titlebar-area-height, 28px));
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.sidebar-header h1 {
+  font-family: var(--font-reading);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  color: var(--text-primary);
+}
+
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--sp-sm) 0;
+  -webkit-app-region: no-drag;
+}
+
+.sidebar-nav button {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  width: 100%;
+  padding: var(--sp-sm) var(--sp-xl);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.sidebar-nav button:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.sidebar-nav button.active {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-weight: var(--fw-semibold);
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* --- Scripture Page --- */
+
+.scripture-page {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.scripture-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--sp-3xl) var(--page-gutter);
+}
+
+.scripture-inner {
+  max-width: var(--reading-max-width);
+  margin: 0 auto;
+}
+
+.chapter-header {
+  margin-bottom: var(--sp-2xl);
+}
+
+.chapter-header .book-name {
+  font-family: var(--font-reading);
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-semibold);
+  color: var(--text-primary);
+}
+
+.chapter-header .chapter-number {
+  font-family: var(--font-reading);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-normal);
+  color: var(--text-secondary);
+  margin-left: var(--sp-sm);
+}
+
+.chapter-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-md);
+  margin-bottom: var(--sp-xl);
+}
+
+.chapter-nav select,
+.chapter-nav button {
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
+  padding: var(--sp-xs) var(--sp-sm);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.chapter-nav select:focus,
+.chapter-nav button:focus {
+  outline: 2px solid var(--accent-warm);
+  outline-offset: 1px;
+}
+
+.package-toggle {
+  display: flex;
+  gap: 2px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  padding: 2px;
+}
+
+.package-toggle button {
+  border: none;
+  background: transparent;
+  padding: var(--sp-xs) var(--sp-md);
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  color: var(--text-tertiary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.package-toggle button.active {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-subtle);
+}
+
+.verse-text {
+  font-family: var(--font-reading);
+  font-size: var(--fs-reading);
+  line-height: var(--lh-reading);
+  color: var(--text-primary);
+}
+
+.verse-text.paragraph-mode {
+  /* In paragraph mode, verses flow together */
+}
+
+.verse-line {
+  margin-bottom: var(--sp-xs);
+  position: relative;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+}
+
+.verse-line:hover {
+  background: rgba(139, 111, 78, 0.05);
+}
+
+.verse-line.selected {
+  background: rgba(139, 111, 78, 0.08);
+}
+
+.verse-line.highlighted-yellow { background: var(--hl-yellow); }
+.verse-line.highlighted-green { background: var(--hl-green); }
+.verse-line.highlighted-blue { background: var(--hl-blue); }
+.verse-line.highlighted-pink { background: var(--hl-pink); }
+.verse-line.highlighted-purple { background: var(--hl-purple); }
+
+.verse-num {
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--text-verse-number);
+  margin-right: var(--sp-sm);
+  vertical-align: super;
+  user-select: none;
+}
+
+/* --- Living Margin --- */
+
+.living-margin {
+  width: var(--margin-width);
+  min-width: 280px;
+  max-width: 400px;
+  border-left: 1px solid var(--border-subtle);
+  background: var(--bg-canvas);
+  overflow-y: auto;
+  padding: var(--sp-xl);
+}
+
+.margin-section {
+  margin-bottom: var(--sp-xl);
+}
+
+.margin-section-header {
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--sp-sm);
+  padding-bottom: var(--sp-xs);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.margin-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--sp-md);
+  margin-bottom: var(--sp-sm);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.margin-card:hover {
+  border-color: var(--border-medium);
+  box-shadow: var(--shadow-subtle);
+}
+
+.margin-card .card-title {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--text-primary);
+  margin-bottom: var(--sp-xs);
+}
+
+.margin-card .card-excerpt {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  line-height: var(--lh-normal);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.margin-card .card-provenance {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  padding: 1px 6px;
+  border-radius: 3px;
+  display: inline-block;
+  margin-top: var(--sp-xs);
+}
+
+.provenance-user { background: rgba(123, 99, 72, 0.12); color: var(--accent-user); }
+.provenance-source { background: rgba(107, 127, 90, 0.12); color: var(--accent-source); }
+.provenance-xref { background: rgba(127, 107, 90, 0.12); color: var(--accent-xref); }
+
+.highlight-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  margin-right: var(--sp-xs);
+  vertical-align: middle;
+}
+
+/* Cross-reference card */
+.xref-link {
+  font-family: var(--font-reading);
+  font-size: var(--fs-sm);
+  color: var(--text-link);
+  cursor: pointer;
+  padding: var(--sp-xs) 0;
+  display: block;
+}
+
+.xref-link:hover {
+  color: var(--text-link-hover);
+  text-decoration: underline;
+}
+
+/* --- Writing Sheet --- */
+
+.writing-sheet {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: var(--sp-3xl) var(--page-gutter);
+}
+
+.writing-inner {
+  max-width: var(--reading-max-width);
+  margin: 0 auto;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.note-title-input {
+  font-family: var(--font-reading);
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-semibold);
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text-primary);
+  width: 100%;
+  padding: var(--sp-sm) 0;
+  margin-bottom: var(--sp-lg);
+}
+
+.note-body-editor {
+  flex: 1;
+  font-family: var(--font-reading);
+  font-size: var(--fs-reading);
+  line-height: var(--lh-reading);
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text-primary);
+  resize: none;
+  width: 100%;
+}
+
+.note-meta {
+  font-size: var(--fs-xs);
+  color: var(--text-tertiary);
+  padding: var(--sp-sm) 0;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  gap: var(--sp-lg);
+}
+
+/* --- Search --- */
+
+.search-bar {
+  padding: var(--sp-sm) var(--sp-xl);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.search-input {
+  width: 100%;
+  padding: var(--sp-sm) var(--sp-md);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+.search-input:focus {
+  outline: 2px solid var(--accent-warm);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+.search-results {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--sp-lg);
+}
+
+.search-result-item {
+  padding: var(--sp-md);
+  border-bottom: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.search-result-item:hover {
+  background: var(--bg-secondary);
+}
+
+.search-result-item .result-title {
+  font-weight: var(--fw-medium);
+  color: var(--text-primary);
+  margin-bottom: var(--sp-xs);
+}
+
+.search-result-item .result-excerpt {
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+}
+
+/* --- Highlight palette (floating) --- */
+
+.highlight-palette {
+  position: absolute;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-medium);
+  z-index: 100;
+}
+
+.highlight-palette button {
+  width: 24px;
+  height: 24px;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.highlight-palette button:hover {
+  border-color: var(--text-secondary);
+}
+
+.hl-btn-yellow { background: rgba(250, 214, 100, 0.6); }
+.hl-btn-green { background: rgba(120, 200, 120, 0.5); }
+.hl-btn-blue { background: rgba(120, 170, 230, 0.5); }
+.hl-btn-pink { background: rgba(230, 140, 170, 0.5); }
+.hl-btn-purple { background: rgba(170, 140, 220, 0.5); }
+
+/* --- Notes list (sidebar-like in content) --- */
+
+.notes-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--sp-lg);
+}
+
+.note-list-item {
+  padding: var(--sp-md) var(--sp-lg);
+  border-bottom: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.note-list-item:hover {
+  background: var(--bg-secondary);
+}
+
+.note-list-item .note-item-title {
+  font-weight: var(--fw-medium);
+  color: var(--text-primary);
+  margin-bottom: var(--sp-xs);
+}
+
+.note-list-item .note-item-meta {
+  font-size: var(--fs-xs);
+  color: var(--text-tertiary);
+}
+
+/* --- Toolbar / action bar --- */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  padding: var(--sp-sm) var(--sp-lg);
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.toolbar button {
+  padding: var(--sp-xs) var(--sp-md);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.toolbar button:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+/* --- Import dialog --- */
+
+.import-panel {
+  padding: var(--sp-2xl);
+  max-width: 500px;
+  margin: var(--sp-3xl) auto;
+}
+
+.import-panel h2 {
+  font-family: var(--font-reading);
+  font-size: var(--fs-xl);
+  margin-bottom: var(--sp-lg);
+}
+
+.import-panel p {
+  color: var(--text-secondary);
+  margin-bottom: var(--sp-lg);
+  line-height: var(--lh-normal);
+}
+
+.import-btn {
+  padding: var(--sp-sm) var(--sp-xl);
+  background: var(--accent-warm);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.import-btn:hover {
+  background: var(--text-link-hover);
+}
+
+/* --- Scrollbar --- */
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border-medium);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+}

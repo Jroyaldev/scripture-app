@@ -7,9 +7,13 @@
   "engines": {
     "node": ">=20.0.0"
   },
+  "main": "dist/src/electron/main.js",
   "scripts": {
-    "build": "tsc",
-    "lint": "tsc --noEmit",
+    "build": "tsc && npm run build:renderer",
+    "build:renderer": "vite build",
+    "lint": "tsc --noEmit && tsc --noEmit -p tsconfig.renderer.json",
+    "dev": "vite --config vite.config.ts",
+    "dev:electron": "node --import tsx src/electron/main.ts",
     "test": "node --import tsx --test tests/**/*.test.ts",
     "library": "node --import tsx src/cli/index.ts"
   },
@@ -19,12 +23,19 @@
   "dependencies": {
     "better-sqlite3": "11.9.1",
     "gray-matter": "4.0.3",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
     "ulid": "2.3.0"
   },
   "devDependencies": {
     "@types/better-sqlite3": "7.6.13",
     "@types/node": "22.15.21",
+    "@types/react": "19.1.8",
+    "@types/react-dom": "19.1.6",
+    "@vitejs/plugin-react": "4.5.2",
+    "electron": "35.7.5",
     "tsx": "4.19.4",
-    "typescript": "5.8.3"
+    "typescript": "5.8.3",
+    "vite": "6.3.5"
   }
 }
