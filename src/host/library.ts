@@ -1,0 +1,529 @@
+/**
+ * Library engine — Node host layer.
+ * Orchestrates the pure core modules with real file I/O and SQLite.
+ */
+
+import { createHash } from "node:crypto";
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync, rmSync } from "node:fs";
+import { join } from "node:path";
+import { ulid } from "ulid";
+
+/**
+ * Generate a deterministic anchor ID from source data.
+ * Anchors are Derived (part of the materialized view), so their IDs
+ * must be deterministic to ensure rebuild_hash consistency (INV-2, INV-10).
+ */
+function deterministicAnchorId(
+  srcKind: string,
+  srcId: string,
+  book: string,
+  startCh: number,
+  startV: number,
+  endCh: number,
+  endV: number,
+): string {
+  const input = `anchor:${srcKind}:${srcId}:${book}.${startCh}.${startV}-${endCh}.${endV}`;
+  return "anc_" + createHash("sha256").update(input).digest("hex").slice(0, 24);
+}
+import type { BackboneData, BookNameMap } from "../core/reference/types.js";
+import type { LibraryEvent } from "../core/events/types.js";
+import type { LibraryManifest } from "../core/interfaces.js";
+import type { ParsedNote } from "../core/notes/types.js";
+import type { AnchorRecord, EdgeRecord, HighlightRecord, FactRecord, NoteRecord } from "../core/indexer/types.js";
+import { parseNote } from "../core/notes/parser.js";
+import { foldEvents } from "../core/events/fold.js";
+
+import { canonicalize } from "../core/indexer/hash.js";
+import type { LogicalState } from "../core/indexer/hash.js";
+import { SQLiteMaterializer } from "./sqlite.js";
+import { CURRENT_APP_SCHEMA_VERSION, CURRENT_EVENT_SCHEMA_VERSION } from "../core/migration/index.js";
+
+export class LibraryEngine {
+  readonly rootPath: string;
+  private backbone: BackboneData;
+  private bookNames: BookNameMap;
+  private deviceId: string;
+  private seqCounter: number;
+
+  constructor(rootPath: string, backbone: BackboneData, bookNames: BookNameMap) {
+    this.rootPath = rootPath;
+    this.backbone = backbone;
+    this.bookNames = bookNames;
+    this.deviceId = "dev-" + ulid();
+    this.seqCounter = 0;
+  }
+
+  /**
+   * Initialize a new Library folder with the §4.3 layout.
+   */
+  initLibrary(): void {
+    const dirs = [
+      "notes",
+      "annotations",
+      "sources",
+      "plugins/settings",
+      "config",
+      ".artifacts/scripture/packages/web",
+      ".artifacts/scripture/packages/kjv",
+      ".artifacts/scripture/versification",
+      ".artifacts/plugins",
+      ".artifacts/themes",
+      ".system/cache",
+      ".system/logs",
+      ".history",
+    ];
+
+    for (const dir of dirs) {
+      mkdirSync(join(this.rootPath, dir), { recursive: true });
+    }
+
+    // Write library-manifest.json
+    const manifest: LibraryManifest = {
+      libraryId: ulid(),
+      createdAt: new Date().toISOString(),
+      appSchemaVersion: CURRENT_APP_SCHEMA_VERSION,
+      eventSchemaVersion: CURRENT_EVENT_SCHEMA_VERSION,
+      referenceFormatVersion: "bref:v1",
+      pluginApiVersion: "1",
+    };
+    writeFileSync(
+      join(this.rootPath, "config/library-manifest.json"),
+      JSON.stringify(manifest, null, 2),
+    );
+
+    // Write default library.json
+    writeFileSync(
+      join(this.rootPath, "config/library.json"),
+      JSON.stringify({ canonProfile: "protestant", defaultPackage: "web" }, null, 2),
+    );
+
+    // Write default budget-envelope.json
+    writeFileSync(
+      join(this.rootPath, "config/budget-envelope.json"),
+      JSON.stringify({ backgroundAI: "off", networkBackground: false }, null, 2),
+    );
+
+    // Write empty annotation files
+    for (const file of ["highlights.jsonl", "pinned-facts.jsonl", "threads.jsonl", "note-change-log.jsonl"]) {
+      writeFileSync(join(this.rootPath, "annotations", file), "");
+    }
+
+    // Write empty plugin list
+    writeFileSync(
+      join(this.rootPath, "plugins/installed.json"),
+      JSON.stringify([], null, 2),
+    );
+
+    // Write .gitignore
+    writeFileSync(
+      join(this.rootPath, ".gitignore"),
+      ".system/\n.artifacts/\nsources/**/original.*\n",
+    );
+  }
+
+  /**
+   * Read the library manifest.
+   */
+  readManifest(): LibraryManifest | null {
+    const manifestPath = join(this.rootPath, "config/library-manifest.json");
+    if (!existsSync(manifestPath)) return null;
+    return JSON.parse(readFileSync(manifestPath, "utf-8")) as LibraryManifest;
+  }
+
+  /**
+   * Copy backbone and versification data into .artifacts.
+   */
+  installBackboneData(backbonePath: string, versificationDir: string): void {
+    const targetBackbone = join(this.rootPath, ".artifacts/scripture/backbone.json");
+    writeFileSync(targetBackbone, readFileSync(backbonePath, "utf-8"));
+
+    const targetVersDir = join(this.rootPath, ".artifacts/scripture/versification");
+    mkdirSync(targetVersDir, { recursive: true });
+    for (const file of readdirSync(versificationDir)) {
+      writeFileSync(
+        join(targetVersDir, file),
+        readFileSync(join(versificationDir, file), "utf-8"),
+      );
+    }
+  }
+
+  /**
+   * Install a scripture package manifest into .artifacts.
+   */
+  installPackageManifest(packageId: string, manifest: object): void {
+    const dir = join(this.rootPath, ".artifacts/scripture/packages", packageId);
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, "manifest.json"), JSON.stringify(manifest, null, 2));
+  }
+
+  /**
+   * Create a note file.
+   */
+  createNote(id: string, title: string, body: string, opts?: { type?: string; tags?: string[] }): string {
+    const now = new Date().toISOString();
+    const slug = title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 40);
+    const filename = `${id}--${slug}.md`;
+
+    let frontmatter = `---\nid: ${id}\ntitle: "${title}"\ncreated: ${now}\nmodified: ${now}\n`;
+    if (opts?.type) frontmatter += `type: ${opts.type}\n`;
+    if (opts?.tags && opts.tags.length > 0) frontmatter += `tags: [${opts.tags.join(", ")}]\n`;
+    frontmatter += "---\n";
+
+    const content = frontmatter + body;
+    const notePath = join(this.rootPath, "notes", filename);
+    writeFileSync(notePath, content);
+    return notePath;
+  }
+
+  /**
+   * Append a LibraryEvent to the appropriate JSONL log.
+   */
+  appendEvent(event: LibraryEvent): void {
+    const fileMap: Record<string, string> = {
+      highlight: "highlights.jsonl",
+      fact: "pinned-facts.jsonl",
+      thread: "threads.jsonl",
+      noteMeta: "note-change-log.jsonl",
+    };
+    const filename = fileMap[event.entityType] ?? "highlights.jsonl";
+    const logPath = join(this.rootPath, "annotations", filename);
+    const line = JSON.stringify(event) + "\n";
+    writeFileSync(logPath, line, { flag: "a" });
+  }
+
+  /**
+   * Create a library event with proper envelope.
+   */
+  createEvent<T>(
+    entityType: LibraryEvent["entityType"],
+    entityId: string,
+    op: LibraryEvent["op"],
+    payload: T,
+    baseEventId?: string,
+  ): LibraryEvent<T> {
+    this.seqCounter++;
+    return {
+      eventId: ulid(),
+      schemaVersion: CURRENT_EVENT_SCHEMA_VERSION,
+      entityType,
+      entityId,
+      op,
+      actor: { kind: "user" },
+      deviceId: this.deviceId,
+      seq: this.seqCounter,
+      createdAt: new Date().toISOString(),
+      baseEventId,
+      payload,
+    };
+  }
+
+  /**
+   * Read all events from annotation JSONL files.
+   */
+  readAllEvents(): {
+    highlights: LibraryEvent[];
+    pinnedFacts: LibraryEvent[];
+    threads: LibraryEvent[];
+    noteChangeLogs: LibraryEvent[];
+  } {
+    return {
+      highlights: this.readJsonlEvents("highlights.jsonl"),
+      pinnedFacts: this.readJsonlEvents("pinned-facts.jsonl"),
+      threads: this.readJsonlEvents("threads.jsonl"),
+      noteChangeLogs: this.readJsonlEvents("note-change-log.jsonl"),
+    };
+  }
+
+  private readJsonlEvents(filename: string): LibraryEvent[] {
+    const filePath = join(this.rootPath, "annotations", filename);
+    if (!existsSync(filePath)) return [];
+    const content = readFileSync(filePath, "utf-8");
+    return content
+      .split("\n")
+      .filter((line) => line.trim())
+      .map((line) => JSON.parse(line) as LibraryEvent);
+  }
+
+  /**
+   * Read and parse all notes.
+   */
+  readAllNotes(): ParsedNote[] {
+    const notesDir = join(this.rootPath, "notes");
+    if (!existsSync(notesDir)) return [];
+    const files = readdirSync(notesDir).filter((f) => f.endsWith(".md"));
+    return files.map((file) => {
+      const content = readFileSync(join(notesDir, file), "utf-8");
+      return parseNote(content, this.bookNames, this.backbone);
+    });
+  }
+
+  /**
+   * Build (or rebuild) the .system/library.sqlite materialized view.
+   * Returns the rebuild_hash.
+   */
+  buildSqlite(): string {
+    const systemDir = join(this.rootPath, ".system");
+    mkdirSync(systemDir, { recursive: true });
+    const dbPath = join(systemDir, "library.sqlite");
+
+    // If exists, remove and rebuild (INV-9: safe to delete and rebuild at any moment)
+    if (existsSync(dbPath)) {
+      rmSync(dbPath);
+    }
+
+    const materializer = new SQLiteMaterializer(dbPath);
+
+    try {
+      // 1. Read and index notes
+      const notes = this.readAllNotes();
+      const noteRecords: NoteRecord[] = [];
+      const allAnchors: AnchorRecord[] = [];
+      const allEdges: EdgeRecord[] = [];
+
+      for (const note of notes) {
+        const noteRecord: NoteRecord = {
+          id: note.frontmatter.id,
+          title: note.frontmatter.title,
+          type: note.frontmatter.type ?? "",
+          path: "",
+          created: note.frontmatter.created,
+          modified: note.frontmatter.modified,
+          body_text: note.body,
+        };
+        noteRecords.push(noteRecord);
+        materializer.insertNote(noteRecord);
+
+        if (note.frontmatter.tags) {
+          materializer.insertNoteTags(
+            note.frontmatter.tags.map((tag) => ({
+              note_id: note.frontmatter.id,
+              tag,
+            })),
+          );
+        }
+
+        // Create anchors for scripture refs
+        for (const sr of note.scriptureRefs) {
+          const anchorId = deterministicAnchorId(
+            "note", note.frontmatter.id,
+            sr.ref.start.book, sr.ref.start.chapter, sr.ref.start.verse,
+            sr.ref.end.chapter, sr.ref.end.verse,
+          );
+          const anchor: AnchorRecord = {
+            id: anchorId,
+            src_kind: "note",
+            src_id: note.frontmatter.id,
+            corpus: "protestant",
+            book: sr.ref.start.book,
+            start_ch: sr.ref.start.chapter,
+            start_v: sr.ref.start.verse,
+            end_ch: sr.ref.end.chapter,
+            end_v: sr.ref.end.verse,
+            provenance: "user",
+          };
+          allAnchors.push(anchor);
+          materializer.insertAnchor(anchor);
+        }
+
+        // Create edges for note links
+        for (const link of note.noteLinks) {
+          const edge: EdgeRecord = {
+            src_id: `note:${note.frontmatter.id}`,
+            dst_id: `note:${link.targetId}`,
+            kind: "note-link",
+            provenance: "user",
+          };
+          allEdges.push(edge);
+          materializer.insertEdge(edge);
+        }
+      }
+
+      // 2. Fold events and materialize highlights/facts
+      const events = this.readAllEvents();
+      const allEvents = [
+        ...events.highlights,
+        ...events.pinnedFacts,
+        ...events.threads,
+        ...events.noteChangeLogs,
+      ];
+
+      const foldResult = foldEvents(allEvents);
+
+      const allHighlights: HighlightRecord[] = [];
+      const allFacts: FactRecord[] = [];
+
+      for (const entity of foldResult.entities) {
+        if (entity.entityType === "highlight") {
+          const payload = entity.payload as Record<string, unknown>;
+          const highlight: HighlightRecord = {
+            id: entity.entityId,
+            book: String(payload["book"] ?? ""),
+            chapter: Number(payload["chapter"] ?? 0),
+            verse_start: Number(payload["verse_start"] ?? 0),
+            verse_end: Number(payload["verse_end"] ?? payload["verse_start"] ?? 0),
+            package: String(payload["package"] ?? ""),
+            char_start: payload["char_start"] != null ? Number(payload["char_start"]) : null,
+            char_end: payload["char_end"] != null ? Number(payload["char_end"]) : null,
+            color: String(payload["color"] ?? "yellow"),
+            kind: String(payload["kind"] ?? "highlight"),
+            note_id: payload["note_id"] != null ? String(payload["note_id"]) : null,
+            deleted: 0,
+          };
+          allHighlights.push(highlight);
+          materializer.insertHighlight(highlight);
+
+          // Create an anchor for the highlight
+          const hlAnchorId = deterministicAnchorId(
+            "highlight", entity.entityId,
+            highlight.book, highlight.chapter, highlight.verse_start,
+            highlight.chapter, highlight.verse_end,
+          );
+          const anchor: AnchorRecord = {
+            id: hlAnchorId,
+            src_kind: "highlight",
+            src_id: entity.entityId,
+            corpus: "protestant",
+            book: highlight.book,
+            start_ch: highlight.chapter,
+            start_v: highlight.verse_start,
+            end_ch: highlight.chapter,
+            end_v: highlight.verse_end,
+            provenance: "user",
+          };
+          allAnchors.push(anchor);
+          materializer.insertAnchor(anchor);
+        }
+
+        if (entity.entityType === "fact") {
+          const payload = entity.payload as Record<string, unknown>;
+          const fact: FactRecord = {
+            id: entity.entityId,
+            assertion: String(payload["assertion"] ?? ""),
+            from_claim: payload["from_claim"] != null ? String(payload["from_claim"]) : null,
+            user_note: payload["user_note"] != null ? String(payload["user_note"]) : null,
+            deleted: 0,
+          };
+          allFacts.push(fact);
+          materializer.insertFact(fact);
+        }
+      }
+
+      // 3. Record applied events
+      for (const [_eventId, appliedEvent] of foldResult.appliedIndex) {
+        materializer.insertAppliedEvent(appliedEvent);
+      }
+
+      // 4. Compute rebuild_hash
+      const logicalState: LogicalState = {
+        entities: foldResult.entities,
+        notes: noteRecords,
+        anchors: allAnchors,
+        edges: allEdges,
+        highlights: allHighlights,
+        facts: allFacts,
+      };
+
+      const canonical = canonicalize(logicalState);
+      const hash = createHash("sha256").update(canonical).digest("hex");
+
+      // 5. Store metadata
+      materializer.setMeta("schema_version", String(CURRENT_APP_SCHEMA_VERSION));
+      materializer.setMeta("rebuild_hash", hash);
+      materializer.setMeta("built_at", new Date().toISOString());
+      materializer.setMeta("app_version", "0.1.0");
+
+      materializer.close();
+      return hash;
+    } catch (err) {
+      materializer.close();
+      throw err;
+    }
+  }
+
+  /**
+   * Query everything anchored to a specific verse.
+   */
+  queryVerse(book: string, chapter: number, verse: number): {
+    anchors: AnchorRecord[];
+    highlights: HighlightRecord[];
+    notes: NoteRecord[];
+  } {
+    const dbPath = join(this.rootPath, ".system/library.sqlite");
+    const materializer = new SQLiteMaterializer(dbPath);
+
+    try {
+      const anchors = materializer.queryAnchorsForVerse(book, chapter, verse);
+      const highlights = materializer.queryHighlightsForVerse(book, chapter, verse);
+
+      // Resolve note IDs from anchors
+      const noteIds = new Set<string>();
+      for (const anchor of anchors) {
+        if (anchor.src_kind === "note") {
+          noteIds.add(anchor.src_id);
+        }
+      }
+
+      const notes: NoteRecord[] = [];
+      for (const noteId of noteIds) {
+        const note = materializer.queryNoteById(noteId);
+        if (note) notes.push(note);
+      }
+
+      materializer.close();
+      return { anchors, highlights, notes };
+    } catch (err) {
+      materializer.close();
+      throw err;
+    }
+  }
+
+  /**
+   * Delete the .system/ directory (to test rebuild determinism).
+   */
+  deleteSystemDir(): void {
+    const systemDir = join(this.rootPath, ".system");
+    if (existsSync(systemDir)) {
+      rmSync(systemDir, { recursive: true });
+    }
+  }
+
+  /**
+   * Get summary stats from the materialized view.
+   */
+  getSummary(): {
+    notesFound: number;
+    anchorsFound: number;
+    highlightsFound: number;
+    factsFound: number;
+    unresolvedRefs: number;
+    errors: string[];
+  } {
+    const dbPath = join(this.rootPath, ".system/library.sqlite");
+    const materializer = new SQLiteMaterializer(dbPath);
+
+    try {
+      const notes = materializer.getAllNotes();
+      const anchors = materializer.getAllAnchors();
+      const highlights = materializer.getAllHighlights();
+      const facts = materializer.getAllFacts();
+
+      materializer.close();
+
+      return {
+        notesFound: notes.length,
+        anchorsFound: anchors.length,
+        highlightsFound: highlights.filter((h) => h.deleted === 0).length,
+        factsFound: facts.filter((f) => f.deleted === 0).length,
+        unresolvedRefs: 0,
+        errors: [],
+      };
+    } catch (err) {
+      materializer.close();
+      throw err;
+    }
+  }
+}
