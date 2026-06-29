@@ -3,9 +3,12 @@
  * No core logic here; only window management and IPC bridge.
  */
 
-import { app, BrowserWindow, ipcMain } from "electron";
-import { join, resolve } from "node:path";
+import { app, BrowserWindow, dialog, ipcMain } from "electron";
+import { join, resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 import { ulid } from "ulid";
 import type { BackboneData, BookNameMap, CanonicalRef } from "../core/reference/types.js";
 import { parseBref, toBref, toDisplayString, parseHumanRef } from "../core/reference/parser.js";
@@ -48,8 +51,8 @@ function loadCrossRefs(): CrossRefData | null {
   return JSON.parse(readFileSync(tskPath, "utf-8")) as CrossRefData;
 }
 
-function getLibraryPath(): string {
-  return process.env["LIBRARY_PATH"] ?? resolve(app.getPath("documents"), "ScriptureLibrary");
+function getLibraryPath(libraryPath?: string): string {
+  return libraryPath ?? process.env["LIBRARY_PATH"] ?? resolve(app.getPath("documents"), "ScriptureLibrary");
 }
 
 function createWindow(): void {
@@ -59,7 +62,7 @@ function createWindow(): void {
     minWidth: 900,
     minHeight: 600,
     webPreferences: {
-      preload: join(__dirname, "preload.js"),
+      preload: join(__dirname, "preload.cjs"),
       contextIsolation: true,
       nodeIntegration: false,
     },
@@ -81,12 +84,12 @@ function createWindow(): void {
   });
 }
 
-function initializeEngine(): void {
+function initializeEngine(libraryPathArg?: string): void {
   backbone = loadBackbone();
   bookNames = loadBookNames();
   crossRefData = loadCrossRefs();
 
-  const libraryPath = getLibraryPath();
+  const libraryPath = getLibraryPath(libraryPathArg);
   engine = new LibraryEngine(libraryPath, backbone, bookNames);
   revisionStore = new GitRevisionStore(libraryPath);
 
@@ -110,12 +113,36 @@ function initializeEngine(): void {
 // --- IPC Handlers ---
 
 function registerIpcHandlers(): void {
+  ipcMain.handle("get-library-path", () => {
+    return engine?.rootPath ?? getLibraryPath();
+  });
+
   ipcMain.handle("get-library-info", () => {
     if (!engine) return null;
     return {
       path: engine.rootPath,
       hasLibrary: existsSync(join(engine.rootPath, "config/library-manifest.json")),
     };
+  });
+
+  ipcMain.handle("get-library-summary", () => {
+    if (!engine) return null;
+    return engine.getSummary();
+  });
+
+  ipcMain.handle("read-all-notes", () => {
+    if (!engine) return [];
+    return engine.readAllNotes();
+  });
+
+  ipcMain.handle("init-library", (_event, libraryPath: string) => {
+    if (!libraryPath.trim()) return { ok: false, error: "Library path is required" };
+    try {
+      initializeEngine(libraryPath);
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: (e as Error).message };
+    }
   });
 
   ipcMain.handle("resolve-reference", (_event, input: string) => {
@@ -144,6 +171,42 @@ function registerIpcHandlers(): void {
     try {
       const result = assembleMargin(query, db, crossRefData, bookNames);
       return result;
+    } finally {
+      db.close();
+    }
+  });
+
+  ipcMain.handle("query-verse", (_event, book: string, chapter: number, verse: number) => {
+    if (!engine) return { anchors: [], highlights: [], notes: [] };
+    return engine.queryVerse(book, chapter, verse);
+  });
+
+  ipcMain.handle("query-range", (
+    _event,
+    startBook: string,
+    startCh: number,
+    startV: number,
+    endBook: string,
+    endCh: number,
+    endV: number,
+  ) => {
+    if (!engine || startBook !== endBook) return { anchors: [], highlights: [], notes: [] };
+    const dbPath = join(engine.rootPath, ".system/library.sqlite");
+    if (!existsSync(dbPath)) return { anchors: [], highlights: [], notes: [] };
+
+    const db = new SQLiteMaterializer(dbPath);
+    try {
+      const anchors = db.queryAnchorsForRange(startBook, startCh, startV, endCh, endV);
+      const highlights = db.queryHighlightsForRange(startBook, startCh, startV, endCh, endV);
+      const noteIds = new Set<string>();
+      for (const anchor of anchors) {
+        if (anchor.src_kind === "note") noteIds.add(anchor.src_id);
+      }
+      const notes = [...noteIds]
+        .map((noteId) => db.queryNoteById(noteId))
+        .filter((note) => note != null);
+
+      return { anchors, highlights, notes };
     } finally {
       db.close();
     }
@@ -274,6 +337,28 @@ function registerIpcHandlers(): void {
     return JSON.parse(readFileSync(textPath, "utf-8"));
   });
 
+  ipcMain.handle("get-cross-refs", (_event, opts: { book: string; chapter: number; verse: number }) => {
+    if (!bookNames) return [];
+    const result = assembleMargin(
+      {
+        book: opts.book,
+        startChapter: opts.chapter,
+        startVerse: opts.verse,
+        endChapter: opts.chapter,
+        endVerse: opts.verse,
+      },
+      {
+        queryAnchorsForRange: () => [],
+        queryHighlightsForRange: () => [],
+        queryNoteById: () => undefined,
+        queryEdgesByTarget: () => [],
+      },
+      crossRefData,
+      bookNames,
+    );
+    return result.crossRefs.map((ref) => ref.targetDisplay);
+  });
+
   ipcMain.handle("create-highlight", async (_event, opts: {
     book: string;
     chapter: number;
@@ -306,9 +391,30 @@ function registerIpcHandlers(): void {
     return { ok: true, highlightId: entityId };
   });
 
+  ipcMain.handle("delete-highlight", async (_event, opts: { entityId: string; baseEventId: string }) => {
+    if (!engine || !revisionStore) return { ok: false, error: "Not initialized" };
+
+    const event = engine.createEvent("highlight", opts.entityId, "delete", {}, opts.baseEventId);
+    engine.appendEvent(event);
+
+    const txn = await revisionStore.beginTransaction("Delete highlight");
+    txn.files.push("annotations/highlights.jsonl");
+    await revisionStore.commit(txn);
+
+    engine.buildSqlite();
+    return { ok: true };
+  });
+
   ipcMain.handle("rebuild-sqlite", () => {
     if (!engine) return null;
     return engine.buildSqlite();
+  });
+
+  ipcMain.handle("dialog-open-directory", async () => {
+    const result = await dialog.showOpenDialog({
+      properties: ["openDirectory"],
+    });
+    return result.canceled ? null : result.filePaths[0] ?? null;
   });
 }
 

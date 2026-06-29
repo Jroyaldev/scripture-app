@@ -8,8 +8,8 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "build": "tsc",
-    "build:renderer": "vite build",
+    "build": "node scripts/build-electron.mjs",
+    "build:renderer": "node scripts/build-renderer.mjs",
     "dev:renderer": "vite --config vite.config.ts",
     "lint": "tsc --noEmit && tsc --noEmit -p tsconfig.renderer.json",
     "test": "node --import tsx --test tests/**/*.test.ts",
