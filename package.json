@@ -14,11 +14,11 @@
     "lint": "tsc --noEmit && tsc --noEmit -p tsconfig.renderer.json",
     "test": "node --import tsx --test tests/**/*.test.ts",
     "library": "node --import tsx src/cli/index.ts",
-    "electron": "electron dist/electron/main.js",
+    "electron": "electron dist/src/electron/main.js",
     "start": "npm run build && npm run build:renderer && npm run electron",
     "verify:m2": "node --import tsx scripts/verify-m2.ts"
   },
-  "main": "dist/electron/main.js",
+  "main": "dist/src/electron/main.js",
   "bin": {
     "library": "./dist/cli/index.js"
   },
