@@ -9,21 +9,33 @@
   },
   "scripts": {
     "build": "tsc",
+    "build:renderer": "node --import tsx scripts/build-renderer.ts",
     "lint": "tsc --noEmit",
     "test": "node --import tsx --test tests/**/*.test.ts",
-    "library": "node --import tsx src/cli/index.ts"
+    "library": "node --import tsx src/cli/index.ts",
+    "electron": "electron dist/electron/main.js",
+    "start": "npm run build && npm run build:renderer && npm run electron",
+    "verify:m2": "node --import tsx scripts/verify-m2.ts"
   },
+  "main": "dist/electron/main.js",
   "bin": {
     "library": "./dist/cli/index.js"
   },
   "dependencies": {
     "better-sqlite3": "11.9.1",
+    "electron": "35.0.1",
     "gray-matter": "4.0.3",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
     "ulid": "2.3.0"
   },
   "devDependencies": {
     "@types/better-sqlite3": "7.6.13",
     "@types/node": "22.15.21",
+    "@types/react": "19.1.6",
+    "@types/react-dom": "19.1.5",
+    "electron-builder": "26.0.12",
+    "esbuild": "0.25.4",
     "tsx": "4.19.4",
     "typescript": "5.8.3"
   }

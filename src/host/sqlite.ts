@@ -217,6 +217,68 @@ export class SQLiteMaterializer {
     return this.db.prepare("SELECT * FROM events_applied").all() as AppliedEvent[];
   }
 
+  /**
+   * Full-text search over notes (FTS5).
+   */
+  searchNotes(query: string, limit = 20): NoteRecord[] {
+    if (!query.trim()) return [];
+    return this.db
+      .prepare(
+        `SELECT notes.* FROM notes_fts
+         JOIN notes ON notes.rowid = notes_fts.rowid
+         WHERE notes_fts MATCH ?
+         ORDER BY rank
+         LIMIT ?`,
+      )
+      .all(query, limit) as NoteRecord[];
+  }
+
+  /**
+   * Query all anchors overlapping a given range.
+   */
+  queryAnchorsForRange(
+    book: string,
+    startCh: number,
+    startV: number,
+    endCh: number,
+    endV: number,
+  ): AnchorRecord[] {
+    return this.db
+      .prepare(
+        `SELECT * FROM anchors WHERE book = ? AND
+          NOT (end_ch < ? OR (end_ch = ? AND end_v < ?)) AND
+          NOT (start_ch > ? OR (start_ch = ? AND start_v > ?))`,
+      )
+      .all(book, startCh, startCh, startV, endCh, endCh, endV) as AnchorRecord[];
+  }
+
+  /**
+   * Query highlights overlapping a given range.
+   */
+  queryHighlightsForRange(
+    book: string,
+    startCh: number,
+    startV: number,
+    endCh: number,
+    endV: number,
+  ): HighlightRecord[] {
+    return this.db
+      .prepare(
+        `SELECT * FROM highlights WHERE book = ? AND chapter >= ? AND chapter <= ?
+          AND verse_start <= ? AND verse_end >= ? AND deleted = 0`,
+      )
+      .all(book, startCh, endCh, endV, startV) as HighlightRecord[];
+  }
+
+  /**
+   * Query edges by target (for backlink resolution).
+   */
+  queryEdgesByTarget(targetId: string): EdgeRecord[] {
+    return this.db
+      .prepare("SELECT * FROM edges WHERE dst_id = ?")
+      .all(targetId) as EdgeRecord[];
+  }
+
   close(): void {
     this.db.close();
   }
