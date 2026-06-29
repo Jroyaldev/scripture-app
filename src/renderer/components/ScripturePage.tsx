@@ -1,130 +1,198 @@
-/**
- * Scripture Page — passage reading, reference navigation, verse numbers.
- * WEB/KJV toggle, optional paragraph mode.
- */
+import type React from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import type { BackboneData, BookNameData, ChapterData, QueryResult } from "../api.js";
+import { LivingMargin } from "./LivingMargin.js";
 
-import { useState, useEffect, useCallback } from "react";
-import type { CanonicalRef } from "../../core/reference/types.js";
+interface Props {
+  backbone: BackboneData;
+  bookNames: BookNameData;
+  navigateRef: { book: string; chapter: number } | null;
+  onCreateNote: (prefillBody?: string) => void;
+}
 
-type Props = {
-  activeRef: CanonicalRef | null;
-  bookNames: Record<string, string[]>;
-  onNavigate: (input: string) => void;
-};
+const BOOK_ORDER = [
+  "GEN","EXO","LEV","NUM","DEU","JOS","JDG","RUT","1SA","2SA","1KI","2KI",
+  "1CH","2CH","EZR","NEH","EST","JOB","PSA","PRO","ECC","SNG","ISA","JER",
+  "LAM","EZK","DAN","HOS","JOL","AMO","OBA","JON","MIC","NAM","HAB","ZEP",
+  "HAG","ZEC","MAL","MAT","MRK","LUK","JHN","ACT","ROM","1CO","2CO","GAL",
+  "EPH","PHP","COL","1TH","2TH","1TI","2TI","TIT","PHM","HEB","JAS","1PE",
+  "2PE","1JN","2JN","3JN","JUD","REV",
+];
 
-type VerseData = {
-  verse: number;
-  text: string;
-};
-
-export function ScripturePage({ activeRef, bookNames: _bookNames, onNavigate }: Props) {
-  const [verses, setVerses] = useState<VerseData[]>([]);
-  const [activePackage, setActivePackage] = useState<string>("web");
-  const [refInput, setRefInput] = useState("");
-  const [displayTitle, setDisplayTitle] = useState("");
+export function ScripturePage({ backbone, bookNames, navigateRef, onCreateNote }: Props): React.JSX.Element {
+  const [book, setBook] = useState("ACT");
+  const [chapter, setChapter] = useState(19);
+  const [packageId, setPackageId] = useState("web");
+  const [chapterData, setChapterData] = useState<ChapterData | null>(null);
+  const [selectedVerses, setSelectedVerses] = useState<Set<number>>(new Set());
+  const [marginData, setMarginData] = useState<QueryResult>({ anchors: [], highlights: [], notes: [] });
+  const [crossRefs, setCrossRefs] = useState<string[]>([]);
+  const [showHighlightPalette, setShowHighlightPalette] = useState(false);
+  const [palettePos, setPalettePos] = useState({ top: 0, left: 0 });
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!activeRef) return;
-    void loadText(activeRef, activePackage);
-    void formatTitle(activeRef);
-  }, [activeRef, activePackage]);
-
-  const loadText = async (ref: CanonicalRef, pkg: string) => {
-    const result = await window.electronAPI.readScriptureText({
-      book: ref.start.book,
-      chapter: ref.start.chapter,
-      package: pkg,
-    });
-    if (result && result.verses) {
-      // Filter to the range
-      const filtered = result.verses.filter(
-        (v) => v.verse >= ref.start.verse && v.verse <= ref.end.verse,
-      );
-      setVerses(filtered.length > 0 ? filtered : result.verses);
-    } else {
-      setVerses([]);
+    if (navigateRef) {
+      setBook(navigateRef.book);
+      setChapter(navigateRef.chapter);
     }
-  };
+  }, [navigateRef]);
 
-  const formatTitle = async (ref: CanonicalRef) => {
-    const display = await window.electronAPI.formatDisplay(ref);
-    setDisplayTitle(display);
-  };
+  useEffect(() => {
+    window.api.scripture.getChapterText(packageId, book, chapter).then(setChapterData);
+  }, [book, chapter, packageId]);
 
-  const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
-      if (refInput.trim()) {
-        onNavigate(refInput.trim());
-        setRefInput("");
+  useEffect(() => {
+    loadMarginData();
+  }, [book, chapter]);
+
+  const loadMarginData = useCallback(async () => {
+    const verseCount = backbone.books[book]?.chapters[chapter - 1] ?? 0;
+    if (verseCount === 0) return;
+    const result = await window.api.library.queryRange(book, chapter, 1, book, chapter, verseCount);
+    setMarginData(result);
+
+    const allXrefs: string[] = [];
+    for (let v = 1; v <= Math.min(verseCount, 7); v++) {
+      const refs = await window.api.scripture.getCrossRefs(book, chapter, v);
+      allXrefs.push(...refs);
+    }
+    setCrossRefs(allXrefs);
+  }, [book, chapter, backbone]);
+
+  const bookData = backbone.books[book];
+  const chapterCount = bookData?.chapters.length ?? 0;
+  const displayBookName = bookNames[book]?.[0] ?? book;
+
+  const handleVerseClick = useCallback((verse: number, event: React.MouseEvent) => {
+    setSelectedVerses((prev) => {
+      const next = new Set(prev);
+      if (event.shiftKey && prev.size > 0) {
+        const min = Math.min(verse, ...prev);
+        const max = Math.max(verse, ...prev);
+        for (let v = min; v <= max; v++) next.add(v);
+      } else if (event.metaKey || event.ctrlKey) {
+        if (next.has(verse)) next.delete(verse);
+        else next.add(verse);
+      } else {
+        if (next.size === 1 && next.has(verse)) {
+          next.clear();
+        } else {
+          next.clear();
+          next.add(verse);
+        }
       }
-    },
-    [refInput, onNavigate],
-  );
+      return next;
+    });
 
-  if (!activeRef) {
-    return (
-      <div className="scripture-page">
-        <div className="empty-state">
-          <h2>Open a passage</h2>
-          <p>Type a reference like &ldquo;Acts 19:1-7&rdquo; to begin reading.</p>
-          <form onSubmit={handleSubmit} style={{ marginTop: "1rem" }}>
-            <input
-              className="search-input"
-              value={refInput}
-              onChange={(e) => setRefInput(e.target.value)}
-              placeholder="e.g. Acts 19:1-7, John 3:1-8"
-            />
-          </form>
-        </div>
-      </div>
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    const containerRect = contentRef.current?.getBoundingClientRect();
+    if (containerRect) {
+      setPalettePos({
+        top: rect.top - containerRect.top + (contentRef.current?.scrollTop ?? 0) - 36,
+        left: rect.right - containerRect.left + 8,
+      });
+      setShowHighlightPalette(true);
+    }
+  }, []);
+
+  const handleHighlight = async (color: string) => {
+    if (selectedVerses.size === 0) return;
+    const sorted = [...selectedVerses].sort((a, b) => a - b);
+    await window.api.library.createHighlight(book, chapter, sorted[0]!, sorted[sorted.length - 1]!, color, packageId);
+    setShowHighlightPalette(false);
+    setSelectedVerses(new Set());
+    loadMarginData();
+  };
+
+  const handleNoteFromSelection = () => {
+    if (selectedVerses.size === 0) return;
+    const sorted = [...selectedVerses].sort((a, b) => a - b);
+    const rangeStr = sorted.length === 1
+      ? `${displayBookName} ${chapter}:${sorted[0]}`
+      : `${displayBookName} ${chapter}:${sorted[0]}-${sorted[sorted.length - 1]}`;
+    onCreateNote(`\n\nPassage: ${rangeStr}`);
+    setSelectedVerses(new Set());
+    setShowHighlightPalette(false);
+  };
+
+  const getHighlightClass = (verse: number): string => {
+    const hl = marginData.highlights.find(
+      (h) => h.deleted === 0 && verse >= h.verse_start && verse <= h.verse_end,
     );
-  }
+    return hl ? `highlighted-${hl.color}` : "";
+  };
 
   return (
     <div className="scripture-page">
-      <div className="scripture-header">
-        <h1>
-          {displayTitle}
-          <span className="package-toggle">
-            <button
-              className={activePackage === "web" ? "active" : ""}
-              onClick={() => setActivePackage("web")}
-            >
-              WEB
-            </button>
-            <button
-              className={activePackage === "kjv" ? "active" : ""}
-              onClick={() => setActivePackage("kjv")}
-            >
-              KJV
-            </button>
-          </span>
-        </h1>
-        <form className="ref-nav" onSubmit={handleSubmit}>
-          <input
-            value={refInput}
-            onChange={(e) => setRefInput(e.target.value)}
-            placeholder="Go to reference..."
-          />
-          <button type="submit">Go</button>
-        </form>
+      <div className="scripture-content" ref={contentRef}>
+        <div className="scripture-inner">
+          <div className="chapter-nav">
+            <select value={book} onChange={(e) => { setBook(e.target.value); setChapter(1); }}>
+              {BOOK_ORDER.map((b) => (
+                <option key={b} value={b}>{bookNames[b]?.[0] ?? b}</option>
+              ))}
+            </select>
+            <select value={chapter} onChange={(e) => setChapter(Number(e.target.value))}>
+              {Array.from({ length: chapterCount }, (_, i) => (
+                <option key={i + 1} value={i + 1}>{i + 1}</option>
+              ))}
+            </select>
+            <div className="package-toggle">
+              <button className={packageId === "web" ? "active" : ""} onClick={() => setPackageId("web")}>WEB</button>
+              <button className={packageId === "kjv" ? "active" : ""} onClick={() => setPackageId("kjv")}>KJV</button>
+            </div>
+          </div>
+
+          <div className="chapter-header">
+            <span className="book-name">{displayBookName}</span>
+            <span className="chapter-number">{chapter}</span>
+          </div>
+
+          <div className="verse-text" style={{ position: "relative" }}>
+            {chapterData?.verses.map((v) => (
+              <div
+                key={v.verse}
+                className={`verse-line ${selectedVerses.has(v.verse) ? "selected" : ""} ${getHighlightClass(v.verse)}`}
+                onClick={(e) => handleVerseClick(v.verse, e)}
+              >
+                <sup className="verse-num">{v.verse}</sup>
+                {v.text}
+              </div>
+            ))}
+
+            {!chapterData && (
+              <p style={{ color: "var(--text-tertiary)", fontStyle: "italic" }}>
+                Loading text...
+              </p>
+            )}
+
+            {showHighlightPalette && selectedVerses.size > 0 && (
+              <div className="highlight-palette" style={{ top: palettePos.top, left: palettePos.left }}>
+                <button className="hl-btn-yellow" onClick={() => handleHighlight("yellow")} />
+                <button className="hl-btn-green" onClick={() => handleHighlight("green")} />
+                <button className="hl-btn-blue" onClick={() => handleHighlight("blue")} />
+                <button className="hl-btn-pink" onClick={() => handleHighlight("pink")} />
+                <button className="hl-btn-purple" onClick={() => handleHighlight("purple")} />
+                <button
+                  style={{ fontSize: "var(--fs-xs)", width: "auto", padding: "0 6px" }}
+                  onClick={handleNoteFromSelection}
+                >
+                  Note
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
-      <div className="scripture-text">
-        {verses.length === 0 ? (
-          <p style={{ color: "var(--text-tertiary)", fontStyle: "italic" }}>
-            No text loaded. Scripture text packages will be available after importing text data.
-          </p>
-        ) : (
-          verses.map((v) => (
-            <span key={v.verse} className="verse">
-              <sup className="verse-num">{v.verse}</sup>
-              <span className="verse-text">{v.text} </span>
-            </span>
-          ))
-        )}
-      </div>
+      <LivingMargin
+        book={book}
+        chapter={chapter}
+        marginData={marginData}
+        crossRefs={crossRefs}
+        bookNames={bookNames}
+      />
     </div>
   );
 }

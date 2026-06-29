@@ -1,115 +1,88 @@
-/**
- * Writing Sheet — Markdown editor with frontmatter hidden.
- * Supports create-note-from-passage and inline link autocomplete.
- */
+import type React from "react";
+import { useState, useEffect, useCallback } from "react";
 
-import { useState, useCallback } from "react";
-import type { CanonicalRef } from "../../core/reference/types.js";
+interface Props {
+  prefillBody?: string;
+  onSaved: () => void;
+}
 
-type Props = {
-  activeRef: CanonicalRef | null;
-  onSave: (title: string, body: string) => Promise<{ ok: boolean; noteId?: string }>;
-  bookNames: Record<string, string[]>;
-};
-
-export function WritingSheet({ activeRef, onSave, bookNames: _bookNames }: Props) {
+export function WritingSheet({ prefillBody, onSaved }: Props): React.JSX.Element {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [charCount, setCharCount] = useState(0);
+
+  useEffect(() => {
+    if (prefillBody) {
+      setBody(prefillBody);
+    }
+  }, [prefillBody]);
+
+  useEffect(() => {
+    setCharCount(body.length);
+  }, [body]);
 
   const handleSave = useCallback(async () => {
     if (!title.trim()) return;
     setSaving(true);
-    const result = await onSave(title.trim(), body);
+    const result = await window.api.library.createNote(title, body, {});
     setSaving(false);
     if (result.ok) {
-      setSaved(true);
-      setTimeout(() => {
-        setSaved(false);
-        setTitle("");
-        setBody("");
-      }, 2000);
+      setTitle("");
+      setBody("");
+      onSaved();
     }
-  }, [title, body, onSave]);
+  }, [title, body, onSaved]);
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "s") {
         e.preventDefault();
-        void handleSave();
+        handleSave();
       }
-    },
-    [handleSave],
-  );
-
-  // Pre-fill body with active passage reference
-  const insertPassageRef = useCallback(async () => {
-    if (!activeRef) return;
-    const display = await window.electronAPI.formatDisplay(activeRef);
-    const bref = await window.electronAPI.formatBref(activeRef);
-    setBody((prev) => prev + (prev ? "\n\n" : "") + `${display} (${bref})\n\n`);
-  }, [activeRef]);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [handleSave]);
 
   return (
-    <div className="writing-sheet" onKeyDown={handleKeyDown}>
-      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "1rem" }}>
+    <div className="writing-sheet">
+      <div className="writing-inner">
         <input
-          className="title-input"
+          className="note-title-input"
+          type="text"
+          placeholder="Note title..."
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Note title..."
         />
-      </div>
-
-      {activeRef && (
-        <button
-          onClick={insertPassageRef}
-          style={{
-            marginBottom: "1rem",
-            padding: "4px 12px",
-            border: "1px solid var(--border-medium)",
-            borderRadius: "6px",
-            background: "transparent",
-            cursor: "pointer",
-            fontSize: "0.8125rem",
-          }}
-        >
-          Insert passage reference
-        </button>
-      )}
-
-      <textarea
-        value={body}
-        onChange={(e) => setBody(e.target.value)}
-        placeholder="Write your note in Markdown..."
-      />
-
-      <div style={{ marginTop: "1rem", display: "flex", gap: "8px", alignItems: "center" }}>
-        <button
-          onClick={handleSave}
-          disabled={saving || !title.trim()}
-          style={{
-            padding: "8px 20px",
-            background: "var(--accent-primary)",
-            color: "white",
-            border: "none",
-            borderRadius: "6px",
-            cursor: title.trim() ? "pointer" : "not-allowed",
-            opacity: title.trim() ? 1 : 0.5,
-            fontSize: "0.875rem",
-          }}
-        >
-          {saving ? "Saving..." : "Save Note"}
-        </button>
-        {saved && (
-          <span style={{ fontSize: "0.875rem", color: "var(--provenance-source)" }}>
-            Note saved
-          </span>
-        )}
-        <span style={{ fontSize: "0.75rem", color: "var(--text-tertiary)", marginLeft: "auto" }}>
-          Ctrl+S to save
-        </span>
+        <textarea
+          className="note-body-editor"
+          placeholder="Start writing... (Markdown supported)"
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+        />
+        <div className="note-meta">
+          <span>{charCount} characters</span>
+          <span>Ctrl+S to save</span>
+          <button
+            onClick={handleSave}
+            disabled={saving || !title.trim()}
+            style={{
+              marginLeft: "auto",
+              padding: "var(--sp-xs) var(--sp-md)",
+              background: "var(--accent-warm)",
+              color: "white",
+              border: "none",
+              borderRadius: "var(--radius-sm)",
+              cursor: title.trim() ? "pointer" : "not-allowed",
+              opacity: title.trim() ? 1 : 0.5,
+              fontSize: "var(--fs-xs)",
+              fontWeight: "var(--fw-medium)",
+            }}
+          >
+            {saving ? "Saving..." : "Save Note"}
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1,144 +1,93 @@
-/**
- * Renderer entry point — React app for the Scripture Library desktop shell.
- */
-
-import { useState, useCallback, useEffect } from "react";
-import { createRoot } from "react-dom/client";
+import type React from "react";
+import { useState, useEffect } from "react";
+import type { BackboneData, BookNameData } from "./api.js";
 import { ScripturePage } from "./components/ScripturePage.js";
 import { WritingSheet } from "./components/WritingSheet.js";
 import { SearchView } from "./components/SearchView.js";
-import { LivingMargin } from "./components/LivingMargin.js";
-import type { CanonicalRef } from "../core/reference/types.js";
-import type { MarginResult } from "../core/margin/types.js";
+import { ImportPage } from "./components/ImportPage.js";
+import "./styles.css";
 
-type View = "scripture" | "write" | "search" | "notes";
+type View = "scripture" | "write" | "search" | "notes" | "import";
 
-declare global {
-  interface Window {
-    electronAPI: {
-      getLibraryInfo(): Promise<{ path: string; hasLibrary: boolean } | null>;
-      resolveReference(input: string): Promise<{ ok: boolean; value?: CanonicalRef; error?: string }>;
-      formatBref(ref: CanonicalRef): Promise<string>;
-      formatDisplay(ref: CanonicalRef): Promise<string>;
-      getMargin(query: { book: string; startChapter: number; startVerse: number; endChapter: number; endVerse: number }): Promise<MarginResult>;
-      searchNotes(query: string): Promise<Array<{ id: string; title: string; body_text: string }>>;
-      createNote(opts: { title: string; body: string; tags?: string[] }): Promise<{ ok: boolean; noteId?: string }>;
-      getAllNotes(): Promise<Array<{ id: string; title: string; body_text: string }>>;
-      getNote(id: string): Promise<{ id: string; title: string; body_text: string } | null>;
-      getBackbone(): Promise<unknown>;
-      getBookNames(): Promise<Record<string, string[]>>;
-      importObsidianVault(path: string): Promise<{ ok: boolean; stats?: { imported: number; linksResolved: number; linksUnresolved: number } }>;
-      readScriptureText(opts: { book: string; chapter: number; package: string }): Promise<{ verses: Array<{ verse: number; text: string }> } | null>;
-      createHighlight(opts: { book: string; chapter: number; verseStart: number; verseEnd: number; color: string; package: string }): Promise<{ ok: boolean }>;
-      rebuildSqlite(): Promise<string | null>;
-    };
-  }
-}
-
-function App() {
+export function App(): React.JSX.Element {
   const [view, setView] = useState<View>("scripture");
-  const [activeRef, setActiveRef] = useState<CanonicalRef | null>(null);
-  const [marginResult, setMarginResult] = useState<MarginResult | null>(null);
-  const [bookNames, setBookNames] = useState<Record<string, string[]>>({});
+  const [backbone, setBackbone] = useState<BackboneData | null>(null);
+  const [bookNames, setBookNames] = useState<BookNameData | null>(null);
+  const [navigateRef, setNavigateRef] = useState<{ book: string; chapter: number } | null>(null);
+  const [editNoteBody, setEditNoteBody] = useState<string>("");
 
   useEffect(() => {
-    // Load initial data
-    void window.electronAPI.getBookNames().then(setBookNames);
-    // Default to Acts 19
-    void window.electronAPI.resolveReference("Acts 19:1-7").then((result) => {
-      if (result.ok && result.value) {
-        setActiveRef(result.value);
-      }
-    });
+    window.api.scripture.getBackbone().then(setBackbone);
+    window.api.scripture.getBookNames().then(setBookNames);
   }, []);
 
-  useEffect(() => {
-    if (!activeRef) return;
-    void window.electronAPI.getMargin({
-      book: activeRef.start.book,
-      startChapter: activeRef.start.chapter,
-      startVerse: activeRef.start.verse,
-      endChapter: activeRef.end.chapter,
-      endVerse: activeRef.end.verse,
-    }).then(setMarginResult);
-  }, [activeRef]);
+  const handleCreateNoteFromPassage = (prefillBody?: string) => {
+    setEditNoteBody(prefillBody ?? "");
+    setView("write");
+  };
 
-  const handleNavigate = useCallback(async (input: string) => {
-    const result = await window.electronAPI.resolveReference(input);
-    if (result.ok && result.value) {
-      setActiveRef(result.value);
-      setView("scripture");
-    }
-  }, []);
+  const handleNavigateToRef = (book: string, chapter: number) => {
+    setNavigateRef({ book, chapter });
+    setView("scripture");
+  };
 
-  const handleCreateNote = useCallback(async (title: string, body: string) => {
-    const result = await window.electronAPI.createNote({ title, body });
-    if (result.ok) {
-      // Refresh margin after creating note
-      if (activeRef) {
-        const margin = await window.electronAPI.getMargin({
-          book: activeRef.start.book,
-          startChapter: activeRef.start.chapter,
-          startVerse: activeRef.start.verse,
-          endChapter: activeRef.end.chapter,
-          endVerse: activeRef.end.verse,
-        });
-        setMarginResult(margin);
-      }
-    }
-    return result;
-  }, [activeRef]);
+  if (!backbone || !bookNames) {
+    return (
+      <div className="app-shell" style={{ alignItems: "center", justifyContent: "center" }}>
+        <p style={{ color: "var(--text-tertiary)" }}>Loading library...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="app-layout">
-      <aside className="sidebar">
+    <div className="app-shell">
+      <nav className="sidebar">
         <div className="sidebar-header">
-          <strong style={{ fontSize: "0.875rem" }}>Scripture Library</strong>
+          <h1>Scripture</h1>
         </div>
-        <nav className="sidebar-nav">
+        <div className="sidebar-nav">
           <button className={view === "scripture" ? "active" : ""} onClick={() => setView("scripture")}>
-            Scripture
+            Read
           </button>
           <button className={view === "write" ? "active" : ""} onClick={() => setView("write")}>
-            New Note
-          </button>
-          <button className={view === "notes" ? "active" : ""} onClick={() => setView("notes")}>
-            All Notes
+            Write
           </button>
           <button className={view === "search" ? "active" : ""} onClick={() => setView("search")}>
             Search
           </button>
-        </nav>
-      </aside>
-
+          <button className={view === "notes" ? "active" : ""} onClick={() => setView("notes")}>
+            Notes
+          </button>
+          <button className={view === "import" ? "active" : ""} onClick={() => setView("import")}>
+            Import
+          </button>
+        </div>
+      </nav>
       <div className="main-content">
         {view === "scripture" && (
           <ScripturePage
-            activeRef={activeRef}
+            backbone={backbone}
             bookNames={bookNames}
-            onNavigate={handleNavigate}
+            navigateRef={navigateRef}
+            onCreateNote={handleCreateNoteFromPassage}
           />
         )}
         {view === "write" && (
           <WritingSheet
-            activeRef={activeRef}
-            onSave={handleCreateNote}
-            bookNames={bookNames}
+            prefillBody={editNoteBody}
+            onSaved={() => setEditNoteBody("")}
           />
         )}
-        {view === "search" && <SearchView onNavigate={handleNavigate} />}
-        {view === "notes" && <SearchView onNavigate={handleNavigate} showAll />}
-
-        {view === "scripture" && (
-          <LivingMargin
-            result={marginResult}
-            onCrossRefClick={handleNavigate}
-          />
+        {view === "search" && (
+          <SearchView onNavigate={handleNavigateToRef} />
+        )}
+        {view === "notes" && (
+          <SearchView onNavigate={handleNavigateToRef} showAll />
+        )}
+        {view === "import" && (
+          <ImportPage />
         )}
       </div>
     </div>
   );
 }
-
-const root = createRoot(document.getElementById("root")!);
-root.render(<App />);

@@ -33,6 +33,8 @@ export class GitRevisionStore implements RevisionStore {
     const gitDir = join(this.libraryPath, ".git");
     if (!existsSync(gitDir)) {
       this.git("init");
+      this.git("config", "user.email", "library@scripture-app.local");
+      this.git("config", "user.name", "Scripture Library");
       // Set up gitignore per §4.3
       const gitignorePath = join(this.libraryPath, ".gitignore");
       if (!existsSync(gitignorePath)) {
