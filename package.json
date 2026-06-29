@@ -1,0 +1,30 @@
+{
+  "name": "scripture-app",
+  "version": "0.1.0",
+  "description": "A local-first, open-source knowledge tool where canonical Scripture is the structured organizing spine.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "lint": "tsc --noEmit",
+    "test": "node --import tsx --test tests/**/*.test.ts",
+    "library": "node --import tsx src/cli/index.ts"
+  },
+  "bin": {
+    "library": "./dist/cli/index.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "11.9.1",
+    "gray-matter": "4.0.3",
+    "ulid": "2.3.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "7.6.13",
+    "@types/node": "22.15.21",
+    "tsx": "4.19.4",
+    "typescript": "5.8.3"
+  }
+}
