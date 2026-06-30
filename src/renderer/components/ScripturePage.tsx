@@ -1,6 +1,6 @@
 import type React from "react";
 import { useState, useEffect, useCallback, useRef } from "react";
-import type { BackboneData, BookNameData, ChapterData, QueryResult } from "../api.js";
+import type { BackboneData, BookNameData, ChapterData, QueryResult, SemanticMarginResult } from "../api.js";
 import { LivingMargin } from "./LivingMargin.js";
 
 interface Props {
@@ -27,6 +27,7 @@ export function ScripturePage({ backbone, bookNames, navigateRef, onCreateNote }
   const [selectedVerses, setSelectedVerses] = useState<Set<number>>(new Set());
   const [marginData, setMarginData] = useState<QueryResult>({ anchors: [], highlights: [], notes: [] });
   const [crossRefs, setCrossRefs] = useState<string[]>([]);
+  const [semanticData, setSemanticData] = useState<SemanticMarginResult | null>(null);
   const [showHighlightPalette, setShowHighlightPalette] = useState(false);
   const [palettePos, setPalettePos] = useState({ top: 0, left: 0 });
   const contentRef = useRef<HTMLDivElement>(null);
@@ -52,13 +53,28 @@ export function ScripturePage({ backbone, bookNames, navigateRef, onCreateNote }
     const result = await window.api.library.queryRange(book, chapter, 1, book, chapter, verseCount);
     setMarginData(result);
 
-    const allXrefs: string[] = [];
-    for (let v = 1; v <= Math.min(verseCount, 7); v++) {
-      const refs = await window.api.scripture.getCrossRefs(book, chapter, v);
-      allXrefs.push(...refs);
+    const verses = Math.min(verseCount, 7);
+    const xrefResults = await Promise.all(
+      Array.from({ length: verses }, (_, i) =>
+        window.api.scripture.getCrossRefs(book, chapter, i + 1),
+      ),
+    );
+    setCrossRefs(xrefResults.flat());
+
+    // Load semantic margin (AI)
+    const passageText = chapterData?.verses.map((v) => v.text).join(" ") ?? "";
+    if (passageText) {
+      const semantic = await window.api.ai.semanticMargin({
+        book,
+        startChapter: chapter,
+        startVerse: 1,
+        endChapter: chapter,
+        endVerse: verseCount,
+        passageText,
+      });
+      setSemanticData(semantic);
     }
-    setCrossRefs(allXrefs);
-  }, [book, chapter, backbone]);
+  }, [book, chapter, backbone, chapterData]);
 
   const bookData = backbone.books[book];
   const chapterCount = bookData?.chapters.length ?? 0;
@@ -192,6 +208,10 @@ export function ScripturePage({ backbone, bookNames, navigateRef, onCreateNote }
         marginData={marginData}
         crossRefs={crossRefs}
         bookNames={bookNames}
+        semanticData={semanticData}
+        onPinClaim={async (claimId, assertion) => {
+          await window.api.ai.pinClaim(claimId, assertion);
+        }}
       />
     </div>
   );

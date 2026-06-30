@@ -276,6 +276,72 @@ function checkEvents(
       });
     }
   }
+
+  checkOverlappingHighlights(allEvents, diagnostics);
+}
+
+type HighlightSpan = {
+  entityId: string;
+  book: string;
+  chapter: number;
+  verseStart: number;
+  verseEnd: number;
+};
+
+function checkOverlappingHighlights(events: LibraryEvent[], diagnostics: Diagnostic[]): void {
+  const highlights = events
+    .map(readHighlightSpan)
+    .filter((span): span is HighlightSpan => span !== null);
+
+  for (let i = 0; i < highlights.length; i++) {
+    const left = highlights[i]!;
+    for (let j = i + 1; j < highlights.length; j++) {
+      const right = highlights[j]!;
+      if (left.entityId === right.entityId) continue;
+      if (
+        left.book === right.book &&
+        left.chapter === right.chapter &&
+        left.verseStart <= right.verseEnd &&
+        right.verseStart <= left.verseEnd
+      ) {
+        diagnostics.push({
+          severity: "warning",
+          category: "overlapping-highlights",
+          message: `Highlights "${left.entityId}" and "${right.entityId}" overlap at ${left.book} ${left.chapter}.`,
+          suggestion: "Review both highlights. Sync preserved both authored events.",
+        });
+      }
+    }
+  }
+}
+
+function readHighlightSpan(event: LibraryEvent): HighlightSpan | null {
+  if (event.entityType !== "highlight") return null;
+  if (event.op === "delete") return null;
+  if (!isRecord(event.payload)) return null;
+  const book = event.payload["book"];
+  const chapter = event.payload["chapter"];
+  const verseStart = event.payload["verse_start"];
+  const verseEnd = event.payload["verse_end"];
+  if (
+    typeof book !== "string" ||
+    typeof chapter !== "number" ||
+    typeof verseStart !== "number" ||
+    typeof verseEnd !== "number"
+  ) {
+    return null;
+  }
+  return {
+    entityId: event.entityId,
+    book,
+    chapter,
+    verseStart,
+    verseEnd,
+  };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
 }
 
 function checkManifest(

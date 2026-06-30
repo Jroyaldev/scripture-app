@@ -2,6 +2,14 @@
 
 > Read this file first. It contains the invariants and conventions that govern all code in this repo.
 
+## Operating Mode
+
+- The original Scripture-Native Knowledge Library build spec is frozen source-of-truth.
+- Do not replace the spec with a new greenfield brief. Amend contracts only when the human explicitly decides to change them.
+- Delivery work is tracked in `STATUS.md` and one task file under `tasks/`.
+- An implementation agent should read this file plus exactly one task file, then update `STATUS.md` when that task lands.
+- Promote one component from its current maturity level to its target level per session. Do not broaden a task into adjacent components.
+
 ## Stack
 
 - **Language:** TypeScript everywhere. Core obeys INV-18 (no Node/Electron imports; I/O injected).
@@ -64,3 +72,4 @@ tests/          — Test files.
 - SQLite schema: §4.4 — materialized view, DROP AND REBUILD AT WILL
 - rebuild_hash: SHA-256 of canonicalized logical state (§4.5)
 - Note format: Markdown with ULID in frontmatter, [[note:ULID|label]] links (§4.6)
+- Full contract index: `specs/contracts.md`

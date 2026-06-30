@@ -70,8 +70,8 @@ export function WritingSheet({ prefillBody, onSaved }: Props): React.JSX.Element
             style={{
               marginLeft: "auto",
               padding: "var(--sp-xs) var(--sp-md)",
-              background: "var(--accent-warm)",
-              color: "white",
+              background: "var(--text-primary)",
+              color: "var(--bg-surface)",
               border: "none",
               borderRadius: "var(--radius-sm)",
               cursor: title.trim() ? "pointer" : "not-allowed",

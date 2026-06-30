@@ -12,6 +12,8 @@ import type {
   EdgeRecord,
   HighlightRecord,
   FactRecord,
+  SourceRecord,
+  SourceChunkRecord,
 } from "../core/indexer/types.js";
 import type { AppliedEvent } from "../core/events/types.js";
 
@@ -213,6 +215,47 @@ export class SQLiteMaterializer {
     return this.db.prepare("SELECT * FROM facts").all() as FactRecord[];
   }
 
+  insertSource(source: SourceRecord): void {
+    this.db
+      .prepare("INSERT OR REPLACE INTO sources (id, title, kind, imported) VALUES (?, ?, ?, ?)")
+      .run(source.id, source.title, source.kind, source.imported);
+  }
+
+  insertSourceChunk(chunk: SourceChunkRecord): void {
+    this.db
+      .prepare(
+        "INSERT OR REPLACE INTO source_chunks (id, source_id, ordinal, text, locator_json) VALUES (?, ?, ?, ?, ?)",
+      )
+      .run(chunk.id, chunk.source_id, chunk.ordinal, chunk.text, chunk.locator_json);
+  }
+
+  deleteSourceChunks(sourceId: string): void {
+    this.db.prepare("DELETE FROM source_chunks WHERE source_id = ?").run(sourceId);
+    this.db.prepare("DELETE FROM anchors WHERE src_kind = 'sourceChunk' AND src_id NOT IN (SELECT id FROM source_chunks)").run();
+  }
+
+  querySourceById(id: string): SourceRecord | undefined {
+    return this.db.prepare("SELECT * FROM sources WHERE id = ?").get(id) as SourceRecord | undefined;
+  }
+
+  querySourceChunkById(id: string): SourceChunkRecord | undefined {
+    return this.db.prepare("SELECT * FROM source_chunks WHERE id = ?").get(id) as SourceChunkRecord | undefined;
+  }
+
+  querySourceChunksBySource(sourceId: string): SourceChunkRecord[] {
+    return this.db
+      .prepare("SELECT * FROM source_chunks WHERE source_id = ? ORDER BY ordinal")
+      .all(sourceId) as SourceChunkRecord[];
+  }
+
+  getAllSources(): SourceRecord[] {
+    return this.db.prepare("SELECT * FROM sources").all() as SourceRecord[];
+  }
+
+  getAllSourceChunks(): SourceChunkRecord[] {
+    return this.db.prepare("SELECT * FROM source_chunks").all() as SourceChunkRecord[];
+  }
+
   getAllAppliedEvents(): AppliedEvent[] {
     return this.db.prepare("SELECT * FROM events_applied").all() as AppliedEvent[];
   }
@@ -281,5 +324,66 @@ export class SQLiteMaterializer {
 
   close(): void {
     this.db.close();
+  }
+
+  // --- M3: Claims ---
+
+  insertClaim(c: { id: string; assertion: string; claim_type: string; confidence: number; extractor: string; created: string; status: string }): void {
+    this.db
+      .prepare(
+        "INSERT OR REPLACE INTO claims (id, assertion, claim_type, confidence, extractor, created, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      )
+      .run(c.id, c.assertion, c.claim_type, c.confidence, c.extractor, c.created, c.status);
+  }
+
+  insertClaimAnchor(ca: { claim_id: string; book: string; chapter: number; verse: number }): void {
+    this.db
+      .prepare("INSERT INTO claim_anchors (claim_id, book, chapter, verse) VALUES (?, ?, ?, ?)")
+      .run(ca.claim_id, ca.book, ca.chapter, ca.verse);
+  }
+
+  insertClaimSource(cs: { claim_id: string; kind: string; ref: string }): void {
+    this.db
+      .prepare("INSERT INTO claim_sources (claim_id, kind, ref) VALUES (?, ?, ?)")
+      .run(cs.claim_id, cs.kind, cs.ref);
+  }
+
+  queryClaimsForRange(book: string, startCh: number, startV: number, endCh: number, endV: number): { id: string; assertion: string; claim_type: string; confidence: number; extractor: string; created: string; status: string }[] {
+    return this.db
+      .prepare(
+        `SELECT DISTINCT c.* FROM claims c
+         JOIN claim_anchors ca ON c.id = ca.claim_id
+         WHERE ca.book = ? AND (
+           (ca.chapter < ? OR (ca.chapter = ? AND ca.verse <= ?)) AND
+           (ca.chapter > ? OR (ca.chapter = ? AND ca.verse >= ?))
+         ) AND c.status = 'active'`,
+      )
+      .all(book, endCh, endCh, endV, startCh, startCh, startV) as { id: string; assertion: string; claim_type: string; confidence: number; extractor: string; created: string; status: string }[];
+  }
+
+  queryClaimAnchors(claimId: string): { claim_id: string; book: string; chapter: number; verse: number }[] {
+    return this.db
+      .prepare("SELECT * FROM claim_anchors WHERE claim_id = ?")
+      .all(claimId) as { claim_id: string; book: string; chapter: number; verse: number }[];
+  }
+
+  // --- M3: Overlays ---
+
+  insertOverlay(o: { id: string; book: string; chapter: number; verse: number; char_start: number; char_end: number; reason: string; extractor: string }): void {
+    this.db
+      .prepare(
+        "INSERT OR REPLACE INTO overlays (id, book, chapter, verse, char_start, char_end, reason, extractor) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      )
+      .run(o.id, o.book, o.chapter, o.verse, o.char_start, o.char_end, o.reason, o.extractor);
+  }
+
+  queryOverlaysForRange(book: string, startCh: number, startV: number, endCh: number, endV: number): { id: string; book: string; chapter: number; verse: number; char_start: number; char_end: number; reason: string; extractor: string }[] {
+    return this.db
+      .prepare(
+        `SELECT * FROM overlays WHERE book = ? AND
+          chapter >= ? AND chapter <= ? AND
+          verse >= ? AND verse <= ?`,
+      )
+      .all(book, startCh, endCh, startV, endV) as { id: string; book: string; chapter: number; verse: number; char_start: number; char_end: number; reason: string; extractor: string }[];
   }
 }

@@ -7,7 +7,7 @@ const common = {
   bundle: true,
   platform: "node",
   packages: "external",
-  target: "node22",
+  target: "node22",  // Keep at node22 for Electron 35 compatibility (Electron 35 uses Node 22)
   sourcemap: true,
   logLevel: "info",
 };

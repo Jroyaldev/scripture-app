@@ -5,9 +5,10 @@ import { ScripturePage } from "./components/ScripturePage.js";
 import { WritingSheet } from "./components/WritingSheet.js";
 import { SearchView } from "./components/SearchView.js";
 import { ImportPage } from "./components/ImportPage.js";
+import { BudgetSettings } from "./components/BudgetSettings.js";
 import "./styles.css";
 
-type View = "scripture" | "write" | "search" | "notes" | "import";
+type View = "scripture" | "write" | "search" | "notes" | "import" | "settings";
 
 export function App(): React.JSX.Element {
   const [view, setView] = useState<View>("scripture");
@@ -61,6 +62,9 @@ export function App(): React.JSX.Element {
           <button className={view === "import" ? "active" : ""} onClick={() => setView("import")}>
             Import
           </button>
+          <button className={view === "settings" ? "active" : ""} onClick={() => setView("settings")}>
+            Settings
+          </button>
         </div>
       </nav>
       <div className="main-content">
@@ -86,6 +90,9 @@ export function App(): React.JSX.Element {
         )}
         {view === "import" && (
           <ImportPage />
+        )}
+        {view === "settings" && (
+          <BudgetSettings />
         )}
       </div>
     </div>

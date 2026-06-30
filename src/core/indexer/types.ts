@@ -60,3 +60,31 @@ export type FactRecord = {
   user_note: string | null;
   deleted: number;
 };
+
+export type SourceRecord = {
+  id: string;
+  title: string;
+  kind: string;
+  imported: string;
+};
+
+export type PdfLocator = {
+  kind: "pdf";
+  page: number;
+  bbox: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  textStart: number;
+  textEnd: number;
+};
+
+export type SourceChunkRecord = {
+  id: string;
+  source_id: string;
+  ordinal: number;
+  text: string;
+  locator_json: string;
+};

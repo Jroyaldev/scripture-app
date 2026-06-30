@@ -7,7 +7,8 @@ export type MarginItem =
   | MarginNote
   | MarginHighlight
   | MarginCrossRef
-  | MarginBacklink;
+  | MarginBacklink
+  | MarginSourceChunk;
 
 export type MarginNote = {
   kind: "note";
@@ -43,6 +44,16 @@ export type MarginBacklink = {
   snippet: string;
 };
 
+export type MarginSourceChunk = {
+  kind: "source-chunk";
+  provenance: "source";
+  chunkId: string;
+  sourceId: string;
+  sourceTitle: string;
+  snippet: string;
+  locator: import("../indexer/types.js").PdfLocator;
+};
+
 export type MarginQuery = {
   book: string;
   startChapter: number;
@@ -56,6 +67,12 @@ export type MarginResult = {
   highlights: MarginHighlight[];
   crossRefs: MarginCrossRef[];
   backlinks: MarginBacklink[];
+  sourceChunks: MarginSourceChunk[];
+  semanticNotes?: import("../ai/types.js").SemanticNote[];
+  threads?: import("../ai/types.js").Thread[];
+  claims?: import("../ai/types.js").Claim[];
+  overlays?: import("../ai/types.js").Overlay[];
+  suggestedCrossRefs?: import("../ai/types.js").SuggestedCrossRef[];
 };
 
 export type CrossRefData = {

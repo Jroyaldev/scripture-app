@@ -4,8 +4,8 @@
  */
 
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync, rmSync } from "node:fs";
-import { join } from "node:path";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync, rmSync } from "node:fs";
+import { basename, join } from "node:path";
 import { ulid } from "ulid";
 
 /**
@@ -29,14 +29,32 @@ import type { BackboneData, BookNameMap } from "../core/reference/types.js";
 import type { LibraryEvent } from "../core/events/types.js";
 import type { LibraryManifest } from "../core/interfaces.js";
 import type { ParsedNote } from "../core/notes/types.js";
-import type { AnchorRecord, EdgeRecord, HighlightRecord, FactRecord, NoteRecord } from "../core/indexer/types.js";
+import type {
+  AnchorRecord,
+  EdgeRecord,
+  HighlightRecord,
+  FactRecord,
+  NoteRecord,
+  PdfLocator,
+  SourceChunkRecord,
+  SourceRecord,
+} from "../core/indexer/types.js";
 import { parseNote } from "../core/notes/parser.js";
+import { parseScriptureRefs } from "../core/notes/parser.js";
 import { foldEvents } from "../core/events/fold.js";
 
 import { canonicalize } from "../core/indexer/hash.js";
 import type { LogicalState } from "../core/indexer/hash.js";
 import { SQLiteMaterializer } from "./sqlite.js";
 import { CURRENT_APP_SCHEMA_VERSION, CURRENT_EVENT_SCHEMA_VERSION } from "../core/migration/index.js";
+import type {
+  ImportedSource,
+  SourceChunk,
+  SourceMetadata,
+  SourceRights,
+  SourceSyncPolicy,
+} from "../core/sources/types.js";
+import { extractPdfChunks } from "./pdf-source.js";
 
 export class LibraryEngine {
   readonly rootPath: string;
@@ -526,4 +544,334 @@ export class LibraryEngine {
       throw err;
     }
   }
+
+  // --- M3: Claims, Overlays, FactCards ---
+
+  /**
+   * Insert a derived Claim into the materialized view.
+   * Claims are Derived data — disposable, regenerable.
+   */
+  insertClaim(claim: {
+    id: string;
+    assertion: string;
+    claimType: string;
+    confidence: number;
+    extractor: string;
+    created: string;
+    status: string;
+    anchors: { book: string; chapter: number; verse: number }[];
+    sources: { kind: string; ref: string }[];
+  }): void {
+    const dbPath = join(this.rootPath, ".system/library.sqlite");
+    const materializer = new SQLiteMaterializer(dbPath);
+    try {
+      materializer.insertClaim({
+        id: claim.id,
+        assertion: claim.assertion,
+        claim_type: claim.claimType,
+        confidence: claim.confidence,
+        extractor: claim.extractor,
+        created: claim.created,
+        status: claim.status,
+      });
+      for (const anchor of claim.anchors) {
+        materializer.insertClaimAnchor({
+          claim_id: claim.id,
+          book: anchor.book,
+          chapter: anchor.chapter,
+          verse: anchor.verse,
+        });
+      }
+      for (const source of claim.sources) {
+        materializer.insertClaimSource({
+          claim_id: claim.id,
+          kind: source.kind,
+          ref: source.ref,
+        });
+      }
+    } finally {
+      materializer.close();
+    }
+  }
+
+  /**
+   * Insert a derived Overlay into the materialized view.
+   * Overlays are Derived data — disposable, regenerable.
+   */
+  insertOverlay(overlay: {
+    id: string;
+    book: string;
+    chapter: number;
+    verse: number;
+    charStart: number;
+    charEnd: number;
+    reason: string;
+    extractor: string;
+  }): void {
+    const dbPath = join(this.rootPath, ".system/library.sqlite");
+    const materializer = new SQLiteMaterializer(dbPath);
+    try {
+      materializer.insertOverlay({
+        id: overlay.id,
+        book: overlay.book,
+        chapter: overlay.chapter,
+        verse: overlay.verse,
+        char_start: overlay.charStart,
+        char_end: overlay.charEnd,
+        reason: overlay.reason,
+        extractor: overlay.extractor,
+      });
+    } finally {
+      materializer.close();
+    }
+  }
+
+  /**
+   * Pin a Claim → FactCard.
+   * This is a Substrate write (INV-1): appends a `pin` event to pinned-facts.jsonl
+   * and copies the claim's assertion into Substrate.
+   * The FactCard survives a .system/ wipe because it's in the event log.
+   */
+  pinClaim(claimId: string, assertion: string, userNote?: string): string {
+    const factId = "fact_" + ulid();
+    const event = this.createEvent("fact", factId, "pin", {
+      assertion,
+      fromClaim: claimId,
+      userNote: userNote ?? null,
+    });
+    this.appendEvent(event);
+
+    // Also write the fact to the materialized view immediately
+    const dbPath = join(this.rootPath, ".system/library.sqlite");
+    const materializer = new SQLiteMaterializer(dbPath);
+    try {
+      materializer.insertFact({
+        id: factId,
+        assertion,
+        from_claim: claimId,
+        user_note: userNote ?? null,
+        deleted: 0,
+      });
+    } finally {
+      materializer.close();
+    }
+
+    return factId;
+  }
+
+  /**
+   * Promote an Overlay → real Highlight event.
+   * This is a Substrate write (INV-1): appends a `create` event to highlights.jsonl.
+   */
+  promoteOverlay(overlayId: string, book: string, chapter: number, verseStart: number, verseEnd: number, color: string): string {
+    const hlId = "hl_" + ulid() + "_" + overlayId.slice(0, 8);
+    const event = this.createEvent("highlight", hlId, "create", {
+      book,
+      chapter,
+      verse_start: verseStart,
+      verse_end: verseEnd,
+      package: "web",
+      color,
+      kind: "highlight",
+    });
+    this.appendEvent(event);
+    return hlId;
+  }
+
+  /**
+   * Get the path to the embeddings database.
+   */
+  getEmbeddingsDbPath(): string {
+    return join(this.rootPath, ".system/embeddings.sqlite");
+  }
+
+  /**
+   * Get all facts (FactCards) from the materialized view.
+   */
+  getAllFacts(): { id: string; assertion: string; from_claim: string | null; user_note: string | null; deleted: number }[] {
+    const dbPath = join(this.rootPath, ".system/library.sqlite");
+    const materializer = new SQLiteMaterializer(dbPath);
+    try {
+      return materializer.getAllFacts();
+    } finally {
+      materializer.close();
+    }
+  }
+
+  // --- M4: Source ingestion ---
+
+  async importPdfSource(pdfPath: string, opts: {
+    title: string;
+    rights: SourceRights;
+    syncPolicy: SourceSyncPolicy;
+  }): Promise<ImportedSource> {
+    const sourceId = "src_" + ulid();
+    const sourceDir = join(this.rootPath, "sources", sourceId);
+    mkdirSync(sourceDir, { recursive: true });
+
+    const originalPath = join(sourceDir, "original.pdf");
+    copyFileSync(pdfPath, originalPath);
+    const originalBytes = readFileSync(originalPath);
+    const imported = new Date().toISOString();
+    const metadata: SourceMetadata = {
+      schemaVersion: 1,
+      id: sourceId,
+      title: opts.title,
+      kind: "pdf",
+      imported,
+      originalFilename: basename(pdfPath),
+      originalSha256: createHash("sha256").update(originalBytes).digest("hex"),
+      rights: opts.rights,
+      syncPolicy: opts.syncPolicy,
+    };
+    writeFileSync(join(sourceDir, "metadata.json"), JSON.stringify(metadata, null, 2));
+
+    const chunks = await extractPdfChunks(sourceId, toUint8Array(originalBytes));
+    this.materializeSource(metadata, chunks);
+
+    return {
+      source: sourceRecordFromMetadata(metadata),
+      chunks,
+    };
+  }
+
+  async rechunkSource(sourceId: string): Promise<SourceChunk[]> {
+    const metadata = this.readSourceMetadata(sourceId);
+    const originalPath = join(this.rootPath, "sources", sourceId, "original.pdf");
+    const originalBytes = readFileSync(originalPath);
+    const chunks = await extractPdfChunks(sourceId, toUint8Array(originalBytes));
+    this.materializeSource(metadata, chunks);
+    return chunks;
+  }
+
+  pinSourceChunkToNote(chunkId: string, opts: { title: string; quote?: string }): { noteId: string; notePath: string } {
+    const dbPath = join(this.rootPath, ".system/library.sqlite");
+    const materializer = new SQLiteMaterializer(dbPath);
+    try {
+      const chunk = materializer.querySourceChunkById(chunkId);
+      if (!chunk) throw new Error(`Source chunk not found: ${chunkId}`);
+      const source = materializer.querySourceById(chunk.source_id);
+      if (!source) throw new Error(`Source not found for chunk: ${chunkId}`);
+      const locator = parsePdfLocator(chunk.locator_json);
+      if (!locator) throw new Error(`Invalid source chunk locator: ${chunkId}`);
+
+      const noteId = ulid();
+      const quote = (opts.quote ?? chunk.text).trim();
+      const body = [
+        `> ${quote}`,
+        "",
+        "Citation:",
+        `- source: ${source.id}`,
+        `- sourceTitle: ${source.title}`,
+        `- chunk: ${chunk.id}`,
+        `- page: ${locator.page}`,
+        `- locator: ${JSON.stringify(locator)}`,
+        "",
+      ].join("\n");
+      const notePath = this.createNote(noteId, opts.title, body, { type: "source-citation", tags: ["source"] });
+      return { noteId, notePath };
+    } finally {
+      materializer.close();
+    }
+  }
+
+  private materializeSource(metadata: SourceMetadata, chunks: SourceChunk[]): void {
+    const dbPath = join(this.rootPath, ".system/library.sqlite");
+    const materializer = new SQLiteMaterializer(dbPath);
+    try {
+      materializer.insertSource(sourceRecordFromMetadata(metadata));
+      materializer.deleteSourceChunks(metadata.id);
+      for (const chunk of chunks) {
+        materializer.insertSourceChunk(sourceChunkRecordFromChunk(chunk));
+        for (const scriptureRef of parseScriptureRefs(chunk.text, this.bookNames, this.backbone)) {
+          materializer.insertAnchor({
+            id: deterministicAnchorId(
+              "sourceChunk",
+              chunk.id,
+              scriptureRef.ref.start.book,
+              scriptureRef.ref.start.chapter,
+              scriptureRef.ref.start.verse,
+              scriptureRef.ref.end.chapter,
+              scriptureRef.ref.end.verse,
+            ),
+            src_kind: "sourceChunk",
+            src_id: chunk.id,
+            corpus: "scripture",
+            book: scriptureRef.ref.start.book,
+            start_ch: scriptureRef.ref.start.chapter,
+            start_v: scriptureRef.ref.start.verse,
+            end_ch: scriptureRef.ref.end.chapter,
+            end_v: scriptureRef.ref.end.verse,
+            provenance: "user",
+          });
+        }
+      }
+    } finally {
+      materializer.close();
+    }
+  }
+
+  private readSourceMetadata(sourceId: string): SourceMetadata {
+    const metadataPath = join(this.rootPath, "sources", sourceId, "metadata.json");
+    const parsed = JSON.parse(readFileSync(metadataPath, "utf-8")) as unknown;
+    if (!isRecord(parsed) || parsed["schemaVersion"] !== 1 || parsed["id"] !== sourceId || parsed["kind"] !== "pdf") {
+      throw new Error(`Invalid source metadata: ${sourceId}`);
+    }
+    return parsed as SourceMetadata;
+  }
+}
+
+function sourceRecordFromMetadata(metadata: SourceMetadata): SourceRecord {
+  return {
+    id: metadata.id,
+    title: metadata.title,
+    kind: metadata.kind,
+    imported: metadata.imported,
+  };
+}
+
+function sourceChunkRecordFromChunk(chunk: SourceChunk): SourceChunkRecord {
+  return {
+    id: chunk.id,
+    source_id: chunk.source_id,
+    ordinal: chunk.ordinal,
+    text: chunk.text,
+    locator_json: JSON.stringify(chunk.locator),
+  };
+}
+
+function toUint8Array(buffer: Buffer): Uint8Array {
+  return new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+}
+
+function parsePdfLocator(json: string): PdfLocator | null {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(json);
+  } catch {
+    return null;
+  }
+  if (!isRecord(parsed) || parsed["kind"] !== "pdf") return null;
+  const bbox = parsed["bbox"];
+  if (!isRecord(bbox)) return null;
+  const page = toFiniteNumber(parsed["page"]);
+  const x = toFiniteNumber(bbox["x"]);
+  const y = toFiniteNumber(bbox["y"]);
+  const width = toFiniteNumber(bbox["width"]);
+  const height = toFiniteNumber(bbox["height"]);
+  const textStart = toFiniteNumber(parsed["textStart"]);
+  const textEnd = toFiniteNumber(parsed["textEnd"]);
+  if (page == null || x == null || y == null || width == null || height == null || textStart == null || textEnd == null) {
+    return null;
+  }
+  return { kind: "pdf", page, bbox: { x, y, width, height }, textStart, textEnd };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function toFiniteNumber(value: unknown): number | null {
+  if (typeof value !== "number" || !Number.isFinite(value)) return null;
+  return value;
 }

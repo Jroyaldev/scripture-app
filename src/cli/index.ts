@@ -5,6 +5,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { homedir } from "node:os";
 import { ulid } from "ulid";
 import type { BackboneData, BookNameMap, ScripturePackage } from "../core/reference/types.js";
 import { parseBref, toBref, toDisplayString, parseHumanRef } from "../core/reference/parser.js";
@@ -33,7 +34,7 @@ function loadBookNames(): BookNameMap {
 }
 
 function getLibraryPath(): string {
-  return process.env["LIBRARY_PATH"] ?? resolve("./Library");
+  return process.env["LIBRARY_PATH"] ?? resolve(homedir(), "Documents", "ScriptureLibrary");
 }
 
 const args = process.argv.slice(2);

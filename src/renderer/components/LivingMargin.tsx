@@ -1,5 +1,6 @@
 import type React from "react";
-import type { QueryResult, BookNameData } from "../api.js";
+import { useState } from "react";
+import type { QueryResult, BookNameData, SemanticMarginResult } from "../api.js";
 
 interface Props {
   book: string;
@@ -7,10 +8,20 @@ interface Props {
   marginData: QueryResult;
   crossRefs: string[];
   bookNames: BookNameData;
+  semanticData?: SemanticMarginResult | null;
+  onPinClaim?: (claimId: string, assertion: string) => void;
 }
 
-export function LivingMargin({ book, chapter, marginData, crossRefs, bookNames }: Props): React.JSX.Element {
+export function LivingMargin({ book, chapter, marginData, crossRefs, bookNames, semanticData, onPinClaim }: Props): React.JSX.Element {
   const displayBook = bookNames[book]?.[0] ?? book;
+  const [pinnedClaims, setPinnedClaims] = useState<Set<string>>(new Set());
+
+  const handlePinClaim = (claimId: string, assertion: string) => {
+    if (onPinClaim) {
+      onPinClaim(claimId, assertion);
+      setPinnedClaims((prev) => new Set(prev).add(claimId));
+    }
+  };
 
   return (
     <aside className="living-margin">
@@ -40,6 +51,69 @@ export function LivingMargin({ book, chapter, marginData, crossRefs, bookNames }
         </div>
       )}
 
+      {/* Semantic Notes (AI) */}
+      {semanticData && semanticData.semanticNotes.length > 0 && (
+        <div className="margin-section">
+          <div className="margin-section-header">Related Notes (Semantic)</div>
+          {semanticData.semanticNotes.map((sn) => (
+            <div key={sn.noteId} className="margin-card">
+              <div className="card-title">{sn.title || "Untitled"}</div>
+              <div className="card-excerpt">{sn.snippet}</div>
+              <span className="card-provenance provenance-ai">ai &middot; {(sn.similarity * 100).toFixed(0)}%</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Threads (AI) */}
+      {semanticData && semanticData.threads.length > 0 && (
+        <div className="margin-section">
+          <div className="margin-section-header">Threads</div>
+          {semanticData.threads.map((thread) => (
+            <div key={thread.id} className="margin-card">
+              <div className="card-title">{thread.label}</div>
+              <div className="card-excerpt">{thread.summary}</div>
+              <span className="card-provenance provenance-ai">ai &middot; thread</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Claims (AI) */}
+      {semanticData && semanticData.claims.length > 0 && (
+        <div className="margin-section">
+          <div className="margin-section-header">Claims</div>
+          {semanticData.claims.map((claim) => (
+            <div key={claim.id} className="margin-card">
+              <div className="card-title">{claim.assertion}</div>
+              <div className="card-excerpt">
+                {claim.claimType} &middot; confidence {(claim.confidence * 100).toFixed(0)}%
+              </div>
+              {pinnedClaims.has(claim.id) ? (
+                <span className="card-provenance provenance-user" style={{ marginTop: "var(--sp-xs)" }}>pinned</span>
+              ) : (
+                <button
+                  onClick={() => handlePinClaim(claim.id, claim.assertion)}
+                  style={{
+                    marginTop: "var(--sp-xs)",
+                    padding: "2px 8px",
+                    fontSize: "var(--fs-xs)",
+                    background: "transparent",
+                    border: "1px solid var(--border-medium)",
+                    borderRadius: "3px",
+                    color: "var(--text-secondary)",
+                    cursor: "pointer",
+                  }}
+                >
+                  Pin as FactCard
+                </button>
+              )}
+              <span className="card-provenance provenance-ai" style={{ marginLeft: "var(--sp-xs)" }}>ai</span>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Highlights */}
       {marginData.highlights.length > 0 && (
         <div className="margin-section">
@@ -57,12 +131,12 @@ export function LivingMargin({ book, chapter, marginData, crossRefs, bookNames }
         </div>
       )}
 
-      {/* Cross-References */}
+      {/* Cross-References (TSK) */}
       {crossRefs.length > 0 && (
         <div className="margin-section">
           <div className="margin-section-header">Cross-References</div>
           {crossRefs.slice(0, 20).map((ref, i) => (
-            <span key={i} className="xref-link">
+            <span key={`${ref}-${i}`} className="xref-link">
               {ref}
               <span className="card-provenance provenance-xref" style={{ marginLeft: "var(--sp-xs)", fontSize: "0.625rem" }}>
                 TSK
@@ -72,8 +146,24 @@ export function LivingMargin({ book, chapter, marginData, crossRefs, bookNames }
         </div>
       )}
 
+      {/* AI Suggested Cross-References */}
+      {semanticData && semanticData.suggestedCrossRefs.length > 0 && (
+        <div className="margin-section">
+          <div className="margin-section-header">Suggested Cross-Refs (AI)</div>
+          {semanticData.suggestedCrossRefs.slice(0, 10).map((xref, i) => (
+            <span key={`${xref.targetBref}-${i}`} className="xref-link">
+              {xref.targetDisplay}
+              <span className="card-provenance provenance-ai" style={{ marginLeft: "var(--sp-xs)", fontSize: "0.625rem" }}>
+                ai
+              </span>
+            </span>
+          ))}
+        </div>
+      )}
+
       {/* Empty state */}
-      {marginData.notes.length === 0 && marginData.highlights.length === 0 && crossRefs.length === 0 && (
+      {marginData.notes.length === 0 && marginData.highlights.length === 0 && crossRefs.length === 0 &&
+        (!semanticData || (semanticData.semanticNotes.length === 0 && semanticData.claims.length === 0)) && (
         <div style={{
           textAlign: "center", padding: "var(--sp-2xl)",
           color: "var(--text-tertiary)", fontSize: "var(--fs-sm)",
@@ -90,11 +180,11 @@ export function LivingMargin({ book, chapter, marginData, crossRefs, bookNames }
 
 function getHighlightColor(color: string): string {
   const map: Record<string, string> = {
-    yellow: "rgba(250, 214, 100, 0.6)",
-    green: "rgba(120, 200, 120, 0.5)",
-    blue: "rgba(120, 170, 230, 0.5)",
-    pink: "rgba(230, 140, 170, 0.5)",
-    purple: "rgba(170, 140, 220, 0.5)",
+    yellow: "rgba(245, 213, 115, 0.5)",
+    green: "rgba(110, 195, 120, 0.4)",
+    blue: "rgba(110, 165, 225, 0.4)",
+    pink: "rgba(220, 140, 165, 0.4)",
+    purple: "rgba(165, 140, 215, 0.4)",
   };
   return map[color] ?? map["yellow"]!;
 }

@@ -16,7 +16,13 @@ import { validateBackboneData } from "../core/reference/backbone.js";
 import { LibraryEngine } from "../host/library.js";
 import { GitRevisionStore } from "../host/git-revision-store.js";
 import { SQLiteMaterializer } from "../host/sqlite.js";
+import { EmbeddingsStore } from "../host/embeddings-store.js";
+import { BudgetManager } from "../host/budget-manager.js";
+import { MockAIProvider, MockEmbeddingProvider } from "../host/ai-provider.js";
+import { JobQueue } from "../host/job-queue.js";
 import { assembleMargin } from "../core/margin/index.js";
+import { assembleSemanticMargin } from "../core/ai/semantic-margin.js";
+import { deterministicEmbedding } from "../core/ai/similarity.js";
 import { importObsidianVault } from "../core/importer/obsidian.js";
 import type { CrossRefData, MarginQuery } from "../core/margin/types.js";
 
@@ -29,6 +35,11 @@ let revisionStore: GitRevisionStore | null = null;
 let backbone: BackboneData | null = null;
 let bookNames: BookNameMap | null = null;
 let crossRefData: CrossRefData | null = null;
+let embeddingsStore: EmbeddingsStore | null = null;
+let budgetManager: BudgetManager | null = null;
+let aiProvider: MockAIProvider | null = null;
+let embeddingProvider: MockEmbeddingProvider | null = null;
+let jobQueue: JobQueue | null = null;
 
 function loadBackbone(): BackboneData {
   const backbonePath = join(DATA_DIR, "backbone.json");
@@ -108,6 +119,14 @@ function initializeEngine(libraryPathArg?: string): void {
   if (!existsSync(dbPath)) {
     engine.buildSqlite();
   }
+
+  // M3: Initialize semantic layer
+  const embDbPath = join(libraryPath, ".system/embeddings.sqlite");
+  embeddingsStore = new EmbeddingsStore(embDbPath);
+  budgetManager = new BudgetManager(join(libraryPath, "config"));
+  embeddingProvider = new MockEmbeddingProvider();
+  aiProvider = new MockAIProvider();
+  jobQueue = new JobQueue(budgetManager, embeddingsStore);
 }
 
 // --- IPC Handlers ---
@@ -352,6 +371,8 @@ function registerIpcHandlers(): void {
         queryHighlightsForRange: () => [],
         queryNoteById: () => undefined,
         queryEdgesByTarget: () => [],
+        querySourceChunkById: () => undefined,
+        querySourceById: () => undefined,
       },
       crossRefData,
       bookNames,
@@ -415,6 +436,209 @@ function registerIpcHandlers(): void {
       properties: ["openDirectory"],
     });
     return result.canceled ? null : result.filePaths[0] ?? null;
+  });
+
+  // --- M3: Semantic Intelligence ---
+
+  ipcMain.handle("embed-notes", async () => {
+    if (!engine || !embeddingsStore || !embeddingProvider) return { ok: false, error: "Not initialized" };
+    const dbPath = join(engine.rootPath, ".system/library.sqlite");
+    const db = new SQLiteMaterializer(dbPath);
+    try {
+      const notes = db.getAllNotes();
+      for (const note of notes) {
+        const text = `${note.title} ${note.body_text}`;
+        const vec = await embeddingProvider.embed([text]);
+        embeddingsStore.upsertEmbedding("note", note.id, vec[0]!);
+      }
+      return { ok: true, count: notes.length };
+    } finally {
+      db.close();
+    }
+  });
+
+  ipcMain.handle("semantic-margin", async (_event, opts: {
+    book: string;
+    startChapter: number;
+    startVerse: number;
+    endChapter: number;
+    endVerse: number;
+    passageText: string;
+  }) => {
+    if (!engine || !embeddingsStore || !bookNames) return null;
+    const dbPath = join(engine.rootPath, ".system/library.sqlite");
+    const db = new SQLiteMaterializer(dbPath);
+    try {
+      const queryEmbedding = deterministicEmbedding(opts.passageText, 256);
+
+      // Get deterministic margin first to know which notes are already surfaced
+      const detMargin = assembleMargin(
+        {
+          book: opts.book,
+          startChapter: opts.startChapter,
+          startVerse: opts.startVerse,
+          endChapter: opts.endChapter,
+          endVerse: opts.endVerse,
+        },
+        db,
+        crossRefData,
+        bookNames,
+      );
+
+      const alreadySurfaced = new Set(detMargin.notes.map((n) => n.noteId));
+
+      const allEmbeddings = embeddingsStore.getAllEmbeddings().map((e) => ({
+        srcKind: e.srcKind,
+        srcId: e.srcId,
+        vector: e.vector,
+      }));
+
+      const semantic = assembleSemanticMargin(
+        {
+          book: opts.book,
+          startChapter: opts.startChapter,
+          startVerse: opts.startVerse,
+          endChapter: opts.endChapter,
+          endVerse: opts.endVerse,
+        },
+        queryEmbedding,
+        {
+          getAllEmbeddings: () => allEmbeddings,
+          getEmbedding: (kind, id) => allEmbeddings.find((e) => e.srcKind === kind && e.srcId === id),
+          queryNoteById: (id) => {
+            const n = db.queryNoteById(id);
+            return n ? { id: n.id, title: n.title, body_text: n.body_text } : undefined;
+          },
+          queryClaimsForRange: (b, sc, sv, ec, ev) => db.queryClaimsForRange(b, sc, sv, ec, ev),
+          queryClaimAnchors: (cid) => db.queryClaimAnchors(cid),
+          queryOverlaysForRange: (b, sc, sv, ec, ev) => db.queryOverlaysForRange(b, sc, sv, ec, ev),
+          getAllThreads: () => embeddingsStore!.getAllThreads(),
+        },
+        alreadySurfaced,
+        bookNames,
+      );
+
+      return semantic;
+    } finally {
+      db.close();
+    }
+  });
+
+  ipcMain.handle("pin-claim", async (_event, opts: { claimId: string; assertion: string; userNote?: string }) => {
+    if (!engine || !revisionStore) return { ok: false, error: "Not initialized" };
+    const factId = engine.pinClaim(opts.claimId, opts.assertion, opts.userNote);
+    const txn = await revisionStore.beginTransaction("Pin claim → FactCard");
+    txn.files.push("annotations/pinned-facts.jsonl");
+    await revisionStore.commit(txn);
+    engine.buildSqlite();
+    return { ok: true, factId };
+  });
+
+  ipcMain.handle("promote-overlay", async (_event, opts: {
+    overlayId: string;
+    book: string;
+    chapter: number;
+    verseStart: number;
+    verseEnd: number;
+    color: string;
+  }) => {
+    if (!engine || !revisionStore) return { ok: false, error: "Not initialized" };
+    const hlId = engine.promoteOverlay(opts.overlayId, opts.book, opts.chapter, opts.verseStart, opts.verseEnd, opts.color);
+    const txn = await revisionStore.beginTransaction("Promote overlay → highlight");
+    txn.files.push("annotations/highlights.jsonl");
+    await revisionStore.commit(txn);
+    engine.buildSqlite();
+    return { ok: true, highlightId: hlId };
+  });
+
+  ipcMain.handle("insert-claim", (_event, opts: {
+    id: string;
+    assertion: string;
+    claimType: string;
+    confidence: number;
+    extractor: string;
+    anchors: { book: string; chapter: number; verse: number }[];
+    sources: { kind: string; ref: string }[];
+  }) => {
+    if (!engine) return { ok: false, error: "Not initialized" };
+    engine.insertClaim({
+      id: opts.id,
+      assertion: opts.assertion,
+      claimType: opts.claimType,
+      confidence: opts.confidence,
+      extractor: opts.extractor,
+      created: new Date().toISOString(),
+      status: "active",
+      anchors: opts.anchors,
+      sources: opts.sources,
+    });
+    return { ok: true };
+  });
+
+  ipcMain.handle("insert-overlay", (_event, opts: {
+    id: string;
+    book: string;
+    chapter: number;
+    verse: number;
+    charStart: number;
+    charEnd: number;
+    reason: string;
+    extractor: string;
+  }) => {
+    if (!engine) return { ok: false, error: "Not initialized" };
+    engine.insertOverlay(opts);
+    return { ok: true };
+  });
+
+  ipcMain.handle("get-budget-envelope", () => {
+    if (!budgetManager) return null;
+    return { envelope: budgetManager.get(), usage: budgetManager.getUsage() };
+  });
+
+  ipcMain.handle("set-budget-envelope", (_event, opts: { backgroundAI: string; networkBackground: boolean; dailyTokenCeiling?: number }) => {
+    if (!budgetManager) return { ok: false, error: "Not initialized" };
+    budgetManager.update({
+      backgroundAI: opts.backgroundAI as "off" | "local-only" | "cloud",
+      networkBackground: opts.networkBackground,
+      dailyTokenCeiling: opts.dailyTokenCeiling,
+    });
+    return { ok: true };
+  });
+
+  ipcMain.handle("get-ai-jobs", () => {
+    if (!embeddingsStore) return [];
+    return embeddingsStore.getRecentJobs();
+  });
+
+  ipcMain.handle("get-all-facts", () => {
+    if (!engine) return [];
+    return engine.getAllFacts();
+  });
+
+  ipcMain.handle("ai-invoke", async (_event, opts: { prompt: string; context?: string }) => {
+    if (!aiProvider || !budgetManager) return { ok: false, error: "AI not initialized" };
+    if (!budgetManager.canSpend(1000)) return { ok: false, error: "Budget exceeded" };
+    const resp = await aiProvider.invoke({ prompt: opts.prompt, context: opts.context });
+    budgetManager.recordSpend(resp.tokensUsed);
+    return { ok: true, text: resp.text, tokensUsed: resp.tokensUsed };
+  });
+
+  ipcMain.handle("get-ai-status", () => {
+    if (!budgetManager) return null;
+    return {
+      aiAllowed: budgetManager.isAIAllowed(),
+      networkAllowed: budgetManager.isNetworkAllowed(),
+      usage: budgetManager.getUsage(),
+    };
+  });
+
+  ipcMain.handle("enqueue-ai-job", (_event, opts: { kind: string }) => {
+    if (!jobQueue || !aiProvider) return { ok: false, error: "Not initialized" };
+    const jobId = jobQueue.enqueue(opts.kind as "embed-notes" | "semantic-resurface" | "extract-claims" | "suggest-xrefs" | "generate-thread", async () => {
+      const resp = await aiProvider!.invoke({ prompt: `Job: ${opts.kind}` });
+      return { tokensUsed: resp.tokensUsed, error: null };
+    });
+    return { ok: true, jobId };
   });
 }
 

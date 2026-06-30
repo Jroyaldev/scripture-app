@@ -15,7 +15,9 @@ import type {
   MarginNote,
   MarginQuery,
   MarginResult,
+  MarginSourceChunk,
 } from "./types.js";
+import type { PdfLocator } from "../indexer/types.js";
 
 export type { CrossRefData, MarginItem, MarginQuery, MarginResult } from "./types.js";
 
@@ -52,6 +54,19 @@ export type EdgeRow = {
   kind: string;
 };
 
+export type SourceRow = {
+  id: string;
+  title: string;
+  kind: string;
+};
+
+export type SourceChunkRow = {
+  id: string;
+  source_id: string;
+  text: string;
+  locator_json: string;
+};
+
 /**
  * Injected data access interface for the margin query.
  */
@@ -72,6 +87,8 @@ export interface MarginDataAccess {
   ): HighlightRow[];
   queryNoteById(id: string): NoteRow | undefined;
   queryEdgesByTarget(targetId: string): EdgeRow[];
+  querySourceChunkById(id: string): SourceChunkRow | undefined;
+  querySourceById(id: string): SourceRow | undefined;
 }
 
 /**
@@ -88,6 +105,7 @@ export function assembleMargin(
   const highlights: MarginHighlight[] = [];
   const crossRefs: MarginCrossRef[] = [];
   const backlinks: MarginBacklink[] = [];
+  const sourceChunks: MarginSourceChunk[] = [];
 
   // 1. Notes anchored to or overlapping the range
   const anchors = dataAccess.queryAnchorsForRange(
@@ -99,6 +117,7 @@ export function assembleMargin(
   );
 
   const seenNoteIds = new Set<string>();
+  const seenSourceChunkIds = new Set<string>();
   for (const anchor of anchors) {
     if (anchor.src_kind === "note" && !seenNoteIds.has(anchor.src_id)) {
       seenNoteIds.add(anchor.src_id);
@@ -111,6 +130,26 @@ export function assembleMargin(
           title: note.title,
           snippet: truncateSnippet(note.body_text, 120),
         });
+      }
+    }
+
+    if (anchor.src_kind === "sourceChunk" && !seenSourceChunkIds.has(anchor.src_id)) {
+      seenSourceChunkIds.add(anchor.src_id);
+      const chunk = dataAccess.querySourceChunkById(anchor.src_id);
+      if (chunk) {
+        const source = dataAccess.querySourceById(chunk.source_id);
+        const locator = parsePdfLocator(chunk.locator_json);
+        if (source && locator) {
+          sourceChunks.push({
+            kind: "source-chunk",
+            provenance: "source",
+            chunkId: chunk.id,
+            sourceId: source.id,
+            sourceTitle: source.title,
+            snippet: truncateSnippet(chunk.text, 160),
+            locator,
+          });
+        }
       }
     }
   }
@@ -160,7 +199,7 @@ export function assembleMargin(
     }
   }
 
-  return { notes, highlights, crossRefs, backlinks };
+  return { notes, highlights, crossRefs, backlinks, sourceChunks };
 }
 
 /**
@@ -226,4 +265,45 @@ function parseCrossRefTarget(key: string): { book: string; chapter: number; vers
 function truncateSnippet(text: string, maxLen: number): string {
   if (text.length <= maxLen) return text;
   return text.slice(0, maxLen - 3) + "...";
+}
+
+function parsePdfLocator(json: string): PdfLocator | null {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(json);
+  } catch {
+    return null;
+  }
+  if (!isRecord(parsed)) return null;
+  if (parsed["kind"] !== "pdf") return null;
+  const bbox = parsed["bbox"];
+  if (!isRecord(bbox)) return null;
+
+  const page = toFiniteNumber(parsed["page"]);
+  const x = toFiniteNumber(bbox["x"]);
+  const y = toFiniteNumber(bbox["y"]);
+  const width = toFiniteNumber(bbox["width"]);
+  const height = toFiniteNumber(bbox["height"]);
+  const textStart = toFiniteNumber(parsed["textStart"]);
+  const textEnd = toFiniteNumber(parsed["textEnd"]);
+  if (page == null || x == null || y == null || width == null || height == null || textStart == null || textEnd == null) {
+    return null;
+  }
+
+  return {
+    kind: "pdf",
+    page,
+    bbox: { x, y, width, height },
+    textStart,
+    textEnd,
+  };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function toFiniteNumber(value: unknown): number | null {
+  if (typeof value !== "number" || !Number.isFinite(value)) return null;
+  return value;
 }

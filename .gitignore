@@ -1,5 +1,6 @@
 node_modules/
 dist/
+.DS_Store
 Library-demo/
 Library-m2-test/
 *.sqlite

@@ -7,7 +7,7 @@ interface Props {
   showAll?: boolean;
 }
 
-export function SearchView({ onNavigate: _onNavigate, showAll }: Props): React.JSX.Element {
+export function SearchView({ onNavigate, showAll }: Props): React.JSX.Element {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<NoteSearchResult[]>([]);
   const [allNotes, setAllNotes] = useState<ParsedNoteData[]>([]);
@@ -37,14 +37,32 @@ export function SearchView({ onNavigate: _onNavigate, showAll }: Props): React.J
           </span>
         </div>
         <div className="notes-list">
-          {allNotes.map((note) => (
-            <div key={note.frontmatter.id} className="note-list-item">
-              <div className="note-item-title">{note.frontmatter.title}</div>
-              <div className="note-item-meta">
-                {note.frontmatter.modified} &middot; {note.frontmatter.tags?.join(", ") || "no tags"}
+          {allNotes.map((note) => {
+            const firstRef = note.scriptureRefs[0];
+            return (
+              <div
+                key={note.frontmatter.id}
+                className="note-list-item"
+                onClick={() => {
+                  if (firstRef) {
+                    window.api.ref.parseBref(firstRef.bref).then((res) => {
+                      if (res.ok && res.bref) {
+                        const parts = res.bref.replace("bref:v1/", "").split(".");
+                        const b = parts[0] ?? "";
+                        const ch = Number(parts[1] ?? 1);
+                        if (b) onNavigate(b, ch);
+                      }
+                    });
+                  }
+                }}
+              >
+                <div className="note-item-title">{note.frontmatter.title}</div>
+                <div className="note-item-meta">
+                  {note.frontmatter.modified} &middot; {note.frontmatter.tags?.join(", ") || "no tags"}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
           {allNotes.length === 0 && (
             <p style={{ padding: "var(--sp-xl)", color: "var(--text-tertiary)", textAlign: "center" }}>
               No notes yet. Create one from the Write tab or by selecting a passage.

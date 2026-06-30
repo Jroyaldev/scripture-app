@@ -68,6 +68,54 @@ const api = {
     getCrossRefs: (book: string, chapter: number, verse: number) =>
       ipcRenderer.invoke("get-cross-refs", { book, chapter, verse }),
   },
+  ai: {
+    embedNotes: () => ipcRenderer.invoke("embed-notes"),
+    semanticMargin: (opts: {
+      book: string;
+      startChapter: number;
+      startVerse: number;
+      endChapter: number;
+      endVerse: number;
+      passageText: string;
+    }) => ipcRenderer.invoke("semantic-margin", opts),
+    pinClaim: (claimId: string, assertion: string, userNote?: string) =>
+      ipcRenderer.invoke("pin-claim", { claimId, assertion, userNote }),
+    promoteOverlay: (opts: {
+      overlayId: string;
+      book: string;
+      chapter: number;
+      verseStart: number;
+      verseEnd: number;
+      color: string;
+    }) => ipcRenderer.invoke("promote-overlay", opts),
+    insertClaim: (opts: {
+      id: string;
+      assertion: string;
+      claimType: string;
+      confidence: number;
+      extractor: string;
+      anchors: { book: string; chapter: number; verse: number }[];
+      sources: { kind: string; ref: string }[];
+    }) => ipcRenderer.invoke("insert-claim", opts),
+    insertOverlay: (opts: {
+      id: string;
+      book: string;
+      chapter: number;
+      verse: number;
+      charStart: number;
+      charEnd: number;
+      reason: string;
+      extractor: string;
+    }) => ipcRenderer.invoke("insert-overlay", opts),
+    getBudgetEnvelope: () => ipcRenderer.invoke("get-budget-envelope"),
+    setBudgetEnvelope: (opts: {
+      backgroundAI: string;
+      networkBackground: boolean;
+      dailyTokenCeiling?: number;
+    }) => ipcRenderer.invoke("set-budget-envelope", opts),
+    getJobs: () => ipcRenderer.invoke("get-ai-jobs"),
+    getFacts: () => ipcRenderer.invoke("get-all-facts"),
+  },
   dialog: {
     openDirectory: () => ipcRenderer.invoke("dialog-open-directory"),
   },

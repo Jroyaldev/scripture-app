@@ -5,7 +5,7 @@
   "license": "Apache-2.0",
   "type": "module",
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.0.0"
   },
   "scripts": {
     "build": "node scripts/build-electron.mjs",
@@ -16,7 +16,11 @@
     "library": "node --import tsx src/cli/index.ts",
     "electron": "electron dist/electron/main.js",
     "start": "npm run build && npm run build:renderer && npm run electron",
-    "verify:m2": "node --import tsx scripts/verify-m2.ts"
+    "verify:m2": "node --import tsx scripts/verify-m2.ts",
+    "verify:m3": "node --import tsx scripts/verify-m3.ts",
+    "verify:m4": "node --import tsx scripts/verify-m4.ts",
+    "verify:m5": "node --import tsx scripts/verify-m5.ts",
+    "verify:m6": "node --import tsx scripts/verify-m6.ts"
   },
   "main": "dist/electron/main.js",
   "bin": {
@@ -27,6 +31,7 @@
     "better-sqlite3": "11.9.1",
     "electron": "35.0.1",
     "gray-matter": "4.0.3",
+    "pdfjs-dist": "6.1.200",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "ulid": "2.3.0",
