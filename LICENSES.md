@@ -7,9 +7,12 @@ This document records every shipped dataset with its license, source, and permis
 ### World English Bible (WEB)
 
 - **Source:** [https://worldenglishbible.org](https://worldenglishbible.org) / [eBible.org](https://ebible.org/web/)
+- **Data source:** [TehShrike/world-english-bible](https://github.com/TehShrike/world-english-bible) (GitHub, JSON format)
 - **License:** Public Domain (no copyright)
 - **SPDX:** N/A (public domain)
 - **Attribution:** "World English Bible (WEB). Public Domain. No copyright. Free to use, copy, and distribute."
+- **Format version:** 1
+- **Note:** ROM 16:25-27 (the doxology) was missing from the TehShrike source and supplemented from public domain WEB text.
 - **Permission Flags:**
   - `bundle`: true
   - `index`: true
@@ -21,9 +24,11 @@ This document records every shipped dataset with its license, source, and permis
 ### King James Version (KJV)
 
 - **Source:** Various public domain sources; Crown Copyright expired in the UK except by Letters Patent (not enforced outside the UK for scholarly use). No copyright restrictions in the United States.
+- **Data source:** [aruljohn/Bible-kjv](https://github.com/aruljohn/Bible-kjv) (GitHub, JSON format)
 - **License:** Public Domain (in the United States and most jurisdictions)
 - **SPDX:** N/A (public domain)
 - **Attribution:** "King James Version (KJV). Public Domain."
+- **Format version:** 1
 - **Permission Flags:**
   - `bundle`: true
   - `index`: true

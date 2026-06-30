@@ -12,6 +12,9 @@ import type { LibraryManifest } from "../interfaces.js";
 export const CURRENT_APP_SCHEMA_VERSION = 1;
 export const CURRENT_EVENT_SCHEMA_VERSION = 1;
 
+/** The current scripture package format version the app understands (INV-17). */
+export const CURRENT_PACKAGE_FORMAT_VERSION = 1;
+
 export type MigrationResult =
   | { status: "current"; message: string }
   | { status: "migrated"; message: string; fromVersion: number; toVersion: number }

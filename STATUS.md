@@ -25,7 +25,7 @@ This is the living delivery ledger. The build specification and `AGENTS.md` rema
 | Desktop Git RevisionStore | L1-L2 | L3 | Works as adapter proof; needs safer restore UX and operational guardrails. |
 | Non-Git snapshot RevisionStore | L1 | L1 | Groundwork for iOS/mobile exists; retention pruning and UI are not implemented. |
 | iOS client | L0 | L0 deferred | No iOS project/toolchain setup. Do not start before Tier B/C maturity improves. |
-| Scripture data WEB/KJV | L1 | L3 | Partial seeded demo verses exist; full package coverage, manifests, and refusal behavior remain. |
+| Scripture data WEB/KJV | L3 | L3 | Full WEB + KJV across all 66 books (1189 chapters each, 2378 files); package manifests with license flags + formatVersion; Doctor checks for version refusal + missing content; LICENSES.md covers both sources. |
 | App UX / onboarding / settings / error states | L0-L1 | L2-L3 | Main flows exist, but loading/error/library picker/settings/sync surfaces need deliberate work. |
 | CI / native rebuild / lint | L2 | L2 | Two explicit commands (`rebuild:node` / `rebuild:electron`) cover the ABI 137/133 split; `npm run lint` reproducible (exit 0); `npm test` ABI-independent (8/8); preflight gates Electron launch. See `docs/native-build.md`. CI matrix not yet configured. |
 
@@ -33,7 +33,7 @@ This is the living delivery ledger. The build specification and `AGENTS.md` rema
 
 1. **A0 Snapshot current prototype:** preserve the dirty tree on a branch, ignore noise, commit non-noise work, and document current state.
 2. **A1 Stabilize native build and lint:** make Electron and Node-side verification reproducible without manual ABI rebuilds. — **DONE** (see `docs/native-build.md`; `rebuild:node`/`rebuild:electron` + Electron preflight).
-3. **B1 Full scripture package path:** promote WEB/KJV data from partial demo to real package coverage and refusal behavior.
+3. **B1 Full scripture package path:** promote WEB/KJV data from partial demo to real package coverage and refusal behavior. — **DONE** (1189 chapters × 2 translations; manifests + version refusal + Doctor content checks).
 4. **B2 App UX pass:** onboarding, library picker, loading/error states, settings, source/import screens, sync status.
 5. **B3 Real AI and embeddings:** BYOK/local provider flow, real embeddings, sqlite-vec, queue/retry/error handling.
 6. **B4 Production rebuild story:** delete `.system/` and rebuild source chunks/indexes/embeddings deterministically.

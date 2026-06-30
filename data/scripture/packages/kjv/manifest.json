@@ -1,0 +1,24 @@
+{
+  "id": "kjv",
+  "name": "King James Version",
+  "language": "en",
+  "type": "translation",
+  "versification": "kjv",
+  "canonProfile": "protestant",
+  "formatVersion": 1,
+  "license": {
+    "spdx": null,
+    "name": "Public Domain",
+    "attributionText": "King James Version (KJV). Public Domain.",
+    "permissions": {
+      "bundle": true,
+      "index": true,
+      "display": true,
+      "quoteInNotes": true,
+      "export": true,
+      "syncToOwnDevices": true
+    }
+  },
+  "source": "https://github.com/aruljohn/Bible-kjv",
+  "sourceNote": "Downloaded and converted from aruljohn/Bible-kjv JSON format."
+}

@@ -9,7 +9,7 @@ import type { LibraryEvent } from "../events/types.js";
 import type { ParsedNote } from "../notes/types.js";
 import type { LibraryManifest } from "../interfaces.js";
 import { parseBref, validateRef } from "../reference/parser.js";
-import { CURRENT_APP_SCHEMA_VERSION, CURRENT_EVENT_SCHEMA_VERSION } from "../migration/index.js";
+import { CURRENT_APP_SCHEMA_VERSION, CURRENT_EVENT_SCHEMA_VERSION, CURRENT_PACKAGE_FORMAT_VERSION } from "../migration/index.js";
 
 export type DiagnosticSeverity = "error" | "warning" | "info";
 
@@ -42,7 +42,8 @@ export type DoctorInput = {
   backbone: BackboneData;
   rebuildHash: string | null;
   expectedRebuildHash: string | null;
-  packageManifests: Array<{ id: string; license?: { spdx?: string; name?: string; attributionText?: string; permissions?: Record<string, boolean> } }>;
+  packageManifests: Array<{ id: string; formatVersion?: number; canonProfile?: string; license?: { spdx?: string; name?: string; attributionText?: string; permissions?: Record<string, boolean> } }>;
+  packageContent: Array<{ packageId: string; book: string; chapterCount: number }>;
   sourceDirs: string[];
   installedArtifactPaths: string[];
 };
@@ -57,6 +58,8 @@ export function runDoctor(input: DoctorInput): DoctorReport {
   checkEvents(input.events, diagnostics);
   checkManifest(input.manifest, diagnostics);
   checkPackageLicenses(input.packageManifests, diagnostics);
+  checkPackageFormatVersions(input.packageManifests, diagnostics);
+  checkPackageContent(input.packageManifests, input.packageContent, input.backbone, diagnostics);
   checkRebuildHash(input.rebuildHash, input.expectedRebuildHash, diagnostics);
 
   const errors = diagnostics.filter((d) => d.severity === "error").length;
@@ -415,6 +418,64 @@ function checkPackageLicenses(
         message: `Package "${pkg.id}" has no permission flags.`,
         suggestion: "Add permission flags (bundle, index, display, quoteInNotes, export, syncToOwnDevices).",
       });
+    }
+  }
+}
+
+function checkPackageFormatVersions(
+  packages: DoctorInput["packageManifests"],
+  diagnostics: Diagnostic[],
+): void {
+  for (const pkg of packages) {
+    if (pkg.formatVersion === undefined) {
+      diagnostics.push({
+        severity: "warning",
+        category: "missing-package-version",
+        message: `Package "${pkg.id}" has no formatVersion field.`,
+        suggestion: "Add a formatVersion to the package manifest (INV-17).",
+      });
+      continue;
+    }
+    if (pkg.formatVersion > CURRENT_PACKAGE_FORMAT_VERSION) {
+      diagnostics.push({
+        severity: "error",
+        category: "package-version-refused",
+        message: `Package "${pkg.id}" formatVersion ${pkg.formatVersion} is newer than the app supports (${CURRENT_PACKAGE_FORMAT_VERSION}).`,
+        suggestion: "Update the app to a version that supports this package format, or use an older package.",
+      });
+    }
+  }
+}
+
+function checkPackageContent(
+  packages: DoctorInput["packageManifests"],
+  content: DoctorInput["packageContent"],
+  backbone: BackboneData,
+  diagnostics: Diagnostic[],
+): void {
+  for (const pkg of packages) {
+    const pkgContent = content.filter((c) => c.packageId === pkg.id);
+    const contentMap = new Map(pkgContent.map((c) => [c.book, c.chapterCount]));
+
+    for (const [bookCode, bookData] of Object.entries(backbone.books)) {
+      const expectedChapters = bookData.chapters.length;
+      const actualChapters = contentMap.get(bookCode);
+
+      if (actualChapters === undefined) {
+        diagnostics.push({
+          severity: "error",
+          category: "missing-package-content",
+          message: `Package "${pkg.id}" is missing book ${bookCode} (${expectedChapters} chapters).`,
+          suggestion: `Re-run the scripture package builder or install the ${bookCode} text for package "${pkg.id}".`,
+        });
+      } else if (actualChapters < expectedChapters) {
+        diagnostics.push({
+          severity: "error",
+          category: "missing-package-content",
+          message: `Package "${pkg.id}" book ${bookCode}: ${actualChapters}/${expectedChapters} chapters present.`,
+          suggestion: `Re-run the scripture package builder to fill gaps in ${bookCode}.`,
+        });
+      }
     }
   }
 }

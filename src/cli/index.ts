@@ -63,6 +63,7 @@ switch (command) {
       type: "translation",
       versification: "web",
       canonProfile: "protestant",
+      formatVersion: 1,
       license: {
         name: "Public Domain",
         attributionText: "World English Bible (WEB). Public Domain. No copyright. Free to use, copy, and distribute.",
@@ -86,6 +87,7 @@ switch (command) {
       type: "translation",
       versification: "kjv",
       canonProfile: "protestant",
+      formatVersion: 1,
       license: {
         name: "Public Domain",
         attributionText: "King James Version (KJV). Public Domain. Crown Copyright expired; no copyright restrictions in the United States and most jurisdictions.",
@@ -117,14 +119,34 @@ switch (command) {
 
     // Read package manifests
     const packagesDir = join(libraryPath, ".artifacts/scripture/packages");
-    const packageManifests: Array<{ id: string; license?: Record<string, unknown> }> = [];
+    const packageManifests: Array<{ id: string; formatVersion?: number; canonProfile?: string; license?: Record<string, unknown> }> = [];
+    const packageContent: Array<{ packageId: string; book: string; chapterCount: number }> = [];
     if (existsSync(packagesDir)) {
       const { readdirSync } = await import("node:fs");
       for (const pkgId of readdirSync(packagesDir)) {
         const manifestPath = join(packagesDir, pkgId, "manifest.json");
+        let pkgData: Record<string, unknown> = {};
         if (existsSync(manifestPath)) {
-          const pkgData = JSON.parse(readFileSync(manifestPath, "utf-8")) as Record<string, unknown>;
-          packageManifests.push({ id: pkgId, license: pkgData["license"] as Record<string, unknown> | undefined });
+          pkgData = JSON.parse(readFileSync(manifestPath, "utf-8")) as Record<string, unknown>;
+        }
+        packageManifests.push({
+          id: pkgId,
+          formatVersion: typeof pkgData["formatVersion"] === "number" ? pkgData["formatVersion"] : undefined,
+          canonProfile: typeof pkgData["canonProfile"] === "string" ? pkgData["canonProfile"] : undefined,
+          license: pkgData["license"] as Record<string, unknown> | undefined,
+        });
+        // Scan text directory for content coverage
+        const textDir = join(packagesDir, pkgId, "text");
+        if (existsSync(textDir)) {
+          for (const bookDir of readdirSync(textDir)) {
+            const bookPath = join(textDir, bookDir);
+            try {
+              const files = readdirSync(bookPath).filter((f) => f.endsWith(".json"));
+              packageContent.push({ packageId: pkgId, book: bookDir, chapterCount: files.length });
+            } catch {
+              // Not a directory
+            }
+          }
         }
       }
     }
@@ -151,6 +173,7 @@ switch (command) {
       rebuildHash,
       expectedRebuildHash,
       packageManifests,
+      packageContent,
       sourceDirs: [],
       installedArtifactPaths: [],
     });
@@ -338,6 +361,7 @@ async function runM1Demo(): Promise<void> {
     type: "translation",
     versification: "web",
     canonProfile: "protestant",
+    formatVersion: 1,
     license: {
       name: "Public Domain",
       attributionText: "World English Bible (WEB). Public Domain.",
@@ -351,6 +375,7 @@ async function runM1Demo(): Promise<void> {
     type: "translation",
     versification: "kjv",
     canonProfile: "protestant",
+    formatVersion: 1,
     license: {
       name: "Public Domain",
       attributionText: "King James Version (KJV). Public Domain.",
@@ -468,12 +493,33 @@ See also Acts 19:1-7 for John's baptism vs. Christian baptism.
 
   const packagesDir = join(libraryPath, ".artifacts/scripture/packages");
   const { readdirSync } = await import("node:fs");
-  const packageManifests: Array<{ id: string; license?: Record<string, unknown> }> = [];
+  const packageManifests: Array<{ id: string; formatVersion?: number; canonProfile?: string; license?: Record<string, unknown> }> = [];
+  const packageContent: Array<{ packageId: string; book: string; chapterCount: number }> = [];
   for (const pkgId of readdirSync(packagesDir)) {
     const manifestPath = join(packagesDir, pkgId, "manifest.json");
+    let pkgData: Record<string, unknown> = {};
     if (existsSync(manifestPath)) {
-      const pkgData = JSON.parse(readFileSync(manifestPath, "utf-8")) as Record<string, unknown>;
-      packageManifests.push({ id: pkgId, license: pkgData["license"] as Record<string, unknown> | undefined });
+      pkgData = JSON.parse(readFileSync(manifestPath, "utf-8")) as Record<string, unknown>;
+    }
+    packageManifests.push({
+      id: pkgId,
+      formatVersion: typeof pkgData["formatVersion"] === "number" ? pkgData["formatVersion"] : undefined,
+      canonProfile: typeof pkgData["canonProfile"] === "string" ? pkgData["canonProfile"] : undefined,
+      license: pkgData["license"] as Record<string, unknown> | undefined,
+    });
+
+    // Scan text directory for content coverage
+    const textDir = join(packagesDir, pkgId, "text");
+    if (existsSync(textDir)) {
+      for (const bookDir of readdirSync(textDir)) {
+        const bookPath = join(textDir, bookDir);
+        try {
+          const files = readdirSync(bookPath).filter((f) => f.endsWith(".json"));
+          packageContent.push({ packageId: pkgId, book: bookDir, chapterCount: files.length });
+        } catch {
+          // Not a directory
+        }
+      }
     }
   }
 
@@ -485,6 +531,7 @@ See also Acts 19:1-7 for John's baptism vs. Christian baptism.
     rebuildHash: hash2,
     expectedRebuildHash: hash2,
     packageManifests,
+    packageContent,
     sourceDirs: [],
     installedArtifactPaths: [],
   });

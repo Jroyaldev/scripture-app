@@ -1,0 +1,24 @@
+{
+  "id": "web",
+  "name": "World English Bible",
+  "language": "en",
+  "type": "translation",
+  "versification": "web",
+  "canonProfile": "protestant",
+  "formatVersion": 1,
+  "license": {
+    "spdx": null,
+    "name": "Public Domain",
+    "attributionText": "World English Bible (WEB). Public Domain. No copyright. Free to use, copy, and distribute.",
+    "permissions": {
+      "bundle": true,
+      "index": true,
+      "display": true,
+      "quoteInNotes": true,
+      "export": true,
+      "syncToOwnDevices": true
+    }
+  },
+  "source": "https://github.com/TehShrike/world-english-bible",
+  "sourceNote": "Downloaded and converted from TehShrike/world-english-bible JSON format. ROM 16:25-27 supplemented from public domain WEB text (missing from source)."
+}

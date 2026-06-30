@@ -131,6 +131,7 @@ async function main(): Promise<void> {
     rebuildHash: null,
     expectedRebuildHash: null,
     packageManifests: [],
+    packageContent: [],
     sourceDirs: [],
     installedArtifactPaths: [],
   });

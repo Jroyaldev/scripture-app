@@ -49,3 +49,29 @@ CURRENT STATE: partial seeded WEB demo verses exist. Full WEB/KJV package covera
 
 - Update `STATUS.md` row "Scripture data WEB/KJV" Cur -> L3.
 - Commit with message `feat: add full scripture package path`.
+
+## Completion Record
+
+**Status: DONE. L1 → L3.**
+
+Delivered:
+- `scripts/build-scripture-packages.mjs`: downloads full WEB (TehShrike/world-english-bible) and KJV (aruljohn/Bible-kjv) from public-domain GitHub sources, converts to per-chapter JSON, validates verse counts against backbone.json.
+- `data/scripture/text/{web,kjv}/`: 1189 chapter files per translation (2378 total), all 66 Protestant books, all verse counts validated against backbone.
+- `data/scripture/packages/{web,kjv}/manifest.json`: ScripturePackage manifests with license flags, attribution, formatVersion=1, source URLs.
+- `src/core/reference/types.ts`: added `formatVersion` to ScripturePackage.
+- `src/core/migration/index.ts`: added `CURRENT_PACKAGE_FORMAT_VERSION = 1`.
+- `src/core/doctor/index.ts`: added `checkPackageFormatVersions` (refusal on newer format) and `checkPackageContent` (flags missing books/chapters).
+- `src/cli/index.ts`: updated both `doctor` and `demo` commands to pass `packageContent` + full manifest data; all ScripturePackage objects include `formatVersion`.
+- `LICENSES.md`: updated with data source attribution for both packages.
+- `tests/scripture-packages.test.ts`: 10 assertions covering coverage, verse counts, manifests, version refusal, missing content, and LICENSES.md.
+
+Data fixes:
+- Fixed backbone verse counts for 1SA 20 (43→42), 1SA 24 (23→22), JOB 39 (35→30), JOB 40 (27→24) — these were incorrect.
+- Fixed backbone book code NAH (was NAM in the builder script).
+- Supplemented WEB ROM 16:25-27 (doxology missing from TehShrike source) with public domain WEB text.
+
+Verification:
+- `npm run lint` → exit 0.
+- `npm test` → 18/18 pass (including 10 new B1 tests).
+- `npm run verify:m2` → 53/53 pass.
+- Full coverage: 1189/1189 chapters for both WEB and KJV, all verse counts match backbone.

@@ -73,6 +73,7 @@ export type ScripturePackage = {
   type: "translation" | "original" | "interlinear-data" | "alignment";
   versification: string;
   canonProfile: string;
+  formatVersion: number;
   license: {
     spdx?: string;
     name: string;
