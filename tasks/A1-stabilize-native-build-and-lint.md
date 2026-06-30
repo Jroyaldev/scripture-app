@@ -47,3 +47,26 @@ CURRENT STATE: Electron launches only after manually rebuilding `better-sqlite3`
 
 - Update `STATUS.md` rows "Electron shell + launch" and "CI / native rebuild / lint".
 - Commit with message `chore: stabilize native build workflow`.
+
+## Completion Record
+
+**Status: DONE.**
+
+Delivered:
+- `package.json`: `rebuild:node`, `rebuild:electron`, `preflight:electron`, `typecheck`, `typecheck:renderer`; `start` wired through `preflight:electron`.
+- `scripts/preflight-native.cjs`: Electron-runtime ABI probe with actionable failure message.
+- `src/electron/main.ts`: `probeNativeModule()` guard in `app.whenReady` — `dialog.showErrorBox` + quit on ABI mismatch (covers direct `electron` invocation).
+- `docs/native-build.md`: ABI 133/137 split, the two commands, visible-failure design, CI matrix notes.
+- `tests/native-build.test.ts`: ABI-independent smoke test (5 assertions).
+
+Verification (round-trip):
+- `npm run lint` → exit 0.
+- `npm test` → 8/8 pass (ABI-independent).
+- `npm run rebuild:node` → `npm run verify:m2` → 53/53 pass.
+- `npm run rebuild:electron` → `npm run preflight:electron` → exit 0 (ABI 133).
+- Visible-fail proven: rebuild for Node then `preflight:electron` → exit 1 with `Fix: npm run rebuild:electron`.
+
+Notes:
+- The "lint can wedge" symptom was not reproducible against `typescript@5.8.3`; both `tsc` passes complete cleanly. Traced to a prior `electron --version` GUI hang, not `tsc`.
+- No `node_modules/` or native binaries committed; no TypeScript strictness weakened; core architecture unchanged (INV-18 preserved).
+- CI matrix not configured (out of scope; documented as next step).

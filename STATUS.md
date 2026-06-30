@@ -15,7 +15,7 @@ This is the living delivery ledger. The build specification and `AGENTS.md` rema
 |---|---:|---:|---|
 | Repo hygiene / snapshot | L2 | L2 | Dirty prototype is being preserved on `codex/prototype-snapshot`; `.DS_Store` noise ignored. |
 | Reference / anchor / `bref` model | L2 | L3 | Real core exists; needs broader package/data coverage and regression tests. |
-| Electron shell + launch | L2 | L3 | App launches after rebuilding `better-sqlite3` for Electron ABI 133; rebuild workflow is manual. |
+| Electron shell + launch | L2 | L3 | App launches after `npm run rebuild:electron`; `npm start` runs an Electron-runtime preflight that fails visibly with an actionable message on ABI mismatch; `main.ts` also guards direct `electron` invocation with a dialog. |
 | Library folder layout | L2 | L3 | Matches contract shape; needs package/version refusal hardening. |
 | Notes / anchors / highlights / deterministic Living Margin | L1-L2 | L3 | Flows exist and M2 gate passed; UX and error states are thin. |
 | M3 AI plumbing | L1 | L2-L3 | Broker, budgets, embeddings store, claims/facts/overlays exist; AI and embeddings are mock/deterministic. |
@@ -27,12 +27,12 @@ This is the living delivery ledger. The build specification and `AGENTS.md` rema
 | iOS client | L0 | L0 deferred | No iOS project/toolchain setup. Do not start before Tier B/C maturity improves. |
 | Scripture data WEB/KJV | L1 | L3 | Partial seeded demo verses exist; full package coverage, manifests, and refusal behavior remain. |
 | App UX / onboarding / settings / error states | L0-L1 | L2-L3 | Main flows exist, but loading/error/library picker/settings/sync surfaces need deliberate work. |
-| CI / native rebuild / lint | L1 | L2 | ABI flip-flop is manual: Electron ABI 133 vs Node 24 ABI 137. `npm run lint` can wedge in this environment. |
+| CI / native rebuild / lint | L2 | L2 | Two explicit commands (`rebuild:node` / `rebuild:electron`) cover the ABI 137/133 split; `npm run lint` reproducible (exit 0); `npm test` ABI-independent (8/8); preflight gates Electron launch. See `docs/native-build.md`. CI matrix not yet configured. |
 
 ## Sequenced Backlog
 
 1. **A0 Snapshot current prototype:** preserve the dirty tree on a branch, ignore noise, commit non-noise work, and document current state.
-2. **A1 Stabilize native build and lint:** make Electron and Node-side verification reproducible without manual ABI rebuilds.
+2. **A1 Stabilize native build and lint:** make Electron and Node-side verification reproducible without manual ABI rebuilds. — **DONE** (see `docs/native-build.md`; `rebuild:node`/`rebuild:electron` + Electron preflight).
 3. **B1 Full scripture package path:** promote WEB/KJV data from partial demo to real package coverage and refusal behavior.
 4. **B2 App UX pass:** onboarding, library picker, loading/error states, settings, source/import screens, sync status.
 5. **B3 Real AI and embeddings:** BYOK/local provider flow, real embeddings, sqlite-vec, queue/retry/error handling.

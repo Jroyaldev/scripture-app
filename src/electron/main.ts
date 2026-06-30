@@ -642,7 +642,42 @@ function registerIpcHandlers(): void {
   });
 }
 
-app.whenReady().then(() => {
+/**
+ * Native module ABI guard (Task A1).
+ *
+ * `better-sqlite3` is a native addon whose binary is compiled for one
+ * Node/Electron ABI at a time. Electron 35 uses ABI 133; Node 24 uses ABI 137.
+ * If the binary was rebuilt for Node-side verification, launching Electron
+ * crashes deep inside `initializeEngine` with an opaque ERR_DLOPEN_FAILED.
+ * This probe surfaces the failure as a visible dialog with an actionable
+ * command before any library work begins.
+ */
+async function probeNativeModule(): Promise<boolean> {
+  try {
+    const mod = await import("better-sqlite3");
+    const Database = (mod as { default: new (path: string) => { exec: (s: string) => void; close: () => void } }).default;
+    const db = new Database(":memory:");
+    db.exec("CREATE TABLE preflight_probe (x INTEGER)");
+    db.close();
+    return true;
+  } catch (err) {
+    const detail = String((err as Error)?.message ?? err).split("\n").slice(0, 4).join("\n");
+    dialog.showErrorBox(
+      "Native module ABI mismatch",
+      "better-sqlite3 could not be loaded by this Electron runtime.\n\n" +
+        "This usually means the native binary was rebuilt for Node-side\n" +
+        "verification (ABI 137) instead of Electron (ABI 133).\n\n" +
+        "Fix: run  npm run rebuild:electron\n" +
+        "Then re-launch the app.\n\n" +
+        "Underlying error:\n" + detail,
+    );
+    app.quit();
+    return false;
+  }
+}
+
+app.whenReady().then(async () => {
+  if (!(await probeNativeModule())) return;
   initializeEngine();
   registerIpcHandlers();
   createWindow();
