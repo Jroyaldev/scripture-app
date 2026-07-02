@@ -698,6 +698,86 @@ export class LibraryEngine {
     }
   }
 
+  /**
+   * Incrementally apply a highlight creation to SQLite without full rebuild (INV-9).
+   * Also appends the event to the JSONL log (INV-7).
+   * Returns the new highlight entity ID.
+   */
+  applyHighlightCreate(
+    book: string,
+    chapter: number,
+    verseStart: number,
+    verseEnd: number,
+    color: string,
+    pkg: string,
+  ): string {
+    const entityId = "hl_" + ulid();
+    const event = this.createEvent("highlight", entityId, "create", {
+      book,
+      chapter,
+      verse_start: verseStart,
+      verse_end: verseEnd,
+      package: pkg,
+      color,
+      kind: "highlight",
+    });
+    this.appendEvent(event);
+
+    // Incremental SQLite update
+    const dbPath = join(this.rootPath, ".system/library.sqlite");
+    const materializer = new SQLiteMaterializer(dbPath);
+    try {
+      materializer.insertHighlightIncremental({
+        id: entityId,
+        book,
+        chapter,
+        verse_start: verseStart,
+        verse_end: verseEnd,
+        package: pkg,
+        char_start: null,
+        char_end: null,
+        color,
+        kind: "highlight",
+        note_id: null,
+        deleted: 0,
+      });
+    } finally {
+      materializer.close();
+    }
+
+    return entityId;
+  }
+
+  /**
+   * Incrementally mark a highlight as deleted in SQLite without full rebuild (INV-9).
+   * Also appends a delete event to the JSONL log (INV-7).
+   */
+  applyHighlightDelete(entityId: string, baseEventId?: string): void {
+    const event = this.createEvent("highlight", entityId, "delete", {}, baseEventId);
+    this.appendEvent(event);
+
+    const dbPath = join(this.rootPath, ".system/library.sqlite");
+    const materializer = new SQLiteMaterializer(dbPath);
+    try {
+      materializer.deleteHighlightIncremental(entityId);
+    } finally {
+      materializer.close();
+    }
+  }
+
+  /**
+   * Query active highlights for a specific book/chapter/package (for overlap detection).
+   */
+  queryHighlightsForChapter(book: string, chapter: number, pkg: string): HighlightRecord[] {
+    const dbPath = join(this.rootPath, ".system/library.sqlite");
+    const materializer = new SQLiteMaterializer(dbPath);
+    try {
+      return materializer.queryHighlightsForChapter(book, chapter, pkg);
+    } finally {
+      materializer.close();
+    }
+  }
+
   // --- M4: Source ingestion ---
 
   async importPdfSource(pdfPath: string, opts: {

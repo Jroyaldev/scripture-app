@@ -1,0 +1,33 @@
+{
+  "pkg": "scripture-app",
+  "globalName": "ScriptureApp",
+  "projectId": "9451b47c-9b1e-4f57-b355-f37f2eccb58b",
+  "shape": "package",
+  "srcDir": "src/renderer/components",
+  "tsconfig": "tsconfig.renderer.json",
+  "cssEntry": "src/renderer/styles.css",
+  "runtimeFontPrefixes": ["Source Serif", "Inter", "JetBrains Mono", "Fira Code", "Consolas"],
+  "guidelinesGlob": [],
+  "componentSrcMap": {
+    "App": "src/renderer/app.tsx",
+    "ScripturePage": "src/renderer/components/ScripturePage.tsx",
+    "LivingMargin": "src/renderer/components/LivingMargin.tsx",
+    "SearchView": "src/renderer/components/SearchView.tsx",
+    "SettingsPage": "src/renderer/components/SettingsPage.tsx",
+    "WritingSheet": "src/renderer/components/WritingSheet.tsx",
+    "ImportPage": "src/renderer/components/ImportPage.tsx",
+    "BudgetSettings": "src/renderer/components/BudgetSettings.tsx",
+    "ToastProvider": null,
+    "ErrorBoundary": null
+  },
+  "dtsPropsFor": {
+    "App": "",
+    "ScripturePage": "backbone: { version: string; books: Record<string, { chapters: number[] }> };\n  bookNames: Record<string, string[]>;\n  navigateRef: { book: string; chapter: number } | null;\n  onCreateNote: (prefillBody?: string) => void;\n  marginVisible: boolean;",
+    "LivingMargin": "book: string;\n  chapter: number;\n  marginData: { anchors: unknown[]; highlights: Array<{ id: string; verse_start: number; verse_end: number; color: string; deleted: number }>; notes: Array<{ id: string; title: string; body_text: string }> };\n  crossRefs: string[];\n  bookNames: Record<string, string[]>;\n  semanticData?: { semanticNotes: unknown[]; threads: unknown[]; claims: Array<{ id: string; assertion: string }>; overlays: unknown[]; suggestedCrossRefs: unknown[] } | null;\n  semanticLoading?: boolean;\n  onPinClaim?: (claimId: string, assertion: string) => void;\n  onDeleteHighlight?: (entityId: string) => void;",
+    "SearchView": "onNavigate: (book: string, chapter: number) => void;\n  showAll?: boolean;",
+    "SettingsPage": "libraryPath: string;",
+    "WritingSheet": "prefillBody?: string;\n  onSaved: () => void;",
+    "BudgetSettings": "",
+    "ImportPage": ""
+  }
+}

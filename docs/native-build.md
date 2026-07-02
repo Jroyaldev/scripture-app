@@ -30,7 +30,12 @@ npm run rebuild:electron
 ```
 
 - `rebuild:node`   → `npm rebuild better-sqlite3`
-- `rebuild:electron` → `electron-rebuild -f -w better-sqlite3`
+- `rebuild:electron` → `node scripts/rebuild-electron-native.cjs`
+
+The Electron rebuild script calls the repo-local `node-gyp` directly inside
+`node_modules/better-sqlite3` with Electron 35 headers. This avoids the broader
+`electron-rebuild` dependency-tree walk, which can stall before compilation in
+large or slow worktrees.
 
 After a clean `npm install`, `better-sqlite3` is built for the **current Node**
 ABI by default, so `npm test` and the verify scripts work out of the box. Switch

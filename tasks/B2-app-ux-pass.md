@@ -1,0 +1,287 @@
+# B2 — App UX Pass
+
+> **Status:** In progress. Target: L0-L1 → L2-L3.
+> **Predecessors:** A0 (snapshot), A1 (native build), B1 (scripture data).
+> **Contracts:** §4.2 (event fold), §4.4 (SQLite materialized view), §4.6 (note format), INV-7 (append-only), INV-9 (safe to rebuild).
+
+## Progress — 2026-07-01 (margin-toggle relocation)
+
+Real usability bug reported directly against the running app: the "Hide/Show Margin" button, living in the sidebar footer (`.sidebar-footer-controls`), was unclickable — hidden behind the main reading area. Root cause: the sidebar is a fixed-height `flex-direction: column` stack (brand row, nav, a flex spacer, footer-controls, footer avatar row) with `overflow: hidden` (added earlier this session to fix a separate collapse-width bug); when the stack's total content height exceeds the available vertical space, the footer-controls row gets clipped away (or, pre-`overflow:hidden`, spills out and gets painted over by the later `.main-content` sibling) — either way, unreachable.
+
+**Design call:** relocate, not patch. The original design handoff already specified the correct home for this control — the 56px topbar, right-aligned as an icon button next to the theme toggle — a single-row flex container with no vertical-overflow risk at all. Moved it there, mirroring the existing `onToggleTheme`/theme lift-to-App pattern exactly (`onToggleMargin` prop, same convention). Removed the old `.sidebar-footer-controls` block and its now-dead CSS. `toggleMargin`'s function body, persistence, and `userDirtySettings` dirty-tracking were left completely untouched — only its call site moved. Adversarially reviewed; only finding was a stale doc reference (this file), corrected.
+
+**Verification:** `npm run typecheck` (clean), `npm run typecheck:renderer` (clean), `npm run build:renderer` (231.7kb JS / 37.9kb CSS), `npm test` — **81/81 passing**, including `tests/app-settings-load-race-contract.test.ts` and `tests/scripture-page-margin-visibility-contract.test.ts` unmodified (both assert on `toggleMargin`'s behavior, not the button's former location).
+
+## Progress — 2026-07-01 (post-redesign live QA + fixes)
+
+Live QA of the read-screen redesign via Chrome DevTools Protocol against the running Electron app, plus a full adversarial code review. Findings and fixes, on top of the Integration phase below:
+
+- **Real bug (critical), fixed:** `sidebarCollapsed`/`marginVisible`/`theme` could silently self-revert within ~100ms-2s of a user toggling them. Root cause: the settings-load effect in `app.tsx` applied its async `window.api.settings.get()` result unconditionally, clobbering a user's toggle if it landed in the resolution window. Fixed with a `userDirtySettings` ref set synchronously at click time, before `setState`, so the load effect skips any setting the user already touched. Regression test added: `tests/app-settings-load-race-contract.test.ts`.
+- **Real bug (major), fixed:** `Popover.tsx` only clamped the panel's top edge against the viewport bottom using the anchor position, never the panel's own rendered height — a popover opened from a low anchor could overflow off-screen uncorrected. Fixed with a second `useLayoutEffect` pass that measures real panel height and flips above the anchor (or clamps) when it would overflow.
+- **Real bug (minor), fixed:** `.app-shell` had no `background`/`color` of its own, so the outer `html`/`body` backdrop (never given the `dark` class) stayed light-themed and could show through at edges. Fixed by painting the theme background directly on `.app-shell`.
+- **Real bug (minor), fixed:** toast `.toast-action`/`.toast-close` used hardcoded white-based overlay colors tuned only for a dark toast background; in dark mode the toast itself flips to a light background (by design — it swaps `text-primary`/`bg-surface`), making the close button and Undo pill nearly invisible (~1.12:1 contrast). Fixed with theme-aware `--toast-overlay-bg`/`--toast-fg-subtle` tokens, dark-mode overridden.
+- **Real bug (minor), fixed:** a stale-selection bug — navigating chapters (passage jump, nav arrows, ⌘←/→) while the highlight palette was still open left the old chapter's `selectedVerses` intact, so a color pick after navigating could write a highlight to the *new* chapter using the *old* chapter's verse numbers. Fixed by clearing `selectedVerses`/closing the palette in the existing chapter-change reset effect.
+- **Minor consistency fix:** one early-return branch in the semantic-margin effect didn't return a cleanup function like its siblings — benign today, but a latent trap for a future edit. Fixed for consistency.
+- **Live-confirmed working correctly (CDP-driven, real interactions, not just static review):** sidebar brand-row library popover (open/Escape/scrim-close), passage picker (chapter grid navigation, book search with testament-grouped filtering, back-and-forth view switching), version picker (WEB/KJV switch actually re-fetches text), theme toggle (dark CSS variables correctly resolve on `.app-shell`), Living Margin's Chapter Overview state (real stats, no fabricated summary prose) and Selected Passage state (verse pin, 5-swatch palette, real highlight creation via the same IPC path, gradient wash renders with correct color-specific gradient stops), the floating in-text palette fallback when the margin is hidden, and regressions: passage-jump text input, the ⌘←/→ keyboard-nav input-focus guard, and the effect-based chapter-cancellation guard all still work.
+- **Known non-issue (documented, not fixed):** live testing of the sidebar collapse width transition was inconclusive — the Electron window ran in a backgrounded/non-visible state in this environment (`document.hidden: true`, confirmed even a forced inline `!important` style didn't immediately relayout, consistent with Chromium's documented throttling of paint/transitions for hidden pages), which also explains a couple of `requestAnimationFrame`-dependent test hangs during this session. This is very likely a test-harness artifact, not a real functional bug, but could not be 100% confirmed against a genuinely focused/visible window from this session. Recommend a manual visual check of the collapse animation. Kept a valid, harmless hardening regardless: added `min-width: 0` and `overflow: hidden` to `.sidebar` (flex items default to `min-width: auto`, which floors shrinking at content size — good practice for any collapsing flex rail even though it wasn't confirmed to be the actual blocker here).
+- **Verification:** `npm run typecheck` (clean), `npm run typecheck:renderer` (clean), `npm run build:renderer` (231.5kb JS / 38.0kb CSS), `npm test` — **81/81 passing**.
+
+## Progress — 2026-07-01 (redesign integration)
+
+Integration phase closing out the 4-phase redesign (Foundation → Sidebar → Topbar+Reading → Living Margin → this phase). High-level summary of the full redesign as it now stands, end to end:
+
+- **Sidebar:** collapsible via `sidebarCollapsed` (persisted through `window.api.settings`), a library popover anchored off the brand row (`Popover` primitive), primary nav, and a footer with an AI-busy indicator (`onAiBusyChange` from `ScripturePage`'s `semanticLoading` effect) plus a margin-visibility toggle in a dedicated `.sidebar-footer-controls` row.
+- **Topbar + reading column:** passage-picker and version-picker popovers (both built on the shared `Popover` primitive), a redesigned verse renderer with gradient-wash highlight classes (`hl-{color}` on `.verse-line`/`.verse-text-span`, with `cont-above`/`cont-below` continuation classes for adjacent same-color highlights), the passage-jump box (`parsePassage` + atomic `goTo`), and a derived `pinnedRange` (`{start, end}` from `selectedVerses`) surfaced via `onPinnedRangeChange`.
+- **Living Margin:** a 3-state panel (`Chapter Overview` default / `Currently Reading` ambient / `Selected Passage` pinned), the ambient state driven by an `IntersectionObserver`-derived `nearVerse` (first annotated verse — real highlight, note, or cross-ref — scrolled into view), and the pinned state exposing the actual highlight color-assignment swatches (`onSetHighlightColor` / `onRemoveHighlight`) plus a session-only cached AI insight for the pinned range.
+- **Dark mode + accent color (this phase):** `App.tsx` now owns `theme` state (`"light" | "dark"`), initialized from `window.api.settings.get()` on mount, applies `app-shell dark` vs `app-shell` on the top-level shell div (covering the loading/error/loaded render paths), and passes `theme` + `onToggleTheme` (flips state, persists via `settings.set`) down into `ScripturePage`, which renders the sun/moon toggle button in the topbar. Added a minimal 3-swatch accent picker (blue/green/plum) to `SettingsPage.tsx` under a new "Appearance" section (`.accent-swatch-row` / `.accent-swatch-{color}` classes, no inline styles — keeps `settings-page-style-contract.test.ts` green) that calls `window.api.settings.set({ accentColor })` and updates `--accent-current` on `document.documentElement` immediately; `App.tsx` also applies the persisted `accentColor` to `--accent-current` on initial load so a relaunch reflects the saved choice before Settings is ever opened.
+- **End-to-end prop audit:** verified every prop between `App` → `ScripturePage` → `LivingMargin` connects with no dangling/unused names — `marginVisible`, `onAiBusyChange`, `theme`, `onToggleTheme`, `pinnedRange`/`onPinnedRangeChange`, `nearVerse`, `onSetHighlightColor`/`onRemoveHighlight` (formerly a bare `onDeleteHighlight`, now also wired for create via `onSetHighlightColor`). Confirmed the floating in-text highlight palette in `ScripturePage` is still gated on `!marginVisible`, and that both it and the Living Margin's pinned-state palette call the same `handleHighlight`/`handleDeleteHighlight` closures underneath, which hit the same `window.api.library.createHighlight` / `deleteHighlight` IPC — i.e. highlighting works identically through either UI depending on whether the margin is shown.
+- **Persistence:** `sidebarCollapsed`, `marginVisible`, `theme`, and `accentColor` all round-trip through `window.api.settings.get()`/`set()` (electron-store backed); confirmed by code-path inspection (no live Electron launch per ABI constraints) that a reload re-reads `settings.get()` in `App`'s init effect before any user interaction can diverge from the persisted value.
+
+**Verification:** `npm run typecheck` (clean), `npm run typecheck:renderer` (clean), `npm run build:renderer` (231.0kb JS / 37.7kb CSS, no errors), `npm test` — **80/80 passing**, including all 9 protected contract tests named in this phase's constraints.
+
+**Left incomplete / deferred (explicit):**
+- No new automated DOM-level test was added specifically for theme toggling or the accent picker (matches the pattern of prior phases, which also relied on source-contract tests + `build:renderer` rather than a jsdom render harness for new UI). `settings-page-style-contract.test.ts` still passes (no inline styles introduced).
+- The per-accent **dark-mode variant** mentioned in the Foundation phase's CSS comment (e.g. an `.accent-blue.dark` combination selector for a richer dark+accent interaction) was not built — `--accent-current` just points at the same `--accent-{color}` value regardless of theme, which is visually adequate (the accent is used sparingly as an outline/active color) but not a custom-tuned dark variant per accent.
+- The Living Margin's AI-insight cache remains session-only and is discarded when the margin is hidden/shown or the app reloads (carried over from the Living Margin phase's own stated scope — not something this integration phase was asked to change).
+- Real end-to-end manual verification (launching Electron, clicking through theme toggle / accent picker / highlight creation in both margin states) was **not** performed, per the hard ABI-safety constraint against running `npm start`/rebuild/preflight scripts in this phase. Verification here is limited to typecheck/build/test plus direct source reading of the wiring.
+
+## Progress — 2026-06-30
+
+- Live Electron QA with DevTools + screen state found no margin-toggle leak: 30 rapid hide/show cycles completed with max 10 ms visible toggle latency and p95 4 ms; DOM nodes returned to baseline after the loop and GC.
+- Current highlight persistence path is incremental, not full-rebuild: direct `createHighlight` IPC measured about 2 ms and `queryRange` stayed under 5 ms on the active library.
+- Highlight palette now dismisses immediately after the optimistic visual update, before waiting for disk/Git persistence, so a slow save cannot keep the user in a spinner state.
+- Verse highlight classes now refresh on chapter changes even when the Living Margin is hidden; cross-refs and semantic margin work remain gated until the margin is visible.
+- Added `tests/scripture-page-highlight-optimistic-contract.test.ts` to guard the palette-before-persistence ordering.
+- Navigation §8: added a **passage-jump control** ("Go to… e.g. Rev 14"). Parses `Rev 14` / `Revelation 14` / `1 Cor 13` / `Psalm 119` / `John 3:16` / bare book via a renderer-local pure util `src/renderer/utils/parsePassage.ts` (renderer stays self-contained — no `src/core` import; reuses the existing alias data). Submitting calls an atomic `goTo(book, chapter)` so book+chapter change in one render → one `getChapterText` fetch, eliminating the intermediate chapter-1 load on long-distance jumps.
+- Added **request sequencing/cancellation** to the chapter-text load effect (`cancelled`-closure, mirroring the margin effect) so a slow/cold `getChapterText` (e.g. a ~735 ms Psalm 119 range) resolving out of order can no longer overwrite a newer chapter. The chapter-error **Retry** now routes through the same guarded effect via a `retryToken` instead of an unguarded inline fetch.
+- Added tests: `tests/reference-passage-jump.test.ts` (13 behavioral cases for `parsePassage`, incl. alias-length precedence and out-of-range chapter/verse), plus source-contract tests `tests/scripture-page-chapter-cancellation-contract.test.ts` and `tests/scripture-page-passage-jump-contract.test.ts`. Full suite 42/42; typecheck, typecheck:renderer, build:renderer all pass.
+
+## Findings — Current State Audit
+
+### 1. Highlight System (L2 — functional, needs safety polish)
+
+**1a. Performance: incremental path is in place.**
+`create-highlight` now uses `engine.applyHighlightCreate()` and incremental SQLite insert/delete paths instead of `engine.buildSqlite()`. Live Electron QA on the active library measured direct highlight creation at about 2 ms and chapter `queryRange` under 5 ms. The remaining UX guard is to keep visible feedback optimistic so slower future libraries cannot hold the palette open.
+
+**1b. Replace-on-overlap exists.**
+Before creating a new highlight, the IPC handler queries existing active highlights for the same book/chapter/package and emits delete events for overlapping highlights before appending the new create event.
+
+**1c. Delete UI exists; undo remains shallow.**
+The Living Margin exposes highlight delete buttons and the palette exposes remove when an already-highlighted verse is selected. Toast undo for created highlights calls delete, but delete undo is only messaging today; proper restore semantics still need a product decision.
+
+**1d. Palette positioning (fixed in this session).**
+Was `position: absolute` relative to the centered `.verse-text` container, calculated against the full-width scroll container — causing the palette to drift past the Living Margin on wide windows. Fixed to `position: fixed` with viewport coordinates.
+
+**1e. Creation feedback is optimistic.**
+The verse background updates before persistence, the palette dismisses immediately, and a toast confirms success or failure. Failure reloads margin data to revert the optimistic row.
+
+### 2. Onboarding / Library Picker (L0 — none)
+
+**2a. Silent library creation.**
+`initializeEngine()` silently creates a library at `~/Documents/ScriptureLibrary` if none exists. No first-run flow, no welcome screen, no library location picker. The user has no idea where their data lives or that a library was created.
+
+**2b. No library path display.**
+The app never shows the user where their library is. No settings panel, no about dialog, no status bar. If the user wants to find their library folder, they have to know to look in `~/Documents/ScriptureLibrary`.
+
+**2c. No library switching.**
+The `init-library` IPC handler exists and can initialize a library at any path, but the renderer never calls it. There is no UI to open or switch libraries.
+
+### 3. Loading / Error States (L0-L1 — thin)
+
+**3a. "Loading library..." hangs forever on IPC failure.**
+`App.tsx` shows "Loading library..." until `getBackbone()` and `getBookNames()` resolve. If either IPC call rejects (e.g., backbone validation fails, file missing), the promise rejects silently — no catch handler, no error UI, no retry. The user sees "Loading library..." forever.
+
+**3b. No error boundaries.**
+No React error boundary. If any component throws during render, the entire app goes blank with no message.
+
+**3c. Scripture text loading has no error state.**
+`getChapterText()` returns `null` on failure, and the UI shows "Loading text..." indefinitely. No error message, no retry.
+
+**3d. Semantic margin blocks margin rendering.**
+`loadMarginData()` awaits the semantic margin call before setting any margin data. If the semantic call is slow (it computes deterministic embeddings over all stored embeddings), the entire margin panel stays empty. The deterministic margin (notes, highlights, cross-refs) should render first, then semantic data loads async.
+
+**3e. Cross-refs are sequential.**
+7 sequential `getCrossRefs` IPC calls (one per verse) instead of a single batched call. Each IPC round-trip is ~1-5ms, but they're awaited in `Promise.all` which is at least parallel — still 7 separate calls.
+
+### 4. Settings (L1 — minimal)
+
+**4a. BudgetSettings is the only settings view.**
+It shows AI budget envelope, network toggle, token ceiling, usage bar, and recent AI jobs. No library path, no package selection, no about/version info, no theme settings, no scripture package management.
+
+**4b. No package management.**
+The app hardcodes WEB and KJV. No UI to see installed packages, their licenses, or their format versions. The Doctor checks package format versions and content coverage (B1), but the user never sees this.
+
+**4c. Inline styles everywhere.**
+BudgetSettings uses inline styles throughout (200 lines of `style={{...}}`). No CSS classes. Inconsistent with the rest of the app which uses design tokens via CSS classes.
+
+### 5. Source / Import (L1 — minimal)
+
+**5a. ImportPage only handles Obsidian vaults.**
+One button: "Choose Vault Folder". No PDF import UI (the backend exists in `pdf-source.ts`). No progress indicator during import. No file preview. No error detail beyond a single error string.
+
+**5b. No source list.**
+No UI to see imported sources, their chunks, or their rights/policy (§4.8).
+
+### 6. Sync Status (L0 — none)
+
+**6a. No sync UI at all.**
+M6 sync proof exists in the backend (`src/host/sync.ts`), but there is no UI surface. No sync status indicator, no last-synced timestamp, no conflict resolution UI, no device list.
+
+### 7. Design System (L1 — exists but underused)
+
+**7a. Design tokens are well-defined.**
+`design-tokens.json` and `:root` CSS custom properties cover colors, typography, spacing, radius, shadows, transitions. The palette is cool-neutral, professional. Source Serif 4 for reading, Inter for UI.
+
+**7b. Inconsistent application.**
+- BudgetSettings: 100% inline styles, no classes
+- ScripturePage: mix of classes and inline styles
+- LivingMargin: mix of classes and inline styles
+- No shared component primitives (buttons, inputs, cards)
+
+**7c. No dark mode.**
+All tokens are light-only. No `prefers-color-scheme` media query. No theme toggle.
+
+**7d. No responsive behavior.**
+Living Margin is always visible at 340px. On narrow windows (< 900px), the reading column gets squeezed. No collapse/toggle for the margin.
+
+### 8. Navigation (L1 — basic)
+
+**8a. No keyboard navigation.**
+No arrow keys for chapter navigation. No cmd+arrow for next/previous chapter. No keyboard shortcuts for highlight colors.
+
+**8b. No chapter prev/next buttons.**
+The only way to change chapters is the dropdown. No prev/next arrows.
+
+**8c. No book search/filter.**
+66 books in a flat dropdown. No search, no grouping by testament, no recently-used.
+
+## Plan — B2 Implementation
+
+### Phase 1: Highlight UX (L0 → L3)
+
+The highlight flow is the most-used interaction and currently the most broken. Fix it first.
+
+**1.1 Incremental SQLite updates for highlights.**
+- Add `insertHighlightIncremental(h)` and `deleteHighlightIncremental(entityId)` to `SQLiteMaterializer` — single-row INSERT/DELETE without dropping the DB.
+- Add `engine.applyHighlightEvent(event)` and `engine.applyHighlightDelete(entityId)` that write the event to JSONL and update SQLite incrementally.
+- Update `create-highlight` and `delete-highlight` IPC handlers to use incremental updates instead of `buildSqlite()`.
+- Keep `buildSqlite()` for full rebuilds (INV-9) — it's still the recovery path.
+
+**1.2 Replace-on-overlap.**
+- Before creating a new highlight, query existing active highlights for the same book/chapter/package that overlap the new verse range.
+- If overlaps found, emit `delete` events for the old highlights (INV-7: append-only, so we delete, not edit) then create the new one.
+- This means "re-highlighting" a verse replaces the old color, doesn't stack.
+
+**1.3 Undo via delete + toast.**
+- Add a "Remove highlight" button to the palette (trash icon) that appears when clicking an already-highlighted verse.
+- Add a toast notification system: "Highlight created" with an "Undo" button that calls `delete-highlight`.
+- Toast auto-dismisses after 5s. Undo button calls `delete-highlight` with the entityId from the create response.
+
+**1.4 Visual feedback.**
+- Palette buttons show a brief loading state during creation.
+- Verse background updates optimistically (before IPC resolves) and reverts on failure.
+- Palette dismisses on click-outside or Escape.
+
+**1.5 Highlight list in Living Margin.**
+- Existing highlights for the current chapter show in the margin with a delete button (x) on hover.
+- Clicking a highlight in the margin scrolls to and selects those verses.
+
+### Phase 2: Loading / Error States (L0 → L2)
+
+**2.1 Error boundary.**
+- Add a React error boundary at the App level that catches render errors and shows a recovery screen with "Reload" and "Show error details" buttons.
+
+**2.2 IPC error handling.**
+- Wrap all `window.api.*` calls in a shared `safeCall` wrapper that catches rejections and returns `{ ok: false, error }` instead of throwing.
+- App.tsx: if `getBackbone()` or `getBookNames()` fails, show an error screen with the error message and a "Retry" button.
+
+**2.3 Non-blocking margin loading.**
+- Split `loadMarginData()` into two phases:
+  - Phase 1 (fast): query range for notes/highlights + cross-refs → render immediately.
+  - Phase 2 (slow): semantic margin → render when ready, show subtle "Loading semantic margin..." placeholder.
+- Batch cross-ref calls into a single `getCrossRefsForChapter(book, chapter)` IPC handler instead of 7 sequential calls.
+
+**2.4 Chapter text error state.**
+- If `getChapterText()` returns null after 2s, show "Failed to load text for {book} {chapter}" with a retry button.
+
+### Phase 3: Onboarding / Library (L0 → L2)
+
+**3.1 First-run welcome.**
+- On first launch (no library manifest found), show a welcome screen:
+  - "Welcome to Scripture Library"
+  - Brief description (1-2 sentences)
+  - "Choose Library Location" button (opens directory picker)
+  - "Use Default Location" button (~/Documents/ScriptureLibrary)
+  - Shows the chosen path before confirming.
+
+**3.2 Library info in sidebar footer.**
+- Show library path at the bottom of the sidebar (truncated with tooltip).
+- Click to reveal in Finder.
+
+**3.3 Library switcher.**
+- Add "Switch Library" option in settings or sidebar footer.
+- Opens directory picker, calls `init-library` with the chosen path, restarts the app.
+
+### Phase 4: Settings (L1 → L2)
+
+**4.1 Unified settings page.**
+- Replace BudgetSettings with a proper Settings page with sections:
+  - Library: path, switch, rebuild index, storage usage
+  - Scripture Packages: installed packages, licenses, format versions
+  - AI Budget: existing budget envelope UI (refactored to use CSS classes)
+  - About: app version, data versions, links
+
+**4.2 CSS class refactor.**
+- Move all inline styles from BudgetSettings into `styles.css` using the design token system.
+
+### Phase 5: Navigation Polish (L1 → L2)
+
+**5.1 Chapter prev/next.**
+- Add prev/next arrow buttons in the chapter nav bar.
+- Cmd+Left / Cmd+Right keyboard shortcuts.
+
+**5.2 Book dropdown grouping.**
+- Group books by testament (Old Testament / New Testament) using `<optgroup>`.
+- Add a search/filter input above the dropdown.
+
+**5.3 Living Margin toggle.**
+- Add a button to collapse/expand the Living Margin panel.
+- Remember preference in localStorage.
+
+### Phase 6: Design System Consolidation (L1 → L2)
+
+**6.1 Shared primitives.**
+- Extract reusable Button, Input, Card, Toast components.
+- All use design tokens via CSS classes, no inline styles.
+
+**6.2 Consistent focus states.**
+- All interactive elements have visible focus rings using `--accent-user`.
+- Keyboard navigation works everywhere.
+
+**6.3 Empty states.**
+- Every view has a proper empty state with helpful guidance text.
+- ScripturePage: "Select a book and chapter to begin reading."
+- SearchView: "Type to search your notes."
+- Notes: "No notes yet. Create one from the Write tab or by selecting a passage."
+
+### Out of scope for B2
+
+- Dark mode (design system expansion, separate task)
+- PDF import UI (source rights UI, B4 territory)
+- Sync status UI (C2 territory)
+- Plugin management UI (C3 territory)
+- Mobile responsive (D1 territory)
+
+## Quality Gate
+
+Before marking B2 complete:
+
+1. **Highlight flow:** Create, replace-on-overlap, undo, delete — all work without full SQLite rebuild. Sub-100ms response time.
+2. **Error states:** Every IPC call has a catch handler. Error boundary catches render crashes. No infinite loading states.
+3. **Onboarding:** First-run user sees a welcome screen, can choose library location, and knows where their data lives.
+4. **Settings:** Library path, packages, AI budget, and about info are all visible. No inline styles.
+5. **Navigation:** Prev/next chapters, keyboard shortcuts, book grouping, margin toggle.
+6. **Design:** All components use design tokens via CSS classes. Consistent focus states. Proper empty states.
+7. **Tests:** New tests for highlight replace-on-overlap, incremental SQLite, error boundary, first-run flow.
+8. **Lint + typecheck + verify:m2:** All pass.
+9. **Manual verification:** App launches, scripture renders, highlights work smoothly, settings display correctly.

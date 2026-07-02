@@ -23,7 +23,7 @@ test("package.json declares the two native rebuild scripts", () => {
   assert.equal(typeof pkg.scripts["rebuild:node"], "string");
   assert.equal(typeof pkg.scripts["rebuild:electron"], "string");
   assert.match(pkg.scripts["rebuild:node"], /better-sqlite3/);
-  assert.match(pkg.scripts["rebuild:electron"], /electron-rebuild.*better-sqlite3/);
+  assert.equal(pkg.scripts["rebuild:electron"], "node scripts/rebuild-electron-native.cjs");
 });
 
 test("package.json declares the electron preflight script and wires it into start", () => {
@@ -43,6 +43,13 @@ test("preflight-native.cjs exists and is syntactically valid", () => {
   assert.equal(existsSync(preflightPath), true, "scripts/preflight-native.cjs should exist");
   const result = spawnSync("node", ["--check", preflightPath], { cwd: repoRoot });
   assert.equal(result.status, 0, `preflight syntax check failed: ${result.stderr?.toString()}`);
+});
+
+test("rebuild-electron-native.cjs exists and is syntactically valid", () => {
+  const rebuildPath = join(repoRoot, "scripts/rebuild-electron-native.cjs");
+  assert.equal(existsSync(rebuildPath), true, "scripts/rebuild-electron-native.cjs should exist");
+  const result = spawnSync("node", ["--check", rebuildPath], { cwd: repoRoot });
+  assert.equal(result.status, 0, `electron rebuild syntax check failed: ${result.stderr?.toString()}`);
 });
 
 test("docs/native-build.md documents the ABI split", () => {

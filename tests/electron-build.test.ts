@@ -70,6 +70,9 @@ test("electron build exits and emits a CommonJS preload bridge", async () => {
   const preloadPath = join(repoRoot, "dist/electron/preload.cjs");
   assert.equal(existsSync(preloadPath), true, "preload.cjs should be emitted for Electron preload loading");
 
+  const mainPath = join(repoRoot, "dist/electron/main.cjs");
+  assert.equal(existsSync(mainPath), true, "main.cjs should be emitted as CommonJS for Electron");
+
   const preloadCode = readFileSync(preloadPath, "utf-8");
   assert.match(preloadCode, /exposeInMainWorld\(\s*["']api["']/, "preload should expose window.api");
   assert.doesNotMatch(preloadCode, /^\s*import\s/m, "preload should be CommonJS, not ESM");

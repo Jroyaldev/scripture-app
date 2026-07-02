@@ -12,11 +12,23 @@ const common = {
   logLevel: "info",
 };
 
+// In CJS format, esbuild polyfills import.meta.url as {} which breaks
+// fileURLToPath(import.meta.url). Define it to the CJS equivalent so
+// __dirname-derived paths resolve correctly.
+const cjsBanner = {
+  js: "const __import_meta_url = require('url').pathToFileURL(__filename).href;",
+};
+const cjsDefine = {
+  "import.meta.url": "__import_meta_url",
+};
+
 await build({
   ...common,
   entryPoints: ["src/electron/main.ts"],
-  outfile: "dist/electron/main.js",
-  format: "esm",
+  outfile: "dist/electron/main.cjs",
+  format: "cjs",
+  banner: cjsBanner,
+  define: cjsDefine,
 });
 
 await build({

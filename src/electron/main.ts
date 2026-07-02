@@ -3,10 +3,12 @@
  * No core logic here; only window management and IPC bridge.
  */
 
-import { app, BrowserWindow, dialog, ipcMain } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, nativeTheme, shell } from "electron";
 import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { createRequire } from "node:module";
+import Store from "electron-store";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 import { ulid } from "ulid";
@@ -18,16 +20,49 @@ import { GitRevisionStore } from "../host/git-revision-store.js";
 import { SQLiteMaterializer } from "../host/sqlite.js";
 import { EmbeddingsStore } from "../host/embeddings-store.js";
 import { BudgetManager } from "../host/budget-manager.js";
-import { MockAIProvider, MockEmbeddingProvider } from "../host/ai-provider.js";
+import { MockAIProvider, MockEmbeddingProvider, createDeepSeekProvider, OpenAICompatibleAIProvider } from "../host/ai-provider.js";
+import { loadEnvFile } from "../host/env.js";
+import type { AIProvider } from "../core/interfaces.js";
 import { JobQueue } from "../host/job-queue.js";
 import { assembleMargin } from "../core/margin/index.js";
 import { assembleSemanticMargin } from "../core/ai/semantic-margin.js";
 import { deterministicEmbedding } from "../core/ai/similarity.js";
 import { importObsidianVault } from "../core/importer/obsidian.js";
 import type { CrossRefData, MarginQuery } from "../core/margin/types.js";
+import { isHighlightOverlap } from "../core/events/highlightOverlap.js";
 
 const DATA_DIR = resolve(__dirname, "../../data/scripture");
 const CROSS_REF_DIR = resolve(__dirname, "../../data/cross-references");
+
+interface WindowBounds {
+  x?: number;
+  y?: number;
+  width: number;
+  height: number;
+}
+
+interface AppSettingsSchema {
+  theme: "light" | "dark";
+  accentColor: "blue" | "green" | "plum";
+  sidebarCollapsed: boolean;
+  marginVisible: boolean;
+  windowBounds: WindowBounds | null;
+  /** The library location the user last confirmed (Welcome screen or Switch
+   * Library), if any. null means no choice has ever been confirmed — the
+   * signal used at startup to decide whether to show the Welcome screen. */
+  libraryPath: string | null;
+}
+
+const store = new Store<AppSettingsSchema>({
+  defaults: {
+    theme: nativeTheme.shouldUseDarkColors ? "dark" : "light",
+    accentColor: "blue",
+    sidebarCollapsed: false,
+    marginVisible: true,
+    windowBounds: null,
+    libraryPath: null,
+  },
+});
 
 let mainWindow: BrowserWindow | null = null;
 let engine: LibraryEngine | null = null;
@@ -37,7 +72,7 @@ let bookNames: BookNameMap | null = null;
 let crossRefData: CrossRefData | null = null;
 let embeddingsStore: EmbeddingsStore | null = null;
 let budgetManager: BudgetManager | null = null;
-let aiProvider: MockAIProvider | null = null;
+let aiProvider: AIProvider | null = null;
 let embeddingProvider: MockEmbeddingProvider | null = null;
 let jobQueue: JobQueue | null = null;
 
@@ -63,13 +98,20 @@ function loadCrossRefs(): CrossRefData | null {
 }
 
 function getLibraryPath(libraryPath?: string): string {
-  return libraryPath ?? process.env["LIBRARY_PATH"] ?? resolve(app.getPath("documents"), "ScriptureLibrary");
+  return libraryPath ?? store.get("libraryPath") ?? process.env["LIBRARY_PATH"] ?? resolve(app.getPath("documents"), "ScriptureLibrary");
 }
 
 function createWindow(): void {
+  const savedBounds = store.get("windowBounds");
+  const hasSaneBounds =
+    savedBounds != null && savedBounds.width > 0 && savedBounds.height > 0;
+
   mainWindow = new BrowserWindow({
-    width: 1400,
-    height: 900,
+    width: hasSaneBounds ? savedBounds.width : 1400,
+    height: hasSaneBounds ? savedBounds.height : 900,
+    ...(hasSaneBounds && savedBounds.x != null && savedBounds.y != null
+      ? { x: savedBounds.x, y: savedBounds.y }
+      : {}),
     minWidth: 900,
     minHeight: 600,
     webPreferences: {
@@ -87,6 +129,23 @@ function createWindow(): void {
     void mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
   }
 
+  // Open DevTools in development or when debugging
+  if (process.env["SCRIPTURE_DEBUG"] === "1") {
+    mainWindow.webContents.openDevTools();
+  }
+
+  let boundsSaveTimer: NodeJS.Timeout | null = null;
+  const saveBounds = () => {
+    if (boundsSaveTimer) clearTimeout(boundsSaveTimer);
+    boundsSaveTimer = setTimeout(() => {
+      if (mainWindow) {
+        store.set("windowBounds", mainWindow.getBounds());
+      }
+    }, 500);
+  };
+  mainWindow.on("resize", saveBounds);
+  mainWindow.on("move", saveBounds);
+
   mainWindow.on("close", () => {
     // Flush pending git commits on close
     if (revisionStore) {
@@ -95,7 +154,7 @@ function createWindow(): void {
   });
 }
 
-function initializeEngine(libraryPathArg?: string): void {
+function initializeEngine(libraryPathArg?: string, autoCreateIfMissing: boolean = true): void {
   backbone = loadBackbone();
   bookNames = loadBookNames();
   crossRefData = loadCrossRefs();
@@ -105,28 +164,38 @@ function initializeEngine(libraryPathArg?: string): void {
   revisionStore = new GitRevisionStore(libraryPath);
 
   // Ensure library is initialized
-  if (!existsSync(join(libraryPath, "config/library-manifest.json"))) {
-    engine.initLibrary();
-    engine.installBackboneData(
-      join(DATA_DIR, "backbone.json"),
-      join(DATA_DIR, "versification"),
-    );
-    revisionStore.init();
-  }
+  const manifestExists = existsSync(join(libraryPath, "config/library-manifest.json"));
+  if (autoCreateIfMissing || manifestExists) {
+    if (!existsSync(join(libraryPath, "config/library-manifest.json"))) {
+      engine.initLibrary();
+      engine.installBackboneData(
+        join(DATA_DIR, "backbone.json"),
+        join(DATA_DIR, "versification"),
+      );
+      revisionStore.init();
+    }
 
-  // Build SQLite if not present
-  const dbPath = join(libraryPath, ".system/library.sqlite");
-  if (!existsSync(dbPath)) {
-    engine.buildSqlite();
-  }
+    // Build SQLite if not present
+    const dbPath = join(libraryPath, ".system/library.sqlite");
+    if (!existsSync(dbPath)) {
+      engine.buildSqlite();
+    }
 
-  // M3: Initialize semantic layer
-  const embDbPath = join(libraryPath, ".system/embeddings.sqlite");
-  embeddingsStore = new EmbeddingsStore(embDbPath);
-  budgetManager = new BudgetManager(join(libraryPath, "config"));
-  embeddingProvider = new MockEmbeddingProvider();
-  aiProvider = new MockAIProvider();
-  jobQueue = new JobQueue(budgetManager, embeddingsStore);
+    // M3: Initialize semantic layer. Deliberately inside this gate — these
+    // eagerly open sqlite files under libraryPath/.system/, which this block
+    // is what creates in the first place (via initLibrary/buildSqlite above).
+    // Constructing them when the library doesn't exist yet (first-run, before
+    // the user has confirmed a location) would throw SQLITE_CANTOPEN.
+    const embDbPath = join(libraryPath, ".system/embeddings.sqlite");
+    embeddingsStore = new EmbeddingsStore(embDbPath);
+    budgetManager = new BudgetManager(join(libraryPath, "config"));
+    embeddingProvider = new MockEmbeddingProvider();
+    // B3 Gate 1: real LLM provider when a key is configured (.env at the repo
+    // root in dev, or the process environment), deterministic mock otherwise.
+    loadEnvFile(resolve(__dirname, "../../.env"));
+    aiProvider = createDeepSeekProvider(process.env) ?? new MockAIProvider();
+    jobQueue = new JobQueue(budgetManager, embeddingsStore);
+  }
 }
 
 // --- IPC Handlers ---
@@ -144,6 +213,12 @@ function registerIpcHandlers(): void {
     };
   });
 
+  ipcMain.handle("reveal-in-finder", () => {
+    if (!engine) return { ok: false, error: "Not initialized" };
+    shell.showItemInFolder(engine.rootPath);
+    return { ok: true };
+  });
+
   ipcMain.handle("get-library-summary", () => {
     if (!engine) return null;
     return engine.getSummary();
@@ -158,6 +233,10 @@ function registerIpcHandlers(): void {
     if (!libraryPath.trim()) return { ok: false, error: "Library path is required" };
     try {
       initializeEngine(libraryPath);
+      // Remember this as the confirmed library location so the next launch
+      // resolves back to it (via getLibraryPath) instead of reverting to the
+      // hardcoded default and re-showing the Welcome screen.
+      store.set("libraryPath", libraryPath);
       return { ok: true };
     } catch (e) {
       return { ok: false, error: (e as Error).message };
@@ -166,6 +245,7 @@ function registerIpcHandlers(): void {
 
   ipcMain.handle("resolve-reference", (_event, input: string) => {
     if (!backbone || !bookNames) return { ok: false, error: "Not initialized" };
+    if (typeof input !== "string" || !input) return { ok: false, error: "Reference is required" };
     if (input.startsWith("bref:")) {
       return parseBref(input);
     }
@@ -380,6 +460,38 @@ function registerIpcHandlers(): void {
     return result.crossRefs.map((ref) => ref.targetDisplay);
   });
 
+  // Batched cross-refs for an entire chapter (reduces 7+ IPC calls to 1)
+  ipcMain.handle("get-cross-refs-for-chapter", (_event, opts: { book: string; chapter: number; verseCount: number }) => {
+    if (!bookNames) return [];
+    const verses = Math.min(opts.verseCount, 7);
+    // Different verses in the same chapter can share a cross-reference
+    // target (e.g. two nearby verses both pointing at the same passage) —
+    // dedupe by target text, keeping first-encountered order.
+    const seen = new Set<string>();
+    const allRefs: string[] = [];
+    for (let v = 1; v <= verses; v++) {
+      const result = assembleMargin(
+        { book: opts.book, startChapter: opts.chapter, startVerse: v, endChapter: opts.chapter, endVerse: v },
+        {
+          queryAnchorsForRange: () => [],
+          queryHighlightsForRange: () => [],
+          queryNoteById: () => undefined,
+          queryEdgesByTarget: () => [],
+          querySourceChunkById: () => undefined,
+          querySourceById: () => undefined,
+        },
+        crossRefData,
+        bookNames,
+      );
+      for (const ref of result.crossRefs) {
+        if (seen.has(ref.targetDisplay)) continue;
+        seen.add(ref.targetDisplay);
+        allRefs.push(ref.targetDisplay);
+      }
+    }
+    return allRefs;
+  });
+
   ipcMain.handle("create-highlight", async (_event, opts: {
     book: string;
     chapter: number;
@@ -390,45 +502,50 @@ function registerIpcHandlers(): void {
   }) => {
     if (!engine || !revisionStore) return { ok: false, error: "Not initialized" };
 
-    const entityId = "hl_" + ulid();
-    const event = engine.createEvent("highlight", entityId, "create", {
-      book: opts.book,
-      chapter: opts.chapter,
-      verse_start: opts.verseStart,
-      verse_end: opts.verseEnd,
-      package: opts.package,
-      color: opts.color,
-      kind: "highlight",
-    });
-    engine.appendEvent(event);
+    // Replace-on-overlap: find and delete existing overlapping highlights
+    const existing = engine.queryHighlightsForChapter(opts.book, opts.chapter, opts.package);
+    const overlapping = existing.filter((h) =>
+      isHighlightOverlap(h, { verseStart: opts.verseStart, verseEnd: opts.verseEnd }),
+    );
+    for (const h of overlapping) {
+      engine.applyHighlightDelete(h.id);
+    }
+
+    // Create the new highlight with incremental SQLite update
+    const entityId = engine.applyHighlightCreate(
+      opts.book, opts.chapter, opts.verseStart, opts.verseEnd, opts.color, opts.package,
+    );
 
     // Track in git
     const txn = await revisionStore.beginTransaction("Create highlight");
     txn.files.push("annotations/highlights.jsonl");
     await revisionStore.commit(txn);
 
-    // Rebuild
-    engine.buildSqlite();
     return { ok: true, highlightId: entityId };
   });
 
   ipcMain.handle("delete-highlight", async (_event, opts: { entityId: string; baseEventId: string }) => {
     if (!engine || !revisionStore) return { ok: false, error: "Not initialized" };
 
-    const event = engine.createEvent("highlight", opts.entityId, "delete", {}, opts.baseEventId);
-    engine.appendEvent(event);
+    engine.applyHighlightDelete(opts.entityId, opts.baseEventId);
 
     const txn = await revisionStore.beginTransaction("Delete highlight");
     txn.files.push("annotations/highlights.jsonl");
     await revisionStore.commit(txn);
 
-    engine.buildSqlite();
     return { ok: true };
   });
 
   ipcMain.handle("rebuild-sqlite", () => {
     if (!engine) return null;
     return engine.buildSqlite();
+  });
+
+  ipcMain.handle("settings:get", () => store.store);
+
+  ipcMain.handle("settings:set", (_event, partial: Partial<AppSettingsSchema>) => {
+    store.set({ ...store.store, ...partial });
+    return store.store;
   });
 
   ipcMain.handle("dialog-open-directory", async () => {
@@ -625,10 +742,13 @@ function registerIpcHandlers(): void {
 
   ipcMain.handle("get-ai-status", () => {
     if (!budgetManager) return null;
+    const isReal = aiProvider instanceof OpenAICompatibleAIProvider;
     return {
       aiAllowed: budgetManager.isAIAllowed(),
       networkAllowed: budgetManager.isNetworkAllowed(),
       usage: budgetManager.getUsage(),
+      provider: isReal ? "deepseek" : "mock",
+      model: isReal ? (aiProvider as OpenAICompatibleAIProvider).model : null,
     };
   });
 
@@ -654,8 +774,8 @@ function registerIpcHandlers(): void {
  */
 async function probeNativeModule(): Promise<boolean> {
   try {
-    const mod = await import("better-sqlite3");
-    const Database = (mod as { default: new (path: string) => { exec: (s: string) => void; close: () => void } }).default;
+    const require_ = createRequire(import.meta.url);
+    const Database = require_("better-sqlite3") as new (path: string) => { exec: (s: string) => void; close: () => void };
     const db = new Database(":memory:");
     db.exec("CREATE TABLE preflight_probe (x INTEGER)");
     db.close();
@@ -678,7 +798,23 @@ async function probeNativeModule(): Promise<boolean> {
 
 app.whenReady().then(async () => {
   if (!(await probeNativeModule())) return;
-  initializeEngine();
+  try {
+    // Only skip auto-create (and let the renderer show the Welcome screen)
+    // on a genuinely first-ever launch — once the user has confirmed ANY
+    // location (default or custom), store.get("libraryPath") is set and we
+    // treat that as "already onboarded", auto-creating there if its files
+    // were somehow removed rather than reverting to first-run.
+    initializeEngine(undefined, store.get("libraryPath") != null);
+  } catch (err) {
+    const detail = String((err as Error)?.message ?? err);
+    dialog.showErrorBox(
+      "Failed to initialize library",
+      "The library engine could not start.\n\n" +
+        "Underlying error:\n" + detail,
+    );
+    app.quit();
+    return;
+  }
   registerIpcHandlers();
   createWindow();
 });

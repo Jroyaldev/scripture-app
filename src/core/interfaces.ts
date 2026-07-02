@@ -9,6 +9,13 @@ export type AIRequest = {
   prompt: string;
   context?: string;
   maxTokens?: number;
+  /** Ask the provider for structured JSON output. Default "text". */
+  responseFormat?: "text" | "json";
+  /**
+   * Latency class. Hosts map this to provider-specific knobs
+   * (e.g. DeepSeek disables thinking for "interactive"). Default "interactive".
+   */
+  latency?: "interactive" | "background";
 };
 
 export type AIResponse = {

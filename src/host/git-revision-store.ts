@@ -47,7 +47,6 @@ export class GitRevisionStore implements RevisionStore {
   }
 
   async beginTransaction(label: string): Promise<RevisionTxn> {
-    this.init();
     return {
       id: ulid(),
       label,
@@ -56,7 +55,6 @@ export class GitRevisionStore implements RevisionStore {
   }
 
   async commit(txn: RevisionTxn): Promise<RevisionReceipt> {
-    this.init();
     for (const file of txn.files) {
       this.trackChange(file);
     }
@@ -160,6 +158,7 @@ export class GitRevisionStore implements RevisionStore {
     this.debounceTimer = setTimeout(() => {
       void this.flush(label);
     }, DEBOUNCE_IDLE_MS);
+    this.debounceTimer.unref?.();
   }
 
   private git(...args: string[]): string {

@@ -7,26 +7,51 @@
 import type { AIProvider, AIRequest, AIResponse } from "../core/interfaces.js";
 import { deterministicEmbedding } from "../core/ai/similarity.js";
 
-export class OpenAIAIProvider implements AIProvider {
+export type OpenAICompatibleOptions = {
+  apiKey: string;
+  baseUrl: string;
+  model: string;
+  /**
+   * Provider accepts DeepSeek-style `thinking: {type}` body control.
+   * When true, `latency: "interactive"` disables thinking (fast path)
+   * and `latency: "background"` enables it. When false, no thinking
+   * field is ever sent.
+   */
+  supportsThinkingControl?: boolean;
+};
+
+export class OpenAICompatibleAIProvider implements AIProvider {
+  readonly model: string;
   private apiKey: string;
   private baseUrl: string;
-  private model: string;
+  private supportsThinkingControl: boolean;
 
-  constructor(apiKey: string, baseUrl = "https://api.openai.com/v1", model = "gpt-4o-mini") {
-    this.apiKey = apiKey;
-    this.baseUrl = baseUrl;
-    this.model = model;
+  constructor(opts: OpenAICompatibleOptions) {
+    this.apiKey = opts.apiKey;
+    this.baseUrl = opts.baseUrl;
+    this.model = opts.model;
+    this.supportsThinkingControl = opts.supportsThinkingControl ?? false;
   }
 
   async invoke(req: AIRequest): Promise<AIResponse> {
-    const body = {
+    const body: Record<string, unknown> = {
       model: this.model,
       messages: [
         ...(req.context ? [{ role: "system" as const, content: req.context }] : []),
         { role: "user" as const, content: req.prompt },
       ],
       max_tokens: req.maxTokens ?? 1000,
+      stream: false,
     };
+
+    if (req.responseFormat === "json") {
+      body["response_format"] = { type: "json_object" };
+    }
+
+    if (this.supportsThinkingControl) {
+      const latency = req.latency ?? "interactive";
+      body["thinking"] = { type: latency === "interactive" ? "disabled" : "enabled" };
+    }
 
     const resp = await fetch(`${this.baseUrl}/chat/completions`, {
       method: "POST",
@@ -146,4 +171,28 @@ export class OpenAIEmbeddingProvider {
 
     return data.data.map((d) => new Float32Array(d.embedding));
   }
+}
+
+/**
+ * DeepSeek provider factory (Task B3, Gate 1).
+ * Reads DEEPSEEK_API_KEY / DEEPSEEK_BASE_URL / DEEPSEEK_MODEL from the given
+ * env map (typically process.env). Returns null when no key is configured —
+ * callers fall back to MockAIProvider.
+ *
+ * DeepSeek v4 has thinking ON by default; supportsThinkingControl lets
+ * interactive requests disable it (verified ~1.5s round-trip vs multi-second
+ * with reasoning). Note: DeepSeek has NO embeddings API (verified 404) —
+ * embeddings come from the local provider (Gate 2).
+ */
+export function createDeepSeekProvider(
+  env: Record<string, string | undefined>,
+): OpenAICompatibleAIProvider | null {
+  const apiKey = env["DEEPSEEK_API_KEY"];
+  if (!apiKey) return null;
+  return new OpenAICompatibleAIProvider({
+    apiKey,
+    baseUrl: env["DEEPSEEK_BASE_URL"] ?? "https://api.deepseek.com",
+    model: env["DEEPSEEK_MODEL"] ?? "deepseek-v4-flash",
+    supportsThinkingControl: true,
+  });
 }

@@ -8,6 +8,8 @@ declare global {
     api: {
       library: {
         getPath(): Promise<string>;
+        getInfo(): Promise<{ path: string; hasLibrary: boolean } | null>;
+        revealInFinder(): Promise<{ ok: boolean; error?: string }>;
         init(path: string): Promise<{ ok: boolean; error?: string }>;
         rebuild(): Promise<{ ok: boolean; hash?: string; error?: string }>;
         getSummary(): Promise<LibrarySummary | null>;
@@ -15,7 +17,7 @@ declare global {
         createNote(title: string, body: string, opts?: { type?: string; tags?: string[] }): Promise<{ ok: boolean; id?: string; path?: string; error?: string }>;
         queryVerse(book: string, chapter: number, verse: number): Promise<QueryResult>;
         queryRange(startBook: string, startCh: number, startV: number, endBook: string, endCh: number, endV: number): Promise<QueryResult>;
-        createHighlight(book: string, chapter: number, verseStart: number, verseEnd: number, color: string, packageId: string): Promise<{ ok: boolean; entityId?: string; error?: string }>;
+        createHighlight(book: string, chapter: number, verseStart: number, verseEnd: number, color: string, packageId: string): Promise<{ ok: boolean; highlightId?: string; error?: string }>;
         deleteHighlight(entityId: string, baseEventId: string): Promise<{ ok: boolean; error?: string }>;
         search(query: string): Promise<NoteSearchResult[]>;
         importVault(vaultPath: string): Promise<ImportResult>;
@@ -31,6 +33,7 @@ declare global {
         getBookNames(): Promise<BookNameData>;
         getChapterText(packageId: string, book: string, chapter: number): Promise<ChapterData | null>;
         getCrossRefs(book: string, chapter: number, verse: number): Promise<string[]>;
+        getCrossRefsForChapter(book: string, chapter: number, verseCount: number): Promise<string[]>;
       };
       ai: {
         embedNotes(): Promise<{ ok: boolean; count?: number; error?: string }>;
@@ -82,8 +85,19 @@ declare global {
       dialog: {
         openDirectory(): Promise<string | null>;
       };
+      settings: {
+        get(): Promise<AppSettings>;
+        set(partial: Partial<AppSettings>): Promise<AppSettings>;
+      };
     };
   }
+}
+
+export interface AppSettings {
+  theme: "light" | "dark";
+  accentColor: "blue" | "green" | "plum";
+  sidebarCollapsed: boolean;
+  marginVisible: boolean;
 }
 
 export interface LibrarySummary {
@@ -126,14 +140,17 @@ export interface AnchorRecord {
 }
 
 export interface HighlightRecord {
-  id: number;
-  entity_id: string;
+  id: string;
   book: string;
   chapter: number;
   verse_start: number;
   verse_end: number;
+  package: string;
+  char_start: number | null;
+  char_end: number | null;
   color: string;
-  package_id: string;
+  kind: string;
+  note_id: string | null;
   deleted: number;
 }
 

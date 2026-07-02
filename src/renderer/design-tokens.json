@@ -10,7 +10,19 @@
       "highlight-green": "rgba(110, 195, 120, 0.22)",
       "highlight-blue": "rgba(110, 165, 225, 0.22)",
       "highlight-pink": "rgba(220, 140, 165, 0.22)",
-      "highlight-purple": "rgba(165, 140, 215, 0.22)"
+      "highlight-purple": "rgba(165, 140, 215, 0.22)",
+      "highlight-wash": {
+        "yellow-a": "rgba(245, 190, 60, 0.42)",
+        "yellow-b": "rgba(245, 190, 60, 0.22)",
+        "green-a": "rgba(110, 195, 120, 0.4)",
+        "green-b": "rgba(110, 195, 120, 0.2)",
+        "blue-a": "rgba(110, 165, 225, 0.4)",
+        "blue-b": "rgba(110, 165, 225, 0.2)",
+        "pink-a": "rgba(225, 140, 165, 0.42)",
+        "pink-b": "rgba(225, 140, 165, 0.22)",
+        "purple-a": "rgba(175, 140, 220, 0.42)",
+        "purple-b": "rgba(175, 140, 220, 0.22)"
+      }
     },
     "text": {
       "primary": "#1A1A1A",
@@ -31,12 +43,51 @@
       "user": "#3D6BB5",
       "source": "#5A8A5A",
       "ai": "#5A6B7F",
-      "cross-ref": "#7A7A7A"
+      "cross-ref": "#7A7A7A",
+      "options": {
+        "blue": { "light": "#3D6BB5", "dark": "#6C9BE0" },
+        "green": { "light": "#5A8A5A", "dark": "#7FB885" },
+        "plum": { "light": "#7A5FB0", "dark": "#A48CD1" }
+      }
     },
     "status": {
       "healthy": "#4A9A4A",
       "warning": "#C0A030",
       "error": "#C05A5A"
+    },
+    "dark": {
+      "bg": {
+        "primary": "#1E1F22",
+        "secondary": "#26282C",
+        "surface": "#2C2E33",
+        "canvas": "#1A1B1E",
+        "sidebar": "#202124"
+      },
+      "text": {
+        "primary": "#E8E6E1",
+        "secondary": "#9B9B94",
+        "tertiary": "#7A7A72",
+        "verse-number": "#5C5D55",
+        "link": "#7AA2E8",
+        "link-hover": "#9CBBEF"
+      },
+      "border": {
+        "subtle": "#303136",
+        "medium": "#3A3B40",
+        "strong": "#4A4B50"
+      },
+      "highlight-wash": {
+        "yellow-a": "rgba(245, 190, 60, 0.28)",
+        "yellow-b": "rgba(245, 190, 60, 0.14)",
+        "green-a": "rgba(110, 195, 120, 0.26)",
+        "green-b": "rgba(110, 195, 120, 0.13)",
+        "blue-a": "rgba(110, 165, 225, 0.26)",
+        "blue-b": "rgba(110, 165, 225, 0.13)",
+        "pink-a": "rgba(225, 140, 165, 0.26)",
+        "pink-b": "rgba(225, 140, 165, 0.13)",
+        "purple-a": "rgba(175, 140, 220, 0.26)",
+        "purple-b": "rgba(175, 140, 220, 0.13)"
+      }
     }
   },
   "typography": {

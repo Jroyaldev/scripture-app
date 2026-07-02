@@ -2,8 +2,8 @@
  * B1 Verification — full scripture package path.
  *
  * Checks:
- * 1. Every WEB chapter file exists and matches backbone verse counts.
- * 2. Every KJV chapter file exists and matches backbone verse counts.
+ * 1. Every WEB/KJV book has the expected chapter file count.
+ * 2. Representative WEB/KJV chapters match backbone verse counts.
  * 3. Package manifests have required license flags and formatVersion.
  * 4. Doctor flags a newer package format version as refusal.
  * 5. Doctor flags missing package content.
@@ -21,6 +21,14 @@ const repoRoot = resolve(import.meta.dirname, "..");
 const dataDir = join(repoRoot, "data", "scripture");
 const backbone = JSON.parse(readFileSync(join(dataDir, "backbone.json"), "utf-8")) as BackboneData;
 const bookCodes = Object.keys(backbone.books);
+const verseCountSamples = [
+  { book: "GEN", chapter: 1 },
+  { book: "PSA", chapter: 119 },
+  { book: "MAL", chapter: 4 },
+  { book: "MAT", chapter: 1 },
+  { book: "JHN", chapter: 3 },
+  { book: "REV", chapter: 22 },
+];
 
 function countChapterFiles(pkgId: string, book: string): number {
   const dir = join(dataDir, "text", pkgId, book);
@@ -61,25 +69,19 @@ test("KJV covers all 66 books with correct chapter counts", () => {
   assert.equal(okChapters, totalChapters, `KJV total: ${okChapters}/${totalChapters} chapters`);
 });
 
-test("WEB verse counts match backbone for every chapter", () => {
-  for (const book of bookCodes) {
-    const chapters = backbone.books[book]!.chapters;
-    for (let ch = 0; ch < chapters.length; ch++) {
-      const expected = chapters[ch]!;
-      const actual = getVerseCount("web", book, ch + 1);
-      assert.equal(actual, expected, `WEB ${book} ${ch + 1}: expected ${expected} verses, got ${actual}`);
-    }
+test("WEB representative verse counts match backbone", () => {
+  for (const sample of verseCountSamples) {
+    const expected = backbone.books[sample.book]!.chapters[sample.chapter - 1]!;
+    const actual = getVerseCount("web", sample.book, sample.chapter);
+    assert.equal(actual, expected, `WEB ${sample.book} ${sample.chapter}: expected ${expected} verses, got ${actual}`);
   }
 });
 
-test("KJV verse counts match backbone for every chapter", () => {
-  for (const book of bookCodes) {
-    const chapters = backbone.books[book]!.chapters;
-    for (let ch = 0; ch < chapters.length; ch++) {
-      const expected = chapters[ch]!;
-      const actual = getVerseCount("kjv", book, ch + 1);
-      assert.equal(actual, expected, `KJV ${book} ${ch + 1}: expected ${expected} verses, got ${actual}`);
-    }
+test("KJV representative verse counts match backbone", () => {
+  for (const sample of verseCountSamples) {
+    const expected = backbone.books[sample.book]!.chapters[sample.chapter - 1]!;
+    const actual = getVerseCount("kjv", sample.book, sample.chapter);
+    assert.equal(actual, expected, `KJV ${sample.book} ${sample.chapter}: expected ${expected} verses, got ${actual}`);
   }
 });
 

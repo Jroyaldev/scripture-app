@@ -153,6 +153,27 @@ export class SQLiteMaterializer {
       .run(h.id, h.book, h.chapter, h.verse_start, h.verse_end, h.package, h.char_start, h.char_end, h.color, h.kind, h.note_id, h.deleted);
   }
 
+  /** Incrementally mark a highlight as deleted without rebuilding the DB (INV-9). */
+  deleteHighlightIncremental(entityId: string): void {
+    this.db
+      .prepare("UPDATE highlights SET deleted = 1 WHERE id = ?")
+      .run(entityId);
+  }
+
+  /** Incrementally insert a highlight without rebuilding the DB (INV-9). */
+  insertHighlightIncremental(h: HighlightRecord): void {
+    this.insertHighlight(h);
+  }
+
+  /** Query active highlights for a specific book/chapter/package (for overlap detection). */
+  queryHighlightsForChapter(book: string, chapter: number, pkg: string): HighlightRecord[] {
+    return this.db
+      .prepare(
+        "SELECT * FROM highlights WHERE book = ? AND chapter = ? AND package = ? AND deleted = 0",
+      )
+      .all(book, chapter, pkg) as HighlightRecord[];
+  }
+
   insertFact(f: FactRecord): void {
     this.db
       .prepare(

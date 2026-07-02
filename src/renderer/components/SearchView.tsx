@@ -44,7 +44,7 @@ export function SearchView({ onNavigate, showAll }: Props): React.JSX.Element {
                 key={note.frontmatter.id}
                 className="note-list-item"
                 onClick={() => {
-                  if (firstRef) {
+                  if (firstRef?.bref) {
                     window.api.ref.parseBref(firstRef.bref).then((res) => {
                       if (res.ok && res.bref) {
                         const parts = res.bref.replace("bref:v1/", "").split(".");
@@ -52,6 +52,10 @@ export function SearchView({ onNavigate, showAll }: Props): React.JSX.Element {
                         const ch = Number(parts[1] ?? 1);
                         if (b) onNavigate(b, ch);
                       }
+                    }).catch(() => {
+                      // Malformed note data (missing/invalid bref) — nothing
+                      // to navigate to; fail silently rather than leaving an
+                      // unhandled rejection.
                     });
                   }
                 }}

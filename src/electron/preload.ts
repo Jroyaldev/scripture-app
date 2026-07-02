@@ -19,6 +19,8 @@ async function toRendererRefResult(result: ParseResult<CanonicalRef>): Promise<{
 const api = {
   library: {
     getPath: () => ipcRenderer.invoke("get-library-path"),
+    getInfo: () => ipcRenderer.invoke("get-library-info"),
+    revealInFinder: () => ipcRenderer.invoke("reveal-in-finder"),
     init: (path: string) => ipcRenderer.invoke("init-library", path),
     rebuild: async () => {
       const hash = await ipcRenderer.invoke("rebuild-sqlite");
@@ -67,6 +69,8 @@ const api = {
       ipcRenderer.invoke("read-scripture-text", { book, chapter, package: packageId }),
     getCrossRefs: (book: string, chapter: number, verse: number) =>
       ipcRenderer.invoke("get-cross-refs", { book, chapter, verse }),
+    getCrossRefsForChapter: (book: string, chapter: number, verseCount: number) =>
+      ipcRenderer.invoke("get-cross-refs-for-chapter", { book, chapter, verseCount }),
   },
   ai: {
     embedNotes: () => ipcRenderer.invoke("embed-notes"),
@@ -118,6 +122,10 @@ const api = {
   },
   dialog: {
     openDirectory: () => ipcRenderer.invoke("dialog-open-directory"),
+  },
+  settings: {
+    get: () => ipcRenderer.invoke("settings:get"),
+    set: (partial: Record<string, unknown>) => ipcRenderer.invoke("settings:set", partial),
   },
 };
 
