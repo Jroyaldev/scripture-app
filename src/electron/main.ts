@@ -8,7 +8,13 @@ import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { createRequire } from "node:module";
-import Store from "electron-store";
+import ElectronStore from "electron-store";
+
+// electron-store v11 is pure ESM. Under Electron 35 (Node 22 require(esm))
+// esbuild's CJS interop wraps the namespace so `.default` is the namespace,
+// not the class — unwrap whichever shape arrives (fails loudly otherwise).
+const Store = ((ElectronStore as unknown as { default?: unknown }).default ??
+  ElectronStore) as typeof ElectronStore;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 import { ulid } from "ulid";
@@ -21,7 +27,7 @@ import { SQLiteMaterializer } from "../host/sqlite.js";
 import { EmbeddingsStore } from "../host/embeddings-store.js";
 import { BudgetManager } from "../host/budget-manager.js";
 import { MockAIProvider, MockEmbeddingProvider, createDeepSeekProvider, OpenAICompatibleAIProvider } from "../host/ai-provider.js";
-import { LocalEmbeddingProvider } from "../host/local-embeddings.js";
+import { WorkerEmbeddingProvider } from "../host/worker-embeddings.js";
 import { loadEnvFile } from "../host/env.js";
 import { embedAllNotes } from "../host/embeddings-sync.js";
 import type { AIProvider, EmbeddingProvider } from "../core/interfaces.js";
@@ -194,13 +200,17 @@ function initializeEngine(libraryPathArg?: string, autoCreateIfMissing: boolean 
     // root in dev, or the process environment), deterministic mock otherwise.
     loadEnvFile(resolve(__dirname, "../../.env"));
     aiProvider = createDeepSeekProvider(process.env) ?? new MockAIProvider();
-    // B3 Gate 2: local on-device embeddings (EmbeddingGemma). Lazy-loaded —
-    // constructing this does not download or load the model. EMBEDDING_MODEL
-    // env can override; "mock" forces the deterministic test provider.
+    // B3 Gate 2: local on-device embeddings (EmbeddingGemma) in a
+    // worker_thread — inference on the main thread livelocks the app
+    // (verified via spin report). Lazy: constructing this spawns nothing.
+    // EMBEDDING_MODEL env can override; "mock" forces the test provider.
     embeddingProvider =
       process.env["EMBEDDING_MODEL"] === "mock"
         ? new MockEmbeddingProvider()
-        : new LocalEmbeddingProvider({ cacheDir: join(app.getPath("userData"), "models") });
+        : new WorkerEmbeddingProvider({
+            workerPath: join(__dirname, "embedding-worker.cjs"),
+            cacheDir: join(app.getPath("userData"), "models"),
+          });
     jobQueue = new JobQueue(budgetManager, embeddingsStore);
   }
 }
@@ -594,9 +604,13 @@ function registerIpcHandlers(): void {
       // local model is unavailable (e.g. first-run download failed), degrade
       // to a zero vector: semantic notes go empty, but claims / threads /
       // overlays (which don't need embeddings) still surface.
+      // Passage text is capped: attention cost grows quadratically and a
+      // full chapter (~1600 tokens) takes minutes on CPU; ~1500 chars
+      // (~375 tokens) keeps interactive latency bounded with enough signal.
+      const queryText = opts.passageText.slice(0, 1500);
       let queryEmbedding: Float32Array;
       try {
-        const vecs = await embeddingProvider.embed([opts.passageText], "query");
+        const vecs = await embeddingProvider.embed([queryText], "query");
         queryEmbedding = vecs[0] ?? new Float32Array(embeddingProvider.dim);
       } catch (err) {
         console.error("semantic-margin: query embedding failed:", err);

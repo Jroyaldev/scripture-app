@@ -26,7 +26,7 @@ export function prefixTexts(texts: string[], kind: EmbeddingKind): string[] {
   return texts.map((t) => prefix + t);
 }
 
-const DEFAULT_MODEL_ID = "onnx-community/embeddinggemma-300m-ONNX";
+export const DEFAULT_MODEL_ID = "onnx-community/embeddinggemma-300m-ONNX";
 
 type FeatureExtractor = (
   texts: string[],

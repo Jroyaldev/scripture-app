@@ -37,3 +37,14 @@ await build({
   outfile: "dist/electron/preload.cjs",
   format: "cjs",
 });
+
+// Embedding inference runs in a worker_thread (never on the Electron main
+// thread) — needs its own bundled entry next to main.cjs.
+await build({
+  ...common,
+  entryPoints: ["src/host/embedding-worker.ts"],
+  outfile: "dist/electron/embedding-worker.cjs",
+  format: "cjs",
+  banner: cjsBanner,
+  define: cjsDefine,
+});
