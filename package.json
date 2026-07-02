@@ -11,7 +11,7 @@
     "build": "node scripts/build-electron.mjs",
     "build:renderer": "node scripts/build-renderer.mjs",
     "dev:renderer": "vite --config vite.config.ts",
-    "lint": "tsc --noEmit && tsc --noEmit -p tsconfig.renderer.json",
+    "lint": "tsc --noEmit && tsc --noEmit -p tsconfig.renderer.json && tsc --noEmit -p tsconfig.embedding-host.json",
     "typecheck": "tsc --noEmit",
     "typecheck:renderer": "tsc --noEmit -p tsconfig.renderer.json",
     "test": "node --import tsx --test tests/**/*.test.ts",

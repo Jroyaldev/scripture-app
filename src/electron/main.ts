@@ -27,7 +27,7 @@ import { SQLiteMaterializer } from "../host/sqlite.js";
 import { EmbeddingsStore } from "../host/embeddings-store.js";
 import { BudgetManager } from "../host/budget-manager.js";
 import { MockAIProvider, MockEmbeddingProvider, createDeepSeekProvider, OpenAICompatibleAIProvider } from "../host/ai-provider.js";
-import { WorkerEmbeddingProvider } from "../host/worker-embeddings.js";
+import { RendererEmbeddingProvider } from "./renderer-embeddings.js";
 import { loadEnvFile } from "../host/env.js";
 import { embedAllNotes } from "../host/embeddings-sync.js";
 import type { AIProvider, EmbeddingProvider } from "../core/interfaces.js";
@@ -200,16 +200,18 @@ function initializeEngine(libraryPathArg?: string, autoCreateIfMissing: boolean 
     // root in dev, or the process environment), deterministic mock otherwise.
     loadEnvFile(resolve(__dirname, "../../.env"));
     aiProvider = createDeepSeekProvider(process.env) ?? new MockAIProvider();
-    // B3 Gate 2: local on-device embeddings (EmbeddingGemma) in a
-    // worker_thread — inference on the main thread livelocks the app
-    // (verified via spin report). Lazy: constructing this spawns nothing.
+    // B3 Gate 2: local on-device embeddings (EmbeddingGemma) in a hidden
+    // renderer running onnxruntime-web/WASM. Every Node-side option (main
+    // thread, worker_threads, utilityProcess, run-as-node) either livelocks
+    // the UI or SIGTRAPs under Electron's V8 memory cage — see
+    // renderer-embeddings.ts. Lazy: constructing this spawns nothing.
     // EMBEDDING_MODEL env can override; "mock" forces the test provider.
     embeddingProvider =
       process.env["EMBEDDING_MODEL"] === "mock"
         ? new MockEmbeddingProvider()
-        : new WorkerEmbeddingProvider({
-            workerPath: join(__dirname, "embedding-worker.cjs"),
-            cacheDir: join(app.getPath("userData"), "models"),
+        : new RendererEmbeddingProvider({
+            htmlPath: join(__dirname, "../embedding-host/index.html"),
+            preloadPath: join(__dirname, "embed-preload.cjs"),
           });
     jobQueue = new JobQueue(budgetManager, embeddingsStore);
   }

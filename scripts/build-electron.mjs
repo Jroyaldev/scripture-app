@@ -38,8 +38,9 @@ await build({
   format: "cjs",
 });
 
-// Embedding inference runs in a worker_thread (never on the Electron main
-// thread) — needs its own bundled entry next to main.cjs.
+// Embedding inference worker entry (plain-Node contexts / scripts). The app
+// itself uses the hidden-renderer path — onnxruntime-node crashes under
+// Electron's V8 memory cage in every Node-side context.
 await build({
   ...common,
   entryPoints: ["src/host/embedding-worker.ts"],
@@ -47,4 +48,12 @@ await build({
   format: "cjs",
   banner: cjsBanner,
   define: cjsDefine,
+});
+
+// Preload for the hidden embedding-host renderer window.
+await build({
+  ...common,
+  entryPoints: ["src/embedding-host/preload.ts"],
+  outfile: "dist/electron/embed-preload.cjs",
+  format: "cjs",
 });

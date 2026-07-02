@@ -6,6 +6,20 @@ READ: spec §4.4 (embeddings excluded from rebuild_hash), §4.9 (broker), §4.10
 
 CURRENT STATE: The governance skeleton is real (broker interfaces, BudgetManager, JobQueue, embeddings.sqlite, claims/overlays/threads tables, pin/promote promotion paths through RevisionStore). The intelligence inside it is mock: `main.ts` hard-codes `MockAIProvider`/`MockEmbeddingProvider`; the `semantic-margin` IPC handler hard-codes the bag-of-words `deterministicEmbedding`; nothing extracts claims/threads in-app; `suggestedCrossRefs` are circular (echo claim anchors of the queried range); the margin "AI Insight" block displays the first retrieved artifact, generating nothing.
 
+## Progress — 2026-07-02 (embedding runtime saga: the app can now actually run inference)
+
+Three layered launch failures diagnosed and fixed after Gate 2 landed:
+
+1. **Startup crash (`electron-store` interop):** v11 is pure ESM; under Node 22 `require(esm)`, esbuild's CJS interop wraps the namespace so `.default` was the namespace, not the class. Fixed with a defensive unwrap in `main.ts`.
+2. **Main-process livelock:** ONNX inference ran on the Electron main thread (spin report: `InferenceSession::Run` on main, 99% CPU 27min; chapter-sized passages = quadratic attention). Fixed: inference off main + passage text capped at 1500 chars.
+3. **THE BIG ONE — Electron's V8 memory cage vs onnxruntime-node:** the native ORT binding fatally crashes (SIGTRAP, `brk #0`) in EVERY Electron Node context — main thread, `worker_threads`, `utilityProcess`, even `ELECTRON_RUN_AS_NODE` — because the cage (Electron ≥21) rejects externally-allocated ArrayBuffers. All verified by lldb + stepwise bisect; identical code is fine in plain Node (which is why `smoke:embed` passed).
+   - **Solution: hidden-renderer inference.** `dist/embedding-host/` (browser build of transformers.js → onnxruntime-web/WASM) runs in an invisible `BrowserWindow`; `RendererEmbeddingProvider` (main) proxies embed calls over IPC (`src/embedding-host/`, `src/electron/renderer-embeddings.ts`). No native buffers → no cage crash; renderer death rejects pending and respawns lazily. Verified live under Electron: 768-dim vectors, ~1.3s warm (window+model+inference), first run downloads model into session Cache storage.
+   - `WorkerEmbeddingProvider`/`embedding-worker.cjs` (worker_threads) remain the **plain-Node** path (scripts, future CLI); the worker entry is dual-mode (utilityProcess/worker_threads) with explicit crash logging.
+   - Packaging TODO (Gate 5/6): onnxruntime-web fetches its `.wasm` from CDN — bundle locally for offline-after-first-run.
+4. **Environmental:** the repo lived in iCloud-synced Desktop; model + node_modules churn starved all disk I/O (4-min `git status`, SQLite opens crawling in spin reports, app blocked in module loading). Repo moved to `~/dev/scripture-app` (human decision); builds went from ~4s to ~20ms, tests from 60s to 1.2s.
+
+Verification: `npm run lint` clean (3 tsconfigs incl. new `tsconfig.embedding-host.json`); `npm test` 112 pass / 5 skip (sqlite tests skip by design under Electron ABI); live in-Electron embed verified end-to-end; app running stable with hidden-host inference.
+
 ## Progress — 2026-07-01 (Gate 2 landed + Gate 3 extraction contract proven live)
 
 **Embedding model decision re-verified before implementing** (user request):
