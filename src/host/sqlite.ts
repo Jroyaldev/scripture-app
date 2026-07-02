@@ -388,6 +388,22 @@ export class SQLiteMaterializer {
       .all(claimId) as { claim_id: string; book: string; chapter: number; verse: number }[];
   }
 
+  /**
+   * Remove all claims produced by a given extractor (plus their anchors and
+   * sources). Claims are Derived data — extraction jobs replace their own
+   * prior output wholesale for idempotent re-runs.
+   */
+  deleteClaimsByExtractor(extractor: string): number {
+    this.db
+      .prepare("DELETE FROM claim_anchors WHERE claim_id IN (SELECT id FROM claims WHERE extractor = ?)")
+      .run(extractor);
+    this.db
+      .prepare("DELETE FROM claim_sources WHERE claim_id IN (SELECT id FROM claims WHERE extractor = ?)")
+      .run(extractor);
+    const result = this.db.prepare("DELETE FROM claims WHERE extractor = ?").run(extractor);
+    return result.changes;
+  }
+
   // --- M3: Overlays ---
 
   insertOverlay(o: { id: string; book: string; chapter: number; verse: number; char_start: number; char_end: number; reason: string; extractor: string }): void {

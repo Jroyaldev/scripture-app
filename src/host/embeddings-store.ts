@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS embeddings (
   src_id TEXT,
   dim INTEGER,
   vector BLOB,
+  model TEXT,
+  content_hash TEXT,
   created TEXT,
   PRIMARY KEY (src_kind, src_id)
 );
@@ -43,18 +45,61 @@ export class EmbeddingsStore {
   constructor(dbPath: string) {
     this.db = new Database(dbPath);
     this.db.pragma("journal_mode = WAL");
+    this.migrateIfNeeded();
     this.db.exec(SCHEMA);
   }
 
-  upsertEmbedding(srcKind: string, srcId: string, vector: Float32Array): void {
+  /**
+   * Embeddings are Derived data (INV-2, INV-10): if an older table shape is
+   * found (pre-Gate-2, no model/content_hash columns), drop and start over
+   * rather than migrating rows — they'd be invalidated anyway.
+   */
+  private migrateIfNeeded(): void {
+    const table = this.db
+      .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'embeddings'")
+      .get() as { name: string } | undefined;
+    if (!table) return;
+    const columns = this.db.prepare("PRAGMA table_info(embeddings)").all() as { name: string }[];
+    const names = new Set(columns.map((c) => c.name));
+    if (!names.has("model") || !names.has("content_hash")) {
+      this.db.exec("DROP TABLE embeddings");
+    }
+  }
+
+  upsertEmbedding(
+    srcKind: string,
+    srcId: string,
+    vector: Float32Array,
+    model = "unknown",
+    contentHash = "",
+  ): void {
     const dim = vector.length;
     const blob = Buffer.from(vector.buffer, vector.byteOffset, vector.byteLength);
     const created = new Date().toISOString();
     this.db
       .prepare(
-        "INSERT OR REPLACE INTO embeddings (src_kind, src_id, dim, vector, created) VALUES (?, ?, ?, ?, ?)",
+        "INSERT OR REPLACE INTO embeddings (src_kind, src_id, dim, vector, model, content_hash, created) VALUES (?, ?, ?, ?, ?, ?, ?)",
       )
-      .run(srcKind, srcId, dim, blob, created);
+      .run(srcKind, srcId, dim, blob, model, contentHash, created);
+  }
+
+  /**
+   * True when a stored vector already exists for this source with the same
+   * model and content hash — i.e. re-embedding would be a no-op.
+   */
+  isCurrent(srcKind: string, srcId: string, model: string, contentHash: string): boolean {
+    const row = this.db
+      .prepare(
+        "SELECT 1 FROM embeddings WHERE src_kind = ? AND src_id = ? AND model = ? AND content_hash = ?",
+      )
+      .get(srcKind, srcId, model, contentHash);
+    return row !== undefined;
+  }
+
+  /** Remove vectors produced by any other model (model switch invalidation). */
+  pruneOtherModels(model: string): number {
+    const result = this.db.prepare("DELETE FROM embeddings WHERE model != ?").run(model);
+    return result.changes;
   }
 
   getEmbedding(srcKind: string, srcId: string): { srcKind: string; srcId: string; vector: Float32Array } | undefined {
@@ -66,10 +111,12 @@ export class EmbeddingsStore {
     return { srcKind: row.src_kind, srcId: row.src_id, vector };
   }
 
-  getAllEmbeddings(): { srcKind: string; srcId: string; vector: Float32Array }[] {
-    const rows = this.db
-      .prepare("SELECT src_kind, src_id, dim, vector FROM embeddings")
-      .all() as { src_kind: string; src_id: string; dim: number; vector: Uint8Array }[];
+  getAllEmbeddings(model?: string): { srcKind: string; srcId: string; vector: Float32Array }[] {
+    const rows = (
+      model
+        ? this.db.prepare("SELECT src_kind, src_id, dim, vector FROM embeddings WHERE model = ?").all(model)
+        : this.db.prepare("SELECT src_kind, src_id, dim, vector FROM embeddings").all()
+    ) as { src_kind: string; src_id: string; dim: number; vector: Uint8Array }[];
     return rows.map((row) => ({
       srcKind: row.src_kind,
       srcId: row.src_id,

@@ -27,13 +27,17 @@
     "verify:m5": "node --import tsx scripts/verify-m5.ts",
     "verify:m6": "node --import tsx scripts/verify-m6.ts",
     "verify:data": "node --import tsx scripts/verify-scripture-packages.ts",
-    "smoke:ai": "node --import tsx scripts/smoke-ai.ts"
+    "smoke:ai": "node --import tsx scripts/smoke-ai.ts",
+    "seed:notes": "node --import tsx scripts/seed-test-notes.ts",
+    "smoke:embed": "node --import tsx scripts/smoke-embed.ts",
+    "smoke:extract": "node --import tsx scripts/smoke-extract.ts"
   },
   "main": "dist/electron/main.cjs",
   "bin": {
     "library": "./dist/cli/index.js"
   },
   "dependencies": {
+    "@huggingface/transformers": "4.2.0",
     "@vitejs/plugin-react": "4.4.1",
     "better-sqlite3": "11.9.1",
     "electron": "35.0.1",

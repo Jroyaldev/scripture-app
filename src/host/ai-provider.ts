@@ -128,6 +128,7 @@ export class MockAIProvider implements AIProvider {
  */
 export class MockEmbeddingProvider {
   readonly dim = 256;
+  readonly modelId = "mock-bow-256";
 
   async embed(texts: string[]): Promise<Float32Array[]> {
     return texts.map((t) => deterministicEmbedding(t, this.dim));
@@ -139,6 +140,7 @@ export class MockEmbeddingProvider {
  */
 export class OpenAIEmbeddingProvider {
   readonly dim: number;
+  readonly modelId: string;
   private apiKey: string;
   private baseUrl: string;
   private model: string;
@@ -147,6 +149,7 @@ export class OpenAIEmbeddingProvider {
     this.apiKey = apiKey;
     this.baseUrl = baseUrl;
     this.model = model;
+    this.modelId = model;
     this.dim = dim;
   }
 

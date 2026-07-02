@@ -18,7 +18,7 @@ This is the living delivery ledger. The build specification and `AGENTS.md` rema
 | Electron shell + launch | L2 | L3 | App launches after `npm run rebuild:electron`; `npm start` runs an Electron-runtime preflight that fails visibly with an actionable message on ABI mismatch; `main.ts` also guards direct `electron` invocation with a dialog. |
 | Library folder layout | L2 | L3 | Matches contract shape; needs package/version refusal hardening. |
 | Notes / anchors / highlights / deterministic Living Margin | L1-L2 | L3 | Highlight create/delete uses incremental SQLite; palette now dismisses optimistically before persistence; broader restore/safety UX still needs hardening. |
-| M3 AI plumbing | L1-L2 | L2-L3 | B3 Gate 1 landed: real DeepSeek provider path (`deepseek-v4-flash`, thinking-control latency classes, JSON mode, `.env` BYOK, mock fallback intact) with unit tests + live `smoke:ai` gate. Embeddings still mock/deterministic (DeepSeek has no embeddings API — local model is Gate 2); extraction jobs and margin truthfulness are Gates 3-4. See `tasks/B3-real-ai-and-embeddings.md`. |
+| M3 AI plumbing | L2 | L2-L3 | B3 Gates 1-2 landed + Gate 3 contract proven live: real DeepSeek LLM path (`deepseek-v4-flash`, latency classes, JSON mode) AND real local embeddings (EmbeddingGemma-300m ONNX q8, asymmetric prefixes, incremental content-hash sync, model-switch invalidation) now power the semantic margin — `deterministicEmbedding` is test-only. Claim-extraction contract (`claims-v1`, strict validation, mandatory evidence) proven live: 5/5 grounded claims from seeded notes surfaced through the margin query path. Remaining: extraction as background jobs (Gate 3), margin truthfulness/AI-insight (Gate 4), budget semantics (Gate 5), rebuild + in-app acceptance (Gate 6). See `tasks/B3-real-ai-and-embeddings.md`. |
 | M4 source ingestion | L1-L2 | L2-L3 | PDF import/chunk/locator path passes gate; source shelf/workflow is minimal. |
 | M5 plugin broker / manifest / theme | L1 | L3 | Default-deny proof exists; Node `vm` sandbox is not hardened enough for third-party plugins. |
 | M6 sync | L1 | L3 | Folder-to-folder proof exists; not a real device/cloud sync UX. |
@@ -35,7 +35,7 @@ This is the living delivery ledger. The build specification and `AGENTS.md` rema
 2. **A1 Stabilize native build and lint:** make Electron and Node-side verification reproducible without manual ABI rebuilds. — **DONE** (see `docs/native-build.md`; `rebuild:node`/`rebuild:electron` + Electron preflight).
 3. **B1 Full scripture package path:** promote WEB/KJV data from partial demo to real package coverage and refusal behavior. — **DONE** (1189 chapters × 2 translations; manifests + version refusal + Doctor content checks).
 4. **B2 App UX pass:** onboarding, library picker, loading/error states, settings, source/import screens, sync status.
-5. **B3 Real AI and embeddings:** BYOK/local provider flow, real embeddings, queue/retry/error handling. — **IN PROGRESS** (Gate 1 of 6 done; staged plan in `tasks/B3-real-ai-and-embeddings.md`).
+5. **B3 Real AI and embeddings:** BYOK/local provider flow, real embeddings, queue/retry/error handling. — **IN PROGRESS** (Gates 1-2 of 6 done, Gate 3 contract proven live; staged plan in `tasks/B3-real-ai-and-embeddings.md`).
 6. **B4 Production rebuild story:** delete `.system/` and rebuild source chunks/indexes/embeddings deterministically.
 7. **C1 Revision safety:** safe restore UX and data-loss guardrails.
 8. **C2 Real sync UX:** provider choice, device identity, conflict UI, progress, license enforcement.

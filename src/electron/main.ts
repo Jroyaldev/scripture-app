@@ -21,12 +21,13 @@ import { SQLiteMaterializer } from "../host/sqlite.js";
 import { EmbeddingsStore } from "../host/embeddings-store.js";
 import { BudgetManager } from "../host/budget-manager.js";
 import { MockAIProvider, MockEmbeddingProvider, createDeepSeekProvider, OpenAICompatibleAIProvider } from "../host/ai-provider.js";
+import { LocalEmbeddingProvider } from "../host/local-embeddings.js";
 import { loadEnvFile } from "../host/env.js";
-import type { AIProvider } from "../core/interfaces.js";
+import { embedAllNotes } from "../host/embeddings-sync.js";
+import type { AIProvider, EmbeddingProvider } from "../core/interfaces.js";
 import { JobQueue } from "../host/job-queue.js";
 import { assembleMargin } from "../core/margin/index.js";
 import { assembleSemanticMargin } from "../core/ai/semantic-margin.js";
-import { deterministicEmbedding } from "../core/ai/similarity.js";
 import { importObsidianVault } from "../core/importer/obsidian.js";
 import type { CrossRefData, MarginQuery } from "../core/margin/types.js";
 import { isHighlightOverlap } from "../core/events/highlightOverlap.js";
@@ -73,7 +74,7 @@ let crossRefData: CrossRefData | null = null;
 let embeddingsStore: EmbeddingsStore | null = null;
 let budgetManager: BudgetManager | null = null;
 let aiProvider: AIProvider | null = null;
-let embeddingProvider: MockEmbeddingProvider | null = null;
+let embeddingProvider: EmbeddingProvider | null = null;
 let jobQueue: JobQueue | null = null;
 
 function loadBackbone(): BackboneData {
@@ -189,11 +190,17 @@ function initializeEngine(libraryPathArg?: string, autoCreateIfMissing: boolean 
     const embDbPath = join(libraryPath, ".system/embeddings.sqlite");
     embeddingsStore = new EmbeddingsStore(embDbPath);
     budgetManager = new BudgetManager(join(libraryPath, "config"));
-    embeddingProvider = new MockEmbeddingProvider();
     // B3 Gate 1: real LLM provider when a key is configured (.env at the repo
     // root in dev, or the process environment), deterministic mock otherwise.
     loadEnvFile(resolve(__dirname, "../../.env"));
     aiProvider = createDeepSeekProvider(process.env) ?? new MockAIProvider();
+    // B3 Gate 2: local on-device embeddings (EmbeddingGemma). Lazy-loaded —
+    // constructing this does not download or load the model. EMBEDDING_MODEL
+    // env can override; "mock" forces the deterministic test provider.
+    embeddingProvider =
+      process.env["EMBEDDING_MODEL"] === "mock"
+        ? new MockEmbeddingProvider()
+        : new LocalEmbeddingProvider({ cacheDir: join(app.getPath("userData"), "models") });
     jobQueue = new JobQueue(budgetManager, embeddingsStore);
   }
 }
@@ -562,13 +569,10 @@ function registerIpcHandlers(): void {
     const dbPath = join(engine.rootPath, ".system/library.sqlite");
     const db = new SQLiteMaterializer(dbPath);
     try {
-      const notes = db.getAllNotes();
-      for (const note of notes) {
-        const text = `${note.title} ${note.body_text}`;
-        const vec = await embeddingProvider.embed([text]);
-        embeddingsStore.upsertEmbedding("note", note.id, vec[0]!);
-      }
-      return { ok: true, count: notes.length };
+      const result = await embedAllNotes(db, embeddingsStore, embeddingProvider);
+      return { ok: true, ...result };
+    } catch (err) {
+      return { ok: false, error: err instanceof Error ? err.message : String(err) };
     } finally {
       db.close();
     }
@@ -582,11 +586,22 @@ function registerIpcHandlers(): void {
     endVerse: number;
     passageText: string;
   }) => {
-    if (!engine || !embeddingsStore || !bookNames) return null;
+    if (!engine || !embeddingsStore || !bookNames || !embeddingProvider) return null;
     const dbPath = join(engine.rootPath, ".system/library.sqlite");
     const db = new SQLiteMaterializer(dbPath);
     try {
-      const queryEmbedding = deterministicEmbedding(opts.passageText, 256);
+      // B3 Gate 2: real query embedding (asymmetric "query" role). If the
+      // local model is unavailable (e.g. first-run download failed), degrade
+      // to a zero vector: semantic notes go empty, but claims / threads /
+      // overlays (which don't need embeddings) still surface.
+      let queryEmbedding: Float32Array;
+      try {
+        const vecs = await embeddingProvider.embed([opts.passageText], "query");
+        queryEmbedding = vecs[0] ?? new Float32Array(embeddingProvider.dim);
+      } catch (err) {
+        console.error("semantic-margin: query embedding failed:", err);
+        queryEmbedding = new Float32Array(embeddingProvider.dim);
+      }
 
       // Get deterministic margin first to know which notes are already surfaced
       const detMargin = assembleMargin(
@@ -604,7 +619,7 @@ function registerIpcHandlers(): void {
 
       const alreadySurfaced = new Set(detMargin.notes.map((n) => n.noteId));
 
-      const allEmbeddings = embeddingsStore.getAllEmbeddings().map((e) => ({
+      const allEmbeddings = embeddingsStore.getAllEmbeddings(embeddingProvider.modelId).map((e) => ({
         srcKind: e.srcKind,
         srcId: e.srcId,
         vector: e.vector,
@@ -749,6 +764,7 @@ function registerIpcHandlers(): void {
       usage: budgetManager.getUsage(),
       provider: isReal ? "deepseek" : "mock",
       model: isReal ? (aiProvider as OpenAICompatibleAIProvider).model : null,
+      embeddingModel: embeddingProvider?.modelId ?? null,
     };
   });
 

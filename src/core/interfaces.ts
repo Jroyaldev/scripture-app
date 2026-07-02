@@ -29,9 +29,19 @@ export interface AIProvider {
 
 // --- Embedding Provider (§4.10) — stub; implemented in M3 ---
 
+/**
+ * Asymmetric retrieval role. Modern retrieval embedders (e.g. EmbeddingGemma)
+ * require different prompt prefixes for search queries vs stored documents;
+ * omitting them silently degrades retrieval. Providers that don't
+ * distinguish may ignore this. Default is "document".
+ */
+export type EmbeddingKind = "document" | "query";
+
 export interface EmbeddingProvider {
-  embed(texts: string[]): Promise<Float32Array[]>;
+  embed(texts: string[], kind?: EmbeddingKind): Promise<Float32Array[]>;
   readonly dim: number;
+  /** Stable identifier for invalidation (stored beside each vector). */
+  readonly modelId: string;
 }
 
 // --- Revision Store (§4.11) ---

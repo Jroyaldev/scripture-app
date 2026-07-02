@@ -6,6 +6,32 @@ READ: spec §4.4 (embeddings excluded from rebuild_hash), §4.9 (broker), §4.10
 
 CURRENT STATE: The governance skeleton is real (broker interfaces, BudgetManager, JobQueue, embeddings.sqlite, claims/overlays/threads tables, pin/promote promotion paths through RevisionStore). The intelligence inside it is mock: `main.ts` hard-codes `MockAIProvider`/`MockEmbeddingProvider`; the `semantic-margin` IPC handler hard-codes the bag-of-words `deterministicEmbedding`; nothing extracts claims/threads in-app; `suggestedCrossRefs` are circular (echo claim anchors of the queried range); the margin "AI Insight" block displays the first retrieved artifact, generating nothing.
 
+## Progress — 2026-07-01 (Gate 2 landed + Gate 3 extraction contract proven live)
+
+**Embedding model decision re-verified before implementing** (user request):
+- Qwen3-Embedding-0.6B scores higher on MTEB but is operationally fragile — requires last-token pooling + instruct formatting; a documented real-world integration collapsed to 0.00 recall@5 when mis-wired. 2x params for CPU.
+- nomic-embed-text is faster (137M) but weaker quality-per-token in this size class.
+- **EmbeddingGemma-300m ONNX q8 confirmed**: mean pooling baked into the ONNX export (no pooling footgun), MRL, official transformers.js support. Asymmetric prefixes are MANDATORY and now contract-tested: query `"task: search result | query: "`, document `"title: none | text: "`.
+
+**Gate 2 landed:**
+- `@huggingface/transformers@4.2.0` (pinned; published 2026-04-22). `onnxruntime-node` is Node-API — confirmed no interaction with the better-sqlite3 ABI split. esbuild main bundle already uses `packages: "external"`, so no bundling change needed.
+- `EmbeddingProvider` (core) gained `kind?: "document" | "query"` and `modelId`; `LocalEmbeddingProvider` in `src/host/local-embeddings.ts` (lazy load, retry-after-failure, cacheDir injected — `userData/models` in Electron).
+- `embeddings.sqlite` gained `model` + `content_hash` columns; pre-Gate-2 table shape is dropped on open (Derived, INV-2/INV-10). Incremental sync factored into `src/host/embeddings-sync.ts` (shared by `embed-notes` IPC and scripts): skips unchanged content hashes, prunes on model switch.
+- `semantic-margin` IPC no longer uses `deterministicEmbedding`: real query-role embedding, zero-vector graceful degradation (claims/threads/overlays still surface if the model is unavailable).
+- **Live gate (`npm run smoke:embed`)**: 14-note seeded corpus (`npm run seed:notes`, `Library-demo`, fixed IDs, idempotent) — passage query ACT 19:1-7 ranks the Acts note at 80.4% with the Spirit/baptism cluster behind it; a paraphrase query with near-zero keyword overlap correctly surfaces the regeneration cluster (bag-of-words provably could not); admin distractor notes never surface; second sync skips 14/14 in 1ms. Per-query embed latency 83-138ms after load — fine for the interactive margin.
+
+**Gate 3 groundwork (extraction contract, proven live):**
+- `src/core/ai/claim-extraction.ts` (pure, INV-18): versioned prompt contract (`claims-v1`), strict field-by-field validation — anchors validated against real backbone verse counts, evidence mandatory (note IDs must exist; scripture refs shape-checked), invalid claims rejected with reasons, never repaired. Anti-injection rule pinned in the system prompt. 11 unit tests.
+- `SQLiteMaterializer.deleteClaimsByExtractor` for idempotent job re-runs.
+- **Live gate (`npm run smoke:extract`)**: DeepSeek (background latency, thinking on) extracted 5/5 valid claims from the 2 notes anchored to ACT 19:1-7, all grounded in actual note content with note-ID evidence, inserted into Derived and verified through the same `queryClaimsForRange` path the Living Margin renders. 19.5s, 3235 tokens.
+- **Lesson learned:** with thinking enabled, reasoning consumes completion tokens BEFORE any JSON is emitted — `maxTokens: 2000` yielded an empty response (all 2000 eaten by reasoning). Background extraction calls must budget generously (8000 used).
+
+**Scope decisions (human, 2026-07-01):**
+- Gate 5 BYOK settings UI is descoped for now — `.env`-based configuration is acceptable; budget-envelope semantics + consent remain in scope.
+- Gate 4/6 must include "derived artifacts look good in the app" and a real end-user live QA pass (CDP against the running app, seeded library) once the pipeline is complete.
+
+**Verification:** `npm run lint` clean; `npm test` 112/112 (18 new; sqlite-backed tests skip gracefully under the Electron ABI to preserve A1's ABI-independence contract); `smoke:embed` + `smoke:extract` pass live.
+
 ## Progress — 2026-07-01 (Gate 1 landed)
 
 - `AIRequest` (core) gained `responseFormat?: "text" | "json"` and `latency?: "interactive" | "background"` — transport-free, hosts map them.
@@ -66,14 +92,15 @@ CURRENT STATE: The governance skeleton is real (broker interfaces, BudgetManager
 - Margin AI states: queued / running / failed-with-retry / budget-exhausted, all visible and non-blocking.
 - Exit: pinning a passage with notes yields a grounded, cited insight; killing the network mid-call degrades visibly and recoverably.
 
-### Gate 5 — BYOK settings UX + budget semantics
-- Settings: provider key entry (Electron `safeStorage`, never plaintext on disk), model picker, test-connection button, usage meter, job log with errors.
-- Wire `off`/`local-only`/`cloud` end-to-end: `local-only` permits local embeddings but blocks DeepSeek; interactive vs background distinction enforced at the broker.
-- First-cloud-call consent moment (privacy copy: what text leaves the machine).
-- Exit: a fresh user can go key → test → working margin without touching `.env`; envelope settings provably gate the right calls.
+### Gate 5 — Budget semantics + consent (BYOK settings UI descoped 2026-07-01)
+- DESCOPED for now (human decision): key entry UI / `safeStorage` / model picker. `.env`-based configuration remains the supported path until a future session revisits it.
+- Still in scope: wire `off`/`local-only`/`cloud` end-to-end (`local-only` permits local embeddings but blocks DeepSeek; interactive vs background enforced at the broker), first-cloud-call consent copy, usage meter + job log surfacing errors.
+- Exit: envelope settings provably gate the right calls; a user with `.env` configured sees usage and failures honestly in Settings.
 
-### Gate 6 — Deterministic rebuild seam (hands off to B4)
+### Gate 6 — Rebuild seam + end-user acceptance (hands off to B4)
 - Delete `.system/embeddings.sqlite` + all Derived AI artifacts → background jobs regenerate them; `rebuild_hash` unaffected (INV-10); extractor versions recorded throughout.
+- Derived artifacts must LOOK GOOD in the app: claims/threads/related-notes cards reviewed in the real Living Margin (typography, density, provenance affordances), not just present in SQLite.
+- Full end-user live QA pass: launch the app against the seeded `Library-demo` (`LIBRARY_PATH` env), drive it via CDP + manual reading flow, and verify what a reader actually sees — margin content quality, latency feel, loading/failure states, no placeholder text anywhere.
 
 ## Out Of Scope
 
