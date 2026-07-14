@@ -1,14 +1,15 @@
 /**
- * Structure chart + outline — designed for the full Structure modal.
- * Uses ResizeObserver so layout matches real available width.
+ * Structure chart — high-quality clause-flow map for pastors.
+ *
+ * Complex constituency trees scale badly (overlap, truncation). Instead:
+ * words in reading order, grouped by clause, tagged with pastoral roles.
+ * Outline tab for list study. Data: MACULA (CC BY).
  */
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo, useState } from "react";
 import type { LanguageSyntaxHit, LanguageSyntaxNode } from "../api.js";
 
 type RoleKey =
-  | "clause"
-  | "sub"
   | "subj"
   | "verb"
   | "obj"
@@ -18,31 +19,37 @@ type RoleKey =
   | "conj"
   | "det"
   | "noun"
+  | "sub"
   | "other";
 
-function roleOf(cat: string, rule?: string): { key: RoleKey; label: string } {
+const ROLE_LABEL: Record<RoleKey, string> = {
+  subj: "Subject",
+  verb: "Verb",
+  obj: "Object",
+  pred: "Predicate",
+  prep: "Prep.",
+  adv: "Adverbial",
+  conj: "Connector",
+  det: "Article",
+  noun: "Noun",
+  sub: "Subordinate",
+  other: "·",
+};
+
+function roleOf(cat: string, rule?: string): RoleKey {
   const c = (cat ?? "").toLowerCase();
   const r = (rule ?? "").toUpperCase();
-  if (c === "s") return { key: "clause", label: "Sentence" };
-  if (c === "cl") {
-    if (/SUB|ADVCL|RELC/.test(r)) return { key: "sub", label: "Subordinate" };
-    return { key: "clause", label: "Clause" };
-  }
-  if (c === "subj") return { key: "subj", label: "Subject" };
-  if (c === "vc" || c === "v" || c === "vp" || c === "verb") return { key: "verb", label: "Verb" };
-  if (c === "o" || c === "obj" || c === "do" || c === "io") return { key: "obj", label: "Object" };
-  if (c === "pp" || c === "prep") return { key: "prep", label: "Prep." };
-  if (c === "p") {
-    if (/PREP|PP/.test(r)) return { key: "prep", label: "Prep." };
-    return { key: "pred", label: "Predicate" };
-  }
-  if (c === "adv" || c === "advp") return { key: "adv", label: "Adverbial" };
-  if (c === "conj" || c === "c") return { key: "conj", label: "And" };
-  if (c === "det" || c === "art" || c === "article") return { key: "det", label: "Art." };
-  if (c === "noun" || c === "np") return { key: "noun", label: c === "np" ? "NP" : "Noun" };
-  if (c === "pron") return { key: "noun", label: "Pron." };
-  if (c === "adj" || c === "adjp") return { key: "other", label: "Adj." };
-  return { key: "other", label: cat ? cat.slice(0, 6) : "·" };
+  if (c === "subj") return "subj";
+  if (c === "vc" || c === "v" || c === "vp" || c === "verb") return "verb";
+  if (c === "o" || c === "obj" || c === "do" || c === "io") return "obj";
+  if (c === "pp" || c === "prep") return "prep";
+  if (c === "p") return /PREP|PP/.test(r) ? "prep" : "pred";
+  if (c === "adv" || c === "advp") return "adv";
+  if (c === "conj" || c === "c") return "conj";
+  if (c === "det" || c === "art" || c === "article") return "det";
+  if (c === "cl" && /SUB|ADVCL|RELC/.test(r)) return "sub";
+  if (c === "noun" || c === "pron" || c === "np") return "noun";
+  return "other";
 }
 
 function cleanGloss(g?: string): string {
@@ -50,234 +57,32 @@ function cleanGloss(g?: string): string {
   return g
     .replace(/\[[^\]]*]/g, " ")
     .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 40);
+    .trim();
 }
 
-type ChartNode = {
-  id: string;
-  kind: "clause" | "role" | "word";
-  roleKey: RoleKey;
-  label: string;
-  surface?: string;
-  gloss?: string;
-  tokenId?: string;
-  children: ChartNode[];
-};
-
-function isLeafish(n: LanguageSyntaxNode): boolean {
+function isLeaf(n: LanguageSyntaxNode): boolean {
   if (n.tokenId) return true;
   if (n.children && n.children.length > 0) return false;
   return Boolean(n.surface || n.gloss);
 }
 
-function toChartTree(node: LanguageSyntaxNode, roleHint: RoleKey = "other"): ChartNode {
-  if (isLeafish(node)) {
-    const r = roleOf(node.cat, node.rule);
-    const key =
-      roleHint !== "other" && roleHint !== "clause" && roleHint !== "noun" && roleHint !== "det"
-        ? roleHint
-        : r.key;
-    const lab =
-      key === r.key
-        ? r.label
-        : roleOf(
-            key === "subj"
-              ? "Subj"
-              : key === "verb"
-                ? "V"
-                : key === "obj"
-                  ? "O"
-                  : key === "prep"
-                    ? "pp"
-                    : key === "pred"
-                      ? "P"
-                      : node.cat,
-            node.rule,
-          ).label;
-    return {
-      id: node.tokenId ?? node.id,
-      kind: "word",
-      roleKey: key,
-      label: lab,
-      surface: node.surface,
-      gloss: cleanGloss(node.gloss),
-      tokenId: node.tokenId,
-      children: [],
-    };
-  }
+/* ─── flatten to clause groups + words ─────────────────────── */
 
-  const cat = (node.cat ?? "").toLowerCase();
-  const own = roleOf(node.cat, node.rule);
-  const kids = (node.children ?? []).map((ch) => {
-    let hint: RoleKey = roleHint;
-    if (
-      own.key === "subj" ||
-      own.key === "verb" ||
-      own.key === "obj" ||
-      own.key === "prep" ||
-      own.key === "pred"
-    ) {
-      hint = own.key;
-    } else if (cat === "cl" || cat === "s") {
-      const ck = roleOf(ch.cat, ch.rule).key;
-      if (ck !== "other" && ck !== "noun" && ck !== "clause") hint = ck;
-    }
-    return toChartTree(ch, hint);
-  });
-
-  const interesting =
-    cat === "s" ||
-    cat === "cl" ||
-    own.key === "subj" ||
-    own.key === "verb" ||
-    own.key === "obj" ||
-    own.key === "prep" ||
-    own.key === "pred" ||
-    own.key === "adv";
-
-  if (!interesting && kids.length === 1) return kids[0]!;
-  if (!interesting && kids.length > 1) {
-    return {
-      id: node.id,
-      kind: "role",
-      roleKey: roleHint !== "other" ? roleHint : "other",
-      label: own.label,
-      children: kids,
-    };
-  }
-
-  return {
-    id: node.id,
-    kind: cat === "s" || cat === "cl" ? "clause" : "role",
-    roleKey: own.key,
-    label: own.label,
-    children: kids,
-  };
-}
-
-type Laid = {
+type FlowWord = {
   id: string;
-  kind: ChartNode["kind"];
-  roleKey: RoleKey;
-  label: string;
-  surface?: string;
-  gloss?: string;
   tokenId?: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
+  surface: string;
+  gloss: string;
+  role: RoleKey;
   isFocus: boolean;
-  cx: number;
 };
 
-type Edge = { x1: number; y1: number; x2: number; y2: number };
-
-function layoutChart(
-  root: ChartNode,
-  focusTokenId: string,
-  maxWidth: number,
-): { nodes: Laid[]; edges: Edge[]; width: number; height: number } {
-  const leafMinW = 64;
-  const leafH = 56;
-  const roleH = 26;
-  const hGap = 18;
-  const vGap = 48;
-  const padX = 24;
-
-  type M = { n: ChartNode; width: number; kids: M[] };
-
-  function measureLeafWidth(n: ChartNode): number {
-    const grk = (n.surface ?? "").length;
-    const en = (n.gloss ?? "").length;
-    const byChars = Math.max(grk * 11, en * 7, leafMinW);
-    return Math.min(Math.max(byChars, leafMinW), 140);
-  }
-
-  function measure(n: ChartNode): M {
-    if (n.kind === "word" || n.children.length === 0) {
-      return { n, width: measureLeafWidth(n), kids: [] };
-    }
-    const kids = n.children.map(measure);
-    const inner = kids.reduce((s, k) => s + k.width, 0) + hGap * Math.max(0, kids.length - 1);
-    return { n, width: Math.max(56, inner), kids };
-  }
-
-  const m = measure(root);
-  const natural = m.width + padX * 2;
-  // Prefer natural spacing; only scale if wider than container
-  const scale = natural > maxWidth ? maxWidth / natural : 1;
-  const nodes: Laid[] = [];
-  const edges: Edge[] = [];
-
-  function place(mm: M, left: number, depth: number): number {
-    const isWord = mm.n.kind === "word";
-    const h = isWord ? leafH : roleH;
-    const y = 16 + depth * vGap;
-    let cx: number;
-
-    if (mm.kids.length === 0) {
-      const w = Math.max(leafMinW, mm.width * scale);
-      cx = left + w / 2;
-      nodes.push({
-        id: mm.n.id,
-        kind: mm.n.kind,
-        roleKey: mm.n.roleKey,
-        label: mm.n.label,
-        surface: mm.n.surface,
-        gloss: mm.n.gloss,
-        tokenId: mm.n.tokenId,
-        x: left,
-        y,
-        w,
-        h: leafH,
-        isFocus: mm.n.tokenId === focusTokenId,
-        cx,
-      });
-      return cx;
-    }
-
-    let x = left;
-    const childCenters: number[] = [];
-    for (const k of mm.kids) {
-      childCenters.push(place(k, x, depth + 1));
-      x += k.width * scale + hGap * scale;
-    }
-    cx = (Math.min(...childCenters) + Math.max(...childCenters)) / 2;
-    const w = Math.min(100, Math.max(48, mm.n.label.length * 8));
-    nodes.push({
-      id: mm.n.id,
-      kind: mm.n.kind,
-      roleKey: mm.n.roleKey,
-      label: mm.n.label,
-      x: cx - w / 2,
-      y,
-      w,
-      h,
-      isFocus: false,
-      cx,
-    });
-
-    for (const k of mm.kids) {
-      const child = nodes.find((nn) => nn.id === k.n.id);
-      if (child) {
-        edges.push({ x1: cx, y1: y + h, x2: child.cx, y2: child.y });
-      }
-    }
-    return cx;
-  }
-
-  place(m, padX, 0);
-  const width = Math.ceil(Math.max(...nodes.map((n) => n.x + n.w), 280) + padX);
-  const height = Math.ceil(Math.max(...nodes.map((n) => n.y + n.h), 120) + 20);
-  return { nodes, edges, width, height };
-}
-
-function curve(e: Edge): string {
-  const my = (e.y1 + e.y2) / 2;
-  return `M ${e.x1.toFixed(1)} ${e.y1.toFixed(1)} C ${e.x1.toFixed(1)} ${my.toFixed(1)}, ${e.x2.toFixed(1)} ${my.toFixed(1)}, ${e.x2.toFixed(1)} ${e.y2.toFixed(1)}`;
-}
+type FlowClause = {
+  id: string;
+  title: string;
+  rule?: string;
+  words: FlowWord[];
+};
 
 type OutlineRow = {
   id: string;
@@ -291,80 +96,156 @@ type OutlineRow = {
   rule?: string;
 };
 
-function flattenOutline(root: LanguageSyntaxNode, focusTokenId: string): OutlineRow[] {
-  const rows: OutlineRow[] = [];
-  let i = 0;
+/**
+ * Walk MACULA tree → ordered words with best-effort functional roles.
+ * Intermediate NP scaffolding is dropped from the visual model.
+ */
+function buildFlow(
+  root: LanguageSyntaxNode,
+  focusTokenId: string,
+): { clauses: FlowClause[]; outline: OutlineRow[]; wordCount: number } {
+  const clauses: FlowClause[] = [];
+  const outline: OutlineRow[] = [];
+  let wordCount = 0;
+  let clauseI = 0;
+  let wordI = 0;
+
+  // Active clause bucket
+  let current: FlowClause = {
+    id: "main",
+    title: "Main clause",
+    words: [],
+  };
+  clauses.push(current);
+
+  function pushClause(title: string, rule?: string, depth = 0): void {
+    // Don't open empty duplicate
+    if (current.words.length === 0 && clauseI === 0 && title === "Main clause") {
+      current.title = title;
+      current.rule = rule;
+      return;
+    }
+    if (current.words.length === 0) {
+      current.title = title;
+      current.rule = rule;
+      return;
+    }
+    current = { id: `cl-${++clauseI}`, title, rule, words: [] };
+    clauses.push(current);
+    outline.push({
+      id: current.id,
+      kind: "clause",
+      depth,
+      role: title,
+      roleKey: /subord/i.test(title) ? "sub" : "other",
+      rule,
+      isFocus: false,
+    });
+  }
 
   function walk(node: LanguageSyntaxNode, depth: number, roleHint: RoleKey): void {
     const cat = (node.cat ?? "").toLowerCase();
-    if (isLeafish(node)) {
-      const r = roleOf(node.cat, node.rule);
-      const key =
-        roleHint !== "other" && roleHint !== "clause" && roleHint !== "noun" ? roleHint : r.key;
-      const label =
-        key === r.key
-          ? r.label
-          : roleOf(
-              key === "subj"
-                ? "Subj"
-                : key === "verb"
-                  ? "V"
-                  : key === "obj"
-                    ? "O"
-                    : key === "prep"
-                      ? "pp"
-                      : key === "pred"
-                        ? "P"
-                        : node.cat,
-              node.rule,
-            ).label;
-      rows.push({
-        id: node.tokenId ?? `w${i++}`,
-        kind: "word",
-        depth: Math.min(depth, 5),
-        role: label,
-        roleKey: key,
-        surface: node.surface,
-        gloss: cleanGloss(node.gloss),
-        isFocus: node.tokenId === focusTokenId,
+    const own = roleOf(node.cat, node.rule);
+
+    if (isLeaf(node)) {
+      const role =
+        roleHint !== "other" && roleHint !== "noun" && roleHint !== "det" ? roleHint : own === "other" ? "noun" : own;
+      const surface = (node.surface ?? "·").replace(/\s+/g, " ").trim();
+      const gloss = cleanGloss(node.gloss);
+      const id = node.tokenId ?? `w${wordI++}`;
+      const isFocus = node.tokenId === focusTokenId;
+      current.words.push({
+        id,
+        tokenId: node.tokenId,
+        surface,
+        gloss,
+        role,
+        isFocus,
       });
+      outline.push({
+        id,
+        kind: "word",
+        depth: Math.min(depth, 4),
+        role: ROLE_LABEL[role],
+        roleKey: role,
+        surface,
+        gloss,
+        isFocus,
+      });
+      wordCount += 1;
       return;
     }
-    if ((cat === "cl" || cat === "s") && depth > 0) {
-      const cr = roleOf(node.cat, node.rule);
-      rows.push({
-        id: `cl-${node.id}`,
-        kind: "clause",
-        depth: Math.min(depth - 1, 4),
-        role: cr.label,
-        roleKey: cr.key,
-        rule: node.rule,
-        isFocus: false,
-      });
+
+    // Clause boundary
+    if (cat === "cl") {
+      const sub = own === "sub" || /SUB|ADVCL|RELC/i.test(node.rule ?? "");
+      const title = sub ? "Subordinate clause" : depth === 0 ? "Main clause" : "Clause";
+      if (depth > 0) pushClause(title, node.rule, Math.min(depth, 3));
+      const nextRole = roleHint;
+      for (const ch of node.children ?? []) walk(ch, depth + 1, nextRole);
+      return;
     }
-    const own = roleOf(node.cat, node.rule);
-    const next: RoleKey =
-      own.key === "subj" ||
-      own.key === "verb" ||
-      own.key === "obj" ||
-      own.key === "prep" ||
-      own.key === "pred"
-        ? own.key
-        : roleHint;
-    const bump = cat === "cl" || cat === "pp" || cat === "vp" || cat === "subj" || cat === "p" ? 1 : 0;
-    for (const ch of node.children ?? []) walk(ch, depth + bump, next);
+
+    // Functional container: pass role to descendants
+    let next: RoleKey = roleHint;
+    if (own === "subj" || own === "verb" || own === "obj" || own === "prep" || own === "pred" || own === "adv") {
+      next = own;
+    }
+
+    // S node — just descend
+    if (cat === "s") {
+      for (const ch of node.children ?? []) walk(ch, depth, next);
+      return;
+    }
+
+    // Assign child roles from common MACULA clause rules when possible
+    const kids = node.children ?? [];
+    if (cat === "cl" || false) {
+      /* handled above */
+    }
+
+    // Heuristic: under a rule like P-VC-S, map children by their own cats
+    for (const ch of kids) {
+      const ck = roleOf(ch.cat, ch.rule);
+      let childHint = next;
+      if (ck === "subj" || ck === "verb" || ck === "obj" || ck === "prep" || ck === "pred" || ck === "adv") {
+        childHint = ck;
+      } else if (next !== "other") {
+        childHint = next;
+      }
+      walk(ch, depth + (cat === "pp" || cat === "vp" || cat === "p" ? 1 : 0), childHint);
+    }
   }
 
   walk(root, 0, "other");
-  return rows;
+
+  // Drop empty trailing clauses
+  const cleaned = clauses.filter((c) => c.words.length > 0);
+  if (cleaned.length === 0) {
+    cleaned.push({ id: "empty", title: "Clause", words: [] });
+  }
+
+  // Prepend outline clause header for first group if missing
+  if (outline.length && outline[0]!.kind === "word") {
+    outline.unshift({
+      id: "cl-main",
+      kind: "clause",
+      depth: 0,
+      role: cleaned[0]?.title ?? "Main clause",
+      roleKey: "other",
+      isFocus: false,
+    });
+  }
+
+  return { clauses: cleaned, outline, wordCount };
 }
+
+/* ─── component ────────────────────────────────────────────── */
 
 type Props = {
   hit: LanguageSyntaxHit;
   dir?: "ltr" | "rtl";
-  /** Measure parent and use full width for chart layout. */
   fillContainer?: boolean;
-  /** Fallback chart width if not filling. */
   chartWidth?: number;
   defaultMode?: "chart" | "outline";
 };
@@ -372,43 +253,29 @@ type Props = {
 export function SyntaxArtView({
   hit,
   dir = "ltr",
-  fillContainer = false,
-  chartWidth = 720,
   defaultMode = "chart",
 }: Props): React.JSX.Element {
   const [mode, setMode] = useState<"chart" | "outline">(defaultMode);
-  const hostRef = useRef<HTMLDivElement | null>(null);
-  const [measuredW, setMeasuredW] = useState(chartWidth);
+  const [hoverId, setHoverId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!fillContainer || !hostRef.current) {
-      setMeasuredW(chartWidth);
-      return;
-    }
-    const el = hostRef.current;
-    const ro = new ResizeObserver((entries) => {
-      const w = entries[0]?.contentRect.width;
-      if (w && w > 80) setMeasuredW(Math.floor(w));
-    });
-    ro.observe(el);
-    setMeasuredW(Math.floor(el.clientWidth) || chartWidth);
-    return () => ro.disconnect();
-  }, [fillContainer, chartWidth]);
-
-  const chartRoot = useMemo(() => toChartTree(hit.sentence.root), [hit.sentence.root]);
-  const layout = useMemo(
-    () => layoutChart(chartRoot, hit.focusTokenId, Math.max(measuredW - 8, 320)),
-    [chartRoot, hit.focusTokenId, measuredW],
-  );
-  const outline = useMemo(
-    () => flattenOutline(hit.sentence.root, hit.focusTokenId),
+  const { clauses, outline, wordCount } = useMemo(
+    () => buildFlow(hit.sentence.root, hit.focusTokenId),
     [hit.sentence.root, hit.focusTokenId],
   );
-  const words = outline.filter((r) => r.kind === "word");
-  const focus = words.find((w) => w.isFocus) ?? words[0];
+
+  const focus =
+    clauses.flatMap((c) => c.words).find((w) => w.isFocus) ??
+    clauses[0]?.words[0] ??
+    null;
+
+  const hover =
+    hoverId != null
+      ? clauses.flatMap((c) => c.words).find((w) => w.id === hoverId) ?? null
+      : null;
+  const spotlight = hover ?? focus;
 
   return (
-    <div className="lang-syntax lang-syntax--modal" ref={hostRef}>
+    <div className="lang-syntax lang-syntax--modal">
       <div className="lang-syntax-modes" role="tablist" aria-label="Structure view">
         <button
           type="button"
@@ -428,68 +295,50 @@ export function SyntaxArtView({
         >
           Outline
         </button>
-        <span className="lang-syntax-meta">{words.length} words in {hit.sentence.refLabel}</span>
+        <span className="lang-syntax-meta">
+          {wordCount} words · {clauses.length} clause{clauses.length === 1 ? "" : "s"} ·{" "}
+          {hit.sentence.refLabel}
+        </span>
       </div>
 
       {mode === "chart" ? (
-        <div className="lang-syntax-chart-wrap">
-          <div className="lang-syntax-chart-scroll">
-            <svg
-              className="lang-syntax-chart"
-              width={layout.width}
-              height={layout.height}
-              viewBox={`0 0 ${layout.width} ${layout.height}`}
-              role="img"
-              aria-label={`Structure chart for ${hit.sentence.refLabel}`}
-            >
-              {layout.edges.map((e, i) => (
-                <path key={i} d={curve(e)} className="lang-syntax-edge" fill="none" />
-              ))}
-              {layout.nodes.map((n) =>
-                n.kind === "word" ? (
-                  <g
-                    key={n.id}
-                    className={`lang-syntax-leaf role-${n.roleKey}${n.isFocus ? " is-focus" : ""}`}
-                    transform={`translate(${n.x}, ${n.y})`}
-                  >
-                    <title>
-                      {n.label}: {n.surface}
-                      {n.gloss ? ` — ${n.gloss}` : ""}
-                    </title>
-                    <rect width={n.w} height={n.h} rx={10} className="lang-syntax-leaf-bg" />
-                    <rect
-                      width={4}
-                      height={n.h}
-                      rx={2}
-                      className={`lang-syntax-leaf-accent role-${n.roleKey}`}
-                    />
-                    <text
-                      x={n.w / 2 + 2}
-                      y={22}
-                      textAnchor="middle"
-                      className="lang-syntax-leaf-grk"
-                      style={{ direction: dir }}
+        <div className="lang-flow">
+          <p className="lang-flow-intro">
+            Reading order · color = grammatical role · selected word highlighted
+          </p>
+          <div className="lang-flow-scroll">
+            {clauses.map((cl) => (
+              <section key={cl.id} className="lang-flow-clause">
+                <header className="lang-flow-clause-head">
+                  <span className="lang-flow-clause-title">{cl.title}</span>
+                  {cl.rule ? (
+                    <span className="lang-flow-clause-rule" title="MACULA rule tag">
+                      {cl.rule}
+                    </span>
+                  ) : null}
+                </header>
+                <div className="lang-flow-words" dir={dir}>
+                  {cl.words.map((w) => (
+                    <button
+                      key={w.id}
+                      type="button"
+                      className={`lang-flow-card role-${w.role}${w.isFocus ? " is-focus" : ""}${hoverId === w.id ? " is-hover" : ""}`}
+                      onMouseEnter={() => setHoverId(w.id)}
+                      onMouseLeave={() => setHoverId(null)}
+                      title={`${ROLE_LABEL[w.role]}${w.gloss ? ` · ${w.gloss}` : ""}`}
                     >
-                      {(n.surface ?? "·").slice(0, 14)}
-                    </text>
-                    <text x={n.w / 2 + 2} y={40} textAnchor="middle" className="lang-syntax-leaf-en">
-                      {(n.gloss || n.label).slice(0, 16)}
-                    </text>
-                  </g>
-                ) : (
-                  <g
-                    key={n.id}
-                    className={`lang-syntax-branch role-${n.roleKey}`}
-                    transform={`translate(${n.x}, ${n.y})`}
-                  >
-                    <rect width={n.w} height={n.h} rx={13} className="lang-syntax-branch-bg" />
-                    <text x={n.w / 2} y={17} textAnchor="middle" className="lang-syntax-branch-label">
-                      {n.label}
-                    </text>
-                  </g>
-                ),
-              )}
-            </svg>
+                      <span className="lang-flow-role">{ROLE_LABEL[w.role]}</span>
+                      <span className="lang-flow-grk">{w.surface}</span>
+                      {w.gloss ? (
+                        <span className="lang-flow-en" dir="ltr">
+                          {w.gloss}
+                        </span>
+                      ) : null}
+                    </button>
+                  ))}
+                </div>
+              </section>
+            ))}
           </div>
           <div className="lang-syntax-legend" aria-hidden="true">
             <span className="role-subj">Subject</span>
@@ -497,6 +346,8 @@ export function SyntaxArtView({
             <span className="role-obj">Object</span>
             <span className="role-prep">Prep.</span>
             <span className="role-pred">Pred.</span>
+            <span className="role-adv">Adv.</span>
+            <span className="role-conj">Conn.</span>
           </div>
         </div>
       ) : (
@@ -534,12 +385,14 @@ export function SyntaxArtView({
         </ul>
       )}
 
-      {focus ? (
+      {spotlight ? (
         <p className="lang-syntax-caption" aria-live="polite">
-          <span className={`lang-syntax-role role-${focus.roleKey}`}>{focus.role}</span>
+          <span className={`lang-syntax-role role-${spotlight.role}`}>
+            {ROLE_LABEL[spotlight.role]}
+          </span>
           <span className="lang-syntax-caption-body">
-            Selected: {focus.surface}
-            {focus.gloss ? ` — ${focus.gloss}` : ""}
+            {spotlight.surface}
+            {spotlight.gloss ? ` — ${spotlight.gloss}` : ""}
           </span>
         </p>
       ) : null}

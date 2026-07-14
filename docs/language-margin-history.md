@@ -268,13 +268,12 @@ decorative SVG.
 
 - **Shipped data:** MACULA Nestle1904 node trees → compact JSON (all NT).
   Import: `npm run import:macula-syntax`.
-- **Shipped UI (v2):** **Structure** panel — default **Outline** (indented
-  reading-order rows: role · Greek · English gloss; clause breaks; focus
-  highlight) + optional **Words** strip. Label in margin: “Structure,” not
-  “Syntax art.”
-- **Still open:** better MACULA role inheritance (true Subject/Object from
-  rules); Hebrew trees (`WLC/nodes`); click row → highlight reading text;
-  full-width panel; arcing/bracketing (Biblearc-style) as a later mode.
+- **Shipped UI (v3):** full-viewport **Structure modal** (not margin/popover).
+  Chart = **clause-flow map** (reading-order word cards by clause + role
+  colors) — avoids scaled constituency trees that overlap/truncate.
+  Outline tab for list study. Margin only has the open trigger.
+- **Still open:** richer MACULA role inheritance (true Subj/Obj from rules);
+  Hebrew trees; click card → highlight reading text; optional arcing.
 
 ### 7.1d Word-study ring stack (mental model)
 

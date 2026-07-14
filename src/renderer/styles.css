@@ -3507,8 +3507,8 @@ html, body, #root {
   font-variant-numeric: tabular-nums;
 }
 
-/* Chart — fills modal body width via ResizeObserver */
-.lang-syntax-chart-wrap {
+/* Clause-flow chart — no overlap, full text, pastoral roles */
+.lang-flow {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
@@ -3516,115 +3516,185 @@ html, body, #root {
   border-radius: 12px;
   border: 1px solid var(--border-subtle);
   background: var(--bg-secondary);
-  padding: 12px 10px 8px;
+  overflow: hidden;
 }
 
-.lang-syntax-chart-scroll {
+.lang-flow-intro {
+  margin: 0;
+  padding: 10px 14px 6px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  flex: 0 0 auto;
+}
+
+.lang-flow-scroll {
   flex: 1 1 auto;
   overflow: auto;
-  max-width: 100%;
-  padding: 4px 4px 12px;
-  min-height: 200px;
+  padding: 4px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.lang-syntax-chart {
-  display: block;
+.lang-flow-clause {
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  padding: 10px 12px 12px;
 }
 
-.lang-syntax-outline--wide {
-  max-height: min(50vh, 420px);
+.lang-flow-clause-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
-.lang-syntax-edge {
-  stroke: color-mix(in srgb, var(--text-tertiary) 55%, transparent);
-  stroke-width: 1.35;
-  opacity: 0.9;
-}
-
-.lang-syntax-branch-bg {
-  fill: color-mix(in srgb, var(--bg-secondary) 88%, var(--text-tertiary) 6%);
-  stroke: var(--border-subtle);
-  stroke-width: 1;
-}
-
-.lang-syntax-branch-label {
-  font-size: 8.5px;
-  font-weight: 650;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  fill: var(--text-tertiary);
-}
-
-.lang-syntax-leaf-bg {
-  fill: var(--bg-secondary);
-  stroke: var(--border-medium);
-  stroke-width: 1;
-}
-
-.lang-syntax-leaf.is-focus .lang-syntax-leaf-bg {
-  fill: color-mix(in srgb, var(--accent-current) 14%, var(--bg-surface));
-  stroke: var(--accent-current);
-  stroke-width: 1.5;
-}
-
-.lang-syntax-leaf-accent {
-  fill: var(--text-tertiary);
-  opacity: 0.55;
-}
-
-.lang-syntax-leaf-accent.role-subj {
-  fill: #6b9ac4;
-  opacity: 1;
-}
-.lang-syntax-leaf-accent.role-verb {
-  fill: #c4a35a;
-  opacity: 1;
-}
-.lang-syntax-leaf-accent.role-obj {
-  fill: #7bae7f;
-  opacity: 1;
-}
-.lang-syntax-leaf-accent.role-prep {
-  fill: #8b7ec8;
-  opacity: 1;
-}
-.lang-syntax-leaf-accent.role-pred {
-  fill: #c47b8a;
-  opacity: 1;
-}
-
-.lang-syntax-leaf-grk {
-  font-family: var(--font-reading);
-  font-size: 14px;
-  font-weight: 600;
-  fill: var(--text-primary);
-}
-
-.lang-syntax-leaf-en {
+.lang-flow-clause-title {
   font-size: 11px;
-  fill: var(--text-tertiary);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
 }
 
-.lang-syntax-branch-label {
-  font-size: 10.5px;
+.lang-flow-clause-rule {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-tertiary);
+  opacity: 0.75;
+}
+
+.lang-flow-words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.lang-flow-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  min-width: 72px;
+  max-width: 200px;
+  padding: 8px 11px 9px;
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-secondary);
+  border-left: 3.5px solid var(--text-tertiary);
+  cursor: default;
+  text-align: left;
+  font-family: inherit;
+  transition:
+    border-color 120ms ease,
+    background 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.lang-flow-card:hover,
+.lang-flow-card.is-hover {
+  border-color: var(--border-medium);
+  background: color-mix(in srgb, var(--bg-surface) 40%, var(--bg-secondary));
+}
+
+.lang-flow-card.is-focus {
+  border-color: var(--accent-current);
+  background: color-mix(in srgb, var(--accent-current) 12%, var(--bg-surface));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-current) 22%, transparent);
+}
+
+.lang-flow-card.role-subj {
+  border-left-color: #6b9ac4;
+}
+.lang-flow-card.role-verb {
+  border-left-color: #c4a35a;
+}
+.lang-flow-card.role-obj {
+  border-left-color: #7bae7f;
+}
+.lang-flow-card.role-prep {
+  border-left-color: #8b7ec8;
+}
+.lang-flow-card.role-pred {
+  border-left-color: #c47b8a;
+}
+.lang-flow-card.role-adv {
+  border-left-color: #5fa8a0;
+}
+.lang-flow-card.role-conj {
+  border-left-color: #9a9a9a;
+}
+.lang-flow-card.role-det {
+  border-left-color: #b0b0b0;
+}
+
+.lang-flow-role {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.lang-flow-card.role-subj .lang-flow-role {
+  color: #6b9ac4;
+}
+.lang-flow-card.role-verb .lang-flow-role {
+  color: #c4a35a;
+}
+.lang-flow-card.role-obj .lang-flow-role {
+  color: #7bae7f;
+}
+.lang-flow-card.role-prep .lang-flow-role {
+  color: #8b7ec8;
+}
+.lang-flow-card.role-pred .lang-flow-role {
+  color: #c47b8a;
+}
+.lang-flow-card.role-adv .lang-flow-role {
+  color: #5fa8a0;
+}
+
+.lang-flow-grk {
+  font-family: var(--font-reading);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.25;
+  word-break: break-word;
+}
+
+.lang-flow-en {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  line-height: 1.3;
+  word-break: break-word;
 }
 
 .lang-syntax-outline--wide {
   flex: 1 1 auto;
   max-height: none;
   min-height: 240px;
+  overflow-y: auto;
 }
 
 .lang-syntax-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 10px;
-  padding: 6px 6px 2px;
-  font-size: 9.5px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
+  gap: 8px 12px;
+  padding: 8px 14px 10px;
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--text-tertiary);
+  flex: 0 0 auto;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .lang-syntax-legend .role-subj {
@@ -3641,6 +3711,12 @@ html, body, #root {
 }
 .lang-syntax-legend .role-pred {
   color: #c47b8a;
+}
+.lang-syntax-legend .role-adv {
+  color: #5fa8a0;
+}
+.lang-syntax-legend .role-conj {
+  color: #9a9a9a;
 }
 
 .lang-syntax-outline {
