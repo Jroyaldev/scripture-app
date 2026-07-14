@@ -1,10 +1,12 @@
 /**
- * Import STEPBible TIPNR → compact names index for the Living Margin.
+ * Import STEPBible TIPNR → compact names index (all persons, places, other).
  *
  *   npx tsx scripts/import-tipnr.ts
  *
- * Input:  data/scripture/names/TIPNR-STEPBible-CC-BY.txt
- * Output: data/scripture/names/tipnr-index.json
+ * Records are separated by lines like:
+ *   $========== PERSON(s)
+ *   $========== PLACE
+ *   $========== OTHER
  */
 
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
@@ -16,7 +18,6 @@ const ROOT = resolve(__dirname, "..");
 const INPUT = resolve(ROOT, "data/scripture/names/TIPNR-STEPBible-CC-BY.txt");
 const OUTPUT = resolve(ROOT, "data/scripture/names/tipnr-index.json");
 
-/** Our app book codes ← TIPNR UBS-style abbreviations. */
 const TIPNR_TO_APP: Record<string, string> = {
   Gen: "GEN", Exo: "EXO", Lev: "LEV", Num: "NUM", Deu: "DEU",
   Jos: "JOS", Jdg: "JDG", Rut: "RUT", "1Sa": "1SA", "2Sa": "2SA",
@@ -38,42 +39,32 @@ export type TipnrEntity = {
   id: string;
   kind: "person" | "place" | "other";
   displayName: string;
-  /** One-line pastor blurb */
   brief: string;
-  /** Slightly longer when present */
   short?: string;
   uStrong: string;
-  /** G2491 without disambiguation letter */
   baseStrong: string;
-  /** First occurrence key APP.ch.v */
+  /** All Strong keys that refer to this individual (Heb + Grk forms). */
+  strongs: string[];
   firstRef?: string;
-  /** Compact ref list for UI (capped) */
   refs: string[];
   refCount: number;
   gender?: string;
 };
 
 export type TipnrIndex = {
-  version: 1;
+  version: 2;
   source: string;
   license: string;
   generatedAt: string;
   entityCount: number;
+  personCount: number;
+  placeCount: number;
+  otherCount: number;
   entities: Record<string, TipnrEntity>;
-  /** APP.ch.v → entity ids (may be multiple at a verse) */
   byRef: Record<string, string[]>;
-  /** base Strong G2491 / H0175 → entity ids */
   byBaseStrong: Record<string, string[]>;
 };
 
-function baseStrong(s: string): string {
-  const m = s.trim().match(/^([GH])(\d+)/i);
-  if (!m) return s.trim().toUpperCase();
-  return `${m[1]!.toUpperCase()}${m[2]!.padStart(4, "0").replace(/^0+(\d)/, "$1")}`
-    .replace(/^([GH])0+(\d)/, "$1$2");
-}
-
-/** Normalize Strong for matching: G2491G → G2491, H0175 → H175 optional pad */
 function normalizeStrongKey(s: string): string {
   const m = s.trim().match(/^([GH])0*(\d+)/i);
   if (!m) return s.trim().toUpperCase();
@@ -81,29 +72,47 @@ function normalizeStrongKey(s: string): string {
 }
 
 function parseTipnrRefToken(tok: string): string | null {
-  // Mat.3.1 or Mat.3.1a or 1Co.13.8
   const m = tok.trim().match(/^(\d?[A-Za-z]{2,3})\.(\d+)\.(\d+)/);
   if (!m) return null;
   const book = TIPNR_TO_APP[m[1]!] ?? m[1]!.toUpperCase();
   return `${book}.${m[2]}.${m[3]}`;
 }
 
-function expandRefsField(field: string, max = 40): { refs: string[]; count: number } {
-  // Full list often: Mat.3.1; Mat.3.4; ...
-  const parts = field.split(/[;]/).map((s) => s.trim()).filter(Boolean);
-  const refs: string[] = [];
+/**
+ * Expand "Mat.3.1; Mat.3.4; Exo.4.14ff; 5.1" style lists.
+ * Store every distinct verse for byRef coverage (Jesus, David, Israel, …).
+ */
+function expandRefsField(field: string, max = 10_000): { refs: string[]; count: number } {
   const seen = new Set<string>();
-  for (const p of parts) {
-    // skip URLs
-    if (p.startsWith("http")) continue;
-    // strip trailing a/b markers Mat.3.1a
-    const cleaned = p.replace(/[ab]$/, "");
-    const key = parseTipnrRefToken(cleaned);
-    if (!key || seen.has(key)) continue;
-    seen.add(key);
-    if (refs.length < max) refs.push(key);
+  const refs: string[] = [];
+  // Prefer fully expanded lists (many "Book.ch.v")
+  const tokens = field.split(/[;]/).map((s) => s.trim()).filter(Boolean);
+  let lastBook: string | null = null;
+  for (const raw of tokens) {
+    if (raw.startsWith("http")) continue;
+    const t = raw.replace(/ff$/i, "").replace(/[ab]$/i, "").trim();
+    // "4.12" continuation after Mat.3.1 style — attach last book
+    let m = t.match(/^(\d?[A-Za-z]{2,3})\.(\d+)\.(\d+)/);
+    if (m) {
+      lastBook = m[1]!;
+      const key = parseTipnrRefToken(`${m[1]}.${m[2]}.${m[3]}`);
+      if (key && !seen.has(key)) {
+        seen.add(key);
+        if (refs.length < max) refs.push(key);
+      }
+      continue;
+    }
+    // ch.v only with remembered book
+    m = t.match(/^(\d+)\.(\d+)/);
+    if (m && lastBook) {
+      const key = parseTipnrRefToken(`${lastBook}.${m[1]}.${m[2]}`);
+      if (key && !seen.has(key)) {
+        seen.add(key);
+        if (refs.length < max) refs.push(key);
+      }
+    }
   }
-  return { refs, count: seen.size || refs.length };
+  return { refs, count: seen.size };
 }
 
 function parseHeaderId(field0: string): {
@@ -112,14 +121,13 @@ function parseHeaderId(field0: string): {
   uStrong: string;
   id: string;
 } | null {
-  // John@Mat.3.1-Act=G2491G
   const m = field0.match(/^([^@\t]+)@([^=\t]+)=([A-Za-z0-9]+)/);
   if (!m) return null;
   return {
     displayName: m[1]!.trim(),
     firstTipnr: m[2]!.trim(),
     uStrong: m[3]!.trim(),
-    id: field0.trim(),
+    id: `${m[1]!.trim()}@${m[2]!.trim()}=${m[3]!.trim()}`,
   };
 }
 
@@ -131,130 +139,185 @@ function stripHtml(s: string): string {
     .trim();
 }
 
+function kindFromMarker(marker: string): TipnrEntity["kind"] | null {
+  const u = marker.toUpperCase().replace(/\s+/g, "");
+  if (u.includes("PERSON")) return "person";
+  if (u.includes("PLACE")) return "place";
+  if (u.includes("OTHER")) return "other";
+  return null;
+}
+
 function parseFile(text: string): TipnrIndex {
   const entities: Record<string, TipnrEntity> = {};
   const byRef: Record<string, string[]> = {};
   const byBaseStrong: Record<string, string[]> = {};
 
-  // Split major sections
-  const personStart = text.indexOf("$==========PERSON");
-  const placeStart = text.indexOf("$==========PLACE");
-  const otherStart = text.indexOf("$==========OTHER");
+  // Split on $========== markers (each record or section header)
+  const parts = text.split(/\n\$==========\s*/);
+  // parts[0] is file header; subsequent start with PERSON(s)\nAaron@...
 
-  type Sec = { kind: TipnrEntity["kind"]; body: string };
-  const sections: Sec[] = [];
-  if (personStart >= 0) {
-    const end = placeStart >= 0 ? placeStart : otherStart >= 0 ? otherStart : text.length;
-    sections.push({ kind: "person", body: text.slice(personStart, end) });
-  }
-  if (placeStart >= 0) {
-    const end = otherStart >= 0 ? otherStart : text.length;
-    sections.push({ kind: "place", body: text.slice(placeStart, end) });
-  }
-  if (otherStart >= 0) {
-    sections.push({ kind: "other", body: text.slice(otherStart) });
-  }
+  for (const part of parts) {
+    const trimmed = part.trimStart();
+    if (!trimmed) continue;
+    const nl = trimmed.indexOf("\n");
+    const markerLine = (nl >= 0 ? trimmed.slice(0, nl) : trimmed).trim();
+    const body = nl >= 0 ? trimmed.slice(nl + 1) : "";
+    const kind = kindFromMarker(markerLine);
+    if (!kind) continue;
+    // Skip pure schema headers (no Name@=)
+    if (!body.includes("@") || !/^[A-Za-z0-9].*@/.test(body.trimStart()) && !body.match(/^[^\n]+@/)) {
+      // still try
+    }
 
-  for (const sec of sections) {
-    // Records often start with Name@... on its own logical block; $ may separate
-    const blocks = sec.body.split(/\n(?=[A-Za-z0-9][^@\n]{0,40}@)/);
-    for (const block of blocks) {
-      const lines = block.split("\n").filter((l) => l.length > 0);
-      if (!lines[0]?.includes("@")) continue;
-      const headerFields = lines[0]!.split("\t");
-      const header = parseHeaderId(headerFields[0] ?? "");
-      if (!header) continue;
-
-      let brief = "";
-      let short = "";
-      let refs: string[] = [];
-      let refCount = 0;
-      const gender = (headerFields[9] ?? headerFields[8] ?? "").trim() || undefined;
-
-      // Summary in header often field with #A prophet...
-      const summaryField = headerFields.find((f) => f.includes("#A ") || f.startsWith("#"));
-      if (summaryField) {
-        brief = stripHtml(summaryField.replace(/^#/, "")).slice(0, 220);
+    const lines = body.split("\n");
+    // Find first data header line with Name@ref=Strong
+    let headerIdx = -1;
+    for (let i = 0; i < lines.length; i++) {
+      if (parseHeaderId((lines[i] ?? "").split("\t")[0] ?? "")) {
+        headerIdx = i;
+        break;
       }
+    }
+    if (headerIdx < 0) continue;
 
-      for (const line of lines.slice(1)) {
-        if (line.startsWith("@Briefest=")) {
-          // keep if no better
-          if (!brief) brief = line.slice("@Briefest=".length).trim();
-        } else if (line.startsWith("@Brief=")) {
-          brief = line.slice("@Brief=".length).trim() || brief;
-        } else if (line.startsWith("@Short=")) {
-          short = line.slice("@Short=".length).trim();
-        } else if (line.startsWith("– Named") || line.startsWith("- Named") || line.includes("\tNamed\t") || line.startsWith("– Named\t") || line.startsWith("– Named")) {
-          const f = line.split("\t");
-          // refs often last wide field with Mat.3.1; Mat.3.4;
-          const refField = f.find((x) => /\b[A-Za-z]{3}\.\d+\.\d+/.test(x) && x.includes(";"))
-            ?? f[f.length - 1]
-            ?? "";
-          const expanded = expandRefsField(refField, 48);
+    const headerFields = lines[headerIdx]!.split("\t");
+    const header = parseHeaderId(headerFields[0] ?? "");
+    if (!header) continue;
+
+    let brief = "";
+    let short = "";
+    let refs: string[] = [];
+    let refCount = 0;
+    const strongs = new Set<string>([normalizeStrongKey(header.uStrong)]);
+    const genderRaw = headerFields.find((f) => /^(Male|Female)/i.test(f.trim())) ?? "";
+    const gender = genderRaw.trim() || undefined;
+
+    const summaryField = headerFields.find((f) => f.includes("#A ") || f.startsWith("#"));
+    if (summaryField) {
+      brief = stripHtml(summaryField.replace(/^#/, "")).slice(0, 280);
+    }
+
+    for (const line of lines.slice(headerIdx + 1)) {
+      if (line.startsWith("@Briefest=")) {
+        if (!brief) brief = line.slice("@Briefest=".length).trim();
+      } else if (line.startsWith("@Brief=")) {
+        const b = line.slice("@Brief=".length).trim();
+        if (b) brief = b;
+      } else if (line.startsWith("@Short=")) {
+        short = line.slice("@Short=".length).trim();
+      } else if (
+        line.startsWith("– Named") ||
+        line.startsWith("- Named") ||
+        line.startsWith("– Greek") ||
+        line.startsWith("- Greek") ||
+        line.startsWith("– Aramaic") ||
+        line.startsWith("– Spelled") ||
+        line.startsWith("– Group")
+      ) {
+        const f = line.split("\t");
+        // Capture dStrong from columns like G2491G«G2491=
+        for (const col of f) {
+          for (const sm of col.matchAll(/\b([GH]\d{1,5}[A-Za-z]?)\b/g)) {
+            strongs.add(normalizeStrongKey(sm[1]!));
+          }
+          for (const sm2 of col.matchAll(/«([GH]\d+)/gi)) {
+            strongs.add(normalizeStrongKey(sm2[1]!));
+          }
+          // STEP URLs embed full ref lists: reference=Mat.1.1;Mat.1.16;...
+          if (col.includes("reference=")) {
+            const q = col.match(/reference=([^&\s]+)/i);
+            if (q?.[1]) {
+              const expanded = expandRefsField(decodeURIComponent(q[1]).replace(/\|/g, ";"));
+              if (expanded.refs.length > refs.length) {
+                refs = expanded.refs;
+                refCount = Math.max(refCount, expanded.count);
+              }
+            }
+          }
+        }
+        const refField =
+          f.find((x) => (x.match(/[A-Za-z]{3}\.\d+\.\d+/g) ?? []).length >= 2 && !x.startsWith("http")) ??
+          f.find((x) => /[A-Za-z]{3}\.\d+\.\d+/.test(x) && !x.startsWith("http")) ??
+          "";
+        const expanded = expandRefsField(refField);
+        if (expanded.refs.length > refs.length) {
+          refs = expanded.refs;
+          refCount = Math.max(refCount, expanded.count);
+        } else if (expanded.count > refCount) {
+          refCount = expanded.count;
+        }
+      } else if (line.startsWith("– Total") || line.startsWith("- Total")) {
+        const f = line.split("\t");
+        for (const col of f) {
+          for (const m of col.matchAll(/\b([GH]\d{1,5}[A-Za-z]?)\b/g)) {
+            strongs.add(normalizeStrongKey(m[1]!));
+          }
+        }
+        // Prefer exhaustive Named/Greek URL lists; Total is often abbreviated (ff).
+        if (refs.length < 20) {
+          const refField = f.find((x) => /[A-Za-z]{3}\.\d+/.test(x)) ?? "";
+          const expanded = expandRefsField(refField.replace(/ff/gi, ""));
           if (expanded.refs.length > refs.length) {
             refs = expanded.refs;
-            refCount = expanded.count;
-          }
-        } else if (line.startsWith("– Total") || line.startsWith("- Total")) {
-          const f = line.split("\t");
-          const refField = f.find((x) => /[A-Za-z]{3}\.\d+/.test(x)) ?? "";
-          // Total is often abbreviated; only use if we have no Named refs
-          if (refs.length === 0) {
-            const expanded = expandRefsField(refField.replace(/ff/g, ""), 24);
-            refs = expanded.refs;
-            refCount = Math.max(expanded.count, refCount);
+            refCount = Math.max(refCount, expanded.count);
           }
         }
       }
-
-      // first ref from id
-      const firstTok = header.firstTipnr.split("-")[0] ?? "";
-      const firstRef = parseTipnrRefToken(firstTok) ?? refs[0];
-
-      if (refs.length === 0 && firstRef) {
-        refs = [firstRef];
-        refCount = 1;
-      }
-
-      if (!brief && short) brief = short.slice(0, 220);
-      if (!brief) brief = `${header.displayName} (${sec.kind})`;
-
-      const entity: TipnrEntity = {
-        id: header.id,
-        kind: sec.kind,
-        displayName: header.displayName,
-        brief: brief.slice(0, 280),
-        short: short ? short.slice(0, 400) : undefined,
-        uStrong: header.uStrong,
-        baseStrong: normalizeStrongKey(header.uStrong),
-        firstRef,
-        refs,
-        refCount: refCount || refs.length,
-        gender: gender && /^(Male|Female)/i.test(gender) ? gender : undefined,
-      };
-
-      entities[entity.id] = entity;
-
-      const push = (map: Record<string, string[]>, key: string, id: string) => {
-        if (!key) return;
-        const arr = map[key] ?? [];
-        if (!arr.includes(id)) arr.push(id);
-        map[key] = arr;
-      };
-
-      push(byBaseStrong, entity.baseStrong, entity.id);
-      for (const r of entity.refs) push(byRef, r, entity.id);
-      if (firstRef) push(byRef, firstRef, entity.id);
     }
+
+    const firstTok = header.firstTipnr.split("-")[0] ?? "";
+    const firstRef = parseTipnrRefToken(firstTok) ?? refs[0];
+    if (refs.length === 0 && firstRef) {
+      refs = [firstRef];
+      refCount = 1;
+    }
+    if (!brief && short) brief = short.slice(0, 280);
+    if (!brief) brief = `${header.displayName}`;
+
+    const entity: TipnrEntity = {
+      id: header.id,
+      kind,
+      displayName: header.displayName,
+      brief: brief.slice(0, 320),
+      short: short ? short.slice(0, 480) : undefined,
+      uStrong: header.uStrong,
+      baseStrong: normalizeStrongKey(header.uStrong),
+      strongs: [...strongs],
+      firstRef,
+      refs,
+      refCount: Math.max(refCount, refs.length),
+      gender: gender && /^(Male|Female)/i.test(gender) ? gender : undefined,
+    };
+
+    // Prefer person/place over other if duplicate id race (shouldn't happen)
+    if (entities[entity.id] && entities[entity.id]!.kind !== "other" && kind === "other") {
+      continue;
+    }
+    entities[entity.id] = entity;
+
+    const push = (map: Record<string, string[]>, key: string, id: string) => {
+      if (!key) return;
+      const arr = map[key] ?? [];
+      if (!arr.includes(id)) arr.push(id);
+      map[key] = arr;
+    };
+
+    for (const s of entity.strongs) push(byBaseStrong, s, entity.id);
+    push(byBaseStrong, entity.baseStrong, entity.id);
+    for (const r of entity.refs) push(byRef, r, entity.id);
+    if (firstRef) push(byRef, firstRef, entity.id);
   }
 
+  const list = Object.values(entities);
   return {
-    version: 1,
+    version: 2,
     source: "STEPBible TIPNR",
     license: "CC BY 4.0",
     generatedAt: new Date().toISOString(),
-    entityCount: Object.keys(entities).length,
+    entityCount: list.length,
+    personCount: list.filter((e) => e.kind === "person").length,
+    placeCount: list.filter((e) => e.kind === "place").length,
+    otherCount: list.filter((e) => e.kind === "other").length,
     entities,
     byRef,
     byBaseStrong,
@@ -267,28 +330,22 @@ function main(): void {
     process.exit(1);
   }
   console.log("Reading", INPUT);
-  const text = readFileSync(INPUT, "utf8");
-  const index = parseFile(text);
+  const index = parseFile(readFileSync(INPUT, "utf8"));
   writeFileSync(OUTPUT, JSON.stringify(index));
   const sizeMb = (Buffer.byteLength(JSON.stringify(index)) / 1024 / 1024).toFixed(2);
   console.log(`Wrote ${OUTPUT}`);
-  console.log(`  entities: ${index.entityCount}`);
+  console.log(
+    `  entities: ${index.entityCount} (person ${index.personCount}, place ${index.placeCount}, other ${index.otherCount})`,
+  );
   console.log(`  byRef keys: ${Object.keys(index.byRef).length}`);
   console.log(`  byBaseStrong keys: ${Object.keys(index.byBaseStrong).length}`);
   console.log(`  size: ~${sizeMb} MB`);
 
-  // Sanity: John Baptist vs Apostle
-  const jbn = Object.values(index.entities).filter((e) =>
-    e.displayName === "John" && /Baptist|prophet who prepared/i.test(e.brief + (e.short ?? "")),
-  );
-  const jap = Object.values(index.entities).filter((e) =>
-    e.displayName === "John" && /apostle|Zebedee/i.test(e.brief + (e.short ?? "")),
-  );
-  console.log("  sample John entities:", Object.values(index.entities).filter((e) => e.displayName === "John").length);
-  console.log("  Baptist-ish:", jbn.slice(0, 2).map((e) => e.id));
-  console.log("  Apostle-ish:", jap.slice(0, 2).map((e) => e.id));
-  const mat31 = index.byRef["MAT.3.1"] ?? [];
-  console.log("  MAT.3.1 →", mat31.map((id) => index.entities[id]?.displayName + " · " + index.entities[id]?.brief.slice(0, 50)));
+  console.log("  MAT.1.1", index.byRef["MAT.1.1"]?.slice(0, 5));
+  console.log("  MAT.3.1", index.byRef["MAT.3.1"]);
+  console.log("  G11", index.byBaseStrong["G11"]?.slice(0, 3));
+  console.log("  G1138", index.byBaseStrong["G1138"]?.slice(0, 3));
+  console.log("  G2491", index.byBaseStrong["G2491"]);
 }
 
 main();

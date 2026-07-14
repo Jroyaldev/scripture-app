@@ -11,6 +11,8 @@ export type TipnrEntity = {
   short?: string;
   uStrong: string;
   baseStrong: string;
+  /** All Strong keys for this individual (Hebrew + Greek forms). */
+  strongs?: string[];
   firstRef?: string;
   refs: string[];
   refCount: number;
@@ -18,11 +20,14 @@ export type TipnrEntity = {
 };
 
 export type TipnrIndexFile = {
-  version: 1;
+  version: 1 | 2;
   source: string;
   license: string;
   generatedAt: string;
   entityCount: number;
+  personCount?: number;
+  placeCount?: number;
+  otherCount?: number;
   entities: Record<string, TipnrEntity>;
   byRef: Record<string, string[]>;
   byBaseStrong: Record<string, string[]>;
@@ -69,6 +74,8 @@ export class TipnrIndex {
   /**
    * Resolve a proper-name token in a verse to TIPNR individual(s).
    * Prefer ref ∩ strong so "John" at Mat.3.1 → Baptist, not the Apostle.
+   * When verse has unrelated names but Strong is known, prefer Strong
+   * (high-frequency names may still miss a ref in the index).
    */
   resolve(q: NameResolveQuery): NameResolveHit | null {
     if (!this.data) return null;
@@ -88,10 +95,7 @@ export class TipnrIndex {
 
     // Best: same verse + matching Strong
     if (base && atRef.length) {
-      const both = atRef.filter(
-        (e) => normalizeStrongKey(e.baseStrong) === base || normalizeStrongKey(e.uStrong) === base
-          || e.uStrong.toUpperCase().startsWith(base),
-      );
+      const both = atRef.filter((e) => entityHasStrong(e, base));
       if (both.length === 1) {
         return {
           entity: both[0]!,
@@ -107,9 +111,28 @@ export class TipnrIndex {
           alternatives: both.filter((e) => e.id !== picked.id),
         };
       }
+      // Verse has entities but none share this Strong → fall through to Strong
+      // (do not pick an unrelated name at the same verse).
     }
 
-    // Verse-only (rare name at this location)
+    // Strong (+ optional name) when no verse∩strong hit
+    if (byStrong.length === 1) {
+      return {
+        entity: byStrong[0]!,
+        match: "strong",
+        alternatives: atRef.filter((e) => e.id !== byStrong[0]!.id),
+      };
+    }
+    if (byStrong.length > 1) {
+      const picked = pickByNameHint(byStrong, q.nameHint) ?? pickPrimaryIndividual(byStrong) ?? byStrong[0]!;
+      return {
+        entity: picked,
+        match: "strong+name",
+        alternatives: byStrong.filter((e) => e.id !== picked.id).slice(0, 5),
+      };
+    }
+
+    // Verse-only — only when we have no Strong (or Strong empty in index)
     if (atRef.length === 1) {
       return { entity: atRef[0]!, match: "ref", alternatives: [] };
     }
@@ -119,19 +142,6 @@ export class TipnrIndex {
         entity: picked,
         match: "ref",
         alternatives: atRef.filter((e) => e.id !== picked.id),
-      };
-    }
-
-    // Strong only — may be multiple Johns; prefer name hint
-    if (byStrong.length === 1) {
-      return { entity: byStrong[0]!, match: "strong", alternatives: [] };
-    }
-    if (byStrong.length > 1) {
-      const picked = pickByNameHint(byStrong, q.nameHint) ?? byStrong[0]!;
-      return {
-        entity: picked,
-        match: "strong+name",
-        alternatives: byStrong.filter((e) => e.id !== picked.id).slice(0, 5),
       };
     }
 
@@ -145,17 +155,38 @@ function normalizeStrongKey(s: string): string {
   return `${m[1]!.toUpperCase()}${m[2]}`;
 }
 
+function entityHasStrong(e: TipnrEntity, base: string): boolean {
+  if (!base) return false;
+  if (normalizeStrongKey(e.baseStrong) === base) return true;
+  if (normalizeStrongKey(e.uStrong) === base) return true;
+  if (e.uStrong.toUpperCase().startsWith(base)) return true;
+  for (const s of e.strongs ?? []) {
+    if (normalizeStrongKey(s) === base) return true;
+  }
+  return false;
+}
+
 function pickByNameHint(list: TipnrEntity[], hint?: string | null): TipnrEntity | null {
   if (!hint?.trim()) return null;
-  const h = hint.trim().toLowerCase();
+  const h = hint.trim().toLowerCase().replace(/[^\p{L}\p{N}\s'-]/gu, "");
+  if (!h) return null;
   const exact = list.find((e) => e.displayName.toLowerCase() === h);
   if (exact) return exact;
+  // "Bethany" should beat "Beth-barah" when both share a Strong
   const starts = list.find((e) => e.displayName.toLowerCase().startsWith(h));
   if (starts) return starts;
+  const contains = list.find((e) => e.displayName.toLowerCase().includes(h));
+  if (contains) return contains;
   const inBrief = list.find(
     (e) => e.brief.toLowerCase().includes(h) || (e.short ?? "").toLowerCase().includes(h),
   );
   return inBrief ?? null;
+}
+
+/** Prefer the individual with the most passage hits (Jesus over Barabbas for G2424). */
+function pickPrimaryIndividual(list: TipnrEntity[]): TipnrEntity | null {
+  if (!list.length) return null;
+  return [...list].sort((a, b) => (b.refCount ?? 0) - (a.refCount ?? 0))[0] ?? null;
 }
 
 /** Detect whether a language token looks like a proper name worth resolving. */
@@ -168,12 +199,13 @@ export function tokenLooksLikeProperName(token: {
   gloss?: string | null;
 }): boolean {
   const wt = (token.wordType ?? "").toLowerCase();
-  if (wt === "proper" || wt === "name") return true;
+  if (wt === "proper" || wt === "name" || wt.includes("proper")) return true;
   const code = token.morphCode ?? "";
-  if (code === "HNp" || code === "ANp" || /\/Np$/i.test(code)) return true;
-  // Greek name morph extras: N-NSM-P, N-PRI, N-*-L location
-  if (/^N-.*-(P|T|L|LG|PG)$/i.test(code) || code === "N-PRI") return true;
-  if ((token.morph?.pos ?? "").toLowerCase() === "noun" && wt.includes("proper")) return true;
+  if (code === "HNp" || code === "ANp" || /\/Np\b/i.test(code) || /\/Np$/i.test(code)) return true;
+  // Greek: indeclinable proper (N-PRI), person/place/title morph extras
+  if (code === "N-PRI" || /^N-.*-(P|T|L|LG|PG)$/i.test(code)) return true;
+  // Hebrew proper often only wordType; also noun + capitalized English gloss
+  if ((token.morph?.pos ?? "").toLowerCase() === "noun" && wt === "proper") return true;
   return false;
 }
 

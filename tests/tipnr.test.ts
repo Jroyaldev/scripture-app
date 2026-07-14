@@ -51,3 +51,53 @@ test("tokenLooksLikeProperName detects HNp and Greek proper", () => {
   assert.equal(tokenLooksLikeProperName({ wordType: "proper", morphCode: "N-NSM" }), true);
   assert.equal(tokenLooksLikeProperName({ morphCode: "V-AAI-3S", wordType: "common" }), false);
 });
+
+test("TIPNR covers people and places across OT and NT", () => {
+  assert.ok(existsSync(indexPath), "run npx tsx scripts/import-tipnr.ts first");
+  const idx = new TipnrIndex();
+  idx.loadJson(readFileSync(indexPath, "utf8"));
+  assert.ok(idx.entityCount >= 4000, `expected full TIPNR set, got ${idx.entityCount}`);
+
+  const jesus = idx.resolve({
+    book: "ACT",
+    chapter: 19,
+    verse: 10,
+    strong: "G2424",
+    nameHint: "Jesus",
+  });
+  assert.ok(jesus);
+  assert.equal(jesus!.entity.displayName, "Jesus");
+  assert.match(jesus!.match, /strong|ref/);
+
+  const moses = idx.resolve({
+    book: "EXO",
+    chapter: 2,
+    verse: 10,
+    strong: "H4872",
+    nameHint: "Moses",
+  });
+  assert.ok(moses);
+  assert.equal(moses!.entity.displayName, "Moses");
+  assert.equal(moses!.entity.kind, "person");
+
+  const jerusalem = idx.resolve({
+    book: "REV",
+    chapter: 21,
+    verse: 2,
+    strong: "G2419",
+    nameHint: "Jerusalem",
+  });
+  assert.ok(jerusalem);
+  assert.equal(jerusalem!.entity.displayName, "Jerusalem");
+  assert.equal(jerusalem!.entity.kind, "place");
+
+  const goliath = idx.resolve({
+    book: "1SA",
+    chapter: 17,
+    verse: 4,
+    strong: "H1555",
+    nameHint: "Goliath",
+  });
+  assert.ok(goliath);
+  assert.equal(goliath!.entity.displayName, "Goliath");
+});
