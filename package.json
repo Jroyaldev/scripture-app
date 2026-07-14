@@ -36,7 +36,8 @@
     "eval:personas": "node --import tsx scripts/eval-personas.ts",
     "smoke:enrich": "node --import tsx scripts/smoke-enrich.ts",
     "import:macula-greek": "node --import tsx scripts/import-macula-greek.ts",
-    "import:oshb": "node --import tsx scripts/import-oshb.ts"
+    "import:oshb": "node --import tsx scripts/import-oshb.ts",
+    "import:tipnr": "node --import tsx scripts/import-tipnr.ts"
   },
   "main": "dist/electron/main.cjs",
   "bin": {

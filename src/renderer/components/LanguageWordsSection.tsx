@@ -13,6 +13,7 @@ import type React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   LanguageMorphPart,
+  LanguageNameEntityHit,
   LanguagePackageSummary,
   LanguageStepMorph,
   LanguageToken,
@@ -217,6 +218,90 @@ function MorphFormBlock({
 function defaultTokenId(tokens: ChipToken[]): string | null {
   const content = tokens.find(isContentish);
   return (content ?? tokens[0])?.id ?? null;
+}
+
+/** Format APP.ch.v → display “Mat 3:1” style for the margin. */
+function formatAppRef(key: string): string {
+  const m = key.match(/^([A-Z0-9]+)\.(\d+)\.(\d+)$/);
+  if (!m) return key;
+  return `${m[1]} ${m[2]}:${m[3]}`;
+}
+
+/**
+ * TIPNR individual card — person/place, not “all same Strong’s”.
+ * Progressive: brief always; other refs on demand.
+ */
+function NameEntityCard({ hit }: { hit: LanguageNameEntityHit }): React.JSX.Element {
+  const [openRefs, setOpenRefs] = useState(false);
+  const e = hit.entity;
+  const kindLabel =
+    e.kind === "person" ? "Person" : e.kind === "place" ? "Place" : "Name";
+  const otherRefs = e.refs.filter((r) => r !== e.firstRef).slice(0, 12);
+
+  return (
+    <div className={`lang-name-card kind-${e.kind}`}>
+      <div className="lang-name-kicker">
+        <span className="lang-name-kind">{kindLabel}</span>
+        {hit.match === "ref+strong" && (
+          <span className="lang-name-match" title="Matched this verse and Strong’s number">
+            this verse
+          </span>
+        )}
+      </div>
+      <div className="lang-name-title">{e.displayName}</div>
+      <p className="lang-name-brief">{e.brief}</p>
+      {e.short && e.short !== e.brief && (
+        <p className="lang-name-short">{e.short}</p>
+      )}
+      <div className="lang-name-meta">
+        {e.uStrong && <span className="lang-name-strong">{e.uStrong}</span>}
+        {e.refCount > 0 && (
+          <span className="lang-name-refcount">
+            {e.refCount} passage{e.refCount === 1 ? "" : "s"}
+          </span>
+        )}
+      </div>
+      {otherRefs.length > 0 && (
+        <div className="lang-name-refs">
+          <button
+            type="button"
+            className="lang-name-refs-toggle"
+            onClick={(ev) => {
+              ev.stopPropagation();
+              setOpenRefs((v) => !v);
+            }}
+            aria-expanded={openRefs}
+          >
+            {openRefs ? "Hide other refs" : "Other places named"}
+            <span aria-hidden="true">{openRefs ? "▴" : "▾"}</span>
+          </button>
+          {openRefs && (
+            <ul className="lang-name-ref-list">
+              {otherRefs.map((r) => (
+                <li key={r}>{formatAppRef(r)}</li>
+              ))}
+              {e.refCount > otherRefs.length + 1 && (
+                <li className="lang-name-ref-more">+{e.refCount - otherRefs.length - 1} more</li>
+              )}
+            </ul>
+          )}
+        </div>
+      )}
+      {hit.alternatives.length > 0 && (
+        <div className="lang-name-alts">
+          <span className="lang-name-alts-label">Also at this Strong’s</span>
+          <div className="lang-name-alt-chips">
+            {hit.alternatives.map((a) => (
+              <span key={a.id} className="lang-name-alt-chip" title={a.brief}>
+                {a.displayName}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+      <p className="lang-name-attr">TIPNR · STEPBible · CC BY</p>
+    </div>
+  );
 }
 
 export function LanguageWordsSection({ book, chapter, verse, onStudyEngage }: Props): React.JSX.Element | null {
@@ -450,6 +535,10 @@ export function LanguageWordsSection({ book, chapter, verse, onStudyEngage }: Pr
                 <p className="lang-detail-gloss" dir="ltr">
                   {card.gloss ?? card.token.gloss}
                 </p>
+              )}
+
+              {card.nameEntity && (
+                <NameEntityCard hit={card.nameEntity} />
               )}
 
               {/* Form chips: persistent skeleton; meanings open on demand */}

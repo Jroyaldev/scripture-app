@@ -2918,6 +2918,162 @@ html, body, #root {
   font-variant-numeric: tabular-nums;
 }
 
+/* --- TIPNR person / place card --- */
+
+.lang-name-card {
+  margin: 10px 0 12px;
+  padding: 12px 12px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-secondary);
+}
+
+.lang-name-card.kind-person {
+  background: color-mix(in srgb, var(--bg-secondary) 88%, var(--accent-current) 6%);
+}
+
+.lang-name-card.kind-place {
+  background: color-mix(in srgb, var(--bg-secondary) 90%, #5a8a5a 8%);
+}
+
+.lang-name-kicker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.lang-name-kind {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.lang-name-match {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--accent-current);
+  opacity: 0.9;
+}
+
+.lang-name-title {
+  font-family: var(--font-reading);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.25;
+  margin-bottom: 4px;
+}
+
+.lang-name-brief {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.lang-name-short {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-tertiary);
+}
+
+.lang-name-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.lang-name-strong {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+}
+
+.lang-name-refs {
+  margin-top: 8px;
+}
+
+.lang-name-refs-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: var(--font-ui);
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--accent-current);
+  cursor: pointer;
+}
+
+.lang-name-refs-toggle:hover {
+  opacity: 0.85;
+}
+
+.lang-name-ref-list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.lang-name-ref-more {
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+.lang-name-alts {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border-subtle);
+}
+
+.lang-name-alts-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: 5px;
+}
+
+.lang-name-alt-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.lang-name-alt-chip {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-medium);
+  color: var(--text-secondary);
+}
+
+.lang-name-attr {
+  margin: 10px 0 0;
+  font-size: 10px;
+  color: var(--text-tertiary);
+  opacity: 0.75;
+  letter-spacing: 0.02em;
+}
+
 .lang-usage {
   display: flex;
   flex-wrap: wrap;

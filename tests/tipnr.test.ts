@@ -1,0 +1,53 @@
+import assert from "node:assert/strict";
+import { readFileSync, existsSync } from "node:fs";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { test } from "node:test";
+import {
+  TipnrIndex,
+  tokenLooksLikeProperName,
+} from "../src/core/language/tipnr.js";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const indexPath = resolve(__dirname, "../data/scripture/names/tipnr-index.json");
+
+test("TIPNR index resolves John Baptist at MAT 3:1 not the Apostle", () => {
+  assert.ok(existsSync(indexPath), "run npx tsx scripts/import-tipnr.ts first");
+  const idx = new TipnrIndex();
+  idx.loadJson(readFileSync(indexPath, "utf8"));
+  assert.ok(idx.entityCount > 1000);
+
+  const hit = idx.resolve({
+    book: "MAT",
+    chapter: 3,
+    verse: 1,
+    strong: "G2491",
+    nameHint: "John",
+  });
+  assert.ok(hit);
+  assert.match(hit!.entity.brief + hit!.entity.displayName, /Baptist|prophet|John/i);
+  assert.ok(
+    /Baptist|prepared the way|prophet/i.test(hit!.entity.brief + (hit!.entity.short ?? "")),
+    `expected Baptist-ish brief, got: ${hit!.entity.brief}`,
+  );
+
+  const apostle = idx.resolve({
+    book: "MAT",
+    chapter: 4,
+    verse: 21,
+    strong: "G2491",
+    nameHint: "John",
+  });
+  assert.ok(apostle);
+  assert.notEqual(hit!.entity.id, apostle!.entity.id);
+  assert.match(
+    apostle!.entity.brief + (apostle!.entity.short ?? ""),
+    /apostle|Zebedee|disciple/i,
+  );
+});
+
+test("tokenLooksLikeProperName detects HNp and Greek proper", () => {
+  assert.equal(tokenLooksLikeProperName({ morphCode: "HNp" }), true);
+  assert.equal(tokenLooksLikeProperName({ wordType: "proper", morphCode: "N-NSM" }), true);
+  assert.equal(tokenLooksLikeProperName({ morphCode: "V-AAI-3S", wordType: "common" }), false);
+});

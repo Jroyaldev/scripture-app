@@ -435,8 +435,30 @@ export interface LanguageTokenCard {
   morphExplain: LanguageMorphExplain | null;
   /** Present only when morphCode hits STEP tables. */
   stepMorph?: LanguageStepMorph | null;
+  /** TIPNR individual (person/place) when resolvable — not all same-Strong hits. */
+  nameEntity?: LanguageNameEntityHit | null;
   lemmaFreq: { corpus: number; book: number; chapter: number };
   neighborhood: { before: LanguageToken[]; after: LanguageToken[] };
   occurrencesInBook: LanguageToken[];
   marks: LanguageTokenMark[];
 }
+
+export type LanguageNameEntity = {
+  id: string;
+  kind: "person" | "place" | "other";
+  displayName: string;
+  brief: string;
+  short?: string;
+  uStrong: string;
+  baseStrong: string;
+  firstRef?: string;
+  refs: string[];
+  refCount: number;
+  gender?: string;
+};
+
+export type LanguageNameEntityHit = {
+  entity: LanguageNameEntity;
+  match: "ref+strong" | "ref" | "strong+name" | "strong";
+  alternatives: LanguageNameEntity[];
+};

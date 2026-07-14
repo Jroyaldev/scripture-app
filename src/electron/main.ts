@@ -41,7 +41,7 @@ import { assembleMargin } from "../core/margin/index.js";
 import { runSemanticMargin } from "../host/semantic-margin-host.js";
 import { importObsidianVault } from "../core/importer/obsidian.js";
 import { TokenPackageLoader } from "../host/token-package-loader.js";
-import { getSharedStepMorphIndex } from "../core/language/index.js";
+import { getSharedStepMorphIndex, getSharedTipnrIndex } from "../core/language/index.js";
 import type { CrossRefData, MarginQuery } from "../core/margin/types.js";
 import {
   isHighlightOverlap,
@@ -323,6 +323,28 @@ function loadStepMorphTablesOnce(): void {
   }
 }
 
+let tipnrLoaded = false;
+
+/** Load compact TIPNR people/places index (CC BY). */
+function loadTipnrIndexOnce(): void {
+  const index = getSharedTipnrIndex();
+  if (tipnrLoaded && index.loaded) return;
+  const path = join(DATA_DIR, "names/tipnr-index.json");
+  try {
+    if (!existsSync(path)) {
+      console.warn(`TIPNR index missing: ${path} (run npx tsx scripts/import-tipnr.ts)`);
+      tipnrLoaded = false;
+      return;
+    }
+    const n = index.loadJson(readFileSync(path, "utf8"));
+    tipnrLoaded = n > 0;
+    console.log(`TIPNR names index: ${n} entities (${path})`);
+  } catch (err) {
+    console.warn("TIPNR index not loaded:", err);
+    tipnrLoaded = false;
+  }
+}
+
 function initializeEngine(libraryPathArg?: string, autoCreateIfMissing: boolean = true): void {
   highlightChanges.clear();
   backbone = loadBackbone();
@@ -339,6 +361,7 @@ function initializeEngine(libraryPathArg?: string, autoCreateIfMissing: boolean 
 
   // STEP morph overlay (Approach A) — load before any card request.
   loadStepMorphTablesOnce();
+  loadTipnrIndexOnce();
 
   if (!tokenPackages) {
     tokenPackages = new TokenPackageLoader(languagePackageRoots(libraryPath), {

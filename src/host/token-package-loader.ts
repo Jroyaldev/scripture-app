@@ -9,6 +9,7 @@ import {
   buildTokenIndex,
   explainMorphCode,
   getSharedStepMorphIndex,
+  getSharedTipnrIndex,
   hebrewMorphFeatureLabels,
   lemmaOccurrencesInBook,
   lookupStrongGloss,
@@ -18,13 +19,16 @@ import {
   parseStrongGlossJson,
   parseTokensJsonl,
   shortGlossLabel,
+  tokenLooksLikeProperName,
   tokenNeighborhood,
   tokensForVerse,
   type LanguagePackageManifest,
   type MarkOptions,
   type MorphExplanation,
+  type NameResolveHit,
   type StepMorphOverlay,
   type StrongGlossEntry,
+  type TipnrEntity,
   type TokenIndex,
   type TokenMark,
   type TokenRecord,
@@ -72,6 +76,15 @@ export type TokenCardDto = {
    * Null when code has no STEP hit or tables not loaded — chips still work.
    */
   stepMorph: StepMorphOverlay | null;
+  /**
+   * TIPNR individual when this token is a proper name we can resolve.
+   * Disambiguated person/place — not “all Strong G2491 hits”.
+   */
+  nameEntity: {
+    entity: TipnrEntity;
+    match: NameResolveHit["match"];
+    alternatives: TipnrEntity[];
+  } | null;
   lemmaFreq: {
     corpus: number;
     book: number;
@@ -354,6 +367,27 @@ export class TokenPackageLoader {
 
     const resolved = this.resolveGloss(token);
 
+    let nameEntity: TokenCardDto["nameEntity"] = null;
+    if (tokenLooksLikeProperName(token)) {
+      const tipnr = getSharedTipnrIndex();
+      if (tipnr.loaded) {
+        const hit = tipnr.resolve({
+          book: token.book,
+          chapter: token.chapter,
+          verse: token.verse,
+          strong: token.strongPrefixed ?? token.strong,
+          nameHint: resolved.full ?? token.gloss ?? undefined,
+        });
+        if (hit) {
+          nameEntity = {
+            entity: hit.entity,
+            match: hit.match,
+            alternatives: hit.alternatives.slice(0, 4),
+          };
+        }
+      }
+    }
+
     return {
       token,
       displaySurface: displaySurface(token.surface),
@@ -362,6 +396,7 @@ export class TokenPackageLoader {
       morphLabels,
       morphExplain,
       stepMorph,
+      nameEntity,
       lemmaFreq: { corpus, book, chapter },
       neighborhood: { before: nb.before, after: nb.after },
       occurrencesInBook: occurrences,

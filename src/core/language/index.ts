@@ -88,6 +88,17 @@ export {
 } from "./step-morph.js";
 
 export {
+  TipnrIndex,
+  getSharedTipnrIndex,
+  setSharedTipnrIndex,
+  tokenLooksLikeProperName,
+  type TipnrEntity,
+  type TipnrIndexFile,
+  type NameResolveQuery,
+  type NameResolveHit,
+} from "./tipnr.js";
+
+export {
   lookupStrongGloss,
   normalizeStrongNumber,
   parseStrongGlossJson,
