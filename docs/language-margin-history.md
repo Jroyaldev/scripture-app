@@ -11,7 +11,7 @@
 > - `data/scripture/names/README.md` — TIPNR import notes
 > - Mockups: `docs/living-margin-language-mockup.html` (+ `.png`)
 
-**Last updated:** 2026-07-14 (Rendering Orbit + Syntax Art)
+**Last updated:** 2026-07-14 (Rendering Orbit polish + TBD reverse ring / senses)
 
 ---
 
@@ -78,8 +78,10 @@ Think of three stacked concerns on one token card:
 | **Morph chips** | Ordered English labels + meanings | `morph-labels.ts`, `hebrew-morph-labels.ts`, `morph-explain.ts` |
 | **STEP overlay** | Approach A — extra prose table lookup by morph code | `step-morph.ts`, `data/scripture/morph/TEGMC*`, `TEHMC*` |
 | **TIPNR identity** | *Which* individual/place for proper names | `tipnr.ts`, `data/scripture/names/tipnr-index.json` |
-| **Rendering Orbit** | How this lemma is glossed across the corpus (circular spectrum) | `rendering-orbit.ts`, MACULA package glosses |
+| **Rendering Orbit** | How this lemma is rendered in English (circular spectrum) | `rendering-orbit.ts`, MACULA package glosses |
 | **Syntax Art** | MACULA sentence tree as interactive SVG | `syntax-tree.ts`, `data/scripture/syntax/macula-greek-nestle1904/` |
+| **Reverse ring** *(TBD)* | English word → which OL lemmas underlie it | needs alignment / reverse index |
+| **Senses ring** *(TBD)* | Semantic senses of a lemma (not translation bands) | Louw–Nida / sense lexicon; careful framing |
 
 ### 3.1 Morph expanders
 
@@ -206,27 +208,84 @@ Representative commits (branch history may include more polish):
 When resuming language work, pick deliberately. Order below is **suggested
 priority**, not committed backlog.
 
-### 7.1 Translation braid / reverse interlinear *(partially superseded)*
+### 7.1 Rendering Orbit (lemma → English) *(shipped; keep polishing)*
 
-- **Shipped instead (v1):** **Rendering Orbit** — circular corpus gloss map
-  from MACULA Berean glosses (open data). Product name intentionally not
-  “translation ring” (Logos feature name). See §3 and UI `RenderingOrbitView`.
-- **Still open:** true reverse interlinear braid against BSB/YLT Alignments
-  (Clear Bible, CC BY); multi-version segment sizes; English→lemma orbit.
-- Avoid TTESV (ESV) for commercial (BY-NC).
+Logos “Translation” ring job: **one original-language lemma in the center,
+English renderings as segments.** Pastors ask: *how is this word usually
+translated?*
 
-### 7.1b Syntax Art *(shipped NT Greek)*
+- **Shipped:** **Rendering Orbit** — corpus gloss spectrum from MACULA
+  package glosses (open data). UI: `RenderingOrbitView`. Product name
+  intentionally not “translation ring.”
+- **Pastoral rules already applied (2026-07-14):**
+  - Counts are **lemma-scoped** (never mix other lemmas / helpers into a
+    content word’s ring).
+  - **Suppress full orbit** for function words (article, conj, prep,
+    particles — e.g. καί, ὁ, ἐν).
+  - **Merge English inflections** (king / kings / king’s; perfect /
+    perfected) and strip interlinear glue (*of the*, *have been…*).
+  - Copy: “How this word is rendered” / “this lemma only.”
+- **Still open (same direction):** multi-version bands via Clear Alignments
+  BSB/YLT (CC BY) instead of gloss-only; click segment → list verses;
+  external callout labels like Logos. Avoid TTESV (ESV BY-NC) for commercial.
+
+### 7.1a Reverse ring (English → lemmas) *(TBD — high value, not built)*
+
+Logos “Greek Words” / “Hebrew Words” when studying **English**: center =
+English term (e.g. *perfect*), segments = **which original lemmas** your
+Bible (or open reverse interlinear) uses under that English word.
+
+| | Detail |
+|--|--------|
+| **Pastor question** | “When the English says *perfect*, which Greek/Hebrew words stand behind it?” |
+| **Not the same as** | Rendering Orbit (lemma → English). Reverse ring is the dual. |
+| **Data options** | Clear Bible Alignments BSB/YLT (CC BY); or invert MACULA token glosses into English→lemma frequency (weaker, gloss≠published Bible). |
+| **UX sketch** | Second orbit or tab: “Behind English *X*” with lemma + short gloss per segment; click → occurrences. |
+| **License** | Prefer BSB/YLT alignments; no ESV reverse interlinear without rights. |
+| **Status** | **TBD** — documented for a future pass; do not confuse with the shipped lemma→English orbit. |
+
+### 7.1b Senses ring *(TBD — careful, data-first)*
+
+Logos “Senses” ring: center = lemma, segments = **semantic senses** (with
+definitions / ratios), not English translation strings. Orthogonal to
+translation spectrum.
+
+| | Detail |
+|--|--------|
+| **Pastor question** | “What range of *meanings* can this lemma carry in context?” |
+| **Not the same as** | Rendering Orbit bands (*perfect* vs *finish*) or reverse ring (English→lemmas). |
+| **Data options** | MACULA `domain` / Louw–Nida (`ln`) on Greek tokens; Bible Sense Lexicon–style open datasets if license-clean; STEP/domain tables. |
+| **UX sketch** | Progressive “Senses” under orbit; segment = sense label + count; open = one-line definition + sample verses. |
+| **Risk** | Looks like “the” meaning or theology. Creed: **dictionary/data range ≠ sermon force.** Attribute source; no AI-authored senses in v1. |
+| **Status** | **TBD** — ship only with progressive disclosure + clear “range, not force” framing. |
+
+### 7.1c Syntax Art *(shipped NT Greek)*
 
 - **Shipped:** MACULA Nestle1904 node trees → compact JSON → interactive SVG
   (“Syntax art”) for all NT books. Import: `npm run import:macula-syntax`.
-- **Still open:** Hebrew MACULA trees; collapsed “simple” view; click node →
-  highlight verse words; full-width panel mode.
+- **Still open:** Hebrew MACULA trees (`WLC/nodes`); collapsed “simple” view;
+  click node → highlight verse words; full-width panel mode.
+
+### 7.1d Word-study ring stack (mental model)
+
+```text
+  [ lemma selected in margin ]
+           │
+           ├─ Rendering Orbit     lemma → English renderings     ✅ shipped
+           ├─ Reverse ring        English → lemmas               ⏳ TBD
+           ├─ Senses ring         lemma → semantic senses        ⏳ TBD
+           └─ Syntax art          sentence tree                  ✅ NT Greek
+```
+
+Logos Bible Word Study packs several of these; Shepherdly can add them as
+**separate progressive modules** so each answer stays clear.
 
 ### 7.2 Lexicon depth
 
 - STEPBible **TBESG / TBESH** (extended Strong’s briefs).
 - Dodson / OpenScriptures Hebrew lexicon for range of meaning.
 - Label glosses carefully: **dictionary range ≠ contextual sense**.
+- Complements Senses ring (7.1b); do not replace it with a wall of lexicon text.
 
 ### 7.3 Name-card UX polish
 
@@ -236,11 +295,11 @@ priority**, not committed backlog.
   source — not yet surfaced).
 - Gender / role chips if desired from TIPNR fields.
 
-### 7.4 Sense / domain (careful)
+### 7.4 Alignment braid (token ↔ English span) *(TBD)*
 
-- MACULA `domain` / Louw-Nida fields exist on Greek tokens.
-- Risk: looks like “the” meaning. Only ship with strong non-theological
-  framing and progressive disclosure.
+- Distinct from reverse ring: per-token **underlines** in the reading text
+  (“this Greek word covers these English words”).
+- Data: Clear Alignments BSB/YLT. See `docs/original-language-data-sources.md`.
 
 ### 7.5 Edition awareness (TAGNT / TAHOT)
 
@@ -308,7 +367,10 @@ Recorded so they stay optional, not forgotten:
 - Should name cards open by default on proper names, or stay progressive?  
 - Should `other` TIPNR kinds (divine titles, etc.) get a distinct treatment?  
 - When verse has many names, is “Also at this Strong’s” the right alt UI?  
-- Braid first vs lexicon first when user reopens language work?  
+- **Reverse ring first or Senses ring first** when extending word-study visuals?  
+- Reverse ring: invert MACULA glosses (fast, weaker) vs Clear BSB alignments (stronger)?  
+- Senses: Louw–Nida only, or wait for a cleaner open sense lexicon?  
+- Braid (reading-text underlines) vs reverse ring (English center) — both needed long-term?  
 - Any MACULA Hebrew upgrade path vs stay on OSHB packages?
 
 ---
