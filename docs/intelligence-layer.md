@@ -5,6 +5,11 @@
 > this map. Companion: `tasks/B3.5-margin-retrieval-quality.md` (how we got
 > here), `npm run calibrate:margin` (re-measure), `npm run eval:margin` (the
 > magic gate as a regression test).
+>
+> **Not this document:** the Living Margin *Original language* strip (morph
+> chips, STEP overlay, TIPNR people/places) is data-first word tables, not
+> retrieval AI. History and deferred options:
+> [`docs/language-margin-history.md`](./language-margin-history.md).
 
 ## Identity (decided 2026-07-02)
 

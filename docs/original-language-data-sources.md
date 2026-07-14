@@ -4,6 +4,11 @@ Sources for a **data-first** language layer: tokens, lemmas, morphology, glosses
 
 Status: research inventory (2026-07). Prefer **TSV / plain text** over XML trees for v0 ingest.
 
+**Product history & future options:** what we shipped (morph expanders, STEP
+Approach A, TIPNR people/places), freeze decisions, and deferred menu
+(translation braid, lexicon depth, etc.) live in
+[`docs/language-margin-history.md`](./language-margin-history.md).
+
 ---
 
 ## Recommended v0 stack
@@ -226,12 +231,19 @@ Not available from word tables alone: Force / Consequence / Limits, sermon-safe 
 |-------|------|
 | `TokenRecord` + dataset meta | `src/core/language/types.ts` |
 | Morph code → English chips | `src/core/language/morph-labels.ts` |
+| Morph meanings + kinds | `src/core/language/morph-explain.ts` |
+| STEP TEGMC/TEHMC overlay (Approach A) | `src/core/language/step-morph.ts`, `data/scripture/morph/` |
+| TIPNR people/places identity | `src/core/language/tipnr.ts`, `data/scripture/names/` |
 | Pure MACULA Greek TSV parser | `src/core/language/macula-greek-tsv.ts` |
 | Indexes / marks / neighborhood | `src/core/language/indexes.ts` |
 | Tests + 1 Cor 13 fixture | `tests/macula-greek-import.test.ts` |
+| TIPNR tests | `tests/tipnr.test.ts` |
 | Node CLI (I/O only) | `scripts/import-macula-greek.ts` |
+| TIPNR import | `scripts/import-tipnr.ts` (`npm run import:tipnr`) |
 | Host package loader | `src/host/token-package-loader.ts` |
+| Language margin UI | `src/renderer/components/LanguageWordsSection.tsx` |
 | Renderer IPC | `window.api.language.*` (list / load / verse tokens / token card) |
+| Session history / deferred options | [`docs/language-margin-history.md`](./language-margin-history.md) |
 
 ```bash
 # sparse-fetch Nestle1904 TSV

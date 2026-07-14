@@ -8,7 +8,8 @@
 - **Index:** `tipnr-index.json` (generated)
 
 ```bash
-npx tsx scripts/import-tipnr.ts
+npm run import:tipnr
+# or: npx tsx scripts/import-tipnr.ts
 ```
 
 ### Design
@@ -20,4 +21,11 @@ npx tsx scripts/import-tipnr.ts
 
 Never resolve people by bare Strong’s alone (G2491 buckets all Johns).
 
-Resolution order: **verse ∩ Strong** → verse only → Strong + name hint.
+Resolution order: **verse ∩ Strong** → **Strong (+ name hint)** when verse∩Strong
+misses → **verse only** when no Strong.
+
+Display names: machine ids (`Olives_Mount`) are humanized at import; prose
+fields strip TIPNR `<ref>` / `<strong>` markup.
+
+**Full language-margin history** (STEP Approach A, why braid was deferred,
+future menu): [`docs/language-margin-history.md`](../../../docs/language-margin-history.md).
