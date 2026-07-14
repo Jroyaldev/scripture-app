@@ -1,13 +1,9 @@
 /**
- * Structure — pastor-usable MACULA syntax.
- *
- * Intended for a wide popover (not the narrow margin): Chart lays out
- * with real spacing; Outline lists roles in reading order.
- *
- * Data: Clear Bible MACULA (CC BY).
+ * Structure chart + outline — designed for the full Structure modal.
+ * Uses ResizeObserver so layout matches real available width.
  */
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { LanguageSyntaxHit, LanguageSyntaxNode } from "../api.js";
 
 type RoleKey =
@@ -55,7 +51,7 @@ function cleanGloss(g?: string): string {
     .replace(/\[[^\]]*]/g, " ")
     .replace(/\s+/g, " ")
     .trim()
-    .slice(0, 36);
+    .slice(0, 40);
 }
 
 type ChartNode = {
@@ -183,21 +179,20 @@ function layoutChart(
   focusTokenId: string,
   maxWidth: number,
 ): { nodes: Laid[]; edges: Edge[]; width: number; height: number } {
-  // Roomier metrics when we have popover width
-  const roomy = maxWidth >= 420;
-  const leafMinW = roomy ? 56 : 44;
-  const leafH = roomy ? 48 : 40;
-  const roleH = roomy ? 22 : 18;
-  const hGap = roomy ? 14 : 8;
-  const vGap = roomy ? 40 : 30;
+  const leafMinW = 64;
+  const leafH = 56;
+  const roleH = 26;
+  const hGap = 18;
+  const vGap = 48;
+  const padX = 24;
 
   type M = { n: ChartNode; width: number; kids: M[] };
 
   function measureLeafWidth(n: ChartNode): number {
     const grk = (n.surface ?? "").length;
     const en = (n.gloss ?? "").length;
-    const byChars = Math.max(grk * (roomy ? 10 : 8.5), en * (roomy ? 6.2 : 5.2), leafMinW);
-    return Math.min(Math.max(byChars, leafMinW), roomy ? 110 : 88);
+    const byChars = Math.max(grk * 11, en * 7, leafMinW);
+    return Math.min(Math.max(byChars, leafMinW), 140);
   }
 
   function measure(n: ChartNode): M {
@@ -206,12 +201,12 @@ function layoutChart(
     }
     const kids = n.children.map(measure);
     const inner = kids.reduce((s, k) => s + k.width, 0) + hGap * Math.max(0, kids.length - 1);
-    return { n, width: Math.max(48, inner), kids };
+    return { n, width: Math.max(56, inner), kids };
   }
 
   const m = measure(root);
-  // Prefer natural width; only scale down if still wider than available
-  const natural = m.width + 24;
+  const natural = m.width + padX * 2;
+  // Prefer natural spacing; only scale if wider than container
   const scale = natural > maxWidth ? maxWidth / natural : 1;
   const nodes: Laid[] = [];
   const edges: Edge[] = [];
@@ -219,11 +214,11 @@ function layoutChart(
   function place(mm: M, left: number, depth: number): number {
     const isWord = mm.n.kind === "word";
     const h = isWord ? leafH : roleH;
-    const y = 12 + depth * vGap;
+    const y = 16 + depth * vGap;
     let cx: number;
 
     if (mm.kids.length === 0) {
-      const w = Math.max(leafMinW * 0.9, mm.width * scale);
+      const w = Math.max(leafMinW, mm.width * scale);
       cx = left + w / 2;
       nodes.push({
         id: mm.n.id,
@@ -250,7 +245,7 @@ function layoutChart(
       x += k.width * scale + hGap * scale;
     }
     cx = (Math.min(...childCenters) + Math.max(...childCenters)) / 2;
-    const w = Math.min(roomy ? 88 : 72, Math.max(40, mm.n.label.length * 7));
+    const w = Math.min(100, Math.max(48, mm.n.label.length * 8));
     nodes.push({
       id: mm.n.id,
       kind: mm.n.kind,
@@ -273,9 +268,9 @@ function layoutChart(
     return cx;
   }
 
-  place(m, 16, 0);
-  const width = Math.ceil(Math.max(...nodes.map((n) => n.x + n.w), 200) + 20);
-  const height = Math.ceil(Math.max(...nodes.map((n) => n.y + n.h), 100) + 16);
+  place(m, padX, 0);
+  const width = Math.ceil(Math.max(...nodes.map((n) => n.x + n.w), 280) + padX);
+  const height = Math.ceil(Math.max(...nodes.map((n) => n.y + n.h), 120) + 20);
   return { nodes, edges, width, height };
 }
 
@@ -367,24 +362,43 @@ function flattenOutline(root: LanguageSyntaxNode, focusTokenId: string): Outline
 type Props = {
   hit: LanguageSyntaxHit;
   dir?: "ltr" | "rtl";
-  /** Chart layout budget — use ~480–560 in the structure popover. */
+  /** Measure parent and use full width for chart layout. */
+  fillContainer?: boolean;
+  /** Fallback chart width if not filling. */
   chartWidth?: number;
-  /** Start on chart or outline. */
   defaultMode?: "chart" | "outline";
 };
 
 export function SyntaxArtView({
   hit,
   dir = "ltr",
-  chartWidth = 520,
+  fillContainer = false,
+  chartWidth = 720,
   defaultMode = "chart",
 }: Props): React.JSX.Element {
   const [mode, setMode] = useState<"chart" | "outline">(defaultMode);
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const [measuredW, setMeasuredW] = useState(chartWidth);
+
+  useEffect(() => {
+    if (!fillContainer || !hostRef.current) {
+      setMeasuredW(chartWidth);
+      return;
+    }
+    const el = hostRef.current;
+    const ro = new ResizeObserver((entries) => {
+      const w = entries[0]?.contentRect.width;
+      if (w && w > 80) setMeasuredW(Math.floor(w));
+    });
+    ro.observe(el);
+    setMeasuredW(Math.floor(el.clientWidth) || chartWidth);
+    return () => ro.disconnect();
+  }, [fillContainer, chartWidth]);
 
   const chartRoot = useMemo(() => toChartTree(hit.sentence.root), [hit.sentence.root]);
   const layout = useMemo(
-    () => layoutChart(chartRoot, hit.focusTokenId, chartWidth - 32),
-    [chartRoot, hit.focusTokenId, chartWidth],
+    () => layoutChart(chartRoot, hit.focusTokenId, Math.max(measuredW - 8, 320)),
+    [chartRoot, hit.focusTokenId, measuredW],
   );
   const outline = useMemo(
     () => flattenOutline(hit.sentence.root, hit.focusTokenId),
@@ -394,25 +408,14 @@ export function SyntaxArtView({
   const focus = words.find((w) => w.isFocus) ?? words[0];
 
   return (
-    <div className="lang-syntax lang-syntax--popover">
-      <div className="lang-syntax-kicker">
-        <div>
-          <span className="lang-syntax-kind">Structure</span>
-          <span className="lang-syntax-title"> {hit.sentence.refLabel}</span>
-        </div>
-        <span className="lang-syntax-meta">{words.length} words</span>
-      </div>
-
+    <div className="lang-syntax lang-syntax--modal" ref={hostRef}>
       <div className="lang-syntax-modes" role="tablist" aria-label="Structure view">
         <button
           type="button"
           role="tab"
           className={`lang-syntax-mode${mode === "chart" ? " is-active" : ""}`}
           aria-selected={mode === "chart"}
-          onClick={(e) => {
-            e.stopPropagation();
-            setMode("chart");
-          }}
+          onClick={() => setMode("chart")}
         >
           Chart
         </button>
@@ -421,13 +424,11 @@ export function SyntaxArtView({
           role="tab"
           className={`lang-syntax-mode${mode === "outline" ? " is-active" : ""}`}
           aria-selected={mode === "outline"}
-          onClick={(e) => {
-            e.stopPropagation();
-            setMode("outline");
-          }}
+          onClick={() => setMode("outline")}
         >
           Outline
         </button>
+        <span className="lang-syntax-meta">{words.length} words in {hit.sentence.refLabel}</span>
       </div>
 
       {mode === "chart" ? (
@@ -451,24 +452,28 @@ export function SyntaxArtView({
                     className={`lang-syntax-leaf role-${n.roleKey}${n.isFocus ? " is-focus" : ""}`}
                     transform={`translate(${n.x}, ${n.y})`}
                   >
-                    <rect width={n.w} height={n.h} rx={8} className="lang-syntax-leaf-bg" />
+                    <title>
+                      {n.label}: {n.surface}
+                      {n.gloss ? ` — ${n.gloss}` : ""}
+                    </title>
+                    <rect width={n.w} height={n.h} rx={10} className="lang-syntax-leaf-bg" />
                     <rect
-                      width={3.5}
+                      width={4}
                       height={n.h}
-                      rx={1.5}
+                      rx={2}
                       className={`lang-syntax-leaf-accent role-${n.roleKey}`}
                     />
                     <text
-                      x={n.w / 2 + 1}
-                      y={18}
+                      x={n.w / 2 + 2}
+                      y={22}
                       textAnchor="middle"
                       className="lang-syntax-leaf-grk"
                       style={{ direction: dir }}
                     >
-                      {(n.surface ?? "·").slice(0, 12)}
+                      {(n.surface ?? "·").slice(0, 14)}
                     </text>
-                    <text x={n.w / 2 + 1} y={34} textAnchor="middle" className="lang-syntax-leaf-en">
-                      {(n.gloss || n.label).slice(0, 14)}
+                    <text x={n.w / 2 + 2} y={40} textAnchor="middle" className="lang-syntax-leaf-en">
+                      {(n.gloss || n.label).slice(0, 16)}
                     </text>
                   </g>
                 ) : (
@@ -477,8 +482,8 @@ export function SyntaxArtView({
                     className={`lang-syntax-branch role-${n.roleKey}`}
                     transform={`translate(${n.x}, ${n.y})`}
                   >
-                    <rect width={n.w} height={n.h} rx={11} className="lang-syntax-branch-bg" />
-                    <text x={n.w / 2} y={15} textAnchor="middle" className="lang-syntax-branch-label">
+                    <rect width={n.w} height={n.h} rx={13} className="lang-syntax-branch-bg" />
+                    <text x={n.w / 2} y={17} textAnchor="middle" className="lang-syntax-branch-label">
                       {n.label}
                     </text>
                   </g>
@@ -501,7 +506,7 @@ export function SyntaxArtView({
               <li
                 key={row.id}
                 className="lang-syntax-clause"
-                style={{ paddingLeft: 12 + row.depth * 16 }}
+                style={{ paddingLeft: 16 + row.depth * 20 }}
               >
                 <span className="lang-syntax-clause-label">{row.role}</span>
                 {row.rule ? <span className="lang-syntax-clause-rule">{row.rule}</span> : null}
@@ -510,7 +515,7 @@ export function SyntaxArtView({
               <li
                 key={row.id}
                 className={`lang-syntax-row role-${row.roleKey}${row.isFocus ? " is-focus" : ""}`}
-                style={{ paddingLeft: 12 + row.depth * 16 }}
+                style={{ paddingLeft: 16 + row.depth * 20 }}
               >
                 <span className={`lang-syntax-role role-${row.roleKey}`}>{row.role}</span>
                 <span className="lang-syntax-forms">
@@ -533,13 +538,11 @@ export function SyntaxArtView({
         <p className="lang-syntax-caption" aria-live="polite">
           <span className={`lang-syntax-role role-${focus.roleKey}`}>{focus.role}</span>
           <span className="lang-syntax-caption-body">
-            {focus.surface}
+            Selected: {focus.surface}
             {focus.gloss ? ` — ${focus.gloss}` : ""}
           </span>
         </p>
       ) : null}
-
-      <p className="lang-syntax-attr">MACULA · Clear Bible · CC BY · who does what in this sentence</p>
     </div>
   );
 }
