@@ -20,12 +20,39 @@ import { EmbeddingsStore } from "../src/host/embeddings-store.js";
 import { LocalEmbeddingProvider } from "../src/host/local-embeddings.js";
 import { embedAllNotes } from "../src/host/embeddings-sync.js";
 import { SQLiteMaterializer } from "../src/host/sqlite.js";
-import { findRelatedNotes } from "../src/core/ai/similarity.js";
+import { cosineSimilarity, type EmbeddingRow } from "../src/core/ai/similarity.js";
+import { parseChunkSrcId } from "../src/core/ai/retrieval.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const LIBRARY_PATH = process.env["LIBRARY_PATH"] ?? resolve(__dirname, "../Library-demo");
 
-const DISTRACTOR_IDS = new Set(["01SEEDNOTE0000000000000013", "01SEEDNOTE0000000000000014"]);
+const DISTRACTOR_IDS = new Set([
+  "01SEEDNOTE0000000000000013",
+  "01SEEDNOTE0000000000000014",
+  "01SEEDNOTE0000000000000017",
+  "01SEEDNOTE0000000000000018",
+  "01SEEDNOTE0000000000000019",
+]);
+
+/** Raw dense ranking (best chunk per note) — this smoke checks the MODEL
+ * and sync; the decision layer has its own gate (npm run eval:margin). */
+function rankNotesByDense(
+  queryVector: Float32Array,
+  embeddings: EmbeddingRow[],
+): { noteId: string; similarity: number }[] {
+  const best = new Map<string, number>();
+  for (const row of embeddings) {
+    if (row.srcKind !== "note_chunk") continue;
+    const parsed = parseChunkSrcId(row.srcId);
+    if (!parsed) continue;
+    const sim = cosineSimilarity(queryVector, row.vector);
+    if (sim > (best.get(parsed.noteId) ?? -1)) best.set(parsed.noteId, sim);
+  }
+  return [...best.entries()]
+    .map(([noteId, similarity]) => ({ noteId, similarity }))
+    .sort((a, b) => b.similarity - a.similarity)
+    .slice(0, 5);
+}
 
 function fail(msg: string): never {
   console.error(`SMOKE FAIL: ${msg}`);
@@ -52,8 +79,9 @@ async function main(): Promise<void> {
   t = Date.now();
   const second = await embedAllNotes(db, store, provider);
   console.log(`second sync: ${second.embedded} embedded, ${second.skipped} skipped (${Date.now() - t}ms)`);
-  if (second.embedded !== 0 || second.skipped !== second.count) {
-    fail(`incremental sync broken: expected all ${second.count} skipped, got ${second.skipped}`);
+  const totalChunks = first.embedded + first.skipped;
+  if (second.embedded !== 0 || second.skipped !== totalChunks) {
+    fail(`incremental sync broken: expected all ${totalChunks} chunks skipped, got ${second.skipped}`);
   }
 
   const embeddings = store.getAllEmbeddings(provider.modelId);
@@ -61,7 +89,7 @@ async function main(): Promise<void> {
   const search = async (query: string, label: string) => {
     const started = Date.now();
     const [qvec] = await provider.embed([query], "query");
-    const results = findRelatedNotes(qvec!, embeddings, new Set(), 0.3, 5);
+    const results = rankNotesByDense(qvec!, embeddings);
     console.log(`\nquery [${label}] (${Date.now() - started}ms): "${query.slice(0, 80)}..."`);
     for (const r of results) {
       const note = db.queryNoteById(r.noteId);

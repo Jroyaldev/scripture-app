@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS highlights (
 CREATE TABLE IF NOT EXISTS claims (id TEXT PRIMARY KEY, assertion TEXT, claim_type TEXT, confidence REAL,
                      extractor TEXT, created TEXT, status TEXT);
 CREATE TABLE IF NOT EXISTS claim_anchors (claim_id TEXT, book TEXT, chapter INTEGER, verse INTEGER);
-CREATE TABLE IF NOT EXISTS claim_sources (claim_id TEXT, kind TEXT, ref TEXT);
+CREATE TABLE IF NOT EXISTS claim_sources (claim_id TEXT, kind TEXT, ref TEXT, quote TEXT);
 
 CREATE TABLE IF NOT EXISTS overlays (id TEXT PRIMARY KEY, book TEXT, chapter INTEGER, verse INTEGER,
                        char_start INTEGER, char_end INTEGER, reason TEXT, extractor TEXT);
@@ -83,6 +83,13 @@ export class SQLiteMaterializer {
   private initSchema(): void {
     this.db.exec(SCHEMA);
     this.db.exec(FTS_SCHEMA);
+    // claims-v2 (B3.5): evidence quotes on claim sources. This is Derived
+    // data (INV-9, drop-and-rebuild at will) — an in-place ALTER just spares
+    // pre-existing DBs a full rebuild before the next insert.
+    const cols = this.db.prepare("PRAGMA table_info(claim_sources)").all() as { name: string }[];
+    if (!cols.some((c) => c.name === "quote")) {
+      this.db.exec("ALTER TABLE claim_sources ADD COLUMN quote TEXT");
+    }
   }
 
   clear(): void {
@@ -363,10 +370,10 @@ export class SQLiteMaterializer {
       .run(ca.claim_id, ca.book, ca.chapter, ca.verse);
   }
 
-  insertClaimSource(cs: { claim_id: string; kind: string; ref: string }): void {
+  insertClaimSource(cs: { claim_id: string; kind: string; ref: string; quote?: string }): void {
     this.db
-      .prepare("INSERT INTO claim_sources (claim_id, kind, ref) VALUES (?, ?, ?)")
-      .run(cs.claim_id, cs.kind, cs.ref);
+      .prepare("INSERT INTO claim_sources (claim_id, kind, ref, quote) VALUES (?, ?, ?, ?)")
+      .run(cs.claim_id, cs.kind, cs.ref, cs.quote ?? null);
   }
 
   queryClaimsForRange(book: string, startCh: number, startV: number, endCh: number, endV: number): { id: string; assertion: string; claim_type: string; confidence: number; extractor: string; created: string; status: string }[] {
@@ -386,6 +393,19 @@ export class SQLiteMaterializer {
     return this.db
       .prepare("SELECT * FROM claim_anchors WHERE claim_id = ?")
       .all(claimId) as { claim_id: string; book: string; chapter: number; verse: number }[];
+  }
+
+  queryClaimSources(claimId: string): { claim_id: string; kind: string; ref: string; quote: string | null }[] {
+    return this.db
+      .prepare("SELECT * FROM claim_sources WHERE claim_id = ?")
+      .all(claimId) as { claim_id: string; kind: string; ref: string; quote: string | null }[];
+  }
+
+  /** All anchors belonging to one source (e.g. a note's cited references). */
+  queryAnchorsBySrcId(srcId: string): AnchorRecord[] {
+    return this.db
+      .prepare("SELECT * FROM anchors WHERE src_id = ?")
+      .all(srcId) as AnchorRecord[];
   }
 
   /**

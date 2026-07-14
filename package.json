@@ -30,7 +30,13 @@
     "smoke:ai": "node --import tsx scripts/smoke-ai.ts",
     "seed:notes": "node --import tsx scripts/seed-test-notes.ts",
     "smoke:embed": "node --import tsx scripts/smoke-embed.ts",
-    "smoke:extract": "node --import tsx scripts/smoke-extract.ts"
+    "smoke:extract": "node --import tsx scripts/smoke-extract.ts",
+    "calibrate:margin": "node --import tsx scripts/calibrate-margin.ts",
+    "eval:margin": "node --import tsx scripts/eval-margin.ts",
+    "eval:personas": "node --import tsx scripts/eval-personas.ts",
+    "smoke:enrich": "node --import tsx scripts/smoke-enrich.ts",
+    "import:macula-greek": "node --import tsx scripts/import-macula-greek.ts",
+    "import:oshb": "node --import tsx scripts/import-oshb.ts"
   },
   "main": "dist/electron/main.cjs",
   "bin": {

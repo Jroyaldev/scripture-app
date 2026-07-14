@@ -24,6 +24,8 @@ export type ClaimAnchor = {
 export type ClaimSource = {
   kind: "note" | "source" | "scripture";
   ref: string;
+  /** Verified verbatim quote from the cited note (claims-v2). */
+  quote?: string;
 };
 
 export type Overlay = {
@@ -46,11 +48,18 @@ export type Thread = {
   created: string;
 };
 
+/** Deterministic, user-verifiable justification for a surfaced note (B3.5/B3.6). */
+export type SemanticNoteReason = {
+  kind: "reference" | "phrase" | "semantic" | "theme";
+  label: string;
+};
+
 export type SemanticNote = {
   noteId: string;
   title: string;
   snippet: string;
   similarity: number;
+  reasons: SemanticNoteReason[];
 };
 
 export type SuggestedCrossRef = {

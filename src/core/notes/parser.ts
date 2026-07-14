@@ -5,6 +5,7 @@
 
 import type { BackboneData, BookNameMap, CanonicalRef } from "../reference/types.js";
 import { parseHumanRef } from "../reference/parser.js";
+import { parseQuickRefs } from "./quickref.js";
 import type { NoteFrontmatter, NoteLink, ParsedNote, ScriptureRefMatch } from "./types.js";
 
 /**
@@ -158,6 +159,10 @@ export function parseScriptureRefs(
       }
     }
   }
+
+  // B3.6 Gate E0: quick-capture pass — lowercase, compact ("ps23"),
+  // chapter-only ("john 3"), dot-separated, misspelled/typo forms.
+  refs.push(...parseQuickRefs(body, bookNames, backbone, seen));
 
   return refs;
 }

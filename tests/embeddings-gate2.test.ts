@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import Database from "better-sqlite3";
 import { EmbeddingsStore } from "../src/host/embeddings-store.js";
-import { embedAllNotes, noteContentHash } from "../src/host/embeddings-sync.js";
+import { chunkContentHash, embedAllNotes } from "../src/host/embeddings-sync.js";
 import { prefixTexts, EMBEDDING_PREFIXES } from "../src/host/local-embeddings.js";
 import type { EmbeddingKind } from "../src/core/interfaces.js";
 
@@ -88,7 +88,7 @@ test("pruneOtherModels removes only foreign-model vectors; getAllEmbeddings filt
   }
 });
 
-test("embedAllNotes is incremental: unchanged notes skipped, edits re-embedded", { skip: sqliteSkip }, async () => {
+test("embedAllNotes is incremental: unchanged chunks skipped, edits re-embedded", { skip: sqliteSkip }, async () => {
   const dir = tempDir();
   try {
     const store = new EmbeddingsStore(join(dir, "e.sqlite"));
@@ -133,6 +133,43 @@ test("embedAllNotes is incremental: unchanged notes skipped, edits re-embedded",
   }
 });
 
+test("embedAllNotes stores per-paragraph chunks and sweeps stale/legacy rows", { skip: sqliteSkip }, async () => {
+  const dir = tempDir();
+  try {
+    const store = new EmbeddingsStore(join(dir, "e.sqlite"));
+    const provider = {
+      dim: 2,
+      modelId: "fake-model",
+      embed: async (texts: string[]) => texts.map(() => new Float32Array([1, 1])),
+    };
+    // Legacy whole-note row (pre-B3.5) must be swept.
+    store.upsertEmbedding("note", "a", new Float32Array([9, 9]), "fake-model", "legacy");
+
+    const longPara = "Resurrection theology and its implications. ".repeat(20).trim();
+    const otherPara = "Committee logistics and scheduling for autumn. ".repeat(20).trim();
+    const notes = [{ id: "a", title: "Multi", body_text: `${longPara}\n\n${otherPara}` }];
+    const db = { getAllNotes: () => notes };
+
+    const first = await embedAllNotes(db, store, provider);
+    assert.equal(first.embedded, 2, "two paragraph chunks embedded");
+    assert.deepEqual(
+      store.listEmbeddings().map((r) => r.srcId).sort(),
+      ["a#0", "a#1"],
+      "chunk ids stored, legacy whole-note row swept",
+    );
+    assert.ok(first.pruned >= 1, "legacy row counted as pruned");
+
+    // Note shrinks to one paragraph → stale chunk swept.
+    notes[0] = { id: "a", title: "Multi", body_text: longPara };
+    const second = await embedAllNotes(db, store, provider);
+    assert.deepEqual(store.listEmbeddings().map((r) => r.srcId), ["a#0"]);
+    assert.equal(second.skipped, 1, "unchanged first chunk skipped");
+    store.close();
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("model switch prunes and re-embeds everything", { skip: sqliteSkip }, async () => {
   const dir = tempDir();
   try {
@@ -154,9 +191,9 @@ test("model switch prunes and re-embeds everything", { skip: sqliteSkip }, async
   }
 });
 
-test("noteContentHash changes with content, stable otherwise", () => {
-  assert.equal(noteContentHash("T", "B"), noteContentHash("T", "B"));
-  assert.notEqual(noteContentHash("T", "B"), noteContentHash("T", "B2"));
+test("chunkContentHash changes with content, stable otherwise", () => {
+  assert.equal(chunkContentHash("T\nB"), chunkContentHash("T\nB"));
+  assert.notEqual(chunkContentHash("T\nB"), chunkContentHash("T\nB2"));
 });
 
 test("prefixTexts applies the exact EmbeddingGemma asymmetric prefixes", () => {

@@ -1,19 +1,27 @@
 import type React from "react";
 import { useState, useEffect, useCallback, useRef } from "react";
-import type { AppSettings, BackboneData, BookNameData } from "./api.js";
+import type {
+  AppSettings,
+  BackboneData,
+  BookNameData,
+  ReadingSize,
+  ReadingWidth,
+  SidebarStyle,
+  VerseNumberMode,
+} from "./api.js";
 import { ScripturePage } from "./components/ScripturePage.js";
 import { WritingSheet } from "./components/WritingSheet.js";
 import { SearchView } from "./components/SearchView.js";
-import { ImportPage } from "./components/ImportPage.js";
 import { SettingsPage } from "./components/SettingsPage.js";
 import { ErrorBoundary } from "./components/ErrorBoundary.js";
 import { ToastProvider } from "./components/Toast.js";
 import { Popover } from "./components/Popover.js";
 import { WelcomeScreen } from "./components/WelcomeScreen.js";
+import type { ReadingPrefs } from "./components/ReadingComfort.js";
 import { safeCall } from "./utils/safeCall.js";
 import "./styles.css";
 
-type View = "scripture" | "write" | "search" | "notes" | "import" | "settings";
+type View = "scripture" | "write" | "search" | "notes" | "settings";
 type LoadState =
   | { status: "loading" }
   | { status: "loaded"; backbone: BackboneData; bookNames: BookNameData; libraryPath: string }
@@ -81,15 +89,6 @@ function NotesIcon(): React.JSX.Element {
   );
 }
 
-function ImportIcon(): React.JSX.Element {
-  return (
-    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M10 2.8v8.4M10 11.2l-3-3M10 11.2l3-3" />
-      <path d="M3.5 13v2.7c0 .7.6 1.3 1.3 1.3h10.4c.7 0 1.3-.6 1.3-1.3V13" />
-    </svg>
-  );
-}
-
 function SettingsIcon(): React.JSX.Element {
   return (
     <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
@@ -106,16 +105,32 @@ interface NavItemProps {
   onClick: () => void;
   label: string;
   icon: React.JSX.Element;
+  /** Keyboard digit shown in tooltip, e.g. "1" → "Read (1)" */
+  shortcut?: string;
 }
 
-function NavItem({ active, onClick, label, icon }: NavItemProps): React.JSX.Element {
+function NavItem({ active, onClick, label, icon, shortcut }: NavItemProps): React.JSX.Element {
+  const tip = shortcut ? `${label} (${shortcut})` : label;
   return (
-    <button className={`nav-item${active ? " active" : ""}`} onClick={onClick} title={label}>
+    <button
+      className={`nav-item${active ? " active" : ""}`}
+      onClick={onClick}
+      title={tip}
+      aria-label={tip}
+      aria-keyshortcuts={shortcut}
+    >
       {icon}
       <span className="nav-label">{label}</span>
+      {shortcut && <span className="nav-shortcut" aria-hidden="true">{shortcut}</span>}
     </button>
   );
 }
+
+const SIDEBAR_STYLES: { id: SidebarStyle; label: string; hint: string }[] = [
+  { id: "original", label: "Original", hint: "Current wide rail" },
+  { id: "compact", label: "Compact", hint: "Tighter spacing" },
+  { id: "rail", label: "Rail", hint: "Icons-first narrow" },
+];
 
 export function App(): React.JSX.Element {
   const [view, setView] = useState<View>("scripture");
@@ -127,9 +142,17 @@ export function App(): React.JSX.Element {
   });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [theme, setTheme] = useState<AppSettings["theme"]>("light");
+  const [readingSize, setReadingSize] = useState<ReadingSize>("m");
+  const [readingWidth, setReadingWidth] = useState<ReadingWidth>("medium");
+  const [verseNumbers, setVerseNumbers] = useState<VerseNumberMode>("always");
+  const [sidebarStyle, setSidebarStyle] = useState<SidebarStyle>("original");
+  const [focusMode, setFocusMode] = useState(false);
+  /** Margin visibility before focus mode — restored on exit. */
+  const preFocusMargin = useRef(true);
   const [aiBusy, setAiBusy] = useState(false);
   const [libraryPopoverOpen, setLibraryPopoverOpen] = useState(false);
   const brandRowRef = useRef<HTMLDivElement>(null);
+  const footerAvatarRef = useRef<HTMLButtonElement>(null);
   const [brandRect, setBrandRect] = useState<DOMRect | null>(null);
   const settingsLoaded = useRef(false);
   // Tracks which persisted settings the user has already changed via the UI
@@ -217,6 +240,10 @@ export function App(): React.JSX.Element {
         if (!userDirtySettings.current.theme) {
           setTheme(res.value.theme);
         }
+        if (res.value.readingSize) setReadingSize(res.value.readingSize);
+        if (res.value.readingWidth) setReadingWidth(res.value.readingWidth);
+        if (res.value.verseNumbers) setVerseNumbers(res.value.verseNumbers);
+        if (res.value.sidebarStyle) setSidebarStyle(res.value.sidebarStyle);
         document.documentElement.style.setProperty(
           "--accent-current",
           `var(--accent-${res.value.accentColor})`,
@@ -243,6 +270,11 @@ export function App(): React.JSX.Element {
     if (!settingsLoaded.current) return;
     void safeCall(() => window.api.settings.set({ theme }));
   }, [theme]);
+
+  useEffect(() => {
+    if (!settingsLoaded.current) return;
+    void safeCall(() => window.api.settings.set({ readingSize, readingWidth, verseNumbers, sidebarStyle }));
+  }, [readingSize, readingWidth, verseNumbers, sidebarStyle]);
 
   const handleCreateNoteFromPassage = (prefillBody?: string) => {
     setEditNoteBody(prefillBody ?? "");
@@ -285,7 +317,79 @@ export function App(): React.JSX.Element {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   };
 
-  const shellClass = `app-shell${theme === "dark" ? " dark" : ""}`;
+  const handleReadingPrefsChange = useCallback((partial: Partial<ReadingPrefs>) => {
+    if (partial.readingSize) setReadingSize(partial.readingSize);
+    if (partial.readingWidth) setReadingWidth(partial.readingWidth);
+    if (partial.verseNumbers) setVerseNumbers(partial.verseNumbers);
+  }, []);
+
+  const toggleFocusMode = useCallback(() => {
+    setFocusMode((prev) => {
+      if (!prev) {
+        preFocusMargin.current = marginVisible;
+        userDirtySettings.current.marginVisible = true;
+        setMarginVisible(false);
+        return true;
+      }
+      userDirtySettings.current.marginVisible = true;
+      setMarginVisible(preFocusMargin.current);
+      return false;
+    });
+  }, [marginVisible]);
+
+  // Global keyboard: view digits 1–4, F = focus mode, Esc exits focus.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      const tag = t?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || t?.isContentEditable) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+      if (e.key === "f" || e.key === "F") {
+        e.preventDefault();
+        toggleFocusMode();
+        return;
+      }
+      if (e.key === "Escape" && focusMode) {
+        e.preventDefault();
+        toggleFocusMode();
+        return;
+      }
+
+      const map: Record<string, View> = {
+        "1": "scripture",
+        "2": "write",
+        "3": "notes",
+        "4": "search",
+        "5": "settings",
+      };
+      const next = map[e.key];
+      if (next) {
+        e.preventDefault();
+        if (focusMode) toggleFocusMode();
+        setView(next);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [focusMode, toggleFocusMode]);
+
+  const openLibraryPopoverFrom = (el: HTMLElement | null) => {
+    if (el) setBrandRect(el.getBoundingClientRect());
+    setLibraryPopoverOpen(true);
+  };
+
+  const shellClass = [
+    "app-shell",
+    theme === "dark" ? "dark" : "",
+    focusMode ? "focus-mode" : "",
+    `reading-size-${readingSize}`,
+    `reading-width-${readingWidth}`,
+    `verse-nums-${verseNumbers}`,
+    `sidebar-style-${sidebarStyle}`,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   if (loadState.status === "loading") {
     return (
@@ -327,69 +431,141 @@ export function App(): React.JSX.Element {
   const libraryName = libraryPath.split("/").pop() ?? libraryPath;
   const avatarInitial = libraryName.charAt(0).toUpperCase() || "?";
 
+  const libraryPopover = libraryPopoverOpen && (
+    <Popover anchorRect={brandRect} onClose={closeLibraryPopover} width={280} className="library-popover">
+      <div className="library-popover-name">{libraryName}</div>
+      <div className="library-popover-path" title={libraryPath}>{libraryPath}</div>
+      <div className="package-chip-row">
+        <div className="package-chip">
+          <span className="package-chip-name">WEB</span>
+        </div>
+        <div className="package-chip">
+          <span className="package-chip-name">KJV</span>
+        </div>
+      </div>
+      <button
+        type="button"
+        className="library-popover-settings"
+        onClick={async () => {
+          closeLibraryPopover();
+          const res = await window.api.library.revealInFinder();
+          if (!res.ok) alert(`Could not reveal library: ${res.error}`);
+        }}
+      >
+        Reveal in Finder
+      </button>
+      <button
+        type="button"
+        className="library-popover-settings"
+        onClick={async () => {
+          closeLibraryPopover();
+          const chosen = await window.api.dialog.openDirectory();
+          if (!chosen || chosen === libraryPath) return;
+          const res = await window.api.library.init(chosen);
+          if (res.ok) window.location.reload();
+          else alert(`Switch failed: ${res.error}`);
+        }}
+      >
+        Switch Library…
+      </button>
+      <button type="button" className="library-popover-settings" onClick={handleManageInSettings}>
+        Manage in Settings →
+      </button>
+    </Popover>
+  );
+
   return (
     <ErrorBoundary>
       <ToastProvider>
         <div className={shellClass}>
-          <nav className={`sidebar${sidebarCollapsed ? " collapsed" : ""}`}>
-            <button
-              className="sidebar-collapse-btn"
-              onClick={toggleSidebarCollapsed}
-              title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          {!focusMode && (
+            <nav
+              className={`sidebar${sidebarCollapsed || sidebarStyle === "rail" ? " collapsed" : ""}${sidebarStyle === "rail" ? " rail-locked" : ""}`}
             >
-              <PanelToggleIcon />
-            </button>
-            <div className="sidebar-header">
-              <div
-                className="brand-row"
-                ref={brandRowRef}
-                onClick={toggleLibraryPopover}
-              >
-                <div className="brand-mark">
-                  <BookMarkIcon />
-                </div>
-                <div className="brand-word">Scripture</div>
-                <div className={`brand-chev${libraryPopoverOpen ? " open" : ""}`}>
-                  <ChevronDownIcon />
-                </div>
-              </div>
-              {libraryPopoverOpen && (
-                <Popover anchorRect={brandRect} onClose={closeLibraryPopover} width={280} className="library-popover">
-                  <div className="library-popover-name">{libraryName}</div>
-                  <div className="library-popover-path">{libraryPath}</div>
-                  <div className="package-chip">
-                    <span className="package-chip-name">WEB</span>
-                  </div>
-                  <div className="package-chip">
-                    <span className="package-chip-name">KJV</span>
-                  </div>
-                  <button className="library-popover-settings" onClick={handleManageInSettings}>
-                    Manage in Settings →
-                  </button>
-                </Popover>
+              {sidebarStyle !== "rail" && (
+                <button
+                  className="sidebar-collapse-btn"
+                  onClick={toggleSidebarCollapsed}
+                  title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                >
+                  <PanelToggleIcon />
+                </button>
               )}
-            </div>
-            <div className="sidebar-nav">
-              <NavItem active={view === "scripture"} onClick={() => setView("scripture")} label="Read" icon={<ReadIcon />} />
-              <NavItem active={view === "write"} onClick={() => setView("write")} label="Write" icon={<WriteIcon />} />
-              <NavItem active={view === "search"} onClick={() => setView("search")} label="Search" icon={<SearchIcon />} />
-              <NavItem active={view === "notes"} onClick={() => setView("notes")} label="Notes" icon={<NotesIcon />} />
-              <div className="nav-divider" />
-              <NavItem active={view === "import"} onClick={() => setView("import")} label="Import" icon={<ImportIcon />} />
-              <NavItem active={view === "settings"} onClick={() => setView("settings")} label="Settings" icon={<SettingsIcon />} />
-            </div>
-            <div className="sidebar-spacer" />
-            <div className="sidebar-footer">
-              <div className={`footer-avatar${aiBusy ? " analyzing" : ""}`}>{avatarInitial}</div>
-              <div className="footer-lib-text">
-                <div className="footer-lib-name">{libraryName}</div>
-                <div className={`footer-ai-status${aiBusy ? " analyzing" : " idle"}`}>
-                  <i className="footer-ai-dot" />
-                  {aiBusy ? "Analyzing passage..." : "Up to date"}
+              <div className="sidebar-header">
+                <div
+                  className="brand-row"
+                  ref={brandRowRef}
+                  onClick={toggleLibraryPopover}
+                  title="Library"
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      toggleLibraryPopover();
+                    }
+                  }}
+                >
+                  <div className="brand-mark">
+                    <BookMarkIcon />
+                  </div>
+                  <div className="brand-word">Scripture</div>
+                  <div className={`brand-chev${libraryPopoverOpen ? " open" : ""}`}>
+                    <ChevronDownIcon />
+                  </div>
+                </div>
+                {libraryPopover}
+              </div>
+              <div className="sidebar-nav">
+                <NavItem active={view === "scripture"} onClick={() => setView("scripture")} label="Read" icon={<ReadIcon />} shortcut="1" />
+                <NavItem active={view === "write"} onClick={() => setView("write")} label="Write" icon={<WriteIcon />} shortcut="2" />
+                <NavItem active={view === "notes"} onClick={() => setView("notes")} label="Notes" icon={<NotesIcon />} shortcut="3" />
+                <NavItem active={view === "search"} onClick={() => setView("search")} label="Search" icon={<SearchIcon />} shortcut="4" />
+                <div className="nav-divider" />
+                <NavItem active={view === "settings"} onClick={() => setView("settings")} label="Settings" icon={<SettingsIcon />} shortcut="5" />
+              </div>
+              <div className="sidebar-spacer" />
+
+              {/* Lab: try sidebar densities without committing permanently */}
+              <div className="sidebar-lab" title="Sidebar layout lab">
+                {SIDEBAR_STYLES.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    className={`sidebar-lab-tab${sidebarStyle === s.id ? " active" : ""}`}
+                    onClick={() => setSidebarStyle(s.id)}
+                    title={s.hint}
+                    aria-pressed={sidebarStyle === s.id}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="sidebar-footer">
+                <button
+                  type="button"
+                  ref={footerAvatarRef}
+                  className={`footer-avatar${aiBusy ? " analyzing" : ""}`}
+                  onClick={() => {
+                    if (libraryPopoverOpen) closeLibraryPopover();
+                    else openLibraryPopoverFrom(footerAvatarRef.current);
+                  }}
+                  title={`${libraryName} — library menu`}
+                  aria-label={`Library: ${libraryName}`}
+                >
+                  {avatarInitial}
+                </button>
+                <div className="footer-lib-text">
+                  <div className="footer-lib-name" title={libraryPath}>{libraryName}</div>
+                  <div className={`footer-ai-status${aiBusy ? " analyzing" : " idle"}`}>
+                    <i className="footer-ai-dot" />
+                    {aiBusy ? "Analyzing passage..." : "Up to date"}
+                  </div>
                 </div>
               </div>
-            </div>
-          </nav>
+            </nav>
+          )}
           <div className="main-content">
             {view === "scripture" && (
               <ScripturePage
@@ -397,11 +573,17 @@ export function App(): React.JSX.Element {
                 bookNames={bookNames}
                 navigateRef={navigateRef}
                 onCreateNote={handleCreateNoteFromPassage}
-                marginVisible={marginVisible}
+                marginVisible={marginVisible && !focusMode}
                 onAiBusyChange={setAiBusy}
                 theme={theme}
                 onToggleTheme={toggleTheme}
                 onToggleMargin={toggleMargin}
+                readingSize={readingSize}
+                readingWidth={readingWidth}
+                verseNumbers={verseNumbers}
+                onReadingPrefsChange={handleReadingPrefsChange}
+                focusMode={focusMode}
+                onToggleFocus={toggleFocusMode}
               />
             )}
             {view === "write" && (
@@ -409,9 +591,26 @@ export function App(): React.JSX.Element {
             )}
             {view === "search" && <SearchView onNavigate={handleNavigateToRef} />}
             {view === "notes" && <SearchView onNavigate={handleNavigateToRef} showAll />}
-            {view === "import" && <ImportPage />}
-            {view === "settings" && <SettingsPage libraryPath={libraryPath} />}
+            {view === "settings" && (
+              <SettingsPage
+                libraryPath={libraryPath}
+                readingSize={readingSize}
+                readingWidth={readingWidth}
+                verseNumbers={verseNumbers}
+                onReadingPrefsChange={handleReadingPrefsChange}
+              />
+            )}
           </div>
+          {focusMode && (
+            <button
+              type="button"
+              className="focus-exit-chip"
+              onClick={toggleFocusMode}
+              title="Exit focus mode (Esc or F)"
+            >
+              Exit focus
+            </button>
+          )}
         </div>
       </ToastProvider>
     </ErrorBoundary>

@@ -14,10 +14,14 @@ declare global {
         rebuild(): Promise<{ ok: boolean; hash?: string; error?: string }>;
         getSummary(): Promise<LibrarySummary | null>;
         readAllNotes(): Promise<ParsedNoteData[]>;
-        createNote(title: string, body: string, opts?: { type?: string; tags?: string[] }): Promise<{ ok: boolean; id?: string; path?: string; error?: string }>;
+        createNote(title: string, body: string, opts?: { type?: string; tags?: string[] }): Promise<{ ok: boolean; noteId?: string; id?: string; path?: string; error?: string }>;
         queryVerse(book: string, chapter: number, verse: number): Promise<QueryResult>;
         queryRange(startBook: string, startCh: number, startV: number, endBook: string, endCh: number, endV: number): Promise<QueryResult>;
-        createHighlight(book: string, chapter: number, verseStart: number, verseEnd: number, color: string, packageId: string): Promise<{ ok: boolean; highlightId?: string; error?: string }>;
+        createHighlight(book: string, chapter: number, verseStart: number, verseEnd: number, color: string, packageId: string, charStart?: number | null, charEnd?: number | null): Promise<{ ok: boolean; highlightId?: string; changeId?: string; error?: string }>;
+        eraseHighlightRange(book: string, chapter: number, verseStart: number, verseEnd: number, packageId: string, charStart?: number | null, charEnd?: number | null): Promise<{ ok: boolean; changeId?: string; error?: string }>;
+        recolorHighlights(book: string, chapter: number, packageId: string, entityIds: string[], color: string): Promise<{ ok: boolean; changeId?: string; error?: string }>;
+        deleteHighlights(book: string, chapter: number, packageId: string, entityIds: string[]): Promise<{ ok: boolean; changeId?: string; error?: string }>;
+        undoHighlightChange(changeId: string): Promise<{ ok: boolean; error?: string }>;
         deleteHighlight(entityId: string, baseEventId: string): Promise<{ ok: boolean; error?: string }>;
         search(query: string): Promise<NoteSearchResult[]>;
         importVault(vaultPath: string): Promise<ImportResult>;
@@ -35,8 +39,26 @@ declare global {
         getCrossRefs(book: string, chapter: number, verse: number): Promise<string[]>;
         getCrossRefsForChapter(book: string, chapter: number, verseCount: number): Promise<string[]>;
       };
+      language: {
+        listPackages(): Promise<LanguagePackageSummary[]>;
+        loadPackage(packageId: string): Promise<{ ok: boolean; packageId?: string; loaded?: boolean; error?: string }>;
+        getVerseTokens(packageId: string, book: string, chapter: number, verse: number): Promise<LanguageToken[] | null>;
+        getToken(packageId: string, tokenId: string): Promise<LanguageToken | null>;
+        getTokenCard(packageId: string, tokenId: string): Promise<LanguageTokenCard | null>;
+        getLemmaInBook(packageId: string, book: string, lemma: string): Promise<LanguageToken[] | null>;
+        getVerseMarks(packageId: string, book: string, chapter: number, verse: number): Promise<LanguageTokenMark[] | null>;
+      };
       ai: {
         embedNotes(): Promise<{ ok: boolean; count?: number; error?: string }>;
+        enrichNote(noteId: string): Promise<EnrichmentSuggestionsResult>;
+        getEnrichment(noteId: string): Promise<EnrichmentSuggestionsResult>;
+        enrichmentFeedback(opts: {
+          noteId: string;
+          refKey: string;
+          action: "confirmed" | "dismissed";
+          refDisplay?: string;
+        }): Promise<{ ok: boolean; error?: string }>;
+        unanchorRef(opts: { noteId: string; refKey: string; refDisplay: string }): Promise<{ ok: boolean; error?: string }>;
         semanticMargin(opts: {
           book: string;
           startChapter: number;
@@ -93,11 +115,31 @@ declare global {
   }
 }
 
+export type ReadingSize = "s" | "m" | "l";
+export type ReadingWidth = "narrow" | "medium" | "wide";
+export type VerseNumberMode = "always" | "faint" | "hover";
+/** Sidebar layout lab modes — switch while testing chrome density. */
+export type SidebarStyle = "original" | "compact" | "rail";
+
+/** One stop in the passage-picker recents list. */
+export interface RecentPassageSetting {
+  book: string;
+  chapter: number;
+  verse?: number;
+  packageId: string;
+  visitedAt: number;
+}
+
 export interface AppSettings {
   theme: "light" | "dark";
   accentColor: "blue" | "green" | "plum";
   sidebarCollapsed: boolean;
   marginVisible: boolean;
+  readingSize: ReadingSize;
+  readingWidth: ReadingWidth;
+  verseNumbers: VerseNumberMode;
+  sidebarStyle: SidebarStyle;
+  recentPassages: RecentPassageSetting[];
 }
 
 export interface LibrarySummary {
@@ -202,11 +244,25 @@ export interface ImportResult {
   errors: string[];
 }
 
+export interface EnrichmentSuggestionsResult {
+  ok?: boolean;
+  error?: string;
+  enriched: boolean;
+  noScriptureIntent: boolean;
+  suggestions: { refKey: string; display: string; bref: string; healed: boolean }[];
+}
+
+export interface SemanticNoteReasonData {
+  kind: "reference" | "phrase" | "semantic" | "theme";
+  label: string;
+}
+
 export interface SemanticNoteData {
   noteId: string;
   title: string;
   snippet: string;
   similarity: number;
+  reasons: SemanticNoteReasonData[];
 }
 
 export interface ThreadData {
@@ -227,7 +283,7 @@ export interface ClaimData {
   created: string;
   status: string;
   anchors: { book: string; chapter: number; verse: number }[];
-  sources: { kind: string; ref: string }[];
+  sources: { kind: string; ref: string; quote?: string }[];
 }
 
 export interface OverlayData {
@@ -280,4 +336,107 @@ export interface FactData {
   from_claim: string | null;
   user_note: string | null;
   deleted: number;
+}
+
+/** Original-language package discovered on disk (type interlinear-data). */
+export interface LanguagePackageSummary {
+  id: string;
+  name: string;
+  language: string;
+  type: string;
+  edition?: string;
+  family?: string;
+  datasetVersion?: string;
+  tokenCount?: number;
+  books?: string[];
+  path: string;
+  loaded: boolean;
+}
+
+export interface LanguageToken {
+  id: string;
+  datasetId: string;
+  book: string;
+  chapter: number;
+  verse: number;
+  position: number;
+  surface: string;
+  after?: string;
+  normalized?: string;
+  lemma?: string;
+  strong?: string;
+  strongPrefixed?: string;
+  morphCode?: string;
+  morph: Record<string, string | undefined>;
+  gloss?: string;
+  louwNida?: string;
+  domain?: string;
+  role?: string;
+  wordClass?: string;
+  wordType?: string;
+  /** Host-enriched for chip UI */
+  displayGloss?: string | null;
+  hoverGloss?: string | null;
+  displaySurface?: string;
+  order?: number;
+}
+
+export interface LanguageTokenMark {
+  tokenId: string;
+  kind: "repeat" | "rare";
+  reason: string;
+}
+
+export type LanguageMorphPartKind =
+  | "pos"
+  | "stem"
+  | "tense"
+  | "voice"
+  | "mood"
+  | "person"
+  | "number"
+  | "gender"
+  | "case"
+  | "degree"
+  | "state"
+  | "other";
+
+export interface LanguageMorphPart {
+  label: string;
+  meaning: string;
+  kind?: LanguageMorphPartKind;
+  /** True when meaning is a fallback (uncatalogued label). */
+  unknown?: boolean;
+}
+
+export interface LanguageMorphExplain {
+  code: string;
+  language: "hebrew" | "greek" | "unknown";
+  summary: string;
+  parts: LanguageMorphPart[];
+}
+
+/** STEPBible open-notes overlay (Approach A) — never replaces chips. */
+export interface LanguageStepMorph {
+  code: string;
+  phrase: string;
+  explanation: string;
+  example: string;
+  source: "STEPBible TEGMC" | "STEPBible TEHMC";
+}
+
+export interface LanguageTokenCard {
+  token: LanguageToken;
+  displaySurface?: string;
+  /** Prefer Strong's / package English gloss. */
+  gloss: string | null;
+  glossSource: "package" | "strongs-hebrew" | null;
+  morphLabels: string[];
+  morphExplain: LanguageMorphExplain | null;
+  /** Present only when morphCode hits STEP tables. */
+  stepMorph?: LanguageStepMorph | null;
+  lemmaFreq: { corpus: number; book: number; chapter: number };
+  neighborhood: { before: LanguageToken[]; after: LanguageToken[] };
+  occurrencesInBook: LanguageToken[];
+  marks: LanguageTokenMark[];
 }

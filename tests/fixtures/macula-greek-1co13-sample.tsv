@@ -1,0 +1,17 @@
+xml:id	ref	role	class	type	english	mandarin	gloss	text	after	lemma	normalized	strong	morph	person	number	gender	case	tense	voice	mood	degree	domain	ln	frame	subjref	referent
+n46001028018	1CO 1:28!18	v	verb				He might annul	καταργήσῃ	,	καταργέω	καταργήσῃ	2673	V-AAS-3S	third	singular			aorist	active	subjunctive		076	76.26	A0:n46001028011 A1:n46001028017	n46001028011	
+n46013008001	1CO 13:8!1		det				-	Ἠ	 	ὁ	Ἠ	3588	T-NSF		singular	feminine	nominative					092004	92.24			
+n46013008002	1CO 13:8!2		noun	common			Love	ἀγάπη	 	ἀγάπη	ἀγάπη	26	N-NSF		singular	feminine	nominative					025003	25.43			
+n46013008003	1CO 13:8!3	adv	adv				never	οὐδέποτε	 	οὐδέποτε	οὐδέποτε	3763	ADV-N									067001	67.10			
+n46013008004	1CO 13:8!4	v	verb				fails	πίπτει	·	πίπτω	πίπτει	4098	V-PAI-3S	third	singular			present	active	indicative		068004 075	68.49 75.7	A0:n46013008002		
+n46013008005	1CO 13:8!5		conj				if	εἴτε	 	εἴτε	εἴτε	1535	CONJ									089010	89.69			
+n46013008006	1CO 13:8!6		conj				however	δὲ	 	δέ	δέ	1161	CONJ									089023	89.124			
+n46013008007	1CO 13:8!7	s	noun	common			[there are] prophesies	προφητεῖαι	,	προφητεία	προφητεῖαι	4394	N-NPF		plural	feminine	nominative					033053	33.460			
+n46013008008	1CO 13:8!8	v	verb				they will be done away	καταργηθήσονται	·	καταργέω	καταργηθήσονται	2673	V-FPI-3P	third	plural			future	passive	indicative		013003	13.100	A1:n46013008007	n46013008007	
+n46013008009	1CO 13:8!9		conj				if	εἴτε	 	εἴτε	εἴτε	1535	CONJ									089010	89.69			
+n46013008010	1CO 13:8!10	s	noun	common			tongues	γλῶσσαι	,	γλῶσσα	γλῶσσαι	1100	N-NPF		plural	feminine	nominative					033001	33.3			
+n46013008011	1CO 13:8!11	v	verb				they will be ceased	παύσονται	·	παύω	παύσονται	3973	V-FDI-3P	third	plural			future	middle	indicative		068004	68.34	A0:n46013008010	n46013008010	
+n46013008012	1CO 13:8!12		conj				if	εἴτε	 	εἴτε	εἴτε	1535	CONJ									089010	89.69			
+n46013008013	1CO 13:8!13	s	noun	common			knowledge	γνῶσις	,	γνῶσις	γνῶσις	1108	N-NSF		singular	feminine	nominative					028002	28.17			
+n46013008014	1CO 13:8!14	v	verb				it will pass away	καταργηθήσεται	.	καταργέω	καταργηθήσεται	2673	V-FPI-3S	third	singular			future	passive	indicative		013004	13.162	A1:n46013008013	n46013008013	
+n46013010009	1CO 13:10!9	v	verb				will be done away	καταργηθήσεται	.	καταργέω	καταργηθήσεται	2673	V-FPI-3S	third	singular			future	passive	indicative		013004	13.162	A1:n46013010006		

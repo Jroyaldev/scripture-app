@@ -1,11 +1,37 @@
 import type React from "react";
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import type { BackboneData, BookNameData, ChapterData, QueryResult, SemanticMarginResult } from "../api.js";
+import type {
+  BackboneData,
+  BookNameData,
+  ChapterData,
+  HighlightRecord,
+  QueryResult,
+  ReadingSize,
+  ReadingWidth,
+  SemanticMarginResult,
+  VerseNumberMode,
+} from "../api.js";
 import { LivingMargin } from "./LivingMargin.js";
 import { useToast } from "./Toast.js";
 import { safeCall } from "../utils/safeCall.js";
 import { parsePassage } from "../utils/parsePassage.js";
+import { rangeToVerseCharOffsets } from "../utils/rangeToCharOffsets.js";
+import { nextVerseSelection } from "../utils/verseSelection.js";
+import { scopeHighlightsToPackage } from "../utils/highlightPackageScope.js";
 import { Popover } from "./Popover.js";
+import { HighlightUnderlay, FADE_MS, SWEEP_MS } from "./HighlightUnderlay.js";
+import { HighlightToolbar } from "./HighlightToolbar.js";
+import { ReadingComfort, type ReadingPrefs } from "./ReadingComfort.js";
+import { NoteCapture, type NoteCaptureDraft } from "./NoteCapture.js";
+import {
+  formatRecentLabel,
+  normalizeRecents,
+  pushRecent,
+  removeRecent,
+  type RecentPassage,
+} from "../utils/recentPassages.js";
+import { isHighlightOverlap, type HighlightRange } from "../../core/events/highlightOverlap.js";
+import { resolveBlobExtent, buildSegments, isAdjacent } from "../../core/events/highlightAdjacency.js";
 
 export interface PinnedRange {
   start: number;
@@ -26,6 +52,12 @@ interface Props {
   onToggleMargin?: () => void;
   /** Fired whenever the pinned (selected) verse range changes; null when nothing is selected. */
   onPinnedRangeChange?: (range: PinnedRange | null) => void;
+  readingSize?: ReadingSize;
+  readingWidth?: ReadingWidth;
+  verseNumbers?: VerseNumberMode;
+  onReadingPrefsChange?: (partial: Partial<ReadingPrefs>) => void;
+  focusMode?: boolean;
+  onToggleFocus?: () => void;
 }
 
 const OT_BOOKS = [
@@ -108,7 +140,27 @@ function SearchIconSmall(): React.JSX.Element {
   );
 }
 
-export function ScripturePage({ backbone, bookNames, navigateRef, onCreateNote, marginVisible, onAiBusyChange, theme, onToggleTheme, onToggleMargin, onPinnedRangeChange }: Props): React.JSX.Element {
+export function ScripturePage({
+  backbone,
+  bookNames,
+  navigateRef,
+  onCreateNote: _onCreateNote,
+  marginVisible,
+  onAiBusyChange,
+  theme,
+  onToggleTheme,
+  onToggleMargin,
+  onPinnedRangeChange,
+  readingSize = "m",
+  readingWidth = "medium",
+  verseNumbers = "always",
+  onReadingPrefsChange,
+  focusMode = false,
+  onToggleFocus,
+}: Props): React.JSX.Element {
+  // Selection notes use the in-place NoteCapture slide-over (stay on Read).
+  // Parent still supplies onCreateNote for a future “open full Write” path.
+  void _onCreateNote;
   const [book, setBook] = useState("ACT");
   const [chapter, setChapter] = useState(19);
   const [packageId, setPackageId] = useState("web");
@@ -120,8 +172,39 @@ export function ScripturePage({ backbone, bookNames, navigateRef, onCreateNote, 
   const [semanticData, setSemanticData] = useState<SemanticMarginResult | null>(null);
   const [semanticLoading, setSemanticLoading] = useState(false);
   const [showHighlightPalette, setShowHighlightPalette] = useState(false);
-  const [palettePos, setPalettePos] = useState({ top: 0, left: 0 });
-  const [highlightLoading, setHighlightLoading] = useState(false);
+  // x is the palette's horizontal CENTER (it's centered over the selection
+  // via a CSS transform, not left-aligned); y is the anchor edge — the
+  // selection's top when opening above (the common case) or its bottom when
+  // flipped below for lack of room.
+  const [palettePos, setPalettePos] = useState({ x: 0, y: 0, flipped: false });
+  // Record ids of a just-created highlight — drives the left-to-right sweep-in
+  // animation on the new blob. Keyed by highlight id (not verse number) so a
+  // sweep can never leak onto a neighboring untouched highlight that happens
+  // to share a verse. Cleared by handleHighlight's timer after the animation,
+  // and on chapter change (below).
+  const [animateIds, setAnimateIds] = useState<Set<string>>(new Set());
+  // Record ids of a highlight mid-deletion — drives the fade-out on the blob.
+  // Populated by handleDeleteHighlight, which deliberately keeps the highlight
+  // in marginData for FADE_MS after issuing the delete so the blob has
+  // something to fade from instead of just vanishing. Cleared once that timer
+  // fires (and on chapter change, below).
+  const [fadingIds, setFadingIds] = useState<Set<string>>(new Set());
+  // A sub-verse (word/phrase) selection produced by dragging across text —
+  // mutually exclusive with selectedVerses (setting one clears the other).
+  // charStart/charEnd are half-open string offsets into the verse's text, or
+  // null when the selection reaches that side of the verse's true boundary
+  // (see rangeToVerseCharOffsets — this null-normalization is what lets the
+  // selection bridge into an adjacent same-color verse like a whole-verse
+  // highlight would).
+  const [phraseSelection, setPhraseSelection] = useState<HighlightRange | null>(null);
+  // Set on a mouseup that completed a real drag-selection, consumed by the
+  // click handler that fires immediately after, so drag-residue clicks don't
+  // collapse the phrase selection back to a whole-verse one.
+  const suppressNextClickRef = useRef(false);
+  // Whole-verse range selections are always contiguous. Shift extends from
+  // this stable anchor; Command/Control-click intentionally behaves like a
+  // normal click until discontiguous groups have an honest persistence model.
+  const verseSelectionAnchorRef = useRef<number | null>(null);
   const [jumpText, setJumpText] = useState("");
   const [jumpError, setJumpError] = useState(false);
   const [retryToken, setRetryToken] = useState(0);
@@ -135,6 +218,11 @@ export function ScripturePage({ backbone, bookNames, navigateRef, onCreateNote, 
   const passageBtnRef = useRef<HTMLButtonElement>(null);
   const [passageAnchor, setPassageAnchor] = useState<DOMRect | null>(null);
   const bookSearchRef = useRef<HTMLInputElement>(null);
+  const [recents, setRecents] = useState<RecentPassage[]>([]);
+  const recentsLoaded = useRef(false);
+
+  // Note capture slide-over (stays on Read — does not switch to Write tab)
+  const [noteDraft, setNoteDraft] = useState<NoteCaptureDraft | null>(null);
 
   // Version picker popover state
   const [versionOpen, setVersionOpen] = useState(false);
@@ -143,13 +231,114 @@ export function ScripturePage({ backbone, bookNames, navigateRef, onCreateNote, 
 
   const contentRef = useRef<HTMLDivElement>(null);
   const paletteRef = useRef<HTMLDivElement>(null);
+  // The .verse-text container — the SVG highlight underlay is positioned
+  // absolutely inside it (behind the verse rows). Measured each pass so the
+  // blobs track reflow on resize, font load, and margin toggle.
+  const verseTextRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
 
-  // The first annotated verse (has a highlight, note, or cross-ref) currently
-  // scrolled into view — drives the Living Margin's ambient "currently
-  // reading" state. Derived, not persisted; reset on chapter/book change.
+  // Verse nearest the reading eye-line — ambient Living Margin only.
+  // Frozen while the pointer is over the margin or language study has locked
+  // a verse (so side-panel clicks never "click out" to a different scroll position).
   const [nearVerse, setNearVerse] = useState<number | null>(null);
   const verseRowRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  const marginActiveRef = useRef(false);
+  const studyLockVerseRef = useRef<number | null>(null);
+
+  // Full verse text for the current chapter, keyed by verse number — passed
+  // down to the Living Margin for pinned-passage quotes and the passage-
+  // scoped AI insight call, and used below to normalize highlight char
+  // bounds against each verse's true length.
+  const chapterVerseText = useMemo<Map<number, string>>(() => {
+    const m = new Map<number, string>();
+    for (const v of chapterData?.verses ?? []) m.set(v.verse, v.text);
+    return m;
+  }, [chapterData]);
+
+  // Highlight character offsets are translation-specific. queryRange returns
+  // every package for the canonical verse range, but all rendering, selection,
+  // recolor, removal, and ambient-annotation logic must operate on only the
+  // active text package. Whole-verse records stay package-scoped too so a
+  // later phrase edit cannot accidentally merge cross-translation entities.
+  const packageHighlights = useMemo(
+    () => scopeHighlightsToPackage(marginData.highlights, packageId),
+    [marginData.highlights, packageId],
+  );
+
+  // Highlight records, with char_start/char_end normalized to `null` (the
+  // "unbounded" sentinel whole-verse highlights already use) whenever a
+  // char-scoped record actually reaches its verse's true start (0) or end
+  // (the verse's full text length). This isn't cosmetic: the blob-adjacency
+  // logic (highlightAdjacency.ts) looks for that null sentinel specifically
+  // to decide whether a highlight bridges into an adjacent same-color verse.
+  // New phrase selections are already normalized at creation time
+  // (rangeToVerseCharOffsets), but highlights created before that fix shipped
+  // — or restored from an older snapshot — still have a literal number
+  // (e.g. char_end: 78 where the verse is exactly 78 characters) instead of
+  // null, which would otherwise silently fail to bridge even though there's
+  // no actual gap of unhighlighted text. Normalizing here, at the one shared
+  // read point every adjacency-sensitive consumer (the renderer, and the
+  // recolor/remove blob-extent walk) draws from, fixes old data too, with no
+  // migration step.
+  const normalizedHighlights = useMemo<HighlightRecord[]>(() => {
+    if (chapterVerseText.size === 0) return packageHighlights;
+    return packageHighlights.map((h) => {
+      if (h.char_start == null && h.char_end == null) return h;
+      const endText = chapterVerseText.get(h.verse_end);
+      const charStart = h.char_start === 0 ? null : h.char_start;
+      const charEnd = h.char_end != null && endText != null && h.char_end >= endText.length ? null : h.char_end;
+      if (charStart === h.char_start && charEnd === h.char_end) return h;
+      return { ...h, char_start: charStart, char_end: charEnd };
+    });
+  }, [packageHighlights, chapterVerseText]);
+
+  // Notes and anchors use canonical scripture coordinates and remain shared
+  // across translations. Only the highlight collection is package-specific.
+  // Passing this scoped view to Living Margin keeps its counts, swatches, and
+  // remove/recolor actions aligned with the layer visible on the page.
+  const packageMarginData = useMemo<QueryResult>(() => ({
+    ...marginData,
+    highlights: normalizedHighlights,
+  }), [marginData, normalizedHighlights]);
+
+  // Verse numbers whose highlight coverage reaches both sides of a verse
+  // boundary — backs the "cont-below"/"cont-above" row classes
+  // below, which collapse the visual gap between two consecutive verse rows.
+  // This MUST use the same char-aware isAdjacent predicate the SVG underlay
+  // uses, not a plain "do these two verses happen to show the same color"
+  // check: two same-color highlights can be genuinely separate blobs (e.g. a
+  // whole verse followed by a next-verse phrase that doesn't start at char
+  // 0), and collapsing the row gap between them would visually press two
+  // distinct, separately-rounded shapes together — the same class of bug the
+  // isAdjacent fix above was for, one layer up in the CSS.
+  const verseBridges = useMemo<Set<number>>(() => {
+    const bridges = new Set<number>();
+    const activeHere = normalizedHighlights.filter(
+      (h) => h.deleted === 0 && h.book === book && h.chapter === chapter,
+    );
+    const segments = buildSegments(activeHere);
+    for (const a of segments) {
+      for (const b of segments) {
+        if (b.verse === a.verse + 1 && isAdjacent(a, b)) {
+          bridges.add(a.verse);
+        }
+      }
+    }
+    return bridges;
+  }, [normalizedHighlights, book, chapter]);
+
+  // The book+chapter actually on screen right now, kept in sync every
+  // render. reloadMarginHighlights (fired from highlight create/delete/undo)
+  // reads this to detect when its own fetch has become stale — e.g. the user
+  // navigated to a different chapter while a highlight action's confirmation
+  // fetch, or the delete fade-out's 320ms delay, was still in flight. Without
+  // this check, that late response would silently overwrite the correctly-
+  // loaded data for whatever chapter is actually showing with old data for
+  // wherever the user used to be.
+  const currentChapterKeyRef = useRef(`${book}:${chapter}`);
+  useEffect(() => {
+    currentChapterKeyRef.current = `${book}:${chapter}`;
+  }, [book, chapter]);
 
   useEffect(() => {
     if (navigateRef) {
@@ -258,6 +447,40 @@ export function ScripturePage({ backbone, bookNames, navigateRef, onCreateNote, 
   const chapterCount = bookData?.chapters.length ?? 0;
   const displayBookName = bookNames[book]?.[0] ?? book;
 
+  // Load recents once from persisted settings.
+  useEffect(() => {
+    let cancelled = false;
+    safeCall(() => window.api.settings.get()).then((res) => {
+      if (cancelled || !res.ok) return;
+      setRecents(normalizeRecents(res.value.recentPassages));
+      recentsLoaded.current = true;
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Persist recents after the initial load (never write empty defaults over disk).
+  useEffect(() => {
+    if (!recentsLoaded.current) return;
+    void safeCall(() => window.api.settings.set({ recentPassages: recents }));
+  }, [recents]);
+
+  const recordRecent = useCallback(
+    (b: string, c: number, verse?: number, pkg: string = packageId) => {
+      setRecents((prev) =>
+        pushRecent(prev, {
+          book: b,
+          chapter: c,
+          verse,
+          packageId: pkg,
+          visitedAt: Date.now(),
+        }),
+      );
+    },
+    [packageId],
+  );
+
   // Atomic navigation: set book+chapter together in one render so only a
   // single getChapterText fetch happens (avoids the intermediate chapter-1 load).
   // An optional verse is remembered in a ref (not state) so the chapter-change
@@ -266,12 +489,21 @@ export function ScripturePage({ backbone, bookNames, navigateRef, onCreateNote, 
   // selection" — otherwise that effect (which must keep running for prev/next
   // arrows and keyboard nav) would wipe the selection right back out in the
   // same commit.
+  //
+  // `recordRecent` defaults true for jumps/picker/xrefs; prev/next arrows call
+  // setChapter directly so sequential reading does not flood the recents list.
   const pendingVerseSelectRef = useRef<number | null>(null);
-  const goTo = useCallback((b: string, c: number, verse?: number) => {
-    pendingVerseSelectRef.current = verse ?? null;
-    setBook(b);
-    setChapter(c);
-  }, []);
+  const goTo = useCallback(
+    (b: string, c: number, verse?: number, opts?: { recordRecent?: boolean }) => {
+      pendingVerseSelectRef.current = verse ?? null;
+      setBook(b);
+      setChapter(c);
+      if (opts?.recordRecent !== false) {
+        recordRecent(b, c, verse);
+      }
+    },
+    [recordRecent],
+  );
 
   // Cross-reference click-through (Living Margin's xref-link entries were
   // previously decorative text). Reuses the same parser as the "Go to..."
@@ -343,15 +575,34 @@ export function ScripturePage({ backbone, bookNames, navigateRef, onCreateNote, 
     setVersionOpen(true);
   };
 
+  // Book search: full names, aliases, codes (ACT), compact abbreviations (1co, rev).
   const matchesQuery = (code: string) => {
-    const name = bookNames[code]?.[0] ?? code;
-    return name.toLowerCase().includes(bookQuery.trim().toLowerCase());
+    const q = bookQuery.trim().toLowerCase().replace(/\s+/g, "");
+    if (!q) return true;
+    if (code.toLowerCase().includes(q)) return true;
+    const names = bookNames[code] ?? [];
+    for (const name of names) {
+      const n = name.toLowerCase();
+      if (n.includes(bookQuery.trim().toLowerCase())) return true;
+      const compact = n.replace(/[\s.]+/g, "");
+      if (compact.includes(q) || compact.startsWith(q)) return true;
+      // Leading initials: "1 Corinthians" → "1c", "song of songs" → "sos"
+      const initials = n
+        .split(/[\s.]+/)
+        .filter(Boolean)
+        .map((w, i) => (i === 0 && /^\d/.test(w) ? w : w[0] ?? ""))
+        .join("");
+      if (initials.startsWith(q) || initials === q) return true;
+    }
+    return false;
   };
   const filteredOt = OT_BOOKS.filter(matchesQuery);
   const filteredNt = NT_BOOKS.filter(matchesQuery);
+  const browseBookName = bookNames[browseBook]?.[0] ?? browseBook;
 
-  // Derived "pinned range" — min/max of the selectedVerses set, or null when
-  // nothing is selected. Consumed by the Living Margin in a later phase.
+  // Derived pinned whole-verse envelope. Precise phrase selections keep their
+  // nearby floating toolbar even when the margin is open, so the margin does
+  // not duplicate controls for a character range it cannot display exactly.
   const pinnedRange = useMemo<PinnedRange | null>(() => {
     if (selectedVerses.size === 0) return null;
     const vals = [...selectedVerses];
@@ -364,32 +615,67 @@ export function ScripturePage({ backbone, bookNames, navigateRef, onCreateNote, 
 
   // Reload margin data after highlight changes
   const reloadMarginHighlights = useCallback(async () => {
-    const verseCount = backbone.books[book]?.chapters[chapter - 1] ?? 0;
+    const requestBook = book;
+    const requestChapter = chapter;
+    const verseCount = backbone.books[requestBook]?.chapters[requestChapter - 1] ?? 0;
     if (verseCount === 0) return;
-    const res = await safeCall(() => window.api.library.queryRange(book, chapter, 1, book, chapter, verseCount));
-    if (res.ok) setMarginData(res.value);
+    const res = await safeCall(() =>
+      window.api.library.queryRange(requestBook, requestChapter, 1, requestBook, requestChapter, verseCount),
+    );
+    if (!res.ok) return;
+    // The user may have navigated to a different chapter while this fetch
+    // was in flight (this function is called from highlight create/delete/
+    // undo handlers, including from a 320ms-delayed timeout for the delete
+    // fade-out and from undo toasts that can be clicked long after
+    // navigating away) — bail rather than clobber the current chapter's
+    // already-correct data with a stale response for the one we left.
+    if (currentChapterKeyRef.current !== `${requestBook}:${requestChapter}`) return;
+    setMarginData((prev) => {
+      // Skip the update — and the fresh-object identity churn it would
+      // otherwise cause on every consumer keyed on marginData.highlights,
+      // notably the highlight underlay's re-measure — when the refetched
+      // data is identical to what's already showing. This fires on every
+      // highlight create/delete/undo, often when nothing about this
+      // chapter's OTHER highlights actually changed.
+      if (JSON.stringify(prev) === JSON.stringify(res.value)) return prev;
+      return res.value;
+    });
   }, [book, chapter, backbone]);
 
-  // Click-outside to dismiss palette
+  // Click-outside to dismiss palette.
+  // CRITICAL: clicks inside the Living Margin are language-study interactions
+  // (lemma chips, form/STEP expand). Treating them as "outside" used to clear
+  // the verse pin → ambient eye-line retook the margin (often Acts 19:10) and
+  // felt like a click-off. Margin clicks only hide the floating toolbar.
   useEffect(() => {
     if (!showHighlightPalette) return;
     const handler = (e: MouseEvent) => {
-      if (paletteRef.current && !paletteRef.current.contains(e.target as Node)) {
+      const target = e.target as Node | null;
+      if (!target) return;
+      if (paletteRef.current?.contains(target)) return;
+
+      const el = target instanceof Element ? target : target.parentElement;
+      if (el?.closest(".living-margin")) {
         setShowHighlightPalette(false);
-        setSelectedVerses(new Set());
+        return;
       }
+
+      setShowHighlightPalette(false);
+      setSelectedVerses(new Set());
+      setPhraseSelection(null);
+      verseSelectionAnchorRef.current = null;
+      studyLockVerseRef.current = null;
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [showHighlightPalette]);
 
-  // Escape to dismiss palette
+  // Escape dismisses palette chrome; keeps verse pin so study can continue.
   useEffect(() => {
     if (!showHighlightPalette) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setShowHighlightPalette(false);
-        setSelectedVerses(new Set());
       }
     };
     window.addEventListener("keydown", handler);
@@ -412,186 +698,631 @@ export function ScripturePage({ backbone, bookNames, navigateRef, onCreateNote, 
     return () => window.removeEventListener("keydown", handler);
   }, [chapter, chapterCount]);
 
-  const handleVerseClick = useCallback((verse: number, event: React.MouseEvent) => {
-    setSelectedVerses((prev) => {
-      const next = new Set(prev);
-      if (event.shiftKey && prev.size > 0) {
-        const min = Math.min(verse, ...prev);
-        const max = Math.max(verse, ...prev);
-        for (let v = min; v <= max; v++) next.add(v);
-      } else if (event.metaKey || event.ctrlKey) {
-        if (next.has(verse)) next.delete(verse);
-        else next.add(verse);
-      } else {
-        if (next.size === 1 && next.has(verse)) {
-          next.clear();
-        } else {
-          next.clear();
-          next.add(verse);
-        }
-      }
-      return next;
-    });
-
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    setPalettePos({
-      top: rect.top - 36,
-      left: rect.right + 8,
-    });
-    setShowHighlightPalette(true);
+  // Positions the floating highlight palette over the actual selection —
+  // not a single clicked row's far edge, which is what this used to key off
+  // (a verse row spans nearly the full reading column, so anchoring to its
+  // *right* edge routinely put the palette way off to the right of where the
+  // user actually clicked, and off-screen entirely on a wide window with the
+  // margin closed). This centers over the full selected range and clamps to
+  // the viewport, flipping below the selection when there isn't room above.
+  // Shared positioner: given a viewport-relative bounding box of whatever the
+  // palette should point at (a set of verse rows, or a phrase selection's
+  // rects), center over it, clamp to the viewport, and flip below when there
+  // isn't room above.
+  const positionPaletteForBox = useCallback((box: { top: number; bottom: number; left: number; right: number }) => {
+    const centerX = (box.left + box.right) / 2;
+    // The palette's actual width varies slightly (the remove button only
+    // shows when the selection already has a highlight), but not enough to
+    // warrant a measure-then-reposition pass — clamping against a generous
+    // estimate keeps it clear of the window edges either way.
+    const HALF_WIDTH_ESTIMATE = 155;
+    const EDGE_GAP = 12;
+    const x = Math.min(
+      Math.max(centerX, HALF_WIDTH_ESTIMATE + EDGE_GAP),
+      window.innerWidth - HALF_WIDTH_ESTIMATE - EDGE_GAP,
+    );
+    const GAP = 10;
+    const PALETTE_HEIGHT_ESTIMATE = 44;
+    const flipped = box.top - PALETTE_HEIGHT_ESTIMATE - GAP < 0;
+    setPalettePos({ x, y: flipped ? box.bottom + GAP : box.top - GAP, flipped });
   }, []);
 
+  // Positions the floating highlight palette over the actual selection —
+  // not a single clicked row's far edge, which is what this used to key off
+  // (a verse row spans nearly the full reading column, so anchoring to its
+  // *right* edge routinely put the palette way off to the right of where the
+  // user actually clicked, and off-screen entirely on a wide window with the
+  // margin closed).
+  const positionPalette = useCallback((selection: Set<number>) => {
+    const rects = [...selection]
+      .map((v) => verseRowRefs.current.get(v))
+      .filter((el): el is HTMLDivElement => !!el)
+      .map((el) => el.getBoundingClientRect());
+    if (rects.length === 0) return;
+    positionPaletteForBox({
+      top: Math.min(...rects.map((r) => r.top)),
+      bottom: Math.max(...rects.map((r) => r.bottom)),
+      left: Math.min(...rects.map((r) => r.left)),
+      right: Math.max(...rects.map((r) => r.right)),
+    });
+  }, [positionPaletteForBox]);
+
+  // Locate the DOM node + offset for a character offset into a verse span,
+  // walking all text nodes (robust to future markup splitting the span).
+  const locateCharOffset = useCallback((span: HTMLElement, charOffset: number): { node: Node; offset: number } | null => {
+    const walker = document.createTreeWalker(span, NodeFilter.SHOW_TEXT);
+    let acc = 0;
+    let node = walker.nextNode();
+    while (node) {
+      const len = node.textContent?.length ?? 0;
+      if (acc + len >= charOffset) return { node, offset: charOffset - acc };
+      acc += len;
+      node = walker.nextNode();
+    }
+    return null;
+  }, []);
+
+  // Rebuild a DOM Range for a stored phrase selection (used to reposition its
+  // palette on resize, where the original native Range is long gone).
+  const buildPhraseRange = useCallback((sel: HighlightRange): Range | null => {
+    const startSpan = verseRowRefs.current.get(sel.verseStart)?.querySelector<HTMLElement>(".verse-text-span");
+    const endSpan = verseRowRefs.current.get(sel.verseEnd)?.querySelector<HTMLElement>(".verse-text-span");
+    if (!startSpan || !endSpan) return null;
+    const endTotal = endSpan.textContent?.length ?? 0;
+    const s = locateCharOffset(startSpan, sel.charStart ?? 0);
+    const e = locateCharOffset(endSpan, sel.charEnd ?? endTotal);
+    if (!s || !e) return null;
+    const range = document.createRange();
+    range.setStart(s.node, s.offset);
+    range.setEnd(e.node, e.offset);
+    return range;
+  }, [locateCharOffset]);
+
+  const positionPaletteForRange = useCallback((range: Range) => {
+    const rects = Array.from(range.getClientRects());
+    if (rects.length === 0) return;
+    positionPaletteForBox({
+      top: Math.min(...rects.map((r) => r.top)),
+      bottom: Math.max(...rects.map((r) => r.bottom)),
+      left: Math.min(...rects.map((r) => r.left)),
+      right: Math.max(...rects.map((r) => r.right)),
+    });
+  }, [positionPaletteForBox]);
+
+  const verseSpanForNode = useCallback((node: Node, container: HTMLElement): HTMLElement | null => {
+    let current: Node | null = node;
+    while (current && current !== container) {
+      if (current instanceof HTMLElement && current.classList.contains("verse-text-span")) return current;
+      current = current.parentNode;
+    }
+    return null;
+  }, []);
+
+  const verseNumberForSpan = useCallback((span: HTMLElement): number | null => {
+    const value = Number(span.closest<HTMLElement>(".verse-line[data-verse]")?.dataset.verse);
+    return Number.isFinite(value) ? value : null;
+  }, []);
+
+  // A completed native drag becomes one exact continuous highlight range. The
+  // first and last verse retain character offsets; every verse between them is
+  // implicitly covered in full by the shared range model.
+  const handleTextMouseUp = useCallback(() => {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || sel.rangeCount === 0) return;
+    const range = sel.getRangeAt(0);
+    const container = verseTextRef.current;
+    if (!container || !container.contains(range.commonAncestorContainer)) return;
+
+    const startSpan = verseSpanForNode(range.startContainer, container);
+    const endSpan = verseSpanForNode(range.endContainer, container);
+    if (!startSpan || !endSpan) return;
+    const verseStart = verseNumberForSpan(startSpan);
+    const verseEnd = verseNumberForSpan(endSpan);
+    if (verseStart == null || verseEnd == null || verseEnd < verseStart) return;
+
+    let charStart: number | null;
+    let charEnd: number | null;
+    if (startSpan === endSpan) {
+      const offsets = rangeToVerseCharOffsets(range, startSpan);
+      if (!offsets) return;
+      charStart = offsets.start;
+      charEnd = offsets.end;
+    } else {
+      const first = document.createRange();
+      first.selectNodeContents(startSpan);
+      first.setStart(range.startContainer, range.startOffset);
+      const firstOffsets = rangeToVerseCharOffsets(first, startSpan);
+
+      const last = document.createRange();
+      last.selectNodeContents(endSpan);
+      last.setEnd(range.endContainer, range.endOffset);
+      const lastOffsets = rangeToVerseCharOffsets(last, endSpan);
+      if (!firstOffsets || !lastOffsets) return;
+      charStart = firstOffsets.start;
+      charEnd = lastOffsets.end;
+    }
+
+    suppressNextClickRef.current = true;
+    verseSelectionAnchorRef.current = null;
+    setSelectedVerses(new Set());
+    setPhraseSelection({ verseStart, verseEnd, charStart, charEnd });
+    positionPaletteForRange(range);
+    setShowHighlightPalette(true);
+  }, [positionPaletteForRange, verseNumberForSpan, verseSpanForNode]);
+
+  // NOTE on why these compute `next` from `selectedVerses` directly instead
+  // of via a setSelectedVerses(prev => ...) functional updater: this used to
+  // be a functional updater, with the computed set captured into a local
+  // variable read immediately after for palette positioning. That's unsound
+  // — React does not guarantee an updater callback runs synchronously before
+  // the next line of the handler executes (it sometimes computes state
+  // eagerly at the call site as an optimization, sometimes defers it to the
+  // render phase depending on what else is pending), so the "immediately
+  // after" read was sometimes stale (still the pre-click empty set),
+  // silently skipping the palette. Reading `selectedVerses` from the render
+  // closure and listing it as a dependency is both synchronously readable
+  // and correct, since the callback is recreated whenever it changes.
+  const handleVerseClick = useCallback((verse: number, event: React.MouseEvent) => {
+    // A drag-selection's trailing click is residue — the mouseup handler
+    // already turned it into a phrase selection. Consume the flag and no-op.
+    if (suppressNextClickRef.current) {
+      suppressNextClickRef.current = false;
+      return;
+    }
+    // Explicit verse pick takes over from ambient study-lock.
+    studyLockVerseRef.current = null;
+    // A whole-verse click always supersedes any active phrase selection.
+    setPhraseSelection(null);
+    const result = nextVerseSelection(selectedVerses, verseSelectionAnchorRef.current, verse, event.shiftKey);
+    const next = result.selection;
+    verseSelectionAnchorRef.current = result.anchor;
+    setSelectedVerses(next);
+
+    if (next.size > 0) {
+      positionPalette(next);
+      setShowHighlightPalette(true);
+    } else {
+      setShowHighlightPalette(false);
+    }
+  }, [selectedVerses, positionPalette]);
+
+  // Keyboard equivalent of handleVerseClick for keyboard users: Enter/Space
+  // toggles selection and opens the highlight palette on the focused verse.
+  // Shift+Enter extends the range (matching shift-click), matching the
+  // existing pointer interaction model. Reuses the same positioning logic so
+  // the palette appears in the same spot a click would put it.
+  const handleVerseKeyDown = useCallback((verse: number, event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    setPhraseSelection(null);
+    const result = nextVerseSelection(selectedVerses, verseSelectionAnchorRef.current, verse, event.shiftKey);
+    const next = result.selection;
+    verseSelectionAnchorRef.current = result.anchor;
+    setSelectedVerses(next);
+
+    if (next.size > 0) {
+      positionPalette(next);
+      setShowHighlightPalette(true);
+    } else {
+      setShowHighlightPalette(false);
+    }
+  }, [selectedVerses, positionPalette]);
+
+  // Re-anchor the palette on window resize — its position is computed from
+  // viewport-relative rects at the moment it opens, which go stale the instant
+  // the window (or the margin toggling) changes the layout. Handles both a
+  // whole-verse selection and a phrase selection (rebuilding the phrase's
+  // range from its stored offsets).
+  useEffect(() => {
+    if (!showHighlightPalette) return;
+    if (selectedVerses.size === 0 && !phraseSelection) return;
+    const handler = () => {
+      if (phraseSelection) {
+        const range = buildPhraseRange(phraseSelection);
+        if (range) positionPaletteForRange(range);
+      } else {
+        positionPalette(selectedVerses);
+      }
+    };
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, [showHighlightPalette, selectedVerses, phraseSelection, positionPalette, positionPaletteForRange, buildPhraseRange]);
+
+  const undoHighlightChange = (changeId: string) => {
+    void safeCall(() => window.api.library.undoHighlightChange(changeId)).then(async (result) => {
+      if (!result.ok || !result.value.ok) {
+        showToast(result.ok ? result.value.error ?? "Undo failed" : result.error);
+      }
+      await reloadMarginHighlights();
+    });
+  };
+
   const handleHighlight = async (color: string) => {
-    if (selectedVerses.size === 0) return;
-    const sorted = [...selectedVerses].sort((a, b) => a - b);
-    setHighlightLoading(true);
+    // A phrase drag is a PRECISE gesture — it applies the color to exactly its
+    // character range and trims whatever it overlaps (standard highlighter
+    // behavior). A whole-verse click is a COARSE gesture — it operates on the
+    // whole visual blob (recolor/remove the passage as one unit). This is the
+    // clean split: honor the granularity the user selected at.
+    const isPhrase = phraseSelection != null;
+    const target: HighlightRange | null = phraseSelection
+      ? phraseSelection
+      : (() => {
+          const sorted = [...selectedVerses].sort((a, b) => a - b);
+          if (sorted.length === 0) return null;
+          return { verseStart: sorted[0]!, verseEnd: sorted[sorted.length - 1]!, charStart: null as number | null, charEnd: null as number | null };
+        })();
+    if (!target) return;
 
-    // Optimistic update
-    setMarginData((prev) => ({
-      ...prev,
-      highlights: [
-        ...prev.highlights.filter(
-          (h) => !(h.chapter === chapter && h.verse_start <= sorted[sorted.length - 1]! && h.verse_end >= sorted[0]!),
-        ),
-        {
-          id: "temp",
-          book,
-          chapter,
-          verse_start: sorted[0]!,
-          verse_end: sorted[sorted.length - 1]!,
-          package: packageId,
-          char_start: null,
-          char_end: null,
-          color,
-          kind: "highlight",
-          note_id: null,
-          deleted: 0,
-        },
-      ],
-    }));
+    const activeHere = normalizedHighlights.filter(
+      (h) => h.deleted === 0 && h.book === book && h.chapter === chapter,
+    );
+    const touched = activeHere.filter((h) => isHighlightOverlap(h, target));
 
-    // The highlight is already visible optimistically; do not keep the palette
-    // spinning while disk/Git persistence finishes.
-    setHighlightLoading(false);
     setShowHighlightPalette(false);
     setSelectedVerses(new Set());
+    setPhraseSelection(null);
+    verseSelectionAnchorRef.current = null;
 
-    const res = await safeCall(() =>
-      window.api.library.createHighlight(book, chapter, sorted[0]!, sorted[sorted.length - 1]!, color, packageId),
-    );
+    // Whole-blob recolor only applies to a SINGLE-verse click landing on an
+    // existing highlight ("I clicked into this blob to manage it"). A genuine
+    // multi-verse range selection (shift-click spanning several verses) means
+    // "highlight exactly this range" — it must always create over the FULL
+    // selected range below, even if verse one of the range already happened to
+    // carry some other highlight. Treating any touched record as "recolor
+    // that blob using ITS OWN extent" (as this used to, unconditionally) threw
+    // away the rest of a multi-verse selection whenever its first verse
+    // collided with something pre-existing — only that one verse ever got the
+    // new color; the verses after it were silently skipped.
+    const isSingleVerseClick = !isPhrase && selectedVerses.size === 1;
+
+    if (isSingleVerseClick && touched.length > 0) {
+      // Single-verse click landing on an existing highlight: recolor the full
+      // connected visual blob(s) in place. One grouped IPC gives the edit one
+      // exact before/after snapshot and therefore one safe Undo token.
+      const blobIds = new Set<string>();
+      for (const t of touched) for (const id of resolveBlobExtent(activeHere, t.id)) blobIds.add(id);
+      const blobRecords = activeHere.filter((h) => blobIds.has(h.id));
+      if (blobRecords.every((h) => h.color === color)) return; // already this color
+
+      const recolor = await safeCall(() => window.api.library.recolorHighlights(
+        book, chapter, packageId, [...blobIds], color,
+      ));
+      if (recolor.ok && recolor.value.ok) {
+        if (recolor.value.changeId) showToast("Highlight color changed", "Undo", () => undoHighlightChange(recolor.value.changeId!));
+      } else {
+        showToast(recolor.ok ? recolor.value.error ?? "Failed to recolor highlight" : recolor.error);
+      }
+      await reloadMarginHighlights();
+      return;
+    }
+
+    // CREATE path: a fresh highlight, a phrase applied over existing text, or
+    // a genuine multi-verse range selection. Always creates over the user's
+    // FULL selected range (target.verseStart..verseEnd) — never just whatever
+    // happened to already be highlighted within it. The backend supersedes
+    // anything underneath by subtracting this exact endpoint-aware range;
+    // unaffected characters and outer verses survive as remainders. Optimistic
+    // render + sweep only when
+    // there's no overlap at all (a clean fresh highlight) — otherwise the
+    // optimistic add would flash both the new and the not-yet-resolved old
+    // highlight until the reload corrects it.
+    const optimistic = touched.length === 0;
+    if (optimistic) {
+      setMarginData((prev) => ({
+        ...prev,
+        highlights: [
+          ...prev.highlights,
+          {
+            id: "temp", book, chapter,
+            verse_start: target.verseStart, verse_end: target.verseEnd,
+            package: packageId, char_start: target.charStart, char_end: target.charEnd,
+            color, kind: "highlight", note_id: null, deleted: 0,
+          },
+        ],
+      }));
+      setAnimateIds(new Set(["temp"]));
+    }
+
+    const res = await safeCall(() => window.api.library.createHighlight(
+      book, chapter, target.verseStart, target.verseEnd, color, packageId, target.charStart, target.charEnd,
+    ));
 
     if (res.ok && res.value.ok) {
       const hlId = res.value.highlightId ?? "";
-      showToast("Highlight created", "Undo", () => {
-        void safeCall(() => window.api.library.deleteHighlight(hlId, ""));
-        void reloadMarginHighlights();
-      });
-      void reloadMarginHighlights();
+      // Transfer the sweep token from the optimistic temp id to the real id so
+      // the sweep survives the reload's id swap instead of being cut off.
+      setAnimateIds(new Set([hlId]));
+      if (res.value.changeId) showToast("Highlight created", "Undo", () => undoHighlightChange(res.value.changeId!));
+      await reloadMarginHighlights();
+      // Clear this id after the sweep would have finished so a later unrelated
+      // re-measure (resize, other edits) doesn't replay it.
+      window.setTimeout(() => {
+        setAnimateIds((prev) => {
+          if (!prev.has(hlId)) return prev;
+          const next = new Set(prev);
+          next.delete(hlId);
+          return next;
+        });
+      }, SWEEP_MS);
     } else {
       showToast("Failed to create highlight");
-      void reloadMarginHighlights(); // Revert optimistic update
+      setAnimateIds(new Set());
+      await reloadMarginHighlights(); // Revert optimistic update
     }
   };
 
-  const handleDeleteHighlight = async (entityId: string) => {
-    const res = await safeCall(() => window.api.library.deleteHighlight(entityId, ""));
-    if (res.ok && res.value.ok) {
-      showToast("Highlight removed", "Undo", () => {
-        // Can't truly undo a delete (the event is append-only),
-        // but we can tell the user it was removed
-      });
-      void reloadMarginHighlights();
-    } else {
-      showToast("Failed to remove highlight");
+  const handleDeleteHighlights = async (entityIds: string[]) => {
+    const requestKey = `${book}:${chapter}`;
+    const activeHere = normalizedHighlights.filter(
+      (h) => h.deleted === 0 && h.book === book && h.chapter === chapter,
+    );
+    // Whole-verse/pinned removal is deliberately coarse: every explicitly
+    // touched connected blob is one perceived highlight unit.
+    const blobIdSet = new Set<string>();
+    for (const entityId of entityIds) {
+      for (const id of resolveBlobExtent(activeHere, entityId)) blobIdSet.add(id);
     }
+    const blobIds = [...blobIdSet];
+    const targets = activeHere.filter((h) => blobIds.includes(h.id));
+    if (targets.length === 0) return;
+
+    // Fade every record in the blob at once. marginData still holds them, so
+    // the underlay keeps rendering their blob (now fading) instead of it
+    // vanishing instantly.
+    setFadingIds((prev) => new Set([...prev, ...blobIds]));
+    const clearFading = () => {
+      setFadingIds((prev) => {
+        const next = new Set(prev);
+        for (const id of blobIds) next.delete(id);
+        return next;
+      });
+    };
+
+    const result = await safeCall(() => window.api.library.deleteHighlights(
+      book, chapter, packageId, blobIds,
+    ));
+    if (result.ok && result.value.ok) {
+      if (result.value.changeId) {
+        showToast(targets.length === 1 ? "Highlight removed" : `${targets.length} highlights removed`, "Undo", () => {
+          undoHighlightChange(result.value.changeId!);
+        });
+      }
+      // Let the fade-out play (styles.css .hl-fade-out, FADE_MS) before the
+      // records leave local data. Critically, AWAIT the reload before clearing
+      // the fade flags: if the flags cleared while marginData still held the
+      // records, the underlay would recompute them as fully-opaque live
+      // highlights and the blob would snap back from faded to solid — the
+      // "still showing after delete" bug. Reload-first guarantees the records
+      // are already gone (no blob built for them) before we touch the flags.
+      window.setTimeout(() => {
+        void (async () => {
+          await reloadMarginHighlights();
+          if (currentChapterKeyRef.current === requestKey) clearFading();
+        })();
+      }, FADE_MS);
+    } else {
+      showToast(result.ok ? result.value.error ?? "Failed to remove highlight" : result.error);
+      clearFading();
+    }
+  };
+
+  const handleRemoveSelection = async () => {
+    const phrase = phraseSelection;
+    const touched = touchedHighlights();
+    setShowHighlightPalette(false);
+    setSelectedVerses(new Set());
+    setPhraseSelection(null);
+    verseSelectionAnchorRef.current = null;
+
+    if (phrase) {
+      const result = await safeCall(() => window.api.library.eraseHighlightRange(
+        book,
+        chapter,
+        phrase.verseStart,
+        phrase.verseEnd,
+        packageId,
+        phrase.charStart,
+        phrase.charEnd,
+      ));
+      if (result.ok && result.value.ok) {
+        if (result.value.changeId) showToast("Removed from highlight", "Undo", () => undoHighlightChange(result.value.changeId!));
+      } else {
+        showToast(result.ok ? result.value.error ?? "Failed to remove selection" : result.error);
+      }
+      await reloadMarginHighlights();
+      return;
+    }
+
+    await handleDeleteHighlights(touched.map((highlight) => highlight.id));
   };
 
   const handleNoteFromSelection = () => {
-    if (selectedVerses.size === 0) return;
-    const sorted = [...selectedVerses].sort((a, b) => a - b);
-    const rangeStr = sorted.length === 1
-      ? `${displayBookName} ${chapter}:${sorted[0]}`
-      : `${displayBookName} ${chapter}:${sorted[0]}-${sorted[sorted.length - 1]}`;
-    onCreateNote(`\n\nPassage: ${rangeStr}`);
+    let verseStart: number;
+    let verseEnd: number;
+    let phraseQuote: string | null = null;
+
+    if (phraseSelection) {
+      verseStart = phraseSelection.verseStart;
+      verseEnd = phraseSelection.verseEnd;
+      // Prefer the actual selected span when it lives in a single verse.
+      if (
+        phraseSelection.verseStart === phraseSelection.verseEnd &&
+        phraseSelection.charStart != null &&
+        phraseSelection.charEnd != null
+      ) {
+        const full = chapterVerseText.get(phraseSelection.verseStart) ?? "";
+        phraseQuote = full.slice(phraseSelection.charStart, phraseSelection.charEnd);
+      }
+    } else if (selectedVerses.size > 0) {
+      const sorted = [...selectedVerses].sort((a, b) => a - b);
+      verseStart = sorted[0]!;
+      verseEnd = sorted[sorted.length - 1]!;
+    } else {
+      return;
+    }
+
+    const rangeStr =
+      verseStart === verseEnd
+        ? `${displayBookName} ${chapter}:${verseStart}`
+        : `${displayBookName} ${chapter}:${verseStart}–${verseEnd}`;
+
+    const quote =
+      phraseQuote ??
+      [...chapterVerseText.entries()]
+        .filter(([v]) => v >= verseStart && v <= verseEnd)
+        .sort((a, b) => a[0] - b[0])
+        .map(([v, t]) => (verseStart === verseEnd ? t : `${v} ${t}`))
+        .join("\n");
+
+    setNoteDraft({
+      title: rangeStr,
+      passageRef: rangeStr,
+      quote,
+      book,
+      chapter,
+      verseStart,
+      verseEnd,
+      packageId,
+    });
     setSelectedVerses(new Set());
+    setPhraseSelection(null);
+    verseSelectionAnchorRef.current = null;
     setShowHighlightPalette(false);
   };
 
-  const getHighlightClass = (verse: number): string => {
-    const hl = marginData.highlights.find(
-      (h) => h.deleted === 0 && verse >= h.verse_start && verse <= h.verse_end,
-    );
-    return hl ? `hl-${hl.color}` : "";
-  };
-
-  // Active highlight color for a given verse, or null. Backs the
-  // adjacent-verse merge logic below (reads marginData.highlights).
-  const getHighlightColor = useCallback((verse: number): string | null => {
-    const hl = marginData.highlights.find(
-      (h) => h.deleted === 0 && verse >= h.verse_start && verse <= h.verse_end,
-    );
-    return hl ? hl.color : null;
-  }, [marginData.highlights]);
-
-  const hasExistingHighlight = selectedVerses.size > 0 && marginData.highlights.some(
-    (h) => h.deleted === 0 && [...selectedVerses].some((v) => v >= h.verse_start && v <= h.verse_end),
+  const handleNoteCaptureSaved = useCallback(
+    ({ title }: { noteId: string; title: string }) => {
+      setNoteDraft(null);
+      showToast(`Saved “${title}”`);
+      // Refresh margin so the new note can appear if it anchors to this chapter.
+      void reloadMarginHighlights();
+    },
+    [showToast, reloadMarginHighlights],
   );
 
-  // A verse is "annotated" (eligible to be reported as nearVerse) if it has a
-  // live highlight, a note anchored to it, or appears in the chapter's
-  // cross-refs list. Only real data — never a fabricated signal.
-  const isVerseAnnotated = useCallback((verse: number): boolean => {
-    const hasHighlight = marginData.highlights.some(
-      (h) => h.deleted === 0 && verse >= h.verse_start && verse <= h.verse_end,
-    );
-    if (hasHighlight) return true;
-    const hasNote = marginData.anchors.some(
-      (a) => a.chapter === chapter && verse >= a.verse_start && verse <= a.verse_end,
-    );
-    if (hasNote) return true;
-    return crossRefs.some((ref) => ref.includes(`:${verse}`));
-  }, [marginData, crossRefs, chapter]);
+  // Every highlight lookup below uses the already package-scoped normalized
+  // records and filters by book+chapter, not just verse
+  // number. Without it, if marginData ever briefly holds a stale response
+  // from a different chapter (a race — see reloadMarginHighlights and the
+  // currentChapterKeyRef guard), a highlight from that other chapter would
+  // render as if it belonged to whatever verse number it happens to share
+  // with the chapter actually on screen. Chapters routinely share verse
+  // numbers (most start at 1), so this isn't a hypothetical edge case.
+  const getHighlightClass = (verse: number): string => {
+    const colors = new Set(normalizedHighlights.filter(
+      (h) => h.deleted === 0 && h.book === book && h.chapter === chapter && verse >= h.verse_start && verse <= h.verse_end,
+    ).map((highlight) => highlight.color));
+    if (colors.size === 0) return "";
+    if (colors.size === 1) return `hl-${[...colors][0]}`;
+    return "hl-mixed";
+  };
 
-  // Full verse text for the current chapter, keyed by verse number — passed
-  // down to the Living Margin for pinned-passage quotes and the passage-
-  // scoped AI insight call.
-  const chapterVerseText = useMemo<Map<number, string>>(() => {
-    const m = new Map<number, string>();
-    for (const v of chapterData?.verses ?? []) m.set(v.verse, v.text);
-    return m;
-  }, [chapterData]);
+  // Records the current selection (phrase or whole-verse) actually overlaps —
+  // char-aware for a phrase selection. Backs both the palette's "remove" state
+  // and the whole-blob remove action.
+  const touchedHighlights = useCallback((): HighlightRecord[] => {
+    const activeHere = normalizedHighlights.filter(
+      (h) => h.deleted === 0 && h.book === book && h.chapter === chapter,
+    );
+    if (phraseSelection) {
+      return activeHere.filter((h) => isHighlightOverlap(h, {
+        verseStart: phraseSelection.verseStart, verseEnd: phraseSelection.verseEnd,
+        charStart: phraseSelection.charStart, charEnd: phraseSelection.charEnd,
+      }));
+    }
+    return activeHere.filter((h) => [...selectedVerses].some((v) => v >= h.verse_start && v <= h.verse_end));
+  }, [normalizedHighlights, book, chapter, phraseSelection, selectedVerses]);
 
-  // Track the first annotated verse currently intersecting the reading
-  // column as `nearVerse`. Only relevant when nothing is pinned (precedence
-  // handled by the caller/LivingMargin), but we compute it regardless so it
-  // is ready the instant the selection clears.
+  const selectedHighlightRecords = touchedHighlights();
+  const selectedHighlightColors = [...new Set(selectedHighlightRecords.map((highlight) => highlight.color))];
+  const selectedHighlightColor = selectedHighlightColors.length === 1 ? selectedHighlightColors[0]! : null;
+  const mixedSelectionColors = selectedHighlightColors.length > 1;
+  const hasExistingHighlight = (selectedVerses.size > 0 || phraseSelection != null) && selectedHighlightRecords.length > 0;
+  const multiVerseSelect = selectedVerses.size > 1;
+
+  const selectionRangeLabel = useMemo(() => {
+    if (phraseSelection) {
+      if (phraseSelection.verseStart === phraseSelection.verseEnd) {
+        return `${displayBookName} ${chapter}:${phraseSelection.verseStart}`;
+      }
+      return `${displayBookName} ${chapter}:${phraseSelection.verseStart}–${phraseSelection.verseEnd}`;
+    }
+    if (selectedVerses.size === 0) return "";
+    const sorted = [...selectedVerses].sort((a, b) => a - b);
+    if (sorted.length === 1) return `${displayBookName} ${chapter}:${sorted[0]}`;
+    return `${displayBookName} ${chapter}:${sorted[0]}–${sorted[sorted.length - 1]}`;
+  }, [phraseSelection, selectedVerses, displayBookName, chapter]);
+
+  // Ambient margin follows the verse nearest the reading eye-line — but never
+  // while the pastor is working in the margin (pointer) or has locked a study
+  // verse. Otherwise a click on Greek chips feels like "click out" and the
+  // panel jumps to wherever the page is scrolled (often not verse 1).
   useEffect(() => {
     const root = contentRef.current;
-    if (!root) {
+    if (!root || !chapterData) {
       setNearVerse(null);
       return;
     }
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .map((e) => Number((e.target as HTMLElement).dataset.verse))
-          .filter((v) => Number.isFinite(v));
-        if (visible.length === 0) return;
-        const next = visible.filter((v) => isVerseAnnotated(v)).sort((a, b) => a - b)[0] ?? null;
-        setNearVerse(next);
-      },
-      { root, threshold: 0.5 },
-    );
+    let raf = 0;
+    const update = () => {
+      if (marginActiveRef.current || studyLockVerseRef.current != null) return;
+      const rootRect = root.getBoundingClientRect();
+      const eyeY = rootRect.top + rootRect.height * 0.32;
+      let best: number | null = null;
+      let bestDist = Infinity;
+      for (const [verseNum, el] of verseRowRefs.current) {
+        const r = el.getBoundingClientRect();
+        if (r.bottom < rootRect.top + 8 || r.top > rootRect.bottom - 8) continue;
+        const mid = (r.top + r.bottom) / 2;
+        const dist = Math.abs(mid - eyeY);
+        if (dist < bestDist) {
+          bestDist = dist;
+          best = verseNum;
+        }
+      }
+      setNearVerse((prev) => (prev === best ? prev : best));
+    };
 
-    for (const el of verseRowRefs.current.values()) observer.observe(el);
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        update();
+      });
+    };
 
-    return () => observer.disconnect();
-  }, [chapterData, isVerseAnnotated]);
+    root.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+      update();
+    });
 
-  // Reset nearVerse immediately on chapter/book change so a stale "currently
-  // reading" preview from the previous chapter never flashes. Also clear any
+    return () => {
+      root.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [chapterData, book, chapter]);
+
+  /** Pointer entered/left the Living Margin chrome. */
+  const handleMarginActiveChange = useCallback((active: boolean) => {
+    marginActiveRef.current = active;
+  }, []);
+
+  /**
+   * Pastor started studying language for a verse.
+   * Freeze ambient eye-line on that verse (do NOT auto-pin — pinning would
+   * remount the language panel and close form/STEP notes mid-click).
+   */
+  const handleStudyVerse = useCallback((v: number) => {
+    studyLockVerseRef.current = v;
+    setNearVerse(v);
+  }, []);
+
+  // Reset nearVerse immediately on chapter/book/version change so a stale
+  // "currently reading" preview from the previous text never flashes. Also clear any
   // pending verse selection/palette — otherwise a highlight action left open
   // while navigating (prev/next arrows, ⌘←/→) would apply to the new chapter
   // using verse numbers selected in the old one. Exception: if this chapter
@@ -600,11 +1331,24 @@ export function ScripturePage({ backbone, bookNames, navigateRef, onCreateNote, 
   // honor that instead of clearing it right back out.
   useEffect(() => {
     setNearVerse(null);
+    studyLockVerseRef.current = null;
+    marginActiveRef.current = false;
     setShowHighlightPalette(false);
+    setAnimateIds(new Set());
+    setFadingIds(new Set());
+    setPhraseSelection(null);
     const verse = pendingVerseSelectRef.current;
     pendingVerseSelectRef.current = null;
+    verseSelectionAnchorRef.current = verse ?? null;
     setSelectedVerses(verse ? new Set([verse]) : new Set());
-  }, [book, chapter]);
+  }, [book, chapter, packageId]);
+
+  // Clear study lock when the user fully clears the selection (click away).
+  useEffect(() => {
+    if (selectedVerses.size === 0 && phraseSelection == null) {
+      studyLockVerseRef.current = null;
+    }
+  }, [selectedVerses, phraseSelection]);
 
   return (
     <div className="scripture-page">
@@ -639,13 +1383,73 @@ export function ScripturePage({ backbone, bookNames, navigateRef, onCreateNote, 
           </div>
 
           {passageOpen && (
-            <Popover anchorRect={passageAnchor} onClose={closePassagePopover} width={320} className="passage-picker-popover">
+            <Popover anchorRect={passageAnchor} onClose={closePassagePopover} width={340} className="passage-picker-popover">
               {passageView === "chapters" && (
                 <>
-                  <button className="passage-popback" onClick={openBooksView}>
-                    <BackChevronIcon />
-                    back to {bookNames[browseBook]?.[0] ?? browseBook}
-                  </button>
+                  {recents.length > 0 && (
+                    <div className="picker-recents">
+                      <div className="picker-recents-head">
+                        <span className="picker-recents-label">Recent</span>
+                      </div>
+                      <div className="picker-recents-row" role="list">
+                        {recents.map((r) => {
+                          const label = formatRecentLabel(r, bookNames);
+                          const isHere = r.book === book && r.chapter === chapter;
+                          return (
+                            <div key={`${r.book}:${r.chapter}`} className="picker-recent-chip-wrap" role="listitem">
+                              <button
+                                type="button"
+                                className={`picker-recent-chip${isHere ? " active" : ""}`}
+                                onClick={() => {
+                                  if (r.packageId && r.packageId !== packageId) {
+                                    // Same commit hygiene as the version picker:
+                                    // clear old text before package id flips.
+                                    setChapterData(null);
+                                    setChapterError(null);
+                                    setShowHighlightPalette(false);
+                                    setSelectedVerses(new Set());
+                                    setPhraseSelection(null);
+                                    setPackageId(r.packageId);
+                                  }
+                                  goTo(r.book, r.chapter, r.verse);
+                                  closePassagePopover();
+                                }}
+                                title={label}
+                              >
+                                <span className="picker-recent-ref">{label}</span>
+                                <span className="picker-recent-pkg">{r.packageId.toUpperCase()}</span>
+                              </button>
+                              <button
+                                type="button"
+                                className="picker-recent-dismiss"
+                                title="Remove from recent"
+                                aria-label={`Remove ${label} from recent`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setRecents((prev) => removeRecent(prev, r));
+                                }}
+                              >
+                                ×
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="picker-title-row">
+                    <div className="picker-title">
+                      <span className="picker-title-book">{browseBookName}</span>
+                      <span className="picker-title-sep" aria-hidden="true">·</span>
+                      <span className="picker-title-meta">chapters</span>
+                    </div>
+                    <button type="button" className="picker-title-action" onClick={openBooksView}>
+                      All books
+                      <span className="picker-title-action-chev" aria-hidden="true">›</span>
+                    </button>
+                  </div>
+
                   <div className="chapter-grid">
                     {Array.from({ length: backbone.books[browseBook]?.chapters.length ?? 0 }, (_, i) => i + 1).map((n) => (
                       <button
@@ -665,12 +1469,21 @@ export function ScripturePage({ backbone, bookNames, navigateRef, onCreateNote, 
 
               {passageView === "books" && (
                 <>
+                  <div className="picker-title-row">
+                    <button type="button" className="picker-back" onClick={() => setPassageView("chapters")}>
+                      <BackChevronIcon />
+                      <span>{browseBookName}</span>
+                    </button>
+                    <div className="picker-title picker-title-books">
+                      <span className="picker-title-meta">Books</span>
+                    </div>
+                  </div>
                   <div className="popover-search">
                     <SearchIconSmall />
                     <input
                       ref={bookSearchRef}
                       type="text"
-                      placeholder="Search books"
+                      placeholder="Search books (1co, ps, rev…)"
                       value={bookQuery}
                       onChange={(e) => setBookQuery(e.target.value)}
                     />
@@ -734,7 +1547,19 @@ export function ScripturePage({ backbone, bookNames, navigateRef, onCreateNote, 
                   key={t.code}
                   className={`version-picker-item${t.code === packageId ? " active" : ""}`}
                   onClick={() => {
-                    setPackageId(t.code);
+                    if (t.code !== packageId) {
+                      // Clear the old translation's DOM and selection in the
+                      // same commit as the package switch. Otherwise React can
+                      // briefly paint new-package highlight offsets over the
+                      // old translation before the text-loading effect runs.
+                      setChapterData(null);
+                      setChapterError(null);
+                      setShowHighlightPalette(false);
+                      setSelectedVerses(new Set());
+                      setPhraseSelection(null);
+                      verseSelectionAnchorRef.current = null;
+                      setPackageId(t.code);
+                    }
                     closeVersionPopover();
                   }}
                 >
@@ -769,12 +1594,21 @@ export function ScripturePage({ backbone, bookNames, navigateRef, onCreateNote, 
 
         <div className="topbar-spacer" />
 
+        {onReadingPrefsChange && onToggleFocus && (
+          <ReadingComfort
+            prefs={{ readingSize, readingWidth, verseNumbers }}
+            onChange={onReadingPrefsChange}
+            focusMode={focusMode}
+            onToggleFocus={onToggleFocus}
+          />
+        )}
+
         {/* Matches the Living Margin's own width when it's open, so these
             two icons sit directly above the panel they act on instead of
             floating at an arbitrary point in a wide, otherwise-empty topbar;
             collapses to content width when the margin is hidden. */}
-        <div className={`topbar-margin-slot${marginVisible ? "" : " collapsed"}`}>
-          {onToggleMargin && (
+        <div className={`topbar-margin-slot${marginVisible && !focusMode ? "" : " collapsed"}`}>
+          {onToggleMargin && !focusMode && (
             <button
               className={`margin-toggle-btn${marginVisible ? " active" : ""}`}
               onClick={onToggleMargin}
@@ -808,16 +1642,38 @@ export function ScripturePage({ backbone, bookNames, navigateRef, onCreateNote, 
             </div>
           )}
 
-          <div className="verse-text" style={{ position: "relative" }}>
+          <div
+            className={[
+              "verse-text",
+              multiVerseSelect || mixedSelectionColors ? "has-multi-select" : "",
+              pinnedRange ? "has-pin" : "",
+            ].filter(Boolean).join(" ")}
+            ref={verseTextRef}
+            style={{ position: "relative" }}
+            onMouseUp={handleTextMouseUp}
+            onMouseDown={() => { suppressNextClickRef.current = false; }}
+          >
+            <HighlightUnderlay
+              containerRef={verseTextRef}
+              verseRowRefs={verseRowRefs}
+              highlights={normalizedHighlights}
+              book={book}
+              chapter={chapter}
+              animateIds={animateIds}
+              fadingIds={fadingIds}
+              themeToken={theme}
+              pinRange={pinnedRange}
+            />
             {chapterData?.verses.map((v, idx) => {
-              const color = getHighlightColor(v.verse);
               const prevV = chapterData.verses[idx - 1];
-              const nextV = chapterData.verses[idx + 1];
-              const contAbove = !!color && !!prevV && getHighlightColor(prevV.verse) === color;
-              const contBelow = !!color && !!nextV && getHighlightColor(nextV.verse) === color;
+              const contAbove = !!prevV && verseBridges.has(prevV.verse);
+              const contBelow = verseBridges.has(v.verse);
+              const isSelected = selectedVerses.has(v.verse);
               const rowClasses = [
                 "verse-line",
-                selectedVerses.has(v.verse) ? "selected" : "",
+                isSelected ? "selected" : "",
+                isSelected && multiVerseSelect ? "multi-select" : "",
+                isSelected && mixedSelectionColors ? "mixed-select" : "",
                 getHighlightClass(v.verse),
                 contAbove ? "cont-above" : "",
                 contBelow ? "cont-below" : "",
@@ -832,7 +1688,12 @@ export function ScripturePage({ backbone, bookNames, navigateRef, onCreateNote, 
                   key={v.verse}
                   data-verse={v.verse}
                   className={rowClasses}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${displayBookName} ${chapter}:${v.verse}`}
+                  aria-pressed={isSelected}
                   onClick={(e) => handleVerseClick(v.verse, e)}
+                  onKeyDown={(e) => handleVerseKeyDown(v.verse, e)}
                   ref={(el) => {
                     if (el) verseRowRefs.current.set(v.verse, el);
                     else verseRowRefs.current.delete(v.verse);
@@ -858,55 +1719,34 @@ export function ScripturePage({ backbone, bookNames, navigateRef, onCreateNote, 
               </div>
             )}
 
-            {!marginVisible && showHighlightPalette && selectedVerses.size > 0 && (
-              <div
-                ref={paletteRef}
-                className="highlight-palette"
-                style={{ top: palettePos.top, left: palettePos.left }}
-              >
-                <button className="hl-btn-yellow" onClick={() => handleHighlight("yellow")} disabled={highlightLoading} title="Yellow" />
-                <button className="hl-btn-green" onClick={() => handleHighlight("green")} disabled={highlightLoading} title="Green" />
-                <button className="hl-btn-blue" onClick={() => handleHighlight("blue")} disabled={highlightLoading} title="Blue" />
-                <button className="hl-btn-pink" onClick={() => handleHighlight("pink")} disabled={highlightLoading} title="Pink" />
-                <button className="hl-btn-purple" onClick={() => handleHighlight("purple")} disabled={highlightLoading} title="Purple" />
-                {hasExistingHighlight && (
-                  <button
-                    className="hl-btn-delete"
-                    onClick={() => {
-                      const toDelete = marginData.highlights.filter(
-                        (h) => h.deleted === 0 && [...selectedVerses].some((v) => v >= h.verse_start && v <= h.verse_end),
-                      );
-                      for (const h of toDelete) {
-                        void handleDeleteHighlight(h.id);
-                      }
-                      setShowHighlightPalette(false);
-                      setSelectedVerses(new Set());
-                    }}
-                    disabled={highlightLoading}
-                    title="Remove highlight"
-                  >
-                    ✕
-                  </button>
-                )}
-                <button
-                  className="hl-btn-note"
-                  onClick={handleNoteFromSelection}
-                  disabled={highlightLoading}
-                >
-                  Note
-                </button>
-                {highlightLoading && <span className="hl-loading" />}
-              </div>
+            {/* Mini toolbar always when a selection is active — unified chrome
+                whether the Living Margin is open or closed. */}
+            {showHighlightPalette && (phraseSelection != null || selectedVerses.size > 0) && (
+              <HighlightToolbar
+                variant="floating"
+                flipped={palettePos.flipped}
+                paletteRef={paletteRef}
+                style={{ top: palettePos.y, left: palettePos.x }}
+                rangeLabel={selectionRangeLabel}
+                activeColor={selectedHighlightColor}
+                mixedColors={mixedSelectionColors}
+                hasExistingHighlight={hasExistingHighlight}
+                phraseMode={phraseSelection != null}
+                onSetColor={(color) => void handleHighlight(color)}
+                onNote={handleNoteFromSelection}
+                onRemove={() => void handleRemoveSelection()}
+              />
             )}
           </div>
         </div>
       </div>
 
-      {marginVisible && (
+      {marginVisible && !focusMode && (
         <LivingMargin
           book={book}
           chapter={chapter}
-          marginData={marginData}
+          packageId={packageId}
+          marginData={packageMarginData}
           crossRefs={crossRefs}
           bookNames={bookNames}
           semanticData={semanticData}
@@ -919,10 +1759,21 @@ export function ScripturePage({ backbone, bookNames, navigateRef, onCreateNote, 
             await window.api.ai.pinClaim(claimId, assertion);
           }}
           onSetHighlightColor={(color) => void handleHighlight(color)}
-          onRemoveHighlight={(entityId) => void handleDeleteHighlight(entityId)}
+          onCreateNote={handleNoteFromSelection}
+          onRemoveHighlights={(entityIds) => void handleDeleteHighlights(entityIds)}
+          onStudyVerse={handleStudyVerse}
+          onMarginActiveChange={handleMarginActiveChange}
         />
       )}
       </div>
+
+      {noteDraft && (
+        <NoteCapture
+          draft={noteDraft}
+          onClose={() => setNoteDraft(null)}
+          onSaved={handleNoteCaptureSaved}
+        />
+      )}
     </div>
   );
 }

@@ -14,10 +14,15 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "outDir": "dist/renderer",
-    "rootDir": "src/renderer",
+    "rootDir": "src",
     "declaration": false,
     "sourceMap": true,
     "resolveJsonModule": true
   },
-  "include": ["src/renderer/**/*.ts", "src/renderer/**/*.tsx"]
+  "include": [
+    "src/renderer/**/*.ts",
+    "src/renderer/**/*.tsx",
+    "src/core/events/highlightAdjacency.ts",
+    "src/core/events/highlightOverlap.ts"
+  ]
 }

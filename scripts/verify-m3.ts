@@ -24,8 +24,10 @@ import { EmbeddingsStore } from "../src/host/embeddings-store.js";
 import { BudgetManager } from "../src/host/budget-manager.js";
 import { MockAIProvider, MockEmbeddingProvider } from "../src/host/ai-provider.js";
 import { assembleMargin } from "../src/core/margin/index.js";
-import { assembleSemanticMargin } from "../src/core/ai/semantic-margin.js";
+import { runSemanticMargin } from "../src/host/semantic-margin-host.js";
+import { embedAllNotes } from "../src/host/embeddings-sync.js";
 import { deterministicEmbedding, cosineSimilarity } from "../src/core/ai/similarity.js";
+import type { RetrievalOptions } from "../src/core/ai/retrieval.js";
 import type { BackboneData, BookNameMap } from "../src/core/reference/types.js";
 import { validateBackboneData } from "../src/core/reference/backbone.js";
 import { readFileSync } from "node:fs";
@@ -140,24 +142,23 @@ async function main(): Promise<void> {
   const embProvider = new MockEmbeddingProvider();
 
   const db2 = new SQLiteMaterializer(dbPath);
-  const notes = db2.getAllNotes();
-  for (const note of notes) {
-    const text = `${note.title} ${note.body_text}`;
-    const vec = await embProvider.embed([text]);
-    embStore.upsertEmbedding("note", note.id, vec[0]!);
-  }
+  const syncResult = await embedAllNotes(db2, embStore, embProvider);
   db2.close();
 
   const allEmbeddings = embStore.getAllEmbeddings();
-  check("All 6 notes embedded", allEmbeddings.length === 6);
+  check("All 6 notes embedded (chunk-level)", syncResult.count === 6 && allEmbeddings.length >= 6,
+    `notes: ${syncResult.count}, chunks: ${allEmbeddings.length}`);
+
+  // Bag-of-words mock vectors live in a different cosine regime than the real
+  // model (unrelated ≈ 0.0-0.2 instead of ~0.5) — this gate verifies the
+  // PLUMBING; retrieval quality has its own gate (npm run eval:margin).
+  const bowOptions: Partial<RetrievalOptions> = { denseFloor: 0.2, softFloor: 0.15, scoreGap: 0.5 };
 
   // --- 3. Semantic resurfacing — opening Acts 19:1-7 ---
 
   console.log("\n--- 3. Semantic resurfacing for Acts 19:1-7 ---");
 
   const passageText = "And it happened that while Apollos was at Corinth, Paul passed through the inland country and came to Ephesus. There he found some disciples. And he said to them, Did you receive the Holy Spirit when you believed? And they said to him, No, we have not even heard that there is a Holy Spirit. And he said, Into what then were you baptized? They said, Into John's baptism. And Paul said, John baptized with the baptism of repentance, telling the people to believe in the one who was to come after him, that is, Jesus. On hearing this, they were baptized in the name of the Lord Jesus. And when Paul had laid his hands on them, the Holy Spirit came on them, and they began speaking in tongues and prophesying.";
-
-  const queryEmbedding = deterministicEmbedding(passageText, 256);
 
   // Get deterministic margin first
   const db3 = new SQLiteMaterializer(dbPath);
@@ -167,30 +168,21 @@ async function main(): Promise<void> {
     crossRefData,
     bookNames,
   );
-
-  const alreadySurfaced = new Set(detMargin.notes.map((n) => n.noteId));
   check("Deterministic margin has no notes anchored to Acts 19", detMargin.notes.length === 0);
 
-  // Semantic margin
-  const embRows = allEmbeddings.map(e => ({ srcKind: e.srcKind, srcId: e.srcId, vector: e.vector }));
-  const semanticResult = assembleSemanticMargin(
-    { book: "ACT", startChapter: 19, startVerse: 1, endChapter: 19, endVerse: 7 },
-    queryEmbedding,
-    {
-      getAllEmbeddings: () => embRows,
-      getEmbedding: (kind, id) => embRows.find(e => e.srcKind === kind && e.srcId === id),
-      queryNoteById: (id) => {
-        const n = db3.queryNoteById(id);
-        return n ? { id: n.id, title: n.title, body_text: n.body_text } : undefined;
-      },
-      queryClaimsForRange: (b, sc, sv, ec, ev) => db3.queryClaimsForRange(b, sc, sv, ec, ev),
-      queryClaimAnchors: (cid) => db3.queryClaimAnchors(cid),
-      queryOverlaysForRange: (b, sc, sv, ec, ev) => db3.queryOverlaysForRange(b, sc, sv, ec, ev),
-      getAllThreads: () => [],
-    },
-    alreadySurfaced,
+  // Semantic margin — the same shared host runner the app's IPC handler uses.
+  const semanticResult = await runSemanticMargin({
+    db: db3,
+    embeddingsStore: embStore,
+    provider: embProvider,
+    crossRefData,
     bookNames,
-  );
+    request: {
+      book: "ACT", startChapter: 19, startVerse: 1, endChapter: 19, endVerse: 7,
+      passageText,
+    },
+    retrievalOptions: bowOptions,
+  });
 
   check("Semantic notes surfaced", semanticResult.semanticNotes.length > 0,
     `got ${semanticResult.semanticNotes.length}`);
@@ -210,39 +202,35 @@ async function main(): Promise<void> {
 
   console.log("\n--- 4. Claims with provenance ---");
 
+  // B-1: claims live in the persistent AI-derived store (embeddings.sqlite) —
+  // library.sqlite is wiped on every rebuild, so claims there would be ephemeral.
   const claimId = "claim_" + ulid();
-  engine.insertClaim({
+  embStore.insertClaim({
     id: claimId,
     assertion: "The Holy Spirit is given through baptism in Jesus' name",
-    claimType: "theological",
+    claim_type: "theological",
     confidence: 0.85,
     extractor: "mock-ai",
     created: new Date().toISOString(),
     status: "active",
-    anchors: [{ book: "ACT", chapter: 19, verse: 2 }],
-    sources: [{ kind: "note", ref: `note:${note1Id}` }],
   });
+  embStore.insertClaimAnchor({ claim_id: claimId, book: "ACT", chapter: 19, verse: 2 });
+  embStore.insertClaimSource({ claim_id: claimId, kind: "note", ref: note1Id });
 
   // Re-query semantic margin to get the claim
   const db4 = new SQLiteMaterializer(dbPath);
-  const semanticWithClaim = assembleSemanticMargin(
-    { book: "ACT", startChapter: 19, startVerse: 1, endChapter: 19, endVerse: 7 },
-    queryEmbedding,
-    {
-      getAllEmbeddings: () => embRows,
-      getEmbedding: (kind, id) => embRows.find(e => e.srcKind === kind && e.srcId === id),
-      queryNoteById: (id) => {
-        const n = db4.queryNoteById(id);
-        return n ? { id: n.id, title: n.title, body_text: n.body_text } : undefined;
-      },
-      queryClaimsForRange: (b, sc, sv, ec, ev) => db4.queryClaimsForRange(b, sc, sv, ec, ev),
-      queryClaimAnchors: (cid) => db4.queryClaimAnchors(cid),
-      queryOverlaysForRange: (b, sc, sv, ec, ev) => db4.queryOverlaysForRange(b, sc, sv, ec, ev),
-      getAllThreads: () => [],
-    },
-    alreadySurfaced,
+  const semanticWithClaim = await runSemanticMargin({
+    db: db4,
+    embeddingsStore: embStore,
+    provider: embProvider,
+    crossRefData,
     bookNames,
-  );
+    request: {
+      book: "ACT", startChapter: 19, startVerse: 1, endChapter: 19, endVerse: 7,
+      passageText,
+    },
+    retrievalOptions: bowOptions,
+  });
 
   check("Claim surfaced in margin", semanticWithClaim.claims.length > 0,
     `got ${semanticWithClaim.claims.length}`);

@@ -71,8 +71,8 @@ test("LivingMargin removes highlights by the persisted highlight id from the pin
       crossRefs: [],
       bookNames: { ACT: ["Acts"] },
       pinnedRange: { start: 1, end: 1 },
-      onRemoveHighlight: (id) => {
-        removedId = id;
+      onRemoveHighlights: (ids) => {
+        removedId = ids[0] ?? null;
       },
     });
 

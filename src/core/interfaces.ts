@@ -11,6 +11,14 @@ export type AIRequest = {
   maxTokens?: number;
   /** Ask the provider for structured JSON output. Default "text". */
   responseFormat?: "text" | "json";
+  /** Sampling temperature (0 = maximally deterministic). Provider default when omitted. */
+  temperature?: number;
+  /**
+   * Optional JSON Schema for the response shape. Providers that support
+   * schema-constrained output (OpenAI strict mode, Codex --output-schema)
+   * enforce it; others ignore it and rely on prompt + validation.
+   */
+  jsonSchema?: Record<string, unknown>;
   /**
    * Latency class. Hosts map this to provider-specific knobs
    * (e.g. DeepSeek disables thinking for "interactive"). Default "interactive".

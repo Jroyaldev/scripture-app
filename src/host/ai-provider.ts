@@ -48,6 +48,10 @@ export class OpenAICompatibleAIProvider implements AIProvider {
       body["response_format"] = { type: "json_object" };
     }
 
+    if (req.temperature !== undefined) {
+      body["temperature"] = req.temperature;
+    }
+
     if (this.supportsThinkingControl) {
       const latency = req.latency ?? "interactive";
       body["thinking"] = { type: latency === "interactive" ? "disabled" : "enabled" };

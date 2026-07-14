@@ -6,6 +6,12 @@ READ: spec §4.4 (embeddings excluded from rebuild_hash), §4.9 (broker), §4.10
 
 CURRENT STATE: The governance skeleton is real (broker interfaces, BudgetManager, JobQueue, embeddings.sqlite, claims/overlays/threads tables, pin/promote promotion paths through RevisionStore). The intelligence inside it is mock: `main.ts` hard-codes `MockAIProvider`/`MockEmbeddingProvider`; the `semantic-margin` IPC handler hard-codes the bag-of-words `deterministicEmbedding`; nothing extracts claims/threads in-app; `suggestedCrossRefs` are circular (echo claim anchors of the queried range); the margin "AI Insight" block displays the first retrieved artifact, generating nothing.
 
+## RE-SEQUENCED (2026-07-02): Gate 3+ paused pending retrieval-quality audit fixes
+
+A live-usage audit found the semantic margin's decision layer broken (fixed 0.3 threshold passes every note for every passage — EmbeddingGemma's unrelated-cosine floor is ~0.5), making surfaced notes feel random despite real signal in the embeddings. Running extraction jobs at scale through this layer would be wasted spend. Gates 3–6 of this task resume AFTER `tasks/B3.5-margin-retrieval-quality.md` (audit findings, measured distributions, SOTA-grounded staged fix, and the "magic gate" acceptance definition). B3.5 Gate R4 (`claims-v2`, quote-verified evidence, derived confidence) supersedes this task's Gate 3 extraction contract details.
+
+**UPDATE (2026-07-02, later): B3.5 LANDED — Gates 3–6 are unblocked.** Extraction jobs (Gate 3) must build on the `claims-v2` contract (`parseClaimExtraction` now takes the actual notes and verifies evidence quotes verbatim; confidence is evidence-derived) and go through the shared `runSemanticMargin` host runner / `deleteClaimsByExtractor` idempotence pattern proven in `scripts/smoke-extract.ts`.
+
 ## Progress — 2026-07-02 (embedding runtime saga: the app can now actually run inference)
 
 Three layered launch failures diagnosed and fixed after Gate 2 landed:

@@ -65,6 +65,7 @@ export function findRelatedNotes(
     title: "",
     snippet: "",
     similarity: s.similarity,
+    reasons: [],
   }));
 }
 

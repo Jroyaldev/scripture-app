@@ -99,20 +99,6 @@ const ev2 = engine.createEvent("highlight", hl2Id, "create", {
 });
 engine.appendEvent(ev2);
 
-// --- Insert a claim ---
-const claimId = "claim_" + ulid();
-engine.insertClaim({
-  id: claimId,
-  assertion: "The Holy Spirit is given through baptism in Jesus' name",
-  claimType: "theological",
-  confidence: 0.85,
-  extractor: "mock-ai",
-  created: new Date().toISOString(),
-  status: "active",
-  anchors: [{ book: "ACT", chapter: 19, verse: 2 }],
-  sources: [{ kind: "note", ref: `note:${notes[0]!.id}` }],
-});
-
 // --- Insert an overlay ---
 const overlayId = "ovl_" + ulid();
 engine.insertOverlay({
@@ -129,7 +115,7 @@ engine.insertOverlay({
 // Rebuild to materialize everything
 engine.buildSqlite();
 
-// --- Embed notes ---
+// --- Embed notes + seed a demo claim (B-1: claims live in the AI-derived store) ---
 const embDbPath = join(LIB_PATH, ".system/embeddings.sqlite");
 const embStore = new EmbeddingsStore(embDbPath);
 const embProvider = new MockEmbeddingProvider();
@@ -142,6 +128,20 @@ for (const note of allNotes) {
   const vec = await embProvider.embed([text]);
   embStore.upsertEmbedding("note", note.id, vec[0]!);
 }
+
+const claimId = "claim_" + ulid();
+embStore.insertClaim({
+  id: claimId,
+  assertion: "The Holy Spirit is given through baptism in Jesus' name",
+  claim_type: "theological",
+  confidence: 0.85,
+  extractor: "mock-ai",
+  created: new Date().toISOString(),
+  status: "active",
+});
+embStore.insertClaimAnchor({ claim_id: claimId, book: "ACT", chapter: 19, verse: 2 });
+embStore.insertClaimSource({ claim_id: claimId, kind: "note", ref: notes[0]!.id });
+
 db.close();
 embStore.close();
 

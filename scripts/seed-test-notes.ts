@@ -112,6 +112,41 @@ export const SEED_NOTES: SeedNote[] = [
     body: `Rotate hosting: our place first and third weeks. Sarah brings coffee, Mike has the projector. Childcare fund needs $40 more this month. Send the scheduling poll by Friday. Topic vote result: study of Acts won over Philippians 9-3.`,
     tags: ["admin"],
   },
+  // --- B3.5 additions: serendipity target, chunking stressor, more distractors ---
+  {
+    id: "01SEEDNOTE0000000000000015",
+    title: "The shepherd who owns the sheep",
+    body: `John 10:11 — the good shepherd lays down his life for the sheep; the hired hand runs because the sheep are not his own. Ezekiel 34:11-16 is the backdrop: after indicting the shepherds who fed themselves, the LORD says "I myself will search for my sheep" — ownership language throughout. The shepherd image is never sentimental in Scripture; it is a claim about who the flock belongs to.`,
+    tags: ["john", "themes"],
+  },
+  {
+    id: "01SEEDNOTE0000000000000016",
+    title: "Easter series prep — mixed notes",
+    body: `Resurrection as firstfruits: 1 Corinthians 15:20-23 orders the harvest — Christ the firstfruits, then those who are his at his coming. The metaphor makes Easter the FIRST sheaf of a single crop, not an isolated marvel; our resurrection is the same harvest. Hold this against 1 Corinthians 15:12-19, where denying the general resurrection unravels the gospel itself.
+
+Series logistics: four weeks, one text per week. Week one needs the banner file to the print shop by the 14th. Ask Dana about the extra chairs and confirm the sunrise service permit with the parks office.
+
+Children's program: the older group can handle the seed-and-plant object lesson; order the paper cups and potting soil. Keep the younger group with the butterfly craft from two years ago.`,
+    tags: ["sermon-prep"],
+  },
+  {
+    id: "01SEEDNOTE0000000000000017",
+    title: "Website migration checklist",
+    body: `Move the sermon archive to the new host before the DNS cutover. Export the podcast feed, verify the redirects, and rotate the admin passwords. The calendar plugin needs its license renewed. Test the giving page on mobile before announcing anything.`,
+    tags: ["admin"],
+  },
+  {
+    id: "01SEEDNOTE0000000000000018",
+    title: "Hospitality supplies",
+    body: `Restock: coffee (two bags, one decaf), tea, sugar packets, gluten-free crackers, juice boxes. The urn's power cord is frayed — replace it. Name tags and markers for the newcomers' lunch. Ask Elena if the folding tables survived the retreat.`,
+    tags: ["admin"],
+  },
+  {
+    id: "01SEEDNOTE0000000000000019",
+    title: "Budget meeting notes — Q3",
+    body: `Missions line holds at 12%. Building fund transfer approved, pending two signatures. The van repair came in $300 under estimate. Flag the insurance premium increase for the January meeting and get a second quote from the broker.`,
+    tags: ["admin"],
+  },
 ];
 
 function loadJson<T>(path: string): T {

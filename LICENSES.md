@@ -70,6 +70,31 @@ This document records every shipped dataset with its license, source, and permis
   - `export`: true
   - `syncToOwnDevices`: true
 
+### Strong’s Hebrew concise dictionary (Open Scriptures)
+
+- **Source:** [https://github.com/openscriptures/strongs](https://github.com/openscriptures/strongs) (`hebrew/strongs-hebrew-dictionary.js`)
+- **License:** CC BY-SA 3.0 (Open Scriptures JSON; underlying Strong 1894 text is public domain)
+- **SPDX:** CC-BY-SA-3.0
+- **Bundled as:** `data/scripture/lexicons/strongs-hebrew-gloss.json`
+- **Attribution:** "Strong's Hebrew dictionary (Open Scriptures JSON, CC BY-SA 3.0), derived from James Strong 1894, public domain."
+- **Use:** Short English gloss on OT language cards when OSHB tokens have a Strong’s number.
+
+### MACULA Greek Linguistic Datasets (Clear Bible / Biblica)
+
+- **Source:** [https://github.com/Clear-Bible/macula-greek](https://github.com/Clear-Bible/macula-greek)
+- **License:** CC BY 4.0 (composite; nested sources documented in upstream `LICENSE.md`)
+- **SPDX:** CC-BY-4.0
+- **Attribution:** "MACULA Greek Linguistic Datasets © Biblica, Inc / Clear Bible, https://github.com/Clear-Bible/macula-greek/, CC BY 4.0."
+- **Importer:** `src/core/language/macula-greek-tsv.ts` + `npm run import:macula-greek`
+- **Permission Flags:**
+  - `bundle`: true (with attribution)
+  - `index`: true
+  - `display`: true
+  - `quoteInNotes`: true
+  - `export`: true
+  - `syncToOwnDevices`: true
+- **Note:** SBLGNT edition also requires compliance with the [SBLGNT EULA](https://sblgnt.com/license/) for the base text. Prefer Nestle 1904 TSV for redistribution-friendly packaging.
+
 ## Cross-Reference Corpus
 
 ### Treasury of Scripture Knowledge (TSK)

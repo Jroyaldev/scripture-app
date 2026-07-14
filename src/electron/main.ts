@@ -27,16 +27,27 @@ import { SQLiteMaterializer } from "../host/sqlite.js";
 import { EmbeddingsStore } from "../host/embeddings-store.js";
 import { BudgetManager } from "../host/budget-manager.js";
 import { MockAIProvider, MockEmbeddingProvider, createDeepSeekProvider, OpenAICompatibleAIProvider } from "../host/ai-provider.js";
+import { CodexExecAIProvider, createCodexProvider } from "../host/codex-provider.js";
 import { RendererEmbeddingProvider } from "./renderer-embeddings.js";
 import { loadEnvFile } from "../host/env.js";
 import { embedAllNotes } from "../host/embeddings-sync.js";
+import { enrichAllNotes, type EnrichTier } from "../host/enrichment-sync.js";
+import type { ThemeEntry } from "../core/ai/note-enrichment.js";
+import { healSuggestionOrder, inferredRefKey } from "../core/ai/note-enrichment.js";
 import type { AIProvider, EmbeddingProvider } from "../core/interfaces.js";
+import type { HighlightRecord } from "../core/indexer/types.js";
 import { JobQueue } from "../host/job-queue.js";
 import { assembleMargin } from "../core/margin/index.js";
-import { assembleSemanticMargin } from "../core/ai/semantic-margin.js";
+import { runSemanticMargin } from "../host/semantic-margin-host.js";
 import { importObsidianVault } from "../core/importer/obsidian.js";
+import { TokenPackageLoader } from "../host/token-package-loader.js";
+import { getSharedStepMorphIndex } from "../core/language/index.js";
 import type { CrossRefData, MarginQuery } from "../core/margin/types.js";
-import { isHighlightOverlap } from "../core/events/highlightOverlap.js";
+import {
+  isHighlightOverlap,
+  subtractHighlightRange,
+  type HighlightRange,
+} from "../core/events/highlightOverlap.js";
 
 const DATA_DIR = resolve(__dirname, "../../data/scripture");
 const CROSS_REF_DIR = resolve(__dirname, "../../data/cross-references");
@@ -53,6 +64,17 @@ interface AppSettingsSchema {
   accentColor: "blue" | "green" | "plum";
   sidebarCollapsed: boolean;
   marginVisible: boolean;
+  readingSize: "s" | "m" | "l";
+  readingWidth: "narrow" | "medium" | "wide";
+  verseNumbers: "always" | "faint" | "hover";
+  sidebarStyle: "original" | "compact" | "rail";
+  recentPassages: Array<{
+    book: string;
+    chapter: number;
+    verse?: number;
+    packageId: string;
+    visitedAt: number;
+  }>;
   windowBounds: WindowBounds | null;
   /** The library location the user last confirmed (Welcome screen or Switch
    * Library), if any. null means no choice has ever been confirmed — the
@@ -66,6 +88,11 @@ const store = new Store<AppSettingsSchema>({
     accentColor: "blue",
     sidebarCollapsed: false,
     marginVisible: true,
+    readingSize: "m",
+    readingWidth: "medium",
+    verseNumbers: "always",
+    sidebarStyle: "original",
+    recentPassages: [],
     windowBounds: null,
     libraryPath: null,
   },
@@ -80,8 +107,101 @@ let crossRefData: CrossRefData | null = null;
 let embeddingsStore: EmbeddingsStore | null = null;
 let budgetManager: BudgetManager | null = null;
 let aiProvider: AIProvider | null = null;
+let codexProvider: CodexExecAIProvider | null = null;
+let themes: ThemeEntry[] = [];
 let embeddingProvider: EmbeddingProvider | null = null;
 let jobQueue: JobQueue | null = null;
+/** Original-language packages (MACULA Greek, later OSHB Hebrew). */
+let tokenPackages: TokenPackageLoader | null = null;
+
+interface HighlightChangeSnapshot {
+  before: HighlightRecord[];
+  after: HighlightRecord[];
+}
+
+// Undo tokens are intentionally process-local and short-lived in product
+// terms: they back the five-second toast, not durable history. The append-only
+// event log remains the durable source of truth.
+const highlightChanges = new Map<string, HighlightChangeSnapshot>();
+const MAX_HIGHLIGHT_CHANGES = 50;
+
+function rememberHighlightChange(before: HighlightRecord[], after: HighlightRecord[]): string {
+  const changeId = `hlchg_${ulid()}`;
+  highlightChanges.set(changeId, {
+    before: before.map((record) => ({ ...record, deleted: 0 })),
+    after: after.map((record) => ({ ...record, deleted: 0 })),
+  });
+  while (highlightChanges.size > MAX_HIGHLIGHT_CHANGES) {
+    const oldest = highlightChanges.keys().next().value as string | undefined;
+    if (!oldest) break;
+    highlightChanges.delete(oldest);
+  }
+  return changeId;
+}
+
+function highlightRecordMatches(a: HighlightRecord | undefined, b: HighlightRecord): boolean {
+  return !!a &&
+    a.id === b.id &&
+    a.book === b.book &&
+    a.chapter === b.chapter &&
+    a.verse_start === b.verse_start &&
+    a.verse_end === b.verse_end &&
+    a.package === b.package &&
+    a.char_start === b.char_start &&
+    a.char_end === b.char_end &&
+    a.color === b.color &&
+    a.deleted === 0;
+}
+
+function rangeRecord(
+  id: string,
+  source: HighlightRecord,
+  range: HighlightRange,
+): HighlightRecord {
+  return {
+    ...source,
+    id,
+    verse_start: range.verseStart,
+    verse_end: range.verseEnd,
+    char_start: range.charStart,
+    char_end: range.charEnd,
+    deleted: 0,
+  };
+}
+
+function validateHighlightRange(range: HighlightRange): string | null {
+  if (!Number.isInteger(range.verseStart) || !Number.isInteger(range.verseEnd) || range.verseStart < 1 || range.verseEnd < range.verseStart) {
+    return "Invalid highlight verse range";
+  }
+  if (range.charStart != null && (!Number.isInteger(range.charStart) || range.charStart < 0)) {
+    return "Invalid highlight start offset";
+  }
+  if (range.charEnd != null && (!Number.isInteger(range.charEnd) || range.charEnd < 0)) {
+    return "Invalid highlight end offset";
+  }
+  if (
+    range.verseStart === range.verseEnd &&
+    range.charStart != null &&
+    range.charEnd != null &&
+    range.charEnd <= range.charStart
+  ) {
+    return "Highlight selection is empty";
+  }
+  return null;
+}
+
+function applyHighlightRecordUpdate(target: LibraryEngine, record: HighlightRecord): void {
+  target.applyHighlightUpdate(record.id, {
+    book: record.book,
+    chapter: record.chapter,
+    verseStart: record.verse_start,
+    verseEnd: record.verse_end,
+    package: record.package,
+    color: record.color,
+    charStart: record.char_start,
+    charEnd: record.char_end,
+  });
+}
 
 function loadBackbone(): BackboneData {
   const backbonePath = join(DATA_DIR, "backbone.json");
@@ -102,6 +222,12 @@ function loadCrossRefs(): CrossRefData | null {
   const tskPath = join(CROSS_REF_DIR, "tsk.json");
   if (!existsSync(tskPath)) return null;
   return JSON.parse(readFileSync(tskPath, "utf-8")) as CrossRefData;
+}
+
+function loadThemes(): ThemeEntry[] {
+  const themesPath = resolve(__dirname, "../../data/themes/themes-seed-en.json");
+  if (!existsSync(themesPath)) return [];
+  return (JSON.parse(readFileSync(themesPath, "utf-8")) as { themes: ThemeEntry[] }).themes;
 }
 
 function getLibraryPath(libraryPath?: string): string {
@@ -161,7 +287,44 @@ function createWindow(): void {
   });
 }
 
+function languagePackageRoots(libraryPath: string): string[] {
+  return [
+    join(libraryPath, ".artifacts/scripture/packages"),
+    join(DATA_DIR, "packages"),
+  ];
+}
+
+let stepMorphLoaded = false;
+
+/** Load STEPBible TEGMC/TEHMC once into the shared index (CC BY). */
+function loadStepMorphTablesOnce(): void {
+  const index = getSharedStepMorphIndex();
+  // Retry if a previous attempt left the index empty (missing files, race).
+  if (stepMorphLoaded && index.size > 0) return;
+  const morphDir = join(DATA_DIR, "morph");
+  const greekPath = join(morphDir, "TEGMC-STEPBible-CC-BY.txt");
+  const hebrewPath = join(morphDir, "TEHMC-STEPBible-CC-BY.txt");
+  try {
+    if (existsSync(greekPath)) {
+      index.loadTable(readFileSync(greekPath, "utf8"), "STEPBible TEGMC");
+    }
+    if (existsSync(hebrewPath)) {
+      index.loadTable(readFileSync(hebrewPath, "utf8"), "STEPBible TEHMC");
+    }
+    stepMorphLoaded = index.size > 0;
+    console.log(
+      `STEP morph overlay: ${index.size} codes` +
+        ` (TEGMC ${existsSync(greekPath) ? "ok" : "MISSING"}, TEHMC ${existsSync(hebrewPath) ? "ok" : "MISSING"})` +
+        ` dir=${morphDir}`,
+    );
+  } catch (err) {
+    console.warn("STEP morph tables not loaded:", err);
+    stepMorphLoaded = false;
+  }
+}
+
 function initializeEngine(libraryPathArg?: string, autoCreateIfMissing: boolean = true): void {
+  highlightChanges.clear();
   backbone = loadBackbone();
   bookNames = loadBookNames();
   crossRefData = loadCrossRefs();
@@ -169,6 +332,23 @@ function initializeEngine(libraryPathArg?: string, autoCreateIfMissing: boolean 
   const libraryPath = getLibraryPath(libraryPathArg);
   engine = new LibraryEngine(libraryPath, backbone, bookNames);
   revisionStore = new GitRevisionStore(libraryPath);
+  const hebrewGlossPath = join(DATA_DIR, "lexicons/strongs-hebrew-gloss.json");
+  const hebrewGlossJson = existsSync(hebrewGlossPath)
+    ? readFileSync(hebrewGlossPath, "utf8")
+    : undefined;
+
+  // STEP morph overlay (Approach A) — load before any card request.
+  loadStepMorphTablesOnce();
+
+  if (!tokenPackages) {
+    tokenPackages = new TokenPackageLoader(languagePackageRoots(libraryPath), {
+      hebrewGlossJson,
+      ensureStepMorph: loadStepMorphTablesOnce,
+    });
+  } else {
+    tokenPackages.setRoots(languagePackageRoots(libraryPath));
+    if (hebrewGlossJson) tokenPackages.loadHebrewGlossJson(hebrewGlossJson);
+  }
 
   // Ensure library is initialized
   const manifestExists = existsSync(join(libraryPath, "config/library-manifest.json"));
@@ -200,6 +380,10 @@ function initializeEngine(libraryPathArg?: string, autoCreateIfMissing: boolean 
     // root in dev, or the process environment), deterministic mock otherwise.
     loadEnvFile(resolve(__dirname, "../../.env"));
     aiProvider = createDeepSeekProvider(process.env) ?? new MockAIProvider();
+    // B3.6: enrichment tier stack — Codex subscription (DEEP) leads when the
+    // user has codex installed + signed in; DeepSeek (FAST) is the fallback.
+    codexProvider = createCodexProvider(process.env);
+    themes = loadThemes();
     // B3 Gate 2: local on-device embeddings (EmbeddingGemma) in a hidden
     // renderer running onnxruntime-web/WASM. Every Node-side option (main
     // thread, worker_threads, utilityProcess, run-as-node) either livelocks
@@ -455,6 +639,76 @@ function registerIpcHandlers(): void {
     return JSON.parse(readFileSync(textPath, "utf-8"));
   });
 
+  // --- Original-language token packages (data-first language layer) ---
+
+  ipcMain.handle("language-list-packages", () => {
+    return tokenPackages?.listPackages() ?? [];
+  });
+
+  ipcMain.handle("language-load-package", (_event, packageId: string) => {
+    if (!tokenPackages) return { ok: false, error: "Loader not ready" };
+    const ok = tokenPackages.load(packageId);
+    return ok
+      ? { ok: true, packageId, loaded: true }
+      : { ok: false, error: `Package not found or empty: ${packageId}` };
+  });
+
+  ipcMain.handle(
+    "language-verse-tokens",
+    (
+      _event,
+      opts: { packageId: string; book: string; chapter: number; verse: number },
+    ) => {
+      if (!tokenPackages) return null;
+      return tokenPackages.getVerseTokens(
+        opts.packageId,
+        opts.book,
+        opts.chapter,
+        opts.verse,
+      );
+    },
+  );
+
+  ipcMain.handle(
+    "language-get-token",
+    (_event, opts: { packageId: string; tokenId: string }) => {
+      if (!tokenPackages) return null;
+      return tokenPackages.getToken(opts.packageId, opts.tokenId);
+    },
+  );
+
+  ipcMain.handle(
+    "language-token-card",
+    (_event, opts: { packageId: string; tokenId: string }) => {
+      if (!tokenPackages) return null;
+      return tokenPackages.getTokenCard(opts.packageId, opts.tokenId);
+    },
+  );
+
+  ipcMain.handle(
+    "language-lemma-in-book",
+    (_event, opts: { packageId: string; book: string; lemma: string }) => {
+      if (!tokenPackages) return null;
+      return tokenPackages.getLemmaInBook(opts.packageId, opts.book, opts.lemma);
+    },
+  );
+
+  ipcMain.handle(
+    "language-verse-marks",
+    (
+      _event,
+      opts: { packageId: string; book: string; chapter: number; verse: number },
+    ) => {
+      if (!tokenPackages) return null;
+      return tokenPackages.getMarksForVerse(
+        opts.packageId,
+        opts.book,
+        opts.chapter,
+        opts.verse,
+      );
+    },
+  );
+
   ipcMain.handle("get-cross-refs", (_event, opts: { book: string; chapter: number; verse: number }) => {
     if (!bookNames) return [];
     const result = assembleMargin(
@@ -518,29 +772,216 @@ function registerIpcHandlers(): void {
     verseEnd: number;
     color: string;
     package: string;
+    charStart?: number | null;
+    charEnd?: number | null;
   }) => {
     if (!engine || !revisionStore) return { ok: false, error: "Not initialized" };
 
-    // Replace-on-overlap: find and delete existing overlapping highlights
+    const incoming: HighlightRange = {
+      verseStart: opts.verseStart,
+      verseEnd: opts.verseEnd,
+      charStart: opts.charStart ?? null,
+      charEnd: opts.charEnd ?? null,
+    };
+    const rangeError = validateHighlightRange(incoming);
+    if (rangeError) return { ok: false, error: rangeError };
+
     const existing = engine.queryHighlightsForChapter(opts.book, opts.chapter, opts.package);
-    const overlapping = existing.filter((h) =>
-      isHighlightOverlap(h, { verseStart: opts.verseStart, verseEnd: opts.verseEnd }),
-    );
-    for (const h of overlapping) {
-      engine.applyHighlightDelete(h.id);
+    const before = existing.filter((highlight) => isHighlightOverlap(highlight, incoming));
+    const after: HighlightRecord[] = [];
+
+    // Subtract the incoming range from every highlight underneath it. The
+    // first remainder keeps the original entity id; a second remainder gets a
+    // fresh id. This preserves untouched outer verses/characters for every
+    // single- and multi-verse overlap shape.
+    for (const h of before) {
+      const remainders = subtractHighlightRange(h, incoming);
+      if (remainders.length === 0) {
+        engine.applyHighlightDelete(h.id);
+        continue;
+      }
+
+      const first = rangeRecord(h.id, h, remainders[0]!);
+      applyHighlightRecordUpdate(engine, first);
+      after.push(first);
+      for (const remainder of remainders.slice(1)) {
+        const remainderId = engine.applyHighlightCreate(
+          h.book,
+          h.chapter,
+          remainder.verseStart,
+          remainder.verseEnd,
+          h.color,
+          h.package,
+          remainder.charStart,
+          remainder.charEnd,
+        );
+        after.push(rangeRecord(remainderId, h, remainder));
+      }
     }
 
-    // Create the new highlight with incremental SQLite update
     const entityId = engine.applyHighlightCreate(
       opts.book, opts.chapter, opts.verseStart, opts.verseEnd, opts.color, opts.package,
+      incoming.charStart, incoming.charEnd,
     );
+    after.push({
+      id: entityId,
+      book: opts.book,
+      chapter: opts.chapter,
+      verse_start: opts.verseStart,
+      verse_end: opts.verseEnd,
+      package: opts.package,
+      char_start: incoming.charStart,
+      char_end: incoming.charEnd,
+      color: opts.color,
+      kind: "highlight",
+      note_id: null,
+      deleted: 0,
+    });
+    const changeId = rememberHighlightChange(before, after);
 
-    // Track in git
     const txn = await revisionStore.beginTransaction("Create highlight");
     txn.files.push("annotations/highlights.jsonl");
     await revisionStore.commit(txn);
 
-    return { ok: true, highlightId: entityId };
+    return { ok: true, highlightId: entityId, changeId };
+  });
+
+  ipcMain.handle("erase-highlight-range", async (_event, opts: {
+    book: string;
+    chapter: number;
+    verseStart: number;
+    verseEnd: number;
+    package: string;
+    charStart?: number | null;
+    charEnd?: number | null;
+  }) => {
+    if (!engine || !revisionStore) return { ok: false, error: "Not initialized" };
+    const incoming: HighlightRange = {
+      verseStart: opts.verseStart,
+      verseEnd: opts.verseEnd,
+      charStart: opts.charStart ?? null,
+      charEnd: opts.charEnd ?? null,
+    };
+    const rangeError = validateHighlightRange(incoming);
+    if (rangeError) return { ok: false, error: rangeError };
+
+    const existing = engine.queryHighlightsForChapter(opts.book, opts.chapter, opts.package);
+    const before = existing.filter((highlight) => isHighlightOverlap(highlight, incoming));
+    if (before.length === 0) return { ok: true };
+    const after: HighlightRecord[] = [];
+
+    for (const h of before) {
+      const remainders = subtractHighlightRange(h, incoming);
+      if (remainders.length === 0) {
+        engine.applyHighlightDelete(h.id);
+        continue;
+      }
+      const first = rangeRecord(h.id, h, remainders[0]!);
+      applyHighlightRecordUpdate(engine, first);
+      after.push(first);
+      for (const remainder of remainders.slice(1)) {
+        const id = engine.applyHighlightCreate(
+          h.book,
+          h.chapter,
+          remainder.verseStart,
+          remainder.verseEnd,
+          h.color,
+          h.package,
+          remainder.charStart,
+          remainder.charEnd,
+        );
+        after.push(rangeRecord(id, h, remainder));
+      }
+    }
+
+    const changeId = rememberHighlightChange(before, after);
+    const txn = await revisionStore.beginTransaction("Erase highlight range");
+    txn.files.push("annotations/highlights.jsonl");
+    await revisionStore.commit(txn);
+    return { ok: true, changeId };
+  });
+
+  ipcMain.handle("recolor-highlights", async (_event, opts: {
+    book: string;
+    chapter: number;
+    package: string;
+    entityIds: string[];
+    color: string;
+  }) => {
+    if (!engine || !revisionStore) return { ok: false, error: "Not initialized" };
+    const ids = new Set(opts.entityIds);
+    const before = engine.queryHighlightsForChapter(opts.book, opts.chapter, opts.package)
+      .filter((highlight) => ids.has(highlight.id));
+    if (before.length === 0) return { ok: false, error: "Highlights no longer exist" };
+
+    const after = before.map((highlight) => ({ ...highlight, color: opts.color, deleted: 0 }));
+    for (const highlight of after) applyHighlightRecordUpdate(engine, highlight);
+    const changeId = rememberHighlightChange(before, after);
+    const txn = await revisionStore.beginTransaction("Recolor highlights");
+    txn.files.push("annotations/highlights.jsonl");
+    await revisionStore.commit(txn);
+    return { ok: true, changeId };
+  });
+
+  ipcMain.handle("delete-highlights", async (_event, opts: {
+    book: string;
+    chapter: number;
+    package: string;
+    entityIds: string[];
+  }) => {
+    if (!engine || !revisionStore) return { ok: false, error: "Not initialized" };
+    const ids = new Set(opts.entityIds);
+    const before = engine.queryHighlightsForChapter(opts.book, opts.chapter, opts.package)
+      .filter((highlight) => ids.has(highlight.id));
+    if (before.length === 0) return { ok: false, error: "Highlights no longer exist" };
+    for (const highlight of before) engine.applyHighlightDelete(highlight.id);
+    const changeId = rememberHighlightChange(before, []);
+    const txn = await revisionStore.beginTransaction("Delete highlights");
+    txn.files.push("annotations/highlights.jsonl");
+    await revisionStore.commit(txn);
+    return { ok: true, changeId };
+  });
+
+  ipcMain.handle("undo-highlight-change", async (_event, changeId: string) => {
+    if (!engine || !revisionStore) return { ok: false, error: "Not initialized" };
+    const change = highlightChanges.get(changeId);
+    if (!change) return { ok: false, error: "This highlight change can no longer be undone" };
+
+    const relevant = [...change.before, ...change.after];
+    const currentById = new Map<string, HighlightRecord>();
+    const queried = new Set<string>();
+    for (const record of relevant) {
+      const key = `${record.book}\u0000${record.chapter}\u0000${record.package}`;
+      if (queried.has(key)) continue;
+      queried.add(key);
+      for (const current of engine.queryHighlightsForChapter(record.book, record.chapter, record.package)) {
+        currentById.set(current.id, current);
+      }
+    }
+
+    const afterIds = new Set(change.after.map((record) => record.id));
+    const beforeIds = new Set(change.before.map((record) => record.id));
+    const afterStillCurrent = change.after.every((record) => highlightRecordMatches(currentById.get(record.id), record));
+    const deletedBeforeStillAbsent = change.before
+      .filter((record) => !afterIds.has(record.id))
+      .every((record) => !currentById.has(record.id));
+    if (!afterStillCurrent || !deletedBeforeStillAbsent) {
+      return { ok: false, error: "That highlight changed again, so the older Undo was not applied" };
+    }
+
+    for (const record of change.after) {
+      if (!beforeIds.has(record.id)) engine.applyHighlightDelete(record.id);
+    }
+    for (const record of change.before) {
+      if (afterIds.has(record.id)) applyHighlightRecordUpdate(engine, record);
+      else engine.applyHighlightRestore(record);
+    }
+
+    highlightChanges.delete(changeId);
+    const txn = await revisionStore.beginTransaction("Undo highlight change");
+    txn.files.push("annotations/highlights.jsonl");
+    await revisionStore.commit(txn);
+    return { ok: true };
   });
 
   ipcMain.handle("delete-highlight", async (_event, opts: { entityId: string; baseEventId: string }) => {
@@ -581,7 +1022,7 @@ function registerIpcHandlers(): void {
     const dbPath = join(engine.rootPath, ".system/library.sqlite");
     const db = new SQLiteMaterializer(dbPath);
     try {
-      const result = await embedAllNotes(db, embeddingsStore, embeddingProvider);
+      const result = await embedAllNotes(db, embeddingsStore, embeddingProvider, themes);
       return { ok: true, ...result };
     } catch (err) {
       return { ok: false, error: err instanceof Error ? err.message : String(err) };
@@ -589,6 +1030,152 @@ function registerIpcHandlers(): void {
       db.close();
     }
   });
+
+  // --- B3.6: capture-time note enrichment ---
+
+  /** Enrichment tier stack honoring the budget envelope (INV-16). */
+  function enrichmentTiers(): EnrichTier[] {
+    if (!budgetManager || budgetManager.get().backgroundAI !== "cloud") return [];
+    const tiers: EnrichTier[] = [];
+    if (codexProvider) tiers.push({ provider: codexProvider, modelId: `codex-${codexProvider.model}` });
+    if (aiProvider && aiProvider instanceof OpenAICompatibleAIProvider) {
+      tiers.push({ provider: aiProvider, modelId: aiProvider.model });
+    }
+    return tiers;
+  }
+
+  ipcMain.handle("enrich-note", async (_event, opts: { noteId: string }) => {
+    if (!engine || !embeddingsStore || !backbone || !bookNames || !embeddingProvider) {
+      return { ok: false, error: "Not initialized" };
+    }
+    const tiers = enrichmentTiers();
+    if (tiers.length === 0) {
+      return { ok: false, error: "background AI is off (budget envelope) or no provider configured" };
+    }
+    const dbPath = join(engine.rootPath, ".system/library.sqlite");
+    const db = new SQLiteMaterializer(dbPath);
+    try {
+      const note = db.queryNoteById(opts.noteId);
+      if (!note) return { ok: false, error: "note not found" };
+      await enrichAllNotes({
+        notes: [{ id: note.id, title: note.title, body_text: note.body_text }],
+        store: embeddingsStore,
+        backbone,
+        themes,
+        tiers,
+      });
+      // Re-embed so the expansion chunk participates in retrieval immediately.
+      await embedAllNotes(db, embeddingsStore, embeddingProvider, themes);
+      return { ok: true, ...getEnrichmentSuggestions(opts.noteId) };
+    } catch (err) {
+      return { ok: false, error: err instanceof Error ? err.message : String(err) };
+    } finally {
+      db.close();
+    }
+  });
+
+  /** Suggestions = inferred refs minus feedback, healed by prior confirms, display-ready. */
+  function getEnrichmentSuggestions(noteId: string): {
+    enriched: boolean;
+    noScriptureIntent: boolean;
+    suggestions: { refKey: string; display: string; bref: string; healed: boolean }[];
+  } {
+    const enrichment = embeddingsStore?.getEnrichment(noteId);
+    if (!enrichment || !bookNames) return { enriched: false, noScriptureIntent: false, suggestions: [] };
+    const feedback = new Set(embeddingsStore!.getEnrichmentFeedback(noteId).map((f) => f.refKey));
+
+    // E5 healing: passages the user confirmed on theme-sharing notes lead.
+    const allEnrichments = embeddingsStore!.getAllEnrichments();
+    const { suggestions: ordered, healedKeys } = healSuggestionOrder({
+      noteThemes: enrichment.themes,
+      suggestions: enrichment.inferredRefs.filter((r) => !feedback.has(inferredRefKey(r))),
+      confirmations: embeddingsStore!
+        .getAllEnrichmentFeedback()
+        .filter((f) => f.action === "confirmed" && f.noteId !== noteId)
+        .map((f) => ({ noteId: f.noteId, refKey: f.refKey })),
+      themesByNote: new Map(allEnrichments.map((e) => [e.noteId, e.themes])),
+    });
+
+    const suggestions = ordered.map((r) => {
+      const name = bookNames![r.book]?.[0] ?? r.book;
+      const display =
+        r.verseStart !== undefined
+          ? `${name} ${r.chapter}:${r.verseStart}${r.verseEnd && r.verseEnd !== r.verseStart ? `–${r.verseEnd}` : ""}`
+          : `${name} ${r.chapter}`;
+      const bref =
+        r.verseStart !== undefined
+          ? `bref:v1/${r.book}.${r.chapter}.${r.verseStart}`
+          : `bref:v1/${r.book}.${r.chapter}.1`;
+      return { refKey: inferredRefKey(r), display, bref, healed: healedKeys.has(inferredRefKey(r)) };
+    });
+    return { enriched: true, noScriptureIntent: enrichment.noScriptureIntent, suggestions };
+  }
+
+  ipcMain.handle("get-enrichment", (_event, opts: { noteId: string }) => {
+    if (!embeddingsStore) return { enriched: false, noScriptureIntent: false, suggestions: [] };
+    return getEnrichmentSuggestions(opts.noteId);
+  });
+
+  ipcMain.handle(
+    "enrichment-feedback",
+    async (_event, opts: { noteId: string; refKey: string; action: "confirmed" | "dismissed"; refDisplay?: string }) => {
+      if (!engine || !embeddingsStore || !revisionStore) return { ok: false, error: "Not initialized" };
+      embeddingsStore.setEnrichmentFeedback({
+        noteId: opts.noteId,
+        refKey: opts.refKey,
+        action: opts.action,
+        created: new Date().toISOString(),
+      });
+      if (opts.action === "confirmed" && opts.refDisplay) {
+        // Confirmation is a USER action: the ref is appended to the note
+        // body (the file is authoritative, INV-11) and becomes a real,
+        // full-strength anchor on the next index pass. INV-1 satisfied:
+        // the write happens only on this explicit user action.
+        const parsed = engine.readAllNotes().find((n) => n.frontmatter.id === opts.noteId);
+        if (!parsed) return { ok: false, error: "note not found" };
+        const newBody = `${parsed.body.trimEnd()}\n\nRelated: ${opts.refDisplay}\n`;
+        const notePath = engine.createNote(opts.noteId, parsed.frontmatter.title, newBody, {
+          type: parsed.frontmatter.type ?? "user",
+          tags: parsed.frontmatter.tags,
+        });
+        const relPath = notePath.replace(engine.rootPath + "/", "");
+        const txn = await revisionStore.beginTransaction(`Anchor note to ${opts.refDisplay}`);
+        txn.files.push(relPath);
+        await revisionStore.commit(txn);
+        engine.buildSqlite();
+      }
+      return { ok: true };
+    },
+  );
+
+  // A-5: unanchor is one tap, symmetrical with anchor. Removes the appended
+  // "Related: <ref>" line and clears the feedback record (the suggestion may
+  // return; the user changed their mind, they didn't dismiss the idea).
+  ipcMain.handle(
+    "unanchor-note-ref",
+    async (_event, opts: { noteId: string; refKey: string; refDisplay: string }) => {
+      if (!engine || !embeddingsStore || !revisionStore) return { ok: false, error: "Not initialized" };
+      const parsed = engine.readAllNotes().find((n) => n.frontmatter.id === opts.noteId);
+      if (!parsed) return { ok: false, error: "note not found" };
+      const line = `Related: ${opts.refDisplay}`;
+      const newBody = parsed.body
+        .split("\n")
+        .filter((l) => l.trim() !== line)
+        .join("\n")
+        .replace(/\n{3,}/g, "\n\n");
+      const notePath = engine.createNote(opts.noteId, parsed.frontmatter.title, newBody, {
+        type: parsed.frontmatter.type ?? "user",
+        tags: parsed.frontmatter.tags,
+      });
+      const relPath = notePath.replace(engine.rootPath + "/", "");
+      const txn = await revisionStore.beginTransaction(`Unanchor note from ${opts.refDisplay}`);
+      txn.files.push(relPath);
+      await revisionStore.commit(txn);
+      engine.buildSqlite();
+      embeddingsStore.deleteEnrichmentFeedback(opts.noteId, opts.refKey);
+      return { ok: true };
+    },
+  );
 
   ipcMain.handle("semantic-margin", async (_event, opts: {
     book: string;
@@ -602,71 +1189,18 @@ function registerIpcHandlers(): void {
     const dbPath = join(engine.rootPath, ".system/library.sqlite");
     const db = new SQLiteMaterializer(dbPath);
     try {
-      // B3 Gate 2: real query embedding (asymmetric "query" role). If the
-      // local model is unavailable (e.g. first-run download failed), degrade
-      // to a zero vector: semantic notes go empty, but claims / threads /
-      // overlays (which don't need embeddings) still surface.
-      // Passage text is capped: attention cost grows quadratically and a
-      // full chapter (~1600 tokens) takes minutes on CPU; ~1500 chars
-      // (~375 tokens) keeps interactive latency bounded with enough signal.
-      const queryText = opts.passageText.slice(0, 1500);
-      let queryEmbedding: Float32Array;
-      try {
-        const vecs = await embeddingProvider.embed([queryText], "query");
-        queryEmbedding = vecs[0] ?? new Float32Array(embeddingProvider.dim);
-      } catch (err) {
-        console.error("semantic-margin: query embedding failed:", err);
-        queryEmbedding = new Float32Array(embeddingProvider.dim);
-      }
-
-      // Get deterministic margin first to know which notes are already surfaced
-      const detMargin = assembleMargin(
-        {
-          book: opts.book,
-          startChapter: opts.startChapter,
-          startVerse: opts.startVerse,
-          endChapter: opts.endChapter,
-          endVerse: opts.endVerse,
-        },
+      // B3.5: one shared code path (host runner) for the IPC handler, the
+      // eval harness, and smoke scripts — hybrid retrieval with the
+      // calibrated quality bar lives in core, wiring lives in the runner.
+      return await runSemanticMargin({
         db,
+        embeddingsStore,
+        provider: embeddingProvider,
         crossRefData,
         bookNames,
-      );
-
-      const alreadySurfaced = new Set(detMargin.notes.map((n) => n.noteId));
-
-      const allEmbeddings = embeddingsStore.getAllEmbeddings(embeddingProvider.modelId).map((e) => ({
-        srcKind: e.srcKind,
-        srcId: e.srcId,
-        vector: e.vector,
-      }));
-
-      const semantic = assembleSemanticMargin(
-        {
-          book: opts.book,
-          startChapter: opts.startChapter,
-          startVerse: opts.startVerse,
-          endChapter: opts.endChapter,
-          endVerse: opts.endVerse,
-        },
-        queryEmbedding,
-        {
-          getAllEmbeddings: () => allEmbeddings,
-          getEmbedding: (kind, id) => allEmbeddings.find((e) => e.srcKind === kind && e.srcId === id),
-          queryNoteById: (id) => {
-            const n = db.queryNoteById(id);
-            return n ? { id: n.id, title: n.title, body_text: n.body_text } : undefined;
-          },
-          queryClaimsForRange: (b, sc, sv, ec, ev) => db.queryClaimsForRange(b, sc, sv, ec, ev),
-          queryClaimAnchors: (cid) => db.queryClaimAnchors(cid),
-          queryOverlaysForRange: (b, sc, sv, ec, ev) => db.queryOverlaysForRange(b, sc, sv, ec, ev),
-          getAllThreads: () => embeddingsStore!.getAllThreads(),
-        },
-        alreadySurfaced,
-        bookNames,
-      );
-
-      return semantic;
+        themes,
+        request: opts,
+      });
     } finally {
       db.close();
     }
@@ -708,18 +1242,24 @@ function registerIpcHandlers(): void {
     anchors: { book: string; chapter: number; verse: number }[];
     sources: { kind: string; ref: string }[];
   }) => {
-    if (!engine) return { ok: false, error: "Not initialized" };
-    engine.insertClaim({
+    if (!embeddingsStore) return { ok: false, error: "Not initialized" };
+    // B-1: claims live in the persistent AI-derived store (embeddings.sqlite),
+    // not library.sqlite — the materialized view is wiped on every note save.
+    embeddingsStore.insertClaim({
       id: opts.id,
       assertion: opts.assertion,
-      claimType: opts.claimType,
+      claim_type: opts.claimType,
       confidence: opts.confidence,
       extractor: opts.extractor,
       created: new Date().toISOString(),
       status: "active",
-      anchors: opts.anchors,
-      sources: opts.sources,
     });
+    for (const a of opts.anchors) {
+      embeddingsStore.insertClaimAnchor({ claim_id: opts.id, book: a.book, chapter: a.chapter, verse: a.verse });
+    }
+    for (const s of opts.sources) {
+      embeddingsStore.insertClaimSource({ claim_id: opts.id, kind: s.kind, ref: s.ref });
+    }
     return { ok: true };
   });
 

@@ -5,7 +5,11 @@ import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   buildClaimExtractionRequest,
+  deriveClaimConfidence,
+  normalizeForQuoteMatch,
   parseClaimExtraction,
+  quoteAppearsInNote,
+  type ClaimEvidence,
 } from "../src/core/ai/claim-extraction.js";
 import type { BackboneData } from "../src/core/reference/types.js";
 
@@ -14,24 +18,30 @@ const backbone = JSON.parse(
   readFileSync(join(resolve(__dirname, "../data/scripture"), "backbone.json"), "utf-8"),
 ) as BackboneData;
 
-const noteIds = new Set(["note-1", "note-2"]);
+const notes = [
+  {
+    id: "note-1",
+    title: "Acts 19 — Disciples at Ephesus",
+    body: "Paul's question assumes reception of the Spirit is verifiable. They were re-baptized in the name of the Lord Jesus.",
+  },
+  { id: "note-2", title: "Laying on of hands", body: "Hands mark continuity and transfer." },
+];
 
 function claim(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
     assertion: "The Spirit is received after baptism in Jesus' name",
     claimType: "theological",
-    confidence: 0.9,
     anchors: [{ book: "ACT", chapter: 19, verse: 5 }],
-    evidence: [{ kind: "note", ref: "note-1" }],
+    evidence: [{ kind: "note", ref: "note-1", quote: "re-baptized in the name of the Lord Jesus" }],
     ...overrides,
   };
 }
 
 function parse(claims: unknown[]): ReturnType<typeof parseClaimExtraction> {
-  return parseClaimExtraction(JSON.stringify({ claims }), backbone, noteIds);
+  return parseClaimExtraction(JSON.stringify({ claims }), backbone, notes);
 }
 
-test("valid claim passes with anchors and note evidence intact", () => {
+test("valid quote-grounded claim passes with anchors and evidence intact", () => {
   const result = parse([claim()]);
   assert.equal(result.rejected.length, 0);
   assert.equal(result.claims.length, 1);
@@ -40,7 +50,7 @@ test("valid claim passes with anchors and note evidence intact", () => {
 });
 
 test("invalid JSON rejects wholesale", () => {
-  const result = parseClaimExtraction("not json at all", backbone, noteIds);
+  const result = parseClaimExtraction("not json at all", backbone, notes);
   assert.equal(result.claims.length, 0);
   assert.equal(result.rejected.length, 1);
 });
@@ -70,18 +80,46 @@ test("claim without evidence is rejected — grounding is mandatory", () => {
 });
 
 test("evidence citing an unknown note id is rejected", () => {
-  const result = parse([claim({ evidence: [{ kind: "note", ref: "hallucinated-note" }] })]);
+  const result = parse([claim({ evidence: [{ kind: "note", ref: "hallucinated-note", quote: "anything" }] })]);
   assert.match(result.rejected[0]!, /unknown note/);
 });
 
-test("malformed scripture evidence ref is rejected", () => {
-  const result = parse([claim({ evidence: [{ kind: "scripture", ref: "Acts 19:5" }] })]);
-  assert.match(result.rejected[0]!, /malformed scripture evidence/);
+test("note evidence without a quote is rejected (claims-v2)", () => {
+  const result = parse([claim({ evidence: [{ kind: "note", ref: "note-1" }] })]);
+  assert.match(result.rejected[0]!, /missing quote/);
 });
 
-test("confidence outside 0..1 is rejected", () => {
-  const result = parse([claim({ confidence: 1.5 })]);
-  assert.match(result.rejected[0]!, /confidence out of range/);
+test("paraphrased/invented quote is rejected — verbatim grounding is mandatory", () => {
+  const result = parse([
+    claim({ evidence: [{ kind: "note", ref: "note-1", quote: "baptism gives the Spirit automatically" }] }),
+  ]);
+  assert.equal(result.claims.length, 0);
+  assert.match(result.rejected[0]!, /quote not found/);
+});
+
+test("quote verification tolerates case, punctuation, and smart quotes — not paraphrase", () => {
+  const note = notes[0]!;
+  assert.equal(quoteAppearsInNote("Re-baptized in the name of the Lord Jesus.", note), true);
+  assert.equal(quoteAppearsInNote("PAUL'S QUESTION ASSUMES", note), true);
+  assert.equal(quoteAppearsInNote("Paul\u2019s question assumes", note), true);
+  assert.equal(quoteAppearsInNote("Paul wondered whether", note), false);
+});
+
+test("scripture-only evidence is rejected — claims must cite the reader's notes", () => {
+  const result = parse([claim({ evidence: [{ kind: "scripture", ref: "ACT.19.5" }] })]);
+  assert.match(result.rejected[0]!, /no note evidence/);
+});
+
+test("malformed scripture evidence ref is rejected", () => {
+  const result = parse([
+    claim({
+      evidence: [
+        { kind: "note", ref: "note-1", quote: "re-baptized in the name of the Lord Jesus" },
+        { kind: "scripture", ref: "Acts 19:5" },
+      ],
+    }),
+  ]);
+  assert.match(result.rejected[0]!, /malformed scripture evidence/);
 });
 
 test("unknown claimType is rejected", () => {
@@ -89,7 +127,27 @@ test("unknown claimType is rejected", () => {
   assert.match(result.rejected[0]!, /invalid claimType/);
 });
 
-test("prompt embeds note ids and pins the anti-injection rule", () => {
+test("confidence is derived from evidence, ignoring any model self-report", () => {
+  const result = parse([claim({ confidence: 0.99 })]);
+  // one verified note quote → 0.5 + 0.2
+  assert.equal(result.claims[0]!.confidence, 0.7);
+
+  const twoNotes: ClaimEvidence[] = [
+    { kind: "note", ref: "n", quote: "q" },
+    { kind: "note", ref: "n2", quote: "q2" },
+  ];
+  assert.equal(deriveClaimConfidence(twoNotes), 0.9);
+  assert.equal(
+    deriveClaimConfidence([...twoNotes, { kind: "scripture", ref: "ACT.19.5" }, { kind: "scripture", ref: "ACT.2.38" }]),
+    1,
+  );
+});
+
+test("normalizeForQuoteMatch collapses punctuation and whitespace deterministically", () => {
+  assert.equal(normalizeForQuoteMatch("  Paul\u2019s  question—assumes! "), "paul s question assumes");
+});
+
+test("prompt demands verbatim quotes and pins the anti-injection rule", () => {
   const { context, prompt } = buildClaimExtractionRequest(
     "Acts 19:1-7 (WEB)",
     "passage text here",
@@ -99,4 +157,6 @@ test("prompt embeds note ids and pins the anti-injection rule", () => {
   assert.match(prompt, /passage text here/);
   assert.match(context, /never instructions/);
   assert.match(context, /USFM 3-letter uppercase/);
+  assert.match(context, /copied EXACTLY/);
+  assert.match(context, /verified by string match/);
 });

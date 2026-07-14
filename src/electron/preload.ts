@@ -47,7 +47,29 @@ const api = {
       verseEnd: number,
       color: string,
       packageId: string,
-    ) => ipcRenderer.invoke("create-highlight", { book, chapter, verseStart, verseEnd, color, package: packageId }),
+      charStart?: number | null,
+      charEnd?: number | null,
+    ) => ipcRenderer.invoke("create-highlight", {
+      book, chapter, verseStart, verseEnd, color, package: packageId,
+      charStart: charStart ?? null, charEnd: charEnd ?? null,
+    }),
+    eraseHighlightRange: (
+      book: string,
+      chapter: number,
+      verseStart: number,
+      verseEnd: number,
+      packageId: string,
+      charStart?: number | null,
+      charEnd?: number | null,
+    ) => ipcRenderer.invoke("erase-highlight-range", {
+      book, chapter, verseStart, verseEnd, package: packageId,
+      charStart: charStart ?? null, charEnd: charEnd ?? null,
+    }),
+    recolorHighlights: (book: string, chapter: number, packageId: string, entityIds: string[], color: string) =>
+      ipcRenderer.invoke("recolor-highlights", { book, chapter, package: packageId, entityIds, color }),
+    deleteHighlights: (book: string, chapter: number, packageId: string, entityIds: string[]) =>
+      ipcRenderer.invoke("delete-highlights", { book, chapter, package: packageId, entityIds }),
+    undoHighlightChange: (changeId: string) => ipcRenderer.invoke("undo-highlight-change", changeId),
     deleteHighlight: (entityId: string, baseEventId: string) =>
       ipcRenderer.invoke("delete-highlight", { entityId, baseEventId }),
     search: (query: string) => ipcRenderer.invoke("search-notes", query),
@@ -72,8 +94,29 @@ const api = {
     getCrossRefsForChapter: (book: string, chapter: number, verseCount: number) =>
       ipcRenderer.invoke("get-cross-refs-for-chapter", { book, chapter, verseCount }),
   },
+  language: {
+    listPackages: () => ipcRenderer.invoke("language-list-packages"),
+    loadPackage: (packageId: string) =>
+      ipcRenderer.invoke("language-load-package", packageId),
+    getVerseTokens: (packageId: string, book: string, chapter: number, verse: number) =>
+      ipcRenderer.invoke("language-verse-tokens", { packageId, book, chapter, verse }),
+    getToken: (packageId: string, tokenId: string) =>
+      ipcRenderer.invoke("language-get-token", { packageId, tokenId }),
+    getTokenCard: (packageId: string, tokenId: string) =>
+      ipcRenderer.invoke("language-token-card", { packageId, tokenId }),
+    getLemmaInBook: (packageId: string, book: string, lemma: string) =>
+      ipcRenderer.invoke("language-lemma-in-book", { packageId, book, lemma }),
+    getVerseMarks: (packageId: string, book: string, chapter: number, verse: number) =>
+      ipcRenderer.invoke("language-verse-marks", { packageId, book, chapter, verse }),
+  },
   ai: {
     embedNotes: () => ipcRenderer.invoke("embed-notes"),
+    enrichNote: (noteId: string) => ipcRenderer.invoke("enrich-note", { noteId }),
+    getEnrichment: (noteId: string) => ipcRenderer.invoke("get-enrichment", { noteId }),
+    enrichmentFeedback: (opts: { noteId: string; refKey: string; action: "confirmed" | "dismissed"; refDisplay?: string }) =>
+      ipcRenderer.invoke("enrichment-feedback", opts),
+    unanchorRef: (opts: { noteId: string; refKey: string; refDisplay: string }) =>
+      ipcRenderer.invoke("unanchor-note-ref", opts),
     semanticMargin: (opts: {
       book: string;
       startChapter: number;

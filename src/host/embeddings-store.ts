@@ -1,8 +1,11 @@
 /**
- * Embeddings store — Node host layer.
- * Manages embeddings.sqlite as a vector store (§4.4).
- * Uses a simple table with cosine similarity computed in JS.
- * Excluded from rebuild_hash (INV-10).
+ * AI-derived store — Node host layer.
+ * Manages embeddings.sqlite as the persistent home for ALL AI-derived data:
+ * vectors (§4.4), threads, claims, and job logs. Unlike library.sqlite (a
+ * materialized view that is deleted and rebuilt on every substrate change),
+ * this store persists across rebuilds — AI outputs are expensive; they are
+ * invalidated precisely (content hashes) rather than wiped wholesale.
+ * Excluded from rebuild_hash (INV-10); fully regenerable (INV-2).
  */
 
 import Database from "better-sqlite3";
@@ -28,6 +31,50 @@ CREATE TABLE IF NOT EXISTS threads (
   created TEXT
 );
 
+CREATE TABLE IF NOT EXISTS claims (
+  id TEXT PRIMARY KEY,
+  assertion TEXT,
+  claim_type TEXT,
+  confidence REAL,
+  extractor TEXT,
+  created TEXT,
+  status TEXT
+);
+
+CREATE TABLE IF NOT EXISTS claim_anchors (
+  claim_id TEXT,
+  book TEXT,
+  chapter INTEGER,
+  verse INTEGER
+);
+
+CREATE TABLE IF NOT EXISTS claim_sources (
+  claim_id TEXT,
+  kind TEXT,
+  ref TEXT,
+  quote TEXT,
+  source_hash TEXT
+);
+
+CREATE TABLE IF NOT EXISTS enrichments (
+  note_id TEXT PRIMARY KEY,
+  content_hash TEXT,
+  extractor TEXT,
+  no_scripture_intent INTEGER,
+  inferred_refs TEXT,
+  themes TEXT,
+  expansion TEXT,
+  created TEXT
+);
+
+CREATE TABLE IF NOT EXISTS enrichment_feedback (
+  note_id TEXT,
+  ref_key TEXT,
+  action TEXT,
+  created TEXT,
+  PRIMARY KEY (note_id, ref_key)
+);
+
 CREATE TABLE IF NOT EXISTS ai_jobs (
   id TEXT PRIMARY KEY,
   kind TEXT,
@@ -38,6 +85,43 @@ CREATE TABLE IF NOT EXISTS ai_jobs (
   error TEXT
 );
 `;
+
+export type EnrichmentRecord = {
+  noteId: string;
+  contentHash: string;
+  extractor: string;
+  noScriptureIntent: boolean;
+  inferredRefs: { book: string; chapter: number; verseStart?: number; verseEnd?: number }[];
+  themes: string[];
+  expansion: string;
+  created: string;
+};
+
+export type EnrichmentFeedback = {
+  noteId: string;
+  /** "BOOK.chapter" or "BOOK.chapter.start-end" — matches InferredRef identity. */
+  refKey: string;
+  action: "confirmed" | "dismissed";
+  created: string;
+};
+
+export type ClaimRecord = {
+  id: string;
+  assertion: string;
+  claim_type: string;
+  confidence: number;
+  extractor: string;
+  created: string;
+  status: string;
+};
+
+export type ClaimSourceRecord = {
+  claim_id: string;
+  kind: string;
+  ref: string;
+  quote: string | null;
+  source_hash: string | null;
+};
 
 export class EmbeddingsStore {
   private db: Database.Database;
@@ -124,6 +208,14 @@ export class EmbeddingsStore {
     }));
   }
 
+  /** Lightweight id listing (no vector decode) — used by the sync sweep. */
+  listEmbeddings(): { srcKind: string; srcId: string }[] {
+    const rows = this.db
+      .prepare("SELECT src_kind, src_id FROM embeddings")
+      .all() as { src_kind: string; src_id: string }[];
+    return rows.map((row) => ({ srcKind: row.src_kind, srcId: row.src_id }));
+  }
+
   deleteEmbedding(srcKind: string, srcId: string): void {
     this.db.prepare("DELETE FROM embeddings WHERE src_kind = ? AND src_id = ?").run(srcKind, srcId);
   }
@@ -131,7 +223,80 @@ export class EmbeddingsStore {
   clear(): void {
     this.db.exec("DELETE FROM embeddings");
     this.db.exec("DELETE FROM threads");
+    this.db.exec("DELETE FROM claims");
+    this.db.exec("DELETE FROM claim_anchors");
+    this.db.exec("DELETE FROM claim_sources");
+    this.db.exec("DELETE FROM enrichments");
+    this.db.exec("DELETE FROM enrichment_feedback");
     this.db.exec("DELETE FROM ai_jobs");
+  }
+
+  // --- Claims (B3.6 B-1: persistent across library.sqlite rebuilds) ---
+
+  insertClaim(c: ClaimRecord): void {
+    this.db
+      .prepare(
+        "INSERT OR REPLACE INTO claims (id, assertion, claim_type, confidence, extractor, created, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      )
+      .run(c.id, c.assertion, c.claim_type, c.confidence, c.extractor, c.created, c.status);
+  }
+
+  insertClaimAnchor(a: { claim_id: string; book: string; chapter: number; verse: number }): void {
+    this.db
+      .prepare("INSERT INTO claim_anchors (claim_id, book, chapter, verse) VALUES (?, ?, ?, ?)")
+      .run(a.claim_id, a.book, a.chapter, a.verse);
+  }
+
+  insertClaimSource(s: { claim_id: string; kind: string; ref: string; quote?: string; source_hash?: string }): void {
+    this.db
+      .prepare("INSERT INTO claim_sources (claim_id, kind, ref, quote, source_hash) VALUES (?, ?, ?, ?, ?)")
+      .run(s.claim_id, s.kind, s.ref, s.quote ?? null, s.source_hash ?? null);
+  }
+
+  queryClaimsForRange(book: string, startCh: number, startV: number, endCh: number, endV: number): ClaimRecord[] {
+    return this.db
+      .prepare(
+        `SELECT DISTINCT c.* FROM claims c
+         JOIN claim_anchors ca ON c.id = ca.claim_id
+         WHERE ca.book = ? AND (
+           (ca.chapter < ? OR (ca.chapter = ? AND ca.verse <= ?)) AND
+           (ca.chapter > ? OR (ca.chapter = ? AND ca.verse >= ?))
+         ) AND c.status = 'active'`,
+      )
+      .all(book, endCh, endCh, endV, startCh, startCh, startV) as ClaimRecord[];
+  }
+
+  queryClaimAnchors(claimId: string): { claim_id: string; book: string; chapter: number; verse: number }[] {
+    return this.db
+      .prepare("SELECT * FROM claim_anchors WHERE claim_id = ?")
+      .all(claimId) as { claim_id: string; book: string; chapter: number; verse: number }[];
+  }
+
+  queryClaimSources(claimId: string): ClaimSourceRecord[] {
+    return this.db
+      .prepare("SELECT * FROM claim_sources WHERE claim_id = ?")
+      .all(claimId) as ClaimSourceRecord[];
+  }
+
+  getAllClaims(): ClaimRecord[] {
+    return this.db.prepare("SELECT * FROM claims").all() as ClaimRecord[];
+  }
+
+  deleteClaim(claimId: string): void {
+    this.db.prepare("DELETE FROM claim_anchors WHERE claim_id = ?").run(claimId);
+    this.db.prepare("DELETE FROM claim_sources WHERE claim_id = ?").run(claimId);
+    this.db.prepare("DELETE FROM claims WHERE id = ?").run(claimId);
+  }
+
+  /** Idempotent extraction re-runs replace their own prior output wholesale. */
+  deleteClaimsByExtractor(extractor: string): number {
+    this.db
+      .prepare("DELETE FROM claim_anchors WHERE claim_id IN (SELECT id FROM claims WHERE extractor = ?)")
+      .run(extractor);
+    this.db
+      .prepare("DELETE FROM claim_sources WHERE claim_id IN (SELECT id FROM claims WHERE extractor = ?)")
+      .run(extractor);
+    return this.db.prepare("DELETE FROM claims WHERE extractor = ?").run(extractor).changes;
   }
 
   // Thread storage
@@ -154,6 +319,112 @@ export class EmbeddingsStore {
       summary: row.summary,
       extractor: row.extractor,
       created: row.created,
+    }));
+  }
+
+  // --- Enrichments (B3.6: capture-time note interpretation, Derived) ---
+
+  upsertEnrichment(e: EnrichmentRecord): void {
+    this.db
+      .prepare(
+        `INSERT OR REPLACE INTO enrichments
+         (note_id, content_hash, extractor, no_scripture_intent, inferred_refs, themes, expansion, created)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .run(
+        e.noteId,
+        e.contentHash,
+        e.extractor,
+        e.noScriptureIntent ? 1 : 0,
+        JSON.stringify(e.inferredRefs),
+        JSON.stringify(e.themes),
+        e.expansion,
+        e.created,
+      );
+  }
+
+  getEnrichment(noteId: string): EnrichmentRecord | undefined {
+    const row = this.db.prepare("SELECT * FROM enrichments WHERE note_id = ?").get(noteId) as
+      | {
+          note_id: string;
+          content_hash: string;
+          extractor: string;
+          no_scripture_intent: number;
+          inferred_refs: string;
+          themes: string;
+          expansion: string;
+          created: string;
+        }
+      | undefined;
+    if (!row) return undefined;
+    return {
+      noteId: row.note_id,
+      contentHash: row.content_hash,
+      extractor: row.extractor,
+      noScriptureIntent: row.no_scripture_intent === 1,
+      inferredRefs: JSON.parse(row.inferred_refs) as EnrichmentRecord["inferredRefs"],
+      themes: JSON.parse(row.themes) as string[],
+      expansion: row.expansion,
+      created: row.created,
+    };
+  }
+
+  getAllEnrichments(): EnrichmentRecord[] {
+    const ids = this.db.prepare("SELECT note_id FROM enrichments").all() as { note_id: string }[];
+    return ids.map((r) => this.getEnrichment(r.note_id)!).filter(Boolean);
+  }
+
+  isEnrichmentCurrent(noteId: string, contentHash: string, extractor: string): boolean {
+    const row = this.db
+      .prepare("SELECT 1 FROM enrichments WHERE note_id = ? AND content_hash = ? AND extractor = ?")
+      .get(noteId, contentHash, extractor);
+    return row !== undefined;
+  }
+
+  deleteEnrichment(noteId: string): void {
+    this.db.prepare("DELETE FROM enrichments WHERE note_id = ?").run(noteId);
+  }
+
+  /**
+   * Feedback keys on (noteId, refKey) — NOT content hash — so dismissals
+   * survive note edits (magic-breaker A-1: zombie suggestions).
+   */
+  setEnrichmentFeedback(f: EnrichmentFeedback): void {
+    this.db
+      .prepare(
+        "INSERT OR REPLACE INTO enrichment_feedback (note_id, ref_key, action, created) VALUES (?, ?, ?, ?)",
+      )
+      .run(f.noteId, f.refKey, f.action, f.created);
+  }
+
+  deleteEnrichmentFeedback(noteId: string, refKey: string): void {
+    this.db.prepare("DELETE FROM enrichment_feedback WHERE note_id = ? AND ref_key = ?").run(noteId, refKey);
+  }
+
+  getEnrichmentFeedback(noteId: string): EnrichmentFeedback[] {
+    const rows = this.db
+      .prepare("SELECT * FROM enrichment_feedback WHERE note_id = ?")
+      .all(noteId) as { note_id: string; ref_key: string; action: string; created: string }[];
+    return rows.map((r) => ({
+      noteId: r.note_id,
+      refKey: r.ref_key,
+      action: r.action as "confirmed" | "dismissed",
+      created: r.created,
+    }));
+  }
+
+  getAllEnrichmentFeedback(): EnrichmentFeedback[] {
+    const rows = this.db.prepare("SELECT * FROM enrichment_feedback").all() as {
+      note_id: string;
+      ref_key: string;
+      action: string;
+      created: string;
+    }[];
+    return rows.map((r) => ({
+      noteId: r.note_id,
+      refKey: r.ref_key,
+      action: r.action as "confirmed" | "dismissed",
+      created: r.created,
     }));
   }
 

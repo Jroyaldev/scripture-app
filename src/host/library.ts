@@ -710,6 +710,8 @@ export class LibraryEngine {
     verseEnd: number,
     color: string,
     pkg: string,
+    charStart: number | null = null,
+    charEnd: number | null = null,
   ): string {
     const entityId = "hl_" + ulid();
     const event = this.createEvent("highlight", entityId, "create", {
@@ -718,6 +720,8 @@ export class LibraryEngine {
       verse_start: verseStart,
       verse_end: verseEnd,
       package: pkg,
+      char_start: charStart,
+      char_end: charEnd,
       color,
       kind: "highlight",
     });
@@ -734,8 +738,8 @@ export class LibraryEngine {
         verse_start: verseStart,
         verse_end: verseEnd,
         package: pkg,
-        char_start: null,
-        char_end: null,
+        char_start: charStart,
+        char_end: charEnd,
         color,
         kind: "highlight",
         note_id: null,
@@ -746,6 +750,64 @@ export class LibraryEngine {
     }
 
     return entityId;
+  }
+
+  /**
+   * Incrementally apply a highlight update (e.g. trimming an edge to make
+   * room for a newly created overlapping highlight) without a full rebuild
+   * (INV-9). Uses an `update` event (whole-payload LWW — see fold.ts and
+   * tests/fold-highlight.test.ts) rather than delete+create specifically so
+   * the highlight keeps its id across the edit: undo-toast closures and the
+   * Living Margin's pinned-highlight lookup both key off `highlight.id`, and
+   * a delete+recreate would silently mint a new one, orphaning both. Also
+   * appends the event to the JSONL log (INV-7).
+   */
+  applyHighlightUpdate(
+    entityId: string,
+    next: {
+      book: string;
+      chapter: number;
+      verseStart: number;
+      verseEnd: number;
+      package: string;
+      color: string;
+      charStart: number | null;
+      charEnd: number | null;
+    },
+  ): void {
+    const event = this.createEvent("highlight", entityId, "update", {
+      book: next.book,
+      chapter: next.chapter,
+      verse_start: next.verseStart,
+      verse_end: next.verseEnd,
+      package: next.package,
+      char_start: next.charStart,
+      char_end: next.charEnd,
+      color: next.color,
+      kind: "highlight",
+    });
+    this.appendEvent(event);
+
+    const dbPath = join(this.rootPath, ".system/library.sqlite");
+    const materializer = new SQLiteMaterializer(dbPath);
+    try {
+      materializer.insertHighlightIncremental({
+        id: entityId,
+        book: next.book,
+        chapter: next.chapter,
+        verse_start: next.verseStart,
+        verse_end: next.verseEnd,
+        package: next.package,
+        char_start: next.charStart,
+        char_end: next.charEnd,
+        color: next.color,
+        kind: "highlight",
+        note_id: null,
+        deleted: 0,
+      });
+    } finally {
+      materializer.close();
+    }
   }
 
   /**
@@ -760,6 +822,25 @@ export class LibraryEngine {
     const materializer = new SQLiteMaterializer(dbPath);
     try {
       materializer.deleteHighlightIncremental(entityId);
+    } finally {
+      materializer.close();
+    }
+  }
+
+  /**
+   * Restore a tombstoned highlight without minting a new entity id. The event
+   * fold already retains the last active payload across a delete; `restore`
+   * makes that payload active again, while the explicit snapshot repopulates
+   * the derived SQLite row immediately (INV-7 / INV-9).
+   */
+  applyHighlightRestore(highlight: HighlightRecord): void {
+    const event = this.createEvent("highlight", highlight.id, "restore", {});
+    this.appendEvent(event);
+
+    const dbPath = join(this.rootPath, ".system/library.sqlite");
+    const materializer = new SQLiteMaterializer(dbPath);
+    try {
+      materializer.insertHighlightIncremental({ ...highlight, deleted: 0 });
     } finally {
       materializer.close();
     }

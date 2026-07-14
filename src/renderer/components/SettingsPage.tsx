@@ -1,10 +1,26 @@
 import type React from "react";
 import { useState, useEffect, useCallback } from "react";
-import type { AppSettings, BudgetEnvelopeData, AIJobData } from "../api.js";
+import type {
+  AppSettings,
+  BudgetEnvelopeData,
+  AIJobData,
+  ReadingSize,
+  ReadingWidth,
+  VerseNumberMode,
+} from "../api.js";
 import { safeCall } from "../utils/safeCall.js";
+import { ImportPage } from "./ImportPage.js";
 
 interface Props {
   libraryPath: string;
+  readingSize?: ReadingSize;
+  readingWidth?: ReadingWidth;
+  verseNumbers?: VerseNumberMode;
+  onReadingPrefsChange?: (partial: {
+    readingSize?: ReadingSize;
+    readingWidth?: ReadingWidth;
+    verseNumbers?: VerseNumberMode;
+  }) => void;
 }
 
 const ACCENT_SWATCHES: { color: AppSettings["accentColor"]; label: string }[] = [
@@ -13,7 +29,13 @@ const ACCENT_SWATCHES: { color: AppSettings["accentColor"]; label: string }[] = 
   { color: "plum", label: "Plum" },
 ];
 
-export function SettingsPage({ libraryPath }: Props): React.JSX.Element {
+export function SettingsPage({
+  libraryPath,
+  readingSize = "m",
+  readingWidth = "medium",
+  verseNumbers = "always",
+  onReadingPrefsChange,
+}: Props): React.JSX.Element {
   const [envelope, setEnvelope] = useState<BudgetEnvelopeData | null>(null);
   const [usage, setUsage] = useState<{ date: string; tokensUsed: number; spendUsd: number } | null>(null);
   const [jobs, setJobs] = useState<AIJobData[]>([]);
@@ -30,7 +52,9 @@ export function SettingsPage({ libraryPath }: Props): React.JSX.Element {
     const jobList = await window.api.ai.getJobs();
     setJobs(jobList);
     const settingsRes = await safeCall(() => window.api.settings.get());
-    if (settingsRes.ok) setAccentColor(settingsRes.value.accentColor);
+    if (settingsRes.ok) {
+      setAccentColor(settingsRes.value.accentColor);
+    }
     setLoading(false);
   }, []);
 
@@ -250,6 +274,69 @@ export function SettingsPage({ libraryPath }: Props): React.JSX.Element {
             ))}
           </div>
         </div>
+        <div className="settings-row">
+          <label className="settings-label">Reading size</label>
+          <p className="settings-description">Also available from the Aa control in the reading topbar.</p>
+          <div className="rc-segmented settings-segmented" role="group" aria-label="Reading size">
+            {(["s", "m", "l"] as const).map((id) => (
+              <button
+                key={id}
+                type="button"
+                className={`rc-seg${readingSize === id ? " active" : ""}`}
+                onClick={() => onReadingPrefsChange?.({ readingSize: id })}
+                aria-pressed={readingSize === id}
+              >
+                {id.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="settings-row">
+          <label className="settings-label">Column width</label>
+          <div className="rc-segmented settings-segmented" role="group" aria-label="Column width">
+            {([
+              ["narrow", "Narrow"],
+              ["medium", "Medium"],
+              ["wide", "Wide"],
+            ] as const).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                className={`rc-seg${readingWidth === id ? " active" : ""}`}
+                onClick={() => onReadingPrefsChange?.({ readingWidth: id })}
+                aria-pressed={readingWidth === id}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="settings-row">
+          <label className="settings-label">Verse numbers</label>
+          <div className="rc-segmented settings-segmented" role="group" aria-label="Verse numbers">
+            {([
+              ["always", "Always"],
+              ["faint", "Faint"],
+              ["hover", "Hover"],
+            ] as const).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                className={`rc-seg${verseNumbers === id ? " active" : ""}`}
+                onClick={() => onReadingPrefsChange?.({ verseNumbers: id })}
+                aria-pressed={verseNumbers === id}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Import lives under Settings so primary nav stays study-focused */}
+      <section className="settings-section">
+        <h2 className="settings-section-title">Import</h2>
+        <ImportPage />
       </section>
 
       {/* About Section */}

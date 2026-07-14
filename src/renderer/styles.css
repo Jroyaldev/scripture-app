@@ -13,21 +13,47 @@
   --hl-purple: rgba(165, 140, 215, 0.22);
 
   /* Highlight wash gradient stops (light) — consumed by a future ScripturePage migration */
-  --hl-yellow-a: rgba(245, 190, 60, 0.42);
-  --hl-yellow-b: rgba(245, 190, 60, 0.22);
-  --hl-green-a: rgba(110, 195, 120, 0.4);
-  --hl-green-b: rgba(110, 195, 120, 0.2);
-  --hl-blue-a: rgba(110, 165, 225, 0.4);
-  --hl-blue-b: rgba(110, 165, 225, 0.2);
-  --hl-pink-a: rgba(225, 140, 165, 0.42);
-  --hl-pink-b: rgba(225, 140, 165, 0.22);
-  --hl-purple-a: rgba(175, 140, 220, 0.42);
-  --hl-purple-b: rgba(175, 140, 220, 0.22);
+  --hl-yellow-a: rgba(246, 190, 54, 0.30);
+  --hl-yellow-mid: rgba(246, 190, 54, 0.38);
+  --hl-yellow-b: rgba(246, 190, 54, 0.22);
+  --hl-green-a: rgba(107, 187, 119, 0.27);
+  --hl-green-mid: rgba(107, 187, 119, 0.34);
+  --hl-green-b: rgba(107, 187, 119, 0.19);
+  --hl-blue-a: rgba(103, 155, 222, 0.27);
+  --hl-blue-mid: rgba(103, 155, 222, 0.34);
+  --hl-blue-b: rgba(103, 155, 222, 0.19);
+  --hl-pink-a: rgba(218, 128, 160, 0.28);
+  --hl-pink-mid: rgba(218, 128, 160, 0.35);
+  --hl-pink-b: rgba(218, 128, 160, 0.20);
+  --hl-purple-a: rgba(164, 130, 214, 0.27);
+  --hl-purple-mid: rgba(164, 130, 214, 0.34);
+  --hl-purple-b: rgba(164, 130, 214, 0.19);
+
+  /* Soft same-hue keylines for compact palette/margin controls. The reading
+     underlay intentionally has no uniform outline: the gradient wash alone
+     defines its silhouette, avoiding cell-like dividers between colors. */
+  --hl-yellow-edge: rgba(225, 164, 24, 0.27);
+  --hl-green-edge: rgba(67, 151, 82, 0.24);
+  --hl-blue-edge: rgba(64, 118, 190, 0.24);
+  --hl-pink-edge: rgba(184, 79, 122, 0.25);
+  --hl-purple-edge: rgba(117, 82, 173, 0.24);
+
+  /* Solid marker colors for the verse-selection accent bar/number when the
+     selected verse is already highlighted — same underlying hue as the
+     highlight wash (just opaque), so a selected highlighted verse reads as
+     "this highlight, selected" instead of an unrelated blue accent stomping
+     on whatever color is underneath. Same RGB in both themes (only the wash
+     alpha differs between light/dark), so no .dark override is needed. */
+  --hl-yellow-mark: rgb(217, 164, 6);
+  --hl-green-mark: rgb(62, 145, 66);
+  --hl-blue-mark: rgb(61, 107, 181);
+  --hl-pink-mark: rgb(194, 87, 138);
+  --hl-purple-mark: rgb(124, 92, 176);
 
   --text-primary: #1A1A1A;
   --text-secondary: #5C5C5C;
-  --text-tertiary: #999999;
-  --text-verse-number: #B8B8B8;
+  --text-tertiary: #6E6E6E;       /* was #999999 (~2.8:1) → ~4.7:1, AA for normal text */
+  --text-verse-number: #737373;   /* was #B8B8B8 (~2.0:1) → ~4.5:1, AA — verse numerals carry meaning */
   --text-link: #3D6BB5;
   --text-link-hover: #2A4F8C;
 
@@ -131,16 +157,31 @@
   --border-medium: #3A3B40;
   --border-strong: #4A4B50;
 
-  --hl-yellow-a: rgba(245, 190, 60, 0.28);
-  --hl-yellow-b: rgba(245, 190, 60, 0.14);
-  --hl-green-a: rgba(110, 195, 120, 0.26);
-  --hl-green-b: rgba(110, 195, 120, 0.13);
-  --hl-blue-a: rgba(110, 165, 225, 0.26);
-  --hl-blue-b: rgba(110, 165, 225, 0.13);
-  --hl-pink-a: rgba(225, 140, 165, 0.26);
-  --hl-pink-b: rgba(225, 140, 165, 0.13);
-  --hl-purple-a: rgba(175, 140, 220, 0.26);
-  --hl-purple-b: rgba(175, 140, 220, 0.13);
+  /* Dark yellow is a muted antique gold rather than the brighter ochre used
+     on paper. Lower chroma and alpha keep it as quiet as the other washes. */
+  --hl-yellow-a: rgba(211, 178, 105, 0.18);
+  --hl-yellow-mid: rgba(211, 178, 105, 0.23);
+  --hl-yellow-b: rgba(211, 178, 105, 0.11);
+  --hl-green-a: rgba(107, 187, 119, 0.20);
+  --hl-green-mid: rgba(107, 187, 119, 0.26);
+  --hl-green-b: rgba(107, 187, 119, 0.13);
+  --hl-blue-a: rgba(103, 155, 222, 0.20);
+  --hl-blue-mid: rgba(103, 155, 222, 0.26);
+  --hl-blue-b: rgba(103, 155, 222, 0.13);
+  --hl-pink-a: rgba(218, 128, 160, 0.21);
+  --hl-pink-mid: rgba(218, 128, 160, 0.27);
+  --hl-pink-b: rgba(218, 128, 160, 0.13);
+  --hl-purple-a: rgba(164, 130, 214, 0.20);
+  --hl-purple-mid: rgba(164, 130, 214, 0.26);
+  --hl-purple-b: rgba(164, 130, 214, 0.13);
+
+  /* Dark control keylines stay slightly denser than their compact fills. */
+  --hl-yellow-edge: rgba(211, 178, 105, 0.24);
+  --hl-green-edge: rgba(107, 187, 119, 0.27);
+  --hl-blue-edge: rgba(103, 155, 222, 0.27);
+  --hl-pink-edge: rgba(218, 128, 160, 0.28);
+  --hl-purple-edge: rgba(164, 130, 214, 0.27);
+  --hl-yellow-mark: rgb(188, 154, 84);
 
   /* .toast's bg/fg are already theme-correct (they intentionally swap
      text-primary/bg-surface), but these overlay tints were hardcoded to
@@ -920,6 +961,11 @@ html, body, #root {
   font-size: var(--fs-reading);
   line-height: var(--lh-reading);
   color: var(--text-primary);
+  /* The SVG highlight underlay is positioned absolutely inside this
+     container; it needs a positioning context and a stacking order that
+     places it behind the verse rows. */
+  position: relative;
+  isolation: isolate;
 }
 
 .verse-line {
@@ -928,6 +974,9 @@ html, body, #root {
   gap: 2px;
   margin-bottom: var(--sp-xs);
   position: relative;
+  /* Lift the row above the SVG highlight underlay (which sits at z-index 0
+     inside the .verse-text stacking context). */
+  z-index: 1;
   cursor: pointer;
   padding: 2px 4px;
   border-radius: var(--radius-sm);
@@ -981,65 +1030,140 @@ html, body, #root {
   font-weight: var(--fw-semibold);
 }
 
+/*
+ * Selecting an already-highlighted verse used to composite a hardcoded blue
+ * accent bar + blue row tint on top of whatever color the highlight blob
+ * underneath actually was — two independent visual systems (the SVG blob
+ * behind, generic "selected" chrome on top) that read as unrelated rather
+ * than "this highlight, selected." Two changes: (1) the accent bar and verse
+ * number switch to a solid marker tone drawn from the SAME hue as the
+ * highlight underneath, so selection reads as belonging to that highlight;
+ * (2) the flat row-tint background is dropped entirely when a highlight is
+ * present — the blob already reads clearly, and a second colored wash on
+ * top of it only muddies it.
+ */
+.verse-line.selected.hl-yellow { background: transparent; }
+.verse-line.selected.hl-yellow::before { background: var(--hl-yellow-mark); }
+.verse-line.selected.hl-yellow .verse-num { color: var(--hl-yellow-mark); }
+
+.verse-line.selected.hl-green { background: transparent; }
+.verse-line.selected.hl-green::before { background: var(--hl-green-mark); }
+.verse-line.selected.hl-green .verse-num { color: var(--hl-green-mark); }
+
+.verse-line.selected.hl-blue { background: transparent; }
+.verse-line.selected.hl-blue::before { background: var(--hl-blue-mark); }
+.verse-line.selected.hl-blue .verse-num { color: var(--hl-blue-mark); }
+
+.verse-line.selected.hl-pink { background: transparent; }
+.verse-line.selected.hl-pink::before { background: var(--hl-pink-mark); }
+.verse-line.selected.hl-pink .verse-num { color: var(--hl-pink-mark); }
+
+.verse-line.selected.hl-purple { background: transparent; }
+.verse-line.selected.hl-purple::before { background: var(--hl-purple-mark); }
+.verse-line.selected.hl-purple .verse-num { color: var(--hl-purple-mark); }
+
+.verse-line.selected.hl-mixed { background: transparent; }
+.verse-line.selected.hl-mixed::before { background: var(--text-secondary); }
+.verse-line.selected.hl-mixed .verse-num { color: var(--text-secondary); }
+
 .verse-text-span {
-  padding: 1px 3px;
-  transition: background var(--transition-normal), box-shadow var(--transition-normal);
+  /* The highlight wash is now drawn by the SVG <HighlightUnderlay> behind the
+     rows (one continuous rounded blob per contiguous same-color run, with
+     soft shoulders at width-step junctions). The span itself carries no
+     background, halo, or border-radius — those produced the per-line pills
+     that pinched at junctions. box-decoration-break: clone is no longer
+     needed (and was a no-op anyway: the row is a flex container, so the span
+     is blockified and never fragments per visual line). */
+  padding: 0;
 }
 
 /*
- * Highlight wash gradients — these five per-color rules MUST be declared
- * BEFORE the cont-above/cont-below override rules further down. Both sets of
- * rules have the same specificity (two classes on the same element), so CSS
- * resolves ties by source order. If a cont-above/cont-below rule appeared
- * first, the flat 4px-all-corners radius from these color rules would win on
- * every corner and the merged-highlight seam would look pinched instead of
- * square-joined. Keep this ordering intact.
+ * Highlight wash gradients are now rendered by the SVG underlay, not by
+ * per-verse CSS. The five .verse-line.hl-{color} .verse-text-span rules that
+ * used to set background + border-radius + box-shadow are gone. The color
+ * tokens (--hl-{c}-a/b) are still consumed by the underlay (read from
+ * computed style), by the topbar palette swatches, and by the Living Margin
+ * chips — so they remain the single source of truth for each color.
  */
-.verse-line.hl-yellow .verse-text-span {
-  background: linear-gradient(100deg, var(--hl-yellow-a), var(--hl-yellow-b));
-  border-radius: 4px;
-  box-shadow: 0 0 0 3px var(--hl-yellow-b);
-}
-.verse-line.hl-green .verse-text-span {
-  background: linear-gradient(100deg, var(--hl-green-a), var(--hl-green-b));
-  border-radius: 4px;
-  box-shadow: 0 0 0 3px var(--hl-green-b);
-}
-.verse-line.hl-blue .verse-text-span {
-  background: linear-gradient(100deg, var(--hl-blue-a), var(--hl-blue-b));
-  border-radius: 4px;
-  box-shadow: 0 0 0 3px var(--hl-blue-b);
-}
-.verse-line.hl-pink .verse-text-span {
-  background: linear-gradient(100deg, var(--hl-pink-a), var(--hl-pink-b));
-  border-radius: 4px;
-  box-shadow: 0 0 0 3px var(--hl-pink-b);
-}
-.verse-line.hl-purple .verse-text-span {
-  background: linear-gradient(100deg, var(--hl-purple-a), var(--hl-purple-b));
-  border-radius: 4px;
-  box-shadow: 0 0 0 3px var(--hl-purple-b);
-}
 
-/*
- * Adjacent-verse merge overrides — declared AFTER the five color rules above
- * so the cascade order (not just specificity) resolves in their favor. See
- * the comment above the color rules for why this ordering matters.
- */
+/* Collapse only the row spacing at a highlight boundary. The SVG underlay
+   owns the actual seam: same-color runs become one path, while different
+   colors share an exact edge without a white slit or a muddy overlap. */
 .verse-line.cont-below {
   margin-bottom: 0;
 }
 .verse-line.cont-above {
   padding-top: 0;
 }
-.verse-line.cont-below .verse-text-span {
-  border-radius: 4px 4px 0 0;
+
+/*
+ * SVG highlight underlay. One <path> per contiguous same-color run, drawn
+ * behind the verse rows. The path geometry (rounded exterior caps + compact
+ * eased steps at width junctions) is built by utils/highlightPath.ts from
+ * per-line rects; the fill gradient stops are the same --hl-{c}-a/b tokens
+ * the old per-verse wash used, so theme/dark-mode recolor is automatic.
+ */
+.highlight-underlay {
+  position: absolute;
+  inset: 0;
+  /* Behind the verse rows (which are z-index: 1 inside this stacking
+     context). pointer-events:none so the rows still receive clicks. */
+  z-index: 0;
+  pointer-events: none;
+  overflow: visible;
 }
-.verse-line.cont-above .verse-text-span {
-  border-radius: 0 0 4px 4px;
+
+/* Light-mode-only multiply blend: lets the highlight read as pigment sitting
+   on the page rather than a flat translucent layer floating above the text,
+   the way real highlighter ink darkens what's under it instead of just
+   tinting over it. Deliberately NOT applied in dark mode — multiplying any
+   color against the near-black dark canvas (--bg-canvas) drives it toward
+   black instead of toward the highlight color, which would make highlights
+   harder to see, not more special. */
+.app-shell:not(.dark) .hl-blob {
+  mix-blend-mode: multiply;
 }
-.verse-line.cont-above.cont-below .verse-text-span {
-  border-radius: 0;
+
+/*
+ * Sweep-in: a freshly created highlight reveals left-to-right like a marker
+ * swipe. Implemented as a clip-path inset that animates from fully clipped
+ * (right side shut) to fully open. Honors prefers-reduced-motion (instant
+ * fallback). The flag is cleared by HighlightUnderlay after the animation.
+ */
+@keyframes hl-sweep {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0 0 0); }
+}
+.hl-blob.hl-sweep {
+  animation: hl-sweep 450ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/*
+ * Fade-out: the mirror of the sweep, played while a highlight is mid-
+ * deletion. ScripturePage keeps the highlight in local data for FADE_MS
+ * (see HighlightUnderlay.tsx) specifically so there's still something here
+ * to animate — without that, the blob's data would already be gone and
+ * there'd be nothing left to fade.
+ */
+@keyframes hl-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+.hl-blob.hl-fade-out {
+  animation: hl-fade-out 320ms ease-in forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hl-blob.hl-sweep {
+    animation: none;
+  }
+  .hl-blob.hl-fade-out {
+    /* Still need to end at opacity 0 (ScripturePage's timer removes the
+       highlight from data at the same moment either way), just without the
+       animated transition. */
+    animation: none;
+    opacity: 0;
+  }
 }
 
 /* --- Living Margin --- */
@@ -1066,6 +1190,50 @@ html, body, #root {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin-bottom: var(--sp-sm);
+}
+
+.margin-section-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.margin-section-toggle:hover {
+  color: var(--text-secondary);
+}
+
+.margin-section-count {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text-tertiary);
+  opacity: 0.85;
+}
+
+.margin-section-caret {
+  margin-left: auto;
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.xref-more-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  text-align: left;
+}
+
+.xref-more-btn:hover {
+  color: var(--accent-user);
 }
 
 .margin-card {
@@ -1113,6 +1281,175 @@ html, body, #root {
 .provenance-source { background: rgba(90, 138, 90, 0.10); color: var(--accent-source); }
 .provenance-xref { background: rgba(122, 122, 122, 0.10); color: var(--accent-xref); }
 .provenance-ai { background: rgba(148, 100, 180, 0.10); color: #9464b4; }
+
+/* B3.5 why-provenance: every AI-surfaced card explains itself deterministically. */
+.card-reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-xs);
+  margin-top: var(--sp-xs);
+}
+
+.reason-chip {
+  font-size: 0.625rem;
+  font-weight: var(--fw-medium);
+  padding: 1px 6px;
+  border-radius: 3px;
+  display: inline-block;
+  background: rgba(122, 122, 122, 0.08);
+  color: var(--text-tertiary);
+}
+
+.reason-chip.reason-reference {
+  background: rgba(90, 138, 90, 0.10);
+  color: var(--accent-source);
+}
+
+.claim-evidence-quote {
+  font-size: var(--fs-xs);
+  color: var(--text-tertiary);
+  font-style: italic;
+  margin-top: var(--sp-xs);
+  padding-left: var(--sp-sm);
+  border-left: 2px solid rgba(148, 100, 180, 0.25);
+}
+
+.margin-semantic-empty {
+  font-size: var(--fs-xs);
+  color: var(--text-tertiary);
+  padding: var(--sp-xs) 0;
+}
+
+.reason-chip.reason-theme {
+  background: rgba(61, 107, 181, 0.08);
+  color: var(--accent-user);
+}
+
+/* --- Capture echo (B3.6 E4): the moment of magic, kept quiet and sharp --- */
+.capture-echo {
+  margin-top: var(--sp-md);
+  padding: var(--sp-sm) var(--sp-md);
+  border: 1px solid rgba(148, 100, 180, 0.18);
+  border-radius: var(--radius-sm);
+  background: rgba(148, 100, 180, 0.04);
+  animation: echo-in 220ms ease-out;
+}
+
+@keyframes echo-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.echo-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-xs);
+  color: #9464b4;
+  font-size: var(--fs-xs);
+}
+
+.echo-note-title {
+  color: var(--text-secondary);
+  font-weight: var(--fw-medium);
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.echo-listening {
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+.echo-question {
+  color: var(--text-secondary);
+}
+
+.echo-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-xs);
+  margin-top: var(--sp-sm);
+}
+
+.echo-pill {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-subtle, rgba(122, 122, 122, 0.25));
+  border-radius: 999px;
+  overflow: hidden;
+  font-size: var(--fs-xs);
+  background: var(--bg-surface);
+  transition: border-color var(--transition-fast);
+}
+
+.echo-pill:hover {
+  border-color: #9464b4;
+}
+
+.echo-pill.healed {
+  border-color: rgba(61, 107, 181, 0.5);
+}
+
+.echo-pill-anchor {
+  appearance: none;
+  background: none;
+  border: none;
+  font: inherit;
+  color: var(--text-primary);
+  padding: 3px 4px 3px 12px;
+  cursor: pointer;
+}
+
+.echo-pill-dismiss {
+  appearance: none;
+  background: none;
+  border: none;
+  font: inherit;
+  color: var(--text-tertiary);
+  padding: 3px 10px 3px 4px;
+  cursor: pointer;
+}
+
+.echo-pill-dismiss:hover {
+  color: var(--text-primary);
+}
+
+.echo-pill.anchored {
+  border-color: rgba(90, 138, 90, 0.45);
+  background: rgba(90, 138, 90, 0.07);
+  color: var(--text-primary);
+  padding-left: 10px;
+}
+
+.echo-pill-check {
+  color: var(--accent-source);
+  margin-right: 4px;
+}
+
+.echo-pill-undo {
+  appearance: none;
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 0.625rem;
+  color: var(--text-tertiary);
+  padding: 3px 10px 3px 8px;
+  cursor: pointer;
+}
+
+.echo-pill-undo:hover {
+  color: var(--text-primary);
+}
+
+.echo-provenance {
+  display: block;
+  margin-top: var(--sp-sm);
+  font-size: 0.625rem;
+  color: var(--text-tertiary);
+  letter-spacing: 0.02em;
+}
 
 .highlight-swatch {
   display: inline-block;
@@ -1259,38 +1596,151 @@ html, body, #root {
   color: var(--text-secondary);
 }
 
-/* --- Highlight palette (floating) --- */
+/* --- Highlight palette (floating) ---
+ *
+ * Anchored to the actual selection (computed in ScripturePage's
+ * positionPalette, not a single row's edge) via palettePos.x/y: x is the
+ * horizontal CENTER to align to, y is the top edge to sit above by default
+ * (translate(-50%, -100%)) or, when .flipped (not enough room above), the
+ * bottom edge to sit below (translate(-50%, 0)). A small arrow points back
+ * at the selection so the popup reads as attached to something specific
+ * instead of floating at an arbitrary point on the page.
+ */
 
 .highlight-palette {
   position: fixed;
   display: flex;
-  gap: 4px;
-  padding: 4px;
+  align-items: center;
+  gap: 6px;
+  padding: 5px;
   background: var(--bg-surface);
   border: 1px solid var(--border-medium);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-medium);
+  border-radius: 10px;
+  box-shadow: var(--shadow-elevated);
   z-index: 100;
+  transform: translate(-50%, -100%);
+  transform-origin: bottom center;
+  animation: hlPaletteIn 130ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.highlight-palette.flipped {
+  transform: translate(-50%, 0);
+  transform-origin: top center;
+  animation-name: hlPaletteInFlipped;
+}
+
+@keyframes hlPaletteIn {
+  from { opacity: 0; transform: translate(-50%, -100%) scale(0.92); }
+  to   { opacity: 1; transform: translate(-50%, -100%) scale(1); }
+}
+@keyframes hlPaletteInFlipped {
+  from { opacity: 0; transform: translate(-50%, 0) scale(0.92); }
+  to   { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .highlight-palette, .highlight-palette.flipped {
+    animation: none;
+  }
+}
+
+/* Pointer arrow — a border-colored triangle 1px larger than a fill-colored
+   one directly in front of it, the standard tooltip-arrow trick, so the
+   arrow gets the same hairline border as the popup body. */
+.highlight-palette::before,
+.highlight-palette::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+}
+.highlight-palette::after {
+  border-left-width: 6px;
+  border-right-width: 6px;
+}
+.highlight-palette:not(.flipped)::before {
+  top: 100%;
+  border-top: 7px solid var(--border-medium);
+}
+.highlight-palette:not(.flipped)::after {
+  top: 100%;
+  margin-top: -1px;
+  border-top: 6px solid var(--bg-surface);
+}
+.highlight-palette.flipped::before {
+  bottom: 100%;
+  border-bottom: 7px solid var(--border-medium);
+}
+.highlight-palette.flipped::after {
+  bottom: 100%;
+  margin-bottom: -1px;
+  border-bottom: 6px solid var(--bg-surface);
+}
+
+.hl-swatch-group {
+  display: flex;
+  gap: 4px;
+}
+
+.hl-action-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* A hairline divider between the color swatches and the note/remove actions
+   — these are different kinds of actions (pick a color vs. do a thing) and
+   used to just run together in one undifferentiated row. */
+.hl-palette-divider {
+  width: 1px;
+  align-self: stretch;
+  background: var(--border-subtle);
 }
 
 .highlight-palette button {
-  width: 24px;
-  height: 24px;
   border: 2px solid transparent;
   border-radius: 4px;
   cursor: pointer;
-  transition: border-color var(--transition-fast);
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
 }
 
-.highlight-palette button:hover {
+/* Sizing is scoped to the swatch group specifically, not shared via
+   `.highlight-palette button` — that used to also match .hl-btn-note/
+   .hl-btn-delete (any button under .highlight-palette, regardless of
+   nesting), and "one class + one element" beats "one class" alone in
+   specificity, so the swatch 24x24 fixed size was silently overriding
+   .hl-btn-note's own `width: auto`, squashing its text into a fixed box. */
+.hl-swatch-group button {
+  width: 24px;
+  height: 24px;
+}
+
+.hl-swatch-group button:hover {
+  border-color: var(--text-secondary);
+  transform: scale(1.08);
+}
+
+.hl-swatch-group button.active {
+  border-color: var(--text-primary);
+  box-shadow: inset 0 0 0 1px var(--bg-surface);
+}
+
+.hl-action-group button:hover {
   border-color: var(--text-secondary);
 }
 
-.hl-btn-yellow { background: rgba(245, 213, 115, 0.5); }
-.hl-btn-green { background: rgba(110, 195, 120, 0.4); }
-.hl-btn-blue { background: rgba(110, 165, 225, 0.4); }
-.hl-btn-pink { background: rgba(220, 140, 165, 0.4); }
-.hl-btn-purple { background: rgba(165, 140, 215, 0.4); }
+/* Swatch chips show the SAME gradient the applied highlight paints, so the
+   chip is an honest miniature of what you'll get — not a saturated lie. The
+   2px transparent border + :hover border gives chip definition without
+   altering the displayed color. */
+.hl-btn-yellow { background: linear-gradient(100deg, var(--hl-yellow-a), var(--hl-yellow-mid), var(--hl-yellow-b)); }
+.hl-btn-green  { background: linear-gradient(100deg, var(--hl-green-a), var(--hl-green-mid), var(--hl-green-b)); }
+.hl-btn-blue   { background: linear-gradient(100deg, var(--hl-blue-a), var(--hl-blue-mid), var(--hl-blue-b)); }
+.hl-btn-pink   { background: linear-gradient(100deg, var(--hl-pink-a), var(--hl-pink-mid), var(--hl-pink-b)); }
+.hl-btn-purple { background: linear-gradient(100deg, var(--hl-purple-a), var(--hl-purple-mid), var(--hl-purple-b)); }
 
 /* --- Notes list --- */
 
@@ -1797,14 +2247,18 @@ html, body, #root {
 /* --- Highlight palette additions --- */
 
 .hl-btn-delete {
-  width: 24px;
+  width: auto;
   height: 24px;
   border: 2px solid transparent;
   border-radius: 4px;
   cursor: pointer;
   background: transparent;
   color: var(--text-tertiary);
-  font-size: var(--fs-sm);
+  font-size: 11px;
+  font-family: var(--font-ui);
+  font-weight: var(--fw-medium);
+  gap: 4px;
+  padding: 0 6px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1814,6 +2268,12 @@ html, body, #root {
 .hl-btn-delete:hover {
   border-color: var(--error);
   color: var(--error);
+}
+
+.hl-btn-delete > span[aria-hidden="true"] {
+  font-size: 15px;
+  line-height: 1;
+  transform: translateY(-0.5px);
 }
 
 .hl-btn-note {
@@ -2052,11 +2512,11 @@ html, body, #root {
   margin-bottom: var(--sp-xl);
 }
 
-.margin-hl-pill.hl-yellow { background: linear-gradient(100deg, var(--hl-yellow-a), var(--hl-yellow-b)); box-shadow: 0 0 0 1px var(--hl-yellow-b); }
-.margin-hl-pill.hl-green { background: linear-gradient(100deg, var(--hl-green-a), var(--hl-green-b)); box-shadow: 0 0 0 1px var(--hl-green-b); }
-.margin-hl-pill.hl-blue { background: linear-gradient(100deg, var(--hl-blue-a), var(--hl-blue-b)); box-shadow: 0 0 0 1px var(--hl-blue-b); }
-.margin-hl-pill.hl-pink { background: linear-gradient(100deg, var(--hl-pink-a), var(--hl-pink-b)); box-shadow: 0 0 0 1px var(--hl-pink-b); }
-.margin-hl-pill.hl-purple { background: linear-gradient(100deg, var(--hl-purple-a), var(--hl-purple-b)); box-shadow: 0 0 0 1px var(--hl-purple-b); }
+.margin-hl-pill.hl-yellow { background: linear-gradient(100deg, var(--hl-yellow-a), var(--hl-yellow-mid), var(--hl-yellow-b)); box-shadow: 0 0 0 1px var(--hl-yellow-edge); }
+.margin-hl-pill.hl-green { background: linear-gradient(100deg, var(--hl-green-a), var(--hl-green-mid), var(--hl-green-b)); box-shadow: 0 0 0 1px var(--hl-green-edge); }
+.margin-hl-pill.hl-blue { background: linear-gradient(100deg, var(--hl-blue-a), var(--hl-blue-mid), var(--hl-blue-b)); box-shadow: 0 0 0 1px var(--hl-blue-edge); }
+.margin-hl-pill.hl-pink { background: linear-gradient(100deg, var(--hl-pink-a), var(--hl-pink-mid), var(--hl-pink-b)); box-shadow: 0 0 0 1px var(--hl-pink-edge); }
+.margin-hl-pill.hl-purple { background: linear-gradient(100deg, var(--hl-purple-a), var(--hl-purple-mid), var(--hl-purple-b)); box-shadow: 0 0 0 1px var(--hl-purple-edge); }
 
 /* Pinned/selected-passage state: highlight color palette */
 
@@ -2084,6 +2544,432 @@ html, body, #root {
 
 .margin-hl-swatch.active {
   border-color: var(--text-primary);
+}
+
+/* Swatch fill = the SAME gradient the applied highlight paints (via the
+   --hl-{c}-a/b tokens), so the chip is an honest preview. These tokens are
+   overridden under .dark, so the swatches recolor automatically in dark
+   mode — no separate dark rules needed. */
+.margin-hl-swatch.yellow { background: linear-gradient(100deg, var(--hl-yellow-a), var(--hl-yellow-mid), var(--hl-yellow-b)); }
+.margin-hl-swatch.green  { background: linear-gradient(100deg, var(--hl-green-a), var(--hl-green-mid), var(--hl-green-b)); }
+.margin-hl-swatch.blue   { background: linear-gradient(100deg, var(--hl-blue-a), var(--hl-blue-mid), var(--hl-blue-b)); }
+.margin-hl-swatch.pink   { background: linear-gradient(100deg, var(--hl-pink-a), var(--hl-pink-mid), var(--hl-pink-b)); }
+.margin-hl-swatch.purple { background: linear-gradient(100deg, var(--hl-purple-a), var(--hl-purple-mid), var(--hl-purple-b)); }
+
+/* --- Original language (editorial interlinear, minimal chrome) --- */
+
+.lang {
+  margin-top: 4px;
+}
+
+.lang-muted {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  line-height: 1.4;
+}
+
+/* Word strip: no borders — reads like a glossed line of text */
+.lang-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 0;
+  margin: 0 0 6px;
+  padding: 2px 0 4px;
+  direction: ltr; /* English underlabels stay LTR */
+}
+
+.lang-word {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  margin: 0 5px 8px 0;
+  padding: 4px 5px 5px;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  min-width: 2.25em;
+  transition: background var(--transition-fast);
+}
+
+.lang-word:hover {
+  background: rgba(0, 0, 0, 0.035);
+}
+
+.dark .lang-word:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.lang-word.is-active {
+  background: rgba(61, 107, 181, 0.1);
+}
+
+.lang-word-form {
+  font-family: var(--font-reading);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.lang-word.is-active .lang-word-form {
+  color: var(--text-primary);
+  box-shadow: inset 0 -1.5px 0 rgba(61, 107, 181, 0.55);
+}
+
+.lang-word-eng {
+  font-size: 10.5px;
+  font-weight: 400;
+  color: var(--text-tertiary);
+  line-height: 1.2;
+  max-width: 6.5em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.lang-word.is-active .lang-word-eng {
+  color: var(--text-secondary);
+}
+
+.lang-more {
+  background: none;
+  border: none;
+  padding: 0 0 6px;
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+}
+
+.lang-more:hover {
+  color: var(--accent-user);
+}
+
+/* Detail panel under the strip */
+.lang-detail {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.lang-detail-form {
+  font-family: var(--font-reading);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  margin: 0 0 4px;
+  /* Keep form at the start of the margin column even for RTL Hebrew */
+  text-align: left;
+  unicode-bidi: isolate;
+}
+
+.lang-detail-gloss {
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0 0 12px;
+}
+
+.lang-form {
+  margin-bottom: 10px;
+}
+
+.lang-form-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-ui);
+}
+
+.lang-form-row:hover .lang-chip {
+  background: rgba(61, 107, 181, 0.08);
+}
+
+.lang-form-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.lang-form-caret {
+  flex-shrink: 0;
+  font-size: 10px;
+  color: var(--text-tertiary);
+  line-height: 1.6;
+  padding-top: 1px;
+}
+
+.lang-form-row.is-open .lang-form-caret {
+  color: var(--accent-user);
+}
+
+.lang-chip {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  padding: 2px 7px;
+  border-radius: 4px;
+  line-height: 1.35;
+}
+
+/* Part of speech — slightly stronger so the “kind of word” reads first */
+.lang-chip-pos {
+  font-weight: 600;
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--bg-secondary) 70%, var(--border-medium));
+}
+
+.lang-chip-more {
+  color: var(--text-tertiary);
+  background: transparent;
+  border: 1px dashed var(--border-medium);
+  font-weight: 500;
+}
+
+/* Uncatalogued label — still shown for correction, never alarming */
+.lang-chip-unknown {
+  color: var(--text-tertiary);
+  font-style: italic;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+}
+
+.lang-chip-id {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 10.5px;
+  color: var(--text-tertiary);
+  background: transparent;
+  border: none;
+  padding-left: 4px;
+  padding-right: 2px;
+}
+
+.lang-toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font-family: var(--font-ui);
+}
+
+.lang-toggle:hover {
+  color: var(--accent-user);
+}
+
+.lang-form-notes {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 8px 0 0;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.lang-form-notes li {
+  display: grid;
+  grid-template-columns: minmax(72px, 88px) 1fr;
+  gap: 6px 10px;
+  align-items: baseline;
+}
+
+.lang-form-notes strong {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: lowercase;
+  letter-spacing: 0.01em;
+}
+
+.lang-form-notes span {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  line-height: 1.4;
+}
+
+.lang-form-note-unknown strong {
+  font-style: italic;
+  color: var(--text-tertiary);
+}
+
+.lang-form-code {
+  margin-top: 2px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--border-subtle);
+  opacity: 0.9;
+}
+
+.lang-form-code strong {
+  font-weight: 500;
+  color: var(--text-tertiary);
+  text-transform: lowercase;
+}
+
+.lang-form-code span {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+/* STEPBible overlay — open notes only; quiet, progressive */
+.lang-step-overlay {
+  margin: 8px 0 10px;
+  padding: 10px 10px 8px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bg-secondary) 85%, var(--accent-current) 4%);
+  border: 1px solid var(--border-subtle);
+}
+
+.lang-step-kicker {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: 5px;
+}
+
+.lang-step-phrase {
+  margin: 0 0 4px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+}
+
+.lang-step-expl {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+}
+
+.lang-step-missing {
+  margin: 8px 0 6px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+.lang-step-missing code {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-style: normal;
+  color: var(--text-secondary);
+}
+
+.lang-step-example {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+.lang-step-example-label {
+  font-style: normal;
+  font-weight: 500;
+  margin-right: 5px;
+  color: var(--text-tertiary);
+  opacity: 0.85;
+}
+
+.lang-step-attr {
+  margin: 8px 0 0;
+  font-size: 10px;
+  color: var(--text-tertiary);
+  opacity: 0.75;
+  letter-spacing: 0.02em;
+}
+
+.lang-study-verse {
+  margin: 8px 0 0;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.lang-usage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 2px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+.lang-dot {
+  margin: 0 3px;
+  opacity: 0.6;
+}
+
+.lang-uses {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lang-uses li {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 12px;
+}
+
+.lang-uses-ref {
+  flex: 0 0 2.5em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-tertiary);
+  font-size: 11px;
+}
+
+.lang-uses li.is-here .lang-uses-ref {
+  color: var(--accent-user);
+  font-weight: 500;
+}
+
+.lang-uses-form {
+  font-family: var(--font-reading);
+  color: var(--text-secondary);
+}
+
+.lang-uses-more {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  padding-left: calc(2.5em + 10px);
 }
 
 .margin-hl-remove {
@@ -2575,7 +3461,974 @@ html, body, #root {
 button:focus-visible,
 select:focus-visible,
 input:focus-visible,
-textarea:focus-visible {
+textarea:focus-visible,
+.verse-line:focus-visible {
   outline: 2px solid var(--accent-user);
   outline-offset: 1px;
+}
+
+/* ==========================================================================
+   UX pass — reading comfort, mini toolbar, sidebar lab, focus, ambient polish
+   ========================================================================== */
+
+/* --- Reading size / width / verse numbers (applied on .app-shell) --- */
+
+.app-shell.reading-size-s {
+  --fs-reading: 1rem;
+  --lh-reading: 1.7;
+}
+.app-shell.reading-size-m {
+  --fs-reading: 1.125rem;
+  --lh-reading: 1.8;
+}
+.app-shell.reading-size-l {
+  --fs-reading: 1.3rem;
+  --lh-reading: 1.85;
+}
+
+.app-shell.reading-width-narrow { --reading-max-width: 560px; }
+.app-shell.reading-width-medium { --reading-max-width: 680px; }
+.app-shell.reading-width-wide   { --reading-max-width: 820px; }
+
+.app-shell.verse-nums-faint .verse-num {
+  color: color-mix(in srgb, var(--text-verse-number) 55%, transparent);
+  font-weight: var(--fw-medium);
+}
+.app-shell.verse-nums-hover .verse-num {
+  opacity: 0;
+  transition: opacity var(--transition-fast), color var(--transition-fast);
+}
+.app-shell.verse-nums-hover .verse-line:hover .verse-num,
+.app-shell.verse-nums-hover .verse-line.selected .verse-num,
+.app-shell.verse-nums-hover .verse-line:focus-visible .verse-num {
+  opacity: 1;
+}
+
+/* --- Sidebar style lab --- */
+
+.app-shell.sidebar-style-compact .sidebar:not(.collapsed) {
+  width: 220px;
+}
+.app-shell.sidebar-style-compact .sidebar-header {
+  padding: var(--sp-md) var(--sp-lg);
+}
+.app-shell.sidebar-style-compact .nav-item {
+  padding: 8px 12px;
+  font-size: 13px;
+}
+.app-shell.sidebar-style-compact .sidebar-footer {
+  padding: var(--sp-sm) var(--sp-md);
+}
+
+.app-shell.sidebar-style-rail .sidebar {
+  width: 72px;
+}
+.app-shell.sidebar-style-rail .sidebar.rail-locked .sidebar-collapse-btn {
+  display: none;
+}
+
+.sidebar-lab {
+  display: flex;
+  gap: 2px;
+  margin: 0 var(--sp-sm) var(--sp-sm);
+  padding: 3px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+}
+.sidebar.collapsed .sidebar-lab {
+  flex-direction: column;
+  margin: 0 8px var(--sp-sm);
+}
+.sidebar-lab-tab {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.02em;
+  padding: 5px 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.sidebar-lab-tab:hover {
+  color: var(--text-secondary);
+}
+.sidebar-lab-tab.active {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-subtle);
+}
+.sidebar.collapsed .sidebar-lab-tab {
+  font-size: 9px;
+  padding: 4px 2px;
+}
+
+.nav-shortcut {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: var(--fw-medium);
+  color: var(--text-tertiary);
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+  min-width: 1em;
+  text-align: right;
+}
+.sidebar.collapsed .nav-shortcut {
+  display: none;
+}
+
+.footer-avatar {
+  border: none;
+  font: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.footer-avatar:hover {
+  filter: brightness(1.05);
+}
+.footer-avatar:focus-visible {
+  outline: 2px solid var(--accent-current);
+  outline-offset: 2px;
+}
+
+.package-chip-row {
+  display: flex;
+  gap: 6px;
+  margin: var(--sp-sm) 0;
+}
+
+/* Soft scrim behind popovers — reading stays visible but clearly modal */
+.popover-scrim {
+  background: rgba(20, 22, 26, 0.18);
+  backdrop-filter: blur(1px);
+}
+.dark .popover-scrim {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+/* --- Focus mode --- */
+
+.app-shell.focus-mode .main-content {
+  width: 100%;
+}
+.focus-exit-chip {
+  position: fixed;
+  bottom: var(--sp-xl);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border-medium);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: var(--fw-medium);
+  box-shadow: var(--shadow-elevated);
+  cursor: pointer;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+.focus-exit-chip:hover {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+/* --- Reading comfort chrome --- */
+
+.reading-comfort {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 6px;
+}
+.reading-comfort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font-ui);
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+.reading-comfort-btn:hover,
+.reading-comfort-btn.open {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+.reading-comfort-btn.active {
+  background: color-mix(in srgb, var(--accent-current) 12%, transparent);
+  color: var(--accent-current);
+  border-color: color-mix(in srgb, var(--accent-current) 28%, transparent);
+}
+.reading-comfort-size-tag {
+  font-size: 10px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.04em;
+  opacity: 0.75;
+}
+
+.reading-comfort-popover {
+  padding: 12px 12px 10px;
+}
+.rc-section {
+  margin-bottom: 12px;
+}
+.rc-section:last-child {
+  margin-bottom: 0;
+}
+.rc-label {
+  font-size: 11px;
+  font-weight: var(--fw-medium);
+  color: var(--text-tertiary);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.rc-segmented {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+}
+.rc-seg {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: var(--fw-medium);
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.rc-seg:hover {
+  color: var(--text-primary);
+}
+.rc-seg.active {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-subtle);
+}
+.rc-seg-letter.size-s { font-size: 11px; }
+.rc-seg-letter.size-m { font-size: 13px; }
+.rc-seg-letter.size-l { font-size: 15px; font-weight: var(--fw-semibold); }
+.settings-segmented {
+  max-width: 320px;
+}
+
+/* --- Unified mini highlight toolbar --- */
+
+.hl-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-medium);
+  border-radius: 12px;
+  box-shadow: var(--shadow-elevated), 0 8px 24px rgba(0, 0, 0, 0.06);
+  z-index: 100;
+}
+.hl-toolbar-floating {
+  position: fixed;
+  transform: translate(-50%, -100%);
+  transform-origin: bottom center;
+  animation: hlPaletteIn 130ms cubic-bezier(0.22, 1, 0.36, 1);
+  margin-top: -10px;
+}
+.hl-toolbar-floating.flipped {
+  transform: translate(-50%, 0);
+  transform-origin: top center;
+  animation-name: hlPaletteInFlipped;
+  margin-top: 10px;
+}
+.hl-toolbar-docked {
+  position: relative;
+  margin-bottom: var(--sp-md);
+  width: 100%;
+  box-shadow: var(--shadow-subtle);
+}
+.hl-toolbar.is-mixed {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-elevated), 0 0 0 1px color-mix(in srgb, var(--text-secondary) 18%, transparent);
+}
+.hl-toolbar-range {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 120px;
+  font-family: var(--font-ui);
+  font-size: 11.5px;
+  font-weight: var(--fw-medium);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 2px 0 4px;
+  user-select: none;
+}
+.hl-toolbar-mixed-badge {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-medium);
+  border-radius: 999px;
+  padding: 1px 6px;
+}
+.hl-toolbar-divider {
+  width: 1px;
+  align-self: stretch;
+  background: var(--border-subtle);
+  min-height: 18px;
+}
+.hl-toolbar .hl-swatch-group {
+  display: flex;
+  gap: 4px;
+}
+.hl-toolbar .hl-swatch-group button {
+  width: 22px;
+  height: 22px;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+.hl-toolbar .hl-swatch-group button:hover {
+  transform: scale(1.1);
+  border-color: var(--text-secondary);
+}
+.hl-toolbar .hl-swatch-group button.active {
+  border-color: var(--text-primary);
+  box-shadow: inset 0 0 0 1px var(--bg-surface);
+}
+.hl-toolbar .hl-action-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Back-compat: keep old palette class hooks working if any remain */
+.highlight-palette {
+  /* Superseded by .hl-toolbar-floating — keep minimal so no orphan styles break */
+}
+
+/* Multi-select / mixed selection chrome on verse rows */
+.verse-line.selected.multi-select::before {
+  height: 28px;
+  width: 3px;
+  background: var(--text-secondary);
+  opacity: 0.85;
+}
+.verse-line.selected.mixed-select::before {
+  background: linear-gradient(
+    180deg,
+    var(--hl-yellow-mark),
+    var(--hl-blue-mark),
+    var(--hl-purple-mark)
+  );
+  height: 30px;
+  width: 3.5px;
+}
+.verse-line.selected.multi-select {
+  background: rgba(90, 90, 90, 0.06);
+}
+.verse-text.has-multi-select .verse-line.selected {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border-medium) 70%, transparent);
+  border-radius: 4px;
+}
+
+/* Dim highlights outside the pin */
+.hl-blob.hl-dimmed {
+  opacity: 0.28;
+  transition: opacity 180ms ease;
+}
+.hl-blob:not(.hl-dimmed) {
+  transition: opacity 180ms ease;
+}
+
+/* --- Living Margin polish --- */
+
+.margin-invite {
+  margin-top: var(--sp-lg);
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text-tertiary);
+}
+.margin-pin-status {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+  min-height: 24px;
+}
+.margin-pin-status.is-mixed .margin-pin-status-label {
+  color: var(--text-secondary);
+  font-weight: var(--fw-medium);
+}
+.margin-pin-status-label {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  flex: 1;
+  min-width: 0;
+}
+.margin-pin-note-btn {
+  border: 1px solid var(--border-medium);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 11.5px;
+  font-weight: var(--fw-medium);
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.margin-pin-note-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+.margin-hl-swatch.mixed-context:not(.active) {
+  opacity: 0.72;
+}
+.margin-hl-swatch.mixed-context.active {
+  box-shadow: 0 0 0 2px var(--bg-surface), 0 0 0 3.5px var(--text-primary);
+}
+
+.ai-insight-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: var(--sp-md);
+  padding: 8px 0;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+.ai-insight-label {
+  font-family: var(--font-ui);
+  letter-spacing: 0.01em;
+}
+.ai-insight-block {
+  margin-top: var(--sp-md);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hl-toolbar-floating,
+  .hl-toolbar-floating.flipped {
+    animation: none;
+  }
+  .hl-blob.hl-dimmed {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   Passage picker — title chrome + recents
+   ========================================================================== */
+
+.passage-picker-popover {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: min(72vh, 520px);
+}
+
+.picker-recents {
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--bg-secondary) 70%, var(--bg-surface));
+}
+
+.picker-recents-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.picker-recents-label {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.picker-recents-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-height: 76px;
+  overflow-y: auto;
+}
+
+.picker-recent-chip-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+}
+
+.picker-recent-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 160px;
+  padding: 5px 22px 5px 9px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.picker-recent-chip:hover {
+  border-color: var(--border-medium);
+  background: var(--bg-secondary);
+}
+
+.picker-recent-chip.active {
+  border-color: color-mix(in srgb, var(--accent-current) 45%, var(--border-medium));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-current) 22%, transparent);
+  color: var(--accent-current);
+}
+
+.picker-recent-ref {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.picker-recent-pkg {
+  font-size: 9.5px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.picker-recent-chip.active .picker-recent-pkg {
+  color: color-mix(in srgb, var(--accent-current) 70%, var(--text-tertiary));
+}
+
+.picker-recent-dismiss {
+  position: absolute;
+  top: 50%;
+  right: 3px;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
+}
+
+.picker-recent-chip-wrap:hover .picker-recent-dismiss,
+.picker-recent-chip-wrap:focus-within .picker-recent-dismiss {
+  opacity: 1;
+}
+
+.picker-recent-dismiss:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.picker-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px 6px;
+}
+
+.picker-title {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+.picker-title-book {
+  font-family: var(--font-reading);
+  font-size: 15px;
+  font-weight: var(--fw-semibold);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.picker-title-sep {
+  color: var(--text-tertiary);
+  font-weight: var(--fw-normal);
+}
+
+.picker-title-meta {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.picker-title-books {
+  margin-left: auto;
+}
+
+.picker-title-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border: none;
+  background: transparent;
+  color: var(--accent-current);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  padding: 4px 2px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.picker-title-action:hover {
+  background: color-mix(in srgb, var(--accent-current) 10%, transparent);
+}
+
+.picker-title-action-chev {
+  font-size: 14px;
+  line-height: 1;
+  opacity: 0.8;
+}
+
+.picker-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  padding: 4px 6px 4px 2px;
+  border-radius: 6px;
+  min-width: 0;
+}
+
+.picker-back:hover {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+.picker-back span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 140px;
+}
+
+.passage-picker-popover .chapter-grid {
+  padding: 4px 12px 14px;
+}
+
+.passage-picker-popover .popover-search {
+  margin: 0 12px 8px;
+}
+
+.passage-picker-popover .popover-scroll {
+  padding: 0 12px 12px;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Legacy popback still styled if used elsewhere */
+.passage-popback {
+  /* kept for compatibility */
+}
+
+/* ==========================================================================
+   Note capture slide-over
+   ========================================================================== */
+
+.note-capture-root {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+
+.note-capture-scrim {
+  position: absolute;
+  inset: 0;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: rgba(18, 20, 24, 0.28);
+  backdrop-filter: blur(2px);
+  cursor: pointer;
+  pointer-events: auto;
+  animation: noteCaptureScrimIn 160ms ease;
+}
+
+.dark .note-capture-scrim {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+@keyframes noteCaptureScrimIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.note-capture-panel {
+  position: relative;
+  width: min(420px, 100vw);
+  height: 100%;
+  background: var(--bg-surface);
+  border-left: 1px solid var(--border-subtle);
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
+  animation: noteCapturePanelIn 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes noteCapturePanelIn {
+  from { transform: translateX(16px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.dark .note-capture-panel {
+  box-shadow: -8px 0 40px rgba(0, 0, 0, 0.35);
+}
+
+.note-capture-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: calc(env(titlebar-area-height, 28px) + 16px) 20px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.note-capture-kicker {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: 4px;
+}
+
+.note-capture-heading {
+  font-family: var(--font-reading);
+  font-size: 18px;
+  font-weight: var(--fw-semibold);
+  color: var(--text-primary);
+  line-height: 1.3;
+  margin: 0;
+}
+
+.note-capture-close {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.note-capture-close:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.note-capture-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.note-capture-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.note-capture-field-grow {
+  flex: 1;
+  min-height: 140px;
+}
+
+.note-capture-label {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.note-capture-title-input {
+  width: 100%;
+  border: 1px solid var(--border-medium);
+  border-radius: 8px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-reading);
+  font-size: 16px;
+  font-weight: var(--fw-semibold);
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.note-capture-title-input:focus {
+  border-color: var(--accent-current);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-current) 18%, transparent);
+}
+
+.note-capture-quote {
+  margin: 0;
+  padding: 12px 14px 12px 12px;
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  position: relative;
+}
+
+.note-capture-quote-mark {
+  color: var(--text-tertiary);
+  opacity: 0.55;
+  margin-bottom: 4px;
+}
+
+.note-capture-quote-text {
+  font-family: var(--font-reading);
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  font-style: italic;
+  margin: 0 0 8px;
+  white-space: pre-wrap;
+}
+
+.note-capture-quote-ref {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: var(--fw-medium);
+  color: var(--text-tertiary);
+  font-style: normal;
+}
+
+.note-capture-textarea {
+  flex: 1;
+  min-height: 160px;
+  width: 100%;
+  resize: none;
+  border: 1px solid var(--border-medium);
+  border-radius: 8px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.55;
+  padding: 12px;
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.note-capture-textarea:focus {
+  border-color: var(--accent-current);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-current) 18%, transparent);
+}
+
+.note-capture-footer {
+  padding: 12px 20px 18px;
+  border-top: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--bg-secondary) 50%, var(--bg-surface));
+}
+
+.note-capture-error {
+  color: var(--error);
+  font-size: 12.5px;
+  margin: 0 0 8px;
+}
+
+.note-capture-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.note-capture-hint {
+  font-size: 11.5px;
+  color: var(--text-tertiary);
+  flex: 1;
+  min-width: 120px;
+}
+
+.note-capture-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.note-capture-cancel,
+.note-capture-save {
+  font-size: 13px;
+  padding: 7px 14px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .note-capture-scrim,
+  .note-capture-panel {
+    animation: none;
+  }
 }

@@ -16,6 +16,8 @@ import { ulid } from "ulid";
 import { loadEnvFile } from "../src/host/env.js";
 import { createDeepSeekProvider } from "../src/host/ai-provider.js";
 import { SQLiteMaterializer } from "../src/host/sqlite.js";
+import { EmbeddingsStore } from "../src/host/embeddings-store.js";
+import { claimSourceHash } from "../src/host/claims-sync.js";
 import {
   CLAIMS_PROMPT_VERSION,
   buildClaimExtractionRequest,
@@ -39,6 +41,8 @@ async function main(): Promise<void> {
 
   const backbone = JSON.parse(readFileSync(join(DATA_DIR, "backbone.json"), "utf-8")) as BackboneData;
   const db = new SQLiteMaterializer(join(LIBRARY_PATH, ".system/library.sqlite"));
+  // B-1: claims persist in the AI-derived store, not the materialized view.
+  const store = new EmbeddingsStore(join(LIBRARY_PATH, ".system/embeddings.sqlite"));
 
   // Gather notes anchored to ACT 19:1-7 (same path the Living Margin uses)
   const anchors = db.queryAnchorsForRange("ACT", 19, 1, 19, 7);
@@ -74,7 +78,7 @@ async function main(): Promise<void> {
   });
   console.log(`\nextraction call: ${Date.now() - started}ms, ${resp.tokensUsed} tokens`);
 
-  const { claims, rejected } = parseClaimExtraction(resp.text, backbone, new Set(noteIds));
+  const { claims, rejected } = parseClaimExtraction(resp.text, backbone, notes);
   for (const r of rejected) console.log(`  rejected: ${r}`);
   console.log(`valid claims: ${claims.length} (rejected: ${rejected.length})`);
   if (claims.length < 2) fail("expected at least 2 valid claims");
@@ -84,13 +88,14 @@ async function main(): Promise<void> {
 
   // Replace this extractor's prior output (idempotent re-runs), then insert.
   const extractor = `${provider.model}@${CLAIMS_PROMPT_VERSION}`;
-  const removed = db.deleteClaimsByExtractor(extractor);
+  const removed = store.deleteClaimsByExtractor(extractor);
   if (removed > 0) console.log(`replaced ${removed} prior claims from ${extractor}`);
 
   const created = new Date().toISOString();
+  const notesById = new Map(notes.map((n) => [n.id, n]));
   for (const claim of claims) {
     const id = ulid();
-    db.insertClaim({
+    store.insertClaim({
       id,
       assertion: claim.assertion,
       claim_type: claim.claimType,
@@ -100,15 +105,23 @@ async function main(): Promise<void> {
       status: "active",
     });
     for (const a of claim.anchors) {
-      db.insertClaimAnchor({ claim_id: id, book: a.book, chapter: a.chapter, verse: a.verse });
+      store.insertClaimAnchor({ claim_id: id, book: a.book, chapter: a.chapter, verse: a.verse });
     }
     for (const e of claim.evidence) {
-      db.insertClaimSource({ claim_id: id, kind: e.kind, ref: e.ref });
+      const src = e.kind === "note" ? notesById.get(e.ref) : undefined;
+      store.insertClaimSource({
+        claim_id: id,
+        kind: e.kind,
+        ref: e.ref,
+        quote: e.kind === "note" ? e.quote : undefined,
+        // B-1: staleness hash — the sweep deletes this claim if the note changes.
+        source_hash: src ? claimSourceHash(src.title, src.body) : undefined,
+      });
     }
   }
 
   // Verify through the same query the Living Margin uses.
-  const surfaced = db.queryClaimsForRange("ACT", 19, 1, 19, 7);
+  const surfaced = store.queryClaimsForRange("ACT", 19, 1, 19, 7);
   const ours = surfaced.filter((c) => c.extractor === extractor);
   console.log(`\nclaims now surfaced for ACT 19:1-7 (extractor ${extractor}):`);
   for (const c of ours) {
@@ -119,6 +132,7 @@ async function main(): Promise<void> {
   }
 
   db.close();
+  store.close();
   console.log("\nSMOKE PASS");
 }
 
