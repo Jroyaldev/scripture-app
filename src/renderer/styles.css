@@ -3325,6 +3325,118 @@ html, body, #root {
   font-variant-numeric: tabular-nums;
 }
 
+/* Chart (simplified tree) */
+.lang-syntax-chart-wrap {
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  padding: 6px 4px 4px;
+  overflow-x: auto;
+}
+
+.lang-syntax-chart {
+  display: block;
+  min-width: 100%;
+}
+
+.lang-syntax-edge {
+  stroke: color-mix(in srgb, var(--text-tertiary) 55%, transparent);
+  stroke-width: 1.35;
+  opacity: 0.9;
+}
+
+.lang-syntax-branch-bg {
+  fill: color-mix(in srgb, var(--bg-secondary) 88%, var(--text-tertiary) 6%);
+  stroke: var(--border-subtle);
+  stroke-width: 1;
+}
+
+.lang-syntax-branch-label {
+  font-size: 8.5px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  fill: var(--text-tertiary);
+}
+
+.lang-syntax-leaf-bg {
+  fill: var(--bg-secondary);
+  stroke: var(--border-medium);
+  stroke-width: 1;
+}
+
+.lang-syntax-leaf.is-focus .lang-syntax-leaf-bg {
+  fill: color-mix(in srgb, var(--accent-current) 14%, var(--bg-surface));
+  stroke: var(--accent-current);
+  stroke-width: 1.5;
+}
+
+.lang-syntax-leaf-accent {
+  fill: var(--text-tertiary);
+  opacity: 0.55;
+}
+
+.lang-syntax-leaf-accent.role-subj {
+  fill: #6b9ac4;
+  opacity: 1;
+}
+.lang-syntax-leaf-accent.role-verb {
+  fill: #c4a35a;
+  opacity: 1;
+}
+.lang-syntax-leaf-accent.role-obj {
+  fill: #7bae7f;
+  opacity: 1;
+}
+.lang-syntax-leaf-accent.role-prep {
+  fill: #8b7ec8;
+  opacity: 1;
+}
+.lang-syntax-leaf-accent.role-pred {
+  fill: #c47b8a;
+  opacity: 1;
+}
+
+.lang-syntax-leaf-grk {
+  font-family: var(--font-reading);
+  font-size: 11px;
+  font-weight: 600;
+  fill: var(--text-primary);
+}
+
+.lang-syntax-leaf-en {
+  font-size: 8px;
+  fill: var(--text-tertiary);
+}
+
+.lang-syntax-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  padding: 6px 6px 2px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.lang-syntax-legend .role-subj {
+  color: #6b9ac4;
+}
+.lang-syntax-legend .role-verb {
+  color: #c4a35a;
+}
+.lang-syntax-legend .role-obj {
+  color: #7bae7f;
+}
+.lang-syntax-legend .role-prep {
+  color: #8b7ec8;
+}
+.lang-syntax-legend .role-pred {
+  color: #c47b8a;
+}
+
 .lang-syntax-outline {
   list-style: none;
   margin: 0;
