@@ -131,11 +131,30 @@ function parseHeaderId(field0: string): {
   };
 }
 
-function stripHtml(s: string): string {
+/**
+ * TIPNR prose uses nonstandard tags, e.g.
+ *   <ref="Gen.2.8">Gen.2.8</ref>
+ *   <ref="Genesis 2:8, 10">Genesis 2:8, 10</ref>
+ *   <strong="H5731B">Eden</strong>
+ * Keep the visible text; drop the markup so the margin card stays clean.
+ */
+function cleanTipnrProse(s: string): string {
   return s
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/g, " ")
+    .replace(/<ref=["'][^"']*["']>([\s\S]*?)<\/ref>/gi, "$1")
+    .replace(/<strong=["'][^"']*["']>([\s\S]*?)<\/strong>/gi, "$1")
+    .replace(/<\/?ref\b[^>]*>/gi, "")
+    .replace(/<\/?strong\b[^>]*>/gi, "")
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<\/?[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
     .replace(/\s+/g, " ")
+    .replace(/\s+([,.;:!?])/g, "$1")
+    .replace(/\(\s+/g, "(")
+    .replace(/\s+\)/g, ")")
+    .replace(/\(\s*\)/g, "")
     .trim();
 }
 
@@ -194,17 +213,17 @@ function parseFile(text: string): TipnrIndex {
 
     const summaryField = headerFields.find((f) => f.includes("#A ") || f.startsWith("#"));
     if (summaryField) {
-      brief = stripHtml(summaryField.replace(/^#/, "")).slice(0, 280);
+      brief = cleanTipnrProse(summaryField.replace(/^#/, "")).slice(0, 280);
     }
 
     for (const line of lines.slice(headerIdx + 1)) {
       if (line.startsWith("@Briefest=")) {
-        if (!brief) brief = line.slice("@Briefest=".length).trim();
+        if (!brief) brief = cleanTipnrProse(line.slice("@Briefest=".length));
       } else if (line.startsWith("@Brief=")) {
-        const b = line.slice("@Brief=".length).trim();
+        const b = cleanTipnrProse(line.slice("@Brief=".length));
         if (b) brief = b;
       } else if (line.startsWith("@Short=")) {
-        short = line.slice("@Short=".length).trim();
+        short = cleanTipnrProse(line.slice("@Short=".length));
       } else if (
         line.startsWith("– Named") ||
         line.startsWith("- Named") ||
@@ -271,6 +290,8 @@ function parseFile(text: string): TipnrIndex {
       refs = [firstRef];
       refCount = 1;
     }
+    brief = cleanTipnrProse(brief);
+    short = cleanTipnrProse(short);
     if (!brief && short) brief = short.slice(0, 280);
     if (!brief) brief = `${header.displayName}`;
 
