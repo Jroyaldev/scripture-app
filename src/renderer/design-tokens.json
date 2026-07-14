@@ -27,8 +27,8 @@
     "text": {
       "primary": "#1A1A1A",
       "secondary": "#5C5C5C",
-      "tertiary": "#999999",
-      "verse-number": "#B8B8B8",
+      "tertiary": "#6E6E6E",
+      "verse-number": "#737373",
       "link": "#3D6BB5",
       "link-hover": "#2A4F8C"
     },
