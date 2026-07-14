@@ -6,6 +6,7 @@ import { test } from "node:test";
 import {
   TipnrIndex,
   tokenLooksLikeProperName,
+  formatTipnrDisplayName,
 } from "../src/core/language/tipnr.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -50,6 +51,14 @@ test("tokenLooksLikeProperName detects HNp and Greek proper", () => {
   assert.equal(tokenLooksLikeProperName({ morphCode: "HNp" }), true);
   assert.equal(tokenLooksLikeProperName({ wordType: "proper", morphCode: "N-NSM" }), true);
   assert.equal(tokenLooksLikeProperName({ morphCode: "V-AAI-3S", wordType: "common" }), false);
+});
+
+test("formatTipnrDisplayName softens machine ids", () => {
+  assert.equal(formatTipnrDisplayName("Olives_Mount"), "Mount of Olives");
+  assert.equal(formatTipnrDisplayName("Mary_Magdalene"), "Mary Magdalene");
+  assert.equal(formatTipnrDisplayName("Moab_Plains"), "Plains of Moab");
+  assert.equal(formatTipnrDisplayName("Halak_Mount"), "Mount Halak");
+  assert.equal(formatTipnrDisplayName("Jesus"), "Jesus");
 });
 
 test("TIPNR covers people and places across OT and NT", () => {

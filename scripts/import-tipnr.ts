@@ -131,6 +131,83 @@ function parseHeaderId(field0: string): {
   };
 }
 
+/** TIPNR machine id → readable label (Olives_Mount → Mount of Olives). */
+function humanizeMachineName(raw: string): string {
+  let s = raw
+    .replace(/_/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/([A-Za-z])(\d+)(?=\s|$)/g, "$1 $2")
+    .replace(/\s+/g, " ")
+    .trim();
+  const mount = s.match(/^(.+?)\s+Mount$/i);
+  if (mount && !/^Mount\b/i.test(s)) {
+    const base = mount[1]!.trim();
+    s = /^Olives$/i.test(base) ? "Mount of Olives" : `Mount ${base}`;
+  }
+  const plains = s.match(/^(.+?)\s+Plains$/i);
+  if (plains && !/^Plains\b/i.test(s)) {
+    s = `Plains of ${plains[1]!.trim()}`;
+  }
+  return s;
+}
+
+/**
+ * Prefer a human label for machine ids (Olives_Mount).
+ * Leave clean names alone (Jesus stays “Jesus”, not “Jesus or Christ…”).
+ */
+function extractPrettyDisplayName(
+  headerField0: string,
+  uStrong: string,
+  machineName: string,
+  bodyLines: string[],
+): string {
+  const needsHumanize =
+    machineName.includes("_") || /[a-z][A-Z]/.test(machineName);
+
+  // Clean single-token names: keep as-is (avoid Total alias lists).
+  if (!needsHumanize) return machineName;
+
+  // 1) Text after Strong, before URL — places with map links
+  //    e.g. =H2132GMount of Oliveshttps://…
+  const eq = headerField0.indexOf(`=${uStrong}`);
+  if (eq >= 0) {
+    let rest = headerField0.slice(eq + 1 + uStrong.length);
+    const http = rest.search(/https?:\/\//i);
+    if (http >= 0) rest = rest.slice(0, http);
+    rest = (rest.split(/[#<\t=]/)[0] ?? rest).trim();
+    if (
+      rest.length >= 2 &&
+      rest.length <= 55 &&
+      !/^(Man|Woman|King|Queen|Prophet|Priest|A |An |https)/i.test(rest) &&
+      !/living at the time/i.test(rest) &&
+      !/\bor\b|\//i.test(rest) &&
+      /^[\p{L}0-9][\p{L}0-9\s'.\-–/()]*$/u.test(rest)
+    ) {
+      return rest;
+    }
+  }
+
+  // 2) “– TotalMount of Olives H2132G…” / “– TotalMary MagdaleneG3137I…”
+  for (const line of bodyLines) {
+    if (!line.startsWith("– Total") && !line.startsWith("- Total")) continue;
+    const body = line.replace(/^[-–]\s*Total\s*/i, "");
+    const m = body.match(/^(.+?)\s*([GH]\d{1,5})/);
+    if (!m) continue;
+    const name = m[1]!.trim();
+    if (
+      name.length >= 2 &&
+      name.length <= 60 &&
+      !name.includes("@") &&
+      !/\bor\b|\//i.test(name)
+    ) {
+      return name;
+    }
+  }
+
+  // 3) Underscore / camelCase machine ids → spaces / Mount of …
+  return humanizeMachineName(machineName);
+}
+
 /**
  * TIPNR prose uses nonstandard tags, e.g.
  *   <ref="Gen.2.8">Gen.2.8</ref>
@@ -292,13 +369,19 @@ function parseFile(text: string): TipnrIndex {
     }
     brief = cleanTipnrProse(brief);
     short = cleanTipnrProse(short);
+    const displayName = extractPrettyDisplayName(
+      headerFields[0] ?? "",
+      header.uStrong,
+      header.displayName,
+      lines.slice(headerIdx + 1),
+    );
     if (!brief && short) brief = short.slice(0, 280);
-    if (!brief) brief = `${header.displayName}`;
+    if (!brief) brief = displayName;
 
     const entity: TipnrEntity = {
       id: header.id,
       kind,
-      displayName: header.displayName,
+      displayName,
       brief: brief.slice(0, 320),
       short: short ? short.slice(0, 480) : undefined,
       uStrong: header.uStrong,

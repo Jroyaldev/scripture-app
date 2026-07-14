@@ -227,6 +227,21 @@ function formatAppRef(key: string): string {
   return `${m[1]} ${m[2]}:${m[3]}`;
 }
 
+/** Soften leftover TIPNR machine ids (Olives_Mount) if an older index is loaded. */
+function prettyName(name: string): string {
+  if (!name.includes("_") && !/[a-z][A-Z]/.test(name)) return name;
+  return name
+    .replace(/_/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/([A-Za-z])(\d+)(?=\s|$)/g, "$1 $2")
+    .replace(/^(.+?)\s+Mount$/i, (_, base: string) =>
+      /^Olives$/i.test(base.trim()) ? "Mount of Olives" : `Mount ${base.trim()}`,
+    )
+    .replace(/^(.+?)\s+Plains$/i, "Plains of $1")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 /**
  * TIPNR individual card — person/place, not “all same Strong’s”.
  * Progressive: brief always; other refs on demand.
@@ -234,6 +249,7 @@ function formatAppRef(key: string): string {
 function NameEntityCard({ hit }: { hit: LanguageNameEntityHit }): React.JSX.Element {
   const [openRefs, setOpenRefs] = useState(false);
   const e = hit.entity;
+  const title = prettyName(e.displayName);
   const kindLabel =
     e.kind === "person" ? "Person" : e.kind === "place" ? "Place" : "Name";
   const otherRefs = e.refs.filter((r) => r !== e.firstRef).slice(0, 12);
@@ -248,7 +264,7 @@ function NameEntityCard({ hit }: { hit: LanguageNameEntityHit }): React.JSX.Elem
           </span>
         )}
       </div>
-      <div className="lang-name-title">{e.displayName}</div>
+      <div className="lang-name-title">{title}</div>
       <p className="lang-name-brief">{e.brief}</p>
       {e.short && e.short !== e.brief && (
         <p className="lang-name-short">{e.short}</p>
@@ -293,7 +309,7 @@ function NameEntityCard({ hit }: { hit: LanguageNameEntityHit }): React.JSX.Elem
           <div className="lang-name-alt-chips">
             {hit.alternatives.map((a) => (
               <span key={a.id} className="lang-name-alt-chip" title={a.brief}>
-                {a.displayName}
+                {prettyName(a.displayName)}
               </span>
             ))}
           </div>

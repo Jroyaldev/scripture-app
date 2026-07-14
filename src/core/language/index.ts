@@ -92,6 +92,7 @@ export {
   getSharedTipnrIndex,
   setSharedTipnrIndex,
   tokenLooksLikeProperName,
+  formatTipnrDisplayName,
   type TipnrEntity,
   type TipnrIndexFile,
   type NameResolveQuery,

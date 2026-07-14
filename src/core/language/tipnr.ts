@@ -170,12 +170,17 @@ function pickByNameHint(list: TipnrEntity[], hint?: string | null): TipnrEntity 
   if (!hint?.trim()) return null;
   const h = hint.trim().toLowerCase().replace(/[^\p{L}\p{N}\s'-]/gu, "");
   if (!h) return null;
-  const exact = list.find((e) => e.displayName.toLowerCase() === h);
+  const label = (e: TipnrEntity) => formatTipnrDisplayName(e.displayName).toLowerCase();
+  const exact = list.find((e) => e.displayName.toLowerCase() === h || label(e) === h);
   if (exact) return exact;
   // "Bethany" should beat "Beth-barah" when both share a Strong
-  const starts = list.find((e) => e.displayName.toLowerCase().startsWith(h));
+  const starts = list.find(
+    (e) => e.displayName.toLowerCase().startsWith(h) || label(e).startsWith(h),
+  );
   if (starts) return starts;
-  const contains = list.find((e) => e.displayName.toLowerCase().includes(h));
+  const contains = list.find(
+    (e) => e.displayName.toLowerCase().includes(h) || label(e).includes(h),
+  );
   if (contains) return contains;
   const inBrief = list.find(
     (e) => e.brief.toLowerCase().includes(h) || (e.short ?? "").toLowerCase().includes(h),
@@ -187,6 +192,31 @@ function pickByNameHint(list: TipnrEntity[], hint?: string | null): TipnrEntity 
 function pickPrimaryIndividual(list: TipnrEntity[]): TipnrEntity | null {
   if (!list.length) return null;
   return [...list].sort((a, b) => (b.refCount ?? 0) - (a.refCount ?? 0))[0] ?? null;
+}
+
+/**
+ * TIPNR machine IDs use underscores (Olives_Mount, Mary_Magdalene).
+ * Prefer a readable label for UI chips and titles.
+ */
+export function formatTipnrDisplayName(raw: string): string {
+  if (!raw?.trim()) return raw ?? "";
+  let s = raw
+    .replace(/_/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/([A-Za-z])(\d+)(?=\s|$)/g, "$1 $2")
+    .replace(/\s+/g, " ")
+    .trim();
+  // Olives Mount → Mount of Olives; Halak Mount → Mount Halak
+  const mount = s.match(/^(.+?)\s+Mount$/i);
+  if (mount && !/^Mount\b/i.test(s)) {
+    const base = mount[1]!.trim();
+    s = /^Olives$/i.test(base) ? "Mount of Olives" : `Mount ${base}`;
+  }
+  const plains = s.match(/^(.+?)\s+Plains$/i);
+  if (plains && !/^Plains\b/i.test(s)) {
+    s = `Plains of ${plains[1]!.trim()}`;
+  }
+  return s;
 }
 
 /** Detect whether a language token looks like a proper name worth resolving. */
