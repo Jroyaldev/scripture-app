@@ -100,6 +100,30 @@ export {
 } from "./tipnr.js";
 
 export {
+  buildRenderingOrbit,
+  normalizeOrbitGloss,
+  formatOrbitLabel,
+  donutSegmentPath,
+  ORBIT_PALETTE,
+  type OrbitSegment,
+  type RenderingOrbit,
+} from "./rendering-orbit.js";
+
+export {
+  layoutSyntaxTree,
+  simplifyTree,
+  parseMaculaNodesXml,
+  buildSyntaxBookIndex,
+  sentenceForToken,
+  catLabel,
+  type SyntaxNode,
+  type SyntaxSentence,
+  type SyntaxPackageIndex,
+  type SyntaxLayout,
+  type LaidOutNode,
+} from "./syntax-tree.js";
+
+export {
   lookupStrongGloss,
   normalizeStrongNumber,
   parseStrongGlossJson,

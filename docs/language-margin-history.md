@@ -11,7 +11,7 @@
 > - `data/scripture/names/README.md` — TIPNR import notes
 > - Mockups: `docs/living-margin-language-mockup.html` (+ `.png`)
 
-**Last updated:** 2026-07-14
+**Last updated:** 2026-07-14 (Rendering Orbit + Syntax Art)
 
 ---
 
@@ -78,6 +78,8 @@ Think of three stacked concerns on one token card:
 | **Morph chips** | Ordered English labels + meanings | `morph-labels.ts`, `hebrew-morph-labels.ts`, `morph-explain.ts` |
 | **STEP overlay** | Approach A — extra prose table lookup by morph code | `step-morph.ts`, `data/scripture/morph/TEGMC*`, `TEHMC*` |
 | **TIPNR identity** | *Which* individual/place for proper names | `tipnr.ts`, `data/scripture/names/tipnr-index.json` |
+| **Rendering Orbit** | How this lemma is glossed across the corpus (circular spectrum) | `rendering-orbit.ts`, MACULA package glosses |
+| **Syntax Art** | MACULA sentence tree as interactive SVG | `syntax-tree.ts`, `data/scripture/syntax/macula-greek-nestle1904/` |
 
 ### 3.1 Morph expanders
 
@@ -204,15 +206,21 @@ Representative commits (branch history may include more polish):
 When resuming language work, pick deliberately. Order below is **suggested
 priority**, not committed backlog.
 
-### 7.1 Translation braid / reverse interlinear *(deferred by choice)*
+### 7.1 Translation braid / reverse interlinear *(partially superseded)*
 
-- **Data:** Clear Bible Alignments (BSB, YLT) — CC BY; avoid TTESV (ESV) for
-  commercial (BY-NC).
-- **UX:** for selected Greek/Hebrew token, show which English words map;
-  optional “this English word came from…” from reading text.
-- **Why later:** new data pipeline + dense UI; identity and form already ship
-  value without it.
-- **See:** `docs/original-language-data-sources.md` § Clear Bible Alignments.
+- **Shipped instead (v1):** **Rendering Orbit** — circular corpus gloss map
+  from MACULA Berean glosses (open data). Product name intentionally not
+  “translation ring” (Logos feature name). See §3 and UI `RenderingOrbitView`.
+- **Still open:** true reverse interlinear braid against BSB/YLT Alignments
+  (Clear Bible, CC BY); multi-version segment sizes; English→lemma orbit.
+- Avoid TTESV (ESV) for commercial (BY-NC).
+
+### 7.1b Syntax Art *(shipped NT Greek)*
+
+- **Shipped:** MACULA Nestle1904 node trees → compact JSON → interactive SVG
+  (“Syntax art”) for all NT books. Import: `npm run import:macula-syntax`.
+- **Still open:** Hebrew MACULA trees; collapsed “simple” view; click node →
+  highlight verse words; full-width panel mode.
 
 ### 7.2 Lexicon depth
 

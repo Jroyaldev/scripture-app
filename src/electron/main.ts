@@ -41,6 +41,7 @@ import { assembleMargin } from "../core/margin/index.js";
 import { runSemanticMargin } from "../host/semantic-margin-host.js";
 import { importObsidianVault } from "../core/importer/obsidian.js";
 import { TokenPackageLoader } from "../host/token-package-loader.js";
+import { SyntaxTreeLoader } from "../host/syntax-tree-loader.js";
 import { getSharedStepMorphIndex, getSharedTipnrIndex } from "../core/language/index.js";
 import type { CrossRefData, MarginQuery } from "../core/margin/types.js";
 import {
@@ -113,6 +114,8 @@ let embeddingProvider: EmbeddingProvider | null = null;
 let jobQueue: JobQueue | null = null;
 /** Original-language packages (MACULA Greek, later OSHB Hebrew). */
 let tokenPackages: TokenPackageLoader | null = null;
+/** MACULA syntax trees (syntax art). */
+let syntaxTrees: SyntaxTreeLoader | null = null;
 
 interface HighlightChangeSnapshot {
   before: HighlightRecord[];
@@ -371,6 +374,13 @@ function initializeEngine(libraryPathArg?: string, autoCreateIfMissing: boolean 
   } else {
     tokenPackages.setRoots(languagePackageRoots(libraryPath));
     if (hebrewGlossJson) tokenPackages.loadHebrewGlossJson(hebrewGlossJson);
+  }
+
+  const syntaxRoots = [join(DATA_DIR, "syntax")];
+  if (!syntaxTrees) {
+    syntaxTrees = new SyntaxTreeLoader(syntaxRoots);
+  } else {
+    syntaxTrees.setRoots(syntaxRoots);
   }
 
   // Ensure library is initialized
@@ -729,6 +739,17 @@ function registerIpcHandlers(): void {
         opts.chapter,
         opts.verse,
       );
+    },
+  );
+
+  ipcMain.handle(
+    "language-syntax-for-token",
+    (
+      _event,
+      opts: { packageId: string; book: string; tokenId: string },
+    ) => {
+      if (!syntaxTrees) return null;
+      return syntaxTrees.getForToken(opts.packageId, opts.book, opts.tokenId);
     },
   );
 

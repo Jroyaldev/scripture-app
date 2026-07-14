@@ -16,10 +16,13 @@ import type {
   LanguageNameEntityHit,
   LanguagePackageSummary,
   LanguageStepMorph,
+  LanguageSyntaxHit,
   LanguageToken,
   LanguageTokenCard,
 } from "../api.js";
 import { safeCall } from "../utils/safeCall.js";
+import { RenderingOrbitView } from "./RenderingOrbit.js";
+import { SyntaxArtView } from "./SyntaxArt.js";
 
 /** Closed row shows at most this many grammar chips (+ optional Strong's id). */
 const MORPH_CHIP_MAX = 5;
@@ -328,6 +331,9 @@ export function LanguageWordsSection({ book, chapter, verse, onStudyEngage }: Pr
   const [showAll, setShowAll] = useState(false);
   const [grammarOpen, setGrammarOpen] = useState(false);
   const [usesOpen, setUsesOpen] = useState(false);
+  const [syntaxOpen, setSyntaxOpen] = useState(false);
+  const [syntaxHit, setSyntaxHit] = useState<LanguageSyntaxHit | null>(null);
+  const [syntaxLoading, setSyntaxLoading] = useState(false);
 
   // Verse prop is authoritative once parent pins on study engage. We still
   // track local engagement for UI (notes open) but do not fight parent scroll.
@@ -344,6 +350,8 @@ export function LanguageWordsSection({ book, chapter, verse, onStudyEngage }: Pr
   useEffect(() => {
     setGrammarOpen(false);
     setUsesOpen(false);
+    setSyntaxOpen(false);
+    setSyntaxHit(null);
     setShowAll(false);
   }, [book, chapter]);
 
@@ -352,6 +360,8 @@ export function LanguageWordsSection({ book, chapter, verse, onStudyEngage }: Pr
   useEffect(() => {
     setGrammarOpen(false);
     setUsesOpen(false);
+    setSyntaxOpen(false);
+    setSyntaxHit(null);
   }, [verse]);
 
   const openToken = useCallback(async (packageId: string, tokenId: string, opts?: { userPick?: boolean }) => {
@@ -359,6 +369,8 @@ export function LanguageWordsSection({ book, chapter, verse, onStudyEngage }: Pr
       engageStudy();
       setGrammarOpen(false);
       setUsesOpen(false);
+      setSyntaxOpen(false);
+      setSyntaxHit(null);
     }
     setSelectedId(tokenId);
     setCardLoading(true);
@@ -381,6 +393,26 @@ export function LanguageWordsSection({ book, chapter, verse, onStudyEngage }: Pr
     });
   }, [engageStudy]);
 
+  const toggleSyntax = useCallback(async () => {
+    if (syntaxOpen) {
+      setSyntaxOpen(false);
+      return;
+    }
+    engageStudy();
+    if (!card || load.kind !== "ready") {
+      setSyntaxOpen(true);
+      return;
+    }
+    setSyntaxOpen(true);
+    if (syntaxHit?.focusTokenId === card.token.id) return;
+    setSyntaxLoading(true);
+    const result = await safeCall(() =>
+      window.api.language.getSyntaxForToken(load.packageId, book, card.token.id),
+    );
+    setSyntaxHit(result.ok ? result.value : null);
+    setSyntaxLoading(false);
+  }, [syntaxOpen, engageStudy, card, load, syntaxHit, book]);
+
   useEffect(() => {
     let cancelled = false;
     setLoad({ kind: "loading" });
@@ -389,6 +421,8 @@ export function LanguageWordsSection({ book, chapter, verse, onStudyEngage }: Pr
     setShowAll(false);
     setGrammarOpen(false);
     setUsesOpen(false);
+    setSyntaxOpen(false);
+    setSyntaxHit(null);
 
     void (async () => {
       const packagesRes = await safeCall(() => window.api.language.listPackages());
@@ -557,6 +591,16 @@ export function LanguageWordsSection({ book, chapter, verse, onStudyEngage }: Pr
                 <NameEntityCard hit={card.nameEntity} />
               )}
 
+              {/* Rendering Orbit — corpus gloss spectrum */}
+              {card.renderingOrbit && card.renderingOrbit.segments.length > 0 && (
+                <RenderingOrbitView
+                  orbit={card.renderingOrbit}
+                  surface={surfaceOf(card.token, card.displaySurface)}
+                  dir={dirAttr}
+                  lang={langAttr}
+                />
+              )}
+
               {/* Form chips: persistent skeleton; meanings open on demand */}
               {card.morphExplain && card.morphExplain.parts.length > 0 && (
                 <MorphFormBlock
@@ -567,6 +611,36 @@ export function LanguageWordsSection({ book, chapter, verse, onStudyEngage }: Pr
                   open={grammarOpen}
                   onToggle={toggleGrammar}
                 />
+              )}
+
+              {/* Syntax art — MACULA tree, progressive */}
+              {isNtBook(book) && (
+                <div className="lang-syntax-block">
+                  <button
+                    type="button"
+                    className="lang-syntax-toggle"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      void toggleSyntax();
+                    }}
+                    aria-expanded={syntaxOpen}
+                  >
+                    {syntaxOpen ? "Hide syntax art" : "Syntax art"}
+                    <span aria-hidden="true">{syntaxOpen ? "▴" : "▾"}</span>
+                  </button>
+                  {syntaxOpen && (
+                    syntaxLoading ? (
+                      <div className="lang-muted">Loading tree…</div>
+                    ) : syntaxHit ? (
+                      <SyntaxArtView hit={syntaxHit} dir={dirAttr} lang={langAttr} />
+                    ) : (
+                      <p className="lang-muted lang-syntax-miss">
+                        No syntax tree for this word yet. Import MACULA nodes
+                        (`npm run import:macula-syntax`).
+                      </p>
+                    )
+                  )}
+                </div>
               )}
 
               {/* Quiet usage line */}

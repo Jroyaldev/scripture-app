@@ -108,6 +108,8 @@ const api = {
       ipcRenderer.invoke("language-lemma-in-book", { packageId, book, lemma }),
     getVerseMarks: (packageId: string, book: string, chapter: number, verse: number) =>
       ipcRenderer.invoke("language-verse-marks", { packageId, book, chapter, verse }),
+    getSyntaxForToken: (packageId: string, book: string, tokenId: string) =>
+      ipcRenderer.invoke("language-syntax-for-token", { packageId, book, tokenId }),
   },
   ai: {
     embedNotes: () => ipcRenderer.invoke("embed-notes"),

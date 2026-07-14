@@ -47,6 +47,7 @@ declare global {
         getTokenCard(packageId: string, tokenId: string): Promise<LanguageTokenCard | null>;
         getLemmaInBook(packageId: string, book: string, lemma: string): Promise<LanguageToken[] | null>;
         getVerseMarks(packageId: string, book: string, chapter: number, verse: number): Promise<LanguageTokenMark[] | null>;
+        getSyntaxForToken(packageId: string, book: string, tokenId: string): Promise<LanguageSyntaxHit | null>;
       };
       ai: {
         embedNotes(): Promise<{ ok: boolean; count?: number; error?: string }>;
@@ -425,6 +426,54 @@ export interface LanguageStepMorph {
   source: "STEPBible TEGMC" | "STEPBible TEHMC";
 }
 
+export interface LanguageOrbitSegment {
+  label: string;
+  count: number;
+  share: number;
+  isCurrent?: boolean;
+}
+
+/** Rendering Orbit — lemma gloss spectrum (open package data). */
+export interface LanguageRenderingOrbit {
+  lemma: string;
+  strongPrefixed?: string;
+  total: number;
+  lemmaCount: number;
+  segments: LanguageOrbitSegment[];
+  source: "package-gloss" | "strongs-only";
+}
+
+export interface LanguageSyntaxNode {
+  id: string;
+  cat: string;
+  rule?: string;
+  clType?: string;
+  tokenId?: string;
+  surface?: string;
+  gloss?: string;
+  lemma?: string;
+  children?: LanguageSyntaxNode[];
+}
+
+export interface LanguageSyntaxSentence {
+  id: string;
+  refLabel: string;
+  book: string;
+  chapter: number;
+  verseStart: number;
+  verseEnd: number;
+  tokenIds: string[];
+  root: LanguageSyntaxNode;
+}
+
+export interface LanguageSyntaxHit {
+  sentence: LanguageSyntaxSentence;
+  packageId: string;
+  book: string;
+  focusTokenId: string;
+  attribution: string;
+}
+
 export interface LanguageTokenCard {
   token: LanguageToken;
   displaySurface?: string;
@@ -437,6 +486,8 @@ export interface LanguageTokenCard {
   stepMorph?: LanguageStepMorph | null;
   /** TIPNR individual (person/place) when resolvable — not all same-Strong hits. */
   nameEntity?: LanguageNameEntityHit | null;
+  /** Rendering Orbit when lemma has corpus glosses. */
+  renderingOrbit?: LanguageRenderingOrbit | null;
   lemmaFreq: { corpus: number; book: number; chapter: number };
   neighborhood: { before: LanguageToken[]; after: LanguageToken[] };
   occurrencesInBook: LanguageToken[];

@@ -33,6 +33,10 @@ import {
   type TokenMark,
   type TokenRecord,
 } from "../core/language/index.js";
+import {
+  buildRenderingOrbit,
+  type RenderingOrbit,
+} from "../core/language/rendering-orbit.js";
 
 export type LanguagePackageSummary = {
   id: string;
@@ -85,6 +89,11 @@ export type TokenCardDto = {
     match: NameResolveHit["match"];
     alternatives: TipnrEntity[];
   } | null;
+  /**
+   * Rendering Orbit — how this lemma is glossed across the package corpus.
+   * Built from MACULA (etc.) gloss columns; open data, not a proprietary ring.
+   */
+  renderingOrbit: RenderingOrbit | null;
   lemmaFreq: {
     corpus: number;
     book: number;
@@ -388,6 +397,34 @@ export class TokenPackageLoader {
       }
     }
 
+    // Rendering Orbit: lemma → gloss spectrum across package corpus
+    let renderingOrbit: RenderingOrbit | null = null;
+    if (lemma) {
+      const ids = pkg.index.byLemma.get(lemma) ?? [];
+      renderingOrbit = buildRenderingOrbit({
+        lemma,
+        strongPrefixed: token.strongPrefixed,
+        lemmaCount: corpus,
+        tokenIds: ids,
+        glossForId: (id) => {
+          const t = pkg.index.byId.get(id);
+          return t?.gloss ?? null;
+        },
+        currentGloss: token.gloss ?? resolved.full,
+      });
+      // Hebrew packages often lack per-token glosses — use Strong's once.
+      if (!renderingOrbit && resolved.full) {
+        renderingOrbit = buildRenderingOrbit({
+          lemma,
+          strongPrefixed: token.strongPrefixed,
+          lemmaCount: corpus || 1,
+          tokenIds: [tokenId],
+          glossForId: () => resolved.full,
+          currentGloss: resolved.full,
+        });
+      }
+    }
+
     return {
       token,
       displaySurface: displaySurface(token.surface),
@@ -397,6 +434,7 @@ export class TokenPackageLoader {
       morphExplain,
       stepMorph,
       nameEntity,
+      renderingOrbit,
       lemmaFreq: { corpus, book, chapter },
       neighborhood: { before: nb.before, after: nb.after },
       occurrencesInBook: occurrences,

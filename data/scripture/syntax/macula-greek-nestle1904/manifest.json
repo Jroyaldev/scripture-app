@@ -1,0 +1,43 @@
+{
+  "id": "macula-greek-nestle1904-syntax",
+  "name": "MACULA Greek Syntax (Nestle 1904)",
+  "family": "macula-greek",
+  "language": "grc",
+  "edition": "Nestle1904",
+  "license": {
+    "spdx": "CC-BY-4.0",
+    "name": "Creative Commons Attribution 4.0",
+    "attributionText": "MACULA Greek Linguistic Datasets © Biblica, Inc / Clear Bible, https://github.com/Clear-Bible/macula-greek/, CC BY 4.0."
+  },
+  "books": [
+    "MAT",
+    "MRK",
+    "LUK",
+    "JHN",
+    "ACT",
+    "ROM",
+    "1CO",
+    "2CO",
+    "GAL",
+    "EPH",
+    "PHP",
+    "COL",
+    "1TH",
+    "2TH",
+    "1TI",
+    "2TI",
+    "TIT",
+    "PHM",
+    "HEB",
+    "JAS",
+    "1PE",
+    "2PE",
+    "1JN",
+    "2JN",
+    "3JN",
+    "JUD",
+    "REV"
+  ],
+  "sentenceCount": 8011,
+  "generatedAt": "2026-07-14T07:35:52.634Z"
+}
