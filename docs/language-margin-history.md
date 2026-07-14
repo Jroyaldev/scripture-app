@@ -79,7 +79,7 @@ Think of three stacked concerns on one token card:
 | **STEP overlay** | Approach A — extra prose table lookup by morph code | `step-morph.ts`, `data/scripture/morph/TEGMC*`, `TEHMC*` |
 | **TIPNR identity** | *Which* individual/place for proper names | `tipnr.ts`, `data/scripture/names/tipnr-index.json` |
 | **Rendering Orbit** | How this lemma is rendered in English (circular spectrum) | `rendering-orbit.ts`, MACULA package glosses |
-| **Syntax Art** | MACULA sentence tree as interactive SVG | `syntax-tree.ts`, `data/scripture/syntax/macula-greek-nestle1904/` |
+| **Structure** | MACULA clause outline (phrasing-style) + word strip | `syntax-tree.ts`, `SyntaxArt.tsx`, `data/scripture/syntax/…` |
 | **Reverse ring** *(TBD)* | English word → which OL lemmas underlie it | needs alignment / reverse index |
 | **Senses ring** *(TBD)* | Semantic senses of a lemma (not translation bands) | Louw–Nida / sense lexicon; careful framing |
 
@@ -259,12 +259,22 @@ translation spectrum.
 | **Risk** | Looks like “the” meaning or theology. Creed: **dictionary/data range ≠ sermon force.** Attribute source; no AI-authored senses in v1. |
 | **Status** | **TBD** — ship only with progressive disclosure + clear “range, not force” framing. |
 
-### 7.1c Syntax Art *(shipped NT Greek)*
+### 7.1c Structure / syntax *(shipped NT Greek; UI redesigned)*
 
-- **Shipped:** MACULA Nestle1904 node trees → compact JSON → interactive SVG
-  (“Syntax art”) for all NT books. Import: `npm run import:macula-syntax`.
-- **Still open:** Hebrew MACULA trees (`WLC/nodes`); collapsed “simple” view;
-  click node → highlight verse words; full-width panel mode.
+Pastors use syntax for **clause flow** and **who-does-what** (phrasing /
+propositional display — Kaiser, Naselli, etc.), not dense NP/VP trees in a
+narrow margin. “Art” in the original brief meant **aesthetic quality**, not
+decorative SVG.
+
+- **Shipped data:** MACULA Nestle1904 node trees → compact JSON (all NT).
+  Import: `npm run import:macula-syntax`.
+- **Shipped UI (v2):** **Structure** panel — default **Outline** (indented
+  reading-order rows: role · Greek · English gloss; clause breaks; focus
+  highlight) + optional **Words** strip. Label in margin: “Structure,” not
+  “Syntax art.”
+- **Still open:** better MACULA role inheritance (true Subject/Object from
+  rules); Hebrew trees (`WLC/nodes`); click row → highlight reading text;
+  full-width panel; arcing/bracketing (Biblearc-style) as a later mode.
 
 ### 7.1d Word-study ring stack (mental model)
 

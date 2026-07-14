@@ -625,17 +625,17 @@ export function LanguageWordsSection({ book, chapter, verse, onStudyEngage }: Pr
                     }}
                     aria-expanded={syntaxOpen}
                   >
-                    {syntaxOpen ? "Hide syntax art" : "Syntax art"}
+                    {syntaxOpen ? "Hide structure" : "Structure"}
                     <span aria-hidden="true">{syntaxOpen ? "▴" : "▾"}</span>
                   </button>
                   {syntaxOpen && (
                     syntaxLoading ? (
-                      <div className="lang-muted">Loading tree…</div>
+                      <div className="lang-muted">Loading structure…</div>
                     ) : syntaxHit ? (
                       <SyntaxArtView hit={syntaxHit} dir={dirAttr} lang={langAttr} />
                     ) : (
                       <p className="lang-muted lang-syntax-miss">
-                        No syntax tree for this word yet. Import MACULA nodes
+                        No structure for this word yet. Import MACULA nodes
                         (`npm run import:macula-syntax`).
                       </p>
                     )
