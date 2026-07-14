@@ -79,7 +79,7 @@ export function StructureModal({
           {loading ? (
             <div className="structure-modal-loading">Loading structure…</div>
           ) : hit ? (
-            <SyntaxArtView hit={hit} dir={dir} fillContainer defaultMode="chart" />
+            <SyntaxArtView hit={hit} dir={dir} fillContainer defaultMode="tree" />
           ) : (
             <div className="structure-modal-empty">
               <p>No structure for this word yet.</p>

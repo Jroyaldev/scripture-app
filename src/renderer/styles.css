@@ -3507,6 +3507,116 @@ html, body, #root {
   font-variant-numeric: tabular-nums;
 }
 
+/* Tree chart — natural size, scroll (never scale leaves) */
+.lang-tree {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-secondary);
+  overflow: hidden;
+}
+
+.lang-tree-intro {
+  margin: 0;
+  padding: 10px 14px 6px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  flex: 0 0 auto;
+}
+
+.lang-tree-scroll {
+  flex: 1 1 auto;
+  overflow: auto;
+  min-height: 280px;
+  padding: 8px 12px 16px;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, color-mix(in srgb, var(--accent-current) 6%, transparent), transparent 55%),
+    var(--bg-surface);
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.lang-tree-svg {
+  display: block;
+  min-width: 100%;
+}
+
+.lang-tree-edge {
+  stroke: color-mix(in srgb, var(--text-tertiary) 50%, transparent);
+  stroke-width: 1.5;
+}
+
+.lang-tree-branch-bg {
+  fill: color-mix(in srgb, var(--bg-secondary) 90%, var(--text-tertiary) 5%);
+  stroke: var(--border-subtle);
+  stroke-width: 1;
+}
+
+.lang-tree-branch-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  fill: var(--text-secondary);
+}
+
+.lang-tree-leaf-bg {
+  fill: var(--bg-surface);
+  stroke: var(--border-medium);
+  stroke-width: 1.25;
+}
+
+.lang-tree-leaf.is-focus .lang-tree-leaf-bg {
+  fill: color-mix(in srgb, var(--accent-current) 14%, var(--bg-surface));
+  stroke: var(--accent-current);
+  stroke-width: 2;
+}
+
+.lang-tree-leaf-bar {
+  fill: var(--text-tertiary);
+  opacity: 0.45;
+}
+
+.lang-tree-leaf-bar.role-subj {
+  fill: #6b9ac4;
+  opacity: 1;
+}
+.lang-tree-leaf-bar.role-verb {
+  fill: #c4a35a;
+  opacity: 1;
+}
+.lang-tree-leaf-bar.role-obj {
+  fill: #7bae7f;
+  opacity: 1;
+}
+.lang-tree-leaf-bar.role-prep {
+  fill: #8b7ec8;
+  opacity: 1;
+}
+.lang-tree-leaf-bar.role-pred {
+  fill: #c47b8a;
+  opacity: 1;
+}
+.lang-tree-leaf-bar.role-adv {
+  fill: #5fa8a0;
+  opacity: 1;
+}
+
+.lang-tree-leaf-grk {
+  font-family: var(--font-reading);
+  font-size: 15px;
+  font-weight: 600;
+  fill: var(--text-primary);
+}
+
+.lang-tree-leaf-en {
+  font-size: 11px;
+  fill: var(--text-tertiary);
+}
+
 /* Clause-flow chart — no overlap, full text, pastoral roles */
 .lang-flow {
   flex: 1 1 auto;
