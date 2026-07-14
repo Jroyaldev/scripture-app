@@ -611,34 +611,32 @@ export function LanguageWordsSection({ book, chapter, verse, onStudyEngage }: Pr
                 />
               )}
 
-              {/* Structure — full-page modal (not squeezed into margin) */}
-              {isNtBook(book) && (
-                <div className="lang-syntax-block">
-                  <button
-                    type="button"
-                    className={`lang-syntax-toggle${syntaxOpen ? " is-open" : ""}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (syntaxOpen) closeStructureModal();
-                      else void openStructureModal();
-                    }}
-                    aria-expanded={syntaxOpen}
-                    aria-haspopup="dialog"
-                  >
-                    Structure
-                    <span className="lang-syntax-toggle-hint" aria-hidden="true">
-                      open
-                    </span>
-                  </button>
-                  <StructureModal
-                    open={syntaxOpen}
-                    onClose={closeStructureModal}
-                    hit={syntaxHit}
-                    loading={syntaxLoading}
-                    dir={dirAttr}
-                  />
-                </div>
-              )}
+              {/* Structure — full-page modal (Greek + Hebrew when data present) */}
+              <div className="lang-syntax-block">
+                <button
+                  type="button"
+                  className={`lang-syntax-toggle${syntaxOpen ? " is-open" : ""}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (syntaxOpen) closeStructureModal();
+                    else void openStructureModal();
+                  }}
+                  aria-expanded={syntaxOpen}
+                  aria-haspopup="dialog"
+                >
+                  Structure
+                  <span className="lang-syntax-toggle-hint" aria-hidden="true">
+                    open
+                  </span>
+                </button>
+                <StructureModal
+                  open={syntaxOpen}
+                  onClose={closeStructureModal}
+                  hit={syntaxHit}
+                  loading={syntaxLoading}
+                  dir={dirAttr}
+                />
+              </div>
 
               {/* Quiet usage line */}
               <div className="lang-usage">

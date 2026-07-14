@@ -14,6 +14,8 @@ export type SyntaxNode = {
   surface?: string;
   gloss?: string;
   lemma?: string;
+  /** Strong’s digits when present (esp. Hebrew MACULA StrongNumberX). */
+  strong?: string;
   children?: SyntaxNode[];
 };
 
@@ -213,15 +215,18 @@ export function layoutSyntaxTree(
   };
 }
 
-/** Parse MACULA nodes book XML (Sentence/Tree/Node) into compact sentences. */
+/** Parse MACULA nodes book/chapter XML (Sentence/Tree/Node) into compact sentences. */
 export function parseMaculaNodesXml(xml: string, bookCode: string): SyntaxSentence[] {
   const sentences: SyntaxSentence[] = [];
   // Split by Sentence blocks
   const blocks = xml.split(/<Sentence\b/).slice(1);
   let si = 0;
   for (const block of blocks) {
-    const refM = block.match(/^[^>]*\bref="([^"]+)"/);
-    const refRaw = refM?.[1] ?? "";
+    // Greek: ref="MAT 1:1!1-1:1!8"  ·  Hebrew: verse="GEN 1:1"
+    const head = block.slice(0, Math.min(block.indexOf(">"), 200));
+    const refM = head.match(/\bref="([^"]+)"/);
+    const verseM = head.match(/\bverse="([^"]+)"/);
+    const refRaw = refM?.[1] ?? verseM?.[1] ?? "";
     const bodyEnd = block.indexOf("</Sentence>");
     const body = bodyEnd >= 0 ? block.slice(0, bodyEnd) : block;
     // Extract first Tree root Node
@@ -262,12 +267,28 @@ function collectTokenIds(n: SyntaxNode, out: string[]): void {
   for (const c of n.children ?? []) collectTokenIds(c, out);
 }
 
-/** MAT 1:1!1-1:1!8 or MAT 5:3!1-5:4!12 */
+/**
+ * Greek: MAT 1:1!1-1:1!8 or MAT 5:3!1-5:4!12
+ * Hebrew: GEN 1:1 or GEN 1:1-2
+ */
 export function parseMaculaSentenceRef(ref: string): {
   chapter: number;
   verseStart: number;
   verseEnd: number;
 } {
+  // GEN 1:1-3 or GEN 1:1
+  const plain = ref.match(/(?:^|\s)(\d+):(\d+)(?:-(\d+)(?::(\d+))?)?/);
+  if (plain) {
+    const chapter = Number(plain[1]);
+    const verseStart = Number(plain[2]);
+    // GEN 1:1-3 → plain[3]=3; MAT 1:1!1-1:2!x → handled below
+    if (plain[4]) {
+      return { chapter, verseStart, verseEnd: Number(plain[4]) };
+    }
+    if (plain[3] && !ref.includes("!")) {
+      return { chapter, verseStart, verseEnd: Number(plain[3]) };
+    }
+  }
   const m = ref.match(/(\d+):(\d+)!?\d*(?:-(\d+):(\d+))?/);
   if (!m) return { chapter: 1, verseStart: 1, verseEnd: 1 };
   const chapter = Number(m[1]);
@@ -305,17 +326,28 @@ function parseNodeTree(xml: string): SyntaxNode | null {
       const selfClose = open.endsWith("/>");
       const attrs = parseAttrs(open);
       const node: SyntaxNode = {
-        id: attrs.nodeId ?? attrs["xml:id"] ?? `n${i}`,
+        id: attrs.nodeId ?? attrs["xml:id"] ?? attrs.n ?? `n${i}`,
         cat: attrs.Cat ?? "?",
         rule: attrs.Rule,
         clType: attrs.ClType,
       };
+      // Greek Nestle leaves: xml:id="n40001..."
       if (attrs["xml:id"]?.startsWith("n")) {
         node.tokenId = attrs["xml:id"];
         node.surface = attrs.Unicode ?? attrs.NormalizedForm;
         node.gloss = attrs.Gloss;
         node.lemma = attrs.UnicodeLemma;
+        if (attrs.StrongNumber) node.strong = attrs.StrongNumber.replace(/^0+/, "") || attrs.StrongNumber;
       }
+      // Hebrew WLC leaves: n="o010010010011" + Unicode + optional nested <m english="…">
+      if (!node.tokenId && (attrs.n?.startsWith("o") || attrs.morphId) && attrs.Unicode) {
+        node.tokenId = attrs.n ?? attrs.morphId;
+        node.surface = attrs.Unicode;
+        if (attrs.StrongNumberX) {
+          node.strong = attrs.StrongNumberX.replace(/[a-zA-Z]+$/g, "").replace(/^0+/, "") || attrs.StrongNumberX;
+        }
+      }
+      if (attrs.Unicode && !node.surface) node.surface = attrs.Unicode;
       if (selfClose) {
         if (stack.length) stack[stack.length - 1]!.children.push(node);
         else nodes.push(node);
@@ -334,10 +366,58 @@ function parseNodeTree(xml: string): SyntaxNode | null {
       }
       continue;
     }
+    // Hebrew nested <m … english="in" gloss="in">בְּ</m>
+    if (xml[i] === "<" && (xml.startsWith("<m ", i) || xml.startsWith("<m>", i))) {
+      const gt = xml.indexOf(">", i);
+      if (gt < 0) break;
+      const open = xml.slice(i, gt + 1);
+      const attrs = parseAttrs(open);
+      const close = xml.indexOf("</m>", gt);
+      const text = close > gt ? xml.slice(gt + 1, close).trim() : "";
+      const frame = stack[stack.length - 1];
+      if (frame) {
+        if (attrs["xml:id"] && !frame.node.tokenId) frame.node.tokenId = attrs["xml:id"];
+        if (attrs.english && !frame.node.gloss) frame.node.gloss = attrs.english;
+        if (attrs.gloss && !frame.node.gloss) frame.node.gloss = attrs.gloss;
+        if (text && !frame.node.surface) frame.node.surface = text;
+        if (attrs.lemma && !frame.node.lemma) frame.node.lemma = attrs.lemma;
+      }
+      i = close > 0 ? close + 4 : gt + 1;
+      continue;
+    }
     i += 1;
   }
 
   return nodes[0] ?? null;
+}
+
+/** Find leaf tokenId matching Strong’s digits (for OSHB ↔ MACULA Hebrew). */
+export function findLeafTokenIdByStrong(root: SyntaxNode, strong: string): string | null {
+  const want = strong.replace(/^0+/, "").replace(/^[Hh]/, "");
+  let found: string | null = null;
+  function walk(n: SyntaxNode): void {
+    if (found) return;
+    if (n.tokenId && n.strong) {
+      const s = n.strong.replace(/^0+/, "").replace(/^[Hh]/, "");
+      if (s === want) {
+        found = n.tokenId;
+        return;
+      }
+    }
+    for (const c of n.children ?? []) walk(c);
+  }
+  walk(root);
+  return found;
+}
+
+/** First leaf token id in tree order. */
+export function firstLeafTokenId(root: SyntaxNode): string | null {
+  if (root.tokenId) return root.tokenId;
+  for (const c of root.children ?? []) {
+    const id = firstLeafTokenId(c);
+    if (id) return id;
+  }
+  return null;
 }
 
 function parseAttrs(openTag: string): Record<string, string> {

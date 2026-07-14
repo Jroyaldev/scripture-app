@@ -398,32 +398,52 @@ export class TokenPackageLoader {
       }
     }
 
-    // Rendering Orbit: how THIS lemma is rendered in English (not helpers,
-    // not other lemmas). Logos-style job; open gloss data.
+    // Rendering Orbit: lemma/Strong → English spectrum.
+    // Greek: package glosses per lemma. Hebrew OSHB has no gloss column —
+    // group by Strong's and use the Strong's English gloss for each hit.
     let renderingOrbit: RenderingOrbit | null = null;
-    if (lemma && !isFunctionWordForOrbit(token)) {
-      const ids = pkg.index.byLemma.get(lemma) ?? [];
-      renderingOrbit = buildRenderingOrbit({
-        lemma,
-        strongPrefixed: token.strongPrefixed,
-        lemmaCount: corpus,
-        tokenIds: ids,
-        glossForId: (id) => {
-          const t = pkg.index.byId.get(id);
-          return t?.gloss ?? null;
-        },
-        currentGloss: token.gloss ?? resolved.full,
-        suppressAsFunction: false,
-      });
-      // Hebrew packages often lack per-token glosses — use Strong's once.
-      if (!renderingOrbit && resolved.full) {
+    if (!isFunctionWordForOrbit(token)) {
+      const ids =
+        isHebrew && token.strong
+          ? (pkg.index.byStrong.get(token.strong) ?? [])
+          : lemma
+            ? (pkg.index.byLemma.get(lemma) ?? [])
+            : [];
+      const groupCount =
+        isHebrew && token.strong
+          ? ids.length
+          : corpus || ids.length;
+      const displayLemma =
+        lemma && !/^[\d\s/a-z]+$/i.test(lemma) ? lemma : token.surface || lemma || token.strong || "?";
+
+      if (ids.length > 0) {
         renderingOrbit = buildRenderingOrbit({
-          lemma,
+          lemma: displayLemma,
           strongPrefixed: token.strongPrefixed,
-          lemmaCount: corpus || 1,
+          lemmaCount: groupCount,
+          tokenIds: ids,
+          glossForId: (id) => {
+            const t = pkg.index.byId.get(id);
+            if (t?.gloss?.trim()) return t.gloss;
+            // Hebrew: map each occurrence through Strong's gloss table
+            if (t?.strong) {
+              const e = lookupStrongGloss(this.hebrewGloss, t.strong);
+              return e?.short ?? e?.gloss ?? null;
+            }
+            return null;
+          },
+          currentGloss: token.gloss ?? resolved.full ?? resolved.short,
+        });
+      }
+      // Last resort: single-segment Strong's gloss
+      if (!renderingOrbit && (resolved.full || resolved.short)) {
+        renderingOrbit = buildRenderingOrbit({
+          lemma: displayLemma,
+          strongPrefixed: token.strongPrefixed,
+          lemmaCount: groupCount || 1,
           tokenIds: [tokenId],
-          glossForId: () => resolved.full,
-          currentGloss: resolved.full,
+          glossForId: () => resolved.full ?? resolved.short,
+          currentGloss: resolved.full ?? resolved.short,
         });
       }
     }

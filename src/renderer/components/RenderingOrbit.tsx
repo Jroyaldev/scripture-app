@@ -152,7 +152,7 @@ export function RenderingOrbitView({
       </div>
       <p className="lang-orbit-attr">
         {orbit.source === "package-gloss"
-          ? "Lemma → English spectrum · MACULA glosses (open data)"
+          ? "Lemma/Strong → English · package or Strong’s glosses"
           : "Lexicon gloss · single rendering"}
       </p>
     </div>

@@ -749,7 +749,17 @@ function registerIpcHandlers(): void {
       opts: { packageId: string; book: string; tokenId: string },
     ) => {
       if (!syntaxTrees) return null;
-      return syntaxTrees.getForToken(opts.packageId, opts.book, opts.tokenId);
+      // OSHB ids ≠ MACULA Hebrew leaf ids — pass Strong’s / verse for focus match
+      const token = tokenPackages?.getToken(opts.packageId, opts.tokenId);
+      const ctx = token
+        ? {
+            chapter: token.chapter,
+            verse: token.verse,
+            strong: token.strong,
+            surface: token.surface,
+          }
+        : null;
+      return syntaxTrees.getForToken(opts.packageId, opts.book, opts.tokenId, ctx);
     },
   );
 

@@ -38,7 +38,8 @@
     "import:macula-greek": "node --import tsx scripts/import-macula-greek.ts",
     "import:oshb": "node --import tsx scripts/import-oshb.ts",
     "import:tipnr": "node --import tsx scripts/import-tipnr.ts",
-    "import:macula-syntax": "node --import tsx scripts/import-macula-syntax.ts"
+    "import:macula-syntax": "node --import tsx scripts/import-macula-syntax.ts",
+    "import:macula-hebrew-syntax": "node --import tsx scripts/import-macula-hebrew-syntax.ts"
   },
   "main": "dist/electron/main.cjs",
   "bin": {

@@ -40,6 +40,35 @@ test("parseMaculaSentenceRef handles ranges", () => {
     verseStart: 3,
     verseEnd: 4,
   });
+  assert.deepEqual(parseMaculaSentenceRef("GEN 1:1"), {
+    chapter: 1,
+    verseStart: 1,
+    verseEnd: 1,
+  });
+});
+
+test("parseMaculaNodesXml reads Hebrew verse= and nested m gloss", () => {
+  const xml = `<?xml version='1.0'?>
+<Sentences>
+  <Sentence verse="GEN 1:1">
+    <Trees>
+      <Tree>
+        <Node Cat="S" nodeId="s1">
+          <Node Cat="CL" nodeId="cl1">
+            <Node n="o010010010021" Cat="verb" Unicode="בָּרָ֣א" nodeId="w1" StrongNumberX="1254">
+              <m xml:id="o010010010021" english="created" gloss="create">בָּרָ֣א</m>
+            </Node>
+          </Node>
+        </Node>
+      </Tree>
+    </Trees>
+  </Sentence>
+</Sentences>`;
+  const sentences = parseMaculaNodesXml(xml, "GEN");
+  assert.equal(sentences.length, 1);
+  assert.equal(sentences[0]!.chapter, 1);
+  assert.equal(sentences[0]!.verseStart, 1);
+  assert.ok(sentences[0]!.tokenIds.includes("o010010010021"));
 });
 
 test("parseMaculaNodesXml extracts tokens and tree", () => {

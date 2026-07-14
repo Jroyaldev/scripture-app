@@ -117,6 +117,8 @@ export {
   parseMaculaNodesXml,
   buildSyntaxBookIndex,
   sentenceForToken,
+  findLeafTokenIdByStrong,
+  firstLeafTokenId,
   catLabel,
   type SyntaxNode,
   type SyntaxSentence,
