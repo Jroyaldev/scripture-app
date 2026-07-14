@@ -1,18 +1,14 @@
 /**
  * Structure — pastor-usable MACULA syntax.
  *
- * Two complementary views:
- *  1. Chart — simplified visual of clause → roles → words (gestalt)
- *  2. Outline — clear indented list (reading / study)
+ * Intended for a wide popover (not the narrow margin): Chart lays out
+ * with real spacing; Outline lists roles in reading order.
  *
- * Pastors want who-does-what and clause flow, not dense NP/VP academia.
  * Data: Clear Bible MACULA (CC BY).
  */
 
 import React, { useMemo, useState } from "react";
 import type { LanguageSyntaxHit, LanguageSyntaxNode } from "../api.js";
-
-/* ─── role mapping ─────────────────────────────────────────── */
 
 type RoleKey =
   | "clause"
@@ -33,7 +29,7 @@ function roleOf(cat: string, rule?: string): { key: RoleKey; label: string } {
   const r = (rule ?? "").toUpperCase();
   if (c === "s") return { key: "clause", label: "Sentence" };
   if (c === "cl") {
-    if (/SUB|ADVCL|RELC/.test(r)) return { key: "sub", label: "Subord." };
+    if (/SUB|ADVCL|RELC/.test(r)) return { key: "sub", label: "Subordinate" };
     return { key: "clause", label: "Clause" };
   }
   if (c === "subj") return { key: "subj", label: "Subject" };
@@ -59,10 +55,8 @@ function cleanGloss(g?: string): string {
     .replace(/\[[^\]]*]/g, " ")
     .replace(/\s+/g, " ")
     .trim()
-    .slice(0, 28);
+    .slice(0, 36);
 }
-
-/* ─── prune tree for chart (drop unary NP noise) ───────────── */
 
 type ChartNode = {
   id: string;
@@ -81,9 +75,7 @@ function isLeafish(n: LanguageSyntaxNode): boolean {
   return Boolean(n.surface || n.gloss);
 }
 
-/** Collapse unary wrappers; keep clause / functional / word nodes only. */
 function toChartTree(node: LanguageSyntaxNode, roleHint: RoleKey = "other"): ChartNode {
-  // Leaf word
   if (isLeafish(node)) {
     const r = roleOf(node.cat, node.rule);
     const key =
@@ -123,17 +115,21 @@ function toChartTree(node: LanguageSyntaxNode, roleHint: RoleKey = "other"): Cha
   const own = roleOf(node.cat, node.rule);
   const kids = (node.children ?? []).map((ch) => {
     let hint: RoleKey = roleHint;
-    if (own.key === "subj" || own.key === "verb" || own.key === "obj" || own.key === "prep" || own.key === "pred") {
+    if (
+      own.key === "subj" ||
+      own.key === "verb" ||
+      own.key === "obj" ||
+      own.key === "prep" ||
+      own.key === "pred"
+    ) {
       hint = own.key;
     } else if (cat === "cl" || cat === "s") {
-      // Rule P-VC-S etc. — assign by child cat
       const ck = roleOf(ch.cat, ch.rule).key;
       if (ck !== "other" && ck !== "noun" && ck !== "clause") hint = ck;
     }
     return toChartTree(ch, hint);
   });
 
-  // Flatten unary non-interesting nodes
   const interesting =
     cat === "s" ||
     cat === "cl" ||
@@ -144,11 +140,8 @@ function toChartTree(node: LanguageSyntaxNode, roleHint: RoleKey = "other"): Cha
     own.key === "pred" ||
     own.key === "adv";
 
-  if (!interesting && kids.length === 1) {
-    return kids[0]!;
-  }
+  if (!interesting && kids.length === 1) return kids[0]!;
   if (!interesting && kids.length > 1) {
-    // Keep as anonymous group under parent — fold children up by using a soft role
     return {
       id: node.id,
       kind: "role",
@@ -158,17 +151,14 @@ function toChartTree(node: LanguageSyntaxNode, roleHint: RoleKey = "other"): Cha
     };
   }
 
-  const kind: ChartNode["kind"] = cat === "s" || cat === "cl" ? "clause" : "role";
   return {
     id: node.id,
-    kind,
+    kind: cat === "s" || cat === "cl" ? "clause" : "role",
     roleKey: own.key,
     label: own.label,
     children: kids,
   };
 }
-
-/* ─── layout ───────────────────────────────────────────────── */
 
 type Laid = {
   id: string;
@@ -184,53 +174,56 @@ type Laid = {
   h: number;
   isFocus: boolean;
   cx: number;
-  cy: number;
 };
 
 type Edge = { x1: number; y1: number; x2: number; y2: number };
-
-const LEAF_MIN_W = 44;
-const LEAF_H = 40;
-const ROLE_H = 18;
-const H_GAP = 6;
-const V_GAP = 28;
-
-function measureLeafWidth(n: ChartNode): number {
-  const grk = (n.surface ?? "").length;
-  const en = (n.gloss ?? "").length;
-  const byChars = Math.max(grk * 8.5, en * 5.2, LEAF_MIN_W);
-  return Math.min(Math.max(byChars, LEAF_MIN_W), 88);
-}
 
 function layoutChart(
   root: ChartNode,
   focusTokenId: string,
   maxWidth: number,
 ): { nodes: Laid[]; edges: Edge[]; width: number; height: number } {
+  // Roomier metrics when we have popover width
+  const roomy = maxWidth >= 420;
+  const leafMinW = roomy ? 56 : 44;
+  const leafH = roomy ? 48 : 40;
+  const roleH = roomy ? 22 : 18;
+  const hGap = roomy ? 14 : 8;
+  const vGap = roomy ? 40 : 30;
+
   type M = { n: ChartNode; width: number; kids: M[] };
+
+  function measureLeafWidth(n: ChartNode): number {
+    const grk = (n.surface ?? "").length;
+    const en = (n.gloss ?? "").length;
+    const byChars = Math.max(grk * (roomy ? 10 : 8.5), en * (roomy ? 6.2 : 5.2), leafMinW);
+    return Math.min(Math.max(byChars, leafMinW), roomy ? 110 : 88);
+  }
 
   function measure(n: ChartNode): M {
     if (n.kind === "word" || n.children.length === 0) {
       return { n, width: measureLeafWidth(n), kids: [] };
     }
     const kids = n.children.map(measure);
-    const inner = kids.reduce((s, k) => s + k.width, 0) + H_GAP * Math.max(0, kids.length - 1);
-    return { n, width: Math.max(40, inner), kids };
+    const inner = kids.reduce((s, k) => s + k.width, 0) + hGap * Math.max(0, kids.length - 1);
+    return { n, width: Math.max(48, inner), kids };
   }
 
   const m = measure(root);
-  const scale = m.width > maxWidth ? maxWidth / m.width : 1;
+  // Prefer natural width; only scale down if still wider than available
+  const natural = m.width + 24;
+  const scale = natural > maxWidth ? maxWidth / natural : 1;
   const nodes: Laid[] = [];
   const edges: Edge[] = [];
 
   function place(mm: M, left: number, depth: number): number {
     const isWord = mm.n.kind === "word";
-    const h = isWord ? LEAF_H : ROLE_H;
-    const y = 8 + depth * V_GAP;
+    const h = isWord ? leafH : roleH;
+    const y = 12 + depth * vGap;
     let cx: number;
 
     if (mm.kids.length === 0) {
-      const w = Math.max(LEAF_MIN_W * 0.85, mm.width * scale);
+      const w = Math.max(leafMinW * 0.9, mm.width * scale);
       cx = left + w / 2;
       nodes.push({
         id: mm.n.id,
@@ -243,10 +236,9 @@ function layoutChart(
         x: left,
         y,
         w,
-        h: LEAF_H,
+        h: leafH,
         isFocus: mm.n.tokenId === focusTokenId,
         cx,
-        cy: y + LEAF_H / 2,
       });
       return cx;
     }
@@ -255,10 +247,10 @@ function layoutChart(
     const childCenters: number[] = [];
     for (const k of mm.kids) {
       childCenters.push(place(k, x, depth + 1));
-      x += k.width * scale + H_GAP * scale;
+      x += k.width * scale + hGap * scale;
     }
     cx = (Math.min(...childCenters) + Math.max(...childCenters)) / 2;
-    const w = Math.min(72, Math.max(36, mm.n.label.length * 6.5));
+    const w = Math.min(roomy ? 88 : 72, Math.max(40, mm.n.label.length * 7));
     nodes.push({
       id: mm.n.id,
       kind: mm.n.kind,
@@ -270,26 +262,20 @@ function layoutChart(
       h,
       isFocus: false,
       cx,
-      cy: y + h / 2,
     });
 
     for (const k of mm.kids) {
       const child = nodes.find((nn) => nn.id === k.n.id);
       if (child) {
-        edges.push({
-          x1: cx,
-          y1: y + h,
-          x2: child.cx,
-          y2: child.y,
-        });
+        edges.push({ x1: cx, y1: y + h, x2: child.cx, y2: child.y });
       }
     }
     return cx;
   }
 
-  place(m, 6, 0);
-  const width = Math.ceil(Math.max(...nodes.map((n) => n.x + n.w), 160) + 10);
-  const height = Math.ceil(Math.max(...nodes.map((n) => n.y + n.h), 80) + 12);
+  place(m, 16, 0);
+  const width = Math.ceil(Math.max(...nodes.map((n) => n.x + n.w), 200) + 20);
+  const height = Math.ceil(Math.max(...nodes.map((n) => n.y + n.h), 100) + 16);
   return { nodes, edges, width, height };
 }
 
@@ -297,8 +283,6 @@ function curve(e: Edge): string {
   const my = (e.y1 + e.y2) / 2;
   return `M ${e.x1.toFixed(1)} ${e.y1.toFixed(1)} C ${e.x1.toFixed(1)} ${my.toFixed(1)}, ${e.x2.toFixed(1)} ${my.toFixed(1)}, ${e.x2.toFixed(1)} ${e.y2.toFixed(1)}`;
 }
-
-/* ─── outline rows ─────────────────────────────────────────── */
 
 type OutlineRow = {
   id: string;
@@ -321,13 +305,24 @@ function flattenOutline(root: LanguageSyntaxNode, focusTokenId: string): Outline
     if (isLeafish(node)) {
       const r = roleOf(node.cat, node.rule);
       const key =
-        roleHint !== "other" && roleHint !== "clause" && roleHint !== "noun"
-          ? roleHint
-          : r.key;
-      const label = key === r.key ? r.label : roleOf(
-        key === "subj" ? "Subj" : key === "verb" ? "V" : key === "obj" ? "O" : key === "prep" ? "pp" : key === "pred" ? "P" : node.cat,
-        node.rule,
-      ).label;
+        roleHint !== "other" && roleHint !== "clause" && roleHint !== "noun" ? roleHint : r.key;
+      const label =
+        key === r.key
+          ? r.label
+          : roleOf(
+              key === "subj"
+                ? "Subj"
+                : key === "verb"
+                  ? "V"
+                  : key === "obj"
+                    ? "O"
+                    : key === "prep"
+                      ? "pp"
+                      : key === "pred"
+                        ? "P"
+                        : node.cat,
+              node.rule,
+            ).label;
       rows.push({
         id: node.tokenId ?? `w${i++}`,
         kind: "word",
@@ -354,7 +349,11 @@ function flattenOutline(root: LanguageSyntaxNode, focusTokenId: string): Outline
     }
     const own = roleOf(node.cat, node.rule);
     const next: RoleKey =
-      own.key === "subj" || own.key === "verb" || own.key === "obj" || own.key === "prep" || own.key === "pred"
+      own.key === "subj" ||
+      own.key === "verb" ||
+      own.key === "obj" ||
+      own.key === "prep" ||
+      own.key === "pred"
         ? own.key
         : roleHint;
     const bump = cat === "cl" || cat === "pp" || cat === "vp" || cat === "subj" || cat === "p" ? 1 : 0;
@@ -365,21 +364,27 @@ function flattenOutline(root: LanguageSyntaxNode, focusTokenId: string): Outline
   return rows;
 }
 
-/* ─── component ────────────────────────────────────────────── */
-
 type Props = {
   hit: LanguageSyntaxHit;
   dir?: "ltr" | "rtl";
-  lang?: string;
+  /** Chart layout budget — use ~480–560 in the structure popover. */
+  chartWidth?: number;
+  /** Start on chart or outline. */
+  defaultMode?: "chart" | "outline";
 };
 
-export function SyntaxArtView({ hit, dir = "ltr" }: Props): React.JSX.Element {
-  const [mode, setMode] = useState<"chart" | "outline">("chart");
+export function SyntaxArtView({
+  hit,
+  dir = "ltr",
+  chartWidth = 520,
+  defaultMode = "chart",
+}: Props): React.JSX.Element {
+  const [mode, setMode] = useState<"chart" | "outline">(defaultMode);
 
   const chartRoot = useMemo(() => toChartTree(hit.sentence.root), [hit.sentence.root]);
   const layout = useMemo(
-    () => layoutChart(chartRoot, hit.focusTokenId, 300),
-    [chartRoot, hit.focusTokenId],
+    () => layoutChart(chartRoot, hit.focusTokenId, chartWidth - 32),
+    [chartRoot, hit.focusTokenId, chartWidth],
   );
   const outline = useMemo(
     () => flattenOutline(hit.sentence.root, hit.focusTokenId),
@@ -389,10 +394,13 @@ export function SyntaxArtView({ hit, dir = "ltr" }: Props): React.JSX.Element {
   const focus = words.find((w) => w.isFocus) ?? words[0];
 
   return (
-    <div className="lang-syntax">
+    <div className="lang-syntax lang-syntax--popover">
       <div className="lang-syntax-kicker">
-        <span className="lang-syntax-kind">Structure</span>
-        <span className="lang-syntax-ref">{hit.sentence.refLabel}</span>
+        <div>
+          <span className="lang-syntax-kind">Structure</span>
+          <span className="lang-syntax-title"> {hit.sentence.refLabel}</span>
+        </div>
+        <span className="lang-syntax-meta">{words.length} words</span>
       </div>
 
       <div className="lang-syntax-modes" role="tablist" aria-label="Structure view">
@@ -420,52 +428,64 @@ export function SyntaxArtView({ hit, dir = "ltr" }: Props): React.JSX.Element {
         >
           Outline
         </button>
-        <span className="lang-syntax-meta">{words.length} words</span>
       </div>
 
       {mode === "chart" ? (
         <div className="lang-syntax-chart-wrap">
-          <svg
-            className="lang-syntax-chart"
-            width={layout.width}
-            height={layout.height}
-            viewBox={`0 0 ${layout.width} ${layout.height}`}
-            role="img"
-            aria-label={`Structure chart for ${hit.sentence.refLabel}`}
-          >
-            {layout.edges.map((e, i) => (
-              <path key={i} d={curve(e)} className="lang-syntax-edge" fill="none" />
-            ))}
-            {layout.nodes.map((n) =>
-              n.kind === "word" ? (
-                <g
-                  key={n.id}
-                  className={`lang-syntax-leaf role-${n.roleKey}${n.isFocus ? " is-focus" : ""}`}
-                  transform={`translate(${n.x}, ${n.y})`}
-                >
-                  <rect width={n.w} height={n.h} rx={7} className="lang-syntax-leaf-bg" />
-                  <rect width={3} height={n.h} rx={1.5} className={`lang-syntax-leaf-accent role-${n.roleKey}`} />
-                  <text x={n.w / 2 + 1} y={16} textAnchor="middle" className="lang-syntax-leaf-grk" style={{ direction: dir }}>
-                    {(n.surface ?? "·").slice(0, 10)}
-                  </text>
-                  <text x={n.w / 2 + 1} y={30} textAnchor="middle" className="lang-syntax-leaf-en">
-                    {(n.gloss || n.label).slice(0, 12)}
-                  </text>
-                </g>
-              ) : (
-                <g
-                  key={n.id}
-                  className={`lang-syntax-branch role-${n.roleKey}`}
-                  transform={`translate(${n.x}, ${n.y})`}
-                >
-                  <rect width={n.w} height={n.h} rx={9} className="lang-syntax-branch-bg" />
-                  <text x={n.w / 2} y={12.5} textAnchor="middle" className="lang-syntax-branch-label">
-                    {n.label}
-                  </text>
-                </g>
-              ),
-            )}
-          </svg>
+          <div className="lang-syntax-chart-scroll">
+            <svg
+              className="lang-syntax-chart"
+              width={layout.width}
+              height={layout.height}
+              viewBox={`0 0 ${layout.width} ${layout.height}`}
+              role="img"
+              aria-label={`Structure chart for ${hit.sentence.refLabel}`}
+            >
+              {layout.edges.map((e, i) => (
+                <path key={i} d={curve(e)} className="lang-syntax-edge" fill="none" />
+              ))}
+              {layout.nodes.map((n) =>
+                n.kind === "word" ? (
+                  <g
+                    key={n.id}
+                    className={`lang-syntax-leaf role-${n.roleKey}${n.isFocus ? " is-focus" : ""}`}
+                    transform={`translate(${n.x}, ${n.y})`}
+                  >
+                    <rect width={n.w} height={n.h} rx={8} className="lang-syntax-leaf-bg" />
+                    <rect
+                      width={3.5}
+                      height={n.h}
+                      rx={1.5}
+                      className={`lang-syntax-leaf-accent role-${n.roleKey}`}
+                    />
+                    <text
+                      x={n.w / 2 + 1}
+                      y={18}
+                      textAnchor="middle"
+                      className="lang-syntax-leaf-grk"
+                      style={{ direction: dir }}
+                    >
+                      {(n.surface ?? "·").slice(0, 12)}
+                    </text>
+                    <text x={n.w / 2 + 1} y={34} textAnchor="middle" className="lang-syntax-leaf-en">
+                      {(n.gloss || n.label).slice(0, 14)}
+                    </text>
+                  </g>
+                ) : (
+                  <g
+                    key={n.id}
+                    className={`lang-syntax-branch role-${n.roleKey}`}
+                    transform={`translate(${n.x}, ${n.y})`}
+                  >
+                    <rect width={n.w} height={n.h} rx={11} className="lang-syntax-branch-bg" />
+                    <text x={n.w / 2} y={15} textAnchor="middle" className="lang-syntax-branch-label">
+                      {n.label}
+                    </text>
+                  </g>
+                ),
+              )}
+            </svg>
+          </div>
           <div className="lang-syntax-legend" aria-hidden="true">
             <span className="role-subj">Subject</span>
             <span className="role-verb">Verb</span>
@@ -475,13 +495,13 @@ export function SyntaxArtView({ hit, dir = "ltr" }: Props): React.JSX.Element {
           </div>
         </div>
       ) : (
-        <ul className="lang-syntax-outline" aria-label="Clause outline">
+        <ul className="lang-syntax-outline lang-syntax-outline--wide" aria-label="Clause outline">
           {outline.map((row) =>
             row.kind === "clause" ? (
               <li
                 key={row.id}
                 className="lang-syntax-clause"
-                style={{ paddingLeft: 8 + row.depth * 12 }}
+                style={{ paddingLeft: 12 + row.depth * 16 }}
               >
                 <span className="lang-syntax-clause-label">{row.role}</span>
                 {row.rule ? <span className="lang-syntax-clause-rule">{row.rule}</span> : null}
@@ -490,7 +510,7 @@ export function SyntaxArtView({ hit, dir = "ltr" }: Props): React.JSX.Element {
               <li
                 key={row.id}
                 className={`lang-syntax-row role-${row.roleKey}${row.isFocus ? " is-focus" : ""}`}
-                style={{ paddingLeft: 8 + row.depth * 12 }}
+                style={{ paddingLeft: 12 + row.depth * 16 }}
               >
                 <span className={`lang-syntax-role role-${row.roleKey}`}>{row.role}</span>
                 <span className="lang-syntax-forms">
@@ -519,8 +539,7 @@ export function SyntaxArtView({ hit, dir = "ltr" }: Props): React.JSX.Element {
         </p>
       ) : null}
 
-      <p className="lang-syntax-hint">Chart for shape · Outline for study · selected word marked</p>
-      <p className="lang-syntax-attr">MACULA · Clear Bible · CC BY</p>
+      <p className="lang-syntax-attr">MACULA · Clear Bible · CC BY · who does what in this sentence</p>
     </div>
   );
 }

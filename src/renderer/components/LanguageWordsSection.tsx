@@ -21,8 +21,12 @@ import type {
   LanguageTokenCard,
 } from "../api.js";
 import { safeCall } from "../utils/safeCall.js";
+import { Popover } from "./Popover.js";
 import { RenderingOrbitView } from "./RenderingOrbit.js";
 import { SyntaxArtView } from "./SyntaxArt.js";
+
+/** Wide enough for a structure chart without crushing leaves. */
+const STRUCTURE_POPOVER_WIDTH = 560;
 
 /** Closed row shows at most this many grammar chips (+ optional Strong's id). */
 const MORPH_CHIP_MAX = 5;
@@ -334,6 +338,8 @@ export function LanguageWordsSection({ book, chapter, verse, onStudyEngage }: Pr
   const [syntaxOpen, setSyntaxOpen] = useState(false);
   const [syntaxHit, setSyntaxHit] = useState<LanguageSyntaxHit | null>(null);
   const [syntaxLoading, setSyntaxLoading] = useState(false);
+  const [syntaxAnchor, setSyntaxAnchor] = useState<DOMRect | null>(null);
+  const structureBtnRef = useRef<HTMLButtonElement | null>(null);
 
   // Verse prop is authoritative once parent pins on study engage. We still
   // track local engagement for UI (notes open) but do not fight parent scroll.
@@ -352,6 +358,7 @@ export function LanguageWordsSection({ book, chapter, verse, onStudyEngage }: Pr
     setUsesOpen(false);
     setSyntaxOpen(false);
     setSyntaxHit(null);
+    setSyntaxAnchor(null);
     setShowAll(false);
   }, [book, chapter]);
 
@@ -362,6 +369,7 @@ export function LanguageWordsSection({ book, chapter, verse, onStudyEngage }: Pr
     setUsesOpen(false);
     setSyntaxOpen(false);
     setSyntaxHit(null);
+    setSyntaxAnchor(null);
   }, [verse]);
 
   const openToken = useCallback(async (packageId: string, tokenId: string, opts?: { userPick?: boolean }) => {
@@ -371,6 +379,7 @@ export function LanguageWordsSection({ book, chapter, verse, onStudyEngage }: Pr
       setUsesOpen(false);
       setSyntaxOpen(false);
       setSyntaxHit(null);
+      setSyntaxAnchor(null);
     }
     setSelectedId(tokenId);
     setCardLoading(true);
@@ -393,17 +402,19 @@ export function LanguageWordsSection({ book, chapter, verse, onStudyEngage }: Pr
     });
   }, [engageStudy]);
 
-  const toggleSyntax = useCallback(async () => {
-    if (syntaxOpen) {
-      setSyntaxOpen(false);
-      return;
-    }
+  const closeStructurePopover = useCallback(() => {
+    setSyntaxOpen(false);
+    setSyntaxAnchor(null);
+  }, []);
+
+  /** Open structure in a wide popover so the chart is not crushed in the margin. */
+  const openStructurePopover = useCallback(async () => {
     engageStudy();
-    if (!card || load.kind !== "ready") {
-      setSyntaxOpen(true);
-      return;
+    if (structureBtnRef.current) {
+      setSyntaxAnchor(structureBtnRef.current.getBoundingClientRect());
     }
     setSyntaxOpen(true);
+    if (!card || load.kind !== "ready") return;
     if (syntaxHit?.focusTokenId === card.token.id) return;
     setSyntaxLoading(true);
     const result = await safeCall(() =>
@@ -411,7 +422,7 @@ export function LanguageWordsSection({ book, chapter, verse, onStudyEngage }: Pr
     );
     setSyntaxHit(result.ok ? result.value : null);
     setSyntaxLoading(false);
-  }, [syntaxOpen, engageStudy, card, load, syntaxHit, book]);
+  }, [engageStudy, card, load, syntaxHit, book]);
 
   useEffect(() => {
     let cancelled = false;
@@ -423,6 +434,7 @@ export function LanguageWordsSection({ book, chapter, verse, onStudyEngage }: Pr
     setUsesOpen(false);
     setSyntaxOpen(false);
     setSyntaxHit(null);
+    setSyntaxAnchor(null);
 
     void (async () => {
       const packagesRes = await safeCall(() => window.api.language.listPackages());
@@ -613,32 +625,55 @@ export function LanguageWordsSection({ book, chapter, verse, onStudyEngage }: Pr
                 />
               )}
 
-              {/* Syntax art — MACULA tree, progressive */}
+              {/* Structure chart — opens wide popover (margin is too narrow) */}
               {isNtBook(book) && (
                 <div className="lang-syntax-block">
                   <button
+                    ref={structureBtnRef}
                     type="button"
-                    className="lang-syntax-toggle"
+                    className={`lang-syntax-toggle${syntaxOpen ? " is-open" : ""}`}
                     onClick={(e) => {
                       e.stopPropagation();
-                      void toggleSyntax();
+                      if (syntaxOpen) closeStructurePopover();
+                      else void openStructurePopover();
                     }}
                     aria-expanded={syntaxOpen}
+                    aria-haspopup="dialog"
                   >
-                    {syntaxOpen ? "Hide structure" : "Structure"}
-                    <span aria-hidden="true">{syntaxOpen ? "▴" : "▾"}</span>
+                    Structure
+                    <span className="lang-syntax-toggle-hint" aria-hidden="true">
+                      chart
+                    </span>
                   </button>
                   {syntaxOpen && (
-                    syntaxLoading ? (
-                      <div className="lang-muted">Loading structure…</div>
-                    ) : syntaxHit ? (
-                      <SyntaxArtView hit={syntaxHit} dir={dirAttr} lang={langAttr} />
-                    ) : (
-                      <p className="lang-muted lang-syntax-miss">
-                        No structure for this word yet. Import MACULA nodes
-                        (`npm run import:macula-syntax`).
-                      </p>
-                    )
+                    <Popover
+                      anchorRect={syntaxAnchor}
+                      onClose={closeStructurePopover}
+                      width={Math.min(
+                        STRUCTURE_POPOVER_WIDTH,
+                        typeof window !== "undefined" ? window.innerWidth - 24 : STRUCTURE_POPOVER_WIDTH,
+                      )}
+                      className="syntax-structure-popover"
+                    >
+                      {syntaxLoading ? (
+                        <div className="lang-syntax-popover-loading">Loading structure…</div>
+                      ) : syntaxHit ? (
+                        <SyntaxArtView
+                          hit={syntaxHit}
+                          dir={dirAttr}
+                          chartWidth={Math.min(
+                            STRUCTURE_POPOVER_WIDTH,
+                            typeof window !== "undefined" ? window.innerWidth - 48 : STRUCTURE_POPOVER_WIDTH,
+                          )}
+                          defaultMode="chart"
+                        />
+                      ) : (
+                        <p className="lang-muted lang-syntax-miss" style={{ padding: 16 }}>
+                          No structure for this word yet. Import MACULA nodes
+                          (`npm run import:macula-syntax`).
+                        </p>
+                      )}
+                    </Popover>
                   )}
                 </div>
               )}

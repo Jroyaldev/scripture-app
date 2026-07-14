@@ -3246,10 +3246,11 @@ html, body, #root {
 .lang-syntax-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  border: none;
-  background: none;
-  padding: 0;
+  gap: 6px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-secondary);
+  padding: 5px 10px;
+  border-radius: 8px;
   font-family: var(--font-ui);
   font-size: 11.5px;
   font-weight: 600;
@@ -3258,16 +3259,51 @@ html, body, #root {
   cursor: pointer;
 }
 
-.lang-syntax-toggle:hover {
-  opacity: 0.88;
+.lang-syntax-toggle:hover,
+.lang-syntax-toggle.is-open {
+  border-color: color-mix(in srgb, var(--accent-current) 40%, var(--border-medium));
+  background: color-mix(in srgb, var(--accent-current) 10%, var(--bg-surface));
+}
+
+.lang-syntax-toggle-hint {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+/* Full structure UI lives in a wide popover */
+.syntax-structure-popover {
+  max-height: min(78vh, 640px);
+  overflow: auto;
+  padding: 0;
+}
+
+.lang-syntax-popover-loading {
+  padding: 24px 20px;
+  font-size: 13px;
+  color: var(--text-tertiary);
 }
 
 .lang-syntax {
-  margin-top: 8px;
-  padding: 10px 10px 8px;
-  border-radius: 10px;
-  border: 1px solid var(--border-subtle);
-  background: var(--bg-secondary);
+  margin: 0;
+  padding: 14px 16px 12px;
+  border-radius: 0;
+  border: none;
+  background: transparent;
+}
+
+.lang-syntax--popover {
+  min-width: 0;
+}
+
+.lang-syntax-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .lang-syntax-kicker {
@@ -3325,18 +3361,27 @@ html, body, #root {
   font-variant-numeric: tabular-nums;
 }
 
-/* Chart (simplified tree) */
+/* Chart (simplified tree) — sized for popover */
 .lang-syntax-chart-wrap {
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid var(--border-subtle);
   background: var(--bg-surface);
-  padding: 6px 4px 4px;
+  padding: 8px 6px 6px;
+}
+
+.lang-syntax-chart-scroll {
   overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  padding-bottom: 4px;
 }
 
 .lang-syntax-chart {
   display: block;
-  min-width: 100%;
+}
+
+.lang-syntax-outline--wide {
+  max-height: min(50vh, 420px);
 }
 
 .lang-syntax-edge {
@@ -3399,14 +3444,18 @@ html, body, #root {
 
 .lang-syntax-leaf-grk {
   font-family: var(--font-reading);
-  font-size: 11px;
+  font-size: 12.5px;
   font-weight: 600;
   fill: var(--text-primary);
 }
 
 .lang-syntax-leaf-en {
-  font-size: 8px;
+  font-size: 9.5px;
   fill: var(--text-tertiary);
+}
+
+.lang-syntax--popover .lang-syntax-branch-label {
+  font-size: 9.5px;
 }
 
 .lang-syntax-legend {
