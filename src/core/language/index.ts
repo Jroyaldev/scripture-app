@@ -103,6 +103,8 @@ export {
   buildRenderingOrbit,
   normalizeOrbitGloss,
   formatOrbitLabel,
+  stemEnglishToken,
+  isFunctionWordForOrbit,
   donutSegmentPath,
   ORBIT_PALETTE,
   type OrbitSegment,

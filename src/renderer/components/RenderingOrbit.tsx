@@ -78,9 +78,12 @@ export function RenderingOrbitView({
   return (
     <div className="lang-orbit">
       <div className="lang-orbit-kicker">
-        <span className="lang-orbit-kind">Rendering orbit</span>
-        <span className="lang-orbit-count">{orbit.total} glossed</span>
+        <span className="lang-orbit-kind">How this word is rendered</span>
+        <span className="lang-orbit-count">{orbit.total}× in corpus</span>
       </div>
+      <p className="lang-orbit-sub">
+        English glosses for this lemma only — not other Greek/Hebrew words
+      </p>
       <div className="lang-orbit-body">
         <svg
           className="lang-orbit-svg"
@@ -149,7 +152,7 @@ export function RenderingOrbitView({
       </div>
       <p className="lang-orbit-attr">
         {orbit.source === "package-gloss"
-          ? "Corpus gloss map · package data"
+          ? "Lemma → English spectrum · MACULA glosses (open data)"
           : "Lexicon gloss · single rendering"}
       </p>
     </div>

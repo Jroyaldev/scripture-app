@@ -3108,6 +3108,13 @@ html, body, #root {
   font-variant-numeric: tabular-nums;
 }
 
+.lang-orbit-sub {
+  margin: 0 0 8px;
+  font-size: 10.5px;
+  line-height: 1.35;
+  color: var(--text-tertiary);
+}
+
 .lang-orbit-body {
   display: flex;
   gap: 10px;

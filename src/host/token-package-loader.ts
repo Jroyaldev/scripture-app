@@ -35,6 +35,7 @@ import {
 } from "../core/language/index.js";
 import {
   buildRenderingOrbit,
+  isFunctionWordForOrbit,
   type RenderingOrbit,
 } from "../core/language/rendering-orbit.js";
 
@@ -397,9 +398,10 @@ export class TokenPackageLoader {
       }
     }
 
-    // Rendering Orbit: lemma → gloss spectrum across package corpus
+    // Rendering Orbit: how THIS lemma is rendered in English (not helpers,
+    // not other lemmas). Logos-style job; open gloss data.
     let renderingOrbit: RenderingOrbit | null = null;
-    if (lemma) {
+    if (lemma && !isFunctionWordForOrbit(token)) {
       const ids = pkg.index.byLemma.get(lemma) ?? [];
       renderingOrbit = buildRenderingOrbit({
         lemma,
@@ -411,6 +413,7 @@ export class TokenPackageLoader {
           return t?.gloss ?? null;
         },
         currentGloss: token.gloss ?? resolved.full,
+        suppressAsFunction: false,
       });
       // Hebrew packages often lack per-token glosses — use Strong's once.
       if (!renderingOrbit && resolved.full) {

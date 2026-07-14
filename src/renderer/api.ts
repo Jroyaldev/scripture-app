@@ -441,6 +441,8 @@ export interface LanguageRenderingOrbit {
   lemmaCount: number;
   segments: LanguageOrbitSegment[];
   source: "package-gloss" | "strongs-only";
+  /** content rings only; function lemmas are omitted from the card. */
+  kind?: "content" | "function";
 }
 
 export interface LanguageSyntaxNode {
