@@ -112,6 +112,13 @@ export {
 } from "./rendering-orbit.js";
 
 export {
+  HebrewOrbitIndex,
+  getSharedHebrewOrbitIndex,
+  setSharedHebrewOrbitIndex,
+  type HebrewOrbitFile,
+} from "./hebrew-orbit-index.js";
+
+export {
   layoutSyntaxTree,
   simplifyTree,
   parseMaculaNodesXml,

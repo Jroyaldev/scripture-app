@@ -77,11 +77,18 @@ export function isFunctionWordForOrbit(token: {
   lemma?: string;
   gloss?: string | null;
 }): boolean {
+  const hMorph = token.morphCode ?? "";
+  // Hebrew composites attach prefixes (HR/Ncfsa, HTd/Ncmpa): host is content —
+  // still show orbit for the Strong of the content word (ארץ, ראשית, …).
+  if (hMorph.includes("/") && /\/[NVA]/i.test(hMorph)) {
+    return false;
+  }
+
   const pos = (token.morph?.pos ?? "").toLowerCase();
   const wc = (token.wordClass ?? "").toLowerCase();
   if (FUNCTION_POS.has(pos) || FUNCTION_WORD_CLASS.has(wc)) return true;
   // Greek morph codes: CONJ, PREP, PRT, T- (article), ADV particles
-  const code = (token.morphCode ?? "").toUpperCase();
+  const code = hMorph.toUpperCase();
   if (
     code === "CONJ" ||
     code === "PREP" ||
@@ -93,8 +100,9 @@ export function isFunctionWordForOrbit(token: {
   ) {
     return true;
   }
-  // Hebrew: article, conjunction, preposition prefixes often as separate tokens
-  if (/^H(Td|Ti|Tr|Tc|R|C)/i.test(token.morphCode ?? "")) return true;
+  // Hebrew pure-function morphs only
+  if (/^H(Td|Ti|Tr|Tc|To|C)$/i.test(hMorph)) return true;
+  if (/^H[RP]$/i.test(hMorph)) return true;
   // Very short lemmas that are classic particles (Greek)
   const lemma = (token.lemma ?? "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
   if (
@@ -199,17 +207,15 @@ export function stemEnglishToken(w: string): string {
     const base = s.slice(0, -3);
     s = base.endsWith("tt") || base.endsWith("nn") ? base.slice(0, -1) : base;
   } else if (s.endsWith("ed") && s.length > 4) {
-    // complete+d → completed: drop final d only when stem ended in e
-    // (…e + d). Otherwise drop -ed (walked → walk).
-    if (/[aeiou][^aeiou]ed$/.test(s) && /e[^aeiou]ed$/.test(s)) {
-      s = s.slice(0, -1); // completed → complete, loved → love
+    // created / completed / loved → create / complete / love (drop final d when …eCed)
+    if (/e[^aeiou]ed$/.test(s) || /[aeiou][^aeiou]ed$/.test(s)) {
+      s = s.slice(0, -1);
     } else {
       const base = s.slice(0, -2);
       s = base.endsWith("tt") || base.endsWith("nn") ? base.slice(0, -1) : base;
     }
   }
 
-  // Common irregulars + stem repairs for MACULA glosses
   const irregular: Record<string, string> = {
     was: "be",
     were: "be",
@@ -225,6 +231,7 @@ export function stemEnglishToken(w: string): string {
     geese: "goose",
     belov: "love",
     beloved: "love",
+    creat: "create",
     complet: "complete",
     fulfil: "fulfill",
   };

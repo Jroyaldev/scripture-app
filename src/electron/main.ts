@@ -42,7 +42,11 @@ import { runSemanticMargin } from "../host/semantic-margin-host.js";
 import { importObsidianVault } from "../core/importer/obsidian.js";
 import { TokenPackageLoader } from "../host/token-package-loader.js";
 import { SyntaxTreeLoader } from "../host/syntax-tree-loader.js";
-import { getSharedStepMorphIndex, getSharedTipnrIndex } from "../core/language/index.js";
+import {
+  getSharedStepMorphIndex,
+  getSharedTipnrIndex,
+  getSharedHebrewOrbitIndex,
+} from "../core/language/index.js";
 import type { CrossRefData, MarginQuery } from "../core/margin/types.js";
 import {
   isHighlightOverlap,
@@ -348,6 +352,30 @@ function loadTipnrIndexOnce(): void {
   }
 }
 
+let hebrewOrbitLoaded = false;
+
+/** MACULA-Hebrew gloss histogram for multi-band Rendering Orbit (CC BY). */
+function loadHebrewOrbitIndexOnce(): void {
+  const index = getSharedHebrewOrbitIndex();
+  if (hebrewOrbitLoaded && index.loaded) return;
+  const path = join(DATA_DIR, "lexicons/hebrew-strong-orbit.json");
+  try {
+    if (!existsSync(path)) {
+      console.warn(
+        `Hebrew orbit index missing: ${path} (run npm run build:hebrew-orbit)`,
+      );
+      hebrewOrbitLoaded = false;
+      return;
+    }
+    const n = index.loadJson(readFileSync(path, "utf8"));
+    hebrewOrbitLoaded = n > 0;
+    console.log(`Hebrew orbit index: ${n} Strong’s keys (${path})`);
+  } catch (err) {
+    console.warn("Hebrew orbit index not loaded:", err);
+    hebrewOrbitLoaded = false;
+  }
+}
+
 function initializeEngine(libraryPathArg?: string, autoCreateIfMissing: boolean = true): void {
   highlightChanges.clear();
   backbone = loadBackbone();
@@ -365,6 +393,7 @@ function initializeEngine(libraryPathArg?: string, autoCreateIfMissing: boolean 
   // STEP morph overlay (Approach A) — load before any card request.
   loadStepMorphTablesOnce();
   loadTipnrIndexOnce();
+  loadHebrewOrbitIndexOnce();
 
   if (!tokenPackages) {
     tokenPackages = new TokenPackageLoader(languagePackageRoots(libraryPath), {

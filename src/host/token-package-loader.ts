@@ -38,6 +38,7 @@ import {
   isFunctionWordForOrbit,
   type RenderingOrbit,
 } from "../core/language/rendering-orbit.js";
+import { getSharedHebrewOrbitIndex } from "../core/language/hebrew-orbit-index.js";
 
 export type LanguagePackageSummary = {
   id: string;
@@ -399,52 +400,65 @@ export class TokenPackageLoader {
     }
 
     // Rendering Orbit: lemma/Strong → English spectrum.
-    // Greek: package glosses per lemma. Hebrew OSHB has no gloss column —
-    // group by Strong's and use the Strong's English gloss for each hit.
+    // Greek: MACULA package glosses per lemma.
+    // Hebrew: prefer MACULA-Hebrew gloss histogram adapter (multi-band);
+    // fallback Strong’s single-band if adapter missing.
     let renderingOrbit: RenderingOrbit | null = null;
     if (!isFunctionWordForOrbit(token)) {
-      const ids =
-        isHebrew && token.strong
-          ? (pkg.index.byStrong.get(token.strong) ?? [])
-          : lemma
-            ? (pkg.index.byLemma.get(lemma) ?? [])
-            : [];
-      const groupCount =
-        isHebrew && token.strong
-          ? ids.length
-          : corpus || ids.length;
       const displayLemma =
-        lemma && !/^[\d\s/a-z]+$/i.test(lemma) ? lemma : token.surface || lemma || token.strong || "?";
+        lemma && !/^[\d\s/a-z]+$/i.test(lemma)
+          ? lemma
+          : token.surface || lemma || token.strong || "?";
 
-      if (ids.length > 0) {
-        renderingOrbit = buildRenderingOrbit({
-          lemma: displayLemma,
+      if (isHebrew && token.strong) {
+        const hebOrbit = getSharedHebrewOrbitIndex().resolve({
+          strong: token.strong,
           strongPrefixed: token.strongPrefixed,
-          lemmaCount: groupCount,
-          tokenIds: ids,
-          glossForId: (id) => {
-            const t = pkg.index.byId.get(id);
-            if (t?.gloss?.trim()) return t.gloss;
-            // Hebrew: map each occurrence through Strong's gloss table
-            if (t?.strong) {
-              const e = lookupStrongGloss(this.hebrewGloss, t.strong);
-              return e?.short ?? e?.gloss ?? null;
-            }
-            return null;
-          },
-          currentGloss: token.gloss ?? resolved.full ?? resolved.short,
+          lemma: displayLemma,
+          surface: token.surface,
+          currentGloss: resolved.short ?? resolved.full,
         });
+        if (hebOrbit) renderingOrbit = hebOrbit;
       }
-      // Last resort: single-segment Strong's gloss
-      if (!renderingOrbit && (resolved.full || resolved.short)) {
-        renderingOrbit = buildRenderingOrbit({
-          lemma: displayLemma,
-          strongPrefixed: token.strongPrefixed,
-          lemmaCount: groupCount || 1,
-          tokenIds: [tokenId],
-          glossForId: () => resolved.full ?? resolved.short,
-          currentGloss: resolved.full ?? resolved.short,
-        });
+
+      if (!renderingOrbit) {
+        const ids =
+          isHebrew && token.strong
+            ? (pkg.index.byStrong.get(token.strong) ?? [])
+            : lemma
+              ? (pkg.index.byLemma.get(lemma) ?? [])
+              : [];
+        const groupCount =
+          isHebrew && token.strong ? ids.length : corpus || ids.length;
+
+        if (ids.length > 0) {
+          renderingOrbit = buildRenderingOrbit({
+            lemma: displayLemma,
+            strongPrefixed: token.strongPrefixed,
+            lemmaCount: groupCount,
+            tokenIds: ids,
+            glossForId: (id) => {
+              const t = pkg.index.byId.get(id);
+              if (t?.gloss?.trim()) return t.gloss;
+              if (t?.strong) {
+                const e = lookupStrongGloss(this.hebrewGloss, t.strong);
+                return e?.short ?? e?.gloss ?? null;
+              }
+              return null;
+            },
+            currentGloss: token.gloss ?? resolved.full ?? resolved.short,
+          });
+        }
+        if (!renderingOrbit && (resolved.full || resolved.short)) {
+          renderingOrbit = buildRenderingOrbit({
+            lemma: displayLemma,
+            strongPrefixed: token.strongPrefixed,
+            lemmaCount: groupCount || 1,
+            tokenIds: [tokenId],
+            glossForId: () => resolved.full ?? resolved.short,
+            currentGloss: resolved.full ?? resolved.short,
+          });
+        }
       }
     }
 
