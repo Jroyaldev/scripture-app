@@ -1,5 +1,6 @@
 import type React from "react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 interface Props {
   anchorRect: DOMRect | null;
@@ -81,16 +82,25 @@ export function Popover({ anchorRect, onClose, width = 280, className, children 
 
   if (!anchorRect || !position) return null;
 
-  return (
+  // Popovers portal to body so fixed layers are not flattened by a glass
+  // surface's backdrop-filter. Copy the active material classes so design
+  // tokens continue to inherit outside the app-shell subtree.
+  const shell = document.querySelector(".app-shell");
+  const materialClasses = shell
+    ? [...shell.classList].filter((name) => name === "dark" || name.startsWith("theme-")).join(" ")
+    : "";
+
+  return createPortal(
     <>
-      <div className="popover-scrim" onClick={onClose} />
+      <div className={`popover-scrim ${materialClasses}`} onClick={onClose} />
       <div
         ref={panelRef}
-        className={`popover-panel${className ? ` ${className}` : ""}`}
+        className={`popover-panel ${materialClasses}${className ? ` ${className}` : ""}`}
         style={{ top: position.top, left: position.left, width }}
       >
         {children}
       </div>
-    </>
+    </>,
+    document.body,
   );
 }

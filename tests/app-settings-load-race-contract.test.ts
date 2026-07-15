@@ -56,14 +56,14 @@ test("App's settings-load effect does not clobber a setting the user already tog
   // Each toggle handler must mark its setting dirty synchronously (before
   // calling the corresponding setState), not inside any async callback —
   // this is what closes the race window.
-  const toggleHandlers: Array<{ name: string; key: "sidebarCollapsed" | "marginVisible" | "theme" }> = [
-    { name: "toggleSidebarCollapsed", key: "sidebarCollapsed" },
-    { name: "toggleMargin", key: "marginVisible" },
-    { name: "toggleTheme", key: "theme" },
+  const toggleHandlers: Array<{ name: string; key: "sidebarCollapsed" | "marginVisible" | "theme"; updater: RegExp }> = [
+    { name: "toggleSidebarCollapsed", key: "sidebarCollapsed", updater: /set[A-Za-z]+\(\(prev\)/ },
+    { name: "toggleMargin", key: "marginVisible", updater: /set[A-Za-z]+\(\(prev\)/ },
+    { name: "toggleTheme", key: "theme", updater: /setTheme\(\(\)\s*=>\s*nextTheme\)/ },
   ];
 
-  for (const { name, key } of toggleHandlers) {
-    const handlerStart = source.indexOf(`const ${name} = ()`);
+  for (const { name, key, updater } of toggleHandlers) {
+    const handlerStart = source.indexOf(`const ${name} = (`);
     assert.ok(handlerStart !== -1, `expected handler ${name} to exist`);
     const handlerEnd = source.indexOf("};", handlerStart);
     const handlerBody = source.slice(handlerStart, handlerEnd);
@@ -71,7 +71,7 @@ test("App's settings-load effect does not clobber a setting the user already tog
     const dirtyAssignIdx = handlerBody.indexOf(`userDirtySettings.current.${key} = true`);
     assert.ok(dirtyAssignIdx !== -1, `expected ${name} to synchronously set userDirtySettings.current.${key} = true`);
 
-    const setStateIdx = handlerBody.search(/set[A-Za-z]+\(\(prev\)/);
+    const setStateIdx = handlerBody.search(updater);
     assert.ok(
       setStateIdx !== -1 && dirtyAssignIdx < setStateIdx,
       `expected ${name} to mark the setting dirty before calling its setState updater`,

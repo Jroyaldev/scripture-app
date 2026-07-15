@@ -22,6 +22,7 @@ const result = await build({
   },
   loader: {
     ".json": "json",
+    ".png": "file",
   },
   minify: true,
   metafile: true,
@@ -88,7 +89,7 @@ await writeFile(
   <title>Scripture Library</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 ${cssTag}</head>
 <body>
   <div id="root"></div>

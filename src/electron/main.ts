@@ -73,8 +73,7 @@ interface WindowBounds {
 }
 
 interface AppSettingsSchema {
-  theme: "light" | "dark";
-  accentColor: "blue" | "green" | "plum";
+  theme: "light" | "dark" | "glass" | "dark-glass";
   sidebarCollapsed: boolean;
   marginVisible: boolean;
   readingSize: "s" | "m" | "l";
@@ -101,7 +100,6 @@ interface AppSettingsSchema {
 const store = new Store<AppSettingsSchema>({
   defaults: {
     theme: nativeTheme.shouldUseDarkColors ? "dark" : "light",
-    accentColor: "blue",
     sidebarCollapsed: false,
     marginVisible: true,
     readingSize: "m",

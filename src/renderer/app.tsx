@@ -18,6 +18,7 @@ import { ToastProvider } from "./components/Toast.js";
 import { Popover } from "./components/Popover.js";
 import { WelcomeScreen } from "./components/WelcomeScreen.js";
 import type { ReadingPrefs } from "./components/ReadingComfort.js";
+import { isDarkTheme, type AppTheme } from "./theme.js";
 import { safeCall } from "./utils/safeCall.js";
 import "./styles.css";
 
@@ -213,7 +214,7 @@ export function App(): React.JSX.Element {
     void loadData();
   }, [loadData]);
 
-  // Initialize sidebarCollapsed / marginVisible / theme / accentColor from
+  // Initialize sidebarCollapsed / marginVisible / theme from
   // persisted settings. Fall back to the existing localStorage-based
   // marginVisible init on failure.
   //
@@ -244,10 +245,6 @@ export function App(): React.JSX.Element {
         if (res.value.readingWidth) setReadingWidth(res.value.readingWidth);
         if (res.value.verseNumbers) setVerseNumbers(res.value.verseNumbers);
         if (res.value.sidebarStyle) setSidebarStyle(res.value.sidebarStyle);
-        document.documentElement.style.setProperty(
-          "--accent-current",
-          `var(--accent-${res.value.accentColor})`,
-        );
       }
     });
     return () => {
@@ -312,9 +309,9 @@ export function App(): React.JSX.Element {
     setMarginVisible((prev) => !prev);
   };
 
-  const toggleTheme = () => {
+  const toggleTheme = (nextTheme: AppTheme) => {
     userDirtySettings.current.theme = true;
-    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+    setTheme(() => nextTheme);
   };
 
   const handleReadingPrefsChange = useCallback((partial: Partial<ReadingPrefs>) => {
@@ -381,7 +378,8 @@ export function App(): React.JSX.Element {
 
   const shellClass = [
     "app-shell",
-    theme === "dark" ? "dark" : "",
+    `theme-${theme}`,
+    isDarkTheme(theme) ? "dark" : "",
     focusMode ? "focus-mode" : "",
     `reading-size-${readingSize}`,
     `reading-width-${readingWidth}`,
@@ -477,7 +475,7 @@ export function App(): React.JSX.Element {
   return (
     <ErrorBoundary>
       <ToastProvider>
-        <div className={shellClass}>
+        <div className={shellClass} data-theme={theme}>
           {!focusMode && (
             <nav
               className={`sidebar${sidebarCollapsed || sidebarStyle === "rail" ? " collapsed" : ""}${sidebarStyle === "rail" ? " rail-locked" : ""}`}
@@ -576,7 +574,7 @@ export function App(): React.JSX.Element {
                 marginVisible={marginVisible && !focusMode}
                 onAiBusyChange={setAiBusy}
                 theme={theme}
-                onToggleTheme={toggleTheme}
+                onThemeChange={toggleTheme}
                 onToggleMargin={toggleMargin}
                 readingSize={readingSize}
                 readingWidth={readingWidth}
@@ -598,6 +596,8 @@ export function App(): React.JSX.Element {
                 readingWidth={readingWidth}
                 verseNumbers={verseNumbers}
                 onReadingPrefsChange={handleReadingPrefsChange}
+                theme={theme}
+                onThemeChange={toggleTheme}
               />
             )}
           </div>

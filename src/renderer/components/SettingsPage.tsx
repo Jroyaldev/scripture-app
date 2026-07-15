@@ -1,15 +1,15 @@
 import type React from "react";
 import { useState, useEffect, useCallback } from "react";
 import type {
-  AppSettings,
   BudgetEnvelopeData,
   AIJobData,
   ReadingSize,
   ReadingWidth,
   VerseNumberMode,
 } from "../api.js";
-import { safeCall } from "../utils/safeCall.js";
 import { ImportPage } from "./ImportPage.js";
+import { ThemeChoiceGrid } from "./ThemePicker.js";
+import type { AppTheme } from "../theme.js";
 
 interface Props {
   libraryPath: string;
@@ -21,13 +21,9 @@ interface Props {
     readingWidth?: ReadingWidth;
     verseNumbers?: VerseNumberMode;
   }) => void;
+  theme: AppTheme;
+  onThemeChange: (theme: AppTheme) => void;
 }
-
-const ACCENT_SWATCHES: { color: AppSettings["accentColor"]; label: string }[] = [
-  { color: "blue", label: "Blue" },
-  { color: "green", label: "Green" },
-  { color: "plum", label: "Plum" },
-];
 
 export function SettingsPage({
   libraryPath,
@@ -35,13 +31,14 @@ export function SettingsPage({
   readingWidth = "medium",
   verseNumbers = "always",
   onReadingPrefsChange,
+  theme,
+  onThemeChange,
 }: Props): React.JSX.Element {
   const [envelope, setEnvelope] = useState<BudgetEnvelopeData | null>(null);
   const [usage, setUsage] = useState<{ date: string; tokensUsed: number; spendUsd: number } | null>(null);
   const [jobs, setJobs] = useState<AIJobData[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [accentColor, setAccentColor] = useState<AppSettings["accentColor"]>("blue");
 
   const load = useCallback(async () => {
     const result = await window.api.ai.getBudgetEnvelope();
@@ -51,22 +48,12 @@ export function SettingsPage({
     }
     const jobList = await window.api.ai.getJobs();
     setJobs(jobList);
-    const settingsRes = await safeCall(() => window.api.settings.get());
-    if (settingsRes.ok) {
-      setAccentColor(settingsRes.value.accentColor);
-    }
     setLoading(false);
   }, []);
 
   useEffect(() => {
     void load();
   }, [load]);
-
-  const handleAccentChange = async (color: AppSettings["accentColor"]) => {
-    setAccentColor(color);
-    document.documentElement.style.setProperty("--accent-current", `var(--accent-${color})`);
-    await safeCall(() => window.api.settings.set({ accentColor: color }));
-  };
 
   const handleSave = async (updates: Partial<BudgetEnvelopeData>) => {
     if (!envelope) return;
@@ -261,18 +248,9 @@ export function SettingsPage({
       <section className="settings-section">
         <h2 className="settings-section-title">Appearance</h2>
         <div className="settings-row">
-          <label className="settings-label">Accent Color</label>
-          <div className="accent-swatch-row">
-            {ACCENT_SWATCHES.map((s) => (
-              <button
-                key={s.color}
-                className={`accent-swatch accent-swatch-${s.color}${accentColor === s.color ? " active" : ""}`}
-                onClick={() => void handleAccentChange(s.color)}
-                title={s.label}
-                aria-label={`${s.label} accent`}
-              />
-            ))}
-          </div>
+          <label className="settings-label">Reading atmosphere</label>
+          <p className="settings-description">Choose the material around your study. Scripture, highlights, and diagram meanings stay unchanged.</p>
+          <ThemeChoiceGrid theme={theme} onChange={onThemeChange} />
         </div>
         <div className="settings-row">
           <label className="settings-label">Reading size</label>

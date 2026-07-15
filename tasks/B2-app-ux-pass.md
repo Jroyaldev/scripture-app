@@ -4,6 +4,19 @@
 > **Predecessors:** A0 (snapshot), A1 (native build), B1 (scripture data).
 > **Contracts:** §4.2 (event fold), §4.4 (SQLite materialized view), §4.6 (note format), INV-7 (append-only), INV-9 (safe to rebuild).
 
+## Progress — 2026-07-15 (desktop visual-system foundation)
+
+The first bounded pass of the whole-interface refinement is complete. It establishes the shared material and interaction foundation without changing the proven language, Structure, cross-reference, or highlight semantics:
+
+- **Four coherent reading atmospheres:** the persisted two-state light/dark setting is now `Paper | Ink | Glass | Candlelight`. Paper and Ink use warm solid materials; Glass and Candlelight use suite-owned Shepherdly background assets under translucent surfaces. All four retain identical geometry and meaning.
+- **Clearer product language:** the control is **Reading atmosphere**, with the promise **Material changes. Meaning does not.** Each option now explains the reading experience instead of exposing implementation terms.
+- **One interaction identity:** the former blue/green/plum chrome preference is retired. Gold is reserved for action, focus, and current state; highlights and diagrams retain their data-semantic colors.
+- **Unified foundation:** warm paper/ink text ladders, 6/12/20px geometry, restrained elevation, 150ms transitions, and Source Serif / Inter / JetBrains Mono roles now govern the shell. Settings uses a quiet reading sheet so glass imagery never competes with controls.
+- **Reliable floating layers:** shared Popovers now portal above backdrop-filter surfaces while inheriting the active atmosphere. This fixes Electron compositor clipping in both glass modes and improves every existing picker, not only the new one.
+- **Repeatable desktop QA:** `scripts/qa-theme-tour.mjs` verifies and captures the shell, atmosphere picker, and Settings in all four looks. `qa-screenshot-tour.mjs` now covers all four atmospheres and successfully captured Greek and Hebrew language cards across every pill.
+
+The governing contract and bounded continuation order are in `docs/desktop-visual-system.md`. Next is **Sidebar and primary navigation**; mobile remains explicitly outside this worktree.
+
 ## Progress — 2026-07-15 (OpenBible cross-reference study surface)
 
 The Living Margin now uses the complete scored OpenBible snapshot rather than the tiny TSK stand-in:

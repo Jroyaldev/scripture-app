@@ -6,7 +6,7 @@
  *   node scripts/qa-screenshot-tour.mjs hebrew "Genesis 1:1" "ברא"
  *
  * Drives: version → BSB, jump to passage, pin verse, tap the matching word
- * in the margin strip, then captures every orbit pill in both themes
+ * in the margin strip, then captures every orbit pill in all four themes
  * (full window + margin close-up). PNGs → docs/ui-audit/screens/.
  * Restores the original theme when done.
  */
@@ -180,10 +180,11 @@ if (!pills || pills.length === 0) {
 }
 console.log("pills:", pills.join(" · "));
 
-const isDark = await evaluate(
-  `document.querySelector(".app-shell")?.classList.contains("dark") ?? document.documentElement.classList.contains("dark")`,
+const originalTheme = await evaluate(
+  `document.querySelector(".app-shell")?.dataset.theme ?? "light"`,
 );
-const themes = isDark ? ["dark", "light"] : ["light", "dark"];
+const allThemes = ["light", "dark", "glass", "dark-glass"];
+const themes = [originalTheme, ...allThemes.filter((theme) => theme !== originalTheme)];
 
 async function clickPill(text) {
   await evaluate(`
@@ -193,13 +194,23 @@ async function clickPill(text) {
   await sleep(300);
 }
 
-async function toggleTheme() {
+async function setTheme(theme) {
+  const current = await evaluate(`document.querySelector(".app-shell")?.dataset.theme ?? "light"`);
+  if (current === theme) return;
   await evaluate(`document.querySelector(".theme-toggle-btn")?.click()`);
-  await sleep(400);
+  await sleep(200);
+  const changed = await evaluate(`(() => {
+    const option = document.querySelector(${JSON.stringify(`[data-theme-id="${theme}"]`)});
+    if (!option) return false;
+    option.click();
+    return true;
+  })()`);
+  if (!changed) throw new Error(`Theme choice not found: ${theme}`);
+  await sleep(500);
 }
 
 for (let t = 0; t < themes.length; t++) {
-  if (t > 0) await toggleTheme();
+  await setTheme(themes[t]);
   for (const pill of pills) {
     await clickPill(pill);
     const slug = pill.toLowerCase().replace(/\s+/g, "-");
@@ -207,7 +218,7 @@ for (let t = 0; t < themes.length; t++) {
     await shot(`${themes[t]}-${slug}-margin`, ".living-margin");
   }
 }
-await toggleTheme(); // restore
+await setTheme(originalTheme); // restore
 
 console.log("done —", OUT_DIR);
 cdp.ws.close();

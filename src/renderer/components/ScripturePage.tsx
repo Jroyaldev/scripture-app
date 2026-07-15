@@ -23,6 +23,8 @@ import { Popover } from "./Popover.js";
 import { HighlightUnderlay, FADE_MS, SWEEP_MS } from "./HighlightUnderlay.js";
 import { HighlightToolbar } from "./HighlightToolbar.js";
 import { ReadingComfort, type ReadingPrefs } from "./ReadingComfort.js";
+import { ThemePicker } from "./ThemePicker.js";
+import type { AppTheme } from "../theme.js";
 import { NoteCapture, type NoteCaptureDraft } from "./NoteCapture.js";
 import {
   formatRecentLabel,
@@ -47,9 +49,9 @@ interface Props {
   marginVisible: boolean;
   onAiBusyChange?: (busy: boolean) => void;
   /** Lifted to App, consistent with marginVisible; ScripturePage never owns theme state itself. */
-  theme?: "light" | "dark";
-  onToggleTheme?: () => void;
-  /** Lifted to App, same pattern as onToggleTheme; ScripturePage never owns marginVisible itself. */
+  theme?: AppTheme;
+  onThemeChange?: (theme: AppTheme) => void;
+  /** Lifted to App, same pattern as onThemeChange; ScripturePage never owns marginVisible itself. */
   onToggleMargin?: () => void;
   /** Fired whenever the pinned (selected) verse range changes; null when nothing is selected. */
   onPinnedRangeChange?: (range: PinnedRange | null) => void;
@@ -80,23 +82,6 @@ const TRANSLATIONS = [
   { code: "ylt", name: "Young's Literal Translation (1898)" },
   { code: "akjv-strongs", name: "AKJV + Strong's" },
 ];
-
-function SunIcon(): React.JSX.Element {
-  return (
-    <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor" stroke="none">
-      <path d="M17.5 10.7a7.5 7.5 0 1 1-8.2-8.2 5.8 5.8 0 0 0 8.2 8.2z" />
-    </svg>
-  );
-}
-
-function MoonIcon(): React.JSX.Element {
-  return (
-    <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-      <circle cx="10" cy="10" r="3.3" fill="currentColor" stroke="none" />
-      <path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2M4.8 4.8l1.4 1.4M13.8 13.8l1.4 1.4M4.8 15.2l1.4-1.4M13.8 6.2l1.4-1.4" />
-    </svg>
-  );
-}
 
 function MarginToggleIcon(): React.JSX.Element {
   // Mirror of the sidebar's PanelToggleIcon: divider sits on the RIGHT
@@ -184,8 +169,8 @@ export function ScripturePage({
   onCreateNote: _onCreateNote,
   marginVisible,
   onAiBusyChange,
-  theme,
-  onToggleTheme,
+  theme = "light",
+  onThemeChange,
   onToggleMargin,
   onPinnedRangeChange,
   readingSize = "m",
@@ -1768,11 +1753,7 @@ export function ScripturePage({
             </button>
           )}
 
-          {onToggleTheme && (
-            <button className="theme-toggle-btn" onClick={onToggleTheme} title={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}>
-              {theme === "dark" ? <MoonIcon /> : <SunIcon />}
-            </button>
-          )}
+          {onThemeChange && <ThemePicker theme={theme} onChange={onThemeChange} />}
         </div>
       </div>
 

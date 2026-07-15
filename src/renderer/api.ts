@@ -1,3 +1,5 @@
+import type { AppTheme } from "./theme.js";
+
 /**
  * Type-safe wrapper for the contextBridge API exposed by preload.
  * Provides typed access to all Electron IPC calls.
@@ -142,8 +144,7 @@ export interface RecentPassageSetting {
 }
 
 export interface AppSettings {
-  theme: "light" | "dark";
-  accentColor: "blue" | "green" | "plum";
+  theme: AppTheme;
   sidebarCollapsed: boolean;
   marginVisible: boolean;
   readingSize: ReadingSize;
