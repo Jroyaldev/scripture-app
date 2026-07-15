@@ -149,6 +149,11 @@ export function App(): React.JSX.Element {
     chapter: 19,
     packageId: "bsb",
   });
+  const [entityIntent, setEntityIntent] = useState<{
+    id: string;
+    nonce: number;
+    origin: CommandReadingContext;
+  } | null>(null);
   const [workspaceIntent, setWorkspaceIntent] = useState<{
     query?: string;
     noteId?: string;
@@ -324,6 +329,14 @@ export function App(): React.JSX.Element {
 
   const openCommandPalette = useCallback(() => setCommandOpen(true), []);
   const closeCommandPalette = useCallback(() => setCommandOpen(false), []);
+
+  const openEntityResearch = useCallback((entityId: string) => {
+    setEntityIntent({ id: entityId, nonce: Date.now(), origin: readingContext });
+    setView("scripture");
+    setFocusMode(false);
+    userDirtySettings.current.marginVisible = true;
+    setMarginVisible(true);
+  }, [readingContext]);
 
   const toggleSidebarCollapsed = () => {
     userDirtySettings.current.sidebarCollapsed = true;
@@ -723,6 +736,9 @@ export function App(): React.JSX.Element {
                 onReadingPrefsChange={handleReadingPrefsChange}
                 focusMode={focusMode}
                 onToggleFocus={toggleFocusMode}
+                entityIntent={entityIntent}
+                onOpenEntity={openEntityResearch}
+                onCloseEntity={() => setEntityIntent(null)}
               />
             )}
             {view === "write" && (
@@ -785,6 +801,7 @@ export function App(): React.JSX.Element {
               setWorkspaceIntent({ noteId, nonce: Date.now() });
               setView("notes");
             }}
+            onOpenEntity={openEntityResearch}
             onSearchNotes={(query) => {
               setWorkspaceIntent({ query, nonce: Date.now() });
               setView("search");

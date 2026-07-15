@@ -5,6 +5,7 @@ import type {
   BookNameData,
   CrossReferenceMatchData,
   CrossReferenceResultData,
+  EntityResearchData,
   LanguageEntityRangeResult,
   NoteRecord,
   ParsedNoteData,
@@ -68,6 +69,13 @@ interface Props {
   onMarginActiveChange?: (active: boolean) => void;
   /** Leave the explicit selected-passage state and return to the reading eye-line. */
   onClearSelection?: () => void;
+  entityIntent?: {
+    id: string;
+    nonce: number;
+    origin: { book: string; chapter: number; packageId: string; verseStart?: number; verseEnd?: number };
+  } | null;
+  onOpenEntity?: (entityId: string) => void;
+  onCloseEntity?: () => void;
 }
 
 function AiSparkIcon(): React.JSX.Element {
@@ -177,6 +185,221 @@ function CrossReferenceArrow(): React.JSX.Element {
     <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true">
       <path d="M4 12 12 4M6 4h6v6" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
+  );
+}
+
+function EntityGlyph({ kind }: { kind: "person" | "place" | "other" }): React.JSX.Element {
+  if (kind === "place") {
+    return (
+      <svg viewBox="0 0 20 20" aria-hidden="true">
+        <path d="M10 17s4.7-5.1 4.7-8.7a4.7 4.7 0 1 0-9.4 0C5.3 11.9 10 17 10 17Z" />
+        <circle cx="10" cy="8.2" r="1.55" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 20 20" aria-hidden="true">
+      <circle cx="10" cy="6.1" r="2.55" />
+      <path d="M5 16c.55-3.05 2.2-4.65 5-4.65s4.45 1.6 5 4.65" />
+    </svg>
+  );
+}
+
+function formatResearchRef(value: string, bookNames: BookNameData): string {
+  const match = /^([1-3A-Z]{3})\.(\d+)\.(\d+)$/.exec(value);
+  if (!match) return value;
+  return `${bookNames[match[1]!]?.[0] ?? match[1]} ${Number(match[2])}:${Number(match[3])}`;
+}
+
+function coordinatesLabel(latitude: number, longitude: number): string {
+  const lat = `${Math.abs(latitude).toFixed(3)}°${latitude >= 0 ? "N" : "S"}`;
+  const lon = `${Math.abs(longitude).toFixed(3)}°${longitude >= 0 ? "E" : "W"}`;
+  return `${lat} · ${lon}`;
+}
+
+function confidenceLabel(value: NonNullable<EntityResearchData["place"]>["primary"]["confidence"]): string {
+  if (value === "high") return "High confidence";
+  if (value === "strong") return "Strong identification";
+  if (value === "probable") return "Probable location";
+  if (value === "tentative") return "Tentative location";
+  return "Location disputed";
+}
+
+function EntityMiniMap({ data }: { data: EntityResearchData }): React.JSX.Element | null {
+  if (!data.place || !data.minimap) return null;
+  const { minimap, place } = data;
+  return (
+    <figure className="entity-minimap">
+      <svg
+        viewBox={`0 0 ${minimap.width} ${minimap.height}`}
+        role="img"
+        aria-label={`Regional map locating ${data.entity.displayName}`}
+      >
+        <rect className="entity-map-water" width={minimap.width} height={minimap.height} rx="10" />
+        <g className="entity-map-grid" aria-hidden="true">
+          <path d={`M0 ${minimap.height / 2}H${minimap.width}`} />
+          <path d={`M${minimap.width / 2} 0V${minimap.height}`} />
+        </g>
+        <g className="entity-map-land" aria-hidden="true">
+          {minimap.landPaths.map((path, index) => <path key={`${path.slice(0, 24)}-${index}`} d={path} />)}
+        </g>
+        <g className="entity-map-alternatives" aria-hidden="true">
+          {minimap.alternatives.map((point) => (
+            <circle key={`${point.name}-${point.x}-${point.y}`} cx={point.x} cy={point.y} r="2.25" />
+          ))}
+        </g>
+        <g className="entity-map-pin" transform={`translate(${minimap.center.x} ${minimap.center.y})`} aria-hidden="true">
+          <circle className="entity-map-pulse" r="12" />
+          <circle className="entity-map-halo" r="6" />
+          <circle className="entity-map-dot" r="2.6" />
+        </g>
+      </svg>
+      <figcaption>
+        <span>{place.primary.name}</span>
+        <span>{coordinatesLabel(place.primary.latitude, place.primary.longitude)}</span>
+      </figcaption>
+    </figure>
+  );
+}
+
+function EntityResearchView({
+  data,
+  currentBook,
+  bookNames,
+  onNavigate,
+}: {
+  data: EntityResearchData;
+  currentBook: string;
+  bookNames: BookNameData;
+  onNavigate?: (ref: string) => void;
+}): React.JSX.Element {
+  const [showAllRefs, setShowAllRefs] = useState(false);
+  const orderedRefs = [...data.entity.refs].sort((left, right) => {
+    const leftCurrent = left.startsWith(`${currentBook}.`) ? 0 : 1;
+    const rightCurrent = right.startsWith(`${currentBook}.`) ? 0 : 1;
+    return leftCurrent - rightCurrent;
+  });
+  const visibleRefs = showAllRefs ? orderedRefs : orderedRefs.slice(0, 12);
+  const place = data.place;
+
+  useEffect(() => setShowAllRefs(false), [data.entity.id]);
+
+  return (
+    <article className={`entity-research-view is-${data.entity.kind}`}>
+      {data.imageDataUrl && place?.image ? (
+        <figure className="entity-photo">
+          <img src={data.imageDataUrl} alt={place.image.alt} />
+          <figcaption>
+            <span>Modern site photograph</span>
+            <span>{place.image.credit} · {place.image.license}</span>
+          </figcaption>
+        </figure>
+      ) : data.entity.kind === "person" ? (
+        <div className="entity-person-portrait" aria-hidden="true">
+          <span>{data.entity.displayName.slice(0, 1)}</span>
+          <EntityGlyph kind="person" />
+        </div>
+      ) : null}
+
+      <header className="entity-research-identity">
+        <div className="entity-research-kicker">
+          <span>{data.entity.kind}</span>
+          {place && <><span aria-hidden="true">·</span><span>{place.type}</span></>}
+        </div>
+        <h2>{data.entity.displayName}</h2>
+        <p>{data.entity.brief}</p>
+        {data.entity.short && data.entity.short !== data.entity.brief && (
+          <p className="entity-research-expanded">{data.entity.short}</p>
+        )}
+      </header>
+
+      {place && (
+        <section className="entity-research-section" aria-labelledby="entity-location-title">
+          <div className="entity-research-section-head">
+            <h3 id="entity-location-title">Where it is</h3>
+            <span>{confidenceLabel(place.primary.confidence)}</span>
+          </div>
+          <EntityMiniMap data={data} />
+          <div className="entity-location-note">
+            <span>{place.primary.precision ?? place.primary.type}</span>
+            {place.alternatives.length > 0 && (
+              <span>{place.alternatives.length + 1} proposed locations</span>
+            )}
+          </div>
+          {place.alternatives.length > 0 && (
+            <div className="entity-location-alternatives" aria-label="Alternative proposed locations">
+              {place.alternatives.map((location) => (
+                <div key={location.modernId}>
+                  <span>{location.name}</span>
+                  <span>{confidenceLabel(location.confidence)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      <section className="entity-research-section" aria-labelledby="entity-scripture-title">
+        <div className="entity-research-section-head">
+          <h3 id="entity-scripture-title">In Scripture</h3>
+          <span>{data.entity.refCount.toLocaleString()} {data.entity.refCount === 1 ? "passage" : "passages"}</span>
+        </div>
+        <div className="entity-reference-list">
+          {visibleRefs.map((ref) => (
+            <button
+              key={ref}
+              type="button"
+              onClick={() => onNavigate?.(`bref:v1/${ref}`)}
+              aria-label={`Open ${formatResearchRef(ref, bookNames)}`}
+            >
+              <span>{formatResearchRef(ref, bookNames)}</span>
+              <CrossReferenceArrow />
+            </button>
+          ))}
+        </div>
+        {orderedRefs.length > 12 && (
+          <button
+            type="button"
+            className="entity-reference-more"
+            onClick={() => setShowAllRefs((current) => !current)}
+            aria-expanded={showAllRefs}
+          >
+            {showAllRefs ? "Show fewer passages" : `Show all ${orderedRefs.length.toLocaleString()} passages`}
+          </button>
+        )}
+      </section>
+
+      {(data.entity.paratextRefs?.length ?? 0) > 0 && (
+        <details className="entity-edition-notes">
+          <summary>
+            <span>KJV edition notes</span>
+            <span>
+              {data.entity.paratextRefs!.length.toLocaleString()} {data.entity.paratextRefs!.length === 1 ? "subscription" : "subscriptions"}
+            </span>
+          </summary>
+          <p>
+            Historical epistle subscriptions retained as edition metadata. They are not canonical verse text.
+          </p>
+          <div className="entity-edition-note-list">
+            {data.entity.paratextRefs!.map((entry) => (
+              <div key={entry.ref}>
+                <span>{formatResearchRef(entry.ref, bookNames)}</span>
+                <span>{entry.forms[0] || "KJV subscription"}</span>
+              </div>
+            ))}
+          </div>
+        </details>
+      )}
+
+      <footer className="entity-research-sources">
+        <span>Identity: STEPBible TIPNR · CC BY 4.0</span>
+        {place && <span>Geography: OpenBible · CC BY 4.0</span>}
+        {place?.linkedData.pleiadesId && <span>Ancient gazetteer: Pleiades {place.linkedData.pleiadesId}</span>}
+        {place?.linkedData.wikidataId && <span>Linked identity: Wikidata {place.linkedData.wikidataId}</span>}
+        {place && <span>Map: Natural Earth · Public domain</span>}
+        {place?.image && <span>Image: {place.image.credit} · {place.image.license}</span>}
+      </footer>
+    </article>
   );
 }
 
@@ -309,6 +532,7 @@ function IntentOverview({
   loading,
   onNavigate,
   onOpenTab,
+  onOpenEntity,
 }: {
   crossRefs: CrossReferenceResultData | null;
   directNote: NoteRecord | null;
@@ -317,6 +541,7 @@ function IntentOverview({
   loading: boolean;
   onNavigate?: (ref: string) => void;
   onOpenTab: (tab: MarginTab) => void;
+  onOpenEntity?: (entityId: string) => void;
 }): React.JSX.Element {
   const scripture = crossRefs?.items.slice(0, 2) ?? [];
   const relatedNote = semantic?.semanticNotes[0] ?? null;
@@ -404,8 +629,14 @@ function IntentOverview({
           </div>
           <div className="intent-entity-list">
             {entities.map((entity) => (
-              <details key={entity.id} className="intent-entity-card">
-                <summary>
+              <button
+                key={entity.id}
+                type="button"
+                className="intent-entity-card"
+                onClick={() => onOpenEntity?.(entity.id)}
+                aria-label={`Research ${entity.displayName}`}
+              >
+                <span className={`intent-entity-glyph is-${entity.kind}`}><EntityGlyph kind={entity.kind} /></span>
                   <span className="intent-entity-copy">
                     <span className="intent-entity-line">
                       <strong>{entity.displayName}</strong>
@@ -413,13 +644,8 @@ function IntentOverview({
                     </span>
                     <span className="intent-entity-brief">{entity.brief}</span>
                   </span>
-                  <span className="intent-entity-caret" aria-hidden="true">›</span>
-                </summary>
-                <div className="intent-entity-detail">
-                  {entity.short && entity.short !== entity.brief && <p>{entity.short}</p>}
-                  <span>Indexed in {entity.refCount.toLocaleString()} verse{entity.refCount === 1 ? "" : "s"}</span>
-                </div>
-              </details>
+                <span className="intent-entity-open" aria-hidden="true">open&nbsp;→</span>
+              </button>
             ))}
           </div>
           {entityResult.entities.length > entities.length && (
@@ -472,6 +698,9 @@ export function LivingMargin({
   onStudyVerse,
   onMarginActiveChange,
   onClearSelection,
+  entityIntent,
+  onOpenEntity,
+  onCloseEntity,
 }: Props): React.JSX.Element {
   const displayBook = bookNames[book]?.[0] ?? book;
   const [pinnedClaims, setPinnedClaims] = useState<Set<string>>(new Set());
@@ -483,9 +712,13 @@ export function LivingMargin({
     attribution: { name: "STEPBible TIPNR", license: "CC BY 4.0" },
   });
   const [entityLoading, setEntityLoading] = useState(false);
+  const [entityResearch, setEntityResearch] = useState<EntityResearchData | null>(null);
+  const [entityResearchLoading, setEntityResearchLoading] = useState(false);
+  const [entityResearchError, setEntityResearchError] = useState<string | null>(null);
   const [deepNotesById, setDeepNotesById] = useState<Record<string, ParsedNoteData> | null>(null);
   const [deepNotesLoading, setDeepNotesLoading] = useState(false);
   const frameTitleRef = useRef<HTMLHeadingElement>(null);
+  const researchTitleRef = useRef<HTMLHeadingElement>(null);
   const marginRef = useRef<HTMLElement>(null);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const tabScrollPositionsRef = useRef<Record<MarginTab, number>>({
@@ -665,6 +898,46 @@ export function LivingMargin({
   }, [book, chapter, contextStartVerse, contextEndVerse]);
 
   useEffect(() => {
+    if (!entityIntent) {
+      setEntityResearch(null);
+      setEntityResearchError(null);
+      return;
+    }
+    let cancelled = false;
+    setEntityResearchLoading(true);
+    setEntityResearchError(null);
+    void safeCall(() => window.api.language.getEntityResearch(entityIntent.id)).then((result) => {
+      if (cancelled) return;
+      if (result.ok && result.value) {
+        setEntityResearch(result.value);
+      } else {
+        setEntityResearch(null);
+        setEntityResearchError(result.ok ? "This entity is no longer in the installed index." : result.error);
+      }
+      setEntityResearchLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [entityIntent]);
+
+  useEffect(() => {
+    if (!entityIntent || entityResearch?.entity.id !== entityIntent.id) return;
+    const frame = window.requestAnimationFrame(() => researchTitleRef.current?.focus());
+    return () => window.cancelAnimationFrame(frame);
+  }, [entityIntent, entityResearch]);
+
+  useEffect(() => {
+    if (!entityIntent || !onCloseEntity) return;
+    const closeResearch = (event: KeyboardEvent): void => {
+      if (event.key !== "Escape" || event.defaultPrevented) return;
+      if (document.querySelector('[data-floating-layer="dialog"], [data-floating-layer="popover"], .command-palette-panel')) return;
+      event.preventDefault();
+      onCloseEntity();
+    };
+    window.addEventListener("keydown", closeResearch, true);
+    return () => window.removeEventListener("keydown", closeResearch, true);
+  }, [entityIntent, onCloseEntity]);
+
+  useEffect(() => {
     if (activeTab !== "notes") return;
     let cancelled = false;
     setDeepNotesLoading(true);
@@ -705,6 +978,7 @@ export function LivingMargin({
   // Up/Down remain exclusively available to the verse/result navigation
   // paths. Floating dialogs and controls keep their normal keyboard contract.
   useEffect(() => {
+    if (entityIntent) return;
     const cycleStudyLens = (event: KeyboardEvent): void => {
       if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
       const isLensKey = event.key === "Tab" || event.key === "ArrowLeft" || event.key === "ArrowRight";
@@ -728,7 +1002,7 @@ export function LivingMargin({
 
     window.addEventListener("keydown", cycleStudyLens, true);
     return () => window.removeEventListener("keydown", cycleStudyLens, true);
-  }, [activeTab]);
+  }, [activeTab, entityIntent]);
 
   const handleTabKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number): void => {
     let nextIndex: number | null = null;
@@ -759,6 +1033,49 @@ export function LivingMargin({
     // focused on a detached node and can orient to the restored mode.
     window.setTimeout(() => frameTitleRef.current?.focus(), 0);
   };
+
+  if (entityIntent) {
+    return (
+      <aside
+        ref={marginRef}
+        className="living-margin entity-research-margin"
+        aria-label="Entity research"
+        data-margin-mode="research"
+        onPointerEnter={() => onMarginActiveChange?.(true)}
+        onPointerLeave={() => onMarginActiveChange?.(false)}
+      >
+        <header className="entity-research-frame">
+          <button type="button" className="entity-research-back" onClick={onCloseEntity}>
+            <span aria-hidden="true">←</span>
+            <span>Study</span>
+          </button>
+          <span className="entity-research-mode">Entity research</span>
+        </header>
+        {entityResearchLoading && (
+          <div className="entity-research-loading" role="status">
+            <span className="ai-insight-spinner" aria-hidden="true" />
+            <span>Opening entity…</span>
+          </div>
+        )}
+        {entityResearchError && !entityResearchLoading && (
+          <MarginEmptyView title="Entity unavailable" detail={entityResearchError} />
+        )}
+        {entityResearch && !entityResearchLoading && (
+          <div>
+            <h1 ref={researchTitleRef} id="entity-research-title" className="sr-only" tabIndex={-1}>
+              Research {entityResearch.entity.displayName}
+            </h1>
+            <EntityResearchView
+              data={entityResearch}
+              currentBook={book}
+              bookNames={bookNames}
+              onNavigate={onNavigateToRef}
+            />
+          </div>
+        )}
+      </aside>
+    );
+  }
 
   return (
     <aside
@@ -839,6 +1156,7 @@ export function LivingMargin({
               loading={entityLoading || Boolean(semanticLoading)}
               onNavigate={onNavigateToRef}
               onOpenTab={activateTab}
+              onOpenEntity={onOpenEntity}
             />
           </section>
 
@@ -973,6 +1291,7 @@ export function LivingMargin({
               loading={entityLoading || Boolean(semanticLoading)}
               onNavigate={onNavigateToRef}
               onOpenTab={activateTab}
+              onOpenEntity={onOpenEntity}
             />
           </section>
 
@@ -1063,6 +1382,7 @@ export function LivingMargin({
               loading={entityLoading || pinnedAiLoading}
               onNavigate={onNavigateToRef}
               onOpenTab={activateTab}
+              onOpenEntity={onOpenEntity}
             />
           </section>
 

@@ -6,7 +6,7 @@
 import assert from "node:assert/strict";
 import { mkdirSync, writeFileSync } from "node:fs";
 
-const CDP_HTTP = "http://localhost:9222/json/list";
+const CDP_HTTP = `http://localhost:${process.env.CDP_PORT ?? "9222"}/json/list`;
 const OUT_DIR = "docs/ui-audit/command-palette";
 const THEMES = ["light", "dark", "glass", "dark-glass"];
 const CAPTURE_SCREENSHOTS = !process.argv.includes("--no-screenshots");

@@ -4,6 +4,43 @@
 > **Predecessors:** A0 (snapshot), A1 (native build), B1 (scripture data).
 > **Contracts:** §4.2 (event fold), §4.4 (SQLite materialized view), §4.6 (note format), INV-7 (append-only), INV-9 (safe to rebuild).
 
+## Progress — 2026-07-15 (TIPNR reference integrity and KJV subscriptions)
+
+The entity research index now distinguishes canonical Scripture evidence from translation-specific naming and historical edition paratext across the complete shipped TIPNR source:
+
+- **Complete structured-row parsing:** TIPNR v3 unions every one of the **5,810** reference-bearing name-form rows instead of choosing the longest row. It recognizes all shipped significance types, carries abbreviated book/chapter/comma context, preserves LXX identity, normalizes verse ranges, and records the two pinned source-coordinate corrections (`Psa.68.36 → Psa.68.35`, `Mat.15.42 → Mat.12.12`) rather than accepting invalid coordinates.
+- **Translation provenance without index noise:** **1,471** translation-aware rows retain their form, translations, significance, and references. KJV/ESV/NIV variants remain searchable provenance without being mistaken for separate canonical occurrences.
+- **Historical subscriptions are retained, not presented as verses:** a full AKJV prose scan detects the same **14** epistle-subscription blocks as the pinned coordinate contract. Strong's alignment evidence keeps legitimate canonical names at those final verses, while **50** unsupported entity edges are stored in `paratextRefs` / `byParatextRef` and excluded from ordinary `refs` / `byRef`. Corinth now has nine canonical passages; Romans 16:27, 1 Corinthians 16:24, and 2 Corinthians 13:14 appear only in a collapsed `KJV edition notes` disclosure explicitly described as noncanonical verse text.
+- **Dependent data stays aligned:** all **907** OpenBible place records are resynchronized byte-for-byte to the canonical TIPNR reference lists. The place Doctor now refuses TIPNR-reference drift.
+- **A refusing, deterministic rebuild:** the TIPNR Doctor verifies source/license/checksum, entity uniqueness, total-row coverage, complete reference-row parsing, translation provenance, valid coordinates, source-edge preservation, canonical and paratext uniqueness, all 14 subscription coordinates, canonical alignment evidence, dependent-place parity, and an independent AKJV subscription-text scan. Repeated imports produce identical TIPNR, Doctor, and place artifact hashes.
+
+**Verification:** `npm run import:tipnr`, `npm run verify:data`, `npm run lint`, full `npm test` (**434 tests: 424 passing, 10 expected Electron-ABI skips**), Electron build, renderer build, focused TIPNR/place/Living Margin contracts, `npm run qa:entities`, all four desktop atmospheres, expanded edition-note screenshot inspection, and canonical reference navigation pass. Mobile remains outside this worktree.
+
+## Progress — 2026-07-15 (Reference navigation viewport handoff)
+
+Scripture-reference activation now completes the visual navigation it already represented canonically:
+
+- Same-chapter and cross-chapter references still select their exact verse or range, but now wait for the requested chapter text to render and place the first selected verse near the reading eye-line instead of leaving the canvas at the chapter heading.
+- A loaded-chapter identity guard prevents stale text from satisfying a new navigation request while its target chapter is still loading.
+- Living Margin research stays open and the invoking reference retains keyboard focus, so the scroll is visible context movement rather than an unexpected focus transfer.
+- The entity-research tour exercises a late-chapter Corinth reference and proves the selected row is visible, the reader has scrolled, research remains open, and focus stays in its reference index.
+
+**Verification:** full `npm test` (**430 tests: 420 passing, 10 expected Electron-ABI skips**), `npm run lint`, renderer build, focused navigation contracts, `npm run qa:entities -- --no-screenshots`, and `git diff --check` pass.
+
+## Progress — 2026-07-15 (Focused entity research and biblical place maps)
+
+The desktop Living Margin now supports general entity research without pretending that a searched name identifies one destination verse or replacing the reader's present passage:
+
+- **A research object, not a navigation guess:** opening a person or place from Command K or the contextual Overview keeps the Bible where it is, opens a focused Living Margin subject, and gives the destination focus. The back action and global Escape restore the previous Study tabs; floating dialogs and popovers retain top-layer Escape ownership.
+- **Scripture remains the working context:** an entity's complete TIPNR reference inventory is a compact, expandable two-column index. A reference is a real pointer target and navigates the Bible while the research subject stays open, so a pastor can move through the evidence without repeatedly searching for the entity.
+- **Deterministic biblical geography:** a pinned OpenBible Bible Geocoding snapshot is joined to the shipped TIPNR identities. The normalized artifact maps **907 of 1,003** TIPNR places, retaining exact OpenBible identity, coordinates, confidence score, precision, alternative proposals, Scripture references, and available Pleiades and Wikidata identifiers. Unmapped places remain honest TIPNR research cards with no invented coordinate.
+- **Licensed visual context:** **597 place records** have a local selected site photograph from **443 unique packaged files**. Each record keeps creator, source, license, license URL, alt text, dimensions, and SHA-256. Unapproved image licenses are not shipped and fall back to the map treatment; people use a quiet typographic identity treatment rather than a speculative portrait.
+- **One offline minimap system:** Natural Earth 5.1.2 public-domain land geometry is clipped and projected in pure core TypeScript for the selected place. Paper, Ink, Glass, and Candlelight use the same restrained land/water/grid/pin hierarchy with theme-specific tokens; alternate proposed locations remain secondary and textual uncertainty is explicit.
+- **Provenance is part of the interface:** STEPBible TIPNR, OpenBible, Pleiades, Wikidata, Natural Earth, and per-image credit/license data remain separately named. The renderer's content-security policy permits packaged `data:` media without permitting remote image loads.
+- **A refusing importer and repeatable proof:** the import Doctor pins all three raw source hashes and checks identity coverage, uniqueness, coordinates, shipped media licenses and hashes, Natural Earth provenance, and source licensing while preserving unresolved and ambiguous joins for review. The dedicated Electron tour covers Corinth, Capernaum's alternate location, Paul without invented imagery, reference navigation, focus transfer, Escape recovery, overflow, and the complete four-atmosphere screenshot set.
+
+**Verification:** `npm run lint`, Electron build, renderer build, full `npm test` (**429 tests: 419 passing, 10 expected Electron-ABI skips**), focused place/Command K contracts, `npm run qa:entities`, `npm run qa:command -- --no-screenshots`, `npm run qa:margin -- --no-screenshots`, four-atmosphere screenshot inspection, and `git diff --check` pass. Mobile remains outside this worktree.
+
 ## Progress — 2026-07-15 (Reading lens and translation continuity)
 
 The reader and Command K now share one spatial keyboard model, and changing Bible text no longer discards reading context:
@@ -23,7 +60,7 @@ The desktop reader now has one keyboard-first entry point for the four searches 
 
 - **Four deliberate lenses:** `Intelligence | Scripture | Notes | Names` share one quiet palette. Intelligence blends only the strongest relevant result types and exact command intents; Scripture, Notes, and Names remain complete, separately labelled indexes. Empty Intelligence shows recent reading rather than adding a fifth Recents tab.
 - **Natural Scripture lookup:** exact references and same-chapter ranges navigate atomically, while ordinary questions and phrases search the active bundled translation with exact-phrase, meaningful-term, ordered-proximity, and light English-inflection ranking. Canonical order is the stable tie-break; current reading context only breaks otherwise-equal results.
-- **Name-first people and places:** all 4,260 shipped STEPBible TIPNR entities are searchable. Exact, prefix, and close-name matches outrank definition-only matches, while role terms such as `apostle` intentionally return multiple people. Opening an entity moves to its nearest relevant occurrence in the current book or chapter when possible.
+- **Name-first people and places:** all 4,260 shipped STEPBible TIPNR entities are searchable. Exact, prefix, and close-name matches outrank definition-only matches, while role terms such as `apostle` intentionally return multiple people. Opening an entity now preserves the reading position and opens its focused Living Margin research object; Scripture movement happens only when the reader chooses one of its references.
 - **Local notes stay local:** plain queries are escaped into safe FTS5 expressions before host execution, so Scripture-shaped input such as `John 3:16` cannot be parsed as FTS syntax. A chosen result opens the existing full note detail rather than a truncated palette preview.
 - **Actions without a junk drawer:** New note, Study visibility, focus mode, Notes, Search, and Settings are inferred in Intelligence from exact titles and keywords. They outrank incidental Scripture text matches without taking a permanent fifth tab.
 - **Complete desktop keyboard path:** global Command/Ctrl-K opens the palette; Tab and Right activate `Intelligence → Scripture → Notes → Names` in a continuous loop while the typing cursor stays in the query, with Shift-Tab and Left reversing the loop. Up/Down plus Home/End own result navigation; Enter activates; Escape closes and restores the invoker. Every lens change replaces the selected state and result panel rather than merely moving a hover/focus treatment.

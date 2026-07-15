@@ -17,6 +17,7 @@ const tours = [
   ["Settings and onboarding", "scripts/qa-setup-tour.mjs"],
   ["Write, Notes, and Search", "scripts/qa-note-workspace-tour.mjs"],
   ["Command palette", "scripts/qa-command-palette-tour.mjs"],
+  ["Entity research", "scripts/qa-entity-research-tour.mjs"],
   ["Study overlays", "scripts/qa-study-overlays-tour.mjs"],
 ];
 

@@ -1,0 +1,112 @@
+{
+  "status": "healthy",
+  "source": {
+    "name": "STEPBible TIPNR",
+    "url": "https://github.com/STEPBible/STEPBible-Data",
+    "license": "CC BY 4.0",
+    "snapshotDate": "2026-07-14",
+    "rawSha256": "1a3b7d7df5cfa1e96eefa07dec92900bea278370c6788fadb5d036f3223b637c"
+  },
+  "coverage": {
+    "entityCount": 4259,
+    "personCount": 3142,
+    "placeCount": 1003,
+    "otherCount": 114,
+    "structuredRowsSeen": 5834,
+    "structuredRowsWithReferences": 5810,
+    "structuredRowsParsed": 5810,
+    "structuredRowsWithoutReferences": 24,
+    "translationRowsPreserved": 1471,
+    "sourceReferenceEdges": 32290,
+    "canonicalReferenceEdges": 32215,
+    "paratextReferenceEdges": 50,
+    "subscriptionCoordinateCount": 14
+  },
+  "checks": {
+    "sourceLicense": true,
+    "expectedCoverage": true,
+    "uniqueEntityIds": true,
+    "totalRowCoverage": true,
+    "allStructuredReferenceRowsParsed": true,
+    "translationProvenancePreserved": true,
+    "validCoordinates": true,
+    "sourceCorrectionsPinned": true,
+    "sourceReferencesPreserved": true,
+    "uniqueCanonicalRefs": true,
+    "uniqueParatextRefs": true,
+    "subscriptionCoordinatesComplete": true,
+    "paratextCoordinatesRestricted": true,
+    "akjvSubscriptionScanMatchesPinnedCoordinates": true,
+    "normalSubscriptionEdgesHaveCanonicalEvidence": true,
+    "dependentPlaceRefsSynced": true
+  },
+  "subscriptions": {
+    "coordinates": [
+      "ROM.16.27",
+      "1CO.16.24",
+      "2CO.13.14",
+      "GAL.6.18",
+      "EPH.6.24",
+      "PHP.4.23",
+      "COL.4.18",
+      "1TH.5.28",
+      "2TH.3.18",
+      "1TI.6.21",
+      "2TI.4.22",
+      "TIT.3.15",
+      "PHM.1.25",
+      "HEB.13.25"
+    ],
+    "detectedInAkjv": [
+      "ROM.16.27",
+      "1CO.16.24",
+      "2CO.13.14",
+      "GAL.6.18",
+      "EPH.6.24",
+      "PHP.4.23",
+      "COL.4.18",
+      "1TH.5.28",
+      "2TH.3.18",
+      "1TI.6.21",
+      "2TI.4.22",
+      "TIT.3.15",
+      "PHM.1.25",
+      "HEB.13.25"
+    ],
+    "normalEdgesWithCanonicalEvidence": 10,
+    "normalEdgesWithoutCanonicalEvidence": [],
+    "paratextEdgesByCoordinate": {
+      "ROM.16.27": 4,
+      "1CO.16.24": 6,
+      "2CO.13.14": 5,
+      "GAL.6.18": 2,
+      "EPH.6.24": 3,
+      "PHP.4.23": 3,
+      "COL.4.18": 4,
+      "1TH.5.28": 2,
+      "2TH.3.18": 2,
+      "1TI.6.21": 4,
+      "2TI.4.22": 5,
+      "TIT.3.15": 4,
+      "PHM.1.25": 3,
+      "HEB.13.25": 3
+    }
+  },
+  "review": {
+    "duplicateEntityIds": [],
+    "invalidCoordinates": [],
+    "sourceCorrections": [
+      "PSA.68.36 -> PSA.68.35",
+      "MAT.15.42 -> MAT.12.12"
+    ],
+    "unparsedReferenceRows": []
+  },
+  "artifact": {
+    "formatVersion": 3,
+    "normalizedSha256": "1761abda100c7977cbb18a0a96a23bacee0c1e04a41da12ce5f714b81723ff1b"
+  },
+  "dependentArtifacts": {
+    "openBiblePlaceCount": 907,
+    "openBiblePlaceSha256": "16e9d45a29d83dc291b6c74592cc2124c2f74343750bbdbe3c5f924e0a062561"
+  }
+}

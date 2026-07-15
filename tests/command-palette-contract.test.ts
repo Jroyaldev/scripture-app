@@ -25,6 +25,7 @@ test("command palette traps focus, restores it, and exposes complete keyboard tr
   assert.match(source, /setActiveTab\(\(current\) =>/);
   assert.match(source, /inputRef\.current\?\.focus\(\)/);
   assert.match(source, /returnFocusRef/);
+  assert.match(source, /returnFocusRef\.current = null/);
   assert.match(source, /event\.key === "ArrowDown"/);
   assert.match(source, /event\.key === "ArrowUp"/);
   assert.match(source, /event\.key === "Home"/);
@@ -39,4 +40,18 @@ test("palette keeps public Scripture, local notes, and TIPNR names as separate i
   assert.match(source, /window\.api\.language\.searchEntities/);
   assert.match(source, /Your library/);
   assert.match(source, /Name matches rank before definition matches/);
+});
+
+test("name results open reversible Living Margin research instead of guessing a verse", () => {
+  const command = readFileSync(join(repoRoot, "src", "renderer", "components", "CommandPalette.tsx"), "utf8");
+  const app = readFileSync(join(repoRoot, "src", "renderer", "app.tsx"), "utf8");
+  const margin = readFileSync(join(repoRoot, "src", "renderer", "components", "LivingMargin.tsx"), "utf8");
+  assert.match(command, /activate: \(\) => closeAnd\(\(\) => onOpenEntity\(entity\.id\)\)/);
+  assert.doesNotMatch(command, /bestEntityRef|parseEntityRef/);
+  assert.match(app, /setEntityIntent\(\{ id: entityId, nonce: Date\.now\(\), origin: readingContext \}\)/);
+  assert.match(app, /setMarginVisible\(true\)/);
+  assert.match(margin, /window\.api\.language\.getEntityResearch\(entityIntent\.id\)/);
+  assert.match(margin, /data-margin-mode="research"/);
+  assert.match(margin, /window\.addEventListener\("keydown", closeResearch, true\)/);
+  assert.match(margin, /onCloseEntity/);
 });

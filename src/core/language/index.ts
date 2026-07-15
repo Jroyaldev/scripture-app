@@ -95,9 +95,18 @@ export {
   formatTipnrDisplayName,
   type TipnrEntity,
   type TipnrIndexFile,
+  type TipnrParatextReference,
+  type TipnrTranslation,
+  type TipnrTranslationVariant,
   type NameResolveQuery,
   type NameResolveHit,
 } from "./tipnr.js";
+
+export {
+  KJV_EPISTLE_SUBSCRIPTION_REFS,
+  isKjvEpistleSubscriptionRef,
+  type KjvEpistleSubscriptionRef,
+} from "./tipnr-subscriptions.js";
 
 export {
   buildRenderingOrbit,

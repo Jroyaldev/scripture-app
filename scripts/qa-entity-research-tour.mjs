@@ -1,0 +1,324 @@
+/**
+ * Desktop visual and interaction QA for focused Living Margin entities.
+ *
+ * Requires Electron on --remote-debugging-port=9222. This tour proves that a
+ * Command K name result opens a reversible research object without guessing a
+ * Scripture destination, renders local licensed media plus an offline map in
+ * every atmosphere, and keeps Scripture references navigable in context.
+ */
+
+import assert from "node:assert/strict";
+import { mkdirSync, writeFileSync } from "node:fs";
+
+const CDP_HTTP = `http://localhost:${process.env.CDP_PORT ?? "9222"}/json/list`;
+const OUT_DIR = "docs/ui-audit/entity-research";
+const CAPTURE_SCREENSHOTS = !process.argv.includes("--no-screenshots");
+const THEMES = ["light", "dark", "glass", "dark-glass"];
+const THEME_NAMES = {
+  light: "paper",
+  dark: "ink",
+  glass: "glass",
+  "dark-glass": "candlelight",
+};
+
+async function connect(url) {
+  const ws = new WebSocket(url);
+  await new Promise((resolve, reject) => {
+    ws.onopen = resolve;
+    ws.onerror = reject;
+  });
+  let id = 0;
+  const pending = new Map();
+  ws.onmessage = (event) => {
+    const message = JSON.parse(event.data);
+    if (!message.id || !pending.has(message.id)) return;
+    pending.get(message.id)(message);
+    pending.delete(message.id);
+  };
+  const send = (method, params = {}) => new Promise((resolve) => {
+    const messageId = ++id;
+    pending.set(messageId, resolve);
+    ws.send(JSON.stringify({ id: messageId, method, params }));
+  });
+  return { ws, send };
+}
+
+const pages = await (await fetch(CDP_HTTP)).json();
+const app = pages.find((page) => page.title === "Scripture Library");
+if (!app) throw new Error("Scripture Library is not available on :9222");
+const cdp = await connect(app.webSocketDebuggerUrl);
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function evaluate(expression) {
+  const response = await cdp.send("Runtime.evaluate", {
+    expression,
+    awaitPromise: true,
+    returnByValue: true,
+  });
+  if (response.result?.exceptionDetails) {
+    throw new Error(JSON.stringify(response.result.exceptionDetails).slice(0, 900));
+  }
+  return response.result?.result?.value;
+}
+
+async function waitFor(expression, timeout = 16_000) {
+  const started = Date.now();
+  while (Date.now() - started < timeout) {
+    if (await evaluate(expression)) return;
+    await sleep(90);
+  }
+  throw new Error(`Timed out waiting for ${expression}`);
+}
+
+async function screenshot(name, selector = null) {
+  if (!CAPTURE_SCREENSHOTS) return;
+  let clip;
+  if (selector) {
+    clip = await evaluate(`(() => {
+      const element = document.querySelector(${JSON.stringify(selector)});
+      if (!element) return null;
+      const rect = element.getBoundingClientRect();
+      return { x: rect.x, y: rect.y, width: rect.width, height: rect.height, scale: 1 };
+    })()`);
+    if (!clip) throw new Error(`Cannot capture missing element: ${selector}`);
+  }
+  await cdp.send("Page.bringToFront");
+  await evaluate(`new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))`);
+  await sleep(260);
+  const response = await cdp.send("Page.captureScreenshot", {
+    format: "png",
+    captureBeyondViewport: false,
+    ...(clip ? { clip } : {}),
+  });
+  mkdirSync(OUT_DIR, { recursive: true });
+  const path = `${OUT_DIR}/${name}.png`;
+  writeFileSync(path, Buffer.from(response.result.data, "base64"));
+  console.log("saved", path);
+}
+
+async function press(key, code = key, modifiers = 0) {
+  await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key, code, modifiers });
+  await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key, code, modifiers });
+  await sleep(120);
+}
+
+async function clickElement(selector) {
+  const point = await evaluate(`(() => {
+    const element = document.querySelector(${JSON.stringify(selector)});
+    if (!element) return null;
+    const rect = element.getBoundingClientRect();
+    return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  })()`);
+  if (!point) throw new Error(`Cannot click missing element: ${selector}`);
+  await cdp.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: point.x, y: point.y });
+  await cdp.send("Input.dispatchMouseEvent", {
+    type: "mousePressed", x: point.x, y: point.y, button: "left", buttons: 1, clickCount: 1,
+  });
+  await cdp.send("Input.dispatchMouseEvent", {
+    type: "mouseReleased", x: point.x, y: point.y, button: "left", buttons: 0, clickCount: 1,
+  });
+  await sleep(140);
+}
+
+async function clickElementWithText(selector, text) {
+  const point = await evaluate(`(() => {
+    const element = [...document.querySelectorAll(${JSON.stringify(selector)})]
+      .find((candidate) => candidate.textContent?.replace(/\\s+/g, " ").trim() === ${JSON.stringify(text)});
+    if (!element) return null;
+    element.scrollIntoView({ block: "center" });
+    const rect = element.getBoundingClientRect();
+    return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  })()`);
+  if (!point) throw new Error(`Cannot click ${selector} with text ${text}`);
+  await cdp.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: point.x, y: point.y });
+  await cdp.send("Input.dispatchMouseEvent", {
+    type: "mousePressed", x: point.x, y: point.y, button: "left", buttons: 1, clickCount: 1,
+  });
+  await cdp.send("Input.dispatchMouseEvent", {
+    type: "mouseReleased", x: point.x, y: point.y, button: "left", buttons: 0, clickCount: 1,
+  });
+  await sleep(140);
+}
+
+async function setQuery(query) {
+  const entered = await evaluate(`(() => {
+    const input = document.querySelector(".command-palette-input-row input");
+    if (!(input instanceof HTMLInputElement)) return false;
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+    setter?.call(input, ${JSON.stringify(query)});
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.focus();
+    return true;
+  })()`);
+  if (!entered) throw new Error("Command palette query input is unavailable");
+  await waitFor(`!document.querySelector(".command-palette-state") && document.querySelectorAll(".command-palette-result").length > 0`);
+}
+
+async function openEntity(name) {
+  await press("k", "KeyK", 4);
+  await waitFor(`Boolean(document.querySelector(".command-palette-panel"))`);
+  await setQuery(name);
+  await clickElement("#command-tab-names");
+  await waitFor(`[...document.querySelectorAll(".command-palette-result strong")].some((node) => node.textContent?.trim() === ${JSON.stringify(name)})`);
+  const selector = await evaluate(`(() => {
+    const rows = [...document.querySelectorAll(".command-palette-result")];
+    const index = rows.findIndex((row) => row.querySelector("strong")?.textContent?.trim() === ${JSON.stringify(name)});
+    return index < 0 ? null : \`.command-palette-result:nth-child(\${index + 1})\`;
+  })()`);
+  if (!selector) throw new Error(`No exact entity result for ${name}`);
+  await clickElement(selector);
+  await waitFor(`document.querySelector(".entity-research-identity h2")?.textContent?.trim() === ${JSON.stringify(name)}`);
+  await waitFor(`document.activeElement?.id === "entity-research-title"`);
+}
+
+async function setTheme(theme) {
+  const current = await evaluate(`document.querySelector(".app-shell")?.dataset.theme ?? "light"`);
+  if (current === theme) return;
+  await evaluate(`document.querySelector(".theme-toggle-btn")?.click()`);
+  await waitFor(`Boolean(document.querySelector(".theme-picker-popover"))`);
+  await evaluate(`document.querySelector(${JSON.stringify(`[data-theme-id="${theme}"]`)})?.click()`);
+  await waitFor(`document.querySelector(".app-shell")?.dataset.theme === ${JSON.stringify(theme)}`);
+  await sleep(260);
+}
+
+async function navigatePassage(passage) {
+  await press("k", "KeyK", 4);
+  await waitFor(`Boolean(document.querySelector(".command-palette-panel"))`);
+  await setQuery(passage);
+  await waitFor(`[...document.querySelectorAll(".command-palette-result")].some((row) => row.querySelector(".command-result-meta")?.textContent === "Exact reference")`);
+  const opened = await evaluate(`(() => {
+    const row = [...document.querySelectorAll(".command-palette-result")].find((candidate) =>
+      candidate.querySelector(".command-result-meta")?.textContent === "Exact reference"
+    );
+    row?.click();
+    return Boolean(row);
+  })()`);
+  if (!opened) throw new Error(`Cannot restore ${passage}`);
+  await waitFor(`document.querySelector("#reading-chapter-title")?.textContent?.replace(/\\s+/g, " ").trim() === ${JSON.stringify(passage)}`);
+}
+
+await cdp.send("Emulation.setDeviceMetricsOverride", {
+  width: 1440,
+  height: 920,
+  deviceScaleFactor: 1,
+  mobile: false,
+});
+await cdp.send("Page.reload", { ignoreCache: true });
+await waitFor(`Boolean(document.querySelector(".scripture-topbar") && document.querySelector(".command-palette-trigger"))`);
+await sleep(460);
+
+const original = await evaluate(`({
+  theme: document.querySelector(".app-shell")?.dataset.theme ?? "light",
+  passage: document.querySelector("#reading-chapter-title")?.textContent?.replace(/\\s+/g, " ").trim() ?? "Acts 19",
+})`);
+
+const beforeCorinth = await evaluate(`document.querySelector("#reading-chapter-title")?.textContent?.replace(/\\s+/g, " ").trim()`);
+await openEntity("Corinth");
+const afterCorinth = await evaluate(`document.querySelector("#reading-chapter-title")?.textContent?.replace(/\\s+/g, " ").trim()`);
+assert.equal(afterCorinth, beforeCorinth, "opening a place must not guess a destination verse");
+await waitFor(`(() => {
+  const image = document.querySelector(".entity-photo img");
+  return image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0;
+})()`);
+
+const corinth = await evaluate(`(() => {
+  const margin = document.querySelector(".living-margin");
+  const image = document.querySelector(".entity-photo img");
+  return {
+    mode: margin?.getAttribute("data-margin-mode"),
+    imageLoaded: image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0,
+    mapPaths: document.querySelectorAll(".entity-map-land path").length,
+    references: document.querySelectorAll(".entity-reference-list button").length,
+    referenceLabels: [...document.querySelectorAll(".entity-reference-list button")].map((node) => node.textContent?.trim()),
+    editionSummary: document.querySelector(".entity-edition-notes summary")?.textContent?.replace(/\\s+/g, " ").trim(),
+    editionRows: document.querySelectorAll(".entity-edition-note-list > div").length,
+    sources: [...document.querySelectorAll(".entity-research-sources span")].map((node) => node.textContent),
+    horizontalOverflow: (margin?.scrollWidth ?? 0) > (margin?.clientWidth ?? 0),
+  };
+})()`);
+console.log("Corinth rendered state", corinth);
+assert.equal(corinth.mode, "research");
+assert.equal(corinth.imageLoaded, true);
+assert.ok(corinth.mapPaths > 0);
+assert.ok(corinth.references >= 8);
+assert.ok(!corinth.referenceLabels.some((label) => /Romans 16:27/.test(label ?? "")));
+assert.match(corinth.editionSummary ?? "", /KJV edition notes.*3 subscriptions/);
+assert.equal(corinth.editionRows, 3);
+assert.ok(corinth.sources.some((source) => /OpenBible.*CC BY 4\.0/.test(source ?? "")));
+assert.ok(corinth.sources.some((source) => /Natural Earth.*Public domain/.test(source ?? "")));
+assert.equal(corinth.horizontalOverflow, false);
+
+for (const theme of THEMES) {
+  await setTheme(theme);
+  await evaluate(`document.querySelector("#entity-research-title")?.focus()`);
+  await evaluate(`document.querySelector(".living-margin")?.scrollTo({ top: 0 })`);
+  await screenshot(`${THEME_NAMES[theme]}-corinth-context`);
+  await screenshot(`${THEME_NAMES[theme]}-corinth-research`, ".living-margin");
+}
+
+await setTheme("light");
+const editionNotesOpened = await evaluate(`(() => {
+  const details = document.querySelector(".entity-edition-notes");
+  const summary = details?.querySelector("summary");
+  if (!(details instanceof HTMLDetailsElement) || !(summary instanceof HTMLElement)) return false;
+  summary.scrollIntoView({ block: "center" });
+  summary.click();
+  return details.open;
+})()`);
+assert.equal(editionNotesOpened, true);
+await waitFor(`document.querySelector(".entity-edition-notes")?.hasAttribute("open") === true`);
+await screenshot("paper-corinth-kjv-edition-notes", ".living-margin");
+await evaluate(`document.querySelector(".entity-edition-notes summary")?.click()`);
+await clickElementWithText(".entity-reference-list button", "Acts 18:1");
+await waitFor(`document.querySelector("#reading-chapter-title")?.textContent?.includes("Acts 18")`);
+await waitFor(`document.querySelector('.verse-line[data-verse="1"]')?.getAttribute("aria-pressed") === "true"`);
+assert.equal(await evaluate(`document.querySelector(".entity-research-identity h2")?.textContent`), "Corinth");
+await screenshot("paper-corinth-reference-opened");
+
+// A later verse reference should not leave the reading canvas parked at the
+// chapter heading. The selected row lands near the reader's eye-line while
+// entity research remains open and keyboard focus stays with its ref button.
+await clickElementWithText(".entity-reference-list button", "2 Corinthians 6:11");
+await waitFor(`document.querySelector("#reading-chapter-title")?.textContent?.includes("2 Corinthians 6")`);
+await waitFor(`document.querySelector('.verse-line[data-verse="11"]')?.getAttribute("aria-pressed") === "true"`);
+await waitFor(`(() => {
+  const root = document.querySelector(".scripture-content");
+  const row = document.querySelector('.verse-line[data-verse="11"]');
+  if (!(root instanceof HTMLElement) || !(row instanceof HTMLElement)) return false;
+  const rootRect = root.getBoundingClientRect();
+  const rowRect = row.getBoundingClientRect();
+  return root.scrollTop > 0
+    && rowRect.top >= rootRect.top
+    && rowRect.top <= rootRect.top + rootRect.height * 0.45;
+})()`);
+assert.equal(await evaluate(`document.querySelector(".entity-research-identity h2")?.textContent`), "Corinth");
+assert.equal(await evaluate(`document.activeElement?.closest(".entity-reference-list") != null`), true);
+await screenshot("paper-corinth-late-reference-scrolled");
+
+await openEntity("Capernaum");
+assert.ok(await evaluate(`document.querySelectorAll(".entity-map-alternatives circle").length >= 1`));
+assert.equal(await evaluate(`document.querySelectorAll(".entity-location-alternatives > div").length`), 1);
+await screenshot("paper-capernaum-alternative-location", ".living-margin");
+
+await openEntity("Paul");
+assert.equal(await evaluate(`Boolean(document.querySelector(".entity-person-portrait"))`), true);
+assert.equal(await evaluate(`Boolean(document.querySelector(".entity-minimap"))`), false);
+assert.ok(await evaluate(`document.querySelectorAll(".entity-reference-list button").length >= 12`));
+await setTheme("dark");
+await evaluate(`document.querySelector("#entity-research-title")?.focus()`);
+await screenshot("ink-paul-research", ".living-margin");
+
+const paletteWasOpen = await evaluate(`Boolean(document.querySelector(".command-palette-panel"))`);
+await press("Escape", "Escape");
+if (paletteWasOpen) {
+  await waitFor(`!document.querySelector(".command-palette-panel")`);
+  await press("Escape", "Escape");
+}
+await waitFor(`!document.querySelector(".entity-research-view") && Boolean(document.querySelector(".margin-tabs"))`);
+assert.equal(await evaluate(`Boolean(document.querySelector(".living-margin"))`), true);
+
+await setTheme(original.theme);
+await navigatePassage(original.passage);
+await cdp.send("Emulation.clearDeviceMetricsOverride");
+cdp.ws.close();
+console.log("entity research QA complete", { corinth, restored: original });

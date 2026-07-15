@@ -11,7 +11,7 @@
 import assert from "node:assert/strict";
 import { mkdirSync, writeFileSync } from "node:fs";
 
-const CDP_HTTP = "http://localhost:9222/json/list";
+const CDP_HTTP = `http://localhost:${process.env.CDP_PORT ?? "9222"}/json/list`;
 const OUT_DIR = "docs/ui-audit/living-margin";
 const CAPTURE_SCREENSHOTS = !process.argv.includes("--no-screenshots");
 // Finish on Paper so the following interaction captures begin from a fully
@@ -481,9 +481,14 @@ const selectedOverview = await evaluate(`(() => ({
 }))()`);
 assert.ok(selectedOverview.scripture <= 2);
 assert.ok(selectedOverview.entities > 0);
-await evaluate(`document.querySelector(".intent-entity-card summary")?.click()`);
-await waitFor(`document.querySelector(".intent-entity-card")?.hasAttribute("open")`);
 await screenshot("paper-intent-overview");
+await evaluate(`document.querySelector(".intent-entity-card")?.click()`);
+await waitFor(`Boolean(document.querySelector(".entity-research-view"))`);
+assert.ok(await evaluate(`document.querySelectorAll(".entity-reference-list button").length > 0`));
+assert.ok(await evaluate(`[...document.querySelectorAll(".entity-research-sources span")].some((node) => /STEPBible TIPNR/.test(node.textContent ?? ""))`));
+await screenshot("paper-contextual-entity-research", ".living-margin");
+await evaluate(`document.querySelector(".entity-research-back")?.click()`);
+await waitFor(`Boolean(document.querySelector(".margin-tabs")) && !document.querySelector(".entity-research-view")`);
 
 for (const theme of THEMES) {
   await setTheme(theme);

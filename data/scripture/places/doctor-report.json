@@ -1,0 +1,771 @@
+{
+  "status": "healthy",
+  "source": {
+    "name": "OpenBible Bible Geocoding",
+    "commit": "7eb18a5ee62f27b9b93bd6689ea272d76dd23b8f",
+    "license": "CC BY 4.0",
+    "rawSha256": {
+      "ancient.jsonl": "b8187aa4737e8517ccc090f765d2be11da4c548cd2a59d3cdcb62e952cb8c0f2",
+      "modern.jsonl": "da731f6e110bac4ea66a9f037a0a31cfb11c4f1efc1206aa9e109092b2c60087",
+      "image.jsonl": "d3f99729eac6ac47553594f765dad5fec6e9025f93e5054cb2f63ac1b07bcc3a"
+    },
+    "thumbnailArchive": "openbible-thumbnails.zip",
+    "naturalEarth": {
+      "version": "5.1.2",
+      "license": "Public domain",
+      "sha256": "e874b27a51d146452be360cafb3cc50c86001074a67d534113e6534682f9826b",
+      "featureCount": 1420
+    }
+  },
+  "coverage": {
+    "tipnrPlaceCount": 1003,
+    "openBibleAncientCount": 1342,
+    "linkedAncientCount": 1172,
+    "matchedTipnrPlaceCount": 907,
+    "unmatchedTipnrPlaceCount": 96,
+    "imageCount": 597,
+    "mediaBytes": 49312738
+  },
+  "checks": {
+    "sourceHashes": true,
+    "identityCoverage": true,
+    "uniqueTipnrIdentity": true,
+    "validCoordinates": true,
+    "licensedMedia": true,
+    "mediaHashes": true,
+    "naturalEarthPublicDomain": true,
+    "sourceLicense": true,
+    "tipnrReferenceParity": true
+  },
+  "review": {
+    "unmatchedLinks": [
+      {
+        "ancientId": "a51d1fa",
+        "ancientName": "Abel-shittim",
+        "tipnrId": "Abel-shittim@Num.33.49"
+      },
+      {
+        "ancientId": "a4b500d",
+        "ancientName": "Avva",
+        "tipnrId": "Avva@2Ki.17.24"
+      },
+      {
+        "ancientId": "a849ca2",
+        "ancientName": "Bamah",
+        "tipnrId": "Gibeon@Jos.9.3"
+      },
+      {
+        "ancientId": "a571072",
+        "ancientName": "Beth-gader",
+        "tipnrId": "Beth-gader@1Ch.2.51"
+      },
+      {
+        "ancientId": "a2a8df0",
+        "ancientName": "Beth-shan",
+        "tipnrId": "Beth-shan@1Sa.31.10"
+      },
+      {
+        "ancientId": "a55cec0",
+        "ancientName": "Bethuel",
+        "tipnrId": "Bethuel@1Ch.4.30"
+      },
+      {
+        "ancientId": "a92de65",
+        "ancientName": "Bethul",
+        "tipnrId": "Bethul@Jos.19.4"
+      },
+      {
+        "ancientId": "a88310a",
+        "ancientName": "Beyond the River",
+        "tipnrId": "Beyond_the_River@Ezr.4.10"
+      },
+      {
+        "ancientId": "a031bda",
+        "ancientName": "Cana",
+        "tipnrId": "Cana@Jos.19.28"
+      },
+      {
+        "ancientId": "a329990",
+        "ancientName": "Caphtor",
+        "tipnrId": "Crete@Deu.2.23"
+      },
+      {
+        "ancientId": "a26aa94",
+        "ancientName": "Crete",
+        "tipnrId": "Crete@Deu.2.23"
+      },
+      {
+        "ancientId": "a538831",
+        "ancientName": "Cuth",
+        "tipnrId": "Cuth@2Ki.17.30"
+      },
+      {
+        "ancientId": "a30b045",
+        "ancientName": "El-bethel",
+        "tipnrId": "El-bethel@Gen.35.7"
+      },
+      {
+        "ancientId": "ad68510",
+        "ancientName": "Eshtemoa",
+        "tipnrId": "Eshtemoa@Jos.21.14"
+      },
+      {
+        "ancientId": "afed46a",
+        "ancientName": "Gadara",
+        "tipnrId": "Gadara@Mat.8.28"
+      },
+      {
+        "ancientId": "a2d3ca1",
+        "ancientName": "Geba 2",
+        "tipnrId": "Gibeon@Jos.9.3"
+      },
+      {
+        "ancientId": "ada6b64",
+        "ancientName": "Gerasa",
+        "tipnrId": "Gadara@Mat.8.28"
+      },
+      {
+        "ancientId": "af0ee3a",
+        "ancientName": "Gibbar",
+        "tipnrId": "Gibeon@Jos.9.3"
+      },
+      {
+        "ancientId": "aede336",
+        "ancientName": "Gibeon",
+        "tipnrId": "Gibeon@Jos.9.3"
+      },
+      {
+        "ancientId": "a4492a0",
+        "ancientName": "Greece",
+        "tipnrId": "Javan@Isa.66.19"
+      },
+      {
+        "ancientId": "aa9e265",
+        "ancientName": "Ituraea",
+        "tipnrId": "Ituraea@Luk.3.1"
+      },
+      {
+        "ancientId": "a9ac5f9",
+        "ancientName": "Ivvah",
+        "tipnrId": "Avva@2Ki.17.24"
+      },
+      {
+        "ancientId": "af92088",
+        "ancientName": "Jabesh-gilead",
+        "tipnrId": "Jabesh-gilead@Jdg.21.8"
+      },
+      {
+        "ancientId": "a116c5c",
+        "ancientName": "Javan",
+        "tipnrId": "Javan@Isa.66.19"
+      },
+      {
+        "ancientId": "ac2cef0",
+        "ancientName": "Kadesh-barnea",
+        "tipnrId": "Kadesh-barnea@Num.32.8"
+      },
+      {
+        "ancientId": "ac3233c",
+        "ancientName": "Kanah 2",
+        "tipnrId": "Cana@Jos.19.28"
+      },
+      {
+        "ancientId": "a4fa255",
+        "ancientName": "Kedesh 2",
+        "tipnrId": "Kadesh-barnea@Num.32.8"
+      },
+      {
+        "ancientId": "ad9df93",
+        "ancientName": "Keilah",
+        "tipnrId": "Keilah@Jos.15.44"
+      },
+      {
+        "ancientId": "a9de8b7",
+        "ancientName": "Leb-kamai",
+        "tipnrId": "Leb-kamai@Jer.51.1"
+      },
+      {
+        "ancientId": "a662bda",
+        "ancientName": "Meronoth",
+        "tipnrId": "Meronothite@1Ch.27.30"
+      },
+      {
+        "ancientId": "a0f8af9",
+        "ancientName": "Mizpah 1",
+        "tipnrId": "Ramoth-gilead@Gen.31.47"
+      },
+      {
+        "ancientId": "a694ea2",
+        "ancientName": "Mizpah 4",
+        "tipnrId": "Ramoth-gilead@Gen.31.47"
+      },
+      {
+        "ancientId": "a2a77d2",
+        "ancientName": "Neah",
+        "tipnrId": "Neiel@Jos.19.27"
+      },
+      {
+        "ancientId": "ab571de",
+        "ancientName": "Neiel",
+        "tipnrId": "Neiel@Jos.19.27"
+      },
+      {
+        "ancientId": "a8ec7ba",
+        "ancientName": "Paddan-aram",
+        "tipnrId": "Paddan-aram@Gen.25.20"
+      },
+      {
+        "ancientId": "ae67841",
+        "ancientName": "Perez-uzzah",
+        "tipnrId": "Uzzah@2Sa.6.3"
+      },
+      {
+        "ancientId": "ac71e65",
+        "ancientName": "Philistia",
+        "tipnrId": "Philistine@Gen.21.32"
+      },
+      {
+        "ancientId": "ad0520f",
+        "ancientName": "Put",
+        "tipnrId": "Put@Isa.66.19"
+      },
+      {
+        "ancientId": "a204528",
+        "ancientName": "Rakkath",
+        "tipnrId": "Tiberias@Jos.19.35"
+      },
+      {
+        "ancientId": "ad27541",
+        "ancientName": "Ramah 5",
+        "tipnrId": "Ramoth-gilead@Gen.31.47"
+      },
+      {
+        "ancientId": "a63c954",
+        "ancientName": "Ramath-mizpeh",
+        "tipnrId": "Ramoth-gilead@Gen.31.47"
+      },
+      {
+        "ancientId": "a2fe63c",
+        "ancientName": "Ramoth-gilead",
+        "tipnrId": "Ramoth-gilead@Gen.31.47"
+      },
+      {
+        "ancientId": "aab4a5f",
+        "ancientName": "Sardis",
+        "tipnrId": "Sardis@Oba.1.20"
+      },
+      {
+        "ancientId": "a562fcc",
+        "ancientName": "Sea of Galilee",
+        "tipnrId": "Galilee_Sea@Num.34.11"
+      },
+      {
+        "ancientId": "a0a98de",
+        "ancientName": "Sepharad",
+        "tipnrId": "Sardis@Oba.1.20"
+      },
+      {
+        "ancientId": "adf74d4",
+        "ancientName": "Shechem",
+        "tipnrId": "Shechem@Gen.12.6"
+      },
+      {
+        "ancientId": "ae71673",
+        "ancientName": "Shiloah",
+        "tipnrId": "Shiloah@Isa.8.6"
+      },
+      {
+        "ancientId": "af64fb3",
+        "ancientName": "Shittim",
+        "tipnrId": "Abel-shittim@Num.33.49"
+      },
+      {
+        "ancientId": "a2e3aa0",
+        "ancientName": "Tekoa",
+        "tipnrId": "Tekoa@2Sa.14.2"
+      },
+      {
+        "ancientId": "ac9adc9",
+        "ancientName": "Tiberias",
+        "tipnrId": "Tiberias@Jos.19.35"
+      },
+      {
+        "ancientId": "ad81b79",
+        "ancientName": "Topheth",
+        "tipnrId": "Hinnom_Valley@Jos.15.8"
+      },
+      {
+        "ancientId": "a939939",
+        "ancientName": "Tower of Shechem",
+        "tipnrId": "Shechem@Gen.12.6"
+      },
+      {
+        "ancientId": "a1f363e",
+        "ancientName": "Valley of Baca",
+        "tipnrId": "Hinnom_Valley@Jos.15.8"
+      },
+      {
+        "ancientId": "a8c579d",
+        "ancientName": "Valley of Gibeon",
+        "tipnrId": "Gibeon@Jos.9.3"
+      },
+      {
+        "ancientId": "a37c8e6",
+        "ancientName": "Valley of Hinnom",
+        "tipnrId": "Hinnom_Valley@Jos.15.8"
+      }
+    ],
+    "ambiguousLinks": [
+      {
+        "ancientId": "ad053dd",
+        "ancientName": "Aiath",
+        "tipnrId": "Ai@Gen.12.8",
+        "candidates": [
+          "Ai@Gen.12.8-Isa=H5857G",
+          "Ai@Jer.49.3=H5857H"
+        ]
+      },
+      {
+        "ancientId": "aa884e2",
+        "ancientName": "Aija",
+        "tipnrId": "Ai@Gen.12.8",
+        "candidates": [
+          "Ai@Gen.12.8-Isa=H5857G",
+          "Ai@Jer.49.3=H5857H"
+        ]
+      },
+      {
+        "ancientId": "af3ccdf",
+        "ancientName": "Aven",
+        "tipnrId": "Bethel@Gen.12.8",
+        "candidates": [
+          "Bethel@Gen.12.8-Zec=H1008G",
+          "Bethel@Jos.19.4-1Ch=H1008H"
+        ]
+      },
+      {
+        "ancientId": "aea5552",
+        "ancientName": "Beth-gilgal",
+        "tipnrId": "Gilgal@Deu.11.30",
+        "candidates": [
+          "Gilgal@2Ki.2.1-=H1537H",
+          "Gilgal@Deu.11.30-Mic=H1537G"
+        ]
+      },
+      {
+        "ancientId": "a859268",
+        "ancientName": "Bochim",
+        "tipnrId": "Bethel@Gen.12.8",
+        "candidates": [
+          "Bethel@Gen.12.8-Zec=H1008G",
+          "Bethel@Jos.19.4-1Ch=H1008H"
+        ]
+      },
+      {
+        "ancientId": "ae8badb",
+        "ancientName": "Dibon 3",
+        "tipnrId": "Dibon@Num.21.30",
+        "candidates": [
+          "Dibon@Neh.11.25=H1769H",
+          "Dibon@Num.21.30-Jer=H1769G"
+        ]
+      },
+      {
+        "ancientId": "ad6b2b7",
+        "ancientName": "En-tappuah",
+        "tipnrId": "Tappuah@Jos.12.17",
+        "candidates": [
+          "Tappuah@Jos.12.17-=H8599B",
+          "Tappuah@Jos.15.34=H8599G"
+        ]
+      },
+      {
+        "ancientId": "a47f86c",
+        "ancientName": "Etam 2",
+        "tipnrId": "Etam@1Ch.4.3",
+        "candidates": [
+          "Etam@2Ch.11.6=H5862I",
+          "Etam@Jdg.15.8-=H5862G"
+        ]
+      },
+      {
+        "ancientId": "a0c9a06",
+        "ancientName": "Geliloth",
+        "tipnrId": "Gilgal@Deu.11.30",
+        "candidates": [
+          "Gilgal@2Ki.2.1-=H1537H",
+          "Gilgal@Deu.11.30-Mic=H1537G"
+        ]
+      },
+      {
+        "ancientId": "a97126d",
+        "ancientName": "Gibeath-haaraloth",
+        "tipnrId": "Gilgal@Deu.11.30",
+        "candidates": [
+          "Gilgal@2Ki.2.1-=H1537H",
+          "Gilgal@Deu.11.30-Mic=H1537G"
+        ]
+      },
+      {
+        "ancientId": "ad5c4a1",
+        "ancientName": "Hezron",
+        "tipnrId": "Hazor@Jos.11.1",
+        "candidates": [
+          "Hazor@Jer.49.28-=H2674K",
+          "Hazor@Jos.11.1-2Ki=H2674G",
+          "Hazor@Jos.15.23=H2674H",
+          "Hazor@Jos.15.25=H2674I",
+          "Hazor@Neh.11.33=H2674J"
+        ]
+      },
+      {
+        "ancientId": "ad6cc26",
+        "ancientName": "Ir-shemesh",
+        "tipnrId": "Beth-shemesh@Jos.15.10",
+        "candidates": [
+          "Beth-shemesh@Jos.15.10-2Ch=H1053G",
+          "Beth-shemesh@Jos.19.22=H1053H",
+          "Beth-shemesh@Jos.19.38-Jdg=H1053I"
+        ]
+      },
+      {
+        "ancientId": "a9ea180",
+        "ancientName": "Lehem",
+        "tipnrId": "Bethlehem@Gen.35.16",
+        "candidates": [
+          "Bethlehem@Gen.35.16-Jhn=H1035G",
+          "Bethlehem@Jos.19.15=H1035H"
+        ]
+      },
+      {
+        "ancientId": "aeea26d",
+        "ancientName": "Mount Heres",
+        "tipnrId": "Beth-shemesh@Jos.15.10",
+        "candidates": [
+          "Beth-shemesh@Jos.15.10-2Ch=H1053G",
+          "Beth-shemesh@Jos.19.22=H1053H",
+          "Beth-shemesh@Jos.19.38-Jdg=H1053I"
+        ]
+      }
+    ],
+    "invalidCoordinates": [],
+    "invalidLicenses": [
+      "Abel-meholah@Jdg.7.22-1Ki=H0065: sentinel",
+      "Accad@Gen.10.10=H0390: sentinel",
+      "Adadah@Jos.15.22=H5735: sentinel",
+      "Adami-nekeb@Jos.19.33=H0129: sentinel",
+      "Adithaim@Jos.15.36=H5723: sentinel",
+      "Ahlab@Jos.19.29-Jdg=H0303: sentinel",
+      "Ai@Jer.49.3=H5857H: sentinel",
+      "Ain@Num.34.11-Zec=H5871G: sentinel",
+      "Alemeth@Jos.21.18-1Ch=H5964G: sentinel",
+      "Alush@Num.33.13-=H0442: sentinel",
+      "Amam@Jos.15.26=H0538: sentinel",
+      "Amana@Sng.4.8=H0549G: sentinel",
+      "Ammon@Gen.19.38-Zep=H5983: GFDL",
+      "Anab@Jos.11.21-=H6024: sentinel",
+      "Anathoth@Jos.21.18-Jer=H6068G: sentinel",
+      "Aphek@Jos.12.18-1Sa=H0663G: sentinel",
+      "Arab@Jos.15.52=H0694: sentinel",
+      "Ararat@Gen.8.4-Jer=H0780: GFDL",
+      "Aroer@1Sa.30.28=H6177I: sentinel",
+      "Aroer@Num.32.34-Isa=H6177G: sentinel",
+      "Arpad@2Ki.18.34-Jer=H0774: sentinel",
+      "Arumah@Jdg.9.41-2Ki=H0725: sentinel",
+      "Ashan@Jos.15.42-1Ch=H6228: sentinel",
+      "Ashtaroth@Deu.1.4-1Ch=H6252H: sentinel",
+      "Ashteroth-karnaim@Gen.14.5-Amo=H6255: sentinel",
+      "Ataroth-addar@Jos.16.5-=H5853: sentinel",
+      "Ataroth@Num.32.3-=H5852G: sentinel",
+      "Athach@1Sa.30.30=H6269: sentinel",
+      "Atroth-shophan@Num.32.35=H5855: sentinel",
+      "Avith@Gen.36.35-1Ch=H5762: sentinel",
+      "Azmon@Num.34.4-Jos=H6111: sentinel",
+      "Aznoth-tabor@Jos.19.34=H0243: sentinel",
+      "Baal-meon@Num.32.3-Ezk=H1186: sentinel",
+      "Baal-perazim@2Sa.5.20-1Ch=H1188: sentinel",
+      "Baal-shalishah@2Ki.4.42=H1190: sentinel",
+      "Baalah@Jos.15.29=H1173H: sentinel",
+      "Bahurim@2Sa.3.16-1Ch=H0980: sentinel",
+      "Balah@Jos.19.3=H1088: sentinel",
+      "Bamoth-baal@Num.21.28-Jos=H1120H: sentinel",
+      "Bamoth@Num.21.19-=H1120G: sentinel",
+      "Bashan@Num.21.33-Zec=H1316: sentinel",
+      "Beer-elim@Isa.15.8=H0879: sentinel",
+      "Beer-lahai-roi@Gen.16.14-=H0883: sentinel",
+      "Beer@Num.21.16=H0876G: sentinel",
+      "Beersheba@Gen.21.14-Amo=H0884: GFDL",
+      "Berothah@2Sa.8.8-Ezk=H1268A: sentinel",
+      "Beth-anath@Jos.19.38-Jdg=H1043: sentinel",
+      "Beth-anoth@Jos.15.59=H1042: sentinel",
+      "Beth-arabah@Jos.15.6-1Ch=H1026: sentinel",
+      "Beth-aven@Jos.7.2-Hos=H1007: sentinel",
+      "Beth-biri@1Ch.4.31=H1011: sentinel",
+      "Beth-dagon@Jos.15.41=H1016G: sentinel",
+      "Beth-dagon@Jos.19.27=H1016H: sentinel",
+      "Beth-eden@Amo.1.5=H1040: GFDL",
+      "Beth-eked@2Ki.10.12-=H1044: sentinel",
+      "Beth-emek@Jos.19.27=H1025: sentinel",
+      "Beth-gamul@Jer.48.23=H1014: sentinel",
+      "Beth-haram@Num.32.36-Jos=H1027: sentinel",
+      "Beth-jeshimoth@Num.33.49-Ezk=H1020: sentinel",
+      "Beth-lebaoth@Jos.19.6=H1034: sentinel",
+      "Beth-nimrah@Num.32.36-Jos=H1039: sentinel",
+      "Beth-pazzez@Jos.19.21=H1048: sentinel",
+      "Beth-pelet@Jos.15.27-Neh=H1046: sentinel",
+      "Beth-shemesh@Jos.19.22=H1053H: sentinel",
+      "Beth-shemesh@Jos.19.38-Jdg=H1053I: sentinel",
+      "Beth-shittah@Jdg.7.22=H1029: sentinel",
+      "Bethel@Jos.19.4-1Ch=H1008H: sentinel",
+      "Bethlehem@Jos.19.15=H1035H: GPL",
+      "Bethphage@Mat.21.1-Luk=G0967: GFDL",
+      "Betonim@Jos.13.26=H0993: sentinel",
+      "Bezek@1Sa.11.8=H0966H: sentinel",
+      "Bezek@Jdg.1.4-=H0966G: sentinel",
+      "Bezer@Deu.4.43-Jer=H1221G: sentinel",
+      "Bilhah@1Ch.4.29=H1090B: sentinel",
+      "Bor-ashan@1Sa.30.30=H3565: sentinel",
+      "Bozez@1Sa.14.4=H0949: sentinel",
+      "Bozrah@Gen.36.33-Amo=H1224G: GFDL",
+      "Chephar-ammoni@Jos.18.24=H3723G: sentinel",
+      "Chephirah@Jos.9.17-Neh=H3716: sentinel",
+      "Chesalon@Jos.15.10=H3693: sentinel",
+      "Chesil@Jos.15.30=H3686: sentinel",
+      "Chesulloth@Jos.19.12-1Ch=H3694: GFDL",
+      "Chilmad@Ezk.27.23=H3638: sentinel",
+      "Chitlish@Jos.15.40=H3798: sentinel",
+      "Cnidus@Act.27.7=G2834: GFDL",
+      "Dabbesheth@Jos.19.11=H1708: sentinel",
+      "Dannah@Jos.15.49=H1837: sentinel",
+      "Diblathaim@Num.33.46-Jer=H5963: sentinel",
+      "Dimonah@Jos.15.22=H1776: sentinel",
+      "Dinhabah@Gen.36.32-1Ch=H1838: sentinel",
+      "Dizahab@Deu.1.1=H1774: sentinel",
+      "Dragon_Spring@Neh.2.13=H8577B: GFDL",
+      "Dumah@Isa.21.11=H1746H: GFDL",
+      "Dumah@Jos.15.52=H7316G: sentinel",
+      "Dura@Dan.3.1=H1757: sentinel",
+      "East@Jdg.6.3-Ezk=H6924A: GFDL",
+      "Ebez@Jos.19.20=H0077: sentinel",
+      "Ecbatana@Ezr.6.2=H0307: GFDL",
+      "Eden@2Ki.19.12-Ezk=H5729: GFDL",
+      "Eglaim@Isa.15.8=H0097: sentinel",
+      "Elealeh@Num.32.3-Jer=H0500: sentinel",
+      "Elkosh@Nam.1.1=H0512: sentinel",
+      "Elon@Jos.19.43=H0356I: sentinel",
+      "Elonbeth-hanan@1Ki.4.9=H0358: sentinel",
+      "Eltekon@Jos.15.59=H0515: sentinel",
+      "Emek-keziz@Jos.18.21=H6010J: GFDL",
+      "En-dor@Jos.17.11-Psa=H5874: sentinel",
+      "En-haddah@Jos.19.21=H5876: sentinel",
+      "En-hakkore@Jdg.15.19=H5875: sentinel",
+      "En-hazor@Jos.19.37=H5877: sentinel",
+      "En-rogel@Jos.15.7-1Ki=H5883: GFDL",
+      "En-shemesh@Jos.15.7-=H5885: sentinel",
+      "Enaim@Gen.38.14-=H5879G: sentinel",
+      "Enam@Jos.15.34=H5879H: sentinel",
+      "Eneglaim@Ezk.47.10=H5882: sentinel",
+      "Engedi@Gen.14.7-Ezk=H5872: GFDL",
+      "Ephes-dammim@1Sa.17.1-1Ch=H0658: sentinel",
+      "Esau_Mount@Oba.1.8-=H6215I: sentinel",
+      "Eshan@Jos.15.52=H0824: sentinel",
+      "Eshtaol@Jos.15.33-1Ch=H0847: sentinel",
+      "Etam@2Ch.11.6=H5862I: sentinel",
+      "Etham@Exo.13.20-Num=H0864: sentinel",
+      "Ether@Jos.15.42-=H6281: sentinel",
+      "Ezem@Jos.15.29-1Ch=H6107: sentinel",
+      "Forum_of_Appius@Act.28.15=G0675: GFDL",
+      "Gallim@1Sa.25.44-Isa=H1554: sentinel",
+      "Gath-hepher@Jos.19.13-2Ki=H1662: sentinel",
+      "Gaza@Gen.10.19-Act=H5804: sentinel",
+      "Gebim@Isa.10.31=H1374: sentinel",
+      "Gederah@Jos.15.36-1Ch=H1449: sentinel",
+      "Gederoth@Jos.15.41-2Ch=H1450: sentinel",
+      "Gederothaim@Jos.15.36=H1453: sentinel",
+      "Gethsemane@Mat.26.36-Mrk=G1068: GFDL",
+      "Gidom@Jdg.20.45=H1440: sentinel",
+      "Gittaim@2Sa.4.3-Neh=H1664: sentinel",
+      "Golan@Deu.4.43-1Ch=H1474: sentinel",
+      "Gur@2Ki.9.27=H1483: sentinel",
+      "Gurbaal@2Ch.26.7=H1485: GFDL",
+      "Hachilah@1Sa.23.19-=H2444: sentinel",
+      "Hadid@Ezr.2.33-Neh=H2307: sentinel",
+      "Hadrach@Zec.9.1=H2317: sentinel",
+      "Halah@2Ki.17.6-1Ch=H2477: sentinel",
+      "Halak_Mount@Jos.11.17-=H2510: sentinel",
+      "Hanes@Isa.30.4=H2609: GFDL",
+      "Hazar-gaddah@Jos.15.27=H2693: GFDL",
+      "Hazar-shual@Jos.15.28-Neh=H2705: GFDL",
+      "Hazor-hadattah@Jos.15.25=H2675: sentinel",
+      "Hazor@Jos.15.23=H2674H: sentinel",
+      "Hazor@Jos.15.25=H2674I: sentinel",
+      "Hazor@Neh.11.33=H2674J: sentinel",
+      "Helam@2Sa.10.16-=H2431: sentinel",
+      "Helbah@Jdg.1.31=H2462: sentinel",
+      "Heleph@Jos.19.33=H2501: sentinel",
+      "Hepher@Jos.12.17-1Ki=H2660B: sentinel",
+      "Heshmon@Jos.15.27=H2829: sentinel",
+      "Hethlon@Ezk.47.15-=H2855: sentinel",
+      "Hierapolis@Col.4.13=G2404: GFDL",
+      "Hobah@Gen.14.15=H2327: sentinel",
+      "Holon@Jos.15.51-1Ch=H2473G: sentinel",
+      "Horem@Jos.19.38=H2765: sentinel",
+      "Horesh@1Sa.23.15-=H2793G: sentinel",
+      "Hukkok@Jos.19.34=H2712A: sentinel",
+      "Ibleam@Jos.17.11-1Ch=H2991: sentinel",
+      "Idalah@Jos.19.15=H3030: sentinel",
+      "Iim@Jos.15.29=H5864H: sentinel",
+      "Ijon@2Sa.24.6-2Ch=H5859: sentinel",
+      "Ithnan@Jos.15.23=H3497: sentinel",
+      "Jagur@Jos.15.21=H3017: sentinel",
+      "Jahaz@Num.21.23-Jer=H3096: sentinel",
+      "Janoah@2Ki.15.29=H3239A: sentinel",
+      "Janoah@Jos.16.6-=H3239B: sentinel",
+      "Jazer_Sea@Jer.48.32=H3270H: sentinel",
+      "Jazer@Num.21.32-Jer=H3270G: sentinel",
+      "Jeshimon@1Sa.23.19-=H3452G: sentinel",
+      "Jeshua@Neh.11.26=H3442M: sentinel",
+      "Jogbehah@Num.32.35-Jdg=H3011: sentinel",
+      "Jokdeam@Jos.15.56=H3347: sentinel",
+      "Kain@Num.24.22-Jos=H7014A: sentinel",
+      "Kamon@Jdg.10.5=H7056: sentinel",
+      "Karkor@Jdg.8.10=H7174: sentinel",
+      "Kartan@Jos.21.32=H7178: sentinel",
+      "Kedemoth@Deu.2.26-1Ch=H6932: sentinel",
+      "Kehelathah@Num.33.22-=H6954: sentinel",
+      "Kerioth-hezron@Jos.15.25=H7152G: sentinel",
+      "Kibroth-hattaavah@Num.11.34-Deu=H6914: sentinel",
+      "Kiriathaim@1Ch.6.76=H7156I: sentinel",
+      "Kishion@Jos.19.20-1Ch=H7191: sentinel",
+      "Kitron@Jos.19.15-Jdg=H7003: sentinel",
+      "Laban@Deu.1.1=H3837B: sentinel",
+      "Lahmam@Jos.15.40=H3903: sentinel",
+      "Lakkum@Jos.19.33=H3946: sentinel",
+      "Lebaoth@Jos.15.32=H3822: sentinel",
+      "Lehi@Jdg.15.9-2Sa=H3896: sentinel",
+      "Libnah@Num.33.20-=H3841G: sentinel",
+      "Luhith@Isa.15.5-Jer=H3872: sentinel",
+      "Luz@Jdg.1.26=H3870G: sentinel",
+      "Maarath@Jos.15.59=H4638: sentinel",
+      "Machpelah@Gen.23.9-=H4375: GFDL",
+      "Madmannah@Jos.15.31-1Ch=H4089G: sentinel",
+      "Madmen@Jer.48.2=H4086: sentinel",
+      "Madmenah@Isa.10.31=H4088: GFDL",
+      "Madon@Jos.11.1-=H4068: sentinel",
+      "Mahaneh-dan@Jdg.13.25-=H4265: GFDL",
+      "Makaz@1Ki.4.9=H4739: sentinel",
+      "Makheloth@Num.33.25-=H4722: sentinel",
+      "Makkedah@Jos.10.10-=H4719: sentinel",
+      "Marah@Exo.15.23-Num=H4785: sentinel",
+      "Maroth@Mic.1.12=H4796: sentinel",
+      "Masrekah@Gen.36.36-1Ch=H4957: sentinel",
+      "Massah@Exo.17.7-Psa=H4532: sentinel",
+      "Mattanah@Num.21.18-=H4980: sentinel",
+      "Meconah@Neh.11.28=H4368: sentinel",
+      "Medeba@Num.21.30-Isa=H4311: GFDL",
+      "Media@2Ki.17.6-Act=H4074H: GFDL",
+      "Meribah@Exo.17.7-Psa=H4809G: sentinel",
+      "Merom@Jos.11.5-=H4792: sentinel",
+      "Michmethath@Jos.16.6-=H4366: sentinel",
+      "Middin@Jos.15.61=H4081: sentinel",
+      "Migdal-el@Jos.19.38=H4027: sentinel",
+      "Migdal-gad@Jos.15.37=H4028: sentinel",
+      "Migdol@Exo.14.2-Ezk=H4024B: sentinel",
+      "Migron@1Sa.14.2-Isa=H4051: sentinel",
+      "Minnith@Jdg.11.33-Ezk=H4511: sentinel",
+      "Mithkah@Num.33.28-=H4989: sentinel",
+      "Moladah@Jos.15.26-Neh=H4137: sentinel",
+      "Naaran@Jos.16.7-1Ch=H5295: sentinel",
+      "Nahalol@Jos.19.15-Jdg=H5096: sentinel",
+      "Negeb@Gen.12.9-Zec=H5045G: GFDL",
+      "Netophah@2Sa.23.28-Jer=H5199: sentinel",
+      "Nezib@Jos.15.43=H5334: sentinel",
+      "Nibshan@Jos.15.62=H5044: sentinel",
+      "Nob@1Sa.21.1-Isa=H5011: GFDL",
+      "Ophir@1Ki.9.28-Isa=H0211H: GFDL",
+      "Ophrah@Jos.19.19-Jdg=H6084H: GFDL",
+      "Parah@Jos.18.23=H6511: sentinel",
+      "Parvaim@2Ch.3.6=H6516: sentinel",
+      "Persia@2Ch.36.20-Dan=H6539: GFDL",
+      "Pethor@Num.22.5-Deu=H6604: GFDL",
+      "Pi-hahiroth@Exo.14.2-Num=H6367: sentinel",
+      "Pontus@Act.2.9-1Pe=G4195: GFDL",
+      "Ramah@Jos.19.36=H7414I: sentinel",
+      "Ramath-lehi@Jdg.15.17=H7437: sentinel",
+      "Rehob@Jos.19.28=H7340G: sentinel",
+      "Rehoboth@Gen.36.37-1Ch=H7344H: sentinel",
+      "Rekem@Jos.18.27=H7552H: sentinel",
+      "Rephaim_Valley@Jos.15.8-Isa=H7497G: GFDL",
+      "Rephidim@Exo.17.1-Num=H7508: sentinel",
+      "Resen@Gen.10.12=H7449: sentinel",
+      "Rhodes@Act.21.1=G4499: GFDL",
+      "Riblah@2Ki.23.33-Ezk=H7247H: sentinel",
+      "Rimmon-perez@Num.33.19-=H7428: sentinel",
+      "Rimmon@Jdg.20.45-=H7417C: sentinel",
+      "Rissah@Num.33.21-=H7446: sentinel",
+      "Rithmah@Num.33.18-=H7575: sentinel",
+      "Rogelim@2Sa.17.27-=H7274: sentinel",
+      "Sansannah@Jos.15.31=H5578: sentinel",
+      "Secacah@Jos.15.61=H5527: sentinel",
+      "Senaah@Ezr.2.35-Neh=H5570G: sentinel",
+      "Seneh@1Sa.14.4=H5573: sentinel",
+      "Shaaraim@Jos.15.36-1Sa=H8189G: sentinel",
+      "Shahazumah@Jos.19.22=H7831: sentinel",
+      "Shamir@Jos.15.48=H8069G: sentinel",
+      "Shema@Jos.15.26=H8090: GFDL",
+      "Shikkeron@Jos.15.11=H7942: sentinel",
+      "Shion@Jos.19.19=H7866: sentinel",
+      "Shur@Gen.16.7-1Sa=H7793: sentinel",
+      "Sidon@Gen.10.19-Act=H6721H: sentinel",
+      "Sirah@2Sa.3.26=H5626: sentinel",
+      "Sitnah@Gen.26.21=H7856: sentinel",
+      "Socoh@Jos.15.48=H7755H: sentinel",
+      "Sorek_Valley@Jdg.16.4=H7796: GFDL",
+      "Straight@Act.9.11=G2117: GFDL",
+      "Succoth@Gen.33.17-Psa=H5523G: sentinel",
+      "Suphah@Num.21.14=H5492B: sentinel",
+      "Sychar@Jhn.4.5=G4965: sentinel",
+      "Taanath-shiloh@Jos.16.6=H8387: sentinel",
+      "Tabbath@Jdg.7.22=H2888: sentinel",
+      "Taberah@Num.11.3-Deu=H8404: sentinel",
+      "Tadmor@1Ki.9.18-2Ch=H8412: GFDL",
+      "Tahath@Num.33.26-=H8480G: sentinel",
+      "Tappuah@Jos.12.17-=H8599B: sentinel",
+      "Taralah@Jos.18.27=H8634: sentinel",
+      "Telassar@2Ki.19.12-Isa=H8515: GFDL",
+      "Teman@Jer.49.7-Hab=H8487H: sentinel",
+      "Terah@Num.33.27-=H8646H: sentinel",
+      "Three_Taverns@Act.28.15=G5140: sentinel",
+      "Thyatira@Act.16.14-Rev=G2363: GFDL",
+      "Tiphsah@1Ki.4.24=H8607G: sentinel",
+      "Tiphsah@2Ki.15.16=H8607H: sentinel",
+      "Tirzah@Jos.12.24-Sng=H8656H: sentinel",
+      "Tob@Jdg.11.3-2Sa=H2897: sentinel",
+      "Tochen@1Ch.4.32=H8507: sentinel",
+      "Tower_of_Eder@Gen.35.21-Mic=H4029: GFDL",
+      "Troas@Act.16.8-2Ti=G5174: GFDL",
+      "Ulai@Dan.8.2-=H0195: sentinel",
+      "Uphaz@Jer.10.9-Dan=H0210: GFDL",
+      "Uz@Job.1.1-Lam=H5780J: GFDL",
+      "Waheb@Num.21.14=H2052: sentinel",
+      "Washer's_Field@2Ki.18.17-Isa=H3526G: GFDL",
+      "Wildgoats_Rocks@1Sa.24.2=H3277G: GFDL",
+      "Yiron@Jos.19.38=H3375: sentinel",
+      "Zalmonah@Num.33.41-=H6758: sentinel",
+      "Zarephath@1Ki.17.9-Luk=H6886: sentinel",
+      "Zedad@Num.34.8-Ezk=H6657: sentinel",
+      "Zemaraim@Jos.18.22-2Ch=H6787: sentinel",
+      "Zephath@Num.14.45-1Ch=H6857: sentinel",
+      "Zeredah@1Ki.11.26=H6868G: sentinel",
+      "Ziph@Jos.15.24=H2128G: sentinel",
+      "Ziphron@Num.34.9=H2202: sentinel",
+      "Zophim@Num.23.14=H6839: sentinel"
+    ]
+  },
+  "normalizedSha256": "16e9d45a29d83dc291b6c74592cc2124c2f74343750bbdbe3c5f924e0a062561",
+  "tipnrReferenceSync": {
+    "tipnrFormatVersion": 3,
+    "tipnrSourceSha256": "1a3b7d7df5cfa1e96eefa07dec92900bea278370c6788fadb5d036f3223b637c",
+    "placeCount": 907
+  }
+}

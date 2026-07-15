@@ -125,6 +125,8 @@ const api = {
       ipcRenderer.invoke("language-entities-for-range", { book, chapter, startVerse, endVerse }),
     searchEntities: (query: string, limit?: number) =>
       ipcRenderer.invoke("language-search-entities", { query, limit }),
+    getEntityResearch: (entityId: string) =>
+      ipcRenderer.invoke("language-entity-research", entityId),
     hasReverseIndex: (readingPackageId: string) =>
       ipcRenderer.invoke("language-has-reverse-index", readingPackageId),
     getLemmaInBook: (packageId: string, book: string, lemma: string) =>

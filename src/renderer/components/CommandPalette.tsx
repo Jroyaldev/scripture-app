@@ -40,6 +40,7 @@ interface Props {
   actions: CommandPaletteAction[];
   onNavigate: (book: string, chapter: number, verse?: number, endVerse?: number) => void;
   onOpenNote: (noteId: string) => void;
+  onOpenEntity: (entityId: string) => void;
   onSearchNotes: (query: string) => void;
   onRunAction: (id: string) => void;
 }
@@ -130,21 +131,6 @@ function displayBook(bookNames: BookNameData, book: string): string {
   return bookNames[book]?.[0] ?? book;
 }
 
-function parseEntityRef(value: string | undefined): { book: string; chapter: number; verse: number } | null {
-  const match = /^([1-3A-Z]{3})\.(\d+)\.(\d+)$/.exec(value ?? "");
-  if (!match) return null;
-  return { book: match[1]!, chapter: Number(match[2]), verse: Number(match[3]) };
-}
-
-function bestEntityRef(entity: LanguageNameEntity, context: CommandReadingContext) {
-  const refs = entity.refs.map(parseEntityRef).filter((ref): ref is NonNullable<ReturnType<typeof parseEntityRef>> => ref != null);
-  return refs.find((ref) => ref.book === context.book && ref.chapter === context.chapter)
-    ?? refs.find((ref) => ref.book === context.book)
-    ?? parseEntityRef(entity.firstRef)
-    ?? refs[0]
-    ?? null;
-}
-
 function matchesAction(action: CommandPaletteAction, query: string): boolean {
   const terms = query.toLocaleLowerCase().split(/\s+/).filter(Boolean);
   const haystack = `${action.title} ${action.detail} ${action.keywords.join(" ")}`.toLocaleLowerCase();
@@ -161,6 +147,7 @@ export function CommandPalette({
   actions,
   onNavigate,
   onOpenNote,
+  onOpenEntity,
   onSearchNotes,
   onRunAction,
 }: Props): React.JSX.Element | null {
@@ -177,6 +164,10 @@ export function CommandPalette({
   const returnFocusRef = useRef<HTMLElement | null>(null);
 
   const closeAnd = useCallback((work: () => void) => {
+    // Activating a result transfers focus ownership to its destination
+    // (Scripture selection, note workspace, or entity research). Only a
+    // dismissed palette should restore the invoking control.
+    returnFocusRef.current = null;
     onClose();
     work();
   }, [onClose]);
@@ -315,19 +306,15 @@ export function CommandPalette({
   })), [closeAnd, data.notes, onOpenNote]);
 
   const entityResults = useMemo<PaletteResult[]>(() => data.entities.map(({ entity }) => {
-    const destination = bestEntityRef(entity, context);
     return {
       id: `entity:${entity.id}`,
       kind: entity.kind === "place" ? "place" : "person",
       title: displayEntityName(entity.displayName),
       detail: cleanExcerpt(entity.brief || entity.short || "Indexed biblical name"),
-      meta: `${entity.refCount} ${entity.refCount === 1 ? "passage" : "passages"}`,
-      activate: () => {
-        if (!destination) return;
-        closeAnd(() => onNavigate(destination.book, destination.chapter, destination.verse));
-      },
+      meta: `${entity.kind === "place" ? "Place" : "Person"} · ${entity.refCount}`,
+      activate: () => closeAnd(() => onOpenEntity(entity.id)),
     } satisfies PaletteResult;
-  }), [closeAnd, context, data.entities, onNavigate]);
+  }), [closeAnd, data.entities, onOpenEntity]);
 
   const actionResults = useMemo<PaletteResult[]>(() => actions
     .filter((action) => !query.trim() || matchesAction(action, query))

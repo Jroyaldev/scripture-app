@@ -3,6 +3,25 @@
  * Data: STEPBible TIPNR CC BY 4.0 → tipnr-index.json
  */
 
+export type TipnrTranslation = "ESV" | "KJV" | "NIV" | "LXX";
+
+/** A source row whose English form differs by translation. */
+export type TipnrTranslationVariant = {
+  significance: string;
+  form: string;
+  translations: TipnrTranslation[];
+  refs: string[];
+};
+
+/** Historical edition paratext retained outside the canonical verse index. */
+export type TipnrParatextReference = {
+  ref: string;
+  source: "KJV epistle subscription";
+  translations: ["KJV"];
+  forms: string[];
+  strongs: string[];
+};
+
 export type TipnrEntity = {
   id: string;
   kind: "person" | "place" | "other";
@@ -14,22 +33,37 @@ export type TipnrEntity = {
   /** All Strong keys for this individual (Hebrew + Greek forms). */
   strongs?: string[];
   firstRef?: string;
+  /** Canonical verse references used by normal Scripture presentation. */
   refs: string[];
   refCount: number;
+  /** Unique canonical + translation/paratext coordinates in the source. */
+  sourceRefCount?: number;
+  /** Translation-aware source forms, retained without changing canonical refs. */
+  translationVariants?: TipnrTranslationVariant[];
+  /** Edition paratext, deliberately excluded from `refs` and `byRef`. */
+  paratextRefs?: TipnrParatextReference[];
   gender?: string;
 };
 
 export type TipnrIndexFile = {
-  version: 1 | 2;
+  version: 1 | 2 | 3;
   source: string;
   license: string;
   generatedAt: string;
+  sourceSha256?: string;
+  referenceModel?: {
+    canonical: "refs + byRef";
+    translationVariants: "translationVariants";
+    editionParatext: "paratextRefs + byParatextRef";
+    kjvSubscriptionCoordinates: readonly string[];
+  };
   entityCount: number;
   personCount?: number;
   placeCount?: number;
   otherCount?: number;
   entities: Record<string, TipnrEntity>;
   byRef: Record<string, string[]>;
+  byParatextRef?: Record<string, string[]>;
   byBaseStrong: Record<string, string[]>;
 };
 

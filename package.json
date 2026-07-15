@@ -47,6 +47,7 @@
     "build:reverse-index": "node --import tsx scripts/build-reverse-index.ts",
     "build:hebrew-orbit": "node --import tsx scripts/build-hebrew-orbit-index.ts",
     "import:openbible-crossrefs": "node --import tsx scripts/import-openbible-cross-references.ts",
+    "import:openbible-places": "node --import tsx scripts/import-openbible-places.ts",
     "qa:sidebar": "node scripts/qa-sidebar-tour.mjs",
     "qa:topbar": "node scripts/qa-topbar-tour.mjs",
     "qa:canvas": "node scripts/qa-reading-canvas-tour.mjs",
@@ -56,6 +57,7 @@
     "qa:setup": "node scripts/qa-setup-tour.mjs",
     "qa:notebook": "node scripts/qa-note-workspace-tour.mjs",
     "qa:command": "node scripts/qa-command-palette-tour.mjs",
+    "qa:entities": "node scripts/qa-entity-research-tour.mjs",
     "qa:desktop": "node scripts/qa-desktop-regression.mjs"
   },
   "main": "dist/electron/main.cjs",

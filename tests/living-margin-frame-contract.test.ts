@@ -65,6 +65,16 @@ test("translation changes preserve canonical verse selection and the reading anc
   assert.match(page, /el\?\.closest\("\.living-margin, \.version-picker-group, \.version-picker-popover"\)/);
 });
 
+test("reference navigation brings the selected verse to the reading eye-line after render", () => {
+  assert.match(page, /interface ReferenceViewportTarget/);
+  assert.match(page, /loadedChapterKeyRef\.current = loadKey/);
+  assert.match(page, /setReferenceViewportTarget\(verse == null/);
+  assert.match(page, /if \(loadedChapterKeyRef\.current !== `\$\{packageId\}:\$\{book\}:\$\{chapter\}`\) return/);
+  assert.match(page, /const readingEyeLine = rootRect\.height \* 0\.28/);
+  assert.match(page, /root\.scrollTop = Math\.max\(0, root\.scrollTop \+ rowRect\.top - rootRect\.top - readingEyeLine\)/);
+  assert.match(page, /Focus[\s\S]*stays on the invoking reference in the Living Margin/);
+});
+
 test("Overview surfaces only grounded Scripture, library, and TIPNR entity leads", () => {
   assert.match(margin, /function IntentOverview/);
   assert.match(margin, /crossRefs\?\.items\.slice\(0, 2\)/);

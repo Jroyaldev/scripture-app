@@ -4,6 +4,8 @@ import { join, resolve } from "node:path";
 import type { BackboneData } from "../src/core/reference/types.js";
 import { loadOpenBibleCrossReferences } from "../src/host/cross-reference-loader.js";
 import { parseCrossReferenceKey } from "../src/core/cross-references/index.js";
+import type { TipnrIndexFile } from "../src/core/language/tipnr.js";
+import { KJV_EPISTLE_SUBSCRIPTION_REFS } from "../src/core/language/tipnr-subscriptions.js";
 
 type ChapterData = {
   verses: Array<{ verse: number; text: string }>;
@@ -159,6 +161,73 @@ for (const syntaxId of ["macula-greek-nestle1904", "macula-hebrew-wlc"]) {
     `[verify:data] ${syntaxId}: ${sentencesChecked} sentences, ${leavesChecked} leaves clean`,
   );
 }
+
+// TIPNR Doctor: canonical verse references, translation-specific forms, and
+// historical KJV subscription paratext are deliberately separate indexes.
+const tipnrDirectory = join(dataDir, "names");
+const tipnrSourcePath = join(tipnrDirectory, "TIPNR-STEPBible-CC-BY.txt");
+const tipnrIndexPath = join(tipnrDirectory, "tipnr-index.json");
+const tipnrDoctorPath = join(tipnrDirectory, "tipnr-doctor-report.json");
+if (!existsSync(tipnrSourcePath) || !existsSync(tipnrIndexPath) || !existsSync(tipnrDoctorPath)) {
+  fail("TIPNR source, index, or Doctor report is missing");
+}
+const tipnrRawIndex = readFileSync(tipnrIndexPath, "utf8");
+const tipnrIndex = JSON.parse(tipnrRawIndex) as TipnrIndexFile;
+const tipnrDoctor = JSON.parse(readFileSync(tipnrDoctorPath, "utf8")) as {
+  status: string;
+  source: { license: string; snapshotDate: string; rawSha256: string };
+  coverage: {
+    structuredRowsWithReferences: number;
+    structuredRowsParsed: number;
+    translationRowsPreserved: number;
+    paratextReferenceEdges: number;
+    subscriptionCoordinateCount: number;
+  };
+  checks: Record<string, boolean>;
+  subscriptions: {
+    coordinates: string[];
+    detectedInAkjv: string[];
+    normalEdgesWithoutCanonicalEvidence: string[];
+  };
+  artifact: { formatVersion: number; normalizedSha256: string };
+};
+if (tipnrDoctor.status !== "healthy" || Object.values(tipnrDoctor.checks).some((value) => !value)) {
+  fail("TIPNR Doctor report is not healthy");
+}
+if (
+  tipnrIndex.version !== 3
+  || tipnrDoctor.artifact.formatVersion !== 3
+  || tipnrDoctor.source.license !== "CC BY 4.0"
+  || !/^\d{4}-\d{2}-\d{2}$/.test(tipnrDoctor.source.snapshotDate)
+  || tipnrDoctor.coverage.structuredRowsParsed !== tipnrDoctor.coverage.structuredRowsWithReferences
+  || tipnrDoctor.coverage.structuredRowsParsed < 5_800
+  || tipnrDoctor.coverage.translationRowsPreserved < 1_400
+  || tipnrDoctor.coverage.paratextReferenceEdges !== 50
+  || tipnrDoctor.coverage.subscriptionCoordinateCount !== 14
+  || tipnrDoctor.subscriptions.normalEdgesWithoutCanonicalEvidence.length !== 0
+  || JSON.stringify(tipnrDoctor.subscriptions.coordinates) !== JSON.stringify(KJV_EPISTLE_SUBSCRIPTION_REFS)
+  || JSON.stringify(tipnrDoctor.subscriptions.detectedInAkjv) !== JSON.stringify(KJV_EPISTLE_SUBSCRIPTION_REFS)
+) {
+  fail("TIPNR coverage/provenance metadata is incomplete");
+}
+if (
+  createHash("sha256").update(tipnrRawIndex).digest("hex") !== tipnrDoctor.artifact.normalizedSha256
+  || createHash("sha256").update(readFileSync(tipnrSourcePath)).digest("hex") !== tipnrDoctor.source.rawSha256
+) {
+  fail("TIPNR source or normalized artifact checksum does not match Doctor");
+}
+for (const ref of KJV_EPISTLE_SUBSCRIPTION_REFS) {
+  const paratextIds = tipnrIndex.byParatextRef?.[ref] ?? [];
+  if (paratextIds.length === 0) fail(`TIPNR subscription coordinate has no retained paratext: ${ref}`);
+  for (const id of paratextIds) {
+    if (tipnrIndex.byRef[ref]?.includes(id)) {
+      fail(`TIPNR subscription paratext leaked into canonical byRef: ${id} at ${ref}`);
+    }
+  }
+}
+console.error(
+  `[verify:data] TIPNR: ${tipnrIndex.entityCount} entities, ${tipnrDoctor.coverage.structuredRowsParsed} structured rows, 14 KJV subscription coordinates clean`,
+);
 
 // OpenBible reference graph Doctor: verify the committed artifact rather than
 // trusting importer prose. The raw ZIP stays external (INV-13), while every

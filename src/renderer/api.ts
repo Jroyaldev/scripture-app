@@ -1,4 +1,6 @@
 import type { AppTheme } from "./theme.js";
+import type { EntityResearchData } from "../core/entities/place-research.js";
+export type { EntityResearchData } from "../core/entities/place-research.js";
 
 /**
  * Type-safe wrapper for the contextBridge API exposed by preload.
@@ -69,6 +71,7 @@ declare global {
           endVerse: number,
         ): Promise<LanguageEntityRangeResult>;
         searchEntities(query: string, limit?: number): Promise<LanguageEntitySearchResult>;
+        getEntityResearch(entityId: string): Promise<EntityResearchData | null>;
         hasReverseIndex(readingPackageId: string): Promise<boolean>;
         getLemmaInBook(packageId: string, book: string, lemma: string): Promise<LanguageToken[] | null>;
         getVerseMarks(packageId: string, book: string, chapter: number, verse: number): Promise<LanguageTokenMark[] | null>;

@@ -66,6 +66,7 @@ import {
   type ScriptureSearchDocument,
 } from "../core/search/scripture-search.js";
 import { toFts5PlainQuery } from "../core/search/note-search-query.js";
+import { PlaceResearchLoader } from "../host/place-research-loader.js";
 
 const DATA_DIR = resolve(__dirname, "../../data/scripture");
 const CROSS_REF_DIR = resolve(__dirname, "../../data/cross-references");
@@ -134,6 +135,8 @@ let tokenPackages: TokenPackageLoader | null = null;
 let reverseIndexes: ReverseIndexLoader | null = null;
 /** MACULA syntax trees (syntax art). */
 let syntaxTrees: SyntaxTreeLoader | null = null;
+/** OpenBible/TIPNR biblical-place research and Natural Earth minimaps. */
+let placeResearch: PlaceResearchLoader | null = null;
 
 type ScriptureChapterFile = {
   verses: Array<{ verse: number; text: string }>;
@@ -493,6 +496,16 @@ function initializeEngine(libraryPathArg?: string, autoCreateIfMissing: boolean 
   loadStepMorphTablesOnce();
   loadTipnrIndexOnce();
   loadHebrewOrbitIndexOnce();
+  if (!placeResearch) placeResearch = new PlaceResearchLoader();
+  if (!placeResearch.loaded) {
+    try {
+      const count = placeResearch.load(join(DATA_DIR, "places"));
+      if (count > 0) console.log(`OpenBible place research: ${count} TIPNR identities`);
+      else console.warn("OpenBible place research artifact is missing");
+    } catch (err) {
+      console.warn("OpenBible place research not loaded:", err);
+    }
+  }
 
   const pkgRoots = languagePackageRoots(libraryPath);
   if (!reverseIndexes) {
@@ -893,6 +906,20 @@ function registerIpcHandlers(): void {
       return {
         entities: index.search(opts.query, opts.limit),
         attribution: { name: index.source, license: index.license },
+      };
+    },
+  );
+
+  ipcMain.handle(
+    "language-entity-research",
+    (_event, entityId: string) => {
+      const entity = getSharedTipnrIndex().get(entityId);
+      if (!entity) return null;
+      return placeResearch?.research(entity) ?? {
+        entity,
+        place: null,
+        minimap: null,
+        imageDataUrl: null,
       };
     },
   );

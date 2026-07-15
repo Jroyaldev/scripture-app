@@ -50,6 +50,13 @@ interface TranslationViewport {
   scrollTop: number;
 }
 
+interface ReferenceViewportTarget {
+  book: string;
+  chapter: number;
+  verse: number;
+  requestId: number;
+}
+
 interface Props {
   backbone: BackboneData;
   bookNames: BookNameData;
@@ -78,6 +85,13 @@ interface Props {
   onReadingPrefsChange?: (partial: Partial<ReadingPrefs>) => void;
   focusMode?: boolean;
   onToggleFocus?: () => void;
+  entityIntent?: {
+    id: string;
+    nonce: number;
+    origin: { book: string; chapter: number; packageId: string; verseStart?: number; verseEnd?: number };
+  } | null;
+  onOpenEntity?: (entityId: string) => void;
+  onCloseEntity?: () => void;
 }
 
 const OT_BOOKS = [
@@ -277,6 +291,9 @@ export function ScripturePage({
   onReadingPrefsChange,
   focusMode = false,
   onToggleFocus,
+  entityIntent,
+  onOpenEntity,
+  onCloseEntity,
 }: Props): React.JSX.Element {
   // Selection notes use the in-place NoteCapture slide-over (stay on Read).
   // Parent still supplies onCreateNote for a future “open full Write” path.
@@ -357,6 +374,9 @@ export function ScripturePage({
 
   const contentRef = useRef<HTMLDivElement>(null);
   const pendingTranslationViewportRef = useRef<TranslationViewport | null>(null);
+  const [referenceViewportTarget, setReferenceViewportTarget] = useState<ReferenceViewportTarget | null>(null);
+  const referenceViewportRequestRef = useRef(0);
+  const loadedChapterKeyRef = useRef<string | null>(null);
   const lastLoadedChapterVerseTextRef = useRef<{
     book: string;
     chapter: number;
@@ -502,11 +522,18 @@ export function ScripturePage({
   // Load chapter text
   useEffect(() => {
     let cancelled = false;
+    const loadKey = `${packageId}:${book}:${chapter}`;
+    loadedChapterKeyRef.current = null;
     setChapterData(null);
     setChapterError(null);
     safeCall(() => window.api.scripture.getChapterText(packageId, book, chapter)).then((res) => {
       if (cancelled) return;
-      if (res.ok) setChapterData(res.value); else setChapterError(res.error);
+      if (res.ok) {
+        loadedChapterKeyRef.current = loadKey;
+        setChapterData(res.value);
+      } else {
+        setChapterError(res.error);
+      }
     });
     return () => { cancelled = true; };
   }, [book, chapter, packageId, retryToken]);
@@ -531,6 +558,31 @@ export function ScripturePage({
     pendingTranslationViewportRef.current = null;
     setScrolled(root.scrollTop > 0);
   }, [chapterData, packageId]);
+
+  // A verse reference is both a canonical selection and a reading-location
+  // request. Selection can be committed before a new chapter's text exists,
+  // so wait for the exact requested chapter to render, then place its first
+  // selected verse near the same 28% eye-line used by ambient reading. This
+  // also handles a reference within the chapter already on screen. Focus
+  // deliberately stays on the invoking reference in the Living Margin.
+  useLayoutEffect(() => {
+    const target = referenceViewportTarget;
+    const root = contentRef.current;
+    if (!target || !root || !chapterData) return;
+    if (target.book !== book || target.chapter !== chapter) return;
+    if (loadedChapterKeyRef.current !== `${packageId}:${book}:${chapter}`) return;
+
+    const row = verseRowRefs.current.get(target.verse);
+    if (!row) return;
+    const rootRect = root.getBoundingClientRect();
+    const rowRect = row.getBoundingClientRect();
+    const readingEyeLine = rootRect.height * 0.28;
+    root.scrollTop = Math.max(0, root.scrollTop + rowRect.top - rootRect.top - readingEyeLine);
+    setScrolled(root.scrollTop > 0);
+    setReferenceViewportTarget((current) => (
+      current?.requestId === target.requestId ? null : current
+    ));
+  }, [book, chapter, chapterData, packageId, referenceViewportTarget]);
 
   // Phase 1: Load deterministic margin data (fast)
   useEffect(() => {
@@ -693,6 +745,14 @@ export function ScripturePage({
       userNavigatedRef.current = true;
       pendingVerseSelectRef.current = verse ?? null;
       pendingVerseEndRef.current = opts?.rangeEnd ?? null;
+      setReferenceViewportTarget(verse == null
+        ? null
+        : {
+            book: b,
+            chapter: c,
+            verse,
+            requestId: ++referenceViewportRequestRef.current,
+          });
       setBook(b);
       setChapter(c);
       if (b === book && c === chapter) {
@@ -2241,6 +2301,9 @@ export function ScripturePage({
           onStudyVerse={handleStudyVerse}
           onMarginActiveChange={handleMarginActiveChange}
           onClearSelection={handleClearMarginSelection}
+          entityIntent={entityIntent}
+          onOpenEntity={onOpenEntity}
+          onCloseEntity={onCloseEntity}
         />
       )}
       </div>
