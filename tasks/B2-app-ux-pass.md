@@ -4,6 +4,22 @@
 > **Predecessors:** A0 (snapshot), A1 (native build), B1 (scripture data).
 > **Contracts:** §4.2 (event fold), §4.4 (SQLite materialized view), §4.6 (note format), INV-7 (append-only), INV-9 (safe to rebuild).
 
+## Progress — 2026-07-15 (Living Margin frame)
+
+The fifth bounded desktop visual-system pass is complete. It turns the right rail into one calm, stateful study companion while preserving the proven language, cross-reference, senses, and Structure visualizers:
+
+- **One persistent frame:** a sticky `Study` heading and truthful `Chapter | In view | Selected` label make the panel's context legible without adding a dashboard card or colored edge.
+- **A real chapter overview:** the top of the reading canvas now keeps chapter context visible. Moving into Scripture follows the reading eye-line; returning to the top restores the overview. Scroll handling releases old language-study locks and self-corrects stale pointer state instead of freezing on an earlier verse.
+- **A finishable selection flow:** selected passages expose one quiet `Done` action, five familiar highlight swatches, and note capture. `Done` clears the passage and restores keyboard focus to the persistent frame heading.
+- **Progressive reading context:** long multi-verse quotations collapse to four lines with a deliberate full-selection toggle. Secondary related notes, themes, and grounded claims live under one collapsed `More from your notes` disclosure rather than forming a permanent card parade.
+- **Truthful evidence scope:** selected-passage insight never falls back to chapter-wide semantic results while its scoped retrieval is loading. OpenBible connections keep their own source/license and range scope; note-derived insight and connections remain explicitly attributed to the local library.
+- **Quieter material language:** section rhythm, headings, note surfaces, counts, loading, highlight tools, empty states, and disclosures use hairlines, warm type, and restrained gold interaction cues across Paper, Ink, Glass, and Candlelight.
+- **Repeatable interaction QA:** `npm run qa:margin -- --leave=light --leave-package=kjv --leave-passage="Genesis 1"` verifies all three panel modes, long-selection expansion, all four atmospheres, OpenBible attribution, scoped note provenance, secondary disclosure, and focus recovery without creating, deleting, or recoloring authored data. Captures live in `docs/ui-audit/living-margin/`.
+
+**Verification:** `npm run lint`, full `npm test` (**384 tests: 374 passing, 10 expected Electron-ABI skips**), Electron build, renderer build, the self-driving Living Margin tour, and `git diff --check` pass.
+
+The next bounded component is **Shared controls and floating layers**. Mobile remains explicitly outside this worktree.
+
 ## Progress — 2026-07-15 (Reading canvas)
 
 The fourth bounded desktop visual-system pass is complete. It turns the chapter body into a deliberate long-form reading surface without changing Living Margin content, study-overlay semantics, or the separate mobile worktree:

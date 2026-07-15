@@ -1507,9 +1507,28 @@ export function ScripturePage({
       return;
     }
 
-    let raf = 0;
+    let scrollTimer = 0;
     const update = () => {
-      if (marginActiveRef.current || studyLockVerseRef.current != null) return;
+      // Pointer enter/leave is the fast path, while :hover is the recovery
+      // path when the panel remounts under a stationary pointer. Without the
+      // reconciliation, a stale `true` can freeze ambient context after the
+      // pointer has visibly returned to Scripture.
+      const marginHasPointer = document.querySelector(".living-margin")?.matches(":hover") ?? false;
+      if (marginActiveRef.current && marginHasPointer) return;
+      marginActiveRef.current = false;
+      // A language click freezes the ambient verse while the pastor works in
+      // the margin. Scrolling the reading canvas is an equally explicit move
+      // to new context, so it releases that study lock instead of leaving the
+      // margin pinned to an old verse for the rest of the chapter.
+      if (studyLockVerseRef.current != null) studyLockVerseRef.current = null;
+      // The top of a chapter is its deliberate overview state. Once the
+      // reader moves into the text, the margin follows the eye-line; returning
+      // to the top restores chapter context instead of pretending the first
+      // visible verse is an explicit selection.
+      if (root.scrollTop < 72) {
+        setNearVerse((previous) => (previous == null ? previous : null));
+        return;
+      }
       const rootRect = root.getBoundingClientRect();
       const eyeY = rootRect.top + rootRect.height * 0.32;
       let best: number | null = null;
@@ -1528,24 +1547,26 @@ export function ScripturePage({
     };
 
     const onScroll = () => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        raf = 0;
+      // Update the first movement immediately, then coalesce the rest with a
+      // short trailing pass. This remains responsive when Chromium throttles
+      // animation frames for an obscured desktop window and avoids measuring
+      // every verse on every raw trackpad event.
+      if (scrollTimer === 0) update();
+      else window.clearTimeout(scrollTimer);
+      scrollTimer = window.setTimeout(() => {
+        scrollTimer = 0;
         update();
-      });
+      }, 48);
     };
 
     root.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
-    raf = requestAnimationFrame(() => {
-      raf = 0;
-      update();
-    });
+    update();
 
     return () => {
       root.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
-      if (raf) cancelAnimationFrame(raf);
+      if (scrollTimer) window.clearTimeout(scrollTimer);
     };
   }, [chapterData, book, chapter]);
 
@@ -1562,6 +1583,14 @@ export function ScripturePage({
   const handleStudyVerse = useCallback((v: number) => {
     studyLockVerseRef.current = v;
     setNearVerse(v);
+  }, []);
+
+  const handleClearMarginSelection = useCallback(() => {
+    setSelectedVerses(new Set());
+    setPhraseSelection(null);
+    verseSelectionAnchorRef.current = null;
+    studyLockVerseRef.current = null;
+    setShowHighlightPalette(false);
   }, []);
 
   // Reset nearVerse immediately on chapter/book/version change so a stale
@@ -2100,6 +2129,7 @@ export function ScripturePage({
           onRemoveHighlights={(entityIds) => void handleDeleteHighlights(entityIds)}
           onStudyVerse={handleStudyVerse}
           onMarginActiveChange={handleMarginActiveChange}
+          onClearSelection={handleClearMarginSelection}
         />
       )}
       </div>

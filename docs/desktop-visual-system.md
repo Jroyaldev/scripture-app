@@ -63,6 +63,16 @@ The picker is named **Reading atmosphere**, not Theme. Its compact explanation i
 - Loading, error, and empty are designed states with an announced status, a useful recovery action, and technical detail kept subordinate.
 - The reading measure remains usable at the 900px desktop floor. Focus mode and Living Margin visibility may change available space without changing the chapter's semantics.
 
+## Living Margin contract
+
+- The panel is one labelled `Study` frame with a persistent header and three truthful modes: `Chapter` at the top, `In view` while reading, and `Selected` after an explicit verse or range choice.
+- Chapter overview is contextual, not a generic empty card. It may summarize real highlights, notes, connections, and note-derived themes, then offers one concise next step.
+- Scrolling Scripture releases an old language-study lock and follows the reading eye-line. Pointer use inside the margin pauses that movement without allowing a stale hover flag to freeze the panel afterward.
+- Selected context keeps the passage reference and a bounded quotation first. Long ranges disclose the complete quotation on request. `Done` clears selection and returns focus to the persistent heading.
+- Language remains the primary study surface. OpenBible connections, local notes, passage insight, related notes, themes, grounded claims, and note-derived connections appear only when real data exists and keep their distinct source/scope labels.
+- Passage-scoped semantic content never falls back to a chapter-wide result. Secondary local-library material collapses under one disclosure so evidence remains available without dominating the daily reading path.
+- Note previews are plain readable articles unless they have a real action. Counts are tabular and subordinate; hairlines and spacing create hierarchy instead of colored borders, card shadows, or permanent category chrome.
+
 ## Interaction language
 
 - Hover changes surface or text tone without lifting the entire component.
@@ -80,7 +90,7 @@ Each item is a separate bounded B2 pass with before/after desktop captures in al
 2. **Sidebar and primary navigation — landed.** One 228px/64px density, static product identity, single footer library switcher, quiet current/hover/focus states, contextual shortcut hints, truthful local/busy status, and repeatable all-look interaction QA.
 3. **Reading topbar — landed.** Stable location/tool zones, compact passage/version movement, discoverable `⌘K` jump, named focus-restoring pickers, truthful reading controls, margin-independent geometry, 900px desktop compaction, and repeatable all-look QA.
 4. **Reading canvas — landed.** Semantic chapter article, responsive reading measure, quiet number gutter, material hover, rail-only verse focus, highlight-safe range selection, deliberate loading/error/empty states, chapter continuation, 900px desktop safety, and repeatable all-look QA.
-5. **Living Margin frame.** Section hierarchy, disclosure, provenance, action affordances, and card rhythm while preserving the proven language, cross-reference, and Structure visualizers.
+5. **Living Margin frame — landed.** Persistent three-mode study frame, real chapter overview, reading eye-line context, finishable selected state, bounded passage quote, progressive local-library disclosure, passage-scoped semantic truth, distinct provenance, focus recovery, and repeatable all-look QA.
 6. **Shared controls and floating layers.** Button, input, segmented control, card, tooltip, menu, popover, toast, and dialog states.
 7. **Settings, onboarding, and import.** Information architecture, first-run guidance, library choice, sources, progress, failure, and recovery.
 8. **Write, Notes, and Search.** Calm working surfaces, strong empty states, save feedback, results hierarchy, and keyboard flow.

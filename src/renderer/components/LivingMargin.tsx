@@ -32,7 +32,7 @@ interface Props {
   chapterVerseText?: Map<number, string>;
   /** Derived selected/"pinned" range from ScripturePage (min/max of selectedVerses). */
   pinnedRange?: PinnedRange | null;
-  /** The first annotated verse currently scrolled into view, when nothing is pinned. */
+  /** The verse nearest the reading eye-line, when nothing is pinned. */
   nearVerse?: number | null;
   onPinClaim?: (claimId: string, assertion: string) => void;
   /** Assign a highlight color to the pinned range. */
@@ -50,6 +50,8 @@ interface Props {
   onStudyVerse?: (verse: number) => void;
   /** Pointer entered/left the margin (freeze ambient eye-line while true). */
   onMarginActiveChange?: (active: boolean) => void;
+  /** Leave the explicit selected-passage state and return to the reading eye-line. */
+  onClearSelection?: () => void;
 }
 
 function AiSparkIcon(): React.JSX.Element {
@@ -57,6 +59,73 @@ function AiSparkIcon(): React.JSX.Element {
     <svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor">
       <path d="M10 2.5l1.3 4.2L15.5 8l-4.2 1.3L10 13.5l-1.3-4.2L4.5 8l4.2-1.3z" />
     </svg>
+  );
+}
+
+function PassageQuote({
+  text,
+  contextKey,
+}: {
+  text: string;
+  contextKey: string;
+}): React.JSX.Element {
+  const [expanded, setExpanded] = useState(false);
+  const canExpand = text.length > 220;
+
+  useEffect(() => {
+    setExpanded(false);
+  }, [contextKey]);
+
+  return (
+    <div className="margin-quote-wrap">
+      <blockquote className={`margin-focus-quote${canExpand && !expanded ? " is-collapsed" : ""}`}>
+        {text}
+      </blockquote>
+      {canExpand && (
+        <button
+          type="button"
+          className="margin-quote-toggle"
+          aria-expanded={expanded}
+          onClick={() => setExpanded((value) => !value)}
+        >
+          {expanded ? "Show less" : "Read full selection"}
+          <span aria-hidden="true">{expanded ? "↑" : "↓"}</span>
+        </button>
+      )}
+    </div>
+  );
+}
+
+function MarginDisclosure({
+  label,
+  detail,
+  count,
+  children,
+}: {
+  label: string;
+  detail: string;
+  count: number;
+  children: React.ReactNode;
+}): React.JSX.Element {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <section className={`margin-section margin-disclosure${open ? " is-open" : ""}`}>
+      <button
+        type="button"
+        className="margin-disclosure-toggle"
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+      >
+        <span className="margin-disclosure-copy">
+          <span className="margin-disclosure-title">{label}</span>
+          <span className="margin-disclosure-detail">{detail}</span>
+        </span>
+        <span className="margin-disclosure-count" aria-label={`${count} items`}>{count}</span>
+        <span className="margin-disclosure-caret" aria-hidden="true">›</span>
+      </button>
+      {open && <div className="margin-disclosure-body">{children}</div>}
+    </section>
   );
 }
 
@@ -134,7 +203,7 @@ function CrossRefsBlock({
     <section className="margin-section crossref-section" aria-label="Cross references">
       <div className="crossref-heading">
         <div>
-          <div className="margin-section-header crossref-title">See also</div>
+          <h3 className="margin-section-header crossref-title">See also</h3>
           <div className="crossref-context">
             {result.scope === "verse" ? "For this verse" : "Across this passage"}
           </div>
@@ -144,7 +213,6 @@ function CrossRefsBlock({
           title={`${result.items.length} highest-ranked of ${result.totalCount} positive-score connections`}
         >
           <strong>{result.items.length}</strong>
-          {result.totalCount > result.items.length && <span> / {result.totalCount}</span>}
         </span>
       </div>
 
@@ -190,7 +258,7 @@ function NoteCrossRefsBlock({
     <section className="margin-section note-crossref-section" aria-label="Cross references from notes">
       <div className="crossref-heading">
         <div>
-          <div className="margin-section-header crossref-title">From notes</div>
+          <h3 className="margin-section-header crossref-title">From notes</h3>
           <div className="crossref-context">Connections in your library</div>
         </div>
         <span className="crossref-total"><strong>{items.length}</strong></span>
@@ -238,9 +306,11 @@ export function LivingMargin({
   onNavigateToRef,
   onStudyVerse,
   onMarginActiveChange,
+  onClearSelection,
 }: Props): React.JSX.Element {
   const displayBook = bookNames[book]?.[0] ?? book;
   const [pinnedClaims, setPinnedClaims] = useState<Set<string>>(new Set());
+  const frameTitleRef = useRef<HTMLHeadingElement>(null);
 
   // Session-only cache of AI insight results for the pinned range, keyed by
   // translation + canonical range. Avoids re-triggering the call when
@@ -337,60 +407,119 @@ export function LivingMargin({
     ? `${displayBook} ${chapter}:${pinnedRange.start}${pinnedRange.end !== pinnedRange.start ? `–${pinnedRange.end}` : ""}`
     : "";
 
-  // Pinned view prefers the passage-scoped AI result over the chapter-wide
-  // one — a card shown for verses 1-7 must have been retrieved FOR verses
-  // 1-7 (B3.5 truthfulness), falling back to chapter scope while loading.
-  const pinnedSemantic = pinnedAiResult ?? semanticData;
+  // A selected-passage card must have been retrieved for that exact range.
+  // Chapter-wide results remain useful in the chapter overview, but never
+  // masquerade as selected-passage evidence while the scoped call is loading.
+  const pinnedSemantic = pinnedAiResult ?? null;
+  const pinnedInsight = pinnedAiResult
+    ? pinnedAiResult.threads[0]?.summary
+      ?? pinnedAiResult.semanticNotes[0]?.snippet
+      ?? pinnedAiResult.claims[0]?.assertion
+      ?? null
+    : null;
+  const pinnedLibraryItemCount = pinnedSemantic
+    ? pinnedSemantic.semanticNotes.length + pinnedSemantic.threads.length + pinnedSemantic.claims.length
+    : 0;
 
   const nearNote = nearVerse != null ? findNoteForRange(marginData, chapter, nearVerse, nearVerse) : null;
   const nearQuote = nearVerse != null ? chapterVerseText?.get(nearVerse) ?? "" : "";
   const nearRef = nearVerse != null ? `${displayBook} ${chapter}:${nearVerse}` : "";
+  const marginMode = isPinned ? "Selected" : isNear ? "In view" : "Chapter";
+  const clearSelection = () => {
+    onClearSelection?.();
+    // The Done control intentionally disappears when selection ends. Move
+    // focus to the persistent frame title so keyboard users are never left
+    // focused on a detached node and can orient to the restored mode.
+    window.setTimeout(() => frameTitleRef.current?.focus(), 0);
+  };
 
   return (
     <aside
       className="living-margin"
+      aria-labelledby="living-margin-title"
+      data-margin-mode={marginMode.toLowerCase().replace(" ", "-")}
       onPointerEnter={() => onMarginActiveChange?.(true)}
       onPointerLeave={() => onMarginActiveChange?.(false)}
     >
+      <header className="margin-frame-header">
+        <h2
+          ref={frameTitleRef}
+          id="living-margin-title"
+          className="margin-frame-title"
+          tabIndex={-1}
+        >
+          Study
+        </h2>
+        <div className="margin-frame-state">
+          <span className="margin-frame-mode" aria-live="polite">{marginMode}</span>
+          {isPinned && onClearSelection && (
+            <button type="button" className="margin-frame-action" onClick={clearSelection}>
+              Done
+            </button>
+          )}
+        </div>
+      </header>
+
       {/* --- State 1: Chapter overview (default) --- */}
       {!isPinned && !isNear && (
-        <div className="margin-panel-anim">
-          <div className="margin-header-ref">{displayBook} {chapter}</div>
+        <div className="margin-panel-anim" data-margin-view="chapter">
+          <h3 className="margin-header-ref">{displayBook} {chapter}</h3>
 
           {semanticData && semanticData.threads.length > 0 && (
-            <div className="margin-tags">
-              {semanticData.threads.slice(0, 3).map((t) => (
-                <span key={t.id} className="margin-tag">{t.label}</span>
-              ))}
+            <div className="margin-overview-themes">
+              <span className="margin-overview-label">Themes in your notes</span>
+              <div className="margin-tags">
+                {semanticData.threads.slice(0, 3).map((t) => (
+                  <span key={t.id} className="margin-tag">{t.label}</span>
+                ))}
+              </div>
             </div>
           )}
 
-          <div className="margin-stats">
-            <div className="margin-stat">
-              <div className="margin-stat-num">{activeHighlights.length}</div>
-              <div className="margin-stat-label">Highlights</div>
-            </div>
-            <div className="margin-stat">
-              <div className="margin-stat-num">{marginData.notes.length}</div>
-              <div className="margin-stat-label">Notes</div>
-            </div>
-            <div className="margin-stat">
-              <div className="margin-stat-num">{crossRefs?.totalCount ?? 0}</div>
-              <div className="margin-stat-label">Cross-refs</div>
-            </div>
-          </div>
+          {(hasDeterministicData || hasSemanticData) && (
+            <>
+              <div className="margin-stats" aria-label="Chapter study activity">
+                <div className="margin-stat">
+                  <span className="margin-stat-num">{activeHighlights.length}</span>
+                  <span className="margin-stat-label">Highlights</span>
+                </div>
+                <div className="margin-stat">
+                  <span className="margin-stat-num">{marginData.notes.length}</span>
+                  <span className="margin-stat-label">Notes</span>
+                </div>
+                <div className="margin-stat">
+                  <span className="margin-stat-num">{crossRefs?.totalCount ?? 0}</span>
+                  <span className="margin-stat-label">Connections</span>
+                </div>
+              </div>
 
-          <p className="margin-invite">
-            Select a verse to study language, highlight, or open related notes.
-          </p>
+              <p className="margin-invite">
+                Select a verse to study its language, add a highlight, or follow a connection.
+              </p>
+            </>
+          )}
+
+          {!hasDeterministicData && !hasSemanticData && semanticLoading && (
+            <div className="margin-overview-loading" role="status">
+              <span className="ai-insight-spinner" aria-hidden="true" />
+              <span>Reading your library…</span>
+            </div>
+          )}
+
+          {!hasDeterministicData && !hasSemanticData && !semanticLoading && (
+            <div className="margin-empty">
+              <p>Nothing has been added to this chapter yet.</p>
+              <p className="margin-empty-hint">Select a verse to begin studying or leave your first mark.</p>
+            </div>
+          )}
         </div>
       )}
 
       {/* --- State 2: Ambient "currently reading" --- */}
       {isNear && (
-        <div className="margin-panel-anim">
-          <div className="margin-header-ref">{nearRef}</div>
-          {nearQuote && <div className="margin-focus-quote">{nearQuote}</div>}
+        <div className="margin-panel-anim" data-margin-view="reading">
+          <h3 className="margin-header-ref">{nearRef}</h3>
+          {nearQuote && <PassageQuote text={nearQuote} contextKey={nearRef} />}
 
           {nearVerse != null && (
             <LanguageWordsSection
@@ -403,11 +532,13 @@ export function LivingMargin({
           )}
 
           {nearNote && (
-            <div className="margin-section">
-              <div className="margin-section-header">Note</div>
-              <div className="card-title">{nearNote.title}</div>
-              <div className="card-excerpt">{nearNote.body_text.slice(0, 120)}</div>
-            </div>
+            <section className="margin-section margin-note-section">
+              <h3 className="margin-section-header">Your note</h3>
+              <article className="margin-card">
+                <div className="card-title">{nearNote.title}</div>
+                <div className="card-excerpt">{nearNote.body_text.slice(0, 120)}</div>
+              </article>
+            </section>
           )}
 
           {(crossRefs?.items?.length ?? 0) > 0 && crossRefs && (
@@ -424,55 +555,57 @@ export function LivingMargin({
           4. Secondary: related notes / claims / xrefs — only when non-empty
           Never show permanent empty AI shells. */}
       {isPinned && (
-        <div className="margin-panel-anim">
-          <div className="margin-header-ref">{pinnedRef}</div>
-          {pinnedQuote && <div className="margin-focus-quote">{pinnedQuote}</div>}
+        <div className="margin-panel-anim" data-margin-view="selected">
+          <h3 className="margin-header-ref">{pinnedRef}</h3>
+          {pinnedQuote && <PassageQuote text={pinnedQuote} contextKey={pinnedRef} />}
 
           {/* Selection tools live on the floating mini toolbar over the text.
               Margin shows pin status + neutral multi-color state when needed. */}
-          <div className={`margin-pin-status${pinnedColors.length > 1 ? " is-mixed" : ""}`}>
-            <span className="margin-pin-status-label">
-              {pinnedColors.length > 1
-                ? "Mixed colors in selection"
-                : pinnedHighlightColor
-                  ? `${pinnedHighlightColor.charAt(0).toUpperCase() + pinnedHighlightColor.slice(1)} highlight`
-                  : "No highlight yet"}
-            </span>
-            {pinnedColors.length > 1 && (
-              <span className="hl-toolbar-mixed-badge">Mixed</span>
-            )}
-            {onCreateNote && (
-              <button type="button" className="margin-pin-note-btn" onClick={() => onCreateNote()}>
-                Note
-              </button>
-            )}
-            {pinnedHighlights.length > 0 && onRemoveHighlights && (
-              <button
-                type="button"
-                className="margin-hl-remove"
-                onClick={() => onRemoveHighlights(pinnedHighlights.map((h) => h.id))}
-              >
-                Remove
-              </button>
+          <div className="margin-selection-tools">
+            <div className={`margin-pin-status${pinnedColors.length > 1 ? " is-mixed" : ""}`}>
+              <span className="margin-pin-status-label">
+                {pinnedColors.length > 1
+                  ? "Mixed highlights"
+                  : pinnedHighlightColor
+                    ? `${pinnedHighlightColor.charAt(0).toUpperCase() + pinnedHighlightColor.slice(1)} highlight`
+                    : "Unhighlighted"}
+              </span>
+              {pinnedColors.length > 1 && (
+                <span className="hl-toolbar-mixed-badge">Mixed</span>
+              )}
+              {onCreateNote && (
+                <button type="button" className="margin-pin-note-btn" onClick={() => onCreateNote()}>
+                  Add note
+                </button>
+              )}
+              {pinnedHighlights.length > 0 && onRemoveHighlights && (
+                <button
+                  type="button"
+                  className="margin-hl-remove"
+                  onClick={() => onRemoveHighlights(pinnedHighlights.map((h) => h.id))}
+                >
+                  Remove highlight{pinnedHighlights.length === 1 ? "" : "s"}
+                </button>
+              )}
+            </div>
+
+            {/* Quick color row — same swatch chrome as the mini toolbar */}
+            {onSetHighlightColor && (
+              <div className="margin-hl-palette" role="group" aria-label="Highlight color">
+                {(["yellow", "green", "blue", "pink", "purple"] as const).map((color) => (
+                  <button
+                    key={color}
+                    type="button"
+                    className={`margin-hl-swatch ${color}${pinnedHighlightColor === color ? " active" : ""}${pinnedColors.length > 1 ? " mixed-context" : ""}`}
+                    title={`${color.charAt(0).toUpperCase() + color.slice(1)} highlight`}
+                    aria-label={`Apply ${color} highlight`}
+                    aria-pressed={pinnedHighlightColor === color}
+                    onClick={() => onSetHighlightColor(color)}
+                  />
+                ))}
+              </div>
             )}
           </div>
-
-          {/* Quick color row — same swatch chrome as the mini toolbar */}
-          {onSetHighlightColor && (
-            <div className="margin-hl-palette" role="group" aria-label="Highlight color">
-              {(["yellow", "green", "blue", "pink", "purple"] as const).map((color) => (
-                <button
-                  key={color}
-                  type="button"
-                  className={`margin-hl-swatch ${color}${pinnedHighlightColor === color ? " active" : ""}${pinnedColors.length > 1 ? " mixed-context" : ""}`}
-                  title={`${color.charAt(0).toUpperCase() + color.slice(1)} highlight`}
-                  aria-label={`Apply ${color} highlight`}
-                  aria-pressed={pinnedHighlightColor === color}
-                  onClick={() => onSetHighlightColor(color)}
-                />
-              ))}
-            </div>
-          )}
 
           {/* Primary study surface */}
           <LanguageWordsSection
@@ -484,70 +617,99 @@ export function LivingMargin({
           />
 
           {pinnedNote && (
-            <div className="margin-section">
-              <div className="margin-section-header">Note</div>
-              <div className="margin-card">
+            <section className="margin-section margin-note-section">
+              <h3 className="margin-section-header">Your note</h3>
+              <article className="margin-card">
                 <div className="card-title">{pinnedNote.title}</div>
                 <div className="card-excerpt">{pinnedNote.body_text.slice(0, 150)}</div>
-              </div>
-            </div>
-          )}
-
-          {/* Secondary — only when there is content */}
-          {pinnedSemantic && pinnedSemantic.semanticNotes.length > 0 && (
-            <div className="margin-section">
-              <div className="margin-section-header">Related</div>
-              {pinnedSemantic.semanticNotes.map((sn) => (
-                <div key={sn.noteId} className="margin-card">
-                  <div className="card-title">{sn.title || "Untitled"}</div>
-                  <div className="card-excerpt">{sn.snippet}</div>
-                  {sn.reasons && sn.reasons.length > 0 && (
-                    <div className="card-reasons">
-                      {sn.reasons.map((r, i) => (
-                        <span key={`${r.kind}-${i}`} className={`reason-chip reason-${r.kind}`}>{r.label}</span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-
-          {pinnedSemantic && pinnedSemantic.threads.length > 0 && (
-            <div className="margin-section">
-              <div className="margin-section-header">Threads</div>
-              {pinnedSemantic.threads.map((thread) => (
-                <div key={thread.id} className="margin-card">
-                  <div className="card-title">{thread.label}</div>
-                  <div className="card-excerpt">{thread.summary}</div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {pinnedSemantic && pinnedSemantic.claims.length > 0 && (
-            <div className="margin-section">
-              <div className="margin-section-header">Claims</div>
-              {pinnedSemantic.claims.map((claim) => {
-                const noteEvidence = claim.sources.filter((s) => s.kind === "note");
-                const quote = noteEvidence.find((s) => s.quote)?.quote;
-                return (
-                  <div key={claim.id} className="margin-card">
-                    <div className="card-title">{claim.assertion}</div>
-                    {quote && <div className="claim-evidence-quote">&ldquo;{quote}&rdquo;</div>}
-                    {!pinnedClaims.has(claim.id) && (
-                      <button className="btn-pin-claim" onClick={() => handlePinClaim(claim.id, claim.assertion)}>
-                        Keep
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+              </article>
+            </section>
           )}
 
           {(crossRefs?.items?.length ?? 0) > 0 && crossRefs && (
             <CrossRefsBlock result={crossRefs} onNavigate={onNavigateToRef} />
+          )}
+
+          {pinnedAiLoading && (
+            <div className="ai-insight-loading" role="status">
+              <span className="ai-insight-spinner" aria-hidden="true" />
+              <span className="ai-insight-label">Looking through your notes…</span>
+            </div>
+          )}
+
+          {!pinnedAiLoading && pinnedInsight && (
+            <section className="margin-section ai-insight-block" aria-label="Passage insight from your notes">
+              <div className="ai-insight-head">
+                <span className="ai-insight-title"><AiSparkIcon /> Passage insight</span>
+                <span className="ai-insight-source">From your notes</span>
+              </div>
+              <p className="ai-insight-text">{pinnedInsight}</p>
+            </section>
+          )}
+
+          {/* Secondary note-derived material is real but subordinate. Keep it
+              available without forcing every category into the reading path. */}
+          {pinnedSemantic && pinnedLibraryItemCount > 0 && (
+            <MarginDisclosure
+              key={pinKey}
+              label="More from your notes"
+              detail="Related notes, themes, and grounded claims"
+              count={pinnedLibraryItemCount}
+            >
+              {pinnedSemantic.semanticNotes.length > 0 && (
+                <div className="margin-subsection">
+                  <h4 className="margin-subsection-title">Related notes</h4>
+                  {pinnedSemantic.semanticNotes.map((sn) => (
+                    <article key={sn.noteId} className="margin-card">
+                      <div className="card-title">{sn.title || "Untitled"}</div>
+                      <div className="card-excerpt">{sn.snippet}</div>
+                      {sn.reasons && sn.reasons.length > 0 && (
+                        <div className="card-reasons">
+                          {sn.reasons.map((reason, index) => (
+                            <span key={`${reason.kind}-${index}`} className={`reason-chip reason-${reason.kind}`}>
+                              {reason.label}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </article>
+                  ))}
+                </div>
+              )}
+
+              {pinnedSemantic.threads.length > 0 && (
+                <div className="margin-subsection">
+                  <h4 className="margin-subsection-title">Themes</h4>
+                  {pinnedSemantic.threads.map((thread) => (
+                    <article key={thread.id} className="margin-card">
+                      <div className="card-title">{thread.label}</div>
+                      <div className="card-excerpt">{thread.summary}</div>
+                    </article>
+                  ))}
+                </div>
+              )}
+
+              {pinnedSemantic.claims.length > 0 && (
+                <div className="margin-subsection">
+                  <h4 className="margin-subsection-title">Grounded claims</h4>
+                  {pinnedSemantic.claims.map((claim) => {
+                    const noteEvidence = claim.sources.filter((source) => source.kind === "note");
+                    const quote = noteEvidence.find((source) => source.quote)?.quote;
+                    return (
+                      <article key={claim.id} className="margin-card">
+                        <div className="card-title">{claim.assertion}</div>
+                        {quote && <div className="claim-evidence-quote">&ldquo;{quote}&rdquo;</div>}
+                        {!pinnedClaims.has(claim.id) && (
+                          <button className="btn-pin-claim" onClick={() => handlePinClaim(claim.id, claim.assertion)}>
+                            Keep
+                          </button>
+                        )}
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
+            </MarginDisclosure>
           )}
 
           {pinnedSemantic && pinnedSemantic.suggestedCrossRefs.length > 0 && (
@@ -556,41 +718,8 @@ export function LivingMargin({
               onNavigate={onNavigateToRef}
             />
           )}
-
-          {/* Compact AI: only while loading or when there is a real summary */}
-          {pinnedAiLoading && (
-            <div className="ai-insight-loading">
-              <span className="ai-insight-spinner" />
-              <span className="ai-insight-label">Looking at your notes…</span>
-            </div>
-          )}
-          {!pinnedAiLoading && pinnedAiResult && (
-            pinnedAiResult.threads.length > 0 ||
-            pinnedAiResult.semanticNotes.length > 0 ||
-            pinnedAiResult.claims.length > 0
-          ) && (
-            <div className="ai-insight-block">
-              <div className="ai-insight-head">
-                <AiSparkIcon />
-              </div>
-              <div className="ai-insight-text">
-                {pinnedAiResult.threads[0]?.summary
-                  ?? pinnedAiResult.semanticNotes[0]?.snippet
-                  ?? pinnedAiResult.claims[0]?.assertion}
-              </div>
-            </div>
-          )}
         </div>
       )}
-
-      {/* Empty state — only when chapter overview has no marks at all */}
-      {!isPinned && !isNear && !hasDeterministicData && !hasSemanticData && !semanticLoading && (
-        <div className="margin-empty">
-          <p>No notes, highlights, or cross-references for this passage yet.</p>
-          <p className="margin-empty-hint">Select a verse to study language or create a highlight.</p>
-        </div>
-      )}
-
     </aside>
   );
 }
