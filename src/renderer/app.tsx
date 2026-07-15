@@ -9,7 +9,7 @@ import type {
   VerseNumberMode,
 } from "./api.js";
 import { ScripturePage } from "./components/ScripturePage.js";
-import { WritingSheet } from "./components/WritingSheet.js";
+import { WritingSheet, type WritingDraft } from "./components/WritingSheet.js";
 import { SearchView } from "./components/SearchView.js";
 import { SettingsPage } from "./components/SettingsPage.js";
 import { ErrorBoundary } from "./components/ErrorBoundary.js";
@@ -131,7 +131,7 @@ export function App(): React.JSX.Element {
   const [view, setView] = useState<View>("scripture");
   const [loadState, setLoadState] = useState<LoadState>({ status: "loading" });
   const [navigateRef, setNavigateRef] = useState<{ book: string; chapter: number } | null>(null);
-  const [editNoteBody, setEditNoteBody] = useState<string>("");
+  const [writingDraft, setWritingDraft] = useState<WritingDraft>({ title: "", body: "" });
   const [marginVisible, setMarginVisible] = useState(() => {
     return localStorage.getItem("marginVisible") !== "false";
   });
@@ -265,7 +265,14 @@ export function App(): React.JSX.Element {
   }, [readingSize, readingWidth, verseNumbers]);
 
   const handleCreateNoteFromPassage = (prefillBody?: string) => {
-    setEditNoteBody(prefillBody ?? "");
+    if (prefillBody) {
+      setWritingDraft((current) => ({
+        ...current,
+        body: current.body.trim()
+          ? `${current.body.trimEnd()}\n\n${prefillBody}`
+          : prefillBody,
+      }));
+    }
     setView("write");
   };
 
@@ -554,10 +561,18 @@ export function App(): React.JSX.Element {
               />
             )}
             {view === "write" && (
-              <WritingSheet prefillBody={editNoteBody} onSaved={() => setEditNoteBody("")} />
+              <WritingSheet
+                draft={writingDraft}
+                onDraftChange={setWritingDraft}
+                onSaved={() => setWritingDraft({ title: "", body: "" })}
+              />
             )}
-            {view === "search" && <SearchView onNavigate={handleNavigateToRef} />}
-            {view === "notes" && <SearchView onNavigate={handleNavigateToRef} showAll />}
+            {view === "search" && (
+              <SearchView mode="search" onNavigate={handleNavigateToRef} onWrite={() => setView("write")} />
+            )}
+            {view === "notes" && (
+              <SearchView mode="notes" onNavigate={handleNavigateToRef} onWrite={() => setView("write")} />
+            )}
             {view === "settings" && (
               <SettingsPage
                 libraryPath={libraryPath}

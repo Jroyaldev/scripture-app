@@ -36,6 +36,22 @@ The seventh bounded desktop visual-system pass is complete. It replaces the disc
 
 The next bounded component is **Write, Notes, and Search**.
 
+## Progress — 2026-07-15 (Write, Notes, and Search)
+
+The eighth bounded desktop visual-system pass is complete. It turns three prototype-era destinations into one coherent local notebook without adding autonomous writes, note deletion, source ingestion, sync, or mobile behavior:
+
+- **Draft-preserving authoring:** App now owns the active title/body draft, so moving through Read, Notes, or Search no longer discards unfinished work. Passage capture appends to the same draft. Saving remains explicit through Save note or `Command-S`; there is no autosave or background Substrate mutation.
+- **Recoverable save behavior:** note creation is wrapped in `safeCall`, keeps the complete draft on transport or application failure, reports busy/error/success through the shared controls and toast system, and clears only after a confirmed save.
+- **Quiet writing desk:** Write has one named workspace, plain-Markdown/local trust copy, a focused title/body sheet, word and character measure, and a restrained saved-note enrichment surface. Suggested Scripture anchors remain post-save, visibly AI-inferred, and individually confirmed or dismissed by the user.
+- **Readable note library:** Notes sorts the real library by modified date, filters title/body/tags locally, and opens a selected note in a persistent reading detail instead of unexpectedly leaving the workspace. The detail preserves Markdown-shaped headings, quotes, and lists; exposes tags and measures; and turns every parsed Scripture reference into an explicit return-to-reading action.
+- **Real retrieval hierarchy:** Search uses the existing FTS index with a debounced, request-sequenced flow, recently modified notes before a query, shared note detail after selection, highlighted matches, clear/retry actions, and deliberate loading, error, and no-result states. No implementation-facing `FTS5` copy remains.
+- **Complete desktop keyboard path:** Arrow Up/Down and Home/End move and select note rows; Escape clears filter/search; `Command-S` saves from either writing field. Focus, selection, and search emphasis keep the same restrained gold contract as the reading desk.
+- **Non-mutating visual QA:** `npm run qa:notebook` checks draft persistence, note-list keyboard movement, real indexed search/detail agreement, Paper/Ink/Glass/Candlelight captures, and Write/Notes/Search at 900×700. The active library contained 26 notes before and after the tour.
+
+**Verification:** `npm run lint`, full `npm test` (**393 tests: 383 passing, 10 expected Electron-ABI skips**), renderer build, focused notebook contracts, `npm run qa:notebook`, and `git diff --check` pass. Note editing/deletion is not invented by this visual pass; PDF/source-shelf ingestion remains B4, sync remains C2, and mobile remains outside this worktree.
+
+The next bounded component is **Study overlays**.
+
 ## Progress — 2026-07-15 (Living Margin frame)
 
 The fifth bounded desktop visual-system pass is complete. It turns the right rail into one calm, stateful study companion while preserving the proven language, cross-reference, senses, and Structure visualizers:

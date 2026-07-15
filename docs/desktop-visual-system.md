@@ -94,6 +94,16 @@ The picker is named **Reading atmosphere**, not Theme. Its compact explanation i
 - First run leads with ownership: plain files, local by default, and one movable folder. The recommended location is presented before creation, and a custom location is shown for confirmation before the library is initialized.
 - `qa:setup` exercises every Settings section in Paper, Ink, Glass, and Candlelight, keyboard choice behavior, the 900px desktop floor, and an isolated temporary first-run profile without mutating the active library.
 
+## Write, Notes, and Search contract
+
+- Write is a deliberate local authoring surface, not an autosaving cloud editor. The note remains an in-memory draft while the reader moves through Scripture, Notes, and Search; only the explicit Save note action writes Substrate.
+- A failed save never clears the draft. Busy, error, and success states use shared status and toast language, while `Command-S` invokes the same explicit save path as the visible action.
+- The writing sheet keeps title, body, word/character measure, local/plain-Markdown trust, and source-suggestion feedback in one restrained hierarchy. Background enrichment may offer Scripture anchors after save, but every anchor remains an explicit user choice.
+- Notes is a real notebook workspace: a recent-first, locally filterable list opens a shared reading detail with legible Markdown structure, tags, dates, word count, and each parsed Scripture reference as an explicit return-to-reading action.
+- Search uses the library's full-text index without exposing implementation jargon. Requests are debounced and sequence-guarded so a slower earlier result cannot replace a later query; recent notes, loading, no-match, transport error, retry, and clear states are all designed.
+- Note-list rows form one spatial keyboard path with Arrow Up/Down and Home/End. Selection remains visible and the same note detail is used by library browsing and search, so retrieval does not become a second navigation model.
+- `qa:notebook` proves that a populated draft survives navigation, keyboard selection moves the active note, real full-text results open the matching detail, all four atmospheres remain coherent, the 900px desktop floor does not overflow, and authored-note count is unchanged before and after the tour.
+
 ## Interaction language
 
 - Hover changes surface or text tone without lifting the entire component.
@@ -114,7 +124,7 @@ Each item is a separate bounded B2 pass with before/after desktop captures in al
 5. **Living Margin frame — landed.** Persistent three-mode study frame, real chapter overview, reading eye-line context, finishable selected state, bounded passage quote, progressive local-library disclosure, passage-scoped semantic truth, distinct provenance, focus recovery, and repeatable all-look QA.
 6. **Shared controls and floating layers — landed.** Unified button/input/card/menu geometry and states, keyboard-complete segmented controls, lightweight named popovers, delayed accessible tooltips, typed live-region toasts, modal focus containment/recovery, and repeatable all-look QA.
 7. **Settings, onboarding, and import — landed.** One five-section local-library workspace, truthful package/licensing and network disclosures, deliberate mutations, ownership-first setup, staged non-destructive import, complete recovery states, 900px desktop compaction, and isolated four-atmosphere QA.
-8. **Write, Notes, and Search.** Calm working surfaces, strong empty states, save feedback, results hierarchy, and keyboard flow.
+8. **Write, Notes, and Search — landed.** Explicit draft-preserving authoring, recoverable save feedback, a recent/filterable notebook with shared detail, sequence-safe full-text retrieval, Scripture return paths, complete list keyboard flow, and non-mutating four-atmosphere QA.
 9. **Study overlays.** Language cards, Structure, note capture, highlight palette, and cross-reference previews receive final system alignment without changing source truth.
 10. **Consolidation.** Remove remaining static inline styles and unjustified color/radius/shadow literals; run full four-atmosphere regression tours and interaction checks.
 

@@ -52,7 +52,8 @@
     "qa:canvas": "node scripts/qa-reading-canvas-tour.mjs",
     "qa:margin": "node scripts/qa-living-margin-tour.mjs",
     "qa:controls": "node scripts/qa-shared-controls-tour.mjs",
-    "qa:setup": "node scripts/qa-setup-tour.mjs"
+    "qa:setup": "node scripts/qa-setup-tour.mjs",
+    "qa:notebook": "node scripts/qa-note-workspace-tour.mjs"
   },
   "main": "dist/electron/main.cjs",
   "bin": {
