@@ -62,6 +62,14 @@ export class TipnrIndex {
     return this.data?.entityCount ?? 0;
   }
 
+  get source(): string {
+    return this.data?.source ?? "STEPBible TIPNR";
+  }
+
+  get license(): string {
+    return this.data?.license ?? "CC BY 4.0";
+  }
+
   loadJson(jsonText: string): number {
     this.data = JSON.parse(jsonText) as TipnrIndexFile;
     return this.data.entityCount;
@@ -69,6 +77,34 @@ export class TipnrIndex {
 
   get(id: string): TipnrEntity | null {
     return this.data?.entities[id] ?? null;
+  }
+
+  /**
+   * Return the unique people and places explicitly indexed in a canonical
+   * verse range. Ordering follows first appearance, never global popularity.
+   */
+  entitiesForRange(
+    book: string,
+    chapter: number,
+    startVerse: number,
+    endVerse: number,
+  ): TipnrEntity[] {
+    if (!this.data) return [];
+    const start = Math.max(1, Math.min(startVerse, endVerse));
+    const end = Math.max(start, Math.max(startVerse, endVerse));
+    const seen = new Set<string>();
+    const entities: TipnrEntity[] = [];
+    for (let verse = start; verse <= end; verse += 1) {
+      const refKey = `${book.toUpperCase()}.${chapter}.${verse}`;
+      for (const id of this.data.byRef[refKey] ?? []) {
+        if (seen.has(id)) continue;
+        const entity = this.data.entities[id];
+        if (!entity || (entity.kind !== "person" && entity.kind !== "place")) continue;
+        seen.add(id);
+        entities.push(entity);
+      }
+    }
+    return entities;
   }
 
   /**

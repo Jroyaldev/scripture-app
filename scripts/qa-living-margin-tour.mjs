@@ -2,10 +2,10 @@
  * Desktop-only visual and interaction QA for the Living Margin frame.
  *
  * Requires Electron on --remote-debugging-port=9222. Exercises the deliberate
- * Chapter / In view / Selected scope model; Cross refs / Passage / Notes tab
- * navigation; progressive disclosure, provenance, focus recovery, preserved
- * tab choice, and all four reading atmospheres. The tour never creates,
- * removes, or recolors authored data.
+ * Chapter / In view / Selected scope model; compact Overview plus complete
+ * Refs / Passage / Notes navigation; entity provenance, deep-note disclosure,
+ * focus recovery, preserved tab choice, and all four reading atmospheres. The
+ * tour never creates, removes, or recolors authored data.
  */
 
 import assert from "node:assert/strict";
@@ -282,13 +282,26 @@ assert.equal(chapterState.title, "Study");
 assert.equal(chapterState.mode, "Chapter");
 assert.equal(chapterState.view, "chapter");
 assert.equal(chapterState.done, false);
-assert.equal(chapterState.tabs.length, 3);
-assert.match(chapterState.tabs[0] ?? "", /^Cross refs/);
-assert.match(chapterState.tabs[1] ?? "", /^Passage/);
-assert.match(chapterState.tabs[2] ?? "", /^Notes/);
-assert.equal(chapterState.activeTab, "margin-connections-tab");
+assert.equal(chapterState.tabs.length, 4);
+assert.match(chapterState.tabs[0] ?? "", /^Overview/);
+assert.match(chapterState.tabs[1] ?? "", /^Refs/);
+assert.match(chapterState.tabs[2] ?? "", /^Passage/);
+assert.match(chapterState.tabs[3] ?? "", /^Notes/);
+assert.equal(chapterState.activeTab, "margin-overview-tab");
 console.log("chapter", chapterState);
-await screenshot("paper-default-crossrefs", ".living-margin");
+await waitFor(`!document.querySelector(".intent-loading")`, 30_000);
+const overviewState = await evaluate(`(() => ({
+  scripture: document.querySelectorAll(".intent-ref-row").length,
+  library: document.querySelectorAll(".intent-note-lead").length,
+  entities: document.querySelectorAll(".intent-entity-card").length,
+  attribution: [...document.querySelectorAll(".intent-attribution")].map((node) => node.textContent?.trim()).join(" | "),
+}))()`);
+assert.ok(overviewState.scripture > 0 && overviewState.scripture <= 2);
+assert.ok(overviewState.entities > 0);
+assert.match(overviewState.attribution ?? "", /STEPBible TIPNR.*CC BY 4\.0/);
+console.log("overview", overviewState);
+await screenshot("paper-default-overview", ".living-margin");
+await screenshot("paper-overview-context");
 await selectMarginTab("passage");
 await screenshot("paper-chapter-overview");
 await screenshot("paper-chapter-overview-margin", ".living-margin");
@@ -341,8 +354,28 @@ assert.deepEqual(selectedState, {
 console.log("selected", selectedState);
 await screenshot("paper-selected-context");
 
+await selectMarginTab("overview");
+await waitFor(`!document.querySelector(".intent-loading")`, 30_000);
+await waitFor(`Boolean(document.querySelector(".intent-ref-row, .intent-note-lead, .intent-entity-card"))`);
+const selectedOverview = await evaluate(`(() => ({
+  scripture: document.querySelectorAll(".intent-ref-row").length,
+  library: document.querySelectorAll(".intent-note-lead").length,
+  entities: document.querySelectorAll(".intent-entity-card").length,
+}))()`);
+assert.ok(selectedOverview.scripture <= 2);
+assert.ok(selectedOverview.entities > 0);
+await evaluate(`document.querySelector(".intent-entity-card summary")?.click()`);
+await waitFor(`document.querySelector(".intent-entity-card")?.hasAttribute("open")`);
+await screenshot("paper-intent-overview");
+
 for (const theme of THEMES) {
   await setTheme(theme);
+  await selectMarginTab("overview");
+  await parkPointerOverReading();
+  await evaluate(`document.querySelector(".living-margin").scrollTop = 0`);
+  await sleep(160);
+  await screenshot(`${THEME_NAMES[theme]}-intent-overview-margin`, ".living-margin");
+  await selectMarginTab("passage");
   await parkPointerOverReading();
   await evaluate(`document.querySelector(".living-margin").scrollTop = 0`);
   await sleep(160);
@@ -355,15 +388,17 @@ await waitFor(`document.querySelector(".margin-quote-toggle")?.getAttribute("ari
 await screenshot("paper-expanded-selection-margin", ".living-margin");
 await evaluate(`document.querySelector(".margin-quote-toggle")?.click()`);
 
-await selectMarginTab("connections");
-await evaluate(`document.querySelector("#margin-connections-tab")?.focus()`);
+await selectMarginTab("overview");
+await evaluate(`document.querySelector("#margin-overview-tab")?.focus()`);
+await pressKey("ArrowRight", "ArrowRight");
+await waitFor(`document.activeElement?.id === "margin-connections-tab"`);
+await waitFor(`document.querySelector("#margin-connections-tab")?.getAttribute("aria-selected") === "true"`);
 await pressKey("ArrowRight", "ArrowRight");
 await waitFor(`document.activeElement?.id === "margin-passage-tab"`);
-await waitFor(`document.querySelector("#margin-passage-tab")?.getAttribute("aria-selected") === "true"`);
 await pressKey("ArrowRight", "ArrowRight");
 await waitFor(`document.activeElement?.id === "margin-notes-tab"`);
 await pressKey("Home", "Home");
-await waitFor(`document.activeElement?.id === "margin-connections-tab"`);
+await waitFor(`document.activeElement?.id === "margin-overview-tab"`);
 await pressKey("End", "End");
 await waitFor(`document.activeElement?.id === "margin-notes-tab"`);
 console.log("margin tab keyboard path ok");
@@ -378,12 +413,15 @@ const crossRefTruth = await evaluate(`(() => ({
   links: document.querySelectorAll(".crossref-row").length,
   title: document.querySelector(".crossref-title")?.textContent?.trim(),
   context: document.querySelector(".crossref-context")?.textContent?.trim(),
+  hasCollapsedRemainder: Boolean(document.querySelector(".crossref-expand")),
 }))()`);
 assert.equal(crossRefTruth.source, "OpenBible Cross References");
 assert.match(crossRefTruth.license ?? "", /CC[- ]BY/i);
 assert.ok(crossRefTruth.links >= 1);
 assert.equal(crossRefTruth.title, "OpenBible");
 assert.equal(crossRefTruth.context, "Cross References·Across this passage");
+assert.equal(crossRefTruth.hasCollapsedRemainder, false);
+assert.ok(crossRefTruth.links >= 6);
 console.log("cross references", crossRefTruth);
 await evaluate(`(() => {
   const margin = document.querySelector(".living-margin");
@@ -397,24 +435,25 @@ await screenshot("paper-openbible-connections-margin", ".living-margin");
 
 await selectMarginTab("notes");
 await waitFor(`!document.querySelector(".ai-insight-loading")`, 30_000);
-await waitFor(`Boolean(document.querySelector(".margin-disclosure-toggle"))`, 30_000);
+await waitFor(`!document.querySelector(".deep-notes-loading")`, 30_000);
+await waitFor(`Boolean(document.querySelector(".notes-deep-dive, .deep-note-card, .ai-insight-block"))`, 30_000);
 await evaluate(`document.querySelector(".living-margin").scrollTop = 0`);
 await screenshot("paper-notes-margin", ".living-margin");
-const disclosure = await evaluate(`(() => ({
-  label: document.querySelector(".margin-disclosure-title")?.textContent?.trim(),
-  detail: document.querySelector(".margin-disclosure-detail")?.textContent?.trim(),
-  expanded: document.querySelector(".margin-disclosure-toggle")?.getAttribute("aria-expanded"),
+const notesDeepDive = await evaluate(`(() => ({
+  cards: document.querySelectorAll(".deep-note-card").length,
+  collapsedGate: Boolean(document.querySelector(".margin-disclosure-toggle")),
   insightSource: document.querySelector(".ai-insight-source")?.textContent?.trim(),
 }))()`);
-assert.equal(disclosure.label, "More from your notes");
-assert.equal(disclosure.expanded, "false");
-assert.equal(disclosure.insightSource, "From your notes");
-console.log("note evidence", disclosure);
-await evaluate(`document.querySelector(".margin-disclosure-toggle")?.click()`);
-await waitFor(`document.querySelector(".margin-disclosure-toggle")?.getAttribute("aria-expanded") === "true"`);
-await evaluate(`document.querySelector(".margin-disclosure-toggle")?.scrollIntoView({ block: "start" })`);
+assert.equal(notesDeepDive.collapsedGate, false);
+assert.equal(notesDeepDive.insightSource, "From your notes");
+console.log("note evidence", notesDeepDive);
+if (notesDeepDive.cards > 0) {
+  await evaluate(`document.querySelector(".deep-note-card:not([open]) summary")?.click()`);
+  await waitFor(`Boolean(document.querySelector(".deep-note-card[open] .deep-note-body"))`);
+}
+await evaluate(`document.querySelector(".notes-deep-dive, .deep-note-card")?.scrollIntoView({ block: "start" })`);
 await sleep(260);
-await screenshot("paper-note-evidence-open-margin", ".living-margin");
+await screenshot("paper-notes-deep-margin", ".living-margin");
 
 await evaluate(`document.querySelector(".margin-frame-action")?.click()`);
 await waitFor(`document.querySelector(".living-margin")?.dataset.marginMode === "chapter"`);
@@ -426,7 +465,7 @@ assert.equal(
 );
 await screenshot("paper-done-focus-margin", ".living-margin");
 
-await selectMarginTab("connections");
+await selectMarginTab("overview");
 await navigatePassage(leavePassage ?? original.passage);
 await setTranslation(leavePackage ?? original.packageId);
 await setMargin(original.margin);

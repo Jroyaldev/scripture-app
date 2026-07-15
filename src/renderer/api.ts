@@ -56,6 +56,12 @@ declare global {
           tokenId: string,
           readingPackageId?: string,
         ): Promise<LanguageTokenCard | null>;
+        getEntitiesForRange(
+          book: string,
+          chapter: number,
+          startVerse: number,
+          endVerse: number,
+        ): Promise<LanguageEntityRangeResult>;
         hasReverseIndex(readingPackageId: string): Promise<boolean>;
         getLemmaInBook(packageId: string, book: string, lemma: string): Promise<LanguageToken[] | null>;
         getVerseMarks(packageId: string, book: string, chapter: number, verse: number): Promise<LanguageTokenMark[] | null>;
@@ -617,4 +623,12 @@ export type LanguageNameEntityHit = {
   entity: LanguageNameEntity;
   match: "ref+strong" | "ref" | "strong+name" | "strong";
   alternatives: LanguageNameEntity[];
+};
+
+export type LanguageEntityRangeResult = {
+  entities: LanguageNameEntity[];
+  attribution: {
+    name: string;
+    license: string;
+  };
 };

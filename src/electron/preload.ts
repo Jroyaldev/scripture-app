@@ -109,6 +109,8 @@ const api = {
       ipcRenderer.invoke("language-get-token", { packageId, tokenId }),
     getTokenCard: (packageId: string, tokenId: string, readingPackageId?: string) =>
       ipcRenderer.invoke("language-token-card", { packageId, tokenId, readingPackageId }),
+    getEntitiesForRange: (book: string, chapter: number, startVerse: number, endVerse: number) =>
+      ipcRenderer.invoke("language-entities-for-range", { book, chapter, startVerse, endVerse }),
     hasReverseIndex: (readingPackageId: string) =>
       ipcRenderer.invoke("language-has-reverse-index", readingPackageId),
     getLemmaInBook: (packageId: string, book: string, lemma: string) =>

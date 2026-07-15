@@ -284,10 +284,7 @@ function addCrossReferencePreviews(
         .join(" ")
         .replace(/\s+/g, " ");
       if (!preview) return item;
-      const clipped = preview.length > 170
-        ? `${preview.slice(0, 167).replace(/\s+\S*$/, "")}…`
-        : preview;
-      return { ...item, preview: clipped };
+      return { ...item, preview };
     }),
   };
 }
@@ -829,6 +826,17 @@ function registerIpcHandlers(): void {
     "language-has-reverse-index",
     (_event, readingPackageId: string) => {
       return reverseIndexes?.hasIndex(readingPackageId) ?? false;
+    },
+  );
+
+  ipcMain.handle(
+    "language-entities-for-range",
+    (_event, opts: { book: string; chapter: number; startVerse: number; endVerse: number }) => {
+      const index = getSharedTipnrIndex();
+      return {
+        entities: index.entitiesForRange(opts.book, opts.chapter, opts.startVerse, opts.endVerse),
+        attribution: { name: index.source, license: index.license },
+      };
     },
   );
 

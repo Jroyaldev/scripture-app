@@ -110,3 +110,14 @@ test("TIPNR covers people and places across OT and NT", () => {
   assert.ok(goliath);
   assert.equal(goliath!.entity.displayName, "Goliath");
 });
+
+test("TIPNR returns unique people and places in first-appearance order for a range", () => {
+  const idx = new TipnrIndex();
+  idx.loadJson(readFileSync(indexPath, "utf8"));
+
+  const entities = idx.entitiesForRange("ACT", 19, 1, 7);
+  assert.ok(entities.length > 0);
+  assert.equal(new Set(entities.map((entity) => entity.id)).size, entities.length);
+  assert.ok(entities.some((entity) => entity.displayName === "Paul"));
+  assert.ok(entities.every((entity) => entity.kind === "person" || entity.kind === "place"));
+});

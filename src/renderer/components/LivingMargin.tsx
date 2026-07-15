@@ -5,7 +5,9 @@ import type {
   BookNameData,
   CrossReferenceMatchData,
   CrossReferenceResultData,
+  LanguageEntityRangeResult,
   NoteRecord,
+  ParsedNoteData,
   QueryResult,
   SemanticMarginResult,
   SuggestedCrossRefData,
@@ -18,12 +20,13 @@ export interface PinnedRange {
   end: number;
 }
 
-type MarginTab = "passage" | "connections" | "notes";
+type MarginTab = "overview" | "connections" | "passage" | "notes";
 
-const MARGIN_TABS: Array<{ id: MarginTab; label: string }> = [
-  { id: "connections", label: "Cross refs" },
-  { id: "passage", label: "Passage" },
-  { id: "notes", label: "Notes" },
+const MARGIN_TABS: Array<{ id: MarginTab; label: string; accessibleLabel: string }> = [
+  { id: "overview", label: "Overview", accessibleLabel: "Overview" },
+  { id: "connections", label: "Refs", accessibleLabel: "Cross references" },
+  { id: "passage", label: "Passage", accessibleLabel: "Passage study" },
+  { id: "notes", label: "Notes", accessibleLabel: "Notes" },
 ];
 
 interface Props {
@@ -104,39 +107,6 @@ function PassageQuote({
   );
 }
 
-function MarginDisclosure({
-  label,
-  detail,
-  count,
-  children,
-}: {
-  label: string;
-  detail: string;
-  count: number;
-  children: React.ReactNode;
-}): React.JSX.Element {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <section className={`margin-section margin-disclosure${open ? " is-open" : ""}`}>
-      <button
-        type="button"
-        className="margin-disclosure-toggle"
-        aria-expanded={open}
-        onClick={() => setOpen((value) => !value)}
-      >
-        <span className="margin-disclosure-copy">
-          <span className="margin-disclosure-title">{label}</span>
-          <span className="margin-disclosure-detail">{detail}</span>
-        </span>
-        <span className="margin-disclosure-count" aria-label={`${count} items`}>{count}</span>
-        <span className="margin-disclosure-caret" aria-hidden="true">›</span>
-      </button>
-      {open && <div className="margin-disclosure-body">{children}</div>}
-    </section>
-  );
-}
-
 function MarginEmptyView({
   title,
   detail,
@@ -152,12 +122,39 @@ function MarginEmptyView({
   );
 }
 
-function NotePreview({ note }: { note: NoteRecord }): React.JSX.Element {
+function DeepNoteCard({
+  title,
+  body,
+  meta,
+  reasons,
+  defaultOpen = false,
+}: {
+  title: string;
+  body: string;
+  meta?: string;
+  reasons?: Array<{ kind: string; label: string }>;
+  defaultOpen?: boolean;
+}): React.JSX.Element {
   return (
-    <article className="margin-card">
-      <div className="card-title">{note.title || "Untitled"}</div>
-      <div className="card-excerpt">{note.body_text.slice(0, 150)}</div>
-    </article>
+    <details className="deep-note-card" open={defaultOpen || undefined}>
+      <summary>
+        <span className="deep-note-summary-copy">
+          <span className="deep-note-title">{title || "Untitled"}</span>
+          {meta && <span className="deep-note-meta">{meta}</span>}
+        </span>
+        <span className="deep-note-caret" aria-hidden="true">›</span>
+      </summary>
+      <div className="deep-note-body">{body || "This note has no body text."}</div>
+      {reasons && reasons.length > 0 && (
+        <div className="card-reasons" aria-label="Why this note surfaced">
+          {reasons.map((reason, index) => (
+            <span key={`${reason.kind}-${index}`} className={`reason-chip reason-${reason.kind}`}>
+              {reason.label}
+            </span>
+          ))}
+        </div>
+      )}
+    </details>
   );
 }
 
@@ -222,15 +219,6 @@ function CrossRefsBlock({
   result: CrossReferenceResultData;
   onNavigate?: (ref: string) => void;
 }): React.JSX.Element {
-  const [open, setOpen] = useState(false);
-  const preview = 3;
-  const shown = open ? result.items : result.items.slice(0, preview);
-  const rest = result.items.length - shown.length;
-
-  useEffect(() => {
-    setOpen(false);
-  }, [result.sourceBref]);
-
   return (
     <section className="margin-section crossref-section" aria-label="OpenBible cross references">
       <div className="crossref-heading">
@@ -251,23 +239,10 @@ function CrossRefsBlock({
       </div>
 
       <div className="crossref-list">
-        {shown.map((item) => (
+        {result.items.map((item) => (
           <CrossReferenceRow key={item.targetBref} item={item} onNavigate={onNavigate} />
         ))}
       </div>
-
-      {rest > 0 && (
-        <button type="button" className="crossref-expand" onClick={() => setOpen(true)}>
-          Show {rest} more
-          <span aria-hidden="true">↓</span>
-        </button>
-      )}
-      {open && result.items.length > preview && (
-        <button type="button" className="crossref-expand" onClick={() => setOpen(false)}>
-          Show less
-          <span aria-hidden="true">↑</span>
-        </button>
-      )}
 
       <div
         className="crossref-attribution"
@@ -321,6 +296,155 @@ function NoteCrossRefsBlock({
   );
 }
 
+function IntentOverview({
+  crossRefs,
+  directNote,
+  semantic,
+  entityResult,
+  loading,
+  onNavigate,
+  onOpenTab,
+}: {
+  crossRefs: CrossReferenceResultData | null;
+  directNote: NoteRecord | null;
+  semantic: SemanticMarginResult | null | undefined;
+  entityResult: LanguageEntityRangeResult;
+  loading: boolean;
+  onNavigate?: (ref: string) => void;
+  onOpenTab: (tab: MarginTab) => void;
+}): React.JSX.Element {
+  const scripture = crossRefs?.items.slice(0, 2) ?? [];
+  const relatedNote = semantic?.semanticNotes[0] ?? null;
+  const thread = semantic?.threads[0] ?? null;
+  const claim = semantic?.claims.find((item) => item.status === "active") ?? null;
+  const entities = entityResult.entities.slice(0, 4);
+  const hasLibraryLead = directNote != null || relatedNote != null || thread != null || claim != null;
+  const hasContent = scripture.length > 0 || hasLibraryLead || entities.length > 0;
+
+  return (
+    <div className="intent-overview" aria-label="Most relevant study leads">
+      {scripture.length > 0 && (
+        <section className="intent-section" aria-labelledby="intent-scripture-title">
+          <div className="intent-section-head">
+            <h3 id="intent-scripture-title">Scripture</h3>
+            <button type="button" onClick={() => onOpenTab("connections")}>All refs</button>
+          </div>
+          <div className="intent-ref-list">
+            {scripture.map((item) => (
+              <button
+                key={item.targetBref}
+                type="button"
+                className="intent-ref-row"
+                onClick={() => onNavigate?.(item.targetBref)}
+                aria-label={`Open ${item.targetDisplay}`}
+              >
+                <span className="intent-ref-copy">
+                  <span className="intent-ref-title">{item.targetDisplay}</span>
+                  {item.preview && <span className="intent-ref-preview">{item.preview}</span>}
+                </span>
+                <CrossReferenceArrow />
+              </button>
+            ))}
+          </div>
+          {crossRefs && (
+            <div className="intent-attribution">
+              {crossRefs.attribution.name} <span aria-hidden="true">·</span> {crossRefs.attribution.license}
+            </div>
+          )}
+        </section>
+      )}
+
+      {hasLibraryLead && (
+        <section className="intent-section" aria-labelledby="intent-library-title">
+          <div className="intent-section-head">
+            <h3 id="intent-library-title">Your library</h3>
+            <button type="button" onClick={() => onOpenTab("notes")}>All notes</button>
+          </div>
+          <div className="intent-library-leads">
+            {directNote && (
+              <button type="button" className="intent-note-lead" onClick={() => onOpenTab("notes")}>
+                <span className="intent-lead-kind">Anchored note</span>
+                <strong>{directNote.title || "Untitled"}</strong>
+                <span>{directNote.body_text}</span>
+              </button>
+            )}
+            {!directNote && relatedNote && (
+              <button type="button" className="intent-note-lead" onClick={() => onOpenTab("notes")}>
+                <span className="intent-lead-kind">Related note</span>
+                <strong>{relatedNote.title || "Untitled"}</strong>
+                <span>{relatedNote.snippet}</span>
+              </button>
+            )}
+            {thread && (
+              <button type="button" className="intent-note-lead is-secondary" onClick={() => onOpenTab("notes")}>
+                <span className="intent-lead-kind">Theme in your notes</span>
+                <strong>{thread.label}</strong>
+                <span>{thread.summary}</span>
+              </button>
+            )}
+            {!thread && claim && (
+              <button type="button" className="intent-note-lead is-secondary" onClick={() => onOpenTab("notes")}>
+                <span className="intent-lead-kind">Grounded in your notes</span>
+                <strong>{claim.assertion}</strong>
+              </button>
+            )}
+          </div>
+        </section>
+      )}
+
+      {entities.length > 0 && (
+        <section className="intent-section" aria-labelledby="intent-entities-title">
+          <div className="intent-section-head">
+            <h3 id="intent-entities-title">People &amp; places</h3>
+          </div>
+          <div className="intent-entity-list">
+            {entities.map((entity) => (
+              <details key={entity.id} className="intent-entity-card">
+                <summary>
+                  <span className="intent-entity-copy">
+                    <span className="intent-entity-line">
+                      <strong>{entity.displayName}</strong>
+                      <span>{entity.kind}</span>
+                    </span>
+                    <span className="intent-entity-brief">{entity.brief}</span>
+                  </span>
+                  <span className="intent-entity-caret" aria-hidden="true">›</span>
+                </summary>
+                <div className="intent-entity-detail">
+                  {entity.short && entity.short !== entity.brief && <p>{entity.short}</p>}
+                  <span>Indexed in {entity.refCount.toLocaleString()} verse{entity.refCount === 1 ? "" : "s"}</span>
+                </div>
+              </details>
+            ))}
+          </div>
+          {entityResult.entities.length > entities.length && (
+            <p className="intent-more-count">
+              {entityResult.entities.length - entities.length} more appear in this scope as you continue reading.
+            </p>
+          )}
+          <div className="intent-attribution">
+            {entityResult.attribution.name} <span aria-hidden="true">·</span> {entityResult.attribution.license}
+          </div>
+        </section>
+      )}
+
+      {loading && (
+        <div className="intent-loading" role="status">
+          <span className="ai-insight-spinner" aria-hidden="true" />
+          <span>Checking this passage against your library…</span>
+        </div>
+      )}
+
+      {!hasContent && !loading && (
+        <MarginEmptyView
+          title="Nothing strong enough to surface"
+          detail="The deeper passage, reference, and note views remain available without filling this overview with weak guesses."
+        />
+      )}
+    </div>
+  );
+}
+
 export function LivingMargin({
   book,
   chapter,
@@ -346,11 +470,19 @@ export function LivingMargin({
   const [pinnedClaims, setPinnedClaims] = useState<Set<string>>(new Set());
   const [pendingClaimId, setPendingClaimId] = useState<string | null>(null);
   const [claimPinError, setClaimPinError] = useState<{ id: string; message: string } | null>(null);
-  const [activeTab, setActiveTab] = useState<MarginTab>("connections");
+  const [activeTab, setActiveTab] = useState<MarginTab>("overview");
+  const [entityResult, setEntityResult] = useState<LanguageEntityRangeResult>({
+    entities: [],
+    attribution: { name: "STEPBible TIPNR", license: "CC BY 4.0" },
+  });
+  const [entityLoading, setEntityLoading] = useState(false);
+  const [deepNotesById, setDeepNotesById] = useState<Record<string, ParsedNoteData> | null>(null);
+  const [deepNotesLoading, setDeepNotesLoading] = useState(false);
   const frameTitleRef = useRef<HTMLHeadingElement>(null);
   const marginRef = useRef<HTMLElement>(null);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const tabScrollPositionsRef = useRef<Record<MarginTab, number>>({
+    overview: 0,
     passage: 0,
     connections: 0,
     notes: 0,
@@ -485,6 +617,11 @@ export function LivingMargin({
     : isNear
       ? `reading:${book}:${chapter}:${nearVerse}`
       : `chapter:${book}:${chapter}`;
+  const contextStartVerse = pinnedRange?.start ?? nearVerse ?? 1;
+  const finalChapterVerse = chapterVerseText && chapterVerseText.size > 0
+    ? Math.max(...chapterVerseText.keys())
+    : 1;
+  const contextEndVerse = pinnedRange?.end ?? nearVerse ?? finalChapterVerse;
   const noteConnectionCount = isPinned ? pinnedSemantic?.suggestedCrossRefs.length ?? 0 : 0;
   const connectionCount = (crossRefs?.items.length ?? 0) + noteConnectionCount;
   const notesCount = isPinned
@@ -494,7 +631,47 @@ export function LivingMargin({
       : marginData.notes.length;
 
   useEffect(() => {
-    tabScrollPositionsRef.current = { passage: 0, connections: 0, notes: 0 };
+    let cancelled = false;
+    setEntityLoading(true);
+    void safeCall(() => window.api.language.getEntitiesForRange(
+      book,
+      chapter,
+      contextStartVerse,
+      contextEndVerse,
+    )).then((result) => {
+      if (cancelled) return;
+      if (result.ok) setEntityResult(result.value);
+      else setEntityResult({
+        entities: [],
+        attribution: { name: "STEPBible TIPNR", license: "CC BY 4.0" },
+      });
+      setEntityLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [book, chapter, contextStartVerse, contextEndVerse]);
+
+  useEffect(() => {
+    if (activeTab !== "notes") return;
+    let cancelled = false;
+    setDeepNotesLoading(true);
+    void safeCall(() => window.api.library.readAllNotes()).then((result) => {
+      if (cancelled) return;
+      if (result.ok) {
+        setDeepNotesById(Object.fromEntries(
+          result.value.map((note) => [note.frontmatter.id, note]),
+        ));
+      }
+      setDeepNotesLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab, marginData.notes.length]);
+
+  useEffect(() => {
+    tabScrollPositionsRef.current = { overview: 0, passage: 0, connections: 0, notes: 0 };
     marginRef.current?.scrollTo({ top: 0 });
   }, [contextKey]);
 
@@ -586,6 +763,7 @@ export function LivingMargin({
               id={`margin-${tab.id}-tab`}
               className={`margin-tab${selected ? " is-active" : ""}`}
               role="tab"
+              aria-label={tab.accessibleLabel}
               aria-selected={selected}
               aria-controls={`margin-${tab.id}-panel`}
               tabIndex={selected ? 0 : -1}
@@ -604,6 +782,24 @@ export function LivingMargin({
       {/* --- State 1: Chapter overview (default) --- */}
       {!isPinned && !isNear && (
         <div className="margin-panel-anim" data-margin-view="chapter">
+          <section
+            id="margin-overview-panel"
+            className="margin-tab-panel"
+            role="tabpanel"
+            aria-labelledby="margin-overview-tab"
+            hidden={activeTab !== "overview"}
+          >
+            <IntentOverview
+              crossRefs={crossRefs}
+              directNote={marginData.notes[0] ?? null}
+              semantic={semanticData}
+              entityResult={entityResult}
+              loading={entityLoading || Boolean(semanticLoading)}
+              onNavigate={onNavigateToRef}
+              onOpenTab={activateTab}
+            />
+          </section>
+
           <section
             id="margin-passage-panel"
             className="margin-tab-panel"
@@ -692,7 +888,15 @@ export function LivingMargin({
             )}
             {marginData.notes.length > 0 ? (
               <div className="margin-note-list">
-                {marginData.notes.map((note) => <NotePreview key={note.id} note={note} />)}
+                {marginData.notes.map((note, index) => (
+                  <DeepNoteCard
+                    key={note.id}
+                    title={note.title}
+                    body={note.body_text}
+                    meta="Anchored in this chapter"
+                    defaultOpen={index === 0}
+                  />
+                ))}
               </div>
             ) : semanticLoading ? (
               <div className="margin-overview-loading" role="status">
@@ -712,6 +916,24 @@ export function LivingMargin({
       {/* --- State 2: Ambient "currently reading" --- */}
       {isNear && (
         <div className="margin-panel-anim" data-margin-view="reading">
+          <section
+            id="margin-overview-panel"
+            className="margin-tab-panel"
+            role="tabpanel"
+            aria-labelledby="margin-overview-tab"
+            hidden={activeTab !== "overview"}
+          >
+            <IntentOverview
+              crossRefs={crossRefs}
+              directNote={nearNote}
+              semantic={semanticData}
+              entityResult={entityResult}
+              loading={entityLoading || Boolean(semanticLoading)}
+              onNavigate={onNavigateToRef}
+              onOpenTab={activateTab}
+            />
+          </section>
+
           <section
             id="margin-passage-panel"
             className="margin-tab-panel"
@@ -759,7 +981,12 @@ export function LivingMargin({
               <p>Your local library at this verse.</p>
             </div>
             {nearNote ? (
-              <NotePreview note={nearNote} />
+              <DeepNoteCard
+                title={nearNote.title}
+                body={nearNote.body_text}
+                meta="Anchored at this verse"
+                defaultOpen
+              />
             ) : (
               <MarginEmptyView
                 title="No note on this verse"
@@ -779,6 +1006,24 @@ export function LivingMargin({
           Never show permanent empty AI shells. */}
       {isPinned && (
         <div className="margin-panel-anim" data-margin-view="selected">
+          <section
+            id="margin-overview-panel"
+            className="margin-tab-panel"
+            role="tabpanel"
+            aria-labelledby="margin-overview-tab"
+            hidden={activeTab !== "overview"}
+          >
+            <IntentOverview
+              crossRefs={crossRefs}
+              directNote={pinnedNote}
+              semantic={pinnedSemantic}
+              entityResult={entityResult}
+              loading={entityLoading || pinnedAiLoading}
+              onNavigate={onNavigateToRef}
+              onOpenTab={activateTab}
+            />
+          </section>
+
           <section
             id="margin-passage-panel"
             className="margin-tab-panel"
@@ -884,7 +1129,12 @@ export function LivingMargin({
           {pinnedNote && (
             <section className="margin-section margin-note-section">
               <h3 className="margin-section-header">Your note</h3>
-              <NotePreview note={pinnedNote} />
+              <DeepNoteCard
+                title={pinnedNote.title}
+                body={pinnedNote.body_text}
+                meta="Anchored to this passage"
+                defaultOpen
+              />
             </section>
           )}
 
@@ -905,32 +1155,28 @@ export function LivingMargin({
             </section>
           )}
 
-          {/* Secondary note-derived material is real but subordinate. Keep it
-              available without forcing every category into the reading path. */}
+          {deepNotesLoading && pinnedSemantic && pinnedSemantic.semanticNotes.length > 0 && (
+            <div className="deep-notes-loading" role="status">
+              <span className="ai-insight-spinner" aria-hidden="true" />
+              <span>Opening complete notes…</span>
+            </div>
+          )}
+
+          {/* Notes is the deliberate deep-dive view. All retrieved material is
+              present here; individual complete notes expand in place. */}
           {pinnedSemantic && pinnedLibraryItemCount > 0 && (
-            <MarginDisclosure
-              key={pinKey}
-              label="More from your notes"
-              detail="Related notes, themes, and grounded claims"
-              count={pinnedLibraryItemCount}
-            >
+            <section className="margin-section notes-deep-dive" aria-label="Complete related material from your notes">
               {pinnedSemantic.semanticNotes.length > 0 && (
                 <div className="margin-subsection">
                   <h4 className="margin-subsection-title">Related notes</h4>
                   {pinnedSemantic.semanticNotes.map((sn) => (
-                    <article key={sn.noteId} className="margin-card">
-                      <div className="card-title">{sn.title || "Untitled"}</div>
-                      <div className="card-excerpt">{sn.snippet}</div>
-                      {sn.reasons && sn.reasons.length > 0 && (
-                        <div className="card-reasons">
-                          {sn.reasons.map((reason, index) => (
-                            <span key={`${reason.kind}-${index}`} className={`reason-chip reason-${reason.kind}`}>
-                              {reason.label}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </article>
+                    <DeepNoteCard
+                      key={sn.noteId}
+                      title={deepNotesById?.[sn.noteId]?.frontmatter.title || sn.title}
+                      body={deepNotesById?.[sn.noteId]?.body ?? sn.snippet}
+                      meta="Related note"
+                      reasons={sn.reasons}
+                    />
                   ))}
                 </div>
               )}
@@ -975,7 +1221,7 @@ export function LivingMargin({
                   })}
                 </div>
               )}
-            </MarginDisclosure>
+            </section>
           )}
 
           {!pinnedAiLoading && !pinnedNote && !pinnedInsight && pinnedLibraryItemCount === 0 && (
