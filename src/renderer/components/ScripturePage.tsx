@@ -137,6 +137,53 @@ function JumpIcon(): React.JSX.Element {
   );
 }
 
+function ReadingCanvasLoading({ passage }: { passage: string }): React.JSX.Element {
+  return (
+    <div className="reading-state reading-loading" role="status" aria-live="polite">
+      <span className="sr-only">Loading {passage}</span>
+      <div className="reading-skeleton" aria-hidden="true">
+        {Array.from({ length: 7 }, (_, index) => (
+          <span key={index} className="reading-skeleton-line" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ReadingCanvasError({
+  passage,
+  error,
+  onRetry,
+}: {
+  passage: string;
+  error: string;
+  onRetry: () => void;
+}): React.JSX.Element {
+  return (
+    <section className="reading-state reading-state-message" role="alert" aria-labelledby="chapter-error-title">
+      <span className="reading-state-kicker">Text unavailable</span>
+      <h2 id="chapter-error-title">We couldn&apos;t open {passage}.</h2>
+      <p>Try again, or choose another installed Bible text from the toolbar.</p>
+      <button type="button" className="reading-state-action" onClick={onRetry}>Try again</button>
+      <details className="reading-state-details">
+        <summary>Technical details</summary>
+        <code>{error}</code>
+      </details>
+    </section>
+  );
+}
+
+function ReadingCanvasEmpty({ passage, onRetry }: { passage: string; onRetry: () => void }): React.JSX.Element {
+  return (
+    <section className="reading-state reading-state-message" role="status" aria-labelledby="chapter-empty-title">
+      <span className="reading-state-kicker">No verses in this text</span>
+      <h2 id="chapter-empty-title">{passage} is empty here.</h2>
+      <p>Choose another installed Bible text from the toolbar, or check this text again.</p>
+      <button type="button" className="reading-state-action" onClick={onRetry}>Check again</button>
+    </section>
+  );
+}
+
 function SearchIconSmall(): React.JSX.Element {
   return (
     <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
@@ -278,6 +325,8 @@ export function ScripturePage({
   const [versionAnchor, setVersionAnchor] = useState<DOMRect | null>(null);
 
   const contentRef = useRef<HTMLDivElement>(null);
+  const chapterHeadingRef = useRef<HTMLHeadingElement>(null);
+  const shouldFocusChapterHeading = useRef(false);
   const paletteRef = useRef<HTMLDivElement>(null);
   // The .verse-text container — the SVG highlight underlay is positioned
   // absolutely inside it (behind the verse rows). Measured each pass so the
@@ -624,6 +673,17 @@ export function ScripturePage({
     el.addEventListener("scroll", handler);
     return () => el.removeEventListener("scroll", handler);
   }, []);
+
+  // A chapter is a new reading surface, not the continuation of the previous
+  // scroll position. Keep every navigation path deterministic; the explicit
+  // chapter-end continuation additionally moves focus to the new landmark.
+  useEffect(() => {
+    if (contentRef.current) contentRef.current.scrollTop = 0;
+    setScrolled(false);
+    if (!shouldFocusChapterHeading.current) return;
+    shouldFocusChapterHeading.current = false;
+    chapterHeadingRef.current?.focus();
+  }, [book, chapter, packageId]);
 
   // Keep the passage-picker's book-browsing view in sync with the current book.
   useEffect(() => {
@@ -1053,8 +1113,23 @@ export function ScripturePage({
   // existing pointer interaction model. Reuses the same positioning logic so
   // the palette appears in the same spot a click would put it.
   const handleVerseKeyDown = useCallback((verse: number, event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!event.metaKey && !event.ctrlKey && !event.altKey) {
+      const verses = chapterData?.verses ?? [];
+      const index = verses.findIndex((item) => item.verse === verse);
+      let targetVerse: number | null = null;
+      if (event.key === "ArrowUp" && index > 0) targetVerse = verses[index - 1]!.verse;
+      if (event.key === "ArrowDown" && index >= 0 && index < verses.length - 1) targetVerse = verses[index + 1]!.verse;
+      if (event.key === "Home" && verses.length > 0) targetVerse = verses[0]!.verse;
+      if (event.key === "End" && verses.length > 0) targetVerse = verses[verses.length - 1]!.verse;
+      if (targetVerse != null) {
+        event.preventDefault();
+        verseRowRefs.current.get(targetVerse)?.focus();
+        return;
+      }
+    }
     if (event.key !== "Enter" && event.key !== " ") return;
     event.preventDefault();
+    studyLockVerseRef.current = null;
     setPhraseSelection(null);
     const result = nextVerseSelection(selectedVerses, verseSelectionAnchorRef.current, verse, event.shiftKey);
     const next = result.selection;
@@ -1067,7 +1142,7 @@ export function ScripturePage({
     } else {
       setShowHighlightPalette(false);
     }
-  }, [selectedVerses, positionPalette]);
+  }, [chapterData, selectedVerses, positionPalette]);
 
   // Re-anchor the palette on window resize AND on scroll — its position is
   // computed from viewport-relative rects at the moment it opens, which go
@@ -1864,19 +1939,14 @@ export function ScripturePage({
 
       <div className="scripture-body">
       <div className="scripture-content" ref={contentRef}>
-        <div className="scripture-inner">
+        <article className="scripture-inner" aria-labelledby="reading-chapter-title">
           <div className="chapter-header">
-            <span className="book-name">{displayBookName}</span>
-            <span className="chapter-number">{chapter}</span>
+            <h1 id="reading-chapter-title" className="chapter-title" ref={chapterHeadingRef} tabIndex={-1}>
+              <span className="book-name">{displayBookName}</span>
+              {" "}
+              <span className="chapter-number">{chapter}</span>
+            </h1>
           </div>
-
-          {semanticData && semanticData.threads.length > 0 && (
-            <div className="theme-tag-row">
-              {semanticData.threads.slice(0, 3).map((t) => (
-                <span key={t.id} className="theme-tag">{t.label}</span>
-              ))}
-            </div>
-          )}
 
           <div
             className={[
@@ -1885,6 +1955,7 @@ export function ScripturePage({
               pinnedRange ? "has-pin" : "",
             ].filter(Boolean).join(" ")}
             ref={verseTextRef}
+            aria-busy={!chapterData && !chapterError}
             style={{ position: "relative" }}
             onMouseUp={handleTextMouseUp}
             onMouseDown={() => { suppressNextClickRef.current = false; }}
@@ -1942,17 +2013,22 @@ export function ScripturePage({
             })}
 
             {!chapterData && !chapterError && (
-              <p className="loading-text-inline">Loading text…</p>
+              <ReadingCanvasLoading passage={`${displayBookName} ${chapter}`} />
             )}
 
             {chapterError && (
-              <div className="chapter-error">
-                <p>Failed to load {displayBookName} {chapter}</p>
-                <p className="chapter-error-detail">{chapterError}</p>
-                <button className="btn-secondary" onClick={() => setRetryToken((t) => t + 1)}>
-                  Retry
-                </button>
-              </div>
+              <ReadingCanvasError
+                passage={`${displayBookName} ${chapter}`}
+                error={chapterError}
+                onRetry={() => setRetryToken((token) => token + 1)}
+              />
+            )}
+
+            {chapterData && chapterData.verses.length === 0 && (
+              <ReadingCanvasEmpty
+                passage={`${displayBookName} ${chapter}`}
+                onRetry={() => setRetryToken((token) => token + 1)}
+              />
             )}
 
             {/* Mini toolbar always when a selection is active — unified chrome
@@ -1978,7 +2054,28 @@ export function ScripturePage({
               )}
             </PaletteExit>
           </div>
-        </div>
+
+          {chapterData && chapterData.verses.length > 0 && (
+            <footer className="chapter-end">
+              <span className="chapter-end-label">End of {displayBookName} {chapter}</span>
+              {chapter < chapterCount && (
+                <button
+                  type="button"
+                  className="chapter-continue"
+                  onClick={() => {
+                    shouldFocusChapterHeading.current = true;
+                    userNavigatedRef.current = true;
+                    setChapter((current) => current + 1);
+                  }}
+                  aria-label={`Continue to ${displayBookName} ${chapter + 1}`}
+                >
+                  <span>Continue to {displayBookName} {chapter + 1}</span>
+                  <ChapterArrowIcon direction="next" />
+                </button>
+              )}
+            </footer>
+          )}
+        </article>
       </div>
 
       {marginVisible && !focusMode && (

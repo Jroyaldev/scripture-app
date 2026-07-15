@@ -4,6 +4,21 @@
 > **Predecessors:** A0 (snapshot), A1 (native build), B1 (scripture data).
 > **Contracts:** §4.2 (event fold), §4.4 (SQLite materialized view), §4.6 (note format), INV-7 (append-only), INV-9 (safe to rebuild).
 
+## Progress — 2026-07-15 (Reading canvas)
+
+The fourth bounded desktop visual-system pass is complete. It turns the chapter body into a deliberate long-form reading surface without changing Living Margin content, study-overlay semantics, or the separate mobile worktree:
+
+- **Scripture-first hierarchy:** the chapter is now a semantic labelled article with a real heading, a restrained 36–44px book/chapter landmark, and responsive reading measure. Ambient note-derived theme tags are no longer mixed into the canonical text surface.
+- **Quieter verse rhythm:** every row uses a stable number gutter and Source Serif text column. Hover is a faint material wash; focus uses a short gold rail instead of a perimeter; multi-verse selection does not paint over the existing source-colored SVG highlight layer.
+- **Deliberate non-content states:** loading has an announced status and reduced-motion-safe skeleton; error gives a useful retry with collapsed technical detail; empty text states explain what is absent and offer a check-again action.
+- **Complete spatial keyboard flow:** Arrow Up/Down traverse real verses, Home/End move to the chapter boundaries, and Enter/Space preserve selection behavior. Chapter changes reset reading position, while bottom continuation moves focus to the next chapter heading.
+- **Calm chapter continuity:** a minimal end marker and `Continue to …` action replace the previous dead stop without turning the reader into a paginated card interface.
+- **Repeatable visual QA:** `npm run qa:canvas -- --leave=light --leave-package=kjv --leave-passage="Genesis 1"` verifies semantic structure, hover/focus/range selection, all four atmospheres, focus mode, chapter continuation, and the 900px desktop boundary. Captures live in `docs/ui-audit/reading-canvas/`.
+
+**Verification:** `npm run lint`, full `npm test` (**379 tests: 369 passing, 10 expected Electron-ABI skips**), Electron build, renderer build, the self-driving canvas tour, and `git diff --check` pass.
+
+The next bounded component is the **Living Margin frame**. Mobile remains explicitly outside this worktree.
+
 ## Progress — 2026-07-15 (Reading topbar)
 
 The third bounded desktop visual-system pass is complete. It turns the reading topbar into one stable command surface without changing the reading canvas, Living Margin content, or mobile worktree:

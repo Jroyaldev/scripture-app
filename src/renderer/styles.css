@@ -297,6 +297,18 @@
 /* Reset */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 html, body, #root {
   height: 100%;
   background: var(--bg-primary);
@@ -1152,8 +1164,9 @@ html, body, #root {
 .scripture-content {
   flex: 1;
   overflow-y: auto;
-  padding: var(--sp-3xl) var(--page-gutter);
+  padding: clamp(36px, 5vh, 56px) clamp(24px, 3.2vw, var(--page-gutter)) 80px;
   background: var(--bg-reading);
+  scroll-padding-top: 32px;
   transition: background-color var(--transition-slow);
 }
 
@@ -1163,37 +1176,30 @@ html, body, #root {
 }
 
 .chapter-header {
-  margin-bottom: var(--sp-sm);
+  margin-bottom: 26px;
 }
 
-.chapter-header .book-name {
+.chapter-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
   font-family: var(--font-reading);
-  font-size: 30px;
+  font-size: clamp(2.25rem, 1.9rem + 0.8vw, 2.75rem);
   font-weight: var(--fw-semibold);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
   color: var(--text-primary);
 }
 
-.chapter-header .chapter-number {
-  font-family: var(--font-reading);
-  font-size: 20px;
+.chapter-title:focus {
+  outline: none;
+}
+
+.chapter-title .chapter-number {
+  font-size: 0.64em;
   font-weight: var(--fw-normal);
   color: var(--text-secondary);
-  margin-left: var(--sp-sm);
-}
-
-.theme-tag-row {
-  display: flex;
-  gap: 6px;
-  margin-bottom: var(--sp-2xl);
-}
-
-.theme-tag {
-  font-size: 11px;
-  font-weight: var(--fw-medium);
-  color: var(--text-tertiary);
-  background: var(--bg-secondary);
-  padding: 3px 9px;
-  border-radius: 99px;
+  letter-spacing: -0.01em;
 }
 
 .verse-text {
@@ -1209,18 +1215,21 @@ html, body, #root {
 }
 
 .verse-line {
-  display: flex;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
   align-items: baseline;
-  gap: 2px;
-  margin-bottom: var(--sp-xs);
+  column-gap: 10px;
+  margin-bottom: 2px;
   position: relative;
   /* Lift the row above the SVG highlight underlay (which sits at z-index 0
      inside the .verse-text stacking context). */
   z-index: 1;
   cursor: pointer;
-  padding: 2px 4px;
-  border-radius: var(--radius-sm);
-  transition: background var(--transition-fast);
+  padding: 3px 10px 4px 0;
+  border-radius: 8px;
+  transition:
+    background-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 /* Pinned-verse left accent bar. A row-level pin indicator — distinct from
@@ -1230,35 +1239,34 @@ html, body, #root {
   position: absolute;
   left: 0;
   top: 50%;
-  width: 3px;
+  width: 2px;
   height: 0;
-  border-radius: 0 3px 3px 0;
+  border-radius: 0 2px 2px 0;
   background: var(--accent-current);
   transform: translateY(-50%);
   transition: height var(--transition-normal);
 }
 
 .verse-line.selected::before {
-  height: 22px;
+  height: 18px;
 }
 
 .verse-line:hover {
-  background: rgba(0, 0, 0, 0.03);
+  background: color-mix(in srgb, var(--study-hover-surface) 42%, transparent);
 }
 
 /* Pinned row tint — a very subtle full-row background, never a wide flat
    block (kept separate from the highlight-wash layer on .verse-text-span). */
 .verse-line.selected {
-  background: rgba(61, 107, 181, 0.07);
+  background: color-mix(in srgb, var(--study-gold) 8%, transparent);
 }
 
 .verse-num {
   font-family: var(--font-ui);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-medium);
   color: var(--text-verse-number);
-  margin-right: var(--sp-sm);
-  min-width: 20px;
+  padding-top: 0.16em;
   text-align: right;
   flex-shrink: 0;
   user-select: none;
@@ -1267,7 +1275,23 @@ html, body, #root {
 
 .verse-line.selected .verse-num {
   color: var(--accent-current);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-medium);
+}
+
+.scripture-content .verse-line:focus {
+  outline: none;
+  background: color-mix(in srgb, var(--study-hover-surface) 54%, transparent);
+  box-shadow: none;
+}
+
+.scripture-content .verse-line:focus::before {
+  height: 18px;
+  background: var(--study-gold);
+}
+
+.scripture-content .verse-line:focus .verse-num,
+.verse-line:hover .verse-num {
+  color: var(--text-secondary);
 }
 
 /*
@@ -1315,6 +1339,13 @@ html, body, #root {
      needed (and was a no-op anyway: the row is a flex container, so the span
      is blockified and never fragments per visual line). */
   padding: 0;
+  min-width: 0;
+  cursor: text;
+  user-select: text;
+}
+
+.scripture-content ::selection {
+  background: color-mix(in srgb, var(--study-gold) 24%, transparent);
 }
 
 /*
@@ -1351,6 +1382,182 @@ html, body, #root {
   z-index: 0;
   pointer-events: none;
   overflow: visible;
+}
+
+/* The reading column keeps loading, failure, and empty states in the same
+   typographic measure as Scripture. They are calm interruptions, not app-wide
+   dashboard cards. */
+.reading-state {
+  min-height: 320px;
+}
+
+.reading-loading {
+  padding-top: 2px;
+}
+
+.reading-skeleton {
+  display: grid;
+  gap: 20px;
+  padding-left: 40px;
+  overflow: hidden;
+}
+
+.reading-skeleton-line {
+  display: block;
+  width: 94%;
+  height: 15px;
+  border-radius: 99px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--text-primary) 6%, transparent) 0%,
+    color-mix(in srgb, var(--text-primary) 11%, transparent) 46%,
+    color-mix(in srgb, var(--text-primary) 6%, transparent) 100%
+  );
+  background-size: 220% 100%;
+  animation: reading-skeleton-shift 1.6s ease-in-out infinite;
+}
+
+.reading-skeleton-line:nth-child(2) { width: 81%; }
+.reading-skeleton-line:nth-child(3) { width: 89%; }
+.reading-skeleton-line:nth-child(4) { width: 68%; }
+.reading-skeleton-line:nth-child(5) { width: 96%; }
+.reading-skeleton-line:nth-child(6) { width: 76%; }
+.reading-skeleton-line:nth-child(7) { width: 86%; }
+
+@keyframes reading-skeleton-shift {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+
+.reading-state-message {
+  max-width: 520px;
+  margin: 24px auto 0;
+  padding: 38px 0 42px;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  text-align: center;
+  font-family: var(--font-ui);
+}
+
+.reading-state-kicker {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.reading-state-message h2 {
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  font-family: var(--font-reading);
+  font-size: 24px;
+  font-weight: var(--fw-semibold);
+  line-height: 1.25;
+}
+
+.reading-state-message > p {
+  max-width: 420px;
+  margin: 0 auto 20px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.reading-state-action {
+  min-height: 36px;
+  padding: 0 15px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: var(--text-primary);
+  color: var(--bg-surface);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.reading-state-action:hover {
+  opacity: 0.86;
+}
+
+.reading-state-action:active {
+  transform: translateY(1px);
+}
+
+.reading-state-details {
+  max-width: 440px;
+  margin: 20px auto 0;
+  color: var(--text-tertiary);
+  font-size: 11px;
+}
+
+.reading-state-details summary {
+  width: max-content;
+  margin: 0 auto;
+  cursor: pointer;
+}
+
+.reading-state-details code {
+  display: block;
+  margin-top: 9px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.chapter-end {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 52px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border-subtle);
+  font-family: var(--font-ui);
+}
+
+.chapter-end-label {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.chapter-continue {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.chapter-continue:hover {
+  background: color-mix(in srgb, var(--study-hover-surface) 58%, transparent);
+  color: var(--text-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reading-skeleton-line {
+    animation: none;
+  }
 }
 
 /* Light-mode-only multiply blend: lets the highlight read as pigment sitting
@@ -2710,24 +2917,6 @@ html, body, #root {
 .nav-arrow:focus-visible {
   outline: 2px solid var(--study-gold);
   outline-offset: 1px;
-}
-
-/* --- Chapter error --- */
-
-.chapter-error {
-  padding: var(--sp-xl);
-  text-align: center;
-}
-
-.chapter-error p {
-  color: var(--text-secondary);
-  margin-bottom: var(--sp-sm);
-}
-
-.chapter-error-detail {
-  font-size: var(--fs-xs);
-  color: var(--text-tertiary);
-  margin-bottom: var(--sp-md) !important;
 }
 
 /* --- Highlight palette additions --- */
@@ -7602,9 +7791,8 @@ textarea:focus-visible,
 
 /* Multi-select / mixed selection chrome on verse rows */
 .verse-line.selected.multi-select::before {
-  height: 28px;
-  width: 3px;
-  background: var(--text-secondary);
+  height: 24px;
+  width: 2px;
   opacity: 0.85;
 }
 .verse-line.selected.mixed-select::before {
@@ -7618,11 +7806,15 @@ textarea:focus-visible,
   width: 3.5px;
 }
 .verse-line.selected.multi-select {
-  background: rgba(90, 90, 90, 0.06);
+  background: color-mix(in srgb, var(--text-secondary) 6%, transparent);
 }
-.verse-text.has-multi-select .verse-line.selected {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border-medium) 70%, transparent);
-  border-radius: 4px;
+.verse-line.selected.multi-select.hl-yellow,
+.verse-line.selected.multi-select.hl-green,
+.verse-line.selected.multi-select.hl-blue,
+.verse-line.selected.multi-select.hl-pink,
+.verse-line.selected.multi-select.hl-purple,
+.verse-line.selected.multi-select.hl-mixed {
+  background: transparent;
 }
 
 /* Dim highlights outside the pin */

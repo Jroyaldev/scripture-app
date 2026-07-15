@@ -48,7 +48,8 @@
     "build:hebrew-orbit": "node --import tsx scripts/build-hebrew-orbit-index.ts",
     "import:openbible-crossrefs": "node --import tsx scripts/import-openbible-cross-references.ts",
     "qa:sidebar": "node scripts/qa-sidebar-tour.mjs",
-    "qa:topbar": "node scripts/qa-topbar-tour.mjs"
+    "qa:topbar": "node scripts/qa-topbar-tour.mjs",
+    "qa:canvas": "node scripts/qa-reading-canvas-tour.mjs"
   },
   "main": "dist/electron/main.cjs",
   "bin": {
