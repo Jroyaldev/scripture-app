@@ -1,0 +1,147 @@
+{
+  "status": "healthy",
+  "source": {
+    "name": "Pleiades Gazetteer",
+    "release": "4.1",
+    "releaseDate": "2025-05-28",
+    "sourceCommit": "b6a6790f71c45e4a4ef60fce296c506f28f458bf",
+    "releaseUrl": "https://github.com/isawnyu/pleiades.datasets/releases/tag/v4.1",
+    "doi": "10.5281/zenodo.1193921",
+    "license": "CC BY 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
+    "sourceManifestSha256": "12e1dd9b417457e8e48dac77e5abe0c46ad848e9006f714b30fa6c5921e108cc"
+  },
+  "coverage": {
+    "linkedPleiadesIds": 96,
+    "placeCount": 96,
+    "nameCount": 401,
+    "locationCount": 124,
+    "connectionCount": 118,
+    "referenceCount": 886,
+    "geometryCount": 124,
+    "comparableCoordinates": 96,
+    "coordinatesWithin25Km": 61,
+    "coordinatesWithin100Km": 16,
+    "coordinatesOver100Km": 19
+  },
+  "checks": {
+    "manifestPinned": true,
+    "expectedLinkedCoverage": true,
+    "sourceHashes": true,
+    "sourceIdsMatch": true,
+    "uniquePlaceIds": true,
+    "validCoordinates": true,
+    "validGeometry": true,
+    "sourceRights": true,
+    "richMetadataPreserved": true,
+    "coordinateComparisonComplete": true
+  },
+  "review": {
+    "sourceHashMismatches": [],
+    "sourceIdMismatches": [],
+    "invalidCoordinates": [],
+    "invalidGeometry": [],
+    "invalidRights": [],
+    "divergentCoordinates": [
+      {
+        "id": "1043",
+        "distanceKm": 1858.3,
+        "relation": "divergent"
+      },
+      {
+        "id": "727172",
+        "distanceKm": 1647.1,
+        "relation": "divergent"
+      },
+      {
+        "id": "50004",
+        "distanceKm": 1299.1,
+        "relation": "divergent"
+      },
+      {
+        "id": "912849",
+        "distanceKm": 910.4,
+        "relation": "divergent"
+      },
+      {
+        "id": "1004",
+        "distanceKm": 883.4,
+        "relation": "divergent"
+      },
+      {
+        "id": "707539",
+        "distanceKm": 619.4,
+        "relation": "divergent"
+      },
+      {
+        "id": "912964",
+        "distanceKm": 557.6,
+        "relation": "divergent"
+      },
+      {
+        "id": "716588",
+        "distanceKm": 461.5,
+        "relation": "divergent"
+      },
+      {
+        "id": "992072",
+        "distanceKm": 406.4,
+        "relation": "divergent"
+      },
+      {
+        "id": "481865",
+        "distanceKm": 376,
+        "relation": "divergent"
+      },
+      {
+        "id": "991386",
+        "distanceKm": 348.1,
+        "relation": "divergent"
+      },
+      {
+        "id": "991389",
+        "distanceKm": 255.1,
+        "relation": "divergent"
+      },
+      {
+        "id": "1052",
+        "distanceKm": 230.2,
+        "relation": "divergent"
+      },
+      {
+        "id": "1001914",
+        "distanceKm": 229.2,
+        "relation": "divergent"
+      },
+      {
+        "id": "991393",
+        "distanceKm": 200.9,
+        "relation": "divergent"
+      },
+      {
+        "id": "1001913",
+        "distanceKm": 143.9,
+        "relation": "divergent"
+      },
+      {
+        "id": "29475",
+        "distanceKm": 139.6,
+        "relation": "divergent"
+      },
+      {
+        "id": "511328",
+        "distanceKm": 104.7,
+        "relation": "divergent"
+      },
+      {
+        "id": "981531",
+        "distanceKm": 104.7,
+        "relation": "divergent"
+      }
+    ]
+  },
+  "artifact": {
+    "formatVersion": 1,
+    "normalizedSha256": "1d2471ac8fd576dff229be079049cc3c0f3ef4021a4543ed01cd7c3e49fd9879"
+  }
+}

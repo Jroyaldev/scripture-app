@@ -22,6 +22,27 @@ export type TipnrParatextReference = {
   strongs: string[];
 };
 
+export type TipnrRelationshipKind = "parent" | "sibling" | "partner" | "offspring";
+
+/** A source-declared family connection resolved to another TIPNR identity. */
+export type TipnrPersonRelationship = {
+  kind: TipnrRelationshipKind;
+  targetId: string;
+  displayName: string;
+  /** TIPNR marks some identifications with a trailing question qualifier. */
+  uncertain?: boolean;
+};
+
+/** Structured person facts retained from TIPNR's person-record header. */
+export type TipnrPersonProfile = {
+  /** Source wording, kept so role/era parsing is auditable. */
+  description: string;
+  role: string;
+  era?: string;
+  affiliation?: string;
+  relationships: TipnrPersonRelationship[];
+};
+
 export type TipnrEntity = {
   id: string;
   kind: "person" | "place" | "other";
@@ -43,10 +64,11 @@ export type TipnrEntity = {
   /** Edition paratext, deliberately excluded from `refs` and `byRef`. */
   paratextRefs?: TipnrParatextReference[];
   gender?: string;
+  person?: TipnrPersonProfile;
 };
 
 export type TipnrIndexFile = {
-  version: 1 | 2 | 3;
+  version: 1 | 2 | 3 | 4;
   source: string;
   license: string;
   generatedAt: string;

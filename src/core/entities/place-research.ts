@@ -7,6 +7,9 @@
  */
 
 import type { TipnrEntity } from "../language/tipnr.js";
+import type { PleiadesEntityResearch } from "./pleiades-research.js";
+
+export type PlaceImageKind = "site" | "context" | "artifact" | "reception";
 
 export type PlaceResearchImage = {
   file: string;
@@ -14,6 +17,10 @@ export type PlaceResearchImage = {
   sha256: string;
   width: number;
   height: number;
+  /** What the source description says the image contributes to research. */
+  kind: PlaceImageKind;
+  /** The modern location or object label the source image actually depicts. */
+  depictedLocation: string;
   alt: string;
   placeholder?: string;
   credit: string;
@@ -52,7 +59,7 @@ export type PlaceResearchRecord = {
 };
 
 export type PlaceResearchMeta = {
-  formatVersion: 1;
+  formatVersion: 2;
   id: "openbible-place-research";
   name: "OpenBible Bible Geocoding";
   sourceUrl: string;
@@ -64,6 +71,7 @@ export type PlaceResearchMeta = {
   naturalEarthLicense: "Public domain";
   placeCount: number;
   imageCount: number;
+  imageKinds: Record<PlaceImageKind, number>;
 };
 
 export type PlaceResearchArtifact = {
@@ -83,6 +91,7 @@ export type MiniMapData = {
 export type EntityResearchData = {
   entity: TipnrEntity;
   place: PlaceResearchRecord | null;
+  pleiades: PleiadesEntityResearch | null;
   minimap: MiniMapData | null;
   imageDataUrl: string | null;
 };
@@ -112,7 +121,7 @@ export class PlaceResearchIndex {
 
   loadArtifact(jsonText: string): number {
     const parsed = JSON.parse(jsonText) as PlaceResearchArtifact;
-    if (parsed.meta.formatVersion !== 1 || parsed.meta.id !== "openbible-place-research") {
+    if (parsed.meta.formatVersion !== 2 || parsed.meta.id !== "openbible-place-research") {
       throw new Error(`Unsupported place research artifact: ${parsed.meta.id} v${parsed.meta.formatVersion}`);
     }
     const count = Object.keys(parsed.places).length;
@@ -143,6 +152,25 @@ export class PlaceResearchIndex {
   }
 }
 
+/**
+ * Conservatively classify OpenBible's curated description. Only explicit
+ * archaeological/site language earns `site`; generic landscapes, current
+ * settlements, and proxy views remain `context`.
+ */
+export function classifyPlaceImageDescription(description: string): PlaceImageKind {
+  const value = description.toLocaleLowerCase();
+  if (/\b(church|monument|memorial|mosque|synagogue|shrine|painting|fresco|icon|sculpture|reconstruction|model|dome of the rock)\b/.test(value)) {
+    return "reception";
+  }
+  if (/\b(artifact|gate from|stele|tablet|inscription|statue|sarcophagus|mosaic|coin|relief|seal|pottery|obelisk|bust)\b/.test(value)) {
+    return "artifact";
+  }
+  if (/\b(ruins?|excavation|archaeological|tell|tel |mound|cave|pool|well|gate at|citadel|fortress|fortification|rock-cut|ancient wall|theater|amphitheater)\b/.test(value)) {
+    return "site";
+  }
+  return "context";
+}
+
 export function confidenceFromScore(score: number): PlaceLocation["confidence"] {
   if (score >= 900) return "high";
   if (score >= 650) return "strong";
@@ -159,7 +187,7 @@ export function buildPlaceMiniMap(
   const height = 164 as const;
   const centerLon = place.primary.longitude;
   const centerLat = place.primary.latitude;
-  const regional = /region|country|territory|sea|river|mountain range|wilderness/i.test(place.type);
+  const regional = /region|country|territory|province|district|body of water|sea|river|mountain range|wilderness|island/i.test(place.type);
   const latSpan = regional ? 13 : 8;
   const lonSpan = latSpan / Math.max(0.42, Math.cos(centerLat * Math.PI / 180));
   const bounds = {

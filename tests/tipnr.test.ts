@@ -45,12 +45,16 @@ test("TIPNR Doctor proves exhaustive structured-row and provenance integrity", (
       translationRowsPreserved: number;
       paratextReferenceEdges: number;
       subscriptionCoordinateCount: number;
+      personProfileCount: number;
+      sourcePersonRelationshipCount: number;
+      resolvedPersonRelationshipCount: number;
+      uncertainPersonRelationshipCount: number;
     };
     checks: Record<string, boolean>;
     artifact: { normalizedSha256: string };
     subscriptions: { coordinates: string[]; detectedInAkjv: string[] };
   };
-  assert.equal(index.version, 3);
+  assert.equal(index.version, 4);
   assert.equal(doctor.status, "healthy");
   assert.deepEqual(Object.entries(doctor.checks).filter(([, passed]) => !passed), []);
   assert.equal(doctor.coverage.structuredRowsParsed, doctor.coverage.structuredRowsWithReferences);
@@ -58,9 +62,60 @@ test("TIPNR Doctor proves exhaustive structured-row and provenance integrity", (
   assert.ok(doctor.coverage.translationRowsPreserved >= 1_400);
   assert.equal(doctor.coverage.paratextReferenceEdges, 50);
   assert.equal(doctor.coverage.subscriptionCoordinateCount, 14);
+  assert.equal(doctor.coverage.personProfileCount, 3_132);
+  assert.equal(doctor.coverage.sourcePersonRelationshipCount, 9_461);
+  assert.equal(doctor.coverage.resolvedPersonRelationshipCount, 9_461);
+  assert.equal(doctor.coverage.uncertainPersonRelationshipCount, 251);
   assert.deepEqual(doctor.subscriptions.coordinates, KJV_EPISTLE_SUBSCRIPTION_REFS);
   assert.deepEqual(doctor.subscriptions.detectedInAkjv, KJV_EPISTLE_SUBSCRIPTION_REFS);
   assert.equal(createHash("sha256").update(raw).digest("hex"), doctor.artifact.normalizedSha256);
+});
+
+test("TIPNR preserves person identity, affiliation, and fully resolved family structure", () => {
+  const index = JSON.parse(readFileSync(indexPath, "utf8")) as TipnrIndexFile;
+  const aaron = index.entities["Aaron@Exo.4.14-Heb=H0175"];
+  assert.ok(aaron?.person);
+  assert.equal(aaron.person.description, "High Priest living at the time of Egypt and Wilderness");
+  assert.equal(aaron.person.role, "High Priest");
+  assert.equal(aaron.person.era, "Egypt and Wilderness");
+  assert.equal(aaron.person.affiliation, "Tribe of Levi");
+  assert.deepEqual(
+    aaron.person.relationships.map((relationship) => [relationship.kind, relationship.displayName]),
+    [
+      ["parent", "Amram"],
+      ["parent", "Jochebed"],
+      ["sibling", "Moses"],
+      ["sibling", "Miriam"],
+      ["partner", "Elisheba"],
+      ["offspring", "Nadab"],
+      ["offspring", "Abihu"],
+      ["offspring", "Ithamar"],
+      ["offspring", "Eleazar"],
+    ],
+  );
+  for (const relationship of aaron.person.relationships) {
+    assert.ok(index.entities[relationship.targetId], relationship.targetId);
+  }
+
+  const paul = index.entities["Paul@Act.7.58-2Pe=G3972G"];
+  assert.equal(paul?.person?.role, "Apostle");
+  assert.equal(paul?.person?.era, "the New Testament");
+  assert.deepEqual(paul?.person?.relationships, []);
+});
+
+test("TIPNR PERSON+PLACE source records use their declared Place schema", () => {
+  const index = JSON.parse(readFileSync(indexPath, "utf8")) as TipnrIndexFile;
+  const schemaPlaces = [
+    "Beth-gader@1Ch.2.51=H1013",
+    "Eshtemoa@Jos.15.50-1Ch=H0851",
+    "Ir-nahash@1Ch.4.12=H5904",
+  ];
+  for (const id of schemaPlaces) {
+    assert.equal(index.entities[id]?.kind, "place", id);
+    assert.equal(index.entities[id]?.person, undefined, id);
+  }
+  assert.equal(index.personCount, 3_132);
+  assert.equal(index.placeCount, 1_013);
 });
 
 test("KJV subscriptions remain attributed paratext and never ordinary Scripture edges", () => {

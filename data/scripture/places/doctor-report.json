@@ -18,13 +18,19 @@
     }
   },
   "coverage": {
-    "tipnrPlaceCount": 1003,
+    "tipnrPlaceCount": 1013,
     "openBibleAncientCount": 1342,
     "linkedAncientCount": 1172,
-    "matchedTipnrPlaceCount": 907,
+    "matchedTipnrPlaceCount": 917,
     "unmatchedTipnrPlaceCount": 96,
-    "imageCount": 597,
-    "mediaBytes": 49312738
+    "imageCount": 604,
+    "imageKinds": {
+      "site": 223,
+      "context": 340,
+      "artifact": 30,
+      "reception": 11
+    },
+    "mediaBytes": 49485518
   },
   "checks": {
     "sourceHashes": true,
@@ -32,6 +38,8 @@
     "uniqueTipnrIdentity": true,
     "validCoordinates": true,
     "licensedMedia": true,
+    "mediaSemanticsComplete": true,
+    "imageKindTotalsMatch": true,
     "mediaHashes": true,
     "naturalEarthPublicDomain": true,
     "sourceLicense": true,
@@ -48,16 +56,6 @@
         "ancientId": "a4b500d",
         "ancientName": "Avva",
         "tipnrId": "Avva@2Ki.17.24"
-      },
-      {
-        "ancientId": "a849ca2",
-        "ancientName": "Bamah",
-        "tipnrId": "Gibeon@Jos.9.3"
-      },
-      {
-        "ancientId": "a571072",
-        "ancientName": "Beth-gader",
-        "tipnrId": "Beth-gader@1Ch.2.51"
       },
       {
         "ancientId": "a2a8df0",
@@ -105,34 +103,14 @@
         "tipnrId": "El-bethel@Gen.35.7"
       },
       {
-        "ancientId": "ad68510",
-        "ancientName": "Eshtemoa",
-        "tipnrId": "Eshtemoa@Jos.21.14"
-      },
-      {
         "ancientId": "afed46a",
         "ancientName": "Gadara",
         "tipnrId": "Gadara@Mat.8.28"
       },
       {
-        "ancientId": "a2d3ca1",
-        "ancientName": "Geba 2",
-        "tipnrId": "Gibeon@Jos.9.3"
-      },
-      {
         "ancientId": "ada6b64",
         "ancientName": "Gerasa",
         "tipnrId": "Gadara@Mat.8.28"
-      },
-      {
-        "ancientId": "af0ee3a",
-        "ancientName": "Gibbar",
-        "tipnrId": "Gibeon@Jos.9.3"
-      },
-      {
-        "ancientId": "aede336",
-        "ancientName": "Gibeon",
-        "tipnrId": "Gibeon@Jos.9.3"
       },
       {
         "ancientId": "a4492a0",
@@ -173,11 +151,6 @@
         "ancientId": "a4fa255",
         "ancientName": "Kedesh 2",
         "tipnrId": "Kadesh-barnea@Num.32.8"
-      },
-      {
-        "ancientId": "ad9df93",
-        "ancientName": "Keilah",
-        "tipnrId": "Keilah@Jos.15.44"
       },
       {
         "ancientId": "a9de8b7",
@@ -265,11 +238,6 @@
         "tipnrId": "Sardis@Oba.1.20"
       },
       {
-        "ancientId": "adf74d4",
-        "ancientName": "Shechem",
-        "tipnrId": "Shechem@Gen.12.6"
-      },
-      {
         "ancientId": "ae71673",
         "ancientName": "Shiloah",
         "tipnrId": "Shiloah@Isa.8.6"
@@ -278,11 +246,6 @@
         "ancientId": "af64fb3",
         "ancientName": "Shittim",
         "tipnrId": "Abel-shittim@Num.33.49"
-      },
-      {
-        "ancientId": "a2e3aa0",
-        "ancientName": "Tekoa",
-        "tipnrId": "Tekoa@2Sa.14.2"
       },
       {
         "ancientId": "ac9adc9",
@@ -295,19 +258,9 @@
         "tipnrId": "Hinnom_Valley@Jos.15.8"
       },
       {
-        "ancientId": "a939939",
-        "ancientName": "Tower of Shechem",
-        "tipnrId": "Shechem@Gen.12.6"
-      },
-      {
         "ancientId": "a1f363e",
         "ancientName": "Valley of Baca",
         "tipnrId": "Hinnom_Valley@Jos.15.8"
-      },
-      {
-        "ancientId": "a8c579d",
-        "ancientName": "Valley of Gibeon",
-        "tipnrId": "Gibeon@Jos.9.3"
       },
       {
         "ancientId": "a37c8e6",
@@ -315,139 +268,7 @@
         "tipnrId": "Hinnom_Valley@Jos.15.8"
       }
     ],
-    "ambiguousLinks": [
-      {
-        "ancientId": "ad053dd",
-        "ancientName": "Aiath",
-        "tipnrId": "Ai@Gen.12.8",
-        "candidates": [
-          "Ai@Gen.12.8-Isa=H5857G",
-          "Ai@Jer.49.3=H5857H"
-        ]
-      },
-      {
-        "ancientId": "aa884e2",
-        "ancientName": "Aija",
-        "tipnrId": "Ai@Gen.12.8",
-        "candidates": [
-          "Ai@Gen.12.8-Isa=H5857G",
-          "Ai@Jer.49.3=H5857H"
-        ]
-      },
-      {
-        "ancientId": "af3ccdf",
-        "ancientName": "Aven",
-        "tipnrId": "Bethel@Gen.12.8",
-        "candidates": [
-          "Bethel@Gen.12.8-Zec=H1008G",
-          "Bethel@Jos.19.4-1Ch=H1008H"
-        ]
-      },
-      {
-        "ancientId": "aea5552",
-        "ancientName": "Beth-gilgal",
-        "tipnrId": "Gilgal@Deu.11.30",
-        "candidates": [
-          "Gilgal@2Ki.2.1-=H1537H",
-          "Gilgal@Deu.11.30-Mic=H1537G"
-        ]
-      },
-      {
-        "ancientId": "a859268",
-        "ancientName": "Bochim",
-        "tipnrId": "Bethel@Gen.12.8",
-        "candidates": [
-          "Bethel@Gen.12.8-Zec=H1008G",
-          "Bethel@Jos.19.4-1Ch=H1008H"
-        ]
-      },
-      {
-        "ancientId": "ae8badb",
-        "ancientName": "Dibon 3",
-        "tipnrId": "Dibon@Num.21.30",
-        "candidates": [
-          "Dibon@Neh.11.25=H1769H",
-          "Dibon@Num.21.30-Jer=H1769G"
-        ]
-      },
-      {
-        "ancientId": "ad6b2b7",
-        "ancientName": "En-tappuah",
-        "tipnrId": "Tappuah@Jos.12.17",
-        "candidates": [
-          "Tappuah@Jos.12.17-=H8599B",
-          "Tappuah@Jos.15.34=H8599G"
-        ]
-      },
-      {
-        "ancientId": "a47f86c",
-        "ancientName": "Etam 2",
-        "tipnrId": "Etam@1Ch.4.3",
-        "candidates": [
-          "Etam@2Ch.11.6=H5862I",
-          "Etam@Jdg.15.8-=H5862G"
-        ]
-      },
-      {
-        "ancientId": "a0c9a06",
-        "ancientName": "Geliloth",
-        "tipnrId": "Gilgal@Deu.11.30",
-        "candidates": [
-          "Gilgal@2Ki.2.1-=H1537H",
-          "Gilgal@Deu.11.30-Mic=H1537G"
-        ]
-      },
-      {
-        "ancientId": "a97126d",
-        "ancientName": "Gibeath-haaraloth",
-        "tipnrId": "Gilgal@Deu.11.30",
-        "candidates": [
-          "Gilgal@2Ki.2.1-=H1537H",
-          "Gilgal@Deu.11.30-Mic=H1537G"
-        ]
-      },
-      {
-        "ancientId": "ad5c4a1",
-        "ancientName": "Hezron",
-        "tipnrId": "Hazor@Jos.11.1",
-        "candidates": [
-          "Hazor@Jer.49.28-=H2674K",
-          "Hazor@Jos.11.1-2Ki=H2674G",
-          "Hazor@Jos.15.23=H2674H",
-          "Hazor@Jos.15.25=H2674I",
-          "Hazor@Neh.11.33=H2674J"
-        ]
-      },
-      {
-        "ancientId": "ad6cc26",
-        "ancientName": "Ir-shemesh",
-        "tipnrId": "Beth-shemesh@Jos.15.10",
-        "candidates": [
-          "Beth-shemesh@Jos.15.10-2Ch=H1053G",
-          "Beth-shemesh@Jos.19.22=H1053H",
-          "Beth-shemesh@Jos.19.38-Jdg=H1053I"
-        ]
-      },
-      {
-        "ancientId": "a9ea180",
-        "ancientName": "Lehem",
-        "tipnrId": "Bethlehem@Gen.35.16",
-        "candidates": [
-          "Bethlehem@Gen.35.16-Jhn=H1035G",
-          "Bethlehem@Jos.19.15=H1035H"
-        ]
-      },
-      {
-        "ancientId": "aeea26d",
-        "ancientName": "Mount Heres",
-        "tipnrId": "Beth-shemesh@Jos.15.10",
-        "candidates": [
-          "Beth-shemesh@Jos.15.10-2Ch=H1053G",
-          "Beth-shemesh@Jos.19.22=H1053H",
-          "Beth-shemesh@Jos.19.38-Jdg=H1053I"
-        ]
-      }
-    ],
+    "ambiguousLinks": [],
     "invalidCoordinates": [],
     "invalidLicenses": [
       "Abel-meholah@Jdg.7.22-1Ki=H0065: sentinel",
@@ -570,6 +391,7 @@
       "Esau_Mount@Oba.1.8-=H6215I: sentinel",
       "Eshan@Jos.15.52=H0824: sentinel",
       "Eshtaol@Jos.15.33-1Ch=H0847: sentinel",
+      "Etam@1Ch.4.3-=H5862H: sentinel",
       "Etam@2Ch.11.6=H5862I: sentinel",
       "Etham@Exo.13.20-Num=H0864: sentinel",
       "Ether@Jos.15.42-=H6281: sentinel",
@@ -582,6 +404,7 @@
       "Gederah@Jos.15.36-1Ch=H1449: sentinel",
       "Gederoth@Jos.15.41-2Ch=H1450: sentinel",
       "Gederothaim@Jos.15.36=H1453: sentinel",
+      "Gedor@Jos.12.13-1Ch=H1446G: sentinel",
       "Gethsemane@Mat.26.36-Mrk=G1068: GFDL",
       "Gidom@Jdg.20.45=H1440: sentinel",
       "Gittaim@2Sa.4.3-Neh=H1664: sentinel",
@@ -633,6 +456,7 @@
       "Kartan@Jos.21.32=H7178: sentinel",
       "Kedemoth@Deu.2.26-1Ch=H6932: sentinel",
       "Kehelathah@Num.33.22-=H6954: sentinel",
+      "Keilah@Jos.15.44-Neh=H7084: sentinel",
       "Kerioth-hezron@Jos.15.25=H7152G: sentinel",
       "Kibroth-hattaavah@Num.11.34-Deu=H6914: sentinel",
       "Kiriathaim@1Ch.6.76=H7156I: sentinel",
@@ -683,7 +507,6 @@
       "Nibshan@Jos.15.62=H5044: sentinel",
       "Nob@1Sa.21.1-Isa=H5011: GFDL",
       "Ophir@1Ki.9.28-Isa=H0211H: GFDL",
-      "Ophrah@Jos.19.19-Jdg=H6084H: GFDL",
       "Parah@Jos.18.23=H6511: sentinel",
       "Parvaim@2Ch.3.6=H6516: sentinel",
       "Persia@2Ch.36.20-Dan=H6539: GFDL",
@@ -752,6 +575,7 @@
       "Wildgoats_Rocks@1Sa.24.2=H3277G: GFDL",
       "Yiron@Jos.19.38=H3375: sentinel",
       "Zalmonah@Num.33.41-=H6758: sentinel",
+      "Zanoah@Jos.15.34-Neh=H2182G: sentinel",
       "Zarephath@1Ki.17.9-Luk=H6886: sentinel",
       "Zedad@Num.34.8-Ezk=H6657: sentinel",
       "Zemaraim@Jos.18.22-2Ch=H6787: sentinel",
@@ -762,10 +586,5 @@
       "Zophim@Num.23.14=H6839: sentinel"
     ]
   },
-  "normalizedSha256": "16e9d45a29d83dc291b6c74592cc2124c2f74343750bbdbe3c5f924e0a062561",
-  "tipnrReferenceSync": {
-    "tipnrFormatVersion": 3,
-    "tipnrSourceSha256": "1a3b7d7df5cfa1e96eefa07dec92900bea278370c6788fadb5d036f3223b637c",
-    "placeCount": 907
-  }
+  "normalizedSha256": "b2480ebb20a4a1d2ff859e768b99e47734554139e817930ac278ebacaa032b38"
 }

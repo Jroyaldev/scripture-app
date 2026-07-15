@@ -113,6 +113,46 @@ This document records every shipped dataset with its license, source, and permis
   - `export`: true
   - `syncToOwnDevices`: true
 
+## Biblical Entity Research
+
+### STEPBible TIPNR
+
+- **Source:** [STEPBible Data](https://github.com/STEPBible/STEPBible-Data), TIPNR proper-name records
+- **License:** Creative Commons Attribution 4.0 International
+- **SPDX:** CC-BY-4.0
+- **Attribution:** "STEPBible TIPNR, CC BY 4.0, stepbible.org."
+- **Use:** Biblical person/place identities, canonical references, translation-aware forms, grammatical relationship fields, and retained KJV edition paratext.
+
+### OpenBible Bible Geocoding Data
+
+- **Source:** [OpenBible Bible Geocoding Data](https://github.com/openbibleinfo/Bible-Geocoding-Data), pinned commit `7eb18a5ee62f27b9b93bd6689ea272d76dd23b8f`
+- **License:** Creative Commons Attribution 4.0 International
+- **SPDX:** CC-BY-4.0
+- **Attribution:** "OpenBible Bible Geocoding Data, CC BY 4.0."
+- **Use:** Modern location proposals, confidence/alternatives, linked identifiers, and curated media metadata.
+
+### Pleiades Gazetteer
+
+- **Source:** [Pleiades Gazetteer release 4.1](https://github.com/isawnyu/pleiades.datasets/releases/tag/v4.1), 2025-05-28, commit `b6a6790f71c45e4a4ef60fce296c506f28f458bf`, DOI `10.5281/zenodo.1193921`
+- **License:** Creative Commons Attribution 3.0 Unported
+- **SPDX:** CC-BY-3.0
+- **Attribution:** "Pleiades Gazetteer release 4.1, CC BY 3.0."
+- **Use:** Ancient names, dated place assertions, geometry, place relationships, provenance, and bibliography for the 96 Pleiades identities linked by the shipped OpenBible artifact.
+- **Note:** Pleiades remains separately labelled from OpenBible; source coordinates are compared and disagreements remain visible.
+
+### Natural Earth land geometry
+
+- **Source:** [Natural Earth](https://www.naturalearthdata.com/), version 5.1.2, 1:50m land
+- **License:** Public domain
+- **Attribution:** "Natural Earth. Public domain."
+- **Use:** Offline entity minimap land geometry.
+
+### Packaged place media
+
+- **Source:** OpenBible-curated Wikimedia and archival thumbnails; exact creator, source, and license are stored per image.
+- **License:** Per file: public domain, CC0, CC BY, CC BY-SA, Free Art License, or Open Government Licence only.
+- **Use:** Locally packaged visual context labelled as proposed site, geographic context, associated artifact, or later reception.
+
 ## Backbone Coordinate System
 
 ### backbone.json

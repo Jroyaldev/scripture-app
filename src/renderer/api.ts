@@ -136,6 +136,9 @@ declare global {
       dialog: {
         openDirectory(): Promise<string | null>;
       };
+      system: {
+        openExternalResearchUrl(url: string): Promise<{ ok: true }>;
+      };
       settings: {
         get(): Promise<AppSettings>;
         set(partial: Partial<AppSettings>): Promise<AppSettings>;

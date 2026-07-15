@@ -70,6 +70,13 @@ import { PlaceResearchLoader } from "../host/place-research-loader.js";
 
 const DATA_DIR = resolve(__dirname, "../../data/scripture");
 const CROSS_REF_DIR = resolve(__dirname, "../../data/cross-references");
+const ALLOWED_RESEARCH_LINK_HOSTS = new Set([
+  "commons.wikimedia.org",
+  "creativecommons.org",
+  "www.nationalarchives.gov.uk",
+  "artlibre.org",
+  "pleiades.stoa.org",
+]);
 
 interface WindowBounds {
   x?: number;
@@ -381,6 +388,15 @@ function createWindow(): void {
       void revisionStore.flush("Session close");
     }
   });
+}
+
+function validatedResearchUrl(value: unknown): string {
+  if (typeof value !== "string") throw new Error("Research link must be a URL");
+  const parsed = new URL(value);
+  if (parsed.protocol !== "https:" || !ALLOWED_RESEARCH_LINK_HOSTS.has(parsed.hostname)) {
+    throw new Error("This research source is not on the approved external-link list");
+  }
+  return parsed.toString();
 }
 
 function languagePackageRoots(libraryPath: string): string[] {
@@ -918,6 +934,7 @@ function registerIpcHandlers(): void {
       return placeResearch?.research(entity) ?? {
         entity,
         place: null,
+        pleiades: null,
         minimap: null,
         imageDataUrl: null,
       };
@@ -1239,6 +1256,11 @@ function registerIpcHandlers(): void {
       properties: ["openDirectory"],
     });
     return result.canceled ? null : result.filePaths[0] ?? null;
+  });
+
+  ipcMain.handle("open-external-research-url", async (_event, value: unknown) => {
+    await shell.openExternal(validatedResearchUrl(value));
+    return { ok: true as const };
   });
 
   // --- M3: Semantic Intelligence ---

@@ -236,6 +236,8 @@ Not available from word tables alone: Force / Consequence / Limits, sermon-safe 
 | Morph meanings + kinds | `src/core/language/morph-explain.ts` |
 | STEP TEGMC/TEHMC overlay (Approach A) | `src/core/language/step-morph.ts`, `data/scripture/morph/` |
 | TIPNR people/places identity | `src/core/language/tipnr.ts`, `data/scripture/names/` |
+| OpenBible place geography + classified media | `src/core/entities/place-research.ts`, `data/scripture/places/openbible-places.json` |
+| Pleiades 4.1 ancient-place research | `src/core/entities/pleiades-research.ts`, `data/scripture/places/pleiades-4.1.json` |
 | Pure MACULA Greek TSV parser | `src/core/language/macula-greek-tsv.ts` |
 | MACULA/MARBLE semantic-sense join + outline | `src/core/language/greek-senses.ts` |
 | Indexes / marks / neighborhood | `src/core/language/indexes.ts` |
@@ -243,6 +245,8 @@ Not available from word tables alone: Force / Consequence / Limits, sermon-safe 
 | TIPNR tests | `tests/tipnr.test.ts` |
 | Node CLI (I/O only) | `scripts/import-macula-greek.ts` |
 | TIPNR import | `scripts/import-tipnr.ts` (`npm run import:tipnr`) |
+| OpenBible place import | `scripts/import-openbible-places.ts` (`npm run import:openbible-places`) |
+| Pleiades pinned fetch/import | `scripts/fetch-pleiades-release.mjs`, `scripts/import-pleiades.ts` |
 | Host package loader | `src/host/token-package-loader.ts` |
 | Language margin UI | `src/renderer/components/LanguageWordsSection.tsx` |
 | Renderer IPC | `window.api.language.*` (list / load / verse tokens / token card) |

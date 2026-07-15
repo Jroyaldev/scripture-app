@@ -82,6 +82,11 @@ The picker is named **Reading atmosphere**, not Theme. Its compact explanation i
 - Passage-scoped semantic content never falls back to a chapter-wide result. Overview remains deliberately bounded; Refs and Notes expose their complete returned material through natural scrolling and per-note disclosure rather than a single hidden remainder.
 - Note previews are plain readable articles unless they have a real action. Counts are tabular and subordinate; hairlines and spacing create hierarchy instead of colored borders, card shadows, or permanent category chrome.
 - OpenBible Cross References and personalized connections from notes never share an unlabeled result list. Corpus license/provenance stays adjacent to public results; local-library evidence stays explicitly local.
+- Entity research is a reversible object inside Study, not a guessed Scripture destination. Related people retain back/forward history; Scripture evidence groups by book and remains clickable without closing the subject.
+- Person cards use source-shaped role, era, affiliation, and grammatical family relationships. They do not invent portraits or semantic relationship types.
+- Place media always names whether it is a proposed site, geographic context, associated artifact, or later reception. Creator/source/license disclosure stays adjacent and remote imagery is never loaded into the renderer.
+- Maps label OpenBible's primary proposal, alternatives, and any visible Pleiades point. Unmapped identities remain unmapped. Broad-place representative points are described as such; materially different source coordinates never silently collapse into one location.
+- Pleiades 4.1 is a progressive ancient-record layer—historical names, date range, connections, and bibliography—kept separately attributed from OpenBible geography and TIPNR Scripture identity.
 
 ## Shared controls and floating layers contract
 

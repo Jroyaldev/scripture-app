@@ -193,6 +193,9 @@ const api = {
   dialog: {
     openDirectory: () => ipcRenderer.invoke("dialog-open-directory"),
   },
+  system: {
+    openExternalResearchUrl: (url: string) => ipcRenderer.invoke("open-external-research-url", url),
+  },
   settings: {
     get: () => ipcRenderer.invoke("settings:get"),
     set: (partial: Record<string, unknown>) => ipcRenderer.invoke("settings:set", partial),

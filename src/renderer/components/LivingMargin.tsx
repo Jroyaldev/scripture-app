@@ -225,9 +225,184 @@ function confidenceLabel(value: NonNullable<EntityResearchData["place"]>["primar
   return "Location disputed";
 }
 
+function placeImageKindLabel(kind: NonNullable<NonNullable<EntityResearchData["place"]>["image"]>["kind"]): string {
+  if (kind === "site") return "Proposed site view";
+  if (kind === "artifact") return "Associated artifact";
+  if (kind === "reception") return "Later reception";
+  return "Geographic context";
+}
+
+function historicYearLabel(value: number): string {
+  if (value < 0) return `${Math.abs(value).toLocaleString()} BC`;
+  return `AD ${Math.max(1, value).toLocaleString()}`;
+}
+
+function historicPeriodLabel(period: { start: number; end: number } | undefined): string | null {
+  if (!period) return null;
+  return `${historicYearLabel(period.start)}–${historicYearLabel(period.end)}`;
+}
+
+function isBroadPlaceType(value: string): boolean {
+  return /region|country|territory|province|district|body of water|sea|river|mountain range|wilderness|island/i.test(value);
+}
+
+function pleiadesConnectionLabel(value: string): string {
+  if (value === "part_of_physical") return "Within";
+  if (value === "part_of_admin") return "Governed within";
+  if (value === "member") return "Member of";
+  return "Connected to";
+}
+
+function coordinateComparisonCopy(
+  data: NonNullable<EntityResearchData["pleiades"]>,
+  placeType: string,
+): string | null {
+  const comparison = data.coordinateComparison;
+  if (!comparison) return null;
+  const distance = comparison.distanceKm < 10
+    ? `${comparison.distanceKm.toFixed(1)} km`
+    : `${Math.round(comparison.distanceKm).toLocaleString()} km`;
+  if (isBroadPlaceType(placeType)) {
+    return `For this broad place, OpenBible and Pleiades use representative points ${distance} apart.`;
+  }
+  if (comparison.relation === "close") return `OpenBible and Pleiades agree within ${distance}.`;
+  if (comparison.relation === "regional") return `Pleiades records a nearby point ${distance} away.`;
+  return `Sources diverge: the Pleiades point is ${distance} away. Both locations remain distinct.`;
+}
+
+type EntityBookFootprint = {
+  book: string;
+  label: string;
+  count: number;
+  firstRef: string;
+};
+
+function entityBookFootprint(
+  refs: string[],
+  bookNames: BookNameData,
+): EntityBookFootprint[] {
+  const canonicalOrder = new Map(Object.keys(bookNames).map((book, index) => [book, index]));
+  const byBook = new Map<string, EntityBookFootprint>();
+  for (const ref of refs) {
+    const match = /^([1-3A-Z]{3})\./.exec(ref);
+    if (!match) continue;
+    const book = match[1]!;
+    const current = byBook.get(book);
+    if (current) current.count += 1;
+    else byBook.set(book, {
+      book,
+      label: bookNames[book]?.[0] ?? book,
+      count: 1,
+      firstRef: ref,
+    });
+  }
+  return [...byBook.values()].sort((left, right) => (
+    (canonicalOrder.get(left.book) ?? Number.MAX_SAFE_INTEGER)
+    - (canonicalOrder.get(right.book) ?? Number.MAX_SAFE_INTEGER)
+  ));
+}
+
+const RELATIONSHIP_GROUPS = [
+  { kind: "parent", label: "Parents" },
+  { kind: "sibling", label: "Siblings" },
+  { kind: "partner", label: "Partner" },
+  { kind: "offspring", label: "Children" },
+] as const;
+
+function PersonRelationships({
+  data,
+  onOpenEntity,
+}: {
+  data: EntityResearchData;
+  onOpenEntity?: (entityId: string) => void;
+}): React.JSX.Element | null {
+  const relationships = data.entity.person?.relationships ?? [];
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+
+  useEffect(() => setExpandedGroups(new Set()), [data.entity.id]);
+
+  if (relationships.length === 0) return null;
+  return (
+    <section className="entity-research-section entity-person-relationships" aria-labelledby="entity-relationships-title">
+      <div className="entity-research-section-head">
+        <h3 id="entity-relationships-title">Family in the text</h3>
+        <span>{relationships.length} named</span>
+      </div>
+      <div className="entity-relationship-rows">
+        {RELATIONSHIP_GROUPS.map((group) => {
+          const items = relationships.filter((relationship) => relationship.kind === group.kind);
+          if (items.length === 0) return null;
+          const expanded = expandedGroups.has(group.kind);
+          const visibleItems = expanded ? items : items.slice(0, 6);
+          return (
+            <div key={group.kind} className="entity-relationship-row">
+              <span className="entity-relationship-label">{group.label}</span>
+              <div className="entity-relationship-links">
+                {visibleItems.map((relationship) => (
+                  <button
+                    key={`${relationship.kind}-${relationship.targetId}`}
+                    type="button"
+                    onClick={() => onOpenEntity?.(relationship.targetId)}
+                    aria-label={`Research ${relationship.displayName}${relationship.uncertain ? ", uncertain identification" : ""}`}
+                    title={relationship.uncertain ? "TIPNR marks this identification as uncertain" : undefined}
+                  >
+                    <span>{relationship.displayName}</span>
+                    {relationship.uncertain && <span className="entity-relationship-uncertain" aria-hidden="true">?</span>}
+                    <CrossReferenceArrow />
+                  </button>
+                ))}
+                {items.length > visibleItems.length && (
+                  <button
+                    type="button"
+                    className="entity-relationship-more"
+                    aria-expanded={expanded}
+                    onClick={() => setExpandedGroups((current) => {
+                      const next = new Set(current);
+                      if (next.has(group.kind)) next.delete(group.kind);
+                      else next.add(group.kind);
+                      return next;
+                    })}
+                  >
+                    +{items.length - visibleItems.length} more
+                  </button>
+                )}
+                {expanded && items.length > 6 && (
+                  <button
+                    type="button"
+                    className="entity-relationship-more"
+                    aria-expanded="true"
+                    onClick={() => setExpandedGroups((current) => {
+                      const next = new Set(current);
+                      next.delete(group.kind);
+                      return next;
+                    })}
+                  >
+                    Show fewer
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function EntityMiniMap({ data }: { data: EntityResearchData }): React.JSX.Element | null {
   if (!data.place || !data.minimap) return null;
   const { minimap, place } = data;
+  const pleiadesPoint = data.pleiades?.place.reprPoint;
+  const pleiadesMarker = pleiadesPoint
+    ? {
+        x: ((pleiadesPoint[0] - minimap.bounds.west) / (minimap.bounds.east - minimap.bounds.west)) * minimap.width,
+        y: ((minimap.bounds.north - pleiadesPoint[1]) / (minimap.bounds.north - minimap.bounds.south)) * minimap.height,
+      }
+    : null;
+  const showPleiadesMarker = pleiadesMarker
+    && pleiadesMarker.x >= 0 && pleiadesMarker.x <= minimap.width
+    && pleiadesMarker.y >= 0 && pleiadesMarker.y <= minimap.height
+    && (data.pleiades?.coordinateComparison?.distanceKm ?? 0) > 2;
   return (
     <figure className="entity-minimap">
       <svg
@@ -244,10 +419,23 @@ function EntityMiniMap({ data }: { data: EntityResearchData }): React.JSX.Elemen
           {minimap.landPaths.map((path, index) => <path key={`${path.slice(0, 24)}-${index}`} d={path} />)}
         </g>
         <g className="entity-map-alternatives" aria-hidden="true">
-          {minimap.alternatives.map((point) => (
-            <circle key={`${point.name}-${point.x}-${point.y}`} cx={point.x} cy={point.y} r="2.25" />
+          {minimap.alternatives.map((point, index) => (
+            <g key={`${point.name}-${point.x}-${point.y}`} transform={`translate(${point.x} ${point.y})`}>
+              <circle r="4.6" />
+              <text textAnchor="middle" dominantBaseline="central">{index + 1}</text>
+            </g>
           ))}
         </g>
+        {showPleiadesMarker && (
+          <g
+            className="entity-map-pleiades"
+            transform={`translate(${pleiadesMarker.x} ${pleiadesMarker.y})`}
+            aria-hidden="true"
+          >
+            <circle r="4.2" />
+            <circle r="1.2" />
+          </g>
+        )}
         <g className="entity-map-pin" transform={`translate(${minimap.center.x} ${minimap.center.y})`} aria-hidden="true">
           <circle className="entity-map-pulse" r="12" />
           <circle className="entity-map-halo" r="6" />
@@ -255,10 +443,96 @@ function EntityMiniMap({ data }: { data: EntityResearchData }): React.JSX.Elemen
         </g>
       </svg>
       <figcaption>
-        <span>{place.primary.name}</span>
+        <span>{place.primary.name} · OpenBible location</span>
         <span>{coordinatesLabel(place.primary.latitude, place.primary.longitude)}</span>
       </figcaption>
+      <div className="entity-map-legend" aria-label="Map key">
+        <span><i className="is-primary" aria-hidden="true" />OpenBible</span>
+        {showPleiadesMarker && <span><i className="is-pleiades" aria-hidden="true" />Pleiades</span>}
+        {minimap.alternatives.length > 0 && <span><i className="is-alternative" aria-hidden="true" />Numbered proposals</span>}
+      </div>
     </figure>
+  );
+}
+
+function PleiadesResearchSection({
+  data,
+  openResearchLink,
+}: {
+  data: NonNullable<EntityResearchData["pleiades"]>;
+  openResearchLink: (url: string) => void;
+}): React.JSX.Element {
+  const { place } = data;
+  const period = historicPeriodLabel(place.period);
+  const names = [...new Set(place.names
+    .filter((name) => (name.start ?? 0) < 1500)
+    .flatMap((name) => [name.attested, ...name.romanized])
+    .filter((name): name is string => Boolean(name?.trim())))]
+    .slice(0, 8);
+  const references = place.references
+    .filter((reference, index, all) => all.findIndex((candidate) => (
+      candidate.shortTitle === reference.shortTitle
+      && candidate.citationDetail === reference.citationDetail
+      && candidate.citation === reference.citation
+    )) === index);
+
+  return (
+    <section className="entity-research-section entity-pleiades" aria-labelledby="entity-ancient-record-title">
+      <div className="entity-research-section-head">
+        <h3 id="entity-ancient-record-title">Ancient record</h3>
+        <span>Pleiades 4.1</span>
+      </div>
+      <div className="entity-pleiades-lead">
+        <div>
+          <strong>{place.title}</strong>
+          {period && <span>{period}</span>}
+        </div>
+        <button type="button" onClick={() => openResearchLink(place.sourceUrl)}>
+          Open record <CrossReferenceArrow />
+        </button>
+      </div>
+      {place.description && <p className="entity-pleiades-description">{place.description}</p>}
+      {names.length > 0 && (
+        <div className="entity-pleiades-names" aria-label="Attested and historical names">
+          <span>Names</span>
+          <div>{names.map((name) => <span key={name}>{name}</span>)}</div>
+        </div>
+      )}
+      {place.connections.length > 0 && (
+        <div className="entity-pleiades-connections">
+          <span>Ancient context</span>
+          {place.connections.slice(0, 6).map((connection) => (
+            <button
+              key={connection.id}
+              type="button"
+              disabled={!connection.targetUrl}
+              onClick={() => connection.targetUrl && openResearchLink(connection.targetUrl)}
+            >
+              <span>{pleiadesConnectionLabel(connection.type)}</span>
+              <strong>{connection.title}</strong>
+              {connection.targetUrl && <CrossReferenceArrow />}
+            </button>
+          ))}
+        </div>
+      )}
+      {references.length > 0 && (
+        <details className="entity-pleiades-bibliography">
+          <summary>
+            <span>Ancient sources & bibliography</span>
+            <span>{references.length.toLocaleString()} records</span>
+          </summary>
+          <div>
+            {references.slice(0, 12).map((reference, index) => (
+              <p key={`${reference.shortTitle ?? reference.citation}-${reference.citationDetail ?? ""}-${index}`}>
+                <strong>{reference.shortTitle ?? reference.citation}</strong>
+                {reference.citationDetail && <span>{reference.citationDetail}</span>}
+              </p>
+            ))}
+            {references.length > 12 && <p className="entity-pleiades-more">+{references.length - 12} more in Pleiades</p>}
+          </div>
+        </details>
+      )}
+    </section>
   );
 }
 
@@ -267,22 +541,56 @@ function EntityResearchView({
   currentBook,
   bookNames,
   onNavigate,
+  onOpenEntity,
 }: {
   data: EntityResearchData;
   currentBook: string;
   bookNames: BookNameData;
   onNavigate?: (ref: string) => void;
+  onOpenEntity?: (entityId: string) => void;
 }): React.JSX.Element {
   const [showAllRefs, setShowAllRefs] = useState(false);
+  const [mediaLinkError, setMediaLinkError] = useState<string | null>(null);
   const orderedRefs = [...data.entity.refs].sort((left, right) => {
     const leftCurrent = left.startsWith(`${currentBook}.`) ? 0 : 1;
     const rightCurrent = right.startsWith(`${currentBook}.`) ? 0 : 1;
     return leftCurrent - rightCurrent;
   });
   const visibleRefs = showAllRefs ? orderedRefs : orderedRefs.slice(0, 12);
+  const referenceTotals = new Map(entityBookFootprint(data.entity.refs, bookNames)
+    .map((group) => [group.book, group.count]));
+  const visibleReferenceGroups = [...visibleRefs.reduce((groups, ref) => {
+    const bookCode = /^([1-3A-Z]{3})\./.exec(ref)?.[1] ?? "OTHER";
+    const current = groups.get(bookCode) ?? [];
+    current.push(ref);
+    groups.set(bookCode, current);
+    return groups;
+  }, new Map<string, string[]>())].map(([bookCode, refs]) => ({
+    bookCode,
+    label: bookNames[bookCode]?.[0] ?? bookCode,
+    refs,
+    total: referenceTotals.get(bookCode) ?? refs.length,
+  }));
   const place = data.place;
+  const person = data.entity.person;
+  const footprint = entityBookFootprint(data.entity.refs, bookNames);
+  const footprintHighlights = [...footprint].sort((left, right) => {
+    const leftCurrent = left.book === currentBook ? 0 : 1;
+    const rightCurrent = right.book === currentBook ? 0 : 1;
+    return leftCurrent - rightCurrent || right.count - left.count;
+  }).slice(0, 6);
 
-  useEffect(() => setShowAllRefs(false), [data.entity.id]);
+  useEffect(() => {
+    setShowAllRefs(false);
+    setMediaLinkError(null);
+  }, [data.entity.id]);
+
+  const openMediaLink = (url: string): void => {
+    setMediaLinkError(null);
+    void safeCall(() => window.api.system.openExternalResearchUrl(url)).then((result) => {
+      if (!result.ok) setMediaLinkError(result.error);
+    });
+  };
 
   return (
     <article className={`entity-research-view is-${data.entity.kind}`}>
@@ -290,15 +598,37 @@ function EntityResearchView({
         <figure className="entity-photo">
           <img src={data.imageDataUrl} alt={place.image.alt} />
           <figcaption>
-            <span>Modern site photograph</span>
-            <span>{place.image.credit} · {place.image.license}</span>
+            <div className="entity-photo-caption">
+              <span>{placeImageKindLabel(place.image.kind)}</span>
+              <strong>{place.image.alt}</strong>
+            </div>
+            <details className="entity-photo-provenance">
+              <summary>
+                <span>Image details</span>
+                <span>{place.image.credit} · {place.image.license}</span>
+              </summary>
+              <dl>
+                <dt>Depicts</dt>
+                <dd>{place.image.depictedLocation}</dd>
+                <dt>Credit</dt>
+                <dd>{place.image.credit}</dd>
+                <dt>Source</dt>
+                <dd>
+                  <button type="button" onClick={() => openMediaLink(place.image!.sourceUrl)}>
+                    Wikimedia Commons <span aria-hidden="true">↗</span>
+                  </button>
+                </dd>
+                <dt>License</dt>
+                <dd>
+                  <button type="button" onClick={() => openMediaLink(place.image!.licenseUrl)}>
+                    {place.image.license} <span aria-hidden="true">↗</span>
+                  </button>
+                </dd>
+              </dl>
+              {mediaLinkError && <p className="entity-photo-link-error" role="alert">{mediaLinkError}</p>}
+            </details>
           </figcaption>
         </figure>
-      ) : data.entity.kind === "person" ? (
-        <div className="entity-person-portrait" aria-hidden="true">
-          <span>{data.entity.displayName.slice(0, 1)}</span>
-          <EntityGlyph kind="person" />
-        </div>
       ) : null}
 
       <header className="entity-research-identity">
@@ -307,16 +637,25 @@ function EntityResearchView({
           {place && <><span aria-hidden="true">·</span><span>{place.type}</span></>}
         </div>
         <h2>{data.entity.displayName}</h2>
+        {person && (
+          <div className="entity-person-facts" aria-label="Person identity">
+            <strong>{person.role}</strong>
+            {person.era && <span>{person.era}</span>}
+            {person.affiliation && <span>{person.affiliation}</span>}
+          </div>
+        )}
         <p>{data.entity.brief}</p>
         {data.entity.short && data.entity.short !== data.entity.brief && (
           <p className="entity-research-expanded">{data.entity.short}</p>
         )}
       </header>
 
+      <PersonRelationships data={data} onOpenEntity={onOpenEntity} />
+
       {place && (
         <section className="entity-research-section" aria-labelledby="entity-location-title">
           <div className="entity-research-section-head">
-            <h3 id="entity-location-title">Where it is</h3>
+            <h3 id="entity-location-title">Location</h3>
             <span>{confidenceLabel(place.primary.confidence)}</span>
           </div>
           <EntityMiniMap data={data} />
@@ -326,11 +665,16 @@ function EntityResearchView({
               <span>{place.alternatives.length + 1} proposed locations</span>
             )}
           </div>
+          {data.pleiades?.coordinateComparison && (
+            <p className={`entity-coordinate-comparison ${isBroadPlaceType(place.type) ? "is-broad" : `is-${data.pleiades.coordinateComparison.relation}`}`}>
+              {coordinateComparisonCopy(data.pleiades, place.type)}
+            </p>
+          )}
           {place.alternatives.length > 0 && (
             <div className="entity-location-alternatives" aria-label="Alternative proposed locations">
-              {place.alternatives.map((location) => (
+              {place.alternatives.map((location, index) => (
                 <div key={location.modernId}>
-                  <span>{location.name}</span>
+                  <span><i aria-hidden="true">{index + 1}</i>{location.name}</span>
                   <span>{confidenceLabel(location.confidence)}</span>
                 </div>
               ))}
@@ -339,22 +683,78 @@ function EntityResearchView({
         </section>
       )}
 
+      {data.entity.kind === "place" && !place && (
+        <section className="entity-research-section entity-location-unmapped" aria-labelledby="entity-location-unmapped-title">
+          <div className="entity-research-section-head">
+            <h3 id="entity-location-unmapped-title">Location</h3>
+            <span>Not mapped</span>
+          </div>
+          <p>
+            No geographic record is joined to this identity. The app keeps it unmapped rather than inventing a location;
+            its Scripture references remain available below.
+          </p>
+        </section>
+      )}
+
+      {data.pleiades && <PleiadesResearchSection data={data.pleiades} openResearchLink={openMediaLink} />}
+
       <section className="entity-research-section" aria-labelledby="entity-scripture-title">
         <div className="entity-research-section-head">
           <h3 id="entity-scripture-title">In Scripture</h3>
           <span>{data.entity.refCount.toLocaleString()} {data.entity.refCount === 1 ? "passage" : "passages"}</span>
         </div>
+        {footprint.length > 0 && (
+          <div className="entity-scripture-footprint" aria-label={`Scripture footprint across ${footprint.length} books`}>
+            <div className="entity-footprint-track" aria-hidden="true">
+              {footprint.map((group) => (
+                <span
+                  key={group.book}
+                  className={group.book === currentBook ? "is-current" : undefined}
+                  style={{ flexGrow: group.count }}
+                  title={`${group.label}: ${group.count}`}
+                />
+              ))}
+            </div>
+            <div className="entity-footprint-books">
+              {footprintHighlights.map((group) => (
+                <button
+                  key={group.book}
+                  type="button"
+                  className={group.book === currentBook ? "is-current" : undefined}
+                  onClick={() => onNavigate?.(`bref:v1/${group.firstRef}`)}
+                  aria-label={`Open first ${group.label} reference, ${group.count} ${group.count === 1 ? "passage" : "passages"}`}
+                >
+                  <span>{group.label}</span>
+                  <strong>{group.count}</strong>
+                </button>
+              ))}
+              {footprint.length > footprintHighlights.length && (
+                <span className="entity-footprint-more">+{footprint.length - footprintHighlights.length} books</span>
+              )}
+            </div>
+          </div>
+        )}
         <div className="entity-reference-list">
-          {visibleRefs.map((ref) => (
-            <button
-              key={ref}
-              type="button"
-              onClick={() => onNavigate?.(`bref:v1/${ref}`)}
-              aria-label={`Open ${formatResearchRef(ref, bookNames)}`}
-            >
-              <span>{formatResearchRef(ref, bookNames)}</span>
-              <CrossReferenceArrow />
-            </button>
+          {visibleReferenceGroups.map((group) => (
+            <section key={group.bookCode} className="entity-reference-group" aria-label={`${group.label} references`}>
+              <div className="entity-reference-group-head">
+                <span>{group.label}</span>
+                <span>{group.refs.length < group.total ? `${group.refs.length} of ${group.total}` : group.total}</span>
+              </div>
+              <div className="entity-reference-grid">
+                {group.refs.map((ref) => (
+                  <button
+                    key={ref}
+                    type="button"
+                    onClick={() => onNavigate?.(`bref:v1/${ref}`)}
+                    aria-label={`Open ${formatResearchRef(ref, bookNames)}`}
+                  >
+                    <span>{formatResearchRef(ref, bookNames)}</span>
+                    <CrossReferenceArrow />
+                  </button>
+                ))}
+              </div>
+            </section>
           ))}
         </div>
         {orderedRefs.length > 12 && (
@@ -394,7 +794,7 @@ function EntityResearchView({
       <footer className="entity-research-sources">
         <span>Identity: STEPBible TIPNR · CC BY 4.0</span>
         {place && <span>Geography: OpenBible · CC BY 4.0</span>}
-        {place?.linkedData.pleiadesId && <span>Ancient gazetteer: Pleiades {place.linkedData.pleiadesId}</span>}
+        {data.pleiades && <span>Ancient gazetteer: Pleiades 4.1 · CC BY 3.0</span>}
         {place?.linkedData.wikidataId && <span>Linked identity: Wikidata {place.linkedData.wikidataId}</span>}
         {place && <span>Map: Natural Earth · Public domain</span>}
         {place?.image && <span>Image: {place.image.credit} · {place.image.license}</span>}
@@ -715,6 +1115,9 @@ export function LivingMargin({
   const [entityResearch, setEntityResearch] = useState<EntityResearchData | null>(null);
   const [entityResearchLoading, setEntityResearchLoading] = useState(false);
   const [entityResearchError, setEntityResearchError] = useState<string | null>(null);
+  const [entityBackTrail, setEntityBackTrail] = useState<Array<{ id: string; displayName: string }>>([]);
+  const [entityForwardTrail, setEntityForwardTrail] = useState<Array<{ id: string; displayName: string }>>([]);
+  const internalEntityNavigationRef = useRef<string | null>(null);
   const [deepNotesById, setDeepNotesById] = useState<Record<string, ParsedNoteData> | null>(null);
   const [deepNotesLoading, setDeepNotesLoading] = useState(false);
   const frameTitleRef = useRef<HTMLHeadingElement>(null);
@@ -901,7 +1304,16 @@ export function LivingMargin({
     if (!entityIntent) {
       setEntityResearch(null);
       setEntityResearchError(null);
+      setEntityBackTrail([]);
+      setEntityForwardTrail([]);
+      internalEntityNavigationRef.current = null;
       return;
+    }
+    if (internalEntityNavigationRef.current === entityIntent.id) {
+      internalEntityNavigationRef.current = null;
+    } else {
+      setEntityBackTrail([]);
+      setEntityForwardTrail([]);
     }
     let cancelled = false;
     setEntityResearchLoading(true);
@@ -919,6 +1331,48 @@ export function LivingMargin({
     return () => { cancelled = true; };
   }, [entityIntent]);
 
+  const openRelatedEntity = (entityId: string): void => {
+    if (!onOpenEntity || !entityResearch || entityResearch.entity.id === entityId) return;
+    setEntityBackTrail((current) => [
+      ...current,
+      { id: entityResearch.entity.id, displayName: entityResearch.entity.displayName },
+    ].slice(-12));
+    setEntityForwardTrail([]);
+    internalEntityNavigationRef.current = entityId;
+    onOpenEntity(entityId);
+  };
+
+  const openPreviousEntity = (): void => {
+    const previous = entityBackTrail.at(-1);
+    if (!previous || !onOpenEntity) {
+      onCloseEntity?.();
+      return;
+    }
+    if (entityResearch) {
+      setEntityForwardTrail((current) => [
+        { id: entityResearch.entity.id, displayName: entityResearch.entity.displayName },
+        ...current,
+      ].slice(0, 12));
+    }
+    setEntityBackTrail((current) => current.slice(0, -1));
+    internalEntityNavigationRef.current = previous.id;
+    onOpenEntity(previous.id);
+  };
+
+  const openNextEntity = (): void => {
+    const next = entityForwardTrail[0];
+    if (!next || !onOpenEntity) return;
+    if (entityResearch) {
+      setEntityBackTrail((current) => [
+        ...current,
+        { id: entityResearch.entity.id, displayName: entityResearch.entity.displayName },
+      ].slice(-12));
+    }
+    setEntityForwardTrail((current) => current.slice(1));
+    internalEntityNavigationRef.current = next.id;
+    onOpenEntity(next.id);
+  };
+
   useEffect(() => {
     if (!entityIntent || entityResearch?.entity.id !== entityIntent.id) return;
     const frame = window.requestAnimationFrame(() => researchTitleRef.current?.focus());
@@ -931,11 +1385,11 @@ export function LivingMargin({
       if (event.key !== "Escape" || event.defaultPrevented) return;
       if (document.querySelector('[data-floating-layer="dialog"], [data-floating-layer="popover"], .command-palette-panel')) return;
       event.preventDefault();
-      onCloseEntity();
+      openPreviousEntity();
     };
     window.addEventListener("keydown", closeResearch, true);
     return () => window.removeEventListener("keydown", closeResearch, true);
-  }, [entityIntent, onCloseEntity]);
+  }, [entityIntent, entityBackTrail, entityResearch, onCloseEntity, onOpenEntity]);
 
   useEffect(() => {
     if (activeTab !== "notes") return;
@@ -1045,10 +1499,23 @@ export function LivingMargin({
         onPointerLeave={() => onMarginActiveChange?.(false)}
       >
         <header className="entity-research-frame">
-          <button type="button" className="entity-research-back" onClick={onCloseEntity}>
-            <span aria-hidden="true">←</span>
-            <span>Study</span>
-          </button>
+          <div className="entity-research-nav">
+            <button type="button" className="entity-research-back" onClick={openPreviousEntity}>
+              <span aria-hidden="true">←</span>
+              <span>{entityBackTrail.at(-1)?.displayName ?? "Study"}</span>
+            </button>
+            {entityForwardTrail.length > 0 && (
+              <button
+                type="button"
+                className="entity-research-forward"
+                onClick={openNextEntity}
+                aria-label={`Forward to ${entityForwardTrail[0]!.displayName}`}
+                title={`Forward to ${entityForwardTrail[0]!.displayName}`}
+              >
+                →
+              </button>
+            )}
+          </div>
           <span className="entity-research-mode">Entity research</span>
         </header>
         {entityResearchLoading && (
@@ -1070,6 +1537,7 @@ export function LivingMargin({
               currentBook={book}
               bookNames={bookNames}
               onNavigate={onNavigateToRef}
+              onOpenEntity={openRelatedEntity}
             />
           </div>
         )}

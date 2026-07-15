@@ -9,8 +9,8 @@
   },
   "coverage": {
     "entityCount": 4259,
-    "personCount": 3142,
-    "placeCount": 1003,
+    "personCount": 3132,
+    "placeCount": 1013,
     "otherCount": 114,
     "structuredRowsSeen": 5834,
     "structuredRowsWithReferences": 5810,
@@ -20,7 +20,11 @@
     "sourceReferenceEdges": 32290,
     "canonicalReferenceEdges": 32215,
     "paratextReferenceEdges": 50,
-    "subscriptionCoordinateCount": 14
+    "subscriptionCoordinateCount": 14,
+    "personProfileCount": 3132,
+    "sourcePersonRelationshipCount": 9461,
+    "resolvedPersonRelationshipCount": 9461,
+    "uncertainPersonRelationshipCount": 251
   },
   "checks": {
     "sourceLicense": true,
@@ -38,6 +42,11 @@
     "paratextCoordinatesRestricted": true,
     "akjvSubscriptionScanMatchesPinnedCoordinates": true,
     "normalSubscriptionEdgesHaveCanonicalEvidence": true,
+    "personProfilesComplete": true,
+    "personRelationshipsResolved": true,
+    "personRelationshipsUnique": true,
+    "personRelationshipTargetsExist": true,
+    "personSchemaDoesNotLeakIntoOtherKinds": true,
     "dependentPlaceRefsSynced": true
   },
   "subscriptions": {
@@ -99,11 +108,14 @@
       "PSA.68.36 -> PSA.68.35",
       "MAT.15.42 -> MAT.12.12"
     ],
-    "unparsedReferenceRows": []
+    "unparsedReferenceRows": [],
+    "unresolvedPersonRelationships": [],
+    "ambiguousPersonRelationships": [],
+    "duplicatePersonRelationships": []
   },
   "artifact": {
-    "formatVersion": 3,
-    "normalizedSha256": "1761abda100c7977cbb18a0a96a23bacee0c1e04a41da12ce5f714b81723ff1b"
+    "formatVersion": 4,
+    "normalizedSha256": "987c05636597db976f3238aa45ab983180f16b63e1d769440ec5b6a3767a7b6d"
   },
   "dependentArtifacts": {
     "openBiblePlaceCount": 907,

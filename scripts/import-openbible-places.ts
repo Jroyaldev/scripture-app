@@ -27,8 +27,12 @@ import type {
   PlaceResearchArtifact,
   PlaceResearchImage,
   PlaceResearchRecord,
+  PlaceImageKind,
 } from "../src/core/entities/place-research.js";
-import { confidenceFromScore } from "../src/core/entities/place-research.js";
+import {
+  classifyPlaceImageDescription,
+  confidenceFromScore,
+} from "../src/core/entities/place-research.js";
 import type { TipnrEntity, TipnrIndexFile } from "../src/core/language/tipnr.js";
 
 const ROOT = resolve(import.meta.dirname ?? ".", "..");
@@ -234,6 +238,12 @@ for (let index = 0; index < selectedEntries.length; index += 100) {
 
 const places: Record<string, PlaceResearchRecord> = {};
 let imageCount = 0;
+const imageKindCounts: Record<PlaceImageKind, number> = {
+  site: 0,
+  context: 0,
+  artifact: 0,
+  reception: 0,
+};
 const usedMedia = new Set<string>();
 const invalidCoordinates: string[] = [];
 const invalidLicenses: string[] = [];
@@ -259,13 +269,19 @@ for (const candidate of selected) {
     if (existsSync(mediaPath)) {
       const sourceWidth = sourceImage.width ?? 512;
       const sourceHeight = sourceImage.height ?? 512;
+      const description = cleanMarkup(
+        thumbnail.description ?? `View associated with ${modern.friendly_id}`,
+      );
+      const imageKind = classifyPlaceImageDescription(description);
       image = {
         file: thumbnail.file,
         mimeType: mimeFromExtension(thumbnail.file),
         sha256: sha256(readFileSync(mediaPath)),
         width: 512,
         height: Math.max(1, Math.round(512 * sourceHeight / sourceWidth)),
-        alt: cleanMarkup(thumbnail.description ?? `Modern site photograph associated with ${ancient.friendly_id}`),
+        kind: imageKind,
+        depictedLocation: modern.friendly_id,
+        alt: description,
         placeholder: thumbnail.placeholder,
         credit: sourceImage.credit ?? sourceImage.author ?? thumbnail.credit ?? "Wikimedia Commons contributor",
         creditUrl: sourceImage.credit_url ?? thumbnail.credit_url,
@@ -274,6 +290,7 @@ for (const candidate of selected) {
         licenseUrl: licenseUrl(sourceImage.license),
       };
       imageCount++;
+      imageKindCounts[imageKind] += 1;
       usedMedia.add(thumbnail.file);
     }
   } else if (sourceImage?.license && !APPROVED_IMAGE_LICENSES.has(sourceImage.license)) {
@@ -311,7 +328,7 @@ copyFileSync(naturalEarthInput, naturalEarthOutput);
 const placeCount = Object.keys(places).length;
 const artifact: PlaceResearchArtifact = {
   meta: {
-    formatVersion: 1,
+    formatVersion: 2,
     id: "openbible-place-research",
     name: "OpenBible Bible Geocoding",
     sourceUrl: "https://github.com/openbibleinfo/Bible-Geocoding-Data",
@@ -323,6 +340,7 @@ const artifact: PlaceResearchArtifact = {
     naturalEarthLicense: "Public domain",
     placeCount,
     imageCount,
+    imageKinds: imageKindCounts,
   },
   places,
 };
@@ -352,6 +370,7 @@ const doctor = {
     matchedTipnrPlaceCount: placeCount,
     unmatchedTipnrPlaceCount: tipnrPlaces.length - placeCount,
     imageCount,
+    imageKinds: imageKindCounts,
     mediaBytes,
   },
   checks: {
@@ -362,6 +381,14 @@ const doctor = {
     licensedMedia: Object.values(places).every((place) => (
       !place.image || APPROVED_IMAGE_LICENSES.has(place.image.license)
     )),
+    mediaSemanticsComplete: Object.values(places).every((place) => (
+      !place.image
+      || (place.image.depictedLocation.trim().length > 0
+        && place.image.alt.trim().length > 0
+        && ["site", "context", "artifact", "reception"].includes(place.image.kind))
+    )),
+    imageKindTotalsMatch:
+      Object.values(imageKindCounts).reduce((sum, count) => sum + count, 0) === imageCount,
     mediaHashes: Object.values(places).every((place) => !place.image || place.image.sha256 === sha256(readFileSync(join(mediaDir, place.image.file)))),
     naturalEarthPublicDomain: true,
     sourceLicense: true,

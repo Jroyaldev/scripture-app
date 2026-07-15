@@ -6,6 +6,8 @@ import { loadOpenBibleCrossReferences } from "../src/host/cross-reference-loader
 import { parseCrossReferenceKey } from "../src/core/cross-references/index.js";
 import type { TipnrIndexFile } from "../src/core/language/tipnr.js";
 import { KJV_EPISTLE_SUBSCRIPTION_REFS } from "../src/core/language/tipnr-subscriptions.js";
+import type { PlaceResearchArtifact } from "../src/core/entities/place-research.js";
+import type { PleiadesResearchArtifact } from "../src/core/entities/pleiades-research.js";
 
 type ChapterData = {
   verses: Array<{ verse: number; text: string }>;
@@ -195,8 +197,8 @@ if (tipnrDoctor.status !== "healthy" || Object.values(tipnrDoctor.checks).some((
   fail("TIPNR Doctor report is not healthy");
 }
 if (
-  tipnrIndex.version !== 3
-  || tipnrDoctor.artifact.formatVersion !== 3
+  tipnrIndex.version !== 4
+  || tipnrDoctor.artifact.formatVersion !== 4
   || tipnrDoctor.source.license !== "CC BY 4.0"
   || !/^\d{4}-\d{2}-\d{2}$/.test(tipnrDoctor.source.snapshotDate)
   || tipnrDoctor.coverage.structuredRowsParsed !== tipnrDoctor.coverage.structuredRowsWithReferences
@@ -227,6 +229,91 @@ for (const ref of KJV_EPISTLE_SUBSCRIPTION_REFS) {
 }
 console.error(
   `[verify:data] TIPNR: ${tipnrIndex.entityCount} entities, ${tipnrDoctor.coverage.structuredRowsParsed} structured rows, 14 KJV subscription coordinates clean`,
+);
+
+// Place-research Doctors: keep modern geography/media and the pinned ancient
+// gazetteer as separate licensed artifacts. Normal verification rechecks the
+// committed normalized records; raw source originals remain external (INV-13).
+const placeResearchDir = join(dataDir, "places");
+const placeResearchPath = join(placeResearchDir, "openbible-places.json");
+const placeDoctorPath = join(placeResearchDir, "doctor-report.json");
+const pleiadesPath = join(placeResearchDir, "pleiades-4.1.json");
+const pleiadesDoctorPath = join(placeResearchDir, "pleiades-doctor-report.json");
+if (![placeResearchPath, placeDoctorPath, pleiadesPath, pleiadesDoctorPath].every(existsSync)) {
+  fail("Place research artifact or Doctor report is missing");
+}
+const placeResearch = JSON.parse(readFileSync(placeResearchPath, "utf8")) as PlaceResearchArtifact;
+const placeDoctor = JSON.parse(readFileSync(placeDoctorPath, "utf8")) as {
+  status: string;
+  source: { license: string; naturalEarth: { version: string; license: string } };
+  coverage: {
+    tipnrPlaceCount: number;
+    matchedTipnrPlaceCount: number;
+    unmatchedTipnrPlaceCount: number;
+    imageCount: number;
+    imageKinds: Record<string, number>;
+  };
+  checks: Record<string, boolean>;
+};
+if (placeDoctor.status !== "healthy" || Object.values(placeDoctor.checks).some((value) => !value)) {
+  fail("OpenBible place Doctor report is not healthy");
+}
+if (
+  placeResearch.meta.formatVersion !== 2
+  || placeResearch.meta.license !== "CC BY 4.0"
+  || placeResearch.meta.naturalEarthVersion !== "5.1.2 (50m land)"
+  || placeResearch.meta.naturalEarthLicense !== "Public domain"
+  || placeDoctor.source.license !== "CC BY 4.0"
+  || placeDoctor.source.naturalEarth.license !== "Public domain"
+  || placeDoctor.coverage.tipnrPlaceCount !== 1_013
+  || placeDoctor.coverage.matchedTipnrPlaceCount !== placeResearch.meta.placeCount
+  || placeDoctor.coverage.unmatchedTipnrPlaceCount !== 96
+  || placeDoctor.coverage.imageCount !== placeResearch.meta.imageCount
+  || Object.values(placeDoctor.coverage.imageKinds).reduce((sum, count) => sum + count, 0) !== placeResearch.meta.imageCount
+  || Object.keys(placeResearch.places).length !== placeResearch.meta.placeCount
+) {
+  fail("OpenBible place coverage, license, media semantics, or Natural Earth metadata drifted");
+}
+
+const pleiadesRaw = readFileSync(pleiadesPath);
+const pleiades = JSON.parse(pleiadesRaw.toString("utf8")) as PleiadesResearchArtifact;
+const pleiadesDoctor = JSON.parse(readFileSync(pleiadesDoctorPath, "utf8")) as {
+  status: string;
+  source: { release: string; releaseDate: string; sourceCommit: string; doi: string; license: string };
+  coverage: { linkedPleiadesIds: number; placeCount: number; referenceCount: number; geometryCount: number };
+  checks: Record<string, boolean>;
+  artifact: { formatVersion: number; normalizedSha256: string };
+};
+if (pleiadesDoctor.status !== "healthy" || Object.values(pleiadesDoctor.checks).some((value) => !value)) {
+  fail("Pleiades Doctor report is not healthy");
+}
+const linkedPleiadesIds = [...new Set(Object.values(placeResearch.places)
+  .flatMap((place) => place.linkedData.pleiadesId ? [place.linkedData.pleiadesId] : []))];
+if (
+  pleiades.meta.formatVersion !== 1
+  || pleiades.meta.release !== "4.1"
+  || pleiades.meta.releaseDate !== "2025-05-28"
+  || pleiades.meta.sourceCommit !== "b6a6790f71c45e4a4ef60fce296c506f28f458bf"
+  || pleiades.meta.doi !== "10.5281/zenodo.1193921"
+  || pleiades.meta.license !== "CC BY 3.0"
+  || pleiadesDoctor.source.release !== pleiades.meta.release
+  || pleiadesDoctor.source.releaseDate !== pleiades.meta.releaseDate
+  || pleiadesDoctor.source.sourceCommit !== pleiades.meta.sourceCommit
+  || pleiadesDoctor.source.doi !== pleiades.meta.doi
+  || pleiadesDoctor.source.license !== pleiades.meta.license
+  || pleiadesDoctor.coverage.linkedPleiadesIds !== linkedPleiadesIds.length
+  || pleiadesDoctor.coverage.placeCount !== pleiades.meta.placeCount
+  || linkedPleiadesIds.some((id) => pleiades.places[id] == null)
+  || pleiadesDoctor.coverage.referenceCount < 800
+  || pleiadesDoctor.coverage.geometryCount < 100
+  || createHash("sha256").update(pleiadesRaw).digest("hex") !== pleiadesDoctor.artifact.normalizedSha256
+) {
+  fail("Pleiades release, linked coverage, license, richness, or normalized checksum drifted");
+}
+console.error(
+  `[verify:data] Places: ${placeResearch.meta.placeCount}/${placeDoctor.coverage.tipnrPlaceCount} mapped, `
+  + `${placeResearch.meta.imageCount} classified images; Pleiades ${pleiades.meta.release}: `
+  + `${pleiades.meta.placeCount} linked ancient records, ${pleiades.meta.license}`,
 );
 
 // OpenBible reference graph Doctor: verify the committed artifact rather than

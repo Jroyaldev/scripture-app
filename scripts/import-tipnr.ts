@@ -18,6 +18,9 @@ import type {
   TipnrEntity,
   TipnrIndexFile,
   TipnrParatextReference,
+  TipnrPersonProfile,
+  TipnrPersonRelationship,
+  TipnrRelationshipKind,
   TipnrTranslation,
   TipnrTranslationVariant,
 } from "../src/core/language/tipnr.js";
@@ -63,7 +66,7 @@ const TIPNR_TO_APP: Record<string, string> = {
 };
 
 export type TipnrIndex = Omit<TipnrIndexFile, "version" | "personCount" | "placeCount" | "otherCount" | "byParatextRef"> & {
-  version: 3;
+  version: 4;
   personCount: number;
   placeCount: number;
   otherCount: number;
@@ -95,6 +98,23 @@ type AlignmentRow = {
   chapter: number;
   verse: number;
   tokens: Array<{ strongs?: string[] }>;
+};
+
+type RawPersonProfile = {
+  description: string;
+  parents: string;
+  siblings: string;
+  partners: string;
+  offspring: string;
+  affiliation: string;
+};
+
+type RelationshipResolutionIssue = {
+  sourceId: string;
+  kind: TipnrRelationshipKind;
+  sourceValue: string;
+  normalizedTarget: string;
+  candidates: string[];
 };
 
 function normalizeStrongKey(s: string): string {
@@ -335,6 +355,10 @@ function extractPrettyDisplayName(
  */
 function cleanTipnrProse(s: string): string {
   return s
+    // TIPNR's generated summaries systematically close a nonexistent
+    // parenthesis after their first-reference link. Remove only that exact
+    // line-ending artifact before stripping the source tags.
+    .replace(/<\/ref>\s*\)(?=\s*(?:<br\s*\/?>|$))/gi, "</ref>")
     .replace(/<ref=["'][^"']*["']>([\s\S]*?)<\/ref>/gi, "$1")
     .replace(/<strong=["'][^"']*["']>([\s\S]*?)<\/strong>/gi, "$1")
     .replace(/<\/?ref\b[^>]*>/gi, "")
@@ -355,10 +379,145 @@ function cleanTipnrProse(s: string): string {
 
 function kindFromMarker(marker: string): TipnrEntity["kind"] | null {
   const u = marker.toUpperCase().replace(/\s+/g, "");
+  // TIPNR has ten records under PERSON+PLACE, but their header type and field
+  // schema are explicitly Place. Treating PERSON as the first substring made
+  // them people and exposed map URLs as family data.
+  if (u.includes("PERSON+PLACE")) return "place";
   if (u.includes("PERSON")) return "person";
   if (u.includes("PLACE")) return "place";
   if (u.includes("OTHER")) return "other";
   return null;
+}
+
+function parsePersonDescription(description: string): Pick<TipnrPersonProfile, "role" | "era"> {
+  const rules: RegExp[] = [
+    /^(.*?)\s+living at the time before\s+(.+)$/i,
+    /^(.*?)\s+living at the time of\s+(.+)$/i,
+    /^(.*?)\s+living before\s+(.+)$/i,
+    /^(.*?)\s+at the time of\s+(.+)$/i,
+  ];
+  for (const rule of rules) {
+    const match = description.match(rule);
+    if (!match) continue;
+    const role = match[1]!.trim();
+    const eraValue = match[2]!.trim();
+    const before = /living (?:at the time )?before/i.test(description);
+    return {
+      role: role || description,
+      ...(eraValue ? { era: before ? `Before ${eraValue.replace(/^the\s+/i, "")}` : eraValue } : {}),
+    };
+  }
+  return { role: description };
+}
+
+function splitRelationshipValues(value: string, kind: TipnrRelationshipKind): string[] {
+  const separator = kind === "parent" ? /\s*\+\s*/ : /\s*,\s*/;
+  return value.split(separator).map((item) => item.trim()).filter(Boolean);
+}
+
+function normalizeRelationshipTarget(value: string): { target: string; uncertain: boolean } {
+  let target = value.trim();
+  let uncertain = false;
+  for (;;) {
+    const qualifier = target.match(/\s*\(([^()]*)\)\s*$/);
+    if (!qualifier) break;
+    if (qualifier[1]?.includes("?")) uncertain = true;
+    target = target.slice(0, qualifier.index).trim();
+  }
+  return { target, uncertain };
+}
+
+function applyPersonProfiles(
+  entities: Record<string, TipnrEntity>,
+  rawProfiles: Map<string, RawPersonProfile>,
+): {
+  sourceRelationshipCount: number;
+  resolvedRelationshipCount: number;
+  uncertainRelationshipCount: number;
+  unresolved: RelationshipResolutionIssue[];
+  ambiguous: RelationshipResolutionIssue[];
+  duplicateRelationships: Array<{ sourceId: string; kind: TipnrRelationshipKind; targetId: string }>;
+} {
+  const exact = new Map(Object.values(entities).map((entity) => [entity.id, entity]));
+  const byPrefix = new Map<string, TipnrEntity[]>();
+  for (const entity of Object.values(entities)) {
+    const prefix = entity.id.slice(0, entity.id.lastIndexOf("="));
+    const candidates = byPrefix.get(prefix) ?? [];
+    candidates.push(entity);
+    byPrefix.set(prefix, candidates);
+  }
+
+  let sourceRelationshipCount = 0;
+  let resolvedRelationshipCount = 0;
+  let uncertainRelationshipCount = 0;
+  const unresolved: RelationshipResolutionIssue[] = [];
+  const ambiguous: RelationshipResolutionIssue[] = [];
+  const duplicateRelationships: Array<{ sourceId: string; kind: TipnrRelationshipKind; targetId: string }> = [];
+  const fields: Array<[TipnrRelationshipKind, keyof Pick<RawPersonProfile, "parents" | "siblings" | "partners" | "offspring">]> = [
+    ["parent", "parents"],
+    ["sibling", "siblings"],
+    ["partner", "partners"],
+    ["offspring", "offspring"],
+  ];
+
+  for (const [sourceId, raw] of rawProfiles) {
+    const source = entities[sourceId];
+    if (!source || source.kind !== "person") continue;
+    const parsedDescription = parsePersonDescription(raw.description);
+    const relationships: TipnrPersonRelationship[] = [];
+    const seen = new Set<string>();
+
+    for (const [kind, field] of fields) {
+      for (const sourceValue of splitRelationshipValues(raw[field], kind)) {
+        sourceRelationshipCount += 1;
+        const normalized = normalizeRelationshipTarget(sourceValue);
+        const exactTarget = exact.get(normalized.target);
+        const candidates = exactTarget ? [exactTarget] : (byPrefix.get(normalized.target) ?? []);
+        if (candidates.length !== 1) {
+          const issue = {
+            sourceId,
+            kind,
+            sourceValue,
+            normalizedTarget: normalized.target,
+            candidates: candidates.map((candidate) => candidate.id),
+          };
+          (candidates.length === 0 ? unresolved : ambiguous).push(issue);
+          continue;
+        }
+        const target = candidates[0]!;
+        const identity = `${kind}\u0000${target.id}`;
+        if (seen.has(identity)) {
+          duplicateRelationships.push({ sourceId, kind, targetId: target.id });
+          continue;
+        }
+        seen.add(identity);
+        resolvedRelationshipCount += 1;
+        if (normalized.uncertain) uncertainRelationshipCount += 1;
+        relationships.push({
+          kind,
+          targetId: target.id,
+          displayName: target.displayName,
+          ...(normalized.uncertain ? { uncertain: true } : {}),
+        });
+      }
+    }
+
+    source.person = {
+      description: raw.description,
+      ...parsedDescription,
+      ...((raw.affiliation && raw.affiliation !== ">") ? { affiliation: raw.affiliation } : {}),
+      relationships,
+    };
+  }
+
+  return {
+    sourceRelationshipCount,
+    resolvedRelationshipCount,
+    uncertainRelationshipCount,
+    unresolved,
+    ambiguous,
+    duplicateRelationships,
+  };
 }
 
 function sha256(value: string | Uint8Array): string {
@@ -441,6 +600,7 @@ export function parseTipnrFile(
   detectedSubscriptionCoordinates: readonly string[] = KJV_EPISTLE_SUBSCRIPTION_REFS,
 ): { index: TipnrIndex; doctor: Record<string, unknown> } {
   const entities: Record<string, TipnrEntity> = {};
+  const rawPersonProfiles = new Map<string, RawPersonProfile>();
   const duplicateEntityIds: string[] = [];
   const invalidCoordinates = new Set<string>();
   const sourceCorrectionsUsed = new Set<string>();
@@ -480,6 +640,17 @@ export function parseTipnrFile(
     const gender = genderRaw.trim() || undefined;
     const summaryField = headerFields.find((field) => field.includes("#A ") || field.startsWith("#"));
     if (summaryField) brief = cleanTipnrProse(summaryField.replace(/^#/, "")).slice(0, 280);
+    const headerType = (headerFields[8] ?? "").trim();
+    if (kind === "person" && /^(Male|Female|Group)$/i.test(headerType)) {
+      rawPersonProfiles.set(header.id, {
+        description: cleanTipnrProse(headerFields[1] ?? ""),
+        parents: (headerFields[2] ?? "").trim(),
+        siblings: (headerFields[3] ?? "").trim(),
+        partners: (headerFields[4] ?? "").trim(),
+        offspring: (headerFields[5] ?? "").trim(),
+        affiliation: cleanTipnrProse(headerFields[6] ?? ""),
+      });
+    }
 
     const sourceRows: SourceRow[] = [];
     for (const line of lines.slice(headerIdx + 1)) {
@@ -677,6 +848,8 @@ export function parseTipnrFile(
     entities[entity.id] = entity;
   }
 
+  const personRelationships = applyPersonProfiles(entities, rawPersonProfiles);
+
   const byRef: Record<string, string[]> = {};
   const byParatextRef: Record<string, string[]> = Object.fromEntries(
     KJV_EPISTLE_SUBSCRIPTION_REFS.map((ref) => [ref, []]),
@@ -691,7 +864,7 @@ export function parseTipnrFile(
 
   const list = Object.values(entities);
   const index: TipnrIndex = {
-    version: 3,
+    version: 4,
     source: "STEPBible TIPNR",
     license: "CC BY 4.0",
     // A source-snapshot timestamp keeps Derived regeneration byte-stable (INV-2).
@@ -748,6 +921,21 @@ export function parseTipnrFile(
     akjvSubscriptionScanMatchesPinnedCoordinates:
       JSON.stringify(detectedSubscriptionCoordinates) === JSON.stringify(KJV_EPISTLE_SUBSCRIPTION_REFS),
     normalSubscriptionEdgesHaveCanonicalEvidence: normalSubscriptionEdgesWithoutEvidence.length === 0,
+    personProfilesComplete:
+      rawPersonProfiles.size >= 3_100
+      && rawPersonProfiles.size === list.filter((entity) => entity.kind === "person").length
+      && [...rawPersonProfiles.keys()].every((id) => entities[id]?.person != null),
+    personRelationshipsResolved:
+      personRelationships.sourceRelationshipCount === personRelationships.resolvedRelationshipCount
+      && personRelationships.unresolved.length === 0
+      && personRelationships.ambiguous.length === 0,
+    personRelationshipsUnique: personRelationships.duplicateRelationships.length === 0,
+    personRelationshipTargetsExist: list.every((entity) => (
+      entity.person?.relationships.every((relationship) => entities[relationship.targetId] != null) ?? true
+    )),
+    personSchemaDoesNotLeakIntoOtherKinds: list.every((entity) => (
+      entity.kind === "person" ? entity.person != null : entity.person == null
+    )),
   };
   const doctor = {
     status: Object.values(checks).every(Boolean) ? "healthy" : "unhealthy",
@@ -772,6 +960,10 @@ export function parseTipnrFile(
       canonicalReferenceEdges: Object.values(byRef).reduce((sum, ids) => sum + ids.length, 0),
       paratextReferenceEdges: Object.values(byParatextRef).reduce((sum, ids) => sum + ids.length, 0),
       subscriptionCoordinateCount: paratextCoordinates.size,
+      personProfileCount: rawPersonProfiles.size,
+      sourcePersonRelationshipCount: personRelationships.sourceRelationshipCount,
+      resolvedPersonRelationshipCount: personRelationships.resolvedRelationshipCount,
+      uncertainPersonRelationshipCount: personRelationships.uncertainRelationshipCount,
     },
     checks,
     subscriptions: {
@@ -788,6 +980,9 @@ export function parseTipnrFile(
       invalidCoordinates: [...invalidCoordinates],
       sourceCorrections: [...sourceCorrectionsUsed],
       unparsedReferenceRows,
+      unresolvedPersonRelationships: personRelationships.unresolved,
+      ambiguousPersonRelationships: personRelationships.ambiguous,
+      duplicatePersonRelationships: personRelationships.duplicateRelationships,
     },
     artifact: {
       formatVersion: index.version,
