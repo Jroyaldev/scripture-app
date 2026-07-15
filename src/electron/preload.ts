@@ -89,10 +89,15 @@ const api = {
     getBookNames: () => ipcRenderer.invoke("get-book-names"),
     getChapterText: (packageId: string, book: string, chapter: number) =>
       ipcRenderer.invoke("read-scripture-text", { book, chapter, package: packageId }),
-    getCrossRefs: (book: string, chapter: number, verse: number) =>
-      ipcRenderer.invoke("get-cross-refs", { book, chapter, verse }),
-    getCrossRefsForChapter: (book: string, chapter: number, verseCount: number) =>
-      ipcRenderer.invoke("get-cross-refs-for-chapter", { book, chapter, verseCount }),
+    getCrossRefsForPassage: (
+      book: string,
+      chapter: number,
+      startVerse: number,
+      endVerse: number,
+      packageId: string,
+    ) => ipcRenderer.invoke("get-cross-refs-for-passage", {
+      book, chapter, startVerse, endVerse, packageId,
+    }),
   },
   language: {
     listPackages: () => ipcRenderer.invoke("language-list-packages"),

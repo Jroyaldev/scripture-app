@@ -4,9 +4,8 @@
  * Pure, platform-agnostic (INV-18). Data access injected.
  */
 
-import type { BookCode, BookNameMap, CanonicalRef } from "../reference/types.js";
-import { isValidBookCode } from "../reference/backbone.js";
-import { toBref, toDisplayString } from "../reference/parser.js";
+import type { BookNameMap } from "../reference/types.js";
+import { queryCrossReferences } from "../cross-references/index.js";
 import type {
   CrossRefData,
   MarginBacklink,
@@ -173,7 +172,7 @@ export function assembleMargin(
     });
   }
 
-  // 3. Public-domain cross-references (TSK)
+  // 3. Ranked open cross-references (OpenBible, CC-BY)
   if (crossRefData) {
     const xrefs = gatherCrossRefs(query, crossRefData, bookNames);
     crossRefs.push(...xrefs);
@@ -203,63 +202,24 @@ export function assembleMargin(
 }
 
 /**
- * Gather cross-references from TSK data for a given passage range.
+ * Gather ranked cross-references for a verse or passage range.
  */
 function gatherCrossRefs(
   query: MarginQuery,
   crossRefData: CrossRefData,
   bookNames: BookNameMap,
 ): MarginCrossRef[] {
-  const results: MarginCrossRef[] = [];
-  const seen = new Set<string>();
-
-  for (let ch = query.startChapter; ch <= query.endChapter; ch++) {
-    const vStart = ch === query.startChapter ? query.startVerse : 1;
-    const vEnd = ch === query.endChapter ? query.endVerse : 200;
-
-    for (let v = vStart; v <= vEnd; v++) {
-      const key = `${query.book}.${ch}.${v}`;
-      const refs = crossRefData.refs[key];
-      if (!refs) continue;
-
-      for (const targetKey of refs) {
-        if (seen.has(targetKey)) continue;
-        seen.add(targetKey);
-
-        const parsed = parseCrossRefTarget(targetKey);
-        if (!parsed) continue;
-        if (!isValidBookCode(parsed.book)) continue;
-
-        const bookCode = parsed.book as BookCode;
-        const ref: CanonicalRef = {
-          version: "v1",
-          start: { book: bookCode, chapter: parsed.chapter, verse: parsed.verse },
-          end: { book: bookCode, chapter: parsed.chapter, verse: parsed.verse },
-        };
-
-        results.push({
-          kind: "cross-ref",
-          provenance: "source",
-          sourceId: crossRefData.meta.id,
-          sourceName: crossRefData.meta.name,
-          targetBref: toBref(ref),
-          targetDisplay: toDisplayString(ref, bookNames),
-        });
-      }
-    }
-  }
-
-  return results;
-}
-
-function parseCrossRefTarget(key: string): { book: string; chapter: number; verse: number } | null {
-  const parts = key.split(".");
-  if (parts.length !== 3) return null;
-  const [bookStr, chStr, vStr] = parts as [string, string, string];
-  const chapter = parseInt(chStr, 10);
-  const verse = parseInt(vStr, 10);
-  if (isNaN(chapter) || isNaN(verse)) return null;
-  return { book: bookStr, chapter, verse };
+  const result = queryCrossReferences(crossRefData, query, bookNames);
+  return result.items.map((ref): MarginCrossRef => ({
+    kind: "cross-ref",
+    provenance: "source",
+    sourceId: ref.sourceId,
+    sourceName: ref.sourceName,
+    targetBref: ref.targetBref,
+    targetDisplay: ref.targetDisplay,
+    score: ref.score,
+    supportingSourceCount: ref.supportingSourceCount,
+  }));
 }
 
 function truncateSnippet(text: string, maxLen: number): string {

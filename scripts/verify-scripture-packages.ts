@@ -1,6 +1,9 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { join, resolve } from "node:path";
 import type { BackboneData } from "../src/core/reference/types.js";
+import { loadOpenBibleCrossReferences } from "../src/host/cross-reference-loader.js";
+import { parseCrossReferenceKey } from "../src/core/cross-references/index.js";
 
 type ChapterData = {
   verses: Array<{ verse: number; text: string }>;
@@ -129,5 +132,89 @@ for (const syntaxId of ["macula-greek-nestle1904", "macula-hebrew-wlc"]) {
     `[verify:data] ${syntaxId}: ${sentencesChecked} sentences, ${leavesChecked} leaves clean`,
   );
 }
+
+// OpenBible reference graph Doctor: verify the committed artifact rather than
+// trusting importer prose. The raw ZIP stays external (INV-13), while every
+// normalized coordinate, range, score and duplicate invariant is rechecked.
+const crossReferenceDir = join(repoRoot, "data", "cross-references");
+const crossReferencePath = join(crossReferenceDir, "openbible.jsonl");
+const crossReferenceDoctorPath = join(crossReferenceDir, "openbible-doctor-report.json");
+if (!existsSync(crossReferencePath) || !existsSync(crossReferenceDoctorPath)) {
+  fail("OpenBible cross-reference artifact or Doctor report is missing");
+}
+const crossReferenceText = readFileSync(crossReferencePath, "utf-8").trimEnd();
+const crossReferenceLines = crossReferenceText.split("\n");
+const crossReferenceData = loadOpenBibleCrossReferences(crossReferencePath);
+const crossReferenceDoctor = JSON.parse(readFileSync(crossReferenceDoctorPath, "utf-8")) as {
+  status: string;
+  checks: Record<string, boolean>;
+  scores: { normalizedSha256: string };
+};
+if (crossReferenceDoctor.status !== "healthy" || Object.values(crossReferenceDoctor.checks).some((value) => !value)) {
+  fail("OpenBible Doctor report is not healthy");
+}
+if (
+  crossReferenceData.meta.license !== "CC-BY"
+  || !/^\d{4}-\d{2}-\d{2}$/.test(crossReferenceData.meta.snapshotDate)
+  || crossReferenceData.meta.rowCount < 300_000
+  || crossReferenceData.meta.sourceVerseCount < 29_000
+  || crossReferenceData.meta.sourceBookCount !== 66
+) {
+  fail("OpenBible coverage/license/snapshot metadata is below the required floor");
+}
+const normalizedSha256 = createHash("sha256")
+  .update(crossReferenceLines.slice(1).join("\n"))
+  .digest("hex");
+if (
+  normalizedSha256 !== crossReferenceData.meta.normalizedSha256
+  || normalizedSha256 !== crossReferenceDoctor.scores.normalizedSha256
+) {
+  fail("OpenBible normalized dataset checksum does not match metadata/Doctor");
+}
+
+const crossReferenceBookOrder = new Map(bookCodes.map((book, index) => [book, index]));
+const coordinateOrdinal = (book: string, chapter: number, verse: number): number =>
+  (crossReferenceBookOrder.get(book) ?? 999) * 1_000_000 + chapter * 1_000 + verse;
+const validCoordinate = (book: string, chapter: number, verse: number): boolean => {
+  const chapters = backbone.books[book]?.chapters;
+  return !!chapters
+    && chapter >= 1
+    && chapter <= chapters.length
+    && verse >= 1
+    && verse <= (chapters[chapter - 1] ?? 0);
+};
+
+for (const [sourceKey, edges] of Object.entries(crossReferenceData.refs)) {
+  const source = parseCrossReferenceKey(sourceKey);
+  if (
+    !source
+    || source.start.book !== source.end.book
+    || source.start.chapter !== source.end.chapter
+    || source.start.verse !== source.end.verse
+    || !validCoordinate(source.start.book, source.start.chapter, source.start.verse)
+  ) {
+    fail(`OpenBible invalid source coordinate: ${sourceKey}`);
+  }
+  const seenTargets = new Set<string>();
+  for (const [targetKey, score] of edges) {
+    if (seenTargets.has(targetKey)) fail(`OpenBible duplicate edge: ${sourceKey} -> ${targetKey}`);
+    seenTargets.add(targetKey);
+    if (!Number.isInteger(score)) fail(`OpenBible non-integer score: ${sourceKey} -> ${targetKey}`);
+    const target = parseCrossReferenceKey(targetKey);
+    if (
+      !target
+      || !validCoordinate(target.start.book, target.start.chapter, target.start.verse)
+      || !validCoordinate(target.end.book, target.end.chapter, target.end.verse)
+      || coordinateOrdinal(target.start.book, target.start.chapter, target.start.verse)
+        > coordinateOrdinal(target.end.book, target.end.chapter, target.end.verse)
+    ) {
+      fail(`OpenBible invalid target range: ${targetKey}`);
+    }
+  }
+}
+console.error(
+  `[verify:data] OpenBible: ${crossReferenceData.meta.rowCount} scored edges, `
+  + `${crossReferenceData.meta.sourceVerseCount} sources, ${crossReferenceData.meta.targetRangeCount} target ranges, CC-BY`,
+);
 
 console.log(`Scripture data verified: ${checkedFiles} chapter files, ${checkedVerses} verses.`);

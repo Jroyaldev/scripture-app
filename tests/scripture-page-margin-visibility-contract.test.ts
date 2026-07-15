@@ -11,10 +11,11 @@ test("ScripturePage does not load cross-refs or semantic margin while the margin
     "utf-8",
   );
 
-  const deterministicEffect = source.indexOf("// Phase 1: Load deterministic margin data");
-  const hiddenBranch = source.indexOf("if (!marginVisible)", deterministicEffect);
-  const crossRefs = source.indexOf("window.api.scripture.getCrossRefsForChapter", deterministicEffect);
+  const crossReferenceEffect = source.indexOf("// Cross-references follow the actual reading scope");
+  const hiddenBranch = source.indexOf("if (!marginVisible)", crossReferenceEffect);
+  const crossRefs = source.indexOf("window.api.scripture.getCrossRefsForPassage", crossReferenceEffect);
 
+  assert.ok(crossReferenceEffect !== -1);
   assert.ok(hiddenBranch !== -1);
   assert.ok(crossRefs !== -1 && crossRefs > hiddenBranch);
   assert.match(source, /window\.setTimeout\(\(\) => \{/);

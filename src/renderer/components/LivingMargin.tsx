@@ -1,6 +1,15 @@
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
-import type { AnchorRecord, BookNameData, NoteRecord, QueryResult, SemanticMarginResult } from "../api.js";
+import type {
+  AnchorRecord,
+  BookNameData,
+  CrossReferenceMatchData,
+  CrossReferenceResultData,
+  NoteRecord,
+  QueryResult,
+  SemanticMarginResult,
+  SuggestedCrossRefData,
+} from "../api.js";
 import { safeCall } from "../utils/safeCall.js";
 import { LanguageWordsSection } from "./LanguageWordsSection.js";
 
@@ -14,7 +23,7 @@ interface Props {
   chapter: number;
   packageId: string;
   marginData: QueryResult;
-  crossRefs: string[];
+  crossRefs: CrossReferenceResultData | null;
   bookNames: BookNameData;
   semanticData?: SemanticMarginResult | null;
   semanticLoading?: boolean;
@@ -60,48 +69,153 @@ function findNoteForRange(marginData: QueryResult, chapter: number, start: numbe
 }
 
 /** Collapsed by default so language stays primary; expand on demand. */
-function CrossRefsBlock({
-  refs,
+function CrossReferenceArrow(): React.JSX.Element {
+  return (
+    <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true">
+      <path d="M4 12 12 4M6 4h6v6" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function CrossReferenceRow({
+  item,
   onNavigate,
-  title = "See also",
 }: {
-  refs: string[];
+  item: CrossReferenceMatchData;
   onNavigate?: (ref: string) => void;
-  title?: string;
+}): React.JSX.Element {
+  return (
+    <button
+      type="button"
+      className="crossref-row"
+      onClick={() => onNavigate?.(item.targetBref)}
+      aria-label={`Open ${item.targetDisplay}`}
+      title={item.preview ? `${item.targetDisplay} — ${item.preview}` : `Open ${item.targetDisplay}`}
+    >
+      <span className="crossref-row-copy">
+        <span className="crossref-reference">{item.targetDisplay}</span>
+        {item.preview && <span className="crossref-preview">{item.preview}</span>}
+        {item.supportingSourceCount > 1 && (
+          <span className="crossref-support">
+            Linked from {item.supportingSourceCount} verses in this passage
+          </span>
+        )}
+        {item.relationshipKinds.length > 0 && (
+          <span className="crossref-kinds">
+            {item.relationshipKinds.map((kind) => <span key={kind}>{kind}</span>)}
+          </span>
+        )}
+      </span>
+      <span className="crossref-open-affordance">
+        <span>Open</span>
+        <CrossReferenceArrow />
+      </span>
+    </button>
+  );
+}
+
+function CrossRefsBlock({
+  result,
+  onNavigate,
+}: {
+  result: CrossReferenceResultData;
+  onNavigate?: (ref: string) => void;
 }): React.JSX.Element {
   const [open, setOpen] = useState(false);
   const preview = 3;
-  const shown = open ? refs.slice(0, 12) : refs.slice(0, preview);
-  const rest = refs.length - shown.length;
+  const shown = open ? result.items : result.items.slice(0, preview);
+  const rest = result.items.length - shown.length;
+
+  useEffect(() => {
+    setOpen(false);
+  }, [result.sourceBref]);
 
   return (
-    <div className="margin-section">
-      <button
-        type="button"
-        className="margin-section-header margin-section-toggle"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-      >
-        {title}
-        <span className="margin-section-count">{refs.length}</span>
-        <span className="margin-section-caret" aria-hidden="true">{open ? "▴" : "▾"}</span>
-      </button>
-      {(open || refs.length <= preview) && (
-        <>
-          {shown.map((ref, i) => (
-            <button key={`${ref}-${i}`} className="xref-link" onClick={() => onNavigate?.(ref)}>
-              {ref}
-            </button>
-          ))}
-          {rest > 0 && open && <div className="xref-more-hint">+{rest}</div>}
-        </>
-      )}
-      {!open && refs.length > preview && (
-        <button type="button" className="xref-more-hint xref-more-btn" onClick={() => setOpen(true)}>
-          +{refs.length - preview} more
+    <section className="margin-section crossref-section" aria-label="Cross references">
+      <div className="crossref-heading">
+        <div>
+          <div className="margin-section-header crossref-title">See also</div>
+          <div className="crossref-context">
+            {result.scope === "verse" ? "For this verse" : "Across this passage"}
+          </div>
+        </div>
+        <span
+          className="crossref-total"
+          title={`${result.items.length} highest-ranked of ${result.totalCount} positive-score connections`}
+        >
+          <strong>{result.items.length}</strong>
+          {result.totalCount > result.items.length && <span> / {result.totalCount}</span>}
+        </span>
+      </div>
+
+      <div className="crossref-list">
+        {shown.map((item) => (
+          <CrossReferenceRow key={item.targetBref} item={item} onNavigate={onNavigate} />
+        ))}
+      </div>
+
+      {rest > 0 && (
+        <button type="button" className="crossref-expand" onClick={() => setOpen(true)}>
+          Show {rest} more
+          <span aria-hidden="true">↓</span>
         </button>
       )}
-    </div>
+      {open && result.items.length > preview && (
+        <button type="button" className="crossref-expand" onClick={() => setOpen(false)}>
+          Show less
+          <span aria-hidden="true">↑</span>
+        </button>
+      )}
+
+      <div
+        className="crossref-attribution"
+        title={`${result.attribution.attribution} · ${result.attribution.license} · ${result.attribution.sourceUrl}`}
+      >
+        <span>{result.attribution.name}</span>
+        <span aria-hidden="true">·</span>
+        <span>{result.attribution.license}</span>
+      </div>
+    </section>
+  );
+}
+
+function NoteCrossRefsBlock({
+  items,
+  onNavigate,
+}: {
+  items: SuggestedCrossRefData[];
+  onNavigate?: (ref: string) => void;
+}): React.JSX.Element {
+  return (
+    <section className="margin-section note-crossref-section" aria-label="Cross references from notes">
+      <div className="crossref-heading">
+        <div>
+          <div className="margin-section-header crossref-title">From notes</div>
+          <div className="crossref-context">Connections in your library</div>
+        </div>
+        <span className="crossref-total"><strong>{items.length}</strong></span>
+      </div>
+      <div className="crossref-list">
+        {items.map((item) => (
+          <button
+            key={item.targetBref}
+            type="button"
+            className="note-crossref-row"
+            onClick={() => onNavigate?.(item.targetBref)}
+            aria-label={`Open ${item.targetDisplay} from notes`}
+          >
+            <span className="crossref-row-copy">
+              <span className="crossref-reference">{item.targetDisplay}</span>
+              <span className="note-crossref-reason">{item.reason}</span>
+            </span>
+            <span className="crossref-open-affordance">
+              <span>Open</span>
+              <CrossReferenceArrow />
+            </span>
+          </button>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -142,7 +256,7 @@ export function LivingMargin({
   };
 
   const activeHighlights = marginData.highlights.filter((h) => h.deleted === 0);
-  const hasDeterministicData = marginData.notes.length > 0 || activeHighlights.length > 0 || crossRefs.length > 0;
+  const hasDeterministicData = marginData.notes.length > 0 || activeHighlights.length > 0 || (crossRefs?.totalCount ?? 0) > 0;
   const hasSemanticData = semanticData && (
     semanticData.semanticNotes.length > 0 ||
     semanticData.threads.length > 0 ||
@@ -229,7 +343,6 @@ export function LivingMargin({
   const pinnedSemantic = pinnedAiResult ?? semanticData;
 
   const nearNote = nearVerse != null ? findNoteForRange(marginData, chapter, nearVerse, nearVerse) : null;
-  const nearXrefs = nearVerse != null ? crossRefs.filter((r) => r.includes(`:${nearVerse}`)) : [];
   const nearQuote = nearVerse != null ? chapterVerseText?.get(nearVerse) ?? "" : "";
   const nearRef = nearVerse != null ? `${displayBook} ${chapter}:${nearVerse}` : "";
 
@@ -262,7 +375,7 @@ export function LivingMargin({
               <div className="margin-stat-label">Notes</div>
             </div>
             <div className="margin-stat">
-              <div className="margin-stat-num">{crossRefs.length}</div>
+              <div className="margin-stat-num">{crossRefs?.totalCount ?? 0}</div>
               <div className="margin-stat-label">Cross-refs</div>
             </div>
           </div>
@@ -297,16 +410,8 @@ export function LivingMargin({
             </div>
           )}
 
-          {nearXrefs.length > 0 && (
-            <div className="margin-section">
-              <div className="margin-section-header">Cross-refs</div>
-              {nearXrefs.slice(0, 4).map((ref, i) => (
-                <button key={`${ref}-${i}`} className="xref-link" onClick={() => onNavigateToRef?.(ref)}>{ref}</button>
-              ))}
-              {nearXrefs.length > 4 && (
-                <div className="xref-more-hint">+{nearXrefs.length - 4}</div>
-              )}
-            </div>
+          {(crossRefs?.items?.length ?? 0) > 0 && crossRefs && (
+            <CrossRefsBlock result={crossRefs} onNavigate={onNavigateToRef} />
           )}
         </div>
       )}
@@ -441,24 +546,15 @@ export function LivingMargin({
             </div>
           )}
 
-          {crossRefs.length > 0 && (
-            <CrossRefsBlock refs={crossRefs} onNavigate={onNavigateToRef} title="See also" />
+          {(crossRefs?.items?.length ?? 0) > 0 && crossRefs && (
+            <CrossRefsBlock result={crossRefs} onNavigate={onNavigateToRef} />
           )}
 
           {pinnedSemantic && pinnedSemantic.suggestedCrossRefs.length > 0 && (
-            <div className="margin-section">
-              <div className="margin-section-header">From notes</div>
-              {pinnedSemantic.suggestedCrossRefs.slice(0, 6).map((xref, i) => (
-                <button
-                  key={`${xref.targetBref}-${i}`}
-                  className="xref-link"
-                  title={xref.reason}
-                  onClick={() => onNavigateToRef?.(xref.targetDisplay)}
-                >
-                  {xref.targetDisplay}
-                </button>
-              ))}
-            </div>
+            <NoteCrossRefsBlock
+              items={pinnedSemantic.suggestedCrossRefs.slice(0, 6)}
+              onNavigate={onNavigateToRef}
+            />
           )}
 
           {/* Compact AI: only while loading or when there is a real summary */}

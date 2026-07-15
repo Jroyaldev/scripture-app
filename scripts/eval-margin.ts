@@ -23,11 +23,12 @@ import { embedAllNotes } from "../src/host/embeddings-sync.js";
 import { runSemanticMargin } from "../src/host/semantic-margin-host.js";
 import type { CrossRefData } from "../src/core/margin/types.js";
 import type { BookNameMap } from "../src/core/reference/types.js";
+import { loadOpenBibleCrossReferences } from "../src/host/cross-reference-loader.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const LIBRARY_PATH = process.env["LIBRARY_PATH"] ?? resolve(__dirname, "../Library-demo");
 const DATA_DIR = resolve(__dirname, "../data/scripture");
-const TSK_PATH = resolve(__dirname, "../data/cross-references/tsk.json");
+const OPENBIBLE_PATH = resolve(__dirname, "../data/cross-references/openbible.jsonl");
 
 const DISTRACTORS = new Set([
   "01SEEDNOTE0000000000000013", // Reading plan Q3
@@ -102,8 +103,8 @@ async function main(): Promise<void> {
   const bookNames = JSON.parse(
     readFileSync(join(DATA_DIR, "book-names-en.json"), "utf-8"),
   ) as BookNameMap;
-  const crossRefData = existsSync(TSK_PATH)
-    ? (JSON.parse(readFileSync(TSK_PATH, "utf-8")) as CrossRefData)
+  const crossRefData = existsSync(OPENBIBLE_PATH)
+    ? (loadOpenBibleCrossReferences(OPENBIBLE_PATH) as CrossRefData)
     : null;
 
   // Ensure embeddings are current for the seeded corpus (incremental, cheap).

@@ -97,12 +97,14 @@ This document records every shipped dataset with its license, source, and permis
 
 ## Cross-Reference Corpus
 
-### Treasury of Scripture Knowledge (TSK)
+### OpenBible Cross References
 
-- **Source:** Originally compiled by R.A. Torrey (1880s), public domain. Digital versions available from multiple sources including [OpenBible.info](https://www.openbible.info/labs/cross-references/) and [eBible.org](https://ebible.org).
-- **License:** Public Domain (original work is pre-1928, no copyright in the United States)
-- **SPDX:** N/A (public domain)
-- **Attribution:** "Cross-references derived from the Treasury of Scripture Knowledge, compiled by R.A. Torrey. Public Domain."
+- **Source:** [OpenBible.info Cross References](https://www.openbible.info/labs/cross-references/). The compiled and scored dataset draws primarily from public-domain sources, especially the Treasury of Scripture Knowledge, and also incorporates OpenBible data.
+- **License:** [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/)
+- **SPDX:** CC-BY-4.0
+- **Attribution:** "OpenBible Cross References, CC-BY 4.0, snapshot 2026-07-13."
+- **Importer:** `scripts/import-openbible-cross-references.ts` + `npm run import:openbible-crossrefs`
+- **Note:** This app normalizes coordinates and ranks the supplied scores; it does not claim that the compiled dataset is simply TSK or public domain.
 - **Permission Flags:**
   - `bundle`: true
   - `index`: true

@@ -33,7 +33,7 @@ knob that tunes it, doesn't ship.
 
 ```
                       ┌─ DETERMINISTIC MARGIN (no AI, always trustworthy) ─┐
- passage opened ────▶ │ anchored notes · highlights · TSK cross-refs ·     │
+ passage opened ────▶ │ anchored notes · highlights · OpenBible xrefs ·   │
                       │ backlinks · PDF source chunks                      │
                       └────────────────────────────────────────────────────┘
                       ┌─ SEMANTIC MARGIN (AI-derived, evidence-gated) ─────┐
@@ -63,12 +63,12 @@ One shared code path — Electron IPC, eval harness, and verify scripts all call
 |---|---|---|
 | Query embedding | `runSemanticMargin` | Raw passage text (capped 1500 chars), query prompt prefix. **The query is the bare translation text — no glosses, no theme hints.** |
 | Keyword extraction | `extractKeywords` | Stopword-filtered (incl. KJV archaisms), frequency-ranked, top 24, OR-joined into FTS5. |
-| Cross-ref targets | deterministic margin's TSK list | Feeds reference evidence below. |
+| Cross-ref targets | deterministic margin's ranked OpenBible list | Feeds reference evidence below. |
 
 ### Stage 2 — Three evidence channels
 | Channel | Signal | Strength | Explains itself as |
 |---|---|---|---|
-| **Reference** | note anchored to a TSK cross-ref target of the passage, or elsewhere in the queried chapter | Strongest; admits regardless of dense score | "Cites Acts 8:17 — a cross-reference of this passage" / "Notes on Acts 19:6, in this chapter" |
+| **Reference** | note anchored to an OpenBible cross-ref target of the passage, or elsewhere in the queried chapter | Strongest; admits regardless of dense score | "Cites Acts 8:17 — a cross-reference of this passage" / "Notes on Acts 19:6, in this chapter" |
 | **Dense** | best-chunk cosine vs query embedding | Primary; subject to floors | "Closely related theme" |
 | **Lexical** | BM25 rank over passage keywords | Corroborating only (softer floor) | "Strong wording overlap with this passage" |
 
@@ -88,7 +88,7 @@ empty state, no raw percentages anywhere.
 |---|---|---|
 | **Claims** | DeepSeek (`claims-v2`) extracts assertions from notes **anchored to the passage**; every claim must quote a note verbatim (≤15 words), string-verified; confidence derived from evidence count, model self-report ignored | Rejected-not-repaired validation; "grounded in N notes" + quote in UI |
 | **Threads** | stored groupings; surfaced only when they involve a note visible for this passage | scoped, currently no in-app generator (B3 Gate 3) |
-| **Suggested cross-refs** | verses that surfaced related notes cite, minus TSK, minus the passage itself | fully deterministic, labeled "from your notes" |
+| **Suggested cross-refs** | verses that surfaced related notes cite, minus OpenBible, minus the passage itself | fully deterministic, labeled "from your notes" |
 | **Overlays** | stored AI ranges for the passage | no in-app generator yet |
 
 ## Knob table (tune here, verify with calibrate + eval)

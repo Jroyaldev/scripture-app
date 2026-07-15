@@ -34,6 +34,8 @@ export type MarginCrossRef = {
   sourceName: string;
   targetBref: string;
   targetDisplay: string;
+  score: number;
+  supportingSourceCount: number;
 };
 
 export type MarginBacklink = {
@@ -75,12 +77,4 @@ export type MarginResult = {
   suggestedCrossRefs?: import("../ai/types.js").SuggestedCrossRef[];
 };
 
-export type CrossRefData = {
-  meta: {
-    id: string;
-    name: string;
-    source: string;
-    license: string;
-  };
-  refs: Record<string, string[]>;
-};
+export type CrossRefData = import("../cross-references/index.js").CrossReferenceData;

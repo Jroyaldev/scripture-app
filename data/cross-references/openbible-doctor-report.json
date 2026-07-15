@@ -1,0 +1,46 @@
+{
+  "status": "healthy",
+  "generatedAt": "2026-07-15T06:54:32.695Z",
+  "source": {
+    "fileName": "openbible-cross-references.zip",
+    "header": "From Verse\tTo Verse\tVotes\t#www.openbible.info CC-BY 2026-07-13",
+    "snapshotDate": "2026-07-13",
+    "license": "CC-BY",
+    "rawSha256": "cf573c48d8a9e6b51f0004c19992d7afa695431db8839b1179b5e879ab5fa805"
+  },
+  "coverage": {
+    "rawRowCount": 344799,
+    "storedRowCount": 344799,
+    "sourceVerseCount": 29363,
+    "sourceBookCount": 66,
+    "targetRangeCount": 88150,
+    "crossBookRangeCount": 18,
+    "nonPositiveScoreCount": 3512,
+    "mappedCoordinateOccurrences": 5,
+    "mappedCoordinateValues": [
+      "3John.1.15 -> 3JN.1.14"
+    ]
+  },
+  "scores": {
+    "min": -86,
+    "max": 1283,
+    "sum": 2200115,
+    "normalizedSha256": "3ea815709530c3ded1b00c2c975b601c2c30aae360218e37fe483fdcc765a717"
+  },
+  "checks": {
+    "coverageFloor": true,
+    "canonicalCoordinates": true,
+    "uniqueEdges": true,
+    "rangeIntegrity": true,
+    "license": true,
+    "snapshotDate": true,
+    "scoresPreserved": true
+  },
+  "issues": {
+    "malformedRows": [],
+    "invalidSources": [],
+    "invalidTargets": [],
+    "reversedRanges": [],
+    "duplicateEdges": []
+  }
+}

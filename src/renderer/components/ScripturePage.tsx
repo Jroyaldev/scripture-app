@@ -4,6 +4,7 @@ import type {
   BackboneData,
   BookNameData,
   ChapterData,
+  CrossReferenceResultData,
   HighlightRecord,
   QueryResult,
   ReadingSize,
@@ -204,7 +205,7 @@ export function ScripturePage({
   const [chapterError, setChapterError] = useState<string | null>(null);
   const [selectedVerses, setSelectedVerses] = useState<Set<number>>(new Set());
   const [marginData, setMarginData] = useState<QueryResult>({ anchors: [], highlights: [], notes: [] });
-  const [crossRefs, setCrossRefs] = useState<string[]>([]);
+  const [crossRefs, setCrossRefs] = useState<CrossReferenceResultData | null>(null);
   const [semanticData, setSemanticData] = useState<SemanticMarginResult | null>(null);
   const [semanticLoading, setSemanticLoading] = useState(false);
   const [showHighlightPalette, setShowHighlightPalette] = useState(false);
@@ -407,7 +408,7 @@ export function ScripturePage({
     const verseCount = backbone.books[book]?.chapters[chapter - 1] ?? 0;
     if (verseCount === 0) {
       setMarginData({ anchors: [], highlights: [], notes: [] });
-      setCrossRefs([]);
+      setCrossRefs(null);
       return () => {
         cancelled = true;
       };
@@ -419,16 +420,11 @@ export function ScripturePage({
     });
 
     if (!marginVisible) {
-      setCrossRefs([]);
+      setCrossRefs(null);
       return () => {
         cancelled = true;
       };
     }
-
-    // Batched cross-refs (single IPC call instead of 7)
-    safeCall(() => window.api.scripture.getCrossRefsForChapter(book, chapter, verseCount)).then((res) => {
-      if (!cancelled && res.ok) setCrossRefs(res.value);
-    });
 
     return () => {
       cancelled = true;
@@ -561,25 +557,49 @@ export function ScripturePage({
   // `recordRecent` defaults true for jumps/picker/xrefs; prev/next arrows call
   // setChapter directly so sequential reading does not flood the recents list.
   const pendingVerseSelectRef = useRef<number | null>(null);
+  const pendingVerseEndRef = useRef<number | null>(null);
   const goTo = useCallback(
-    (b: string, c: number, verse?: number, opts?: { recordRecent?: boolean }) => {
+    (b: string, c: number, verse?: number, opts?: { recordRecent?: boolean; rangeEnd?: number }) => {
       userNavigatedRef.current = true;
       pendingVerseSelectRef.current = verse ?? null;
+      pendingVerseEndRef.current = opts?.rangeEnd ?? null;
       setBook(b);
       setChapter(c);
+      if (b === book && c === chapter) {
+        pendingVerseSelectRef.current = null;
+        pendingVerseEndRef.current = null;
+        verseSelectionAnchorRef.current = verse ?? null;
+        setSelectedVerses(verse
+          ? new Set(Array.from(
+              { length: Math.max(1, (opts?.rangeEnd ?? verse) - verse + 1) },
+              (_, index) => verse + index,
+            ))
+          : new Set());
+        setPhraseSelection(null);
+        setShowHighlightPalette(false);
+      }
       if (opts?.recordRecent !== false) {
         recordRecent(b, c, verse);
       }
     },
-    [recordRecent],
+    [book, chapter, recordRecent],
   );
 
-  // Cross-reference click-through (Living Margin's xref-link entries were
-  // previously decorative text). Reuses the same parser as the "Go to..."
-  // jump input, since cross-refs are rendered as "Book chapter:verse" text.
-  // Falls back to stripping a trailing "-N" range (e.g. "Acts 19:1-7") since
-  // parsePassage only targets a single verse, not a range.
+  // Cross-reference click-through. Canonical bref targets preserve same-
+  // chapter destination ranges as a pinned selection; note-derived display
+  // strings retain the existing passage-parser fallback.
   const handleNavigateToRef = useCallback((ref: string) => {
+    const canonical = /^bref:v1\/([1-3A-Z]{3})\.(\d+)\.(\d+)(?:-([1-3A-Z]{3})\.(\d+)\.(\d+))?$/.exec(ref);
+    if (canonical) {
+      const [, startBook, startChapterText, startVerseText, endBook, endChapterText, endVerseText] = canonical;
+      const startChapter = Number(startChapterText);
+      const startVerse = Number(startVerseText);
+      const sameChapterRangeEnd = endBook === startBook && Number(endChapterText) === startChapter
+        ? Number(endVerseText)
+        : undefined;
+      goTo(startBook!, startChapter, startVerse, { rangeEnd: sameChapterRangeEnd });
+      return;
+    }
     let result = parsePassage(ref, bookNames, backbone);
     if (!result.ok) {
       const stripped = ref.replace(/[-–]\s*\d+\s*$/, "");
@@ -681,6 +701,37 @@ export function ScripturePage({
   useEffect(() => {
     onPinnedRangeChange?.(pinnedRange);
   }, [pinnedRange, onPinnedRangeChange]);
+
+  // Cross-references follow the actual reading scope: exact verse when the
+  // eye-line is ambient, selected range when pinned, full chapter only for the
+  // overview. Passage aggregation and top-N ranking happen in pure core code.
+  useEffect(() => {
+    if (!marginVisible) {
+      setCrossRefs(null);
+      return;
+    }
+    const verseCount = backbone.books[book]?.chapters[chapter - 1] ?? 0;
+    if (verseCount === 0) {
+      setCrossRefs(null);
+      return;
+    }
+    const startVerse = pinnedRange?.start ?? nearVerse ?? 1;
+    const endVerse = pinnedRange?.end ?? nearVerse ?? verseCount;
+    let cancelled = false;
+    setCrossRefs(null);
+    safeCall(() => window.api.scripture.getCrossRefsForPassage(
+      book,
+      chapter,
+      startVerse,
+      endVerse,
+      packageId,
+    )).then((result) => {
+      if (!cancelled && result.ok) setCrossRefs(result.value);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [backbone, book, chapter, marginVisible, nearVerse, packageId, pinnedRange]);
 
   // Reload margin data after highlight changes
   const reloadMarginHighlights = useCallback(async () => {
@@ -1420,9 +1471,16 @@ export function ScripturePage({
     setFadingIds(new Set());
     setPhraseSelection(null);
     const verse = pendingVerseSelectRef.current;
+    const verseEnd = pendingVerseEndRef.current;
     pendingVerseSelectRef.current = null;
+    pendingVerseEndRef.current = null;
     verseSelectionAnchorRef.current = verse ?? null;
-    setSelectedVerses(verse ? new Set([verse]) : new Set());
+    setSelectedVerses(verse
+      ? new Set(Array.from(
+          { length: Math.max(1, (verseEnd ?? verse) - verse + 1) },
+          (_, index) => verse + index,
+        ))
+      : new Set());
   }, [book, chapter, packageId]);
 
   // Clear study lock when the user fully clears the selection (click away).

@@ -10,7 +10,7 @@
  * THEN the Living Margin assembles, grouped and provenance-typed:
  *      - Related notes surfaced via semantic similarity (no explicit anchor)
  *      - Claims with provenance and confidence
- *      - Cross-references (AI + public-domain)
+ *      - Cross-references (AI + OpenBible CC-BY)
  * AND pinning a claim writes a FactCard (Substrate),
  * AND deleting .system/ and rebuilding leaves the FactCard intact.
  */
@@ -31,6 +31,8 @@ import type { RetrievalOptions } from "../src/core/ai/retrieval.js";
 import type { BackboneData, BookNameMap } from "../src/core/reference/types.js";
 import { validateBackboneData } from "../src/core/reference/backbone.js";
 import { readFileSync } from "node:fs";
+import { loadOpenBibleCrossReferences } from "../src/host/cross-reference-loader.js";
+import type { CrossRefData } from "../src/core/margin/types.js";
 
 const DATA_DIR = resolve(import.meta.dirname ?? ".", "../data/scripture");
 const CROSS_REF_DIR = resolve(import.meta.dirname ?? ".", "../data/cross-references");
@@ -60,10 +62,10 @@ function loadBookNames(): BookNameMap {
   return JSON.parse(readFileSync(join(DATA_DIR, "book-names-en.json"), "utf-8")) as BookNameMap;
 }
 
-function loadCrossRefs(): { meta: { id: string; name: string; source: string; license: string }; refs: Record<string, string[]> } | null {
-  const path = join(CROSS_REF_DIR, "tsk.json");
+function loadCrossRefs(): CrossRefData | null {
+  const path = join(CROSS_REF_DIR, "openbible.jsonl");
   if (!existsSync(path)) return null;
-  return JSON.parse(readFileSync(path, "utf-8"));
+  return loadOpenBibleCrossReferences(path);
 }
 
 async function main(): Promise<void> {

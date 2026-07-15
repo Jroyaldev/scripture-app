@@ -45,7 +45,8 @@
     "import:bsb": "node --import tsx scripts/import-bsb-usfm.ts",
     "import:bsb-tables": "node --import tsx scripts/import-bsb-tables.ts",
     "build:reverse-index": "node --import tsx scripts/build-reverse-index.ts",
-    "build:hebrew-orbit": "node --import tsx scripts/build-hebrew-orbit-index.ts"
+    "build:hebrew-orbit": "node --import tsx scripts/build-hebrew-orbit-index.ts",
+    "import:openbible-crossrefs": "node --import tsx scripts/import-openbible-cross-references.ts"
   },
   "main": "dist/electron/main.cjs",
   "bin": {

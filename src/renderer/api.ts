@@ -36,8 +36,13 @@ declare global {
         getBackbone(): Promise<BackboneData>;
         getBookNames(): Promise<BookNameData>;
         getChapterText(packageId: string, book: string, chapter: number): Promise<ChapterData | null>;
-        getCrossRefs(book: string, chapter: number, verse: number): Promise<string[]>;
-        getCrossRefsForChapter(book: string, chapter: number, verseCount: number): Promise<string[]>;
+        getCrossRefsForPassage(
+          book: string,
+          chapter: number,
+          startVerse: number,
+          endVerse: number,
+          packageId: string,
+        ): Promise<CrossReferenceResultData>;
       };
       language: {
         listPackages(): Promise<LanguagePackageSummary[]>;
@@ -310,6 +315,36 @@ export interface SuggestedCrossRefData {
   targetDisplay: string;
   reason: string;
   confidence: number;
+}
+
+export interface CrossReferenceMatchData {
+  sourceId: string;
+  sourceName: string;
+  targetKey: string;
+  targetBref: string;
+  targetDisplay: string;
+  score: number;
+  rankScore: number;
+  supportingSourceCount: number;
+  supportingSourceBrefs: string[];
+  relationshipKinds: Array<"quotation" | "parallel" | "theme" | "prophecy">;
+  preview?: string;
+}
+
+export interface CrossReferenceResultData {
+  scope: "verse" | "passage";
+  sourceBref: string;
+  totalCount: number;
+  items: CrossReferenceMatchData[];
+  attribution: {
+    id: string;
+    name: string;
+    sourceUrl: string;
+    license: string;
+    licenseUrl: string;
+    attribution: string;
+    snapshotDate: string;
+  };
 }
 
 export interface SemanticMarginResult {

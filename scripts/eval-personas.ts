@@ -31,11 +31,11 @@ import { cosineSimilarity } from "../src/core/ai/similarity.js";
 import { extractKeywords, parseChunkSrcId, DEFAULT_RETRIEVAL_OPTIONS } from "../src/core/ai/retrieval.js";
 import type { ThemeEntry } from "../src/core/ai/note-enrichment.js";
 import type { BackboneData, BookNameMap } from "../src/core/reference/types.js";
-import type { CrossRefData } from "../src/core/margin/types.js";
+import { loadOpenBibleCrossReferences } from "../src/host/cross-reference-loader.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = resolve(__dirname, "../data/scripture");
-const TSK_PATH = resolve(__dirname, "../data/cross-references/tsk.json");
+const OPENBIBLE_PATH = resolve(__dirname, "../data/cross-references/openbible.jsonl");
 const TMP_LIB = resolve(__dirname, "../tmp-persona-eval");
 
 import { PERSONA_NOTES } from "./persona-corpus.js";
@@ -57,7 +57,7 @@ function passage(book: string, chapter: number, from: number, to: number): strin
 async function main(): Promise<void> {
   const backbone = loadJson<BackboneData>(join(DATA_DIR, "backbone.json"));
   const bookNames = loadJson<BookNameMap>(join(DATA_DIR, "book-names-en.json"));
-  const crossRefData = existsSync(TSK_PATH) ? loadJson<CrossRefData>(TSK_PATH) : null;
+  const crossRefData = existsSync(OPENBIBLE_PATH) ? loadOpenBibleCrossReferences(OPENBIBLE_PATH) : null;
 
   // Fresh throwaway library each run.
   rmSync(TMP_LIB, { recursive: true, force: true });

@@ -3,7 +3,7 @@
  *
  * DONE WHEN: from a populated library, opening Acts 19:1–7 shows, in the margin
  * within ~1s and with no AI, every note anchored to or overlapping that range,
- * all highlights on it, and its public-domain cross-references — each tagged
+ * all highlights on it, and its open, attributed cross-references — each tagged
  * user/source — and creating a note from the passage writes a correctly-anchored
  * note that appears in the margin on the next open. Importing an Obsidian vault
  * yields resolvable notes and links.
@@ -21,6 +21,7 @@ import { assembleMargin } from "../src/core/margin/index.js";
 import { importObsidianVault } from "../src/core/importer/obsidian.js";
 import { GitRevisionStore } from "../src/host/git-revision-store.js";
 import type { CrossRefData } from "../src/core/margin/types.js";
+import { loadOpenBibleCrossReferences } from "../src/host/cross-reference-loader.js";
 
 const DATA_DIR = resolve(import.meta.dirname ?? ".", "../data/scripture");
 const CROSS_REF_DIR = resolve(import.meta.dirname ?? ".", "../data/cross-references");
@@ -50,7 +51,7 @@ if (existsSync(TEST_LIBRARY)) {
 // Load data
 const backbone: BackboneData = JSON.parse(readFileSync(join(DATA_DIR, "backbone.json"), "utf-8"));
 const bookNames: BookNameMap = JSON.parse(readFileSync(join(DATA_DIR, "book-names-en.json"), "utf-8"));
-const crossRefData: CrossRefData = JSON.parse(readFileSync(join(CROSS_REF_DIR, "tsk.json"), "utf-8"));
+const crossRefData: CrossRefData = loadOpenBibleCrossReferences(join(CROSS_REF_DIR, "openbible.jsonl"));
 
 const backboneValidation = validateBackboneData(backbone);
 assert(backboneValidation.ok, "Backbone validates");
@@ -159,10 +160,10 @@ assert(margin.highlights.length >= 1, `Highlights found in margin: ${margin.high
 const hlFound = margin.highlights.some((h) => h.highlightId === hlEntityId);
 assert(hlFound, "Highlight on Acts 19:2 appears in margin");
 
-// Check cross-references (from TSK)
+// Check cross-references (OpenBible)
 assert(margin.crossRefs.length > 0, `Cross-references found: ${margin.crossRefs.length}`);
-const hasTskCrossRef = margin.crossRefs.some((x) => x.sourceId === "tsk");
-assert(hasTskCrossRef, "TSK cross-references present in margin");
+const hasOpenBibleCrossRef = margin.crossRefs.some((x) => x.sourceId === "openbible-cross-references");
+assert(hasOpenBibleCrossRef, "OpenBible cross-references present in margin");
 
 // Provenance typing
 const allItemsHaveProvenance = [
@@ -325,8 +326,9 @@ assert("density" in tokens, "Tokens have density section");
 // --- Section 7: Cross-ref data integrity ---
 section("7. Cross-reference corpus");
 
-assert(crossRefData.meta.id === "tsk", "TSK corpus loaded");
-assert(crossRefData.meta.license === "Public Domain", "TSK is public domain");
+assert(crossRefData.meta.id === "openbible-cross-references", "OpenBible corpus loaded");
+assert(crossRefData.meta.license === "CC-BY", "OpenBible attribution license preserved");
+assert(crossRefData.meta.rowCount > 300_000, `Complete scored corpus loaded: ${crossRefData.meta.rowCount}`);
 
 const actsRefs = crossRefData.refs["ACT.19.1"];
 assert(actsRefs !== undefined && actsRefs.length > 0, `ACT.19.1 has cross-refs: ${actsRefs?.length}`);
@@ -361,10 +363,15 @@ assert(existsSync(join(rendererDir, "components/SearchView.tsx")), "SearchView c
 assert(existsSync(join(rendererDir, "styles.css")), "styles.css");
 assert(existsSync(join(rendererDir, "index.html")), "index.html");
 
-// Check components reference provenance
+// Check components make source provenance visible to readers.
 const marginComponent = readFileSync(join(rendererDir, "components/LivingMargin.tsx"), "utf-8");
-assert(marginComponent.includes("provenance"), "LivingMargin shows provenance");
-assert(marginComponent.includes("cross-ref"), "LivingMargin shows cross-references");
+assert(
+  marginComponent.includes("result.attribution.name") &&
+    marginComponent.includes("result.attribution.license") &&
+    marginComponent.includes("From notes"),
+  "LivingMargin distinguishes OpenBible and note-derived provenance",
+);
+assert(marginComponent.includes("crossref-row"), "LivingMargin shows interactive cross-references");
 
 // --- Results ---
 console.log("\n=== M2 Verification Results ===");

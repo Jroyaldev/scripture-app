@@ -36,7 +36,7 @@
 | Commentary (`.cmtx`) | **Attributed voice** in the margin | Not built yet. |
 | Dictionary (`.dctx`) | Language-margin definition pane (Strong’s-keyed) | Next after YLT. |
 | Lexicon (`.lexi`) | Same pane; HTML branch | BDB+ is HTML + UTF-16 DB (node:sqlite handles). |
-| Cross-refs (`.refx`) | Merge/compare against existing TSK | Low priority. |
+| Cross-refs (`.refx`) | Merge/compare against OpenBible base graph | Low priority. |
 | MySword (`.dct.mybible`) | Deprioritized | Headword-keyed, not Strong’s. |
 
 ## Handoff inventory (`~/Downloads`, 2026-07-14)

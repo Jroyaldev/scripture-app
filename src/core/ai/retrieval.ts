@@ -198,7 +198,7 @@ function displayVerse(v: VersePoint, bookNames: BookNameMap): string {
 /**
  * Compute deterministic reference evidence for candidate notes:
  *  - "crossref": the note is anchored to a verse that is a public-domain
- *    (TSK) cross-reference target of the queried passage;
+ *    OpenBible cross-reference target of the queried passage;
  *  - "chapter": the note is anchored elsewhere in the queried chapter(s)
  *    (only meaningful for sub-chapter queries — chapter-wide queries have
  *    already surfaced those notes deterministically).
@@ -268,7 +268,7 @@ function inferredKey(r: InferredRefLike): string {
 export function computeInferredHits(args: {
   query: MarginQuery;
   enrichments: { noteId: string; inferredRefs: InferredRefLike[] }[];
-  /** TSK cross-reference targets of the queried passage (same bridge user anchors get). */
+  /** OpenBible cross-reference targets of the queried passage (same bridge user anchors get). */
   crossRefTargets: VersePoint[];
   /** `${noteId}|${refKey}` entries the user dismissed. */
   dismissedKeys: Set<string>;
@@ -309,7 +309,7 @@ export function computeInferredHits(args: {
         break;
       }
 
-      // Bridge through the passage's public-domain cross-references — the
+      // Bridge through the passage's attributed OpenBible cross-references — the
       // same evidence rule user-typed anchors get (crossref hits).
       const bridged = crossRefTargets.find((t) => covers(ref, t));
       if (bridged) {

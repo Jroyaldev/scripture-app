@@ -14,6 +14,7 @@ import { LibraryEngine } from "../src/host/library.js";
 import { SQLiteMaterializer } from "../src/host/sqlite.js";
 import { assembleMargin } from "../src/core/margin/index.js";
 import type { CrossRefData } from "../src/core/margin/types.js";
+import { loadOpenBibleCrossReferences } from "../src/host/cross-reference-loader.js";
 
 const DATA_DIR = resolve(import.meta.dirname ?? ".", "../data/scripture");
 const CROSS_REF_DIR = resolve(import.meta.dirname ?? ".", "../data/cross-references");
@@ -49,7 +50,7 @@ function loadBookNames(): BookNameMap {
 }
 
 function loadCrossRefs(): CrossRefData {
-  return JSON.parse(readFileSync(join(CROSS_REF_DIR, "tsk.json"), "utf-8")) as CrossRefData;
+  return loadOpenBibleCrossReferences(join(CROSS_REF_DIR, "openbible.jsonl"));
 }
 
 function writeSimplePdf(path: string, text: string): void {

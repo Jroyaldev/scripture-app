@@ -74,6 +74,13 @@
   --accent-plum: #7A5FB0;
   --accent-current: var(--accent-blue);
 
+  /* Shepherdly identity bridge — gold is reserved for interaction/focus,
+     never used as a categorical cross-reference claim. */
+  --study-gold: #97683A;
+  --study-gold-focus: rgba(151, 104, 58, 0.36);
+  --study-hover-surface: #F7F1E6;
+  --study-hover-line: rgba(24, 21, 17, 0.13);
+
   --healthy: #4A9A4A;
   --warning: #C0A030;
   --error: #C05A5A;
@@ -179,6 +186,11 @@
   --border-subtle: #303136;
   --border-medium: #3A3B40;
   --border-strong: #4A4B50;
+
+  --study-gold: #C6935C;
+  --study-gold-focus: rgba(198, 147, 92, 0.42);
+  --study-hover-surface: #29241E;
+  --study-hover-line: rgba(243, 237, 224, 0.16);
 
   /* Dark yellow is a muted antique gold rather than the brighter ochre used
      on paper. Lower chroma and alpha keep it as quiet as the other washes. */
@@ -1504,34 +1516,251 @@ html, body, #root {
   vertical-align: middle;
 }
 
-/* Cross-reference card */
-.xref-link {
-  /* Now a real <button> (was decorative text) — reset UA button chrome so
-     it looks identical to the plain-text link it replaced. */
-  appearance: none;
-  background: none;
-  border: none;
-  width: 100%;
-  text-align: left;
-  font: inherit;
-  font-family: var(--font-reading);
-  font-size: var(--fs-sm);
-  color: var(--text-link);
-  cursor: pointer;
-  padding: var(--sp-xs) 0;
-  display: block;
+/* Cross references — ranked source graph, visually distinct from note echoes. */
+.crossref-section {
+  padding-top: 2px;
 }
 
-.xref-link:hover {
-  color: var(--text-link-hover);
-  text-decoration: underline;
+.crossref-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-md);
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
-.xref-more-hint {
-  font-family: var(--font-ui);
-  font-size: var(--fs-xs);
+.crossref-title {
+  margin-bottom: 2px;
+  color: var(--text-secondary);
+}
+
+.crossref-context {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  line-height: 1.25;
+  letter-spacing: 0.055em;
   color: var(--text-tertiary);
-  padding: var(--sp-xs) 0;
+}
+
+.crossref-total {
+  min-width: 24px;
+  padding-top: 1px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--text-tertiary);
+}
+
+.crossref-total strong {
+  font-weight: var(--fw-medium);
+  color: var(--text-secondary);
+}
+
+.crossref-total span {
+  opacity: 0.78;
+}
+
+.crossref-list {
+  display: grid;
+  gap: 3px;
+  padding-top: 7px;
+}
+
+.crossref-row {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: calc(100% + 16px);
+  margin-inline: -8px;
+  padding: 9px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
+}
+
+.note-crossref-row {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: calc(100% + 16px);
+  margin-inline: -8px;
+  padding: 9px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.crossref-row:hover {
+  background: var(--study-hover-surface);
+  border-color: var(--study-hover-line);
+}
+
+.note-crossref-row:hover {
+  background: var(--bg-secondary);
+  border-color: var(--border-subtle);
+}
+
+.crossref-row:focus-visible {
+  outline: 2px solid var(--study-gold-focus);
+  outline-offset: 1px;
+  background: var(--study-hover-surface);
+  border-color: var(--study-hover-line);
+}
+
+.note-crossref-row:focus-visible {
+  outline: 2px solid var(--study-gold-focus);
+  outline-offset: 1px;
+  background: var(--bg-secondary);
+  border-color: var(--border-subtle);
+}
+
+.crossref-row-copy {
+  min-width: 0;
+  flex: 1;
+  display: grid;
+  gap: 2px;
+}
+
+.crossref-reference {
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  font-weight: var(--fw-medium);
+  color: var(--text-primary);
+}
+
+.crossref-preview {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-family: var(--font-reading);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.crossref-support {
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 0.59375rem;
+  line-height: 1.25;
+  letter-spacing: 0.035em;
+  color: var(--text-tertiary);
+}
+
+.crossref-kinds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 3px;
+}
+
+.crossref-kinds span {
+  padding: 2px 5px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+}
+
+.crossref-open-affordance {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  opacity: 0;
+  transform: translateX(-3px);
+  font-family: var(--font-mono);
+  font-size: 0.59375rem;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: var(--study-gold);
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.crossref-row:hover .crossref-open-affordance,
+.crossref-row:focus-visible .crossref-open-affordance,
+.note-crossref-row:hover .crossref-open-affordance,
+.note-crossref-row:focus-visible .crossref-open-affordance {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.crossref-expand {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 5px;
+  padding: 7px 0 3px;
+  border: none;
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: color 150ms ease;
+}
+
+.crossref-expand:hover,
+.crossref-expand:focus-visible {
+  color: var(--text-primary);
+}
+
+.crossref-expand:focus-visible {
+  outline: 2px solid var(--study-gold-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.crossref-attribution {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 11px;
+  font-family: var(--font-ui);
+  font-size: 0.59375rem;
+  line-height: 1.25;
+  letter-spacing: 0.025em;
+  color: var(--text-tertiary);
+  opacity: 0.82;
+}
+
+.note-crossref-section {
+  padding-top: 2px;
+}
+
+.note-crossref-reason {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-family: var(--font-reading);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
 }
 
 /* --- Writing Sheet --- */

@@ -4,6 +4,18 @@
 > **Predecessors:** A0 (snapshot), A1 (native build), B1 (scripture data).
 > **Contracts:** §4.2 (event fold), §4.4 (SQLite materialized view), §4.6 (note format), INV-7 (append-only), INV-9 (safe to rebuild).
 
+## Progress — 2026-07-15 (OpenBible cross-reference study surface)
+
+The Living Margin now uses the complete scored OpenBible snapshot rather than the tiny TSK stand-in:
+
+- **Complete, reproducible corpus:** 344,799 scored edges across 66 books are retained in a normalized JSONL artifact, including 3,512 non-positive and lower-ranked edges. The reader filters non-positive scores only at query time; it never destroys them on import.
+- **Verse and passage reading modes:** exact verses return a compact top ten. Passage selections aggregate their constituent verse relationships into a top eight, preserve destination ranges, expose multi-verse support, and avoid self-links.
+- **Truthful provenance:** OpenBible has its own CC-BY attribution and remains visually separate from suggestions derived from the reader's notes. The UI does not manufacture quotation, parallel, theme, or prophecy labels because the source dataset has no per-edge taxonomy.
+- **Quiet interactive treatment:** rows use translation previews, full-row click targets, restrained warm hover/focus states, and a small gold `Open` affordance. Opening a same-chapter destination range selects every verse in the range.
+- **Doctor and regression gates:** import checks cover canonical coordinates, coverage, duplicate edges, range integrity, license, snapshot date, and exact score preservation. Core tests cover filtering, verse limits, passage aggregation, ranges, attribution, and the committed full-corpus totals.
+
+**Verification:** `npm run lint`, `npm run verify:data`, `npm run verify:m2`, all 370 tests under the Node ABI, Electron/renderer builds, and self-driving light/dark verse + passage tours pass. No mobile-specific work was added.
+
 ## Progress — 2026-07-14 (Structure minimalist visual refinement)
 
 The desktop Structure component now uses one quiet visual language across Clause, Diagram, Outline, and Sentence map instead of color-coding grammatical roles:

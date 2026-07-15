@@ -43,6 +43,13 @@ import { importObsidianVault } from "../core/importer/obsidian.js";
 import { TokenPackageLoader } from "../host/token-package-loader.js";
 import { ReverseIndexLoader } from "../host/reverse-index-loader.js";
 import { SyntaxTreeLoader } from "../host/syntax-tree-loader.js";
+import { loadOpenBibleCrossReferences } from "../host/cross-reference-loader.js";
+import {
+  emptyCrossReferenceResult,
+  parseCrossReferenceKey,
+  queryCrossReferences,
+  type CrossReferenceQueryResult,
+} from "../core/cross-references/index.js";
 import {
   getSharedStepMorphIndex,
   getSharedTipnrIndex,
@@ -126,6 +133,12 @@ let tokenPackages: TokenPackageLoader | null = null;
 let reverseIndexes: ReverseIndexLoader | null = null;
 /** MACULA syntax trees (syntax art). */
 let syntaxTrees: SyntaxTreeLoader | null = null;
+
+type ScriptureChapterFile = {
+  verses: Array<{ verse: number; text: string }>;
+};
+
+const scriptureChapterCache = new Map<string, ScriptureChapterFile | null>();
 
 interface HighlightChangeSnapshot {
   before: HighlightRecord[];
@@ -232,9 +245,55 @@ function loadBookNames(): BookNameMap {
 }
 
 function loadCrossRefs(): CrossRefData | null {
-  const tskPath = join(CROSS_REF_DIR, "tsk.json");
-  if (!existsSync(tskPath)) return null;
-  return JSON.parse(readFileSync(tskPath, "utf-8")) as CrossRefData;
+  const path = join(CROSS_REF_DIR, "openbible.jsonl");
+  if (!existsSync(path)) return null;
+  return loadOpenBibleCrossReferences(path);
+}
+
+function readScriptureChapter(packageId: string, book: string, chapter: number): ScriptureChapterFile | null {
+  const libraryRoot = engine?.rootPath ?? "data";
+  const cacheKey = `${libraryRoot}:${packageId}:${book}:${chapter}`;
+  if (scriptureChapterCache.has(cacheKey)) return scriptureChapterCache.get(cacheKey) ?? null;
+
+  const libraryPath = engine
+    ? join(engine.rootPath, ".artifacts/scripture/packages", packageId, "text", book, `${chapter}.json`)
+    : "";
+  const dataPath = join(DATA_DIR, "text", packageId, book, `${chapter}.json`);
+  const path = libraryPath && existsSync(libraryPath) ? libraryPath : dataPath;
+  const value = existsSync(path)
+    ? JSON.parse(readFileSync(path, "utf-8")) as ScriptureChapterFile
+    : null;
+  scriptureChapterCache.set(cacheKey, value);
+  return value;
+}
+
+function addCrossReferencePreviews(
+  result: CrossReferenceQueryResult,
+  packageId: string,
+): CrossReferenceQueryResult {
+  return {
+    ...result,
+    items: result.items.map((item) => {
+      const target = parseCrossReferenceKey(item.targetKey);
+      if (!target) return item;
+      const chapter = readScriptureChapter(packageId, target.start.book, target.start.chapter);
+      if (!chapter) return item;
+      const finalVerse = target.start.book === target.end.book && target.start.chapter === target.end.chapter
+        ? Math.min(target.end.verse, target.start.verse + 1)
+        : target.start.verse;
+      const preview = chapter.verses
+        .filter((verse) => verse.verse >= target.start.verse && verse.verse <= finalVerse)
+        .map((verse) => verse.text.trim())
+        .filter(Boolean)
+        .join(" ")
+        .replace(/\s+/g, " ");
+      if (!preview) return item;
+      const clipped = preview.length > 170
+        ? `${preview.slice(0, 167).replace(/\s+\S*$/, "")}…`
+        : preview;
+      return { ...item, preview: clipped };
+    }),
+  };
 }
 
 function loadThemes(): ThemeEntry[] {
@@ -384,6 +443,7 @@ function loadHebrewOrbitIndexOnce(): void {
 
 function initializeEngine(libraryPathArg?: string, autoCreateIfMissing: boolean = true): void {
   highlightChanges.clear();
+  scriptureChapterCache.clear();
   backbone = loadBackbone();
   bookNames = loadBookNames();
   crossRefData = loadCrossRefs();
@@ -715,23 +775,7 @@ function registerIpcHandlers(): void {
 
   ipcMain.handle("read-scripture-text", (_event, opts: { book: string; chapter: number; package: string }) => {
     if (!engine) return null;
-    const textPath = join(
-      engine.rootPath,
-      ".artifacts/scripture/packages",
-      opts.package,
-      "text",
-      opts.book,
-      `${opts.chapter}.json`,
-    );
-    if (!existsSync(textPath)) {
-      // Try data dir fallback
-      const dataTextPath = join(DATA_DIR, "text", opts.package, opts.book, `${opts.chapter}.json`);
-      if (existsSync(dataTextPath)) {
-        return JSON.parse(readFileSync(dataTextPath, "utf-8"));
-      }
-      return null;
-    }
-    return JSON.parse(readFileSync(textPath, "utf-8"));
+    return readScriptureChapter(opts.package, opts.book, opts.chapter);
   });
 
   // --- Original-language token packages (data-first language layer) ---
@@ -838,60 +882,25 @@ function registerIpcHandlers(): void {
     },
   );
 
-  ipcMain.handle("get-cross-refs", (_event, opts: { book: string; chapter: number; verse: number }) => {
-    if (!bookNames) return [];
-    const result = assembleMargin(
-      {
-        book: opts.book,
-        startChapter: opts.chapter,
-        startVerse: opts.verse,
-        endChapter: opts.chapter,
-        endVerse: opts.verse,
-      },
-      {
-        queryAnchorsForRange: () => [],
-        queryHighlightsForRange: () => [],
-        queryNoteById: () => undefined,
-        queryEdgesByTarget: () => [],
-        querySourceChunkById: () => undefined,
-        querySourceById: () => undefined,
-      },
-      crossRefData,
-      bookNames,
+  ipcMain.handle("get-cross-refs-for-passage", (_event, opts: {
+    book: string;
+    chapter: number;
+    startVerse: number;
+    endVerse: number;
+    packageId: string;
+  }) => {
+    const query = {
+      book: opts.book,
+      startChapter: opts.chapter,
+      startVerse: opts.startVerse,
+      endChapter: opts.chapter,
+      endVerse: opts.endVerse,
+    };
+    if (!bookNames || !crossRefData) return emptyCrossReferenceResult(query, crossRefData);
+    return addCrossReferencePreviews(
+      queryCrossReferences(crossRefData, query, bookNames),
+      opts.packageId,
     );
-    return result.crossRefs.map((ref) => ref.targetDisplay);
-  });
-
-  // Batched cross-refs for an entire chapter (reduces 7+ IPC calls to 1)
-  ipcMain.handle("get-cross-refs-for-chapter", (_event, opts: { book: string; chapter: number; verseCount: number }) => {
-    if (!bookNames) return [];
-    const verses = Math.min(opts.verseCount, 7);
-    // Different verses in the same chapter can share a cross-reference
-    // target (e.g. two nearby verses both pointing at the same passage) —
-    // dedupe by target text, keeping first-encountered order.
-    const seen = new Set<string>();
-    const allRefs: string[] = [];
-    for (let v = 1; v <= verses; v++) {
-      const result = assembleMargin(
-        { book: opts.book, startChapter: opts.chapter, startVerse: v, endChapter: opts.chapter, endVerse: v },
-        {
-          queryAnchorsForRange: () => [],
-          queryHighlightsForRange: () => [],
-          queryNoteById: () => undefined,
-          queryEdgesByTarget: () => [],
-          querySourceChunkById: () => undefined,
-          querySourceById: () => undefined,
-        },
-        crossRefData,
-        bookNames,
-      );
-      for (const ref of result.crossRefs) {
-        if (seen.has(ref.targetDisplay)) continue;
-        seen.add(ref.targetDisplay);
-        allRefs.push(ref.targetDisplay);
-      }
-    }
-    return allRefs;
   });
 
   ipcMain.handle("create-highlight", async (_event, opts: {
