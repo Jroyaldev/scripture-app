@@ -77,6 +77,12 @@ test("parses 'John 3:16' as JHN chapter 3 verse 16", () => {
   assert.deepEqual(r.value, { book: "JHN", chapter: 3, verse: 16 });
 });
 
+test("preserves a same-chapter verse range", () => {
+  const r = parsePassage("John 3:16-18", bookNames, backbone);
+  assert.ok(r.ok);
+  assert.deepEqual(r.value, { book: "JHN", chapter: 3, verse: 16, endVerse: 18 });
+});
+
 test("parses bare 'Revelation' as REV chapter 1", () => {
   const r = parsePassage("Revelation", bookNames, backbone);
   assert.ok(r.ok);

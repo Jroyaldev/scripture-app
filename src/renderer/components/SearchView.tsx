@@ -11,6 +11,9 @@ interface Props {
   mode: WorkspaceMode;
   onNavigate: (book: string, chapter: number) => void;
   onWrite: () => void;
+  initialQuery?: string;
+  initialNoteId?: string;
+  intentNonce?: number;
 }
 
 interface WorkspaceReference {
@@ -176,19 +179,31 @@ function EmptyState({
   );
 }
 
-export function SearchView({ mode, onNavigate, onWrite }: Props): React.JSX.Element {
+export function SearchView({
+  mode,
+  onNavigate,
+  onWrite,
+  initialQuery = "",
+  initialNoteId,
+  intentNonce = 0,
+}: Props): React.JSX.Element {
   const { showToast } = useToast();
   const [notes, setNotes] = useState<WorkspaceNote[]>([]);
   const [loadStatus, setLoadStatus] = useState<"loading" | "ready" | "error">("loading");
   const [loadError, setLoadError] = useState("");
   const [loadNonce, setLoadNonce] = useState(0);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
   const [searchState, setSearchState] = useState<SearchState>({ status: "idle" });
   const [searchNonce, setSearchNonce] = useState(0);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const requestSeq = useRef(0);
   const rowRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (mode === "search") setQuery(initialQuery);
+    if (initialNoteId) setSelectedId(initialNoteId);
+  }, [initialNoteId, initialQuery, intentNonce, mode]);
 
   useEffect(() => {
     let cancelled = false;
@@ -206,14 +221,17 @@ export function SearchView({ mode, onNavigate, onWrite }: Props): React.JSX.Elem
         .sort((left, right) => right.modified.localeCompare(left.modified));
       setNotes(ordered);
       setLoadStatus("ready");
-      setSelectedId((current) => current && ordered.some((note) => note.id === current)
-        ? current
-        : ordered[0]?.id ?? null);
+      setSelectedId((current) => {
+        if (initialNoteId && ordered.some((note) => note.id === initialNoteId)) return initialNoteId;
+        return current && ordered.some((note) => note.id === current)
+          ? current
+          : ordered[0]?.id ?? null;
+      });
     });
     return () => {
       cancelled = true;
     };
-  }, [loadNonce]);
+  }, [initialNoteId, loadNonce]);
 
   useEffect(() => {
     if (mode !== "search") return;

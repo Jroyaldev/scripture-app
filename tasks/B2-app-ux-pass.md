@@ -4,6 +4,22 @@
 > **Predecessors:** A0 (snapshot), A1 (native build), B1 (scripture data).
 > **Contracts:** §4.2 (event fold), §4.4 (SQLite materialized view), §4.6 (note format), INV-7 (append-only), INV-9 (safe to rebuild).
 
+## Progress — 2026-07-15 (Local Command K intelligence)
+
+The desktop reader now has one keyboard-first entry point for the four searches pastors are most likely to repeat, without mixing public corpus data with the user's library or pretending lexical retrieval is semantic:
+
+- **Four deliberate lenses:** `Intelligence | Scripture | Notes | Names` share one quiet palette. Intelligence blends only the strongest relevant result types and exact command intents; Scripture, Notes, and Names remain complete, separately labelled indexes. Empty Intelligence shows recent reading rather than adding a fifth Recents tab.
+- **Natural Scripture lookup:** exact references and same-chapter ranges navigate atomically, while ordinary questions and phrases search the active bundled translation with exact-phrase, meaningful-term, ordered-proximity, and light English-inflection ranking. Canonical order is the stable tie-break; current reading context only breaks otherwise-equal results.
+- **Name-first people and places:** all 4,260 shipped STEPBible TIPNR entities are searchable. Exact, prefix, and close-name matches outrank definition-only matches, while role terms such as `apostle` intentionally return multiple people. Opening an entity moves to its nearest relevant occurrence in the current book or chapter when possible.
+- **Local notes stay local:** plain queries are escaped into safe FTS5 expressions before host execution, so Scripture-shaped input such as `John 3:16` cannot be parsed as FTS syntax. A chosen result opens the existing full note detail rather than a truncated palette preview.
+- **Actions without a junk drawer:** New note, Study visibility, focus mode, Notes, Search, and Settings are inferred in Intelligence from exact titles and keywords. They outrank incidental Scripture text matches without taking a permanent fifth tab.
+- **Complete desktop keyboard path:** global Command/Ctrl-K opens the palette; Tab and Shift-Tab cycle input, active lens, and results; Arrow keys plus Home/End move within tabs and result rows; Enter activates; Escape closes; focus returns to the invoker. The four lenses expose real tab and tab-panel semantics.
+- **One restrained material:** the palette uses one border, one input, one hairline tab row, flat result rows, a neutral selected wash, and a short gold focus rail across Paper, Ink, Glass, and Candlelight. It remains overflow-safe at the 900px desktop floor and does not add mobile behavior in this worktree.
+- **Truthful semantic boundary:** this pass does not label lexical Scripture matching as semantic. A future semantic artifact should embed one coordinate-level reference corpus, preferably contextual passage chunks keyed by translation-free `bref`, then render hits in the active translation. Embedding five near-duplicate full Bibles would cost roughly 475 MB at the current 768-dimensional Float32 model; one quantized 31,102-coordinate artifact is the appropriate B3/B4 follow-on.
+- **Repeatable proof:** `npm run qa:command` covers exact reference and range navigation, phrase search, role-based TIPNR search, direct note opening, command intent, the full keyboard path, all four atmospheres, and horizontal-overflow checks. The first uncached active-translation search completes in about 366 ms including the 120 ms debounce; later searches reuse the local corpus cache.
+
+**Verification:** full `npm test` (**420 tests: 410 passing, 10 expected Electron-ABI skips**), `npm run lint`, renderer typecheck, Electron build, renderer build, focused Command K contracts, `npm run qa:command`, refreshed `npm run qa:topbar`, four-atmosphere screenshot inspection, and `git diff --check` pass. Mobile, source-shelf search, and the future semantic Scripture artifact remain outside this bounded pass.
+
 ## Progress — 2026-07-15 (Intentional Living Margin views)
 
 The right rail now separates automatic passage context from the user's chosen study lens, then leads with a small, source-grounded intent view instead of forcing the reader to hunt across unrelated panels:

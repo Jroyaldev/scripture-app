@@ -38,6 +38,12 @@ declare global {
         getBackbone(): Promise<BackboneData>;
         getBookNames(): Promise<BookNameData>;
         getChapterText(packageId: string, book: string, chapter: number): Promise<ChapterData | null>;
+        search(
+          packageId: string,
+          query: string,
+          limit?: number,
+          context?: { book?: string; chapter?: number },
+        ): Promise<ScriptureSearchHitData[]>;
         getCrossRefsForPassage(
           book: string,
           chapter: number,
@@ -62,6 +68,7 @@ declare global {
           startVerse: number,
           endVerse: number,
         ): Promise<LanguageEntityRangeResult>;
+        searchEntities(query: string, limit?: number): Promise<LanguageEntitySearchResult>;
         hasReverseIndex(readingPackageId: string): Promise<boolean>;
         getLemmaInBook(packageId: string, book: string, lemma: string): Promise<LanguageToken[] | null>;
         getVerseMarks(packageId: string, book: string, chapter: number, verse: number): Promise<LanguageTokenMark[] | null>;
@@ -229,6 +236,16 @@ export interface QueryResult {
 
 export interface ChapterData {
   verses: Array<{ verse: number; text: string }>;
+}
+
+export interface ScriptureSearchHitData {
+  book: string;
+  chapter: number;
+  verse: number;
+  text: string;
+  order: number;
+  score: number;
+  matchKind: "phrase" | "all-terms" | "terms";
 }
 
 export interface BackboneData {
@@ -627,6 +644,18 @@ export type LanguageNameEntityHit = {
 
 export type LanguageEntityRangeResult = {
   entities: LanguageNameEntity[];
+  attribution: {
+    name: string;
+    license: string;
+  };
+};
+
+export type LanguageEntitySearchResult = {
+  entities: Array<{
+    entity: LanguageNameEntity;
+    match: "name" | "description";
+    score: number;
+  }>;
   attribution: {
     name: string;
     license: string;

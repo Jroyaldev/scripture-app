@@ -89,6 +89,18 @@ const api = {
     getBookNames: () => ipcRenderer.invoke("get-book-names"),
     getChapterText: (packageId: string, book: string, chapter: number) =>
       ipcRenderer.invoke("read-scripture-text", { book, chapter, package: packageId }),
+    search: (
+      packageId: string,
+      query: string,
+      limit?: number,
+      context?: { book?: string; chapter?: number },
+    ) => ipcRenderer.invoke("search-scripture-text", {
+      packageId,
+      query,
+      limit,
+      currentBook: context?.book,
+      currentChapter: context?.chapter,
+    }),
     getCrossRefsForPassage: (
       book: string,
       chapter: number,
@@ -111,6 +123,8 @@ const api = {
       ipcRenderer.invoke("language-token-card", { packageId, tokenId, readingPackageId }),
     getEntitiesForRange: (book: string, chapter: number, startVerse: number, endVerse: number) =>
       ipcRenderer.invoke("language-entities-for-range", { book, chapter, startVerse, endVerse }),
+    searchEntities: (query: string, limit?: number) =>
+      ipcRenderer.invoke("language-search-entities", { query, limit }),
     hasReverseIndex: (readingPackageId: string) =>
       ipcRenderer.invoke("language-has-reverse-index", readingPackageId),
     getLemmaInBook: (packageId: string, book: string, lemma: string) =>

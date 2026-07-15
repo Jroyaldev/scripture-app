@@ -6,7 +6,7 @@
 import type { BackboneData, BookNameData } from "../api.js";
 
 export type ParsePassageResult =
-  | { ok: true; value: { book: string; chapter: number; verse?: number } }
+  | { ok: true; value: { book: string; chapter: number; verse?: number; endVerse?: number } }
   | { ok: false; error: string };
 
 type ReverseMapEntry = { code: string; name: string; length: number };
@@ -72,12 +72,13 @@ export function parsePassage(
   if (remainder === "") {
     chapter = 1;
   } else {
-    const cvMatch = remainder.match(/^(\d+)(?:\s*:\s*(\d+))?$/);
+    const cvMatch = remainder.match(/^(\d+)(?:\s*:\s*(\d+)(?:\s*[-–]\s*(\d+))?)?$/);
     if (!cvMatch) {
       return { ok: false, error: `Couldn't read chapter in "${input}"` };
     }
     chapter = parseInt(cvMatch[1]!, 10);
     verseStr = cvMatch[2];
+    if (cvMatch[3]) verseStr = `${verseStr}-${cvMatch[3]}`;
   }
 
   const bookData = backbone.books[code];
@@ -88,13 +89,16 @@ export function parsePassage(
     return { ok: false, error: `${fullName} has ${chapterCount} chapters` };
   }
 
-  const value: { book: string; chapter: number; verse?: number } = { book: code, chapter };
+  const value: { book: string; chapter: number; verse?: number; endVerse?: number } = { book: code, chapter };
 
   if (verseStr !== undefined) {
-    const verse = parseInt(verseStr, 10);
+    const [verseText, endVerseText] = verseStr.split("-");
+    const verse = parseInt(verseText ?? "", 10);
     const verseCount = bookData?.chapters[chapter - 1] ?? 0;
     if (verse >= 1 && verse <= verseCount) {
       value.verse = verse;
+      const endVerse = endVerseText ? parseInt(endVerseText, 10) : undefined;
+      if (endVerse && endVerse >= verse && endVerse <= verseCount) value.endVerse = endVerse;
     }
   }
 

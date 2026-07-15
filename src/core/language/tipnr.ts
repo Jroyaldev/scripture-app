@@ -51,6 +51,12 @@ export type NameResolveHit = {
   alternatives: TipnrEntity[];
 };
 
+export type TipnrSearchHit = {
+  entity: TipnrEntity;
+  match: "name" | "description";
+  score: number;
+};
+
 export class TipnrIndex {
   private data: TipnrIndexFile | null = null;
 
@@ -77,6 +83,61 @@ export class TipnrIndex {
 
   get(id: string): TipnrEntity | null {
     return this.data?.entities[id] ?? null;
+  }
+
+  /**
+   * Search individual people and places. Name closeness always outranks a
+   * description-only match; this keeps “Paul” precise while still allowing a
+   * generic role such as “apostle” to surface several useful people.
+   */
+  search(query: string, limit = 20): TipnrSearchHit[] {
+    if (!this.data) return [];
+    const normalizedQuery = normalizeSearchText(query);
+    if (!normalizedQuery) return [];
+    const terms = normalizedQuery.split(" ").filter((term) => term.length > 1);
+    if (terms.length === 0) return [];
+    const hits: TipnrSearchHit[] = [];
+
+    for (const entity of Object.values(this.data.entities)) {
+      if (entity.kind !== "person" && entity.kind !== "place") continue;
+      const name = normalizeSearchText(formatTipnrDisplayName(entity.displayName));
+      const nameTokens = name.split(" ");
+      const description = normalizeSearchText(`${entity.brief} ${entity.short ?? ""}`);
+      let nameScore = 0;
+
+      if (name === normalizedQuery) nameScore = 1000;
+      else if (name.startsWith(normalizedQuery)) nameScore = 920;
+      else if (nameTokens.some((token) => token === normalizedQuery)) nameScore = 880;
+      else if (terms.some((term) => nameTokens.some((token) => token === term))) nameScore = 840;
+      else if (name.includes(normalizedQuery)) nameScore = 800;
+      else if (terms.every((term) => nameTokens.some((token) => token.startsWith(term)))) nameScore = 760;
+      else if (normalizedQuery.length >= 4 && editDistance(name, normalizedQuery) <= 2) nameScore = 720;
+
+      if (nameScore > 0) {
+        hits.push({
+          entity,
+          match: "name",
+          score: nameScore + Math.min(30, Math.log2(entity.refCount + 1)),
+        });
+        continue;
+      }
+
+      const descriptionMatches = terms.filter((term) => description.includes(term)).length;
+      if (descriptionMatches === 0) continue;
+      const complete = descriptionMatches === terms.length;
+      hits.push({
+        entity,
+        match: "description",
+        score: 300 + descriptionMatches * 28 + (complete ? 35 : 0)
+          + Math.min(30, Math.log2(entity.refCount + 1)),
+      });
+    }
+
+    return hits
+      .sort((left, right) => right.score - left.score
+        || right.entity.refCount - left.entity.refCount
+        || formatTipnrDisplayName(left.entity.displayName).localeCompare(formatTipnrDisplayName(right.entity.displayName)))
+      .slice(0, Math.max(1, limit));
   }
 
   /**
@@ -183,6 +244,34 @@ export class TipnrIndex {
 
     return null;
   }
+}
+
+function normalizeSearchText(value: string): string {
+  return value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+function editDistance(left: string, right: string): number {
+  if (left === right) return 0;
+  if (Math.abs(left.length - right.length) > 2) return 3;
+  let previous = Array.from({ length: right.length + 1 }, (_, index) => index);
+  for (let leftIndex = 1; leftIndex <= left.length; leftIndex += 1) {
+    const current = [leftIndex];
+    for (let rightIndex = 1; rightIndex <= right.length; rightIndex += 1) {
+      current[rightIndex] = Math.min(
+        (current[rightIndex - 1] ?? 0) + 1,
+        (previous[rightIndex] ?? 0) + 1,
+        (previous[rightIndex - 1] ?? 0) + (left[leftIndex - 1] === right[rightIndex - 1] ? 0 : 1),
+      );
+    }
+    previous = current;
+  }
+  return previous[right.length] ?? 3;
 }
 
 function normalizeStrongKey(s: string): string {

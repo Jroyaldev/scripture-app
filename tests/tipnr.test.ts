@@ -121,3 +121,25 @@ test("TIPNR returns unique people and places in first-appearance order for a ran
   assert.ok(entities.some((entity) => entity.displayName === "Paul"));
   assert.ok(entities.every((entity) => entity.kind === "person" || entity.kind === "place"));
 });
+
+test("TIPNR search gives name closeness priority over definition text", () => {
+  const idx = new TipnrIndex();
+  idx.loadJson(readFileSync(indexPath, "utf8"));
+  const results = idx.search("Paul", 12);
+  assert.ok(results.length > 0);
+  assert.equal(results[0]?.entity.displayName, "Paul");
+  assert.equal(results[0]?.match, "name");
+  const firstDescription = results.findIndex((result) => result.match === "description");
+  const lastName = results.map((result) => result.match).lastIndexOf("name");
+  assert.ok(firstDescription === -1 || firstDescription > lastName);
+});
+
+test("TIPNR search supports typos and generic roles", () => {
+  const idx = new TipnrIndex();
+  idx.loadJson(readFileSync(indexPath, "utf8"));
+  assert.equal(idx.search("Pual", 5)[0]?.entity.displayName, "Paul");
+  const apostles = idx.search("apostle", 20);
+  assert.ok(apostles.length >= 3);
+  assert.ok(apostles.every((result) => result.entity.kind === "person" || result.entity.kind === "place"));
+  assert.ok(apostles.some((result) => /apostle/i.test(`${result.entity.brief} ${result.entity.short ?? ""}`)));
+});

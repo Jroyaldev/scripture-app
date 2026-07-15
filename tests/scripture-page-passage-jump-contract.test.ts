@@ -5,14 +5,20 @@ import { test } from "node:test";
 
 const repoRoot = resolve(import.meta.dirname, "..");
 
-test("ScripturePage wires the passage-jump input through the parsePassage util and an atomic goTo helper", () => {
+test("ScripturePage exposes Command K and preserves atomic passage navigation", () => {
   const source = readFileSync(
     join(repoRoot, "src", "renderer", "components", "ScripturePage.tsx"),
     "utf-8",
   );
+  const command = readFileSync(
+    join(repoRoot, "src", "renderer", "components", "CommandPalette.tsx"),
+    "utf-8",
+  );
 
   assert.match(source, /import \{ parsePassage \} from "\.\.\/utils\/parsePassage\.js";/);
-  assert.match(source, /className="passage-jump"/);
+  assert.match(source, /className="passage-jump command-palette-trigger"/);
+  assert.match(command, /parsePassage\(trimmed, bookNames, backbone\)/);
+  assert.match(command, /onNavigate\(book, chapter, verse, endVerse\)/);
 
   const goToStart = source.indexOf("const goTo = useCallback");
   assert.notEqual(goToStart, -1);

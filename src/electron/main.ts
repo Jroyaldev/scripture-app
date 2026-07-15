@@ -61,6 +61,11 @@ import {
   subtractHighlightRange,
   type HighlightRange,
 } from "../core/events/highlightOverlap.js";
+import {
+  searchScriptureDocuments,
+  type ScriptureSearchDocument,
+} from "../core/search/scripture-search.js";
+import { toFts5PlainQuery } from "../core/search/note-search-query.js";
 
 const DATA_DIR = resolve(__dirname, "../../data/scripture");
 const CROSS_REF_DIR = resolve(__dirname, "../../data/cross-references");
@@ -135,6 +140,7 @@ type ScriptureChapterFile = {
 };
 
 const scriptureChapterCache = new Map<string, ScriptureChapterFile | null>();
+const scriptureSearchCorpusCache = new Map<string, ScriptureSearchDocument[]>();
 
 interface HighlightChangeSnapshot {
   before: HighlightRecord[];
@@ -261,6 +267,28 @@ function readScriptureChapter(packageId: string, book: string, chapter: number):
     : null;
   scriptureChapterCache.set(cacheKey, value);
   return value;
+}
+
+function getScriptureSearchCorpus(packageId: string): ScriptureSearchDocument[] {
+  const libraryRoot = engine?.rootPath ?? "data";
+  const cacheKey = `${libraryRoot}:${packageId}`;
+  const cached = scriptureSearchCorpusCache.get(cacheKey);
+  if (cached) return cached;
+  if (!backbone) return [];
+
+  const documents: ScriptureSearchDocument[] = [];
+  let order = 0;
+  for (const [book, bookData] of Object.entries(backbone.books)) {
+    for (let chapter = 1; chapter <= bookData.chapters.length; chapter += 1) {
+      const chapterData = readScriptureChapter(packageId, book, chapter);
+      for (const verse of chapterData?.verses ?? []) {
+        documents.push({ book, chapter, verse: verse.verse, text: verse.text, order });
+        order += 1;
+      }
+    }
+  }
+  scriptureSearchCorpusCache.set(cacheKey, documents);
+  return documents;
 }
 
 function addCrossReferencePreviews(
@@ -668,7 +696,7 @@ function registerIpcHandlers(): void {
     if (!existsSync(dbPath)) return [];
     const db = new SQLiteMaterializer(dbPath);
     try {
-      return db.searchNotes(query);
+      return db.searchNotes(toFts5PlainQuery(query));
     } finally {
       db.close();
     }
@@ -771,6 +799,24 @@ function registerIpcHandlers(): void {
     return readScriptureChapter(opts.package, opts.book, opts.chapter);
   });
 
+  ipcMain.handle(
+    "search-scripture-text",
+    (
+      _event,
+      opts: {
+        packageId: string;
+        query: string;
+        limit?: number;
+        currentBook?: string;
+        currentChapter?: number;
+      },
+    ) => searchScriptureDocuments(getScriptureSearchCorpus(opts.packageId), opts.query, {
+      limit: opts.limit,
+      currentBook: opts.currentBook,
+      currentChapter: opts.currentChapter,
+    }),
+  );
+
   // --- Original-language token packages (data-first language layer) ---
 
   ipcMain.handle("language-list-packages", () => {
@@ -835,6 +881,17 @@ function registerIpcHandlers(): void {
       const index = getSharedTipnrIndex();
       return {
         entities: index.entitiesForRange(opts.book, opts.chapter, opts.startVerse, opts.endVerse),
+        attribution: { name: index.source, license: index.license },
+      };
+    },
+  );
+
+  ipcMain.handle(
+    "language-search-entities",
+    (_event, opts: { query: string; limit?: number }) => {
+      const index = getSharedTipnrIndex();
+      return {
+        entities: index.search(opts.query, opts.limit),
         attribution: { name: index.source, license: index.license },
       };
     },

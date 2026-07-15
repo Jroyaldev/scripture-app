@@ -46,7 +46,15 @@ export interface PinnedRange {
 interface Props {
   backbone: BackboneData;
   bookNames: BookNameData;
-  navigateRef: { book: string; chapter: number } | null;
+  navigateRef: { book: string; chapter: number; verse?: number; endVerse?: number } | null;
+  onOpenCommandPalette?: () => void;
+  onReadingContextChange?: (context: {
+    book: string;
+    chapter: number;
+    packageId: string;
+    verseStart?: number;
+    verseEnd?: number;
+  }) => void;
   onCreateNote: (prefillBody?: string) => void;
   marginVisible: boolean;
   onAiBusyChange?: (busy: boolean) => void;
@@ -133,8 +141,8 @@ function ChapterArrowIcon({ direction }: { direction: "previous" | "next" }): Re
 function JumpIcon(): React.JSX.Element {
   return (
     <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M3.5 10h12" />
-      <path d="m11.5 6 4 4-4 4" />
+      <circle cx="8.5" cy="8.5" r="5.25" />
+      <path d="m12.4 12.4 4.1 4.1" />
     </svg>
   );
 }
@@ -247,6 +255,8 @@ export function ScripturePage({
   backbone,
   bookNames,
   navigateRef,
+  onOpenCommandPalette,
+  onReadingContextChange,
   onCreateNote: _onCreateNote,
   marginVisible,
   onAiBusyChange,
@@ -308,9 +318,6 @@ export function ScripturePage({
   // this stable anchor; Command/Control-click intentionally behaves like a
   // normal click until discontiguous groups have an honest persistence model.
   const verseSelectionAnchorRef = useRef<number | null>(null);
-  const [jumpText, setJumpText] = useState("");
-  const [jumpError, setJumpError] = useState(false);
-  const jumpInputRef = useRef<HTMLInputElement>(null);
   const [retryToken, setRetryToken] = useState(0);
   const [scrolled, setScrolled] = useState(false);
 
@@ -453,13 +460,6 @@ export function ScripturePage({
   useEffect(() => {
     currentChapterKeyRef.current = `${book}:${chapter}`;
   }, [book, chapter]);
-
-  useEffect(() => {
-    if (navigateRef) {
-      setBook(navigateRef.book);
-      setChapter(navigateRef.chapter);
-    }
-  }, [navigateRef]);
 
   // Load chapter text
   useEffect(() => {
@@ -655,6 +655,29 @@ export function ScripturePage({
     },
     [book, chapter, recordRecent],
   );
+
+  useEffect(() => {
+    if (!navigateRef) return;
+    goTo(navigateRef.book, navigateRef.chapter, navigateRef.verse, {
+      rangeEnd: navigateRef.endVerse,
+    });
+    // A navigation request is an edge-triggered object from App. Depending on
+    // goTo here would replay that old request after an internal chapter turn,
+    // because goTo intentionally changes with the current book/chapter.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigateRef]);
+
+  useEffect(() => {
+    if (!onReadingContextChange) return;
+    const selected = [...selectedVerses].sort((left, right) => left - right);
+    onReadingContextChange({
+      book,
+      chapter,
+      packageId,
+      verseStart: selected[0],
+      verseEnd: selected.at(-1),
+    });
+  }, [book, chapter, onReadingContextChange, packageId, selectedVerses]);
 
   // Cross-reference click-through. Canonical bref targets preserve same-
   // chapter destination ranges as a pinned selection; note-derived display
@@ -921,20 +944,6 @@ export function ScripturePage({
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [chapter, chapterCount]);
-
-  // Command/Ctrl+K is the stable "go somewhere" shortcut inside Read. It
-  // focuses the passage field without competing with the unmodified 1–5 app
-  // navigation or Command+Arrow chapter movement.
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (!(e.metaKey || e.ctrlKey) || e.altKey || e.key.toLowerCase() !== "k") return;
-      e.preventDefault();
-      jumpInputRef.current?.focus();
-      jumpInputRef.current?.select();
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, []);
 
   // Positions the floating highlight palette over the actual selection —
   // not a single clicked row's far edge, which is what this used to key off
@@ -1918,41 +1927,17 @@ export function ScripturePage({
           )}
         </div>
 
-        <form className="passage-jump" onSubmit={(e) => {
-          e.preventDefault();
-          const r = parsePassage(jumpText, bookNames, backbone);
-          if (r.ok) {
-            goTo(r.value.book, r.value.chapter, r.value.verse);
-            setJumpText("");
-            setJumpError(false);
-          } else {
-            setJumpError(true);
-          }
-        }}>
+        <button
+          type="button"
+          className="passage-jump command-palette-trigger"
+          onClick={onOpenCommandPalette}
+          aria-label="Search Scripture, notes, people, places, and actions"
+          aria-haspopup="dialog"
+        >
           <JumpIcon />
-          <input
-            ref={jumpInputRef}
-            className={jumpError ? "passage-jump-input error" : "passage-jump-input"}
-            value={jumpText}
-            placeholder="Jump to passage"
-            aria-label="Jump to passage"
-            aria-invalid={jumpError}
-            aria-describedby={jumpError ? "passage-jump-error" : undefined}
-            onChange={(e) => { setJumpText(e.target.value); setJumpError(false); }}
-            onKeyDown={(e) => {
-              if (e.key !== "Escape") return;
-              setJumpText("");
-              setJumpError(false);
-              e.currentTarget.blur();
-            }}
-          />
-          {!jumpText && <kbd className="passage-jump-shortcut" aria-hidden="true">⌘K</kbd>}
-          {jumpError && (
-            <span id="passage-jump-error" className="passage-jump-error" role="status">
-              Try a book and chapter, like John 3.
-            </span>
-          )}
-        </form>
+          <span className="command-palette-trigger-label">Search</span>
+          <kbd className="passage-jump-shortcut" aria-hidden="true">⌘K</kbd>
+        </button>
         </div>
 
         <div className="topbar-spacer" />

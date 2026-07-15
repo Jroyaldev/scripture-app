@@ -16,6 +16,7 @@ const tours = [
   ["Shared controls", "scripts/qa-shared-controls-tour.mjs"],
   ["Settings and onboarding", "scripts/qa-setup-tour.mjs"],
   ["Write, Notes, and Search", "scripts/qa-note-workspace-tour.mjs"],
+  ["Command palette", "scripts/qa-command-palette-tour.mjs"],
   ["Study overlays", "scripts/qa-study-overlays-tour.mjs"],
 ];
 

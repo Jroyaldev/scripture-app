@@ -2,7 +2,7 @@
  * Desktop-only visual and interaction QA for the reading topbar.
  *
  * Requires Electron on --remote-debugging-port=9222. Exercises both toolbar
- * zones, every picker, passage-jump success/error affordances, focus mode,
+ * zones, every picker, the Command K entry point, focus mode,
  * margin stability, scroll depth, all four atmospheres, and the supported
  * 900px minimum desktop width.
  */
@@ -259,18 +259,11 @@ assert.equal(await evaluate(`document.activeElement === document.querySelector('
 await blurActiveElement();
 
 await pressCommandK();
-assert.equal(await evaluate(`document.activeElement === document.querySelector(".passage-jump-input")`), true);
-await evaluate(`(() => {
-  const input = document.querySelector(".passage-jump-input");
-  input.value = "not a passage";
-  input.dispatchEvent(new Event("input", { bubbles: true }));
-  input.closest("form")?.requestSubmit();
-})()`);
-await waitFor(`Boolean(document.querySelector(".passage-jump-error"))`);
-assert.equal(await evaluate(`document.querySelector(".passage-jump-input")?.getAttribute("aria-invalid")`), "true");
-await screenshot("light-jump-error");
+assert.equal(await evaluate(`document.activeElement === document.querySelector(".command-palette-input-row input")`), true);
+assert.equal(await evaluate(`document.querySelectorAll(".command-palette-tabs [role=tab]").length`), 4);
+await screenshot("light-command-palette-entry");
 await pressEscape();
-assert.equal(await evaluate(`Boolean(document.querySelector(".passage-jump-error"))`), false);
+assert.equal(await evaluate(`Boolean(document.querySelector(".command-palette-panel"))`), false);
 
 const beforeMargin = await evaluate(`(() => {
   const tools = document.querySelector(".topbar-tools").getBoundingClientRect();
@@ -350,11 +343,19 @@ const minimumFocused = await evaluate(`(() => {
   const nav = document.querySelector(".topbar-navigation").getBoundingClientRect();
   const tools = document.querySelector(".topbar-tools").getBoundingClientRect();
   const jump = document.querySelector(".passage-jump").getBoundingClientRect();
-  return { navRight: nav.right, toolsLeft: tools.left, jumpWidth: jump.width };
+  const palette = document.querySelector(".command-palette-panel").getBoundingClientRect();
+  return {
+    navRight: nav.right,
+    toolsLeft: tools.left,
+    jumpWidth: jump.width,
+    paletteLeft: palette.left,
+    paletteRight: palette.right,
+  };
 })()`);
-assert.ok(minimumFocused.jumpWidth >= 170);
+assert.ok(minimumFocused.jumpWidth <= 37);
 assert.ok(minimumFocused.navRight <= minimumFocused.toolsLeft, `focused minimum-width zones overlap: ${JSON.stringify(minimumFocused)}`);
-await screenshot("light-minimum-jump-focus");
+assert.ok(minimumFocused.paletteLeft >= 0 && minimumFocused.paletteRight <= 900);
+await screenshot("light-minimum-command-palette");
 await pressEscape();
 
 await cdp.send("Emulation.clearDeviceMetricsOverride");

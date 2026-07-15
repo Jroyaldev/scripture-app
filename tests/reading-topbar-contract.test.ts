@@ -19,16 +19,18 @@ test("reading topbar has stable location and tool zones without margin-width cou
 
 test("reading topbar exposes passage movement, picker state, and a discoverable jump shortcut", () => {
   const page = readFileSync(join(repoRoot, "src", "renderer", "components", "ScripturePage.tsx"), "utf-8");
+  const app = readFileSync(join(repoRoot, "src", "renderer", "app.tsx"), "utf-8");
 
   assert.match(page, /aria-label="Previous chapter"/);
   assert.match(page, /aria-label="Next chapter"/);
   assert.match(page, /aria-haspopup="dialog"[\s\S]*aria-expanded=\{passageOpen\}/);
   assert.match(page, /aria-haspopup="dialog"[\s\S]*aria-expanded=\{versionOpen\}/);
-  assert.match(page, /e\.key\.toLowerCase\(\) !== "k"/);
-  assert.match(page, /jumpInputRef\.current\?\.focus\(\)/);
+  assert.match(app, /event\.key\.toLocaleLowerCase\(\) !== "k"/);
+  assert.match(app, /setCommandOpen\(true\)/);
+  assert.match(page, /className="passage-jump command-palette-trigger"/);
+  assert.match(page, /onClick=\{onOpenCommandPalette\}/);
   assert.match(page, /<kbd className="passage-jump-shortcut"/);
-  assert.match(page, /aria-invalid=\{jumpError\}/);
-  assert.match(page, /Try a book and chapter, like John 3\./);
+  assert.match(page, /aria-haspopup="dialog"/);
 });
 
 test("topbar popovers are named and return focus through their trigger refs", () => {

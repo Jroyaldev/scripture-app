@@ -18,6 +18,11 @@ import { Popover } from "./components/Popover.js";
 import { WelcomeScreen } from "./components/WelcomeScreen.js";
 import type { ReadingPrefs } from "./components/ReadingComfort.js";
 import { Tooltip } from "./components/Tooltip.js";
+import {
+  CommandPalette,
+  type CommandPaletteAction,
+  type CommandReadingContext,
+} from "./components/CommandPalette.js";
 import { isDarkTheme, type AppTheme } from "./theme.js";
 import { safeCall } from "./utils/safeCall.js";
 import "./styles.css";
@@ -131,8 +136,24 @@ function NavItem({ active, onClick, label, icon, shortcut }: NavItemProps): Reac
 export function App(): React.JSX.Element {
   const [view, setView] = useState<View>("scripture");
   const [loadState, setLoadState] = useState<LoadState>({ status: "loading" });
-  const [navigateRef, setNavigateRef] = useState<{ book: string; chapter: number } | null>(null);
+  const [navigateRef, setNavigateRef] = useState<{
+    book: string;
+    chapter: number;
+    verse?: number;
+    endVerse?: number;
+  } | null>(null);
   const [writingDraft, setWritingDraft] = useState<WritingDraft>({ title: "", body: "" });
+  const [commandOpen, setCommandOpen] = useState(false);
+  const [readingContext, setReadingContext] = useState<CommandReadingContext>({
+    book: "ACT",
+    chapter: 19,
+    packageId: "bsb",
+  });
+  const [workspaceIntent, setWorkspaceIntent] = useState<{
+    query?: string;
+    noteId?: string;
+    nonce: number;
+  }>({ nonce: 0 });
   const [marginVisible, setMarginVisible] = useState(() => {
     return localStorage.getItem("marginVisible") !== "false";
   });
@@ -279,10 +300,30 @@ export function App(): React.JSX.Element {
     setView("write");
   };
 
-  const handleNavigateToRef = (book: string, chapter: number) => {
-    setNavigateRef({ book, chapter });
+  const handleNavigateToRef = useCallback((
+    book: string,
+    chapter: number,
+    verse?: number,
+    endVerse?: number,
+  ) => {
+    setNavigateRef({ book, chapter, verse, endVerse });
     setView("scripture");
-  };
+  }, []);
+
+  const handleReadingContextChange = useCallback((next: CommandReadingContext) => {
+    setReadingContext((current) => (
+      current.book === next.book
+      && current.chapter === next.chapter
+      && current.packageId === next.packageId
+      && current.verseStart === next.verseStart
+      && current.verseEnd === next.verseEnd
+        ? current
+        : next
+    ));
+  }, []);
+
+  const openCommandPalette = useCallback(() => setCommandOpen(true), []);
+  const closeCommandPalette = useCallback(() => setCommandOpen(false), []);
 
   const toggleSidebarCollapsed = () => {
     userDirtySettings.current.sidebarCollapsed = true;
@@ -374,6 +415,16 @@ export function App(): React.JSX.Element {
       return false;
     });
   }, [marginVisible]);
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent): void => {
+      if (!(event.metaKey || event.ctrlKey) || event.altKey || event.key.toLocaleLowerCase() !== "k") return;
+      event.preventDefault();
+      setCommandOpen(true);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   // Global keyboard: view digits 1–4, F = focus mode, Esc exits focus.
   useEffect(() => {
@@ -467,6 +518,72 @@ export function App(): React.JSX.Element {
   const { backbone, bookNames, libraryPath } = loadState;
   const libraryName = libraryPath.split("/").pop() ?? libraryPath;
   const avatarInitial = libraryName.charAt(0).toUpperCase() || "?";
+  const contextLabel = `${bookNames[readingContext.book]?.[0] ?? readingContext.book} ${readingContext.chapter}${
+    readingContext.verseStart ? `:${readingContext.verseStart}${
+      readingContext.verseEnd && readingContext.verseEnd !== readingContext.verseStart ? `–${readingContext.verseEnd}` : ""
+    }` : ""
+  }`;
+  const commandActions: CommandPaletteAction[] = [
+    {
+      id: "new-note",
+      title: `New note for ${contextLabel}`,
+      detail: "Open a local Markdown draft",
+      keywords: ["write", "capture", "observation"],
+    },
+    {
+      id: "toggle-study",
+      title: marginVisible && !focusMode ? "Hide Study" : "Show Study",
+      detail: "Toggle the Living Margin",
+      keywords: ["margin", "panel", "references", "language"],
+    },
+    {
+      id: "toggle-focus",
+      title: focusMode ? "Exit focus" : "Focus on reading",
+      detail: focusMode ? "Restore the full study desk" : "Hide navigation and study chrome",
+      keywords: ["reader", "distraction", "mode"],
+    },
+    {
+      id: "open-notes",
+      title: "Open Notes",
+      detail: "Browse your local notebook",
+      keywords: ["library", "notebook"],
+    },
+    {
+      id: "search-notes",
+      title: "Search all notes",
+      detail: "Open the complete note search workspace",
+      keywords: ["find", "library", "text"],
+    },
+    {
+      id: "open-settings",
+      title: "Open Settings",
+      detail: "Library, reading, intelligence, and import",
+      keywords: ["preferences", "theme", "package"],
+    },
+  ];
+
+  const runCommandAction = (id: string): void => {
+    if (id === "new-note") {
+      setWritingDraft((current) => current.title.trim() || current.body.trim()
+        ? current
+        : { title: contextLabel, body: "" });
+      setView("write");
+    } else if (id === "toggle-study") {
+      if (focusMode) toggleFocusMode();
+      if (!marginVisible) toggleMargin();
+      else if (!focusMode) toggleMargin();
+    } else if (id === "toggle-focus") {
+      toggleFocusMode();
+    } else if (id === "open-notes") {
+      setWorkspaceIntent({ nonce: Date.now() });
+      setView("notes");
+    } else if (id === "search-notes") {
+      setWorkspaceIntent({ query: "", nonce: Date.now() });
+      setView("search");
+    } else if (id === "open-settings") {
+      setView("settings");
+    }
+  };
 
   const libraryPopover = libraryPopoverOpen && (
     <Popover
@@ -592,6 +709,8 @@ export function App(): React.JSX.Element {
                 backbone={backbone}
                 bookNames={bookNames}
                 navigateRef={navigateRef}
+                onOpenCommandPalette={openCommandPalette}
+                onReadingContextChange={handleReadingContextChange}
                 onCreateNote={handleCreateNoteFromPassage}
                 marginVisible={marginVisible && !focusMode}
                 onAiBusyChange={setAiBusy}
@@ -614,10 +733,22 @@ export function App(): React.JSX.Element {
               />
             )}
             {view === "search" && (
-              <SearchView mode="search" onNavigate={handleNavigateToRef} onWrite={() => setView("write")} />
+              <SearchView
+                mode="search"
+                onNavigate={handleNavigateToRef}
+                onWrite={() => setView("write")}
+                initialQuery={workspaceIntent.query}
+                intentNonce={workspaceIntent.nonce}
+              />
             )}
             {view === "notes" && (
-              <SearchView mode="notes" onNavigate={handleNavigateToRef} onWrite={() => setView("write")} />
+              <SearchView
+                mode="notes"
+                onNavigate={handleNavigateToRef}
+                onWrite={() => setView("write")}
+                initialNoteId={workspaceIntent.noteId}
+                intentNonce={workspaceIntent.nonce}
+              />
             )}
             {view === "settings" && (
               <SettingsPage
@@ -641,6 +772,25 @@ export function App(): React.JSX.Element {
               Exit focus
             </button>
           )}
+          <CommandPalette
+            open={commandOpen}
+            onClose={closeCommandPalette}
+            theme={theme}
+            backbone={backbone}
+            bookNames={bookNames}
+            context={readingContext}
+            actions={commandActions}
+            onNavigate={handleNavigateToRef}
+            onOpenNote={(noteId) => {
+              setWorkspaceIntent({ noteId, nonce: Date.now() });
+              setView("notes");
+            }}
+            onSearchNotes={(query) => {
+              setWorkspaceIntent({ query, nonce: Date.now() });
+              setView("search");
+            }}
+            onRunAction={runCommandAction}
+          />
         </div>
       </ToastProvider>
     </ErrorBoundary>
