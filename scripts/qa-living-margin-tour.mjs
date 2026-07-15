@@ -406,21 +406,38 @@ const translationAnchor = await evaluate(`(() => {
   return { offset: row.getBoundingClientRect().top - root.getBoundingClientRect().top, scrollTop: root.scrollTop };
 })()`);
 assert.ok(translationAnchor && translationAnchor.scrollTop > 0);
+const quoteBeforeTranslation = await evaluate(`document.querySelector(".margin-focus-quote")?.textContent?.trim() ?? ""`);
+assert.ok(quoteBeforeTranslation.length > 0);
+await evaluate(`(() => {
+  window.__marginQuoteHadGap = false;
+  const margin = document.querySelector(".living-margin");
+  window.__marginQuoteObserver = new MutationObserver(() => {
+    const quote = document.querySelector(".margin-focus-quote")?.textContent?.trim() ?? "";
+    if (!quote) window.__marginQuoteHadGap = true;
+  });
+  if (margin) window.__marginQuoteObserver.observe(margin, { subtree: true, childList: true, characterData: true });
+})()`);
 await setTranslation("web");
 const translatedState = await evaluate(`(() => {
   const root = document.querySelector(".scripture-content");
   const row = document.querySelector('.verse-line[data-verse="7"]');
+  window.__marginQuoteObserver?.disconnect();
   return {
     selected: [...document.querySelectorAll('.verse-line[aria-pressed="true"]')].map((node) => Number(node.getAttribute("data-verse"))),
     activeTab: document.querySelector('.margin-tab[aria-selected="true"]')?.id,
     offset: root && row ? row.getBoundingClientRect().top - root.getBoundingClientRect().top : null,
     scrollTop: root?.scrollTop ?? 0,
+    quote: document.querySelector(".margin-focus-quote")?.textContent?.trim() ?? "",
+    quoteHadGap: window.__marginQuoteHadGap,
   };
 })()`);
 assert.deepEqual(translatedState.selected, [1, 2, 3, 4, 5, 6, 7]);
 assert.equal(translatedState.activeTab, "margin-passage-tab");
 assert.ok(translatedState.scrollTop > 0);
 assert.ok(Math.abs(translatedState.offset - translationAnchor.offset) < 3);
+assert.equal(translatedState.quoteHadGap, false);
+assert.ok(translatedState.quote.length > 0);
+assert.notEqual(translatedState.quote, quoteBeforeTranslation);
 await setTranslation("bsb");
 assert.equal(await evaluate(`document.querySelectorAll('.verse-line[aria-pressed="true"]').length`), 7);
 console.log("translation continuity ok", { before: translationAnchor, translated: translatedState });

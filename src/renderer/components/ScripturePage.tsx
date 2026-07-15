@@ -357,6 +357,12 @@ export function ScripturePage({
 
   const contentRef = useRef<HTMLDivElement>(null);
   const pendingTranslationViewportRef = useRef<TranslationViewport | null>(null);
+  const lastLoadedChapterVerseTextRef = useRef<{
+    book: string;
+    chapter: number;
+    packageId: string;
+    verses: Map<number, string>;
+  } | null>(null);
   const chapterHeadingRef = useRef<HTMLHeadingElement>(null);
   const shouldFocusChapterHeading = useRef(false);
   const paletteRef = useRef<HTMLDivElement>(null);
@@ -383,6 +389,30 @@ export function ScripturePage({
     for (const v of chapterData?.verses ?? []) m.set(v.verse, v.text);
     return m;
   }, [chapterData]);
+
+  // Keep the last complete quote map available across the one empty render
+  // used to swap translation packages. The reading canvas still clears so
+  // package-specific highlight offsets can never touch old prose; only the
+  // already-selected quotation in the Living Margin receives this fallback.
+  useLayoutEffect(() => {
+    if (chapterVerseText.size === 0) return;
+    lastLoadedChapterVerseTextRef.current = {
+      book,
+      chapter,
+      packageId,
+      verses: chapterVerseText,
+    };
+  }, [book, chapter, packageId, chapterVerseText]);
+
+  const displayChapterVerseText = useMemo<Map<number, string>>(() => {
+    if (chapterVerseText.size > 0) return chapterVerseText;
+    const previous = lastLoadedChapterVerseTextRef.current;
+    const translationPending = pendingTranslationViewportRef.current?.packageId === packageId && !chapterError;
+    if (translationPending && previous?.book === book && previous.chapter === chapter) {
+      return previous.verses;
+    }
+    return chapterVerseText;
+  }, [book, chapter, packageId, chapterError, chapterVerseText]);
 
   // Highlight character offsets are translation-specific. queryRange returns
   // every package for the canonical verse range, but all rendering, selection,
@@ -2192,6 +2222,8 @@ export function ScripturePage({
           semanticData={semanticData}
           semanticLoading={semanticLoading}
           chapterVerseText={chapterVerseText}
+          displayChapterVerseText={displayChapterVerseText}
+          chapterTextLoading={!chapterData && !chapterError}
           pinnedRange={pinnedRange}
           nearVerse={pinnedRange ? null : nearVerse}
           onNavigateToRef={handleNavigateToRef}

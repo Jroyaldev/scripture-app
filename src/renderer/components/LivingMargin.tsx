@@ -39,8 +39,13 @@ interface Props {
   semanticData?: SemanticMarginResult | null;
   semanticLoading?: boolean;
   /** Full verse text for the current chapter, keyed by verse number — used to
-   * build the passage-scoped AI insight call and the pinned-passage quote. */
+   * build the passage-scoped AI insight call. */
   chapterVerseText?: Map<number, string>;
+  /** Display-only verse text that may retain the previous package for the
+   * brief translation handoff. It must never feed package-scoped analysis. */
+  displayChapterVerseText?: Map<number, string>;
+  /** True while the active translation text is still resolving. */
+  chapterTextLoading?: boolean;
   /** Derived selected/"pinned" range from ScripturePage (min/max of selectedVerses). */
   pinnedRange?: PinnedRange | null;
   /** The verse nearest the reading eye-line, when nothing is pinned. */
@@ -455,6 +460,8 @@ export function LivingMargin({
   semanticData,
   semanticLoading,
   chapterVerseText,
+  displayChapterVerseText,
+  chapterTextLoading,
   pinnedRange,
   nearVerse,
   onPinClaim,
@@ -543,6 +550,10 @@ export function LivingMargin({
       : "";
 
     if (!text) {
+      // A package switch deliberately clears the reading DOM before the next
+      // translation arrives. Do not turn that transient empty frame into a
+      // permanent cached "no insight" result for the new package.
+      if (chapterTextLoading) return;
       // No real text available to analyze — record a null result rather than
       // spinning forever or fabricating a response.
       aiCacheRef.current.set(pinKey, null);
@@ -566,7 +577,7 @@ export function LivingMargin({
     return () => {
       cancelled = true;
     };
-  }, [pinKey, pinnedRange, chapterVerseText, book, chapter]);
+  }, [pinKey, pinnedRange, chapterVerseText, chapterTextLoading, book, chapter]);
 
   const pinnedAiResult = pinKey ? aiCacheRef.current.get(pinKey) : undefined;
   // Loading whenever this pinned range has no cached result yet — covers both
@@ -581,8 +592,9 @@ export function LivingMargin({
     : [];
   const pinnedColors = [...new Set(pinnedHighlights.map((highlight) => highlight.color))];
   const pinnedHighlightColor = pinnedColors.length === 1 ? pinnedColors[0]! : null;
-  const pinnedQuote = pinnedRange && chapterVerseText
-    ? [...chapterVerseText.entries()]
+  const quoteVerseText = displayChapterVerseText ?? chapterVerseText;
+  const pinnedQuote = pinnedRange && quoteVerseText
+    ? [...quoteVerseText.entries()]
         .filter(([v]) => v >= pinnedRange.start && v <= pinnedRange.end)
         .sort((a, b) => a[0] - b[0])
         .map(([, t]) => t)
@@ -607,7 +619,7 @@ export function LivingMargin({
     : 0;
 
   const nearNote = nearVerse != null ? findNoteForRange(marginData, chapter, nearVerse, nearVerse) : null;
-  const nearQuote = nearVerse != null ? chapterVerseText?.get(nearVerse) ?? "" : "";
+  const nearQuote = nearVerse != null ? quoteVerseText?.get(nearVerse) ?? "" : "";
   const nearRef = nearVerse != null ? `${displayBook} ${chapter}:${nearVerse}` : "";
   const marginMode = isPinned ? "Selected" : isNear ? "In view" : "Chapter";
   const contextReference = isPinned ? pinnedRef : isNear ? nearRef : `${displayBook} ${chapter}`;

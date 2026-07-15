@@ -47,6 +47,9 @@ test("translation changes preserve canonical verse selection and the reading anc
   assert.match(page, /interface TranslationViewport/);
   assert.match(page, /captureTranslationViewport\(t\.code\)/);
   assert.match(page, /pendingTranslationViewportRef\.current/);
+  assert.match(page, /lastLoadedChapterVerseTextRef\.current/);
+  assert.match(page, /displayChapterVerseText=\{displayChapterVerseText\}/);
+  assert.match(page, /chapterTextLoading=\{!chapterData && !chapterError\}/);
   assert.match(page, /root\.scrollTop = Math\.max\(0, root\.scrollTop \+ currentOffset - pending\.verseOffset\)/);
   assert.match(page, /Translation changes are deliberately excluded/);
   assert.match(page, /\}, \[book, chapter\]\);/);
@@ -56,6 +59,9 @@ test("translation changes preserve canonical verse selection and the reading anc
   const pickerHandler = page.slice(pickerStart, pickerEnd);
   assert.doesNotMatch(pickerHandler, /setSelectedVerses\(new Set\(\)\)/);
   assert.doesNotMatch(pickerHandler, /verseSelectionAnchorRef\.current = null/);
+
+  assert.match(margin, /const quoteVerseText = displayChapterVerseText \?\? chapterVerseText/);
+  assert.match(margin, /if \(chapterTextLoading\) return/);
 });
 
 test("Overview surfaces only grounded Scripture, library, and TIPNR entity leads", () => {
