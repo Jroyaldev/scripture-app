@@ -67,8 +67,9 @@ test("LivingMargin removes highlights by the persisted highlight id from the pin
     const tree = LivingMargin({
       book: "ACT",
       chapter: 19,
+      packageId: "bsb",
       marginData,
-      crossRefs: [],
+      crossRefs: null,
       bookNames: { ACT: ["Acts"] },
       pinnedRange: { start: 1, end: 1 },
       onRemoveHighlights: (ids) => {

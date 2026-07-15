@@ -51,7 +51,8 @@ test("capture, highlight, and cross-reference overlays state trust and source cl
   assert.match(scripture, /`theme-\$\{theme\}`/);
 
   assert.match(margin, /aria-label="OpenBible cross references"/);
-  assert.match(margin, /<span>OpenBible<\/span>/);
+  assert.match(margin, />OpenBible<\/h3>/);
+  assert.match(margin, /<span>Cross References<\/span>/);
   assert.match(margin, /For this verse/);
   assert.match(margin, /Across this passage/);
 });

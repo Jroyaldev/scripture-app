@@ -4412,6 +4412,186 @@ html, body, #root {
   color: var(--text-primary);
 }
 
+.margin-context {
+  padding: 0 0 2px;
+}
+
+.margin-context .margin-quote-wrap {
+  margin-bottom: 14px;
+}
+
+.margin-tabs {
+  position: sticky;
+  top: 52px;
+  z-index: 7;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 12px calc(var(--sp-xl) * -1) 18px;
+  padding: 0 var(--sp-lg);
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--bg-canvas) 96%, transparent);
+  backdrop-filter: blur(18px) saturate(1.08);
+}
+
+.margin-tab {
+  position: relative;
+  min-width: 0;
+  min-height: 39px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 5px;
+  border: 0;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.margin-tab::after {
+  content: "";
+  position: absolute;
+  right: 9px;
+  bottom: -1px;
+  left: 9px;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--study-gold);
+  opacity: 0;
+  transform: scaleX(0.72);
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.margin-tab:hover {
+  background: color-mix(in srgb, var(--study-hover-surface) 46%, transparent);
+  color: var(--text-secondary);
+}
+
+.margin-tab.is-active {
+  color: var(--text-primary);
+}
+
+.margin-tab.is-active::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.margin-tab:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--study-gold) 72%, transparent);
+  outline-offset: -3px;
+  border-radius: var(--radius-sm);
+}
+
+.margin-tab-count {
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.margin-tab-panel[hidden] {
+  display: none;
+}
+
+.margin-tab-panel:not([hidden]) {
+  animation: marginTabIn 140ms ease-out;
+}
+
+@keyframes marginTabIn {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.margin-view-heading {
+  margin: 0 0 18px;
+}
+
+.margin-view-heading--action {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.margin-view-heading h3,
+.margin-view-empty h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  font-weight: var(--fw-semibold);
+  line-height: 1.35;
+}
+
+.margin-view-heading p,
+.margin-view-empty p {
+  margin: 4px 0 0;
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  line-height: 1.45;
+}
+
+.margin-view-action {
+  flex: none;
+  min-height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--study-gold);
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+}
+
+.margin-view-action:hover {
+  border-color: color-mix(in srgb, var(--study-gold) 32%, var(--border-subtle));
+  background: color-mix(in srgb, var(--study-hover-surface) 54%, transparent);
+  color: var(--text-primary);
+}
+
+.margin-view-action:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--study-gold) 70%, transparent);
+  outline-offset: 2px;
+}
+
+.margin-view-empty {
+  padding: 20px 0 10px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.margin-note-list {
+  display: grid;
+  gap: 10px;
+}
+
+.margin-subsection .margin-card + .margin-card {
+  border-top: 1px solid var(--border-subtle);
+}
+
+.card-reasons {
+  display: grid;
+  gap: 3px;
+  margin-top: 7px;
+}
+
+.reason-chip {
+  display: block;
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  font-size: 0.625rem;
+  font-weight: var(--fw-medium);
+  line-height: 1.4;
+}
+
 .margin-header-ref {
   margin: 0;
   color: var(--text-primary);
@@ -9815,6 +9995,12 @@ textarea:focus-visible,
   border-bottom: 1px solid var(--border-subtle);
 }
 
+.margin-tab-panel > .margin-selection-tools {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
 .margin-pin-status {
   display: flex;
   align-items: center;
@@ -9918,6 +10104,12 @@ textarea:focus-visible,
   }
   .margin-panel-anim {
     animation: none;
+  }
+  .margin-tab-panel:not([hidden]) {
+    animation: none;
+  }
+  .margin-tab::after {
+    transition: none;
   }
   .margin-disclosure-caret {
     transition: none;
@@ -10552,7 +10744,9 @@ textarea:focus-visible,
    to prevent labels from ghosting through the title while retaining blur at
    the edge. */
 .theme-glass .margin-frame-header,
-.theme-dark-glass .margin-frame-header {
+.theme-dark-glass .margin-frame-header,
+.theme-glass .margin-tabs,
+.theme-dark-glass .margin-tabs {
   background: var(--bg-primary);
 }
 

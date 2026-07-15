@@ -4,6 +4,20 @@
 > **Predecessors:** A0 (snapshot), A1 (native build), B1 (scripture data).
 > **Contracts:** §4.2 (event fold), §4.4 (SQLite materialized view), §4.6 (note format), INV-7 (append-only), INV-9 (safe to rebuild).
 
+## Progress — 2026-07-15 (Intentional Living Margin views)
+
+The right rail now separates automatic passage context from the user's chosen study lens, so moving through Scripture no longer forces the reader through a sequence of unrelated content:
+
+- **Scope and lens are orthogonal:** the persistent `Chapter | In view | Selected` state still follows the reading context, while `Passage | Connections | Notes` remains the reader's stable view choice across verse and scope changes.
+- **Three purpose-built views:** Passage owns overview, original-language study, word detail, and highlight tools. Connections owns OpenBible relationships and visibly separate note-derived links. Notes owns passage capture, anchored notes, insight, themes, claims, and related-note evidence.
+- **Context never disappears:** reference and bounded quotation remain above the tabs, so every view answers what it is about before presenting its own material. Each view has a tailored empty state rather than borrowing another view's controls.
+- **Quiet, durable navigation:** one hairline tab row and a restrained gold current mark replace stacked mixed-purpose sections. Tab selection persists, each view restores its own scroll position, and a scope change resets stale scroll without changing the chosen lens.
+- **Keyboard and assistive integrity:** the tabs expose real tab/tab-panel relationships, one roving tab stop, Arrow-key movement, Home/End, selected state, and labelled panels. Focus and hover use the shared desktop interaction language.
+- **Trust boundaries remain visible:** OpenBible Cross References retain their CC-BY attribution and never merge with local note-derived connections. Public corpus results and personalized library evidence occupy separately named sections.
+- **Repeatable proof:** the Living Margin tour exercises all three views, keyboard movement, per-view state, selection completion, all four atmospheres, provenance, and tailored content. The study-overlay tour verifies that language, Structure, passage notes, highlights, and OpenBible previews still work through the new view ownership.
+
+**Verification:** `npm run lint`, full `npm test` (**407 tests: 397 passing, 10 expected Electron-ABI skips**), renderer typecheck, Electron build, renderer build, focused Living Margin/study-overlay contracts, `npm run qa:margin`, `npm run qa:study-overlays`, and `git diff --check` pass. The tours preserve the active library at **26 notes and 30 highlights**. Mobile remains outside this worktree.
+
 ## Progress — 2026-07-15 (BSB canonical-prose boundary)
 
 A bounded data-integrity repair removed USFM publication structure from the canonical reading text without changing the reader UI or the separate mobile worktree:

@@ -337,6 +337,8 @@ try {
   for (const theme of THEMES) {
     const name = THEME_NAMES[theme];
     await setTheme(theme);
+    await clickSelector("#margin-passage-tab");
+    await waitFor(`document.querySelector("#margin-passage-tab")?.getAttribute("aria-selected") === "true"`);
 
     await selectVerseAndOpenToolbar();
     const toolbarState = await evaluate(`(() => ({
@@ -432,6 +434,8 @@ try {
     await clickSelector(".structure-modal-done");
     await waitFor(`!document.querySelector(".structure-modal-root")`);
 
+    await clickSelector("#margin-connections-tab");
+    await waitFor(`document.querySelector("#margin-connections-tab")?.getAttribute("aria-selected") === "true"`);
     await waitFor(`Boolean(document.querySelector(".crossref-section"))`, 15_000);
     await scrollMarginTo(".crossref-section");
     const crossRefState = await evaluate(`(() => ({
@@ -441,7 +445,7 @@ try {
       source: document.querySelector(".crossref-attribution span:first-child")?.textContent?.trim(),
     }))()`);
     assert.equal(crossRefState.label, "OpenBible cross references");
-    assert.match(crossRefState.context ?? "", /^OpenBible\s*·\s*For this verse$/);
+    assert.match(crossRefState.context ?? "", /^Cross References\s*·\s*For this verse$/);
     assert.ok(crossRefState.rows >= 1);
     assert.equal(crossRefState.source, "OpenBible Cross References");
     await screenshot(`${name}-openbible-preview`, [".living-margin"]);
@@ -450,6 +454,8 @@ try {
   await setTheme("light");
   await evaluate(`window.resizeTo(900, 700)`);
   await sleep(650);
+  await clickSelector("#margin-passage-tab");
+  await waitFor(`document.querySelector("#margin-passage-tab")?.getAttribute("aria-selected") === "true"`);
   await selectLovedWord();
   await chooseWordMap("Senses");
   await scrollMarginTo(".lang-detail");

@@ -18,6 +18,14 @@ export interface PinnedRange {
   end: number;
 }
 
+type MarginTab = "passage" | "connections" | "notes";
+
+const MARGIN_TABS: Array<{ id: MarginTab; label: string }> = [
+  { id: "passage", label: "Passage" },
+  { id: "connections", label: "Connections" },
+  { id: "notes", label: "Notes" },
+];
+
 interface Props {
   book: string;
   chapter: number;
@@ -129,6 +137,30 @@ function MarginDisclosure({
   );
 }
 
+function MarginEmptyView({
+  title,
+  detail,
+}: {
+  title: string;
+  detail: string;
+}): React.JSX.Element {
+  return (
+    <div className="margin-view-empty">
+      <h3>{title}</h3>
+      <p>{detail}</p>
+    </div>
+  );
+}
+
+function NotePreview({ note }: { note: NoteRecord }): React.JSX.Element {
+  return (
+    <article className="margin-card">
+      <div className="card-title">{note.title || "Untitled"}</div>
+      <div className="card-excerpt">{note.body_text.slice(0, 150)}</div>
+    </article>
+  );
+}
+
 function findNoteForRange(marginData: QueryResult, chapter: number, start: number, end: number): NoteRecord | null {
   const anchor = marginData.anchors.find(
     (a: AnchorRecord) => a.chapter === chapter && a.verse_start <= end && a.verse_end >= start,
@@ -203,9 +235,9 @@ function CrossRefsBlock({
     <section className="margin-section crossref-section" aria-label="OpenBible cross references">
       <div className="crossref-heading">
         <div>
-          <h3 className="margin-section-header crossref-title">Cross references</h3>
+          <h3 className="margin-section-header crossref-title">OpenBible</h3>
           <div className="crossref-context">
-            <span>OpenBible</span>
+            <span>Cross References</span>
             <span aria-hidden="true">·</span>
             <span>{result.scope === "verse" ? "For this verse" : "Across this passage"}</span>
           </div>
@@ -314,7 +346,15 @@ export function LivingMargin({
   const [pinnedClaims, setPinnedClaims] = useState<Set<string>>(new Set());
   const [pendingClaimId, setPendingClaimId] = useState<string | null>(null);
   const [claimPinError, setClaimPinError] = useState<{ id: string; message: string } | null>(null);
+  const [activeTab, setActiveTab] = useState<MarginTab>("passage");
   const frameTitleRef = useRef<HTMLHeadingElement>(null);
+  const marginRef = useRef<HTMLElement>(null);
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const tabScrollPositionsRef = useRef<Record<MarginTab, number>>({
+    passage: 0,
+    connections: 0,
+    notes: 0,
+  });
 
   // Session-only cache of AI insight results for the pinned range, keyed by
   // translation + canonical range. Avoids re-triggering the call when
@@ -438,6 +478,61 @@ export function LivingMargin({
   const nearQuote = nearVerse != null ? chapterVerseText?.get(nearVerse) ?? "" : "";
   const nearRef = nearVerse != null ? `${displayBook} ${chapter}:${nearVerse}` : "";
   const marginMode = isPinned ? "Selected" : isNear ? "In view" : "Chapter";
+  const contextReference = isPinned ? pinnedRef : isNear ? nearRef : `${displayBook} ${chapter}`;
+  const contextQuote = isPinned ? pinnedQuote : isNear ? nearQuote : "";
+  const contextKey = isPinned
+    ? `selected:${book}:${chapter}:${pinnedRange.start}-${pinnedRange.end}`
+    : isNear
+      ? `reading:${book}:${chapter}:${nearVerse}`
+      : `chapter:${book}:${chapter}`;
+  const noteConnectionCount = isPinned ? pinnedSemantic?.suggestedCrossRefs.length ?? 0 : 0;
+  const connectionCount = (crossRefs?.items.length ?? 0) + noteConnectionCount;
+  const notesCount = isPinned
+    ? (pinnedNote ? 1 : 0) + pinnedLibraryItemCount
+    : isNear
+      ? (nearNote ? 1 : 0)
+      : marginData.notes.length;
+
+  useEffect(() => {
+    tabScrollPositionsRef.current = { passage: 0, connections: 0, notes: 0 };
+    marginRef.current?.scrollTo({ top: 0 });
+  }, [contextKey]);
+
+  const activateTab = (tab: MarginTab, focus = false): void => {
+    if (tab === activeTab) return;
+    if (marginRef.current) tabScrollPositionsRef.current[activeTab] = marginRef.current.scrollTop;
+    setActiveTab(tab);
+    window.requestAnimationFrame(() => {
+      marginRef.current?.scrollTo({ top: tabScrollPositionsRef.current[tab] });
+    });
+    if (focus) {
+      const index = MARGIN_TABS.findIndex((item) => item.id === tab);
+      window.setTimeout(() => tabRefs.current[index]?.focus(), 0);
+    }
+  };
+
+  const handleTabKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number): void => {
+    let nextIndex: number | null = null;
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+      nextIndex = (index + 1) % MARGIN_TABS.length;
+    } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+      nextIndex = (index - 1 + MARGIN_TABS.length) % MARGIN_TABS.length;
+    } else if (event.key === "Home") {
+      nextIndex = 0;
+    } else if (event.key === "End") {
+      nextIndex = MARGIN_TABS.length - 1;
+    }
+    if (nextIndex == null) return;
+    event.preventDefault();
+    activateTab(MARGIN_TABS[nextIndex]!.id, true);
+  };
+
+  const tabCount = (tab: MarginTab): number | null => {
+    if (tab === "connections") return connectionCount;
+    if (tab === "notes") return notesCount;
+    return null;
+  };
+
   const clearSelection = () => {
     onClearSelection?.();
     // The Done control intentionally disappears when selection ends. Move
@@ -448,6 +543,7 @@ export function LivingMargin({
 
   return (
     <aside
+      ref={marginRef}
       className="living-margin"
       aria-labelledby="living-margin-title"
       data-margin-mode={marginMode.toLowerCase().replace(" ", "-")}
@@ -473,90 +569,212 @@ export function LivingMargin({
         </div>
       </header>
 
+      <div className="margin-context" aria-label={`Study scope: ${contextReference}`}>
+        <h3 className="margin-header-ref">{contextReference}</h3>
+        {contextQuote && <PassageQuote text={contextQuote} contextKey={contextKey} />}
+      </div>
+
+      <div className="margin-tabs" role="tablist" aria-label="Study views" aria-orientation="horizontal">
+        {MARGIN_TABS.map((tab, index) => {
+          const selected = activeTab === tab.id;
+          const count = tabCount(tab.id);
+          return (
+            <button
+              key={tab.id}
+              ref={(node) => { tabRefs.current[index] = node; }}
+              type="button"
+              id={`margin-${tab.id}-tab`}
+              className={`margin-tab${selected ? " is-active" : ""}`}
+              role="tab"
+              aria-selected={selected}
+              aria-controls={`margin-${tab.id}-panel`}
+              tabIndex={selected ? 0 : -1}
+              onClick={() => activateTab(tab.id)}
+              onKeyDown={(event) => handleTabKeyDown(event, index)}
+            >
+              <span>{tab.label}</span>
+              {count != null && count > 0 && (
+                <span className="margin-tab-count" aria-label={`${count} items`}>{count}</span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
       {/* --- State 1: Chapter overview (default) --- */}
       {!isPinned && !isNear && (
         <div className="margin-panel-anim" data-margin-view="chapter">
-          <h3 className="margin-header-ref">{displayBook} {chapter}</h3>
+          <section
+            id="margin-passage-panel"
+            className="margin-tab-panel"
+            role="tabpanel"
+            aria-labelledby="margin-passage-tab"
+            hidden={activeTab !== "passage"}
+          >
+            {(hasDeterministicData || hasSemanticData) && (
+              <>
+                <div className="margin-view-heading">
+                  <h3>Chapter overview</h3>
+                  <p>Your marks and study activity remain secondary to the text.</p>
+                </div>
+                <div className="margin-stats" aria-label="Chapter study activity">
+                  <div className="margin-stat">
+                    <span className="margin-stat-num">{activeHighlights.length}</span>
+                    <span className="margin-stat-label">Highlights</span>
+                  </div>
+                  <div className="margin-stat">
+                    <span className="margin-stat-num">{marginData.notes.length}</span>
+                    <span className="margin-stat-label">Notes</span>
+                  </div>
+                  <div className="margin-stat">
+                    <span className="margin-stat-num">{crossRefs?.totalCount ?? 0}</span>
+                    <span className="margin-stat-label">Connections</span>
+                  </div>
+                </div>
+                <p className="margin-invite">
+                  Select a verse to study its language, add a highlight, or narrow every tab to that passage.
+                </p>
+              </>
+            )}
 
-          {semanticData && semanticData.threads.length > 0 && (
-            <div className="margin-overview-themes">
-              <span className="margin-overview-label">Themes in your notes</span>
-              <div className="margin-tags">
-                {semanticData.threads.slice(0, 3).map((t) => (
-                  <span key={t.id} className="margin-tag">{t.label}</span>
-                ))}
+            {!hasDeterministicData && !hasSemanticData && semanticLoading && (
+              <div className="margin-overview-loading" role="status">
+                <span className="ai-insight-spinner" aria-hidden="true" />
+                <span>Reading your library…</span>
               </div>
-            </div>
-          )}
+            )}
 
-          {(hasDeterministicData || hasSemanticData) && (
-            <>
-              <div className="margin-stats" aria-label="Chapter study activity">
-                <div className="margin-stat">
-                  <span className="margin-stat-num">{activeHighlights.length}</span>
-                  <span className="margin-stat-label">Highlights</span>
-                </div>
-                <div className="margin-stat">
-                  <span className="margin-stat-num">{marginData.notes.length}</span>
-                  <span className="margin-stat-label">Notes</span>
-                </div>
-                <div className="margin-stat">
-                  <span className="margin-stat-num">{crossRefs?.totalCount ?? 0}</span>
-                  <span className="margin-stat-label">Connections</span>
+            {!hasDeterministicData && !hasSemanticData && !semanticLoading && (
+              <MarginEmptyView
+                title="A quiet chapter"
+                detail="Select a verse to begin studying or leave your first mark."
+              />
+            )}
+          </section>
+
+          <section
+            id="margin-connections-panel"
+            className="margin-tab-panel"
+            role="tabpanel"
+            aria-labelledby="margin-connections-tab"
+            hidden={activeTab !== "connections"}
+          >
+            <div className="margin-view-heading">
+              <h3>Connections</h3>
+              <p>Ranked relationships aggregated across this chapter.</p>
+            </div>
+            {crossRefs && crossRefs.items.length > 0 ? (
+              <CrossRefsBlock result={crossRefs} onNavigate={onNavigateToRef} />
+            ) : (
+              <MarginEmptyView
+                title="No chapter connections"
+                detail="Select a verse to look for a more focused relationship."
+              />
+            )}
+          </section>
+
+          <section
+            id="margin-notes-panel"
+            className="margin-tab-panel"
+            role="tabpanel"
+            aria-labelledby="margin-notes-tab"
+            hidden={activeTab !== "notes"}
+          >
+            <div className="margin-view-heading">
+              <h3>Notes</h3>
+              <p>Material from your local library for this chapter.</p>
+            </div>
+            {semanticData && semanticData.threads.length > 0 && (
+              <div className="margin-overview-themes">
+                <span className="margin-overview-label">Themes in your notes</span>
+                <div className="margin-tags">
+                  {semanticData.threads.slice(0, 3).map((thread) => (
+                    <span key={thread.id} className="margin-tag">{thread.label}</span>
+                  ))}
                 </div>
               </div>
-
-              <p className="margin-invite">
-                Select a verse to study its language, add a highlight, or follow a connection.
-              </p>
-            </>
-          )}
-
-          {!hasDeterministicData && !hasSemanticData && semanticLoading && (
-            <div className="margin-overview-loading" role="status">
-              <span className="ai-insight-spinner" aria-hidden="true" />
-              <span>Reading your library…</span>
-            </div>
-          )}
-
-          {!hasDeterministicData && !hasSemanticData && !semanticLoading && (
-            <div className="margin-empty">
-              <p>Nothing has been added to this chapter yet.</p>
-              <p className="margin-empty-hint">Select a verse to begin studying or leave your first mark.</p>
-            </div>
-          )}
+            )}
+            {marginData.notes.length > 0 ? (
+              <div className="margin-note-list">
+                {marginData.notes.map((note) => <NotePreview key={note.id} note={note} />)}
+              </div>
+            ) : semanticLoading ? (
+              <div className="margin-overview-loading" role="status">
+                <span className="ai-insight-spinner" aria-hidden="true" />
+                <span>Reading your library…</span>
+              </div>
+            ) : (
+              <MarginEmptyView
+                title="No chapter notes yet"
+                detail="Select a verse, then add a note when you have something worth keeping."
+              />
+            )}
+          </section>
         </div>
       )}
 
       {/* --- State 2: Ambient "currently reading" --- */}
       {isNear && (
         <div className="margin-panel-anim" data-margin-view="reading">
-          <h3 className="margin-header-ref">{nearRef}</h3>
-          {nearQuote && <PassageQuote text={nearQuote} contextKey={nearRef} />}
+          <section
+            id="margin-passage-panel"
+            className="margin-tab-panel"
+            role="tabpanel"
+            aria-labelledby="margin-passage-tab"
+            hidden={activeTab !== "passage"}
+          >
+            {nearVerse != null && (
+              <LanguageWordsSection
+                book={book}
+                chapter={chapter}
+                verse={nearVerse}
+                readingPackageId={packageId}
+                onStudyEngage={onStudyVerse}
+              />
+            )}
+          </section>
 
-          {nearVerse != null && (
-            <LanguageWordsSection
-              book={book}
-              chapter={chapter}
-              verse={nearVerse}
-              readingPackageId={packageId}
-              onStudyEngage={onStudyVerse}
-            />
-          )}
+          <section
+            id="margin-connections-panel"
+            className="margin-tab-panel"
+            role="tabpanel"
+            aria-labelledby="margin-connections-tab"
+            hidden={activeTab !== "connections"}
+          >
+            <div className="margin-view-heading">
+              <h3>Connections</h3>
+              <p>Ranked relationships for the verse at your reading eye-line.</p>
+            </div>
+            {crossRefs && crossRefs.items.length > 0 ? (
+              <CrossRefsBlock result={crossRefs} onNavigate={onNavigateToRef} />
+            ) : (
+              <MarginEmptyView
+                title="No connections here"
+                detail="Continue reading or select a passage to widen the scope."
+              />
+            )}
+          </section>
 
-          {nearNote && (
-            <section className="margin-section margin-note-section">
-              <h3 className="margin-section-header">Your note</h3>
-              <article className="margin-card">
-                <div className="card-title">{nearNote.title}</div>
-                <div className="card-excerpt">{nearNote.body_text.slice(0, 120)}</div>
-              </article>
-            </section>
-          )}
-
-          {(crossRefs?.items?.length ?? 0) > 0 && crossRefs && (
-            <CrossRefsBlock result={crossRefs} onNavigate={onNavigateToRef} />
-          )}
+          <section
+            id="margin-notes-panel"
+            className="margin-tab-panel"
+            role="tabpanel"
+            aria-labelledby="margin-notes-tab"
+            hidden={activeTab !== "notes"}
+          >
+            <div className="margin-view-heading">
+              <h3>Notes</h3>
+              <p>Your local library at this verse.</p>
+            </div>
+            {nearNote ? (
+              <NotePreview note={nearNote} />
+            ) : (
+              <MarginEmptyView
+                title="No note on this verse"
+                detail="Select the verse when you want to highlight it or add a note."
+              />
+            )}
+          </section>
         </div>
       )}
 
@@ -569,9 +787,13 @@ export function LivingMargin({
           Never show permanent empty AI shells. */}
       {isPinned && (
         <div className="margin-panel-anim" data-margin-view="selected">
-          <h3 className="margin-header-ref">{pinnedRef}</h3>
-          {pinnedQuote && <PassageQuote text={pinnedQuote} contextKey={pinnedRef} />}
-
+          <section
+            id="margin-passage-panel"
+            className="margin-tab-panel"
+            role="tabpanel"
+            aria-labelledby="margin-passage-tab"
+            hidden={activeTab !== "passage"}
+          >
           {/* Selection tools live on the floating mini toolbar over the text.
               Margin shows pin status + neutral multi-color state when needed. */}
           <div className="margin-selection-tools">
@@ -585,11 +807,6 @@ export function LivingMargin({
               </span>
               {pinnedColors.length > 1 && (
                 <span className="hl-toolbar-mixed-badge">Mixed</span>
-              )}
-              {onCreateNote && (
-                <button type="button" className="margin-pin-note-btn" onClick={() => onCreateNote()}>
-                  Add note
-                </button>
               )}
               {pinnedHighlights.length > 0 && onRemoveHighlights && (
                 <button
@@ -629,18 +846,60 @@ export function LivingMargin({
             onStudyEngage={onStudyVerse}
           />
 
+          </section>
+
+          <section
+            id="margin-connections-panel"
+            className="margin-tab-panel"
+            role="tabpanel"
+            aria-labelledby="margin-connections-tab"
+            hidden={activeTab !== "connections"}
+          >
+            <div className="margin-view-heading">
+              <h3>Connections</h3>
+              <p>Public cross references and personal connections, kept visibly separate.</p>
+            </div>
+            {(crossRefs?.items.length ?? 0) > 0 && crossRefs && (
+              <CrossRefsBlock result={crossRefs} onNavigate={onNavigateToRef} />
+            )}
+            {pinnedSemantic && pinnedSemantic.suggestedCrossRefs.length > 0 && (
+              <NoteCrossRefsBlock
+                items={pinnedSemantic.suggestedCrossRefs.slice(0, 6)}
+                onNavigate={onNavigateToRef}
+              />
+            )}
+            {connectionCount === 0 && (
+              <MarginEmptyView
+                title="No connections for this passage"
+                detail="Try a single verse for a narrower OpenBible match."
+              />
+            )}
+          </section>
+
+          <section
+            id="margin-notes-panel"
+            className="margin-tab-panel"
+            role="tabpanel"
+            aria-labelledby="margin-notes-tab"
+            hidden={activeTab !== "notes"}
+          >
+            <div className="margin-view-heading margin-view-heading--action">
+              <div>
+                <h3>Notes</h3>
+                <p>Your anchored note and grounded library context.</p>
+              </div>
+              {onCreateNote && (
+                <button type="button" className="margin-view-action" onClick={() => onCreateNote()}>
+                  Add note
+                </button>
+              )}
+            </div>
+
           {pinnedNote && (
             <section className="margin-section margin-note-section">
               <h3 className="margin-section-header">Your note</h3>
-              <article className="margin-card">
-                <div className="card-title">{pinnedNote.title}</div>
-                <div className="card-excerpt">{pinnedNote.body_text.slice(0, 150)}</div>
-              </article>
+              <NotePreview note={pinnedNote} />
             </section>
-          )}
-
-          {(crossRefs?.items?.length ?? 0) > 0 && crossRefs && (
-            <CrossRefsBlock result={crossRefs} onNavigate={onNavigateToRef} />
           )}
 
           {pinnedAiLoading && (
@@ -733,12 +992,13 @@ export function LivingMargin({
             </MarginDisclosure>
           )}
 
-          {pinnedSemantic && pinnedSemantic.suggestedCrossRefs.length > 0 && (
-            <NoteCrossRefsBlock
-              items={pinnedSemantic.suggestedCrossRefs.slice(0, 6)}
-              onNavigate={onNavigateToRef}
+          {!pinnedAiLoading && !pinnedNote && !pinnedInsight && pinnedLibraryItemCount === 0 && (
+            <MarginEmptyView
+              title="Nothing from your notes yet"
+              detail="Add a note when this passage gives you something worth carrying forward."
             />
           )}
+          </section>
         </div>
       )}
     </aside>

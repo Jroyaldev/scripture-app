@@ -2,9 +2,10 @@
  * Desktop-only visual and interaction QA for the Living Margin frame.
  *
  * Requires Electron on --remote-debugging-port=9222. Exercises the deliberate
- * Chapter / In view / Selected state model, progressive disclosure, scope and
- * provenance labels, focus recovery, and all four reading atmospheres. The
- * tour never creates, removes, or recolors authored data.
+ * Chapter / In view / Selected scope model; Passage / Connections / Notes tab
+ * navigation; progressive disclosure, provenance, focus recovery, preserved
+ * tab choice, and all four reading atmospheres. The tour never creates,
+ * removes, or recolors authored data.
  */
 
 import assert from "node:assert/strict";
@@ -12,7 +13,9 @@ import { mkdirSync, writeFileSync } from "node:fs";
 
 const CDP_HTTP = "http://localhost:9222/json/list";
 const OUT_DIR = "docs/ui-audit/living-margin";
-const THEMES = ["light", "dark", "glass", "dark-glass"];
+// Finish on Paper so the following interaction captures begin from a fully
+// repainted opaque surface after the two backdrop-filter atmospheres.
+const THEMES = ["dark", "glass", "dark-glass", "light"];
 const THEME_NAMES = {
   light: "paper",
   dark: "ink",
@@ -99,18 +102,39 @@ async function screenshot(name, selector = null) {
 }
 
 async function pressEscape() {
-  await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape" });
-  await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Escape", code: "Escape" });
+  await pressKey("Escape", "Escape");
+}
+
+async function pressKey(key, code = key) {
+  await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key, code });
+  await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key, code });
   await sleep(140);
 }
 
+async function selectMarginTab(tab) {
+  const selector = `#margin-${tab}-tab`;
+  const changed = await evaluate(`(() => {
+    const button = document.querySelector(${JSON.stringify(selector)});
+    if (!button) return false;
+    button.click();
+    return true;
+  })()`);
+  if (!changed) throw new Error(`Margin tab not found: ${tab}`);
+  await waitFor(`document.querySelector(${JSON.stringify(selector)})?.getAttribute("aria-selected") === "true"`);
+  await waitFor(`!document.querySelector(${JSON.stringify(`#margin-${tab}-panel`)})?.hidden`);
+  await evaluate(`document.activeElement instanceof HTMLElement && document.activeElement.blur()`);
+  await sleep(180);
+}
+
 async function parkPointerOverReading() {
+  await evaluate(`document.activeElement instanceof HTMLElement && document.activeElement.blur()`);
   const point = await evaluate(`(() => {
     const rect = document.querySelector(".scripture-content")?.getBoundingClientRect();
     return rect ? { x: rect.left + rect.width * 0.55, y: rect.top + Math.min(160, rect.height * 0.3) } : null;
   })()`);
   if (!point) throw new Error("Reading canvas is not available for pointer parking");
   await cdp.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: point.x, y: point.y });
+  await waitFor(`!document.querySelector('[role="tooltip"]')`);
   await sleep(160);
 }
 
@@ -142,6 +166,8 @@ async function setTheme(theme) {
   if (!changed) throw new Error(`Theme option not found: ${theme}`);
   await waitFor(`document.querySelector(".app-shell")?.dataset.theme === ${JSON.stringify(theme)}`);
   await sleep(240);
+  await evaluate(`document.querySelectorAll(".toast-close").forEach((button) => button.click())`);
+  await waitFor(`document.querySelectorAll(".toast").length === 0`);
 }
 
 async function setTranslation(code) {
@@ -249,8 +275,18 @@ const chapterState = await evaluate(`(() => ({
   mode: document.querySelector(".margin-frame-mode")?.textContent?.trim(),
   view: document.querySelector("[data-margin-view]")?.getAttribute("data-margin-view"),
   done: Boolean(document.querySelector(".margin-frame-action")),
+  tabs: [...document.querySelectorAll(".margin-tab")].map((tab) => tab.textContent?.trim()),
+  activeTab: document.querySelector('.margin-tab[aria-selected="true"]')?.id,
 }))()`);
-assert.deepEqual(chapterState, { title: "Study", mode: "Chapter", view: "chapter", done: false });
+assert.equal(chapterState.title, "Study");
+assert.equal(chapterState.mode, "Chapter");
+assert.equal(chapterState.view, "chapter");
+assert.equal(chapterState.done, false);
+assert.equal(chapterState.tabs.length, 3);
+assert.match(chapterState.tabs[0] ?? "", /^Passage/);
+assert.match(chapterState.tabs[1] ?? "", /^Connections/);
+assert.match(chapterState.tabs[2] ?? "", /^Notes/);
+assert.equal(chapterState.activeTab, "margin-passage-tab");
 console.log("chapter", chapterState);
 await screenshot("paper-chapter-overview");
 await screenshot("paper-chapter-overview-margin", ".living-margin");
@@ -287,6 +323,8 @@ const selectedState = await evaluate(`(() => ({
   done: document.querySelector(".margin-frame-action")?.textContent?.trim(),
   quoteExpanded: document.querySelector(".margin-quote-toggle")?.getAttribute("aria-expanded"),
   swatches: document.querySelectorAll(".margin-hl-swatch").length,
+  activeTab: document.querySelector('.margin-tab[aria-selected="true"]')?.id,
+  activePanel: document.querySelector('.margin-tab-panel:not([hidden])')?.id,
 }))()`);
 assert.deepEqual(selectedState, {
   mode: "Selected",
@@ -295,12 +333,15 @@ assert.deepEqual(selectedState, {
   done: "Done",
   quoteExpanded: "false",
   swatches: 5,
+  activeTab: "margin-passage-tab",
+  activePanel: "margin-passage-panel",
 });
 console.log("selected", selectedState);
 await screenshot("paper-selected-context");
 
 for (const theme of THEMES) {
   await setTheme(theme);
+  await parkPointerOverReading();
   await evaluate(`document.querySelector(".living-margin").scrollTop = 0`);
   await sleep(160);
   await screenshot(`${THEME_NAMES[theme]}-selected-margin`, ".living-margin");
@@ -312,17 +353,35 @@ await waitFor(`document.querySelector(".margin-quote-toggle")?.getAttribute("ari
 await screenshot("paper-expanded-selection-margin", ".living-margin");
 await evaluate(`document.querySelector(".margin-quote-toggle")?.click()`);
 
+await selectMarginTab("passage");
+await evaluate(`document.querySelector("#margin-passage-tab")?.focus()`);
+await pressKey("ArrowRight", "ArrowRight");
+await waitFor(`document.activeElement?.id === "margin-connections-tab"`);
+await waitFor(`document.querySelector("#margin-connections-tab")?.getAttribute("aria-selected") === "true"`);
+await pressKey("ArrowRight", "ArrowRight");
+await waitFor(`document.activeElement?.id === "margin-notes-tab"`);
+await pressKey("Home", "Home");
+await waitFor(`document.activeElement?.id === "margin-passage-tab"`);
+await pressKey("End", "End");
+await waitFor(`document.activeElement?.id === "margin-notes-tab"`);
+console.log("margin tab keyboard path ok");
+
+await selectMarginTab("connections");
 await waitFor(`Boolean(document.querySelector(".crossref-section"))`);
+await evaluate(`document.querySelector(".living-margin").scrollTop = 0`);
+await screenshot("paper-connections-margin");
 const crossRefTruth = await evaluate(`(() => ({
   source: document.querySelector(".crossref-attribution span:first-child")?.textContent?.trim(),
   license: document.querySelector(".crossref-attribution span:last-child")?.textContent?.trim(),
   links: document.querySelectorAll(".crossref-row").length,
+  title: document.querySelector(".crossref-title")?.textContent?.trim(),
   context: document.querySelector(".crossref-context")?.textContent?.trim(),
 }))()`);
 assert.equal(crossRefTruth.source, "OpenBible Cross References");
 assert.match(crossRefTruth.license ?? "", /CC[- ]BY/i);
 assert.ok(crossRefTruth.links >= 1);
-assert.equal(crossRefTruth.context, "OpenBible·Across this passage");
+assert.equal(crossRefTruth.title, "OpenBible");
+assert.equal(crossRefTruth.context, "Cross References·Across this passage");
 console.log("cross references", crossRefTruth);
 await evaluate(`(() => {
   const margin = document.querySelector(".living-margin");
@@ -334,8 +393,11 @@ await evaluate(`(() => {
 await sleep(240);
 await screenshot("paper-openbible-connections-margin", ".living-margin");
 
+await selectMarginTab("notes");
 await waitFor(`!document.querySelector(".ai-insight-loading")`, 30_000);
 await waitFor(`Boolean(document.querySelector(".margin-disclosure-toggle"))`, 30_000);
+await evaluate(`document.querySelector(".living-margin").scrollTop = 0`);
+await screenshot("paper-notes-margin", ".living-margin");
 const disclosure = await evaluate(`(() => ({
   label: document.querySelector(".margin-disclosure-title")?.textContent?.trim(),
   detail: document.querySelector(".margin-disclosure-detail")?.textContent?.trim(),
@@ -356,8 +418,13 @@ await evaluate(`document.querySelector(".margin-frame-action")?.click()`);
 await waitFor(`document.querySelector(".living-margin")?.dataset.marginMode === "chapter"`);
 await waitFor(`document.activeElement?.id === "living-margin-title"`);
 assert.equal(await evaluate(`document.querySelectorAll('.verse-line[aria-pressed="true"]').length`), 0);
+assert.equal(
+  await evaluate(`document.querySelector('.margin-tab[aria-selected="true"]')?.id`),
+  "margin-notes-tab",
+);
 await screenshot("paper-done-focus-margin", ".living-margin");
 
+await selectMarginTab("passage");
 await navigatePassage(leavePassage ?? original.passage);
 await setTranslation(leavePackage ?? original.packageId);
 await setMargin(original.margin);

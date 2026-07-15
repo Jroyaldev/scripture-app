@@ -69,12 +69,17 @@ The picker is named **Reading atmosphere**, not Theme. Its compact explanation i
 ## Living Margin contract
 
 - The panel is one labelled `Study` frame with a persistent header and three truthful modes: `Chapter` at the top, `In view` while reading, and `Selected` after an explicit verse or range choice.
+- Scope and lens are independent. `Chapter | In view | Selected` follows the reading context automatically; `Passage | Connections | Notes` is the reader's stable choice and does not reset merely because the reference changes.
+- Passage owns overview, original-language study, word detail, and highlight tools. Connections owns OpenBible relationships and a separately named local note-derived section. Notes owns capture, anchored notes, passage insight, related notes, themes, and grounded claims.
+- Reference and bounded quotation stay above the tabs so all three lenses retain context. Each lens restores its own scroll position; changing scope clears stale scroll positions while preserving the chosen lens.
+- The lens row is a real roving tablist with labelled tabpanels, Arrow-key movement, Home/End, one tab stop, and a restrained current mark. Every lens has its own truthful empty state.
 - Chapter overview is contextual, not a generic empty card. It may summarize real highlights, notes, connections, and note-derived themes, then offers one concise next step.
 - Scrolling Scripture releases an old language-study lock and follows the reading eye-line. Pointer use inside the margin pauses that movement without allowing a stale hover flag to freeze the panel afterward.
 - Selected context keeps the passage reference and a bounded quotation first. Long ranges disclose the complete quotation on request. `Done` clears selection and returns focus to the persistent heading.
 - Language remains the primary study surface. OpenBible connections, local notes, passage insight, related notes, themes, grounded claims, and note-derived connections appear only when real data exists and keep their distinct source/scope labels.
 - Passage-scoped semantic content never falls back to a chapter-wide result. Secondary local-library material collapses under one disclosure so evidence remains available without dominating the daily reading path.
 - Note previews are plain readable articles unless they have a real action. Counts are tabular and subordinate; hairlines and spacing create hierarchy instead of colored borders, card shadows, or permanent category chrome.
+- OpenBible Cross References and personalized connections from notes never share an unlabeled result list. Corpus license/provenance stays adjacent to public results; local-library evidence stays explicitly local.
 
 ## Shared controls and floating layers contract
 
