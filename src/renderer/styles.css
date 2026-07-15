@@ -9,6 +9,7 @@
   --bg-sidebar: #EFE7D8;
   --bg-reading: #FAF6EC;
   --bg-topbar: rgba(250, 246, 236, 0.96);
+  --bg-float: #FAF6EC;
   --hl-yellow: rgba(245, 213, 115, 0.28);
   --hl-green: rgba(110, 195, 120, 0.22);
   --hl-blue: rgba(110, 165, 225, 0.22);
@@ -59,6 +60,7 @@
   --text-verse-number: #776C5D;
   --text-link: #8B5D30;
   --text-link-hover: #6F4725;
+  --text-on-accent: #FFFDF8;
 
   --border-subtle: #E4DAC9;
   --border-medium: #D3C5AF;
@@ -127,6 +129,10 @@
   --shadow-subtle: 0 1px 2px rgba(56, 43, 27, 0.05);
   --shadow-medium: 0 8px 24px rgba(56, 43, 27, 0.07);
   --shadow-elevated: 0 18px 48px rgba(48, 35, 20, 0.13);
+  --shadow-topbar: 0 8px 20px rgba(45, 35, 23, 0.055);
+  --shadow-sidecar: -12px 0 36px rgba(48, 35, 20, 0.10);
+  --scrim-subtle: rgba(18, 20, 24, 0.24);
+  --scrim-strong: rgba(21, 17, 13, 0.48);
   --transition-fast: 150ms ease;
   --transition-normal: 150ms ease;
   --transition-slow: 240ms ease;
@@ -165,11 +171,8 @@
 }
 
 /*
- * Dark theme overrides. Applied to the top-level .app-shell element by a
- * later phase (not wired up yet). Overrides bg/text/border/highlight-wash
- * vars; accent-* and other tokens are unaffected here (accent dark variants
- * are applied per-accent by a later phase, e.g. via an .accent-blue.dark
- * combination selector).
+ * Ink overrides. The top-level .app-shell applies these variables to both
+ * the main workspace and every portal-carried floating layer.
  */
 .dark {
   --bg-primary: #0D0B09;
@@ -179,6 +182,7 @@
   --bg-sidebar: #12100D;
   --bg-reading: #15120F;
   --bg-topbar: rgba(21, 18, 15, 0.96);
+  --bg-float: #181511;
 
   --text-primary: #F3EDE0;
   --text-secondary: #C9BCAA;
@@ -190,6 +194,7 @@
   --border-subtle: #29241E;
   --border-medium: #3A322A;
   --border-strong: #55483B;
+  --text-on-accent: #FFFDF8;
 
   --accent-current: #C6935C;
   --accent-user: #C6935C;
@@ -198,6 +203,10 @@
   --study-gold-focus: rgba(198, 147, 92, 0.42);
   --study-hover-surface: #29241E;
   --study-hover-line: rgba(243, 237, 224, 0.16);
+  --shadow-topbar: 0 8px 24px rgba(0, 0, 0, 0.20);
+  --shadow-sidecar: -12px 0 42px rgba(0, 0, 0, 0.30);
+  --scrim-subtle: rgba(0, 0, 0, 0.45);
+  --scrim-strong: rgba(0, 0, 0, 0.66);
 
   /* Dark yellow is a muted antique gold rather than the brighter ochre used
      on paper. Lower chroma and alpha keep it as quiet as the other washes. */
@@ -265,6 +274,7 @@
   --bg-sidebar: rgba(246, 239, 228, 0.54);
   --bg-reading: rgba(255, 252, 246, 0.58);
   --bg-topbar: rgba(255, 252, 246, 0.48);
+  --bg-float: rgba(255, 252, 246, 0.94);
   --border-subtle: rgba(76, 61, 42, 0.10);
   --border-medium: rgba(76, 61, 42, 0.17);
   --border-strong: rgba(76, 61, 42, 0.28);
@@ -283,6 +293,7 @@
   --bg-sidebar: rgba(26, 22, 18, 0.57);
   --bg-reading: rgba(29, 24, 20, 0.56);
   --bg-topbar: rgba(29, 24, 20, 0.48);
+  --bg-float: rgba(31, 26, 22, 0.95);
   --border-subtle: rgba(245, 237, 224, 0.09);
   --border-medium: rgba(245, 237, 224, 0.15);
   --border-strong: rgba(245, 237, 224, 0.24);
@@ -415,12 +426,12 @@ html, body, #root {
    more opaque than the canvas anyway, so keep it crisp above glass. */
 .theme-glass .popover-panel,
 .popover-panel.theme-glass {
-  background: rgba(255, 252, 246, 0.94);
+  background: var(--bg-float);
 }
 
 .theme-dark-glass .popover-panel,
 .popover-panel.theme-dark-glass {
-  background: rgba(31, 26, 22, 0.95);
+  background: var(--bg-float);
 }
 
 .sidebar {
@@ -511,8 +522,9 @@ html, body, #root {
 .brand-mark {
   width: 30px;
   height: 30px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: var(--accent-current);
+  color: var(--text-on-accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -654,7 +666,7 @@ html, body, #root {
 }
 
 .scripture-topbar.scrolled {
-  box-shadow: 0 8px 20px rgba(45, 35, 23, 0.055);
+  box-shadow: var(--shadow-topbar);
 }
 
 .topbar-navigation,
@@ -693,7 +705,7 @@ html, body, #root {
   height: 36px;
   padding: 2px;
   border: 1px solid var(--border-subtle);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
 }
 
@@ -710,7 +722,7 @@ html, body, #root {
   color: var(--text-primary);
   cursor: pointer;
   padding: 0 9px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   min-width: 0;
   transition: background var(--transition-fast), color var(--transition-fast);
 }
@@ -801,7 +813,7 @@ html, body, #root {
 
 .chapter-grid-num.active {
   background: var(--accent-current);
-  color: #fff;
+  color: var(--text-on-accent);
 }
 
 .popover-search {
@@ -897,7 +909,7 @@ html, body, #root {
   font-size: 12px;
   font-weight: 600;
   padding: 0 9px;
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: background var(--transition-fast), color var(--transition-fast);
 }
@@ -953,7 +965,7 @@ html, body, #root {
 
 .version-picker-item.active .version-picker-code {
   background: var(--accent-current);
-  color: #fff;
+  color: var(--text-on-accent);
 }
 
 .version-picker-name {
@@ -1066,7 +1078,7 @@ html, body, #root {
   flex-shrink: 1;
   min-width: 36px;
   border: 1px solid var(--border-subtle);
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--bg-surface) 46%, transparent);
   color: var(--text-tertiary);
   transition: width var(--transition-normal), border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
@@ -1221,7 +1233,7 @@ html, body, #root {
   z-index: 1;
   cursor: pointer;
   padding: 3px 10px 4px 0;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   transition:
     background-color var(--transition-fast),
     box-shadow var(--transition-fast);
@@ -1708,61 +1720,19 @@ html, body, #root {
   overflow: hidden;
 }
 
-.margin-card .card-provenance {
-  font-size: var(--fs-xs);
-  font-weight: var(--fw-medium);
-  padding: 1px 6px;
-  border-radius: 3px;
-  display: inline-block;
-  margin-top: var(--sp-xs);
-}
-
-.provenance-user { background: rgba(61, 107, 181, 0.10); color: var(--accent-user); }
-.provenance-source { background: rgba(90, 138, 90, 0.10); color: var(--accent-source); }
-.provenance-xref { background: rgba(122, 122, 122, 0.10); color: var(--accent-xref); }
-.provenance-ai { background: rgba(148, 100, 180, 0.10); color: #9464b4; }
-
-/* B3.5 why-provenance: every AI-surfaced card explains itself deterministically. */
-.card-reasons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-xs);
-  margin-top: var(--sp-xs);
-}
-
-.reason-chip {
-  font-size: 0.625rem;
-  font-weight: var(--fw-medium);
-  padding: 1px 6px;
-  border-radius: 3px;
-  display: inline-block;
-  background: rgba(122, 122, 122, 0.08);
-  color: var(--text-tertiary);
-}
-
-.reason-chip.reason-reference {
-  background: rgba(90, 138, 90, 0.10);
-  color: var(--accent-source);
-}
-
 .claim-evidence-quote {
   font-size: var(--fs-xs);
   color: var(--text-tertiary);
   font-style: italic;
   margin-top: var(--sp-xs);
   padding-left: var(--sp-sm);
-  border-left: 2px solid rgba(148, 100, 180, 0.25);
+  border-left: 2px solid color-mix(in srgb, var(--accent-ai) 28%, transparent);
 }
 
 .margin-semantic-empty {
   font-size: var(--fs-xs);
   color: var(--text-tertiary);
   padding: var(--sp-xs) 0;
-}
-
-.reason-chip.reason-theme {
-  background: rgba(61, 107, 181, 0.08);
-  color: var(--accent-user);
 }
 
 /* --- Capture echo: source suggestions remain subordinate to the saved note --- */
@@ -2988,7 +2958,7 @@ html, body, #root {
   padding: 5px;
   background: var(--bg-surface);
   border: 1px solid var(--border-medium);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-elevated);
   z-index: 100;
   transform: translate(-50%, -100%);
@@ -3512,9 +3482,9 @@ html, body, #root {
   width: 32px;
   height: 32px;
   margin: 0 auto 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: var(--accent-current);
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent-current) 22%, transparent);
+  color: var(--text-on-accent);
 }
 
 .welcome-kicker {
@@ -3986,7 +3956,7 @@ html, body, #root {
 }
 
 .floating-dialog-scrim {
-  background: rgba(18, 20, 24, 0.24);
+  background: var(--scrim-subtle);
   backdrop-filter: blur(2px);
 }
 
@@ -3995,6 +3965,10 @@ html, body, #root {
   color: var(--text-primary);
   border: 1px solid var(--border-subtle);
   box-shadow: var(--shadow-elevated);
+}
+
+.floating-material-host {
+  display: contents;
 }
 
 /* --- Tooltip primitive --- */
@@ -4050,7 +4024,7 @@ html, body, #root {
 .popover-panel {
   position: fixed;
   z-index: 901;
-  background: var(--bg-surface);
+  background: var(--bg-float);
   color: var(--text-primary);
   max-height: calc(100vh - 16px);
   border: 1px solid color-mix(in srgb, var(--border-medium) 72%, transparent);
@@ -4806,7 +4780,7 @@ html, body, #root {
   margin: 0 5px 8px 0;
   padding: 4px 5px 5px;
   border: none;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   background: transparent;
   cursor: pointer;
   font-family: var(--font-ui);
@@ -4815,11 +4789,7 @@ html, body, #root {
 }
 
 .lang-word:hover {
-  background: rgba(0, 0, 0, 0.035);
-}
-
-.dark .lang-word:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: color-mix(in srgb, var(--text-primary) 5%, transparent);
 }
 
 .lang-word.is-active {
@@ -4991,7 +4961,7 @@ html, body, #root {
 .lang-strong-peek {
   margin: 0 0 12px;
   padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
   background: var(--bg-secondary);
 }
@@ -5268,7 +5238,7 @@ html, body, #root {
 .lang-step-overlay {
   margin: 8px 0 10px;
   padding: 10px 10px 8px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--bg-secondary) 85%, var(--accent-current) 4%);
   border: 1px solid var(--border-subtle);
 }
@@ -5352,7 +5322,7 @@ html, body, #root {
 .lang-name-card {
   margin: 10px 0 12px;
   padding: 12px 12px 10px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
   background: var(--bg-secondary);
 }
@@ -5508,7 +5478,7 @@ html, body, #root {
 .lang-orbit {
   margin: 12px 0 10px;
   padding: 10px 8px 8px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
   background:
     radial-gradient(ellipse 80% 70% at 20% 0%, color-mix(in srgb, var(--accent-current) 8%, transparent), transparent 55%),
@@ -5610,7 +5580,7 @@ html, body, #root {
   text-align: left;
   cursor: pointer;
   font-family: var(--font-ui);
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   transition: background var(--transition-fast);
 }
 
@@ -5671,7 +5641,7 @@ html, body, #root {
   margin: 12px 0 10px;
   overflow: hidden;
   border: 1px solid var(--border-subtle);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background:
     radial-gradient(
       ellipse 80% 70% at 20% 0%,
@@ -5721,7 +5691,7 @@ button.lang-sense-branch-row {
   height: 22px;
   place-items: center;
   border: 1px solid color-mix(in srgb, var(--sense-color) 38%, var(--border-subtle));
-  border-radius: 7px;
+  border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--sense-color) 14%, transparent);
   color: color-mix(in srgb, var(--sense-color) 70%, var(--text-primary));
   font-family: var(--font-mono);
@@ -5857,7 +5827,7 @@ button.lang-sense-branch-row {
   align-items: baseline;
   min-height: 25px;
   padding: 4px 5px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   background: transparent;
   transition: background var(--transition-fast);
 }
@@ -5870,7 +5840,7 @@ button.lang-sense-branch-row:hover {
   align-self: center;
   padding: 1px 5px;
   border: 1px solid var(--border-subtle);
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--bg-surface) 55%, transparent);
   color: var(--text-tertiary);
   font-size: 9px;
@@ -5951,7 +5921,7 @@ button.lang-sense-branch-row:hover {
   border: 1px solid var(--border-subtle);
   background: var(--bg-secondary);
   padding: 5px 10px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-family: var(--font-ui);
   font-size: 11.5px;
   font-weight: 600;
@@ -5991,13 +5961,13 @@ button.lang-sense-branch-row:hover {
 .structure-modal-scrim {
   position: absolute;
   inset: 0;
-  background: color-mix(in srgb, #0c0e12 55%, transparent);
+  background: var(--scrim-strong);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
 }
 
 .dark .structure-modal-scrim {
-  background: color-mix(in srgb, #000 72%, transparent);
+  background: var(--scrim-strong);
 }
 
 .structure-modal-panel {
@@ -6009,8 +5979,8 @@ button.lang-sense-branch-row:hover {
   max-height: calc(100vh - 40px);
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: 16px;
-  box-shadow: 0 18px 56px color-mix(in srgb, #000 24%, transparent);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-elevated);
   overflow: hidden;
   animation: structure-modal-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -6099,7 +6069,7 @@ button.lang-sense-branch-row:hover {
   width: 36px;
   height: 36px;
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
@@ -6163,7 +6133,7 @@ button.lang-sense-branch-row:hover {
   font-size: 13px;
   font-weight: 600;
   padding: 8px 18px;
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
 }
 
@@ -6250,7 +6220,7 @@ button.lang-sense-branch-row:hover {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
   background: var(--bg-secondary);
   overflow: hidden;
@@ -6370,7 +6340,7 @@ button.lang-sense-branch-row:hover {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
   background: var(--bg-secondary);
   overflow: hidden;
@@ -6394,7 +6364,7 @@ button.lang-sense-branch-row:hover {
 }
 
 .lang-flow-clause {
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
   background: var(--bg-surface);
   padding: 10px 12px 12px;
@@ -6440,7 +6410,7 @@ button.lang-sense-branch-row:hover {
   min-width: 72px;
   max-width: 200px;
   padding: 8px 11px 9px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
   background: var(--bg-secondary);
   border-left: 3.5px solid var(--text-tertiary);
@@ -6599,7 +6569,7 @@ button.lang-sense-branch-row:hover {
   padding: 0;
   max-height: 280px;
   overflow-y: auto;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
   background: var(--bg-surface);
 }
@@ -6718,7 +6688,7 @@ button.lang-sense-branch-row:hover {
   flex-wrap: wrap;
   gap: 5px;
   padding: 8px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
   background: var(--bg-surface);
   max-height: 200px;
@@ -6731,7 +6701,7 @@ button.lang-sense-branch-row:hover {
   align-items: flex-start;
   gap: 1px;
   padding: 4px 8px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border-subtle);
   background: var(--bg-secondary);
   max-width: 100%;
@@ -6861,7 +6831,7 @@ button.lang-sense-branch-row:hover {
 .lang-structure-source {
   flex: 0 0 auto;
   border: 1px solid var(--border-subtle);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--bg-secondary) 68%, var(--bg-surface));
   overflow: hidden;
 }
@@ -6981,7 +6951,7 @@ button.lang-sense-branch-row:hover {
   margin: -2px 0 10px;
   padding: 4px;
   border: 1px solid var(--border-subtle);
-  border-radius: 11px;
+  border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--bg-secondary) 72%, var(--bg-surface));
 }
 
@@ -6994,7 +6964,7 @@ button.lang-sense-branch-row:hover {
   gap: 3px;
   padding: 6px 9px;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-secondary);
   font-family: var(--font-ui);
@@ -7105,7 +7075,7 @@ button.lang-sense-branch-row:hover {
   min-height: 0;
   max-height: min(540px, calc(100vh - 300px));
   border: 1px solid var(--border-subtle);
-  border-radius: 13px;
+  border-radius: var(--radius-md);
   background: var(--bg-surface);
   overflow: hidden;
 }
@@ -7196,7 +7166,7 @@ button.lang-sense-branch-row:hover {
   position: relative;
   padding: 12px 14px 14px;
   border: 0;
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   background: transparent;
   box-shadow: none;
 }
@@ -7250,7 +7220,7 @@ button.lang-sense-branch-row:hover {
   gap: 3px;
   padding: 9px 11px 10px;
   border: 1px solid var(--border-subtle);
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--bg-secondary) 70%, var(--bg-surface));
   text-align: start;
 }
@@ -7400,7 +7370,7 @@ button.lang-flow-group {
   flex: 0 0 auto;
   padding: 4px 8px;
   border: 1px solid transparent;
-  border-radius: 7px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-tertiary);
   font-family: var(--font-ui);
@@ -7432,14 +7402,14 @@ button.lang-flow-group {
   gap: 2px;
   padding: 2px;
   border: 1px solid var(--border-subtle);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--bg-secondary);
 }
 
 .lang-phrase-detail-views button {
   padding: 4px 8px;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-tertiary);
   font-family: var(--font-ui);
@@ -7534,7 +7504,7 @@ button.lang-flow-group {
   gap: 3px;
   padding: 8px 10px;
   border: 1px solid var(--border-subtle);
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   background: var(--bg-surface);
   color: inherit;
   font: inherit;
@@ -7738,7 +7708,7 @@ button.lang-phrase-diagram-node:focus-visible {
   box-sizing: border-box;
   padding: 7px 10px;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   direction: ltr;
 }
 
@@ -7858,7 +7828,7 @@ button.lang-phrase-diagram-node:focus-visible {
 .lang-phrase-tree-more button {
   padding: 3px 7px;
   border: 1px solid var(--border-subtle);
-  border-radius: 7px;
+  border-radius: var(--radius-sm);
   background: var(--bg-secondary);
   color: var(--text-secondary);
   font-family: var(--font-ui);
@@ -8260,7 +8230,7 @@ button.lang-phrase-diagram-node:focus-visible {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #9464b4;
+  color: var(--accent-ai);
   font-size: var(--fs-xs);
   font-weight: var(--fw-semibold);
   margin-bottom: var(--sp-sm);
@@ -8323,9 +8293,9 @@ button.lang-phrase-diagram-node:focus-visible {
 .footer-avatar {
   width: 30px;
   height: 30px;
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   background: var(--accent-current);
-  color: #fff;
+  color: var(--text-on-accent);
   font-size: 12px;
   font-weight: 600;
   display: flex;
@@ -8339,8 +8309,8 @@ button.lang-phrase-diagram-node:focus-visible {
 }
 
 @keyframes footer-avatar-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(192, 160, 48, 0.45); }
-  50% { box-shadow: 0 0 0 4px rgba(192, 160, 48, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--study-gold) 45%, transparent); }
+  50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--study-gold) 0%, transparent); }
 }
 
 .footer-lib-text {
@@ -8498,6 +8468,24 @@ button.lang-phrase-diagram-node:focus-visible {
 .library-popover-settings:hover {
   background: var(--study-hover-surface);
   color: var(--text-primary);
+}
+
+.library-popover-settings:disabled {
+  cursor: default;
+  opacity: 0.58;
+}
+
+.library-popover-error,
+.margin-inline-error {
+  margin-top: 8px;
+  color: var(--error);
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+
+.library-popover-error {
+  padding: 8px 9px 0;
+  border-top: 1px solid color-mix(in srgb, var(--error) 18%, var(--border-subtle));
 }
 
 /* --- Settings page --- */
@@ -8735,7 +8723,7 @@ button.lang-phrase-diagram-node:focus-visible {
   place-items: center;
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: var(--text-primary);
   color: var(--bg-surface);
 }
@@ -9260,15 +9248,15 @@ button.lang-phrase-diagram-node:focus-visible {
   width: 76px;
   height: 50px;
   overflow: hidden;
-  border: 1px solid rgba(24, 21, 17, 0.16);
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(24, 21, 17, 0.10);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-subtle);
 }
 
 .theme-choice-grid.compact .theme-preview {
   width: 48px;
   height: 32px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
 
 .theme-preview-light { background: #F3EDE0; }
@@ -9458,12 +9446,8 @@ textarea:focus-visible,
 /* Anchored pickers remain lightweight. Only explicitly modal popovers dim the
    reading surface; ordinary menus use the transparent outside-click layer. */
 .popover-scrim.is-soft {
-  background: rgba(20, 22, 26, 0.18);
+  background: color-mix(in srgb, var(--scrim-subtle) 75%, transparent);
   backdrop-filter: blur(1px);
-}
-.dark .popover-scrim.is-soft,
-.popover-scrim.is-soft.dark {
-  background: rgba(0, 0, 0, 0.35);
 }
 
 /* --- Focus mode --- */
@@ -9590,7 +9574,7 @@ textarea:focus-visible,
   font-size: 12px;
   font-weight: var(--fw-medium);
   padding: 6px 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
 }
@@ -9676,8 +9660,8 @@ textarea:focus-visible,
   padding: 6px 8px;
   background: var(--bg-surface);
   border: 1px solid var(--border-medium);
-  border-radius: 12px;
-  box-shadow: var(--shadow-elevated), 0 8px 24px rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-elevated);
   z-index: 100;
 }
 .hl-toolbar-floating {
@@ -10135,7 +10119,7 @@ textarea:focus-visible,
   font-weight: var(--fw-medium);
   cursor: pointer;
   padding: 4px 6px 4px 2px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   min-width: 0;
 }
 
@@ -10189,7 +10173,7 @@ textarea:focus-visible,
   border: none;
   padding: 0;
   margin: 0;
-  background: rgba(18, 20, 24, 0.24);
+  background: var(--scrim-subtle);
   backdrop-filter: blur(2px);
   cursor: pointer;
   pointer-events: auto;
@@ -10197,7 +10181,7 @@ textarea:focus-visible,
 }
 
 .dark .note-capture-scrim {
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--scrim-subtle);
 }
 
 @keyframes noteCaptureScrimIn {
@@ -10211,7 +10195,7 @@ textarea:focus-visible,
   height: 100%;
   background: var(--bg-surface);
   border-left: 1px solid var(--border-subtle);
-  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-sidecar);
   display: flex;
   flex-direction: column;
   pointer-events: auto;
@@ -10225,7 +10209,7 @@ textarea:focus-visible,
 }
 
 .dark .note-capture-panel {
-  box-shadow: -8px 0 40px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--shadow-sidecar);
 }
 
 .note-capture-header {
@@ -10620,13 +10604,13 @@ textarea:focus-visible,
 }
 
 .structure-modal-scrim {
-  background: color-mix(in srgb, #15110d 48%, transparent);
+  background: var(--scrim-strong);
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
 }
 
 .structure-modal-root.dark .structure-modal-scrim {
-  background: color-mix(in srgb, #000 66%, transparent);
+  background: var(--scrim-strong);
 }
 
 .structure-modal-panel {
@@ -10794,7 +10778,7 @@ button.lang-phrase-diagram-node:focus-visible,
   gap: 7px;
   padding: 5px 7px;
   border-color: var(--border-medium);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: var(--bg-surface);
   box-shadow: var(--shadow-medium);
   backdrop-filter: blur(14px) saturate(var(--material-saturate));
@@ -10826,13 +10810,13 @@ button.lang-phrase-diagram-node:focus-visible,
   width: min(440px, 100vw);
   border-left-color: var(--border-medium);
   background: var(--bg-surface);
-  box-shadow: -12px 0 36px color-mix(in srgb, #000 10%, transparent);
+  box-shadow: var(--shadow-sidecar);
   backdrop-filter: blur(var(--material-blur)) saturate(var(--material-saturate));
   -webkit-backdrop-filter: blur(var(--material-blur)) saturate(var(--material-saturate));
 }
 
 .dark .note-capture-panel {
-  box-shadow: -12px 0 42px rgba(0, 0, 0, 0.30);
+  box-shadow: var(--shadow-sidecar);
 }
 
 .note-capture-header {

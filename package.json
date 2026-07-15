@@ -54,7 +54,8 @@
     "qa:controls": "node scripts/qa-shared-controls-tour.mjs",
     "qa:study-overlays": "node scripts/qa-study-overlays-tour.mjs",
     "qa:setup": "node scripts/qa-setup-tour.mjs",
-    "qa:notebook": "node scripts/qa-note-workspace-tour.mjs"
+    "qa:notebook": "node scripts/qa-note-workspace-tour.mjs",
+    "qa:desktop": "node scripts/qa-desktop-regression.mjs"
   },
   "main": "dist/electron/main.cjs",
   "bin": {

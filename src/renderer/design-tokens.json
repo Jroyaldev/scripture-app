@@ -1,54 +1,52 @@
 {
   "color": {
     "bg": {
-      "primary": "#FBFBFA",
-      "secondary": "#F4F4F2",
-      "surface": "#FFFFFF",
-      "canvas": "#F8F8F6",
-      "sidebar": "#F2F2F0",
+      "primary": "#F3EDE0",
+      "secondary": "#EEE6D8",
+      "surface": "#FAF6EC",
+      "canvas": "#F6F0E5",
+      "sidebar": "#EFE7D8",
+      "reading": "#FAF6EC",
+      "topbar": "rgba(250, 246, 236, 0.96)",
       "highlight-yellow": "rgba(245, 213, 115, 0.28)",
       "highlight-green": "rgba(110, 195, 120, 0.22)",
       "highlight-blue": "rgba(110, 165, 225, 0.22)",
       "highlight-pink": "rgba(220, 140, 165, 0.22)",
       "highlight-purple": "rgba(165, 140, 215, 0.22)",
       "highlight-wash": {
-        "yellow-a": "rgba(245, 190, 60, 0.42)",
-        "yellow-b": "rgba(245, 190, 60, 0.22)",
-        "green-a": "rgba(110, 195, 120, 0.4)",
-        "green-b": "rgba(110, 195, 120, 0.2)",
-        "blue-a": "rgba(110, 165, 225, 0.4)",
-        "blue-b": "rgba(110, 165, 225, 0.2)",
-        "pink-a": "rgba(225, 140, 165, 0.42)",
-        "pink-b": "rgba(225, 140, 165, 0.22)",
-        "purple-a": "rgba(175, 140, 220, 0.42)",
-        "purple-b": "rgba(175, 140, 220, 0.22)"
+        "yellow-a": "rgba(246, 190, 54, 0.30)",
+        "yellow-b": "rgba(246, 190, 54, 0.22)",
+        "green-a": "rgba(107, 187, 119, 0.27)",
+        "green-b": "rgba(107, 187, 119, 0.19)",
+        "blue-a": "rgba(103, 155, 222, 0.27)",
+        "blue-b": "rgba(103, 155, 222, 0.19)",
+        "pink-a": "rgba(218, 128, 160, 0.28)",
+        "pink-b": "rgba(218, 128, 160, 0.20)",
+        "purple-a": "rgba(164, 130, 214, 0.27)",
+        "purple-b": "rgba(164, 130, 214, 0.19)"
       }
     },
     "text": {
-      "primary": "#1A1A1A",
-      "secondary": "#5C5C5C",
-      "tertiary": "#6E6E6E",
-      "verse-number": "#737373",
-      "link": "#3D6BB5",
-      "link-hover": "#2A4F8C"
+      "primary": "#181511",
+      "secondary": "#4D463C",
+      "tertiary": "#6B6254",
+      "verse-number": "#776C5D",
+      "link": "#8B5D30",
+      "link-hover": "#6F4725",
+      "on-accent": "#FFFDF8"
     },
     "border": {
-      "subtle": "#ECECEA",
-      "medium": "#D8D8D5",
-      "strong": "#B0B0AC"
+      "subtle": "#E4DAC9",
+      "medium": "#D3C5AF",
+      "strong": "#B7A78E"
     },
     "accent": {
-      "warm": "#4A4A4A",
-      "warm-light": "#6B6B6B",
-      "user": "#3D6BB5",
+      "warm": "#97683A",
+      "warm-light": "#B8854A",
+      "user": "#97683A",
       "source": "#5A8A5A",
       "ai": "#5A6B7F",
-      "cross-ref": "#7A7A7A",
-      "options": {
-        "blue": { "light": "#3D6BB5", "dark": "#6C9BE0" },
-        "green": { "light": "#5A8A5A", "dark": "#7FB885" },
-        "plum": { "light": "#7A5FB0", "dark": "#A48CD1" }
-      }
+      "cross-ref": "#7A7A7A"
     },
     "status": {
       "healthy": "#4A9A4A",
@@ -57,38 +55,46 @@
     },
     "dark": {
       "bg": {
-        "primary": "#1E1F22",
-        "secondary": "#26282C",
-        "surface": "#2C2E33",
-        "canvas": "#1A1B1E",
-        "sidebar": "#202124"
+        "primary": "#0D0B09",
+        "secondary": "#15120F",
+        "surface": "#181511",
+        "canvas": "#110F0D",
+        "sidebar": "#12100D",
+        "reading": "#15120F",
+        "topbar": "rgba(21, 18, 15, 0.96)"
       },
       "text": {
-        "primary": "#E8E6E1",
-        "secondary": "#9B9B94",
-        "tertiary": "#7A7A72",
-        "verse-number": "#5C5D55",
-        "link": "#7AA2E8",
-        "link-hover": "#9CBBEF"
+        "primary": "#F3EDE0",
+        "secondary": "#C9BCAA",
+        "tertiary": "#9C8F7D",
+        "verse-number": "#A89B89",
+        "link": "#D2A36E",
+        "link-hover": "#E2BC8E"
       },
       "border": {
-        "subtle": "#303136",
-        "medium": "#3A3B40",
-        "strong": "#4A4B50"
+        "subtle": "#29241E",
+        "medium": "#3A322A",
+        "strong": "#55483B"
       },
       "highlight-wash": {
-        "yellow-a": "rgba(245, 190, 60, 0.28)",
-        "yellow-b": "rgba(245, 190, 60, 0.14)",
-        "green-a": "rgba(110, 195, 120, 0.26)",
-        "green-b": "rgba(110, 195, 120, 0.13)",
-        "blue-a": "rgba(110, 165, 225, 0.26)",
-        "blue-b": "rgba(110, 165, 225, 0.13)",
-        "pink-a": "rgba(225, 140, 165, 0.26)",
-        "pink-b": "rgba(225, 140, 165, 0.13)",
-        "purple-a": "rgba(175, 140, 220, 0.26)",
-        "purple-b": "rgba(175, 140, 220, 0.13)"
+        "yellow-a": "rgba(211, 178, 105, 0.18)",
+        "yellow-b": "rgba(211, 178, 105, 0.11)",
+        "green-a": "rgba(107, 187, 119, 0.20)",
+        "green-b": "rgba(107, 187, 119, 0.13)",
+        "blue-a": "rgba(103, 155, 222, 0.20)",
+        "blue-b": "rgba(103, 155, 222, 0.13)",
+        "pink-a": "rgba(218, 128, 160, 0.21)",
+        "pink-b": "rgba(218, 128, 160, 0.13)",
+        "purple-a": "rgba(164, 130, 214, 0.20)",
+        "purple-b": "rgba(164, 130, 214, 0.13)"
       }
     }
+  },
+  "atmospheres": {
+    "light": { "name": "Paper", "mode": "solid", "asset": null },
+    "dark": { "name": "Ink", "mode": "solid", "asset": null },
+    "glass": { "name": "Glass", "mode": "glass", "asset": "assets/glass-light.png" },
+    "dark-glass": { "name": "Candlelight", "mode": "glass", "asset": "assets/glass-dark.png" }
   },
   "typography": {
     "font-family": {
@@ -131,25 +137,26 @@
     "reading-max-width": "680px"
   },
   "radius": {
-    "sm": "3px",
-    "md": "5px",
-    "lg": "8px"
+    "sm": "6px",
+    "md": "12px",
+    "lg": "20px"
   },
   "shadow": {
-    "subtle": "0 1px 2px rgba(0, 0, 0, 0.04)",
-    "medium": "0 2px 6px rgba(0, 0, 0, 0.06)",
-    "elevated": "0 4px 12px rgba(0, 0, 0, 0.08)"
+    "subtle": "0 1px 2px rgba(56, 43, 27, 0.05)",
+    "medium": "0 8px 24px rgba(56, 43, 27, 0.07)",
+    "elevated": "0 18px 48px rgba(48, 35, 20, 0.13)"
   },
   "transition": {
-    "fast": "120ms ease",
-    "normal": "200ms ease",
-    "slow": "300ms ease"
+    "fast": "150ms ease",
+    "normal": "150ms ease",
+    "slow": "240ms ease"
   },
   "layout": {
     "scriptureColumnMax": "680px",
     "marginWidth": "340px",
-    "sidebarWidth": "220px",
-    "headerHeight": "48px"
+    "sidebarWidth": "228px",
+    "sidebarRailWidth": "64px",
+    "headerHeight": "58px"
   },
   "density": {
     "compact": {

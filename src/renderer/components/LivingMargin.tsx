@@ -34,7 +34,7 @@ interface Props {
   pinnedRange?: PinnedRange | null;
   /** The verse nearest the reading eye-line, when nothing is pinned. */
   nearVerse?: number | null;
-  onPinClaim?: (claimId: string, assertion: string) => void;
+  onPinClaim?: (claimId: string, assertion: string) => Promise<boolean> | boolean;
   /** Assign a highlight color to the pinned range. */
   onSetHighlightColor?: (color: string) => void;
   /** Remove every complete visual highlight touched by the pinned range. */
@@ -312,6 +312,8 @@ export function LivingMargin({
 }: Props): React.JSX.Element {
   const displayBook = bookNames[book]?.[0] ?? book;
   const [pinnedClaims, setPinnedClaims] = useState<Set<string>>(new Set());
+  const [pendingClaimId, setPendingClaimId] = useState<string | null>(null);
+  const [claimPinError, setClaimPinError] = useState<{ id: string; message: string } | null>(null);
   const frameTitleRef = useRef<HTMLHeadingElement>(null);
 
   // Session-only cache of AI insight results for the pinned range, keyed by
@@ -320,11 +322,20 @@ export function LivingMargin({
   const aiCacheRef = useRef<Map<string, SemanticMarginResult | null>>(new Map());
   const [aiCacheVersion, setAiCacheVersion] = useState(0);
 
-  const handlePinClaim = (claimId: string, assertion: string) => {
-    if (onPinClaim) {
-      onPinClaim(claimId, assertion);
-      setPinnedClaims((prev) => new Set(prev).add(claimId));
+  const handlePinClaim = async (claimId: string, assertion: string): Promise<void> => {
+    if (!onPinClaim) return;
+    setPendingClaimId(claimId);
+    setClaimPinError(null);
+    const saved = await onPinClaim(claimId, assertion);
+    setPendingClaimId(null);
+    if (!saved) {
+      setClaimPinError({
+        id: claimId,
+        message: "Could not keep this claim. Your library was not changed.",
+      });
+      return;
     }
+    setPinnedClaims((prev) => new Set(prev).add(claimId));
   };
 
   const activeHighlights = marginData.highlights.filter((h) => h.deleted === 0);
@@ -702,10 +713,18 @@ export function LivingMargin({
                         <div className="card-title">{claim.assertion}</div>
                         {quote && <div className="claim-evidence-quote">&ldquo;{quote}&rdquo;</div>}
                         {!pinnedClaims.has(claim.id) && (
-                          <button className="btn-pin-claim" onClick={() => handlePinClaim(claim.id, claim.assertion)}>
-                            Keep
+                          <button
+                            className="btn-pin-claim"
+                            onClick={() => void handlePinClaim(claim.id, claim.assertion)}
+                            disabled={pendingClaimId !== null}
+                            aria-busy={pendingClaimId === claim.id}
+                          >
+                            {pendingClaimId === claim.id ? "Keeping…" : "Keep"}
                           </button>
                         )}
+                        {claimPinError?.id === claim.id && pendingClaimId === null ? (
+                          <p className="margin-inline-error" role="alert">{claimPinError.message}</p>
+                        ) : null}
                       </article>
                     );
                   })}

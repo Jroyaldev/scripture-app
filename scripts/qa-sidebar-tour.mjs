@@ -115,7 +115,12 @@ async function setCollapsed(collapsed) {
   const current = await evaluate(`document.querySelector(".sidebar")?.classList.contains("collapsed")`);
   if (current === collapsed) return;
   await evaluate(`document.querySelector(".sidebar-collapse-btn")?.click()`);
-  await sleep(360);
+  await waitFor(`document.querySelector(".sidebar")?.classList.contains("collapsed") === ${collapsed}`);
+  // Remote hidden windows may throttle transition sampling. Finish the finite
+  // width/opacity transitions before measuring the settled production state.
+  await evaluate(`document.querySelector(".sidebar")?.getAnimations({ subtree: true }).forEach((animation) => {
+    if (Number.isFinite(animation.effect?.getComputedTiming().endTime)) animation.finish();
+  })`);
   assert.equal(
     await evaluate(`document.querySelector(".sidebar")?.classList.contains("collapsed")`),
     collapsed,
@@ -159,6 +164,10 @@ assert.equal(
   await evaluate(`document.querySelector('.nav-item[aria-current="page"]')?.getAttribute("aria-label")`),
   "Write (2)",
 );
+// Write deliberately focuses its title field. Numeric navigation is scoped
+// away from text editing, so return focus to the app chrome before proving
+// the global shortcut back to Read.
+await evaluate(`document.activeElement instanceof HTMLElement && document.activeElement.blur()`);
 await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key: "1", code: "Digit1" });
 await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key: "1", code: "Digit1" });
 await sleep(180);

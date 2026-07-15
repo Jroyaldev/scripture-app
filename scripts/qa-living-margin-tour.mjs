@@ -322,7 +322,7 @@ const crossRefTruth = await evaluate(`(() => ({
 assert.equal(crossRefTruth.source, "OpenBible Cross References");
 assert.match(crossRefTruth.license ?? "", /CC[- ]BY/i);
 assert.ok(crossRefTruth.links >= 1);
-assert.equal(crossRefTruth.context, "Across this passage");
+assert.equal(crossRefTruth.context, "OpenBible·Across this passage");
 console.log("cross references", crossRefTruth);
 await evaluate(`(() => {
   const margin = document.querySelector(".living-margin");

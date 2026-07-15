@@ -560,11 +560,10 @@ export function RenderingOrbitView({
               key={`${seg.label}-${i}`}
               d={path}
               fill={vizColor(i)}
-              className={`lang-orbit-seg${seg.isCurrent ? " is-current" : ""}${focusIdx === i ? " is-hover" : ""}`}
+              className={`lang-orbit-seg${seg.isCurrent ? " is-current" : ""}${focusIdx === i ? " is-hover" : ""}${onSelectSegment ? " is-interactive" : ""}`}
               opacity={focusIdx === null || focusIdx === i ? 1 : 0.4}
               onMouseEnter={() => setFocusIdx(i)}
               onClick={() => activate(i)}
-              style={{ cursor: onSelectSegment ? "pointer" : undefined }}
             >
               <title>
                 {seg.label}
@@ -597,7 +596,7 @@ export function RenderingOrbitView({
             <button
               key={`${seg.label}-${i}`}
               type="button"
-              className={`lang-orbit-row${seg.isCurrent ? " is-current" : ""}${focusIdx === i ? " is-hover" : ""}`}
+              className={`lang-orbit-row${seg.isCurrent ? " is-current" : ""}${focusIdx === i ? " is-hover" : ""}${onSelectSegment ? " is-interactive" : ""}`}
               onMouseEnter={() => setFocusIdx(i)}
               onFocus={() => setFocusIdx(i)}
               onClick={() => activate(i)}

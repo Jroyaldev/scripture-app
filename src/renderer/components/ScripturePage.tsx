@@ -234,8 +234,7 @@ function PaletteExit({
   // atmosphere.
   return createPortal(
     <div
-      style={{ display: "contents" }}
-      className={materialClasses}
+      className={`floating-material-host ${materialClasses}`}
       data-floating-layer="toolbar"
     >
       {show ? children : lastChildren.current}
@@ -2006,7 +2005,6 @@ export function ScripturePage({
             ].filter(Boolean).join(" ")}
             ref={verseTextRef}
             aria-busy={!chapterData && !chapterError}
-            style={{ position: "relative" }}
             onMouseUp={handleTextMouseUp}
             onMouseDown={() => { suppressNextClickRef.current = false; }}
           >
@@ -2144,7 +2142,8 @@ export function ScripturePage({
           nearVerse={pinnedRange ? null : nearVerse}
           onNavigateToRef={handleNavigateToRef}
           onPinClaim={async (claimId, assertion) => {
-            await window.api.ai.pinClaim(claimId, assertion);
+            const result = await safeCall(() => window.api.ai.pinClaim(claimId, assertion));
+            return result.ok && result.value.ok;
           }}
           onSetHighlightColor={(color) => void handleHighlight(color)}
           onCreateNote={handleNoteFromSelection}

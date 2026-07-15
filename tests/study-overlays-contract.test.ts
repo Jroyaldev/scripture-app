@@ -64,7 +64,7 @@ test("study surfaces share restrained material styling without malformed blur ex
   assert.match(css, /\.theme-dark-glass \.lang-sense-outline/);
   assert.match(css, /\.theme-dark-glass \.margin-frame-header/);
   assert.match(css, /\.crossref-row:hover,[\s\S]*background: var\(--study-hover-surface\)/);
-  assert.match(css, /\.hl-toolbar \{[\s\S]*border-radius: 10px/);
+  assert.match(css, /\.hl-toolbar \{[\s\S]*border-radius: var\(--radius-md\)/);
   assert.match(css, /\.note-capture-panel \{[\s\S]*backdrop-filter: blur\(var\(--material-blur\)\)/);
   assert.doesNotMatch(css, /calc\(var\(--material-blur\) \*/);
 });

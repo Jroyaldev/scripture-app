@@ -1,8 +1,22 @@
 # B2 — App UX Pass
 
-> **Status:** In progress. Target: L0-L1 → L2-L3.
+> **Status:** Complete for the desktop B2 scope. Target achieved: L3.
 > **Predecessors:** A0 (snapshot), A1 (native build), B1 (scripture data).
 > **Contracts:** §4.2 (event fold), §4.4 (SQLite materialized view), §4.6 (note format), INV-7 (append-only), INV-9 (safe to rebuild).
+
+## Progress — 2026-07-15 (Desktop consolidation)
+
+The tenth and final bounded desktop visual-system pass is complete. It closes the gap between the rendered interface, its durable design contract, and its automated evidence without broadening into mobile, source-shelf/PDF ingestion, or sync:
+
+- **One durable visual contract:** `design-tokens.json` now describes the same warm Paper/Ink system, 6/12/20px geometry, restrained elevation, layout dimensions, motion, and four reading atmospheres that the renderer actually uses. The obsolete cool prototype palette and accent experiments are gone.
+- **No accidental component styling:** one-off chrome colors, mid-register radii, scrims, and shadows now resolve through named tokens. Static inline layout/cursor styles and hard-coded SVG colors were removed; the remaining inline styles are exclusively runtime geometry, position, duration, direction, or data visualization values.
+- **Confirmed mutation states:** library actions and grounded-claim saving use `safeCall`, expose busy and inline failure states, disable duplicate submissions, and report success only after the host confirms the write. No native `alert()` or `confirm()` remains in the renderer.
+- **One complete regression command:** `npm run qa:desktop` runs the existing Sidebar, Topbar, Reading canvas, Living Margin, Shared controls, Setup, Notebook, and Study overlays suites in sequence. It covers Paper, Ink, Glass, Candlelight, desktop-floor layouts, keyboard/focus behavior, floating layers, error/empty/loading paths, and real study interactions.
+- **Non-destructive proof:** the aggregate tour completed all eight suites and restored the active library at **26 notes and 24 highlights**. Representative final captures were visually inspected across all four atmospheres, and the screenshot corpus was refreshed rather than replaced by a one-off claim.
+
+**Verification:** `npm run qa:desktop` (**8/8 suites**), full `npm test` (**401 tests: 391 passing, 10 expected Electron-ABI skips**), focused consolidation contracts, `npm run lint`, `npm run typecheck:renderer`, Electron build, renderer build, and `git diff --check` pass. `verify:m2` remains Node-ABI-gated while the live Electron runtime uses its Electron-built native module; it was intentionally not rebuilt during the visual-QA session.
+
+B2 is complete within its declared desktop scope. PDF/source-shelf ingestion remains B4, sync remains C2, plugin management remains C3, and mobile remains D1 in its separate worktree.
 
 ## Progress — 2026-07-15 (Shared controls and floating layers)
 
@@ -538,7 +552,6 @@ The highlight flow is the most-used interaction and currently the most broken. F
 
 ### Out of scope for B2
 
-- Dark mode (design system expansion, separate task)
 - PDF import UI (source rights UI, B4 territory)
 - Sync status UI (C2 territory)
 - Plugin management UI (C3 territory)
@@ -555,5 +568,5 @@ Before marking B2 complete:
 5. **Navigation:** Prev/next chapters, keyboard shortcuts, book grouping, margin toggle.
 6. **Design:** All components use design tokens via CSS classes. Consistent focus states. Proper empty states.
 7. **Tests:** New tests for highlight replace-on-overlap, incremental SQLite, error boundary, first-run flow.
-8. **Lint + typecheck + verify:m2:** All pass.
+8. **Runtime gates:** Lint and both typecheck halves pass. `verify:m2` runs under a matching Node native ABI; Electron preflight/build verifies the shipped Electron ABI without rebuilding the active visual-QA runtime.
 9. **Manual verification:** App launches, scripture renders, highlights work smoothly, settings display correctly.

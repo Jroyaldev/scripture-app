@@ -306,19 +306,24 @@ for (const theme of THEMES) {
     scrim: "rgba(0, 0, 0, 0)",
   });
   console.log(theme, "popover", popoverState);
-  await screenshot(`${THEME_NAMES[theme]}-reading-layout`);
 
   if (theme === "light") {
-    const before = await evaluate(`document.querySelector(".reading-comfort-popover .control-segmented [aria-checked=true]")?.dataset.value`);
-    await evaluate(`document.querySelector(".reading-comfort-popover .control-segmented [aria-checked=true]")?.focus()`);
+    const typeSize = `.reading-comfort-popover [role="radiogroup"][aria-label="Type size"] [aria-checked="true"]`;
+    const before = await evaluate(`document.querySelector(${JSON.stringify(typeSize)})?.getAttribute("data-value") ?? null`);
+    assert.notEqual(before, null);
+    await evaluate(`document.querySelector(${JSON.stringify(typeSize)})?.focus()`);
     await pressKey("ArrowRight");
-    const after = await evaluate(`document.querySelector(".reading-comfort-popover .control-segmented [aria-checked=true]")?.dataset.value`);
+    const after = await evaluate(`document.querySelector(${JSON.stringify(typeSize)})?.getAttribute("data-value") ?? null`);
     assert.notEqual(after, before);
     assert.equal(await evaluate(`document.activeElement?.getAttribute("aria-checked")`), "true");
     await chooseReadingPreference(0, original.readingSize);
   }
 
-  await pressEscape();
+  await screenshot(`${THEME_NAMES[theme]}-reading-layout`);
+
+  if (await evaluate(`Boolean(document.querySelector(".reading-comfort-popover"))`)) {
+    await pressEscape();
+  }
   await waitFor(`!document.querySelector(".reading-comfort-popover")`);
   assert.equal(await evaluate(`document.activeElement?.classList.contains("reading-comfort-btn")`), true);
 

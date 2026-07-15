@@ -39,7 +39,7 @@ function PanelToggleIcon(): React.JSX.Element {
 
 function BookMarkIcon(): React.JSX.Element {
   return (
-    <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
       <path d="M4 5c2-.8 3.6-.8 6 .2v9c-2.4-1-4-1-6-.2z" />
       <path d="M16 5c-2-.8-3.6-.8-6 .2v9c2.4-1 4-1 6-.2z" />
     </svg>
@@ -145,6 +145,8 @@ export function App(): React.JSX.Element {
   const preFocusMargin = useRef(true);
   const [aiBusy, setAiBusy] = useState(false);
   const [libraryPopoverOpen, setLibraryPopoverOpen] = useState(false);
+  const [libraryAction, setLibraryAction] = useState<"reveal" | "switch" | null>(null);
+  const [libraryActionError, setLibraryActionError] = useState<string | null>(null);
   const libraryTriggerRef = useRef<HTMLButtonElement>(null);
   const [libraryAnchorRect, setLibraryAnchorRect] = useState<DOMRect | null>(null);
   const settingsLoaded = useRef(false);
@@ -289,6 +291,7 @@ export function App(): React.JSX.Element {
   const toggleLibraryPopover = () => {
     if (!libraryPopoverOpen && libraryTriggerRef.current) {
       setLibraryAnchorRect(libraryTriggerRef.current.getBoundingClientRect());
+      setLibraryActionError(null);
     }
     setLibraryPopoverOpen((prev) => !prev);
   };
@@ -300,6 +303,45 @@ export function App(): React.JSX.Element {
   const handleManageInSettings = () => {
     setLibraryPopoverOpen(false);
     setView("settings");
+  };
+
+  const revealLibrary = async (): Promise<void> => {
+    setLibraryAction("reveal");
+    setLibraryActionError(null);
+    const result = await safeCall(() => window.api.library.revealInFinder());
+    setLibraryAction(null);
+    if (!result.ok || !result.value.ok) {
+      setLibraryActionError(
+        result.ok ? (result.value.error ?? "Could not reveal the library.") : result.error,
+      );
+      return;
+    }
+    closeLibraryPopover();
+  };
+
+  const switchLibrary = async (): Promise<void> => {
+    setLibraryAction("switch");
+    setLibraryActionError(null);
+    const picked = await safeCall(() => window.api.dialog.openDirectory());
+    if (!picked.ok) {
+      setLibraryAction(null);
+      setLibraryActionError(picked.error);
+      return;
+    }
+    const chosen = picked.value;
+    if (!chosen || chosen === libraryPath) {
+      setLibraryAction(null);
+      return;
+    }
+    const result = await safeCall(() => window.api.library.init(chosen));
+    if (!result.ok || !result.value.ok) {
+      setLibraryAction(null);
+      setLibraryActionError(
+        result.ok ? (result.value.error ?? "Switch failed.") : result.error,
+      );
+      return;
+    }
+    window.location.reload();
   };
 
   const toggleMargin = () => {
@@ -448,31 +490,32 @@ export function App(): React.JSX.Element {
       <button
         type="button"
         className="control-menu-item library-popover-settings"
-        onClick={async () => {
-          closeLibraryPopover();
-          const res = await window.api.library.revealInFinder();
-          if (!res.ok) alert(`Could not reveal library: ${res.error}`);
-        }}
+        onClick={() => void revealLibrary()}
+        disabled={libraryAction !== null}
+        aria-busy={libraryAction === "reveal"}
       >
-        Reveal in Finder
+        {libraryAction === "reveal" ? "Opening in Finder…" : "Reveal in Finder"}
       </button>
       <button
         type="button"
         className="control-menu-item library-popover-settings"
-        onClick={async () => {
-          closeLibraryPopover();
-          const chosen = await window.api.dialog.openDirectory();
-          if (!chosen || chosen === libraryPath) return;
-          const res = await window.api.library.init(chosen);
-          if (res.ok) window.location.reload();
-          else alert(`Switch failed: ${res.error}`);
-        }}
+        onClick={() => void switchLibrary()}
+        disabled={libraryAction !== null}
+        aria-busy={libraryAction === "switch"}
       >
-        Switch Library…
+        {libraryAction === "switch" ? "Choosing library…" : "Switch Library…"}
       </button>
-      <button type="button" className="control-menu-item library-popover-settings" onClick={handleManageInSettings}>
+      <button
+        type="button"
+        className="control-menu-item library-popover-settings"
+        onClick={handleManageInSettings}
+        disabled={libraryAction !== null}
+      >
         Manage in Settings →
       </button>
+      {libraryActionError ? (
+        <p className="library-popover-error" role="alert">{libraryActionError}</p>
+      ) : null}
     </Popover>
   );
 

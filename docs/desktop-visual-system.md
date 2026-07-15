@@ -114,6 +114,13 @@ The picker is named **Reading atmosphere**, not Theme. Its compact explanation i
 - OpenBible rows are quiet clickable previews with destination ranges preserved. `OpenBible · For this verse/Across this passage` stays adjacent to the heading, complete CC-BY attribution stays visible, and personalized note-derived connections remain a separate section.
 - `qa:study-overlays` exercises the highlight toolbar, note capture, Greek semantic senses, Structure, and OpenBible previews in all four atmospheres; proves roving-tab focus, exact portal material, 900×700 containment, and unchanged note/highlight counts; and settles only finite CSS animations so remote hidden-window captures remain deterministic.
 
+## Consolidation contract
+
+- `design-tokens.json` and the rendered CSS describe one system: the same Paper/Ink values, 6/12/20px geometry, scarce elevation, desktop dimensions, motion, and four atmosphere assets. It is a durable contract rather than an abandoned prototype palette.
+- Generic chrome uses named surface, scrim, shadow, radius, and on-accent tokens. Component inline styles are reserved for runtime geometry, position, duration, direction, or data visualization values; native renderer alerts and hard-coded SVG chrome colors are prohibited.
+- Explicit host mutations show busy and recoverable failure states, prevent duplicate submission, and communicate success only after a confirmed result. A failed claim or library action never presents a false saved state.
+- `npm run qa:desktop` is the whole-desktop visual regression gate. It runs the Sidebar, Topbar, Reading canvas, Living Margin, Shared controls, Setup, Notebook, and Study overlays tours sequentially across Paper, Ink, Glass, and Candlelight while preserving authored note/highlight counts.
+
 ## Interaction language
 
 - Hover changes surface or text tone without lifting the entire component.
@@ -136,7 +143,7 @@ Each item is a separate bounded B2 pass with before/after desktop captures in al
 7. **Settings, onboarding, and import — landed.** One five-section local-library workspace, truthful package/licensing and network disclosures, deliberate mutations, ownership-first setup, staged non-destructive import, complete recovery states, 900px desktop compaction, and isolated four-atmosphere QA.
 8. **Write, Notes, and Search — landed.** Explicit draft-preserving authoring, recoverable save feedback, a recent/filterable notebook with shared detail, sequence-safe full-text retrieval, Scripture return paths, complete list keyboard flow, and non-mutating four-atmosphere QA.
 9. **Study overlays — landed.** Restrained source-text selection, keyboard-complete word maps, exact-material Structure, portal-safe highlight tools, trust-forward passage capture, visible OpenBible provenance, 900px desktop safety, and non-mutating four-atmosphere QA without changing language, syntax, or relationship truth.
-10. **Consolidation.** Remove remaining static inline styles and unjustified color/radius/shadow literals; run full four-atmosphere regression tours and interaction checks.
+10. **Consolidation — landed.** Durable tokens reconciled with the renderer, accidental literals/static inline styles removed, explicit mutation feedback hardened, and all eight four-atmosphere interaction suites unified under `qa:desktop`.
 
 ## Quality gate for every pass
 
