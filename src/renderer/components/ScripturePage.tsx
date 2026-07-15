@@ -1,5 +1,6 @@
 import type React from "react";
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { createPortal } from "react-dom";
 import type {
   BackboneData,
   BookNameData,
@@ -204,9 +205,11 @@ function SearchIconSmall(): React.JSX.Element {
 function PaletteExit({
   show,
   children,
+  theme,
 }: {
   show: boolean;
   children: React.ReactNode;
+  theme: AppTheme;
 }): React.JSX.Element | null {
   const [render, setRender] = useState(show);
   const lastChildren = useRef<React.ReactNode>(null);
@@ -220,10 +223,24 @@ function PaletteExit({
     return () => clearTimeout(t);
   }, [show]);
   if (!render) return null;
-  return (
-    <div style={{ display: "contents" }} className={show ? undefined : "hl-palette-leaving"}>
+  const materialClasses = [
+    theme === "dark" || theme === "dark-glass" ? "dark" : "",
+    `theme-${theme}`,
+    show ? "" : "hl-palette-leaving",
+  ].filter(Boolean).join(" ");
+  // A fixed child of a backdrop-filter layer is flattened/clipped by
+  // Chromium in Glass/Candlelight. Portal above the reading canvas and carry
+  // its material classes so geometry and hit-testing stay identical in every
+  // atmosphere.
+  return createPortal(
+    <div
+      style={{ display: "contents" }}
+      className={materialClasses}
+      data-floating-layer="toolbar"
+    >
       {show ? children : lastChildren.current}
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -2068,6 +2085,7 @@ export function ScripturePage({
                 whether the Living Margin is open or closed. */}
             <PaletteExit
               show={showHighlightPalette && (phraseSelection != null || selectedVerses.size > 0)}
+              theme={theme}
             >
               {showHighlightPalette && (phraseSelection != null || selectedVerses.size > 0) && (
                 <HighlightToolbar

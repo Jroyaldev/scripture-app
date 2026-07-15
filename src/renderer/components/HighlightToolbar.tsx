@@ -60,8 +60,8 @@ export function HighlightToolbar({
         {rangeLabel}
         {mixedColors && <span className="hl-toolbar-mixed-badge">Mixed</span>}
       </div>
-      <div className="hl-toolbar-divider" />
-      <div className="hl-swatch-group">
+      <div className="hl-toolbar-divider" aria-hidden="true" />
+      <div className="hl-swatch-group" role="group" aria-label="Highlight color">
         {COLORS.map((color) => (
           <button
             key={color}
@@ -74,10 +74,10 @@ export function HighlightToolbar({
           />
         ))}
       </div>
-      <div className="hl-toolbar-divider" />
+      <div className="hl-toolbar-divider" aria-hidden="true" />
       <div className="hl-action-group">
         <button type="button" className="hl-btn-note" onClick={onNote}>
-          Note
+          Add note
         </button>
         {hasExistingHighlight && (
           <button

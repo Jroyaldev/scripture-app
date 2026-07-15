@@ -200,12 +200,14 @@ function CrossRefsBlock({
   }, [result.sourceBref]);
 
   return (
-    <section className="margin-section crossref-section" aria-label="Cross references">
+    <section className="margin-section crossref-section" aria-label="OpenBible cross references">
       <div className="crossref-heading">
         <div>
-          <h3 className="margin-section-header crossref-title">See also</h3>
+          <h3 className="margin-section-header crossref-title">Cross references</h3>
           <div className="crossref-context">
-            {result.scope === "verse" ? "For this verse" : "Across this passage"}
+            <span>OpenBible</span>
+            <span aria-hidden="true">·</span>
+            <span>{result.scope === "verse" ? "For this verse" : "Across this passage"}</span>
           </div>
         </div>
         <span

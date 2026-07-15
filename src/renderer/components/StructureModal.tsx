@@ -30,7 +30,15 @@ export function StructureModal({
   // Keep rendering through a short exit animation instead of vanishing in
   // one frame (the enter side already animates).
   const [rendered, setRendered] = useState(open);
-  const [dark, setDark] = useState(false);
+  const [materialClasses, setMaterialClasses] = useState(() => {
+    if (typeof document === "undefined") return "";
+    const shell = document.querySelector(".app-shell");
+    return shell
+      ? [...shell.classList]
+          .filter((name) => name === "dark" || name.startsWith("theme-"))
+          .join(" ")
+      : "";
+  });
   const panelRef = useRef<HTMLDivElement | null>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
 
@@ -44,13 +52,17 @@ export function StructureModal({
     return () => clearTimeout(t);
   }, [open, rendered]);
 
-  // This dialog is portaled to <body>, outside .app-shell. Mirror the shell's
-  // theme class so the portal inherits the same token set in dark mode.
+  // This dialog is portaled to <body>, outside .app-shell. Mirror the exact
+  // reading material so Glass and Candlelight inherit more than light/dark.
   useEffect(() => {
     if (!rendered) return;
     const shell = document.querySelector(".app-shell");
     if (!shell) return;
-    const sync = (): void => setDark(shell.classList.contains("dark"));
+    const sync = (): void => setMaterialClasses(
+      [...shell.classList]
+        .filter((name) => name === "dark" || name.startsWith("theme-"))
+        .join(" "),
+    );
     sync();
     const observer = new MutationObserver(sync);
     observer.observe(shell, { attributes: true, attributeFilter: ["class"] });
@@ -98,7 +110,11 @@ export function StructureModal({
   if (!rendered) return null;
 
   return createPortal(
-    <div className={`structure-modal-root${dark ? " dark" : ""}${open ? "" : " is-closing"}`} role="presentation">
+    <div
+      className={`structure-modal-root ${materialClasses}${open ? "" : " is-closing"}`.trim()}
+      role="presentation"
+      data-floating-layer="dialog"
+    >
       <div className="structure-modal-scrim" onClick={onClose} aria-hidden="true" />
       <div
         ref={panelRef}
@@ -110,17 +126,18 @@ export function StructureModal({
       >
         <header className="structure-modal-header">
           <div className="structure-modal-heading">
+            <span className="structure-modal-kicker">Original language</span>
             <h2 id="structure-modal-title" className="structure-modal-title">
-              Structure
+              Sentence structure
             </h2>
             {hit ? (
               <p className="structure-modal-sub">
                 {hit.sentence.refLabel}
                 <span className="structure-modal-dot">·</span>
-                source-text phrase and clause structure
+                phrase and clause map
               </p>
             ) : (
-              <p className="structure-modal-sub">Original-language sentence structure</p>
+              <p className="structure-modal-sub">Phrase and clause relationships from the source text</p>
             )}
           </div>
           <button
@@ -135,21 +152,30 @@ export function StructureModal({
 
         <div className="structure-modal-body">
           {loading ? (
-            <div className="structure-modal-loading">Loading structure…</div>
+            <div className="structure-modal-loading" role="status">
+              <span className="structure-modal-loading-mark" aria-hidden="true" />
+              <strong>Mapping the sentence…</strong>
+              <span>Reading the packaged source structure.</span>
+            </div>
           ) : hit ? (
             <SyntaxArtView hit={hit} dir={dir} />
           ) : (
             <div className="structure-modal-empty">
-              <p>No sentence structure for this passage yet.</p>
+              <strong>No packaged structure here</strong>
               <p className="structure-modal-empty-hint">
-                Structure data isn&rsquo;t packaged for this verse.
+                This verse does not have a source-backed sentence map in the installed data.
               </p>
             </div>
           )}
         </div>
 
         <footer className="structure-modal-footer">
-          <span>MACULA · Clear Bible · CC BY 4.0</span>
+          <span className="structure-modal-provenance">
+            <span className="structure-modal-provenance-label">Source</span>
+            <span>MACULA + Clear Bible</span>
+            <span aria-hidden="true">·</span>
+            <span>CC BY 4.0</span>
+          </span>
           <button type="button" className="structure-modal-done" onClick={onClose}>
             Done
           </button>

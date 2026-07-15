@@ -52,6 +52,22 @@ The eighth bounded desktop visual-system pass is complete. It turns three protot
 
 The next bounded component is **Study overlays**.
 
+## Progress — 2026-07-15 (Study overlays)
+
+The ninth bounded desktop visual-system pass is complete. It aligns the study drill-downs as one calm system without changing the proven language, senses, syntax, cross-reference, or authored-data semantics:
+
+- **Source-text language hierarchy:** the interlinear now reads as a continuous source line with one quiet selected word. The word card uses restrained neutral material, a short gloss, and progressive Definition, word-map, grammar, Structure, usage, and provenance layers rather than stacked decorative cards.
+- **Keyboard-complete word maps:** In English, Behind this word, and Senses now expose stable tab/tab-panel relationships, one roving tab stop, Arrow/Up/Down/Home/End movement, and a quiet count line. Quantitative rings and the source-shaped Senses outline remain semantically unchanged.
+- **Exact-material Structure:** the full-workspace portal mirrors the complete Paper/Ink/Glass/Candlelight class set instead of only light/dark. Its heading, loading/unavailable states, close/done focus path, and MACULA + Clear Bible / CC BY 4.0 provenance now share the desktop hierarchy while Clause, Sentence map, Diagram, and Outline remain untouched.
+- **Reliable floating study tools:** the highlight toolbar is flatter, labels its color group and Add note action, and now portals above the Glass/Candlelight backdrop-filter canvas. This fixes Chromium compositor clipping and pointer failure in the two glass atmospheres rather than masking it in QA.
+- **Trust-forward passage capture:** the compact note panel leads with the reference, visibly states `Plain Markdown · saved locally only when you choose`, preserves the quoted passage, and leaves the user's note body empty until they write. Save remains explicit.
+- **Visible relationship provenance:** OpenBible is adjacent to exact verse/passage scope in the Cross references heading; destination previews remain clickable, range-preserving, and separate from local note-derived connections. Rows use a quiet list rhythm rather than oversized cards.
+- **Repeatable non-mutating QA:** `npm run qa:study-overlays` captures highlight, note, language/senses, Structure, and OpenBible surfaces in all four atmospheres plus the 900×700 desktop floor. It proves exact Structure material, roving-tab focus, portal hit-testing, no horizontal overflow, and unchanged active-library counts (**26 notes, 24 highlights**). Captures live in `docs/ui-audit/study-overlays/`.
+
+**Verification:** `npm run lint`, full `npm test` (**397 tests: 387 passing, 10 expected Electron-ABI skips**), Electron build, renderer build, focused study-overlay contracts, `npm run qa:study-overlays`, and `git diff --check` pass. Mobile, source-shelf/PDF ingestion, sync, and changes to proven language/syntax data remain outside this bounded pass.
+
+The next bounded component is **Consolidation**.
+
 ## Progress — 2026-07-15 (Living Margin frame)
 
 The fifth bounded desktop visual-system pass is complete. It turns the right rail into one calm, stateful study companion while preserving the proven language, cross-reference, senses, and Structure visualizers:

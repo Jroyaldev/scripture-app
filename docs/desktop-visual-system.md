@@ -104,6 +104,16 @@ The picker is named **Reading atmosphere**, not Theme. Its compact explanation i
 - Note-list rows form one spatial keyboard path with Arrow Up/Down and Home/End. Selection remains visible and the same note detail is used by library browsing and search, so retrieval does not become a second navigation model.
 - `qa:notebook` proves that a populated draft survives navigation, keyboard selection moves the active note, real full-text results open the matching detail, all four atmospheres remain coherent, the 900px desktop floor does not overflow, and authored-note count is unchanged before and after the tour.
 
+## Study overlays contract
+
+- The original-language strip is source text rather than a chip tray. One selected word uses the shared restrained material and gold-current mark; definitions, word maps, grammar, Structure, usage, and provenance remain progressively disclosed beneath it.
+- In English and Behind this word remain quantitative rings because their segments represent real corpus counts. Senses remains a hierarchy outline. The three word-map modes form one roving tab path with Arrow keys and Home/End, one selected tab, and one labelled tabpanel.
+- Structure is the full-workspace drill-down for the proven Clause, Sentence map, Diagram, and Outline models. Its body portal mirrors the exact Paper, Ink, Glass, or Candlelight material; loading, unavailable data, source sentence, focus containment, recovery, and MACULA/Clear Bible attribution stay explicit.
+- The floating highlight palette is one precise anchored tool with five labelled colors and Add note. It portals above filtered glass layers so visual position and pointer hit-testing remain identical in all atmospheres; no swatch acts without an explicit user click.
+- Passage note capture is the compact sibling of Write: reference and quotation are carried in, the user's note body remains empty, Plain Markdown/local-only trust is visible, and only Save note or `Command-S` writes Substrate.
+- OpenBible rows are quiet clickable previews with destination ranges preserved. `OpenBible · For this verse/Across this passage` stays adjacent to the heading, complete CC-BY attribution stays visible, and personalized note-derived connections remain a separate section.
+- `qa:study-overlays` exercises the highlight toolbar, note capture, Greek semantic senses, Structure, and OpenBible previews in all four atmospheres; proves roving-tab focus, exact portal material, 900×700 containment, and unchanged note/highlight counts; and settles only finite CSS animations so remote hidden-window captures remain deterministic.
+
 ## Interaction language
 
 - Hover changes surface or text tone without lifting the entire component.
@@ -125,7 +135,7 @@ Each item is a separate bounded B2 pass with before/after desktop captures in al
 6. **Shared controls and floating layers — landed.** Unified button/input/card/menu geometry and states, keyboard-complete segmented controls, lightweight named popovers, delayed accessible tooltips, typed live-region toasts, modal focus containment/recovery, and repeatable all-look QA.
 7. **Settings, onboarding, and import — landed.** One five-section local-library workspace, truthful package/licensing and network disclosures, deliberate mutations, ownership-first setup, staged non-destructive import, complete recovery states, 900px desktop compaction, and isolated four-atmosphere QA.
 8. **Write, Notes, and Search — landed.** Explicit draft-preserving authoring, recoverable save feedback, a recent/filterable notebook with shared detail, sequence-safe full-text retrieval, Scripture return paths, complete list keyboard flow, and non-mutating four-atmosphere QA.
-9. **Study overlays.** Language cards, Structure, note capture, highlight palette, and cross-reference previews receive final system alignment without changing source truth.
+9. **Study overlays — landed.** Restrained source-text selection, keyboard-complete word maps, exact-material Structure, portal-safe highlight tools, trust-forward passage capture, visible OpenBible provenance, 900px desktop safety, and non-mutating four-atmosphere QA without changing language, syntax, or relationship truth.
 10. **Consolidation.** Remove remaining static inline styles and unjustified color/radius/shadow literals; run full four-atmosphere regression tours and interaction checks.
 
 ## Quality gate for every pass

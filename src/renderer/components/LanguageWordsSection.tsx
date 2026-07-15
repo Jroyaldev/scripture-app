@@ -10,7 +10,7 @@
  */
 
 import type React from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import type {
   LanguageMorphPart,
   LanguageNameEntityHit,
@@ -370,6 +370,8 @@ function OrbitModesBlock({
   onJumpStrong: (strongs: string) => boolean;
   onPeekDefinition: (def: NonNullable<LanguageTokenCard["definition"]>) => void;
 }): React.JSX.Element | null {
+  const panelId = useId();
+  const modeRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const isGreek = card.token.strongPrefixed?.startsWith("G")
     || card.token.datasetId.includes("macula-greek");
   const senses = isGreek ? undefined : card.definition?.deeper?.senses;
@@ -435,6 +437,29 @@ function OrbitModesBlock({
     setMode(m);
   };
 
+  const moveMode = (index: number): void => {
+    if (available.length === 0) return;
+    const nextIndex = (index + available.length) % available.length;
+    const next = available[nextIndex];
+    if (!next) return;
+    pick(next);
+    window.setTimeout(() => modeRefs.current[nextIndex]?.focus(), 0);
+  };
+
+  const onModeKeyDown = (
+    event: React.KeyboardEvent<HTMLButtonElement>,
+    index: number,
+  ): void => {
+    let nextIndex: number | null = null;
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") nextIndex = index + 1;
+    if (event.key === "ArrowLeft" || event.key === "ArrowUp") nextIndex = index - 1;
+    if (event.key === "Home") nextIndex = 0;
+    if (event.key === "End") nextIndex = available.length - 1;
+    if (nextIndex == null) return;
+    event.preventDefault();
+    moveMode(nextIndex);
+  };
+
   const model =
     mode === "english" && card.renderingOrbit
       ? forwardOrbitModel(card.renderingOrbit, surface)
@@ -451,72 +476,71 @@ function OrbitModesBlock({
         : `${card.renderingOrbit?.total ?? 0} uses`;
 
   return (
-    <div className="lang-orbit-block">
-      <div className="lang-orbit-modes" role="tablist" aria-label="Word map">
-        {hasEnglish && (
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mode === "english"}
-            className={`lang-orbit-mode${mode === "english" ? " is-active" : ""}`}
-            onClick={() => pick("english")}
-          >
-            In English
-          </button>
-        )}
-        {hasBehind && (
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mode === "behind"}
-            className={`lang-orbit-mode${mode === "behind" ? " is-active" : ""}`}
-            onClick={() => pick("behind")}
-          >
-            Behind this word
-          </button>
-        )}
-        {hasSenses && (
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mode === "senses"}
-            className={`lang-orbit-mode${mode === "senses" ? " is-active" : ""}`}
-            onClick={() => pick("senses")}
-          >
-            Senses
-          </button>
-        )}
-        <span className="lang-orbit-mode-meta">{countLabel}</span>
+    <div className="lang-orbit-block" data-study-surface="word-map">
+      <div className="lang-orbit-modes" role="tablist" aria-label="Word map" aria-orientation="horizontal">
+        {available.map((availableMode, index) => {
+          const label = availableMode === "english"
+            ? "In English"
+            : availableMode === "behind"
+              ? "Behind this word"
+              : "Senses";
+          const active = mode === availableMode;
+          return (
+            <button
+              key={availableMode}
+              ref={(node) => { modeRefs.current[index] = node; }}
+              id={`${panelId}-${availableMode}-tab`}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              aria-controls={`${panelId}-panel`}
+              className={`lang-orbit-mode${active ? " is-active" : ""}`}
+              tabIndex={active ? 0 : -1}
+              onClick={() => pick(availableMode)}
+              onKeyDown={(event) => onModeKeyDown(event, index)}
+            >
+              {label}
+            </button>
+          );
+        })}
+        <span className="lang-orbit-mode-meta" aria-live="polite">{countLabel}</span>
       </div>
-      {mode === "senses" && senseModel ? (
-        <SenseOutlineView model={senseModel} activeMorphLabels={card.morphLabels} />
-      ) : model ? (
-        <RenderingOrbitView
-          model={model}
-          dir={dir}
-          lang={lang}
-          onSelectSegment={
-            mode === "behind"
-              ? (i) => {
-                  const seg = card.reverseOrbit?.segments[i];
-                  if (!seg?.strongs) return;
-                  const jumped = onJumpStrong(seg.strongs);
-                  if (!jumped && seg.definition) {
-                    onPeekDefinition(seg.definition);
-                  } else if (!jumped) {
-                    // Still open a minimal peek from label alone.
-                    onPeekDefinition({
-                      id: seg.strongs,
-                      firstSense: seg.label,
-                      full: seg.label,
-                      source: "Strong's",
-                    });
+      <div
+        id={`${panelId}-panel`}
+        className="lang-orbit-panel"
+        role="tabpanel"
+        aria-labelledby={`${panelId}-${mode}-tab`}
+      >
+        {mode === "senses" && senseModel ? (
+          <SenseOutlineView model={senseModel} activeMorphLabels={card.morphLabels} />
+        ) : model ? (
+          <RenderingOrbitView
+            model={model}
+            dir={dir}
+            lang={lang}
+            onSelectSegment={
+              mode === "behind"
+                ? (i) => {
+                    const seg = card.reverseOrbit?.segments[i];
+                    if (!seg?.strongs) return;
+                    const jumped = onJumpStrong(seg.strongs);
+                    if (!jumped && seg.definition) {
+                      onPeekDefinition(seg.definition);
+                    } else if (!jumped) {
+                      // Still open a minimal peek from label alone.
+                      onPeekDefinition({
+                        id: seg.strongs,
+                        firstSense: seg.label,
+                        full: seg.label,
+                        source: "Strong's",
+                      });
+                    }
                   }
-                }
-              : undefined
-          }
-        />
-      ) : null}
+                : undefined
+            }
+          />
+        ) : null}
+      </div>
     </div>
   );
 }

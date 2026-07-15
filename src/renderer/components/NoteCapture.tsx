@@ -184,10 +184,11 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
       <div className="floating-dialog-surface note-capture-panel" ref={panelRef} tabIndex={-1}>
         <header className="note-capture-header">
           <div className="note-capture-header-text">
-            <span className="note-capture-kicker">New note</span>
+            <span className="note-capture-kicker">Passage note</span>
             <h2 id="note-capture-title" className="note-capture-heading">
-              From {draft.passageRef}
+              {draft.passageRef}
             </h2>
+            <p className="note-capture-trust">Plain Markdown · saved locally only when you choose</p>
           </div>
           <Tooltip label="Close" shortcut="Esc">
             <Button
@@ -241,7 +242,7 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
           {error && <p className="note-capture-error" role="status">{error}</p>}
           <div className="note-capture-footer-row">
             <span id="note-capture-description" className="note-capture-hint">
-              Quote is saved with the note · {isMac ? "⌘S" : "Ctrl+S"} to save
+              Quote included · {isMac ? "⌘S" : "Ctrl+S"} to save
             </span>
             <div className="note-capture-actions">
               <Button
