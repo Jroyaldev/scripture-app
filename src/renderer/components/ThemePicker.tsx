@@ -1,6 +1,7 @@
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { Popover } from "./Popover.js";
+import { Tooltip } from "./Tooltip.js";
 import { THEME_OPTIONS, themeLabel, type AppTheme } from "../theme.js";
 
 interface ThemeChoiceGridProps {
@@ -68,18 +69,19 @@ export function ThemePicker({ theme, onChange }: ThemePickerProps): React.JSX.El
 
   return (
     <>
-      <button
-        ref={buttonRef}
-        type="button"
-        className={`theme-toggle-btn theme-toggle-${theme}${open ? " open" : ""}`}
-        onClick={toggle}
-        title={`Reading atmosphere: ${themeLabel(theme)}`}
-        aria-label={`Reading atmosphere: ${themeLabel(theme)}`}
-        aria-haspopup="dialog"
-        aria-expanded={open}
-      >
-        <span className={`theme-orb theme-orb-${theme}`} aria-hidden="true" />
-      </button>
+      <Tooltip label={`Reading atmosphere · ${themeLabel(theme)}`}>
+        <button
+          ref={buttonRef}
+          type="button"
+          className={`theme-toggle-btn theme-toggle-${theme}${open ? " open" : ""}`}
+          onClick={toggle}
+          aria-label={`Reading atmosphere: ${themeLabel(theme)}`}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+        >
+          <span className={`theme-orb theme-orb-${theme}`} aria-hidden="true" />
+        </button>
+      </Tooltip>
       {open && (
         <Popover
           anchorRect={anchorRect}

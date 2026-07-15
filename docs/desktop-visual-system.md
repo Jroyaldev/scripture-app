@@ -73,6 +73,16 @@ The picker is named **Reading atmosphere**, not Theme. Its compact explanation i
 - Passage-scoped semantic content never falls back to a chapter-wide result. Secondary local-library material collapses under one disclosure so evidence remains available without dominating the daily reading path.
 - Note previews are plain readable articles unless they have a real action. Counts are tabular and subordinate; hairlines and spacing create hierarchy instead of colored borders, card shadows, or permanent category chrome.
 
+## Shared controls and floating layers contract
+
+- Buttons share one 32px/36px geometry and four explicit intents: primary, secondary, ghost, and danger. Hover changes material, press compresses gently, busy keeps the label legible, and disabled never masquerades as an available action.
+- Text fields and text areas use the same warm inset, 6px control radius, invalid/disabled states, and one soft gold focus halo. Cards remain 12px quiet surfaces; menu rows use material selection rather than lift or decorative color.
+- Segmented controls are real single-tab-stop radio groups. Arrow keys change adjacent choices, Home/End reach the boundaries, and selection combines a raised material with one restrained gold underline.
+- Anchored popovers are lightweight by default: the outside-click layer is transparent, the surface is named and initially focused, Escape closes, callers restore focus, and resize refuses stale positioning. Dimming and focus containment are explicit modal options rather than the cost of every small picker.
+- Compact icon actions use real delayed tooltips, available on hover and keyboard focus with optional shortcut text. Native `title` bubbles are no longer the only affordance for the primary reading controls.
+- Toasts are typed neutral/success/warning/error status surfaces with correct live-region behavior, a dismiss label, optional action, bounded timer, exit motion, and a quiet progress line. They inherit the active reading material even though they sit outside the shell layout.
+- Modal note capture contains focus, restores it to the real invoking control or its Scripture fallback, and uses the shared fields/actions. Specialized study meaning and visualizers remain untouched until the dedicated overlay pass.
+
 ## Interaction language
 
 - Hover changes surface or text tone without lifting the entire component.
@@ -91,7 +101,7 @@ Each item is a separate bounded B2 pass with before/after desktop captures in al
 3. **Reading topbar — landed.** Stable location/tool zones, compact passage/version movement, discoverable `⌘K` jump, named focus-restoring pickers, truthful reading controls, margin-independent geometry, 900px desktop compaction, and repeatable all-look QA.
 4. **Reading canvas — landed.** Semantic chapter article, responsive reading measure, quiet number gutter, material hover, rail-only verse focus, highlight-safe range selection, deliberate loading/error/empty states, chapter continuation, 900px desktop safety, and repeatable all-look QA.
 5. **Living Margin frame — landed.** Persistent three-mode study frame, real chapter overview, reading eye-line context, finishable selected state, bounded passage quote, progressive local-library disclosure, passage-scoped semantic truth, distinct provenance, focus recovery, and repeatable all-look QA.
-6. **Shared controls and floating layers.** Button, input, segmented control, card, tooltip, menu, popover, toast, and dialog states.
+6. **Shared controls and floating layers — landed.** Unified button/input/card/menu geometry and states, keyboard-complete segmented controls, lightweight named popovers, delayed accessible tooltips, typed live-region toasts, modal focus containment/recovery, and repeatable all-look QA.
 7. **Settings, onboarding, and import.** Information architecture, first-run guidance, library choice, sources, progress, failure, and recovery.
 8. **Write, Notes, and Search.** Calm working surfaces, strong empty states, save feedback, results hierarchy, and keyboard flow.
 9. **Study overlays.** Language cards, Structure, note capture, highlight palette, and cross-reference previews receive final system alignment without changing source truth.

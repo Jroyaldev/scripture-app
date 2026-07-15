@@ -24,6 +24,7 @@ import { HighlightUnderlay, FADE_MS, SWEEP_MS } from "./HighlightUnderlay.js";
 import { HighlightToolbar } from "./HighlightToolbar.js";
 import { ReadingComfort, type ReadingPrefs } from "./ReadingComfort.js";
 import { ThemePicker } from "./ThemePicker.js";
+import { Tooltip } from "./Tooltip.js";
 import type { AppTheme } from "../theme.js";
 import { NoteCapture, type NoteCaptureDraft } from "./NoteCapture.js";
 import {
@@ -1174,7 +1175,7 @@ export function ScripturePage({
   const undoHighlightChange = (changeId: string) => {
     void safeCall(() => window.api.library.undoHighlightChange(changeId)).then(async (result) => {
       if (!result.ok || !result.value.ok) {
-        showToast(result.ok ? result.value.error ?? "Undo failed" : result.error);
+        showToast(result.ok ? result.value.error ?? "Undo failed" : result.error, undefined, undefined, { tone: "error" });
       }
       await reloadMarginHighlights();
     });
@@ -1233,7 +1234,7 @@ export function ScripturePage({
       if (recolor.ok && recolor.value.ok) {
         if (recolor.value.changeId) showToast("Highlight color changed", "Undo", () => undoHighlightChange(recolor.value.changeId!));
       } else {
-        showToast(recolor.ok ? recolor.value.error ?? "Failed to recolor highlight" : recolor.error);
+        showToast(recolor.ok ? recolor.value.error ?? "Failed to recolor highlight" : recolor.error, undefined, undefined, { tone: "error" });
       }
       await reloadMarginHighlights();
       return;
@@ -1288,7 +1289,7 @@ export function ScripturePage({
         });
       }, SWEEP_MS);
     } else {
-      showToast("Failed to create highlight");
+      showToast("Failed to create highlight", undefined, undefined, { tone: "error" });
       setAnimateIds(new Set());
       await reloadMarginHighlights(); // Revert optimistic update
     }
@@ -1344,7 +1345,7 @@ export function ScripturePage({
         })();
       }, FADE_MS);
     } else {
-      showToast(result.ok ? result.value.error ?? "Failed to remove highlight" : result.error);
+      showToast(result.ok ? result.value.error ?? "Failed to remove highlight" : result.error, undefined, undefined, { tone: "error" });
       clearFading();
     }
   };
@@ -1370,7 +1371,7 @@ export function ScripturePage({
       if (result.ok && result.value.ok) {
         if (result.value.changeId) showToast("Removed from highlight", "Undo", () => undoHighlightChange(result.value.changeId!));
       } else {
-        showToast(result.ok ? result.value.error ?? "Failed to remove selection" : result.error);
+        showToast(result.ok ? result.value.error ?? "Failed to remove selection" : result.error, undefined, undefined, { tone: "error" });
       }
       await reloadMarginHighlights();
       return;
@@ -1436,7 +1437,7 @@ export function ScripturePage({
   const handleNoteCaptureSaved = useCallback(
     ({ title }: { noteId: string; title: string }) => {
       setNoteDraft(null);
-      showToast(`Saved “${title}”`);
+      showToast(`Saved “${title}”`, undefined, undefined, { tone: "success" });
       // Refresh margin so the new note can appear if it anchors to this chapter.
       void reloadMarginHighlights();
     },
@@ -1649,36 +1650,38 @@ export function ScripturePage({
             <ChevronIcon />
           </button>
           <div className="chapter-nav-arrows" role="group" aria-label="Move by chapter">
-            <button
-              type="button"
-              className="nav-arrow"
-              onClick={() => {
-                if (chapter > 1) {
-                  userNavigatedRef.current = true;
-                  setChapter(chapter - 1);
-                }
-              }}
-              disabled={chapter <= 1}
-              title="Previous chapter (⌘←)"
-              aria-label="Previous chapter"
-            >
-              <ChapterArrowIcon direction="previous" />
-            </button>
-            <button
-              type="button"
-              className="nav-arrow"
-              onClick={() => {
-                if (chapter < chapterCount) {
-                  userNavigatedRef.current = true;
-                  setChapter(chapter + 1);
-                }
-              }}
-              disabled={chapter >= chapterCount}
-              title="Next chapter (⌘→)"
-              aria-label="Next chapter"
-            >
-              <ChapterArrowIcon direction="next" />
-            </button>
+            <Tooltip label="Previous chapter" shortcut="⌘←">
+              <button
+                type="button"
+                className="nav-arrow"
+                onClick={() => {
+                  if (chapter > 1) {
+                    userNavigatedRef.current = true;
+                    setChapter(chapter - 1);
+                  }
+                }}
+                disabled={chapter <= 1}
+                aria-label="Previous chapter"
+              >
+                <ChapterArrowIcon direction="previous" />
+              </button>
+            </Tooltip>
+            <Tooltip label="Next chapter" shortcut="⌘→">
+              <button
+                type="button"
+                className="nav-arrow"
+                onClick={() => {
+                  if (chapter < chapterCount) {
+                    userNavigatedRef.current = true;
+                    setChapter(chapter + 1);
+                  }
+                }}
+                disabled={chapter >= chapterCount}
+                aria-label="Next chapter"
+              >
+                <ChapterArrowIcon direction="next" />
+              </button>
+            </Tooltip>
           </div>
 
           {passageOpen && (
@@ -1871,7 +1874,7 @@ export function ScripturePage({
                 <button
                   key={t.code}
                   type="button"
-                  className={`version-picker-item${t.code === packageId ? " active" : ""}`}
+                  className={`control-menu-item version-picker-item${t.code === packageId ? " active" : ""}`}
                   onClick={() => {
                     if (t.code !== packageId) {
                       // Clear the old translation's DOM and selection in the
@@ -1950,16 +1953,17 @@ export function ScripturePage({
 
         <span className="topbar-tool-divider" aria-hidden="true" />
           {onToggleMargin && !focusMode && (
-            <button
-              type="button"
-              className={`margin-toggle-btn${marginVisible ? " active" : ""}`}
-              onClick={onToggleMargin}
-              title={marginVisible ? "Hide Living Margin" : "Show Living Margin"}
-              aria-label={marginVisible ? "Hide Living Margin" : "Show Living Margin"}
-              aria-pressed={marginVisible}
-            >
-              <MarginToggleIcon />
-            </button>
+            <Tooltip label={marginVisible ? "Hide Study" : "Show Study"}>
+              <button
+                type="button"
+                className={`margin-toggle-btn${marginVisible ? " active" : ""}`}
+                onClick={onToggleMargin}
+                aria-label={marginVisible ? "Hide Living Margin" : "Show Living Margin"}
+                aria-pressed={marginVisible}
+              >
+                <MarginToggleIcon />
+              </button>
+            </Tooltip>
           )}
 
           {onThemeChange && <ThemePicker theme={theme} onChange={onThemeChange} />}

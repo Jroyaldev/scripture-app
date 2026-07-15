@@ -373,6 +373,10 @@ export function App(): React.JSX.Element {
   ]
     .filter(Boolean)
     .join(" ");
+  const floatingMaterialClass = [
+    `theme-${theme}`,
+    isDarkTheme(theme) ? "dark" : "",
+  ].filter(Boolean).join(" ");
 
   if (loadState.status === "loading") {
     return (
@@ -436,7 +440,7 @@ export function App(): React.JSX.Element {
       </div>
       <button
         type="button"
-        className="library-popover-settings"
+        className="control-menu-item library-popover-settings"
         onClick={async () => {
           closeLibraryPopover();
           const res = await window.api.library.revealInFinder();
@@ -447,7 +451,7 @@ export function App(): React.JSX.Element {
       </button>
       <button
         type="button"
-        className="library-popover-settings"
+        className="control-menu-item library-popover-settings"
         onClick={async () => {
           closeLibraryPopover();
           const chosen = await window.api.dialog.openDirectory();
@@ -459,7 +463,7 @@ export function App(): React.JSX.Element {
       >
         Switch Library…
       </button>
-      <button type="button" className="library-popover-settings" onClick={handleManageInSettings}>
+      <button type="button" className="control-menu-item library-popover-settings" onClick={handleManageInSettings}>
         Manage in Settings →
       </button>
     </Popover>
@@ -467,7 +471,7 @@ export function App(): React.JSX.Element {
 
   return (
     <ErrorBoundary>
-      <ToastProvider>
+      <ToastProvider materialClassName={floatingMaterialClass}>
         <div className={shellClass} data-theme={theme}>
           {!focusMode && (
             <nav

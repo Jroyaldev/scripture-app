@@ -50,7 +50,8 @@
     "qa:sidebar": "node scripts/qa-sidebar-tour.mjs",
     "qa:topbar": "node scripts/qa-topbar-tour.mjs",
     "qa:canvas": "node scripts/qa-reading-canvas-tour.mjs",
-    "qa:margin": "node scripts/qa-living-margin-tour.mjs"
+    "qa:margin": "node scripts/qa-living-margin-tour.mjs",
+    "qa:controls": "node scripts/qa-shared-controls-tour.mjs"
   },
   "main": "dist/electron/main.cjs",
   "bin": {

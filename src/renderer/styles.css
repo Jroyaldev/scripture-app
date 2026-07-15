@@ -2748,38 +2748,307 @@ html, body, #root {
 
 /* --- Buttons --- */
 
-.btn-primary {
-  padding: var(--sp-sm) var(--sp-xl);
-  background: var(--text-primary);
-  color: var(--bg-surface);
-  border: none;
-  border-radius: var(--radius-md);
-  font-family: var(--font-ui);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
-  cursor: pointer;
-  transition: opacity var(--transition-fast);
-}
-
-.btn-primary:hover {
-  opacity: 0.85;
-}
-
+.control-button,
+.btn-primary,
 .btn-secondary {
-  padding: var(--sp-xs) var(--sp-md);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 0;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: var(--fw-medium);
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    color var(--transition-fast),
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast),
+    opacity var(--transition-fast);
+}
+
+.control-button--sm {
+  min-height: 32px;
+  padding-inline: 12px;
+  font-size: 12px;
+}
+
+.control-button--icon {
+  width: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0;
+}
+
+.control-button-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: inherit;
+  min-width: 0;
+}
+
+.control-button--primary,
+.btn-primary {
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+  color: var(--bg-surface);
+  box-shadow: var(--shadow-subtle);
+}
+
+.control-button--primary:hover:not(:disabled),
+.btn-primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--text-primary) 88%, var(--study-gold));
+  border-color: color-mix(in srgb, var(--text-primary) 88%, var(--study-gold));
+}
+
+.control-button--secondary,
+.btn-secondary {
+  border: 1px solid var(--border-medium);
+  background: color-mix(in srgb, var(--bg-surface) 82%, transparent);
+  color: var(--text-secondary);
+  box-shadow: var(--shadow-subtle);
+}
+
+.control-button--secondary:hover:not(:disabled),
+.btn-secondary:hover:not(:disabled) {
+  background: var(--study-hover-surface);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+.control-button--ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.control-button--ghost:hover:not(:disabled) {
+  background: var(--study-hover-surface);
+  color: var(--text-primary);
+}
+
+.control-button--danger {
+  background: color-mix(in srgb, var(--error) 11%, transparent);
+  border-color: color-mix(in srgb, var(--error) 32%, transparent);
+  color: var(--error);
+}
+
+.control-button--danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--error) 17%, transparent);
+  border-color: color-mix(in srgb, var(--error) 48%, transparent);
+}
+
+.control-button:active:not(:disabled),
+.btn-primary:active:not(:disabled),
+.btn-secondary:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.control-button:disabled,
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+  box-shadow: none;
+}
+
+.control-button[aria-busy="true"] .control-button-label {
+  opacity: 0.62;
+}
+
+.control-button-spinner {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+  border: 1.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: control-spin 640ms linear infinite;
+}
+
+@keyframes control-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* --- Fields, grouped controls, and quiet cards --- */
+
+.control-input {
+  width: 100%;
+  min-height: 36px;
+  padding: 8px 10px;
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-sm);
-  background: var(--bg-surface);
-  color: var(--text-secondary);
-  font-family: var(--font-ui);
-  font-size: var(--fs-xs);
-  cursor: pointer;
-  transition: all var(--transition-fast);
+  background: color-mix(in srgb, var(--bg-surface) 86%, transparent);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-subtle);
+  font: 13px/1.45 var(--font-ui);
+  outline: none;
+  transition: border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.btn-secondary:hover {
-  background: var(--bg-secondary);
+.control-input:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  background: var(--bg-surface);
+}
+
+.control-input:focus-visible {
+  border-color: var(--study-gold);
+  box-shadow: 0 0 0 3px var(--study-gold-focus);
+}
+
+.control-input[aria-invalid="true"] {
+  border-color: color-mix(in srgb, var(--error) 68%, var(--border-medium));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--error) 18%, transparent);
+}
+
+.control-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.control-input::placeholder {
+  color: var(--text-tertiary);
+  opacity: 0.78;
+}
+
+.control-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.control-card {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--bg-surface) 74%, transparent);
+  box-shadow: var(--shadow-subtle);
+}
+
+.control-segmented {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--bg-secondary) 88%, transparent);
+}
+
+.control-segment {
+  position: relative;
+  flex: 1;
+  min-height: 30px;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font: var(--fw-medium) 12px/1 var(--font-ui);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+
+.control-segment:hover {
+  background: color-mix(in srgb, var(--study-hover-surface) 58%, transparent);
   color: var(--text-primary);
+}
+
+.control-segment.active,
+.control-segment[aria-checked="true"] {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-subtle), inset 0 -2px var(--study-gold);
+}
+
+.control-segment:active {
+  transform: scale(0.98);
+}
+
+.control-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 32px;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font: var(--fw-medium) 12px/1.35 var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.control-menu-item:hover,
+.control-menu-item:focus-visible,
+.control-menu-item[aria-current="true"],
+.control-menu-item[aria-checked="true"] {
+  background: var(--study-hover-surface);
+  color: var(--text-primary);
+}
+
+.floating-dialog-scrim {
+  background: rgba(18, 20, 24, 0.24);
+  backdrop-filter: blur(2px);
+}
+
+.floating-dialog-surface {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-elevated);
+}
+
+/* --- Tooltip primitive --- */
+
+.control-tooltip-anchor {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+}
+
+.control-tooltip {
+  position: fixed;
+  z-index: 1200;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: min(260px, calc(100vw - 16px));
+  padding: 6px 8px;
+  border: 1px solid color-mix(in srgb, var(--bg-surface) 13%, transparent);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--text-primary) 96%, transparent);
+  color: var(--bg-surface);
+  box-shadow: var(--shadow-medium);
+  font: var(--fw-medium) 11px/1.25 var(--font-ui);
+  letter-spacing: 0.005em;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.control-tooltip.is-positioned {
+  animation: tooltip-in 120ms ease forwards;
+}
+
+.control-tooltip kbd {
+  color: color-mix(in srgb, var(--bg-surface) 68%, transparent);
+  font: 500 9px/1 var(--font-mono);
+}
+
+@keyframes tooltip-in {
+  from { opacity: 0; transform: translateY(2px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 /* --- Popover primitive --- */
@@ -2796,16 +3065,28 @@ html, body, #root {
   z-index: 901;
   background: var(--bg-surface);
   color: var(--text-primary);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-elevated);
+  max-height: calc(100vh - 16px);
+  border: 1px solid color-mix(in srgb, var(--border-medium) 72%, transparent);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-medium);
   overflow: hidden;
   transform-origin: top left;
-  animation: popover-in 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: popover-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+}
+
+.popover-panel[data-placement="top"] {
+  transform-origin: bottom left;
+  animation-name: popover-in-top;
 }
 
 @keyframes popover-in {
-  from { opacity: 0; transform: scale(0.96); }
+  from { opacity: 0; transform: translateY(-3px) scale(0.985); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes popover-in-top {
+  from { opacity: 0; transform: translateY(3px) scale(0.985); }
   to { opacity: 1; transform: scale(1); }
 }
 
@@ -2817,28 +3098,75 @@ html, body, #root {
   right: var(--sp-xl);
   display: flex;
   flex-direction: column;
-  gap: var(--sp-sm);
+  gap: 8px;
   z-index: 1000;
   pointer-events: none;
 }
 
 .toast {
+  --toast-tone: var(--text-tertiary);
+  position: relative;
   display: flex;
   align-items: center;
-  gap: var(--sp-md);
-  padding: var(--sp-sm) var(--sp-md);
-  background: var(--text-primary);
-  color: var(--bg-surface);
+  gap: 9px;
+  width: min(360px, calc(100vw - 48px));
+  min-height: 44px;
+  overflow: hidden;
+  padding: 9px 8px 9px 11px;
+  border: 1px solid color-mix(in srgb, var(--border-medium) 74%, transparent);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-elevated);
-  font-size: var(--fs-sm);
+  background: color-mix(in srgb, var(--bg-surface) 95%, transparent);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-medium);
+  backdrop-filter: blur(18px) saturate(1.1);
+  font: 500 12.5px/1.35 var(--font-ui);
   pointer-events: auto;
-  animation: toast-in 200ms ease;
+  animation: toast-in 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.toast--success { --toast-tone: var(--healthy); }
+.toast--warning { --toast-tone: var(--warning); }
+.toast--error { --toast-tone: var(--error); }
+
+.toast.is-closing {
+  animation: toast-out 160ms ease forwards;
 }
 
 @keyframes toast-in {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(8px) scale(0.985); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes toast-out {
+  to { opacity: 0; transform: translateY(5px) scale(0.985); }
+}
+
+.toast-mark {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--toast-tone) 14%, transparent);
+  color: var(--toast-tone);
+}
+
+.toast-mark > span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.toast-mark svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .toast-message {
@@ -2846,33 +3174,83 @@ html, body, #root {
 }
 
 .toast-action {
-  background: var(--toast-overlay-bg);
-  border: none;
-  color: var(--bg-surface);
-  padding: 2px 10px;
+  min-height: 28px;
+  padding: 0 9px;
+  border: 1px solid var(--border-medium);
   border-radius: var(--radius-sm);
-  font-size: var(--fs-xs);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 11px;
   font-weight: var(--fw-medium);
   cursor: pointer;
-  transition: background var(--transition-fast);
+  transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
 }
 
 .toast-action:hover {
-  background: var(--toast-overlay-bg-hover);
+  background: var(--study-hover-surface);
+  border-color: var(--border-strong);
+}
+
+.toast-action:active {
+  transform: scale(0.97);
 }
 
 .toast-close {
-  background: none;
-  border: none;
-  color: var(--toast-fg-subtle);
-  font-size: var(--fs-lg);
-  cursor: pointer;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
   padding: 0;
-  line-height: 1;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: color var(--transition-fast), background var(--transition-fast);
 }
 
 .toast-close:hover {
-  color: var(--bg-surface);
+  background: var(--study-hover-surface);
+  color: var(--text-primary);
+}
+
+.toast-close svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.toast-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: color-mix(in srgb, var(--toast-tone) 52%, transparent);
+  transform-origin: left;
+  animation: toast-progress var(--toast-duration) linear forwards;
+}
+
+@keyframes toast-progress {
+  to { transform: scaleX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .control-button-spinner { animation-duration: 1.2s; }
+  .control-tooltip.is-positioned,
+  .popover-panel,
+  .toast,
+  .toast.is-closing {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .toast-progress { animation: none; }
 }
 
 /* --- Chapter navigation --- */
@@ -7592,7 +7970,26 @@ input:focus-visible,
 textarea:focus-visible,
 .verse-line:focus-visible {
   outline: 2px solid var(--study-gold);
-  outline-offset: 1px;
+  outline-offset: 2px;
+}
+
+/* Shared fields use one soft focus halo rather than stacking the global
+   outline over their own border. Buttons keep a compact halo; segmented
+   options retain a crisp inset-safe outline. */
+.control-input:focus-visible {
+  outline: none;
+  border-color: var(--study-gold);
+  box-shadow: 0 0 0 3px var(--study-gold-focus);
+}
+
+.control-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--study-gold-focus);
+}
+
+.control-segment:focus-visible {
+  outline: 2px solid var(--study-gold);
+  outline-offset: -1px;
 }
 
 /* ==========================================================================
@@ -7662,13 +8059,14 @@ textarea:focus-visible,
   border-bottom: 1px solid var(--border-subtle);
 }
 
-/* Soft scrim behind popovers — reading stays visible but clearly modal */
-.popover-scrim {
+/* Anchored pickers remain lightweight. Only explicitly modal popovers dim the
+   reading surface; ordinary menus use the transparent outside-click layer. */
+.popover-scrim.is-soft {
   background: rgba(20, 22, 26, 0.18);
   backdrop-filter: blur(1px);
 }
-.dark .popover-scrim,
-.popover-scrim.dark {
+.dark .popover-scrim.is-soft,
+.popover-scrim.is-soft.dark {
   background: rgba(0, 0, 0, 0.35);
 }
 
@@ -7715,7 +8113,7 @@ textarea:focus-visible,
   height: 32px;
   padding: 0 8px;
   border: 1px solid transparent;
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
@@ -7777,15 +8175,17 @@ textarea:focus-visible,
   text-transform: uppercase;
   margin-bottom: 6px;
 }
-.rc-segmented {
+.rc-segmented,
+.control-segmented {
   display: flex;
   gap: 2px;
   padding: 3px;
   background: var(--bg-secondary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
 }
-.rc-seg {
+.rc-seg,
+.control-segment {
   flex: 1;
   border: none;
   background: transparent;
@@ -7798,13 +8198,16 @@ textarea:focus-visible,
   cursor: pointer;
   transition: background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
 }
-.rc-seg:hover {
+.rc-seg:hover,
+.control-segment:hover {
   color: var(--text-primary);
 }
-.rc-seg.active {
+.rc-seg.active,
+.control-segment.active,
+.control-segment[aria-checked="true"] {
   background: var(--bg-surface);
   color: var(--text-primary);
-  box-shadow: var(--shadow-subtle);
+  box-shadow: var(--shadow-subtle), inset 0 -2px var(--study-gold);
 }
 .rc-seg-letter.size-s { font-size: 11px; }
 .rc-seg-letter.size-m { font-size: 13px; }
@@ -8390,7 +8793,7 @@ textarea:focus-visible,
   border: none;
   padding: 0;
   margin: 0;
-  background: rgba(18, 20, 24, 0.28);
+  background: rgba(18, 20, 24, 0.24);
   backdrop-filter: blur(2px);
   cursor: pointer;
   pointer-events: auto;
@@ -8417,6 +8820,7 @@ textarea:focus-visible,
   flex-direction: column;
   pointer-events: auto;
   animation: noteCapturePanelIn 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  outline: none;
 }
 
 @keyframes noteCapturePanelIn {
@@ -8461,7 +8865,7 @@ textarea:focus-visible,
   width: 32px;
   height: 32px;
   border: 1px solid var(--border-subtle);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-secondary);
   display: flex;
@@ -8510,8 +8914,8 @@ textarea:focus-visible,
 .note-capture-title-input {
   width: 100%;
   border: 1px solid var(--border-medium);
-  border-radius: 8px;
-  background: var(--bg-primary);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--bg-surface) 82%, var(--bg-primary));
   color: var(--text-primary);
   font-family: var(--font-reading);
   font-size: 16px;
@@ -8522,14 +8926,14 @@ textarea:focus-visible,
 }
 
 .note-capture-title-input:focus {
-  border-color: var(--accent-current);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-current) 18%, transparent);
+  border-color: var(--study-gold);
+  box-shadow: 0 0 0 3px var(--study-gold-focus);
 }
 
 .note-capture-quote {
   margin: 0;
   padding: 12px 14px 12px 12px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: var(--bg-secondary);
   border: 1px solid var(--border-subtle);
   position: relative;
@@ -8565,8 +8969,8 @@ textarea:focus-visible,
   width: 100%;
   resize: none;
   border: 1px solid var(--border-medium);
-  border-radius: 8px;
-  background: var(--bg-primary);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--bg-surface) 82%, var(--bg-primary));
   color: var(--text-primary);
   font-family: var(--font-ui);
   font-size: 14px;
@@ -8577,8 +8981,8 @@ textarea:focus-visible,
 }
 
 .note-capture-textarea:focus {
-  border-color: var(--accent-current);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-current) 18%, transparent);
+  border-color: var(--study-gold);
+  box-shadow: 0 0 0 3px var(--study-gold-focus);
 }
 
 .note-capture-footer {

@@ -4,6 +4,22 @@
 > **Predecessors:** A0 (snapshot), A1 (native build), B1 (scripture data).
 > **Contracts:** §4.2 (event fold), §4.4 (SQLite materialized view), §4.6 (note format), INV-7 (append-only), INV-9 (safe to rebuild).
 
+## Progress — 2026-07-15 (Shared controls and floating layers)
+
+The sixth bounded desktop visual-system pass is complete. It consolidates the state and material language beneath the interface without redesigning Settings, onboarding, import, or the proven study visualizers:
+
+- **One action and field contract:** shared typed Button/Input/Textarea primitives now cover primary, secondary, ghost, danger, size, busy, disabled, pressed, invalid, and visible-focus states. Existing `.btn-primary` / `.btn-secondary` callers receive the same geometry until their bounded surface migrations land.
+- **Keyboard-complete choices:** Reading layout now uses a reusable single-tab-stop segmented radio group with Arrow, Home, and End movement, selected material, and a quiet gold state mark.
+- **Lightweight floats:** anchored pickers no longer dim and blur the whole reading desk. Popovers are named, viewport-clamped, resize-safe, initially focused without animation-frame dependence, Escape-dismissible, and optionally modal when a surface truly needs containment.
+- **Discoverable icon tools:** Reading layout, focus mode, chapter movement, Study visibility, and atmosphere use delayed pointer/keyboard tooltips with accessible descriptions and optional shortcut labels instead of relying only on native title bubbles.
+- **Reliable status:** Toasts now carry neutral/success/warning/error tone, polite/assertive live-region behavior, action/dismiss states, a bounded progress line, exit motion, timer cleanup, and the correct Paper/Ink/Glass/Candlelight material outside the app shell.
+- **Modal integrity:** note capture uses shared controls, traps Tab/Shift+Tab, announces validation, and restores focus to the invoking control or the originating Scripture verse when the transient selection toolbar has disappeared.
+- **Repeatable non-mutating QA:** `npm run qa:controls` exercises real popover focus, segmented keyboard movement, Escape return, modal containment/recovery, keyboard tooltip disclosure, library menu rows, and all four atmospheres. A CSS-only toast fixture verifies the visual layer without creating a note or highlight. Captures live in `docs/ui-audit/shared-controls/`.
+
+**Verification:** `npm run lint`, full `npm test` (**389 tests: 379 passing, 10 expected Electron-ABI skips**), focused shared-control/topbar contracts, renderer build, the self-driving all-atmosphere controls tour, and `git diff --check` pass. `verify:m2` remains Node-ABI-gated while the live Electron runtime uses ABI 133; the native module was intentionally not rebuilt out from under the running visual-QA app.
+
+The next bounded component is **Settings, onboarding, and import**. Mobile remains explicitly outside this worktree.
+
 ## Progress — 2026-07-15 (Living Margin frame)
 
 The fifth bounded desktop visual-system pass is complete. It turns the right rail into one calm, stateful study companion while preserving the proven language, cross-reference, senses, and Structure visualizers:

@@ -1,7 +1,9 @@
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import type { ReadingSize, ReadingWidth, VerseNumberMode } from "../api.js";
+import { SegmentedControl, type SegmentedOption } from "./Controls.js";
 import { Popover } from "./Popover.js";
+import { Tooltip } from "./Tooltip.js";
 
 export interface ReadingPrefs {
   readingSize: ReadingSize;
@@ -38,22 +40,22 @@ function FocusIcon(): React.JSX.Element {
   );
 }
 
-const SIZES: { id: ReadingSize; label: string; hint: string }[] = [
-  { id: "s", label: "S", hint: "Compact" },
-  { id: "m", label: "M", hint: "Default" },
-  { id: "l", label: "L", hint: "Large" },
+const SIZES: SegmentedOption<ReadingSize>[] = [
+  { value: "s", content: <span className="rc-seg-letter size-s">S</span>, accessibleLabel: "Compact type" },
+  { value: "m", content: <span className="rc-seg-letter size-m">M</span>, accessibleLabel: "Default type" },
+  { value: "l", content: <span className="rc-seg-letter size-l">L</span>, accessibleLabel: "Large type" },
 ];
 
-const WIDTHS: { id: ReadingWidth; label: string }[] = [
-  { id: "narrow", label: "Narrow" },
-  { id: "medium", label: "Medium" },
-  { id: "wide", label: "Wide" },
+const WIDTHS: SegmentedOption<ReadingWidth>[] = [
+  { value: "narrow", content: "Narrow" },
+  { value: "medium", content: "Medium" },
+  { value: "wide", content: "Wide" },
 ];
 
-const VERSE_MODES: { id: VerseNumberMode; label: string; hint: string }[] = [
-  { id: "always", label: "Always", hint: "Full contrast" },
-  { id: "faint", label: "Faint", hint: "Quiet numbers" },
-  { id: "hover", label: "Hover", hint: "Show on row hover" },
+const VERSE_MODES: SegmentedOption<VerseNumberMode>[] = [
+  { value: "always", content: "Always", accessibleLabel: "Always show verse numbers" },
+  { value: "faint", content: "Faint", accessibleLabel: "Show quiet verse numbers" },
+  { value: "hover", content: "Hover", accessibleLabel: "Show verse numbers on row hover" },
 ];
 
 /**
@@ -84,30 +86,32 @@ export function ReadingComfort({ prefs, onChange, focusMode, onToggleFocus }: Pr
 
   return (
     <div className="reading-comfort">
-      <button
-        ref={btnRef}
-        type="button"
-        className={`reading-comfort-btn${open ? " open" : ""}`}
-        onClick={() => (open ? setOpen(false) : openPopover())}
-        title="Reading size & layout"
-        aria-label="Reading size and layout"
-        aria-haspopup="dialog"
-        aria-expanded={open}
-      >
-        <AaIcon />
-        <span className="reading-comfort-size-tag">{prefs.readingSize.toUpperCase()}</span>
-      </button>
+      <Tooltip label="Reading layout">
+        <button
+          ref={btnRef}
+          type="button"
+          className={`reading-comfort-btn${open ? " open" : ""}`}
+          onClick={() => (open ? setOpen(false) : openPopover())}
+          aria-label="Reading size and layout"
+          aria-haspopup="dialog"
+          aria-expanded={open}
+        >
+          <AaIcon />
+          <span className="reading-comfort-size-tag">{prefs.readingSize.toUpperCase()}</span>
+        </button>
+      </Tooltip>
 
-      <button
-        type="button"
-        className={`reading-comfort-btn focus-btn${focusMode ? " active" : ""}`}
-        onClick={onToggleFocus}
-        title={focusMode ? "Exit focus mode (F)" : "Focus reading (F) — hide side panels"}
-        aria-label={focusMode ? "Exit focus mode" : "Enter focus mode"}
-        aria-pressed={focusMode}
-      >
-        <FocusIcon />
-      </button>
+      <Tooltip label={focusMode ? "Exit focus" : "Focus reading"} shortcut="F">
+        <button
+          type="button"
+          className={`reading-comfort-btn focus-btn${focusMode ? " active" : ""}`}
+          onClick={onToggleFocus}
+          aria-label={focusMode ? "Exit focus mode" : "Enter focus mode"}
+          aria-pressed={focusMode}
+        >
+          <FocusIcon />
+        </button>
+      </Tooltip>
 
       {open && (
         <Popover
@@ -123,55 +127,32 @@ export function ReadingComfort({ prefs, onChange, focusMode, onToggleFocus }: Pr
           </div>
           <div className="rc-section">
             <div className="rc-label">Type size</div>
-            <div className="rc-segmented" role="group" aria-label="Type size">
-              {SIZES.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  className={`rc-seg${prefs.readingSize === s.id ? " active" : ""}`}
-                  onClick={() => onChange({ readingSize: s.id })}
-                  title={s.hint}
-                  aria-pressed={prefs.readingSize === s.id}
-                >
-                  <span className={`rc-seg-letter size-${s.id}`}>{s.label}</span>
-                </button>
-              ))}
-            </div>
+            <SegmentedControl
+              label="Type size"
+              value={prefs.readingSize}
+              options={SIZES}
+              onChange={(readingSize) => onChange({ readingSize })}
+            />
           </div>
 
           <div className="rc-section">
             <div className="rc-label">Column width</div>
-            <div className="rc-segmented" role="group" aria-label="Column width">
-              {WIDTHS.map((w) => (
-                <button
-                  key={w.id}
-                  type="button"
-                  className={`rc-seg${prefs.readingWidth === w.id ? " active" : ""}`}
-                  onClick={() => onChange({ readingWidth: w.id })}
-                  aria-pressed={prefs.readingWidth === w.id}
-                >
-                  {w.label}
-                </button>
-              ))}
-            </div>
+            <SegmentedControl
+              label="Column width"
+              value={prefs.readingWidth}
+              options={WIDTHS}
+              onChange={(readingWidth) => onChange({ readingWidth })}
+            />
           </div>
 
           <div className="rc-section">
             <div className="rc-label">Verse numbers</div>
-            <div className="rc-segmented" role="group" aria-label="Verse numbers">
-              {VERSE_MODES.map((m) => (
-                <button
-                  key={m.id}
-                  type="button"
-                  className={`rc-seg${prefs.verseNumbers === m.id ? " active" : ""}`}
-                  onClick={() => onChange({ verseNumbers: m.id })}
-                  title={m.hint}
-                  aria-pressed={prefs.verseNumbers === m.id}
-                >
-                  {m.label}
-                </button>
-              ))}
-            </div>
+            <SegmentedControl
+              label="Verse numbers"
+              value={prefs.verseNumbers}
+              options={VERSE_MODES}
+              onChange={(verseNumbers) => onChange({ verseNumbers })}
+            />
           </div>
         </Popover>
       )}

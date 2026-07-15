@@ -7,7 +7,9 @@ interface Props {
   onClose: () => void;
   width?: number;
   className?: string;
-  ariaLabel?: string;
+  ariaLabel: string;
+  modal?: boolean;
+  initialFocus?: boolean;
   children: React.ReactNode;
 }
 
@@ -17,6 +19,7 @@ const ANCHOR_GAP = 8;
 interface PanelPosition {
   top: number;
   left: number;
+  placement: "top" | "bottom";
 }
 
 function computePosition(anchorRect: DOMRect, width: number): PanelPosition {
@@ -34,7 +37,7 @@ function computePosition(anchorRect: DOMRect, width: number): PanelPosition {
   const maxTop = viewportHeight - VIEWPORT_MARGIN;
   top = Math.min(top, maxTop);
 
-  return { top, left };
+  return { top, left, placement: "bottom" };
 }
 
 /**
@@ -42,7 +45,16 @@ function computePosition(anchorRect: DOMRect, width: number): PanelPosition {
  * plus a positioned panel anchored below `anchorRect`. Used by later phases
  * for the library popover, passage picker, and version picker.
  */
-export function Popover({ anchorRect, onClose, width = 280, className, ariaLabel, children }: Props): React.JSX.Element | null {
+export function Popover({
+  anchorRect,
+  onClose,
+  width = 280,
+  className,
+  ariaLabel,
+  modal = false,
+  initialFocus = true,
+  children,
+}: Props): React.JSX.Element | null {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const [position, setPosition] = useState<PanelPosition | null>(null);
 
@@ -66,19 +78,62 @@ export function Popover({ anchorRect, onClose, width = 280, className, ariaLabel
     const aboveTop = anchorRect.top - ANCHOR_GAP - panelHeight;
     const nextTop = aboveTop >= VIEWPORT_MARGIN ? aboveTop : Math.max(VIEWPORT_MARGIN, maxTop - panelHeight);
     if (nextTop !== position.top) {
-      setPosition((prev) => (prev ? { ...prev, top: nextTop } : prev));
+      setPosition((prev) => (prev ? {
+        ...prev,
+        top: nextTop,
+        placement: aboveTop >= VIEWPORT_MARGIN ? "top" : prev.placement,
+      } : prev));
     }
   }, [anchorRect, position]);
+
+  useEffect(() => {
+    if (!anchorRect || !position || !initialFocus) return;
+    const timer = window.setTimeout(() => {
+      const panel = panelRef.current;
+      if (!panel) return;
+      const first = panel.querySelector<HTMLElement>(
+        'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      (first ?? panel).focus();
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [anchorRect, initialFocus, position]);
 
   useEffect(() => {
     if (!anchorRect) return;
     function handleKeyDown(e: KeyboardEvent): void {
       if (e.key === "Escape") {
+        e.preventDefault();
         onClose();
+        return;
+      }
+      if (!modal || e.key !== "Tab" || !panelRef.current) return;
+      const focusable = [...panelRef.current.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      )];
+      if (focusable.length === 0) {
+        e.preventDefault();
+        panelRef.current.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last?.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first?.focus();
       }
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [anchorRect, modal, onClose]);
+
+  useEffect(() => {
+    if (!anchorRect) return;
+    window.addEventListener("resize", onClose);
+    return () => window.removeEventListener("resize", onClose);
   }, [anchorRect, onClose]);
 
   if (!anchorRect || !position) return null;
@@ -93,13 +148,21 @@ export function Popover({ anchorRect, onClose, width = 280, className, ariaLabel
 
   return createPortal(
     <>
-      <div className={`popover-scrim ${materialClasses}`} onClick={onClose} />
+      <div
+        className={`popover-scrim${modal ? " is-soft" : ""} ${materialClasses}`}
+        onPointerDown={onClose}
+        aria-hidden="true"
+      />
       <div
         ref={panelRef}
         className={`popover-panel ${materialClasses}${className ? ` ${className}` : ""}`}
         style={{ top: position.top, left: position.left, width }}
-        role={ariaLabel ? "dialog" : undefined}
+        role="dialog"
         aria-label={ariaLabel}
+        aria-modal={modal || undefined}
+        tabIndex={-1}
+        data-floating-layer="popover"
+        data-placement={position.placement}
       >
         {children}
       </div>

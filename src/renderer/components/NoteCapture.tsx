@@ -1,6 +1,8 @@
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { safeCall } from "../utils/safeCall.js";
+import { Button, ControlInput, ControlTextarea } from "./Controls.js";
+import { Tooltip } from "./Tooltip.js";
 
 /**
  * Draft for a note captured from a scripture selection.
@@ -55,6 +57,22 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
   const [error, setError] = useState<string | null>(null);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    return () => {
+      const target = returnFocusRef.current;
+      window.setTimeout(() => {
+        if (target?.isConnected) {
+          target.focus();
+          return;
+        }
+        const verse = document.querySelector<HTMLElement>(`.verse-line[data-verse="${draft.verseStart}"]`);
+        (verse ?? document.querySelector<HTMLElement>("#reading-chapter-title"))?.focus();
+      }, 0);
+    };
+  }, [draft.verseStart]);
 
   // Focus the body for immediate typing; title is already good.
   useEffect(() => {
@@ -69,6 +87,23 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
         e.preventDefault();
         e.stopPropagation();
         onClose();
+        return;
+      }
+      if (e.key !== "Tab" || !panelRef.current) return;
+      const focusable = [...panelRef.current.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      )];
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!first || !last) {
+        e.preventDefault();
+        panelRef.current.focus();
+      } else if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
       }
     };
     window.addEventListener("keydown", onKey, true);
@@ -132,14 +167,21 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
     typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
 
   return (
-    <div className="note-capture-root" role="dialog" aria-modal="true" aria-labelledby="note-capture-title">
+    <div
+      className="note-capture-root"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="note-capture-title"
+      aria-describedby="note-capture-description"
+      data-floating-layer="dialog"
+    >
       <button
         type="button"
-        className="note-capture-scrim"
+        className="floating-dialog-scrim note-capture-scrim"
         aria-label="Dismiss note capture"
         onClick={() => !saving && onClose()}
       />
-      <div className="note-capture-panel" ref={panelRef}>
+      <div className="floating-dialog-surface note-capture-panel" ref={panelRef} tabIndex={-1}>
         <header className="note-capture-header">
           <div className="note-capture-header-text">
             <span className="note-capture-kicker">New note</span>
@@ -147,22 +189,24 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
               From {draft.passageRef}
             </h2>
           </div>
-          <button
-            type="button"
-            className="note-capture-close"
-            onClick={() => !saving && onClose()}
-            title="Close (Esc)"
-            aria-label="Close"
-            disabled={saving}
-          >
-            <CloseIcon />
-          </button>
+          <Tooltip label="Close" shortcut="Esc">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="note-capture-close"
+              onClick={() => !saving && onClose()}
+              aria-label="Close"
+              disabled={saving}
+            >
+              <CloseIcon />
+            </Button>
+          </Tooltip>
         </header>
 
         <div className="note-capture-body">
           <label className="note-capture-field">
             <span className="note-capture-label">Title</span>
-            <input
+            <ControlInput
               className="note-capture-title-input"
               type="text"
               value={title}
@@ -173,7 +217,7 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
           </label>
 
           {draft.quote.trim() && (
-            <blockquote className="note-capture-quote">
+            <blockquote className="control-card note-capture-quote">
               <QuoteMark />
               <p className="note-capture-quote-text">{draft.quote.trim()}</p>
               <footer className="note-capture-quote-ref">{draft.passageRef}</footer>
@@ -182,7 +226,7 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
 
           <label className="note-capture-field note-capture-field-grow">
             <span className="note-capture-label">Your notes</span>
-            <textarea
+            <ControlTextarea
               ref={bodyRef}
               className="note-capture-textarea"
               value={body}
@@ -194,28 +238,31 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
         </div>
 
         <footer className="note-capture-footer">
-          {error && <p className="note-capture-error">{error}</p>}
+          {error && <p className="note-capture-error" role="status">{error}</p>}
           <div className="note-capture-footer-row">
-            <span className="note-capture-hint">
+            <span id="note-capture-description" className="note-capture-hint">
               Quote is saved with the note · {isMac ? "⌘S" : "Ctrl+S"} to save
             </span>
             <div className="note-capture-actions">
-              <button
-                type="button"
-                className="btn-secondary note-capture-cancel"
+              <Button
+                variant="secondary"
+                size="sm"
+                className="note-capture-cancel"
                 onClick={() => !saving && onClose()}
                 disabled={saving}
               >
                 Cancel
-              </button>
-              <button
-                type="button"
-                className="btn-primary note-capture-save"
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                className="note-capture-save"
                 onClick={() => void handleSave()}
                 disabled={saving || !title.trim()}
+                busy={saving}
               >
                 {saving ? "Saving…" : "Save note"}
-              </button>
+              </Button>
             </div>
           </div>
         </footer>
