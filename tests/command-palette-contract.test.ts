@@ -20,7 +20,10 @@ test("command palette has four truthful high-traffic lenses", () => {
 test("command palette traps focus, restores it, and exposes complete keyboard traversal", () => {
   const source = readFileSync(join(repoRoot, "src", "renderer", "components", "CommandPalette.tsx"), "utf8");
   assert.match(source, /event\.key !== "Tab"/);
-  assert.match(source, /event\.shiftKey && document\.activeElement === first/);
+  assert.match(source, /event\.shiftKey \? -1 : 1/);
+  assert.match(source, /% TABS\.length/);
+  assert.match(source, /setActiveTab\(\(current\) =>/);
+  assert.match(source, /inputRef\.current\?\.focus\(\)/);
   assert.match(source, /returnFocusRef/);
   assert.match(source, /event\.key === "ArrowDown"/);
   assert.match(source, /event\.key === "ArrowUp"/);

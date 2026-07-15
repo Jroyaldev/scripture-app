@@ -172,7 +172,6 @@ export function CommandPalette({
   const [focusedResult, setFocusedResult] = useState(-1);
   const requestSeq = useRef(0);
   const inputRef = useRef<HTMLInputElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const resultRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const returnFocusRef = useRef<HTMLElement | null>(null);
@@ -209,20 +208,16 @@ export function CommandPalette({
         onClose();
         return;
       }
-      if (event.key !== "Tab" || !panelRef.current) return;
-      const focusable = [...panelRef.current.querySelectorAll<HTMLElement>(
-        'input:not([disabled]), button:not([disabled]):not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])',
-      )];
-      const first = focusable[0];
-      const last = focusable.at(-1);
-      if (!first || !last) return;
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
+      if (event.key !== "Tab") return;
+      event.preventDefault();
+      event.stopPropagation();
+      setActiveTab((current) => {
+        const currentIndex = Math.max(0, TABS.findIndex((tab) => tab.id === current));
+        const nextIndex = (currentIndex + (event.shiftKey ? -1 : 1) + TABS.length) % TABS.length;
+        return TABS[nextIndex]?.id ?? "intelligence";
+      });
+      setFocusedResult(-1);
+      inputRef.current?.focus();
     };
     window.addEventListener("keydown", onKeyDown, true);
     return () => window.removeEventListener("keydown", onKeyDown, true);
@@ -414,9 +409,9 @@ export function CommandPalette({
   const handleTabKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number): void => {
     let nextIndex: number | null = null;
     if (event.key === "ArrowRight") nextIndex = (index + 1) % TABS.length;
-    if (event.key === "ArrowLeft") nextIndex = (index - 1 + TABS.length) % TABS.length;
-    if (event.key === "Home") nextIndex = 0;
-    if (event.key === "End") nextIndex = TABS.length - 1;
+    else if (event.key === "ArrowLeft") nextIndex = (index - 1 + TABS.length) % TABS.length;
+    else if (event.key === "Home") nextIndex = 0;
+    else if (event.key === "End") nextIndex = TABS.length - 1;
     if (nextIndex == null) return;
     event.preventDefault();
     const next = TABS[nextIndex];
@@ -449,7 +444,6 @@ export function CommandPalette({
     <div className={`command-palette-root ${materialClass}`} data-floating-layer="dialog">
       <button type="button" className="command-palette-scrim" aria-label="Close search" onClick={onClose} />
       <div
-        ref={panelRef}
         className="command-palette-panel"
         role="dialog"
         aria-modal="true"

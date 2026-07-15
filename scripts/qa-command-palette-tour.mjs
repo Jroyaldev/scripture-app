@@ -9,6 +9,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 const CDP_HTTP = "http://localhost:9222/json/list";
 const OUT_DIR = "docs/ui-audit/command-palette";
 const THEMES = ["light", "dark", "glass", "dark-glass"];
+const CAPTURE_SCREENSHOTS = !process.argv.includes("--no-screenshots");
 
 async function connect(url) {
   const ws = new WebSocket(url);
@@ -60,6 +61,7 @@ async function waitFor(expression, timeout = 12_000) {
 }
 
 async function screenshot(name) {
+  if (!CAPTURE_SCREENSHOTS) return;
   await cdp.send("Page.bringToFront");
   await evaluate(`new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))`);
   await sleep(520);
@@ -134,15 +136,30 @@ assert.equal(await evaluate(`document.activeElement === document.querySelector("
 assert.equal(await evaluate(`document.querySelectorAll('.command-palette-tabs [role="tab"]').length`), 4);
 assert.ok(await evaluate(`document.querySelectorAll(".command-palette-result").length >= 4`));
 
-// Input → active tab → results; arrows move tabs and result focus.
+// Tab is deliberately a lens switch: it changes the selected state and keeps
+// the query focused. Shift-Tab reverses; the sequence wraps in both directions.
 await press("Tab", "Tab");
-assert.equal(await evaluate(`document.activeElement?.textContent?.trim()`), "Intelligence");
+assert.equal(await evaluate(`document.querySelector('.command-palette-tabs [aria-selected="true"]')?.textContent?.trim()`), "Scripture");
+assert.equal(await evaluate(`document.activeElement === document.querySelector(".command-palette-input-row input")`), true);
+await press("Tab", "Tab");
+assert.equal(await evaluate(`document.querySelector('.command-palette-tabs [aria-selected="true"]')?.textContent?.trim()`), "Notes");
+await press("Tab", "Tab");
+assert.equal(await evaluate(`document.querySelector('.command-palette-tabs [aria-selected="true"]')?.textContent?.trim()`), "Names");
+await press("Tab", "Tab");
+assert.equal(await evaluate(`document.querySelector('.command-palette-tabs [aria-selected="true"]')?.textContent?.trim()`), "Intelligence");
+await press("Tab", "Tab", 8);
+assert.equal(await evaluate(`document.querySelector('.command-palette-tabs [aria-selected="true"]')?.textContent?.trim()`), "Names");
+await press("Tab", "Tab");
+assert.equal(await evaluate(`document.querySelector('.command-palette-tabs [aria-selected="true"]')?.textContent?.trim()`), "Intelligence");
+
+// The tablist also retains conventional Arrow/Home/End behavior when a tab is
+// focused directly by pointer or assistive technology.
+await evaluate(`document.querySelector('#command-tab-intelligence')?.focus()`);
 await press("ArrowRight", "ArrowRight");
 assert.equal(await evaluate(`document.activeElement?.textContent?.trim()`), "Scripture");
 await press("ArrowLeft", "ArrowLeft");
 assert.equal(await evaluate(`document.activeElement?.textContent?.trim()`), "Intelligence");
-await press("Tab", "Tab", 8);
-assert.equal(await evaluate(`document.activeElement === document.querySelector(".command-palette-input-row input")`), true);
+await evaluate(`document.querySelector(".command-palette-input-row input")?.focus()`);
 
 const firstSearchStart = Date.now();
 await setQuery("John 3:16");
