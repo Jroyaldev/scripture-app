@@ -149,6 +149,11 @@ export function App(): React.JSX.Element {
     chapter: 19,
     packageId: "bsb",
   });
+  const [commandContext, setCommandContext] = useState<CommandReadingContext>({
+    book: "ACT",
+    chapter: 19,
+    packageId: "bsb",
+  });
   const [entityIntent, setEntityIntent] = useState<{
     id: string;
     nonce: number;
@@ -319,6 +324,7 @@ export function App(): React.JSX.Element {
     setReadingContext((current) => (
       current.book === next.book
       && current.chapter === next.chapter
+      && current.chapterEndVerse === next.chapterEndVerse
       && current.packageId === next.packageId
       && current.verseStart === next.verseStart
       && current.verseEnd === next.verseEnd
@@ -327,16 +333,25 @@ export function App(): React.JSX.Element {
     ));
   }, []);
 
-  const openCommandPalette = useCallback(() => setCommandOpen(true), []);
+  const openCommandPalette = useCallback(() => {
+    setCommandContext(readingContext);
+    setCommandOpen(true);
+  }, [readingContext]);
   const closeCommandPalette = useCallback(() => setCommandOpen(false), []);
 
-  const openEntityResearch = useCallback((entityId: string) => {
-    setEntityIntent({ id: entityId, nonce: Date.now(), origin: readingContext });
+  const openEntityResearchAt = useCallback((entityId: string, origin: CommandReadingContext) => {
+    setEntityIntent({ id: entityId, nonce: Date.now(), origin });
     setView("scripture");
     setFocusMode(false);
     userDirtySettings.current.marginVisible = true;
     setMarginVisible(true);
-  }, [readingContext]);
+  }, []);
+  const openEntityResearch = useCallback((entityId: string) => {
+    openEntityResearchAt(entityId, readingContext);
+  }, [openEntityResearchAt, readingContext]);
+  const openCommandEntityResearch = useCallback((entityId: string) => {
+    openEntityResearchAt(entityId, commandContext);
+  }, [commandContext, openEntityResearchAt]);
 
   const toggleSidebarCollapsed = () => {
     userDirtySettings.current.sidebarCollapsed = true;
@@ -433,11 +448,11 @@ export function App(): React.JSX.Element {
     const onKey = (event: KeyboardEvent): void => {
       if (!(event.metaKey || event.ctrlKey) || event.altKey || event.key.toLocaleLowerCase() !== "k") return;
       event.preventDefault();
-      setCommandOpen(true);
+      openCommandPalette();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [openCommandPalette]);
 
   // Global keyboard: view digits 1–4, F = focus mode, Esc exits focus.
   useEffect(() => {
@@ -794,14 +809,14 @@ export function App(): React.JSX.Element {
             theme={theme}
             backbone={backbone}
             bookNames={bookNames}
-            context={readingContext}
+            context={commandContext}
             actions={commandActions}
             onNavigate={handleNavigateToRef}
             onOpenNote={(noteId) => {
               setWorkspaceIntent({ noteId, nonce: Date.now() });
               setView("notes");
             }}
-            onOpenEntity={openEntityResearch}
+            onOpenEntity={openCommandEntityResearch}
             onSearchNotes={(query) => {
               setWorkspaceIntent({ query, nonce: Date.now() });
               setView("search");

@@ -19,6 +19,7 @@ Do not re-architect these contracts during delivery tasks. If a contract appears
 | 4.9 | Plugin manifest, closed capabilities, default-deny broker, theme subclass. No `write:substrate`. | `src/core/plugins/`, `src/host/plugin-broker.ts`, `src/host/plugin-runtime.ts` |
 | 4.10 | Budget Envelope plus AI and embedding interfaces. Background AI/network are bounded. | `src/core/ai/`, `src/host/budget-manager.ts`, `src/host/ai-provider.ts` |
 | 4.11 | `RevisionStore` interface and adapters. Git is desktop-only; non-Git platforms use `.history/` snapshots. | `src/core/interfaces.ts`, `src/host/git-revision-store.ts`, `src/host/snapshot-revision-store.ts` |
+| 4.12 | Shepherdly handoff is a versioned, strictly validated project-resource attachment. It stores cited preview + locator, never implicit editor content; target choice and attachment are explicit user actions. | `src/core/integrations/shepherdly-resource-node.ts`, `specs/shepherdly-resource-node.md` |
 
 ## Delivery Rule
 

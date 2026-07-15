@@ -65,6 +65,7 @@ interface Props {
   onReadingContextChange?: (context: {
     book: string;
     chapter: number;
+    chapterEndVerse?: number;
     packageId: string;
     verseStart?: number;
     verseEnd?: number;
@@ -88,7 +89,7 @@ interface Props {
   entityIntent?: {
     id: string;
     nonce: number;
-    origin: { book: string; chapter: number; packageId: string; verseStart?: number; verseEnd?: number };
+    origin: { book: string; chapter: number; chapterEndVerse?: number; packageId: string; verseStart?: number; verseEnd?: number };
   } | null;
   onOpenEntity?: (entityId: string) => void;
   onCloseEntity?: () => void;
@@ -792,6 +793,7 @@ export function ScripturePage({
     onReadingContextChange({
       book,
       chapter,
+      chapterEndVerse: backbone.books[book]?.chapters[chapter - 1],
       packageId,
       verseStart: selected[0],
       verseEnd: selected.at(-1),

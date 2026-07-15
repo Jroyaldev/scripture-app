@@ -4,6 +4,31 @@
 > **Predecessors:** A0 (snapshot), A1 (native build), B1 (scripture data).
 > **Contracts:** §4.2 (event fold), §4.4 (SQLite materialized view), §4.6 (note format), INV-7 (append-only), INV-9 (safe to rebuild).
 
+## Deferred entity-research follow-ups — 2026-07-15
+
+### Deferred delivery TODO
+
+- **4 — Manual unmapped-place crosswalk:** 96 of 1,013 TIPNR place identities still have no OpenBible geography join. This is intentionally not an immediate B2 blocker. Review them individually against pinned, licensed sources; add a mapping only when the identity and coordinate claim are supportable; retain an explicit unmapped state otherwise. Any future crosswalk must be deterministic, source-attributed, Doctor-checked, and must not silently merge competing ancient and modern assertions.
+
+### Research TODOs — no product work until the evidence gate passes
+
+- **3 — Kind-specific Pleiades geometry:** the general overlay fails the current ship bar. The linked subset contains 124 geometries, but 70 are points already represented by the source comparison, 36 are line or multiline records, and only 18 are polygons. Most are marked representative; some lines are cartographic label paths, many site footprints are visually sub-pixel at the regional minimap scale, and several broad polygons are coarse bounding boxes rather than defensible historical borders. Keep the geometry in the research artifact. Research only kind-specific experiments (for example a river course or site-scale outline) with appropriate zoom, source semantics, explicit provenance, and visual QA before proposing UI.
+- **5 — Dependable people media:** research a curated, high-frequency pilot rather than an automatic portrait importer. A candidate must have a reviewed TIPNR-to-subject identity, exact depicted subject, media kind (`reception`, `manuscript`, `artifact`, or `context`), creator/date, source URL, acceptable reusable license, local file hash, and wording that never claims a historical likeness. Measure crosswalk ambiguity and licensed-media coverage before choosing a target corpus or interface.
+- **6 — Source-shaped entity relationships:** audit each layer separately before proposing a graph. Preserve the 9,461 explicit TIPNR family edges and the 118 Pleiades place connections with their real relation types; measure same-verse TIPNR co-occurrence noise and collective/ambiguous identities; look for a separately licensed event/journey corpus before using travel language. A derived edge may say only `mentioned together` and must expose supporting coordinates. Do not ship generic `related`, `travels through`, or semantic-looking network edges without a source-specific Doctor and false-positive review.
+
+## Progress — 2026-07-15 (Shepherdly resource nodes and exact opening context)
+
+The Scripture-side integration foundation is complete without exposing a control that cannot yet finish its job:
+
+- **Research stays outside authored content:** `shepherdly.resource-node` V1 is a strict, versioned `attach-resource` envelope for sermon, class, or project resource surfaces. Its fixed `editorInsertion: explicit-only` rule, unknown-field refusal, and lack of a body/content channel prevent a research attachment from becoming an implicit sermon insertion.
+- **Canonical and source-grounded:** entity nodes carry a stable TIPNR identity, concise preview, exact attribution, translation-free `bref:v1` anchor, return locator, and optional package-labelled excerpt. Token-level translation coordinates and evidence outside the saved opening passage are refused.
+- **The opening passage is truthful:** the Living Margin now distinguishes `direct-mention` from `research-context`. It shows the exact saved selection or chapter, supporting TIPNR references and the first available verse text for a direct mention, or a plain `Broader research` state when the entity is absent there.
+- **Command K no longer erases provenance:** opening Command K freezes the reading origin before focus/click interactions can clear selection. Entity activation uses that frozen origin, while contextual entity cards continue to use the live reading context.
+- **The receiver gap is explicit:** read-only inspection found an authenticated sermon-only `sermonResources` string boundary, but no structured validator, class/project equivalent, target picker, receipt/deduplication path, or visible research tray. The Scripture app therefore ships the pure producer/validator and UI truth model now; it does not expose a dead **Attach to Shepherdly** action.
+- **Deferred research is bounded:** the 96-place manual crosswalk is tracked as delivery TODO 4. Pleiades geometry, dependable people media, and broader relationships remain evidence-gated research TODOs 3, 5, and 6 above.
+
+**Verification:** focused resource-node and Command K contracts, core and renderer typechecks, full automated tests, data Doctors, lint, Electron/renderer builds, and the self-driving entity tour with direct-passage and broader-research captures across all four desktop atmospheres. Mobile remains outside this worktree.
+
 ## Progress — 2026-07-15 (Source-grounded entity research completion)
 
 The entity object is now a complete, source-separated desktop research surface rather than a place card with decorative identity treatment:

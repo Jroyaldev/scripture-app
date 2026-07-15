@@ -13,6 +13,10 @@ import type {
   SemanticMarginResult,
   SuggestedCrossRefData,
 } from "../api.js";
+import {
+  deriveEntityOpeningContext,
+  type EntityOpeningOrigin,
+} from "../../core/integrations/shepherdly-resource-node.js";
 import { safeCall } from "../utils/safeCall.js";
 import { LanguageWordsSection } from "./LanguageWordsSection.js";
 
@@ -72,7 +76,7 @@ interface Props {
   entityIntent?: {
     id: string;
     nonce: number;
-    origin: { book: string; chapter: number; packageId: string; verseStart?: number; verseEnd?: number };
+    origin: { book: string; chapter: number; chapterEndVerse?: number; packageId: string; verseStart?: number; verseEnd?: number };
   } | null;
   onOpenEntity?: (entityId: string) => void;
   onCloseEntity?: () => void;
@@ -300,6 +304,96 @@ function entityBookFootprint(
     (canonicalOrder.get(left.book) ?? Number.MAX_SAFE_INTEGER)
     - (canonicalOrder.get(right.book) ?? Number.MAX_SAFE_INTEGER)
   ));
+}
+
+function EntityOpeningContextSection({
+  data,
+  origin,
+  currentBook,
+  currentChapter,
+  chapterVerseText,
+  bookNames,
+  onNavigate,
+}: {
+  data: EntityResearchData;
+  origin: NonNullable<Props["entityIntent"]>["origin"];
+  currentBook: string;
+  currentChapter: number;
+  chapterVerseText: Map<number, string>;
+  bookNames: BookNameData;
+  onNavigate?: (ref: string) => void;
+}): React.JSX.Element | null {
+  const visibleChapterEnd = currentBook === origin.book && currentChapter === origin.chapter
+    ? Math.max(1, ...chapterVerseText.keys())
+    : 1;
+  const openingOrigin: EntityOpeningOrigin = {
+    book: origin.book,
+    chapter: origin.chapter,
+    chapterEndVerse: origin.chapterEndVerse
+      ?? Math.max(origin.verseEnd ?? origin.verseStart ?? 1, visibleChapterEnd),
+    packageId: origin.packageId,
+    ...(origin.verseStart != null ? { verseStart: origin.verseStart } : {}),
+    ...(origin.verseEnd != null ? { verseEnd: origin.verseEnd } : {}),
+  };
+  const result = deriveEntityOpeningContext(data.entity.refs, openingOrigin);
+  if (!result.ok) return null;
+  const context = result.value;
+  const bookLabel = bookNames[origin.book]?.[0] ?? origin.book;
+  const rangeLabel = origin.verseStart == null
+    ? `${bookLabel} ${origin.chapter}`
+    : origin.verseEnd != null && origin.verseEnd !== origin.verseStart
+      ? `${bookLabel} ${origin.chapter}:${origin.verseStart}–${origin.verseEnd}`
+      : `${bookLabel} ${origin.chapter}:${origin.verseStart}`;
+  const scopeLabel = context.scope === "selection" ? "this selection" : "this chapter";
+  const firstMention = context.mentionRefs[0];
+  const firstMentionVerse = firstMention ? Number(firstMention.split(".")[2]) : null;
+  const firstMentionText = firstMentionVerse != null
+    && currentBook === origin.book
+    && currentChapter === origin.chapter
+      ? chapterVerseText.get(firstMentionVerse)?.trim()
+      : undefined;
+
+  return (
+    <section
+      className={`entity-opening-context ${context.relationship === "direct-mention" ? "is-direct" : "is-research"}`}
+      aria-labelledby="entity-opening-context-title"
+    >
+      <div className="entity-opening-context-head">
+        <h3 id="entity-opening-context-title">From your reading</h3>
+        <span>{rangeLabel}</span>
+      </div>
+      {context.relationship === "direct-mention" ? (
+        <>
+          <div className="entity-opening-context-copy">
+            <strong>Indexed in {scopeLabel}</strong>
+            <span>
+              {context.mentionRefs.length.toLocaleString()} {context.mentionRefs.length === 1 ? "direct reference" : "direct references"}
+            </span>
+          </div>
+          {firstMentionText && firstMentionVerse != null && (
+            <blockquote>
+              <span>{firstMentionVerse}</span>
+              <p>{firstMentionText}</p>
+            </blockquote>
+          )}
+          <div className="entity-opening-context-refs" aria-label={`Direct references in ${rangeLabel}`}>
+            {context.mentionRefs.slice(0, 4).map((ref) => (
+              <button key={ref} type="button" onClick={() => onNavigate?.(`bref:v1/${ref}`)}>
+                <span>{formatResearchRef(ref, bookNames)}</span>
+                <CrossReferenceArrow />
+              </button>
+            ))}
+            {context.mentionRefs.length > 4 && <span>+{context.mentionRefs.length - 4} more</span>}
+          </div>
+        </>
+      ) : (
+        <div className="entity-opening-context-copy">
+          <strong>Broader research</strong>
+          <span>No TIPNR-indexed mention in {scopeLabel}.</span>
+        </div>
+      )}
+    </section>
+  );
 }
 
 const RELATIONSHIP_GROUPS = [
@@ -538,13 +632,19 @@ function PleiadesResearchSection({
 
 function EntityResearchView({
   data,
+  origin,
   currentBook,
+  currentChapter,
+  chapterVerseText,
   bookNames,
   onNavigate,
   onOpenEntity,
 }: {
   data: EntityResearchData;
+  origin: NonNullable<Props["entityIntent"]>["origin"];
   currentBook: string;
+  currentChapter: number;
+  chapterVerseText: Map<number, string>;
   bookNames: BookNameData;
   onNavigate?: (ref: string) => void;
   onOpenEntity?: (entityId: string) => void;
@@ -649,6 +749,16 @@ function EntityResearchView({
           <p className="entity-research-expanded">{data.entity.short}</p>
         )}
       </header>
+
+      <EntityOpeningContextSection
+        data={data}
+        origin={origin}
+        currentBook={currentBook}
+        currentChapter={currentChapter}
+        chapterVerseText={chapterVerseText}
+        bookNames={bookNames}
+        onNavigate={onNavigate}
+      />
 
       <PersonRelationships data={data} onOpenEntity={onOpenEntity} />
 
@@ -1534,7 +1644,10 @@ export function LivingMargin({
             </h1>
             <EntityResearchView
               data={entityResearch}
+              origin={entityIntent.origin}
               currentBook={book}
+              currentChapter={chapter}
+              chapterVerseText={displayChapterVerseText ?? chapterVerseText ?? new Map<number, string>()}
               bookNames={bookNames}
               onNavigate={onNavigateToRef}
               onOpenEntity={openRelatedEntity}

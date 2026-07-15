@@ -48,10 +48,25 @@ test("name results open reversible Living Margin research instead of guessing a 
   const margin = readFileSync(join(repoRoot, "src", "renderer", "components", "LivingMargin.tsx"), "utf8");
   assert.match(command, /activate: \(\) => closeAnd\(\(\) => onOpenEntity\(entity\.id\)\)/);
   assert.doesNotMatch(command, /bestEntityRef|parseEntityRef/);
-  assert.match(app, /setEntityIntent\(\{ id: entityId, nonce: Date\.now\(\), origin: readingContext \}\)/);
+  assert.match(app, /setEntityIntent\(\{ id: entityId, nonce: Date\.now\(\), origin \}\)/);
   assert.match(app, /setMarginVisible\(true\)/);
   assert.match(margin, /window\.api\.language\.getEntityResearch\(entityIntent\.id\)/);
   assert.match(margin, /data-margin-mode="research"/);
   assert.match(margin, /window\.addEventListener\("keydown", closeResearch, true\)/);
   assert.match(margin, /onCloseEntity/);
+});
+
+test("entity research preserves its exact opening passage and labels evidence truthfully", () => {
+  const app = readFileSync(join(repoRoot, "src", "renderer", "app.tsx"), "utf8");
+  const page = readFileSync(join(repoRoot, "src", "renderer", "components", "ScripturePage.tsx"), "utf8");
+  const margin = readFileSync(join(repoRoot, "src", "renderer", "components", "LivingMargin.tsx"), "utf8");
+
+  assert.match(app, /setCommandContext\(readingContext\)/);
+  assert.match(app, /context=\{commandContext\}/);
+  assert.match(app, /onOpenEntity=\{openCommandEntityResearch\}/);
+  assert.match(page, /chapterEndVerse: backbone\.books\[book\]\?\.chapters\[chapter - 1\]/);
+  assert.match(margin, /deriveEntityOpeningContext\(data\.entity\.refs, openingOrigin\)/);
+  assert.match(margin, /From your reading/);
+  assert.match(margin, /Broader research/);
+  assert.match(margin, /No TIPNR-indexed mention in \{scopeLabel\}/);
 });

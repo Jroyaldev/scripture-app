@@ -18,6 +18,7 @@ export type CommandPaletteTab = "intelligence" | "scripture" | "notes" | "names"
 export interface CommandReadingContext {
   book: string;
   chapter: number;
+  chapterEndVerse?: number;
   packageId: string;
   verseStart?: number;
   verseEnd?: number;

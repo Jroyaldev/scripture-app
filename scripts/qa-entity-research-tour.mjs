@@ -4,7 +4,8 @@
  * Requires Electron on --remote-debugging-port=9222. This tour proves that a
  * Command K name result opens a reversible research object without guessing a
  * Scripture destination, renders local licensed media plus an offline map in
- * every atmosphere, and keeps Scripture references navigable in context.
+ * every atmosphere, distinguishes direct passage mention from broader global
+ * research, and keeps Scripture references navigable in context.
  */
 
 import assert from "node:assert/strict";
@@ -202,6 +203,7 @@ async function navigatePassage(passage) {
   })()`);
   if (!opened) throw new Error(`Cannot restore ${passage}`);
   await waitFor(`document.querySelector("#reading-chapter-title")?.textContent?.replace(/\\s+/g, " ").trim() === ${JSON.stringify(passage)}`);
+  await sleep(220);
 }
 
 await cdp.send("Emulation.setDeviceMetricsOverride", {
@@ -219,14 +221,46 @@ const original = await evaluate(`({
   passage: document.querySelector("#reading-chapter-title")?.textContent?.replace(/\\s+/g, " ").trim() ?? "Acts 19",
 })`);
 
-const beforeCorinth = await evaluate(`document.querySelector("#reading-chapter-title")?.textContent?.replace(/\\s+/g, " ").trim()`);
+// A global entity search must retain the reading origin without pretending the
+// entity occurs there.
+await navigatePassage("Acts 1");
 await openEntity("Corinth");
-const afterCorinth = await evaluate(`document.querySelector("#reading-chapter-title")?.textContent?.replace(/\\s+/g, " ").trim()`);
-assert.equal(afterCorinth, beforeCorinth, "opening a place must not guess a destination verse");
+assert.equal(await evaluate(`document.querySelector(".entity-opening-context")?.classList.contains("is-research")`), true);
+assert.match(
+  await evaluate(`document.querySelector(".entity-opening-context")?.textContent?.replace(/\\s+/g, " ").trim()`),
+  /From your reading\s*Acts 1\s*Broader research\s*No TIPNR-indexed mention in this chapter\./,
+);
 await waitFor(`(() => {
   const image = document.querySelector(".entity-photo img");
   return image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0;
 })()`);
+await screenshot("paper-corinth-global-research-context", ".living-margin");
+await press("Escape", "Escape");
+await waitFor(`!document.querySelector(".entity-research-view")`);
+
+// A selected verse that actually names Corinth earns exact, visible evidence.
+await navigatePassage("Acts 18");
+await clickElement('.verse-line[data-verse="1"]');
+await waitFor(`document.querySelector('.verse-line[data-verse="1"]')?.getAttribute("aria-pressed") === "true"`);
+await sleep(260);
+const beforeCorinth = await evaluate(`document.querySelector("#reading-chapter-title")?.textContent?.replace(/\\s+/g, " ").trim()`);
+await openEntity("Corinth");
+const afterCorinth = await evaluate(`document.querySelector("#reading-chapter-title")?.textContent?.replace(/\\s+/g, " ").trim()`);
+assert.equal(afterCorinth, beforeCorinth, "opening a place must not guess a destination verse");
+assert.equal(await evaluate(`document.querySelector(".entity-opening-context")?.classList.contains("is-direct")`), true);
+assert.match(
+  await evaluate(`document.querySelector(".entity-opening-context")?.textContent?.replace(/\\s+/g, " ").trim()`),
+  /From your reading\s*Acts 18:1\s*Indexed in this selection\s*1 direct reference.*Acts 18:1/,
+);
+assert.match(
+  await evaluate(`document.querySelector(".entity-opening-context blockquote")?.textContent?.replace(/\\s+/g, " ").trim()`),
+  /Corinth/i,
+);
+await waitFor(`(() => {
+  const image = document.querySelector(".entity-photo img");
+  return image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0;
+})()`);
+await screenshot("paper-corinth-direct-passage-context", ".living-margin");
 
 const corinth = await evaluate(`(() => {
   const margin = document.querySelector(".living-margin");
@@ -247,6 +281,7 @@ const corinth = await evaluate(`(() => {
     referenceLabels: [...document.querySelectorAll(".entity-reference-list button")].map((node) => node.textContent?.trim()),
     editionSummary: document.querySelector(".entity-edition-notes summary")?.textContent?.replace(/\\s+/g, " ").trim(),
     editionRows: document.querySelectorAll(".entity-edition-note-list > div").length,
+    openingContext: document.querySelector(".entity-opening-context")?.textContent?.replace(/\\s+/g, " ").trim(),
     sources: [...document.querySelectorAll(".entity-research-sources span")].map((node) => node.textContent),
     horizontalOverflow: (margin?.scrollWidth ?? 0) > (margin?.clientWidth ?? 0),
   };
@@ -267,6 +302,7 @@ assert.ok(corinth.references >= 8);
 assert.ok(!corinth.referenceLabels.some((label) => /Romans 16:27/.test(label ?? "")));
 assert.match(corinth.editionSummary ?? "", /KJV edition notes.*3 subscriptions/);
 assert.equal(corinth.editionRows, 3);
+assert.match(corinth.openingContext ?? "", /Acts 18:1.*Indexed in this selection/);
 assert.ok(corinth.sources.some((source) => /OpenBible.*CC BY 4\.0/.test(source ?? "")));
 assert.ok(corinth.sources.some((source) => /Natural Earth.*Public domain/.test(source ?? "")));
 assert.ok(corinth.sources.some((source) => /Pleiades 4\.1.*CC BY 3\.0/.test(source ?? "")));
