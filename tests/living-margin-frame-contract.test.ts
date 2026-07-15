@@ -36,8 +36,26 @@ test("Overview is the quiet default, with stable keyboard deep-dive tabs over th
   assert.match(margin, /hidden=\{activeTab !== "connections"\}/);
   assert.match(margin, /hidden=\{activeTab !== "notes"\}/);
   assert.match(margin, /tabScrollPositionsRef/);
+  assert.match(margin, /const isLensKey = event\.key === "Tab" \|\| event\.key === "ArrowLeft" \|\| event\.key === "ArrowRight"/);
+  assert.match(margin, /target\?\.closest\("\.verse-line, \.margin-tab"\)/);
+  assert.match(margin, /activateTab\(MARGIN_TABS\[nextIndex\]\?\.id \?\? "overview", focusTab\)/);
   assert.match(css, /\.margin-tabs\s*\{[\s\S]*position: sticky/);
   assert.match(css, /\.margin-tab\.is-active::after/);
+});
+
+test("translation changes preserve canonical verse selection and the reading anchor", () => {
+  assert.match(page, /interface TranslationViewport/);
+  assert.match(page, /captureTranslationViewport\(t\.code\)/);
+  assert.match(page, /pendingTranslationViewportRef\.current/);
+  assert.match(page, /root\.scrollTop = Math\.max\(0, root\.scrollTop \+ currentOffset - pending\.verseOffset\)/);
+  assert.match(page, /Translation changes are deliberately excluded/);
+  assert.match(page, /\}, \[book, chapter\]\);/);
+
+  const pickerStart = page.indexOf("captureTranslationViewport(t.code)");
+  const pickerEnd = page.indexOf("closeVersionPopover();", pickerStart);
+  const pickerHandler = page.slice(pickerStart, pickerEnd);
+  assert.doesNotMatch(pickerHandler, /setSelectedVerses\(new Set\(\)\)/);
+  assert.doesNotMatch(pickerHandler, /verseSelectionAnchorRef\.current = null/);
 });
 
 test("Overview surfaces only grounded Scripture, library, and TIPNR entity leads", () => {

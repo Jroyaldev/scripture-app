@@ -4,6 +4,18 @@
 > **Predecessors:** A0 (snapshot), A1 (native build), B1 (scripture data).
 > **Contracts:** §4.2 (event fold), §4.4 (SQLite materialized view), §4.6 (note format), INV-7 (append-only), INV-9 (safe to rebuild).
 
+## Progress — 2026-07-15 (Reading lens and translation continuity)
+
+The reader and Command K now share one spatial keyboard model, and changing Bible text no longer discards reading context:
+
+- **Living Margin lenses from the text:** while the reading canvas owns focus, Tab and Right move through `Overview → Refs → Passage → Notes`, Shift-Tab and Left reverse, and the sequence wraps. The active panel really changes while focus remains on the verse; Up/Down remain reserved for verse movement.
+- **Command K uses the same model:** Tab/Shift-Tab and Left/Right switch its four active lenses while focus stays in the query. Up/Down, Home/End, and Enter continue to operate on results.
+- **Translation-free selection persists:** whole-verse selection and its stable range anchor survive BSB/WEB changes because their coordinates are canonical. Translation-specific phrase offsets, transient toolbars, and highlight animations are cleared.
+- **The reading spot survives reflow:** before a package switch, the reader captures the verse nearest the 32% eye-line and its visual offset. After the new text renders, that verse is restored to the same position; chapter/book navigation still deliberately starts at the top.
+- **Repeatable proof:** Command K QA covers Tab and arrow lens changes with query focus retained. Living Margin QA covers the complete reading-canvas keyboard loop plus an Acts 19:1–7 BSB→WEB→BSB switch that retains all seven selected verses, the Passage lens, a nonzero scroll position, and the exact verse offset.
+
+**Verification:** full `npm test` (**421 tests: 411 passing, 10 expected Electron-ABI skips**), `npm run lint`, renderer build, focused keyboard/continuity contracts, `npm run qa:command -- --no-screenshots`, `npm run qa:margin -- --no-screenshots`, and `git diff --check` pass. Mobile remains outside this worktree.
+
 ## Progress — 2026-07-15 (Local Command K intelligence)
 
 The desktop reader now has one keyboard-first entry point for the four searches pastors are most likely to repeat, without mixing public corpus data with the user's library or pretending lexical retrieval is semantic:
@@ -13,7 +25,7 @@ The desktop reader now has one keyboard-first entry point for the four searches 
 - **Name-first people and places:** all 4,260 shipped STEPBible TIPNR entities are searchable. Exact, prefix, and close-name matches outrank definition-only matches, while role terms such as `apostle` intentionally return multiple people. Opening an entity moves to its nearest relevant occurrence in the current book or chapter when possible.
 - **Local notes stay local:** plain queries are escaped into safe FTS5 expressions before host execution, so Scripture-shaped input such as `John 3:16` cannot be parsed as FTS syntax. A chosen result opens the existing full note detail rather than a truncated palette preview.
 - **Actions without a junk drawer:** New note, Study visibility, focus mode, Notes, Search, and Settings are inferred in Intelligence from exact titles and keywords. They outrank incidental Scripture text matches without taking a permanent fifth tab.
-- **Complete desktop keyboard path:** global Command/Ctrl-K opens the palette; Tab is deliberately owned by the palette and activates `Intelligence → Scripture → Notes → Names` in a continuous loop while the typing cursor stays in the query, with Shift-Tab reversing the loop. Up/Down plus Home/End own result navigation; the tab row retains Arrow/Home/End behavior when directly focused; Enter activates; Escape closes and restores the invoker. Every lens change replaces the selected state and result panel rather than merely moving a hover/focus treatment.
+- **Complete desktop keyboard path:** global Command/Ctrl-K opens the palette; Tab and Right activate `Intelligence → Scripture → Notes → Names` in a continuous loop while the typing cursor stays in the query, with Shift-Tab and Left reversing the loop. Up/Down plus Home/End own result navigation; Enter activates; Escape closes and restores the invoker. Every lens change replaces the selected state and result panel rather than merely moving a hover/focus treatment.
 - **One restrained material:** the palette uses one border, one input, one hairline tab row, flat result rows, a neutral selected wash, and a short gold focus rail across Paper, Ink, Glass, and Candlelight. It remains overflow-safe at the 900px desktop floor and does not add mobile behavior in this worktree.
 - **Truthful semantic boundary:** this pass does not label lexical Scripture matching as semantic. A future semantic artifact should embed one coordinate-level reference corpus, preferably contextual passage chunks keyed by translation-free `bref`, then render hits in the active translation. Embedding five near-duplicate full Bibles would cost roughly 475 MB at the current 768-dimensional Float32 model; one quantized 31,102-coordinate artifact is the appropriate B3/B4 follow-on.
 - **Repeatable proof:** `npm run qa:command` covers exact reference and range navigation, phrase search, role-based TIPNR search, direct note opening, command intent, the full keyboard path, all four atmospheres, and horizontal-overflow checks. The first uncached active-translation search completes in about 366 ms including the 120 ms debounce; later searches reuse the local corpus cache.

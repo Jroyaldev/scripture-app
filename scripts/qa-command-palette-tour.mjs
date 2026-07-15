@@ -152,14 +152,15 @@ assert.equal(await evaluate(`document.querySelector('.command-palette-tabs [aria
 await press("Tab", "Tab");
 assert.equal(await evaluate(`document.querySelector('.command-palette-tabs [aria-selected="true"]')?.textContent?.trim()`), "Intelligence");
 
-// The tablist also retains conventional Arrow/Home/End behavior when a tab is
-// focused directly by pointer or assistive technology.
-await evaluate(`document.querySelector('#command-tab-intelligence')?.focus()`);
+// Left/Right are the same living-lens switch as Tab. They change actual state
+// while the query retains focus, so arrowing never strands the reader in tab
+// chrome or disturbs Up/Down result navigation.
 await press("ArrowRight", "ArrowRight");
-assert.equal(await evaluate(`document.activeElement?.textContent?.trim()`), "Scripture");
+assert.equal(await evaluate(`document.querySelector('.command-palette-tabs [aria-selected="true"]')?.textContent?.trim()`), "Scripture");
+assert.equal(await evaluate(`document.activeElement === document.querySelector(".command-palette-input-row input")`), true);
 await press("ArrowLeft", "ArrowLeft");
-assert.equal(await evaluate(`document.activeElement?.textContent?.trim()`), "Intelligence");
-await evaluate(`document.querySelector(".command-palette-input-row input")?.focus()`);
+assert.equal(await evaluate(`document.querySelector('.command-palette-tabs [aria-selected="true"]')?.textContent?.trim()`), "Intelligence");
+assert.equal(await evaluate(`document.activeElement === document.querySelector(".command-palette-input-row input")`), true);
 
 const firstSearchStart = Date.now();
 await setQuery("John 3:16");

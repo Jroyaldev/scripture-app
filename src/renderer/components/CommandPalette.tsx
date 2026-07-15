@@ -208,12 +208,15 @@ export function CommandPalette({
         onClose();
         return;
       }
-      if (event.key !== "Tab") return;
+      const isLensKey = event.key === "Tab" || event.key === "ArrowLeft" || event.key === "ArrowRight";
+      if (!isLensKey) return;
+      if (event.key !== "Tab" && (event.metaKey || event.ctrlKey || event.altKey)) return;
       event.preventDefault();
       event.stopPropagation();
       setActiveTab((current) => {
         const currentIndex = Math.max(0, TABS.findIndex((tab) => tab.id === current));
-        const nextIndex = (currentIndex + (event.shiftKey ? -1 : 1) + TABS.length) % TABS.length;
+        const reverse = event.key === "ArrowLeft" || (event.key === "Tab" && event.shiftKey);
+        const nextIndex = (currentIndex + (reverse ? -1 : 1) + TABS.length) % TABS.length;
         return TABS[nextIndex]?.id ?? "intelligence";
       });
       setFocusedResult(-1);

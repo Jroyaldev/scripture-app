@@ -688,6 +688,36 @@ export function LivingMargin({
     }
   };
 
+  // While the reading canvas (or the tab row itself) owns focus, these keys
+  // act as study-lens switches rather than moving focus around the chrome.
+  // Up/Down remain exclusively available to the verse/result navigation
+  // paths. Floating dialogs and controls keep their normal keyboard contract.
+  useEffect(() => {
+    const cycleStudyLens = (event: KeyboardEvent): void => {
+      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
+      const isLensKey = event.key === "Tab" || event.key === "ArrowLeft" || event.key === "ArrowRight";
+      if (!isLensKey) return;
+      if (document.querySelector('[data-floating-layer="dialog"], [data-floating-layer="popover"]')) return;
+
+      const target = event.target instanceof Element ? event.target : null;
+      const readingTarget = target === document.body
+        || target === document.documentElement
+        || Boolean(target?.closest(".verse-line, .margin-tab"));
+      if (!readingTarget) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      const currentIndex = Math.max(0, MARGIN_TABS.findIndex((tab) => tab.id === activeTab));
+      const reverse = event.key === "ArrowLeft" || (event.key === "Tab" && event.shiftKey);
+      const nextIndex = (currentIndex + (reverse ? -1 : 1) + MARGIN_TABS.length) % MARGIN_TABS.length;
+      const focusTab = Boolean(target?.closest(".margin-tab"));
+      activateTab(MARGIN_TABS[nextIndex]?.id ?? "overview", focusTab);
+    };
+
+    window.addEventListener("keydown", cycleStudyLens, true);
+    return () => window.removeEventListener("keydown", cycleStudyLens, true);
+  }, [activeTab]);
+
   const handleTabKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number): void => {
     let nextIndex: number | null = null;
     if (event.key === "ArrowRight" || event.key === "ArrowDown") {

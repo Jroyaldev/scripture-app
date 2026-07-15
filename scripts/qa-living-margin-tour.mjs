@@ -13,6 +13,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 
 const CDP_HTTP = "http://localhost:9222/json/list";
 const OUT_DIR = "docs/ui-audit/living-margin";
+const CAPTURE_SCREENSHOTS = !process.argv.includes("--no-screenshots");
 // Finish on Paper so the following interaction captures begin from a fully
 // repainted opaque surface after the two backdrop-filter atmospheres.
 const THEMES = ["dark", "glass", "dark-glass", "light"];
@@ -77,6 +78,7 @@ async function waitFor(expression, timeout = 8_000) {
 }
 
 async function screenshot(name, selector = null) {
+  if (!CAPTURE_SCREENSHOTS) return;
   let clip;
   if (selector) {
     clip = await evaluate(`(() => {
@@ -105,9 +107,9 @@ async function pressEscape() {
   await pressKey("Escape", "Escape");
 }
 
-async function pressKey(key, code = key) {
-  await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key, code });
-  await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key, code });
+async function pressKey(key, code = key, modifiers = 0) {
+  await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key, code, modifiers });
+  await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key, code, modifiers });
   await sleep(140);
 }
 
@@ -185,6 +187,7 @@ async function setTranslation(code) {
   })()`);
   if (!changed) throw new Error(`Translation option not found: ${code}`);
   await waitFor(`document.querySelector(".version-picker-btn")?.textContent?.trim().toLowerCase().startsWith(${JSON.stringify(code)})`);
+  await waitFor(`document.querySelectorAll(".verse-line").length > 0`);
   await sleep(300);
 }
 
@@ -212,15 +215,28 @@ async function setFocusMode(active) {
 }
 
 async function navigatePassage(passage) {
-  await evaluate(`(() => {
-    const input = document.querySelector(".passage-jump-input");
-    if (!input) return false;
+  await evaluate(`document.querySelector(".command-palette-trigger")?.click()`);
+  await waitFor(`Boolean(document.querySelector(".command-palette-panel"))`);
+  const entered = await evaluate(`(() => {
+    const input = document.querySelector(".command-palette-input-row input");
+    if (!(input instanceof HTMLInputElement)) return false;
     const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
     setter?.call(input, ${JSON.stringify(passage)});
     input.dispatchEvent(new Event("input", { bubbles: true }));
-    input.closest("form")?.requestSubmit();
+    input.focus();
     return true;
   })()`);
+  if (!entered) throw new Error("Command palette query is unavailable");
+  await waitFor(`[...document.querySelectorAll(".command-palette-result")].some((row) => row.querySelector(".command-result-meta")?.textContent === "Exact reference")`);
+  const opened = await evaluate(`(() => {
+    const row = [...document.querySelectorAll(".command-palette-result")].find((candidate) =>
+      candidate.querySelector(".command-result-meta")?.textContent === "Exact reference"
+    );
+    if (!row) return false;
+    row.click();
+    return true;
+  })()`);
+  if (!opened) throw new Error(`Exact passage result not found: ${passage}`);
   await waitFor(`(() => {
     const title = document.querySelector(".chapter-title");
     return [title?.querySelector(".book-name")?.textContent, title?.querySelector(".chapter-number")?.textContent]
@@ -354,6 +370,61 @@ assert.deepEqual(selectedState, {
 console.log("selected", selectedState);
 await screenshot("paper-selected-context");
 
+// The reading canvas owns one spatial keyboard model: Up/Down stays with
+// verses, while Tab/Shift-Tab and Left/Right cycle the four live study lenses
+// without moving focus away from the selected verse.
+await selectMarginTab("overview");
+await evaluate(`document.querySelector('.verse-line[data-verse="1"]')?.focus()`);
+await pressKey("Tab", "Tab");
+await waitFor(`document.querySelector("#margin-connections-tab")?.getAttribute("aria-selected") === "true"`);
+assert.equal(await evaluate(`document.activeElement?.getAttribute("data-verse")`), "1");
+await pressKey("ArrowRight", "ArrowRight");
+await waitFor(`document.querySelector("#margin-passage-tab")?.getAttribute("aria-selected") === "true"`);
+assert.equal(await evaluate(`document.activeElement?.getAttribute("data-verse")`), "1");
+await pressKey("ArrowLeft", "ArrowLeft");
+await waitFor(`document.querySelector("#margin-connections-tab")?.getAttribute("aria-selected") === "true"`);
+await pressKey("Tab", "Tab", 8);
+await waitFor(`document.querySelector("#margin-overview-tab")?.getAttribute("aria-selected") === "true"`);
+assert.equal(await evaluate(`document.activeElement?.getAttribute("data-verse")`), "1");
+console.log("reading lens keyboard path ok");
+
+// A translation is another rendering of the same canonical passage. Preserve
+// both its selected range and the eye-line anchor through text reflow.
+await selectMarginTab("passage");
+await evaluate(`(() => {
+  const root = document.querySelector(".scripture-content");
+  const row = document.querySelector('.verse-line[data-verse="7"]');
+  if (!root || !row) return;
+  root.scrollTop += row.getBoundingClientRect().top - root.getBoundingClientRect().top - root.clientHeight * 0.32;
+  root.dispatchEvent(new Event("scroll"));
+})()`);
+await sleep(220);
+const translationAnchor = await evaluate(`(() => {
+  const root = document.querySelector(".scripture-content");
+  const row = document.querySelector('.verse-line[data-verse="7"]');
+  if (!root || !row) return null;
+  return { offset: row.getBoundingClientRect().top - root.getBoundingClientRect().top, scrollTop: root.scrollTop };
+})()`);
+assert.ok(translationAnchor && translationAnchor.scrollTop > 0);
+await setTranslation("web");
+const translatedState = await evaluate(`(() => {
+  const root = document.querySelector(".scripture-content");
+  const row = document.querySelector('.verse-line[data-verse="7"]');
+  return {
+    selected: [...document.querySelectorAll('.verse-line[aria-pressed="true"]')].map((node) => Number(node.getAttribute("data-verse"))),
+    activeTab: document.querySelector('.margin-tab[aria-selected="true"]')?.id,
+    offset: root && row ? row.getBoundingClientRect().top - root.getBoundingClientRect().top : null,
+    scrollTop: root?.scrollTop ?? 0,
+  };
+})()`);
+assert.deepEqual(translatedState.selected, [1, 2, 3, 4, 5, 6, 7]);
+assert.equal(translatedState.activeTab, "margin-passage-tab");
+assert.ok(translatedState.scrollTop > 0);
+assert.ok(Math.abs(translatedState.offset - translationAnchor.offset) < 3);
+await setTranslation("bsb");
+assert.equal(await evaluate(`document.querySelectorAll('.verse-line[aria-pressed="true"]').length`), 7);
+console.log("translation continuity ok", { before: translationAnchor, translated: translatedState });
+
 await selectMarginTab("overview");
 await waitFor(`!document.querySelector(".intent-loading")`, 30_000);
 await waitFor(`Boolean(document.querySelector(".intent-ref-row, .intent-note-lead, .intent-entity-card"))`);
@@ -456,9 +527,10 @@ await sleep(260);
 await screenshot("paper-notes-deep-margin", ".living-margin");
 
 await evaluate(`document.querySelector(".margin-frame-action")?.click()`);
-await waitFor(`document.querySelector(".living-margin")?.dataset.marginMode === "chapter"`);
+await waitFor(`document.querySelector(".living-margin")?.dataset.marginMode !== "selected"`);
 await waitFor(`document.activeElement?.id === "living-margin-title"`);
 assert.equal(await evaluate(`document.querySelectorAll('.verse-line[aria-pressed="true"]').length`), 0);
+assert.equal(await evaluate(`document.querySelector(".living-margin")?.dataset.marginMode`), "in-view");
 assert.equal(
   await evaluate(`document.querySelector('.margin-tab[aria-selected="true"]')?.id`),
   "margin-notes-tab",

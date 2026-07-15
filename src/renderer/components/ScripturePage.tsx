@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
 import type {
   BackboneData,
@@ -41,6 +41,13 @@ import { resolveBlobExtent, buildSegments, isAdjacent } from "../../core/events/
 export interface PinnedRange {
   start: number;
   end: number;
+}
+
+interface TranslationViewport {
+  packageId: string;
+  verse: number | null;
+  verseOffset: number;
+  scrollTop: number;
 }
 
 interface Props {
@@ -349,6 +356,7 @@ export function ScripturePage({
   const [versionAnchor, setVersionAnchor] = useState<DOMRect | null>(null);
 
   const contentRef = useRef<HTMLDivElement>(null);
+  const pendingTranslationViewportRef = useRef<TranslationViewport | null>(null);
   const chapterHeadingRef = useRef<HTMLHeadingElement>(null);
   const shouldFocusChapterHeading = useRef(false);
   const paletteRef = useRef<HTMLDivElement>(null);
@@ -472,6 +480,27 @@ export function ScripturePage({
     });
     return () => { cancelled = true; };
   }, [book, chapter, packageId, retryToken]);
+
+  // Translation text reflows, so preserving raw scrollTop alone is not
+  // enough. Restore the verse nearest the reading eye-line to the exact same
+  // visual offset after the new package has rendered. useLayoutEffect keeps
+  // the temporary loading collapse from flashing the chapter start.
+  useLayoutEffect(() => {
+    const pending = pendingTranslationViewportRef.current;
+    const root = contentRef.current;
+    if (!pending || pending.packageId !== packageId || !chapterData || !root) return;
+
+    root.scrollTop = pending.scrollTop;
+    if (pending.verse != null) {
+      const row = verseRowRefs.current.get(pending.verse);
+      if (row) {
+        const currentOffset = row.getBoundingClientRect().top - root.getBoundingClientRect().top;
+        root.scrollTop = Math.max(0, root.scrollTop + currentOffset - pending.verseOffset);
+      }
+    }
+    pendingTranslationViewportRef.current = null;
+    setScrolled(root.scrollTop > 0);
+  }, [chapterData, packageId]);
 
   // Phase 1: Load deterministic margin data (fast)
   useEffect(() => {
@@ -715,15 +744,16 @@ export function ScripturePage({
   }, []);
 
   // A chapter is a new reading surface, not the continuation of the previous
-  // scroll position. Keep every navigation path deterministic; the explicit
-  // chapter-end continuation additionally moves focus to the new landmark.
+  // scroll position. Translation changes are deliberately excluded: they
+  // restore the current reading anchor in the layout effect above.
   useEffect(() => {
+    pendingTranslationViewportRef.current = null;
     if (contentRef.current) contentRef.current.scrollTop = 0;
     setScrolled(false);
     if (!shouldFocusChapterHeading.current) return;
     shouldFocusChapterHeading.current = false;
     chapterHeadingRef.current?.focus();
-  }, [book, chapter, packageId]);
+  }, [book, chapter]);
 
   // Keep the passage-picker's book-browsing view in sync with the current book.
   useEffect(() => {
@@ -784,6 +814,33 @@ export function ScripturePage({
     if (versionBtnRef.current) setVersionAnchor(versionBtnRef.current.getBoundingClientRect());
     setVersionOpen(true);
   };
+
+  const captureTranslationViewport = useCallback((nextPackageId: string): void => {
+    const root = contentRef.current;
+    if (!root) return;
+    const rootRect = root.getBoundingClientRect();
+    const eyeY = rootRect.top + rootRect.height * 0.32;
+    let anchorVerse: number | null = null;
+    let anchorOffset = 0;
+    let bestDistance = Infinity;
+
+    for (const [verse, row] of verseRowRefs.current) {
+      const rect = row.getBoundingClientRect();
+      if (rect.bottom < rootRect.top || rect.top > rootRect.bottom) continue;
+      const distance = Math.abs((rect.top + rect.bottom) / 2 - eyeY);
+      if (distance >= bestDistance) continue;
+      bestDistance = distance;
+      anchorVerse = verse;
+      anchorOffset = rect.top - rootRect.top;
+    }
+
+    pendingTranslationViewportRef.current = {
+      packageId: nextPackageId,
+      verse: anchorVerse,
+      verseOffset: anchorOffset,
+      scrollTop: root.scrollTop,
+    };
+  }, []);
 
   // Book search: full names, aliases, codes (ACT), compact abbreviations (1co, rev).
   const matchesQuery = (code: string) => {
@@ -1619,7 +1676,7 @@ export function ScripturePage({
     setShowHighlightPalette(false);
   }, []);
 
-  // Reset nearVerse immediately on chapter/book/version change so a stale
+  // Reset nearVerse immediately on chapter/book change so a stale
   // "currently reading" preview from the previous text never flashes. Also clear any
   // pending verse selection/palette — otherwise a highlight action left open
   // while navigating (prev/next arrows, ⌘←/→) would apply to the new chapter
@@ -1646,7 +1703,21 @@ export function ScripturePage({
           (_, index) => verse + index,
         ))
       : new Set());
-  }, [book, chapter, packageId]);
+  }, [book, chapter]);
+
+  // Phrase offsets and highlight animations belong to one translation's text
+  // shape, so they cannot survive a package change. Whole-verse selection and
+  // its canonical anchor do survive: those coordinates are translation-free.
+  useEffect(() => {
+    setNearVerse(null);
+    studyLockVerseRef.current = null;
+    marginActiveRef.current = false;
+    suppressNextClickRef.current = false;
+    setShowHighlightPalette(false);
+    setAnimateIds(new Set());
+    setFadingIds(new Set());
+    setPhraseSelection(null);
+  }, [packageId]);
 
   // Clear study lock when the user fully clears the selection (click away).
   useEffect(() => {
@@ -1902,16 +1973,14 @@ export function ScripturePage({
                   className={`control-menu-item version-picker-item${t.code === packageId ? " active" : ""}`}
                   onClick={() => {
                     if (t.code !== packageId) {
-                      // Clear the old translation's DOM and selection in the
-                      // same commit as the package switch. Otherwise React can
-                      // briefly paint new-package highlight offsets over the
-                      // old translation before the text-loading effect runs.
+                      captureTranslationViewport(t.code);
+                      // Clear the old translation's DOM in the same commit as
+                      // the package switch so package-specific highlight
+                      // offsets can never paint over the previous text.
                       setChapterData(null);
                       setChapterError(null);
                       setShowHighlightPalette(false);
-                      setSelectedVerses(new Set());
                       setPhraseSelection(null);
-                      verseSelectionAnchorRef.current = null;
                       setPackageId(t.code);
                     }
                     closeVersionPopover();
