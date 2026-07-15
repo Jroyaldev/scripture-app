@@ -28,6 +28,12 @@ const verseCountSamples = [
   { book: "MAT", chapter: 1 },
   { book: "JHN", chapter: 3 },
   { book: "REV", chapter: 22 },
+  // Regression 2026-07-14: backbone had been short; packages truncated to match.
+  // Classic KJV counts — module/YLT gold (see docs/esword-import-and-resources.md).
+  { book: "1SA", chapter: 23, expected: 29 },
+  { book: "JOB", chapter: 41, expected: 34 },
+  { book: "JOB", chapter: 42, expected: 17 },
+  { book: "1CO", chapter: 16, expected: 24 },
 ];
 
 function countChapterFiles(pkgId: string, book: string): number {
@@ -69,9 +75,42 @@ test("KJV covers all 66 books with correct chapter counts", () => {
   assert.equal(okChapters, totalChapters, `KJV total: ${okChapters}/${totalChapters} chapters`);
 });
 
+test("backbone uses classic KJV verse totals (31,102)", () => {
+  let total = 0;
+  for (const book of bookCodes) {
+    total += backbone.books[book]!.chapters.reduce((a, n) => a + n, 0);
+  }
+  assert.equal(total, 31102, `backbone verse total should be classic KJV 31102, got ${total}`);
+});
+
+test("hot chapters match classic KJV counts in backbone and all packages", () => {
+  const hot = verseCountSamples.filter(
+    (s): s is { book: string; chapter: number; expected: number } => "expected" in s,
+  );
+  for (const sample of hot) {
+    const bb = backbone.books[sample.book]!.chapters[sample.chapter - 1]!;
+    assert.equal(
+      bb,
+      sample.expected,
+      `backbone ${sample.book} ${sample.chapter}: expected ${sample.expected}, got ${bb}`,
+    );
+    for (const pkg of ["web", "kjv", "ylt"] as const) {
+      const actual = getVerseCount(pkg, sample.book, sample.chapter);
+      assert.equal(
+        actual,
+        sample.expected,
+        `${pkg.toUpperCase()} ${sample.book} ${sample.chapter}: expected ${sample.expected} verses, got ${actual}`,
+      );
+    }
+  }
+});
+
 test("WEB representative verse counts match backbone", () => {
   for (const sample of verseCountSamples) {
-    const expected = backbone.books[sample.book]!.chapters[sample.chapter - 1]!;
+    const expected =
+      "expected" in sample && sample.expected != null
+        ? sample.expected
+        : backbone.books[sample.book]!.chapters[sample.chapter - 1]!;
     const actual = getVerseCount("web", sample.book, sample.chapter);
     assert.equal(actual, expected, `WEB ${sample.book} ${sample.chapter}: expected ${expected} verses, got ${actual}`);
   }

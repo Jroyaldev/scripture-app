@@ -112,7 +112,7 @@ export class LibraryEngine {
     // Write default library.json
     writeFileSync(
       join(this.rootPath, "config/library.json"),
-      JSON.stringify({ canonProfile: "protestant", defaultPackage: "web" }, null, 2),
+      JSON.stringify({ canonProfile: "protestant", defaultPackage: "bsb" }, null, 2),
     );
 
     // Write default budget-envelope.json

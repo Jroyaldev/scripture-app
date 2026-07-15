@@ -1,0 +1,30 @@
+{
+  "id": "bsb",
+  "name": "Berean Standard Bible",
+  "language": "en",
+  "type": "translation",
+  "versification": "kjv",
+  "canonProfile": "protestant",
+  "formatVersion": 1,
+  "license": {
+    "spdx": "CC0-1.0",
+    "name": "CC0 1.0 Universal",
+    "attributionText": "Berean Standard Bible (BSB). The Holy Bible, Berean Standard Bible, BSB is produced in cooperation with Bible Hub, Discovery Bible, OpenBible.com, and the Berean Bible Translation Committee. This text of God's Word has been dedicated to the public domain. Free, unrestricted use. See https://berean.bible/licensing.htm",
+    "permissions": {
+      "bundle": true,
+      "index": true,
+      "display": true,
+      "quoteInNotes": true,
+      "export": true,
+      "syncToOwnDevices": true
+    }
+  },
+  "source": "https://bereanbible.com/bsb_usfm.zip",
+  "sourceNote": "Imported from /Users/jonnyroyal/Downloads/bsb_usfm.zip. License: https://berean.bible/licensing.htm",
+  "doctor": {
+    "totalVerses": 31086,
+    "filesWritten": 1189,
+    "backboneMismatches": 15,
+    "importedAt": "2026-07-14T16:31:44.122Z"
+  }
+}

@@ -1,12 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
-  parseMaculaNodesXml,
   layoutSyntaxTree,
   simplifyTree,
   parseMaculaSentenceRef,
+  findLeafTokenIdByContext,
   type SyntaxNode,
 } from "../src/core/language/syntax-tree.js";
+import { parseMaculaNodesXml } from "../src/host/macula-syntax-xml.js";
 
 const SAMPLE = `<?xml version='1.0' encoding='UTF-8'?>
 <Sentences>
@@ -71,6 +72,28 @@ test("parseMaculaNodesXml reads Hebrew verse= and nested m gloss", () => {
   assert.ok(sentences[0]!.tokenIds.includes("o010010010021"));
 });
 
+test("parseMaculaNodesXml keeps self-closing Hebrew morphemes from consuming siblings", () => {
+  const xml = `<?xml version='1.0'?>
+<Sentences>
+  <Sentence verse="1CH 1:10">
+    <Trees><Tree><Node Cat="S" nodeId="s1"><Node Cat="CL" nodeId="cl1">
+      <Node n="o130010100091ה" Cat="art" Unicode="" nodeId="article" StrongNumberX="1886a">
+        <m xml:id="o130010100091ה" english="the" gloss="the"/>
+      </Node>
+      <Node n="o130010100092" Cat="noun" Unicode="אָֽרֶץ" nodeId="earth" StrongNumberX="0776">
+        <m xml:id="o130010100092" english="earth" gloss="earth">אָֽרֶץ</m>
+      </Node>
+    </Node></Node></Tree></Trees>
+  </Sentence>
+</Sentences>`;
+  const [sentence] = parseMaculaNodesXml(xml, "1CH");
+  assert.ok(sentence);
+  assert.deepEqual(sentence.tokenIds, ["o130010100091ה", "o130010100092"]);
+  const serialized = JSON.stringify(sentence.root);
+  assert.doesNotMatch(serialized, /<\/?(?:Node|m)\b/);
+  assert.match(serialized, /אָֽרֶץ/);
+});
+
 test("parseMaculaNodesXml extracts tokens and tree", () => {
   const sentences = parseMaculaNodesXml(SAMPLE, "MAT");
   assert.equal(sentences.length, 1);
@@ -129,4 +152,36 @@ test("simplifyTree collapses unary np wrappers", () => {
   const s = simplifyTree(deep);
   // Should not be infinitely nested np-only chain to a leaf without children arrays of length 1
   assert.ok(s);
+});
+
+test("context leaf matching uses Hebrew word position when Strong's repeats", () => {
+  const root: SyntaxNode = {
+    id: "sentence",
+    cat: "S",
+    children: [
+      {
+        id: "first",
+        cat: "prep",
+        tokenId: "o010010020061",
+        surface: "עַל",
+        strong: "5921",
+      },
+      {
+        id: "second",
+        cat: "prep",
+        tokenId: "o010010020121",
+        surface: "עַל",
+        strong: "5921",
+      },
+    ],
+  };
+
+  assert.equal(
+    findLeafTokenIdByContext(root, {
+      strong: "H5921",
+      surface: "עַל",
+      position: 12,
+    }),
+    "o010010020121",
+  );
 });

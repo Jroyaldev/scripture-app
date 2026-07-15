@@ -1,0 +1,52 @@
+{
+  "totalRows": 31102,
+  "emptyRows": 0,
+  "emptyRate": 0,
+  "expectedKjvTotal": 31102,
+  "vsKjvDelta": 0,
+  "backboneMismatches": [
+    {
+      "book": "1SA",
+      "chapter": 23,
+      "moduleVerses": 29,
+      "backboneVerses": 28
+    },
+    {
+      "book": "JOB",
+      "chapter": 41,
+      "moduleVerses": 34,
+      "backboneVerses": 26
+    },
+    {
+      "book": "JOB",
+      "chapter": 42,
+      "moduleVerses": 17,
+      "backboneVerses": 12
+    },
+    {
+      "book": "1CO",
+      "chapter": 16,
+      "moduleVerses": 24,
+      "backboneVerses": 10
+    }
+  ],
+  "booksPresent": 66,
+  "sample": [
+    {
+      "ref": "GEN 1:1",
+      "text": "IN the beginning of God’s preparing the heavens and the earth—"
+    },
+    {
+      "ref": "PSA 23:1",
+      "text": "A Psalm of David.\nJehovah is my shepherd, I do not lack,"
+    },
+    {
+      "ref": "JHN 3:16",
+      "text": "for God did so love the world, that His Son—the only begotten—He gave, that every one who is believing in him may not pe"
+    },
+    {
+      "ref": "1CO 16:24",
+      "text": "my love is with you all in Christ Jesus. Amen."
+    }
+  ]
+}

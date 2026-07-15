@@ -16,6 +16,7 @@ Approach A, TIPNR people/places), freeze decisions, and deferred menu
 | Need | Source | Format | License | Notes |
 |------|--------|--------|---------|-------|
 | **Greek NT tokens + morph + lemma + Strong’s + gloss** | [Clear-Bible/macula-greek](https://github.com/Clear-Bible/macula-greek) Nestle1904 TSV | TSV (~20MB) | **CC BY 4.0** (composite; attribute) | Best single file for NT word cards |
+| **Greek occurrence senses** | MACULA/MARBLE `sources/MARBLE/SDBG/sdbg-domains-glosses.xml` + TSV `ln` | XML + token tags | **CC BY 4.0** composite; attribute MACULA | Concise Louw-Nida-based labels joined by exact lemma + sense id |
 | **Hebrew OT tokens + morph + lemma** | [openscriptures/morphhb](https://github.com/openscriptures/morphhb) or MACULA Hebrew TSV | OSIS XML / TSV (LFS) | **CC BY 4.0** morph; WLC PD | OSHB is already attributed in this app’s `LICENSES.md` |
 | **Greek morph code → English labels** | [morphgnt/sblgnt](https://github.com/morphgnt/sblgnt) parsing legend + STEPBible TEGMC | tables | CC BY-SA / CC BY | Expand `V-FPI-3P` → future passive indicative 3pl |
 | **Hebrew morph codes** | [OSHB Morphology Codes](http://openscriptures.github.io/morphhb/parsing/HebrewMorphologyCodes.html) + STEPBible TEHMC | HTML / TSV | CC BY | |
@@ -43,6 +44,7 @@ Practical English alignment for open products: **BSB + YLT** (Clear Alignments),
 
 - **Repo:** https://github.com/Clear-Bible/macula-greek  
 - **File:** `Nestle1904/tsv/macula-greek-Nestle1904.tsv` (also SBLGNT TSV)  
+- **Sense labels:** `sources/MARBLE/SDBG/sdbg-domains-glosses.xml`; join TSV `ln` by accent-insensitive exact `lemma + id`
 - **License:** CC BY 4.0 (see `LICENSE.md` for nested sources)  
 - **Programmatic shape:** one row per word; tab-separated  
 
@@ -71,7 +73,7 @@ Practical English alignment for open products: **BSB + YLT** (Clear Alignments),
 | Morph chips | `class` + person/number/… or expand `morph` |
 | Lexical gloss | `gloss` (Berean; contextual-ish — still not “force”) |
 | Neighborhood | order by `xml:id` / `ref` |
-| Semantic domain | `ln`, `domain` |
+| Context-tagged Senses outline | `ln`, `domain` + MARBLE SDBG source label |
 | Frequency / concordance | group by `lemma` or `strong` |
 
 Also includes syntax trees (`lowfat`, `nodes`) if you later want clause views.
@@ -235,6 +237,7 @@ Not available from word tables alone: Force / Consequence / Limits, sermon-safe 
 | STEP TEGMC/TEHMC overlay (Approach A) | `src/core/language/step-morph.ts`, `data/scripture/morph/` |
 | TIPNR people/places identity | `src/core/language/tipnr.ts`, `data/scripture/names/` |
 | Pure MACULA Greek TSV parser | `src/core/language/macula-greek-tsv.ts` |
+| MACULA/MARBLE semantic-sense join + outline | `src/core/language/greek-senses.ts` |
 | Indexes / marks / neighborhood | `src/core/language/indexes.ts` |
 | Tests + 1 Cor 13 fixture | `tests/macula-greek-import.test.ts` |
 | TIPNR tests | `tests/tipnr.test.ts` |
@@ -294,12 +297,12 @@ npm run import:oshb -- \
 ## Minimal ingest plan (Shepherdly-shaped)
 
 ```text
-1. Download macula-greek Nestle1904 TSV
+1. Download macula-greek Nestle1904 TSV + MARBLE SDBG sense-gloss XML
 2. Download morphhb OSIS (or MACULA Hebrew TSV via git-lfs)
 3. Download Dodson CSV + TBESH (or HebrewLexicon)
 4. Download Clear Alignments eng/BSB (NT + OT)
 5. Download STEPBible TEGMC + TEHMC (morph code → prose chips)
-6. Normalize to internal TokenRecord via parseMaculaGreekTsv()
+6. Normalize to internal TokenRecord via parseMaculaGreekTsv(); attach senses by exact lemma + id
 7. Build indexes via buildTokenIndex()
 8. Optional: load BSB alignment → AlignmentSpan(source_token_id → target_words[])
 ```

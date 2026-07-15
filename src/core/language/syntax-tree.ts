@@ -67,6 +67,73 @@ export type SyntaxLayout = {
   edges: { from: string; to: string; x1: number; y1: number; x2: number; y2: number }[];
 };
 
+export type SyntaxLeafMatchContext = {
+  strong?: string | null;
+  surface?: string | null;
+  /** 1-based orthographic word position within the verse. */
+  position?: number | null;
+};
+
+function normalizeSyntaxSurface(value?: string | null): string {
+  return (value ?? "")
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .replace(/[^\p{L}\p{N}]/gu, "")
+    .toLocaleLowerCase();
+}
+
+/** MACULA ids end with a three-digit word number plus morpheme number. */
+function maculaWordPosition(tokenId?: string): number | null {
+  const match = tokenId?.match(/(\d{3})\d$/);
+  return match ? Number(match[1]) : null;
+}
+
+/**
+ * Resolve a leaf when the interlinear package uses different token ids.
+ * Position is the strongest discriminator for OSHB ↔ MACULA Hebrew; Strong's
+ * and normalized surface are useful fallbacks. This avoids focusing the first
+ * occurrence when a word repeats in the same verse.
+ */
+export function findLeafTokenIdByContext(
+  root: SyntaxNode,
+  context: SyntaxLeafMatchContext,
+): string | null {
+  const leaves: SyntaxNode[] = [];
+  function walk(node: SyntaxNode): void {
+    if (node.tokenId) leaves.push(node);
+    for (const child of node.children ?? []) walk(child);
+  }
+  walk(root);
+
+  const strong = String(context.strong ?? "").replace(/^[GH]/i, "");
+  let candidates = strong
+    ? leaves.filter(
+        (leaf) => String(leaf.strong ?? "").replace(/^[GH]/i, "") === strong,
+      )
+    : leaves;
+  if (!candidates.length) return null;
+
+  if (context.position != null) {
+    const byPosition = candidates.filter(
+      (leaf) => maculaWordPosition(leaf.tokenId) === context.position,
+    );
+    if (byPosition.length === 1) return byPosition[0]!.tokenId ?? null;
+    if (byPosition.length > 1) candidates = byPosition;
+  }
+
+  const surface = normalizeSyntaxSurface(context.surface);
+  if (surface) {
+    const bySurface = candidates.filter((leaf) => {
+      const leafSurface = normalizeSyntaxSurface(leaf.surface);
+      return leafSurface === surface || surface.endsWith(leafSurface);
+    });
+    if (bySurface.length === 1) return bySurface[0]!.tokenId ?? null;
+    if (bySurface.length > 1) candidates = bySurface;
+  }
+
+  return candidates.length === 1 ? candidates[0]!.tokenId ?? null : null;
+}
+
 /** Human labels for phrase cats (compact UI). */
 export function catLabel(cat: string): string {
   const c = cat.toUpperCase();
@@ -215,58 +282,6 @@ export function layoutSyntaxTree(
   };
 }
 
-/** Parse MACULA nodes book/chapter XML (Sentence/Tree/Node) into compact sentences. */
-export function parseMaculaNodesXml(xml: string, bookCode: string): SyntaxSentence[] {
-  const sentences: SyntaxSentence[] = [];
-  // Split by Sentence blocks
-  const blocks = xml.split(/<Sentence\b/).slice(1);
-  let si = 0;
-  for (const block of blocks) {
-    // Greek: ref="MAT 1:1!1-1:1!8"  ·  Hebrew: verse="GEN 1:1"
-    const head = block.slice(0, Math.min(block.indexOf(">"), 200));
-    const refM = head.match(/\bref="([^"]+)"/);
-    const verseM = head.match(/\bverse="([^"]+)"/);
-    const refRaw = refM?.[1] ?? verseM?.[1] ?? "";
-    const bodyEnd = block.indexOf("</Sentence>");
-    const body = bodyEnd >= 0 ? block.slice(0, bodyEnd) : block;
-    // Extract first Tree root Node
-    const treeStart = body.indexOf("<Tree>");
-    if (treeStart < 0) continue;
-    const treeEnd = body.indexOf("</Tree>", treeStart);
-    const treeXml = treeEnd >= 0 ? body.slice(treeStart + 6, treeEnd) : body.slice(treeStart + 6);
-    const root = parseNodeTree(treeXml.trim());
-    if (!root) continue;
-
-    const tokenIds: string[] = [];
-    collectTokenIds(root, tokenIds);
-    if (tokenIds.length === 0) continue;
-
-    const { chapter, verseStart, verseEnd } = parseMaculaSentenceRef(refRaw);
-    const refLabel =
-      verseStart === verseEnd
-        ? `${bookCode} ${chapter}:${verseStart}`
-        : `${bookCode} ${chapter}:${verseStart}–${verseEnd}`;
-
-    sentences.push({
-      id: `${bookCode}.${chapter}.${verseStart}.${si}`,
-      refLabel,
-      book: bookCode,
-      chapter,
-      verseStart,
-      verseEnd,
-      tokenIds,
-      root: simplifyTree(root),
-    });
-    si += 1;
-  }
-  return sentences;
-}
-
-function collectTokenIds(n: SyntaxNode, out: string[]): void {
-  if (n.tokenId) out.push(n.tokenId);
-  for (const c of n.children ?? []) collectTokenIds(c, out);
-}
-
 /**
  * Greek: MAT 1:1!1-1:1!8 or MAT 5:3!1-5:4!12
  * Hebrew: GEN 1:1 or GEN 1:1-2
@@ -295,139 +310,6 @@ export function parseMaculaSentenceRef(ref: string): {
   const verseStart = Number(m[2]);
   const verseEnd = m[4] ? Number(m[4]) : verseStart;
   return { chapter, verseStart, verseEnd };
-}
-
-/**
- * Minimal recursive Node parser for MACULA nested <Node ...>...</Node>
- * or self-closing leaf forms with text content.
- */
-function parseNodeTree(xml: string): SyntaxNode | null {
-  const nodes: SyntaxNode[] = [];
-  // Use a simple stack parse
-  type Frame = { node: SyntaxNode; children: SyntaxNode[] };
-  const stack: Frame[] = [];
-  let i = 0;
-  const len = xml.length;
-
-  while (i < len) {
-    if (xml.startsWith("</Node>", i)) {
-      i += 7;
-      const frame = stack.pop();
-      if (!frame) continue;
-      if (frame.children.length) frame.node.children = frame.children;
-      if (stack.length) stack[stack.length - 1]!.children.push(frame.node);
-      else nodes.push(frame.node);
-      continue;
-    }
-    if (xml[i] === "<" && xml.startsWith("<Node", i)) {
-      const gt = xml.indexOf(">", i);
-      if (gt < 0) break;
-      const open = xml.slice(i, gt + 1);
-      const selfClose = open.endsWith("/>");
-      const attrs = parseAttrs(open);
-      const node: SyntaxNode = {
-        id: attrs.nodeId ?? attrs["xml:id"] ?? attrs.n ?? `n${i}`,
-        cat: attrs.Cat ?? "?",
-        rule: attrs.Rule,
-        clType: attrs.ClType,
-      };
-      // Greek Nestle leaves: xml:id="n40001..."
-      if (attrs["xml:id"]?.startsWith("n")) {
-        node.tokenId = attrs["xml:id"];
-        node.surface = attrs.Unicode ?? attrs.NormalizedForm;
-        node.gloss = attrs.Gloss;
-        node.lemma = attrs.UnicodeLemma;
-        if (attrs.StrongNumber) node.strong = attrs.StrongNumber.replace(/^0+/, "") || attrs.StrongNumber;
-      }
-      // Hebrew WLC leaves: n="o010010010011" + Unicode + optional nested <m english="…">
-      if (!node.tokenId && (attrs.n?.startsWith("o") || attrs.morphId) && attrs.Unicode) {
-        node.tokenId = attrs.n ?? attrs.morphId;
-        node.surface = attrs.Unicode;
-        if (attrs.StrongNumberX) {
-          node.strong = attrs.StrongNumberX.replace(/[a-zA-Z]+$/g, "").replace(/^0+/, "") || attrs.StrongNumberX;
-        }
-      }
-      if (attrs.Unicode && !node.surface) node.surface = attrs.Unicode;
-      if (selfClose) {
-        if (stack.length) stack[stack.length - 1]!.children.push(node);
-        else nodes.push(node);
-        i = gt + 1;
-        continue;
-      }
-      stack.push({ node, children: [] });
-      i = gt + 1;
-      // text content for leaves before nested tags
-      if (stack.length && node.tokenId) {
-        const nextLt = xml.indexOf("<", i);
-        if (nextLt > i) {
-          const text = xml.slice(i, nextLt).trim();
-          if (text && !node.surface) node.surface = text.replace(/\.$/, "");
-        }
-      }
-      continue;
-    }
-    // Hebrew nested <m … english="in" gloss="in">בְּ</m>
-    if (xml[i] === "<" && (xml.startsWith("<m ", i) || xml.startsWith("<m>", i))) {
-      const gt = xml.indexOf(">", i);
-      if (gt < 0) break;
-      const open = xml.slice(i, gt + 1);
-      const attrs = parseAttrs(open);
-      const close = xml.indexOf("</m>", gt);
-      const text = close > gt ? xml.slice(gt + 1, close).trim() : "";
-      const frame = stack[stack.length - 1];
-      if (frame) {
-        if (attrs["xml:id"] && !frame.node.tokenId) frame.node.tokenId = attrs["xml:id"];
-        if (attrs.english && !frame.node.gloss) frame.node.gloss = attrs.english;
-        if (attrs.gloss && !frame.node.gloss) frame.node.gloss = attrs.gloss;
-        if (text && !frame.node.surface) frame.node.surface = text;
-        if (attrs.lemma && !frame.node.lemma) frame.node.lemma = attrs.lemma;
-      }
-      i = close > 0 ? close + 4 : gt + 1;
-      continue;
-    }
-    i += 1;
-  }
-
-  return nodes[0] ?? null;
-}
-
-/** Find leaf tokenId matching Strong’s digits (for OSHB ↔ MACULA Hebrew). */
-export function findLeafTokenIdByStrong(root: SyntaxNode, strong: string): string | null {
-  const want = strong.replace(/^0+/, "").replace(/^[Hh]/, "");
-  let found: string | null = null;
-  function walk(n: SyntaxNode): void {
-    if (found) return;
-    if (n.tokenId && n.strong) {
-      const s = n.strong.replace(/^0+/, "").replace(/^[Hh]/, "");
-      if (s === want) {
-        found = n.tokenId;
-        return;
-      }
-    }
-    for (const c of n.children ?? []) walk(c);
-  }
-  walk(root);
-  return found;
-}
-
-/** First leaf token id in tree order. */
-export function firstLeafTokenId(root: SyntaxNode): string | null {
-  if (root.tokenId) return root.tokenId;
-  for (const c of root.children ?? []) {
-    const id = firstLeafTokenId(c);
-    if (id) return id;
-  }
-  return null;
-}
-
-function parseAttrs(openTag: string): Record<string, string> {
-  const out: Record<string, string> = {};
-  const re = /([A-Za-z_:][A-Za-z0-9_.:-]*)="([^"]*)"/g;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(openTag))) {
-    out[m[1]!] = m[2]!;
-  }
-  return out;
 }
 
 export function buildSyntaxBookIndex(

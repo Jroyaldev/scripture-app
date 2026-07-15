@@ -40,6 +40,11 @@
     "import:tipnr": "node --import tsx scripts/import-tipnr.ts",
     "import:macula-syntax": "node --import tsx scripts/import-macula-syntax.ts",
     "import:macula-hebrew-syntax": "node --import tsx scripts/import-macula-hebrew-syntax.ts",
+    "import:esword-bible": "node --import tsx scripts/import-esword-bible.ts",
+    "import:esword-dict": "node --import tsx scripts/import-esword-dict.ts",
+    "import:bsb": "node --import tsx scripts/import-bsb-usfm.ts",
+    "import:bsb-tables": "node --import tsx scripts/import-bsb-tables.ts",
+    "build:reverse-index": "node --import tsx scripts/build-reverse-index.ts",
     "build:hebrew-orbit": "node --import tsx scripts/build-hebrew-orbit-index.ts"
   },
   "main": "dist/electron/main.cjs",
@@ -48,6 +53,7 @@
   },
   "dependencies": {
     "@huggingface/transformers": "4.2.0",
+    "@xmldom/xmldom": "0.8.13",
     "@vitejs/plugin-react": "4.4.1",
     "better-sqlite3": "11.9.1",
     "electron": "35.0.1",

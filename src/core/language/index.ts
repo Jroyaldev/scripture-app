@@ -112,6 +112,32 @@ export {
 } from "./rendering-orbit.js";
 
 export {
+  buildGreekSemanticSenseOutline,
+  parseMaculaSdbgSenseGlosses,
+  semanticSenseLookupKey,
+  semanticSenseTagsForToken,
+  type GreekSemanticSenseItem,
+  type GreekSemanticSenseOutline,
+  type GreekSemanticSenseParseResult,
+  type GreekSemanticSenseTag,
+} from "./greek-senses.js";
+
+export {
+  normalizeEnglishWord,
+  accumulateReverseIndex,
+  finalizeReverseIndex,
+  buildReverseOrbitDetailed,
+  englishKeysFromGloss,
+  topWords,
+  resolveReverseIndexPackage,
+  reverseSourceLabel,
+  type ReverseIndexFile,
+  type ReverseStrongCount,
+  type ReverseOrbit,
+  type ReverseOrbitSegment,
+} from "./reverse-index.js";
+
+export {
   HebrewOrbitIndex,
   getSharedHebrewOrbitIndex,
   setSharedHebrewOrbitIndex,
@@ -121,11 +147,8 @@ export {
 export {
   layoutSyntaxTree,
   simplifyTree,
-  parseMaculaNodesXml,
   buildSyntaxBookIndex,
   sentenceForToken,
-  findLeafTokenIdByStrong,
-  firstLeafTokenId,
   catLabel,
   type SyntaxNode,
   type SyntaxSentence,
@@ -133,6 +156,35 @@ export {
   type SyntaxLayout,
   type LaidOutNode,
 } from "./syntax-tree.js";
+export {
+  buildSyntaxStudyModel,
+  syntaxStudyGroupsInSourceOrder,
+  syntaxStudyPhraseStops,
+  syntaxRoleForClauseChild,
+  syntaxStudyRoleLabel,
+  type SyntaxStudyClause,
+  type SyntaxStudyGroup,
+  type SyntaxStudyModel,
+  type SyntaxStudyPhraseStop,
+  type SyntaxStudyPhraseNode,
+  type SyntaxStudyRole,
+  type SyntaxStudyWord,
+} from "./syntax-study.js";
+export {
+  buildPhraseDiagramProjection,
+  layoutPhraseDiagram,
+  phraseDiagramPolicy,
+  phraseDiagramShape,
+  type LaidOutPhraseDiagramNode,
+  type PhraseDiagramEdge,
+  type PhraseDiagramLayout,
+  type PhraseDiagramNode,
+  type PhraseDiagramNodeSize,
+  type PhraseDiagramPolicy,
+  type PhraseDiagramProjection,
+  type PhraseDiagramShape,
+  type PhraseDiagramView,
+} from "./syntax-diagram.js";
 
 export {
   lookupStrongGloss,

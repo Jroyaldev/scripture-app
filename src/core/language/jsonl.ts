@@ -94,6 +94,18 @@ export function coerceTokenRecord(raw: unknown): TokenRecord | null {
     morph: o.morph as TokenRecord["morph"],
     gloss: typeof o.gloss === "string" ? o.gloss : undefined,
     louwNida: typeof o.louwNida === "string" ? o.louwNida : undefined,
+    semanticSenses: Array.isArray(o.semanticSenses)
+      ? o.semanticSenses.flatMap((value) => {
+          if (!value || typeof value !== "object") return [];
+          const sense = value as Record<string, unknown>;
+          if (typeof sense.id !== "string" || typeof sense.label !== "string") return [];
+          return [{
+            id: sense.id,
+            label: sense.label,
+            ...(typeof sense.domain === "string" ? { domain: sense.domain } : {}),
+          }];
+        })
+      : undefined,
     domain: typeof o.domain === "string" ? o.domain : undefined,
     role: typeof o.role === "string" ? o.role : undefined,
     wordClass: typeof o.wordClass === "string" ? o.wordClass : undefined,

@@ -7,6 +7,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import {
   buildTokenIndex,
+  buildGreekSemanticSenseOutline,
   explainMorphCode,
   getSharedStepMorphIndex,
   getSharedTipnrIndex,
@@ -39,6 +40,8 @@ import {
   type RenderingOrbit,
 } from "../core/language/rendering-orbit.js";
 import { getSharedHebrewOrbitIndex } from "../core/language/hebrew-orbit-index.js";
+import type { ReverseIndexLoader } from "./reverse-index-loader.js";
+import { resolveReverseIndexPackage } from "../core/language/reverse-index.js";
 
 export type LanguagePackageSummary = {
   id: string;
@@ -70,7 +73,7 @@ export type VerseTokenDto = TokenRecord & {
 export type TokenCardDto = {
   token: TokenRecord;
   displaySurface: string;
-  /** Prefer lexicon gloss, then package gloss. */
+  /** Short pastor-facing gloss; lexicon prose stays in Definition. */
   gloss: string | null;
   /** Where the gloss came from. */
   glossSource: "package" | "strongs-hebrew" | null;
@@ -96,6 +99,51 @@ export type TokenCardDto = {
    * Built from MACULA (etc.) gloss columns; open data, not a proprietary ring.
    */
   renderingOrbit: RenderingOrbit | null;
+  /**
+   * Strong's dictionary definition (StrongsPlus etc.) — full entry behind chips.
+   * Optional `deeper` = Thayer (Greek) or BDB (Hebrew) layered under Strong's
+   * inside the same Definition expander (not a second row).
+   */
+  definition: {
+    firstSense: string;
+    full: string;
+    xlit?: string;
+    pronunciation?: string;
+    source: string;
+    id: string;
+    deeper?: {
+      firstSense: string;
+      full: string;
+      source: string;
+      id: string;
+      xlit?: string;
+      senses?: Array<{ n: string; text: string; label?: string }>;
+    } | null;
+  } | null;
+  /** Occurrence-tagged Greek semantic range from MACULA / MARBLE. */
+  semanticSenses: ReturnType<typeof buildGreekSemanticSenseOutline>;
+  /**
+   * Reverse Rendering Orbit — English word → lemmas behind it (from the
+   * reading package's reverse-index.json). Null when package lacks alignments
+   * or the gloss has no reverse hits.
+   */
+  reverseOrbit: {
+    englishWord: string;
+    key: string;
+    total: number;
+    packageId: string;
+    scopeHint: string;
+    segments: Array<{
+      label: string;
+      count: number;
+      share: number;
+      isCurrent?: boolean;
+      strongs: string | null;
+      /** Lightweight definition for cross-testament bands (no verse token). */
+      definition?: TokenCardDto["definition"];
+    }>;
+    source: "alignments";
+  } | null;
   lemmaFreq: {
     corpus: number;
     book: number;
@@ -116,6 +164,74 @@ type LoadedPackage = {
   tokens: TokenRecord[];
 };
 
+type LexiconDefEntry = {
+  firstSense: string;
+  full: string;
+  xlit?: string;
+  pronunciation?: string;
+  source: string;
+  id: string;
+  senses?: Array<{ n: string; text: string; label?: string }>;
+};
+
+type LexiconJsonFile = {
+  entries?: Record<
+    string,
+    {
+      id?: string;
+      firstSense?: string;
+      full?: string;
+      xlit?: string;
+      pronunciation?: string;
+      source?: string;
+      senses?: Array<{ n: string; text: string; label?: string }>;
+    }
+  >;
+};
+
+function loadLexiconMap(jsonText: string, defaultSource: string): Map<string, LexiconDefEntry> {
+  const map = new Map<string, LexiconDefEntry>();
+  const raw = JSON.parse(jsonText) as LexiconJsonFile;
+  for (const [key, v] of Object.entries(raw.entries ?? {})) {
+    if (!v?.full?.trim() || !v.firstSense?.trim()) continue;
+    const id = (v.id ?? key).toUpperCase();
+    if (!/^[HG]\d{1,5}$/.test(id)) continue;
+    map.set(id, {
+      id,
+      firstSense: v.firstSense.trim(),
+      full: v.full.trim(),
+      ...(v.xlit ? { xlit: v.xlit } : {}),
+      ...(v.pronunciation ? { pronunciation: v.pronunciation } : {}),
+      ...(v.senses?.length ? { senses: v.senses } : {}),
+      source: v.source?.trim() || defaultSource,
+    });
+  }
+  return map;
+}
+
+function resolveStrongIds(
+  strong: string | undefined | null,
+  strongPrefixed: string | undefined | null,
+): string[] {
+  const candidates: string[] = [];
+  if (strongPrefixed) candidates.push(strongPrefixed.toUpperCase().trim());
+  if (strong) {
+    const digits = String(strong).replace(/^[HG]/i, "").replace(/^0+/, "") || String(strong);
+    if (strongPrefixed?.match(/^[HG]/i)) {
+      candidates.push(`${strongPrefixed[0]!.toUpperCase()}${digits}`);
+    } else {
+      candidates.push(`H${digits}`, `G${digits}`);
+    }
+  }
+  const out: string[] = [];
+  for (const c of candidates) {
+    out.push(c);
+    const m = c.match(/^([HG])(\d+)$/);
+    if (m) out.push(`${m[1]}${parseInt(m[2]!, 10)}`);
+  }
+  return [...new Set(out)];
+}
+
 /**
  * Discovers and loads interlinear-data packages from one or more root dirs.
  * Search order: first matching package id wins (library artifacts before app data).
@@ -125,24 +241,123 @@ export class TokenPackageLoader {
   private cache = new Map<string, LoadedPackage>();
   /** Strong's number (digits) → English gloss (Hebrew). */
   private hebrewGloss = new Map<string, StrongGlossEntry>();
+  /**
+   * Strong's full definitions keyed H#### / G#### (StrongsPlus import).
+   * Used for the language-margin Definition expander head.
+   */
+  private strongDefinitions = new Map<string, LexiconDefEntry>();
+  /** Thayer (G####) — deeper block under Strong's for Greek. */
+  private thayerDefinitions = new Map<string, LexiconDefEntry>();
+  /** BDB (H####) — deeper block under Strong's for Hebrew. */
+  private bdbDefinitions = new Map<string, LexiconDefEntry>();
   /** Optional: ensure STEP morph tables are loaded before card lookup. */
   private ensureStepMorph: (() => void) | null;
+  /** Reverse index for aligned reading packages (bsb / akjv-strongs). */
+  private reverseIndex: ReverseIndexLoader | null = null;
 
   constructor(
     packageRoots: string[],
-    options?: { hebrewGlossJson?: string; ensureStepMorph?: () => void },
+    options?: {
+      hebrewGlossJson?: string;
+      strongDefinitionsJson?: string;
+      thayerDefinitionsJson?: string;
+      bdbDefinitionsJson?: string;
+      ensureStepMorph?: () => void;
+      reverseIndex?: ReverseIndexLoader;
+    },
   ) {
     this.roots = packageRoots.filter((r) => r.length > 0);
     this.ensureStepMorph = options?.ensureStepMorph ?? null;
+    this.reverseIndex = options?.reverseIndex ?? null;
     if (options?.hebrewGlossJson) {
       this.loadHebrewGlossJson(options.hebrewGlossJson);
     }
+    if (options?.strongDefinitionsJson) {
+      this.loadStrongDefinitionsJson(options.strongDefinitionsJson);
+    }
+    if (options?.thayerDefinitionsJson) {
+      this.loadThayerDefinitionsJson(options.thayerDefinitionsJson);
+    }
+    if (options?.bdbDefinitionsJson) {
+      this.loadBdbDefinitionsJson(options.bdbDefinitionsJson);
+    }
+  }
+
+  setReverseIndexLoader(loader: ReverseIndexLoader | null): void {
+    this.reverseIndex = loader;
   }
 
   /** Load OpenScriptures Strong's Hebrew compact gloss map (JSON text). */
   loadHebrewGlossJson(jsonText: string): number {
     this.hebrewGloss = parseStrongGlossJson(jsonText);
     return this.hebrewGloss.size;
+  }
+
+  /**
+   * Load StrongsPlus-style definitions:
+   * `{ meta, entries: { "H1": { id, firstSense, full, source, … } } }`.
+   */
+  loadStrongDefinitionsJson(jsonText: string): number {
+    this.strongDefinitions = loadLexiconMap(jsonText, "Strong's");
+    return this.strongDefinitions.size;
+  }
+
+  loadThayerDefinitionsJson(jsonText: string): number {
+    this.thayerDefinitions = loadLexiconMap(jsonText, "Thayer");
+    return this.thayerDefinitions.size;
+  }
+
+  loadBdbDefinitionsJson(jsonText: string): number {
+    this.bdbDefinitions = loadLexiconMap(jsonText, "BDB");
+    return this.bdbDefinitions.size;
+  }
+
+  private lookupInMap(
+    map: Map<string, LexiconDefEntry>,
+    strong: string | undefined | null,
+    strongPrefixed: string | undefined | null,
+  ): LexiconDefEntry | null {
+    if (map.size === 0) return null;
+    for (const c of resolveStrongIds(strong, strongPrefixed)) {
+      const hit = map.get(c);
+      if (hit) return hit;
+    }
+    return null;
+  }
+
+  private lookupDefinition(
+    strong: string | undefined | null,
+    strongPrefixed: string | undefined | null,
+  ): TokenCardDto["definition"] {
+    const head = this.lookupInMap(this.strongDefinitions, strong, strongPrefixed);
+    if (!head) return null;
+
+    const ids = resolveStrongIds(strong, strongPrefixed);
+    const isGreek = ids.some((id) => id.startsWith("G")) || strongPrefixed?.toUpperCase().startsWith("G");
+    const isHebrew = ids.some((id) => id.startsWith("H")) || strongPrefixed?.toUpperCase().startsWith("H");
+
+    let deeper: LexiconDefEntry | null = null;
+    if (isGreek) deeper = this.lookupInMap(this.thayerDefinitions, strong, strongPrefixed);
+    else if (isHebrew) deeper = this.lookupInMap(this.bdbDefinitions, strong, strongPrefixed);
+
+    return {
+      firstSense: head.firstSense,
+      full: head.full,
+      ...(head.xlit ? { xlit: head.xlit } : {}),
+      ...(head.pronunciation ? { pronunciation: head.pronunciation } : {}),
+      source: head.source,
+      id: head.id,
+      deeper: deeper
+        ? {
+            firstSense: deeper.firstSense,
+            full: deeper.full,
+            source: deeper.source,
+            id: deeper.id,
+            ...(deeper.xlit ? { xlit: deeper.xlit } : {}),
+            ...(deeper.senses?.length ? { senses: deeper.senses } : {}),
+          }
+        : null,
+    };
   }
 
   /** Replace search roots (e.g. after library path changes). Clears package cache only. */
@@ -329,11 +544,12 @@ export class TokenPackageLoader {
 
   /**
    * Ready-made payload for a language card UI.
+   * @param options.readingPackageId — scripture package for reverse orbit (bsb / akjv-strongs).
    */
   getTokenCard(
     packageId: string,
     tokenId: string,
-    options?: MarkOptions,
+    options?: MarkOptions & { readingPackageId?: string },
   ): TokenCardDto | null {
     if (!this.load(packageId)) return null;
     const pkg = this.cache.get(packageId)!;
@@ -377,6 +593,16 @@ export class TokenPackageLoader {
     const stepMorph = getSharedStepMorphIndex().lookup(token.morphCode);
 
     const resolved = this.resolveGloss(token);
+    const definition = this.lookupDefinition(token.strong, token.strongPrefixed);
+    const semanticSenses = isHebrew || !lemma
+      ? null
+      : buildGreekSemanticSenseOutline({
+          tokens: (pkg.index.byLemma.get(lemma) ?? []).flatMap((id) => {
+            const occurrence = pkg.index.byId.get(id);
+            return occurrence ? [occurrence] : [];
+          }),
+          focus: token,
+        });
 
     let nameEntity: TokenCardDto["nameEntity"] = null;
     if (tokenLooksLikeProperName(token)) {
@@ -462,21 +688,121 @@ export class TokenPackageLoader {
       }
     }
 
+    // Reverse orbit: English → lemmas. BSB is the canonical reverse source for
+    // every reading translation; akjv-strongs only when it's the active reader.
+    // Pill never vanishes just because the pastor switched WEB/YLT/KJV.
+    let reverseOrbit: TokenCardDto["reverseOrbit"] = null;
+    if (this.reverseIndex) {
+      const reversePkg = resolveReverseIndexPackage(options?.readingPackageId);
+      if (this.reverseIndex.hasIndex(reversePkg)) {
+        const glossForReverse =
+          resolved.short ?? resolved.full ?? token.gloss ?? null;
+        const prefer: "G" | "H" = isHebrew ? "H" : "G";
+        const raw =
+          this.reverseIndex.resolveOrbit({
+            packageId: reversePkg,
+            gloss: glossForReverse,
+            displayWord: resolved.short ?? glossForReverse,
+            currentStrong: token.strongPrefixed ?? token.strong,
+            preferTestament: prefer,
+            labelForStrong: (s) => this.labelForStrong(s, pkg),
+          }) ?? null;
+        if (raw) {
+          reverseOrbit = {
+            ...raw,
+            segments: raw.segments.map((seg) => {
+              if (!seg.strongs) return seg;
+              const def = this.lookupDefinition(seg.strongs.slice(1), seg.strongs);
+              return def ? { ...seg, definition: def } : seg;
+            }),
+          };
+        }
+      }
+    }
+
     return {
       token,
       displaySurface: displaySurface(token.surface),
-      gloss: resolved.full,
+      gloss: resolved.short ?? resolved.full,
       glossSource: resolved.source,
       morphLabels,
       morphExplain,
       stepMorph,
       nameEntity,
       renderingOrbit,
+      definition,
+      semanticSenses,
+      reverseOrbit,
       lemmaFreq: { corpus, book, chapter },
       neighborhood: { before: nb.before, after: nb.after },
       occurrencesInBook: occurrences,
       marks,
     };
+  }
+
+  /**
+   * Display label for a reverse-ring segment:
+   *  1. Same-language package lemma/surface (prefix-safe)
+   *  2. Thayer Greek head (G####) / OpenScriptures Hebrew lemma (H####)
+   *  3. xlit fallback — never raw Strong's id when a lemma exists
+   */
+  private labelForStrong(strongs: string, pkg: LoadedPackage): string {
+    const isHeb = strongs.startsWith("H");
+    const isGrk = strongs.startsWith("G");
+    const digits = strongs.replace(/^[HG]/i, "");
+    const pkgLang = (pkg.manifest.language ?? "").toLowerCase();
+    const pkgIsHeb =
+      pkgLang === "hbo" || pkg.manifest.id.includes("oshb") || pkg.manifest.id.includes("hebrew");
+    const pkgIsGrk =
+      pkgLang === "grc" || pkg.manifest.id.includes("macula") || pkg.manifest.id.includes("greek");
+
+    if ((isHeb && pkgIsHeb) || (isGrk && pkgIsGrk)) {
+      const ids = pkg.index.byStrong.get(digits) ?? [];
+      for (const id of ids.slice(0, 12)) {
+        const t = pkg.index.byId.get(id);
+        if (t?.strongPrefixed && !t.strongPrefixed.toUpperCase().startsWith(strongs[0]!)) {
+          continue;
+        }
+        const lem = t?.lemma?.trim();
+        if (lem && !/^[\d\s/a-z]+$/i.test(lem) && lem.length <= 24) return lem;
+        const surf = t?.surface?.replace(/\//g, "").trim();
+        if (
+          surf &&
+          /[\u0370-\u03FF\u1F00-\u1FFF\u0590-\u05FF]/.test(surf) &&
+          surf.length <= 24
+        ) {
+          return surf;
+        }
+      }
+    }
+
+    // Hebrew rung (mirrors Thayer for Greek): OpenScriptures Strong's Hebrew gloss map.
+    if (isHeb) {
+      const heb = lookupStrongGloss(this.hebrewGloss, digits);
+      if (heb?.lemma?.trim()) return heb.lemma.trim();
+      if (heb?.xlit?.trim()) return heb.xlit.trim();
+      const bdb = this.bdbDefinitions.get(strongs);
+      if (bdb?.xlit?.trim()) return bdb.xlit.trim();
+    }
+
+    if (isGrk) {
+      const th = this.thayerDefinitions.get(strongs);
+      if (th?.full) {
+        const m = th.full.match(
+          /^([\u0370-\u03FF\u1F00-\u1FFF][\u0370-\u03FF\u1F00-\u1FFF\u0300-\u036f]*)/,
+        );
+        if (m) return m[1]!;
+      }
+    }
+
+    const def = this.strongDefinitions.get(strongs);
+    if (def?.xlit && def.xlit.length <= 24) return def.xlit;
+    // Last resort: still better than bare id when we have a firstSense headword.
+    if (def?.firstSense) {
+      const head = def.firstSense.split(/[,;(]/)[0]?.trim();
+      if (head && head.length <= 20 && !/^[HG]\d+$/i.test(head)) return head;
+    }
+    return strongs;
   }
 
   private findPackageDir(

@@ -41,6 +41,7 @@ import { assembleMargin } from "../core/margin/index.js";
 import { runSemanticMargin } from "../host/semantic-margin-host.js";
 import { importObsidianVault } from "../core/importer/obsidian.js";
 import { TokenPackageLoader } from "../host/token-package-loader.js";
+import { ReverseIndexLoader } from "../host/reverse-index-loader.js";
 import { SyntaxTreeLoader } from "../host/syntax-tree-loader.js";
 import {
   getSharedStepMorphIndex,
@@ -80,6 +81,9 @@ interface AppSettingsSchema {
     packageId: string;
     visitedAt: number;
   }>;
+  /** Where the reader last was — restored on launch. Unlike recentPassages
+   * (which only records deliberate jumps), this follows every chapter turn. */
+  lastRead: { book: string; chapter: number; packageId: string } | null;
   windowBounds: WindowBounds | null;
   /** The library location the user last confirmed (Welcome screen or Switch
    * Library), if any. null means no choice has ever been confirmed — the
@@ -98,6 +102,7 @@ const store = new Store<AppSettingsSchema>({
     verseNumbers: "always",
     sidebarStyle: "original",
     recentPassages: [],
+    lastRead: null,
     windowBounds: null,
     libraryPath: null,
   },
@@ -118,6 +123,7 @@ let embeddingProvider: EmbeddingProvider | null = null;
 let jobQueue: JobQueue | null = null;
 /** Original-language packages (MACULA Greek, later OSHB Hebrew). */
 let tokenPackages: TokenPackageLoader | null = null;
+let reverseIndexes: ReverseIndexLoader | null = null;
 /** MACULA syntax trees (syntax art). */
 let syntaxTrees: SyntaxTreeLoader | null = null;
 
@@ -389,20 +395,47 @@ function initializeEngine(libraryPathArg?: string, autoCreateIfMissing: boolean 
   const hebrewGlossJson = existsSync(hebrewGlossPath)
     ? readFileSync(hebrewGlossPath, "utf8")
     : undefined;
+  const strongDefsPath = join(DATA_DIR, "lexicons/strongs-plus.json");
+  const strongDefinitionsJson = existsSync(strongDefsPath)
+    ? readFileSync(strongDefsPath, "utf8")
+    : undefined;
+  const thayerPath = join(DATA_DIR, "lexicons/thayer.json");
+  const thayerDefinitionsJson = existsSync(thayerPath)
+    ? readFileSync(thayerPath, "utf8")
+    : undefined;
+  const bdbPath = join(DATA_DIR, "lexicons/bdb-kjv.json");
+  const bdbDefinitionsJson = existsSync(bdbPath)
+    ? readFileSync(bdbPath, "utf8")
+    : undefined;
 
   // STEP morph overlay (Approach A) — load before any card request.
   loadStepMorphTablesOnce();
   loadTipnrIndexOnce();
   loadHebrewOrbitIndexOnce();
 
+  const pkgRoots = languagePackageRoots(libraryPath);
+  if (!reverseIndexes) {
+    reverseIndexes = new ReverseIndexLoader(pkgRoots);
+  } else {
+    reverseIndexes.setRoots(pkgRoots);
+  }
+
   if (!tokenPackages) {
-    tokenPackages = new TokenPackageLoader(languagePackageRoots(libraryPath), {
+    tokenPackages = new TokenPackageLoader(pkgRoots, {
       hebrewGlossJson,
+      strongDefinitionsJson,
+      thayerDefinitionsJson,
+      bdbDefinitionsJson,
       ensureStepMorph: loadStepMorphTablesOnce,
+      reverseIndex: reverseIndexes,
     });
   } else {
-    tokenPackages.setRoots(languagePackageRoots(libraryPath));
+    tokenPackages.setRoots(pkgRoots);
+    tokenPackages.setReverseIndexLoader(reverseIndexes);
     if (hebrewGlossJson) tokenPackages.loadHebrewGlossJson(hebrewGlossJson);
+    if (strongDefinitionsJson) tokenPackages.loadStrongDefinitionsJson(strongDefinitionsJson);
+    if (thayerDefinitionsJson) tokenPackages.loadThayerDefinitionsJson(thayerDefinitionsJson);
+    if (bdbDefinitionsJson) tokenPackages.loadBdbDefinitionsJson(bdbDefinitionsJson);
   }
 
   const syntaxRoots = [join(DATA_DIR, "syntax")];
@@ -741,9 +774,21 @@ function registerIpcHandlers(): void {
 
   ipcMain.handle(
     "language-token-card",
-    (_event, opts: { packageId: string; tokenId: string }) => {
+    (
+      _event,
+      opts: { packageId: string; tokenId: string; readingPackageId?: string },
+    ) => {
       if (!tokenPackages) return null;
-      return tokenPackages.getTokenCard(opts.packageId, opts.tokenId);
+      return tokenPackages.getTokenCard(opts.packageId, opts.tokenId, {
+        readingPackageId: opts.readingPackageId,
+      });
+    },
+  );
+
+  ipcMain.handle(
+    "language-has-reverse-index",
+    (_event, readingPackageId: string) => {
+      return reverseIndexes?.hasIndex(readingPackageId) ?? false;
     },
   );
 
@@ -784,6 +829,7 @@ function registerIpcHandlers(): void {
         ? {
             chapter: token.chapter,
             verse: token.verse,
+            position: token.position,
             strong: token.strong,
             surface: token.surface,
           }

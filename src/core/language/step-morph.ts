@@ -167,10 +167,9 @@ function properNameStub(code: "HNp" | "ANp" | string): StepMorphOverlay {
   return {
     code,
     phrase: aramaic ? "Aramaic proper name" : "Hebrew proper name",
-    explanation:
-      "A proper name (person, place, or titled entity). STEP has no full morphology row for bare name tags.",
-    example: aramaic ? "e.g. a place or person name in Aramaic" : "e.g. a person or place name",
-    source: aramaic ? "STEPBible TEHMC" : "STEPBible TEHMC",
+    explanation: "A name — a person, place, or title.",
+    example: "",
+    source: "STEPBible TEHMC",
   };
 }
 

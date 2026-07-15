@@ -81,7 +81,7 @@ Think of three stacked concerns on one token card:
 | **Rendering Orbit** | How this lemma is rendered in English (circular spectrum) | `rendering-orbit.ts`, MACULA package glosses |
 | **Structure** | MACULA clause outline (phrasing-style) + word strip | `syntax-tree.ts`, `SyntaxArt.tsx`, `data/scripture/syntax/…` |
 | **Reverse ring** *(TBD)* | English word → which OL lemmas underlie it | needs alignment / reverse index |
-| **Senses ring** *(TBD)* | Semantic senses of a lemma (not translation bands) | Louw–Nida / sense lexicon; careful framing |
+| **Senses outline** | Source-shaped semantic range, never percentage wedges | MACULA/MARBLE occurrence tags for Greek; BDB hierarchy for Hebrew |
 
 ### 3.1 Morph expanders
 
@@ -244,20 +244,21 @@ Bible (or open reverse interlinear) uses under that English word.
 | **License** | Prefer BSB/YLT alignments; no ESV reverse interlinear without rights. |
 | **Status** | **TBD** — documented for a future pass; do not confuse with the shipped lemma→English orbit. |
 
-### 7.1b Senses ring *(TBD — careful, data-first)*
+### 7.1b Senses outline *(shipped — data-first)*
 
-Logos “Senses” ring: center = lemma, segments = **semantic senses** (with
-definitions / ratios), not English translation strings. Orthogonal to
-translation spectrum.
+Lexicon senses are hierarchy/range data, not measured proportions, so this
+module is an outline rather than a donut. It remains orthogonal to the two
+count-backed translation rings.
 
 | | Detail |
 |--|--------|
 | **Pastor question** | “What range of *meanings* can this lemma carry in context?” |
 | **Not the same as** | Rendering Orbit bands (*perfect* vs *finish*) or reverse ring (English→lemmas). |
-| **Data options** | MACULA `domain` / Louw–Nida (`ln`) on Greek tokens; Bible Sense Lexicon–style open datasets if license-clean; STEP/domain tables. |
-| **UX sketch** | Progressive “Senses” under orbit; segment = sense label + count; open = one-line definition + sample verses. |
+| **Greek source** | MACULA token `ln` occurrence tags joined by exact lemma + id to the MARBLE SDBG concise source gloss. Thayer stays in Definition. |
+| **Hebrew source** | Clean unique numeric BDB top-level senses; sub-senses remain nested and grammar scaffolding is never a band. |
+| **UX** | Frequency-ranked Greek range with a quiet `here` marker, six-row visible cap, and full source label/count/domain on open; hierarchical Hebrew outline. One-sense entries have no pill. |
 | **Risk** | Looks like “the” meaning or theology. Creed: **dictionary/data range ≠ sermon force.** Attribute source; no AI-authored senses in v1. |
-| **Status** | **TBD** — ship only with progressive disclosure + clear “range, not force” framing. |
+| **Status** | **Shipped 2026-07-14.** Import refuses exact lemma+id label conflicts, omits unmatched tags rather than guessing, and corpus QA scans every Greek token. |
 
 ### 7.1c Structure / syntax *(shipped NT Greek; UI redesigned)*
 
@@ -282,7 +283,7 @@ decorative SVG.
            │
            ├─ Rendering Orbit     lemma → English renderings     ✅ shipped
            ├─ Reverse ring        English → lemmas               ⏳ TBD
-           ├─ Senses ring         lemma → semantic senses        ⏳ TBD
+           ├─ Senses outline      lemma → semantic range         ✅ shipped
            └─ Syntax art          sentence tree                  ✅ NT Greek
 ```
 
@@ -378,7 +379,6 @@ Recorded so they stay optional, not forgotten:
 - When verse has many names, is “Also at this Strong’s” the right alt UI?  
 - **Reverse ring first or Senses ring first** when extending word-study visuals?  
 - Reverse ring: invert MACULA glosses (fast, weaker) vs Clear BSB alignments (stronger)?  
-- Senses: Louw–Nida only, or wait for a cleaner open sense lexicon?  
 - Braid (reading-text underlines) vs reverse ring (English center) — both needed long-term?  
 - Any MACULA Hebrew upgrade path vs stay on OSHB packages?
 

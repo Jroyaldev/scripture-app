@@ -60,7 +60,7 @@ test("unknown label is flagged for correction", () => {
   assert.ok(ex);
   const bad = ex!.parts.find((p) => p.label === "not-a-real-feature");
   assert.ok(bad?.unknown);
-  assert.match(bad!.meaning, /not yet in our gloss table/i);
+  assert.match(bad!.meaning, /tagged .* in the source morphology/i);
 });
 
 test("visibleMorphParts caps closed chips", () => {

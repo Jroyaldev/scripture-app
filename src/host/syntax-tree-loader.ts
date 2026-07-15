@@ -6,8 +6,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import type { SyntaxPackageIndex, SyntaxSentence } from "../core/language/syntax-tree.js";
 import {
-  findLeafTokenIdByStrong,
-  firstLeafTokenId,
+  findLeafTokenIdByContext,
   sentenceForToken,
 } from "../core/language/syntax-tree.js";
 
@@ -23,6 +22,7 @@ export type SyntaxHit = {
 export type SyntaxTokenContext = {
   chapter: number;
   verse: number;
+  position?: number | null;
   strong?: string | null;
   surface?: string | null;
 };
@@ -120,11 +120,14 @@ export class SyntaxTreeLoader {
 
     let focusTokenId = tokenId;
     if (!sentence.tokenIds.includes(tokenId)) {
-      const byStrong =
-        ctx?.strong != null
-          ? findLeafTokenIdByStrong(sentence.root, String(ctx.strong))
-          : null;
-      focusTokenId = byStrong ?? firstLeafTokenId(sentence.root) ?? sentence.tokenIds[0]!;
+      const byContext = ctx
+        ? findLeafTokenIdByContext(sentence.root, ctx)
+        : null;
+      // Different packages may not share ids, but that never authorizes a
+      // guessed highlight. An unavailable Structure result is safer than
+      // silently focusing the first matching Strong's number or first leaf.
+      if (!byContext) return null;
+      focusTokenId = byContext;
     }
 
     return {

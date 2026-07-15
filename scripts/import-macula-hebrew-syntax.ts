@@ -13,10 +13,10 @@ import { readdirSync, readFileSync, writeFileSync, mkdirSync, existsSync } from 
 import { resolve, dirname, join, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-  parseMaculaNodesXml,
   buildSyntaxBookIndex,
   type SyntaxSentence,
 } from "../src/core/language/syntax-tree.js";
+import { parseMaculaNodesXml } from "../src/host/macula-syntax-xml.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");

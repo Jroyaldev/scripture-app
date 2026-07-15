@@ -44,7 +44,12 @@ declare global {
         loadPackage(packageId: string): Promise<{ ok: boolean; packageId?: string; loaded?: boolean; error?: string }>;
         getVerseTokens(packageId: string, book: string, chapter: number, verse: number): Promise<LanguageToken[] | null>;
         getToken(packageId: string, tokenId: string): Promise<LanguageToken | null>;
-        getTokenCard(packageId: string, tokenId: string): Promise<LanguageTokenCard | null>;
+        getTokenCard(
+          packageId: string,
+          tokenId: string,
+          readingPackageId?: string,
+        ): Promise<LanguageTokenCard | null>;
+        hasReverseIndex(readingPackageId: string): Promise<boolean>;
         getLemmaInBook(packageId: string, book: string, lemma: string): Promise<LanguageToken[] | null>;
         getVerseMarks(packageId: string, book: string, chapter: number, verse: number): Promise<LanguageTokenMark[] | null>;
         getSyntaxForToken(packageId: string, book: string, tokenId: string): Promise<LanguageSyntaxHit | null>;
@@ -141,6 +146,8 @@ export interface AppSettings {
   verseNumbers: VerseNumberMode;
   sidebarStyle: SidebarStyle;
   recentPassages: RecentPassageSetting[];
+  /** Where the reader last was — restored on launch. */
+  lastRead: { book: string; chapter: number; packageId: string } | null;
 }
 
 export interface LibrarySummary {
@@ -371,6 +378,11 @@ export interface LanguageToken {
   morph: Record<string, string | undefined>;
   gloss?: string;
   louwNida?: string;
+  semanticSenses?: Array<{
+    id: string;
+    label: string;
+    domain?: string;
+  }>;
   domain?: string;
   role?: string;
   wordClass?: string;
@@ -445,6 +457,58 @@ export interface LanguageRenderingOrbit {
   kind?: "content" | "function";
 }
 
+/** Lexicon definition payload (Strong's head + optional Thayer/BDB deeper). */
+export interface LanguageDefinition {
+  firstSense: string;
+  full: string;
+  xlit?: string;
+  pronunciation?: string;
+  source: string;
+  id: string;
+  deeper?: {
+    firstSense: string;
+    full: string;
+    source: string;
+    id: string;
+    xlit?: string;
+    senses?: Array<{ n: string; text: string; label?: string }>;
+  } | null;
+}
+
+export interface LanguageSemanticSenseOutline {
+  source: "MACULA / MARBLE";
+  total: number;
+  hiddenCount: number;
+  taggedOccurrences: number;
+  totalOccurrences: number;
+  senses: Array<{
+    rank: number;
+    ids: string[];
+    label: string;
+    domain?: string;
+    count: number;
+    current: boolean;
+    examples: string[];
+  }>;
+}
+
+/** Reverse orbit — English word → original-language lemmas (from alignments). */
+export interface LanguageReverseOrbit {
+  englishWord: string;
+  key: string;
+  total: number;
+  packageId: string;
+  source: "alignments";
+  /** Hub meta, e.g. "whole Bible". */
+  scopeHint?: string;
+  segments: Array<
+    LanguageOrbitSegment & {
+      strongs: string | null;
+      definition?: LanguageDefinition | null;
+    }
+  >;
+}
+
 export interface LanguageSyntaxNode {
   id: string;
   cat: string;
@@ -479,7 +543,7 @@ export interface LanguageSyntaxHit {
 export interface LanguageTokenCard {
   token: LanguageToken;
   displaySurface?: string;
-  /** Prefer Strong's / package English gloss. */
+  /** Short pastor-facing gloss; lexicon prose stays in Definition. */
   gloss: string | null;
   glossSource: "package" | "strongs-hebrew" | null;
   morphLabels: string[];
@@ -490,6 +554,12 @@ export interface LanguageTokenCard {
   nameEntity?: LanguageNameEntityHit | null;
   /** Rendering Orbit when lemma has corpus glosses. */
   renderingOrbit?: LanguageRenderingOrbit | null;
+  /** Strong's dictionary definition for the Definition expander (+ optional deeper Thayer/BDB). */
+  definition?: LanguageDefinition | null;
+  /** Context-tagged Greek senses; Thayer remains Definition prose only. */
+  semanticSenses?: LanguageSemanticSenseOutline | null;
+  /** Reverse orbit: English → lemmas (when reading package has alignments). */
+  reverseOrbit?: LanguageReverseOrbit | null;
   lemmaFreq: { corpus: number; book: number; chapter: number };
   neighborhood: { before: LanguageToken[]; after: LanguageToken[] };
   occurrencesInBook: LanguageToken[];

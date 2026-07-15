@@ -185,12 +185,47 @@ export function normalizeOrbitGloss(raw: string | null | undefined): string | nu
 }
 
 /**
+ * Human-readable counterpart to `normalizeOrbitGloss`.
+ *
+ * The stem is only a grouping key. It must never leak into the legend: users
+ * should see a real attested gloss such as “loved” or “beloved”, not “lov”.
+ */
+export function normalizeOrbitDisplayGloss(raw: string | null | undefined): string | null {
+  if (!raw?.trim()) return null;
+  if (raw.trim() === "-" || raw.trim() === "—") return null;
+
+  const cleaned = raw
+    .replace(/\[[^\]]*]/g, " ")
+    .replace(/\([^)]*\)/g, " ")
+    .replace(/[“”"'’]/g, "")
+    .replace(/[;:,]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+  if (!cleaned) return null;
+
+  const content = cleaned
+    .split(/\s+/)
+    .map((word) => word.replace(/[^a-z-]/g, ""))
+    .filter((word) => word.length > 0 && !GLOSS_STOP.has(word));
+  const words = content.length > 0 ? content : cleaned.split(/\s+/).slice(0, 1);
+  const joined = words.slice(0, 3).join(" ");
+  return joined.length > 48 ? `${joined.slice(0, 45).trim()}…` : joined || null;
+}
+
+/**
  * Collapse English inflectional variants the way Logos groups
  * "king, king's, kings" and "perfect, perfected, perfectly".
  */
 export function stemEnglishToken(w: string): string {
   let s = w.toLowerCase().replace(/[^a-z-]/g, "");
   if (!s || s.length <= 2) return s;
+
+  // High-frequency love forms need one stable bucket. Applying generic -ves
+  // and -ing rules first produced the visible junk keys “lof/lov/belove”.
+  if (s === "love" || s === "loved" || s === "loves" || s === "loving" || s === "beloved") {
+    return "love";
+  }
 
   // possessives / plurals
   if (s.endsWith("ies") && s.length > 4) s = s.slice(0, -3) + "y";
@@ -268,25 +303,35 @@ export function buildRenderingOrbit(opts: {
     return null;
   }
 
-  const counts = new Map<string, number>();
+  type GlossBucket = {
+    count: number;
+    displayCounts: Map<string, number>;
+  };
+  const buckets = new Map<string, GlossBucket>();
   let total = 0;
   for (const id of tokenIds) {
-    const g = normalizeOrbitGloss(opts.glossForId(id));
-    if (!g) continue;
-    counts.set(g, (counts.get(g) ?? 0) + 1);
+    const rawGloss = opts.glossForId(id);
+    const key = normalizeOrbitGloss(rawGloss);
+    if (!key) continue;
+    const display = normalizeOrbitDisplayGloss(rawGloss) ?? key;
+    const bucket = buckets.get(key) ?? { count: 0, displayCounts: new Map<string, number>() };
+    bucket.count += 1;
+    bucket.displayCounts.set(display, (bucket.displayCounts.get(display) ?? 0) + 1);
+    buckets.set(key, bucket);
     total += 1;
   }
 
   // Strong's-only fallback: single segment from current gloss if corpus empty
   if (total === 0) {
-    const one = normalizeOrbitGloss(opts.currentGloss);
-    if (!one) return null;
+    const key = normalizeOrbitGloss(opts.currentGloss);
+    if (!key) return null;
+    const display = normalizeOrbitDisplayGloss(opts.currentGloss) ?? key;
     return {
       lemma,
       strongPrefixed: opts.strongPrefixed ?? undefined,
       total: 1,
       lemmaCount: opts.lemmaCount || 1,
-      segments: [{ label: formatOrbitLabel(one), count: 1, share: 1, isCurrent: true }],
+      segments: [{ label: formatOrbitLabel(display), count: 1, share: 1, isCurrent: true }],
       source: "strongs-only",
       kind: "content",
     };
@@ -294,18 +339,25 @@ export function buildRenderingOrbit(opts: {
 
   // Single dominant rendering with no real variation — still show (Logos does),
   // but pastors see “almost always X” clearly.
-  const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  const sorted = [...buckets.entries()].sort(
+    (a, b) => b[1].count - a[1].count || a[0].localeCompare(b[0]),
+  );
   const top = sorted.slice(0, MAX_SEGMENTS);
-  const used = top.reduce((s, [, c]) => s + c, 0);
+  const used = top.reduce((sum, [, bucket]) => sum + bucket.count, 0);
   const rest = total - used;
   const currentNorm = normalizeOrbitGloss(opts.currentGloss);
 
-  const segments: OrbitSegment[] = top.map(([label, count]) => ({
-    label: formatOrbitLabel(label),
-    count,
-    share: count / total,
-    isCurrent: currentNorm === label,
-  }));
+  const segments: OrbitSegment[] = top.map(([key, bucket]) => {
+    const display = [...bucket.displayCounts.entries()].sort(
+      (a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
+    )[0]?.[0] ?? key;
+    return {
+      label: formatOrbitLabel(display),
+      count: bucket.count,
+      share: bucket.count / total,
+      isCurrent: currentNorm === key,
+    };
+  });
 
   if (rest > 0) {
     segments.push({
@@ -314,15 +366,6 @@ export function buildRenderingOrbit(opts: {
       share: rest / total,
       isCurrent: false,
     });
-  }
-
-  if (currentNorm && !segments.some((s) => s.isCurrent)) {
-    const hit = segments.find(
-      (s) =>
-        s.label.toLowerCase() === currentNorm ||
-        s.label.toLowerCase().includes(currentNorm.slice(0, 10)),
-    );
-    if (hit) hit.isCurrent = true;
   }
 
   return {
@@ -336,7 +379,13 @@ export function buildRenderingOrbit(opts: {
   };
 }
 
-/** SVG path for a donut segment from angle a0→a1 (radians, 0 = top). */
+const FULL_CIRCLE = Math.PI * 2;
+
+/**
+ * SVG path for a donut segment from angle a0→a1 (radians, 0 = top).
+ * Full (or near-full) sweeps use two half-arcs — a single full-circle SVG arc
+ * degenerates to nothing (identical endpoints).
+ */
 export function donutSegmentPath(
   cx: number,
   cy: number,
@@ -345,6 +394,14 @@ export function donutSegmentPath(
   a0: number,
   a1: number,
 ): string {
+  if (a1 - a0 >= FULL_CIRCLE - 0.001) {
+    const mid = a0 + FULL_CIRCLE / 2;
+    return (
+      donutSegmentPath(cx, cy, rOuter, rInner, a0, mid) +
+      " " +
+      donutSegmentPath(cx, cy, rOuter, rInner, mid, a0 + FULL_CIRCLE)
+    );
+  }
   const large = a1 - a0 > Math.PI ? 1 : 0;
   const x0 = cx + rOuter * Math.sin(a0);
   const y0 = cy - rOuter * Math.cos(a0);

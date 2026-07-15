@@ -130,13 +130,13 @@ export function SettingsPage({
         <div className="settings-row">
           <label className="settings-label">Rebuild Index</label>
           <p className="settings-description">
-            Rebuilds the SQLite materialized view from source data. Safe operation (INV-9).
+            Rebuilds the search index from your notes and highlights. Safe to run anytime.
           </p>
           <button
             className="btn-secondary"
             onClick={async () => {
               const res = await window.api.library.rebuild();
-              if (res.ok) alert(`Index rebuilt. Hash: ${res.hash?.slice(0, 12) ?? "..."}`);
+              if (res.ok) alert("Index rebuilt.");
               else alert(`Rebuild failed: ${res.error}`);
             }}
           >

@@ -3,6 +3,7 @@ import { test } from "node:test";
 import {
   buildRenderingOrbit,
   normalizeOrbitGloss,
+  normalizeOrbitDisplayGloss,
   stemEnglishToken,
   isFunctionWordForOrbit,
   donutSegmentPath,
@@ -23,10 +24,37 @@ test("normalizeOrbitGloss merges king/kings/king’s like Logos", () => {
   assert.equal(normalizeOrbitGloss("perfectly"), "perfect");
 });
 
+test("orbit grouping keys never become visible legend labels", () => {
+  assert.equal(normalizeOrbitDisplayGloss("have loved"), "loved");
+  const glosses: Record<string, string> = {
+    a: "loved",
+    b: "loved",
+    c: "loved",
+    d: "loving",
+    e: "beloved",
+  };
+  const orbit = buildRenderingOrbit({
+    lemma: "ἀγαπάω",
+    strongPrefixed: "G25",
+    lemmaCount: 5,
+    tokenIds: Object.keys(glosses),
+    glossForId: (id) => glosses[id],
+    currentGloss: "loved",
+  });
+  assert.ok(orbit);
+  assert.equal(orbit!.segments.length, 1);
+  assert.equal(orbit!.segments[0]!.label, "Loved");
+  assert.doesNotMatch(orbit!.segments[0]!.label, /^(Lov|Lof|Belove)$/);
+});
+
 test("stemEnglishToken handles common inflections", () => {
   assert.equal(stemEnglishToken("words"), "word");
   assert.equal(stemEnglishToken("accomplished"), "accomplish");
   assert.equal(stemEnglishToken("sons"), "son");
+  assert.equal(stemEnglishToken("loved"), "love");
+  assert.equal(stemEnglishToken("loves"), "love");
+  assert.equal(stemEnglishToken("loving"), "love");
+  assert.equal(stemEnglishToken("beloved"), "love");
 });
 
 test("buildRenderingOrbit sizes segments by gloss frequency", () => {

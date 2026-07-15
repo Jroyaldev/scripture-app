@@ -4,6 +4,115 @@
 > **Predecessors:** A0 (snapshot), A1 (native build), B1 (scripture data).
 > **Contracts:** §4.2 (event fold), §4.4 (SQLite materialized view), §4.6 (note format), INV-7 (append-only), INV-9 (safe to rebuild).
 
+## Progress — 2026-07-14 (Structure minimalist visual refinement)
+
+The desktop Structure component now uses one quiet visual language across Clause, Diagram, Outline, and Sentence map instead of color-coding grammatical roles:
+
+- **Neutral hierarchy:** the multicolor phrase-card edges, colored role labels, accent clause rails, selected diagram paths, and Outline focus rails are gone. Spacing, surface tone, border weight, and source typography now carry the hierarchy.
+- **Restrained selection:** the exact selected source word keeps the sole semantic accent underline. Selected clauses, cards, nodes, and paths use neutral contrast; keyboard focus remains visible with a high-contrast neutral ring rather than a blue perimeter.
+- **Consistent chrome:** Structure tabs, source summary, navigation, local `Diagram | Outline` switch, modal controls, and the Done action use the same flat neutral surfaces. Decorative inset edges and accent shadows were removed.
+- **Desktop-only QA:** no mobile-specific work was added. The self-driving Electron tour verified Romans 1:5 and Genesis 1:1 across Clause, Diagram, Outline, direct navigation, and conditional Sentence map in both themes. Final captures live under `docs/ui-audit/structure/structure-minimal-greek-*` and `structure-minimal-hebrew-final-*`.
+
+**Verification:** `npm run typecheck`, renderer build, `npm test`, `git diff --check`, and live Greek/Hebrew light/dark Electron tours pass. The full suite reports 367 tests: 357 passing and 10 expected Electron-ABI skips.
+
+## Progress — 2026-07-14 (Structure continuous navigation)
+
+Structure now reads as one continuous desktop study journey instead of requiring Sentence map as an intermediate navigation screen:
+
+- **Direct Clause movement:** Clause detail has a persistent Previous/Next navigator from first open, with destination previews, `Clause n of n`, selected-versus-browsing context, explicit sentence boundaries, and a one-click return to the selected-word clause. Sentence map remains available as an overview, but is no longer required to move through the sentence.
+- **Direct Phrase movement:** Phrase detail has its own Previous/Next sequence across every real branched phrase in the sentence, including clause boundaries. Single-word groups remain absent because they have no diagrammable source branch. The center context shows both `Phrase n of n` and its current clause.
+- **Truthful reading order:** phrase stops sort by the earliest real source-word position, not by the hierarchical clause array. An embedded clause between two parent phrases therefore appears between them in the reading journey instead of forcing a forward-then-backward jump.
+- **Continuity and recovery:** a reader's explicit `Diagram | Outline` choice persists while stepping through phrases; return-to-selection distinguishes the exact selected phrase when one exists from the broader selected clause; opening Phrase detail receives quiet programmatic focus and returning to Clause restores focus to the originating group.
+- **Keyboard and copy:** `Option+Left/Right` mirrors the visible Previous/Next controls without colliding with the diagram's unmodified parent/child/sibling arrows. The source summary now reports the grammatical group (`Verb`, `Subject`, and so on) instead of falsely calling every selected group a phrase.
+- **Desktop-only visual QA:** no mobile work was added. Final light/dark Electron captures for long Greek and mirrored Hebrew journeys live under `docs/ui-audit/structure/structure-nav-final-romans-*` and `structure-nav-hebrew-*`; the self-driving tour adds `--progress` for direct navigation captures.
+
+Focused model and renderer-contract tests cover source-position ordering across embedded clauses, real-phrase-only stops, direct clause/phrase controls, keyboard scoping, view persistence, and focus restoration.
+
+**Verification:** `npm run lint`, `npm test`, `npm run verify:data`, Electron build, renderer build, live light/dark Greek and Hebrew navigation tours, and `git diff --check` pass. The full suite reports 367 tests: 357 passing and 10 expected Electron-ABI skips.
+
+## Progress — 2026-07-14 (Spatial Phrase diagram completion)
+
+Phrase detail now includes the real spatial branch diagram that the earlier vertical outline did not provide. This remains a desktop-only refinement inside the existing Structure component; Clause and Sentence map are unchanged.
+
+- **Diagram + Outline, not a third top-level tab:** a genuinely branched Clause group opens Phrase detail with a local `Diagram | Outline` switch. Diagram is the visual constituency view; Outline is the complete, vertically scannable source structure. Compact phrases open in Diagram. Linked chains and unusually wide, deep, or large phrases open in Outline while retaining Diagram as an explicit focused projection.
+- **Measured spatial layout:** platform-neutral core code lays out renderer-measured HTML nodes over an SVG connector layer. Parents center above their children, all terminal words share a baseline, source order is stable, Hebrew geometry mirrors RTL, and text is never shrunk to force a tree into view.
+- **Honest adaptive projection:** compact phrases show every node. Wide/deep structures keep the exact selected lineage, replace off-path subtrees with labeled earlier/later branch summaries, and link directly to the complete Outline. Luke 3's 154-item genealogy becomes a three-node lineage (`133 earlier items | Noah | 20 later items`) instead of an unreadable star or staircase.
+- **Visible provenance:** study nodes retain source ids/rules plus compression provenance. Solid connectors mean a direct displayed source branch. Dashed connectors mean a condensed source path—unary parser wrappers, recursive presentation compression, or an explicit focus-window summary—so visual cleanup never masquerades as exact source geometry.
+- **Interaction:** the selected word and its ancestor path receive the only strong accent. Clicking another node updates the quiet inspector; summary nodes open Outline; embedded-clause terminals expose `Open clause →` and navigate to the real Clause surface. Keyboard traversal supports parent/child/sibling arrows, `Home` to the selected word, and `Escape` back to Clause.
+- **Grammar correction from the specialist audit:** MACULA's `O` under passive Greek `ὁρίζω` is now labeled **Predicate complement** when the surface has passive morphology, so Romans 1:4 renders `Υἱοῦ Θεοῦ` as the role assigned by “having been declared,” not as a direct object. The correction is lexical/voice-shaped, not verse-specific.
+- **Corpus hardening:** first/middle/last focus probes across every shipped Greek and Hebrew sentence exercised 44,000 real Phrase details. All retained the exact selected leaf, unique projected ids, bounded fan-out (four complete / three focused), and non-negative hidden counts: 42,769 complete diagrams and 1,231 outline-first exceptional shapes.
+- **Visual QA:** final light/dark Electron captures cover compact Greek (`syntax-spatial-greek-final2-*`), mirrored Hebrew (`syntax-spatial-hebrew-final-*`), wide focus projection (`syntax-spatial-wide-final-*`), genealogy lineage (`syntax-spatial-lineage-final-*`), and diagram-to-embedded-Clause navigation (`syntax-spatial-embedded-final-*`) under `docs/ui-audit/structure/`.
+
+Focused diagram/model/corpus tests cover deterministic layout, non-overlap, terminal baselines, RTL mirroring, focus preservation, projection summaries, provenance, Romans 1:4, Luke 6 late-item selection, Luke 3 lineage, and embedded navigation.
+
+**Verification:** `npm run lint`, `npm test`, `npm run verify:data`, Electron build, renderer build, the 44,000-detail corpus projection audit, and `git diff --check` pass. The full suite reports 362 tests: 352 passing and 10 expected Electron-ABI skips.
+
+## Progress — 2026-07-14 (Structure corpus hardening + Phrase outline completion)
+
+The desktop Structure outline/corpus loop is complete across ordinary and pathological Greek/Hebrew source shapes. The exhaustive vertical form remains as **Outline** inside source-backed Phrase detail beneath the primary Clause view:
+
+- **Corpus-safe outlines:** direct and alternating recursive `NPofNP` / apposition spines collapse into one truthful dependent chain without dropping or duplicating leaves. Luke 3's former 154-level genealogy is now a shallow branch with an 11-item focus window and explicit `Show all 154 items`; 20+ child Greek/Hebrew coordination shapes use the same adaptive preview.
+- **Grammatical precision:** ordinary `O` remains **Object**; explicit `O2` and `OC` render **Second object** and **Object complement**; only clauses with an explicit copular lemma reinterpret source `O` as **Predicate**. `NPofNP` is labeled **Head + dependent**, and non-nominal source shapes never manufacture an English “of.” Common MACULA rules now receive grammatical relationship labels while unknown rules remain neutral.
+- **Real outline navigation:** all 10,159 retained embedded-clause markers resolve to visible clauses and expose `Open clause →`. Three empty Hebrew parser wrappers with no lexical content or destination are omitted instead of becoming dead controls. A browsed clause is visually distinct from the selected-word clause and offers `Return to selected clause`.
+- **Adaptive reading surfaces:** Sentence map and deep Phrase detail auto-reveal the selected clause/leaf; long original lines and already-composed source glosses receive focus-aware compact previews; clause depth is visually capped without flattening the model; indented Sentence map rows no longer create horizontal overflow. Dark instructional text meets the modal's readable contrast level.
+- **Desktop-only boundary:** no mobile implementation or screenshots were added. The Electron tour now also exercises embedded-clause navigation with `--embedded`.
+
+Focused and shipped-corpus tests cover Genesis 1:2 copular syntax, Greek/Hebrew `O2`/`OC`, Luke 3 genealogy depth and leaf integrity, Luke/Joshua wide coordination, non-nominal `NPofNP`, missing-focus refusal, and empty embedded scaffolding. Final light/dark Electron captures cover Genesis 1:2 (`syntax-final-hebrew-*`), Romans 1:5 (`syntax-final2-romans-*`), Luke 3:23–38 (`syntax-final3-genealogy-*`), and Luke 6:13–16 including live tree-to-clause navigation (`syntax-final-embedded-*`) under `docs/ui-audit/structure/`.
+
+**Verification:** `npm run lint`, `npm test`, `npm run verify:data`, `npm run build`, renderer build, corpus-wide embedded-target audit, and `git diff --check` pass. The full suite reports 353 tests: 343 passing and 10 expected Electron-ABI skips.
+
+## Progress — 2026-07-14 (Structure Phrase detail + desktop interaction)
+
+The Tree idea returned as an honest advanced drill-down instead of a misleading peer tab:
+
+- **Real Phrase detail:** multi-word Clause groups expose `phrase detail →` only when MACULA contains a genuine branch. The model collapses unary parser scaffolding but preserves noun/prepositional/verb phrase nesting, coordination, determiner relationships, `NPofNP` head-dependent structure, source order, and embedded-clause boundaries. Single-word groups do not claim a tree.
+- **Progressive disclosure:** Phrase detail opens inline from its Clause group and uses a compact vertical tree with focus-path rails, one exact selected leaf, full source forms, rough glosses, and plain grammatical relationship labels. Greek geometry is LTR; Hebrew branch geometry mirrors RTL while English UI copy remains LTR.
+- **Sentence map navigation:** every clause row now has a quiet `open →` affordance and opens directly into that clause's source-order Clause detail. The original selected-word clause remains marked separately from a clause the reader chooses to inspect.
+- **Desktop-only boundary:** this pass intentionally adds no phone work or phone screenshots; mobile refinement belongs to its separate worktree. The self-driving desktop tour now verifies Phrase detail and Sentence map navigation with `--phrase` and `--navigate`.
+
+Focused model tests cover Greek prepositional/genitive nesting, Hebrew construct phrases, unary-wrapper collapse, single-word suppression, selected-leaf integrity, and embedded-clause refusal. Desktop Electron QA covers Luke 4:14 and Genesis 1:2 in both themes; final captures live under `docs/ui-audit/structure/structure-final-*` and `phrase-greek-final2-*`.
+
+**Verification:** `npm run lint`, `npm run verify:data`, Electron build, renderer build, and `git diff --check` pass. The full suite reports 340 tests: 330 passing and 10 expected Electron-ABI skips.
+
+## Progress — 2026-07-14 (Structure truth + mobile refinement)
+
+The Structure study was corrected after a corpus-wide linguistic and visual audit:
+
+- **Hebrew integrity:** the handwritten XML scanner was replaced by a real host-layer DOM parser, including correct self-closing `<m/>` handling. Regenerated MACULA Hebrew now contains 23,213 sentences / 474,205 clean leaves with zero XML leakage. `verify:data` asserts leaf/token parity and forbids markup in every Greek and Hebrew surface.
+- **Exact focus or no result:** the Hebrew loader no longer falls back to the first Strong&rsquo;s match or first sentence leaf. Contextual word-position/Strong&rsquo;s/surface matching resolves 301,668 of 306,774 OSHB words (98.34%); unresolved words return no Structure result instead of a false highlight.
+- **Truthful language:** embedded clauses stop at their own gloss boundary; visible roles are grammatical (`Subject`, `Verb`, `Object`, `Indirect object`, `Modifier`, `Predicate`, `Connector`, `Phrase`); neutral clause labels replace inferred main/supporting relationships; source-order gloss fragments are explicitly labeled as rough glosses, not translation.
+- **Progressive disclosure:** **Flow** is now **Clause**, the primary selected-clause reading surface. **Outline** is now **Sentence map** and appears only for sentences with multiple clauses. The flat role-to-word **Tree** was removed until a real nested Phrase detail can be built.
+- **Mobile:** the modal becomes a full-screen, safe-area-aware 390px study sheet; Clause groups stack vertically; Sentence map keeps source direction and hierarchy; labels and instructional text retain contrast in dark mode. The self-driving QA tour supports `--mobile` captures and the final Greek, Hebrew, and single-clause screenshots live under `docs/ui-audit/structure/structure-truth-*`.
+
+**Verification:** strict TypeScript/renderer/embedding lint, focused parser/focus/model tests, `verify:data`, Electron build, renderer build, and `git diff --check` pass. Browser QA covers Romans 1:5, Genesis 1:2, and Luke 4:14 in both themes at desktop and 390×844 phone width.
+
+## Progress — 2026-07-14 (Structure study: Tree / Flow / Outline)
+
+The original-language **Structure** modal was rebuilt around three distinct study questions instead of three variations of the raw MACULA parse tree:
+
+- **Tree — how is the selected clause built?** The chart is focus-first and limits itself to the selected clause. It branches into stable pastor-facing functions (`Who`, `Action`, `What`, `Context`, `Description`, `Link`) and then real source words, preserves RTL reading order, centers the selected word, and states its scope when the source sentence is larger than the clause.
+- **Flow — how does the sentence move?** This is now the default view. Each clause is a restrained card of meaningful phrase groups in source reading order, rather than one card per token. Long source sentences auto-center the selected clause; the selected phrase and word remain visible without suggesting that cards are clickable.
+- **Outline — how do the clauses relate?** The complete sentence becomes a compact clause hierarchy with labeled role fragments and the source-language clause beneath. It no longer presents stitched leaf glosses as polished English. Long outlines auto-center the selected clause while retaining the surrounding structure.
+- **Shared semantic model:** renderer-independent core code collapses parser-only clause wrappers, interprets MACULA `S` under a clause as subject (not sentence), retains sentence-level conjunctions as visible `Link` groups, omits Hebrew object markers from English summaries while preserving their source words, and reads Hebrew `NPofNP` constructs as relationships (for example `Spirit of God`).
+- **Exact focus:** OSHB token ids are resolved to MACULA Hebrew leaves by verse, Strong's, normalized surface, and—critically—orthographic word position, so the second occurrence of an identical Strong's token focuses the second occurrence rather than the first.
+- **Interaction and theme:** Flow opens first; tabs use roving keyboard focus with Arrow/Home/End behavior and proper tab/tabpanel semantics. The modal traps focus, restores it on close, animates out, and mirrors the app theme across its body portal so dark mode no longer renders a light dialog.
+- **Repeatable visual QA:** `scripts/qa-structure-tour.mjs` drives a read-only Electron tour, accepts a repeated-word occurrence number, and captures all three modes in both themes under `docs/ui-audit/structure/`.
+
+**Verification:** `npm run lint`, `npm run verify:data`, Electron build, renderer build, and `git diff --check` pass. The full suite passes 324 tests with 10 expected Electron-ABI skips (334 total). Browser QA covers Romans 1:5 `ἐλάβομεν` (81-word / 8-clause sentence), both Luke 4:14 sentences (`Πνεύματος`, `περὶ`), Genesis 1:2 `רוּחַ` (RTL, three linked clauses), and the second of two identical `עַל` occurrences. Every Tree / Flow / Outline view was inspected in light and dark themes; final captures use the `*-final-*` names under `docs/ui-audit/structure/`.
+
+## Progress — 2026-07-14 (language-card orbit visual + data-integrity pass)
+
+The original-language card's three orbit modes received a screenshot-driven correction pass without broadening the surrounding B2 surfaces:
+
+- **Forward labels:** inflection stems remain internal grouping keys; every visible band now uses the most frequent real gloss in its group. John 3:16's G25 card renders `Love` / `Let Love`, never the previous `Lov` / `Lof` / `Belove` fragments.
+- **Reverse card:** `whole Bible` moved beside the use count and only `BSB`/`AKJV` remains in the hub. Runtime ring construction drops alignment bands only when `count <= 1` and share is below 1%; the stored reverse index remains unchanged.
+- **Senses:** the view adapts to each language's real source shape instead of forcing one presentation across both datasets. Hierarchical BDB entries retain the restrained nested accordion: primary senses stay visible, subordinate senses sit beneath grammar branches, and the selected form's matching stem opens by default. Greek no longer derives the widget from Thayer's long, inconsistent article typography; Thayer remains complete inside **Definition**. Greek Senses now come from MACULA's occurrence-level Louw-Nida tags joined to the concise MARBLE SDBG source gloss by exact accent-insensitive `lemma + sense id`. The lemma's corpus range is frequency-ranked, identical source labels collapse, the selected occurrence is marked **here** and always retained inside a six-row visible cap, and one-sense lemmas have no pill. Opening a row repeats the full source label with occurrence count, semantic domain, and quiet attribution. This produces stable concise outlines for `πνεῦμα`, `περί`, `αὐτός`, `λαμβάνω`, `λέγω`, and discourse particles such as `δέ` without verse-specific cleanup or morphology guesses.
+- **Card copy and layout:** the header uses the short gloss (`create`) while lexicon prose stays in Definition; the legend gained label width and compact tabular counts; a focused jumpable row shows `open →`; Genesis 1:1 uses `obj. marker` in the strip.
+- **Lexicon integrity:** Thayer parsing rejects non-strict/duplicate runs, preserves the full source article, removes the destructive first-line/200-character sense cap, and applies display-only cleanup for glued Latin labels already present in the raw module. BDB Doctor reports the 11 malformed source trees (H100, H167, H310, H2051, H2151, H4116, H5737, H6566, H6887, H6905, H8480), and regenerated data preserves their definition prose without `senses[]`. The MACULA importer now has a semantic-sense Doctor: exact lemma+id conflicts and malformed labels fail import, unmatched upstream combinations are omitted rather than guessed, and the shipped-corpus test scans all 137,779 tokens for clean, stable labels and greater than 90% occurrence coverage.
+- **Visual harness:** the self-driving tour now re-pins same-chapter verse targets and avoids unpainted Electron compositor tiles in clipped margin captures.
+
+**Verification:** focused orbit/parser/reverse-index tests pass; the Thayer/BDB Doctors retain their clean/malformed guarantees, and the MACULA semantic-sense Doctor reports 126,198 tagged tokens, 7,049 ids / 9,100 lemma keys, zero exact-key conflicts, and clean labels. The current suite passes 317 tests with 10 expected Electron-ABI skips (327 total); `npm run lint`, `npm run verify:data`, Electron build, renderer build, and Electron native preflight pass. Browser interaction checks cover both language shapes plus six Greek data classes: Luke 4:14 `πνεῦμα`, `περί`, and `αὐτός`; Romans 1:5 `λαμβάνω`; Matthew 3:2 `λέγω`; and Matthew 1:2 `δέ`. Their light/dark tours show concise source labels, selected-occurrence state, visible caps, full-label expansion, and no Thayer scaffolding; captures live under `docs/ui-audit/screens/`.
+
 ## Progress — 2026-07-09 (highlight interaction + blob aesthetic hardening)
 
 The highlight system received a full behavioral and visual pass, with live Electron QA against a disposable copy of `Library-demo`:

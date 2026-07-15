@@ -73,8 +73,11 @@ const NT_BOOKS = [
 ];
 
 const TRANSLATIONS = [
+  { code: "bsb", name: "Berean Standard Bible" },
   { code: "web", name: "World English Bible" },
   { code: "kjv", name: "King James Version" },
+  { code: "ylt", name: "Young's Literal Translation (1898)" },
+  { code: "akjv-strongs", name: "AKJV + Strong's" },
 ];
 
 function SunIcon(): React.JSX.Element {
@@ -140,6 +143,39 @@ function SearchIconSmall(): React.JSX.Element {
   );
 }
 
+/**
+ * Keeps its children mounted ~120ms after `show` flips false so the floating
+ * highlight toolbar can play a short exit fade instead of vanishing in one
+ * frame (the enter side already animates via hlPaletteIn). While leaving it
+ * renders a snapshot of the last shown children — the live selection state is
+ * usually already cleared by then — and disables pointer events via CSS.
+ */
+function PaletteExit({
+  show,
+  children,
+}: {
+  show: boolean;
+  children: React.ReactNode;
+}): React.JSX.Element | null {
+  const [render, setRender] = useState(show);
+  const lastChildren = useRef<React.ReactNode>(null);
+  if (show) lastChildren.current = children;
+  useEffect(() => {
+    if (show) {
+      setRender(true);
+      return;
+    }
+    const t = setTimeout(() => setRender(false), 120);
+    return () => clearTimeout(t);
+  }, [show]);
+  if (!render) return null;
+  return (
+    <div style={{ display: "contents" }} className={show ? undefined : "hl-palette-leaving"}>
+      {show ? children : lastChildren.current}
+    </div>
+  );
+}
+
 export function ScripturePage({
   backbone,
   bookNames,
@@ -163,7 +199,7 @@ export function ScripturePage({
   void _onCreateNote;
   const [book, setBook] = useState("ACT");
   const [chapter, setChapter] = useState(19);
-  const [packageId, setPackageId] = useState("web");
+  const [packageId, setPackageId] = useState("bsb");
   const [chapterData, setChapterData] = useState<ChapterData | null>(null);
   const [chapterError, setChapterError] = useState<string | null>(null);
   const [selectedVerses, setSelectedVerses] = useState<Set<number>>(new Set());
@@ -220,6 +256,12 @@ export function ScripturePage({
   const bookSearchRef = useRef<HTMLInputElement>(null);
   const [recents, setRecents] = useState<RecentPassage[]>([]);
   const recentsLoaded = useRef(false);
+  // Gate for persisting/restoring the last-read passage: restore happens once
+  // settings resolve; persistence only starts after that so the boot default
+  // can never clobber the stored position. userNavigatedRef records that the
+  // reader moved on their own before settings resolved (their choice wins).
+  const lastReadLoaded = useRef(false);
+  const userNavigatedRef = useRef(false);
 
   // Note capture slide-over (stays on Read — does not switch to Write tab)
   const [noteDraft, setNoteDraft] = useState<NoteCaptureDraft | null>(null);
@@ -447,18 +489,44 @@ export function ScripturePage({
   const chapterCount = bookData?.chapters.length ?? 0;
   const displayBookName = bookNames[book]?.[0] ?? book;
 
-  // Load recents once from persisted settings.
+  // Load recents once from persisted settings — and restore the last-read
+  // passage, so launch resumes where the reader left off instead of always
+  // opening the hardcoded boot default. Only applies while the reader is
+  // still at that default (a fast user jump before settings resolve wins).
   useEffect(() => {
     let cancelled = false;
     safeCall(() => window.api.settings.get()).then((res) => {
       if (cancelled || !res.ok) return;
       setRecents(normalizeRecents(res.value.recentPassages));
       recentsLoaded.current = true;
+
+      const last = res.value.lastRead;
+      if (
+        last &&
+        !userNavigatedRef.current &&
+        backbone.books[last.book] &&
+        last.chapter >= 1 &&
+        last.chapter <= (backbone.books[last.book]?.chapters.length ?? 0)
+      ) {
+        setBook(last.book);
+        setChapter(last.chapter);
+        if (last.packageId) setPackageId(last.packageId);
+      }
+      lastReadLoaded.current = true;
     });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [backbone]);
+
+  // Persist last-read on every passage change (after the initial restore, so
+  // the boot default never overwrites a stored position).
+  useEffect(() => {
+    if (!lastReadLoaded.current) return;
+    void safeCall(() =>
+      window.api.settings.set({ lastRead: { book, chapter, packageId } }),
+    );
+  }, [book, chapter, packageId]);
 
   // Persist recents after the initial load (never write empty defaults over disk).
   useEffect(() => {
@@ -495,6 +563,7 @@ export function ScripturePage({
   const pendingVerseSelectRef = useRef<number | null>(null);
   const goTo = useCallback(
     (b: string, c: number, verse?: number, opts?: { recordRecent?: boolean }) => {
+      userNavigatedRef.current = true;
       pendingVerseSelectRef.current = verse ?? null;
       setBook(b);
       setChapter(c);
@@ -688,10 +757,16 @@ export function ScripturePage({
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
       if ((e.metaKey || e.ctrlKey) && e.key === "ArrowLeft") {
         e.preventDefault();
-        if (chapter > 1) setChapter(chapter - 1);
+        if (chapter > 1) {
+          userNavigatedRef.current = true;
+          setChapter(chapter - 1);
+        }
       } else if ((e.metaKey || e.ctrlKey) && e.key === "ArrowRight") {
         e.preventDefault();
-        if (chapter < chapterCount) setChapter(chapter + 1);
+        if (chapter < chapterCount) {
+          userNavigatedRef.current = true;
+          setChapter(chapter + 1);
+        }
       }
     };
     window.addEventListener("keydown", handler);
@@ -908,11 +983,14 @@ export function ScripturePage({
     }
   }, [selectedVerses, positionPalette]);
 
-  // Re-anchor the palette on window resize — its position is computed from
-  // viewport-relative rects at the moment it opens, which go stale the instant
-  // the window (or the margin toggling) changes the layout. Handles both a
-  // whole-verse selection and a phrase selection (rebuilding the phrase's
-  // range from its stored offsets).
+  // Re-anchor the palette on window resize AND on scroll — its position is
+  // computed from viewport-relative rects at the moment it opens, which go
+  // stale the instant the window (or the margin toggling) changes the layout,
+  // and the toolbar is position:fixed, so scrolling the reading column used
+  // to leave it hanging in mid-air over unrelated text. The scroll listener
+  // is capture-phase so it hears the inner .scripture-content scroller.
+  // Handles both a whole-verse selection and a phrase selection (rebuilding
+  // the phrase's range from its stored offsets).
   useEffect(() => {
     if (!showHighlightPalette) return;
     if (selectedVerses.size === 0 && !phraseSelection) return;
@@ -925,7 +1003,11 @@ export function ScripturePage({
       }
     };
     window.addEventListener("resize", handler);
-    return () => window.removeEventListener("resize", handler);
+    window.addEventListener("scroll", handler, true);
+    return () => {
+      window.removeEventListener("resize", handler);
+      window.removeEventListener("scroll", handler, true);
+    };
   }, [showHighlightPalette, selectedVerses, phraseSelection, positionPalette, positionPaletteForRange, buildPhraseRange]);
 
   const undoHighlightChange = (changeId: string) => {
@@ -1366,7 +1448,12 @@ export function ScripturePage({
           <div className="chapter-nav-arrows">
             <button
               className="nav-arrow"
-              onClick={() => chapter > 1 && setChapter(chapter - 1)}
+              onClick={() => {
+                if (chapter > 1) {
+                  userNavigatedRef.current = true;
+                  setChapter(chapter - 1);
+                }
+              }}
               disabled={chapter <= 1}
               title="Previous chapter (⌘←)"
             >
@@ -1374,7 +1461,12 @@ export function ScripturePage({
             </button>
             <button
               className="nav-arrow"
-              onClick={() => chapter < chapterCount && setChapter(chapter + 1)}
+              onClick={() => {
+                if (chapter < chapterCount) {
+                  userNavigatedRef.current = true;
+                  setChapter(chapter + 1);
+                }
+              }}
               disabled={chapter >= chapterCount}
               title="Next chapter (⌘→)"
             >
@@ -1706,7 +1798,7 @@ export function ScripturePage({
             })}
 
             {!chapterData && !chapterError && (
-              <p className="loading-text-inline">Loading text...</p>
+              <p className="loading-text-inline">Loading text…</p>
             )}
 
             {chapterError && (
@@ -1721,22 +1813,26 @@ export function ScripturePage({
 
             {/* Mini toolbar always when a selection is active — unified chrome
                 whether the Living Margin is open or closed. */}
-            {showHighlightPalette && (phraseSelection != null || selectedVerses.size > 0) && (
-              <HighlightToolbar
-                variant="floating"
-                flipped={palettePos.flipped}
-                paletteRef={paletteRef}
-                style={{ top: palettePos.y, left: palettePos.x }}
-                rangeLabel={selectionRangeLabel}
-                activeColor={selectedHighlightColor}
-                mixedColors={mixedSelectionColors}
-                hasExistingHighlight={hasExistingHighlight}
-                phraseMode={phraseSelection != null}
-                onSetColor={(color) => void handleHighlight(color)}
-                onNote={handleNoteFromSelection}
-                onRemove={() => void handleRemoveSelection()}
-              />
-            )}
+            <PaletteExit
+              show={showHighlightPalette && (phraseSelection != null || selectedVerses.size > 0)}
+            >
+              {showHighlightPalette && (phraseSelection != null || selectedVerses.size > 0) && (
+                <HighlightToolbar
+                  variant="floating"
+                  flipped={palettePos.flipped}
+                  paletteRef={paletteRef}
+                  style={{ top: palettePos.y, left: palettePos.x }}
+                  rangeLabel={selectionRangeLabel}
+                  activeColor={selectedHighlightColor}
+                  mixedColors={mixedSelectionColors}
+                  hasExistingHighlight={hasExistingHighlight}
+                  phraseMode={phraseSelection != null}
+                  onSetColor={(color) => void handleHighlight(color)}
+                  onNote={handleNoteFromSelection}
+                  onRemove={() => void handleRemoveSelection()}
+                />
+              )}
+            </PaletteExit>
           </div>
         </div>
       </div>

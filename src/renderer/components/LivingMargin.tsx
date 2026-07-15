@@ -284,6 +284,7 @@ export function LivingMargin({
               book={book}
               chapter={chapter}
               verse={nearVerse}
+              readingPackageId={packageId}
               onStudyEngage={onStudyVerse}
             />
           )}
@@ -373,6 +374,7 @@ export function LivingMargin({
             book={book}
             chapter={chapter}
             verse={pinnedRange.start}
+            readingPackageId={packageId}
             onStudyEngage={onStudyVerse}
           />
 

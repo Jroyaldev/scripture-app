@@ -1,0 +1,31 @@
+{
+  "id": "ylt",
+  "name": "Young's Literal Translation (1898)",
+  "language": "en",
+  "type": "translation",
+  "versification": "kjv",
+  "canonProfile": "protestant",
+  "formatVersion": 1,
+  "license": {
+    "spdx": null,
+    "name": "Public Domain",
+    "attributionText": "Young's Literal Translation (1898). Public domain. Robert Young.",
+    "permissions": {
+      "bundle": true,
+      "index": true,
+      "display": true,
+      "quoteInNotes": true,
+      "export": true,
+      "syncToOwnDevices": true
+    }
+  },
+  "source": "/Users/jonnyroyal/Downloads/YLT (1898).bbli",
+  "sourceNote": "Imported from e-Sword Bible module (bible). Title: Young’s Literal Translation (1898). Rows: 31102.",
+  "doctor": {
+    "totalRows": 31102,
+    "emptyRows": 0,
+    "vsKjvDelta": 0,
+    "backboneMismatchCount": 4,
+    "importedAt": "2026-07-14T16:13:32.170Z"
+  }
+}

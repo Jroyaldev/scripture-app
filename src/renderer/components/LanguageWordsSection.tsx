@@ -21,11 +21,23 @@ import type {
   LanguageTokenCard,
 } from "../api.js";
 import { safeCall } from "../utils/safeCall.js";
-import { RenderingOrbitView } from "./RenderingOrbit.js";
+import {
+  RenderingOrbitView,
+  SenseOutlineView,
+  forwardOrbitModel,
+  reverseOrbitModel,
+  semanticSenseOutlineModel,
+  senseOutlineModel,
+} from "./RenderingOrbit.js";
 import { StructureModal } from "./StructureModal.js";
 
 /** Closed row shows at most this many grammar chips (+ optional Strong's id). */
 const MORPH_CHIP_MAX = 5;
+
+type OrbitMode = "english" | "behind" | "senses";
+
+/** Session memory for orbit mode pills (not persisted to disk). */
+let sessionOrbitMode: OrbitMode = "english";
 
 const NT = new Set([
   "MAT", "MRK", "LUK", "JHN", "ACT", "ROM", "1CO", "2CO", "GAL", "EPH", "PHP",
@@ -37,6 +49,11 @@ interface Props {
   book: string;
   chapter: number;
   verse: number;
+  /**
+   * Reading translation package (bsb, akjv-strongs, …). Used for reverse
+   * orbit when that package has alignments / reverse-index.json.
+   */
+  readingPackageId?: string;
   /**
    * Fired when the pastor starts studying language (word pick / form notes).
    * Parent should pin this verse so ambient scroll cannot steal the panel.
@@ -95,7 +112,13 @@ function surfaceOf(t: ChipToken | LanguageToken, displaySurface?: string): strin
 }
 
 function engOf(t: ChipToken): string | null {
-  if (t.displayGloss) return t.displayGloss;
+  if (t.displayGloss) {
+    // Two adjacent Hebrew object-marker morphemes otherwise both ellipsize to
+    // “object mark…”, which looks like duplicated/truncated data.
+    return t.displayGloss.trim().toLowerCase() === "object marker"
+      ? "obj. marker"
+      : t.displayGloss;
+  }
   if (t.gloss) {
     const first = t.gloss.split(/[;.]/)[0]?.trim() ?? "";
     return first.length > 40 ? `${first.slice(0, 37)}…` : first || null;
@@ -187,12 +210,7 @@ function MorphFormBlock({
               ) : null}
               <p className="lang-step-attr">{stepMorph.source} · CC BY</p>
             </div>
-          ) : (
-            <p className="lang-step-missing">
-              No STEP form note for <code>{code || "this tag"}</code>
-              {code?.includes("/") ? " (composite — try the main word only in data)" : ""}
-            </p>
-          )}
+          ) : null}
 
           <ul className="lang-form-notes">
             {parts.map((p) => (
@@ -217,10 +235,335 @@ function MorphFormBlock({
   );
 }
 
+/**
+ * Strong's definition expander — same row pattern as MorphFormBlock.
+ * Closed: first sense line. Open: full English entry + quiet attribution.
+ */
+function DefinitionBlock({
+  definition,
+  open,
+  onToggle,
+}: {
+  definition: {
+    firstSense: string;
+    full: string;
+    xlit?: string;
+    pronunciation?: string;
+    source: string;
+    id: string;
+    deeper?: {
+      firstSense: string;
+      full: string;
+      source: string;
+      id: string;
+      xlit?: string;
+      senses?: Array<{ n: string; text: string }>;
+    } | null;
+  };
+  open: boolean;
+  onToggle: () => void;
+}): React.JSX.Element {
+  const deeper = definition.deeper;
+  return (
+    <div className="lang-def">
+      <button
+        type="button"
+        className={`lang-def-row${open ? " is-open" : ""}`}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onToggle();
+        }}
+        aria-expanded={open}
+        title={open ? "Hide definition" : "Show full definition"}
+      >
+        <span className="lang-def-kicker">Definition</span>
+        {!open ? (
+          <span className="lang-def-preview" dir="ltr">
+            {definition.firstSense}
+          </span>
+        ) : (
+          <span className="lang-def-preview is-open-label" dir="ltr">
+            {definition.id}
+          </span>
+        )}
+        <span className="lang-def-caret" aria-hidden="true">
+          {open ? "▴" : "▾"}
+        </span>
+      </button>
+      {open && (
+        <div className="lang-def-body" dir="ltr">
+          {/* Strong's — head layer */}
+          {(definition.xlit || definition.pronunciation) && (
+            <p className="lang-def-meta">
+              {definition.xlit ? <span className="lang-def-xlit">{definition.xlit}</span> : null}
+              {definition.xlit && definition.pronunciation ? (
+                <span className="lang-dot">·</span>
+              ) : null}
+              {definition.pronunciation ? (
+                <span className="lang-def-pron">{definition.pronunciation}</span>
+              ) : null}
+            </p>
+          )}
+          <p className="lang-def-full">{definition.full}</p>
+          <p className="lang-def-attr">
+            {definition.source}
+            <span className="lang-dot">·</span>
+            {definition.id}
+          </p>
+
+          {/* Deeper lexicon (Thayer Greek / BDB Hebrew) — same expander, second block */}
+          {deeper && (
+            <div className="lang-def-deeper">
+              {deeper.xlit ? (
+                <p className="lang-def-meta">
+                  <span className="lang-def-xlit">{deeper.xlit}</span>
+                </p>
+              ) : null}
+              {deeper.senses && deeper.senses.length > 0 ? (
+                <ol className="lang-def-senses">
+                  {deeper.senses.map((s) => (
+                    <li key={s.n} className="lang-def-sense">
+                      <span className="lang-def-sense-n">{s.n}</span>
+                      <span className="lang-def-sense-text">{s.text}</span>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="lang-def-full lang-def-deeper-full">{deeper.full}</p>
+              )}
+              <p className="lang-def-attr">
+                {deeper.source}
+                <span className="lang-dot">·</span>
+                {deeper.id}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** Prefer first content word so the pastor lands on something useful. */
 function defaultTokenId(tokens: ChipToken[]): string | null {
   const content = tokens.find(isContentish);
   return (content ?? tokens[0])?.id ?? null;
+}
+
+/**
+ * One word-map block with quiet mode pills (Structure modal tab style).
+ * Corpus modes use one quantitative orbit; Senses uses a structural outline.
+ */
+function OrbitModesBlock({
+  card,
+  surface,
+  dir,
+  lang,
+  onJumpStrong,
+  onPeekDefinition,
+}: {
+  card: LanguageTokenCard;
+  surface: string;
+  dir: "ltr" | "rtl";
+  lang: string;
+  onJumpStrong: (strongs: string) => boolean;
+  onPeekDefinition: (def: NonNullable<LanguageTokenCard["definition"]>) => void;
+}): React.JSX.Element | null {
+  const isGreek = card.token.strongPrefixed?.startsWith("G")
+    || card.token.datasetId.includes("macula-greek");
+  const senses = isGreek ? undefined : card.definition?.deeper?.senses;
+  const senseModel = useMemo(
+    () => {
+      if (isGreek) {
+        return card.semanticSenses
+          ? semanticSenseOutlineModel({
+              lemma: surface,
+              outline: card.semanticSenses,
+              strongId: card.token.strongPrefixed ?? undefined,
+            })
+          : null;
+      }
+      return senses
+        ? senseOutlineModel({
+            lemma: surface,
+            senses,
+            strongId: card.token.strongPrefixed ?? undefined,
+            source: card.definition?.deeper?.source,
+          })
+        : null;
+    },
+    [
+      card.definition?.deeper?.source,
+      card.semanticSenses,
+      card.token.strongPrefixed,
+      isGreek,
+      senses,
+      surface,
+    ],
+  );
+  const hasEnglish = !!(card.renderingOrbit && card.renderingOrbit.segments.length > 0);
+  const hasBehind = !!(card.reverseOrbit && card.reverseOrbit.segments.length > 0);
+  const hasSenses = senseModel != null;
+
+  const available = useMemo(() => {
+    const m: OrbitMode[] = [];
+    if (hasEnglish) m.push("english");
+    if (hasBehind) m.push("behind");
+    if (hasSenses) m.push("senses");
+    return m;
+  }, [hasEnglish, hasBehind, hasSenses]);
+
+  const [mode, setMode] = useState<OrbitMode>(() =>
+    available.includes(sessionOrbitMode) ? sessionOrbitMode : (available[0] ?? "english"),
+  );
+
+  useEffect(() => {
+    if (available.length === 0) return;
+    if (!available.includes(mode)) {
+      const next = available.includes(sessionOrbitMode)
+        ? sessionOrbitMode
+        : available[0]!;
+      setMode(next);
+    }
+  }, [available, mode]);
+
+  if (available.length === 0) return null;
+
+  const pick = (m: OrbitMode): void => {
+    sessionOrbitMode = m;
+    setMode(m);
+  };
+
+  const model =
+    mode === "english" && card.renderingOrbit
+      ? forwardOrbitModel(card.renderingOrbit, surface)
+      : mode === "behind" && card.reverseOrbit
+        ? reverseOrbitModel(card.reverseOrbit)
+        : null;
+
+  const reverseScope = card.reverseOrbit?.scopeHint?.split(/\s*·\s*/)[0]?.trim();
+  const countLabel =
+    mode === "senses"
+      ? `${senseModel?.total ?? 0} senses`
+      : mode === "behind"
+        ? `${card.reverseOrbit?.total ?? 0} uses · ${reverseScope || "whole Bible"}`
+        : `${card.renderingOrbit?.total ?? 0} uses`;
+
+  return (
+    <div className="lang-orbit-block">
+      <div className="lang-orbit-modes" role="tablist" aria-label="Word map">
+        {hasEnglish && (
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mode === "english"}
+            className={`lang-orbit-mode${mode === "english" ? " is-active" : ""}`}
+            onClick={() => pick("english")}
+          >
+            In English
+          </button>
+        )}
+        {hasBehind && (
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mode === "behind"}
+            className={`lang-orbit-mode${mode === "behind" ? " is-active" : ""}`}
+            onClick={() => pick("behind")}
+          >
+            Behind this word
+          </button>
+        )}
+        {hasSenses && (
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mode === "senses"}
+            className={`lang-orbit-mode${mode === "senses" ? " is-active" : ""}`}
+            onClick={() => pick("senses")}
+          >
+            Senses
+          </button>
+        )}
+        <span className="lang-orbit-mode-meta">{countLabel}</span>
+      </div>
+      {mode === "senses" && senseModel ? (
+        <SenseOutlineView model={senseModel} activeMorphLabels={card.morphLabels} />
+      ) : model ? (
+        <RenderingOrbitView
+          model={model}
+          dir={dir}
+          lang={lang}
+          onSelectSegment={
+            mode === "behind"
+              ? (i) => {
+                  const seg = card.reverseOrbit?.segments[i];
+                  if (!seg?.strongs) return;
+                  const jumped = onJumpStrong(seg.strongs);
+                  if (!jumped && seg.definition) {
+                    onPeekDefinition(seg.definition);
+                  } else if (!jumped) {
+                    // Still open a minimal peek from label alone.
+                    onPeekDefinition({
+                      id: seg.strongs,
+                      firstSense: seg.label,
+                      full: seg.label,
+                      source: "Strong's",
+                    });
+                  }
+                }
+              : undefined
+          }
+        />
+      ) : null}
+    </div>
+  );
+}
+
+/** Lightweight Strong's peek when reverse-band has no verse token (cross-testament). */
+function StrongPeekCard({
+  definition,
+  onClose,
+}: {
+  definition: NonNullable<LanguageTokenCard["definition"]>;
+  onClose: () => void;
+}): React.JSX.Element {
+  return (
+    <div className="lang-strong-peek" role="dialog" aria-label={`Definition ${definition.id}`}>
+      <div className="lang-strong-peek-head">
+        <span className="lang-strong-peek-id">{definition.id}</span>
+        <button type="button" className="lang-strong-peek-close" onClick={onClose}>
+          Close
+        </button>
+      </div>
+      {definition.xlit ? <p className="lang-def-meta">{definition.xlit}</p> : null}
+      <p className="lang-def-full">{definition.full}</p>
+      {definition.deeper?.senses && definition.deeper.senses.length > 0 ? (
+        <ol className="lang-def-senses">
+          {definition.deeper.senses.map((s) => (
+            <li key={s.n} className="lang-def-sense">
+              <span className="lang-def-sense-n">{s.n}</span>
+              <span className="lang-def-sense-text">{s.text}</span>
+            </li>
+          ))}
+        </ol>
+      ) : definition.deeper?.full ? (
+        <p className="lang-def-full lang-def-deeper-full">{definition.deeper.full}</p>
+      ) : null}
+      <p className="lang-def-attr">
+        {definition.source}
+        <span className="lang-dot">·</span>
+        {definition.id}
+        {definition.deeper ? (
+          <>
+            <span className="lang-dot">·</span>
+            {definition.deeper.source}
+          </>
+        ) : null}
+      </p>
+    </div>
+  );
 }
 
 /** Format APP.ch.v → display “Mat 3:1” style for the margin. */
@@ -291,7 +634,7 @@ function NameEntityCard({ hit }: { hit: LanguageNameEntityHit }): React.JSX.Elem
             }}
             aria-expanded={openRefs}
           >
-            {openRefs ? "Hide other refs" : "Other places named"}
+            {openRefs ? "Hide references" : "Other references"}
             <span aria-hidden="true">{openRefs ? "▴" : "▾"}</span>
           </button>
           {openRefs && (
@@ -323,17 +666,30 @@ function NameEntityCard({ hit }: { hit: LanguageNameEntityHit }): React.JSX.Elem
   );
 }
 
-export function LanguageWordsSection({ book, chapter, verse, onStudyEngage }: Props): React.JSX.Element | null {
+export function LanguageWordsSection({
+  book,
+  chapter,
+  verse,
+  readingPackageId,
+  onStudyEngage,
+}: Props): React.JSX.Element | null {
   const [load, setLoad] = useState<LoadState>({ kind: "idle" });
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [card, setCard] = useState<LanguageTokenCard | null>(null);
   const [cardLoading, setCardLoading] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const [grammarOpen, setGrammarOpen] = useState(false);
+  const [definitionOpen, setDefinitionOpen] = useState(false);
   const [usesOpen, setUsesOpen] = useState(false);
   const [syntaxOpen, setSyntaxOpen] = useState(false);
   const [syntaxHit, setSyntaxHit] = useState<LanguageSyntaxHit | null>(null);
   const [syntaxLoading, setSyntaxLoading] = useState(false);
+  /** Whether the reading package has a reverse index (null = unknown yet). */
+  const [hasReverse, setHasReverse] = useState<boolean | null>(null);
+  /** Cross-testament Strong's peek (no token in this verse). */
+  const [strongPeek, setStrongPeek] = useState<NonNullable<LanguageTokenCard["definition"]> | null>(
+    null,
+  );
 
   // Verse prop is authoritative once parent pins on study engage. We still
   // track local engagement for UI (notes open) but do not fight parent scroll.
@@ -349,6 +705,7 @@ export function LanguageWordsSection({ book, chapter, verse, onStudyEngage }: Pr
   // Book/chapter change always clears local expand state.
   useEffect(() => {
     setGrammarOpen(false);
+    setDefinitionOpen(false);
     setUsesOpen(false);
     setSyntaxOpen(false);
     setSyntaxHit(null);
@@ -359,6 +716,7 @@ export function LanguageWordsSection({ book, chapter, verse, onStudyEngage }: Pr
   // notes always belong to the card on screen.
   useEffect(() => {
     setGrammarOpen(false);
+    setDefinitionOpen(false);
     setUsesOpen(false);
     setSyntaxOpen(false);
     setSyntaxHit(null);
@@ -368,19 +726,71 @@ export function LanguageWordsSection({ book, chapter, verse, onStudyEngage }: Pr
     if (opts?.userPick) {
       engageStudy();
       setGrammarOpen(false);
+      setDefinitionOpen(false);
       setUsesOpen(false);
       setSyntaxOpen(false);
       setSyntaxHit(null);
+      setStrongPeek(null);
     }
     setSelectedId(tokenId);
     setCardLoading(true);
-    const result = await safeCall(() => window.api.language.getTokenCard(packageId, tokenId));
+    const result = await safeCall(() =>
+      window.api.language.getTokenCard(packageId, tokenId, readingPackageId),
+    );
     setCard(result.ok ? result.value : null);
     setCardLoading(false);
-  }, [engageStudy]);
+  }, [engageStudy, readingPackageId]);
+
+  /**
+   * Jump reverse-ring segment → token in this verse with matching Strong's.
+   * Returns true if a card was opened; false if caller should show a definition peek.
+   */
+  const jumpToStrong = useCallback(
+    (strongs: string | null | undefined): boolean => {
+      if (!strongs || load.kind !== "ready") return false;
+      const norm = strongs.toUpperCase().replace(/^([HG])0+/, "$1");
+      const digits = norm.replace(/^[HG]/, "");
+      const hit =
+        load.tokens.find((t) => {
+          const sp = (t.strongPrefixed ?? "").toUpperCase();
+          const s = (t.strong ?? "").replace(/^0+/, "");
+          // Require letter match when both sides have H/G prefix.
+          if (sp && sp[0] !== norm[0]) return false;
+          return sp === norm || s === digits;
+        }) ?? null;
+      if (hit) {
+        setStrongPeek(null);
+        void openToken(load.packageId, hit.id, { userPick: true });
+        return true;
+      }
+      return false;
+    },
+    [load, openToken],
+  );
+
+  // Reverse index is BSB-backed for all translations (akjv when reading AKJV).
+  useEffect(() => {
+    let cancelled = false;
+    const probeId =
+      readingPackageId === "akjv-strongs" ? "akjv-strongs" : "bsb";
+    void safeCall(() => window.api.language.hasReverseIndex(probeId)).then((res) => {
+      if (cancelled) return;
+      setHasReverse(res.ok ? !!res.value : false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [readingPackageId]);
 
   const toggleGrammar = useCallback(() => {
     setGrammarOpen((prev) => {
+      if (!prev) engageStudy();
+      return !prev;
+    });
+  }, [engageStudy]);
+
+  const toggleDefinition = useCallback(() => {
+    setDefinitionOpen((prev) => {
       if (!prev) engageStudy();
       return !prev;
     });
@@ -418,6 +828,7 @@ export function LanguageWordsSection({ book, chapter, verse, onStudyEngage }: Pr
     setCard(null);
     setShowAll(false);
     setGrammarOpen(false);
+    setDefinitionOpen(false);
     setUsesOpen(false);
     setSyntaxOpen(false);
     setSyntaxHit(null);
@@ -585,18 +996,33 @@ export function LanguageWordsSection({ book, chapter, verse, onStudyEngage }: Pr
                 </p>
               )}
 
+              {card.definition && (
+                <DefinitionBlock
+                  definition={card.definition}
+                  open={definitionOpen}
+                  onToggle={toggleDefinition}
+                />
+              )}
+
               {card.nameEntity && (
                 <NameEntityCard hit={card.nameEntity} />
               )}
 
-              {/* Rendering Orbit — corpus gloss spectrum */}
-              {card.renderingOrbit && card.renderingOrbit.segments.length > 0 && (
-                <RenderingOrbitView
-                  orbit={card.renderingOrbit}
-                  surface={surfaceOf(card.token, card.displaySurface)}
-                  dir={dirAttr}
-                  lang={langAttr}
-                />
+              {/* One orbit + mode pills (In English · Behind this word · Senses) */}
+              <OrbitModesBlock
+                card={card}
+                surface={surfaceOf(card.token, card.displaySurface)}
+                dir={dirAttr}
+                lang={langAttr}
+                onJumpStrong={jumpToStrong}
+                onPeekDefinition={(def) => setStrongPeek(def)}
+              />
+              {strongPeek && (
+                <StrongPeekCard definition={strongPeek} onClose={() => setStrongPeek(null)} />
+              )}
+              {/* Empty only when BSB reverse index itself is missing */}
+              {hasReverse === false && !card.reverseOrbit && (
+                <p className="lang-muted lang-reverse-empty">No word data for this translation</p>
               )}
 
               {/* Form chips: persistent skeleton; meanings open on demand */}

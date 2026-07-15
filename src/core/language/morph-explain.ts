@@ -400,7 +400,7 @@ function labelsToParts(
     } else {
       parts.push({
         label,
-        meaning: `Tagged as “${label}” in the source morphology (not yet in our gloss table).`,
+        meaning: `Tagged “${label}” in the source morphology.`,
         kind,
         unknown: true,
       });

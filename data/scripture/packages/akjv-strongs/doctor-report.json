@@ -1,0 +1,27 @@
+{
+  "totalRows": 31102,
+  "emptyRows": 0,
+  "emptyRate": 0,
+  "expectedKjvTotal": 31102,
+  "vsKjvDelta": 0,
+  "backboneMismatches": [],
+  "booksPresent": 66,
+  "sample": [
+    {
+      "ref": "GEN 1:1",
+      "text": "In the beginning God created the heaven and the earth."
+    },
+    {
+      "ref": "PSA 23:1",
+      "text": "A Psalm of David. The LORD is my shepherd; I shall not want."
+    },
+    {
+      "ref": "JHN 3:16",
+      "text": "For God so loved the world, that he gave his only begotten Son, that whoever believes in him should not perish, but have"
+    },
+    {
+      "ref": "1CO 16:24",
+      "text": "My love be with you all in Christ Jesus. Amen. The first epistle to the Corinthians was written from Philippi by Stephan"
+    }
+  ]
+}

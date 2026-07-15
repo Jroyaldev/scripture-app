@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shepherdly · Language layer — data-first</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-primary: #FBFBFA;
+      --bg-secondary: #F4F4F2;
+      --bg-surface: #FFFFFF;
+      --bg-sidebar: #F2F2F0;
+      --text-primary: #1A1A1A;
+      --text-secondary: #5C5C5C;
+      --text-tertiary: #6E6E6E;
+      --text-verse: #737373;
+      --border-subtle: #ECECEA;
+      --border-medium: #D8D8D5;
+      --accent: #3D6BB5;
+      --accent-soft: rgba(61, 107, 181, 0.10);
+      --source: #5A8A5A;
+      --source-soft: rgba(90, 138, 90, 0.12);
+      --ai: #5A6B7F;
+      --plum: #7A5FB0;
+      --plum-soft: rgba(122, 95, 176, 0.10);
+      --amber: #9A7B20;
+      --amber-soft: rgba(192, 160, 48, 0.12);
+      --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-reading: 'Source Serif 4', Georgia, serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-ui);
+      background: #E8E6E0;
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 20px 48px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .caption {
+      font-size: 12px;
+      color: #8A8780;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .caption strong { font-weight: 500; color: #5C5A54; }
+
+    .app {
+      width: min(1180px, 100%);
+      height: 840px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-medium);
+      border-radius: 14px;
+      box-shadow: 0 12px 40px rgba(40, 38, 32, 0.10);
+      display: grid;
+      grid-template-columns: 56px 1fr 380px;
+      overflow: hidden;
+    }
+
+    /* Rail */
+    .rail {
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 14px 0 16px;
+      gap: 6px;
+    }
+    .brand-mark {
+      width: 28px; height: 28px; border-radius: 7px;
+      background: var(--accent);
+      display: grid; place-items: center;
+      margin-bottom: 10px;
+      color: #fff; font-size: 13px; font-weight: 600;
+      font-family: var(--font-reading);
+    }
+    .nav-btn {
+      width: 36px; height: 36px; border-radius: 9px;
+      display: grid; place-items: center;
+      color: var(--text-tertiary); border: none; background: transparent;
+    }
+    .nav-btn.active {
+      background: var(--bg-surface);
+      color: var(--accent);
+      box-shadow: 0 0 0 1px var(--border-subtle);
+    }
+    .nav-btn svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+    .rail-spacer { flex: 1; }
+
+    /* Main */
+    .main { display: flex; flex-direction: column; min-width: 0; }
+    .topbar {
+      height: 48px; display: flex; align-items: center;
+      padding: 0 18px; border-bottom: 1px solid var(--border-subtle); gap: 10px;
+    }
+    .passage-pill { font-size: 14px; font-weight: 500; }
+    .passage-pill .chev { color: var(--text-tertiary); font-size: 10px; margin-left: 4px; }
+    .version {
+      font-size: 12px; font-weight: 500; color: var(--text-tertiary);
+      letter-spacing: 0.04em; padding: 3px 8px; border-radius: 999px;
+      background: var(--bg-secondary);
+    }
+    .topbar-spacer { flex: 1; }
+
+    .view-toggle {
+      display: inline-flex;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      padding: 2px;
+      gap: 1px;
+    }
+    .view-toggle button {
+      border: none;
+      background: transparent;
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-family: var(--font-ui);
+    }
+    .view-toggle button.on {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      box-shadow: 0 0 0 1px var(--border-subtle);
+    }
+
+    .reading {
+      flex: 1; overflow: hidden;
+      padding: 28px 40px 20px;
+      display: flex; flex-direction: column;
+    }
+    .chapter-label {
+      font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 18px;
+    }
+    .scripture {
+      font-family: var(--font-reading);
+      font-size: 17.5px; line-height: 1.85;
+      color: var(--text-primary); max-width: 34em;
+    }
+    .verse { display: block; margin-bottom: 0.5em; }
+    .vnum {
+      font-family: var(--font-ui); font-size: 11px; font-weight: 500;
+      color: var(--text-verse); vertical-align: super; margin-right: 5px;
+    }
+
+    /* Data-derived marks — density by signal, not editorial */
+    .tok {
+      cursor: default;
+      border-radius: 2px;
+      padding: 0 1px;
+    }
+    /* alignment divergence: translations map this token differently */
+    .tok.diverge {
+      box-shadow: inset 0 -1.5px 0 rgba(61, 107, 181, 0.55);
+    }
+    .tok.diverge.active {
+      background: var(--accent-soft);
+      box-shadow: inset 0 -2px 0 rgba(61, 107, 181, 0.75);
+    }
+    /* local lemma repeat in window */
+    .tok.repeat {
+      box-shadow: inset 0 -1.5px 0 rgba(90, 138, 90, 0.5);
+    }
+    /* rare in corpus */
+    .tok.rare {
+      box-shadow: inset 0 -1.5px 0 rgba(122, 95, 176, 0.45);
+    }
+    /* multi-signal stack */
+    .tok.diverge.repeat {
+      box-shadow:
+        inset 0 -1.5px 0 rgba(61, 107, 181, 0.55),
+        inset 0 -3.5px 0 rgba(90, 138, 90, 0.4);
+    }
+
+    .passage-footer {
+      margin-top: auto; padding-top: 16px;
+      display: flex; align-items: center; gap: 16px;
+      font-size: 11px; color: var(--text-tertiary);
+    }
+    .passage-footer b { font-weight: 500; color: var(--text-secondary); }
+    .legend { margin-left: auto; display: flex; gap: 12px; }
+    .leg { display: inline-flex; align-items: center; gap: 5px; }
+    .leg i {
+      width: 14px; height: 0; border-bottom: 2px solid;
+      display: inline-block;
+    }
+    .leg i.d { border-color: rgba(61, 107, 181, 0.6); }
+    .leg i.r { border-color: rgba(90, 138, 90, 0.55); }
+    .leg i.q { border-color: rgba(122, 95, 176, 0.5); }
+
+    /* Margin */
+    .margin {
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border-subtle);
+      display: flex; flex-direction: column; min-width: 0; overflow: hidden;
+    }
+    .margin-head {
+      padding: 12px 14px 11px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .margin-kicker {
+      font-size: 10px; font-weight: 500; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px;
+    }
+    .token-row {
+      display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+      margin-bottom: 4px;
+    }
+    .token-greek {
+      font-family: var(--font-reading);
+      font-size: 20px; font-weight: 500; letter-spacing: -0.01em;
+    }
+    .token-trans {
+      font-family: var(--font-mono);
+      font-size: 11px; color: var(--text-tertiary);
+    }
+    .plain-gloss {
+      font-size: 12.5px; color: var(--text-secondary); line-height: 1.4;
+      margin-bottom: 8px;
+    }
+    .signals {
+      display: flex; flex-wrap: wrap; gap: 5px;
+    }
+    .sig {
+      font-size: 10.5px; font-weight: 500;
+      padding: 3px 8px; border-radius: 999px;
+    }
+    .sig.diverge { background: var(--accent-soft); color: var(--accent); }
+    .sig.repeat { background: var(--source-soft); color: var(--source); }
+    .sig.freq { background: var(--plum-soft); color: var(--plum); }
+    .sig.neutral {
+      background: var(--bg-surface);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-medium);
+    }
+
+    .margin-scroll {
+      flex: 1; overflow-y: auto;
+      padding: 10px 12px 12px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 10px 12px 11px;
+    }
+    .card-label {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.07em;
+      text-transform: uppercase; color: var(--ai);
+      margin-bottom: 7px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .card-label .src {
+      font-weight: 500; letter-spacing: 0.02em; text-transform: none;
+      color: var(--text-tertiary); font-size: 10px;
+    }
+
+    .kv {
+      display: grid; gap: 4px;
+    }
+    .kv-row {
+      display: grid;
+      grid-template-columns: 88px 1fr;
+      gap: 6px;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .kv-row .k { color: var(--text-tertiary); font-weight: 500; font-size: 11.5px; }
+    .kv-row .v { color: var(--text-primary); }
+    .kv-row .v.mono {
+      font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary);
+    }
+    .kv-row .v .expand {
+      color: var(--text-secondary); font-weight: 400;
+    }
+
+    /* Morphology expanded as readable chips from code */
+    .morph-chips {
+      display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;
+    }
+    .morph-chips span {
+      font-size: 11px;
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    /* Local map — same lemma in book, pure frequency/location */
+    .occ-list { display: flex; flex-direction: column; gap: 5px; }
+    .occ {
+      display: grid;
+      grid-template-columns: 52px 1fr auto;
+      gap: 8px;
+      font-size: 11.5px;
+      align-items: baseline;
+      line-height: 1.35;
+    }
+    .occ .ref {
+      font-weight: 600; font-size: 10.5px;
+      color: var(--text-tertiary); letter-spacing: 0.02em;
+    }
+    .occ .snip {
+      color: var(--text-secondary);
+      font-family: var(--font-reading);
+      font-size: 12px;
+    }
+    .occ .snip em {
+      font-style: normal;
+      color: var(--text-primary);
+      background: var(--accent-soft);
+      border-radius: 2px;
+      padding: 0 2px;
+    }
+    .occ .form {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-tertiary);
+      white-space: nowrap;
+    }
+    .occ.here .ref { color: var(--accent); }
+
+    /* Alignment braid — from reverse interlinear */
+    .align-center {
+      text-align: center;
+      font-family: var(--font-reading);
+      font-size: 14px;
+      font-weight: 500;
+      padding: 2px 0 8px;
+    }
+    .align-center::after {
+      content: '';
+      display: block;
+      width: 24px; height: 1px;
+      background: var(--border-medium);
+      margin: 6px auto 0;
+    }
+    .align-rows { display: flex; flex-direction: column; gap: 5px; }
+    .align-row {
+      display: grid;
+      grid-template-columns: 10px 36px 1fr;
+      gap: 6px;
+      font-size: 11.5px;
+      align-items: start;
+    }
+    .align-row .thread {
+      width: 8px; min-height: 12px;
+      border-left: 1px solid rgba(122, 95, 176, 0.3);
+      border-bottom: 1px solid rgba(122, 95, 176, 0.3);
+      border-bottom-left-radius: 5px;
+      margin-top: 3px;
+    }
+    .align-row .tr {
+      font-weight: 600; font-size: 10px;
+      letter-spacing: 0.04em; color: var(--text-tertiary);
+      padding-top: 1px;
+    }
+    .align-row .words { color: var(--text-primary); }
+    .align-row .words .span-note {
+      display: block;
+      font-size: 10.5px;
+      color: var(--text-tertiary);
+      margin-top: 1px;
+    }
+
+    /* Stats strip — pure counts */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+    .stat {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 8px 8px 9px;
+      text-align: center;
+    }
+    .stat .n {
+      font-size: 18px; font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      line-height: 1.1;
+    }
+    .stat .l {
+      font-size: 10px; color: var(--text-tertiary);
+      margin-top: 2px; line-height: 1.25;
+    }
+
+    /* Neighbors — phrase from alignment span / syntax if present */
+    .phrase-bar {
+      font-family: var(--font-reading);
+      font-size: 13.5px;
+      line-height: 1.5;
+      color: var(--text-secondary);
+    }
+    .phrase-bar .focus {
+      color: var(--text-primary);
+      background: var(--accent-soft);
+      border-radius: 3px;
+      padding: 0 3px;
+    }
+    .phrase-bar .dim { color: var(--text-tertiary); }
+
+    .footer-note {
+      font-size: 10.5px;
+      color: var(--text-tertiary);
+      line-height: 1.4;
+      padding: 2px 4px 0;
+    }
+
+    .actions {
+      flex-shrink: 0;
+      border-top: 1px solid var(--border-subtle);
+      padding: 10px 12px 12px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .actions-label {
+      font-size: 10px; font-weight: 500; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--text-tertiary);
+    }
+    .action-row { display: flex; flex-wrap: wrap; gap: 5px; }
+    .action {
+      font-size: 11px; font-weight: 500;
+      color: var(--text-secondary);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-medium);
+      border-radius: 999px;
+      padding: 5px 9px;
+    }
+
+    /* Below: data inventory */
+    .below {
+      width: min(1180px, 100%);
+      margin-top: 22px;
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 12px;
+    }
+    .panel {
+      background: rgba(255,255,255,0.55);
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 10px;
+      padding: 14px 16px 15px;
+    }
+    .panel h3 {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.05em;
+      text-transform: uppercase; color: #6B6860; margin-bottom: 8px;
+    }
+    .panel ul {
+      list-style: none;
+      display: flex; flex-direction: column; gap: 5px;
+    }
+    .panel li {
+      font-size: 12.5px; line-height: 1.4; color: #4A4842;
+      padding-left: 12px; position: relative;
+    }
+    .panel li::before {
+      content: '';
+      position: absolute; left: 0; top: 7px;
+      width: 4px; height: 4px; border-radius: 50%;
+      background: #B0B0AC;
+    }
+    .panel li strong { font-weight: 500; color: #2A2824; }
+    .panel.later li::before { background: #C0A030; }
+    .panel p {
+      font-size: 12.5px; line-height: 1.45; color: #4A4842; margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <p class="caption"><strong>Shepherdly</strong> · Language layer v0 — derived from token data, not custom linguistic judgments</p>
+
+  <div class="app" role="img" aria-label="Data-first language margin mockup for 1 Corinthians 13:8">
+    <aside class="rail">
+      <div class="brand-mark">S</div>
+      <button class="nav-btn active" aria-label="Read">
+        <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      </button>
+      <button class="nav-btn" aria-label="Write">
+        <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+      </button>
+      <button class="nav-btn" aria-label="Search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+      </button>
+      <button class="nav-btn" aria-label="Notes">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+      </button>
+      <div class="rail-spacer"></div>
+      <button class="nav-btn" aria-label="Settings">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="passage-pill">1 Corinthians 13 <span class="chev">▾</span></div>
+        <span class="version">ESV</span>
+        <div class="topbar-spacer"></div>
+        <div class="view-toggle" title="What to mark from data">
+          <button type="button">All words</button>
+          <button type="button" class="on">Marked</button>
+          <button type="button">None</button>
+        </div>
+      </header>
+
+      <div class="reading">
+        <div class="chapter-label">1 Corinthians · Chapter 13</div>
+        <div class="scripture">
+          <span class="verse">
+            <span class="vnum">8</span>Love never ends. As for prophecies, they will
+            <span class="tok diverge repeat active">pass away</span>;
+            as for tongues, they will
+            <span class="tok diverge">cease</span>;
+            as for knowledge, it will
+            <span class="tok diverge repeat">pass away</span>.
+          </span>
+          <span class="verse">
+            <span class="vnum">9</span>For we know in part and we prophesy in part,
+          </span>
+          <span class="verse">
+            <span class="vnum">10</span>but when the perfect comes, the partial will
+            <span class="tok diverge repeat">pass away</span>.
+          </span>
+          <span class="verse">
+            <span class="vnum">11</span>When I was a child, I spoke like a child, I thought like a child, I reasoned like a child. When I became a man, I
+            <span class="tok repeat">gave up</span>
+            childish ways.
+          </span>
+          <span class="verse">
+            <span class="vnum">12</span>For now we see in a mirror dimly, but then face to face. Now I know in part; then I shall know fully, even as I have been fully known.
+          </span>
+        </div>
+
+        <div class="passage-footer">
+          <span><b>4</b> marked · from data signals</span>
+          <div class="legend">
+            <span class="leg"><i class="d"></i> translation span differs</span>
+            <span class="leg"><i class="r"></i> same lemma nearby</span>
+            <span class="leg"><i class="q"></i> rare in NT</span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <aside class="margin">
+      <div class="margin-head">
+        <div class="margin-kicker">Word · from text data</div>
+        <div class="token-row">
+          <span class="token-greek">καταργηθήσονται</span>
+          <span class="token-trans">katargēthēsontai</span>
+        </div>
+        <div class="plain-gloss">
+          Lexicon gloss: <em>bring to nothing, render idle, abolish</em>
+          <span style="color:var(--text-tertiary)"> · not contextual sense</span>
+        </div>
+        <div class="signals">
+          <span class="sig diverge">4 of 4 translations diverge</span>
+          <span class="sig repeat">lemma ×3 in ch. 13</span>
+          <span class="sig freq">27× in NT</span>
+          <span class="sig neutral">G2673</span>
+        </div>
+      </div>
+
+      <div class="margin-scroll">
+        <!-- Stats from counts alone -->
+        <div class="stats">
+          <div class="stat">
+            <div class="n">3</div>
+            <div class="l">in 1 Cor 13</div>
+          </div>
+          <div class="stat">
+            <div class="n">9</div>
+            <div class="l">in 1 Corinthians</div>
+          </div>
+          <div class="stat">
+            <div class="n">27</div>
+            <div class="l">in NT (lemma)</div>
+          </div>
+        </div>
+
+        <!-- Morphology: code → plain labels via table, no judgment -->
+        <section class="card">
+          <div class="card-label">
+            Morphology
+            <span class="src">morph code → labels</span>
+          </div>
+          <div class="kv">
+            <div class="kv-row">
+              <span class="k">Lemma</span>
+              <span class="v">καταργέω <span class="expand">· G2673</span></span>
+            </div>
+            <div class="kv-row">
+              <span class="k">Code</span>
+              <span class="v mono">V-FPI-3P</span>
+            </div>
+          </div>
+          <div class="morph-chips">
+            <span>verb</span>
+            <span>future</span>
+            <span>passive</span>
+            <span>indicative</span>
+            <span>3rd person</span>
+            <span>plural</span>
+          </div>
+        </section>
+
+        <!-- Phrase window from alignment / token neighbors -->
+        <section class="card">
+          <div class="card-label">
+            Token neighborhood
+            <span class="src">± neighbors</span>
+          </div>
+          <div class="phrase-bar">
+            <span class="dim">…προφητεῖαι,</span>
+            <span class="focus">καταργηθήσονται</span><span class="dim">·</span>
+            <span class="dim">εἴτε γλῶσσαι…</span>
+          </div>
+        </section>
+
+        <!-- Occurrences = concordance query -->
+        <section class="card">
+          <div class="card-label">
+            Same lemma in this book
+            <span class="src">concordance</span>
+          </div>
+          <div class="occ-list">
+            <div class="occ here">
+              <span class="ref">13:8a</span>
+              <span class="snip">prophecies … will <em>pass away</em></span>
+              <span class="form">FPI-3P</span>
+            </div>
+            <div class="occ here">
+              <span class="ref">13:8c</span>
+              <span class="snip">knowledge … will <em>pass away</em></span>
+              <span class="form">FPI-3P</span>
+            </div>
+            <div class="occ">
+              <span class="ref">13:10</span>
+              <span class="snip">the partial will <em>pass away</em></span>
+              <span class="form">FPI-3S</span>
+            </div>
+            <div class="occ">
+              <span class="ref">13:11</span>
+              <span class="snip">I <em>gave up</em> childish ways</span>
+              <span class="form">AAI-1S</span>
+            </div>
+            <div class="occ">
+              <span class="ref">1:28</span>
+              <span class="snip">to <em>bring to nothing</em> things that are</span>
+              <span class="form">ASA-3S</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Alignment braid from reverse interlinear -->
+        <section class="card">
+          <div class="card-label" style="color: var(--plum);">
+            Translation alignment
+            <span class="src">span map</span>
+          </div>
+          <div class="align-center">καταργηθήσονται</div>
+          <div class="align-rows">
+            <div class="align-row">
+              <span class="thread"></span>
+              <span class="tr">ESV</span>
+              <span class="words">pass away
+                <span class="span-note">1 token → 2 English words</span>
+              </span>
+            </div>
+            <div class="align-row">
+              <span class="thread"></span>
+              <span class="tr">NIV</span>
+              <span class="words">cease
+                <span class="span-note">1 → 1</span>
+              </span>
+            </div>
+            <div class="align-row">
+              <span class="thread"></span>
+              <span class="tr">NRSV</span>
+              <span class="words">come to an end
+                <span class="span-note">1 → 4</span>
+              </span>
+            </div>
+            <div class="align-row">
+              <span class="thread"></span>
+              <span class="tr">CSB</span>
+              <span class="words">be done away with
+                <span class="span-note">1 → 4 · keeps passive</span>
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <p class="footer-note">
+          Everything above is countable or look-uppable from morphology, lemmata, frequency tables, and reverse interlinears. No claim about meaning force or sermon use.
+        </p>
+      </div>
+
+      <div class="actions">
+        <div class="actions-label">Open from this token</div>
+        <div class="action-row">
+          <span class="action">Lemma dossier</span>
+          <span class="action">All forms in NT</span>
+          <span class="action">Copy Greek</span>
+          <span class="action">Add to note</span>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="below">
+    <div class="panel">
+      <h3>v0 — gather word data, derive marks</h3>
+      <p>Marks and cards come from existing datasets (MACULA / OSHB / reverse interlinears / Strong’s maps). No pastor-facing “force” or “consequence” prose required to ship.</p>
+      <ul>
+        <li><strong>Token + lemma + morph code</strong> — expand codes to English labels via a fixed table</li>
+        <li><strong>Lexicon gloss range</strong> — dictionary, labeled as non-contextual</li>
+        <li><strong>Counts</strong> — lemma in chapter / book / corpus; form frequency</li>
+        <li><strong>Local concordance</strong> — every occurrence + morph form in the book</li>
+        <li><strong>Alignment spans</strong> — which English words cover this token per version</li>
+        <li><strong>Divergence mark</strong> — when ≥N translations use different content words for the same token</li>
+        <li><strong>Repeat mark</strong> — same lemma within N verses (or same chapter)</li>
+        <li><strong>Rarity mark</strong> — lemma below a frequency threshold in the corpus</li>
+        <li><strong>Neighborhood</strong> — ±k Greek tokens (or syntax parent/children if treebank present)</li>
+        <li><strong>Strong’s / Gk number</strong> — searchable alias only</li>
+      </ul>
+    </div>
+    <div class="panel later">
+      <h3>Later — needs judgment or AI</h3>
+      <p>Keep out of v0. These are valuable, but they are products on top of the data layer, not the data layer.</p>
+      <ul>
+        <li><strong>Force / consequence / limits</strong> — contextual linguistic judgment</li>
+        <li><strong>“Changes the reading”</strong> — pastoral significance ranking</li>
+        <li><strong>Sermon-safe rewrite · challenge insight</strong> — agent behaviors</li>
+        <li><strong>Commentary agreement map</strong> — assertion extraction + verification</li>
+        <li><strong>Root-as-meaning warnings</strong> — editorial rules / fallacy library</li>
+        <li><strong>Which genitive sense</strong> — ambiguity resolution</li>
+        <li><strong>Argument / narrative / poetic geometry views</strong> — need discourse structure beyond morph</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

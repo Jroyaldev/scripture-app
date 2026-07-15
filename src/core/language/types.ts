@@ -82,6 +82,15 @@ export type TokenRecord = {
   gloss?: string;
   /** Louw-Nida domain id when present. */
   louwNida?: string;
+  /**
+   * Occurrence-level MACULA / MARBLE semantic tags resolved from the source
+   * Louw-Nida ids. Optional so older token packages remain readable.
+   */
+  semanticSenses?: Array<{
+    id: string;
+    label: string;
+    domain?: string;
+  }>;
   /** Domain code when present (dataset-specific). */
   domain?: string;
   /** Syntactic role label when present (e.g. MACULA role). */

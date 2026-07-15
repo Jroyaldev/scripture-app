@@ -40,7 +40,18 @@ function writeSamplePackage(root: string, packageId: string): string {
   });
 
   // Re-tag datasetId for package id
-  const lines = tokens.map((t) => JSON.stringify({ ...t, datasetId: packageId }));
+  const senseLabels: Record<string, string> = {
+    "76.26": "to destroy, to cause to cease",
+    "13.100": "to cease to exist",
+    "13.162": "to pass away",
+  };
+  const lines = tokens.map((t) => JSON.stringify({
+    ...t,
+    datasetId: packageId,
+    ...(t.louwNida && senseLabels[t.louwNida]
+      ? { semanticSenses: [{ id: t.louwNida, label: senseLabels[t.louwNida] }] }
+      : {}),
+  }));
   writeFileSync(join(dir, "tokens.jsonl"), lines.join("\n") + "\n");
   writeFileSync(
     join(dir, "manifest.json"),
@@ -117,6 +128,11 @@ test("TokenPackageLoader lists, loads, and queries a package", () => {
     assert.equal(card!.lemmaFreq.book, 4);
     assert.ok(card!.occurrencesInBook.length === 4);
     assert.ok(card!.marks.some((m) => m.kind === "repeat"));
+    assert.equal(card!.semanticSenses?.total, 3);
+    assert.equal(
+      card!.semanticSenses?.senses.find((sense) => sense.current)?.ids[0],
+      "13.100",
+    );
 
     const lemmaHits = loader.getLemmaInBook("macula-greek-nestle1904", "1CO", "καταργέω");
     assert.equal(lemmaHits?.length, 4);

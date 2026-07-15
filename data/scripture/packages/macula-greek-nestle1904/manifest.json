@@ -23,7 +23,7 @@
     }
   },
   "source": "https://github.com/Clear-Bible/macula-greek",
-  "sourceNote": "Imported from MACULA Greek Nestle1904 TSV. Attribute Clear Bible / Biblica CC BY 4.0.",
+  "sourceNote": "Imported from MACULA Greek Nestle1904 TSV with MARBLE SDBG occurrence senses. Attribute Clear Bible / Biblica CC BY 4.0.",
   "tokenCount": 137779,
   "books": [
     "1CO",
