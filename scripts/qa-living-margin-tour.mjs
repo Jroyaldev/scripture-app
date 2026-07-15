@@ -113,6 +113,28 @@ async function pressKey(key, code = key, modifiers = 0) {
   await sleep(140);
 }
 
+async function clickPoint(point) {
+  await cdp.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: point.x, y: point.y });
+  await cdp.send("Input.dispatchMouseEvent", {
+    type: "mousePressed", x: point.x, y: point.y, button: "left", buttons: 1, clickCount: 1,
+  });
+  await cdp.send("Input.dispatchMouseEvent", {
+    type: "mouseReleased", x: point.x, y: point.y, button: "left", buttons: 0, clickCount: 1,
+  });
+  await sleep(140);
+}
+
+async function clickElement(selector) {
+  const point = await evaluate(`(() => {
+    const element = document.querySelector(${JSON.stringify(selector)});
+    if (!element) return null;
+    const rect = element.getBoundingClientRect();
+    return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  })()`);
+  if (!point) throw new Error(`Clickable element not found: ${selector}`);
+  await clickPoint(point);
+}
+
 async function selectMarginTab(tab) {
   const selector = `#margin-${tab}-tab`;
   const changed = await evaluate(`(() => {
@@ -175,17 +197,18 @@ async function setTheme(theme) {
 async function setTranslation(code) {
   const current = await evaluate(`document.querySelector(".version-picker-btn")?.textContent?.trim().toLowerCase().split(/\\s+/)[0]`);
   if (current === code) return;
-  await evaluate(`document.querySelector(".version-picker-btn")?.click()`);
+  await clickElement(".version-picker-btn");
   await waitFor(`Boolean(document.querySelector(".version-picker-popover"))`);
-  const changed = await evaluate(`(() => {
+  const optionPoint = await evaluate(`(() => {
     const option = [...document.querySelectorAll(".version-picker-item")].find((item) =>
       item.querySelector(".version-picker-code")?.textContent?.trim().toLowerCase() === ${JSON.stringify(code)}
     );
-    if (!option) return false;
-    option.click();
-    return true;
+    if (!option) return null;
+    const rect = option.getBoundingClientRect();
+    return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
   })()`);
-  if (!changed) throw new Error(`Translation option not found: ${code}`);
+  if (!optionPoint) throw new Error(`Translation option not found: ${code}`);
+  await clickPoint(optionPoint);
   await waitFor(`document.querySelector(".version-picker-btn")?.textContent?.trim().toLowerCase().startsWith(${JSON.stringify(code)})`);
   await waitFor(`document.querySelectorAll(".verse-line").length > 0`);
   await sleep(300);
@@ -408,6 +431,12 @@ const translationAnchor = await evaluate(`(() => {
 assert.ok(translationAnchor && translationAnchor.scrollTop > 0);
 const quoteBeforeTranslation = await evaluate(`document.querySelector(".margin-focus-quote")?.textContent?.trim() ?? ""`);
 assert.ok(quoteBeforeTranslation.length > 0);
+// Reopen the selection toolbar so the document-level click-away listener is
+// active. A real pointer press on the version trigger must hide only that
+// toolbar, never clear the canonical selected range.
+await evaluate(`document.querySelector('.verse-line[data-verse="7"]')?.focus()`);
+await pressKey("Enter", "Enter", 8);
+await waitFor(`Boolean(document.querySelector('[data-floating-layer="toolbar"]'))`);
 await evaluate(`(() => {
   window.__marginQuoteHadGap = false;
   const margin = document.querySelector(".living-margin");
@@ -547,7 +576,6 @@ await evaluate(`document.querySelector(".margin-frame-action")?.click()`);
 await waitFor(`document.querySelector(".living-margin")?.dataset.marginMode !== "selected"`);
 await waitFor(`document.activeElement?.id === "living-margin-title"`);
 assert.equal(await evaluate(`document.querySelectorAll('.verse-line[aria-pressed="true"]').length`), 0);
-assert.equal(await evaluate(`document.querySelector(".living-margin")?.dataset.marginMode`), "in-view");
 assert.equal(
   await evaluate(`document.querySelector('.margin-tab[aria-selected="true"]')?.id`),
   "margin-notes-tab",

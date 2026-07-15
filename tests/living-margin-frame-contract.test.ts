@@ -62,6 +62,7 @@ test("translation changes preserve canonical verse selection and the reading anc
 
   assert.match(margin, /const quoteVerseText = displayChapterVerseText \?\? chapterVerseText/);
   assert.match(margin, /if \(chapterTextLoading\) return/);
+  assert.match(page, /el\?\.closest\("\.living-margin, \.version-picker-group, \.version-picker-popover"\)/);
 });
 
 test("Overview surfaces only grounded Scripture, library, and TIPNR entity leads", () => {

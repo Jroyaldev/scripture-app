@@ -983,7 +983,11 @@ export function ScripturePage({
       if (paletteRef.current?.contains(target)) return;
 
       const el = target instanceof Element ? target : target.parentElement;
-      if (el?.closest(".living-margin")) {
+      // The version picker changes how this same canonical selection is
+      // rendered; opening or choosing from it must not behave like clicking
+      // away from the selection. Its panel is portaled to document.body, so
+      // protect both the trigger group and the floating panel explicitly.
+      if (el?.closest(".living-margin, .version-picker-group, .version-picker-popover")) {
         setShowHighlightPalette(false);
         return;
       }
