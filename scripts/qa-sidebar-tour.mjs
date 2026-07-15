@@ -146,6 +146,15 @@ const structure = await evaluate(`(() => ({
   activeCount: document.querySelectorAll('.nav-item[aria-current="page"]').length,
   width: document.querySelector(".sidebar")?.getBoundingClientRect().width,
   status: document.querySelector(".footer-ai-status")?.textContent?.trim(),
+  toggle: (() => {
+    const sidebar = document.querySelector(".sidebar")?.getBoundingClientRect();
+    const brand = document.querySelector(".brand-mark")?.getBoundingClientRect();
+    const button = document.querySelector(".sidebar-collapse-btn")?.getBoundingClientRect();
+    return sidebar && brand && button ? {
+      withinSidebar: button.left >= sidebar.left && button.right <= sidebar.right,
+      centerDelta: (button.top + button.height / 2) - (brand.top + brand.height / 2),
+    } : null;
+  })(),
 }))()`);
 assert.equal(structure.labCount, 0);
 assert.equal(structure.libraryTriggers, 1);
@@ -155,6 +164,8 @@ assert.ok(
   structure.status === "Local library" || structure.status === "Studying passage…",
   `unexpected library status: ${structure.status}`,
 );
+assert.equal(structure.toggle?.withinSidebar, true);
+assert.ok(Math.abs(structure.toggle?.centerDelta ?? 99) < 1, `toggle is not aligned with the brand: ${JSON.stringify(structure.toggle)}`);
 console.log("structure", structure);
 
 await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key: "2", code: "Digit2" });
@@ -218,11 +229,22 @@ const collapsed = await evaluate(`(() => ({
   width: document.querySelector(".sidebar")?.getBoundingClientRect().width,
   labelOpacity: Number(getComputedStyle(document.querySelector(".nav-label")).opacity),
   collapseLabel: document.querySelector(".sidebar-collapse-btn")?.getAttribute("aria-label"),
+  idleToggleOpacity: Number(getComputedStyle(document.querySelector(".sidebar-header > .control-tooltip-anchor")).opacity),
 }))()`);
 assert.ok(Math.abs(collapsed.width - 64) < 1, `expected 64px collapsed sidebar, got ${collapsed.width}`);
 assert.equal(collapsed.labelOpacity, 0);
 assert.equal(collapsed.collapseLabel, "Expand sidebar");
+assert.equal(collapsed.idleToggleOpacity, 0);
 await screenshot("light-collapsed");
+
+await moveTo(".sidebar-header");
+const collapsedHover = await evaluate(`(() => ({
+  toggleOpacity: Number(getComputedStyle(document.querySelector(".sidebar-header > .control-tooltip-anchor")).opacity),
+  brandOpacity: Number(getComputedStyle(document.querySelector(".brand-mark")).opacity),
+}))()`);
+assert.ok(collapsedHover.toggleOpacity > 0.9);
+assert.ok(collapsedHover.brandOpacity < 0.1);
+await screenshot("light-collapsed-hover");
 
 await setCollapsed(false);
 await evaluate(`document.querySelector(".library-switcher")?.click()`);

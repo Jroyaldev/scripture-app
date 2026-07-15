@@ -440,10 +440,7 @@ html, body, #root {
      the content's min-content size — without this override, collapsing to
      64px silently does nothing once any child (nav label, footer text) has
      a wider intrinsic minimum, regardless of the width/flex-shrink values.
-     min-width:0 alone is sufficient (the automatic-minimum-size floor only
-     applies when min-width is `auto`); deliberately NOT using overflow:hidden
-     here — .sidebar-collapse-btn is intentionally positioned half outside
-     the sidebar's own box (right:-12px) and would get clipped by it. */
+     min-width:0 removes that automatic floor. */
   min-width: 0;
   flex-shrink: 0;
   background: var(--bg-sidebar);
@@ -462,34 +459,28 @@ html, body, #root {
 
 .sidebar-collapse-btn {
   -webkit-app-region: no-drag;
-  position: absolute;
-  top: calc(env(titlebar-area-height, 28px) + var(--sp-sm));
-  right: -11px;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-medium);
-  box-shadow: var(--shadow-subtle);
-  display: flex;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  display: grid;
   align-items: center;
   justify-content: center;
   color: var(--text-secondary);
   cursor: pointer;
-  opacity: 0.55;
+  opacity: 0.68;
   transition: opacity var(--transition-fast), background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
-  z-index: 6;
 }
 
-.sidebar:hover .sidebar-collapse-btn,
-.sidebar.collapsed .sidebar-collapse-btn,
 .sidebar-collapse-btn:focus-visible {
   opacity: 1;
 }
 
 .sidebar-collapse-btn:hover {
-  background: var(--bg-secondary);
+  background: var(--study-hover-surface);
   color: var(--text-primary);
+  opacity: 1;
 }
 
 .sidebar-collapse-btn:active {
@@ -498,8 +489,16 @@ html, body, #root {
 
 .sidebar-header {
   -webkit-app-region: drag;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
   padding: 16px 18px 18px;
   position: relative;
+}
+
+.sidebar-header > .control-tooltip-anchor {
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .brand-row {
@@ -507,16 +506,32 @@ html, body, #root {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
 }
 
 .sidebar.collapsed .sidebar-header {
-  padding-left: 0;
-  padding-right: 0;
+  justify-content: center;
+  padding-left: 17px;
+  padding-right: 17px;
 }
 
 .sidebar.collapsed .brand-row {
   justify-content: center;
   gap: 0;
+}
+
+.sidebar.collapsed .sidebar-header > .control-tooltip-anchor {
+  position: absolute;
+  top: 16px;
+  left: 17px;
+  margin: 0;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.sidebar.collapsed .sidebar-header:hover > .control-tooltip-anchor,
+.sidebar.collapsed .sidebar-header:focus-within > .control-tooltip-anchor {
+  opacity: 1;
 }
 
 .brand-mark {
@@ -529,6 +544,12 @@ html, body, #root {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.sidebar.collapsed .sidebar-header:hover .brand-mark,
+.sidebar.collapsed .sidebar-header:focus-within .brand-mark {
+  opacity: 0;
 }
 
 .brand-word {
@@ -9489,9 +9510,10 @@ textarea:focus-visible,
 .reading-comfort-btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  width: 32px;
   height: 32px;
-  padding: 0 8px;
+  padding: 0;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   background: transparent;
@@ -9510,13 +9532,6 @@ textarea:focus-visible,
   color: var(--accent-current);
   border-color: color-mix(in srgb, var(--accent-current) 28%, transparent);
 }
-.reading-comfort-size-tag {
-  font-size: 10px;
-  font-weight: var(--fw-semibold);
-  letter-spacing: 0.04em;
-  opacity: 0.75;
-}
-
 .reading-comfort-popover {
   padding: 12px 12px 10px;
 }
@@ -9640,14 +9655,6 @@ textarea:focus-visible,
 @media (max-width: 980px) {
   .passage-picker-book {
     max-width: 92px;
-  }
-
-  .reading-comfort-size-tag {
-    display: none;
-  }
-
-  .reading-comfort-btn {
-    padding-inline: 7px;
   }
 }
 

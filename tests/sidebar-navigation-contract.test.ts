@@ -23,7 +23,10 @@ test("sidebar exposes one production density and one library-menu trigger", () =
   assert.match(app, /aria-current=\{active \? "page" : undefined\}/);
   assert.match(app, /aria-label="Primary navigation"/);
   assert.match(app, /aria-expanded=\{!sidebarCollapsed\}/);
+  assert.match(app, /<div className="sidebar-header">[\s\S]*<Tooltip label=\{sidebarCollapsed \? "Expand sidebar" : "Collapse sidebar"\}>[\s\S]*className="sidebar-collapse-btn"/);
   assert.match(app, /ariaLabel="Library menu"/);
+  assert.doesNotMatch(css, /\.sidebar-collapse-btn\s*\{[\s\S]*right:\s*-11px/);
+  assert.match(css, /\.sidebar\.collapsed \.sidebar-header:hover > \.control-tooltip-anchor/);
 });
 
 test("sidebar footer describes local state without implying remote sync", () => {

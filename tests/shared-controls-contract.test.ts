@@ -61,6 +61,8 @@ test("tooltips replace native title-only hints for compact reading actions", () 
   assert.match(tooltip, /onFocusCapture=\{\(\) => showAfter\(120\)\}/);
   assert.match(tooltip, /event\.key === "Escape"/);
   assert.match(comfort, /<Tooltip label="Reading layout">/);
+  assert.match(comfort, /function TextLayoutIcon/);
+  assert.doesNotMatch(comfort, /reading-comfort-size-tag|function AaIcon/);
   assert.match(comfort, /shortcut="F"/);
   assert.match(theme, /<Tooltip label=\{`Reading atmosphere/);
 });

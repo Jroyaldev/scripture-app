@@ -194,6 +194,8 @@ const structure = await evaluate(`(() => {
     toolsLeft: tools?.getBoundingClientRect().left,
     oldSlotCount: document.querySelectorAll(".topbar-margin-slot").length,
     jumpShortcut: document.querySelector(".passage-jump-shortcut")?.textContent,
+    layoutIcon: Boolean(document.querySelector(".reading-layout-icon")),
+    straySizeTag: document.querySelectorAll(".reading-comfort-size-tag").length,
     innerWidth: window.innerWidth,
   };
 })()`);
@@ -201,6 +203,8 @@ assert.equal(structure.toolbarRole, "toolbar");
 assert.equal(structure.toolbarLabel, "Reading toolbar");
 assert.equal(structure.oldSlotCount, 0);
 assert.equal(structure.jumpShortcut, "⌘K");
+assert.equal(structure.layoutIcon, true);
+assert.equal(structure.straySizeTag, 0);
 assert.ok(structure.navRight < structure.toolsLeft, "topbar zones must not overlap");
 console.log("structure", structure);
 
@@ -306,8 +310,19 @@ await evaluate(`(() => {
 })()`);
 await sleep(180);
 
-await evaluate(`window.resizeTo(900, 700)`);
-await sleep(700);
+// Electron ignores window.resizeTo while the human has the app maximized.
+// Device-metric emulation proves the same renderer breakpoint without
+// changing or unmaximizing their window.
+await cdp.send("Emulation.setDeviceMetricsOverride", {
+  width: 900,
+  height: 700,
+  deviceScaleFactor: 1,
+  mobile: false,
+  screenWidth: 900,
+  screenHeight: 700,
+});
+await waitFor(`window.innerWidth === 900`, 5_000);
+await sleep(180);
 const minimum = await evaluate(`(() => {
   const bar = document.querySelector(".scripture-topbar").getBoundingClientRect();
   const nav = document.querySelector(".topbar-navigation").getBoundingClientRect();
@@ -341,6 +356,9 @@ assert.ok(minimumFocused.jumpWidth >= 170);
 assert.ok(minimumFocused.navRight <= minimumFocused.toolsLeft, `focused minimum-width zones overlap: ${JSON.stringify(minimumFocused)}`);
 await screenshot("light-minimum-jump-focus");
 await pressEscape();
+
+await cdp.send("Emulation.clearDeviceMetricsOverride");
+await sleep(220);
 
 const restoredBounds = leaveTheme ? fullDesktopBounds : originalBounds;
 await evaluate(`window.resizeTo(${JSON.stringify(restoredBounds.width)}, ${JSON.stringify(restoredBounds.height)}); window.moveTo(${JSON.stringify(restoredBounds.left)}, ${JSON.stringify(restoredBounds.top)})`);

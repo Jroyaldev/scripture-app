@@ -4,6 +4,17 @@
 > **Predecessors:** A0 (snapshot), A1 (native build), B1 (scripture data).
 > **Contracts:** §4.2 (event fold), §4.4 (SQLite materialized view), §4.6 (note format), INV-7 (append-only), INV-9 (safe to rebuild).
 
+## Progress — 2026-07-15 (Top chrome control refinement)
+
+A focused post-consolidation audit corrected the two remaining ambiguous controls without reopening the wider desktop system:
+
+- **Sidebar ownership is now obvious:** the collapse action no longer floats halfway across the sidebar/content divider like a resize handle. In the expanded sidebar it is a quiet, tooltip-backed action aligned inside the brand header. In the collapsed rail the brand remains at rest and gives way to the expand action only when its header is hovered or keyboard-focused.
+- **Reading layout is one glyph:** the broken-looking custom `Aa` plus detached current-size letter was replaced by one line icon combining type and text measure. The 32px control now matches Focus, Study, and atmosphere controls without presenting “Aᵣ M” as accidental text.
+- **Geometry is enforced:** sidebar QA proves that the toggle stays inside the rail and shares the brand's vertical center; it captures both collapsed idle and discoverable hover states. Topbar QA proves the new icon exists, the detached size tag does not, and the control remains safe at the 900px desktop floor.
+- **Maximized-window-safe QA:** the 900px topbar pass now uses renderer device metrics, so a human-maximized Electron window cannot make the responsive proof fail or be unmaximized behind the user's back.
+
+**Verification:** focused sidebar/topbar/shared-control/consolidation contracts (**14/14**), `npm run qa:sidebar`, `npm run qa:topbar`, full `npm test` (**401 tests: 391 passing, 10 expected Electron-ABI skips**), `npm run lint`, renderer typecheck/build, four-atmosphere screenshot inspection, and `git diff --check` pass. Mobile remains outside this worktree.
+
 ## Progress — 2026-07-15 (Desktop consolidation)
 
 The tenth and final bounded desktop visual-system pass is complete. It closes the gap between the rendered interface, its durable design contract, and its automated evidence without broadening into mobile, source-shelf/PDF ingestion, or sync:

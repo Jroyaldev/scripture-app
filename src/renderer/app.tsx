@@ -17,6 +17,7 @@ import { ToastProvider } from "./components/Toast.js";
 import { Popover } from "./components/Popover.js";
 import { WelcomeScreen } from "./components/WelcomeScreen.js";
 import type { ReadingPrefs } from "./components/ReadingComfort.js";
+import { Tooltip } from "./components/Tooltip.js";
 import { isDarkTheme, type AppTheme } from "./theme.js";
 import { safeCall } from "./utils/safeCall.js";
 import "./styles.css";
@@ -528,15 +529,6 @@ export function App(): React.JSX.Element {
               className={`sidebar${sidebarCollapsed ? " collapsed" : ""}`}
               aria-label="Primary navigation"
             >
-              <button
-                className="sidebar-collapse-btn"
-                onClick={toggleSidebarCollapsed}
-                title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                aria-expanded={!sidebarCollapsed}
-              >
-                <PanelToggleIcon />
-              </button>
               <div className="sidebar-header">
                 <div className="brand-row" aria-label="Scripture">
                   <div className="brand-mark">
@@ -544,6 +536,17 @@ export function App(): React.JSX.Element {
                   </div>
                   <div className="brand-word">Scripture</div>
                 </div>
+                <Tooltip label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}>
+                  <button
+                    type="button"
+                    className="sidebar-collapse-btn"
+                    onClick={toggleSidebarCollapsed}
+                    aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                    aria-expanded={!sidebarCollapsed}
+                  >
+                    <PanelToggleIcon />
+                  </button>
+                </Tooltip>
               </div>
               <div className="sidebar-nav">
                 <NavItem active={view === "scripture"} onClick={() => setView("scripture")} label="Read" icon={<ReadIcon />} shortcut="1" />

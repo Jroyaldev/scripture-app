@@ -18,12 +18,14 @@ interface Props {
   onToggleFocus: () => void;
 }
 
-function AaIcon(): React.JSX.Element {
+function TextLayoutIcon(): React.JSX.Element {
   return (
-    <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M4.5 14.5L8 5.5h.5L12 14.5" />
-      <path d="M5.8 11.2h4.9" />
-      <path d="M13.2 14.5V8.8c0-1.1.7-1.8 1.8-1.8" />
+    <svg className="reading-layout-icon" viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M3.5 15.5 7.2 5h1.3l3.7 10.5" />
+      <path d="M5.1 11.5h5.5" />
+      <path d="M14 6h3" />
+      <path d="M14 9.5h3" />
+      <path d="M14 13h3" />
     </svg>
   );
 }
@@ -59,7 +61,7 @@ const VERSE_MODES: SegmentedOption<VerseNumberMode>[] = [
 ];
 
 /**
- * Super-clean reading chrome: one Aa control + focus toggle.
+ * Super-clean reading chrome: one text-layout control + focus toggle.
  * Size / width / verse-number density live in a small popover.
  */
 export function ReadingComfort({ prefs, onChange, focusMode, onToggleFocus }: Props): React.JSX.Element {
@@ -96,8 +98,7 @@ export function ReadingComfort({ prefs, onChange, focusMode, onToggleFocus }: Pr
           aria-haspopup="dialog"
           aria-expanded={open}
         >
-          <AaIcon />
-          <span className="reading-comfort-size-tag">{prefs.readingSize.toUpperCase()}</span>
+          <TextLayoutIcon />
         </button>
       </Tooltip>
 

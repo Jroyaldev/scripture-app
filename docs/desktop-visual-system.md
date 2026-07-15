@@ -42,6 +42,7 @@ The picker is named **Reading atmosphere**, not Theme. Its compact explanation i
 
 - Expanded width is 228px; the optional collapsed rail is 64px. These are the production densities, not user-selectable visual experiments.
 - The Scripture wordmark identifies the application and does not open a library menu. The footer switcher is the single place that identifies and changes the active local library.
+- The sidebar toggle belongs inside the brand header rather than straddling the content divider. In the collapsed rail the brand remains visible at rest and yields to the expand action on header hover or keyboard focus, keeping identity and navigation ownership in one stable location.
 - The active destination combines a neutral inset material with one gold icon. Hover is a quieter material change. Keyboard focus keeps the visible gold ring.
 - Numeric shortcuts remain `1–5`, but their labels appear only on the hovered or keyboard-focused destination so the idle column stays quiet.
 - The idle footer says `Local library`. It never implies cloud sync. While source-backed passage work is active it says `Studying passage…` and pulses the avatar.
@@ -52,6 +53,7 @@ The picker is named **Reading atmosphere**, not Theme. Its compact explanation i
 - Book/chapter, Previous/Next, translation, and passage jump form one compact navigation system. `⌘K` focuses the jump command; Escape clears an error or returns focus from a picker.
 - Picker headings explain the consequence of the choice. Translation changes rendered text while notes stay anchored; Reading layout changes presentation while preserving text.
 - Icon-only reading tools retain visible hover/focus states, truthful accessible names, and one quiet divider between presentation controls and panel/atmosphere controls.
+- Reading layout uses one typography-and-measure glyph. It does not append the current size as a detached letter; the popover carries the complete size, width, and verse-number state.
 - Desktop compression preserves every capability. At 900px the dormant jump command becomes an icon and expands on focus without colliding with the passage group.
 
 ## Reading canvas contract
