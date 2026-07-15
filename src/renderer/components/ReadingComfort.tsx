@@ -1,5 +1,5 @@
 import type React from "react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ReadingSize, ReadingWidth, VerseNumberMode } from "../api.js";
 import { Popover } from "./Popover.js";
 
@@ -63,7 +63,19 @@ const VERSE_MODES: { id: VerseNumberMode; label: string; hint: string }[] = [
 export function ReadingComfort({ prefs, onChange, focusMode, onToggleFocus }: Props): React.JSX.Element {
   const [open, setOpen] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
+  const shouldReturnFocus = useRef(false);
   const [anchor, setAnchor] = useState<DOMRect | null>(null);
+
+  const closePopover = () => {
+    shouldReturnFocus.current = true;
+    setOpen(false);
+  };
+
+  useEffect(() => {
+    if (open || !shouldReturnFocus.current) return;
+    shouldReturnFocus.current = false;
+    btnRef.current?.focus();
+  }, [open]);
 
   const openPopover = () => {
     if (btnRef.current) setAnchor(btnRef.current.getBoundingClientRect());
@@ -79,6 +91,7 @@ export function ReadingComfort({ prefs, onChange, focusMode, onToggleFocus }: Pr
         onClick={() => (open ? setOpen(false) : openPopover())}
         title="Reading size & layout"
         aria-label="Reading size and layout"
+        aria-haspopup="dialog"
         aria-expanded={open}
       >
         <AaIcon />
@@ -89,7 +102,7 @@ export function ReadingComfort({ prefs, onChange, focusMode, onToggleFocus }: Pr
         type="button"
         className={`reading-comfort-btn focus-btn${focusMode ? " active" : ""}`}
         onClick={onToggleFocus}
-        title={focusMode ? "Exit focus mode (F)" : "Focus mode (F) — hide chrome"}
+        title={focusMode ? "Exit focus mode (F)" : "Focus reading (F) — hide side panels"}
         aria-label={focusMode ? "Exit focus mode" : "Enter focus mode"}
         aria-pressed={focusMode}
       >
@@ -99,10 +112,15 @@ export function ReadingComfort({ prefs, onChange, focusMode, onToggleFocus }: Pr
       {open && (
         <Popover
           anchorRect={anchor}
-          onClose={() => setOpen(false)}
+          onClose={closePopover}
           width={280}
           className="reading-comfort-popover"
+          ariaLabel="Reading layout"
         >
+          <div className="rc-heading">
+            <span>Reading layout</span>
+            <small>Presentation changes. The text does not.</small>
+          </div>
           <div className="rc-section">
             <div className="rc-label">Type size</div>
             <div className="rc-segmented" role="group" aria-label="Type size">

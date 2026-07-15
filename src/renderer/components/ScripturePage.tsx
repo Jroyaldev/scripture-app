@@ -120,6 +120,23 @@ function BackChevronIcon(): React.JSX.Element {
   );
 }
 
+function ChapterArrowIcon({ direction }: { direction: "previous" | "next" }): React.JSX.Element {
+  return (
+    <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d={direction === "previous" ? "M12.5 5.5 8 10l4.5 4.5" : "M7.5 5.5 12 10l-4.5 4.5"} />
+    </svg>
+  );
+}
+
+function JumpIcon(): React.JSX.Element {
+  return (
+    <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M3.5 10h12" />
+      <path d="m11.5 6 4 4-4 4" />
+    </svg>
+  );
+}
+
 function SearchIconSmall(): React.JSX.Element {
   return (
     <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
@@ -229,6 +246,7 @@ export function ScripturePage({
   const verseSelectionAnchorRef = useRef<number | null>(null);
   const [jumpText, setJumpText] = useState("");
   const [jumpError, setJumpError] = useState(false);
+  const jumpInputRef = useRef<HTMLInputElement>(null);
   const [retryToken, setRetryToken] = useState(0);
   const [scrolled, setScrolled] = useState(false);
 
@@ -238,6 +256,7 @@ export function ScripturePage({
   const [bookQuery, setBookQuery] = useState("");
   const [browseBook, setBrowseBook] = useState(book);
   const passageBtnRef = useRef<HTMLButtonElement>(null);
+  const passageShouldReturnFocus = useRef(false);
   const [passageAnchor, setPassageAnchor] = useState<DOMRect | null>(null);
   const bookSearchRef = useRef<HTMLInputElement>(null);
   const [recents, setRecents] = useState<RecentPassage[]>([]);
@@ -255,6 +274,7 @@ export function ScripturePage({
   // Version picker popover state
   const [versionOpen, setVersionOpen] = useState(false);
   const versionBtnRef = useRef<HTMLButtonElement>(null);
+  const versionShouldReturnFocus = useRef(false);
   const [versionAnchor, setVersionAnchor] = useState<DOMRect | null>(null);
 
   const contentRef = useRef<HTMLDivElement>(null);
@@ -611,10 +631,17 @@ export function ScripturePage({
   }, [book]);
 
   const closePassagePopover = useCallback(() => {
+    passageShouldReturnFocus.current = true;
     setPassageOpen(false);
     setPassageView("chapters");
     setBookQuery("");
   }, []);
+
+  useEffect(() => {
+    if (passageOpen || !passageShouldReturnFocus.current) return;
+    passageShouldReturnFocus.current = false;
+    passageBtnRef.current?.focus();
+  }, [passageOpen]);
 
   const openPassagePopover = () => {
     if (passageBtnRef.current) setPassageAnchor(passageBtnRef.current.getBoundingClientRect());
@@ -642,7 +669,16 @@ export function ScripturePage({
     setPassageView("chapters");
   };
 
-  const closeVersionPopover = useCallback(() => setVersionOpen(false), []);
+  const closeVersionPopover = useCallback(() => {
+    versionShouldReturnFocus.current = true;
+    setVersionOpen(false);
+  }, []);
+
+  useEffect(() => {
+    if (versionOpen || !versionShouldReturnFocus.current) return;
+    versionShouldReturnFocus.current = false;
+    versionBtnRef.current?.focus();
+  }, [versionOpen]);
 
   const openVersionPopover = () => {
     if (versionBtnRef.current) setVersionAnchor(versionBtnRef.current.getBoundingClientRect());
@@ -808,6 +844,20 @@ export function ScripturePage({
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [chapter, chapterCount]);
+
+  // Command/Ctrl+K is the stable "go somewhere" shortcut inside Read. It
+  // focuses the passage field without competing with the unmodified 1–5 app
+  // navigation or Command+Arrow chapter movement.
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey) || e.altKey || e.key.toLowerCase() !== "k") return;
+      e.preventDefault();
+      jumpInputRef.current?.focus();
+      jumpInputRef.current?.select();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
 
   // Positions the floating highlight palette over the actual selection —
   // not a single clicked row's far edge, which is what this used to key off
@@ -1477,19 +1527,26 @@ export function ScripturePage({
 
   return (
     <div className="scripture-page">
-      <div className={`scripture-topbar${scrolled ? " scrolled" : ""}`}>
-        <div className="passage-picker-group">
+      <header className={`scripture-topbar${scrolled ? " scrolled" : ""}`} role="toolbar" aria-label="Reading toolbar">
+        <div className="topbar-navigation">
+        <div className="passage-picker-group" aria-label="Chapter navigation">
           <button
             ref={passageBtnRef}
+            type="button"
             className={`passage-picker-btn${passageOpen ? " open" : ""}`}
             onClick={openPassagePopover}
+            title="Choose passage"
+            aria-label={`Choose passage. Current passage: ${displayBookName} ${chapter}`}
+            aria-haspopup="dialog"
+            aria-expanded={passageOpen}
           >
             <span className="passage-picker-book">{displayBookName}</span>{" "}
             <span className="passage-picker-chapter">{chapter}</span>
             <ChevronIcon />
           </button>
-          <div className="chapter-nav-arrows">
+          <div className="chapter-nav-arrows" role="group" aria-label="Move by chapter">
             <button
+              type="button"
               className="nav-arrow"
               onClick={() => {
                 if (chapter > 1) {
@@ -1499,10 +1556,12 @@ export function ScripturePage({
               }}
               disabled={chapter <= 1}
               title="Previous chapter (⌘←)"
+              aria-label="Previous chapter"
             >
-              ←
+              <ChapterArrowIcon direction="previous" />
             </button>
             <button
+              type="button"
               className="nav-arrow"
               onClick={() => {
                 if (chapter < chapterCount) {
@@ -1512,13 +1571,20 @@ export function ScripturePage({
               }}
               disabled={chapter >= chapterCount}
               title="Next chapter (⌘→)"
+              aria-label="Next chapter"
             >
-              →
+              <ChapterArrowIcon direction="next" />
             </button>
           </div>
 
           {passageOpen && (
-            <Popover anchorRect={passageAnchor} onClose={closePassagePopover} width={340} className="passage-picker-popover">
+            <Popover
+              anchorRect={passageAnchor}
+              onClose={closePassagePopover}
+              width={340}
+              className="passage-picker-popover"
+              ariaLabel="Choose passage"
+            >
               {passageView === "chapters" && (
                 <>
                   {recents.length > 0 && (
@@ -1550,6 +1616,7 @@ export function ScripturePage({
                                   closePassagePopover();
                                 }}
                                 title={label}
+                                aria-current={isHere ? "page" : undefined}
                               >
                                 <span className="picker-recent-ref">{label}</span>
                                 <span className="picker-recent-pkg">{r.packageId.toUpperCase()}</span>
@@ -1589,11 +1656,14 @@ export function ScripturePage({
                     {Array.from({ length: backbone.books[browseBook]?.chapters.length ?? 0 }, (_, i) => i + 1).map((n) => (
                       <button
                         key={n}
+                        type="button"
                         className={`chapter-grid-num${browseBook === book && chapter === n ? " active" : ""}`}
                         onClick={() => {
                           goTo(browseBook, n);
                           closePassagePopover();
                         }}
+                        aria-label={`Go to ${browseBookName} ${n}`}
+                        aria-current={browseBook === book && chapter === n ? "page" : undefined}
                       >
                         {n}
                       </button>
@@ -1621,6 +1691,7 @@ export function ScripturePage({
                       placeholder="Search books (1co, ps, rev…)"
                       value={bookQuery}
                       onChange={(e) => setBookQuery(e.target.value)}
+                      aria-label="Search Bible books"
                     />
                   </div>
                   <div className="popover-scroll">
@@ -1669,17 +1740,33 @@ export function ScripturePage({
         <div className="version-picker-group">
           <button
             ref={versionBtnRef}
+            type="button"
             className={`version-picker-btn${versionOpen ? " open" : ""}`}
             onClick={openVersionPopover}
+            title="Choose Bible translation"
+            aria-label={`Choose Bible translation. Current translation: ${packageId.toUpperCase()}`}
+            aria-haspopup="dialog"
+            aria-expanded={versionOpen}
           >
             {packageId.toUpperCase()}
             <ChevronIcon />
           </button>
           {versionOpen && (
-            <Popover anchorRect={versionAnchor} onClose={closeVersionPopover} width={260} className="version-picker-popover">
+            <Popover
+              anchorRect={versionAnchor}
+              onClose={closeVersionPopover}
+              width={280}
+              className="version-picker-popover"
+              ariaLabel="Choose Bible translation"
+            >
+              <div className="picker-menu-heading">
+                <span>Bible text</span>
+                <small>Notes stay anchored when the translation changes.</small>
+              </div>
               {TRANSLATIONS.map((t) => (
                 <button
                   key={t.code}
+                  type="button"
                   className={`version-picker-item${t.code === packageId ? " active" : ""}`}
                   onClick={() => {
                     if (t.code !== packageId) {
@@ -1697,6 +1784,7 @@ export function ScripturePage({
                     }
                     closeVersionPopover();
                   }}
+                  aria-pressed={t.code === packageId}
                 >
                   <span className="version-picker-code">{t.code.toUpperCase()}</span>
                   <span className="version-picker-name">{t.name}</span>
@@ -1718,17 +1806,35 @@ export function ScripturePage({
             setJumpError(true);
           }
         }}>
+          <JumpIcon />
           <input
+            ref={jumpInputRef}
             className={jumpError ? "passage-jump-input error" : "passage-jump-input"}
             value={jumpText}
-            placeholder="Go to… (e.g. Rev 14)"
+            placeholder="Jump to passage"
             aria-label="Jump to passage"
+            aria-invalid={jumpError}
+            aria-describedby={jumpError ? "passage-jump-error" : undefined}
             onChange={(e) => { setJumpText(e.target.value); setJumpError(false); }}
+            onKeyDown={(e) => {
+              if (e.key !== "Escape") return;
+              setJumpText("");
+              setJumpError(false);
+              e.currentTarget.blur();
+            }}
           />
+          {!jumpText && <kbd className="passage-jump-shortcut" aria-hidden="true">⌘K</kbd>}
+          {jumpError && (
+            <span id="passage-jump-error" className="passage-jump-error" role="status">
+              Try a book and chapter, like John 3.
+            </span>
+          )}
         </form>
+        </div>
 
         <div className="topbar-spacer" />
 
+        <div className="topbar-tools" aria-label="Reading tools">
         {onReadingPrefsChange && onToggleFocus && (
           <ReadingComfort
             prefs={{ readingSize, readingWidth, verseNumbers }}
@@ -1738,16 +1844,15 @@ export function ScripturePage({
           />
         )}
 
-        {/* Matches the Living Margin's own width when it's open, so these
-            two icons sit directly above the panel they act on instead of
-            floating at an arbitrary point in a wide, otherwise-empty topbar;
-            collapses to content width when the margin is hidden. */}
-        <div className={`topbar-margin-slot${marginVisible && !focusMode ? "" : " collapsed"}`}>
+        <span className="topbar-tool-divider" aria-hidden="true" />
           {onToggleMargin && !focusMode && (
             <button
+              type="button"
               className={`margin-toggle-btn${marginVisible ? " active" : ""}`}
               onClick={onToggleMargin}
               title={marginVisible ? "Hide Living Margin" : "Show Living Margin"}
+              aria-label={marginVisible ? "Hide Living Margin" : "Show Living Margin"}
+              aria-pressed={marginVisible}
             >
               <MarginToggleIcon />
             </button>
@@ -1755,7 +1860,7 @@ export function ScripturePage({
 
           {onThemeChange && <ThemePicker theme={theme} onChange={onThemeChange} />}
         </div>
-      </div>
+      </header>
 
       <div className="scripture-body">
       <div className="scripture-content" ref={contentRef}>

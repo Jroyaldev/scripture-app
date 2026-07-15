@@ -4,6 +4,21 @@
 > **Predecessors:** A0 (snapshot), A1 (native build), B1 (scripture data).
 > **Contracts:** §4.2 (event fold), §4.4 (SQLite materialized view), §4.6 (note format), INV-7 (append-only), INV-9 (safe to rebuild).
 
+## Progress — 2026-07-15 (Reading topbar)
+
+The third bounded desktop visual-system pass is complete. It turns the reading topbar into one stable command surface without changing the reading canvas, Living Margin content, or mobile worktree:
+
+- **Stable two-zone architecture:** passage movement stays in a left location zone and reading tools stay in a right tool zone. Living Margin visibility no longer reserves or releases a 300–400px spacer, so neither zone jumps when the margin opens or closes.
+- **Faster passage movement:** book/chapter, Previous/Next, and translation selection use one restrained control register. The passage field is now a clear `Jump to passage` command with a visible `⌘K` shortcut, Escape recovery, and a concise example when a reference cannot be parsed.
+- **Truthful reading controls:** Reading layout explains that presentation changes while text does not; translation selection explains that notes remain anchored; focus mode promises to hide side panels rather than falsely claiming to hide all chrome.
+- **Complete keyboard behavior:** picker triggers expose their dialog state, every floating layer is named, keyboard focus enters the book search where appropriate, and Escape closes each picker before returning focus to its originating control.
+- **Desktop-safe compression:** below 1120px the passage label and dormant jump command compact without removing capabilities. At the supported 900px desktop floor the location and tool zones remain distinct; focusing the jump field expands it without overlap.
+- **Repeatable visual QA:** `npm run qa:topbar -- --leave=light` verifies stable margin geometry, hover, focus return, jump error/recovery, focus mode, scroll depth, 900px compression, and Paper/Ink/Glass/Candlelight materials. Captures live in `docs/ui-audit/topbar/`.
+
+**Verification:** `npm run lint`, full `npm test` (**375 tests: 365 passing, 10 expected Electron-ABI skips**), Electron build, renderer build, `npm run qa:topbar -- --leave=light`, and `git diff --check` pass.
+
+The next bounded component is **Reading canvas**. Mobile remains explicitly outside this worktree.
+
 ## Progress — 2026-07-15 (sidebar and primary navigation)
 
 The second bounded desktop visual-system pass is complete. It converts the sidebar from a layout experiment into production navigation without changing the reading canvas, topbar, Living Margin, or mobile worktree:

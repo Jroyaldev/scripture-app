@@ -633,68 +633,84 @@ html, body, #root {
 /* --- Topbar (passage/version pickers, theme toggle) --- */
 
 .scripture-topbar {
-  height: 56px;
+  height: 58px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: var(--sp-md);
-  padding: 0 var(--page-gutter);
+  gap: 0;
+  padding: 0 20px;
   background: var(--bg-topbar);
   border-bottom: 1px solid var(--border-subtle);
-  transition: box-shadow var(--transition-normal);
+  position: relative;
+  z-index: 8;
+  transition: box-shadow var(--transition-normal), background-color var(--transition-slow);
 }
 
 .scripture-topbar.scrolled {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 8px 20px rgba(45, 35, 23, 0.055);
+}
+
+.topbar-navigation,
+.topbar-tools {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.topbar-navigation {
+  gap: 8px;
+}
+
+.topbar-tools {
+  flex-shrink: 0;
+  gap: 2px;
+}
+
+.topbar-tool-divider {
+  width: 1px;
+  height: 18px;
+  margin: 0 5px;
+  background: var(--border-subtle);
 }
 
 .topbar-spacer {
   flex: 1;
-}
-
-.topbar-margin-slot {
-  width: var(--margin-width);
-  min-width: 300px;
-  max-width: 400px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--sp-xs);
-  transition: width var(--transition-normal), min-width var(--transition-normal), max-width var(--transition-normal);
-}
-
-.topbar-margin-slot.collapsed {
-  width: auto;
-  min-width: 0;
-  max-width: none;
+  min-width: 12px;
 }
 
 .passage-picker-group {
   display: flex;
   align-items: center;
-  gap: var(--sp-sm);
+  gap: 0;
   position: relative;
+  height: 36px;
+  padding: 2px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
 }
 
 .passage-picker-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
+  height: 30px;
   background: none;
   border: none;
   font-family: var(--font-reading);
-  font-size: 16px;
+  font-size: 15.5px;
   font-weight: var(--fw-semibold);
   color: var(--text-primary);
   cursor: pointer;
-  padding: 4px 6px;
-  border-radius: var(--radius-sm);
+  padding: 0 9px;
+  border-radius: 8px;
+  min-width: 0;
+  transition: background var(--transition-fast), color var(--transition-fast);
 }
 
 .passage-picker-btn:hover,
 .passage-picker-btn.open {
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
 }
 
 .passage-picker-btn svg {
@@ -704,6 +720,14 @@ html, body, #root {
 .passage-picker-chapter {
   color: var(--text-secondary);
   font-weight: var(--fw-normal);
+}
+
+.passage-picker-book {
+  display: block;
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* .chapter-nav-arrows / .nav-arrow are defined once, in the
@@ -852,28 +876,28 @@ html, body, #root {
 
 .version-picker-group {
   position: relative;
-  margin-left: 2px;
 }
 
 .version-picker-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
+  height: 34px;
   background: none;
   border: none;
   color: var(--text-secondary);
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 600;
-  padding: 5px 10px;
-  border-radius: var(--radius-sm);
+  padding: 0 9px;
+  border-radius: 9px;
   cursor: pointer;
   transition: background var(--transition-fast), color var(--transition-fast);
 }
 
 .version-picker-btn:hover,
 .version-picker-btn.open {
-  background: var(--bg-secondary);
+  background: var(--study-hover-surface);
   color: var(--text-primary);
 }
 
@@ -900,7 +924,7 @@ html, body, #root {
 }
 
 .version-picker-item.active {
-  background: rgba(61, 107, 181, 0.07);
+  background: var(--study-hover-surface);
 }
 
 .version-picker-item svg {
@@ -931,11 +955,37 @@ html, body, #root {
   flex: 1;
 }
 
+.picker-menu-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 10px 10px;
+  margin-bottom: 3px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.picker-menu-heading > span {
+  font-family: var(--font-reading);
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.picker-menu-heading small {
+  color: var(--text-tertiary);
+  font-size: 10.5px;
+  line-height: 1.35;
+}
+
+.version-picker-popover {
+  padding: 10px;
+}
+
 /* Theme toggle */
 
 .theme-toggle-btn {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -977,8 +1027,8 @@ html, body, #root {
 /* Living Margin toggle (topbar, sibling of theme toggle) */
 
 .margin-toggle-btn {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -997,40 +1047,95 @@ html, body, #root {
 
 .margin-toggle-btn.active {
   color: var(--accent-current);
+  background: color-mix(in srgb, var(--accent-current) 8%, transparent);
 }
 
 .passage-jump {
+  width: 190px;
+  height: 34px;
   display: flex;
   align-items: center;
+  position: relative;
+  flex-shrink: 1;
+  min-width: 36px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--bg-surface) 46%, transparent);
+  color: var(--text-tertiary);
+  transition: width var(--transition-normal), border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.passage-jump > svg {
+  position: absolute;
+  left: 9px;
+  pointer-events: none;
+}
+
+.passage-jump:hover {
+  border-color: var(--border-medium);
+  background: color-mix(in srgb, var(--bg-surface) 72%, transparent);
+}
+
+.passage-jump:focus-within {
+  border-color: var(--study-gold);
+  background: var(--bg-surface);
+  box-shadow: 0 0 0 2px var(--study-gold-focus);
 }
 
 .passage-jump-input {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
   font-family: var(--font-ui);
-  font-size: var(--fs-sm);
-  padding: var(--sp-xs) var(--sp-sm);
-  /* Underline, not a boxed field — still reads as "type here" without the
-     heavier bordered-box look the rest of the topbar is moving away from. */
+  font-size: 12.5px;
+  padding: 0 46px 0 30px;
   border: none;
-  border-bottom: 1px solid var(--border-medium);
-  border-radius: 0;
+  border-radius: inherit;
   background: none;
   color: var(--text-primary);
-  width: 160px;
-  transition: border-color var(--transition-fast);
-}
-
-.passage-jump-input:hover {
-  border-bottom-color: var(--text-tertiary);
 }
 
 .passage-jump-input:focus {
   outline: none;
-  border-bottom-color: var(--accent-user);
-  border-bottom-width: 2px;
 }
 
-.passage-jump-input.error {
-  border-bottom-color: var(--error);
+.passage-jump:has(.passage-jump-input.error) {
+  border-color: var(--error);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--error) 24%, transparent);
+}
+
+.passage-jump-shortcut {
+  position: absolute;
+  right: 7px;
+  padding: 2px 4px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--bg-secondary) 80%, transparent);
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.passage-jump:focus-within .passage-jump-shortcut {
+  opacity: 0;
+}
+
+.passage-jump-error {
+  position: absolute;
+  top: calc(100% + 7px);
+  left: 0;
+  min-width: 224px;
+  padding: 7px 9px;
+  border: 1px solid color-mix(in srgb, var(--error) 38%, var(--border-subtle));
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.35;
+  box-shadow: var(--shadow-medium);
+  z-index: 12;
 }
 
 /* Row wrapper for the reading column + Living Margin, sitting below
@@ -2571,23 +2676,29 @@ html, body, #root {
 .chapter-nav-arrows {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 0;
+  padding-left: 2px;
+  border-left: 1px solid var(--border-subtle);
 }
 
 .nav-arrow {
-  padding: var(--sp-xs) var(--sp-sm);
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: none;
   border-radius: var(--radius-sm);
   background: none;
   color: var(--text-secondary);
   font-family: var(--font-ui);
-  font-size: var(--fs-sm);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: background var(--transition-fast), color var(--transition-fast), opacity var(--transition-fast);
 }
 
 .nav-arrow:hover:not(:disabled) {
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   color: var(--text-primary);
 }
 
@@ -2597,7 +2708,7 @@ html, body, #root {
 }
 
 .nav-arrow:focus-visible {
-  outline: 2px solid var(--accent-user);
+  outline: 2px solid var(--study-gold);
   outline-offset: 1px;
 }
 
@@ -7226,16 +7337,16 @@ textarea:focus-visible,
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-right: 6px;
+  margin-right: 0;
 }
 .reading-comfort-btn {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  height: 30px;
+  height: 32px;
   padding: 0 8px;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: 9px;
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
@@ -7261,6 +7372,27 @@ textarea:focus-visible,
 
 .reading-comfort-popover {
   padding: 12px 12px 10px;
+}
+
+.rc-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 2px 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.rc-heading > span {
+  font-family: var(--font-reading);
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.rc-heading small {
+  color: var(--text-tertiary);
+  font-size: 10.5px;
 }
 .rc-section {
   margin-bottom: 12px;
@@ -7310,6 +7442,61 @@ textarea:focus-visible,
 .rc-seg-letter.size-l { font-size: 15px; font-weight: var(--fw-semibold); }
 .settings-segmented {
   max-width: 320px;
+}
+
+/* Desktop compaction at the supported 900px minimum. This is not the mobile
+   layout: every topbar action remains available and keeps its desktop hit
+   target; only long labels and the dormant jump field yield space. */
+@media (max-width: 1120px) {
+  .scripture-topbar {
+    padding-inline: 14px;
+  }
+
+  .passage-picker-book {
+    max-width: 120px;
+  }
+
+  .passage-jump {
+    width: 36px;
+  }
+
+  .passage-jump:focus-within {
+    width: 176px;
+  }
+
+  .passage-jump-input {
+    padding-right: 6px;
+  }
+
+  .passage-jump-input::placeholder {
+    color: transparent;
+  }
+
+  .passage-jump:focus-within .passage-jump-input {
+    padding-right: 10px;
+  }
+
+  .passage-jump:focus-within .passage-jump-input::placeholder {
+    color: var(--text-tertiary);
+  }
+
+  .passage-jump-shortcut {
+    display: none;
+  }
+}
+
+@media (max-width: 980px) {
+  .passage-picker-book {
+    max-width: 92px;
+  }
+
+  .reading-comfort-size-tag {
+    display: none;
+  }
+
+  .reading-comfort-btn {
+    padding-inline: 7px;
+  }
 }
 
 /* --- Unified mini highlight toolbar --- */

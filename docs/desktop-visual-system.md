@@ -46,6 +46,14 @@ The picker is named **Reading atmosphere**, not Theme. Its compact explanation i
 - Numeric shortcuts remain `1–5`, but their labels appear only on the hovered or keyboard-focused destination so the idle column stays quiet.
 - The idle footer says `Local library`. It never implies cloud sync. While source-backed passage work is active it says `Studying passage…` and pulses the avatar.
 
+## Reading topbar contract
+
+- The bar has two stable zones: passage location and movement on the left; reading tools on the right. Living Margin visibility never changes either zone's position.
+- Book/chapter, Previous/Next, translation, and passage jump form one compact navigation system. `⌘K` focuses the jump command; Escape clears an error or returns focus from a picker.
+- Picker headings explain the consequence of the choice. Translation changes rendered text while notes stay anchored; Reading layout changes presentation while preserving text.
+- Icon-only reading tools retain visible hover/focus states, truthful accessible names, and one quiet divider between presentation controls and panel/atmosphere controls.
+- Desktop compression preserves every capability. At 900px the dormant jump command becomes an icon and expands on focus without colliding with the passage group.
+
 ## Interaction language
 
 - Hover changes surface or text tone without lifting the entire component.
@@ -61,7 +69,7 @@ Each item is a separate bounded B2 pass with before/after desktop captures in al
 
 1. **Global shell and atmosphere system — landed.** Tokens, Paper/Ink/Glass/Candlelight, picker, portal-safe floating layers, Settings gallery, and automated all-look QA.
 2. **Sidebar and primary navigation — landed.** One 228px/64px density, static product identity, single footer library switcher, quiet current/hover/focus states, contextual shortcut hints, truthful local/busy status, and repeatable all-look interaction QA.
-3. **Reading topbar.** Passage/version selection, previous/next, jump field, reading controls, Living Margin control, and atmosphere trigger.
+3. **Reading topbar — landed.** Stable location/tool zones, compact passage/version movement, discoverable `⌘K` jump, named focus-restoring pickers, truthful reading controls, margin-independent geometry, 900px desktop compaction, and repeatable all-look QA.
 4. **Reading canvas.** Chapter hierarchy, verse rhythm, selection, hover, highlights, loading/error/empty states, and focus mode.
 5. **Living Margin frame.** Section hierarchy, disclosure, provenance, action affordances, and card rhythm while preserving the proven language, cross-reference, and Structure visualizers.
 6. **Shared controls and floating layers.** Button, input, segmented control, card, tooltip, menu, popover, toast, and dialog states.

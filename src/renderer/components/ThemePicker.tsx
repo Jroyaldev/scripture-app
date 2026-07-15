@@ -1,5 +1,5 @@
 import type React from "react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Popover } from "./Popover.js";
 import { THEME_OPTIONS, themeLabel, type AppTheme } from "../theme.js";
 
@@ -46,6 +46,7 @@ interface ThemePickerProps {
 
 export function ThemePicker({ theme, onChange }: ThemePickerProps): React.JSX.Element {
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const shouldReturnFocus = useRef(false);
   const [open, setOpen] = useState(false);
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
 
@@ -53,6 +54,17 @@ export function ThemePicker({ theme, onChange }: ThemePickerProps): React.JSX.El
     if (!open && buttonRef.current) setAnchorRect(buttonRef.current.getBoundingClientRect());
     setOpen((current) => !current);
   };
+
+  const close = () => {
+    shouldReturnFocus.current = true;
+    setOpen(false);
+  };
+
+  useEffect(() => {
+    if (open || !shouldReturnFocus.current) return;
+    shouldReturnFocus.current = false;
+    buttonRef.current?.focus();
+  }, [open]);
 
   return (
     <>
@@ -69,7 +81,13 @@ export function ThemePicker({ theme, onChange }: ThemePickerProps): React.JSX.El
         <span className={`theme-orb theme-orb-${theme}`} aria-hidden="true" />
       </button>
       {open && (
-        <Popover anchorRect={anchorRect} onClose={() => setOpen(false)} width={328} className="theme-picker-popover">
+        <Popover
+          anchorRect={anchorRect}
+          onClose={close}
+          width={328}
+          className="theme-picker-popover"
+          ariaLabel="Reading atmosphere"
+        >
           <div className="theme-picker-heading">
             <span>Reading atmosphere</span>
             <small>Material changes. Meaning does not.</small>
@@ -79,7 +97,7 @@ export function ThemePicker({ theme, onChange }: ThemePickerProps): React.JSX.El
             compact
             onChange={(next) => {
               onChange(next);
-              setOpen(false);
+              close();
             }}
           />
         </Popover>
