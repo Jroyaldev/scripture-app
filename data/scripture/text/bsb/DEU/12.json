@@ -110,7 +110,7 @@
   },
   {
    "verse": 28,
-   "text": "Be careful to obey all these things I command you, so that it may always go well with you and your children after you, because you will be doing what is good and right in the eyes of the LORD your God. A Warning against Idolatry (; )"
+   "text": "Be careful to obey all these things I command you, so that it may always go well with you and your children after you, because you will be doing what is good and right in the eyes of the LORD your God."
   },
   {
    "verse": 29,
@@ -127,6 +127,20 @@
   {
    "verse": 32,
    "text": "See that you do everything I command you; do not add to it or subtract from it."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "One Place for Worship"
+  },
+  {
+   "beforeVerse": 29,
+   "kind": "section",
+   "level": 1,
+   "text": "A Warning against Idolatry"
   }
  ]
 }

@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "where they continued to preach the gospel. The Visit to Lystra and Derbe"
+   "text": "where they continued to preach the gospel."
   },
   {
    "verse": 8,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "But after the disciples had gathered around him, he got up and went back into the city. And the next day he left with Barnabas for Derbe. Strengthening the Disciples"
+   "text": "But after the disciples had gathered around him, he got up and went back into the city. And the next day he left with Barnabas for Derbe."
   },
   {
    "verse": 21,
@@ -111,6 +111,26 @@
   {
    "verse": 28,
    "text": "And they spent a long time there with the disciples."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul and Barnabas at Iconium"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "The Visit to Lystra and Derbe"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "Strengthening the Disciples"
   }
  ]
 }

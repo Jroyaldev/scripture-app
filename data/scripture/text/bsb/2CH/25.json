@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "Yet he did not put their sons to death, but acted according to what is written in the Law, in the Book of Moses, where the LORD commanded: “Fathers must not be put to death for their children, and children must not be put to death for their fathers; each is to die for his own sin.” Amaziah’s Victories"
+   "text": "Yet he did not put their sons to death, but acted according to what is written in the Law, in the Book of Moses, where the LORD commanded: “Fathers must not be put to death for their children, and children must not be put to death for their fathers; each is to die for his own sin.”"
   },
   {
    "verse": 5,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "Meanwhile the troops that Amaziah had dismissed from battle raided the cities of Judah, from Samaria to Beth-horon. They struck down 3,000 people and carried off a great deal of plunder. Amaziah Rebuked for Idolatry"
+   "text": "Meanwhile the troops that Amaziah had dismissed from battle raided the cities of Judah, from Samaria to Beth-horon. They struck down 3,000 people and carried off a great deal of plunder."
   },
   {
    "verse": 14,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "While he was still speaking, the king asked, “Have we made you the counselor to the king? Stop! Why be struck down?” So the prophet stopped, but he said, “I know that God has determined to destroy you, because you have done this and have not heeded my advice.” Jehoash Defeats Amaziah ()"
+   "text": "While he was still speaking, the king asked, “Have we made you the counselor to the king? Stop! Why be struck down?” So the prophet stopped, but he said, “I know that God has determined to destroy you, because you have done this and have not heeded my advice.”"
   },
   {
    "verse": 17,
@@ -94,7 +94,7 @@
   },
   {
    "verse": 24,
-   "text": "He took all the gold and silver and all the articles found in the house of God with Obed-edom and in the treasuries of the royal palace, as well as some hostages. Then he returned to Samaria. The Death of Amaziah ()"
+   "text": "He took all the gold and silver and all the articles found in the house of God with Obed-edom and in the treasuries of the royal palace, as well as some hostages. Then he returned to Samaria."
   },
   {
    "verse": 25,
@@ -111,6 +111,38 @@
   {
    "verse": 28,
    "text": "They carried him back on horses and buried him with his fathers in the City of Judah."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Amaziah Reigns in Judah"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "Amaziah’s Victories"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Amaziah Rebuked for Idolatry"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Jehoash Defeats Amaziah"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "The Death of Amaziah"
   }
  ]
 }

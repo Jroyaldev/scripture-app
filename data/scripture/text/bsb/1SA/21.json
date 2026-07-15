@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "Now one of Saul’s servants was there that day, detained before the LORD. And his name was Doeg the Edomite, the chief shepherd for Saul. David Flees to Gath (; )"
+   "text": "Now one of Saul’s servants was there that day, detained before the LORD. And his name was Doeg the Edomite, the chief shepherd for Saul."
   },
   {
    "verse": 8,
@@ -59,6 +59,20 @@
   {
    "verse": 15,
    "text": "Am I in need of madmen, that you have brought this man to rave in my presence? Must this man come into my house?”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "David Takes the Consecrated Bread"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "David Flees to Gath"
   }
  ]
 }

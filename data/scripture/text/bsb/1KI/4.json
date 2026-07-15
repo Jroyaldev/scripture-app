@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "Ahishar was in charge of the palace; and Adoniram son of Abda was in charge of the forced labor. Solomon’s Twelve Officers"
+   "text": "Ahishar was in charge of the palace; and Adoniram son of Abda was in charge of the forced labor."
   },
   {
    "verse": 7,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "Geber son of Uri in the land of Gilead, including the territories of Sihon king of the Amorites and of Og king of Bashan. There was also one governor in the land of Judah. Solomon’s Prosperity"
+   "text": "Geber son of Uri in the land of Gilead, including the territories of Sihon king of the Amorites and of Og king of Bashan. There was also one governor in the land of Judah."
   },
   {
    "verse": 20,
@@ -110,7 +110,7 @@
   },
   {
    "verse": 28,
-   "text": "Each one also brought to the required place their quotas of barley and straw for the chariot horses and other horses. Solomon’s Wisdom"
+   "text": "Each one also brought to the required place their quotas of barley and straw for the chariot horses and other horses."
   },
   {
    "verse": 29,
@@ -135,6 +135,32 @@
   {
    "verse": 34,
    "text": "So men of all nations came to listen to Solomon’s wisdom, sent by all the kings of the earth, who had heard of his wisdom."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Solomon’s Princes"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Solomon’s Twelve Officers"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "Solomon’s Prosperity"
+  },
+  {
+   "beforeVerse": 29,
+   "kind": "section",
+   "level": 1,
+   "text": "Solomon’s Wisdom"
   }
  ]
 }

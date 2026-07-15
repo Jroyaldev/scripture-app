@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "They hired counselors against them to frustrate their plans throughout the reign of Cyrus king of Persia and down to the reign of Darius king of Persia. Opposition under Xerxes and Artaxerxes"
+   "text": "They hired counselors against them to frustrate their plans throughout the reign of Cyrus king of Persia and down to the reign of Darius king of Persia."
   },
   {
    "verse": 6,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "We advise the king that if this city is rebuilt and its walls are restored, you will have no dominion west of the Euphrates. The Decree of Artaxerxes"
+   "text": "We advise the king that if this city is rebuilt and its walls are restored, you will have no dominion west of the Euphrates."
   },
   {
    "verse": 17,
@@ -95,6 +95,26 @@
   {
    "verse": 24,
    "text": "Thus the construction of the house of God in Jerusalem ceased, and it remained at a standstill until the second year of the reign of Darius king of Persia."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Adversaries Hinder the Work"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "Opposition under Xerxes and Artaxerxes"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "The Decree of Artaxerxes"
   }
  ]
 }

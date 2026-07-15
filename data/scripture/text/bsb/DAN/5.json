@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "As they drank the wine, they praised their gods of gold and silver, bronze and iron, wood and stone. The Handwriting on the Wall"
+   "text": "As they drank the wine, they praised their gods of gold and silver, bronze and iron, wood and stone."
   },
   {
    "verse": 5,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "did this because Daniel, the one he named Belteshazzar, was found to have an extraordinary spirit, as well as knowledge, understanding, and the ability to interpret dreams, explain riddles, and solve difficult problems. Summon Daniel, therefore, and he will give you the interpretation.” Daniel Interprets the Handwriting"
+   "text": "did this because Daniel, the one he named Belteshazzar, was found to have an extraordinary spirit, as well as knowledge, understanding, and the ability to interpret dreams, explain riddles, and solve difficult problems. Summon Daniel, therefore, and he will give you the interpretation.”"
   },
   {
    "verse": 13,
@@ -123,6 +123,26 @@
   {
    "verse": 31,
    "text": "and Darius the Mede received the kingdom at the age of sixty-two."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Belshazzar’s Feast"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "The Handwriting on the Wall"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Daniel Interprets the Handwriting"
   }
  ]
 }

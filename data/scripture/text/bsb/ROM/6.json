@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "For sin shall not be your master, because you are not under law, but under grace. The Wages of Sin"
+   "text": "For sin shall not be your master, because you are not under law, but under grace."
   },
   {
    "verse": 15,
@@ -91,6 +91,20 @@
   {
    "verse": 23,
    "text": "For the wages of sin is death, but the gift of God is eternal life in Christ Jesus our Lord."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Dead to Sin, Alive to God"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "The Wages of Sin"
   }
  ]
 }

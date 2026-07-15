@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "For this is what the LORD of Hosts, the God of Israel, says: Houses, fields, and vineyards will again be bought in this land.” Jeremiah Prays for Understanding"
+   "text": "For this is what the LORD of Hosts, the God of Israel, says: Houses, fields, and vineyards will again be bought in this land.”"
   },
   {
    "verse": 16,
@@ -98,7 +98,7 @@
   },
   {
    "verse": 25,
-   "text": "Yet You, O Lord GOD, have said to me, ‘Buy for yourself the field with silver and call in witnesses, even though the city has been delivered into the hands of the Chaldeans!’” The LORD Answers Jeremiah"
+   "text": "Yet You, O Lord GOD, have said to me, ‘Buy for yourself the field with silver and call in witnesses, even though the city has been delivered into the hands of the Chaldeans!’”"
   },
   {
    "verse": 26,
@@ -138,7 +138,7 @@
   },
   {
    "verse": 35,
-   "text": "They have built the high places of Baal in the Valley of Ben-hinnom to make their sons and daughters pass through the fire to Molech— something I never commanded them, nor had it ever entered My mind, that they should commit such an abomination and cause Judah to sin. A Promise of Restoration ()"
+   "text": "They have built the high places of Baal in the Valley of Ben-hinnom to make their sons and daughters pass through the fire to Molech— something I never commanded them, nor had it ever entered My mind, that they should commit such an abomination and cause Judah to sin."
   },
   {
    "verse": 36,
@@ -175,6 +175,32 @@
   {
    "verse": 44,
    "text": "Fields will be purchased with silver, and deeds will be signed, sealed, and witnessed in the land of Benjamin, in the areas surrounding Jerusalem, and in the cities of Judah— the cities of the hill country, the foothills, and the Negev— because I will restore them from captivity, declares the LORD.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jeremiah Buys Hanamel’s Field"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Jeremiah Prays for Understanding"
+  },
+  {
+   "beforeVerse": 26,
+   "kind": "section",
+   "level": 1,
+   "text": "The LORD Answers Jeremiah"
+  },
+  {
+   "beforeVerse": 36,
+   "kind": "section",
+   "level": 1,
+   "text": "A Promise of Restoration"
   }
  ]
 }

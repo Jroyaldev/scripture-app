@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "The place where they serve is a copy and shadow of what is in heaven. This is why Moses was warned when he was about to build the tabernacle: “See to it that you make everything according to the pattern shown you on the mountain.” The New Covenant ()"
+   "text": "The place where they serve is a copy and shadow of what is in heaven. This is why Moses was warned when he was about to build the tabernacle: “See to it that you make everything according to the pattern shown you on the mountain.”"
   },
   {
    "verse": 6,
@@ -51,6 +51,20 @@
   {
    "verse": 13,
    "text": "By speaking of a new covenant, He has made the first one obsolete; and what is obsolete and aging will soon disappear."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Christ’s Eternal Priesthood"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "The New Covenant"
   }
  ]
 }

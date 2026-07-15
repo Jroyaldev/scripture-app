@@ -102,7 +102,7 @@
   },
   {
    "verse": 26,
-   "text": "They served in the days of Joiakim son of Jeshua, the son of Jozadak, and in the days of Nehemiah the governor and Ezra the priest and scribe. The Dedication of the Wall"
+   "text": "They served in the days of Joiakim son of Jeshua, the son of Jozadak, and in the days of Nehemiah the governor and Ezra the priest and scribe."
   },
   {
    "verse": 27,
@@ -170,7 +170,7 @@
   },
   {
    "verse": 43,
-   "text": "On that day they offered great sacrifices, rejoicing because God had given them great joy. The women and children also rejoiced, so that the joy of Jerusalem was heard from afar. Provisions for Temple Worship"
+   "text": "On that day they offered great sacrifices, rejoicing because God had given them great joy. The women and children also rejoiced, so that the joy of Jerusalem was heard from afar."
   },
   {
    "verse": 44,
@@ -187,6 +187,26 @@
   {
    "verse": 47,
    "text": "So in the days of Zerubbabel and Nehemiah, all Israel contributed the daily portions for the singers and gatekeepers. They also set aside daily portions for the Levites, and the Levites set aside daily portions for the descendants of Aaron."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Priests and Levites Who Returned"
+  },
+  {
+   "beforeVerse": 27,
+   "kind": "section",
+   "level": 1,
+   "text": "The Dedication of the Wall"
+  },
+  {
+   "beforeVerse": 44,
+   "kind": "section",
+   "level": 1,
+   "text": "Provisions for Temple Worship"
   }
  ]
 }

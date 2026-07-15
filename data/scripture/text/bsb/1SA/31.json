@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "So Saul, his three sons, his armor-bearer, and all his men died together that same day. The Philistines Possess the Towns ()"
+   "text": "So Saul, his three sons, his armor-bearer, and all his men died together that same day."
   },
   {
    "verse": 7,
@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "They put his armor in the temple of the Ashtoreths and hung his body on the wall of Beth-shan. Jabesh-gilead’s Tribute to Saul ()"
+   "text": "They put his armor in the temple of the Ashtoreths and hung his body on the wall of Beth-shan."
   },
   {
    "verse": 11,
@@ -51,6 +51,26 @@
   {
    "verse": 13,
    "text": "Then they took their bones and buried them under the tamarisk tree in Jabesh, and they fasted seven days."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Saul’s Overthrow and Death"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "The Philistines Possess the Towns"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "Jabesh-gilead’s Tribute to Saul"
   }
  ]
 }

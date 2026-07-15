@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "The next day Saul organized the troops into three divisions, and during the morning watch they invaded the camp of the Ammonites and slaughtered them, until the hottest part of the day. And the survivors were so scattered that no two of them were left together. Saul Confirmed as King"
+   "text": "The next day Saul organized the troops into three divisions, and during the morning watch they invaded the camp of the Ammonites and slaughtered them, until the hottest part of the day. And the survivors were so scattered that no two of them were left together."
   },
   {
    "verse": 12,
@@ -59,6 +59,20 @@
   {
    "verse": 15,
    "text": "So all the people went to Gilgal and confirmed Saul as king in the presence of the LORD. There they sacrificed peace offerings before the LORD, and Saul and all the Israelites rejoiced greatly."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Saul Defeats the Ammonites"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Saul Confirmed as King"
   }
  ]
 }

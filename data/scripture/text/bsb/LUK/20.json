@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "And Jesus replied, “Neither will I tell you by what authority I am doing these things.” The Parable of the Wicked Tenants (; )"
+   "text": "And Jesus replied, “Neither will I tell you by what authority I am doing these things.”"
   },
   {
    "verse": 9,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "Everyone who falls on this stone will be broken to pieces, but he on whom it falls will be crushed.” Paying Taxes to Caesar (; )"
+   "text": "Everyone who falls on this stone will be broken to pieces, but he on whom it falls will be crushed.”"
   },
   {
    "verse": 19,
@@ -102,7 +102,7 @@
   },
   {
    "verse": 26,
-   "text": "And they were unable to trap Him in His words before the people. And amazed at His answer, they fell silent. The Sadducees and the Resurrection (; )"
+   "text": "And they were unable to trap Him in His words before the people. And amazed at His answer, they fell silent."
   },
   {
    "verse": 27,
@@ -158,7 +158,7 @@
   },
   {
    "verse": 40,
-   "text": "And they did not dare to question Him any further. Whose Son Is the Christ? (; )"
+   "text": "And they did not dare to question Him any further."
   },
   {
    "verse": 41,
@@ -174,7 +174,7 @@
   },
   {
    "verse": 44,
-   "text": "Thus David calls Him ‘Lord.’ So how can He be David’s son?” Beware of the Scribes ()"
+   "text": "Thus David calls Him ‘Lord.’ So how can He be David’s son?”"
   },
   {
    "verse": 45,
@@ -187,6 +187,44 @@
   {
    "verse": 47,
    "text": "They defraud widows of their houses, and for a show make lengthy prayers. These men will receive greater condemnation.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus’ Authority Challenged"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parable of the Wicked Tenants"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "Paying Taxes to Caesar"
+  },
+  {
+   "beforeVerse": 27,
+   "kind": "section",
+   "level": 1,
+   "text": "The Sadducees and the Resurrection"
+  },
+  {
+   "beforeVerse": 41,
+   "kind": "section",
+   "level": 1,
+   "text": "Whose Son Is the Christ?"
+  },
+  {
+   "beforeVerse": 45,
+   "kind": "section",
+   "level": 1,
+   "text": "Beware of the Scribes"
   }
  ]
 }

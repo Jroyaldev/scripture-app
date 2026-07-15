@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "The great courtyard was surrounded by three rows of dressed stone and a row of trimmed cedar beams, as were the inner courtyard and portico of the house of the LORD. The Pillars and Capitals ()"
+   "text": "The great courtyard was surrounded by three rows of dressed stone and a row of trimmed cedar beams, as were the inner courtyard and portico of the house of the LORD."
   },
   {
    "verse": 13,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "And the tops of the pillars were shaped like lilies. So the work of the pillars was completed. The Molten Sea ()"
+   "text": "And the tops of the pillars were shaped like lilies. So the work of the pillars was completed."
   },
   {
    "verse": 23,
@@ -102,7 +102,7 @@
   },
   {
    "verse": 26,
-   "text": "It was a handbreadth thick, and its rim was fashioned like the brim of a cup, like a lily blossom. It could hold two thousand baths. The Ten Bronze Stands"
+   "text": "It was a handbreadth thick, and its rim was fashioned like the brim of a cup, like a lily blossom. It could hold two thousand baths."
   },
   {
    "verse": 27,
@@ -146,7 +146,7 @@
   },
   {
    "verse": 37,
-   "text": "In this way he made the ten stands, each with the same casting, dimensions, and shape. The Ten Bronze Basins ()"
+   "text": "In this way he made the ten stands, each with the same casting, dimensions, and shape."
   },
   {
    "verse": 38,
@@ -154,7 +154,7 @@
   },
   {
    "verse": 39,
-   "text": "He set five stands on the south side of the temple and five on the north, and he put the Sea on the south side, at the southeast corner of the temple. Completion of the Bronze Works ()"
+   "text": "He set five stands on the south side of the temple and five on the north, and he put the Sea on the south side, at the southeast corner of the temple."
   },
   {
    "verse": 40,
@@ -186,7 +186,7 @@
   },
   {
    "verse": 47,
-   "text": "Solomon left all these articles unweighed, because there were so many. The weight of the bronze could not be determined. Completion of the Gold Furnishings ()"
+   "text": "Solomon left all these articles unweighed, because there were so many. The weight of the bronze could not be determined."
   },
   {
    "verse": 48,
@@ -203,6 +203,50 @@
   {
    "verse": 51,
    "text": "So all the work that King Solomon had performed for the house of the LORD was completed. Then Solomon brought in the items his father David had dedicated— the silver, the gold, and the furnishings— and he placed them in the treasuries of the house of the LORD."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Solomon’s Palace Complex"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Pillars and Capitals"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "The Molten Sea"
+  },
+  {
+   "beforeVerse": 27,
+   "kind": "section",
+   "level": 1,
+   "text": "The Ten Bronze Stands"
+  },
+  {
+   "beforeVerse": 38,
+   "kind": "section",
+   "level": 1,
+   "text": "The Ten Bronze Basins"
+  },
+  {
+   "beforeVerse": 40,
+   "kind": "section",
+   "level": 1,
+   "text": "Completion of the Bronze Works"
+  },
+  {
+   "beforeVerse": 48,
+   "kind": "section",
+   "level": 1,
+   "text": "Completion of the Gold Furnishings"
   }
  ]
 }

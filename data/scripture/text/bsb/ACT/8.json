@@ -10,7 +10,7 @@
   },
   {
    "verse": 3,
-   "text": "But Saul began to destroy the church. Going from house to house, he dragged off men and women and put them in prison. Philip in Samaria"
+   "text": "But Saul began to destroy the church. Going from house to house, he dragged off men and women and put them in prison."
   },
   {
    "verse": 4,
@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "So there was great joy in that city. Simon the Sorcerer ()"
+   "text": "So there was great joy in that city."
   },
   {
    "verse": 9,
@@ -98,7 +98,7 @@
   },
   {
    "verse": 25,
-   "text": "And after Peter and John had testified and spoken the word of the Lord, they returned to Jerusalem, preaching the gospel in many of the Samaritan villages. Philip and the Ethiopian ()"
+   "text": "And after Peter and John had testified and spoken the word of the Lord, they returned to Jerusalem, preaching the gospel in many of the Samaritan villages."
   },
   {
    "verse": 26,
@@ -155,6 +155,32 @@
   {
    "verse": 40,
    "text": "But Philip appeared at Azotus and traveled through that region, preaching the gospel in all the towns until he came to Caesarea."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Saul Persecutes the Church"
+  },
+  {
+   "beforeVerse": 4,
+   "kind": "section",
+   "level": 1,
+   "text": "Philip in Samaria"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Simon the Sorcerer"
+  },
+  {
+   "beforeVerse": 26,
+   "kind": "section",
+   "level": 1,
+   "text": "Philip and the Ethiopian"
   }
  ]
 }

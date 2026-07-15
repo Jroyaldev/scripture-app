@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "so that all may see and know, may consider and understand, that the hand of the LORD has done this and the Holy One of Israel has created it.” Meaningless Idols"
+   "text": "so that all may see and know, may consider and understand, that the hand of the LORD has done this and the Holy One of Israel has created it.”"
   },
   {
    "verse": 21,
@@ -115,6 +115,20 @@
   {
    "verse": 29,
    "text": "See, they are all a delusion; their works amount to nothing; their images are as empty as the wind.[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Help to Israel"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "Meaningless Idols"
   }
  ]
 }

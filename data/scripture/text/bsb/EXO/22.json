@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "If the owner was present, no restitution is required. If the animal was rented, the fee covers the loss. Laws of Social Responsibility"
+   "text": "If the owner was present, no restitution is required. If the animal was rented, the fee covers the loss."
   },
   {
    "verse": 16,
@@ -123,6 +123,20 @@
   {
    "verse": 31,
    "text": "You are to be My holy people. You must not eat the meat of a mauled animal found in the field; you are to throw it to the dogs.[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Property Laws"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Laws of Social Responsibility"
   }
  ]
 }

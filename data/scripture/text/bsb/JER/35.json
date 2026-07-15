@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "So when Nebuchadnezzar king of Babylon marched into the land, we said: ‘Come, let us go into Jerusalem to escape the armies of the Chaldeans and the Arameans.’ So we have remained in Jerusalem.” Judah Rebuked"
+   "text": "So when Nebuchadnezzar king of Babylon marched into the land, we said: ‘Come, let us go into Jerusalem to escape the armies of the Chaldeans and the Arameans.’ So we have remained in Jerusalem.”"
   },
   {
    "verse": 12,
@@ -75,6 +75,20 @@
   {
    "verse": 19,
    "text": "this is what the LORD of Hosts, the God of Israel, says: Jonadab son of Rechab will never fail to have a man to stand before Me.’”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Obedience of the Rechabites"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Judah Rebuked"
   }
  ]
 }

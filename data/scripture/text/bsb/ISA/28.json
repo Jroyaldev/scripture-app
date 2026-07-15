@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "Then the word of the LORD to them will become: “Order on order, order on order, line on line, line on line; a little here, a little there,” so that they will go stumbling backward and will be injured, ensnared, and captured. A Cornerstone in Zion (; ; )"
+   "text": "Then the word of the LORD to them will become: “Order on order, order on order, line on line, line on line; a little here, a little there,” so that they will go stumbling backward and will be injured, ensnared, and captured."
   },
   {
    "verse": 14,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "So now, do not mock, or your shackles will become heavier. Indeed, I have heard from the Lord GOD of Hosts a decree of destruction against the whole land. Listen and Hear"
+   "text": "So now, do not mock, or your shackles will become heavier. Indeed, I have heard from the Lord GOD of Hosts a decree of destruction against the whole land."
   },
   {
    "verse": 23,
@@ -115,6 +115,26 @@
   {
    "verse": 29,
    "text": "This also comes from the LORD of Hosts, who is wonderful in counsel and excellent in wisdom."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Captivity of Ephraim"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "A Cornerstone in Zion"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "Listen and Hear"
   }
  ]
 }

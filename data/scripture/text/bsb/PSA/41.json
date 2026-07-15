@@ -52,5 +52,13 @@
    "verse": 13,
    "text": "Blessed be the LORD, the God of Israel, from everlasting to everlasting. Amen and Amen."
   }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Victory over Betrayal"
+  }
  ]
 }

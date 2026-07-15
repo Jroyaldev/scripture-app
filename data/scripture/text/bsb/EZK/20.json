@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "But I acted for the sake of My name, that it should not be profaned in the eyes of the nations among whom they were living, in whose sight I had revealed Myself to Israel by bringing them out of the land of Egypt. Israel’s Rebellion in the Wilderness"
+   "text": "But I acted for the sake of My name, that it should not be profaned in the eyes of the nations among whom they were living, in whose sight I had revealed Myself to Israel by bringing them out of the land of Egypt."
   },
   {
    "verse": 10,
@@ -102,7 +102,7 @@
   },
   {
    "verse": 26,
-   "text": "And I pronounced them unclean through their gifts — the sacrifice of every firstborn in the fire — so that I might devastate them, in order that they would know that I am the LORD. Israel’s Rebellion in the Land"
+   "text": "And I pronounced them unclean through their gifts — the sacrifice of every firstborn in the fire — so that I might devastate them, in order that they would know that I am the LORD."
   },
   {
    "verse": 27,
@@ -126,7 +126,7 @@
   },
   {
    "verse": 32,
-   "text": "When you say, ‘Let us be like the nations, like the peoples of the lands, serving wood and stone,’ what you have in mind will never come to pass. Judgment and Restoration"
+   "text": "When you say, ‘Let us be like the nations, like the peoples of the lands, serving wood and stone,’ what you have in mind will never come to pass."
   },
   {
    "verse": 33,
@@ -174,7 +174,7 @@
   },
   {
    "verse": 44,
-   "text": "Then you will know, O house of Israel, that I am the LORD, when I have dealt with you for the sake of My name and not according to your wicked ways and corrupt acts, declares the Lord GOD.” A Prophecy against the South"
+   "text": "Then you will know, O house of Israel, that I am the LORD, when I have dealt with you for the sake of My name and not according to your wicked ways and corrupt acts, declares the Lord GOD.”"
   },
   {
    "verse": 45,
@@ -195,6 +195,38 @@
   {
    "verse": 49,
    "text": "Then I said, “Ah, Lord GOD, they are saying of me, ‘Is he not just telling parables?’”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Israel’s Rebellion in Egypt"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Israel’s Rebellion in the Wilderness"
+  },
+  {
+   "beforeVerse": 27,
+   "kind": "section",
+   "level": 1,
+   "text": "Israel’s Rebellion in the Land"
+  },
+  {
+   "beforeVerse": 33,
+   "kind": "section",
+   "level": 1,
+   "text": "Judgment and Restoration"
+  },
+  {
+   "beforeVerse": 45,
+   "kind": "section",
+   "level": 1,
+   "text": "A Prophecy against the South"
   }
  ]
 }

@@ -10,7 +10,7 @@
   },
   {
    "verse": 3,
-   "text": "And the LORD heard Israel’s plea and delivered up the Canaanites. Israel devoted them and their cities to destruction; so they named the place Hormah. The Bronze Serpent"
+   "text": "And the LORD heard Israel’s plea and delivered up the Canaanites. Israel devoted them and their cities to destruction; so they named the place Hormah."
   },
   {
    "verse": 4,
@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "So Moses made a bronze snake and mounted it on a pole. If anyone who was bitten looked at the bronze snake, he would live. The Journey to Moab"
+   "text": "So Moses made a bronze snake and mounted it on a pole. If anyone who was bitten looked at the bronze snake, he would live."
   },
   {
    "verse": 10,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "and from Bamoth to the valley in Moab where the top of Pisgah overlooks the wasteland. The Defeat of Sihon ()"
+   "text": "and from Bamoth to the valley in Moab where the top of Pisgah overlooks the wasteland."
   },
   {
    "verse": 21,
@@ -118,7 +118,7 @@
   },
   {
    "verse": 30,
-   "text": "But we have overthrown them; Heshbon is destroyed as far as Dibon. We demolished them as far as Nophah, which reaches to Medeba.” The Defeat of Og ()"
+   "text": "But we have overthrown them; Heshbon is destroyed as far as Dibon. We demolished them as far as Nophah, which reaches to Medeba.”"
   },
   {
    "verse": 31,
@@ -139,6 +139,38 @@
   {
    "verse": 35,
    "text": "So they struck down Og, along with his sons and his whole army, until no remnant was left. And they took possession of his land."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Defeat of Arad"
+  },
+  {
+   "beforeVerse": 4,
+   "kind": "section",
+   "level": 1,
+   "text": "The Bronze Serpent"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "The Journey to Moab"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "The Defeat of Sihon"
+  },
+  {
+   "beforeVerse": 31,
+   "kind": "section",
+   "level": 1,
+   "text": "The Defeat of Og"
   }
  ]
 }

@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "And they struck the men at the entrance, young and old, with blindness, so that they wearied themselves trying to find the door. Lot Flees to Zoar"
+   "text": "And they struck the men at the entrance, young and old, with blindness, so that they wearied themselves trying to find the door."
   },
   {
    "verse": 12,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "And by the time the sun had risen over the land, Lot had reached Zoar. The Destruction of Sodom and Gomorrah ()"
+   "text": "And by the time the sun had risen over the land, Lot had reached Zoar."
   },
   {
    "verse": 24,
@@ -114,7 +114,7 @@
   },
   {
    "verse": 29,
-   "text": "So when God destroyed the cities of the plain, He remembered Abraham, and He brought Lot out of the catastrophe that destroyed the cities where he had lived. Lot and His Daughters"
+   "text": "So when God destroyed the cities of the plain, He remembered Abraham, and He brought Lot out of the catastrophe that destroyed the cities where he had lived."
   },
   {
    "verse": 30,
@@ -151,6 +151,32 @@
   {
    "verse": 38,
    "text": "The younger daughter also gave birth to a son, and she named him Ben-ammi. He is the father of the Ammonites of today."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Lot Welcomes the Angels"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Lot Flees to Zoar"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "The Destruction of Sodom and Gomorrah"
+  },
+  {
+   "beforeVerse": 30,
+   "kind": "section",
+   "level": 1,
+   "text": "Lot and His Daughters"
   }
  ]
 }

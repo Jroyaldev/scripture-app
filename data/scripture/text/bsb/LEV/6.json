@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "In this way the priest will make atonement for him before the LORD, and he will be forgiven for anything he may have done to incur guilt.” The Burnt Offering ()"
+   "text": "In this way the priest will make atonement for him before the LORD, and he will be forgiven for anything he may have done to incur guilt.”"
   },
   {
    "verse": 8,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "The fire shall be kept burning on the altar continually; it must not be extinguished. The Grain Offering ()"
+   "text": "The fire shall be kept burning on the altar continually; it must not be extinguished."
   },
   {
    "verse": 14,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "Every grain offering for a priest shall be burned completely; it is not to be eaten.” The Sin Offering (; )"
+   "text": "Every grain offering for a priest shall be burned completely; it is not to be eaten.”"
   },
   {
    "verse": 24,
@@ -119,6 +119,32 @@
   {
    "verse": 30,
    "text": "But no sin offering may be eaten if its blood has been brought into the Tent of Meeting to make atonement in the Holy Place; it must be burned.[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Sins Requiring a Guilt Offering"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "The Burnt Offering"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "The Grain Offering"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "The Sin Offering"
   }
  ]
 }

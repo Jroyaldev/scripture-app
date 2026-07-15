@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "bringing with it the ark of God. And Ahio was walking in front of the ark. Uzzah Touches the Ark ()"
+   "text": "bringing with it the ark of God. And Ahio was walking in front of the ark."
   },
   {
    "verse": 5,
@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "Thus the ark of the LORD remained in the house of Obed-edom the Gittite for three months, and the LORD blessed him and all his household. The Ark Brought to Jerusalem ()"
+   "text": "Thus the ark of the LORD remained in the house of Obed-edom the Gittite for three months, and the LORD blessed him and all his household."
   },
   {
    "verse": 12,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "while he and all the house of Israel brought up the ark of the LORD with shouting and the sounding of the ram’s horn. Michal’s Contempt for David ()"
+   "text": "while he and all the house of Israel brought up the ark of the LORD with shouting and the sounding of the ram’s horn."
   },
   {
    "verse": 16,
@@ -91,6 +91,32 @@
   {
    "verse": 23,
    "text": "And Michal the daughter of Saul had no children to the day of her death."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "David Fetches the Ark"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "Uzzah Touches the Ark"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "The Ark Brought to Jerusalem"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Michal’s Contempt for David"
   }
  ]
 }

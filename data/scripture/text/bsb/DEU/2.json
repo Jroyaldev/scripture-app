@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "And the Avvim, who lived in villages as far as Gaza, were destroyed by the Caphtorites, who came out of Caphtor and settled in their place.) The Defeat of Sihon ()"
+   "text": "And the Avvim, who lived in villages as far as Gaza, were destroyed by the Caphtorites, who came out of Caphtor and settled in their place.)"
   },
   {
    "verse": 24,
@@ -147,6 +147,20 @@
   {
    "verse": 37,
    "text": "But you did not go near the land of the Ammonites, or the land along the banks of the Jabbok River, or the cities of the hill country, or any place that the LORD our God had forbidden."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Wanderings in the Wilderness"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "The Defeat of Sihon"
   }
  ]
 }

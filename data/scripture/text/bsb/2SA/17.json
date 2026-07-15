@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "Then Absalom and all the men of Israel said, “The advice of Hushai the Archite is better than that of Ahithophel.” For the LORD had purposed to thwart the good counsel of Ahithophel in order to bring disaster on Absalom. Hushai’s Warning Saves David ()"
+   "text": "Then Absalom and all the men of Israel said, “The advice of Hushai the Archite is better than that of Ahithophel.” For the LORD had purposed to thwart the good counsel of Ahithophel in order to bring disaster on Absalom."
   },
   {
    "verse": 15,
@@ -115,6 +115,20 @@
   {
    "verse": 29,
    "text": "honey, curds, sheep, and cheese from the herd for David and his people to eat. For they said, “The people have become hungry, exhausted, and thirsty in the wilderness.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Hushai Counters Ahithophel’s Advice"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Hushai’s Warning Saves David"
   }
  ]
 }

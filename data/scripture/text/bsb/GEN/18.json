@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "Then Abraham brought curds and milk and the calf that had been prepared, and he set them before the men and stood by them under the tree as they ate. Sarah Laughs at the Promise"
+   "text": "Then Abraham brought curds and milk and the calf that had been prepared, and he set them before the men and stood by them under the tree as they ate."
   },
   {
    "verse": 9,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "But Sarah was afraid, so she denied it and said, “I did not laugh.” “No,” replied the LORD, “but you did laugh.” Abraham Intercedes for Sodom"
+   "text": "But Sarah was afraid, so she denied it and said, “I did not laugh.” “No,” replied the LORD, “but you did laugh.”"
   },
   {
    "verse": 16,
@@ -131,6 +131,26 @@
   {
    "verse": 33,
    "text": "When the LORD had finished speaking with Abraham, He departed, and Abraham returned home."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Three Visitors"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Sarah Laughs at the Promise"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Abraham Intercedes for Sodom"
   }
  ]
 }

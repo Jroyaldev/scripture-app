@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "So they set out and went from village to village, preaching the gospel and healing people everywhere. Herod Tries to See Jesus (; )"
+   "text": "So they set out and went from village to village, preaching the gospel and healing people everywhere."
   },
   {
    "verse": 7,
@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "“I beheaded John,” Herod said, “but who is this man I hear such things about?” And he kept trying to see Jesus. The Feeding of the Five Thousand (; ; )"
+   "text": "“I beheaded John,” Herod said, “but who is this man I hear such things about?” And he kept trying to see Jesus."
   },
   {
    "verse": 10,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "They all ate and were satisfied, and the disciples picked up twelve basketfuls of broken pieces that were left over. Peter’s Confession of Christ (; ; )"
+   "text": "They all ate and were satisfied, and the disciples picked up twelve basketfuls of broken pieces that were left over."
   },
   {
    "verse": 18,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "“But what about you?” Jesus asked. “Who do you say I am?” Peter answered, “The Christ of God.” Christ’s Passion Foretold (; )"
+   "text": "“But what about you?” Jesus asked. “Who do you say I am?” Peter answered, “The Christ of God.”"
   },
   {
    "verse": 21,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "“The Son of Man must suffer many things,” He said. “He must be rejected by the elders, chief priests, and scribes, and He must be killed and on the third day be raised to life.” Take Up Your Cross (; )"
+   "text": "“The Son of Man must suffer many things,” He said. “He must be rejected by the elders, chief priests, and scribes, and He must be killed and on the third day be raised to life.”"
   },
   {
    "verse": 23,
@@ -106,7 +106,7 @@
   },
   {
    "verse": 27,
-   "text": "But I tell you truly, some who are standing here will not taste death before they see the kingdom of God.” The Transfiguration (; ; )"
+   "text": "But I tell you truly, some who are standing here will not taste death before they see the kingdom of God.”"
   },
   {
    "verse": 28,
@@ -142,7 +142,7 @@
   },
   {
    "verse": 36,
-   "text": "After the voice had spoken, only Jesus was present with them. The disciples kept this to themselves, and in those days they did not tell anyone what they had seen. The Boy with an Evil Spirit (; )"
+   "text": "After the voice had spoken, only Jesus was present with them. The disciples kept this to themselves, and in those days they did not tell anyone what they had seen."
   },
   {
    "verse": 37,
@@ -166,7 +166,7 @@
   },
   {
    "verse": 42,
-   "text": "Even while the boy was approaching, the demon slammed him to the ground in a convulsion. But Jesus rebuked the unclean spirit, healed the boy, and gave him back to his father. The Second Prediction of the Passion (; )"
+   "text": "Even while the boy was approaching, the demon slammed him to the ground in a convulsion. But Jesus rebuked the unclean spirit, healed the boy, and gave him back to his father."
   },
   {
    "verse": 43,
@@ -178,7 +178,7 @@
   },
   {
    "verse": 45,
-   "text": "But they did not understand this statement. It was veiled from them so that they could not comprehend it, and they were afraid to ask Him about it. The Greatest in the Kingdom (; )"
+   "text": "But they did not understand this statement. It was veiled from them so that they could not comprehend it, and they were afraid to ask Him about it."
   },
   {
    "verse": 46,
@@ -198,7 +198,7 @@
   },
   {
    "verse": 50,
-   "text": "“Do not stop him,” Jesus replied, “for whoever is not against you is for you.” The Samaritans Reject Jesus"
+   "text": "“Do not stop him,” Jesus replied, “for whoever is not against you is for you.”"
   },
   {
    "verse": 51,
@@ -222,7 +222,7 @@
   },
   {
    "verse": 56,
-   "text": "And He and His disciples went on to another village. The Cost of Discipleship (; ; )"
+   "text": "And He and His disciples went on to another village."
   },
   {
    "verse": 57,
@@ -247,6 +247,80 @@
   {
    "verse": 62,
    "text": "Then Jesus declared, “No one who puts his hand to the plow and then looks back is fit for the kingdom of God.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Ministry of the Twelve"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Herod Tries to See Jesus"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "The Feeding of the Five Thousand"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Peter’s Confession of Christ"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "Christ’s Passion Foretold"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "Take Up Your Cross"
+  },
+  {
+   "beforeVerse": 28,
+   "kind": "section",
+   "level": 1,
+   "text": "The Transfiguration"
+  },
+  {
+   "beforeVerse": 37,
+   "kind": "section",
+   "level": 1,
+   "text": "The Boy with an Evil Spirit"
+  },
+  {
+   "beforeVerse": 43,
+   "kind": "section",
+   "level": 1,
+   "text": "The Second Prediction of the Passion"
+  },
+  {
+   "beforeVerse": 46,
+   "kind": "section",
+   "level": 1,
+   "text": "The Greatest in the Kingdom"
+  },
+  {
+   "beforeVerse": 51,
+   "kind": "section",
+   "level": 1,
+   "text": "The Samaritans Reject Jesus"
+  },
+  {
+   "beforeVerse": 57,
+   "kind": "section",
+   "level": 1,
+   "text": "The Cost of Discipleship"
   }
  ]
 }

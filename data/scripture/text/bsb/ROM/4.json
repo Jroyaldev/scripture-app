@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "And he is also the father of the circumcised who not only are circumcised, but who also walk in the footsteps of the faith that our father Abraham had before he was circumcised. Abraham Receives the Promise ()"
+   "text": "And he is also the father of the circumcised who not only are circumcised, but who also walk in the footsteps of the faith that our father Abraham had before he was circumcised."
   },
   {
    "verse": 13,
@@ -99,6 +99,20 @@
   {
    "verse": 25,
    "text": "He was delivered over to death for our trespasses and was raised to life for our justification."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Abraham Justified by Faith"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Abraham Receives the Promise"
   }
  ]
 }

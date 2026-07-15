@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "When Israel took hold of you with their hands, you splintered, tearing all their shoulders; when they leaned on you, you broke, and their backs were wrenched. The Desolation of Egypt"
+   "text": "When Israel took hold of you with their hands, you splintered, tearing all their shoulders; when they leaned on you, you broke, and their backs were wrenched."
   },
   {
    "verse": 8,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "Egypt will never again be an object of trust for the house of Israel, but will remind them of their iniquity in turning to the Egyptians. Then they will know that I am the Lord GOD.” Egypt the Reward of Nebuchadnezzar"
+   "text": "Egypt will never again be an object of trust for the house of Israel, but will remind them of their iniquity in turning to the Egyptians. Then they will know that I am the Lord GOD.”"
   },
   {
    "verse": 17,
@@ -83,6 +83,26 @@
   {
    "verse": 21,
    "text": "In that day I will cause a horn to sprout for the house of Israel, and I will open your mouth to speak among them. Then they will know that I am the LORD.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Prophecy against Pharaoh"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "The Desolation of Egypt"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Egypt the Reward of Nebuchadnezzar"
   }
  ]
 }

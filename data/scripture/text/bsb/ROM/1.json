@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "To all in Rome who are loved by God and called to be saints: Grace and peace to you from God our Father and the Lord Jesus Christ. Unashamed of the Gospel"
+   "text": "To all in Rome who are loved by God and called to be saints: Grace and peace to you from God our Father and the Lord Jesus Christ."
   },
   {
    "verse": 8,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "For the gospel reveals the righteousness of God that comes by faith from start to finish, just as it is written: “The righteous will live by faith.” God’s Wrath against Sin"
+   "text": "For the gospel reveals the righteousness of God that comes by faith from start to finish, just as it is written: “The righteous will live by faith.”"
   },
   {
    "verse": 18,
@@ -127,6 +127,26 @@
   {
    "verse": 32,
    "text": "Although they know God’s righteous decree that those who do such things are worthy of death, they not only continue to do these things, but also approve of those who practice them."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul Greets the Saints in Rome"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Unashamed of the Gospel"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Wrath against Sin"
   }
  ]
 }

@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "Even if it is transplanted, will it flourish? Will it not completely wither when the east wind strikes? It will wither on the bed where it sprouted.’” The Parable Explained"
+   "text": "Even if it is transplanted, will it flourish? Will it not completely wither when the east wind strikes? It will wither on the bed where it sprouted.’”"
   },
   {
    "verse": 11,
@@ -95,6 +95,20 @@
   {
    "verse": 24,
    "text": "Then all the trees of the field will know that I am the LORD. I bring the tall tree down and make the low tree tall. I dry up the green tree and make the withered tree flourish. I, the LORD, have spoken, and I have done it.’”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parable of Two Eagles and a Vine"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parable Explained"
   }
  ]
 }

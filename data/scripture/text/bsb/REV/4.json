@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "Surrounding the throne were twenty-four other thrones, and on these thrones sat twenty-four elders dressed in white, with golden crowns on their heads. Worship of the Creator"
+   "text": "Surrounding the throne were twenty-four other thrones, and on these thrones sat twenty-four elders dressed in white, with golden crowns on their heads."
   },
   {
    "verse": 5,
@@ -43,6 +43,20 @@
   {
    "verse": 11,
    "text": "“Worthy are You, our Lord and God, to receive glory and honor and power, for You created all things; by Your will they exist and were created.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Throne in Heaven"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "Worship of the Creator"
   }
  ]
 }

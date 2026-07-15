@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "When the devil had finished every temptation, he left Him until an opportune time. Jesus Begins His Ministry (; ; )"
+   "text": "When the devil had finished every temptation, he left Him until an opportune time."
   },
   {
    "verse": 14,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "He taught in their synagogues and was glorified by everyone. The Rejection at Nazareth (; ; )"
+   "text": "He taught in their synagogues and was glorified by everyone."
   },
   {
    "verse": 16,
@@ -118,7 +118,7 @@
   },
   {
    "verse": 30,
-   "text": "But Jesus passed through the crowd and went on His way. Jesus Expels an Unclean Spirit ()"
+   "text": "But Jesus passed through the crowd and went on His way."
   },
   {
    "verse": 31,
@@ -146,7 +146,7 @@
   },
   {
    "verse": 37,
-   "text": "And the news about Jesus spread throughout the surrounding region. Jesus Heals at Peter’s House (; )"
+   "text": "And the news about Jesus spread throughout the surrounding region."
   },
   {
    "verse": 38,
@@ -162,7 +162,7 @@
   },
   {
    "verse": 41,
-   "text": "Demons also came out of many people, shouting, “You are the Son of God!” But He rebuked the demons and would not allow them to speak, because they knew He was the Christ. Jesus Preaches in Judea ()"
+   "text": "Demons also came out of many people, shouting, “You are the Son of God!” But He rebuked the demons and would not allow them to speak, because they knew He was the Christ."
   },
   {
    "verse": 42,
@@ -175,6 +175,44 @@
   {
    "verse": 44,
    "text": "And He continued to preach in the synagogues of Judea."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Temptation of Jesus"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Begins His Ministry"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "The Rejection at Nazareth"
+  },
+  {
+   "beforeVerse": 31,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Expels an Unclean Spirit"
+  },
+  {
+   "beforeVerse": 38,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Heals at Peter’s House"
+  },
+  {
+   "beforeVerse": 42,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Preaches in Judea"
   }
  ]
 }

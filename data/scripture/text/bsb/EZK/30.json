@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "So I will execute judgment on Egypt, and they will know that I am the LORD.” Pharaoh’s Power Broken"
+   "text": "So I will execute judgment on Egypt, and they will know that I am the LORD.”"
   },
   {
    "verse": 20,
@@ -103,6 +103,20 @@
   {
    "verse": 26,
    "text": "I will disperse the Egyptians among the nations and scatter them throughout the lands. Then they will know that I am the LORD.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Lament for Egypt"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "Pharaoh’s Power Broken"
   }
  ]
 }

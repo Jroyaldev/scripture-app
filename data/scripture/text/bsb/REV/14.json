@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "And no lie was found in their mouths; they are blameless. The Three Angels and Babylon’s Fall"
+   "text": "And no lie was found in their mouths; they are blameless."
   },
   {
    "verse": 6,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "And I heard a voice from heaven telling me to write, “Blessed are the dead — those who die in the Lord from this moment on.” “Yes,” says the Spirit, “they will rest from their labors, for their deeds will follow them.” The Harvest of the Earth"
+   "text": "And I heard a voice from heaven telling me to write, “Blessed are the dead — those who die in the Lord from this moment on.” “Yes,” says the Spirit, “they will rest from their labors, for their deeds will follow them.”"
   },
   {
    "verse": 14,
@@ -79,6 +79,26 @@
   {
    "verse": 20,
    "text": "And the winepress was trodden outside the city, and the blood that flowed from it rose as high as the bridles of the horses for a distance of 1,600 stadia."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Lamb and the 144,000"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "The Three Angels and Babylon’s Fall"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "The Harvest of the Earth"
   }
  ]
 }

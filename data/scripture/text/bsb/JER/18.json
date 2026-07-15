@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "I will scatter them before the enemy like the east wind. I will show them My back and not My face in the day of their calamity.” Another Plot against Jeremiah ()"
+   "text": "I will scatter them before the enemy like the east wind. I will show them My back and not My face in the day of their calamity.”"
   },
   {
    "verse": 18,
@@ -91,6 +91,20 @@
   {
    "verse": 23,
    "text": "But You, O LORD, know all their deadly plots against me. Do not wipe out their guilt or blot out their sin from Your sight. Let them be overthrown before You; deal with them in the time of Your anger."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Potter and the Clay"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Another Plot against Jeremiah"
   }
  ]
 }

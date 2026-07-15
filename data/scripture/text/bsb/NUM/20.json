@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "These were the waters of Meribah, where the Israelites quarreled with the LORD, and He showed His holiness among them. Edom Refuses Passage"
+   "text": "These were the waters of Meribah, where the Israelites quarreled with the LORD, and He showed His holiness among them."
   },
   {
    "verse": 14,
@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "So Edom refused to allow Israel to pass through their territory, and Israel turned away from them. The Death of Aaron"
+   "text": "So Edom refused to allow Israel to pass through their territory, and Israel turned away from them."
   },
   {
    "verse": 22,
@@ -115,6 +115,26 @@
   {
    "verse": 29,
    "text": "When the whole congregation saw that Aaron had died, the entire house of Israel mourned for him thirty days."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Water from the Rock"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Edom Refuses Passage"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "The Death of Aaron"
   }
  ]
 }

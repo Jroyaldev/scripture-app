@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "Then they fastened them on the shoulder pieces of the ephod as memorial stones for the sons of Israel, as the LORD had commanded Moses. The Breastpiece ()"
+   "text": "Then they fastened them on the shoulder pieces of the ephod as memorial stones for the sons of Israel, as the LORD had commanded Moses."
   },
   {
    "verse": 8,
@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "Then they tied the rings of the breastpiece to the rings of the ephod with a cord of blue yarn, so that the breastpiece was above the waistband of the ephod and would not swing out from the ephod, just as the LORD had commanded Moses. Additional Priestly Garments ()"
+   "text": "Then they tied the rings of the breastpiece to the rings of the ephod with a cord of blue yarn, so that the breastpiece was above the waistband of the ephod and would not swing out from the ephod, just as the LORD had commanded Moses."
   },
   {
    "verse": 22,
@@ -122,7 +122,7 @@
   },
   {
    "verse": 31,
-   "text": "Then they fastened to it a blue cord to mount it on the turban, just as the LORD had commanded Moses. Moses Approves the Work"
+   "text": "Then they fastened to it a blue cord to mount it on the turban, just as the LORD had commanded Moses."
   },
   {
    "verse": 32,
@@ -171,6 +171,32 @@
   {
    "verse": 43,
    "text": "And Moses inspected all the work and saw that they had accomplished it just as the LORD had commanded. So Moses blessed them."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Ephod"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "The Breastpiece"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "Additional Priestly Garments"
+  },
+  {
+   "beforeVerse": 32,
+   "kind": "section",
+   "level": 1,
+   "text": "Moses Approves the Work"
   }
  ]
 }

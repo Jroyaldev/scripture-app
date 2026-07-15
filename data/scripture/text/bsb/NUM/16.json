@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "But Moses and Aaron fell facedown and said, “O God, the God of the spirits of all flesh, when one man sins, will You be angry with the whole congregation?” Moses Separates the People"
+   "text": "But Moses and Aaron fell facedown and said, “O God, the God of the spirits of all flesh, when one man sins, will You be angry with the whole congregation?”"
   },
   {
    "verse": 23,
@@ -106,7 +106,7 @@
   },
   {
    "verse": 27,
-   "text": "So they moved away from the dwellings of Korah, Dathan, and Abiram. Meanwhile, Dathan and Abiram had come out and stood at the entrances to their tents with their wives and children and infants. The Earth Swallows Korah"
+   "text": "So they moved away from the dwellings of Korah, Dathan, and Abiram. Meanwhile, Dathan and Abiram had come out and stood at the entrances to their tents with their wives and children and infants."
   },
   {
    "verse": 28,
@@ -138,7 +138,7 @@
   },
   {
    "verse": 35,
-   "text": "And fire came forth from the LORD and consumed the 250 men who were offering the incense. The Censers Reserved for Holy Use"
+   "text": "And fire came forth from the LORD and consumed the 250 men who were offering the incense."
   },
   {
    "verse": 36,
@@ -158,7 +158,7 @@
   },
   {
    "verse": 40,
-   "text": "just as the LORD commanded him through Moses. This was to be a reminder to the Israelites that no outsider who is not a descendant of Aaron should approach to offer incense before the LORD, lest he become like Korah and his followers. Murmuring and Plague ()"
+   "text": "just as the LORD commanded him through Moses. This was to be a reminder to the Israelites that no outsider who is not a descendant of Aaron should approach to offer incense before the LORD, lest he become like Korah and his followers."
   },
   {
    "verse": 41,
@@ -199,6 +199,38 @@
   {
    "verse": 50,
    "text": "Then Aaron returned to Moses at the entrance to the Tent of Meeting, since the plague had been halted."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Korah’s Rebellion"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "Moses Separates the People"
+  },
+  {
+   "beforeVerse": 28,
+   "kind": "section",
+   "level": 1,
+   "text": "The Earth Swallows Korah"
+  },
+  {
+   "beforeVerse": 36,
+   "kind": "section",
+   "level": 1,
+   "text": "The Censers Reserved for Holy Use"
+  },
+  {
+   "beforeVerse": 41,
+   "kind": "section",
+   "level": 1,
+   "text": "Murmuring and Plague"
   }
  ]
 }

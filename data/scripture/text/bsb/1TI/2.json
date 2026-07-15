@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "Therefore I want the men everywhere to pray, lifting up holy hands, without anger or dissension. Instructions to Women"
+   "text": "Therefore I want the men everywhere to pray, lifting up holy hands, without anger or dissension."
   },
   {
    "verse": 9,
@@ -59,6 +59,20 @@
   {
    "verse": 15,
    "text": "Women, however, will be saved through childbearing, if they continue in faith, love, and holiness, with self-control."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Call to Prayer"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Instructions to Women"
   }
  ]
 }

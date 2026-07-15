@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "When the priests carrying the ark of the covenant of the LORD came up out of the Jordan and their feet touched the dry land, the waters of the Jordan returned to their course and overflowed all the banks as before. The Camp at Gilgal"
+   "text": "When the priests carrying the ark of the covenant of the LORD came up out of the Jordan and their feet touched the dry land, the waters of the Jordan returned to their course and overflowed all the banks as before."
   },
   {
    "verse": 19,
@@ -95,6 +95,20 @@
   {
    "verse": 24,
    "text": "He did this so that all the peoples of the earth may know that the hand of the LORD is mighty, and so that you may always fear the LORD your God.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Twelve Stones from the Jordan"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "The Camp at Gilgal"
   }
  ]
 }

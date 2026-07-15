@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "So it shall serve as a sign on your hand and a symbol on your forehead, for with a mighty hand the LORD brought us out of Egypt.” The Pillars of Cloud and Fire"
+   "text": "So it shall serve as a sign on your hand and a symbol on your forehead, for with a mighty hand the LORD brought us out of Egypt.”"
   },
   {
    "verse": 17,
@@ -87,6 +87,20 @@
   {
    "verse": 22,
    "text": "Neither the pillar of cloud by day nor the pillar of fire by night left its place before the people."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Dedication of the Firstborn"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "The Pillars of Cloud and Fire"
   }
  ]
 }

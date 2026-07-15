@@ -102,7 +102,7 @@
   },
   {
    "verse": 26,
-   "text": "Judah recognized the items and said, “She is more righteous than I, since I did not give her to my son Shelah.” And he did not have relations with her again. The Birth of Perez and Zerah"
+   "text": "Judah recognized the items and said, “She is more righteous than I, since I did not give her to my son Shelah.” And he did not have relations with her again."
   },
   {
    "verse": 27,
@@ -119,6 +119,20 @@
   {
    "verse": 30,
    "text": "Then his brother came out with the scarlet thread around his wrist, and he was named Zerah."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Judah and Tamar"
+  },
+  {
+   "beforeVerse": 27,
+   "kind": "section",
+   "level": 1,
+   "text": "The Birth of Perez and Zerah"
   }
  ]
 }

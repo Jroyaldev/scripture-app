@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "They consist only in food and drink and special washings — external regulations imposed until the time of reform. Redemption through His Blood"
+   "text": "They consist only in food and drink and special washings — external regulations imposed until the time of reform."
   },
   {
    "verse": 11,
@@ -111,6 +111,20 @@
   {
    "verse": 28,
    "text": "so also Christ was offered once to bear the sins of many; and He will appear a second time, not to bear sin, but to bring salvation to those who eagerly await Him."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Earthly Tabernacle"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "Redemption through His Blood"
   }
  ]
 }

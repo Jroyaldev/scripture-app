@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "Who will not fear You, O Lord, and glorify Your name? For You alone are holy. All nations will come and worship before You, for Your righteous acts have been revealed.” Preparation for Judgment"
+   "text": "Who will not fear You, O Lord, and glorify Your name? For You alone are holy. All nations will come and worship before You, for Your righteous acts have been revealed.”"
   },
   {
    "verse": 5,
@@ -31,6 +31,20 @@
   {
    "verse": 8,
    "text": "And the temple was filled with smoke from the glory of God and from His power; and no one could enter the temple until the seven plagues of the seven angels were completed."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Song of Moses and the Lamb"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "Preparation for Judgment"
   }
  ]
 }

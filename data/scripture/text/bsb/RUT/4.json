@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "And may your house become like the house of Perez, whom Tamar bore to Judah, because of the offspring the LORD will give you by this young woman.” Boaz Marries Ruth"
+   "text": "And may your house become like the house of Perez, whom Tamar bore to Judah, because of the offspring the LORD will give you by this young woman.”"
   },
   {
    "verse": 13,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "The neighbor women said, “A son has been born to Naomi,” and they named him Obed. He became the father of Jesse, the father of David. The Line of David (; )"
+   "text": "The neighbor women said, “A son has been born to Naomi,” and they named him Obed. He became the father of Jesse, the father of David."
   },
   {
    "verse": 18,
@@ -87,6 +87,26 @@
   {
    "verse": 22,
    "text": "Obed was the father of Jesse, and Jesse was the father of David."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Boaz Redeems Ruth"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Boaz Marries Ruth"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "The Line of David"
   }
  ]
 }

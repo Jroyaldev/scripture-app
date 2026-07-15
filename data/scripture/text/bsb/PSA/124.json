@@ -32,5 +32,13 @@
    "verse": 8,
    "text": "Our help is in the name of the LORD, the Maker of heaven and earth."
   }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Our Help Is in the Name of the LORD"
+  }
  ]
 }

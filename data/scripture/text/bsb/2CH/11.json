@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "that this is what the LORD says: ‘You are not to go up and fight against your brothers. Each of you must return home, for this is My doing.’” So they listened to the words of the LORD and turned back from going against Jeroboam. Rehoboam Fortifies Judah"
+   "text": "that this is what the LORD says: ‘You are not to go up and fight against your brothers. Each of you must return home, for this is My doing.’” So they listened to the words of the LORD and turned back from going against Jeroboam."
   },
   {
    "verse": 5,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "He also put shields and spears in all the cities and strengthened them greatly. So Judah and Benjamin belonged to him. Jeroboam Forsakes the Priests and Levites"
+   "text": "He also put shields and spears in all the cities and strengthened them greatly. So Judah and Benjamin belonged to him."
   },
   {
    "verse": 13,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "So they strengthened the kingdom of Judah and supported Rehoboam son of Solomon for three years, because they walked for three years in the way of David and Solomon. Rehoboam’s Family"
+   "text": "So they strengthened the kingdom of Judah and supported Rehoboam son of Solomon for three years, because they walked for three years in the way of David and Solomon."
   },
   {
    "verse": 18,
@@ -91,6 +91,32 @@
   {
    "verse": 23,
    "text": "Rehoboam also acted wisely by dispersing some of his sons throughout the districts of Judah and Benjamin, and to all the fortified cities. He gave them abundant provisions and sought many wives for them."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Shemaiah’s Prophecy"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "Rehoboam Fortifies Judah"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Jeroboam Forsakes the Priests and Levites"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Rehoboam’s Family"
   }
  ]
 }

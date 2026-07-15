@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "Then King Asa brought all the men of Judah, and they carried away the stones of Ramah and the timbers Baasha had used for building. And with these materials he built up Geba and Mizpah. Hanani’s Message to Asa"
+   "text": "Then King Asa brought all the men of Judah, and they carried away the stones of Ramah and the timbers Baasha had used for building. And with these materials he built up Geba and Mizpah."
   },
   {
    "verse": 7,
@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "Asa was angry with the seer and became so enraged over this matter that he put the man in prison. And at the same time Asa oppressed some of the people. The Death and Burial of Asa"
+   "text": "Asa was angry with the seer and became so enraged over this matter that he put the man in prison. And at the same time Asa oppressed some of the people."
   },
   {
    "verse": 11,
@@ -55,6 +55,26 @@
   {
    "verse": 14,
    "text": "And he was buried in the tomb that he had cut out for himself in the City of David. They laid him on a bier that was full of spices and various blended perfumes; then they made a great fire in his honor."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "War between Asa and Baasha"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Hanani’s Message to Asa"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "The Death and Burial of Asa"
   }
  ]
 }

@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "they recognized him as the man who used to sit begging at the Beautiful Gate of the temple, and they were filled with wonder and amazement at what had happened to him. Peter Speaks in Solomon’s Colonnade ()"
+   "text": "they recognized him as the man who used to sit begging at the Beautiful Gate of the temple, and they were filled with wonder and amazement at what had happened to him."
   },
   {
    "verse": 11,
@@ -103,6 +103,20 @@
   {
    "verse": 26,
    "text": "When God raised up His Servant, He sent Him first to you to bless you by turning each of you from your wicked ways.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Lame Man Walks"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "Peter Speaks in Solomon’s Colonnade"
   }
  ]
 }

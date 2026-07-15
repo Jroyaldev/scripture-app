@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "And the day after they had eaten from the produce of the land, the manna ceased. There was no more manna for the Israelites, so that year they began to eat the crops of the land of Canaan. The Commander of the LORD’s Army"
+   "text": "And the day after they had eaten from the produce of the land, the manna ceased. There was no more manna for the Israelites, so that year they began to eat the crops of the land of Canaan."
   },
   {
    "verse": 13,
@@ -59,6 +59,20 @@
   {
    "verse": 15,
    "text": "The Commander of the LORD’s army replied, “Take off your sandals, for the place where you are standing is holy.” And Joshua did so."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Circumcision and Passover at Gilgal"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Commander of the LORD’s Army"
   }
  ]
 }

@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "So Cain went out from the presence of the LORD and settled in the land of Nod, east of Eden. The Descendants of Cain"
+   "text": "So Cain went out from the presence of the LORD and settled in the land of Nod, east of Eden."
   },
   {
    "verse": 17,
@@ -94,7 +94,7 @@
   },
   {
    "verse": 24,
-   "text": "If Cain is avenged sevenfold, then Lamech seventy-sevenfold.” Seth and Enosh"
+   "text": "If Cain is avenged sevenfold, then Lamech seventy-sevenfold.”"
   },
   {
    "verse": 25,
@@ -103,6 +103,26 @@
   {
    "verse": 26,
    "text": "And to Seth also a son was born, and he called him Enosh. At that time men began to call upon the name of the LORD."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Cain and Abel"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "The Descendants of Cain"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "Seth and Enosh"
   }
  ]
 }

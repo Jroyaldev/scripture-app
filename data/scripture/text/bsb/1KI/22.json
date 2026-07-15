@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "And all the prophets were prophesying the same, saying, “Go up to Ramoth-gilead and triumph, for the LORD will deliver it into the hand of the king.” Micaiah Prophesies against Ahab ()"
+   "text": "And all the prophets were prophesying the same, saying, “Go up to Ramoth-gilead and triumph, for the LORD will deliver it into the hand of the king.”"
   },
   {
    "verse": 13,
@@ -110,7 +110,7 @@
   },
   {
    "verse": 28,
-   "text": "But Micaiah replied, “If you ever return safely, the LORD has not spoken through me.” Then he added, “Take heed, all you people!” Ahab’s Defeat and Death ()"
+   "text": "But Micaiah replied, “If you ever return safely, the LORD has not spoken through me.” Then he added, “Take heed, all you people!”"
   },
   {
    "verse": 29,
@@ -158,7 +158,7 @@
   },
   {
    "verse": 40,
-   "text": "And Ahab rested with his fathers, and his son Ahaziah reigned in his place. Jehoshaphat Reigns in Judah ()"
+   "text": "And Ahab rested with his fathers, and his son Ahaziah reigned in his place."
   },
   {
    "verse": 41,
@@ -198,7 +198,7 @@
   },
   {
    "verse": 50,
-   "text": "And Jehoshaphat rested with his fathers and was buried with them in the city of his father David. And his son Jehoram reigned in his place. Ahaziah Reigns in Israel ()"
+   "text": "And Jehoshaphat rested with his fathers and was buried with them in the city of his father David. And his son Jehoram reigned in his place."
   },
   {
    "verse": 51,
@@ -211,6 +211,38 @@
   {
    "verse": 53,
    "text": "Ahaziah served and worshiped Baal, provoking the LORD, the God of Israel, to anger, just as his father had done."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Ahab and the False Prophets"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Micaiah Prophesies against Ahab"
+  },
+  {
+   "beforeVerse": 29,
+   "kind": "section",
+   "level": 1,
+   "text": "Ahab’s Defeat and Death"
+  },
+  {
+   "beforeVerse": 41,
+   "kind": "section",
+   "level": 1,
+   "text": "Jehoshaphat Reigns in Judah"
+  },
+  {
+   "beforeVerse": 51,
+   "kind": "section",
+   "level": 1,
+   "text": "Ahaziah Reigns in Israel"
   }
  ]
 }

@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "I will strike them with a plague and destroy them — and I will make you into a nation greater and mightier than they are.” Moses Intercedes for Israel"
+   "text": "I will strike them with a plague and destroy them — and I will make you into a nation greater and mightier than they are.”"
   },
   {
    "verse": 13,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "Pardon, I pray, the iniquity of this people, in keeping with the greatness of Your loving devotion, just as You have forgiven them ever since they left Egypt.” God’s Forgiveness and Judgment ()"
+   "text": "Pardon, I pray, the iniquity of this people, in keeping with the greatness of Your loving devotion, just as You have forgiven them ever since they left Egypt.”"
   },
   {
    "verse": 20,
@@ -138,7 +138,7 @@
   },
   {
    "verse": 35,
-   "text": "I, the LORD, have spoken, and I will surely do these things to this entire wicked congregation, which has conspired against Me. They will meet their end in the wilderness, and there they will die.” The Plague on the Ten Spies"
+   "text": "I, the LORD, have spoken, and I will surely do these things to this entire wicked congregation, which has conspired against Me. They will meet their end in the wilderness, and there they will die.”"
   },
   {
    "verse": 36,
@@ -154,7 +154,7 @@
   },
   {
    "verse": 39,
-   "text": "And when Moses relayed these words to all the Israelites, the people mourned bitterly. The Defeat at Hormah ()"
+   "text": "And when Moses relayed these words to all the Israelites, the people mourned bitterly."
   },
   {
    "verse": 40,
@@ -179,6 +179,38 @@
   {
    "verse": 45,
    "text": "Then the Amalekites and Canaanites who lived in that part of the hill country came down, attacked them, and routed them all the way to Hormah."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Israel’s Rebellion"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Moses Intercedes for Israel"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Forgiveness and Judgment"
+  },
+  {
+   "beforeVerse": 36,
+   "kind": "section",
+   "level": 1,
+   "text": "The Plague on the Ten Spies"
+  },
+  {
+   "beforeVerse": 40,
+   "kind": "section",
+   "level": 1,
+   "text": "The Defeat at Hormah"
   }
  ]
 }

@@ -40,5 +40,13 @@
    "verse": 10,
    "text": "The LORD reigns forever, your God, O Zion, for all generations. Hallelujah!"
   }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Praise the LORD, O My Soul"
+  }
  ]
 }

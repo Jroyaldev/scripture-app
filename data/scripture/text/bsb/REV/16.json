@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "And they assembled the kings in the place that in Hebrew is called Armageddon. The Seventh Bowl of Wrath"
+   "text": "And they assembled the kings in the place that in Hebrew is called Armageddon."
   },
   {
    "verse": 17,
@@ -83,6 +83,20 @@
   {
    "verse": 21,
    "text": "And great hailstones weighing almost a hundred pounds each rained down on them from above. And men cursed God for the plague of hail, because it was so horrendous."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The First Six Bowls of Wrath"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "The Seventh Bowl of Wrath"
   }
  ]
 }

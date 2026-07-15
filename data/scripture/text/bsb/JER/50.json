@@ -10,7 +10,7 @@
   },
   {
    "verse": 3,
-   "text": "For a nation from the north will come against her; it will make her land a desolation. No one will live in it; both man and beast will flee.” Hope for Israel and Judah"
+   "text": "For a nation from the north will come against her; it will make her land a desolation. No one will live in it; both man and beast will flee.”"
   },
   {
    "verse": 4,
@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "Chaldea will be plundered; all who plunder her will have their fill,” declares the LORD. Babylon’s Fall Is Certain"
+   "text": "Chaldea will be plundered; all who plunder her will have their fill,” declares the LORD."
   },
   {
    "verse": 11,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "Cut off the sower from Babylon, and the one who wields the sickle at harvest time. In the face of the oppressor’s sword, each will turn to his own people, each will flee to his own land. Redemption for God’s People"
+   "text": "Cut off the sower from Babylon, and the one who wields the sickle at harvest time. In the face of the oppressor’s sword, each will turn to his own people, each will flee to his own land."
   },
   {
    "verse": 17,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "In those days and at that time, declares the LORD, a search will be made for Israel’s guilt, but there will be none, and for Judah’s sins, but they will not be found; for I will forgive the remnant I preserve. The Destruction of Babylon"
+   "text": "In those days and at that time, declares the LORD, a search will be made for Israel’s guilt, but there will be none, and for Judah’s sins, but they will not be found; for I will forgive the remnant I preserve."
   },
   {
    "verse": 21,
@@ -183,6 +183,38 @@
   {
    "verse": 46,
    "text": "At the sound of Babylon’s capture the earth will quake; a cry will be heard among the nations."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Prophecy against Babylon"
+  },
+  {
+   "beforeVerse": 4,
+   "kind": "section",
+   "level": 1,
+   "text": "Hope for Israel and Judah"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "Babylon’s Fall Is Certain"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Redemption for God’s People"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "The Destruction of Babylon"
   }
  ]
 }

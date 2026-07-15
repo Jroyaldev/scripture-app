@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "The third generation of children born to them may enter the assembly of the LORD. Uncleanness in the Camp ()"
+   "text": "The third generation of children born to them may enter the assembly of the LORD."
   },
   {
    "verse": 9,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "For the LORD your God walks throughout your camp to protect you and deliver your enemies to you. Your camp must be holy, lest He see anything unclean among you and turn away from you. Miscellaneous Laws"
+   "text": "For the LORD your God walks throughout your camp to protect you and deliver your enemies to you. Your camp must be holy, lest He see anything unclean among you and turn away from you."
   },
   {
    "verse": 15,
@@ -99,6 +99,26 @@
   {
    "verse": 25,
    "text": "When you enter your neighbor’s grainfield, you may pluck the heads of grain with your hand, but you must not put a sickle to your neighbor’s grain."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Exclusion from the Congregation"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Uncleanness in the Camp"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Miscellaneous Laws"
   }
  ]
 }

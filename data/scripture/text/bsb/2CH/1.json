@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "So Solomon went to Jerusalem from the high place in Gibeon, from before the Tent of Meeting, and he reigned over Israel. Solomon’s Riches ()"
+   "text": "So Solomon went to Jerusalem from the high place in Gibeon, from before the Tent of Meeting, and he reigned over Israel."
   },
   {
    "verse": 14,
@@ -67,6 +67,20 @@
   {
    "verse": 17,
    "text": "A chariot could be imported from Egypt for six hundred shekels of silver, and a horse for a hundred and fifty. Likewise, they exported them to all the kings of the Hittites and to the kings of Aram."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Solomon’s Prayer for Wisdom"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Solomon’s Riches"
   }
  ]
 }

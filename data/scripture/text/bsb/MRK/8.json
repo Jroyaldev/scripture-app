@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "He immediately got into the boat with His disciples and went to the district of Dalmanutha. The Demand for a Sign (; )"
+   "text": "He immediately got into the boat with His disciples and went to the district of Dalmanutha."
   },
   {
    "verse": 11,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "And He left them, got back into the boat, and crossed to the other side. The Leaven of the Pharisees and of Herod (; )"
+   "text": "And He left them, got back into the boat, and crossed to the other side."
   },
   {
    "verse": 14,
@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "Then He asked them, “Do you still not understand?” The Blind Man at Bethsaida"
+   "text": "Then He asked them, “Do you still not understand?”"
   },
   {
    "verse": 22,
@@ -102,7 +102,7 @@
   },
   {
    "verse": 26,
-   "text": "Jesus sent him home and said, “Do not go back into the village.” Peter’s Confession of Christ (; ; )"
+   "text": "Jesus sent him home and said, “Do not go back into the village.”"
   },
   {
    "verse": 27,
@@ -118,7 +118,7 @@
   },
   {
    "verse": 30,
-   "text": "And Jesus warned them not to tell anyone about Him. Christ’s Passion Foretold (; )"
+   "text": "And Jesus warned them not to tell anyone about Him."
   },
   {
    "verse": 31,
@@ -130,7 +130,7 @@
   },
   {
    "verse": 33,
-   "text": "But Jesus, turning and looking at His disciples, rebuked Peter and said, “Get behind Me, Satan! For you do not have in mind the things of God, but the things of men.” Take Up Your Cross (; )"
+   "text": "But Jesus, turning and looking at His disciples, rebuked Peter and said, “Get behind Me, Satan! For you do not have in mind the things of God, but the things of men.”"
   },
   {
    "verse": 34,
@@ -151,6 +151,50 @@
   {
    "verse": 38,
    "text": "If anyone is ashamed of Me and My words in this adulterous and sinful generation, the Son of Man will also be ashamed of him when He comes in His Father’s glory with the holy angels.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Feeding of the Four Thousand"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "The Demand for a Sign"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "The Leaven of the Pharisees and of Herod"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "The Blind Man at Bethsaida"
+  },
+  {
+   "beforeVerse": 27,
+   "kind": "section",
+   "level": 1,
+   "text": "Peter’s Confession of Christ"
+  },
+  {
+   "beforeVerse": 31,
+   "kind": "section",
+   "level": 1,
+   "text": "Christ’s Passion Foretold"
+  },
+  {
+   "beforeVerse": 34,
+   "kind": "section",
+   "level": 1,
+   "text": "Take Up Your Cross"
   }
  ]
 }

@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "Sow your seed in the morning, and do not rest your hands in the evening, for you do not know which will succeed, whether this or that, or if both will equally prosper. Enjoy Your Years"
+   "text": "Sow your seed in the morning, and do not rest your hands in the evening, for you do not know which will succeed, whether this or that, or if both will equally prosper."
   },
   {
    "verse": 7,
@@ -39,6 +39,20 @@
   {
    "verse": 10,
    "text": "So banish sorrow from your heart, and cast off pain from your body, for youth and vigor are fleeting."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Cast Your Bread upon the Waters"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Enjoy Your Years"
   }
  ]
 }

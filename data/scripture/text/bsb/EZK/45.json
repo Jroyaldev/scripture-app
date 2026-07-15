@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "As the property of the city, you are to set aside an area 5,000 cubits wide and 25,000 cubits long, adjacent to the holy district. It will belong to the whole house of Israel. The Prince’s Portion"
+   "text": "As the property of the city, you are to set aside an area 5,000 cubits wide and 25,000 cubits long, adjacent to the holy district. It will belong to the whole house of Israel."
   },
   {
    "verse": 7,
@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "For this is what the Lord GOD says: ‘Enough, O princes of Israel! Cease your violence and oppression, and do what is just and right. Stop dispossessing My people, declares the Lord GOD.’ Honest Scales (; )"
+   "text": "For this is what the Lord GOD says: ‘Enough, O princes of Israel! Cease your violence and oppression, and do what is just and right. Stop dispossessing My people, declares the Lord GOD.’"
   },
   {
    "verse": 10,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "The shekel will consist of twenty gerahs. Twenty shekels plus twenty-five shekels plus fifteen shekels will equal one mina. Offerings and Feasts"
+   "text": "The shekel will consist of twenty gerahs. Twenty shekels plus twenty-five shekels plus fifteen shekels will equal one mina."
   },
   {
    "verse": 13,
@@ -99,6 +99,32 @@
   {
    "verse": 25,
    "text": "During the seven days of the feast that begins on the fifteenth day of the seventh month, he is to make the same provision for sin offerings, burnt offerings, grain offerings, and oil.’[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Consecration of the Land"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "The Prince’s Portion"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Honest Scales"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Offerings and Feasts"
   }
  ]
 }

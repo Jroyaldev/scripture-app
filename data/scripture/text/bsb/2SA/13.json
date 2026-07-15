@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "And Absalom never said a word to Amnon, either good or bad, because he hated Amnon for violating his sister Tamar. Absalom’s Revenge on Amnon"
+   "text": "And Absalom never said a word to Amnon, either good or bad, because he hated Amnon for violating his sister Tamar."
   },
   {
    "verse": 23,
@@ -130,7 +130,7 @@
   },
   {
    "verse": 33,
-   "text": "So now, my lord the king, do not take to heart the report that all the sons of the king are dead. Only Amnon is dead.” Absalom Flees to Geshur"
+   "text": "So now, my lord the king, do not take to heart the report that all the sons of the king are dead. Only Amnon is dead.”"
   },
   {
    "verse": 34,
@@ -155,6 +155,26 @@
   {
    "verse": 39,
    "text": "And King David longed to go to Absalom, for he had been consoled over Amnon’s death."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Amnon and Tamar"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "Absalom’s Revenge on Amnon"
+  },
+  {
+   "beforeVerse": 34,
+   "kind": "section",
+   "level": 1,
+   "text": "Absalom Flees to Geshur"
   }
  ]
 }

@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "and all of them conspired to come and fight against Jerusalem and create a hindrance. Discouragement Overcome"
+   "text": "and all of them conspired to come and fight against Jerusalem and create a hindrance."
   },
   {
    "verse": 9,
@@ -91,6 +91,20 @@
   {
    "verse": 23,
    "text": "So neither I nor my brothers nor my servants nor the guards with me changed out of our clothes; each carried his weapon, even to go for water."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Work Ridiculed"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Discouragement Overcome"
   }
  ]
 }

@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "The slain will fall among you, and you will know that I am the LORD. A Remnant to Be Blessed"
+   "text": "The slain will fall among you, and you will know that I am the LORD."
   },
   {
    "verse": 8,
@@ -55,6 +55,20 @@
   {
    "verse": 14,
    "text": "I will stretch out My hand against them, and wherever they live I will make the land a desolate waste, from the wilderness to Diblah. Then they will know that I am the LORD.’”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Judgment against Idolatry"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "A Remnant to Be Blessed"
   }
  ]
 }

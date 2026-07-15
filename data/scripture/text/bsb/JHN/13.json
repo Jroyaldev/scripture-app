@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "If you know these things, you will be blessed if you do them. Jesus Predicts His Betrayal ()"
+   "text": "If you know these things, you will be blessed if you do them."
   },
   {
    "verse": 18,
@@ -118,7 +118,7 @@
   },
   {
    "verse": 30,
-   "text": "As soon as he had received the morsel, Judas went out into the night. Love One Another (; )"
+   "text": "As soon as he had received the morsel, Judas went out into the night."
   },
   {
    "verse": 31,
@@ -138,7 +138,7 @@
   },
   {
    "verse": 35,
-   "text": "By this everyone will know that you are My disciples, if you love one another.” Jesus Predicts Peter’s Denial (; ; )"
+   "text": "By this everyone will know that you are My disciples, if you love one another.”"
   },
   {
    "verse": 36,
@@ -151,6 +151,32 @@
   {
    "verse": 38,
    "text": "“Will you lay down your life for Me?” Jesus replied. “Truly, truly, I tell you, before the rooster crows, you will deny Me three times.[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Washes His Disciples’ Feet"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Predicts His Betrayal"
+  },
+  {
+   "beforeVerse": 31,
+   "kind": "section",
+   "level": 1,
+   "text": "Love One Another"
+  },
+  {
+   "beforeVerse": 36,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Predicts Peter’s Denial"
   }
  ]
 }

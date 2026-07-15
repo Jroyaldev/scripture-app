@@ -6,7 +6,7 @@
   },
   {
    "verse": 2,
-   "text": "according to the foreknowledge of God the Father and sanctified by the Spirit for obedience to Jesus Christ and sprinkling by His blood: Grace and peace be yours in abundance. A Living Hope"
+   "text": "according to the foreknowledge of God the Father and sanctified by the Spirit for obedience to Jesus Christ and sprinkling by His blood: Grace and peace be yours in abundance."
   },
   {
    "verse": 3,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "It was revealed to them that they were not serving themselves, but you, when they foretold the things now announced by those who preached the gospel to you by the Holy Spirit sent from heaven. Even angels long to look into these things. A Call to Holiness ()"
+   "text": "It was revealed to them that they were not serving themselves, but you, when they foretold the things now announced by those who preached the gospel to you by the Holy Spirit sent from heaven. Even angels long to look into these things."
   },
   {
    "verse": 13,
@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "Through Him you believe in God, who raised Him from the dead and glorified Him; and so your faith and hope are in God. The Enduring Word ()"
+   "text": "Through Him you believe in God, who raised Him from the dead and glorified Him; and so your faith and hope are in God."
   },
   {
    "verse": 22,
@@ -99,6 +99,32 @@
   {
    "verse": 25,
    "text": "but the word of the Lord stands forever.” And this is the word that was proclaimed to you."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Greeting from Peter"
+  },
+  {
+   "beforeVerse": 3,
+   "kind": "section",
+   "level": 1,
+   "text": "A Living Hope"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "A Call to Holiness"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "The Enduring Word"
   }
  ]
 }

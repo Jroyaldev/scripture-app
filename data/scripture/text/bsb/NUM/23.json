@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "But Balaam replied, “Should I not speak exactly what the LORD puts in my mouth?” Balaam’s Second Oracle"
+   "text": "But Balaam replied, “Should I not speak exactly what the LORD puts in my mouth?”"
   },
   {
    "verse": 13,
@@ -119,6 +119,20 @@
   {
    "verse": 30,
    "text": "So Balak did as Balaam had instructed, and he offered a bull and a ram on each altar."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Balaam’s First Oracle"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Balaam’s Second Oracle"
   }
  ]
 }

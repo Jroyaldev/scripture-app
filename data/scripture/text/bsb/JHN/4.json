@@ -102,7 +102,7 @@
   },
   {
    "verse": 26,
-   "text": "Jesus answered, “I who speak to you am He.” The Disciples Return and Marvel"
+   "text": "Jesus answered, “I who speak to you am He.”"
   },
   {
    "verse": 27,
@@ -150,7 +150,7 @@
   },
   {
    "verse": 38,
-   "text": "I sent you to reap what you have not worked for; others have done the hard work, and now you have taken up their labor.” Many Samaritans Believe"
+   "text": "I sent you to reap what you have not worked for; others have done the hard work, and now you have taken up their labor.”"
   },
   {
    "verse": 39,
@@ -166,7 +166,7 @@
   },
   {
    "verse": 42,
-   "text": "They said to the woman, “We now believe not only because of your words; we have heard for ourselves, and we know that this man truly is the Savior of the world.” Jesus Heals the Official’s Son (; )"
+   "text": "They said to the woman, “We now believe not only because of your words; we have heard for ourselves, and we know that this man truly is the Savior of the world.”"
   },
   {
    "verse": 43,
@@ -215,6 +215,32 @@
   {
    "verse": 54,
    "text": "This was now the second sign that Jesus performed after coming from Judea into Galilee."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus and the Samaritan Woman"
+  },
+  {
+   "beforeVerse": 27,
+   "kind": "section",
+   "level": 1,
+   "text": "The Disciples Return and Marvel"
+  },
+  {
+   "beforeVerse": 39,
+   "kind": "section",
+   "level": 1,
+   "text": "Many Samaritans Believe"
+  },
+  {
+   "beforeVerse": 43,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Heals the Official’s Son"
   }
  ]
 }

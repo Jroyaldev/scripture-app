@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "For judgment without mercy will be shown to anyone who has not been merciful. Mercy triumphs over judgment. Faith and Works ()"
+   "text": "For judgment without mercy will be shown to anyone who has not been merciful. Mercy triumphs over judgment."
   },
   {
    "verse": 14,
@@ -103,6 +103,20 @@
   {
    "verse": 26,
    "text": "As the body without the spirit is dead, so faith without deeds is dead."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Warning against Favoritism"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Faith and Works"
   }
  ]
 }

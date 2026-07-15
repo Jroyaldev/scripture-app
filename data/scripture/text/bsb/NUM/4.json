@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "But the Kohathites are not to go in and look at the holy objects, even for a moment, or they will die.” The Duties of the Gershonites (; )"
+   "text": "But the Kohathites are not to go in and look at the holy objects, even for a moment, or they will die.”"
   },
   {
    "verse": 21,
@@ -110,7 +110,7 @@
   },
   {
    "verse": 28,
-   "text": "This is the service of the Gershonite clans at the Tent of Meeting, and their duties shall be under the direction of Ithamar son of Aaron the priest. The Duties of the Merarites (; )"
+   "text": "This is the service of the Gershonite clans at the Tent of Meeting, and their duties shall be under the direction of Ithamar son of Aaron the priest."
   },
   {
    "verse": 29,
@@ -130,7 +130,7 @@
   },
   {
    "verse": 33,
-   "text": "This is the service of the Merarite clans according to all their work at the Tent of Meeting, under the direction of Ithamar son of Aaron the priest.” The Numbering of the Levite Clans"
+   "text": "This is the service of the Merarite clans according to all their work at the Tent of Meeting, under the direction of Ithamar son of Aaron the priest.”"
   },
   {
    "verse": 34,
@@ -195,6 +195,32 @@
   {
    "verse": 49,
    "text": "At the LORD’s command through Moses they were numbered, and each one was assigned his work and burden, as the LORD had commanded Moses."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Duties of the Kohathites"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "The Duties of the Gershonites"
+  },
+  {
+   "beforeVerse": 29,
+   "kind": "section",
+   "level": 1,
+   "text": "The Duties of the Merarites"
+  },
+  {
+   "beforeVerse": 34,
+   "kind": "section",
+   "level": 1,
+   "text": "The Numbering of the Levite Clans"
   }
  ]
 }

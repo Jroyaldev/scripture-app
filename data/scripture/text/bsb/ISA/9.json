@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "Of the increase of His government and peace there will be no end. He will reign on the throne of David and over his kingdom, to establish and sustain it with justice and righteousness from that time and forevermore. The zeal of the LORD of Hosts will accomplish this. Judgment against Israel’s Pride"
+   "text": "Of the increase of His government and peace there will be no end. He will reign on the throne of David and over his kingdom, to establish and sustain it with justice and righteousness from that time and forevermore. The zeal of the LORD of Hosts will accomplish this."
   },
   {
    "verse": 8,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "Aram from the east and Philistia from the west have devoured Israel with open mouths. Despite all this, His anger is not turned away; His hand is still upraised. Judgment against Israel’s Hypocrisy"
+   "text": "Aram from the east and Philistia from the west have devoured Israel with open mouths. Despite all this, His anger is not turned away; His hand is still upraised."
   },
   {
    "verse": 13,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "Therefore the Lord takes no pleasure in their young men; He has no compassion on their fatherless and widows. For every one of them is godless and wicked, and every mouth speaks folly. Despite all this, His anger is not turned away; His hand is still upraised. Judgment against Israel’s Unrepentance"
+   "text": "Therefore the Lord takes no pleasure in their young men; He has no compassion on their fatherless and widows. For every one of them is godless and wicked, and every mouth speaks folly. Despite all this, His anger is not turned away; His hand is still upraised."
   },
   {
    "verse": 18,
@@ -83,6 +83,32 @@
   {
    "verse": 21,
    "text": "Manasseh devours Ephraim, and Ephraim Manasseh; together they turn against Judah. Despite all this, His anger is not turned away; His hand is still upraised."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Unto Us a Child Is Born"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Judgment against Israel’s Pride"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Judgment against Israel’s Hypocrisy"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Judgment against Israel’s Unrepentance"
   }
  ]
 }

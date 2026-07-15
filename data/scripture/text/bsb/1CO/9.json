@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "What then is my reward? That in preaching the gospel I may offer it free of charge, and so not use up my rights in preaching it. Paul the Servant to All"
+   "text": "What then is my reward? That in preaching the gospel I may offer it free of charge, and so not use up my rights in preaching it."
   },
   {
    "verse": 19,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "I do all this for the sake of the gospel, so that I may share in its blessings. Run Your Race to Win"
+   "text": "I do all this for the sake of the gospel, so that I may share in its blessings."
   },
   {
    "verse": 24,
@@ -107,6 +107,26 @@
   {
    "verse": 27,
    "text": "No, I discipline my body and make it my slave, so that after I have preached to others, I myself will not be disqualified."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Rights of an Apostle"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul the Servant to All"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "Run Your Race to Win"
   }
  ]
 }

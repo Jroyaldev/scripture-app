@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "These are in addition to the monthly and daily burnt offerings with their prescribed grain offerings and drink offerings. They are a pleasing aroma, a food offering to the LORD. The Day of Atonement (; )"
+   "text": "These are in addition to the monthly and daily burnt offerings with their prescribed grain offerings and drink offerings. They are a pleasing aroma, a food offering to the LORD."
   },
   {
    "verse": 7,
@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "Include one male goat for a sin offering, in addition to the sin offering of atonement and the regular burnt offering with its grain offering and drink offerings. The Feast of Tabernacles ()"
+   "text": "Include one male goat for a sin offering, in addition to the sin offering of atonement and the regular burnt offering with its grain offering and drink offerings."
   },
   {
    "verse": 12,
@@ -159,6 +159,26 @@
   {
    "verse": 40,
    "text": "So Moses spoke all this to the Israelites just as the LORD had commanded him."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Feast of Trumpets"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "The Day of Atonement"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "The Feast of Tabernacles"
   }
  ]
 }

@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "Therefore it was not you who sent me here, but God, who has made me a father to Pharaoh — lord of all his household and ruler over all the land of Egypt. Joseph Sends for His Father"
+   "text": "Therefore it was not you who sent me here, but God, who has made me a father to Pharaoh — lord of all his household and ruler over all the land of Egypt."
   },
   {
    "verse": 9,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "Joseph kissed each of his brothers as he wept over them. And afterward his brothers talked with him. Pharaoh Invites Jacob to Egypt"
+   "text": "Joseph kissed each of his brothers as he wept over them. And afterward his brothers talked with him."
   },
   {
    "verse": 16,
@@ -94,7 +94,7 @@
   },
   {
    "verse": 24,
-   "text": "Then Joseph sent his brothers on their way, and as they were leaving, he said to them, “Do not quarrel on the way!” The Revival of Jacob"
+   "text": "Then Joseph sent his brothers on their way, and as they were leaving, he said to them, “Do not quarrel on the way!”"
   },
   {
    "verse": 25,
@@ -111,6 +111,32 @@
   {
    "verse": 28,
    "text": "“Enough!” declared Israel. “My son Joseph is still alive! I will go to see him before I die.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Joseph Reveals His Identity"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Joseph Sends for His Father"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Pharaoh Invites Jacob to Egypt"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "The Revival of Jacob"
   }
  ]
 }

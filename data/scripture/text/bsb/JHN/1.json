@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "The Light shines in the darkness, and the darkness has not overcome it. The Witness of John"
+   "text": "The Light shines in the darkness, and the darkness has not overcome it."
   },
   {
    "verse": 6,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "children born not of blood, nor of the desire or will of man, but born of God. The Word Became Flesh ()"
+   "text": "children born not of blood, nor of the desire or will of man, but born of God."
   },
   {
    "verse": 14,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "No one has ever seen God, but the one and only Son, who is Himself God and is at the Father’s side, has made Him known. The Mission of John the Baptist (; ; ; )"
+   "text": "No one has ever seen God, but the one and only Son, who is Himself God and is at the Father’s side, has made Him known."
   },
   {
    "verse": 19,
@@ -110,7 +110,7 @@
   },
   {
    "verse": 28,
-   "text": "All this happened at Bethany beyond the Jordan, where John was baptizing. Jesus the Lamb of God (; ; )"
+   "text": "All this happened at Bethany beyond the Jordan, where John was baptizing."
   },
   {
    "verse": 29,
@@ -134,7 +134,7 @@
   },
   {
    "verse": 34,
-   "text": "I have seen and testified that this is the Son of God.” The First Disciples (; ; )"
+   "text": "I have seen and testified that this is the Son of God.”"
   },
   {
    "verse": 35,
@@ -166,7 +166,7 @@
   },
   {
    "verse": 42,
-   "text": "Andrew brought him to Jesus, who looked at him and said, “You are Simon son of John. You will be called Cephas” (which is translated as Peter). Jesus Calls Philip and Nathanael"
+   "text": "Andrew brought him to Jesus, who looked at him and said, “You are Simon son of John. You will be called Cephas” (which is translated as Peter)."
   },
   {
    "verse": 43,
@@ -203,6 +203,50 @@
   {
    "verse": 51,
    "text": "Then He declared, “Truly, truly, I tell you, you will all see heaven open and the angels of God ascending and descending on the Son of Man.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Beginning"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "The Witness of John"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "The Word Became Flesh"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "The Mission of John the Baptist"
+  },
+  {
+   "beforeVerse": 29,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus the Lamb of God"
+  },
+  {
+   "beforeVerse": 35,
+   "kind": "section",
+   "level": 1,
+   "text": "The First Disciples"
+  },
+  {
+   "beforeVerse": 43,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Calls Philip and Nathanael"
   }
  ]
 }

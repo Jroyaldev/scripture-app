@@ -138,7 +138,7 @@
   },
   {
    "verse": 36,
-   "text": "Truly I tell you, all these things will come upon this generation. Lament over Jerusalem ()"
+   "text": "Truly I tell you, all these things will come upon this generation."
   },
   {
    "verse": 37,
@@ -151,6 +151,20 @@
   {
    "verse": 39,
    "text": "For I tell you that you will not see Me again until you say, ‘Blessed is He who comes in the name of the Lord.’”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Woes to Scribes and Pharisees"
+  },
+  {
+   "beforeVerse": 37,
+   "kind": "section",
+   "level": 1,
+   "text": "Lament over Jerusalem"
   }
  ]
 }

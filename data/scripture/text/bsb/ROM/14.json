@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "So then, each of us will give an account of himself to God. The Law of Love (; )"
+   "text": "So then, each of us will give an account of himself to God."
   },
   {
    "verse": 13,
@@ -91,6 +91,20 @@
   {
    "verse": 23,
    "text": "But the one who has doubts is condemned if he eats, because his eating is not from faith; and everything that is not from faith is sin."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Law of Liberty"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Law of Love"
   }
  ]
 }

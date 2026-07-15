@@ -6,7 +6,7 @@
   },
   {
    "verse": 2,
-   "text": "Now the earth was formless and void, and darkness was over the surface of the deep. And the Spirit of God was hovering over the surface of the waters. The First Day"
+   "text": "Now the earth was formless and void, and darkness was over the surface of the deep. And the Spirit of God was hovering over the surface of the waters."
   },
   {
    "verse": 3,
@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "God called the light “day,” and the darkness He called “night.” And there was evening, and there was morning — the first day. The Second Day"
+   "text": "God called the light “day,” and the darkness He called “night.” And there was evening, and there was morning — the first day."
   },
   {
    "verse": 6,
@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "God called the expanse “sky.” And there was evening, and there was morning — the second day. The Third Day"
+   "text": "God called the expanse “sky.” And there was evening, and there was morning — the second day."
   },
   {
    "verse": 9,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "And there was evening, and there was morning — the third day. The Fourth Day"
+   "text": "And there was evening, and there was morning — the third day."
   },
   {
    "verse": 14,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "And there was evening, and there was morning — the fourth day. The Fifth Day"
+   "text": "And there was evening, and there was morning — the fourth day."
   },
   {
    "verse": 20,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "And there was evening, and there was morning — the fifth day. The Sixth Day"
+   "text": "And there was evening, and there was morning — the fifth day."
   },
   {
    "verse": 24,
@@ -123,6 +123,50 @@
   {
    "verse": 31,
    "text": "And God looked upon all that He had made, and indeed, it was very good. And there was evening, and there was morning — the sixth day."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Creation"
+  },
+  {
+   "beforeVerse": 3,
+   "kind": "section",
+   "level": 2,
+   "text": "The First Day"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 2,
+   "text": "The Second Day"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 2,
+   "text": "The Third Day"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 2,
+   "text": "The Fourth Day"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 2,
+   "text": "The Fifth Day"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 2,
+   "text": "The Sixth Day"
   }
  ]
 }

@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "For the Son of Man is Lord of the Sabbath.” Jesus Heals on the Sabbath (; )"
+   "text": "For the Son of Man is Lord of the Sabbath.”"
   },
   {
    "verse": 9,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "But the Pharisees went out and plotted how they might kill Jesus. God’s Chosen Servant ()"
+   "text": "But the Pharisees went out and plotted how they might kill Jesus."
   },
   {
    "verse": 15,
@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "In His name the nations will put their hope.” A House Divided (; )"
+   "text": "In His name the nations will put their hope.”"
   },
   {
    "verse": 22,
@@ -118,7 +118,7 @@
   },
   {
    "verse": 30,
-   "text": "He who is not with Me is against Me, and he who does not gather with Me scatters. The Unpardonable Sin ()"
+   "text": "He who is not with Me is against Me, and he who does not gather with Me scatters."
   },
   {
    "verse": 31,
@@ -126,7 +126,7 @@
   },
   {
    "verse": 32,
-   "text": "Whoever speaks a word against the Son of Man will be forgiven, but whoever speaks against the Holy Spirit will not be forgiven, either in this age or in the one to come. Good and Bad Fruit ()"
+   "text": "Whoever speaks a word against the Son of Man will be forgiven, but whoever speaks against the Holy Spirit will not be forgiven, either in this age or in the one to come."
   },
   {
    "verse": 33,
@@ -146,7 +146,7 @@
   },
   {
    "verse": 37,
-   "text": "For by your words you will be acquitted, and by your words you will be condemned.” The Sign of Jonah (; )"
+   "text": "For by your words you will be acquitted, and by your words you will be condemned.”"
   },
   {
    "verse": 38,
@@ -166,7 +166,7 @@
   },
   {
    "verse": 42,
-   "text": "The Queen of the South will rise at the judgment with this generation and condemn it; for she came from the ends of the earth to hear the wisdom of Solomon, and now One greater than Solomon is here. An Unclean Spirit Returns ()"
+   "text": "The Queen of the South will rise at the judgment with this generation and condemn it; for she came from the ends of the earth to hear the wisdom of Solomon, and now One greater than Solomon is here."
   },
   {
    "verse": 43,
@@ -178,7 +178,7 @@
   },
   {
    "verse": 45,
-   "text": "Then it goes and brings with it seven other spirits more wicked than itself, and they go in and dwell there. And the final plight of that man is worse than the first. So will it be with this wicked generation.” Jesus’ Mother and Brothers (; )"
+   "text": "Then it goes and brings with it seven other spirits more wicked than itself, and they go in and dwell there. And the final plight of that man is worse than the first. So will it be with this wicked generation.”"
   },
   {
    "verse": 46,
@@ -199,6 +199,62 @@
   {
    "verse": 50,
    "text": "For whoever does the will of My Father in heaven is My brother and sister and mother.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Lord of the Sabbath"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Heals on the Sabbath"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Chosen Servant"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "A House Divided"
+  },
+  {
+   "beforeVerse": 31,
+   "kind": "section",
+   "level": 1,
+   "text": "The Unpardonable Sin"
+  },
+  {
+   "beforeVerse": 33,
+   "kind": "section",
+   "level": 1,
+   "text": "Good and Bad Fruit"
+  },
+  {
+   "beforeVerse": 38,
+   "kind": "section",
+   "level": 1,
+   "text": "The Sign of Jonah"
+  },
+  {
+   "beforeVerse": 43,
+   "kind": "section",
+   "level": 1,
+   "text": "An Unclean Spirit Returns"
+  },
+  {
+   "beforeVerse": 46,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus’ Mother and Brothers"
   }
  ]
 }

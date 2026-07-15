@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "Joseph also provided his father and brothers and all his father’s household with food for their families. The Famine Continues"
+   "text": "Joseph also provided his father and brothers and all his father’s household with food for their families."
   },
   {
    "verse": 13,
@@ -102,7 +102,7 @@
   },
   {
    "verse": 26,
-   "text": "So Joseph established a law that a fifth of the produce belongs to Pharaoh, and it is in effect in the land of Egypt to this day. Only the priests’ land does not belong to Pharaoh. The Israelites Prosper in Goshen"
+   "text": "So Joseph established a law that a fifth of the produce belongs to Pharaoh, and it is in effect in the land of Egypt to this day. Only the priests’ land does not belong to Pharaoh."
   },
   {
    "verse": 27,
@@ -123,6 +123,26 @@
   {
    "verse": 31,
    "text": "“Swear to me,” Jacob said. So Joseph swore to him, and Israel bowed in worship at the head of his bed."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jacob Settles in Goshen"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Famine Continues"
+  },
+  {
+   "beforeVerse": 27,
+   "kind": "section",
+   "level": 1,
+   "text": "The Israelites Prosper in Goshen"
   }
  ]
 }

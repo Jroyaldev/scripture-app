@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "and so, somehow, to attain to the resurrection from the dead. Pressing on toward the Goal"
+   "text": "and so, somehow, to attain to the resurrection from the dead."
   },
   {
    "verse": 12,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "Nevertheless, we must live up to what we have already attained. Citizenship in Heaven"
+   "text": "Nevertheless, we must live up to what we have already attained."
   },
   {
    "verse": 17,
@@ -83,6 +83,26 @@
   {
    "verse": 21,
    "text": "who, by the power that enables Him to subject all things to Himself, will transform our lowly bodies to be like His glorious body."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Righteousness through Faith in Christ"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Pressing on toward the Goal"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Citizenship in Heaven"
   }
  ]
 }

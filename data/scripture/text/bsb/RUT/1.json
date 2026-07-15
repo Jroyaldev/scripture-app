@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "both Mahlon and Chilion also died, and Naomi was left without her two sons and without her husband. Ruth’s Loyalty to Naomi"
+   "text": "both Mahlon and Chilion also died, and Naomi was left without her two sons and without her husband."
   },
   {
    "verse": 6,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "When Naomi saw that Ruth was determined to go with her, she stopped trying to persuade her. The Return to Bethlehem"
+   "text": "When Naomi saw that Ruth was determined to go with her, she stopped trying to persuade her."
   },
   {
    "verse": 19,
@@ -87,6 +87,26 @@
   {
    "verse": 22,
    "text": "So Naomi returned from the land of Moab with her daughter-in-law Ruth the Moabitess. And they arrived in Bethlehem at the beginning of the barley harvest."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Naomi Becomes a Widow"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "Ruth’s Loyalty to Naomi"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "The Return to Bethlehem"
   }
  ]
 }

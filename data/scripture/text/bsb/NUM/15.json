@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "Throughout your generations, you are to give the LORD an offering from the first of your dough. Offerings for Unintentional Sins"
+   "text": "Throughout your generations, you are to give the LORD an offering from the first of your dough."
   },
   {
    "verse": 22,
@@ -122,7 +122,7 @@
   },
   {
    "verse": 31,
-   "text": "He shall certainly be cut off, because he has despised the word of the LORD and broken His commandment; his guilt remains on him.” A Sabbath-Breaker Stoned ()"
+   "text": "He shall certainly be cut off, because he has despised the word of the LORD and broken His commandment; his guilt remains on him.”"
   },
   {
    "verse": 32,
@@ -142,7 +142,7 @@
   },
   {
    "verse": 36,
-   "text": "So the whole congregation took the man outside the camp and stoned him to death, as the LORD had commanded Moses. The Law of Tassels"
+   "text": "So the whole congregation took the man outside the camp and stoned him to death, as the LORD had commanded Moses."
   },
   {
    "verse": 37,
@@ -163,6 +163,32 @@
   {
    "verse": 41,
    "text": "I am the LORD your God who brought you out of the land of Egypt to be your God. I am the LORD your God.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Laws about Offerings"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "Offerings for Unintentional Sins"
+  },
+  {
+   "beforeVerse": 32,
+   "kind": "section",
+   "level": 1,
+   "text": "A Sabbath-Breaker Stoned"
+  },
+  {
+   "beforeVerse": 37,
+   "kind": "section",
+   "level": 1,
+   "text": "The Law of Tassels"
   }
  ]
 }

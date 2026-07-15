@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "And I will cast you out of My presence, just as I have cast out all your brothers, all the descendants of Ephraim. Judah’s Idolatry Persists"
+   "text": "And I will cast you out of My presence, just as I have cast out all your brothers, all the descendants of Ephraim."
   },
   {
    "verse": 16,
@@ -114,7 +114,7 @@
   },
   {
    "verse": 29,
-   "text": "Cut off your hair and throw it away. Raise up a lamentation on the barren heights, for the LORD has rejected and forsaken the generation of His wrath.’ The Valley of Slaughter"
+   "text": "Cut off your hair and throw it away. Raise up a lamentation on the barren heights, for the LORD has rejected and forsaken the generation of His wrath.’"
   },
   {
    "verse": 30,
@@ -135,6 +135,26 @@
   {
    "verse": 34,
    "text": "I will remove from the cities of Judah and the streets of Jerusalem the sounds of joy and gladness and the voices of the bride and bridegroom, for the land will become a wasteland.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jeremiah’s Message at the Temple Gate"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Judah’s Idolatry Persists"
+  },
+  {
+   "beforeVerse": 30,
+   "kind": "section",
+   "level": 1,
+   "text": "The Valley of Slaughter"
   }
  ]
 }

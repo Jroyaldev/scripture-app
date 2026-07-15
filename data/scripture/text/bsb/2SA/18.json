@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "During his lifetime, Absalom had set up for himself a pillar in the King’s Valley, for he had said, “I have no son to preserve the memory of my name.” So he gave the pillar his name, and to this day it is called Absalom’s Monument. David Mourns for Absalom"
+   "text": "During his lifetime, Absalom had set up for himself a pillar in the King’s Valley, for he had said, “I have no son to preserve the memory of my name.” So he gave the pillar his name, and to this day it is called Absalom’s Monument."
   },
   {
    "verse": 19,
@@ -131,6 +131,20 @@
   {
    "verse": 33,
    "text": "The king was shaken and went up to the chamber over the gate and wept. And as he walked, he cried out, “O my son Absalom! My son, my son Absalom! If only I had died instead of you, O Absalom, my son, my son!”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Absalom Killed"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "David Mourns for Absalom"
   }
  ]
 }

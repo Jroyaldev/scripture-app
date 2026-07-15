@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "You have made them to be a kingdom and priests to serve our God, and they will reign upon the earth.” The Lamb Exalted"
+   "text": "You have made them to be a kingdom and priests to serve our God, and they will reign upon the earth.”"
   },
   {
    "verse": 11,
@@ -55,6 +55,20 @@
   {
    "verse": 14,
    "text": "And the four living creatures said, “Amen,” and the elders fell down and worshiped."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Lamb Takes the Scroll"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "The Lamb Exalted"
   }
  ]
 }

@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "And they buried him, and all Israel mourned for him, according to the word that the LORD had spoken through His servant Ahijah the prophet. Nadab Succeeds Jeroboam"
+   "text": "And they buried him, and all Israel mourned for him, according to the word that the LORD had spoken through His servant Ahijah the prophet."
   },
   {
    "verse": 19,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "And the length of Jeroboam’s reign was twenty-two years, and he rested with his fathers, and his son Nadab reigned in his place. Rehoboam Reigns in Judah ()"
+   "text": "And the length of Jeroboam’s reign was twenty-two years, and he rested with his fathers, and his son Nadab reigned in his place."
   },
   {
    "verse": 21,
@@ -94,7 +94,7 @@
   },
   {
    "verse": 24,
-   "text": "There were even male shrine prostitutes in the land. They imitated all the abominations of the nations the LORD had driven out before the Israelites. Shishak Raids Jerusalem ()"
+   "text": "There were even male shrine prostitutes in the land. They imitated all the abominations of the nations the LORD had driven out before the Israelites."
   },
   {
    "verse": 25,
@@ -123,6 +123,32 @@
   {
    "verse": 31,
    "text": "And Rehoboam rested with his fathers and was buried with them in the City of David; his mother’s name was Naamah the Ammonite. And his son Abijam reigned in his place."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Ahijah’s Prophecy against Jeroboam"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "Nadab Succeeds Jeroboam"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "Rehoboam Reigns in Judah"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "Shishak Raids Jerusalem"
   }
  ]
 }

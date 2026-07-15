@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "When the dew fell on the camp at night, the manna would fall with it. The Complaint of Moses"
+   "text": "When the dew fell on the camp at night, the manna would fall with it."
   },
   {
    "verse": 10,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "If this is how You are going to treat me, please kill me right now — if I have found favor in Your eyes — and let me not see my own wretchedness.” Seventy Elders Anointed"
+   "text": "If this is how You are going to treat me, please kill me right now — if I have found favor in Your eyes — and let me not see my own wretchedness.”"
   },
   {
    "verse": 16,
@@ -118,7 +118,7 @@
   },
   {
    "verse": 30,
-   "text": "Then Moses returned to the camp, along with the elders of Israel. The Quail and the Plague"
+   "text": "Then Moses returned to the camp, along with the elders of Israel."
   },
   {
    "verse": 31,
@@ -139,6 +139,32 @@
   {
    "verse": 35,
    "text": "From Kibroth-hattaavah the people moved on to Hazeroth, where they remained for some time."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Complaints of the People"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "The Complaint of Moses"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Seventy Elders Anointed"
+  },
+  {
+   "beforeVerse": 31,
+   "kind": "section",
+   "level": 1,
+   "text": "The Quail and the Plague"
   }
  ]
 }

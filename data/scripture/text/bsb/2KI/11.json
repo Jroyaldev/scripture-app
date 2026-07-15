@@ -10,7 +10,7 @@
   },
   {
    "verse": 3,
-   "text": "And Joash remained hidden with his nurse in the house of the LORD for six years while Athaliah ruled the land. Joash Anointed King of Judah ()"
+   "text": "And Joash remained hidden with his nurse in the house of the LORD for six years while Athaliah ruled the land."
   },
   {
    "verse": 4,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "Then Jehoiada brought out the king’s son, put the crown on him, presented him with the Testimony, and proclaimed him king. They anointed him, and the people clapped their hands and declared, “Long live the king!” The Death of Athaliah ()"
+   "text": "Then Jehoiada brought out the king’s son, put the crown on him, presented him with the Testimony, and proclaimed him king. They anointed him, and the people clapped their hands and declared, “Long live the king!”"
   },
   {
    "verse": 13,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "So they seized Athaliah as she reached the horses’ entrance to the palace grounds, and there she was put to death. Jehoiada Restores the Worship of the LORD ()"
+   "text": "So they seized Athaliah as she reached the horses’ entrance to the palace grounds, and there she was put to death."
   },
   {
    "verse": 17,
@@ -83,6 +83,32 @@
   {
    "verse": 21,
    "text": "Joash was seven years old when he became king."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Athaliah and Joash"
+  },
+  {
+   "beforeVerse": 4,
+   "kind": "section",
+   "level": 1,
+   "text": "Joash Anointed King of Judah"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Death of Athaliah"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Jehoiada Restores the Worship of the LORD"
   }
  ]
 }

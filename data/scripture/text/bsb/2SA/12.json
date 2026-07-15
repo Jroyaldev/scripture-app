@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "You have acted in secret, but I will do this thing in broad daylight before all Israel.’” David’s Loss and Repentance"
+   "text": "You have acted in secret, but I will do this thing in broad daylight before all Israel.’”"
   },
   {
    "verse": 13,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "But now that he is dead, why should I fast? Can I bring him back again? I will go to him, but he will not return to me.” Solomon’s Birth"
+   "text": "But now that he is dead, why should I fast? Can I bring him back again? I will go to him, but he will not return to me.”"
   },
   {
    "verse": 24,
@@ -98,7 +98,7 @@
   },
   {
    "verse": 25,
-   "text": "and sent word through Nathan the prophet to name him Jedidiah because the LORD loved him. The Capture of Rabbah ()"
+   "text": "and sent word through Nathan the prophet to name him Jedidiah because the LORD loved him."
   },
   {
    "verse": 26,
@@ -123,6 +123,32 @@
   {
    "verse": 31,
    "text": "David brought out the people who were there and put them to work with saws, iron picks, and axes, and he made them work at the brick kilns. He did the same to all the Ammonite cities. Then David and all his troops returned to Jerusalem."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Nathan Rebukes David"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "David’s Loss and Repentance"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "Solomon’s Birth"
+  },
+  {
+   "beforeVerse": 26,
+   "kind": "section",
+   "level": 1,
+   "text": "The Capture of Rabbah"
   }
  ]
 }

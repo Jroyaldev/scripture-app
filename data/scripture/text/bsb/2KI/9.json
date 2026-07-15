@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "Quickly, each man took his garment and put it under Jehu on the bare steps. Then they blew the ram’s horn and proclaimed, “Jehu is king!” Jehu Kills Joram and Ahaziah ()"
+   "text": "Quickly, each man took his garment and put it under Jehu on the bare steps. Then they blew the ram’s horn and proclaimed, “Jehu is king!”"
   },
   {
    "verse": 14,
@@ -114,7 +114,7 @@
   },
   {
    "verse": 29,
-   "text": "(In the eleventh year of Joram son of Ahab, Ahaziah had become king over Judah.) Jezebel’s Violent Death"
+   "text": "(In the eleventh year of Joram son of Ahab, Ahaziah had become king over Judah.)"
   },
   {
    "verse": 30,
@@ -147,6 +147,26 @@
   {
    "verse": 37,
    "text": "And Jezebel’s body will lie like dung in the field on the plot of ground at Jezreel, so that no one can say: This is Jezebel.’”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jehu Anointed King of Israel"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Jehu Kills Joram and Ahaziah"
+  },
+  {
+   "beforeVerse": 30,
+   "kind": "section",
+   "level": 1,
+   "text": "Jezebel’s Violent Death"
   }
  ]
 }

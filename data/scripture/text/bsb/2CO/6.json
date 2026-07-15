@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "As a fair exchange— I speak as to my children— open wide your hearts also. Do Not Be Unequally Yoked"
+   "text": "As a fair exchange— I speak as to my children— open wide your hearts also."
   },
   {
    "verse": 14,
@@ -71,6 +71,20 @@
   {
    "verse": 18,
    "text": "And: “I will be a Father to you, and you will be My sons and daughters, says the Lord Almighty.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Hardships and God’s Grace"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Do Not Be Unequally Yoked"
   }
  ]
 }

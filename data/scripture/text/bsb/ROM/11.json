@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "May their eyes be darkened so they cannot see, and their backs be bent forever.” The Ingrafting of the Gentiles"
+   "text": "May their eyes be darkened so they cannot see, and their backs be bent forever.”"
   },
   {
    "verse": 11,
@@ -94,7 +94,7 @@
   },
   {
    "verse": 24,
-   "text": "For if you were cut from a wild olive tree, and contrary to nature were grafted into one that is cultivated, how much more readily will these, the natural branches, be grafted into their own olive tree! All Israel Will Be Saved"
+   "text": "For if you were cut from a wild olive tree, and contrary to nature were grafted into one that is cultivated, how much more readily will these, the natural branches, be grafted into their own olive tree!"
   },
   {
    "verse": 25,
@@ -126,7 +126,7 @@
   },
   {
    "verse": 32,
-   "text": "For God has consigned everyone to disobedience so that He may have mercy on everyone. A Hymn of Praise ()"
+   "text": "For God has consigned everyone to disobedience so that He may have mercy on everyone."
   },
   {
    "verse": 33,
@@ -143,6 +143,32 @@
   {
    "verse": 36,
    "text": "For from Him and through Him and to Him are all things. To Him be the glory forever! Amen."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Remnant Chosen by Grace"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "The Ingrafting of the Gentiles"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "All Israel Will Be Saved"
+  },
+  {
+   "beforeVerse": 33,
+   "kind": "section",
+   "level": 1,
+   "text": "A Hymn of Praise"
   }
  ]
 }

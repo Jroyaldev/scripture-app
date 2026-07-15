@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "These were all the sons of David, besides the sons by his concubines. And Tamar was their sister. The Descendants of Solomon"
+   "text": "These were all the sons of David, besides the sons by his concubines. And Tamar was their sister."
   },
   {
    "verse": 10,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "The successors of Jehoiakim: Jeconiah his son, and Zedekiah. The Royal Line After the Exile"
+   "text": "The successors of Jehoiakim: Jeconiah his son, and Zedekiah."
   },
   {
    "verse": 17,
@@ -95,6 +95,26 @@
   {
    "verse": 24,
    "text": "The sons of Elioenai: Hodaviah, Eliashib, Pelaiah, Akkub, Johanan, Delaiah, and Anani— seven in all."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Descendants of David"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "The Descendants of Solomon"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "The Royal Line After the Exile"
   }
  ]
 }

@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "Then you will behave properly toward outsiders, without being dependent on anyone. The Return of the Lord"
+   "text": "Then you will behave properly toward outsiders, without being dependent on anyone."
   },
   {
    "verse": 13,
@@ -71,6 +71,20 @@
   {
    "verse": 18,
    "text": "Therefore encourage one another with these words."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Living to Please God"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Return of the Lord"
   }
  ]
 }

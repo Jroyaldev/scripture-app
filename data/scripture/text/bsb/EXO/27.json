@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "Construct the altar with boards so that it is hollow. It is to be made just as you were shown on the mountain. The Courtyard ()"
+   "text": "Construct the altar with boards so that it is hollow. It is to be made just as you were shown on the mountain."
   },
   {
    "verse": 9,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "All the utensils of the tabernacle for every use, including all its tent pegs and the tent pegs of the courtyard, shall be made of bronze. The Oil for the Lamps ()"
+   "text": "All the utensils of the tabernacle for every use, including all its tent pegs and the tent pegs of the courtyard, shall be made of bronze."
   },
   {
    "verse": 20,
@@ -83,6 +83,26 @@
   {
    "verse": 21,
    "text": "In the Tent of Meeting, outside the veil that is in front of the Testimony, Aaron and his sons are to tend the lamps before the LORD from evening until morning. This is to be a permanent statute for the Israelites for the generations to come.[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Bronze Altar"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "The Courtyard"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "The Oil for the Lamps"
   }
  ]
 }

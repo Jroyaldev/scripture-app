@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "So the king did not listen to the people, and indeed this turn of events was from God, in order that the LORD might fulfill the word that He had spoken through Ahijah the Shilonite to Jeroboam son of Nebat. The Kingdom Divided ()"
+   "text": "So the king did not listen to the people, and indeed this turn of events was from God, in order that the LORD might fulfill the word that He had spoken through Ahijah the Shilonite to Jeroboam son of Nebat."
   },
   {
    "verse": 16,
@@ -75,6 +75,20 @@
   {
    "verse": 19,
    "text": "So to this day Israel has been in rebellion against the house of David."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Rebellion against Rehoboam"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "The Kingdom Divided"
   }
  ]
 }

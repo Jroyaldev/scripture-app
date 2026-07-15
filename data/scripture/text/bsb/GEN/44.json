@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "But Joseph replied, “Far be it from me to do this. The man who was found with the cup will be my slave. The rest of you may return to your father in peace.” Judah Pleads for Benjamin"
+   "text": "But Joseph replied, “Far be it from me to do this. The man who was found with the cup will be my slave. The rest of you may return to your father in peace.”"
   },
   {
    "verse": 18,
@@ -135,6 +135,20 @@
   {
    "verse": 34,
    "text": "For how can I go back to my father without the boy? I could not bear to see the misery that would overwhelm him.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Benjamin and the Silver Cup"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Judah Pleads for Benjamin"
   }
  ]
 }

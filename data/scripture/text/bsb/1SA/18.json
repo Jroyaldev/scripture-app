@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "And Jonathan removed the robe he was wearing and gave it to David, along with his tunic, his sword, his bow, and his belt. Saul Envies David"
+   "text": "And Jonathan removed the robe he was wearing and gave it to David, along with his tunic, his sword, his bow, and his belt."
   },
   {
    "verse": 5,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "But all Israel and Judah loved David, because he was leading them out to battle and back. David Marries Michal"
+   "text": "But all Israel and Judah loved David, because he was leading them out to battle and back."
   },
   {
    "verse": 17,
@@ -119,6 +119,26 @@
   {
    "verse": 30,
    "text": "Every time the Philistine commanders came out for battle, David was more successful than all of Saul’s officers, so that his name was highly esteemed."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jonathan Befriends David"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "Saul Envies David"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "David Marries Michal"
   }
  ]
 }

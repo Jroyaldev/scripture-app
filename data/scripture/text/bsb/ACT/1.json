@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "For John baptized with water, but in a few days you will be baptized with the Holy Spirit.” The Ascension (; )"
+   "text": "For John baptized with water, but in a few days you will be baptized with the Holy Spirit.”"
   },
   {
    "verse": 6,
@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "“Men of Galilee,” they said, “why do you stand here looking into the sky? This same Jesus, who has been taken from you into heaven, will come back in the same way you have seen Him go into heaven.” Matthias Replaces Judas"
+   "text": "“Men of Galilee,” they said, “why do you stand here looking into the sky? This same Jesus, who has been taken from you into heaven, will come back in the same way you have seen Him go into heaven.”"
   },
   {
    "verse": 12,
@@ -103,6 +103,26 @@
   {
    "verse": 26,
    "text": "Then they cast lots, and the lot fell to Matthias. So he was added to the eleven apostles."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Prologue"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "The Ascension"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Matthias Replaces Judas"
   }
  ]
 }

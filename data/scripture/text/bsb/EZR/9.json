@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "Then everyone who trembled at the words of the God of Israel gathered around me because of the unfaithfulness of the exiles, while I sat there in horror until the evening offering. Ezra’s Prayer of Confession"
+   "text": "Then everyone who trembled at the words of the God of Israel gathered around me because of the unfaithfulness of the exiles, while I sat there in horror until the evening offering."
   },
   {
    "verse": 5,
@@ -59,6 +59,20 @@
   {
    "verse": 15,
    "text": "O LORD, God of Israel, You are righteous! For we remain this day as a remnant. Here we are before You in our guilt, though because of it no one can stand before You.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Intermarriage with Neighboring Peoples"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "Ezra’s Prayer of Confession"
   }
  ]
 }

@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "The LORD of Hosts, who planted you, has decreed disaster against you on account of the evil that the house of Israel and the house of Judah have brought upon themselves, provoking Me to anger by burning incense to Baal.” A Plot against Jeremiah ()"
+   "text": "The LORD of Hosts, who planted you, has decreed disaster against you on account of the evil that the house of Israel and the house of Judah have brought upon themselves, provoking Me to anger by burning incense to Baal.”"
   },
   {
    "verse": 18,
@@ -91,6 +91,20 @@
   {
    "verse": 23,
    "text": "There will be no remnant, for I will bring disaster on the people of Anathoth in the year of their punishment.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Broken Covenant"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "A Plot against Jeremiah"
   }
  ]
 }

@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "Even if he sins against you seven times in a day, and seven times returns to say, ‘I repent,’ you must forgive him.” The Power of Faith ()"
+   "text": "Even if he sins against you seven times in a day, and seven times returns to say, ‘I repent,’ you must forgive him.”"
   },
   {
    "verse": 5,
@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "So you also, when you have done everything commanded of you, should say, ‘We are unworthy servants; we have only done our duty.’” The Ten Lepers ()"
+   "text": "So you also, when you have done everything commanded of you, should say, ‘We are unworthy servants; we have only done our duty.’”"
   },
   {
    "verse": 11,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "Then Jesus said to him, “Rise and go; your faith has made you well!” The Coming of the Kingdom ()"
+   "text": "Then Jesus said to him, “Rise and go; your faith has made you well!”"
   },
   {
    "verse": 20,
@@ -143,6 +143,32 @@
   {
    "verse": 37,
    "text": "“Where, Lord?” they asked. Jesus answered, “Wherever there is a carcass, there the vultures will gather.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Temptations and Trespasses"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "The Power of Faith"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "The Ten Lepers"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "The Coming of the Kingdom"
   }
  ]
 }

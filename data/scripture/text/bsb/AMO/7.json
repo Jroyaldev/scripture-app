@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "The high places of Isaac will be deserted, and the sanctuaries of Israel will be laid waste; and I will rise up against the house of Jeroboam with My sword.” Amaziah Accuses Amos"
+   "text": "The high places of Isaac will be deserted, and the sanctuaries of Israel will be laid waste; and I will rise up against the house of Jeroboam with My sword.”"
   },
   {
    "verse": 10,
@@ -67,6 +67,20 @@
   {
    "verse": 17,
    "text": "Therefore this is what the LORD says: ‘Your wife will become a prostitute in the city, and your sons and daughters will fall by the sword. Your land will be divided by a measuring line, and you yourself will die on pagan soil. And Israel will surely go into exile, away from their homeland.’”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Locusts, Fire, and Plumb Line"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Amaziah Accuses Amos"
   }
  ]
 }

@@ -22,11 +22,11 @@
   },
   {
    "verse": 6,
-   "text": "They also took the livestock and possessions they had acquired in the land of Canaan, and Jacob and all his offspring went to Egypt. Those Who Went to Egypt ()"
+   "text": "They also took the livestock and possessions they had acquired in the land of Canaan, and Jacob and all his offspring went to Egypt."
   },
   {
    "verse": 7,
-   "text": "Jacob took with him to Egypt his sons and grandsons, and his daughters and granddaughters — all his offspring. The Children of Leah"
+   "text": "Jacob took with him to Egypt his sons and grandsons, and his daughters and granddaughters — all his offspring."
   },
   {
    "verse": 8,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "These are the sons of Leah born to Jacob in Paddan-aram, in addition to his daughter Dinah. The total number of sons and daughters was thirty-three. The Children of Zilpah"
+   "text": "These are the sons of Leah born to Jacob in Paddan-aram, in addition to his daughter Dinah. The total number of sons and daughters was thirty-three."
   },
   {
    "verse": 16,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "These are the sons of Jacob born to Zilpah — whom Laban gave to his daughter Leah — sixteen in all. The Children of Rachel"
+   "text": "These are the sons of Jacob born to Zilpah — whom Laban gave to his daughter Leah — sixteen in all."
   },
   {
    "verse": 19,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "These are the sons of Rachel born to Jacob — fourteen in all. The Children of Bilhah"
+   "text": "These are the sons of Rachel born to Jacob — fourteen in all."
   },
   {
    "verse": 23,
@@ -106,7 +106,7 @@
   },
   {
    "verse": 27,
-   "text": "And with the two sons who had been born to Joseph in Egypt, the members of Jacob’s family who went to Egypt were seventy in all. Jacob Arrives in Egypt"
+   "text": "And with the two sons who had been born to Joseph in Egypt, the members of Jacob’s family who went to Egypt were seventy in all."
   },
   {
    "verse": 28,
@@ -135,6 +135,50 @@
   {
    "verse": 34,
    "text": "you are to say, ‘Your servants have raised livestock ever since our youth — both we and our fathers.’ Then you will be allowed to settle in the land of Goshen, since all shepherds are detestable to the Egyptians.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jacob’s Journey to Egypt"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Those Who Went to Egypt"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 2,
+   "text": "The Children of Leah"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 2,
+   "text": "The Children of Zilpah"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 2,
+   "text": "The Children of Rachel"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 2,
+   "text": "The Children of Bilhah"
+  },
+  {
+   "beforeVerse": 28,
+   "kind": "section",
+   "level": 1,
+   "text": "Jacob Arrives in Egypt"
   }
  ]
 }

@@ -106,7 +106,7 @@
   },
   {
    "verse": 27,
-   "text": "Three sons were born to Absalom, and a daughter named Tamar, who was a beautiful woman. Absalom Reconciled to David"
+   "text": "Three sons were born to Absalom, and a daughter named Tamar, who was a beautiful woman."
   },
   {
    "verse": 28,
@@ -131,6 +131,20 @@
   {
    "verse": 33,
    "text": "So Joab went and told the king, and David summoned Absalom, who came to him and bowed facedown before him. Then the king kissed Absalom."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Absalom’s Return to Jerusalem"
+  },
+  {
+   "beforeVerse": 28,
+   "kind": "section",
+   "level": 1,
+   "text": "Absalom Reconciled to David"
   }
  ]
 }

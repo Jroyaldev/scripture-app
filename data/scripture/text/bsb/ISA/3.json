@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "Why do you crush My people and grind the faces of the poor?” declares the Lord GOD of Hosts. A Warning to the Daughters of Zion"
+   "text": "Why do you crush My people and grind the faces of the poor?” declares the Lord GOD of Hosts."
   },
   {
    "verse": 16,
@@ -103,6 +103,20 @@
   {
    "verse": 26,
    "text": "And the gates of Zion will lament and mourn; destitute, she will sit on the ground."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Judgment on Jerusalem and Judah"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "A Warning to the Daughters of Zion"
   }
  ]
 }

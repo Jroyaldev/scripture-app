@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "so that with one mind and one voice you may glorify the God and Father of our Lord Jesus Christ. Christ the Servant of Jews and Gentiles"
+   "text": "so that with one mind and one voice you may glorify the God and Father of our Lord Jesus Christ."
   },
   {
    "verse": 7,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "Now may the God of hope fill you with all joy and peace as you believe in Him, so that you may overflow with hope by the power of the Holy Spirit. Paul the Minister to the Gentiles"
+   "text": "Now may the God of hope fill you with all joy and peace as you believe in Him, so that you may overflow with hope by the power of the Holy Spirit."
   },
   {
    "verse": 14,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "That is why I have often been hindered from coming to you. Paul’s Travel Plans ()"
+   "text": "That is why I have often been hindered from coming to you."
   },
   {
    "verse": 23,
@@ -131,6 +131,32 @@
   {
    "verse": 33,
    "text": "The God of peace be with all of you. Amen."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Accept One Another"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Christ the Servant of Jews and Gentiles"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul the Minister to the Gentiles"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Travel Plans"
   }
  ]
 }

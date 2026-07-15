@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "The one who is caught with the things devoted to destruction must be burned, along with all that belongs to him, because he has transgressed the covenant of the LORD and committed an outrage in Israel.’” The Sin of Achan"
+   "text": "The one who is caught with the things devoted to destruction must be burned, along with all that belongs to him, because he has transgressed the covenant of the LORD and committed an outrage in Israel.’”"
   },
   {
    "verse": 16,
@@ -103,6 +103,20 @@
   {
    "verse": 26,
    "text": "And they heaped over Achan a large pile of rocks that remains to this day. So the LORD turned from His burning anger. Therefore that place is called the Valley of Achor to this day."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Defeat at Ai"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "The Sin of Achan"
   }
  ]
 }

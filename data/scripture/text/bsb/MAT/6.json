@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "so that your giving may be in secret. And your Father, who sees what is done in secret, will reward you. The Lord’s Prayer ()"
+   "text": "so that your giving may be in secret. And your Father, who sees what is done in secret, will reward you."
   },
   {
    "verse": 5,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "But if you do not forgive men their trespasses, neither will your Father forgive yours. Proper Fasting"
+   "text": "But if you do not forgive men their trespasses, neither will your Father forgive yours."
   },
   {
    "verse": 16,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "so that your fasting will not be obvious to men, but only to your Father, who is unseen. And your Father, who sees what is done in secret, will reward you. Treasures in Heaven ()"
+   "text": "so that your fasting will not be obvious to men, but only to your Father, who is unseen. And your Father, who sees what is done in secret, will reward you."
   },
   {
    "verse": 19,
@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "For where your treasure is, there your heart will be also. The Lamp of the Body ()"
+   "text": "For where your treasure is, there your heart will be also."
   },
   {
    "verse": 22,
@@ -94,7 +94,7 @@
   },
   {
    "verse": 24,
-   "text": "No one can serve two masters: Either he will hate the one and love the other, or he will be devoted to the one and despise the other. You cannot serve both God and money. Do Not Worry ()"
+   "text": "No one can serve two masters: Either he will hate the one and love the other, or he will be devoted to the one and despise the other. You cannot serve both God and money."
   },
   {
    "verse": 25,
@@ -135,6 +135,44 @@
   {
    "verse": 34,
    "text": "Therefore do not worry about tomorrow, for tomorrow will worry about itself. Today has enough trouble of its own.[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Giving to the Needy"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "The Lord’s Prayer"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Proper Fasting"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "Treasures in Heaven"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "The Lamp of the Body"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "Do Not Worry"
   }
  ]
 }

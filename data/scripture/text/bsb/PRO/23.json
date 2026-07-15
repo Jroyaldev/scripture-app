@@ -10,7 +10,7 @@
   },
   {
    "verse": 3,
-   "text": "Do not crave his delicacies, for that food is deceptive. Saying 8"
+   "text": "Do not crave his delicacies, for that food is deceptive."
   },
   {
    "verse": 4,
@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "When you glance at wealth, it disappears, for it makes wings for itself and flies like an eagle to the sky. Saying 9"
+   "text": "When you glance at wealth, it disappears, for it makes wings for itself and flies like an eagle to the sky."
   },
   {
    "verse": 6,
@@ -30,11 +30,11 @@
   },
   {
    "verse": 8,
-   "text": "You will vomit up what little you have eaten and waste your pleasant words. Saying 10"
+   "text": "You will vomit up what little you have eaten and waste your pleasant words."
   },
   {
    "verse": 9,
-   "text": "Do not speak to a fool, for he will despise the wisdom of your words. Saying 11"
+   "text": "Do not speak to a fool, for he will despise the wisdom of your words."
   },
   {
    "verse": 10,
@@ -42,11 +42,11 @@
   },
   {
    "verse": 11,
-   "text": "for their Redeemer is strong; He will take up their case against you. Saying 12"
+   "text": "for their Redeemer is strong; He will take up their case against you."
   },
   {
    "verse": 12,
-   "text": "Apply your heart to instruction and your ears to words of knowledge. Saying 13"
+   "text": "Apply your heart to instruction and your ears to words of knowledge."
   },
   {
    "verse": 13,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "Strike him with a rod, and you will deliver his soul from Sheol. Saying 14"
+   "text": "Strike him with a rod, and you will deliver his soul from Sheol."
   },
   {
    "verse": 15,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "My inmost being will rejoice when your lips speak what is right. Saying 15"
+   "text": "My inmost being will rejoice when your lips speak what is right."
   },
   {
    "verse": 17,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "For surely there is a future, and your hope will not be cut off. Saying 16"
+   "text": "For surely there is a future, and your hope will not be cut off."
   },
   {
    "verse": 19,
@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "For the drunkard and the glutton will come to poverty, and drowsiness will clothe them in rags. Saying 17"
+   "text": "For the drunkard and the glutton will come to poverty, and drowsiness will clothe them in rags."
   },
   {
    "verse": 22,
@@ -98,7 +98,7 @@
   },
   {
    "verse": 25,
-   "text": "May your father and mother be glad, and may she who gave you birth rejoice! Saying 18"
+   "text": "May your father and mother be glad, and may she who gave you birth rejoice!"
   },
   {
    "verse": 26,
@@ -110,7 +110,7 @@
   },
   {
    "verse": 28,
-   "text": "Like a robber she lies in wait and multiplies the faithless among men. Saying 19"
+   "text": "Like a robber she lies in wait and multiplies the faithless among men."
   },
   {
    "verse": 29,
@@ -139,6 +139,92 @@
   {
    "verse": 35,
    "text": "“They struck me, but I feel no pain! They beat me, but I did not know it! When can I wake up to search for another drink?”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "True Riches"
+  },
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 2,
+   "text": "Saying 7"
+  },
+  {
+   "beforeVerse": 4,
+   "kind": "section",
+   "level": 2,
+   "text": "Saying 8"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 2,
+   "text": "Saying 9"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 2,
+   "text": "Saying 10"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 2,
+   "text": "Saying 11"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 2,
+   "text": "Saying 12"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 2,
+   "text": "Saying 13"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 2,
+   "text": "Saying 14"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 2,
+   "text": "Saying 15"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 2,
+   "text": "Saying 16"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 2,
+   "text": "Saying 17"
+  },
+  {
+   "beforeVerse": 26,
+   "kind": "section",
+   "level": 2,
+   "text": "Saying 18"
+  },
+  {
+   "beforeVerse": 29,
+   "kind": "section",
+   "level": 2,
+   "text": "Saying 19"
   }
  ]
 }

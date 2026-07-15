@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "With him is only the arm of flesh, but with us is the LORD our God to help us and to fight our battles.” So the people were strengthened by the words of Hezekiah king of Judah. Sennacherib Threatens Jerusalem (; )"
+   "text": "With him is only the arm of flesh, but with us is the LORD our God to help us and to fight our battles.” So the people were strengthened by the words of Hezekiah king of Judah."
   },
   {
    "verse": 9,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "They spoke against the God of Jerusalem as they had spoken against the gods of the peoples of the earth — the work of human hands. Jerusalem Delivered from the Assyrians (; )"
+   "text": "They spoke against the God of Jerusalem as they had spoken against the gods of the peoples of the earth — the work of human hands."
   },
   {
    "verse": 20,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "Many brought offerings to Jerusalem for the LORD and valuable gifts for Hezekiah king of Judah, and from then on he was exalted in the eyes of all nations. Hezekiah’s Illness and Recovery (; )"
+   "text": "Many brought offerings to Jerusalem for the LORD and valuable gifts for Hezekiah king of Judah, and from then on he was exalted in the eyes of all nations."
   },
   {
    "verse": 24,
@@ -122,7 +122,7 @@
   },
   {
    "verse": 31,
-   "text": "And so when ambassadors of the rulers of Babylon were sent to him to inquire about the wonder that had happened in the land, God left him alone to test him, that He might know all that was in Hezekiah’s heart. Hezekiah’s Death"
+   "text": "And so when ambassadors of the rulers of Babylon were sent to him to inquire about the wonder that had happened in the land, God left him alone to test him, that He might know all that was in Hezekiah’s heart."
   },
   {
    "verse": 32,
@@ -131,6 +131,38 @@
   {
    "verse": 33,
    "text": "And Hezekiah rested with his fathers and was buried in the upper tombs of David’s descendants. All Judah and the people of Jerusalem paid him honor at his death. And his son Manasseh reigned in his place."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Sennacherib Invades Judah"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Sennacherib Threatens Jerusalem"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "Jerusalem Delivered from the Assyrians"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "Hezekiah’s Illness and Recovery"
+  },
+  {
+   "beforeVerse": 32,
+   "kind": "section",
+   "level": 1,
+   "text": "Hezekiah’s Death"
   }
  ]
 }

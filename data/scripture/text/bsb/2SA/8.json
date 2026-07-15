@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "He placed garrisons throughout Edom, and all the Edomites were subject to David. So the LORD made David victorious wherever he went. David’s Officers ()"
+   "text": "He placed garrisons throughout Edom, and all the Edomites were subject to David. So the LORD made David victorious wherever he went."
   },
   {
    "verse": 15,
@@ -71,6 +71,20 @@
   {
    "verse": 18,
    "text": "Benaiah son of Jehoiada was over the Cherethites and Pelethites; and David’s sons were priestly leaders."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "David’s Triumphs"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "David’s Officers"
   }
  ]
 }

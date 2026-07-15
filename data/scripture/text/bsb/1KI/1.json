@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "The girl was unsurpassed in beauty; she cared for the king and served him, but he had no relations with her. Adonijah Usurps the Kingdom"
+   "text": "The girl was unsurpassed in beauty; she cared for the king and served him, but he had no relations with her."
   },
   {
    "verse": 5,
@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "But he did not invite Nathan the prophet, Benaiah, the mighty men, or his brother Solomon. Nathan and Bathsheba before David"
+   "text": "But he did not invite Nathan the prophet, Benaiah, the mighty men, or his brother Solomon."
   },
   {
    "verse": 11,
@@ -106,7 +106,7 @@
   },
   {
    "verse": 27,
-   "text": "Has my lord the king let this happen without informing your servant who should sit on the throne after my lord the king?” David Renews His Oath to Bathsheba"
+   "text": "Has my lord the king let this happen without informing your servant who should sit on the throne after my lord the king?”"
   },
   {
    "verse": 28,
@@ -122,7 +122,7 @@
   },
   {
    "verse": 31,
-   "text": "Bathsheba bowed facedown in homage to the king and said, “May my lord King David live forever!” Solomon Anointed King ()"
+   "text": "Bathsheba bowed facedown in homage to the king and said, “May my lord King David live forever!”"
   },
   {
    "verse": 32,
@@ -158,7 +158,7 @@
   },
   {
    "verse": 40,
-   "text": "All the people followed him, playing flutes and rejoicing with such a great joy that the earth was split by the sound. Adonijah Learns of Solomon’s Kingship"
+   "text": "All the people followed him, playing flutes and rejoicing with such a great joy that the earth was split by the sound."
   },
   {
    "verse": 41,
@@ -211,6 +211,44 @@
   {
    "verse": 53,
    "text": "So King Solomon summoned Adonijah down from the altar, and he came and bowed down before King Solomon, who said to him, “Go to your home.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Abishag Cares for David"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "Adonijah Usurps the Kingdom"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "Nathan and Bathsheba before David"
+  },
+  {
+   "beforeVerse": 28,
+   "kind": "section",
+   "level": 1,
+   "text": "David Renews His Oath to Bathsheba"
+  },
+  {
+   "beforeVerse": 32,
+   "kind": "section",
+   "level": 1,
+   "text": "Solomon Anointed King"
+  },
+  {
+   "beforeVerse": 41,
+   "kind": "section",
+   "level": 1,
+   "text": "Adonijah Learns of Solomon’s Kingship"
   }
  ]
 }

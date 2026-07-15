@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "So the men took these gifts, along with double the amount of silver, and Benjamin as well. Then they hurried down to Egypt and stood before Joseph. Joseph’s Hospitality to His Brothers"
+   "text": "So the men took these gifts, along with double the amount of silver, and Benjamin as well. Then they hurried down to Egypt and stood before Joseph."
   },
   {
    "verse": 16,
@@ -135,6 +135,20 @@
   {
    "verse": 34,
    "text": "When the portions were served to them from Joseph’s table, Benjamin’s portion was five times larger than any of the others. So they feasted and drank freely with Joseph."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Return to Egypt with Benjamin"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Joseph’s Hospitality to His Brothers"
   }
  ]
 }

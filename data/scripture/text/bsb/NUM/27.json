@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "And if his father has no brothers, give his inheritance to the next of kin from his clan, that he may take possession of it. This is to be a statutory ordinance for the Israelites, as the LORD has commanded Moses.’” Moses Requests a Successor ()"
+   "text": "And if his father has no brothers, give his inheritance to the next of kin from his clan, that he may take possession of it. This is to be a statutory ordinance for the Israelites, as the LORD has commanded Moses.’”"
   },
   {
    "verse": 12,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "who will go out and come in before them, and who will lead them out and bring them in, so that the congregation of the LORD will not be like sheep without a shepherd.” Joshua to Succeed Moses ()"
+   "text": "who will go out and come in before them, and who will lead them out and bring them in, so that the congregation of the LORD will not be like sheep without a shepherd.”"
   },
   {
    "verse": 18,
@@ -91,6 +91,26 @@
   {
    "verse": 23,
    "text": "and laid his hands on him and commissioned him, as the LORD had instructed through Moses."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Daughters of Zelophehad"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Moses Requests a Successor"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Joshua to Succeed Moses"
   }
  ]
 }

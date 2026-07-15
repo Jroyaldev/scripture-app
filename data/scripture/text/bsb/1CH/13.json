@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "So they carried the ark of God from the house of Abinadab on a new cart, with Uzzah and Ahio guiding the cart. Uzzah Touches the Ark ()"
+   "text": "So they carried the ark of God from the house of Abinadab on a new cart, with Uzzah and Ahio guiding the cart."
   },
   {
    "verse": 8,
@@ -55,6 +55,20 @@
   {
    "verse": 14,
    "text": "Thus the ark of God remained with the family of Obed-edom in his house for three months, and the LORD blessed his household and everything he owned."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "David Fetches the Ark"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Uzzah Touches the Ark"
   }
  ]
 }

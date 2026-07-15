@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "Then Solomon awoke, and indeed it had been a dream. So he returned to Jerusalem, stood before the ark of the covenant of the Lord, and offered burnt offerings and peace offerings. Then he held a feast for all his servants. Solomon Judges Wisely"
+   "text": "Then Solomon awoke, and indeed it had been a dream. So he returned to Jerusalem, stood before the ark of the covenant of the Lord, and offered burnt offerings and peace offerings. Then he held a feast for all his servants."
   },
   {
    "verse": 16,
@@ -111,6 +111,20 @@
   {
    "verse": 28,
    "text": "When all Israel heard of the judgment the king had given, they stood in awe of him, for they saw that the wisdom of God was in him to administer justice."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Solomon’s Prayer for Wisdom"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Solomon Judges Wisely"
   }
  ]
 }

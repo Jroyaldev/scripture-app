@@ -36,5 +36,13 @@
    "verse": 9,
    "text": "Blessed is he who seizes your infants and dashes them against the rocks."
   }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "By the Rivers of Babylon"
+  }
  ]
 }

@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "in order that judgment may come upon all who have disbelieved the truth and delighted in wickedness. Stand Firm"
+   "text": "in order that judgment may come upon all who have disbelieved the truth and delighted in wickedness."
   },
   {
    "verse": 13,
@@ -67,6 +67,20 @@
   {
    "verse": 17,
    "text": "encourage your hearts and strengthen you in every good word and deed."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Man of Lawlessness"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Stand Firm"
   }
  ]
 }

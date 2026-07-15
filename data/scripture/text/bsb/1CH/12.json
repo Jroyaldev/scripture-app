@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "For at that time men came to David day after day to help him, until he had a great army, like the army of God. David’s Army Grows at Hebron"
+   "text": "For at that time men came to David day after day to help him, until he had a great army, like the army of God."
   },
   {
    "verse": 23,
@@ -159,6 +159,20 @@
   {
    "verse": 40,
    "text": "And their neighbors from as far away as Issachar, Zebulun, and Naphtali came bringing food on donkeys, camels, mules, and oxen— abundant supplies of flour, fig cakes and raisin cakes, wine and oil, oxen and sheep. Indeed, there was joy in Israel."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Mighty Men Join David at Ziklag"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "David’s Army Grows at Hebron"
   }
  ]
 }

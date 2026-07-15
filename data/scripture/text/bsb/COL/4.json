@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "Let your speech always be gracious, seasoned with salt, so that you may know how to answer everyone. Greetings from Paul’s Fellow Workers ()"
+   "text": "Let your speech always be gracious, seasoned with salt, so that you may know how to answer everyone."
   },
   {
    "verse": 7,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "Luke, the beloved physician, and Demas send you greetings. Signature and Final Instructions (; )"
+   "text": "Luke, the beloved physician, and Demas send you greetings."
   },
   {
    "verse": 15,
@@ -71,6 +71,26 @@
   {
    "verse": 18,
    "text": "This greeting is in my own hand — Paul. Remember my chains. Grace be with you."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Prayerful Speech and Actions"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Greetings from Paul’s Fellow Workers"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Signature and Final Instructions"
   }
  ]
 }

@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "So the child grew and was weaned, and Abraham held a great feast on the day Isaac was weaned. Sarah Turns against Hagar ()"
+   "text": "So the child grew and was weaned, and Abraham held a great feast on the day Isaac was weaned."
   },
   {
    "verse": 9,
@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "And while he was dwelling in the Wilderness of Paran, his mother got a wife for him from the land of Egypt. The Covenant at Beersheba"
+   "text": "And while he was dwelling in the Wilderness of Paran, his mother got a wife for him from the land of Egypt."
   },
   {
    "verse": 22,
@@ -135,6 +135,26 @@
   {
    "verse": 34,
    "text": "And Abraham resided in the land of the Philistines for a long time."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Birth of Isaac"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Sarah Turns against Hagar"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "The Covenant at Beersheba"
   }
  ]
 }

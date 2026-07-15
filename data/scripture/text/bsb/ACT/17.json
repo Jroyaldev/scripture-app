@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "And they collected bond from Jason and the others and then released them. The Character of the Bereans"
+   "text": "And they collected bond from Jason and the others and then released them."
   },
   {
    "verse": 10,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "Those who escorted Paul brought him to Athens and then returned with instructions for Silas and Timothy to join him as soon as possible. Paul in Athens"
+   "text": "Those who escorted Paul brought him to Athens and then returned with instructions for Silas and Timothy to join him as soon as possible."
   },
   {
    "verse": 16,
@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "Now all the Athenians and foreigners who lived there spent their time doing nothing more than hearing and articulating new ideas. Paul’s Address in the Areopagus"
+   "text": "Now all the Athenians and foreigners who lived there spent their time doing nothing more than hearing and articulating new ideas."
   },
   {
    "verse": 22,
@@ -135,6 +135,32 @@
   {
    "verse": 34,
    "text": "But some joined him and believed, including Dionysius the Areopagite, a woman named Damaris, and others who were with them."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Uproar in Thessalonica"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "The Character of the Bereans"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul in Athens"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Address in the Areopagus"
   }
  ]
 }

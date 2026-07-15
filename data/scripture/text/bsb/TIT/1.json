@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "To Titus, my true child in our common faith: Grace and peace from God the Father and Christ Jesus our Savior. Appointing Elders on Crete (; )"
+   "text": "To Titus, my true child in our common faith: Grace and peace from God the Father and Christ Jesus our Savior."
   },
   {
    "verse": 5,
@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "He must hold firmly to the faithful word as it was taught, so that he can encourage others by sound teaching and refute those who contradict it. Correcting False Teachers ()"
+   "text": "He must hold firmly to the faithful word as it was taught, so that he can encourage others by sound teaching and refute those who contradict it."
   },
   {
    "verse": 10,
@@ -63,6 +63,26 @@
   {
    "verse": 16,
    "text": "They profess to know God, but by their actions they deny Him. They are detestable, disobedient, and unfit for any good deed."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Greeting to Titus"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "Appointing Elders on Crete"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Correcting False Teachers"
   }
  ]
 }

@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "He explained what had happened and sent them to Joppa. Peter’s Vision (; )"
+   "text": "He explained what had happened and sent them to Joppa."
   },
   {
    "verse": 9,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "This happened three times, and all at once the sheet was taken back up into heaven. Peter Called to Caesarea"
+   "text": "This happened three times, and all at once the sheet was taken back up into heaven."
   },
   {
    "verse": 17,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "So Peter invited them in as his guests. And the next day he got ready and went with them, accompanied by some of the brothers from Joppa. Peter Visits Cornelius"
+   "text": "So Peter invited them in as his guests. And the next day he got ready and went with them, accompanied by some of the brothers from Joppa."
   },
   {
    "verse": 24,
@@ -130,7 +130,7 @@
   },
   {
    "verse": 33,
-   "text": "So I sent for you immediately, and you were kind enough to come. Now then, we are all here in the presence of God to listen to everything the Lord has instructed you to tell us.” Good News for the Gentiles"
+   "text": "So I sent for you immediately, and you were kind enough to come. Now then, we are all here in the presence of God to listen to everything the Lord has instructed you to tell us.”"
   },
   {
    "verse": 34,
@@ -170,7 +170,7 @@
   },
   {
    "verse": 43,
-   "text": "All the prophets testify about Him that everyone who believes in Him receives forgiveness of sins through His name.” The Gentiles Receive the Holy Spirit ()"
+   "text": "All the prophets testify about Him that everyone who believes in Him receives forgiveness of sins through His name.”"
   },
   {
    "verse": 44,
@@ -191,6 +191,44 @@
   {
    "verse": 48,
    "text": "So he ordered that they be baptized in the name of Jesus Christ. Then they asked him to stay for a few days."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Cornelius Sends for Peter"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Peter’s Vision"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Peter Called to Caesarea"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "Peter Visits Cornelius"
+  },
+  {
+   "beforeVerse": 34,
+   "kind": "section",
+   "level": 1,
+   "text": "Good News for the Gentiles"
+  },
+  {
+   "beforeVerse": 44,
+   "kind": "section",
+   "level": 1,
+   "text": "The Gentiles Receive the Holy Spirit"
   }
  ]
 }

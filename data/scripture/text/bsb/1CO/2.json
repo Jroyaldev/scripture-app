@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "so that your faith would not rest on men’s wisdom, but on God’s power. Spiritual Wisdom ()"
+   "text": "so that your faith would not rest on men’s wisdom, but on God’s power."
   },
   {
    "verse": 6,
@@ -63,6 +63,20 @@
   {
    "verse": 16,
    "text": "“For who has known the mind of the Lord, so as to instruct Him?” But we have the mind of Christ."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Message by the Spirit’s Power"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "Spiritual Wisdom"
   }
  ]
 }

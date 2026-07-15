@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "Whatever you have learned or received or heard from me, or seen in me, put it into practice. And the God of peace will be with you. The Generosity of the Philippians ()"
+   "text": "Whatever you have learned or received or heard from me, or seen in me, put it into practice. And the God of peace will be with you."
   },
   {
    "verse": 10,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "To our God and Father be glory forever and ever. Amen. Final Greetings (; )"
+   "text": "To our God and Father be glory forever and ever. Amen."
   },
   {
    "verse": 21,
@@ -91,6 +91,26 @@
   {
    "verse": 23,
    "text": "The grace of the Lord Jesus Christ be with your spirit."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Rejoice in the Lord"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "The Generosity of the Philippians"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "Final Greetings"
   }
  ]
 }

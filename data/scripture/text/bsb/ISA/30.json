@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "A thousand will flee at the threat of one; at the threat of five you will all flee, until you are left alone like a pole on a mountaintop, like a banner on a hill. God Will Be Gracious"
+   "text": "A thousand will flee at the threat of one; at the threat of five you will all flee, until you are left alone like a pole on a mountaintop, like a banner on a hill."
   },
   {
    "verse": 18,
@@ -131,6 +131,20 @@
   {
    "verse": 33,
    "text": "For Topheth has long been prepared; it has been made ready for the king. Its funeral pyre is deep and wide, with plenty of fire and wood. The breath of the LORD, like a torrent of burning sulfur, sets it ablaze."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Worthless Treaty with Egypt"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "God Will Be Gracious"
   }
  ]
 }

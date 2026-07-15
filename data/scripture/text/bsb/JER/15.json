@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "The mother of seven will grow faint; she will breathe her last breath. Her sun will set while it is still day; she will be disgraced and humiliated. And the rest I will put to the sword in the presence of their enemies,” declares the LORD. Jeremiah’s Woe"
+   "text": "The mother of seven will grow faint; she will breathe her last breath. Her sun will set while it is still day; she will be disgraced and humiliated. And the rest I will put to the sword in the presence of their enemies,” declares the LORD."
   },
   {
    "verse": 10,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "Why is my pain unending, and my wound incurable, refusing to be healed? You have indeed become like a mirage to me— water that is not there. The LORD’s Promise"
+   "text": "Why is my pain unending, and my wound incurable, refusing to be healed? You have indeed become like a mirage to me— water that is not there."
   },
   {
    "verse": 19,
@@ -83,6 +83,26 @@
   {
    "verse": 21,
    "text": "I will deliver you from the hand of the wicked and redeem you from the grasp of the ruthless.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Judgment to Continue"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Jeremiah’s Woe"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "The LORD’s Promise"
   }
  ]
 }

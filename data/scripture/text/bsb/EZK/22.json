@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "And when you have defiled yourself in the eyes of the nations, then you will know that I am the LORD.’” The Refining Furnace"
+   "text": "And when you have defiled yourself in the eyes of the nations, then you will know that I am the LORD.’”"
   },
   {
    "verse": 17,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "As silver is melted in a furnace, so you will be melted within the city. Then you will know that I, the LORD, have poured out My wrath upon you.’” Israel’s Wicked Leaders"
+   "text": "As silver is melted in a furnace, so you will be melted within the city. Then you will know that I, the LORD, have poured out My wrath upon you.’”"
   },
   {
    "verse": 23,
@@ -123,6 +123,26 @@
   {
    "verse": 31,
    "text": "So I have poured out My indignation upon them and consumed them with the fire of My fury. I have brought their ways down upon their own heads, declares the Lord GOD.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Sins of Jerusalem"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "The Refining Furnace"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "Israel’s Wicked Leaders"
   }
  ]
 }

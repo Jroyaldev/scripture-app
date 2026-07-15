@@ -2,7 +2,7 @@
  "verses": [
   {
    "verse": 1,
-   "text": "Where has your beloved gone, O most beautiful among women? Which way has he turned? We will seek him with you. The Bride"
+   "text": "Where has your beloved gone, O most beautiful among women? Which way has he turned? We will seek him with you."
   },
   {
    "verse": 2,
@@ -10,7 +10,7 @@
   },
   {
    "verse": 3,
-   "text": "I belong to my beloved and he belongs to me; he pastures his flock among the lilies. The Bridegroom"
+   "text": "I belong to my beloved and he belongs to me; he pastures his flock among the lilies."
   },
   {
    "verse": 4,
@@ -34,11 +34,11 @@
   },
   {
    "verse": 9,
-   "text": "but my dove, my perfect one, is unique, the favorite of the mother who bore her. The maidens see her and call her blessed; the queens and concubines sing her praises. The Friends"
+   "text": "but my dove, my perfect one, is unique, the favorite of the mother who bore her. The maidens see her and call her blessed; the queens and concubines sing her praises."
   },
   {
    "verse": 10,
-   "text": "Who is this who shines like the dawn, as fair as the moon, as bright as the sun, as majestic as the stars in procession? The Bridegroom"
+   "text": "Who is this who shines like the dawn, as fair as the moon, as bright as the sun, as majestic as the stars in procession?"
   },
   {
    "verse": 11,
@@ -46,11 +46,55 @@
   },
   {
    "verse": 12,
-   "text": "Before I realized it, my desire had set me among the royal chariots of my people. The Friends"
+   "text": "Before I realized it, my desire had set me among the royal chariots of my people."
   },
   {
    "verse": 13,
-   "text": "Come back, come back, O Shulammite! Come back, come back, that we may gaze upon you. The Bridegroom Why do you look at the Shulammite, as on the dance of Mahanaim?"
+   "text": "Come back, come back, O Shulammite! Come back, come back, that we may gaze upon you. Why do you look at the Shulammite, as on the dance of Mahanaim?"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Together in the Garden"
+  },
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 2,
+   "text": "The Friends"
+  },
+  {
+   "beforeVerse": 2,
+   "kind": "section",
+   "level": 2,
+   "text": "The Bride"
+  },
+  {
+   "beforeVerse": 4,
+   "kind": "section",
+   "level": 2,
+   "text": "The Bridegroom"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 2,
+   "text": "The Friends"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 2,
+   "text": "The Bridegroom"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 2,
+   "text": "The Friends"
   }
  ]
 }

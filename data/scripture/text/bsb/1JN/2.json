@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "Whoever claims to abide in Him must walk as Jesus walked. A New Commandment"
+   "text": "Whoever claims to abide in Him must walk as Jesus walked."
   },
   {
    "verse": 7,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "I have written to you, fathers, because you know Him who is from the beginning. I have written to you, young men, because you are strong, and the word of God abides in you, and you have overcome the evil one. Do Not Love the World"
+   "text": "I have written to you, fathers, because you know Him who is from the beginning. I have written to you, young men, because you are strong, and the word of God abides in you, and you have overcome the evil one."
   },
   {
    "verse": 15,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "The world is passing away, along with its desires; but whoever does the will of God remains forever. Beware of Antichrists"
+   "text": "The world is passing away, along with its desires; but whoever does the will of God remains forever."
   },
   {
    "verse": 18,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "Whoever denies the Son does not have the Father, but whoever confesses the Son has the Father as well. Remain in Christ"
+   "text": "Whoever denies the Son does not have the Father, but whoever confesses the Son has the Father as well."
   },
   {
    "verse": 24,
@@ -115,6 +115,38 @@
   {
    "verse": 29,
    "text": "If you know that He is righteous, you also know that everyone who practices righteousness has been born of Him."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Our Advocate"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "A New Commandment"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Do Not Love the World"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Beware of Antichrists"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "Remain in Christ"
   }
  ]
 }

@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "The inhabited cities will be laid waste, and the land will become desolate. Then you will know that I am the LORD.’” The Presumptuous Proverb"
+   "text": "The inhabited cities will be laid waste, and the land will become desolate. Then you will know that I am the LORD.’”"
   },
   {
    "verse": 21,
@@ -111,6 +111,20 @@
   {
    "verse": 28,
    "text": "Therefore tell them that this is what the Lord GOD says: ‘None of My words will be delayed any longer. The message I speak will be fulfilled, declares the Lord GOD.’”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Signs of the Coming Captivity"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "The Presumptuous Proverb"
   }
  ]
 }

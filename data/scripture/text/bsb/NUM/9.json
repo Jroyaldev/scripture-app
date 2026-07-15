@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "If a foreigner dwelling among you wants to observe the Passover to the LORD, he is to do so according to the Passover statute and its ordinances. You are to apply the same statute to both the foreigner and the native of the land.’” The Cloud above the Tabernacle ()"
+   "text": "If a foreigner dwelling among you wants to observe the Passover to the LORD, he is to do so according to the Passover statute and its ordinances. You are to apply the same statute to both the foreigner and the native of the land.’”"
   },
   {
    "verse": 15,
@@ -91,6 +91,20 @@
   {
    "verse": 23,
    "text": "They camped at the LORD’s command, and they set out at the LORD’s command; they carried out the LORD’s charge according to His command through Moses."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Second Passover"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "The Cloud above the Tabernacle"
   }
  ]
 }

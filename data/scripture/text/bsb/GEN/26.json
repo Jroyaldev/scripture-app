@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "because Abraham listened to My voice and kept My charge, My commandments, My statutes, and My laws.” Isaac Deceives Abimelech"
+   "text": "because Abraham listened to My voice and kept My charge, My commandments, My statutes, and My laws.”"
   },
   {
    "verse": 6,
@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "So Abimelech warned all the people, saying, “Whoever harms this man or his wife will surely be put to death.” Isaac’s Prosperity"
+   "text": "So Abimelech warned all the people, saying, “Whoever harms this man or his wife will surely be put to death.”"
   },
   {
    "verse": 12,
@@ -98,7 +98,7 @@
   },
   {
    "verse": 25,
-   "text": "So Isaac built an altar there and called on the name of the LORD, and he pitched his tent there. His servants also dug a well there. Isaac’s Covenant with Abimelech"
+   "text": "So Isaac built an altar there and called on the name of the LORD, and he pitched his tent there. His servants also dug a well there."
   },
   {
    "verse": 26,
@@ -130,7 +130,7 @@
   },
   {
    "verse": 33,
-   "text": "So he called it Shibah, and to this day the name of the city is Beersheba. Esau’s Wives"
+   "text": "So he called it Shibah, and to this day the name of the city is Beersheba."
   },
   {
    "verse": 34,
@@ -139,6 +139,38 @@
   {
    "verse": 35,
    "text": "And they brought grief to Isaac and Rebekah."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Promise to Isaac"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "Isaac Deceives Abimelech"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Isaac’s Prosperity"
+  },
+  {
+   "beforeVerse": 26,
+   "kind": "section",
+   "level": 1,
+   "text": "Isaac’s Covenant with Abimelech"
+  },
+  {
+   "beforeVerse": 34,
+   "kind": "section",
+   "level": 1,
+   "text": "Esau’s Wives"
   }
  ]
 }

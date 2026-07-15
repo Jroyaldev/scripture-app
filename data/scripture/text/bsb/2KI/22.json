@@ -6,7 +6,7 @@
   },
   {
    "verse": 2,
-   "text": "And he did what was right in the eyes of the LORD and walked in all the ways of his father David; he did not turn aside to the right or to the left. Funding the Temple Repairs ()"
+   "text": "And he did what was right in the eyes of the LORD and walked in all the ways of his father David; he did not turn aside to the right or to the left."
   },
   {
    "verse": 3,
@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "But they need not account for the money put into their hands, since they work with integrity.” Hilkiah Finds the Book of the Law ()"
+   "text": "But they need not account for the money put into their hands, since they work with integrity.”"
   },
   {
    "verse": 8,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "“Go and inquire of the LORD for me, for the people, and for all Judah concerning the words in this book that has been found. For great is the wrath of the LORD that burns against us because our fathers have not obeyed the words of this book by doing all that is written about us.” Huldah’s Prophecy ()"
+   "text": "“Go and inquire of the LORD for me, for the people, and for all Judah concerning the words in this book that has been found. For great is the wrath of the LORD that burns against us because our fathers have not obeyed the words of this book by doing all that is written about us.”"
   },
   {
    "verse": 14,
@@ -79,6 +79,32 @@
   {
    "verse": 20,
    "text": "‘Therefore I will indeed gather you to your fathers, and you will be gathered to your grave in peace. Your eyes will not see all the calamity that I will bring on this place.’” So they brought her answer back to the king."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Josiah Reigns in Judah"
+  },
+  {
+   "beforeVerse": 3,
+   "kind": "section",
+   "level": 1,
+   "text": "Funding the Temple Repairs"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Hilkiah Finds the Book of the Law"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Huldah’s Prophecy"
   }
  ]
 }

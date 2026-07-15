@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "Then Abraham reached out his hand and took the knife to slaughter his son. The LORD Provides the Sacrifice"
+   "text": "Then Abraham reached out his hand and took the knife to slaughter his son."
   },
   {
    "verse": 11,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "Abraham went back to his servants, and they got up and set out together for Beersheba. And Abraham settled in Beersheba. The Sons of Nahor"
+   "text": "Abraham went back to his servants, and they got up and set out together for Beersheba. And Abraham settled in Beersheba."
   },
   {
    "verse": 20,
@@ -95,6 +95,26 @@
   {
    "verse": 24,
    "text": "Moreover, Nahor’s concubine, whose name was Reumah, bore Tebah, Gaham, Tahash, and Maacah."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Offering of Isaac"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "The LORD Provides the Sacrifice"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "The Sons of Nahor"
   }
  ]
 }

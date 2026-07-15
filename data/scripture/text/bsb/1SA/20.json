@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "“Never!” Jonathan replied. “If I ever found out that my father had evil intentions against you, would I not tell you?” Jonathan and David Renew Their Covenant"
+   "text": "“Never!” Jonathan replied. “If I ever found out that my father had evil intentions against you, would I not tell you?”"
   },
   {
    "verse": 10,
@@ -114,7 +114,7 @@
   },
   {
    "verse": 29,
-   "text": "saying, ‘Please let me go, because our clan is holding a sacrifice in the city, and my brother has told me to be there. So now, if I have found favor in your eyes, please let me go and see my brothers.’ That is why he has not come to the king’s table.” Saul Seeks to Kill Jonathan"
+   "text": "saying, ‘Please let me go, because our clan is holding a sacrifice in the city, and my brother has told me to be there. So now, if I have found favor in your eyes, please let me go and see my brothers.’ That is why he has not come to the king’s table.”"
   },
   {
    "verse": 30,
@@ -167,6 +167,26 @@
   {
    "verse": 42,
    "text": "And Jonathan said to David, “Go in peace, for the two of us have sworn in the name of the LORD, saying, ‘May the LORD be a witness between you and me, and between your descendants and mine forever.’” Then David got up and departed, and Jonathan went back into the city."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jonathan Helps David"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Jonathan and David Renew Their Covenant"
+  },
+  {
+   "beforeVerse": 30,
+   "kind": "section",
+   "level": 1,
+   "text": "Saul Seeks to Kill Jonathan"
   }
  ]
 }

@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "So the churches were strengthened in the faith and grew daily in numbers. Paul’s Vision of the Macedonian"
+   "text": "So the churches were strengthened in the faith and grew daily in numbers."
   },
   {
    "verse": 6,
@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "As soon as Paul had seen the vision, we got ready to leave for Macedonia, concluding that God had called us to preach the gospel to them. Lydia’s Conversion in Philippi ()"
+   "text": "As soon as Paul had seen the vision, we got ready to leave for Macedonia, concluding that God had called us to preach the gospel to them."
   },
   {
    "verse": 11,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "And when she and her household had been baptized, she urged us, “If you consider me a believer in the Lord, come and stay at my house.” And she persuaded us. Paul and Silas Imprisoned"
+   "text": "And when she and her household had been baptized, she urged us, “If you consider me a believer in the Lord, come and stay at my house.” And she persuaded us."
   },
   {
    "verse": 16,
@@ -94,7 +94,7 @@
   },
   {
    "verse": 24,
-   "text": "On receiving this order, he placed them in the inner cell and fastened their feet in the stocks. The Conversion of the Jailer"
+   "text": "On receiving this order, he placed them in the inner cell and fastened their feet in the stocks."
   },
   {
    "verse": 25,
@@ -134,7 +134,7 @@
   },
   {
    "verse": 34,
-   "text": "Then he brought them into his home and set a meal before them. So he and all his household rejoiced that they had come to believe in God. An Official Apology"
+   "text": "Then he brought them into his home and set a meal before them. So he and all his household rejoiced that they had come to believe in God."
   },
   {
    "verse": 35,
@@ -159,6 +159,44 @@
   {
    "verse": 40,
    "text": "After Paul and Silas came out of the prison, they went to Lydia’s house to see the brothers and encourage them. Then they left the city."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Timothy Joins Paul and Silas"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Vision of the Macedonian"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "Lydia’s Conversion in Philippi"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul and Silas Imprisoned"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "The Conversion of the Jailer"
+  },
+  {
+   "beforeVerse": 35,
+   "kind": "section",
+   "level": 1,
+   "text": "An Official Apology"
   }
  ]
 }

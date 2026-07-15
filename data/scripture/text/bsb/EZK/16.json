@@ -134,7 +134,7 @@
   },
   {
    "verse": 34,
-   "text": "So your prostitution is the opposite of that of other women: No one solicited your favors, and you paid a fee instead of receiving one; so you are the very opposite! Judgment on Jerusalem"
+   "text": "So your prostitution is the opposite of that of other women: No one solicited your favors, and you paid a fee instead of receiving one; so you are the very opposite!"
   },
   {
    "verse": 35,
@@ -230,7 +230,7 @@
   },
   {
    "verse": 58,
-   "text": "You will bear the consequences of your lewdness and your abominations, declares the LORD. The Covenant Remembered"
+   "text": "You will bear the consequences of your lewdness and your abominations, declares the LORD."
   },
   {
    "verse": 59,
@@ -251,6 +251,26 @@
   {
    "verse": 63,
    "text": "so that when I make atonement for all you have done, you will remember and be ashamed and never again open your mouth because of your disgrace, declares the Lord GOD.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jerusalem’s Unfaithfulness"
+  },
+  {
+   "beforeVerse": 35,
+   "kind": "section",
+   "level": 1,
+   "text": "Judgment on Jerusalem"
+  },
+  {
+   "beforeVerse": 59,
+   "kind": "section",
+   "level": 1,
+   "text": "The Covenant Remembered"
   }
  ]
 }

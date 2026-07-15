@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "Nothing will remain but to crouch among the captives or fall among the slain. Despite all this, His anger is not turned away; His hand is still upraised. Judgment on Assyria"
+   "text": "Nothing will remain but to crouch among the captives or fall among the slain. Despite all this, His anger is not turned away; His hand is still upraised."
   },
   {
    "verse": 5,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "The remaining trees of its forests will be so few that a child could count them. A Remnant Shall Return"
+   "text": "The remaining trees of its forests will be so few that a child could count them."
   },
   {
    "verse": 20,
@@ -135,6 +135,26 @@
   {
    "verse": 34,
    "text": "He will clear the forest thickets with an axe, and Lebanon will fall before the Mighty One."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Woe to Tyrants"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "Judgment on Assyria"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "A Remnant Shall Return"
   }
  ]
 }

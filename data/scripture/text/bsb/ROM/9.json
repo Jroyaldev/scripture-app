@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "Theirs are the patriarchs, and from them proceeds the human descent of Christ, who is God over all, forever worthy of praise! Amen. God’s Sovereign Choice (; )"
+   "text": "Theirs are the patriarchs, and from them proceeds the human descent of Christ, who is God over all, forever worthy of praise! Amen."
   },
   {
    "verse": 6,
@@ -114,7 +114,7 @@
   },
   {
    "verse": 29,
-   "text": "It is just as Isaiah foretold: “Unless the Lord of Hosts had left us descendants, we would have become like Sodom, we would have resembled Gomorrah.” Israel’s Unbelief"
+   "text": "It is just as Isaiah foretold: “Unless the Lord of Hosts had left us descendants, we would have become like Sodom, we would have resembled Gomorrah.”"
   },
   {
    "verse": 30,
@@ -131,6 +131,26 @@
   {
    "verse": 33,
    "text": "as it is written: “See, I lay in Zion a stone of stumbling and a rock of offense; and the one who believes in Him will never be put to shame.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Concern for the Jews"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Sovereign Choice"
+  },
+  {
+   "beforeVerse": 30,
+   "kind": "section",
+   "level": 1,
+   "text": "Israel’s Unbelief"
   }
  ]
 }

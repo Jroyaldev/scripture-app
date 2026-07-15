@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "And they took the daughters of these people in marriage, gave their own daughters to their sons, and served their gods. Othniel"
+   "text": "And they took the daughters of these people in marriage, gave their own daughters to their sons, and served their gods."
   },
   {
    "verse": 7,
@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "So the land had rest for forty years, until Othniel son of Kenaz died. Ehud"
+   "text": "So the land had rest for forty years, until Othniel son of Kenaz died."
   },
   {
    "verse": 12,
@@ -118,11 +118,37 @@
   },
   {
    "verse": 30,
-   "text": "So Moab was subdued under the hand of Israel that day, and the land had rest for eighty years. Shamgar"
+   "text": "So Moab was subdued under the hand of Israel that day, and the land had rest for eighty years."
   },
   {
    "verse": 31,
    "text": "After Ehud came Shamgar son of Anath. And he too saved Israel, striking down six hundred Philistines with an oxgoad."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Nations Left to Test Israel"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Othniel"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Ehud"
+  },
+  {
+   "beforeVerse": 31,
+   "kind": "section",
+   "level": 1,
+   "text": "Shamgar"
   }
  ]
 }

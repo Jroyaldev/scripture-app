@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "Behold, the former things have happened, and now I declare new things. Before they spring forth I proclaim them to you.” A New Song of Praise (; )"
+   "text": "Behold, the former things have happened, and now I declare new things. Before they spring forth I proclaim them to you.”"
   },
   {
    "verse": 10,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "But those who trust in idols and say to molten images, ‘You are our gods!’ will be turned back in utter shame. Israel Is Deaf and Blind"
+   "text": "But those who trust in idols and say to molten images, ‘You are our gods!’ will be turned back in utter shame."
   },
   {
    "verse": 18,
@@ -99,6 +99,26 @@
   {
    "verse": 25,
    "text": "So He poured out on them His furious anger and the fierceness of battle. It enveloped them in flames, but they did not understand; it consumed them, but they did not take it to heart."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Here Is My Servant"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "A New Song of Praise"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Israel Is Deaf and Blind"
   }
  ]
 }

@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "Simon the Zealot, and Judas Iscariot, who betrayed Jesus. The Ministry of the Twelve (; )"
+   "text": "Simon the Zealot, and Judas Iscariot, who betrayed Jesus."
   },
   {
    "verse": 5,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "Truly I tell you, it will be more bearable for Sodom and Gomorrah on the day of judgment than for that town. Sheep among Wolves ()"
+   "text": "Truly I tell you, it will be more bearable for Sodom and Gomorrah on the day of judgment than for that town."
   },
   {
    "verse": 16,
@@ -98,7 +98,7 @@
   },
   {
    "verse": 25,
-   "text": "It is enough for a disciple to be like his teacher, and a servant like his master. If the head of the house has been called Beelzebul, how much more the members of his household! Fear God Alone ()"
+   "text": "It is enough for a disciple to be like his teacher, and a servant like his master. If the head of the house has been called Beelzebul, how much more the members of his household!"
   },
   {
    "verse": 26,
@@ -122,7 +122,7 @@
   },
   {
    "verse": 31,
-   "text": "So do not be afraid; you are worth more than many sparrows. Confessing Christ ()"
+   "text": "So do not be afraid; you are worth more than many sparrows."
   },
   {
    "verse": 32,
@@ -130,7 +130,7 @@
   },
   {
    "verse": 33,
-   "text": "But whoever denies Me before men, I will also deny him before My Father in heaven. Not Peace but a Sword (; )"
+   "text": "But whoever denies Me before men, I will also deny him before My Father in heaven."
   },
   {
    "verse": 34,
@@ -154,7 +154,7 @@
   },
   {
    "verse": 39,
-   "text": "Whoever finds his life will lose it, and whoever loses his life for My sake will find it. The Reward of Service ()"
+   "text": "Whoever finds his life will lose it, and whoever loses his life for My sake will find it."
   },
   {
    "verse": 40,
@@ -167,6 +167,50 @@
   {
    "verse": 42,
    "text": "And if anyone gives even a cup of cold water to one of these little ones because he is My disciple, truly I tell you, he will never lose his reward.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Twelve Apostles"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "The Ministry of the Twelve"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Sheep among Wolves"
+  },
+  {
+   "beforeVerse": 26,
+   "kind": "section",
+   "level": 1,
+   "text": "Fear God Alone"
+  },
+  {
+   "beforeVerse": 32,
+   "kind": "section",
+   "level": 1,
+   "text": "Confessing Christ"
+  },
+  {
+   "beforeVerse": 34,
+   "kind": "section",
+   "level": 1,
+   "text": "Not Peace but a Sword"
+  },
+  {
+   "beforeVerse": 40,
+   "kind": "section",
+   "level": 1,
+   "text": "The Reward of Service"
   }
  ]
 }

@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "By this the children of God are distinguished from the children of the devil: Anyone who does not practice righteousness is not of God, nor is anyone who does not love his brother. Love One Another (; )"
+   "text": "By this the children of God are distinguished from the children of the devil: Anyone who does not practice righteousness is not of God, nor is anyone who does not love his brother."
   },
   {
    "verse": 11,
@@ -95,6 +95,20 @@
   {
    "verse": 24,
    "text": "Whoever keeps His commandments remains in God, and God in him. And by this we know that He remains in us: by the Spirit He has given us."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Children of God"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "Love One Another"
   }
  ]
 }

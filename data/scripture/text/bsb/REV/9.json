@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "The first woe has passed. Behold, two woes are still to follow. The Sixth Trumpet"
+   "text": "The first woe has passed. Behold, two woes are still to follow."
   },
   {
    "verse": 13,
@@ -83,6 +83,20 @@
   {
    "verse": 21,
    "text": "Furthermore, they did not repent of their murder, sorcery, sexual immorality, and theft."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Fifth Trumpet"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Sixth Trumpet"
   }
  ]
 }

@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "So Mahalalel lived a total of 895 years, and then he died. God Takes Up Enoch ()"
+   "text": "So Mahalalel lived a total of 895 years, and then he died."
   },
   {
    "verse": 18,
@@ -94,7 +94,7 @@
   },
   {
    "verse": 24,
-   "text": "Enoch walked with God, and then he was no more, because God had taken him away. From Methuselah to Noah"
+   "text": "Enoch walked with God, and then he was no more, because God had taken him away."
   },
   {
    "verse": 25,
@@ -127,6 +127,26 @@
   {
    "verse": 32,
    "text": "After Noah was 500 years old, he became the father of Shem, Ham, and Japheth."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Descendants of Adam"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "God Takes Up Enoch"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "From Methuselah to Noah"
   }
  ]
 }

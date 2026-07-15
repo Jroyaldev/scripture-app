@@ -16,5 +16,7 @@
     "MRK 15: 46/47",
     "ROM 16: 26/27"
   ],
-  "total": 15
+  "total": 15,
+  "structuralHeadings": 3150,
+  "structuralLinesDropped": 5004
 }

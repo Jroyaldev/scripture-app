@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "Marriage should be honored by all and the marriage bed kept undefiled, for God will judge the sexually immoral and adulterers. Christ’s Unchanging Nature"
+   "text": "Marriage should be honored by all and the marriage bed kept undefiled, for God will judge the sexually immoral and adulterers."
   },
   {
    "verse": 5,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "For here we do not have a permanent city, but we are looking for the city that is to come. Sacrifice, Obedience, and Prayer"
+   "text": "For here we do not have a permanent city, but we are looking for the city that is to come."
   },
   {
    "verse": 15,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "And I especially urge you to pray that I may be restored to you soon. Benediction and Farewell"
+   "text": "And I especially urge you to pray that I may be restored to you soon."
   },
   {
    "verse": 20,
@@ -99,6 +99,32 @@
   {
    "verse": 25,
    "text": "Grace be with all of you."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Brotherly Love"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "Christ’s Unchanging Nature"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Sacrifice, Obedience, and Prayer"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "Benediction and Farewell"
   }
  ]
 }

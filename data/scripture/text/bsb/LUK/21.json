@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "For they all contributed out of their surplus, but she out of her poverty has put in all she had to live on.” Temple Destruction and Other Signs (; )"
+   "text": "For they all contributed out of their surplus, but she out of her poverty has put in all she had to live on.”"
   },
   {
    "verse": 5,
@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "When you hear of wars and rebellions, do not be alarmed. These things must happen first, but the end is not imminent.” Witnessing to All Nations (; )"
+   "text": "When you hear of wars and rebellions, do not be alarmed. These things must happen first, but the end is not imminent.”"
   },
   {
    "verse": 10,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "By your patient endurance you will gain your souls. The Destruction of Jerusalem (; )"
+   "text": "By your patient endurance you will gain your souls."
   },
   {
    "verse": 20,
@@ -94,7 +94,7 @@
   },
   {
    "verse": 24,
-   "text": "They will fall by the edge of the sword and be led captive into all the nations. And Jerusalem will be trodden down by the Gentiles, until the times of the Gentiles are fulfilled. The Return of the Son of Man (; )"
+   "text": "They will fall by the edge of the sword and be led captive into all the nations. And Jerusalem will be trodden down by the Gentiles, until the times of the Gentiles are fulfilled."
   },
   {
    "verse": 25,
@@ -110,7 +110,7 @@
   },
   {
    "verse": 28,
-   "text": "When these things begin to happen, stand up and lift up your heads, because your redemption is drawing near.” The Lesson of the Fig Tree (; )"
+   "text": "When these things begin to happen, stand up and lift up your heads, because your redemption is drawing near.”"
   },
   {
    "verse": 29,
@@ -130,7 +130,7 @@
   },
   {
    "verse": 33,
-   "text": "Heaven and earth will pass away, but My words will never pass away. Be Watchful for the Day"
+   "text": "Heaven and earth will pass away, but My words will never pass away."
   },
   {
    "verse": 34,
@@ -151,6 +151,50 @@
   {
    "verse": 38,
    "text": "And early in the morning all the people would come to hear Him at the temple."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Poor Widow’s Offering"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "Temple Destruction and Other Signs"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Witnessing to All Nations"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "The Destruction of Jerusalem"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "The Return of the Son of Man"
+  },
+  {
+   "beforeVerse": 29,
+   "kind": "section",
+   "level": 1,
+   "text": "The Lesson of the Fig Tree"
+  },
+  {
+   "beforeVerse": 34,
+   "kind": "section",
+   "level": 1,
+   "text": "Be Watchful for the Day"
   }
  ]
 }

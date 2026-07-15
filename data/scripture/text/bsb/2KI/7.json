@@ -6,7 +6,7 @@
   },
   {
    "verse": 2,
-   "text": "But the officer on whose arm the king leaned answered the man of God, “Look, even if the LORD were to make windows in heaven, could this really happen?” “You will see it with your own eyes,” replied Elisha, “but you will not eat any of it.” The Arameans Flee"
+   "text": "But the officer on whose arm the king leaned answered the man of God, “Look, even if the LORD were to make windows in heaven, could this really happen?” “You will see it with your own eyes,” replied Elisha, “but you will not eat any of it.”"
   },
   {
    "verse": 3,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "And they tracked them as far as the Jordan, and indeed, the whole way was littered with the clothing and equipment the Arameans had thrown off in haste. So the scouts returned and told the king. Elisha’s Prophecy Fulfilled"
+   "text": "And they tracked them as far as the Jordan, and indeed, the whole way was littered with the clothing and equipment the Arameans had thrown off in haste. So the scouts returned and told the king."
   },
   {
    "verse": 16,
@@ -79,6 +79,26 @@
   {
    "verse": 20,
    "text": "And that is just what happened to him. The people trampled him in the gateway, and he died."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Elisha’s Prophecy of Plenty"
+  },
+  {
+   "beforeVerse": 3,
+   "kind": "section",
+   "level": 1,
+   "text": "The Arameans Flee"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Elisha’s Prophecy Fulfilled"
   }
  ]
 }

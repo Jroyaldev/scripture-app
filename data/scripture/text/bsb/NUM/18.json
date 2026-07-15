@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "But only you and your sons shall attend to your priesthood for everything concerning the altar and what is inside the veil, and you are to perform that service. I am giving you the work of the priesthood as a gift, but any outsider who comes near the sanctuary must be put to death.” Offerings for Priests and Levites"
+   "text": "But only you and your sons shall attend to your priesthood for everything concerning the altar and what is inside the veil, and you are to perform that service. I am giving you the work of the priesthood as a gift, but any outsider who comes near the sanctuary must be put to death.”"
   },
   {
    "verse": 8,
@@ -127,6 +127,20 @@
   {
    "verse": 32,
    "text": "Once you have presented the best part of it, you will not incur guilt because of it. But you must not defile the sacred offerings of the Israelites, or else you will die.’”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Duties of Priests and Levites"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Offerings for Priests and Levites"
   }
  ]
 }

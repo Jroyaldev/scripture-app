@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "“Hannah, why are you crying?” her husband Elkanah asked. “Why won’t you eat? Why is your heart so grieved? Am I not better to you than ten sons?” Hannah Prays for a Son"
+   "text": "“Hannah, why are you crying?” her husband Elkanah asked. “Why won’t you eat? Why is your heart so grieved? Am I not better to you than ten sons?”"
   },
   {
    "verse": 9,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "“May your maidservant find favor with you,” said Hannah. Then she went on her way, and she began to eat, and her face was no longer downcast. The Birth of Samuel"
+   "text": "“May your maidservant find favor with you,” said Hannah. Then she went on her way, and she began to eat, and her face was no longer downcast."
   },
   {
    "verse": 19,
@@ -111,6 +111,26 @@
   {
    "verse": 28,
    "text": "I now dedicate the boy to the LORD. For as long as he lives, he is dedicated to the LORD.” So they worshiped the LORD there."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Elkanah and His Wives"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Hannah Prays for a Son"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "The Birth of Samuel"
   }
  ]
 }

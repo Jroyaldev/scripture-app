@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "I, the LORD, have spoken; the time is coming, and I will act. I will not refrain or show pity, nor will I relent. I will judge you according to your ways and deeds,’ declares the Lord GOD.” Ezekiel’s Wife Dies"
+   "text": "I, the LORD, have spoken; the time is coming, and I will act. I will not refrain or show pity, nor will I relent. I will judge you according to your ways and deeds,’ declares the Lord GOD.”"
   },
   {
    "verse": 15,
@@ -107,6 +107,20 @@
   {
    "verse": 27,
    "text": "On that day your mouth will be opened to him who has escaped; you will speak and no longer be mute. So you will be a sign to them, and they will know that I am the LORD.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parable of the Cooking Pot"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Ezekiel’s Wife Dies"
   }
  ]
 }

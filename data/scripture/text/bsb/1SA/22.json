@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "Then the prophet Gad said to David, “Do not stay in the stronghold. Depart and go into the land of Judah.” So David left and went to the forest of Hereth. Saul Slays the Priests of Nob ()"
+   "text": "Then the prophet Gad said to David, “Do not stay in the stronghold. Depart and go into the land of Judah.” So David left and went to the forest of Hereth."
   },
   {
    "verse": 6,
@@ -91,6 +91,20 @@
   {
    "verse": 23,
    "text": "Stay with me; do not be afraid, for he who seeks your life is seeking mine as well. You will be safe with me.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "David Flees to Adullam and Mizpeh"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "Saul Slays the Priests of Nob"
   }
  ]
 }

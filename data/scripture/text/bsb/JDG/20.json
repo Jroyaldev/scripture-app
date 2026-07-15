@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "The Israelites, apart from Benjamin, mobilized 400,000 swordsmen, each one an experienced warrior. Civil War against Benjamin"
+   "text": "The Israelites, apart from Benjamin, mobilized 400,000 swordsmen, each one an experienced warrior."
   },
   {
    "verse": 18,
@@ -191,6 +191,20 @@
   {
    "verse": 48,
    "text": "And the men of Israel turned back against the other Benjamites and put to the sword all the cities, including the animals and everything else they found. And they burned down all the cities in their path."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Decree of the Assembly"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Civil War against Benjamin"
   }
  ]
 }

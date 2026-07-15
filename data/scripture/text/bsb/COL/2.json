@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "For although I am absent from you in body, I am present with you in spirit, and I delight to see your orderly condition and firm faith in Christ. Alive with Christ ()"
+   "text": "For although I am absent from you in body, I am present with you in spirit, and I delight to see your orderly condition and firm faith in Christ."
   },
   {
    "verse": 6,
@@ -91,6 +91,20 @@
   {
    "verse": 23,
    "text": "Such restrictions indeed have an appearance of wisdom, with their self-prescribed worship, their false humility, and their harsh treatment of the body; but they are of no value against the indulgence of the flesh."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Absent in Body, Present in Spirit"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "Alive with Christ"
   }
  ]
 }

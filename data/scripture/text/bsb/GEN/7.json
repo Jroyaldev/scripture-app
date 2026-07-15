@@ -96,5 +96,13 @@
    "verse": 24,
    "text": "And the waters prevailed upon the earth for 150 days."
   }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Great Flood"
+  }
  ]
 }

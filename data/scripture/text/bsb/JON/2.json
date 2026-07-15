@@ -40,5 +40,13 @@
    "verse": 10,
    "text": "And the LORD commanded the fish, and it vomited Jonah onto dry land."
   }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jonah’s Prayer"
+  }
  ]
 }

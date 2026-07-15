@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "The inheritance of the Simeonites was taken from the territory of Judah, because the share for Judah’s descendants was too large for them. So the Simeonites received an inheritance within Judah’s portion. Zebulun’s Inheritance"
+   "text": "The inheritance of the Simeonites was taken from the territory of Judah, because the share for Judah’s descendants was too large for them. So the Simeonites received an inheritance within Judah’s portion."
   },
   {
    "verse": 10,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "This was the inheritance of the clans of the tribe of Zebulun, including these cities and their villages. Issachar’s Inheritance"
+   "text": "This was the inheritance of the clans of the tribe of Zebulun, including these cities and their villages."
   },
   {
    "verse": 17,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "This was the inheritance of the clans of the tribe of Issachar, including these cities and their villages. Asher’s Inheritance"
+   "text": "This was the inheritance of the clans of the tribe of Issachar, including these cities and their villages."
   },
   {
    "verse": 24,
@@ -122,7 +122,7 @@
   },
   {
    "verse": 31,
-   "text": "This was the inheritance of the clans of the tribe of Asher, including these cities and their villages. Naphtali’s Inheritance"
+   "text": "This was the inheritance of the clans of the tribe of Asher, including these cities and their villages."
   },
   {
    "verse": 32,
@@ -154,7 +154,7 @@
   },
   {
    "verse": 39,
-   "text": "This was the inheritance of the clans of the tribe of Naphtali, including these cities and their villages. Dan’s Inheritance"
+   "text": "This was the inheritance of the clans of the tribe of Naphtali, including these cities and their villages."
   },
   {
    "verse": 40,
@@ -190,7 +190,7 @@
   },
   {
    "verse": 48,
-   "text": "This was the inheritance of the clans of the tribe of Dan, including these cities and their villages. Joshua’s Inheritance"
+   "text": "This was the inheritance of the clans of the tribe of Dan, including these cities and their villages."
   },
   {
    "verse": 49,
@@ -203,6 +203,50 @@
   {
    "verse": 51,
    "text": "These are the inheritances that Eleazar the priest, Joshua son of Nun, and the heads of the families distributed by lot to the tribes of Israel at Shiloh before the LORD at the entrance to the Tent of Meeting. So they finished dividing up the land."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Simeon’s Inheritance"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Zebulun’s Inheritance"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Issachar’s Inheritance"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "Asher’s Inheritance"
+  },
+  {
+   "beforeVerse": 32,
+   "kind": "section",
+   "level": 1,
+   "text": "Naphtali’s Inheritance"
+  },
+  {
+   "beforeVerse": 40,
+   "kind": "section",
+   "level": 1,
+   "text": "Dan’s Inheritance"
+  },
+  {
+   "beforeVerse": 49,
+   "kind": "section",
+   "level": 1,
+   "text": "Joshua’s Inheritance"
   }
  ]
 }

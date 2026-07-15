@@ -98,7 +98,7 @@
   },
   {
    "verse": 25,
-   "text": "for I will refresh the weary soul and replenish all who are weak.” The New Covenant ()"
+   "text": "for I will refresh the weary soul and replenish all who are weak.”"
   },
   {
    "verse": 26,
@@ -159,6 +159,20 @@
   {
    "verse": 40,
    "text": "The whole valley of the dead bodies and ashes, and all the fields as far as the Kidron Valley, to the corner of the Horse Gate to the east, will be holy to the LORD. It will never again be uprooted or demolished.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Mourning Turned to Joy"
+  },
+  {
+   "beforeVerse": 26,
+   "kind": "section",
+   "level": 1,
+   "text": "The New Covenant"
   }
  ]
 }

@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "Then Rachel said, “In my great struggles, I have wrestled with my sister and won.” So she named him Naphtali. Gad and Asher"
+   "text": "Then Rachel said, “In my great struggles, I have wrestled with my sister and won.” So she named him Naphtali."
   },
   {
    "verse": 9,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "When Jacob came in from the field that evening, Leah went out to meet him and said, “You must come with me, for I have hired you with my son’s mandrakes.” So he slept with her that night. Issachar, Zebulun, and Dinah"
+   "text": "When Jacob came in from the field that evening, Leah went out to meet him and said, “You must come with me, for I have hired you with my son’s mandrakes.” So he slept with her that night."
   },
   {
    "verse": 17,
@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "After that, Leah gave birth to a daughter and named her Dinah. Joseph"
+   "text": "After that, Leah gave birth to a daughter and named her Dinah."
   },
   {
    "verse": 22,
@@ -94,7 +94,7 @@
   },
   {
    "verse": 24,
-   "text": "She named him Joseph, and said, “May the LORD add to me another son.” Jacob Prospers"
+   "text": "She named him Joseph, and said, “May the LORD add to me another son.”"
   },
   {
    "verse": 25,
@@ -171,6 +171,38 @@
   {
    "verse": 43,
    "text": "Thus Jacob became exceedingly prosperous. He owned large flocks, maidservants and menservants, and camels and donkeys."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Dan and Naphtali"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Gad and Asher"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Issachar, Zebulun, and Dinah"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "Joseph"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "Jacob Prospers"
   }
  ]
 }

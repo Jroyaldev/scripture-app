@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "A wicked and adulterous generation demands a sign, but none will be given it except the sign of Jonah.” Then He left them and went away. The Leaven of the Pharisees and Sadducees (; )"
+   "text": "A wicked and adulterous generation demands a sign, but none will be given it except the sign of Jonah.” Then He left them and went away."
   },
   {
    "verse": 5,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "Then they understood that He was not telling them to beware of the leaven used in bread, but of the teaching of the Pharisees and Sadducees. Peter’s Confession of Christ (; ; )"
+   "text": "Then they understood that He was not telling them to beware of the leaven used in bread, but of the teaching of the Pharisees and Sadducees."
   },
   {
    "verse": 13,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "Then He admonished the disciples not to tell anyone that He was the Christ. Christ’s Passion Foretold (; )"
+   "text": "Then He admonished the disciples not to tell anyone that He was the Christ."
   },
   {
    "verse": 21,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "But Jesus turned and said to Peter, “Get behind Me, Satan! You are a stumbling block to Me. For you do not have in mind the things of God, but the things of men.” Take Up Your Cross (; )"
+   "text": "But Jesus turned and said to Peter, “Get behind Me, Satan! You are a stumbling block to Me. For you do not have in mind the things of God, but the things of men.”"
   },
   {
    "verse": 24,
@@ -111,6 +111,38 @@
   {
    "verse": 28,
    "text": "Truly I tell you, some who are standing here will not taste death before they see the Son of Man coming in His kingdom.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Demand for a Sign"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "The Leaven of the Pharisees and Sadducees"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Peter’s Confession of Christ"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "Christ’s Passion Foretold"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "Take Up Your Cross"
   }
  ]
 }

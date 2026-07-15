@@ -68,5 +68,13 @@
    "verse": 17,
    "text": "So Mordecai went and did all that Esther had instructed him."
   }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Mordecai Appeals to Esther"
+  }
  ]
 }

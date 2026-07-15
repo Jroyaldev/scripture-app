@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "and was designated by God as high priest in the order of Melchizedek. Milk and Solid Food ()"
+   "text": "and was designated by God as high priest in the order of Melchizedek."
   },
   {
    "verse": 11,
@@ -55,6 +55,20 @@
   {
    "verse": 14,
    "text": "But solid food is for the mature, who by constant use have trained their senses to distinguish good from evil."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Perfect High Priest"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "Milk and Solid Food"
   }
  ]
 }

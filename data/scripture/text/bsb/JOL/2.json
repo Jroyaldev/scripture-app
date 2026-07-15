@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "The LORD raises His voice in the presence of His army. Indeed, His camp is very large, for mighty are those who obey His command. For the Day of the LORD is great and very dreadful. Who can endure it? Return with All Your Heart"
+   "text": "The LORD raises His voice in the presence of His army. Indeed, His camp is very large, for mighty are those who obey His command. For the Day of the LORD is great and very dreadful. Who can endure it?"
   },
   {
    "verse": 12,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "Let the priests who minister before the LORD weep between the portico and the altar, saying, “Spare Your people, O LORD, and do not make Your heritage a reproach, an object of scorn among the nations. Why should they say among the peoples, ‘Where is their God?’” Restoration Promised"
+   "text": "Let the priests who minister before the LORD weep between the portico and the altar, saying, “Spare Your people, O LORD, and do not make Your heritage a reproach, an object of scorn among the nations. Why should they say among the peoples, ‘Where is their God?’”"
   },
   {
    "verse": 18,
@@ -106,7 +106,7 @@
   },
   {
    "verse": 27,
-   "text": "Then you will know that I am present in Israel and that I am the LORD your God, and there is no other. My people will never again be put to shame. I Will Pour Out My Spirit ()"
+   "text": "Then you will know that I am present in Israel and that I am the LORD your God, and there is no other. My people will never again be put to shame."
   },
   {
    "verse": 28,
@@ -127,6 +127,32 @@
   {
    "verse": 32,
    "text": "And everyone who calls on the name of the LORD will be saved; for on Mount Zion and in Jerusalem there will be deliverance, as the LORD has promised, among the remnant called by the LORD.[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Army of Locusts"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Return with All Your Heart"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Restoration Promised"
+  },
+  {
+   "beforeVerse": 28,
+   "kind": "section",
+   "level": 1,
+   "text": "I Will Pour Out My Spirit"
   }
  ]
 }

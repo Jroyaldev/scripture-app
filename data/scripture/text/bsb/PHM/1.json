@@ -10,7 +10,7 @@
   },
   {
    "verse": 3,
-   "text": "Grace and peace to you from God our Father and the Lord Jesus Christ. Philemon’s Faith and Love"
+   "text": "Grace and peace to you from God our Father and the Lord Jesus Christ."
   },
   {
    "verse": 4,
@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "I take great joy and encouragement in your love, because you, brother, have refreshed the hearts of the saints. Paul’s Appeal for Onesimus"
+   "text": "I take great joy and encouragement in your love, because you, brother, have refreshed the hearts of the saints."
   },
   {
    "verse": 8,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "In the meantime, prepare a guest room for me, because I hope that through your prayers I will be restored to you. Additional Greetings"
+   "text": "In the meantime, prepare a guest room for me, because I hope that through your prayers I will be restored to you."
   },
   {
    "verse": 23,
@@ -99,6 +99,32 @@
   {
    "verse": 25,
    "text": "The grace of the Lord Jesus Christ be with your spirit."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Greetings from Paul and Timothy"
+  },
+  {
+   "beforeVerse": 4,
+   "kind": "section",
+   "level": 1,
+   "text": "Philemon’s Faith and Love"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Appeal for Onesimus"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "Additional Greetings"
   }
  ]
 }

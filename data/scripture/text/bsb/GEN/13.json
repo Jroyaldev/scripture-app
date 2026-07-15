@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "Is not the whole land before you? Now separate yourself from me. If you go to the left, I will go to the right; if you go to the right, I will go to the left.” Lot Proceeds toward Sodom"
+   "text": "Is not the whole land before you? Now separate yourself from me. If you go to the left, I will go to the right; if you go to the right, I will go to the left.”"
   },
   {
    "verse": 10,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "But the men of Sodom were wicked, sinning greatly against the LORD. God Renews the Promise to Abram"
+   "text": "But the men of Sodom were wicked, sinning greatly against the LORD."
   },
   {
    "verse": 14,
@@ -71,6 +71,26 @@
   {
    "verse": 18,
    "text": "So Abram moved his tent and went to live near the Oaks of Mamre at Hebron, where he built an altar to the LORD."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Abram and Lot Part Ways"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Lot Proceeds toward Sodom"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "God Renews the Promise to Abram"
   }
  ]
 }

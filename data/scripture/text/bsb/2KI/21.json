@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "But the people did not listen and Manasseh led them astray, so that they did greater evil than the nations that the LORD had destroyed before the Israelites. Manasseh’s Idolatries Rebuked ()"
+   "text": "But the people did not listen and Manasseh led them astray, so that they did greater evil than the nations that the LORD had destroyed before the Israelites."
   },
   {
    "verse": 10,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "And Manasseh rested with his fathers and was buried in his palace garden, the garden of Uzza. And his son Amon reigned in his place. Amon Reigns in Judah ()"
+   "text": "And Manasseh rested with his fathers and was buried in his palace garden, the garden of Uzza. And his son Amon reigned in his place."
   },
   {
    "verse": 19,
@@ -103,6 +103,26 @@
   {
    "verse": 26,
    "text": "And he was buried in his tomb in the garden of Uzza, and his son Josiah reigned in his place."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Manasseh Reigns in Judah"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Manasseh’s Idolatries Rebuked"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "Amon Reigns in Judah"
   }
  ]
 }

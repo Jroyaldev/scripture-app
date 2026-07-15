@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "For My own sake, My very own sake, I will act; for how can I let Myself be defamed? I will not yield My glory to another. Deliverance Promised to Israel"
+   "text": "For My own sake, My very own sake, I will act; for how can I let Myself be defamed? I will not yield My glory to another."
   },
   {
    "verse": 12,
@@ -87,6 +87,20 @@
   {
    "verse": 22,
    "text": "“There is no peace,” says the LORD, “for the wicked.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Israel’s Stubbornness"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Deliverance Promised to Israel"
   }
  ]
 }

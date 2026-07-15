@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "On their arrival in Jerusalem, they were welcomed by the church and apostles and elders, to whom they reported all that God had done through them. The Council at Jerusalem (; )"
+   "text": "On their arrival in Jerusalem, they were welcomed by the church and apostles and elders, to whom they reported all that God had done through them."
   },
   {
    "verse": 5,
@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "For Moses has been proclaimed in every city from ancient times and is read in the synagogues on every Sabbath.” The Letter to the Gentile Believers"
+   "text": "For Moses has been proclaimed in every city from ancient times and is read in the synagogues on every Sabbath.”"
   },
   {
    "verse": 22,
@@ -114,7 +114,7 @@
   },
   {
    "verse": 29,
-   "text": "You must abstain from food sacrificed to idols, from blood, from the meat of strangled animals, and from sexual immorality. You will do well to avoid these things. Farewell. The Believers at Antioch Rejoice"
+   "text": "You must abstain from food sacrificed to idols, from blood, from the meat of strangled animals, and from sexual immorality. You will do well to avoid these things. Farewell."
   },
   {
    "verse": 30,
@@ -134,7 +134,7 @@
   },
   {
    "verse": 35,
-   "text": "But Paul and Barnabas remained at Antioch, along with many others, teaching and preaching the word of the Lord. Paul’s Second Missionary Journey Begins (; )"
+   "text": "But Paul and Barnabas remained at Antioch, along with many others, teaching and preaching the word of the Lord."
   },
   {
    "verse": 36,
@@ -159,6 +159,38 @@
   {
    "verse": 41,
    "text": "And he traveled through Syria and Cilicia, strengthening the churches."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Dispute over Circumcision"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "The Council at Jerusalem"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "The Letter to the Gentile Believers"
+  },
+  {
+   "beforeVerse": 30,
+   "kind": "section",
+   "level": 1,
+   "text": "The Believers at Antioch Rejoice"
+  },
+  {
+   "beforeVerse": 36,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Second Missionary Journey Begins"
   }
  ]
 }

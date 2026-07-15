@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "Once the priests have entered the holy area, they must not go out into the outer court until they have left behind the garments in which they minister, for these are holy. They are to put on other clothes before they approach the places that are for the people.” The Outer Measurements"
+   "text": "Once the priests have entered the holy area, they must not go out into the outer court until they have left behind the garments in which they minister, for these are holy. They are to put on other clothes before they approach the places that are for the people.”"
   },
   {
    "verse": 15,
@@ -79,6 +79,20 @@
   {
    "verse": 20,
    "text": "So he measured the area on all four sides. It had a wall all around, five hundred cubits long and five hundred cubits wide, to separate the holy from the common."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Chambers for the Priests"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "The Outer Measurements"
   }
  ]
 }

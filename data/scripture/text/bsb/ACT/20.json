@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "And after the Feast of Unleavened Bread, we sailed from Philippi, and five days later we rejoined them in Troas, where we stayed seven days. Eutychus Revived at Troas ()"
+   "text": "And after the Feast of Unleavened Bread, we sailed from Philippi, and five days later we rejoined them in Troas, where we stayed seven days."
   },
   {
    "verse": 7,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "And the people were greatly relieved to take the boy home alive. From Troas to Miletus"
+   "text": "And the people were greatly relieved to take the boy home alive."
   },
   {
    "verse": 13,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "Paul had decided to sail past Ephesus to avoid spending time in the province of Asia, because he was in a hurry to reach Jerusalem, if possible, by the day of Pentecost. Paul’s Farewell to the Ephesians"
+   "text": "Paul had decided to sail past Ephesus to avoid spending time in the province of Asia, because he was in a hurry to reach Jerusalem, if possible, by the day of Pentecost."
   },
   {
    "verse": 17,
@@ -151,6 +151,32 @@
   {
    "verse": 38,
    "text": "They were especially grieved by his statement that they would never see his face again. Then they accompanied him to the ship."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul in Macedonia and Greece"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Eutychus Revived at Troas"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "From Troas to Miletus"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Farewell to the Ephesians"
   }
  ]
 }

@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "The LORD said to me: “Son of man, pay attention; look carefully with your eyes and listen closely with your ears to everything I tell you concerning all the statutes and laws of the house of the LORD. Take careful note of the entrance to the temple, along with all the exits of the sanctuary. Reproof of the Levites"
+   "text": "The LORD said to me: “Son of man, pay attention; look carefully with your eyes and listen closely with your ears to everything I tell you concerning all the statutes and laws of the house of the LORD. Take careful note of the entrance to the temple, along with all the exits of the sanctuary."
   },
   {
    "verse": 6,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "Yet I will appoint them to keep charge of all the work for the temple and everything to be done in it. The Duties of the Priests"
+   "text": "Yet I will appoint them to keep charge of all the work for the temple and everything to be done in it."
   },
   {
    "verse": 15,
@@ -123,6 +123,26 @@
   {
    "verse": 31,
    "text": "The priests may not eat any bird or animal found dead or torn by wild beasts.[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The East Gate Assigned to the Prince"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "Reproof of the Levites"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "The Duties of the Priests"
   }
  ]
 }

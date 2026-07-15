@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "“O Lord,” he said, “if I have indeed found favor in Your sight, my Lord, please go with us. Although this is a stiff-necked people, forgive our iniquity and sin, and take us as Your inheritance.” The LORD Renews the Covenant ()"
+   "text": "“O Lord,” he said, “if I have indeed found favor in Your sight, my Lord, please go with us. Although this is a stiff-necked people, forgive our iniquity and sin, and take us as Your inheritance.”"
   },
   {
    "verse": 10,
@@ -139,6 +139,20 @@
   {
    "verse": 35,
    "text": "and the Israelites would see that the face of Moses was radiant. So Moses would put the veil back over his face until he went in to speak with the LORD."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "New Stone Tablets"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "The LORD Renews the Covenant"
   }
  ]
 }

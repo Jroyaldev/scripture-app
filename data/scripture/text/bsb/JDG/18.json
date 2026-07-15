@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "And from there they traveled to the hill country of Ephraim and came to Micah’s house. The Danites Take Micah’s Idols"
+   "text": "And from there they traveled to the hill country of Ephraim and came to Micah’s house."
   },
   {
    "verse": 14,
@@ -123,6 +123,20 @@
   {
    "verse": 31,
    "text": "So they set up for themselves Micah’s graven image, and it was there the whole time the house of God was in Shiloh."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Danites Settle in Laish"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "The Danites Take Micah’s Idols"
   }
  ]
 }

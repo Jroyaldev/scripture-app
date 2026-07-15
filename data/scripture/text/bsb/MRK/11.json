@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "Then Jesus entered Jerusalem and went into the temple courts. He looked around at everything, but since it was already late, He went out to Bethany with the Twelve. Jesus Curses the Fig Tree (; )"
+   "text": "Then Jesus entered Jerusalem and went into the temple courts. He looked around at everything, but since it was already late, He went out to Bethany with the Twelve."
   },
   {
    "verse": 12,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "Then He said to the tree, “May no one ever eat of your fruit again.” And His disciples heard this statement. Jesus Cleanses the Temple (; ; )"
+   "text": "Then He said to the tree, “May no one ever eat of your fruit again.” And His disciples heard this statement."
   },
   {
    "verse": 15,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "And when evening came, Jesus and His disciples went out of the city. The Withered Fig Tree (; )"
+   "text": "And when evening came, Jesus and His disciples went out of the city."
   },
   {
    "verse": 20,
@@ -98,7 +98,7 @@
   },
   {
    "verse": 25,
-   "text": "And when you stand to pray, if you hold anything against another, forgive it, so that your Father in heaven will forgive your trespasses as well.” Jesus’ Authority Challenged (; )"
+   "text": "And when you stand to pray, if you hold anything against another, forgive it, so that your Father in heaven will forgive your trespasses as well.”"
   },
   {
    "verse": 27,
@@ -127,6 +127,38 @@
   {
    "verse": 33,
    "text": "So they answered, “We do not know.” And Jesus replied, “Neither will I tell you by what authority I am doing these things.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Triumphal Entry"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Curses the Fig Tree"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Cleanses the Temple"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "The Withered Fig Tree"
+  },
+  {
+   "beforeVerse": 27,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus’ Authority Challenged"
   }
  ]
 }

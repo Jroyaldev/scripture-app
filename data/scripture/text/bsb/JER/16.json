@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "So I will cast you out of this land into a land that neither you nor your fathers have known. There you will serve other gods day and night, for I will show you no favor.’ God Will Restore Israel"
+   "text": "So I will cast you out of this land into a land that neither you nor your fathers have known. There you will serve other gods day and night, for I will show you no favor.’"
   },
   {
    "verse": 14,
@@ -83,6 +83,20 @@
   {
    "verse": 21,
    "text": "“Therefore behold, I will inform them, and this time I will make them know My power and My might; then they will know that My name is the LORD.[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Disaster Predicted"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "God Will Restore Israel"
   }
  ]
 }

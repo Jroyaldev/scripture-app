@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "There will be no more night in the city, and they will have no need for the light of a lamp or of the sun. For the Lord God will shine on them, and they will reign forever and ever. Jesus Is Coming"
+   "text": "There will be no more night in the city, and they will have no need for the light of a lamp or of the sun. For the Lord God will shine on them, and they will reign forever and ever."
   },
   {
    "verse": 6,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "The Spirit and the bride say, “Come!” Let the one who hears say, “Come!” And let the one who is thirsty come, and the one who desires the water of life drink freely. Nothing May Be Added or Removed"
+   "text": "The Spirit and the bride say, “Come!” Let the one who hears say, “Come!” And let the one who is thirsty come, and the one who desires the water of life drink freely."
   },
   {
    "verse": 18,
@@ -83,6 +83,26 @@
   {
    "verse": 21,
    "text": "The grace of the Lord Jesus be with all the saints. Amen."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The River of Life"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Is Coming"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Nothing May Be Added or Removed"
   }
  ]
 }

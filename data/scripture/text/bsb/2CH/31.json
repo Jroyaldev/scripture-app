@@ -6,7 +6,7 @@
   },
   {
    "verse": 2,
-   "text": "Hezekiah reestablished the divisions of the priests and Levites — each of them according to their duties as priests or Levites — for the burnt offerings and peace offerings, for ministry, for giving thanks, and for singing praises at the gates of the LORD’s dwelling. Contributions for Worship"
+   "text": "Hezekiah reestablished the divisions of the priests and Levites — each of them according to their duties as priests or Levites — for the burnt offerings and peace offerings, for ministry, for giving thanks, and for singing praises at the gates of the LORD’s dwelling."
   },
   {
    "verse": 3,
@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "and Azariah, the chief priest of the household of Zadok, answered him, “Since the people began to bring their contributions into the house of the LORD, we have had enough to eat, and there is plenty left over, because the LORD has blessed His people; this great abundance is what is left over.” Hezekiah Organizes the Priests"
+   "text": "and Azariah, the chief priest of the household of Zadok, answered him, “Since the people began to bring their contributions into the house of the LORD, we have had enough to eat, and there is plenty left over, because the LORD has blessed His people; this great abundance is what is left over.”"
   },
   {
    "verse": 11,
@@ -83,6 +83,26 @@
   {
    "verse": 21,
    "text": "He acted with all his heart in every work that he began in the service of the house of God, and in the law and the commandments, in order to seek his God. And so he prospered."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Destruction of Idols"
+  },
+  {
+   "beforeVerse": 3,
+   "kind": "section",
+   "level": 1,
+   "text": "Contributions for Worship"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "Hezekiah Organizes the Priests"
   }
  ]
 }

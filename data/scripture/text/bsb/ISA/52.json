@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "For you will not leave in a hurry nor flee in haste, for the LORD goes before you, and the God of Israel is your rear guard. The Servant Exalted ()"
+   "text": "For you will not leave in a hurry nor flee in haste, for the LORD goes before you, and the God of Israel is your rear guard."
   },
   {
    "verse": 13,
@@ -59,6 +59,20 @@
   {
    "verse": 15,
    "text": "so He will sprinkle many nations. Kings will shut their mouths because of Him. For they will see what they have not been told, and they will understand what they have not heard."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Deliverance for Jerusalem"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Servant Exalted"
   }
  ]
 }

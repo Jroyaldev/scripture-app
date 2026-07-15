@@ -114,7 +114,7 @@
   },
   {
    "verse": 29,
-   "text": "He hung the king of Ai on a tree until evening, and at sunset Joshua commanded that they take down the body from the tree and throw it down at the entrance of the city gate. And over it they raised a large pile of rocks, which remains to this day. Joshua Renews the Covenant ()"
+   "text": "He hung the king of Ai on a tree until evening, and at sunset Joshua commanded that they take down the body from the tree and throw it down at the entrance of the city gate. And over it they raised a large pile of rocks, which remains to this day."
   },
   {
    "verse": 30,
@@ -139,6 +139,20 @@
   {
    "verse": 35,
    "text": "There was not a word of all that Moses had commanded that Joshua failed to read before the whole assembly of Israel, including the women, the little ones, and the foreigners who lived among them."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Conquest of Ai"
+  },
+  {
+   "beforeVerse": 30,
+   "kind": "section",
+   "level": 1,
+   "text": "Joshua Renews the Covenant"
   }
  ]
 }

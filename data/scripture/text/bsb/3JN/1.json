@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "I have no greater joy than to hear that my children are walking in the truth. Gaius Commended for Hospitality"
+   "text": "I have no greater joy than to hear that my children are walking in the truth."
   },
   {
    "verse": 5,
@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "Therefore we ought to support such men, so that we may be fellow workers for the truth. Diotrephes and Demetrius"
+   "text": "Therefore we ought to support such men, so that we may be fellow workers for the truth."
   },
   {
    "verse": 9,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "Demetrius has received a good testimony from everyone, and from the truth itself. We also testify for him, and you know that our testimony is true. Conclusion ()"
+   "text": "Demetrius has received a good testimony from everyone, and from the truth itself. We also testify for him, and you know that our testimony is true."
   },
   {
    "verse": 13,
@@ -55,6 +55,32 @@
   {
    "verse": 14,
    "text": "Instead, I hope to see you soon and speak with you face to face. Peace to you. The friends here send you greetings. Greet each of our friends there by name."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Greeting from the Elder"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "Gaius Commended for Hospitality"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Diotrephes and Demetrius"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Conclusion"
   }
  ]
 }

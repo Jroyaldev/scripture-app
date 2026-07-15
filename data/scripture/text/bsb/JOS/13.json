@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "Now therefore divide this land as an inheritance to the nine tribes and the half-tribe of Manasseh.” The Inheritance East of the Jordan (; )"
+   "text": "Now therefore divide this land as an inheritance to the nine tribes and the half-tribe of Manasseh.”"
   },
   {
    "verse": 8,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "To the tribe of Levi, however, Moses had given no inheritance. The food offerings to the LORD, the God of Israel, are their inheritance, just as He had promised them. Reuben’s Inheritance"
+   "text": "To the tribe of Levi, however, Moses had given no inheritance. The food offerings to the LORD, the God of Israel, are their inheritance, just as He had promised them."
   },
   {
    "verse": 15,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "And the border of the Reubenites was the bank of the Jordan. This was the inheritance of the clans of the Reubenites, including the cities and villages. Gad’s Inheritance"
+   "text": "And the border of the Reubenites was the bank of the Jordan. This was the inheritance of the clans of the Reubenites, including the cities and villages."
   },
   {
    "verse": 24,
@@ -110,7 +110,7 @@
   },
   {
    "verse": 28,
-   "text": "This was the inheritance of the clans of the Gadites, including the cities and villages. Manasseh’s Eastern Inheritance"
+   "text": "This was the inheritance of the clans of the Gadites, including the cities and villages."
   },
   {
    "verse": 29,
@@ -131,6 +131,38 @@
   {
    "verse": 33,
    "text": "To the tribe of Levi, however, Moses had given no inheritance. The LORD, the God of Israel, is their inheritance, just as He had promised them."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Lands Yet Unconquered"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "The Inheritance East of the Jordan"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Reuben’s Inheritance"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "Gad’s Inheritance"
+  },
+  {
+   "beforeVerse": 29,
+   "kind": "section",
+   "level": 1,
+   "text": "Manasseh’s Eastern Inheritance"
   }
  ]
 }

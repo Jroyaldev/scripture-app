@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "Then the LORD said to me, “Get up. Continue your journey ahead of the people, that they may enter and possess the land that I swore to their fathers to give them.” A Call to Obedience ()"
+   "text": "Then the LORD said to me, “Get up. Continue your journey ahead of the people, that they may enter and possess the land that I swore to their fathers to give them.”"
   },
   {
    "verse": 12,
@@ -87,6 +87,20 @@
   {
    "verse": 22,
    "text": "Your fathers went down to Egypt, seventy in all, and now the LORD your God has made you as numerous as the stars in the sky."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "New Stone Tablets"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "A Call to Obedience"
   }
  ]
 }

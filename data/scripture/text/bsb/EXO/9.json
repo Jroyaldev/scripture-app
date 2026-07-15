@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "Pharaoh sent officials and found that none of the livestock of the Israelites had died. But Pharaoh’s heart was hardened, and he would not let the people go. The Sixth Plague: Boils"
+   "text": "Pharaoh sent officials and found that none of the livestock of the Israelites had died. But Pharaoh’s heart was hardened, and he would not let the people go."
   },
   {
    "verse": 8,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "But the LORD hardened Pharaoh’s heart, and he would not listen to them, just as the LORD had said to Moses. The Seventh Plague: Hail"
+   "text": "But the LORD hardened Pharaoh’s heart, and he would not listen to them, just as the LORD had said to Moses."
   },
   {
    "verse": 13,
@@ -139,6 +139,26 @@
   {
    "verse": 35,
    "text": "So Pharaoh’s heart was hardened, and he would not let the Israelites go, just as the LORD had said through Moses."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Fifth Plague: Livestock"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "The Sixth Plague: Boils"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Seventh Plague: Hail"
   }
  ]
 }

@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "I have summoned a drought on the fields and on the mountains, on the grain, new wine, and oil, and on whatever the ground yields, on man and beast, and on all the labor of your hands.” The People Obey"
+   "text": "I have summoned a drought on the fields and on the mountains, on the grain, new wine, and oil, and on whatever the ground yields, on man and beast, and on all the labor of your hands.”"
   },
   {
    "verse": 12,
@@ -59,6 +59,20 @@
   {
    "verse": 15,
    "text": "on the twenty-fourth day of the sixth month, in the second year of King Darius."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Call to Rebuild the Temple"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "The People Obey"
   }
  ]
 }

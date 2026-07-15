@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "But He gives us more grace. This is why it says: “God opposes the proud, but gives grace to the humble.” Drawing Near to God"
+   "text": "But He gives us more grace. This is why it says: “God opposes the proud, but gives grace to the humble.”"
   },
   {
    "verse": 7,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "There is only one Lawgiver and Judge, the One who is able to save and destroy. But who are you to judge your neighbor? Do Not Boast about Tomorrow ()"
+   "text": "There is only one Lawgiver and Judge, the One who is able to save and destroy. But who are you to judge your neighbor?"
   },
   {
    "verse": 13,
@@ -67,6 +67,26 @@
   {
    "verse": 17,
    "text": "Anyone, then, who knows the right thing to do, yet fails to do it, is guilty of sin."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Warning against Pride"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Drawing Near to God"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Do Not Boast about Tomorrow"
   }
  ]
 }

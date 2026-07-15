@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "Jesus performed this, the first of His signs, at Cana in Galilee. He thus revealed His glory, and His disciples believed in Him. Jesus Cleanses the Temple (; ; )"
+   "text": "Jesus performed this, the first of His signs, at Cana in Galilee. He thus revealed His glory, and His disciples believed in Him."
   },
   {
    "verse": 12,
@@ -99,6 +99,20 @@
   {
    "verse": 25,
    "text": "He did not need any testimony about man, for He knew what was in a man."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Wedding at Cana"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Cleanses the Temple"
   }
  ]
 }

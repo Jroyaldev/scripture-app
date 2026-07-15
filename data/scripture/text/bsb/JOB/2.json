@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "“You speak as a foolish woman speaks,” he told her. “Should we accept from God only good and not adversity?” In all this, Job did not sin in what he said. Job’s Three Friends"
+   "text": "“You speak as a foolish woman speaks,” he told her. “Should we accept from God only good and not adversity?” In all this, Job did not sin in what he said."
   },
   {
    "verse": 11,
@@ -51,6 +51,20 @@
   {
    "verse": 13,
    "text": "Then they sat on the ground with him for seven days and seven nights, but no one spoke a word to him because they saw how intense his suffering was."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Job Loses His Health"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "Job’s Three Friends"
   }
  ]
 }

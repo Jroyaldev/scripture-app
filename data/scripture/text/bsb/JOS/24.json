@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "So I gave you a land on which you did not toil and cities that you did not build, and now you live in them and eat from vineyards and olive groves that you did not plant.’ Choose Whom You Will Serve ()"
+   "text": "So I gave you a land on which you did not toil and cities that you did not build, and now you live in them and eat from vineyards and olive groves that you did not plant.’"
   },
   {
    "verse": 14,
@@ -110,7 +110,7 @@
   },
   {
    "verse": 28,
-   "text": "Then Joshua sent the people away, each to his own inheritance. Joshua’s Death and Burial ()"
+   "text": "Then Joshua sent the people away, each to his own inheritance."
   },
   {
    "verse": 29,
@@ -131,6 +131,26 @@
   {
    "verse": 33,
    "text": "Eleazar son of Aaron also died, and they buried him at Gibeah, which had been given to his son Phinehas in the hill country of Ephraim."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Joshua Reviews Israel’s History"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Choose Whom You Will Serve"
+  },
+  {
+   "beforeVerse": 29,
+   "kind": "section",
+   "level": 1,
+   "text": "Joshua’s Death and Burial"
   }
  ]
 }

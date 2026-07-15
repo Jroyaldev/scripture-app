@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "For the Son of Man came to seek and to save the lost.” The Parable of the Ten Minas ()"
+   "text": "For the Son of Man came to seek and to save the lost.”"
   },
   {
    "verse": 11,
@@ -106,7 +106,7 @@
   },
   {
    "verse": 27,
-   "text": "And these enemies of mine who were unwilling for me to rule over them, bring them here and slay them in front of me.’” The Triumphal Entry (; ; ; )"
+   "text": "And these enemies of mine who were unwilling for me to rule over them, bring them here and slay them in front of me.’”"
   },
   {
    "verse": 28,
@@ -158,7 +158,7 @@
   },
   {
    "verse": 40,
-   "text": "“I tell you,” He answered, “if they remain silent, the very stones will cry out.” Jesus Weeps over Jerusalem ()"
+   "text": "“I tell you,” He answered, “if they remain silent, the very stones will cry out.”"
   },
   {
    "verse": 41,
@@ -174,7 +174,7 @@
   },
   {
    "verse": 44,
-   "text": "They will level you to the ground — you and the children within your walls. They will not leave one stone on another, because you did not recognize the time of your visitation from God.” Jesus Cleanses the Temple (; ; )"
+   "text": "They will level you to the ground — you and the children within your walls. They will not leave one stone on another, because you did not recognize the time of your visitation from God.”"
   },
   {
    "verse": 45,
@@ -191,6 +191,38 @@
   {
    "verse": 48,
    "text": "Yet they could not find a way to do so, because all the people hung on His words."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus and Zacchaeus"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parable of the Ten Minas"
+  },
+  {
+   "beforeVerse": 28,
+   "kind": "section",
+   "level": 1,
+   "text": "The Triumphal Entry"
+  },
+  {
+   "beforeVerse": 41,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Weeps over Jerusalem"
+  },
+  {
+   "beforeVerse": 45,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Cleanses the Temple"
   }
  ]
 }

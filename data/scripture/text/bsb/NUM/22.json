@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "So in the morning Balaam got up, saddled his donkey, and went with the princes of Moab. The Angel and Balaam’s Donkey"
+   "text": "So in the morning Balaam got up, saddled his donkey, and went with the princes of Moab."
   },
   {
    "verse": 22,
@@ -163,6 +163,20 @@
   {
    "verse": 41,
    "text": "The next morning, Balak took Balaam and brought him up to Bamoth-baal. From there he could see the outskirts of the camp of the people."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Balak Summons Balaam"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "The Angel and Balaam’s Donkey"
   }
  ]
 }

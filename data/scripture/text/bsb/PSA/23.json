@@ -24,5 +24,13 @@
    "verse": 6,
    "text": "Surely goodness and mercy will follow me all the days of my life, and I will dwell in the house of the LORD forever."
   }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The LORD Is My Shepherd"
+  }
  ]
 }

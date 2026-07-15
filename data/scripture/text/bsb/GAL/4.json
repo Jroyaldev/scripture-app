@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "So you are no longer a slave, but a son; and since you are a son, you are also an heir through God. Paul’s Concern for the Galatians"
+   "text": "So you are no longer a slave, but a son; and since you are a son, you are also an heir through God."
   },
   {
    "verse": 8,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "how I wish I could be with you now and change my tone, because I am perplexed about you. Hagar and Sarah ()"
+   "text": "how I wish I could be with you now and change my tone, because I am perplexed about you."
   },
   {
    "verse": 21,
@@ -123,6 +123,26 @@
   {
    "verse": 31,
    "text": "Therefore, brothers, we are not children of the slave woman, but of the free woman."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Sons and Heirs"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Concern for the Galatians"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "Hagar and Sarah"
   }
  ]
 }

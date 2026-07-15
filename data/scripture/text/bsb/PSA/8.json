@@ -36,5 +36,13 @@
    "verse": 9,
    "text": "O LORD, our Lord, how majestic is Your name in all the earth!"
   }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "How Majestic Is Your Name!"
+  }
  ]
 }

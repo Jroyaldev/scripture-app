@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "“Then I will draw near to you for judgment. And I will be a swift witness against sorcerers and adulterers and perjurers, against oppressors of the widowed and fatherless, and against those who defraud laborers of their wages and deny justice to the foreigner but do not fear Me,” says the LORD of Hosts. Robbing God"
+   "text": "“Then I will draw near to you for judgment. And I will be a swift witness against sorcerers and adulterers and perjurers, against oppressors of the widowed and fatherless, and against those who defraud laborers of their wages and deny justice to the foreigner but do not fear Me,” says the LORD of Hosts."
   },
   {
    "verse": 6,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "“Then all the nations will call you blessed, for you will be a land of delight,” says the LORD of Hosts. The Book of Remembrance"
+   "text": "“Then all the nations will call you blessed, for you will be a land of delight,” says the LORD of Hosts."
   },
   {
    "verse": 13,
@@ -71,6 +71,26 @@
   {
    "verse": 18,
    "text": "So you will again distinguish between the righteous and the wicked, between those who serve God and those who do not.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "I Will Send My Messenger"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "Robbing God"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Book of Remembrance"
   }
  ]
 }

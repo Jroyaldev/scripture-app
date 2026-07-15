@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "I will send it out, declares the LORD of Hosts, and it will enter the house of the thief and the house of him who swears falsely by My name. It will remain inside his house and destroy it, down to its timbers and stones.” The Vision of the Woman in a Basket"
+   "text": "I will send it out, declares the LORD of Hosts, and it will enter the house of the thief and the house of him who swears falsely by My name. It will remain inside his house and destroy it, down to its timbers and stones.”"
   },
   {
    "verse": 5,
@@ -43,6 +43,20 @@
   {
    "verse": 11,
    "text": "“To build a house for it in the land of Shinar,” he told me. “And when it is ready, the basket will be set there on its pedestal.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Vision of the Flying Scroll"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "The Vision of the Woman in a Basket"
   }
  ]
 }

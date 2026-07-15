@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "Moreover, we have prepared and consecrated all the articles that King Ahaz in his unfaithfulness cast aside during his reign. They are now in front of the altar of the LORD.” Hezekiah Restores Temple Worship"
+   "text": "Moreover, we have prepared and consecrated all the articles that King Ahaz in his unfaithfulness cast aside during his reign. They are now in front of the altar of the LORD.”"
   },
   {
    "verse": 20,
@@ -143,6 +143,20 @@
   {
    "verse": 36,
    "text": "Then Hezekiah and all the people rejoiced at what God had prepared for the people, because everything had been accomplished so quickly."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Hezekiah Cleanses the Temple"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "Hezekiah Restores Temple Worship"
   }
  ]
 }

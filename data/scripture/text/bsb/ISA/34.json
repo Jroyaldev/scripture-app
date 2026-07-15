@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "All the stars of heaven will be dissolved. The skies will be rolled up like a scroll, and all their stars will fall like withered leaves from the vine, like foliage from the fig tree. Judgment on Edom ()"
+   "text": "All the stars of heaven will be dissolved. The skies will be rolled up like a scroll, and all their stars will fall like withered leaves from the vine, like foliage from the fig tree."
   },
   {
    "verse": 5,
@@ -67,6 +67,20 @@
   {
    "verse": 17,
    "text": "He has allotted their portion; His hand has distributed it by measure. They will possess it forever; they will dwell in it from generation to generation."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Judgment on the Nations"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "Judgment on Edom"
   }
  ]
 }

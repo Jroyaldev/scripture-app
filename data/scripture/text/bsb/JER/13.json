@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "For just as a loincloth clings to a man’s waist, so I have made the whole house of Israel and the whole house of Judah cling to Me, declares the LORD, so that they might be My people for My renown and praise and glory. But they did not listen. The Wineskins"
+   "text": "For just as a loincloth clings to a man’s waist, so I have made the whole house of Israel and the whole house of Judah cling to Me, declares the LORD, so that they might be My people for My renown and praise and glory. But they did not listen."
   },
   {
    "verse": 12,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "I will smash them against one another, fathers and sons alike, declares the LORD. I will allow no mercy or pity or compassion to keep Me from destroying them.’” Captivity Threatened"
+   "text": "I will smash them against one another, fathers and sons alike, declares the LORD. I will allow no mercy or pity or compassion to keep Me from destroying them.’”"
   },
   {
    "verse": 15,
@@ -107,6 +107,26 @@
   {
    "verse": 27,
    "text": "Your adulteries and lustful neighings, your shameless prostitution on the hills and in the fields — I have seen your detestable acts. Woe to you, O Jerusalem! How long will you remain unclean?”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Linen Loincloth"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "The Wineskins"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Captivity Threatened"
   }
  ]
 }

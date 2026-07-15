@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "But if you warn the wicked man to turn from his way, and he does not turn from it, he will die in his iniquity, but you will have saved your life. The Message of the Watchman"
+   "text": "But if you warn the wicked man to turn from his way, and he does not turn from it, he will die in his iniquity, but you will have saved your life."
   },
   {
    "verse": 10,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "Yet you say, ‘The way of the Lord is not just.’ But I will judge each of you according to his ways, O house of Israel.” Word of Jerusalem’s Fall"
+   "text": "Yet you say, ‘The way of the Lord is not just.’ But I will judge each of you according to his ways, O house of Israel.”"
   },
   {
    "verse": 21,
@@ -131,6 +131,26 @@
   {
    "verse": 33,
    "text": "So when it comes to pass— and surely it will come— then they will know that a prophet has been among them.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Ezekiel the Watchman for Israel"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "The Message of the Watchman"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "Word of Jerusalem’s Fall"
   }
  ]
 }

@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "And on her forehead a mysterious name was written: BABYLON THE GREAT, THE MOTHER OF PROSTITUTES AND OF THE ABOMINATIONS OF THE EARTH. The Mystery Explained"
+   "text": "And on her forehead a mysterious name was written: BABYLON THE GREAT, THE MOTHER OF PROSTITUTES AND OF THE ABOMINATIONS OF THE EARTH."
   },
   {
    "verse": 6,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "These kings have one purpose: to yield their power and authority to the beast. The Victory of the Lamb"
+   "text": "These kings have one purpose: to yield their power and authority to the beast."
   },
   {
    "verse": 14,
@@ -71,6 +71,26 @@
   {
    "verse": 18,
    "text": "And the woman you saw is the great city that rules over the kings of the earth.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Woman on the Beast"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "The Mystery Explained"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "The Victory of the Lamb"
   }
  ]
 }

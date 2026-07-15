@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "Do not turn aside to the right or to the left from any of the words I command you today, and do not go after other gods to serve them. The Curses of Disobedience (; )"
+   "text": "Do not turn aside to the right or to the left from any of the words I command you today, and do not go after other gods to serve them."
   },
   {
    "verse": 15,
@@ -271,6 +271,20 @@
   {
    "verse": 68,
    "text": "The LORD will return you to Egypt in ships by a route that I said you should never see again. There you will sell yourselves to your enemies as male and female slaves, but no one will buy you.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Blessings of Obedience"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "The Curses of Disobedience"
   }
  ]
 }

@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "that the Christ would suffer, and as the first to rise from the dead, would proclaim light to our people and to the Gentiles.” Festus Interrupts Paul’s Defense"
+   "text": "that the Christ would suffer, and as the first to rise from the dead, would proclaim light to our people and to the Gentiles.”"
   },
   {
    "verse": 24,
@@ -127,6 +127,20 @@
   {
    "verse": 32,
    "text": "And Agrippa said to Festus, “This man could have been released if he had not appealed to Caesar.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Testimony to Agrippa"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "Festus Interrupts Paul’s Defense"
   }
  ]
 }

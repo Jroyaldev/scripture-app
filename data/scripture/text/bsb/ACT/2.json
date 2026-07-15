@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "But others mocked them and said, “They are drunk on new wine!” Peter Addresses the Crowd (; )"
+   "text": "But others mocked them and said, “They are drunk on new wine!”"
   },
   {
    "verse": 14,
@@ -142,7 +142,7 @@
   },
   {
    "verse": 36,
-   "text": "Therefore let all Israel know with certainty that God has made this Jesus, whom you crucified, both Lord and Christ!” Three Thousand Believe"
+   "text": "Therefore let all Israel know with certainty that God has made this Jesus, whom you crucified, both Lord and Christ!”"
   },
   {
    "verse": 37,
@@ -162,7 +162,7 @@
   },
   {
    "verse": 41,
-   "text": "Those who embraced his message were baptized, and about three thousand were added to the believers that day. The Fellowship of Believers ()"
+   "text": "Those who embraced his message were baptized, and about three thousand were added to the believers that day."
   },
   {
    "verse": 42,
@@ -187,6 +187,32 @@
   {
    "verse": 47,
    "text": "praising God and enjoying the favor of all the people. And the Lord added to their number daily those who were being saved."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Holy Spirit at Pentecost"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Peter Addresses the Crowd"
+  },
+  {
+   "beforeVerse": 37,
+   "kind": "section",
+   "level": 1,
+   "text": "Three Thousand Believe"
+  },
+  {
+   "beforeVerse": 42,
+   "kind": "section",
+   "level": 1,
+   "text": "The Fellowship of Believers"
   }
  ]
 }

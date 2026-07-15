@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "It was because you Levites were not with us the first time that the LORD our God burst forth in anger against us. For we did not consult Him about the proper order.” The Priests and Levites Carry the Ark"
+   "text": "It was because you Levites were not with us the first time that the LORD our God burst forth in anger against us. For we did not consult Him about the proper order.”"
   },
   {
    "verse": 14,
@@ -94,7 +94,7 @@
   },
   {
    "verse": 24,
-   "text": "Shebaniah, Joshaphat, Nethanel, Amasai, Zechariah, Benaiah, and Eliezer — the priests — were to blow the trumpets before the ark of God. Obed-edom and Jehiah were also to be guardians of the ark. Moving the Ark to Jerusalem"
+   "text": "Shebaniah, Joshaphat, Nethanel, Amasai, Zechariah, Benaiah, and Eliezer — the priests — were to blow the trumpets before the ark of God. Obed-edom and Jehiah were also to be guardians of the ark."
   },
   {
    "verse": 25,
@@ -110,11 +110,37 @@
   },
   {
    "verse": 28,
-   "text": "So all Israel brought up the ark of the covenant of the LORD with shouting, with the sounding of rams’ horns and trumpets, and with cymbals and the music of harps and lyres. Michal’s Contempt for David ()"
+   "text": "So all Israel brought up the ark of the covenant of the LORD with shouting, with the sounding of rams’ horns and trumpets, and with cymbals and the music of harps and lyres."
   },
   {
    "verse": 29,
    "text": "As the ark of the covenant of the LORD was entering the City of David, Saul’s daughter Michal looked down from a window and saw King David dancing and celebrating, and she despised him in her heart."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Preparing to Move the Ark"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "The Priests and Levites Carry the Ark"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "Moving the Ark to Jerusalem"
+  },
+  {
+   "beforeVerse": 29,
+   "kind": "section",
+   "level": 1,
+   "text": "Michal’s Contempt for David"
   }
  ]
 }

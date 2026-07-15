@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "These witnesses have power to shut the sky so that no rain will fall during the days of their prophecy, and power to turn the waters into blood and to strike the earth with every kind of plague as often as they wish. The Witnesses Killed and Raised"
+   "text": "These witnesses have power to shut the sky so that no rain will fall during the days of their prophecy, and power to turn the waters into blood and to strike the earth with every kind of plague as often as they wish."
   },
   {
    "verse": 7,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "The second woe has passed. Behold, the third woe is coming shortly. The Seventh Trumpet"
+   "text": "The second woe has passed. Behold, the third woe is coming shortly."
   },
   {
    "verse": 15,
@@ -75,6 +75,26 @@
   {
    "verse": 19,
    "text": "Then the temple of God in heaven was opened, and the ark of His covenant appeared in His temple. And there were flashes of lightning, rumblings, peals of thunder, an earthquake, and a great hailstorm."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Two Witnesses"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "The Witnesses Killed and Raised"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "The Seventh Trumpet"
   }
  ]
 }

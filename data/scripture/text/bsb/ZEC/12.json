@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "So on that day I will set out to destroy all the nations that come against Jerusalem. Mourning the One They Pierced ()"
+   "text": "So on that day I will set out to destroy all the nations that come against Jerusalem."
   },
   {
    "verse": 10,
@@ -55,6 +55,20 @@
   {
    "verse": 14,
    "text": "and all the remaining clans and their wives.[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Coming Deliverance of Jerusalem"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Mourning the One They Pierced"
   }
  ]
 }

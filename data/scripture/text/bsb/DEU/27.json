@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "You shall therefore obey the voice of the LORD your God and follow His commandments and statutes I am giving you today.” Curses Pronounced from Ebal"
+   "text": "You shall therefore obey the voice of the LORD your God and follow His commandments and statutes I am giving you today.”"
   },
   {
    "verse": 11,
@@ -103,6 +103,20 @@
   {
    "verse": 26,
    "text": "‘Cursed is he who does not put the words of this law into practice.’ And let all the people say, ‘Amen!’[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Altar on Mount Ebal"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "Curses Pronounced from Ebal"
   }
  ]
 }

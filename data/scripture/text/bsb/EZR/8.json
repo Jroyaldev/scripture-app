@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "and from the descendants of Bigvai, both Uthai and Zaccur, and with them 70 men. Ezra Sends for the Levites"
+   "text": "and from the descendants of Bigvai, both Uthai and Zaccur, and with them 70 men."
   },
   {
    "verse": 15,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "They also brought 220 of the temple servants, all designated by name. David and the officials had appointed them to assist the Levites. Fasting for Protection"
+   "text": "They also brought 220 of the temple servants, all designated by name. David and the officials had appointed them to assist the Levites."
   },
   {
    "verse": 21,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "So we fasted and petitioned our God about this, and He granted our request. Priests to Guard the Offerings"
+   "text": "So we fasted and petitioned our God about this, and He granted our request."
   },
   {
    "verse": 24,
@@ -122,7 +122,7 @@
   },
   {
    "verse": 31,
-   "text": "On the twelfth day of the first month we set out from the Ahava Canal to go to Jerusalem, and the hand of our God was upon us to protect us from the hands of the enemies and bandits along the way. Arrival in Jerusalem"
+   "text": "On the twelfth day of the first month we set out from the Ahava Canal to go to Jerusalem, and the hand of our God was upon us to protect us from the hands of the enemies and bandits along the way."
   },
   {
    "verse": 32,
@@ -143,6 +143,38 @@
   {
    "verse": 36,
    "text": "They also delivered the king’s edicts to the royal satraps and governors of the region west of the Euphrates, who proceeded to assist the people and the house of God."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Exiles Who Returned with Ezra"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Ezra Sends for the Levites"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "Fasting for Protection"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "Priests to Guard the Offerings"
+  },
+  {
+   "beforeVerse": 32,
+   "kind": "section",
+   "level": 1,
+   "text": "Arrival in Jerusalem"
   }
  ]
 }

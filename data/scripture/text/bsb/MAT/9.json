@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "When the crowds saw this, they were filled with awe and glorified God, who had given such authority to men. Jesus Calls Matthew (; )"
+   "text": "When the crowds saw this, they were filled with awe and glorified God, who had given such authority to men."
   },
   {
    "verse": 9,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "But go and learn what this means: ‘I desire mercy, not sacrifice.’ For I have not come to call the righteous, but sinners.” Questions about Fasting (; )"
+   "text": "But go and learn what this means: ‘I desire mercy, not sacrifice.’ For I have not come to call the righteous, but sinners.”"
   },
   {
    "verse": 14,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "Jesus replied, “How can the guests of the bridegroom mourn while He is with them? But the time will come when the bridegroom will be taken from them; then they will fast. The Patches and the Wineskins (; )"
+   "text": "Jesus replied, “How can the guests of the bridegroom mourn while He is with them? But the time will come when the bridegroom will be taken from them; then they will fast."
   },
   {
    "verse": 16,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "Neither do men pour new wine into old wineskins. If they do, the skins will burst, the wine will spill, and the wineskins will be ruined. Instead, they pour new wine into new wineskins, and both are preserved.” The Healing Touch of Jesus (; )"
+   "text": "Neither do men pour new wine into old wineskins. If they do, the skins will burst, the wine will spill, and the wineskins will be ruined. Instead, they pour new wine into new wineskins, and both are preserved.”"
   },
   {
    "verse": 18,
@@ -102,7 +102,7 @@
   },
   {
    "verse": 26,
-   "text": "And the news about this spread throughout that region. Jesus Heals the Blind and Mute ()"
+   "text": "And the news about this spread throughout that region."
   },
   {
    "verse": 27,
@@ -134,7 +134,7 @@
   },
   {
    "verse": 34,
-   "text": "But the Pharisees said, “It is by the prince of demons that He drives out demons.” The Lord of the Harvest ()"
+   "text": "But the Pharisees said, “It is by the prince of demons that He drives out demons.”"
   },
   {
    "verse": 35,
@@ -151,6 +151,50 @@
   {
    "verse": 38,
    "text": "Ask the Lord of the harvest, therefore, to send out workers into His harvest.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Heals a Paralytic"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Calls Matthew"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Questions about Fasting"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "The Patches and the Wineskins"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "The Healing Touch of Jesus"
+  },
+  {
+   "beforeVerse": 27,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Heals the Blind and Mute"
+  },
+  {
+   "beforeVerse": 35,
+   "kind": "section",
+   "level": 1,
+   "text": "The Lord of the Harvest"
   }
  ]
 }

@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "So the man went away and began to proclaim throughout the Decapolis how much Jesus had done for him. And everyone was amazed. The Healing Touch of Jesus (; )"
+   "text": "So the man went away and began to proclaim throughout the Decapolis how much Jesus had done for him. And everyone was amazed."
   },
   {
    "verse": 21,
@@ -171,6 +171,20 @@
   {
    "verse": 43,
    "text": "Then Jesus gave strict orders that no one should know about this, and He told them to give her something to eat."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Demons and the Pigs"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "The Healing Touch of Jesus"
   }
  ]
 }

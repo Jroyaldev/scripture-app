@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "You will die the death of the uncircumcised at the hands of foreigners. For I have spoken, declares the Lord GOD.” A Lament for the King of Tyre"
+   "text": "You will die the death of the uncircumcised at the hands of foreigners. For I have spoken, declares the Lord GOD.”"
   },
   {
    "verse": 11,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "All the nations who know you are appalled over you. You have come to a horrible end and will be no more.’” A Prophecy against Sidon"
+   "text": "All the nations who know you are appalled over you. You have come to a horrible end and will be no more.’”"
   },
   {
    "verse": 20,
@@ -94,7 +94,7 @@
   },
   {
    "verse": 24,
-   "text": "For the people of Israel will no longer face a pricking brier or a painful thorn from all around them who treat them with contempt. Then they will know that I am the Lord GOD.’ The Restoration of Israel ()"
+   "text": "For the people of Israel will no longer face a pricking brier or a painful thorn from all around them who treat them with contempt. Then they will know that I am the Lord GOD.’"
   },
   {
    "verse": 25,
@@ -103,6 +103,32 @@
   {
    "verse": 26,
    "text": "And there they will dwell securely, build houses, and plant vineyards. They will dwell securely when I execute judgments against all those around them who treat them with contempt. Then they will know that I am the LORD their God.’”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Prophecy against the Ruler of Tyre"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "A Lament for the King of Tyre"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "A Prophecy against Sidon"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "The Restoration of Israel"
   }
  ]
 }

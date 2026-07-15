@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "Elishama, Beeliada, and Eliphelet. Two Victories over the Philistines ()"
+   "text": "Elishama, Beeliada, and Eliphelet."
   },
   {
    "verse": 8,
@@ -67,6 +67,20 @@
   {
    "verse": 17,
    "text": "And David’s fame went out into every land, and the LORD caused all nations to fear him."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "David’s Family Grows"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Two Victories over the Philistines"
   }
  ]
 }

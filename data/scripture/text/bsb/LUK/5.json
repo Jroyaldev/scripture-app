@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "And when they had brought their boats ashore, they left everything and followed Him. The Leper’s Prayer (; ; )"
+   "text": "And when they had brought their boats ashore, they left everything and followed Him."
   },
   {
    "verse": 12,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "Yet He frequently withdrew to the wilderness to pray. Jesus Heals a Paralytic (; )"
+   "text": "Yet He frequently withdrew to the wilderness to pray."
   },
   {
    "verse": 17,
@@ -102,7 +102,7 @@
   },
   {
    "verse": 26,
-   "text": "Everyone was taken with amazement and glorified God. They were filled with awe and said, “We have seen remarkable things today.” Jesus Calls Levi (; )"
+   "text": "Everyone was taken with amazement and glorified God. They were filled with awe and said, “We have seen remarkable things today.”"
   },
   {
    "verse": 27,
@@ -126,7 +126,7 @@
   },
   {
    "verse": 32,
-   "text": "I have not come to call the righteous, but sinners, to repentance.” Questions about Fasting (; )"
+   "text": "I have not come to call the righteous, but sinners, to repentance.”"
   },
   {
    "verse": 33,
@@ -138,7 +138,7 @@
   },
   {
    "verse": 35,
-   "text": "But the time will come when the bridegroom will be taken from them; then they will fast.” The Patches and the Wineskins (; )"
+   "text": "But the time will come when the bridegroom will be taken from them; then they will fast.”"
   },
   {
    "verse": 36,
@@ -155,6 +155,44 @@
   {
    "verse": 39,
    "text": "And no one after drinking old wine wants new, for he says, ‘The old is better.’”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The First Disciples"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "The Leper’s Prayer"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Heals a Paralytic"
+  },
+  {
+   "beforeVerse": 27,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Calls Levi"
+  },
+  {
+   "beforeVerse": 33,
+   "kind": "section",
+   "level": 1,
+   "text": "Questions about Fasting"
+  },
+  {
+   "beforeVerse": 36,
+   "kind": "section",
+   "level": 1,
+   "text": "The Patches and the Wineskins"
   }
  ]
 }

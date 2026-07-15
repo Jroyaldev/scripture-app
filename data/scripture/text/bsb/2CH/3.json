@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "The portico at the front, extending across the width of the temple, was twenty cubits long and twenty cubits high. He overlaid the inside with pure gold. The Temple’s Interior ()"
+   "text": "The portico at the front, extending across the width of the temple, was twenty cubits long and twenty cubits high. He overlaid the inside with pure gold."
   },
   {
    "verse": 5,
@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "The weight of the nails was fifty shekels of gold. He also overlaid the upper rooms with gold. The Cherubim ()"
+   "text": "The weight of the nails was fifty shekels of gold. He also overlaid the upper rooms with gold."
   },
   {
    "verse": 10,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "So the total wingspan of these cherubim was twenty cubits. They stood on their feet, facing the main room. The Veil and Pillars ()"
+   "text": "So the total wingspan of these cherubim was twenty cubits. They stood on their feet, facing the main room."
   },
   {
    "verse": 14,
@@ -67,6 +67,32 @@
   {
    "verse": 17,
    "text": "Then he set up the pillars in front of the temple, one on the south and one on the north. The pillar on the south he named Jachin, and the pillar on the north he named Boaz."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Temple Construction Begins"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "The Temple’s Interior"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "The Cherubim"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "The Veil and Pillars"
   }
  ]
 }

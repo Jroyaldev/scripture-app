@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "These two and a half tribes have received their inheritance across the Jordan from Jericho, toward the sunrise.” Leaders to Divide the Land"
+   "text": "These two and a half tribes have received their inheritance across the Jordan from Jericho, toward the sunrise.”"
   },
   {
    "verse": 16,
@@ -115,6 +115,20 @@
   {
    "verse": 29,
    "text": "These are the ones whom the LORD commanded to apportion the inheritance to the Israelites in the land of Canaan."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Boundaries of Canaan"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Leaders to Divide the Land"
   }
  ]
 }

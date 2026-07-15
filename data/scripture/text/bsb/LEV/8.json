@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "Then Moses presented Aaron’s sons, put tunics on them, wrapped sashes around them, and tied headbands on them, just as the LORD had commanded him. The Priests’ Sin Offering"
+   "text": "Then Moses presented Aaron’s sons, put tunics on them, wrapped sashes around them, and tied headbands on them, just as the LORD had commanded him."
   },
   {
    "verse": 14,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "But the bull with its hide, flesh, and dung he burned outside the camp, as the LORD had commanded him. The Priests’ Burnt Offering"
+   "text": "But the bull with its hide, flesh, and dung he burned outside the camp, as the LORD had commanded him."
   },
   {
    "verse": 18,
@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "He washed the entrails and legs with water and burned the entire ram on the altar as a burnt offering, a pleasing aroma, a food offering to the LORD, just as the LORD had commanded Moses. The Ram of Ordination ()"
+   "text": "He washed the entrails and legs with water and burned the entire ram on the altar as a burnt offering, a pleasing aroma, a food offering to the LORD, just as the LORD had commanded Moses."
   },
   {
    "verse": 22,
@@ -143,6 +143,32 @@
   {
    "verse": 36,
    "text": "So Aaron and his sons did everything the LORD had commanded through Moses."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Moses Consecrates Aaron and His Sons"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "The Priests’ Sin Offering"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "The Priests’ Burnt Offering"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "The Ram of Ordination"
   }
  ]
 }

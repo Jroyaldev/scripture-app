@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "so that the priests could not stand there to minister because of the cloud. For the glory of the LORD filled the house of the LORD. Solomon Blesses the LORD ()"
+   "text": "so that the priests could not stand there to minister because of the cloud. For the glory of the LORD filled the house of the LORD."
   },
   {
    "verse": 12,
@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "And there I have provided a place for the ark, which contains the covenant of the LORD that He made with our fathers when He brought them out of the land of Egypt.” Solomon’s Prayer of Dedication ()"
+   "text": "And there I have provided a place for the ark, which contains the covenant of the LORD that He made with our fathers when He brought them out of the land of Egypt.”"
   },
   {
    "verse": 22,
@@ -210,7 +210,7 @@
   },
   {
    "verse": 53,
-   "text": "For You, O Lord GOD, have set them apart from all the peoples of the earth as Your inheritance, as You spoke through Your servant Moses when You brought our fathers out of Egypt.” Solomon’s Benediction"
+   "text": "For You, O Lord GOD, have set them apart from all the peoples of the earth as Your inheritance, as You spoke through Your servant Moses when You brought our fathers out of Egypt.”"
   },
   {
    "verse": 54,
@@ -242,7 +242,7 @@
   },
   {
    "verse": 61,
-   "text": "So let your heart be fully devoted to the LORD our God, as it is this day, to walk in His statutes and to keep His commandments.” Sacrifices of Dedication ()"
+   "text": "So let your heart be fully devoted to the LORD our God, as it is this day, to walk in His statutes and to keep His commandments.”"
   },
   {
    "verse": 62,
@@ -263,6 +263,38 @@
   {
    "verse": 66,
    "text": "On the fifteenth day Solomon sent the people away. So they blessed the king and went home, joyful and glad in heart for all the good things that the LORD had done for His servant David and for His people Israel."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Ark Enters the Temple"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Solomon Blesses the LORD"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "Solomon’s Prayer of Dedication"
+  },
+  {
+   "beforeVerse": 54,
+   "kind": "section",
+   "level": 1,
+   "text": "Solomon’s Benediction"
+  },
+  {
+   "beforeVerse": 62,
+   "kind": "section",
+   "level": 1,
+   "text": "Sacrifices of Dedication"
   }
  ]
 }

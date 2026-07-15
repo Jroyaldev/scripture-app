@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "But I will camp around My house because of an army, because of those who march to and fro, and never again will an oppressor overrun My people, for now I keep watch with My own eyes. Zion’s Coming King (; ; ; )"
+   "text": "But I will camp around My house because of an army, because of those who march to and fro, and never again will an oppressor overrun My people, for now I keep watch with My own eyes."
   },
   {
    "verse": 9,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "For I will bend Judah as My bow and fit it with Ephraim. I will rouse your sons, O Zion, against the sons of Greece. I will make you like the sword of a mighty man. The LORD Will Save His People"
+   "text": "For I will bend Judah as My bow and fit it with Ephraim. I will rouse your sons, O Zion, against the sons of Greece. I will make you like the sword of a mighty man."
   },
   {
    "verse": 14,
@@ -67,6 +67,26 @@
   {
    "verse": 17,
    "text": "How lovely they will be, and how beautiful! Grain will make the young men flourish, and new wine, the young women."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Burden against Israel’s Enemies"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Zion’s Coming King"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "The LORD Will Save His People"
   }
  ]
 }

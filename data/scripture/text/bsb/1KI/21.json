@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "But his wife Jezebel said to him, “Do you not reign over Israel? Get up, eat some food, and be cheerful, for I will get you the vineyard of Naboth the Jezreelite.” Jezebel’s Plot"
+   "text": "But his wife Jezebel said to him, “Do you not reign over Israel? Get up, eat some food, and be cheerful, for I will get you the vineyard of Naboth the Jezreelite.”"
   },
   {
    "verse": 8,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "And when Ahab heard that Naboth was dead, he got up and went down to take possession of the vineyard of Naboth the Jezreelite. Elijah Denounces Ahab and Jezebel"
+   "text": "And when Ahab heard that Naboth was dead, he got up and went down to take possession of the vineyard of Naboth the Jezreelite."
   },
   {
    "verse": 17,
@@ -94,7 +94,7 @@
   },
   {
    "verse": 24,
-   "text": "Anyone belonging to Ahab who dies in the city will be eaten by dogs, and anyone who dies in the field will be eaten by the birds of the air.” Ahab’s Repentance"
+   "text": "Anyone belonging to Ahab who dies in the city will be eaten by dogs, and anyone who dies in the field will be eaten by the birds of the air.”"
   },
   {
    "verse": 25,
@@ -115,6 +115,32 @@
   {
    "verse": 29,
    "text": "“Have you seen how Ahab has humbled himself before Me? Because he has humbled himself before Me, I will not bring the calamity during his days, but I will bring it upon his house in the days of his son.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Naboth’s Vineyard"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Jezebel’s Plot"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Elijah Denounces Ahab and Jezebel"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "Ahab’s Repentance"
   }
  ]
 }

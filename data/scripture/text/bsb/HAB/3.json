@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "I heard and trembled within; my lips quivered at the sound. Decay entered my bones; I trembled where I stood. Yet I must wait patiently for the day of distress to come upon the people who invade us. Habakkuk Rejoices"
+   "text": "I heard and trembled within; my lips quivered at the sound. Decay entered my bones; I trembled where I stood. Yet I must wait patiently for the day of distress to come upon the people who invade us."
   },
   {
    "verse": 17,
@@ -74,7 +74,21 @@
   },
   {
    "verse": 19,
-   "text": "GOD the Lord is my strength; He makes my feet like those of a deer; He makes me walk upon the heights! For the choirmaster. With stringed instruments."
+   "text": "GOD the Lord is my strength; He makes my feet like those of a deer; He makes me walk upon the heights!"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Habakkuk’s Prayer"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Habakkuk Rejoices"
   }
  ]
 }

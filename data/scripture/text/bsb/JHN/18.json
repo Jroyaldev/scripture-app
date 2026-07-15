@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "Caiaphas was the one who had advised the Jews that it would be better if one man died for the people. Peter’s First Denial (; ; )"
+   "text": "Caiaphas was the one who had advised the Jews that it would be better if one man died for the people."
   },
   {
    "verse": 15,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "Because it was cold, the servants and officers were standing around a charcoal fire they had made to keep warm. And Peter was also standing with them, warming himself. Jesus before the High Priest (; ; )"
+   "text": "Because it was cold, the servants and officers were standing around a charcoal fire they had made to keep warm. And Peter was also standing with them, warming himself."
   },
   {
    "verse": 19,
@@ -94,7 +94,7 @@
   },
   {
    "verse": 24,
-   "text": "Then Annas sent Him, still bound, to Caiaphas the high priest. Peter’s Second and Third Denials (; ; )"
+   "text": "Then Annas sent Him, still bound, to Caiaphas the high priest."
   },
   {
    "verse": 25,
@@ -106,7 +106,7 @@
   },
   {
    "verse": 27,
-   "text": "Peter denied it once more, and immediately a rooster crowed. Jesus before Pilate (; )"
+   "text": "Peter denied it once more, and immediately a rooster crowed."
   },
   {
    "verse": 28,
@@ -159,6 +159,38 @@
   {
    "verse": 40,
    "text": "“Not this man,” they shouted, “but Barabbas!” ( Now Barabbas was an insurrectionist. )"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Betrayal of Jesus"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Peter’s First Denial"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus before the High Priest"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "Peter’s Second and Third Denials"
+  },
+  {
+   "beforeVerse": 28,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus before Pilate"
   }
  ]
 }

@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "And they buried the bones of Saul and his son Jonathan in Zela in the land of Benjamin, in the tomb of Saul’s father Kish. After they had done everything the king had commanded, God answered their prayers for the land. Four Battles against the Philistines ()"
+   "text": "And they buried the bones of Saul and his son Jonathan in Zela in the land of Benjamin, in the tomb of Saul’s father Kish. After they had done everything the king had commanded, God answered their prayers for the land."
   },
   {
    "verse": 15,
@@ -87,6 +87,20 @@
   {
    "verse": 22,
    "text": "So these four descendants of Rapha in Gath fell at the hands of David and his servants."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "David Avenges the Gibeonites"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Four Battles against the Philistines"
   }
  ]
 }

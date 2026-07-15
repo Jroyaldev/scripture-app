@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "The man who touches them must be armed with iron or with the shaft of a spear. The fire burns them to ashes in the place where they lie.” David’s Mighty Men ()"
+   "text": "The man who touches them must be armed with iron or with the shaft of a spear. The fire burns them to ashes in the place where they lie.”"
   },
   {
    "verse": 8,
@@ -155,6 +155,20 @@
   {
    "verse": 39,
    "text": "and Uriah the Hittite. There were thirty-seven in all."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "David’s Last Song"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "David’s Mighty Men"
   }
  ]
 }

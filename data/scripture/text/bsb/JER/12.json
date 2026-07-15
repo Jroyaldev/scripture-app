@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "How long will the land mourn and the grass of every field be withered? Because of the evil of its residents, the animals and birds have been swept away, for the people have said, “He cannot see what our end will be.” God’s Answer to Jeremiah"
+   "text": "How long will the land mourn and the grass of every field be withered? Because of the evil of its residents, the animals and birds have been swept away, for the people have said, “He cannot see what our end will be.”"
   },
   {
    "verse": 5,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "They have sown wheat but harvested thorns. They have exhausted themselves to no avail. Bear the shame of your harvest because of the fierce anger of the LORD.” A Message for Israel’s Neighbors ()"
+   "text": "They have sown wheat but harvested thorns. They have exhausted themselves to no avail. Bear the shame of your harvest because of the fierce anger of the LORD.”"
   },
   {
    "verse": 14,
@@ -67,6 +67,26 @@
   {
    "verse": 17,
    "text": "But if they will not obey, then I will uproot that nation; I will uproot it and destroy it, declares the LORD.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Prosperity of the Wicked"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Answer to Jeremiah"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "A Message for Israel’s Neighbors"
   }
  ]
 }

@@ -106,7 +106,7 @@
   },
   {
    "verse": 27,
-   "text": "and Abram (that is, Abraham). The Descendants of Abraham ()"
+   "text": "and Abram (that is, Abraham)."
   },
   {
    "verse": 28,
@@ -134,7 +134,7 @@
   },
   {
    "verse": 34,
-   "text": "Abraham was the father of Isaac. The sons of Isaac: Esau and Israel. The Descendants of Esau ()"
+   "text": "Abraham was the father of Isaac. The sons of Isaac: Esau and Israel."
   },
   {
    "verse": 35,
@@ -146,7 +146,7 @@
   },
   {
    "verse": 37,
-   "text": "The sons of Reuel: Nahath, Zerah, Shammah, and Mizzah. The Descendants of Seir ()"
+   "text": "The sons of Reuel: Nahath, Zerah, Shammah, and Mizzah."
   },
   {
    "verse": 38,
@@ -166,7 +166,7 @@
   },
   {
    "verse": 42,
-   "text": "The sons of Ezer: Bilhan, Zaavan, and Akan. The sons of Dishan: Uz and Aran. The Kings of Edom ()"
+   "text": "The sons of Ezer: Bilhan, Zaavan, and Akan. The sons of Dishan: Uz and Aran."
   },
   {
    "verse": 43,
@@ -215,6 +215,38 @@
   {
    "verse": 54,
    "text": "Magdiel, and Iram. These were the chiefs of Edom."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "From Adam to Abraham"
+  },
+  {
+   "beforeVerse": 28,
+   "kind": "section",
+   "level": 1,
+   "text": "The Descendants of Abraham"
+  },
+  {
+   "beforeVerse": 35,
+   "kind": "section",
+   "level": 1,
+   "text": "The Descendants of Esau"
+  },
+  {
+   "beforeVerse": 38,
+   "kind": "section",
+   "level": 1,
+   "text": "The Descendants of Seir"
+  },
+  {
+   "beforeVerse": 43,
+   "kind": "section",
+   "level": 1,
+   "text": "The Kings of Edom"
   }
  ]
 }

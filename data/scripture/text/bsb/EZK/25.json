@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "therefore I will indeed stretch out My hand against you and give you as plunder to the nations. I will cut you off from the peoples and exterminate you from the countries. I will destroy you, and you will know that I am the LORD.’ A Prophecy against Moab"
+   "text": "therefore I will indeed stretch out My hand against you and give you as plunder to the nations. I will cut you off from the peoples and exterminate you from the countries. I will destroy you, and you will know that I am the LORD.’"
   },
   {
    "verse": 8,
@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "So I will execute judgments on Moab, and they will know that I am the LORD.’ A Prophecy against Edom"
+   "text": "So I will execute judgments on Moab, and they will know that I am the LORD.’"
   },
   {
    "verse": 12,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "I will take My vengeance on Edom by the hand of My people Israel, and they will deal with Edom according to My anger and wrath. Then they will know My vengeance, declares the Lord GOD.’ A Prophecy against the Philistines"
+   "text": "I will take My vengeance on Edom by the hand of My people Israel, and they will deal with Edom according to My anger and wrath. Then they will know My vengeance, declares the Lord GOD.’"
   },
   {
    "verse": 15,
@@ -67,6 +67,32 @@
   {
    "verse": 17,
    "text": "I will execute great vengeance against them with furious reproof. Then they will know that I am the LORD, when I lay My vengeance upon them.’”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Prophecy against Ammon"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "A Prophecy against Moab"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "A Prophecy against Edom"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "A Prophecy against the Philistines"
   }
  ]
 }

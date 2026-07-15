@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "They advance as through a wide breach; through the ruins they keep rolling in. Job’s Prosperity Becomes Calamity"
+   "text": "They advance as through a wide breach; through the ruins they keep rolling in."
   },
   {
    "verse": 15,
@@ -123,6 +123,20 @@
   {
    "verse": 31,
    "text": "My harp is tuned to mourning and my flute to the sound of weeping.[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Job’s Honor Turned to Contempt"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Job’s Prosperity Becomes Calamity"
   }
  ]
 }

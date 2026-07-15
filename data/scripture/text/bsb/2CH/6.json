@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "And there I have placed the ark, which contains the covenant of the LORD that He made with the children of Israel.” Solomon’s Prayer of Dedication ()"
+   "text": "And there I have placed the ark, which contains the covenant of the LORD that He made with the children of Israel.”"
   },
   {
    "verse": 12,
@@ -167,6 +167,20 @@
   {
    "verse": 42,
    "text": "O LORD God, do not reject Your anointed one. Remember Your loving devotion to Your servant David.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Solomon Blesses the LORD"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Solomon’s Prayer of Dedication"
   }
  ]
 }

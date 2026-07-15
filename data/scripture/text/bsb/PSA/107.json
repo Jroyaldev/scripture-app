@@ -172,5 +172,25 @@
    "verse": 43,
    "text": "Let him who is wise pay heed to these things and consider the loving devotion of the LORD."
   }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "major-section",
+   "level": 1,
+   "text": "BOOK V"
+  },
+  {
+   "beforeVerse": 1,
+   "kind": "description",
+   "level": 1,
+   "text": "Psalms 107–150"
+  },
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Thanksgiving for Deliverance"
+  }
  ]
 }

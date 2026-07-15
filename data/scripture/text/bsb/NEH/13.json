@@ -10,7 +10,7 @@
   },
   {
    "verse": 3,
-   "text": "As soon as the people heard this law, they excluded from Israel all of foreign descent. The Temple Cleansed"
+   "text": "As soon as the people heard this law, they excluded from Israel all of foreign descent."
   },
   {
    "verse": 4,
@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "Then I ordered that the rooms be purified, and I had the articles of the house of God restored to them, along with the grain offerings and frankincense. Tithes Restored (; ; )"
+   "text": "Then I ordered that the rooms be purified, and I had the articles of the house of God restored to them, along with the grain offerings and frankincense."
   },
   {
    "verse": 10,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "Remember me for this, O my God, and do not blot out my deeds of loving devotion for the house of my God and for its services. The Sabbath Restored ()"
+   "text": "Remember me for this, O my God, and do not blot out my deeds of loving devotion for the house of my God and for its services."
   },
   {
    "verse": 15,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "Then I instructed the Levites to purify themselves and guard the gates in order to keep the Sabbath day holy. Remember me for this as well, O my God, and show me mercy according to Your abundant loving devotion. Intermarriage Forbidden ()"
+   "text": "Then I instructed the Levites to purify themselves and guard the gates in order to keep the Sabbath day holy. Remember me for this as well, O my God, and show me mercy according to Your abundant loving devotion."
   },
   {
    "verse": 23,
@@ -123,6 +123,38 @@
   {
    "verse": 31,
    "text": "I also arranged for contributions of wood at the appointed times, and for the firstfruits. Remember me, O my God, with favor."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Foreigners Excluded"
+  },
+  {
+   "beforeVerse": 4,
+   "kind": "section",
+   "level": 1,
+   "text": "The Temple Cleansed"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Tithes Restored"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "The Sabbath Restored"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "Intermarriage Forbidden"
   }
  ]
 }

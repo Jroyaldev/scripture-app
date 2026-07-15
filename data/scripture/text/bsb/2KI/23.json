@@ -10,7 +10,7 @@
   },
   {
    "verse": 3,
-   "text": "So the king stood by the pillar and made a covenant before the LORD to follow the LORD and to keep His commandments, decrees, and statutes with all his heart and all his soul, and to carry out the words of the covenant that were written in this book. And all the people entered into the covenant. Josiah Destroys Idolatry (; )"
+   "text": "So the king stood by the pillar and made a covenant before the LORD to follow the LORD and to keep His commandments, decrees, and statutes with all his heart and all his soul, and to carry out the words of the covenant that were written in this book. And all the people entered into the covenant."
   },
   {
    "verse": 4,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "On the altars he slaughtered all the priests of the high places, and he burned human bones on them. Then he returned to Jerusalem. Josiah Restores the Passover ()"
+   "text": "On the altars he slaughtered all the priests of the high places, and he burned human bones on them. Then he returned to Jerusalem."
   },
   {
    "verse": 21,
@@ -106,7 +106,7 @@
   },
   {
    "verse": 27,
-   "text": "For the LORD had said, “I will remove Judah from My sight, just as I removed Israel. I will reject this city Jerusalem, which I chose, and the temple of which I said, ‘My Name shall be there.’” The Death of Josiah ()"
+   "text": "For the LORD had said, “I will remove Judah from My sight, just as I removed Israel. I will reject this city Jerusalem, which I chose, and the temple of which I said, ‘My Name shall be there.’”"
   },
   {
    "verse": 28,
@@ -118,7 +118,7 @@
   },
   {
    "verse": 30,
-   "text": "From Megiddo his servants carried his body in a chariot, brought him to Jerusalem, and buried him in his own tomb. Then the people of the land took Jehoahaz son of Josiah, anointed him, and made him king in place of his father. Jehoahaz Succeeds Josiah ()"
+   "text": "From Megiddo his servants carried his body in a chariot, brought him to Jerusalem, and buried him in his own tomb. Then the people of the land took Jehoahaz son of Josiah, anointed him, and made him king in place of his father."
   },
   {
    "verse": 31,
@@ -138,7 +138,7 @@
   },
   {
    "verse": 35,
-   "text": "So Jehoiakim paid the silver and gold to Pharaoh Neco, but to meet Pharaoh’s demand he taxed the land and exacted the silver and the gold from the people, each according to his wealth. Jehoiakim Reigns in Judah ()"
+   "text": "So Jehoiakim paid the silver and gold to Pharaoh Neco, but to meet Pharaoh’s demand he taxed the land and exacted the silver and the gold from the people, each according to his wealth."
   },
   {
    "verse": 36,
@@ -147,6 +147,44 @@
   {
    "verse": 37,
    "text": "And he did evil in the sight of the LORD, just as his fathers had done."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Josiah Renews the Covenant"
+  },
+  {
+   "beforeVerse": 4,
+   "kind": "section",
+   "level": 1,
+   "text": "Josiah Destroys Idolatry"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "Josiah Restores the Passover"
+  },
+  {
+   "beforeVerse": 28,
+   "kind": "section",
+   "level": 1,
+   "text": "The Death of Josiah"
+  },
+  {
+   "beforeVerse": 31,
+   "kind": "section",
+   "level": 1,
+   "text": "Jehoahaz Succeeds Josiah"
+  },
+  {
+   "beforeVerse": 36,
+   "kind": "section",
+   "level": 1,
+   "text": "Jehoiakim Reigns in Judah"
   }
  ]
 }

@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "But if you keep on biting and devouring one another, watch out, or you will be consumed by one another. Walking by the Spirit (; )"
+   "text": "But if you keep on biting and devouring one another, watch out, or you will be consumed by one another."
   },
   {
    "verse": 16,
@@ -103,6 +103,20 @@
   {
    "verse": 26,
    "text": "Let us not become conceited, provoking and envying one another."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Freedom in Christ"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Walking by the Spirit"
   }
  ]
 }

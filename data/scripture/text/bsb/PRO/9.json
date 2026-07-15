@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "If you are wise, you are wise to your own advantage; but if you scoff, you alone will bear the consequences. The Way of Folly"
+   "text": "If you are wise, you are wise to your own advantage; but if you scoff, you alone will bear the consequences."
   },
   {
    "verse": 13,
@@ -71,6 +71,20 @@
   {
    "verse": 18,
    "text": "But they do not know that the dead are there, that her guests are in the depths of Sheol."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Way of Wisdom"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Way of Folly"
   }
  ]
 }

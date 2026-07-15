@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "So Isaac sent Jacob to Paddan-aram, to Laban son of Bethuel the Aramean, the brother of Rebekah, who was the mother of Jacob and Esau. Esau Marries Mahalath"
+   "text": "So Isaac sent Jacob to Paddan-aram, to Laban son of Bethuel the Aramean, the brother of Rebekah, who was the mother of Jacob and Esau."
   },
   {
    "verse": 6,
@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "Esau went to Ishmael and married Mahalath, the sister of Nebaioth and daughter of Abraham’s son Ishmael, in addition to the wives he already had. Jacob’s Ladder"
+   "text": "Esau went to Ishmael and married Mahalath, the sister of Nebaioth and daughter of Abraham’s son Ishmael, in addition to the wives he already had."
   },
   {
    "verse": 10,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "And he was afraid and said, “How awesome is this place! This is none other than the house of God; this is the gate of heaven!” The Stone of Bethel"
+   "text": "And he was afraid and said, “How awesome is this place! This is none other than the house of God; this is the gate of heaven!”"
   },
   {
    "verse": 18,
@@ -87,6 +87,32 @@
   {
    "verse": 22,
    "text": "And this stone I have set up as a pillar will be God’s house, and of all that You give me I will surely give You a tenth.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jacob’s Departure"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "Esau Marries Mahalath"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Jacob’s Ladder"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "The Stone of Bethel"
   }
  ]
 }

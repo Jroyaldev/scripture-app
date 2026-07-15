@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "Peter, however, got up and ran to the tomb. And after bending down and seeing only the linen cloths, he went away, wondering to himself what had happened. The Road to Emmaus ()"
+   "text": "Peter, however, got up and ran to the tomb. And after bending down and seeing only the linen cloths, he went away, wondering to himself what had happened."
   },
   {
    "verse": 13,
@@ -138,7 +138,7 @@
   },
   {
    "verse": 35,
-   "text": "Then the two told what had happened on the road, and how they had recognized Jesus in the breaking of the bread. Jesus Appears to the Disciples (; )"
+   "text": "Then the two told what had happened on the road, and how they had recognized Jesus in the breaking of the bread."
   },
   {
    "verse": 36,
@@ -194,7 +194,7 @@
   },
   {
    "verse": 49,
-   "text": "And behold, I am sending the promise of My Father upon you. But remain in the city until you have been clothed with power from on high.” The Ascension (; )"
+   "text": "And behold, I am sending the promise of My Father upon you. But remain in the city until you have been clothed with power from on high.”"
   },
   {
    "verse": 50,
@@ -211,6 +211,32 @@
   {
    "verse": 53,
    "text": "praising God continually in the temple."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Resurrection"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Road to Emmaus"
+  },
+  {
+   "beforeVerse": 36,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Appears to the Disciples"
+  },
+  {
+   "beforeVerse": 50,
+   "kind": "section",
+   "level": 1,
+   "text": "The Ascension"
   }
  ]
 }

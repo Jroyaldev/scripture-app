@@ -10,7 +10,7 @@
   },
   {
    "verse": 3,
-   "text": "Do not light a fire in any of your dwellings on the Sabbath day.” Offerings for the Tabernacle ()"
+   "text": "Do not light a fire in any of your dwellings on the Sabbath day.”"
   },
   {
    "verse": 4,
@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "and onyx stones and gemstones to be mounted on the ephod and breastpiece. The Skilled Craftsmen"
+   "text": "and onyx stones and gemstones to be mounted on the ephod and breastpiece."
   },
   {
    "verse": 10,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "and the woven garments for ministering in the holy place— both the holy garments for Aaron the priest and the garments for his sons to serve as priests.” The People Offer Gifts"
+   "text": "and the woven garments for ministering in the holy place— both the holy garments for Aaron the priest and the garments for his sons to serve as priests.”"
   },
   {
    "verse": 20,
@@ -114,7 +114,7 @@
   },
   {
    "verse": 29,
-   "text": "So all the men and women of the Israelites whose hearts prompted them brought a freewill offering to the LORD for all the work that the LORD through Moses had commanded them to do. Bezalel and Oholiab ()"
+   "text": "So all the men and women of the Israelites whose hearts prompted them brought a freewill offering to the LORD for all the work that the LORD through Moses had commanded them to do."
   },
   {
    "verse": 30,
@@ -139,6 +139,38 @@
   {
    "verse": 35,
    "text": "He has filled them with skill to do all kinds of work as engravers, designers, embroiderers in blue, purple, and scarlet yarn and fine linen, and as weavers — as artistic designers of every kind of craft.[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Sabbath"
+  },
+  {
+   "beforeVerse": 4,
+   "kind": "section",
+   "level": 1,
+   "text": "Offerings for the Tabernacle"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "The Skilled Craftsmen"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "The People Offer Gifts"
+  },
+  {
+   "beforeVerse": 30,
+   "kind": "section",
+   "level": 1,
+   "text": "Bezalel and Oholiab"
   }
  ]
 }

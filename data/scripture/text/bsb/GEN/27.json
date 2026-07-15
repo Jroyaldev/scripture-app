@@ -114,7 +114,7 @@
   },
   {
    "verse": 29,
-   "text": "May peoples serve you and nations bow down to you. May you be the master of your brothers, and may the sons of your mother bow down to you. May those who curse you be cursed, and those who bless you be blessed.” Esau’s Lost Hope"
+   "text": "May peoples serve you and nations bow down to you. May you be the master of your brothers, and may the sons of your mother bow down to you. May those who curse you be cursed, and those who bless you be blessed.”"
   },
   {
    "verse": 30,
@@ -183,6 +183,20 @@
   {
    "verse": 46,
    "text": "Then Rebekah said to Isaac, “I am weary of my life because of these Hittite women. If Jacob takes a Hittite wife from among them, what good is my life?”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Isaac Blesses Jacob"
+  },
+  {
+   "beforeVerse": 30,
+   "kind": "section",
+   "level": 1,
+   "text": "Esau’s Lost Hope"
   }
  ]
 }

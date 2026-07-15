@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "And all their neighbors supported them with articles of silver and gold, with goods and livestock, and with valuables, in addition to all their freewill offerings. Cyrus Restores the Holy Vessels"
+   "text": "And all their neighbors supported them with articles of silver and gold, with goods and livestock, and with valuables, in addition to all their freewill offerings."
   },
   {
    "verse": 7,
@@ -43,6 +43,20 @@
   {
    "verse": 11,
    "text": "In all, there were 5,400 gold and silver articles. Sheshbazzar brought all these along when the exiles went up from Babylon to Jerusalem."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Proclamation of Cyrus"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Cyrus Restores the Holy Vessels"
   }
  ]
 }

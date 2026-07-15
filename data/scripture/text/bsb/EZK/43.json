@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "This is the law of the temple: All its surrounding territory on top of the mountain will be most holy. Yes, this is the law of the temple. The Altar of Sacrifice"
+   "text": "This is the law of the temple: All its surrounding territory on top of the mountain will be most holy. Yes, this is the law of the temple."
   },
   {
    "verse": 13,
@@ -107,6 +107,20 @@
   {
    "verse": 27,
    "text": "At the end of these days, from the eighth day on, the priests are to present your burnt offerings and peace offerings on the altar. Then I will accept you, declares the Lord GOD.’”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Glory of the LORD Returns to the Temple"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Altar of Sacrifice"
   }
  ]
 }

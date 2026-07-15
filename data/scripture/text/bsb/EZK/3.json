@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "I came to the exiles at Tel-abib who dwelt by the River Kebar. And for seven days I sat where they sat and remained there among them, overwhelmed. A Watchman for Israel"
+   "text": "I came to the exiles at Tel-abib who dwelt by the River Kebar. And for seven days I sat where they sat and remained there among them, overwhelmed."
   },
   {
    "verse": 16,
@@ -107,6 +107,20 @@
   {
    "verse": 27,
    "text": "But when I speak with you, I will open your mouth, and you are to tell them, ‘This is what the Lord GOD says.’ Whoever listens, let him listen; and whoever refuses, let him refuse, for they are a rebellious house.[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Ezekiel Eats the Scroll"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "A Watchman for Israel"
   }
  ]
 }

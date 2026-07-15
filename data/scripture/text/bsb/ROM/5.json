@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "And hope does not disappoint us, because God has poured out His love into our hearts through the Holy Spirit, whom He has given us. Christ’s Sacrifice for the Ungodly ()"
+   "text": "And hope does not disappoint us, because God has poured out His love into our hearts through the Holy Spirit, whom He has given us."
   },
   {
    "verse": 6,
@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "Not only that, but we also rejoice in God through our Lord Jesus Christ, through whom we have now received reconciliation. Death in Adam, Life in Christ ()"
+   "text": "Not only that, but we also rejoice in God through our Lord Jesus Christ, through whom we have now received reconciliation."
   },
   {
    "verse": 12,
@@ -83,6 +83,26 @@
   {
    "verse": 21,
    "text": "so that, just as sin reigned in death, so also grace might reign through righteousness to bring eternal life through Jesus Christ our Lord."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Triumph of Faith"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "Christ’s Sacrifice for the Ungodly"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Death in Adam, Life in Christ"
   }
  ]
 }

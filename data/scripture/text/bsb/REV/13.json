@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "“If anyone is destined for captivity, into captivity he will go; if anyone is to die by the sword, by the sword he must be killed.” Here is a call for the perseverance and faith of the saints. The Beast from the Earth"
+   "text": "“If anyone is destined for captivity, into captivity he will go; if anyone is to die by the sword, by the sword he must be killed.” Here is a call for the perseverance and faith of the saints."
   },
   {
    "verse": 11,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "The second beast was permitted to give breath to the image of the first beast, so that the image could speak and cause all who refused to worship it to be killed. The Mark of the Beast"
+   "text": "The second beast was permitted to give breath to the image of the first beast, so that the image could speak and cause all who refused to worship it to be killed."
   },
   {
    "verse": 16,
@@ -71,6 +71,26 @@
   {
    "verse": 18,
    "text": "Here is a call for wisdom: Let the one who has insight calculate the number of the beast, for it is the number of a man, and that number is 666."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Beast from the Sea"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "The Beast from the Earth"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "The Mark of the Beast"
   }
  ]
 }

@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "If I have found favor in the sight of the king, and if it pleases the king to grant my petition and fulfill my request, may the king and Haman come tomorrow to the banquet I will prepare for them. Then I will answer the king’s question.” Haman’s Plot against Mordecai"
+   "text": "If I have found favor in the sight of the king, and if it pleases the king to grant my petition and fulfill my request, may the king and Haman come tomorrow to the banquet I will prepare for them. Then I will answer the king’s question.”"
   },
   {
    "verse": 9,
@@ -55,6 +55,20 @@
   {
    "verse": 14,
    "text": "His wife Zeresh and all his friends told him, “Have them build a gallows fifty cubits high, and ask the king in the morning to have Mordecai hanged on it. Then go to the banquet with the king and enjoy yourself.” The advice pleased Haman, and he had the gallows constructed."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Esther Approaches the King"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Haman’s Plot against Mordecai"
   }
  ]
 }

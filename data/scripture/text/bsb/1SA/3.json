@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "Therefore I have sworn to the house of Eli, ‘The iniquity of Eli’s house shall never be atoned for by sacrifice or offering.’” Samuel Shares the Vision"
+   "text": "Therefore I have sworn to the house of Eli, ‘The iniquity of Eli’s house shall never be atoned for by sacrifice or offering.’”"
   },
   {
    "verse": 15,
@@ -83,6 +83,20 @@
   {
    "verse": 21,
    "text": "And the LORD continued to appear at Shiloh, because there He revealed Himself to Samuel by His word."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The LORD Calls Samuel"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Samuel Shares the Vision"
   }
  ]
 }

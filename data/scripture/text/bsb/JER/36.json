@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "From the chamber of Gemariah son of Shaphan the scribe, which was in the upper courtyard at the opening of the New Gate of the house of the LORD, Baruch read from the scroll the words of Jeremiah in the hearing of all the people. Jeremiah’s Scroll Read in the Palace"
+   "text": "From the chamber of Gemariah son of Shaphan the scribe, which was in the upper courtyard at the opening of the New Gate of the house of the LORD, Baruch read from the scroll the words of Jeremiah in the hearing of all the people."
   },
   {
    "verse": 11,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "Then the officials said to Baruch, “You and Jeremiah must hide yourselves and tell no one where you are.” Jehoiakim Burns the Scroll"
+   "text": "Then the officials said to Baruch, “You and Jeremiah must hide yourselves and tell no one where you are.”"
   },
   {
    "verse": 20,
@@ -102,7 +102,7 @@
   },
   {
    "verse": 26,
-   "text": "Instead, the king commanded Jerahmeel, a son of the king, as well as Seraiah son of Azriel and Shelemiah son of Abdeel, to seize Baruch the scribe and Jeremiah the prophet. But the LORD had hidden them. Jeremiah Rewrites the Scroll"
+   "text": "Instead, the king commanded Jerahmeel, a son of the king, as well as Seraiah son of Azriel and Shelemiah son of Abdeel, to seize Baruch the scribe and Jeremiah the prophet. But the LORD had hidden them."
   },
   {
    "verse": 27,
@@ -127,6 +127,32 @@
   {
    "verse": 32,
    "text": "Then Jeremiah took another scroll and gave it to the scribe Baruch son of Neriah, and at Jeremiah’s dictation he wrote on it all the words of the scroll that Jehoiakim king of Judah had burned in the fire. And many similar words were added to them."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jeremiah’s Scroll Read in the Temple"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "Jeremiah’s Scroll Read in the Palace"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "Jehoiakim Burns the Scroll"
+  },
+  {
+   "beforeVerse": 27,
+   "kind": "section",
+   "level": 1,
+   "text": "Jeremiah Rewrites the Scroll"
   }
  ]
 }

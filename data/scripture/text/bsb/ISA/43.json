@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "Even from eternity I am He, and none can deliver out of My hand. When I act, who can reverse it?” A Way in the Wilderness"
+   "text": "Even from eternity I am He, and none can deliver out of My hand. When I act, who can reverse it?”"
   },
   {
    "verse": 14,
@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "The people I formed for Myself will declare My praise. Israel’s Unfaithfulness (; )"
+   "text": "The people I formed for Myself will declare My praise."
   },
   {
    "verse": 22,
@@ -111,6 +111,26 @@
   {
    "verse": 28,
    "text": "So I will disgrace the princes of your sanctuary, and I will devote Jacob to destruction and Israel to reproach.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Israel’s Only Savior"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "A Way in the Wilderness"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "Israel’s Unfaithfulness"
   }
  ]
 }

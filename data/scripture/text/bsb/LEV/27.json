@@ -114,7 +114,7 @@
   },
   {
    "verse": 29,
-   "text": "No person set apart for destruction may be ransomed; he must surely be put to death. Instruction on Tithes (; ; )"
+   "text": "No person set apart for destruction may be ransomed; he must surely be put to death."
   },
   {
    "verse": 30,
@@ -135,6 +135,20 @@
   {
    "verse": 34,
    "text": "These are the commandments that the LORD gave to Moses for the Israelites on Mount Sinai."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Rules about Valuations"
+  },
+  {
+   "beforeVerse": 30,
+   "kind": "section",
+   "level": 1,
+   "text": "Instruction on Tithes"
   }
  ]
 }

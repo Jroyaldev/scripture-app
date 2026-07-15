@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "since what they already had was more than enough to perform all the work. The Ten Curtains for the Tabernacle ()"
+   "text": "since what they already had was more than enough to perform all the work."
   },
   {
    "verse": 8,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "He also made fifty gold clasps to join the curtains together, so that the tabernacle was a unit. The Eleven Curtains of Goat Hair ()"
+   "text": "He also made fifty gold clasps to join the curtains together, so that the tabernacle was a unit."
   },
   {
    "verse": 14,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "Additionally, he made for the tent a covering of ram skins dyed red, and over that a covering of fine leather. The Frames and Bases ()"
+   "text": "Additionally, he made for the tent a covering of ram skins dyed red, and over that a covering of fine leather."
   },
   {
    "verse": 20,
@@ -134,7 +134,7 @@
   },
   {
    "verse": 34,
-   "text": "And he overlaid the frames with gold and made gold rings to hold the crossbars. He also overlaid the crossbars with gold. The Veil ()"
+   "text": "And he overlaid the frames with gold and made gold rings to hold the crossbars. He also overlaid the crossbars with gold."
   },
   {
    "verse": 35,
@@ -142,7 +142,7 @@
   },
   {
    "verse": 36,
-   "text": "He also made four posts of acacia wood for it and overlaid them with gold, along with gold hooks; and he cast four silver bases for the posts. The Curtain for the Entrance ()"
+   "text": "He also made four posts of acacia wood for it and overlaid them with gold, along with gold hooks; and he cast four silver bases for the posts."
   },
   {
    "verse": 37,
@@ -151,6 +151,44 @@
   {
    "verse": 38,
    "text": "together with five posts and their hooks. He overlaid the tops of the posts and their bands with gold, and their five bases were bronze."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The People Bring More than Enough"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "The Ten Curtains for the Tabernacle"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "The Eleven Curtains of Goat Hair"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "The Frames and Bases"
+  },
+  {
+   "beforeVerse": 35,
+   "kind": "section",
+   "level": 1,
+   "text": "The Veil"
+  },
+  {
+   "beforeVerse": 37,
+   "kind": "section",
+   "level": 1,
+   "text": "The Curtain for the Entrance"
   }
  ]
 }

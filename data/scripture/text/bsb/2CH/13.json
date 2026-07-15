@@ -10,7 +10,7 @@
   },
   {
    "verse": 3,
-   "text": "Abijah went into battle with an army of 400,000 chosen men, while Jeroboam drew up in formation against him with 800,000 chosen and mighty men of valor. Civil War against Jeroboam"
+   "text": "Abijah went into battle with an army of 400,000 chosen men, while Jeroboam drew up in formation against him with 800,000 chosen and mighty men of valor."
   },
   {
    "verse": 4,
@@ -87,6 +87,20 @@
   {
    "verse": 22,
    "text": "Now the rest of the acts of Abijah, along with his ways and his words, are written in the Treatise of the Prophet Iddo."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Abijah Reigns in Judah"
+  },
+  {
+   "beforeVerse": 4,
+   "kind": "section",
+   "level": 1,
+   "text": "Civil War against Jeroboam"
   }
  ]
 }

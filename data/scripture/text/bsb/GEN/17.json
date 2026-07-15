@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "And to you and your descendants I will give the land where you are residing— all the land of Canaan— as an eternal possession; and I will be their God.” The Covenant of Circumcision"
+   "text": "And to you and your descendants I will give the land where you are residing— all the land of Canaan— as an eternal possession; and I will be their God.”"
   },
   {
    "verse": 9,
@@ -107,6 +107,20 @@
   {
    "verse": 27,
    "text": "And all the men of Abraham’s household— both servants born in his household and those purchased from foreigners— were circumcised with him."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Abraham to Father Many Nations"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "The Covenant of Circumcision"
   }
  ]
 }

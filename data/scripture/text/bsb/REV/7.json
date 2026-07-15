@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "from the tribe of Zebulun 12,000, from the tribe of Joseph 12,000, and from the tribe of Benjamin 12,000. Praise from the Great Multitude"
+   "text": "from the tribe of Zebulun 12,000, from the tribe of Joseph 12,000, and from the tribe of Benjamin 12,000."
   },
   {
    "verse": 9,
@@ -67,6 +67,20 @@
   {
    "verse": 17,
    "text": "For the Lamb in the center of the throne will be their shepherd. ‘He will lead them to springs of living water,’ and ‘God will wipe away every tear from their eyes.’”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "144,000 Sealed"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Praise from the Great Multitude"
   }
  ]
 }

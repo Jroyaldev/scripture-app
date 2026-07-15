@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "Then Jehoiada and his sons brought out the king’s son, put the crown on him, presented him with the Testimony, and proclaimed him king. They anointed him and shouted, “Long live the king!” The Death of Athaliah ()"
+   "text": "Then Jehoiada and his sons brought out the king’s son, put the crown on him, presented him with the Testimony, and proclaimed him king. They anointed him and shouted, “Long live the king!”"
   },
   {
    "verse": 12,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "So they seized Athaliah as she reached the entrance of the Horse Gate on the palace grounds, and there they put her to death. Jehoiada Restores the Worship of the LORD ()"
+   "text": "So they seized Athaliah as she reached the entrance of the Horse Gate on the palace grounds, and there they put her to death."
   },
   {
    "verse": 16,
@@ -83,6 +83,26 @@
   {
    "verse": 21,
    "text": "and all the people of the land rejoiced. And the city was quiet, because Athaliah had been put to the sword."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Joash Anointed King of Judah"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "The Death of Athaliah"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Jehoiada Restores the Worship of the LORD"
   }
  ]
 }

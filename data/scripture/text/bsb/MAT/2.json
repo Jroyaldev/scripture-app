@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "And having been warned in a dream not to return to Herod, they withdrew to their country by another route. The Flight to Egypt ()"
+   "text": "And having been warned in a dream not to return to Herod, they withdrew to their country by another route."
   },
   {
    "verse": 13,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "where he stayed until the death of Herod. This fulfilled what the Lord had spoken through the prophet: “Out of Egypt I called My Son.” Weeping and Great Mourning ()"
+   "text": "where he stayed until the death of Herod. This fulfilled what the Lord had spoken through the prophet: “Out of Egypt I called My Son.”"
   },
   {
    "verse": 16,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "“A voice is heard in Ramah, weeping and great mourning, Rachel weeping for her children and refusing to be comforted, because they are no more.” The Return to Nazareth ()"
+   "text": "“A voice is heard in Ramah, weeping and great mourning, Rachel weeping for her children and refusing to be comforted, because they are no more.”"
   },
   {
    "verse": 19,
@@ -91,6 +91,32 @@
   {
    "verse": 23,
    "text": "and he went and lived in a town called Nazareth. So was fulfilled what was spoken through the prophets: “He will be called a Nazarene.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Pilgrimage of the Magi"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Flight to Egypt"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Weeping and Great Mourning"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "The Return to Nazareth"
   }
  ]
 }

@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "O daughters of Jerusalem, I adjure you by the gazelles and does of the field: Do not arouse or awaken love until the time is right. Solomon Arrives on His Wedding Day"
+   "text": "O daughters of Jerusalem, I adjure you by the gazelles and does of the field: Do not arouse or awaken love until the time is right."
   },
   {
    "verse": 6,
@@ -43,6 +43,20 @@
   {
    "verse": 11,
    "text": "Come out, O daughters of Zion, and gaze at King Solomon, wearing the crown with which his mother crowned him on the day of his wedding— the day of his heart’s rejoicing."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Bride’s Dream"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "Solomon Arrives on His Wedding Day"
   }
  ]
 }

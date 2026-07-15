@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "Circumcise yourselves to the LORD, and remove the foreskins of your hearts, O men of Judah and people of Jerusalem. Otherwise, My wrath will break out like fire and burn with no one to extinguish it, because of your evil deeds.” Disaster from the North"
+   "text": "Circumcise yourselves to the LORD, and remove the foreskins of your hearts, O men of Judah and people of Jerusalem. Otherwise, My wrath will break out like fire and burn with no one to extinguish it, because of your evil deeds.”"
   },
   {
    "verse": 5,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "“Your ways and deeds have brought this upon you. This is your punishment; how bitter it is, because it pierces to the heart!” Lamentation for Judah"
+   "text": "“Your ways and deeds have brought this upon you. This is your punishment; how bitter it is, because it pierces to the heart!”"
   },
   {
    "verse": 19,
@@ -123,6 +123,26 @@
   {
    "verse": 31,
    "text": "For I hear a cry like a woman in labor, a cry of anguish like one bearing her first child — the cry of the Daughter of Zion gasping for breath, stretching out her hands to say, “Woe is me, for my soul faints before the murderers!”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Plea to Return"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "Disaster from the North"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "Lamentation for Judah"
   }
  ]
 }

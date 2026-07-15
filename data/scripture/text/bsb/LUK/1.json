@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "so that you may know the certainty of the things you have been taught. Gabriel Foretells John’s Birth"
+   "text": "so that you may know the certainty of the things you have been taught."
   },
   {
    "verse": 5,
@@ -98,7 +98,7 @@
   },
   {
    "verse": 25,
-   "text": "“The Lord has done this for me. In these days He has shown me favor and taken away my disgrace among the people.” Gabriel Foretells Jesus’ Birth"
+   "text": "“The Lord has done this for me. In these days He has shown me favor and taken away my disgrace among the people.”"
   },
   {
    "verse": 26,
@@ -150,7 +150,7 @@
   },
   {
    "verse": 38,
-   "text": "“I am the Lord’s servant,” Mary answered. “May it happen to me according to your word.” Then the angel left her. Mary Visits Elizabeth"
+   "text": "“I am the Lord’s servant,” Mary answered. “May it happen to me according to your word.” Then the angel left her."
   },
   {
    "verse": 39,
@@ -178,7 +178,7 @@
   },
   {
    "verse": 45,
-   "text": "Blessed is she who has believed that the Lord’s word to her will be fulfilled.” Mary’s Song ()"
+   "text": "Blessed is she who has believed that the Lord’s word to her will be fulfilled.”"
   },
   {
    "verse": 46,
@@ -222,7 +222,7 @@
   },
   {
    "verse": 56,
-   "text": "Mary stayed with Elizabeth for about three months and then returned home. The Birth of John the Baptist"
+   "text": "Mary stayed with Elizabeth for about three months and then returned home."
   },
   {
    "verse": 57,
@@ -262,7 +262,7 @@
   },
   {
    "verse": 66,
-   "text": "And all who heard this wondered in their hearts and asked, “What then will this child become?” For the Lord’s hand was with him. Zechariah’s Song"
+   "text": "And all who heard this wondered in their hearts and asked, “What then will this child become?” For the Lord’s hand was with him."
   },
   {
    "verse": 67,
@@ -319,6 +319,50 @@
   {
    "verse": 80,
    "text": "And the child grew and became strong in spirit; and he lived in the wilderness until the time of his public appearance to Israel."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Dedication to Theophilus"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "Gabriel Foretells John’s Birth"
+  },
+  {
+   "beforeVerse": 26,
+   "kind": "section",
+   "level": 1,
+   "text": "Gabriel Foretells Jesus’ Birth"
+  },
+  {
+   "beforeVerse": 39,
+   "kind": "section",
+   "level": 1,
+   "text": "Mary Visits Elizabeth"
+  },
+  {
+   "beforeVerse": 46,
+   "kind": "section",
+   "level": 1,
+   "text": "Mary’s Song"
+  },
+  {
+   "beforeVerse": 57,
+   "kind": "section",
+   "level": 1,
+   "text": "The Birth of John the Baptist"
+  },
+  {
+   "beforeVerse": 67,
+   "kind": "section",
+   "level": 1,
+   "text": "Zechariah’s Song"
   }
  ]
 }

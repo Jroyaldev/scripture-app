@@ -10,7 +10,7 @@
   },
   {
    "verse": 3,
-   "text": "Then God blessed the seventh day and sanctified it, because on that day He rested from all the work of creation that He had accomplished. Man and Woman in the Garden"
+   "text": "Then God blessed the seventh day and sanctified it, because on that day He rested from all the work of creation that He had accomplished."
   },
   {
    "verse": 4,
@@ -99,6 +99,20 @@
   {
    "verse": 25,
    "text": "And the man and his wife were both naked, and they were not ashamed."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Seventh Day"
+  },
+  {
+   "beforeVerse": 4,
+   "kind": "section",
+   "level": 1,
+   "text": "Man and Woman in the Garden"
   }
  ]
 }

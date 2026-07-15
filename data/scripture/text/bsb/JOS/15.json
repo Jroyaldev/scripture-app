@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "And the western border was the coastline of the Great Sea. These are the boundaries around the clans of the descendants of Judah. Caleb’s Portion and Conquest ()"
+   "text": "And the western border was the coastline of the Great Sea. These are the boundaries around the clans of the descendants of Judah."
   },
   {
    "verse": 13,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "“Give me a blessing,” she answered. “Since you have given me land in the Negev, give me springs of water as well.” So Caleb gave her both the upper and lower springs. The Cities of Judah"
+   "text": "“Give me a blessing,” she answered. “Since you have given me land in the Negev, give me springs of water as well.” So Caleb gave her both the upper and lower springs."
   },
   {
    "verse": 20,
@@ -251,6 +251,26 @@
   {
    "verse": 63,
    "text": "But the descendants of Judah could not drive out the Jebusites living in Jerusalem. So to this day the Jebusites live there among the descendants of Judah."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Judah’s Inheritance"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Caleb’s Portion and Conquest"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "The Cities of Judah"
   }
  ]
 }

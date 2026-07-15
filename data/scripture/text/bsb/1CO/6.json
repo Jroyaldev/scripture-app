@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "Instead, you yourselves cheat and do wrong, even against your own brothers! Members of Christ"
+   "text": "Instead, you yourselves cheat and do wrong, even against your own brothers!"
   },
   {
    "verse": 9,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "But he who unites himself with the Lord is one with Him in spirit. The Temple of the Holy Spirit (; )"
+   "text": "But he who unites himself with the Lord is one with Him in spirit."
   },
   {
    "verse": 18,
@@ -79,6 +79,26 @@
   {
    "verse": 20,
    "text": "you were bought at a price. Therefore glorify God with your body."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Lawsuits among Believers"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Members of Christ"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "The Temple of the Holy Spirit"
   }
  ]
 }

@@ -110,7 +110,7 @@
   },
   {
    "verse": 28,
-   "text": "These are the tribes of Israel, twelve in all, and this was what their father said to them. He blessed them, and he blessed each one with a suitable blessing. The Death of Jacob"
+   "text": "These are the tribes of Israel, twelve in all, and this was what their father said to them. He blessed them, and he blessed each one with a suitable blessing."
   },
   {
    "verse": 29,
@@ -131,6 +131,20 @@
   {
    "verse": 33,
    "text": "When Jacob had finished instructing his sons, he pulled his feet into the bed and breathed his last, and he was gathered to his people."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jacob Blesses His Sons"
+  },
+  {
+   "beforeVerse": 29,
+   "kind": "section",
+   "level": 1,
+   "text": "The Death of Jacob"
   }
  ]
 }

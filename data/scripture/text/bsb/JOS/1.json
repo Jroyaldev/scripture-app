@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "Have I not commanded you to be strong and courageous? Do not be afraid; do not be discouraged, for the LORD your God is with you wherever you go.” Joshua Takes Charge"
+   "text": "Have I not commanded you to be strong and courageous? Do not be afraid; do not be discouraged, for the LORD your God is with you wherever you go.”"
   },
   {
    "verse": 10,
@@ -71,6 +71,20 @@
   {
    "verse": 18,
    "text": "Anyone who rebels against your order and does not obey your words, all that you command him, will be put to death. Above all, be strong and courageous!”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "God Instructs Joshua"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Joshua Takes Charge"
   }
  ]
 }

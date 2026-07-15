@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "Therefore I despise myself, and I repent in dust and ashes.” The LORD Rebukes Job’s Friends"
+   "text": "Therefore I despise myself, and I repent in dust and ashes.”"
   },
   {
    "verse": 7,
@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "So Eliphaz the Temanite, Bildad the Shuhite, and Zophar the Naamathite went and did as the LORD had told them; and the LORD accepted Job’s prayer. The LORD Blesses Job"
+   "text": "So Eliphaz the Temanite, Bildad the Shuhite, and Zophar the Naamathite went and did as the LORD had told them; and the LORD accepted Job’s prayer."
   },
   {
    "verse": 10,
@@ -67,6 +67,26 @@
   {
    "verse": 17,
    "text": "And so Job died, old and full of years."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Job Submits Himself to the LORD"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "The LORD Rebukes Job’s Friends"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "The LORD Blesses Job"
   }
  ]
 }

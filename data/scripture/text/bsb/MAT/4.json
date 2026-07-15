@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "Then the devil left Him, and angels came and ministered to Him. Jesus Begins His Ministry (; ; )"
+   "text": "Then the devil left Him, and angels came and ministered to Him."
   },
   {
    "verse": 12,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "From that time on Jesus began to preach, “Repent, for the kingdom of heaven is near.” The First Disciples (; ; )"
+   "text": "From that time on Jesus began to preach, “Repent, for the kingdom of heaven is near.”"
   },
   {
    "verse": 18,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "and immediately they left the boat and their father and followed Him. Jesus Heals the Multitudes (; )"
+   "text": "and immediately they left the boat and their father and followed Him."
   },
   {
    "verse": 23,
@@ -99,6 +99,32 @@
   {
    "verse": 25,
    "text": "Large crowds followed Him, having come from Galilee, the Decapolis, Jerusalem, Judea, and beyond the Jordan."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Temptation of Jesus"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Begins His Ministry"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "The First Disciples"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Heals the Multitudes"
   }
  ]
 }

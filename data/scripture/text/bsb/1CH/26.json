@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "These were the divisions of the gatekeepers who were descendants of Korah and Merari. The Treasurers, Officers, and Judges"
+   "text": "These were the divisions of the gatekeepers who were descendants of Korah and Merari."
   },
   {
    "verse": 20,
@@ -127,6 +127,20 @@
   {
    "verse": 32,
    "text": "Among Jerijah’s relatives there were 2,700 capable men who were heads of families. King David appointed them over the Reubenites, the Gadites, and the half-tribe of Manasseh for every matter pertaining to God and for the affairs of the king."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Divisions of the Gatekeepers"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "The Treasurers, Officers, and Judges"
   }
  ]
 }

@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "And Jehoahaz rested with his fathers and was buried in Samaria. And his son Jehoash reigned in his place. Jehoash Reigns in Israel"
+   "text": "And Jehoahaz rested with his fathers and was buried in Samaria. And his son Jehoash reigned in his place."
   },
   {
    "verse": 10,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "And Jehoash rested with his fathers, and Jeroboam succeeded him on the throne. Jehoash was buried in Samaria with the kings of Israel. Elisha’s Final Prophecy"
+   "text": "And Jehoash rested with his fathers, and Jeroboam succeeded him on the throne. Jehoash was buried in Samaria with the kings of Israel."
   },
   {
    "verse": 14,
@@ -99,6 +99,26 @@
   {
    "verse": 25,
    "text": "Then Jehoash son of Jehoahaz took back from Ben-hadad son of Hazael the cities that Hazael had taken in battle from his father Jehoahaz. Jehoash defeated Ben-hadad three times, and so recovered the cities of Israel."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jehoahaz Reigns in Israel"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Jehoash Reigns in Israel"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Elisha’s Final Prophecy"
   }
  ]
 }

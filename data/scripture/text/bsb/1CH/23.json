@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "Then David divided the Levites into divisions according to the sons of Levi: Gershon, Kohath, and Merari. The Gershonites (; )"
+   "text": "Then David divided the Levites into divisions according to the sons of Levi: Gershon, Kohath, and Merari."
   },
   {
    "verse": 7,
@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "Jahath was the first and Zizah was the second; but Jeush and Beriah did not have many sons, so they were counted as one family and received a single assignment. The Kohathites (; )"
+   "text": "Jahath was the first and Zizah was the second; but Jeush and Beriah did not have many sons, so they were counted as one family and received a single assignment."
   },
   {
    "verse": 12,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "The sons of Uzziel: Micah was the first and Isshiah the second. The Merarites (; )"
+   "text": "The sons of Uzziel: Micah was the first and Isshiah the second."
   },
   {
    "verse": 21,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "The sons of Mushi: Mahli, Eder, and Jeremoth— three in all. Levite Duties Revised"
+   "text": "The sons of Mushi: Mahli, Eder, and Jeremoth— three in all."
   },
   {
    "verse": 24,
@@ -127,6 +127,38 @@
   {
    "verse": 32,
    "text": "So the Levites were to carry out the responsibilities for the Tent of Meeting and the Holy Place, and, under their brothers the descendants of Aaron, the service of the house of the LORD."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Divisions of the Levites"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "The Gershonites"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "The Kohathites"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "The Merarites"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "Levite Duties Revised"
   }
  ]
 }

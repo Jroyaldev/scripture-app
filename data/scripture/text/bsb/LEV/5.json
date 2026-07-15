@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "In this way the priest will make atonement for him for any of these sins he has committed, and he will be forgiven. The remainder will belong to the priest, like the grain offering.” Laws for Guilt Offerings (; )"
+   "text": "In this way the priest will make atonement for him for any of these sins he has committed, and he will be forgiven. The remainder will belong to the priest, like the grain offering.”"
   },
   {
    "verse": 14,
@@ -75,6 +75,20 @@
   {
    "verse": 19,
    "text": "It is a guilt offering; he was certainly guilty before the LORD.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Sins Requiring a Sin Offering"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Laws for Guilt Offerings"
   }
  ]
 }

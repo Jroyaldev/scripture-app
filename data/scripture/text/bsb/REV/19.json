@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "Then a voice came from the throne, saying: “Praise our God, all you who serve Him, and those who fear Him, small and great alike!” The Marriage of the Lamb"
+   "text": "Then a voice came from the throne, saying: “Praise our God, all you who serve Him, and those who fear Him, small and great alike!”"
   },
   {
    "verse": 6,
@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "So I fell at his feet to worship him. But he told me, “Do not do that! I am a fellow servant with you and your brothers who rely on the testimony of Jesus. Worship God! For the testimony of Jesus is the spirit of prophecy.” The Rider on the White Horse"
+   "text": "So I fell at his feet to worship him. But he told me, “Do not do that! I am a fellow servant with you and your brothers who rely on the testimony of Jesus. Worship God! For the testimony of Jesus is the spirit of prophecy.”"
   },
   {
    "verse": 11,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "And He has a name written on His robe and on His thigh: KING OF KINGS AND LORD OF LORDS. Defeat of the Beast and False Prophet"
+   "text": "And He has a name written on His robe and on His thigh: KING OF KINGS AND LORD OF LORDS."
   },
   {
    "verse": 17,
@@ -83,6 +83,32 @@
   {
    "verse": 21,
    "text": "And the rest were killed with the sword that proceeded from the mouth of the One seated on the horse. And all the birds gorged themselves on their flesh."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Rejoicing in Heaven"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "The Marriage of the Lamb"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "The Rider on the White Horse"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Defeat of the Beast and False Prophet"
   }
  ]
 }

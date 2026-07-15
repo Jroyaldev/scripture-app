@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "Then John’s disciples came and took his body and buried it. And they went and informed Jesus. The Feeding of the Five Thousand (; ; )"
+   "text": "Then John’s disciples came and took his body and buried it. And they went and informed Jesus."
   },
   {
    "verse": 13,
@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "About five thousand men were fed, besides women and children. Jesus Walks on Water (; )"
+   "text": "About five thousand men were fed, besides women and children."
   },
   {
    "verse": 22,
@@ -130,7 +130,7 @@
   },
   {
    "verse": 33,
-   "text": "Then those who were in the boat worshiped Him, saying, “Truly You are the Son of God!” Jesus Heals at Gennesaret ()"
+   "text": "Then those who were in the boat worshiped Him, saying, “Truly You are the Son of God!”"
   },
   {
    "verse": 34,
@@ -143,6 +143,32 @@
   {
    "verse": 36,
    "text": "and begged Him just to let them touch the fringe of His cloak. And all who touched Him were healed."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Beheading of John"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Feeding of the Five Thousand"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Walks on Water"
+  },
+  {
+   "beforeVerse": 34,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Heals at Gennesaret"
   }
  ]
 }

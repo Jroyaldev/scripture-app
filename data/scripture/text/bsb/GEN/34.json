@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "Demand a high dowry and an expensive gift, and I will give you whatever you ask. Only give me the girl as my wife!” The Revenge of Dinah’s Brothers"
+   "text": "Demand a high dowry and an expensive gift, and I will give you whatever you ask. Only give me the girl as my wife!”"
   },
   {
    "verse": 13,
@@ -123,6 +123,20 @@
   {
    "verse": 31,
    "text": "But they replied, “Should he have treated our sister like a prostitute?”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Defiling of Dinah"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Revenge of Dinah’s Brothers"
   }
  ]
 }

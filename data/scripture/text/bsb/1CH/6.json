@@ -118,7 +118,7 @@
   },
   {
    "verse": 30,
-   "text": "Shimea his son, Haggiah his son, and Asaiah his son. The Temple Musicians"
+   "text": "Shimea his son, Haggiah his son, and Asaiah his son."
   },
   {
    "verse": 31,
@@ -186,7 +186,7 @@
   },
   {
    "verse": 47,
-   "text": "the son of Mahli, the son of Mushi, the son of Merari, the son of Levi. The Descendants of Aaron"
+   "text": "the son of Mahli, the son of Mushi, the son of Merari, the son of Levi."
   },
   {
    "verse": 48,
@@ -210,7 +210,7 @@
   },
   {
    "verse": 53,
-   "text": "Zadok his son, and Ahimaaz his son. Territories for the Levites (; )"
+   "text": "Zadok his son, and Ahimaaz his son."
   },
   {
    "verse": 54,
@@ -323,6 +323,32 @@
   {
    "verse": 81,
    "text": "Heshbon, and Jazer, together with their pasturelands."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Descendants of Levi"
+  },
+  {
+   "beforeVerse": 31,
+   "kind": "section",
+   "level": 1,
+   "text": "The Temple Musicians"
+  },
+  {
+   "beforeVerse": 48,
+   "kind": "section",
+   "level": 1,
+   "text": "The Descendants of Aaron"
+  },
+  {
+   "beforeVerse": 54,
+   "kind": "section",
+   "level": 1,
+   "text": "Territories for the Levites"
   }
  ]
 }

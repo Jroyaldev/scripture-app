@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "Then Zebah and Zalmunna said, “Get up and kill us yourself, for as the man is, so is his strength.” So Gideon got up and killed Zebah and Zalmunna, and he took the crescent ornaments from the necks of their camels. Gideon’s Ephod"
+   "text": "Then Zebah and Zalmunna said, “Get up and kill us yourself, for as the man is, so is his strength.” So Gideon got up and killed Zebah and Zalmunna, and he took the crescent ornaments from the necks of their camels."
   },
   {
    "verse": 22,
@@ -106,7 +106,7 @@
   },
   {
    "verse": 27,
-   "text": "From all this Gideon made an ephod, which he placed in Ophrah, his hometown. But soon all Israel prostituted themselves by worshiping it there, and it became a snare to Gideon and his household. Forty Years of Peace"
+   "text": "From all this Gideon made an ephod, which he placed in Ophrah, his hometown. But soon all Israel prostituted themselves by worshiping it there, and it became a snare to Gideon and his household."
   },
   {
    "verse": 28,
@@ -122,7 +122,7 @@
   },
   {
    "verse": 31,
-   "text": "His concubine, who dwelt in Shechem, also bore him a son, and he named him Abimelech. Gideon’s Death"
+   "text": "His concubine, who dwelt in Shechem, also bore him a son, and he named him Abimelech."
   },
   {
    "verse": 32,
@@ -139,6 +139,32 @@
   {
    "verse": 35,
    "text": "They did not show kindness to the house of Jerubbaal (that is, Gideon) for all the good things he had done for Israel."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Gideon Defeats Zebah and Zalmunna"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "Gideon’s Ephod"
+  },
+  {
+   "beforeVerse": 28,
+   "kind": "section",
+   "level": 1,
+   "text": "Forty Years of Peace"
+  },
+  {
+   "beforeVerse": 32,
+   "kind": "section",
+   "level": 1,
+   "text": "Gideon’s Death"
   }
  ]
 }

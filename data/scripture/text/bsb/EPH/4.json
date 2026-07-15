@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "From Him the whole body, fitted and held together by every supporting ligament, grows and builds itself up in love through the work of each individual part. New Life in Christ ()"
+   "text": "From Him the whole body, fitted and held together by every supporting ligament, grows and builds itself up in love through the work of each individual part."
   },
   {
    "verse": 17,
@@ -127,6 +127,20 @@
   {
    "verse": 32,
    "text": "Be kind and tenderhearted to one another, forgiving each other just as in Christ God forgave you."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Unity in the Body"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "New Life in Christ"
   }
  ]
 }

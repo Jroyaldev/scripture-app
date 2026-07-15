@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "And Joab reported to the king the total number of the troops. In Israel there were 800,000 men of valor who drew the sword, and in Judah there were 500,000. Judgment for David’s Sin ()"
+   "text": "And Joab reported to the king the total number of the troops. In Israel there were 800,000 men of valor who drew the sword, and in Judah there were 500,000."
   },
   {
    "verse": 10,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "David answered Gad, “I am deeply distressed. Please, let us fall into the hand of the LORD, for His mercies are great; but do not let me fall into the hands of men.” A Plague on Israel ()"
+   "text": "David answered Gad, “I am deeply distressed. Please, let us fall into the hand of the LORD, for His mercies are great; but do not let me fall into the hands of men.”"
   },
   {
    "verse": 15,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "When David saw the angel striking down the people, he said to the LORD, “Surely I, the shepherd, have sinned and acted wickedly. But these sheep, what have they done? Please, let Your hand fall upon me and my father’s house.” David Builds an Altar ()"
+   "text": "When David saw the angel striking down the people, he said to the LORD, “Surely I, the shepherd, have sinned and acted wickedly. But these sheep, what have they done? Please, let Your hand fall upon me and my father’s house.”"
   },
   {
    "verse": 18,
@@ -99,6 +99,32 @@
   {
    "verse": 25,
    "text": "And there he built an altar to the LORD and offered burnt offerings and peace offerings. Then the LORD answered the prayers on behalf of the land, and the plague upon Israel was halted."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "David’s Military Census"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Judgment for David’s Sin"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "A Plague on Israel"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "David Builds an Altar"
   }
  ]
 }

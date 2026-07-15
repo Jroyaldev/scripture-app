@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "How do you know, wife, whether you will save your husband? Or how do you know, husband, whether you will save your wife? Live Your Calling"
+   "text": "How do you know, wife, whether you will save your husband? Or how do you know, husband, whether you will save your wife?"
   },
   {
    "verse": 17,
@@ -94,7 +94,7 @@
   },
   {
    "verse": 24,
-   "text": "Brothers, each one should remain in the situation he was in when God called him. The Unmarried and Widowed"
+   "text": "Brothers, each one should remain in the situation he was in when God called him."
   },
   {
    "verse": 25,
@@ -159,6 +159,26 @@
   {
    "verse": 40,
    "text": "In my judgment, however, she is happier if she remains as she is. And I think that I too have the Spirit of God."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Principles of Marriage"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Live Your Calling"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "The Unmarried and Widowed"
   }
  ]
 }

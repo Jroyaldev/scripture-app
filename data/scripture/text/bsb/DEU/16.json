@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "For six days you must eat unleavened bread, and on the seventh day you shall hold a solemn assembly to the LORD your God, and you must not do any work. The Feast of Weeks ()"
+   "text": "For six days you must eat unleavened bread, and on the seventh day you shall hold a solemn assembly to the LORD your God, and you must not do any work."
   },
   {
    "verse": 9,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "Remember that you were slaves in Egypt, and carefully follow these statutes. The Feast of Tabernacles ()"
+   "text": "Remember that you were slaves in Egypt, and carefully follow these statutes."
   },
   {
    "verse": 13,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "Everyone must appear with a gift as he is able, according to the blessing the LORD your God has given you. Judges and Justice"
+   "text": "Everyone must appear with a gift as he is able, according to the blessing the LORD your God has given you."
   },
   {
    "verse": 18,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "Pursue justice, and justice alone, so that you may live, and you may possess the land that the LORD your God is giving you. Forbidden Forms of Worship"
+   "text": "Pursue justice, and justice alone, so that you may live, and you may possess the land that the LORD your God is giving you."
   },
   {
    "verse": 21,
@@ -87,6 +87,38 @@
   {
    "verse": 22,
    "text": "and do not set up for yourselves a sacred pillar, which the LORD your God hates."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Passover and the Feast of Unleavened Bread"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "The Feast of Weeks"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Feast of Tabernacles"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Judges and Justice"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "Forbidden Forms of Worship"
   }
  ]
 }

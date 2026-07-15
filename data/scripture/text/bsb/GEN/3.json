@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "And the eyes of both of them were opened, and they knew that they were naked; so they sewed together fig leaves and made coverings for themselves. God Arraigns Adam and Eve"
+   "text": "And the eyes of both of them were opened, and they knew that they were naked; so they sewed together fig leaves and made coverings for themselves."
   },
   {
    "verse": 8,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "Then the LORD God said to the woman, “What is this you have done?” “The serpent deceived me,” she replied, “and I ate.” The Fate of the Serpent"
+   "text": "Then the LORD God said to the woman, “What is this you have done?” “The serpent deceived me,” she replied, “and I ate.”"
   },
   {
    "verse": 14,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "And I will put enmity between you and the woman, and between your seed and her seed. He will crush your head, and you will strike his heel.” The Punishment of Mankind"
+   "text": "And I will put enmity between you and the woman, and between your seed and her seed. He will crush your head, and you will strike his heel.”"
   },
   {
    "verse": 16,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "And Adam named his wife Eve, because she would be the mother of all the living. The Expulsion from Paradise"
+   "text": "And Adam named his wife Eve, because she would be the mother of all the living."
   },
   {
    "verse": 21,
@@ -95,6 +95,38 @@
   {
    "verse": 24,
    "text": "So He drove out the man and stationed cherubim on the east side of the Garden of Eden, along with a whirling sword of flame to guard the way to the tree of life."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Serpent’s Deception"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "God Arraigns Adam and Eve"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "The Fate of the Serpent"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "The Punishment of Mankind"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "The Expulsion from Paradise"
   }
  ]
 }

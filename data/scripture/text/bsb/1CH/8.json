@@ -126,7 +126,7 @@
   },
   {
    "verse": 32,
-   "text": "and Mikloth, who was the father of Shimeah. They too lived alongside their relatives in Jerusalem. The Family of Saul"
+   "text": "and Mikloth, who was the father of Shimeah. They too lived alongside their relatives in Jerusalem."
   },
   {
    "verse": 33,
@@ -159,6 +159,20 @@
   {
    "verse": 40,
    "text": "The sons of Ulam were mighty men of valor, archers, and they had many sons and grandsons— 150 in all. All these were the descendants of Benjamin."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Genealogy from Benjamin to Saul"
+  },
+  {
+   "beforeVerse": 33,
+   "kind": "section",
+   "level": 1,
+   "text": "The Family of Saul"
   }
  ]
 }

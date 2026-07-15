@@ -2,7 +2,7 @@
  "verses": [
   {
    "verse": 1,
-   "text": "I have come to my garden, my sister, my bride; I have gathered my myrrh with my spice. I have eaten my honeycomb with my honey; I have drunk my wine with my milk. The Friends Eat, O friends, and drink; drink freely, O beloved. The Bride"
+   "text": "I have come to my garden, my sister, my bride; I have gathered my myrrh with my spice. I have eaten my honeycomb with my honey; I have drunk my wine with my milk. Eat, O friends, and drink; drink freely, O beloved."
   },
   {
    "verse": 2,
@@ -30,11 +30,11 @@
   },
   {
    "verse": 8,
-   "text": "O daughters of Jerusalem, I adjure you, if you find my beloved, tell him I am sick with love. The Friends"
+   "text": "O daughters of Jerusalem, I adjure you, if you find my beloved, tell him I am sick with love."
   },
   {
    "verse": 9,
-   "text": "How is your beloved better than others, O most beautiful among women? How is your beloved better than another, that you charge us so? The Bride"
+   "text": "How is your beloved better than others, O most beautiful among women? How is your beloved better than another, that you charge us so?"
   },
   {
    "verse": 10,
@@ -63,6 +63,44 @@
   {
    "verse": 16,
    "text": "His mouth is most sweet; he is altogether lovely. This is my beloved, and this is my friend, O daughters of Jerusalem."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Bride and Her Beloved"
+  },
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 2,
+   "text": "The Bridegroom"
+  },
+  {
+   "beforeVerse": 2,
+   "kind": "section",
+   "level": 2,
+   "text": "The Friends"
+  },
+  {
+   "beforeVerse": 2,
+   "kind": "section",
+   "level": 2,
+   "text": "The Bride"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 2,
+   "text": "The Friends"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 2,
+   "text": "The Bride"
   }
  ]
 }

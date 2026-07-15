@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "And if a woman divorces her husband and marries another man, she commits adultery.” Jesus Blesses the Children (; )"
+   "text": "And if a woman divorces her husband and marries another man, she commits adultery.”"
   },
   {
    "verse": 13,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "And He took the children in His arms, placed His hands on them, and blessed them. The Rich Young Man (; )"
+   "text": "And He took the children in His arms, placed His hands on them, and blessed them."
   },
   {
    "verse": 17,
@@ -122,7 +122,7 @@
   },
   {
    "verse": 31,
-   "text": "But many who are first will be last, and the last will be first.” The Third Prediction of the Passion (; )"
+   "text": "But many who are first will be last, and the last will be first.”"
   },
   {
    "verse": 32,
@@ -134,7 +134,7 @@
   },
   {
    "verse": 34,
-   "text": "who will mock Him and spit on Him and flog Him and kill Him. And after three days He will rise again.” The Request of James and John ()"
+   "text": "who will mock Him and spit on Him and flog Him and kill Him. And after three days He will rise again.”"
   },
   {
    "verse": 35,
@@ -178,7 +178,7 @@
   },
   {
    "verse": 45,
-   "text": "For even the Son of Man did not come to be served, but to serve, and to give His life as a ransom for many.” Jesus Heals Bartimaeus (; )"
+   "text": "For even the Son of Man did not come to be served, but to serve, and to give His life as a ransom for many.”"
   },
   {
    "verse": 46,
@@ -207,6 +207,44 @@
   {
    "verse": 52,
    "text": "“Go,” said Jesus, “your faith has healed you.” And immediately he received his sight and followed Jesus along the road."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Teachings about Divorce"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Blesses the Children"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "The Rich Young Man"
+  },
+  {
+   "beforeVerse": 32,
+   "kind": "section",
+   "level": 1,
+   "text": "The Third Prediction of the Passion"
+  },
+  {
+   "beforeVerse": 35,
+   "kind": "section",
+   "level": 1,
+   "text": "The Request of James and John"
+  },
+  {
+   "beforeVerse": 46,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Heals Bartimaeus"
   }
  ]
 }

@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "But they kept insisting, “He stirs up the people all over Judea with His teaching. He began in Galilee and has come all the way here.” Jesus before Herod"
+   "text": "But they kept insisting, “He stirs up the people all over Judea with His teaching. He began in Galilee and has come all the way here.”"
   },
   {
    "verse": 6,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "That day Herod and Pilate became friends; before this time they had been enemies. The Crowd Chooses Barabbas (; )"
+   "text": "That day Herod and Pilate became friends; before this time they had been enemies."
   },
   {
    "verse": 13,
@@ -94,7 +94,7 @@
   },
   {
    "verse": 25,
-   "text": "As they had requested, he released the one imprisoned for insurrection and murder, and he handed Jesus over to their will. The Crucifixion (; ; ; )"
+   "text": "As they had requested, he released the one imprisoned for insurrection and murder, and he handed Jesus over to their will."
   },
   {
    "verse": 26,
@@ -166,7 +166,7 @@
   },
   {
    "verse": 43,
-   "text": "And Jesus said to him, “Truly I tell you, today you will be with Me in Paradise.” The Death of Jesus (; ; ; )"
+   "text": "And Jesus said to him, “Truly I tell you, today you will be with Me in Paradise.”"
   },
   {
    "verse": 44,
@@ -190,7 +190,7 @@
   },
   {
    "verse": 49,
-   "text": "But all those who knew Jesus, including the women who had followed Him from Galilee, stood at a distance watching these things. The Burial of Jesus (; ; ; )"
+   "text": "But all those who knew Jesus, including the women who had followed Him from Galilee, stood at a distance watching these things."
   },
   {
    "verse": 50,
@@ -219,6 +219,44 @@
   {
    "verse": 56,
    "text": "Then they returned to prepare spices and perfumes. And they rested on the Sabbath, according to the commandment."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus before Pilate"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus before Herod"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Crowd Chooses Barabbas"
+  },
+  {
+   "beforeVerse": 26,
+   "kind": "section",
+   "level": 1,
+   "text": "The Crucifixion"
+  },
+  {
+   "beforeVerse": 44,
+   "kind": "section",
+   "level": 1,
+   "text": "The Death of Jesus"
+  },
+  {
+   "beforeVerse": 50,
+   "kind": "section",
+   "level": 1,
+   "text": "The Burial of Jesus"
   }
  ]
 }

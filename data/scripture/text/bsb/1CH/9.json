@@ -134,7 +134,7 @@
   },
   {
    "verse": 34,
-   "text": "All these were heads of Levite families, chiefs according to their genealogies, and they lived in Jerusalem. The Descendants of Saul"
+   "text": "All these were heads of Levite families, chiefs according to their genealogies, and they lived in Jerusalem."
   },
   {
    "verse": 35,
@@ -175,6 +175,20 @@
   {
    "verse": 44,
    "text": "And Azel had six sons, and these were their names: Azrikam, Bocheru, Ishmael, Sheariah, Obadiah, and Hanan. These were the sons of Azel."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The People of Jerusalem"
+  },
+  {
+   "beforeVerse": 35,
+   "kind": "section",
+   "level": 1,
+   "text": "The Descendants of Saul"
   }
  ]
 }

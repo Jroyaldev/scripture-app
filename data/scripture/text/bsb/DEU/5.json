@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "The LORD spoke with you face to face out of the fire on the mountain. The Ten Commandments ()"
+   "text": "The LORD spoke with you face to face out of the fire on the mountain."
   },
   {
    "verse": 5,
@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "You shall not covet your neighbor’s wife. You shall not covet your neighbor’s house or field, or his manservant or maidservant, or his ox or donkey, or anything that belongs to your neighbor.” Moses Intercedes for the People (; )"
+   "text": "You shall not covet your neighbor’s wife. You shall not covet your neighbor’s house or field, or his manservant or maidservant, or his ox or donkey, or anything that belongs to your neighbor.”"
   },
   {
    "verse": 22,
@@ -131,6 +131,26 @@
   {
    "verse": 33,
    "text": "You must walk in all the ways that the LORD your God has commanded you, so that you may live and prosper and prolong your days in the land that you will possess."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Covenant at Horeb"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "The Ten Commandments"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "Moses Intercedes for the People"
   }
  ]
 }

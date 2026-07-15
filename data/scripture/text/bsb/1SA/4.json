@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "The ark of God was captured, and Eli’s two sons, Hophni and Phinehas, died. The Death of Eli"
+   "text": "The ark of God was captured, and Eli’s two sons, Hophni and Phinehas, died."
   },
   {
    "verse": 12,
@@ -87,6 +87,20 @@
   {
    "verse": 22,
    "text": "“The glory has departed from Israel,” she said, “for the ark of God has been captured.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Philistines Capture the Ark"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "The Death of Eli"
   }
  ]
 }

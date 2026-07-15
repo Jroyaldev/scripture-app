@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "Devise a plan, but it will be thwarted; state a proposal, but it will not happen. For God is with us.” A Call to Fear God ()"
+   "text": "Devise a plan, but it will be thwarted; state a proposal, but it will not happen. For God is with us.”"
   },
   {
    "verse": 11,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "Here am I, and the children the LORD has given me as signs and symbols in Israel from the LORD of Hosts, who dwells on Mount Zion. Darkness and Light"
+   "text": "Here am I, and the children the LORD has given me as signs and symbols in Israel from the LORD of Hosts, who dwells on Mount Zion."
   },
   {
    "verse": 19,
@@ -87,6 +87,26 @@
   {
    "verse": 22,
    "text": "Then they will look to the earth and see only distress and darkness and the gloom of anguish. And they will be driven into utter darkness."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Assyrian Invasion Prophesied"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "A Call to Fear God"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "Darkness and Light"
   }
  ]
 }

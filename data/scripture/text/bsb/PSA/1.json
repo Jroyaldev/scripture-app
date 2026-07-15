@@ -24,5 +24,25 @@
    "verse": 6,
    "text": "For the LORD guards the path of the righteous, but the way of the wicked will perish."
   }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "major-section",
+   "level": 1,
+   "text": "BOOK I"
+  },
+  {
+   "beforeVerse": 1,
+   "kind": "description",
+   "level": 1,
+   "text": "Psalms 1–41"
+  },
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Two Paths"
+  }
  ]
 }

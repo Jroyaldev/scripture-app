@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "But whoever practices the truth comes into the Light, so that it may be seen clearly that what he has done has been accomplished in God.” John’s Testimony about Jesus"
+   "text": "But whoever practices the truth comes into the Light, so that it may be seen clearly that what he has done has been accomplished in God.”"
   },
   {
    "verse": 22,
@@ -143,6 +143,20 @@
   {
    "verse": 36,
    "text": "Whoever believes in the Son has eternal life. Whoever rejects the Son will not see life. Instead, the wrath of God remains on him.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus and Nicodemus"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "John’s Testimony about Jesus"
   }
  ]
 }

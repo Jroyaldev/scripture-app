@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "I will no longer allow the taunts of the nations to be heard against you, and you will no longer endure the reproach of the peoples or cause your nation to stumble, declares the Lord GOD.” A New Heart and a New Spirit (; )"
+   "text": "I will no longer allow the taunts of the nations to be heard against you, and you will no longer endure the reproach of the peoples or cause your nation to stumble, declares the Lord GOD.”"
   },
   {
    "verse": 16,
@@ -151,6 +151,20 @@
   {
    "verse": 38,
    "text": "Like the numerous flocks for sacrifices at Jerusalem during her appointed feasts, so the ruined cities will be filled with flocks of people. Then they will know that I am the LORD.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Prophecy to the Mountains of Israel"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "A New Heart and a New Spirit"
   }
  ]
 }

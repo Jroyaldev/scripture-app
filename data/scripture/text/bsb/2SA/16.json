@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "So the king said to Ziba, “All that belongs to Mephibosheth is now yours!” “I humbly bow before you,” said Ziba. “May I find favor in your eyes, my lord the king!” Shimei Curses David"
+   "text": "So the king said to Ziba, “All that belongs to Mephibosheth is now yours!” “I humbly bow before you,” said Ziba. “May I find favor in your eyes, my lord the king!”"
   },
   {
    "verse": 5,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "Finally, the king and all the people with him arrived, exhausted. And there he refreshed himself. The Counsel of Ahithophel and Hushai"
+   "text": "Finally, the king and all the people with him arrived, exhausted. And there he refreshed himself."
   },
   {
    "verse": 15,
@@ -91,6 +91,26 @@
   {
    "verse": 23,
    "text": "Now in those days the advice of Ahithophel was like the consultation of the word of God. Such was the regard that both David and Absalom had for Ahithophel’s advice."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "David and Ziba"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "Shimei Curses David"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "The Counsel of Ahithophel and Hushai"
   }
  ]
 }

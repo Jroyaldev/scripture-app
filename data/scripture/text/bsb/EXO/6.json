@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "Then the LORD spoke to Moses and Aaron and gave them a charge concerning both the Israelites and Pharaoh king of Egypt, to bring the Israelites out of the land of Egypt. Genealogies of Moses and Aaron"
+   "text": "Then the LORD spoke to Moses and Aaron and gave them a charge concerning both the Israelites and Pharaoh king of Egypt, to bring the Israelites out of the land of Egypt."
   },
   {
    "verse": 14,
@@ -119,6 +119,20 @@
   {
    "verse": 30,
    "text": "But in the LORD’s presence Moses replied, “Since I am unskilled in speech, why would Pharaoh listen to me?”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "God Promises Deliverance"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Genealogies of Moses and Aaron"
   }
  ]
 }

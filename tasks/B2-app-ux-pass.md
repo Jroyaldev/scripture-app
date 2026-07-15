@@ -4,6 +4,19 @@
 > **Predecessors:** A0 (snapshot), A1 (native build), B1 (scripture data).
 > **Contracts:** §4.2 (event fold), §4.4 (SQLite materialized view), §4.6 (note format), INV-7 (append-only), INV-9 (safe to rebuild).
 
+## Progress — 2026-07-15 (BSB canonical-prose boundary)
+
+A bounded data-integrity repair removed USFM publication structure from the canonical reading text without changing the reader UI or the separate mobile worktree:
+
+- **Root cause repaired at import:** the previous scanner sliced from one `\v` marker to the next and then stripped marker tokens, so payloads such as `\s2 The First Day` survived as the preceding verse's final sentence. The pure core parser now removes structural lines before verse extraction.
+- **Structure is preserved, not discarded:** 3,150 BSB section, major-section, description, speaker, and acrostic headings are stored separately with the first governed verse. The importer excludes 5,004 total nonverse structural lines from canonical prose.
+- **Psalm numbering remains intact:** a structural line that contains an explicit `\v` remains canonical verse text, protecting all numbered Psalm superscriptions and similar source records.
+- **No corpus shrinkage:** the regenerated package still contains 31,086 verses across 1,189 chapters and the same 15 known critical-text omissions relative to the KJV backbone.
+- **Regression is exhaustive:** the import Doctor records the exact verse, heading, structural-line, and backbone-delta totals. Tests scan every committed BSB chapter for a heading suffix in verse prose, and the package verifier validates every heading coordinate, kind, and payload.
+- **Rendered proof:** after restarting Electron, BSB Genesis 1 rendered 31 verse rows; verses 2, 5, and 8 contained no appended day headings, and a live DOM scan found zero leaked day-heading nodes in the canonical verse layer.
+
+**Verification:** focused USFM tests (**4/4**), `npm run verify:data` (**5,945 chapter files / 155,494 verses**), full `npm test` (**405 tests: 395 passing, 10 expected Electron-ABI skips**), `npm run lint`, Electron build, renderer build, live BSB Genesis 1 DOM assertion, and `git diff --check` pass.
+
 ## Progress — 2026-07-15 (Top chrome control refinement)
 
 A focused post-consolidation audit corrected the two remaining ambiguous controls without reopening the wider desktop system:

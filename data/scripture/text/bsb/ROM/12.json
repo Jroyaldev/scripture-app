@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "if it is encouraging, let him encourage; if it is giving, let him give generously; if it is leading, let him lead with diligence; if it is showing mercy, let him do it cheerfully. Love, Zeal, Hope, Hospitality (; )"
+   "text": "if it is encouraging, let him encourage; if it is giving, let him give generously; if it is leading, let him lead with diligence; if it is showing mercy, let him do it cheerfully."
   },
   {
    "verse": 9,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "Share with the saints who are in need. Practice hospitality. Forgiveness ()"
+   "text": "Share with the saints who are in need. Practice hospitality."
   },
   {
    "verse": 14,
@@ -83,6 +83,26 @@
   {
    "verse": 21,
    "text": "Do not be overcome by evil, but overcome evil with good."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Living Sacrifices"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Love, Zeal, Hope, Hospitality"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Forgiveness"
   }
  ]
 }

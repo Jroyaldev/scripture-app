@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "“Take a census of the men twenty years of age or older, as the LORD has commanded Moses.” And these were the Israelites who came out of the land of Egypt: The Tribe of Reuben"
+   "text": "“Take a census of the men twenty years of age or older, as the LORD has commanded Moses.” And these were the Israelites who came out of the land of Egypt:"
   },
   {
    "verse": 5,
@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "However, the line of Korah did not die out. The Tribe of Simeon"
+   "text": "However, the line of Korah did not die out."
   },
   {
    "verse": 12,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "These were the clans of Simeon, and there were 22,200 men. The Tribe of Gad"
+   "text": "These were the clans of Simeon, and there were 22,200 men."
   },
   {
    "verse": 15,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "These were the clans of Gad, and their registration numbered . . . 40,500. The Tribe of Judah"
+   "text": "These were the clans of Gad, and their registration numbered . . . 40,500."
   },
   {
    "verse": 19,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "These were the clans of Judah, and their registration numbered . . . 76,500. The Tribe of Issachar"
+   "text": "These were the clans of Judah, and their registration numbered . . . 76,500."
   },
   {
    "verse": 23,
@@ -98,7 +98,7 @@
   },
   {
    "verse": 25,
-   "text": "These were the clans of Issachar, and their registration numbered . . . 64,300. The Tribe of Zebulun"
+   "text": "These were the clans of Issachar, and their registration numbered . . . 64,300."
   },
   {
    "verse": 26,
@@ -106,7 +106,7 @@
   },
   {
    "verse": 27,
-   "text": "These were the clans of Zebulun, and their registration numbered . . . 60,500. The Tribe of Manasseh"
+   "text": "These were the clans of Zebulun, and their registration numbered . . . 60,500."
   },
   {
    "verse": 28,
@@ -134,7 +134,7 @@
   },
   {
    "verse": 34,
-   "text": "These were the clans of Manasseh, and their registration numbered . . . 52,700. The Tribe of Ephraim"
+   "text": "These were the clans of Manasseh, and their registration numbered . . . 52,700."
   },
   {
    "verse": 35,
@@ -146,7 +146,7 @@
   },
   {
    "verse": 37,
-   "text": "These were the clans of Ephraim, and their registration numbered . . . 32,500. These clans were the descendants of Joseph. The Tribe of Benjamin"
+   "text": "These were the clans of Ephraim, and their registration numbered . . . 32,500. These clans were the descendants of Joseph."
   },
   {
    "verse": 38,
@@ -162,7 +162,7 @@
   },
   {
    "verse": 41,
-   "text": "These were the clans of Benjamin, and their registration numbered . . . 45,600. The Tribe of Dan"
+   "text": "These were the clans of Benjamin, and their registration numbered . . . 45,600."
   },
   {
    "verse": 42,
@@ -170,7 +170,7 @@
   },
   {
    "verse": 43,
-   "text": "All of them were Shuhamite clans, and their registration numbered . . . 64,400. The Tribe of Asher"
+   "text": "All of them were Shuhamite clans, and their registration numbered . . . 64,400."
   },
   {
    "verse": 44,
@@ -186,7 +186,7 @@
   },
   {
    "verse": 47,
-   "text": "These were the clans of Asher, and their registration numbered . . . 53,400. The Tribe of Naphtali"
+   "text": "These were the clans of Asher, and their registration numbered . . . 53,400."
   },
   {
    "verse": 48,
@@ -202,7 +202,7 @@
   },
   {
    "verse": 51,
-   "text": "These men of Israel numbered 601,730 in all. Inheritance by Lot"
+   "text": "These men of Israel numbered 601,730 in all."
   },
   {
    "verse": 52,
@@ -222,7 +222,7 @@
   },
   {
    "verse": 56,
-   "text": "Each inheritance is to be divided by lot among the larger and smaller tribes.” The Levites Numbered"
+   "text": "Each inheritance is to be divided by lot among the larger and smaller tribes.”"
   },
   {
    "verse": 57,
@@ -246,7 +246,7 @@
   },
   {
    "verse": 62,
-   "text": "The registration of the Levites totaled 23,000, every male a month old or more; they were not numbered among the other Israelites, because no inheritance was given to them among the Israelites. Only Caleb and Joshua Remain"
+   "text": "The registration of the Levites totaled 23,000, every male a month old or more; they were not numbered among the other Israelites, because no inheritance was given to them among the Israelites."
   },
   {
    "verse": 63,
@@ -259,6 +259,104 @@
   {
    "verse": 65,
    "text": "For the LORD had told them that they would surely die in the wilderness. Not one was left except Caleb son of Jephunneh and Joshua son of Nun."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Second Census of Israel"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "The Tribe of Reuben"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "The Tribe of Simeon"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "The Tribe of Gad"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "The Tribe of Judah"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "The Tribe of Issachar"
+  },
+  {
+   "beforeVerse": 26,
+   "kind": "section",
+   "level": 1,
+   "text": "The Tribe of Zebulun"
+  },
+  {
+   "beforeVerse": 28,
+   "kind": "section",
+   "level": 1,
+   "text": "The Tribe of Manasseh"
+  },
+  {
+   "beforeVerse": 35,
+   "kind": "section",
+   "level": 1,
+   "text": "The Tribe of Ephraim"
+  },
+  {
+   "beforeVerse": 38,
+   "kind": "section",
+   "level": 1,
+   "text": "The Tribe of Benjamin"
+  },
+  {
+   "beforeVerse": 42,
+   "kind": "section",
+   "level": 1,
+   "text": "The Tribe of Dan"
+  },
+  {
+   "beforeVerse": 44,
+   "kind": "section",
+   "level": 1,
+   "text": "The Tribe of Asher"
+  },
+  {
+   "beforeVerse": 48,
+   "kind": "section",
+   "level": 1,
+   "text": "The Tribe of Naphtali"
+  },
+  {
+   "beforeVerse": 52,
+   "kind": "section",
+   "level": 1,
+   "text": "Inheritance by Lot"
+  },
+  {
+   "beforeVerse": 57,
+   "kind": "section",
+   "level": 1,
+   "text": "The Levites Numbered"
+  },
+  {
+   "beforeVerse": 63,
+   "kind": "section",
+   "level": 1,
+   "text": "Only Caleb and Joshua Remain"
   }
  ]
 }

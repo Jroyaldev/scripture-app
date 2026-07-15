@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "Oppressing the poor to enrich oneself or giving gifts to the rich will surely lead to poverty. Thirty Sayings of the Wise Saying 1"
+   "text": "Oppressing the poor to enrich oneself or giving gifts to the rich will surely lead to poverty."
   },
   {
    "verse": 17,
@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "to show you true and reliable words, that you may soundly answer those who sent you? Saying 2"
+   "text": "to show you true and reliable words, that you may soundly answer those who sent you?"
   },
   {
    "verse": 22,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "for the LORD will take up their case and will plunder those who rob them. Saying 3"
+   "text": "for the LORD will take up their case and will plunder those who rob them."
   },
   {
    "verse": 24,
@@ -98,7 +98,7 @@
   },
   {
    "verse": 25,
-   "text": "or you may learn his ways and entangle yourself in a snare. Saying 4"
+   "text": "or you may learn his ways and entangle yourself in a snare."
   },
   {
    "verse": 26,
@@ -106,15 +106,65 @@
   },
   {
    "verse": 27,
-   "text": "If you have nothing with which to pay, why should your bed be taken from under you? Saying 5"
+   "text": "If you have nothing with which to pay, why should your bed be taken from under you?"
   },
   {
    "verse": 28,
-   "text": "Do not move an ancient boundary stone which your fathers have placed. Saying 6"
+   "text": "Do not move an ancient boundary stone which your fathers have placed."
   },
   {
    "verse": 29,
    "text": "Do you see a man skilled in his work? He will be stationed in the presence of kings; he will not stand before obscure men."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Good Name"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Thirty Sayings of the Wise"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 2,
+   "text": "Saying 1"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 2,
+   "text": "Saying 2"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 2,
+   "text": "Saying 3"
+  },
+  {
+   "beforeVerse": 26,
+   "kind": "section",
+   "level": 2,
+   "text": "Saying 4"
+  },
+  {
+   "beforeVerse": 28,
+   "kind": "section",
+   "level": 2,
+   "text": "Saying 5"
+  },
+  {
+   "beforeVerse": 29,
+   "kind": "section",
+   "level": 2,
+   "text": "Saying 6"
   }
  ]
 }

@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "And forgive us our sins, for we also forgive everyone who sins against us. And lead us not into temptation.’” Ask, Seek, Knock ()"
+   "text": "And forgive us our sins, for we also forgive everyone who sins against us. And lead us not into temptation.’”"
   },
   {
    "verse": 5,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "So if you who are evil know how to give good gifts to your children, how much more will your Father in heaven give the Holy Spirit to those who ask Him!” A House Divided (; )"
+   "text": "So if you who are evil know how to give good gifts to your children, how much more will your Father in heaven give the Holy Spirit to those who ask Him!”"
   },
   {
    "verse": 14,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "He who is not with Me is against Me, and he who does not gather with Me scatters. An Unclean Spirit Returns ()"
+   "text": "He who is not with Me is against Me, and he who does not gather with Me scatters."
   },
   {
    "verse": 24,
@@ -102,7 +102,7 @@
   },
   {
    "verse": 26,
-   "text": "Then it goes and brings seven other spirits more wicked than itself, and they go in and dwell there. And the final plight of that man is worse than the first.” True Blessedness"
+   "text": "Then it goes and brings seven other spirits more wicked than itself, and they go in and dwell there. And the final plight of that man is worse than the first.”"
   },
   {
    "verse": 27,
@@ -110,7 +110,7 @@
   },
   {
    "verse": 28,
-   "text": "But He replied, “Blessed rather are those who hear the word of God and obey it.” The Sign of Jonah (; )"
+   "text": "But He replied, “Blessed rather are those who hear the word of God and obey it.”"
   },
   {
    "verse": 29,
@@ -126,7 +126,7 @@
   },
   {
    "verse": 32,
-   "text": "The men of Nineveh will stand at the judgment with this generation and condemn it; for they repented at the preaching of Jonah, and now One greater than Jonah is here. The Lamp of the Body ()"
+   "text": "The men of Nineveh will stand at the judgment with this generation and condemn it; for they repented at the preaching of Jonah, and now One greater than Jonah is here."
   },
   {
    "verse": 33,
@@ -142,7 +142,7 @@
   },
   {
    "verse": 36,
-   "text": "So if your whole body is full of light, with no part of it in darkness, you will be radiant, as though a lamp were shining on you.” Woes to Pharisees and Experts in the Law ()"
+   "text": "So if your whole body is full of light, with no part of it in darkness, you will be radiant, as though a lamp were shining on you.”"
   },
   {
    "verse": 37,
@@ -215,6 +215,56 @@
   {
    "verse": 54,
    "text": "waiting to catch Him in something He might say."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Lord’s Prayer"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "Ask, Seek, Knock"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "A House Divided"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "An Unclean Spirit Returns"
+  },
+  {
+   "beforeVerse": 27,
+   "kind": "section",
+   "level": 1,
+   "text": "True Blessedness"
+  },
+  {
+   "beforeVerse": 29,
+   "kind": "section",
+   "level": 1,
+   "text": "The Sign of Jonah"
+  },
+  {
+   "beforeVerse": 33,
+   "kind": "section",
+   "level": 1,
+   "text": "The Lamp of the Body"
+  },
+  {
+   "beforeVerse": 37,
+   "kind": "section",
+   "level": 1,
+   "text": "Woes to Pharisees and Experts in the Law"
   }
  ]
 }

@@ -6,7 +6,7 @@
   },
   {
    "verse": 2,
-   "text": "and He began to teach them, saying: The Beatitudes (; )"
+   "text": "and He began to teach them, saying:"
   },
   {
    "verse": 3,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "Rejoice and be glad, because great is your reward in heaven, for in the same way they persecuted the prophets before you. Salt and Light (; ; )"
+   "text": "Rejoice and be glad, because great is your reward in heaven, for in the same way they persecuted the prophets before you."
   },
   {
    "verse": 13,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "In the same way, let your light shine before men, that they may see your good deeds and glorify your Father in heaven. The Fulfillment of the Law"
+   "text": "In the same way, let your light shine before men, that they may see your good deeds and glorify your Father in heaven."
   },
   {
    "verse": 17,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "For I tell you that unless your righteousness exceeds that of the scribes and Pharisees, you will never enter the kingdom of heaven. Anger and Reconciliation ()"
+   "text": "For I tell you that unless your righteousness exceeds that of the scribes and Pharisees, you will never enter the kingdom of heaven."
   },
   {
    "verse": 21,
@@ -102,7 +102,7 @@
   },
   {
    "verse": 26,
-   "text": "Truly I tell you, you will not get out until you have paid the last penny. Adultery ()"
+   "text": "Truly I tell you, you will not get out until you have paid the last penny."
   },
   {
    "verse": 27,
@@ -118,7 +118,7 @@
   },
   {
    "verse": 30,
-   "text": "And if your right hand causes you to sin, cut it off and throw it away. It is better for you to lose one part of your body than for your whole body to depart into hell. Divorce (; )"
+   "text": "And if your right hand causes you to sin, cut it off and throw it away. It is better for you to lose one part of your body than for your whole body to depart into hell."
   },
   {
    "verse": 31,
@@ -126,7 +126,7 @@
   },
   {
    "verse": 32,
-   "text": "But I tell you that anyone who divorces his wife, except for sexual immorality, brings adultery upon her. And he who marries a divorced woman commits adultery. Oaths and Vows ()"
+   "text": "But I tell you that anyone who divorces his wife, except for sexual immorality, brings adultery upon her. And he who marries a divorced woman commits adultery."
   },
   {
    "verse": 33,
@@ -146,7 +146,7 @@
   },
   {
    "verse": 37,
-   "text": "Simply let your ‘Yes’ be ‘Yes,’ and your ‘No,’ ‘No.’ Anything more comes from the evil one. Love Your Enemies (; )"
+   "text": "Simply let your ‘Yes’ be ‘Yes,’ and your ‘No,’ ‘No.’ Anything more comes from the evil one."
   },
   {
    "verse": 38,
@@ -191,6 +191,62 @@
   {
    "verse": 48,
    "text": "Be perfect, therefore, as your heavenly Father is perfect.[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Sermon on the Mount"
+  },
+  {
+   "beforeVerse": 3,
+   "kind": "section",
+   "level": 1,
+   "text": "The Beatitudes"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Salt and Light"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "The Fulfillment of the Law"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "Anger and Reconciliation"
+  },
+  {
+   "beforeVerse": 27,
+   "kind": "section",
+   "level": 1,
+   "text": "Adultery"
+  },
+  {
+   "beforeVerse": 31,
+   "kind": "section",
+   "level": 1,
+   "text": "Divorce"
+  },
+  {
+   "beforeVerse": 33,
+   "kind": "section",
+   "level": 1,
+   "text": "Oaths and Vows"
+  },
+  {
+   "beforeVerse": 38,
+   "kind": "section",
+   "level": 1,
+   "text": "Love Your Enemies"
   }
  ]
 }

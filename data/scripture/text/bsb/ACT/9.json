@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "For three days he was without sight, and he did not eat or drink anything. Ananias Baptizes Saul"
+   "text": "For three days he was without sight, and he did not eat or drink anything."
   },
   {
    "verse": 10,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "and after taking some food, he regained his strength. And he spent several days with the disciples in Damascus. Saul Preaches at Damascus"
+   "text": "and after taking some food, he regained his strength. And he spent several days with the disciples in Damascus."
   },
   {
    "verse": 20,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "But Saul was empowered all the more, and he confounded the Jews living in Damascus by proving that Jesus is the Christ. The Escape from Damascus"
+   "text": "But Saul was empowered all the more, and he confounded the Jews living in Damascus by proving that Jesus is the Christ."
   },
   {
    "verse": 23,
@@ -98,7 +98,7 @@
   },
   {
    "verse": 25,
-   "text": "One night, however, his disciples took him and lowered him in a basket through a window in the wall. Saul in Jerusalem"
+   "text": "One night, however, his disciples took him and lowered him in a basket through a window in the wall."
   },
   {
    "verse": 26,
@@ -118,7 +118,7 @@
   },
   {
    "verse": 30,
-   "text": "When the brothers learned of this, they took him down to Caesarea and sent him off to Tarsus. The Healing of Aeneas"
+   "text": "When the brothers learned of this, they took him down to Caesarea and sent him off to Tarsus."
   },
   {
    "verse": 31,
@@ -138,7 +138,7 @@
   },
   {
    "verse": 35,
-   "text": "and all who lived in Lydda and Sharon saw him and turned to the Lord. The Raising of Tabitha ()"
+   "text": "and all who lived in Lydda and Sharon saw him and turned to the Lord."
   },
   {
    "verse": 36,
@@ -171,6 +171,50 @@
   {
    "verse": 43,
    "text": "And Peter stayed for several days in Joppa with a tanner named Simon."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Road to Damascus"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Ananias Baptizes Saul"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "Saul Preaches at Damascus"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "The Escape from Damascus"
+  },
+  {
+   "beforeVerse": 26,
+   "kind": "section",
+   "level": 1,
+   "text": "Saul in Jerusalem"
+  },
+  {
+   "beforeVerse": 31,
+   "kind": "section",
+   "level": 1,
+   "text": "The Healing of Aeneas"
+  },
+  {
+   "beforeVerse": 36,
+   "kind": "section",
+   "level": 1,
+   "text": "The Raising of Tabitha"
   }
  ]
 }

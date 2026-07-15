@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "Nadab and Abihu, however, died in the presence of the LORD when they offered unauthorized fire before the LORD in the Wilderness of Sinai. And since they had no sons, only Eleazar and Ithamar served as priests during the lifetime of their father Aaron. The Duties of the Levites"
+   "text": "Nadab and Abihu, however, died in the presence of the LORD when they offered unauthorized fire before the LORD in the Wilderness of Sinai. And since they had no sons, only Eleazar and Ithamar served as priests during the lifetime of their father Aaron."
   },
   {
    "verse": 5,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "for all the firstborn are Mine. On the day I struck down every firstborn in the land of Egypt, I consecrated to Myself all the firstborn in Israel, both man and beast. They are Mine; I am the LORD.” The Numbering of the Levites"
+   "text": "for all the firstborn are Mine. On the day I struck down every firstborn in the land of Egypt, I consecrated to Myself all the firstborn in Israel, both man and beast. They are Mine; I am the LORD.”"
   },
   {
    "verse": 14,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "And the sons of Merari by their clans were Mahli and Mushi. These were the clans of the Levites, according to their families. The Gershonites (; )"
+   "text": "And the sons of Merari by their clans were Mahli and Mushi. These were the clans of the Levites, according to their families."
   },
   {
    "verse": 21,
@@ -102,7 +102,7 @@
   },
   {
    "verse": 26,
-   "text": "the curtains of the courtyard, the curtain for the entrance to the courtyard that surrounds the tabernacle and altar, and the cords— all the service for these items. The Kohathites (; )"
+   "text": "the curtains of the courtyard, the curtain for the entrance to the courtyard that surrounds the tabernacle and altar, and the cords— all the service for these items."
   },
   {
    "verse": 27,
@@ -126,7 +126,7 @@
   },
   {
    "verse": 32,
-   "text": "The chief of the leaders of the Levites was Eleazar son of Aaron the priest; he oversaw those responsible for the duties of the sanctuary. The Merarites (; )"
+   "text": "The chief of the leaders of the Levites was Eleazar son of Aaron the priest; he oversaw those responsible for the duties of the sanctuary."
   },
   {
    "verse": 33,
@@ -146,7 +146,7 @@
   },
   {
    "verse": 37,
-   "text": "as well as the posts of the surrounding courtyard with their bases, tent pegs, and ropes. Moses and Aaron"
+   "text": "as well as the posts of the surrounding courtyard with their bases, tent pegs, and ropes."
   },
   {
    "verse": 38,
@@ -154,7 +154,7 @@
   },
   {
    "verse": 39,
-   "text": "The total number of Levites that Moses and Aaron counted by their clans at the LORD’s command, including all the males a month old or more, was 22,000. The Redemption of the Firstborn"
+   "text": "The total number of Levites that Moses and Aaron counted by their clans at the LORD’s command, including all the males a month old or more, was 22,000."
   },
   {
    "verse": 40,
@@ -203,6 +203,56 @@
   {
    "verse": 51,
    "text": "And Moses gave the redemption money to Aaron and his sons in obedience to the word of the LORD, just as the LORD had commanded him."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Sons of Aaron"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "The Duties of the Levites"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "The Numbering of the Levites"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "The Gershonites"
+  },
+  {
+   "beforeVerse": 27,
+   "kind": "section",
+   "level": 1,
+   "text": "The Kohathites"
+  },
+  {
+   "beforeVerse": 33,
+   "kind": "section",
+   "level": 1,
+   "text": "The Merarites"
+  },
+  {
+   "beforeVerse": 38,
+   "kind": "section",
+   "level": 1,
+   "text": "Moses and Aaron"
+  },
+  {
+   "beforeVerse": 40,
+   "kind": "section",
+   "level": 1,
+   "text": "The Redemption of the Firstborn"
   }
  ]
 }

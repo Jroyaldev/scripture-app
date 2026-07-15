@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "It is not surprising, then, if his servants masquerade as servants of righteousness. Their end will correspond to their actions. Paul’s Suffering and Service ()"
+   "text": "It is not surprising, then, if his servants masquerade as servants of righteousness. Their end will correspond to their actions."
   },
   {
    "verse": 16,
@@ -131,6 +131,20 @@
   {
    "verse": 33,
    "text": "But I was lowered in a basket through a window in the wall and escaped his grasp."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul and the False Apostles"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Suffering and Service"
   }
  ]
 }

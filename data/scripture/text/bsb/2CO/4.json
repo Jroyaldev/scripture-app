@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "For God, who said, “Let light shine out of darkness,” made His light shine in our hearts to give us the light of the knowledge of the glory of God in the face of Jesus Christ. Treasure in Jars of Clay ()"
+   "text": "For God, who said, “Let light shine out of darkness,” made His light shine in our hearts to give us the light of the knowledge of the glory of God in the face of Jesus Christ."
   },
   {
    "verse": 7,
@@ -71,6 +71,20 @@
   {
    "verse": 18,
    "text": "So we fix our eyes not on what is seen, but on what is unseen. For what is seen is temporary, but what is unseen is eternal."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Light of the Gospel"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Treasure in Jars of Clay"
   }
  ]
 }

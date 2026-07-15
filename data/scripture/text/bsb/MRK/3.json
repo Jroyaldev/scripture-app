@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "At this, the Pharisees went out and began plotting with the Herodians how they might kill Jesus. Jesus Heals the Multitudes (; )"
+   "text": "At this, the Pharisees went out and began plotting with the Herodians how they might kill Jesus."
   },
   {
    "verse": 7,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "But He warned them sternly not to make Him known. The Twelve Apostles (; )"
+   "text": "But He warned them sternly not to make Him known."
   },
   {
    "verse": 13,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "and Judas Iscariot, who betrayed Jesus. A House Divided (; )"
+   "text": "and Judas Iscariot, who betrayed Jesus."
   },
   {
    "verse": 20,
@@ -106,7 +106,7 @@
   },
   {
    "verse": 27,
-   "text": "Indeed, no one can enter a strong man’s house to steal his possessions unless he first ties up the strong man. Then he can plunder his house. The Unpardonable Sin ()"
+   "text": "Indeed, no one can enter a strong man’s house to steal his possessions unless he first ties up the strong man. Then he can plunder his house."
   },
   {
    "verse": 28,
@@ -118,7 +118,7 @@
   },
   {
    "verse": 30,
-   "text": "Jesus made this statement because they were saying, “He has an unclean spirit.” Jesus’ Mother and Brothers (; )"
+   "text": "Jesus made this statement because they were saying, “He has an unclean spirit.”"
   },
   {
    "verse": 31,
@@ -139,6 +139,44 @@
   {
    "verse": 35,
    "text": "For whoever does the will of God is My brother and sister and mother.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Heals on the Sabbath"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Heals the Multitudes"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Twelve Apostles"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "A House Divided"
+  },
+  {
+   "beforeVerse": 28,
+   "kind": "section",
+   "level": 1,
+   "text": "The Unpardonable Sin"
+  },
+  {
+   "beforeVerse": 31,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus’ Mother and Brothers"
   }
  ]
 }

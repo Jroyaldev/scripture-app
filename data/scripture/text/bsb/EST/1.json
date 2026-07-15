@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "By order of the king, no limit was placed on the drinking, and every official of his household was to serve each man whatever he desired. Queen Vashti’s Refusal"
+   "text": "By order of the king, no limit was placed on the drinking, and every official of his household was to serve each man whatever he desired."
   },
   {
    "verse": 9,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "Queen Vashti, however, refused to come at the king’s command brought by his eunuchs. And the king became furious, and his anger burned within him. Queen Vashti Deposed"
+   "text": "Queen Vashti, however, refused to come at the king’s command brought by his eunuchs. And the king became furious, and his anger burned within him."
   },
   {
    "verse": 13,
@@ -87,6 +87,26 @@
   {
    "verse": 22,
    "text": "He sent letters to all the provinces of the kingdom, to each province in its own script and to each people in their own language, proclaiming that every man should be master of his own household."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Xerxes’ Royal Feast"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Queen Vashti’s Refusal"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Queen Vashti Deposed"
   }
  ]
 }

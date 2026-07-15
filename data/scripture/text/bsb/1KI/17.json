@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "Some time later, however, the brook dried up because there had been no rain in the land. The Widow of Zarephath"
+   "text": "Some time later, however, the brook dried up because there had been no rain in the land."
   },
   {
    "verse": 8,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "The jar of flour was not exhausted and the jug of oil did not run dry, according to the word that the LORD had spoken through Elijah. Elijah Raises the Widow’s Son"
+   "text": "The jar of flour was not exhausted and the jug of oil did not run dry, according to the word that the LORD had spoken through Elijah."
   },
   {
    "verse": 17,
@@ -95,6 +95,26 @@
   {
    "verse": 24,
    "text": "Then the woman said to Elijah, “Now I know that you are a man of God and that the word of the LORD from your mouth is truth.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Ravens Feed Elijah"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "The Widow of Zarephath"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Elijah Raises the Widow’s Son"
   }
  ]
 }

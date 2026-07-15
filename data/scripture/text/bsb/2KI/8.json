@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "When the king asked the woman, she confirmed it. So the king appointed for her an officer, saying, “Restore all that was hers, along with all the proceeds of the field from the day that she left the country until now.” Hazael Murders Ben-hadad"
+   "text": "When the king asked the woman, she confirmed it. So the king appointed for her an officer, saying, “Restore all that was hers, along with all the proceeds of the field from the day that she left the country until now.”"
   },
   {
    "verse": 7,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "But the next day Hazael took a thick cloth, dipped it in water, and spread it over the king’s face. So Ben-hadad died, and Hazael reigned in his place. Jehoram Reigns in Judah ()"
+   "text": "But the next day Hazael took a thick cloth, dipped it in water, and spread it over the king’s face. So Ben-hadad died, and Hazael reigned in his place."
   },
   {
    "verse": 16,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "Yet for the sake of His servant David, the LORD was unwilling to destroy Judah, since He had promised to maintain a lamp for David and his descendants forever. Edom and Libnah Rebel ()"
+   "text": "Yet for the sake of His servant David, the LORD was unwilling to destroy Judah, since He had promised to maintain a lamp for David and his descendants forever."
   },
   {
    "verse": 20,
@@ -94,7 +94,7 @@
   },
   {
    "verse": 24,
-   "text": "And Jehoram rested with his fathers and was buried with them in the City of David. And his son Ahaziah reigned in his place. Ahaziah Reigns in Judah ()"
+   "text": "And Jehoram rested with his fathers and was buried with them in the City of David. And his son Ahaziah reigned in his place."
   },
   {
    "verse": 25,
@@ -115,6 +115,38 @@
   {
    "verse": 29,
    "text": "So King Joram returned to Jezreel to recover from the wounds that the Arameans had inflicted on him at Ramah when he fought against Hazael king of Aram. Then Ahaziah son of Jehoram king of Judah went down to Jezreel to visit Joram son of Ahab, because Joram had been wounded."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Shunammite’s Land Restored"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Hazael Murders Ben-hadad"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Jehoram Reigns in Judah"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "Edom and Libnah Rebel"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "Ahaziah Reigns in Judah"
   }
  ]
 }

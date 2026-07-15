@@ -98,7 +98,7 @@
   },
   {
    "verse": 25,
-   "text": "and the secrets of his heart will be made known. So he will fall facedown and worship God, proclaiming, “God is truly among you!” Orderly Worship"
+   "text": "and the secrets of his heart will be made known. So he will fall facedown and worship God, proclaiming, “God is truly among you!”"
   },
   {
    "verse": 26,
@@ -159,6 +159,20 @@
   {
    "verse": 40,
    "text": "But everything must be done in a proper and orderly manner."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Prophecy and Tongues"
+  },
+  {
+   "beforeVerse": 26,
+   "kind": "section",
+   "level": 1,
+   "text": "Orderly Worship"
   }
  ]
 }

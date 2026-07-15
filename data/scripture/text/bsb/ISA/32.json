@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "But a noble man makes honorable plans; he stands up for worthy causes. The Women of Jerusalem"
+   "text": "But a noble man makes honorable plans; he stands up for worthy causes."
   },
   {
    "verse": 9,
@@ -79,6 +79,20 @@
   {
    "verse": 20,
    "text": "Blessed are those who sow beside abundant waters, who let the ox and donkey range freely."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Righteous King"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "The Women of Jerusalem"
   }
  ]
 }

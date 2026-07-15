@@ -94,7 +94,7 @@
   },
   {
    "verse": 24,
-   "text": "Because of the cluster of grapes the Israelites cut there, that place was called the Valley of Eshcol. The Reports of the Spies"
+   "text": "Because of the cluster of grapes the Israelites cut there, that place was called the Valley of Eshcol."
   },
   {
    "verse": 25,
@@ -131,6 +131,20 @@
   {
    "verse": 33,
    "text": "We even saw the Nephilim there— the descendants of Anak that come from the Nephilim! We seemed like grasshoppers in our own sight, and we must have seemed the same to them!”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Spies Explore Canaan"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "The Reports of the Spies"
   }
  ]
 }

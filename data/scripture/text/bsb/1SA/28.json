@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "He inquired of the LORD, but the LORD did not answer him by dreams or Urim or prophets. Saul and the Medium of Endor"
+   "text": "He inquired of the LORD, but the LORD did not answer him by dreams or Urim or prophets."
   },
   {
    "verse": 7,
@@ -99,6 +99,20 @@
   {
    "verse": 25,
    "text": "She served it to Saul and his servants, and they ate. And that night they got up and left."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Philistines Gather against Israel"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Saul and the Medium of Endor"
   }
  ]
 }

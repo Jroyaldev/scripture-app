@@ -182,7 +182,7 @@
   },
   {
    "verse": 46,
-   "text": "As long as he has the infection, he remains unclean. He must live alone in a place outside the camp. Laws about Mildew"
+   "text": "As long as he has the infection, he remains unclean. He must live alone in a place outside the camp."
   },
   {
    "verse": 47,
@@ -235,6 +235,20 @@
   {
    "verse": 59,
    "text": "This is the law concerning a mildew contamination in wool or linen fabric, weave, or knit, or any leather article, for pronouncing it clean or unclean.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Laws about Skin Diseases"
+  },
+  {
+   "beforeVerse": 47,
+   "kind": "section",
+   "level": 1,
+   "text": "Laws about Mildew"
   }
  ]
 }

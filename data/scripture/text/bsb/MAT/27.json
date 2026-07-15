@@ -6,7 +6,7 @@
   },
   {
    "verse": 2,
-   "text": "They bound Him, led Him away, and handed Him over to Pilate the governor. Judas Hangs Himself ()"
+   "text": "They bound Him, led Him away, and handed Him over to Pilate the governor."
   },
   {
    "verse": 3,
@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "and they gave them for the potter’s field, as the Lord had commanded me.” Jesus before Pilate (; )"
+   "text": "and they gave them for the potter’s field, as the Lord had commanded me.”"
   },
   {
    "verse": 11,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "But Jesus gave no answer, not even to a single charge, much to the governor’s amazement. The Crowd Chooses Barabbas (; )"
+   "text": "But Jesus gave no answer, not even to a single charge, much to the governor’s amazement."
   },
   {
    "verse": 15,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "“Why?” asked Pilate. “What evil has He done?” But they shouted all the louder, “Crucify Him!” Pilate Washes His Hands ()"
+   "text": "“Why?” asked Pilate. “What evil has He done?” But they shouted all the louder, “Crucify Him!”"
   },
   {
    "verse": 24,
@@ -102,7 +102,7 @@
   },
   {
    "verse": 26,
-   "text": "So Pilate released Barabbas to them. But he had Jesus flogged, and handed Him over to be crucified. The Soldiers Mock Jesus (; ; ; )"
+   "text": "So Pilate released Barabbas to them. But he had Jesus flogged, and handed Him over to be crucified."
   },
   {
    "verse": 27,
@@ -122,7 +122,7 @@
   },
   {
    "verse": 31,
-   "text": "After they had mocked Him, they removed the robe and put His own clothes back on Him. Then they led Him away to crucify Him. The Crucifixion (; ; ; )"
+   "text": "After they had mocked Him, they removed the robe and put His own clothes back on Him. Then they led Him away to crucify Him."
   },
   {
    "verse": 32,
@@ -174,7 +174,7 @@
   },
   {
    "verse": 44,
-   "text": "In the same way, even the robbers who were crucified with Him berated Him. The Death of Jesus (; ; ; )"
+   "text": "In the same way, even the robbers who were crucified with Him berated Him."
   },
   {
    "verse": 45,
@@ -222,7 +222,7 @@
   },
   {
    "verse": 56,
-   "text": "Among them were Mary Magdalene, Mary the mother of James and Joseph, and the mother of Zebedee’s sons. The Burial of Jesus (; ; ; )"
+   "text": "Among them were Mary Magdalene, Mary the mother of James and Joseph, and the mother of Zebedee’s sons."
   },
   {
    "verse": 57,
@@ -242,7 +242,7 @@
   },
   {
    "verse": 61,
-   "text": "Mary Magdalene and the other Mary were sitting there opposite the tomb. The Guards at the Tomb"
+   "text": "Mary Magdalene and the other Mary were sitting there opposite the tomb."
   },
   {
    "verse": 62,
@@ -263,6 +263,68 @@
   {
    "verse": 66,
    "text": "So they went and secured the tomb by sealing the stone and posting the guard."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Delivered to Pilate"
+  },
+  {
+   "beforeVerse": 3,
+   "kind": "section",
+   "level": 1,
+   "text": "Judas Hangs Himself"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus before Pilate"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "The Crowd Chooses Barabbas"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "Pilate Washes His Hands"
+  },
+  {
+   "beforeVerse": 27,
+   "kind": "section",
+   "level": 1,
+   "text": "The Soldiers Mock Jesus"
+  },
+  {
+   "beforeVerse": 32,
+   "kind": "section",
+   "level": 1,
+   "text": "The Crucifixion"
+  },
+  {
+   "beforeVerse": 45,
+   "kind": "section",
+   "level": 1,
+   "text": "The Death of Jesus"
+  },
+  {
+   "beforeVerse": 57,
+   "kind": "section",
+   "level": 1,
+   "text": "The Burial of Jesus"
+  },
+  {
+   "beforeVerse": 62,
+   "kind": "section",
+   "level": 1,
+   "text": "The Guards at the Tomb"
   }
  ]
 }

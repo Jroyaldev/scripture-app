@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "I will pay your servants, the woodcutters, 20,000 cors of ground wheat, 20,000 cors of barley, 20,000 baths of wine, and 20,000 baths of olive oil.” Hiram’s Reply to Solomon ()"
+   "text": "I will pay your servants, the woodcutters, 20,000 cors of ground wheat, 20,000 cors of barley, 20,000 baths of wine, and 20,000 baths of olive oil.”"
   },
   {
    "verse": 11,
@@ -71,6 +71,20 @@
   {
    "verse": 18,
    "text": "Solomon made 70,000 of them porters, 80,000 stonecutters in the mountains, and 3,600 supervisors."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Preparations for the Temple"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "Hiram’s Reply to Solomon"
   }
  ]
 }

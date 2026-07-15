@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "I will cling to my righteousness and never let go. As long as I live, my conscience will not accuse me. The Wicked Man’s Portion"
+   "text": "I will cling to my righteousness and never let go. As long as I live, my conscience will not accuse me."
   },
   {
    "verse": 7,
@@ -91,6 +91,20 @@
   {
    "verse": 23,
    "text": "It claps its hands at him and hisses him out of his place.[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Job Affirms His Integrity"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "The Wicked Man’s Portion"
   }
  ]
 }

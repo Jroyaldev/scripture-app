@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "I tell you that in the same way there will be more joy in heaven over one sinner who repents than over ninety-nine righteous ones who do not need to repent. The Parable of the Lost Coin"
+   "text": "I tell you that in the same way there will be more joy in heaven over one sinner who repents than over ninety-nine righteous ones who do not need to repent."
   },
   {
    "verse": 8,
@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "In the same way, I tell you, there is joy in the presence of God’s angels over one sinner who repents.” The Parable of the Prodigal Son ()"
+   "text": "In the same way, I tell you, there is joy in the presence of God’s angels over one sinner who repents.”"
   },
   {
    "verse": 11,
@@ -127,6 +127,26 @@
   {
    "verse": 32,
    "text": "But it was fitting to celebrate and be glad, because this brother of yours was dead and is alive again; he was lost and is found.’”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parable of the Lost Sheep"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parable of the Lost Coin"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parable of the Prodigal Son"
   }
  ]
 }

@@ -64,5 +64,13 @@
    "verse": 16,
    "text": "Abram was eighty-six years old when Hagar bore Ishmael to him."
   }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Hagar and Ishmael"
+  }
  ]
 }

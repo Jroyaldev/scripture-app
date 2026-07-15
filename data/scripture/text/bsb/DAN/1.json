@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "The chief official gave them new names: To Daniel he gave the name Belteshazzar; to Hananiah, Shadrach; to Mishael, Meshach; and to Azariah, Abednego. Daniel’s Faithfulness"
+   "text": "The chief official gave them new names: To Daniel he gave the name Belteshazzar; to Hananiah, Shadrach; to Mishael, Meshach; and to Azariah, Abednego."
   },
   {
    "verse": 8,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "So the steward continued to withhold their choice food and the wine they were to drink, and he gave them vegetables instead. Daniel’s Wisdom"
+   "text": "So the steward continued to withhold their choice food and the wine they were to drink, and he gave them vegetables instead."
   },
   {
    "verse": 17,
@@ -83,6 +83,26 @@
   {
    "verse": 21,
    "text": "And Daniel remained there until the first year of King Cyrus."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Daniel Removed to Babylon"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Daniel’s Faithfulness"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Daniel’s Wisdom"
   }
  ]
 }

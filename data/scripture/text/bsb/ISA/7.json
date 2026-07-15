@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "The head of Ephraim is Samaria, and the head of Samaria is the son of Remaliah. If you do not stand firm in your faith, then you will not stand at all.’” The Sign of Immanuel ()"
+   "text": "The head of Ephraim is Samaria, and the head of Samaria is the son of Remaliah. If you do not stand firm in your faith, then you will not stand at all.’”"
   },
   {
    "verse": 10,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "For before the boy knows enough to reject evil and choose good, the land of the two kings you dread will be laid waste. Judgment to Come ()"
+   "text": "For before the boy knows enough to reject evil and choose good, the land of the two kings you dread will be laid waste."
   },
   {
    "verse": 17,
@@ -99,6 +99,26 @@
   {
    "verse": 25,
    "text": "For fear of the briers and thorns, you will no longer traverse the hills once tilled by the hoe; they will become places for oxen to graze and sheep to trample."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Message to Ahaz"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "The Sign of Immanuel"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Judgment to Come"
   }
  ]
 }

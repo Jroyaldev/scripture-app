@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "driving out all your enemies before you, as the LORD has said. Teach Your Children"
+   "text": "driving out all your enemies before you, as the LORD has said."
   },
   {
    "verse": 20,
@@ -99,6 +99,20 @@
   {
    "verse": 25,
    "text": "And if we are careful to observe every one of these commandments before the LORD our God, as He has commanded us, then that will be our righteousness.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Greatest Commandment"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "Teach Your Children"
   }
  ]
 }

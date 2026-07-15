@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "So those who have faith are blessed along with Abraham, the man of faith. Christ Has Redeemed Us"
+   "text": "So those who have faith are blessed along with Abraham, the man of faith."
   },
   {
    "verse": 10,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "He redeemed us in order that the blessing promised to Abraham would come to the Gentiles in Christ Jesus, so that by faith we might receive the promise of the Spirit. The Purpose of the Law ()"
+   "text": "He redeemed us in order that the blessing promised to Abraham would come to the Gentiles in Christ Jesus, so that by faith we might receive the promise of the Spirit."
   },
   {
    "verse": 15,
@@ -98,7 +98,7 @@
   },
   {
    "verse": 25,
-   "text": "Now that faith has come, we are no longer under a guardian. Sons through Faith in Christ"
+   "text": "Now that faith has come, we are no longer under a guardian."
   },
   {
    "verse": 26,
@@ -115,6 +115,32 @@
   {
    "verse": 29,
    "text": "And if you belong to Christ, then you are Abraham’s seed and heirs according to the promise."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Faith and Belief"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Christ Has Redeemed Us"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "The Purpose of the Law"
+  },
+  {
+   "beforeVerse": 26,
+   "kind": "section",
+   "level": 1,
+   "text": "Sons through Faith in Christ"
   }
  ]
 }

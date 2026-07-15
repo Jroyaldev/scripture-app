@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "While Absalom was offering the sacrifices, he sent for Ahithophel the Gilonite, David’s counselor, to come from his hometown of Giloh. So the conspiracy gained strength, and Absalom’s following kept increasing. David Flees Jerusalem ()"
+   "text": "While Absalom was offering the sacrifices, he sent for Ahithophel the Gilonite, David’s counselor, to come from his hometown of Giloh. So the conspiracy gained strength, and Absalom’s following kept increasing."
   },
   {
    "verse": 13,
@@ -114,7 +114,7 @@
   },
   {
    "verse": 29,
-   "text": "So Zadok and Abiathar returned the ark of God to Jerusalem and stayed there. David Weeps at the Mount of Olives ()"
+   "text": "So Zadok and Abiathar returned the ark of God to Jerusalem and stayed there."
   },
   {
    "verse": 30,
@@ -147,6 +147,26 @@
   {
    "verse": 37,
    "text": "So David’s friend Hushai arrived in Jerusalem just as Absalom was entering the city."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Absalom’s Conspiracy"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "David Flees Jerusalem"
+  },
+  {
+   "beforeVerse": 30,
+   "kind": "section",
+   "level": 1,
+   "text": "David Weeps at the Mount of Olives"
   }
  ]
 }

@@ -64,5 +64,13 @@
    "verse": 16,
    "text": "After that, the people set out from Hazeroth and camped in the Wilderness of Paran."
   }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Complaint of Miriam and Aaron"
+  }
  ]
 }

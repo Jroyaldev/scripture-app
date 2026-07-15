@@ -10,7 +10,7 @@
   },
   {
    "verse": 3,
-   "text": "the word of the LORD came directly to Ezekiel the priest, the son of Buzi, in the land of the Chaldeans by the River Kebar. And there the LORD’s hand was upon him. The Four Living Creatures"
+   "text": "the word of the LORD came directly to Ezekiel the priest, the son of Buzi, in the land of the Chaldeans by the River Kebar. And there the LORD’s hand was upon him."
   },
   {
    "verse": 4,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "The creatures were darting back and forth as quickly as flashes of lightning. The Four Wheels"
+   "text": "The creatures were darting back and forth as quickly as flashes of lightning."
   },
   {
    "verse": 15,
@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "When the creatures moved, the wheels moved; when the creatures stood still, the wheels stood still; and when the creatures rose from the ground, the wheels rose alongside them, because the spirit of the living creatures was in the wheels. The Divine Glory"
+   "text": "When the creatures moved, the wheels moved; when the creatures stood still, the wheels stood still; and when the creatures rose from the ground, the wheels rose alongside them, because the spirit of the living creatures was in the wheels."
   },
   {
    "verse": 22,
@@ -111,6 +111,32 @@
   {
    "verse": 28,
    "text": "The appearance of the brilliant light all around Him was like that of a rainbow in a cloud on a rainy day. This was the appearance of the likeness of the glory of the LORD. And when I saw it, I fell facedown and heard a voice speaking."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Ezekiel’s Vision by the River Kebar"
+  },
+  {
+   "beforeVerse": 4,
+   "kind": "section",
+   "level": 1,
+   "text": "The Four Living Creatures"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "The Four Wheels"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "The Divine Glory"
   }
  ]
 }

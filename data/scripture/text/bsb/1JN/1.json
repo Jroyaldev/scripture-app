@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "We write these things so that our joy may be complete. Walking in the Light ()"
+   "text": "We write these things so that our joy may be complete."
   },
   {
    "verse": 5,
@@ -39,6 +39,20 @@
   {
    "verse": 10,
    "text": "If we say we have not sinned, we make Him out to be a liar, and His word is not in us."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Word of Life"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "Walking in the Light"
   }
  ]
 }

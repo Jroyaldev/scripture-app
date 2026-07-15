@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "Therefore keep watch, because you do not know the day or the hour. The Parable of the Talents ()"
+   "text": "Therefore keep watch, because you do not know the day or the hour."
   },
   {
    "verse": 14,
@@ -118,7 +118,7 @@
   },
   {
    "verse": 30,
-   "text": "And throw that worthless servant into the outer darkness, where there will be weeping and gnashing of teeth.’ The Sheep and the Goats"
+   "text": "And throw that worthless servant into the outer darkness, where there will be weeping and gnashing of teeth.’"
   },
   {
    "verse": 31,
@@ -183,6 +183,26 @@
   {
    "verse": 46,
    "text": "And they will go away into eternal punishment, but the righteous into eternal life.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parable of the Ten Virgins"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parable of the Talents"
+  },
+  {
+   "beforeVerse": 31,
+   "kind": "section",
+   "level": 1,
+   "text": "The Sheep and the Goats"
   }
  ]
 }

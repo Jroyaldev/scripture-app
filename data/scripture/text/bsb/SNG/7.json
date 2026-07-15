@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "and your mouth like the finest wine. The Bride May it flow smoothly to my beloved, gliding gently over lips and teeth."
+   "text": "and your mouth like the finest wine. May it flow smoothly to my beloved, gliding gently over lips and teeth."
   },
   {
    "verse": 10,
@@ -51,6 +51,26 @@
   {
    "verse": 13,
    "text": "The mandrakes send forth a fragrance, and at our door is every delicacy, new as well as old, that I have treasured up for you, my beloved."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 2,
+   "text": "The Bridegroom"
+  },
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Admiration by the Bridegroom"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 2,
+   "text": "The Bride"
   }
  ]
 }

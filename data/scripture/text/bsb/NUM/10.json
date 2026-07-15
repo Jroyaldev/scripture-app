@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "And on your joyous occasions, your appointed feasts, and the beginning of each month, you are to blow the trumpets over your burnt offerings and peace offerings to serve as a reminder for you before your God. I am the LORD your God.” From Sinai to Paran"
+   "text": "And on your joyous occasions, your appointed feasts, and the beginning of each month, you are to blow the trumpets over your burnt offerings and peace offerings to serve as a reminder for you before your God. I am the LORD your God.”"
   },
   {
    "verse": 11,
@@ -143,6 +143,20 @@
   {
    "verse": 36,
    "text": "And when it came to rest, he would say: “Return, O LORD, to the countless thousands of Israel.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Two Silver Trumpets"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "From Sinai to Paran"
   }
  ]
 }

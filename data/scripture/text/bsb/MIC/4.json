@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "Though all the nations may walk in the name of their gods, yet we will walk in the name of the LORD our God forever and ever. The Restoration of Zion ()"
+   "text": "Though all the nations may walk in the name of their gods, yet we will walk in the name of the LORD our God forever and ever."
   },
   {
    "verse": 6,
@@ -51,6 +51,20 @@
   {
    "verse": 13,
    "text": "Rise and thresh, O Daughter of Zion, for I will give you horns of iron and hooves of bronze to break to pieces many peoples. Then you will devote their gain to the LORD, their wealth to the Lord of all the earth."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Mountain of the House of the LORD"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "The Restoration of Zion"
   }
  ]
 }

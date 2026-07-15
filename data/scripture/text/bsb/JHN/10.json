@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "But others replied, “These are not the words of a man possessed by a demon. Can a demon open the eyes of the blind?” Jesus at the Feast of Dedication"
+   "text": "But others replied, “These are not the words of a man possessed by a demon. Can a demon open the eyes of the blind?”"
   },
   {
    "verse": 22,
@@ -154,7 +154,7 @@
   },
   {
    "verse": 39,
-   "text": "At this, they tried again to seize Him, but He escaped their grasp. John’s Testimony Confirmed"
+   "text": "At this, they tried again to seize Him, but He escaped their grasp."
   },
   {
    "verse": 40,
@@ -167,6 +167,26 @@
   {
    "verse": 42,
    "text": "And many in that place believed in Jesus."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus the Good Shepherd"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus at the Feast of Dedication"
+  },
+  {
+   "beforeVerse": 40,
+   "kind": "section",
+   "level": 1,
+   "text": "John’s Testimony Confirmed"
   }
  ]
 }

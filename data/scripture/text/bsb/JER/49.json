@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "Yet afterward I will restore the Ammonites from captivity,” declares the LORD. Judgment on Edom ()"
+   "text": "Yet afterward I will restore the Ammonites from captivity,” declares the LORD."
   },
   {
    "verse": 7,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "Look! An eagle will soar and swoop down, spreading its wings over Bozrah. In that day the hearts of Edom’s mighty men will be like the heart of a woman in labor. Judgment on Damascus ()"
+   "text": "Look! An eagle will soar and swoop down, spreading its wings over Bozrah. In that day the hearts of Edom’s mighty men will be like the heart of a woman in labor."
   },
   {
    "verse": 23,
@@ -106,7 +106,7 @@
   },
   {
    "verse": 27,
-   "text": "“I will set fire to the walls of Damascus; it will consume the fortresses of Ben-hadad.” Judgment on Kedar and Hazor"
+   "text": "“I will set fire to the walls of Damascus; it will consume the fortresses of Ben-hadad.”"
   },
   {
    "verse": 28,
@@ -130,7 +130,7 @@
   },
   {
    "verse": 33,
-   "text": "“Hazor will become a haunt for jackals, a desolation forever. No one will dwell there; no man will abide there.” Judgment on Elam"
+   "text": "“Hazor will become a haunt for jackals, a desolation forever. No one will dwell there; no man will abide there.”"
   },
   {
    "verse": 34,
@@ -155,6 +155,38 @@
   {
    "verse": 39,
    "text": "“Yet in the last days, I will restore Elam from captivity,” declares the LORD."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Judgment on the Ammonites"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Judgment on Edom"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "Judgment on Damascus"
+  },
+  {
+   "beforeVerse": 28,
+   "kind": "section",
+   "level": 1,
+   "text": "Judgment on Kedar and Hazor"
+  },
+  {
+   "beforeVerse": 34,
+   "kind": "section",
+   "level": 1,
+   "text": "Judgment on Elam"
   }
  ]
 }

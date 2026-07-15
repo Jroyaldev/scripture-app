@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "So the Israelites did as the LORD had commanded Moses, and they divided the land. Caleb Requests Hebron"
+   "text": "So the Israelites did as the LORD had commanded Moses, and they divided the land."
   },
   {
    "verse": 6,
@@ -59,6 +59,20 @@
   {
    "verse": 15,
    "text": "(Hebron used to be called Kiriath-arba, after Arba, the greatest man among the Anakim.) Then the land had rest from war."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Land Division West of the Jordan"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "Caleb Requests Hebron"
   }
  ]
 }

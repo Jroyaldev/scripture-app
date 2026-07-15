@@ -6,7 +6,7 @@
   },
   {
    "verse": 2,
-   "text": "To the saints and faithful brothers in Christ at Colossae: Grace and peace to you from God our Father. Thanksgiving and Prayer (; )"
+   "text": "To the saints and faithful brothers in Christ at Colossae: Grace and peace to you from God our Father."
   },
   {
    "verse": 3,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "in whom we have redemption, the forgiveness of sins. The Supremacy of the Son ()"
+   "text": "in whom we have redemption, the forgiveness of sins."
   },
   {
    "verse": 15,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "if indeed you continue in your faith, established and firm, not moved from the hope of the gospel you heard, which has been proclaimed to every creature under heaven, and of which I, Paul, have become a servant. Paul’s Suffering for the Church ()"
+   "text": "if indeed you continue in your faith, established and firm, not moved from the hope of the gospel you heard, which has been proclaimed to every creature under heaven, and of which I, Paul, have become a servant."
   },
   {
    "verse": 24,
@@ -115,6 +115,32 @@
   {
    "verse": 29,
    "text": "To this end I also labor, striving with all His energy working powerfully within me."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Greetings from Paul and Timothy"
+  },
+  {
+   "beforeVerse": 3,
+   "kind": "section",
+   "level": 1,
+   "text": "Thanksgiving and Prayer"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "The Supremacy of the Son"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Suffering for the Church"
   }
  ]
 }

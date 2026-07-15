@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "And He was amazed at their unbelief. And He went around from village to village, teaching the people. The Ministry of the Twelve (; )"
+   "text": "And He was amazed at their unbelief. And He went around from village to village, teaching the people."
   },
   {
    "verse": 7,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "They also drove out many demons and healed many of the sick, anointing them with oil. The Beheading of John (; )"
+   "text": "They also drove out many demons and healed many of the sick, anointing them with oil."
   },
   {
    "verse": 14,
@@ -114,7 +114,7 @@
   },
   {
    "verse": 29,
-   "text": "When John’s disciples heard about this, they came and took his body and placed it in a tomb. The Feeding of the Five Thousand (; ; )"
+   "text": "When John’s disciples heard about this, they came and took his body and placed it in a tomb."
   },
   {
    "verse": 30,
@@ -174,7 +174,7 @@
   },
   {
    "verse": 44,
-   "text": "And there were five thousand men who had eaten the loaves. Jesus Walks on Water (; )"
+   "text": "And there were five thousand men who had eaten the loaves."
   },
   {
    "verse": 45,
@@ -206,7 +206,7 @@
   },
   {
    "verse": 52,
-   "text": "for they had not understood about the loaves, but their hearts had been hardened. Jesus Heals at Gennesaret ()"
+   "text": "for they had not understood about the loaves, but their hearts had been hardened."
   },
   {
    "verse": 53,
@@ -223,6 +223,44 @@
   {
    "verse": 56,
    "text": "And wherever He went — villages and towns and countrysides — they laid the sick in the marketplaces and begged Him just to let them touch the fringe of His cloak. And all who touched Him were healed."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Rejection at Nazareth"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "The Ministry of the Twelve"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "The Beheading of John"
+  },
+  {
+   "beforeVerse": 30,
+   "kind": "section",
+   "level": 1,
+   "text": "The Feeding of the Five Thousand"
+  },
+  {
+   "beforeVerse": 45,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Walks on Water"
+  },
+  {
+   "beforeVerse": 53,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Heals at Gennesaret"
   }
  ]
 }

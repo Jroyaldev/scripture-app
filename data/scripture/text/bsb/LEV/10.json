@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "You shall not go outside the entrance to the Tent of Meeting, or you will die, for the LORD’s anointing oil is on you.” So they did as Moses instructed. Restrictions for Priests"
+   "text": "You shall not go outside the entrance to the Tent of Meeting, or you will die, for the LORD’s anointing oil is on you.” So they did as Moses instructed."
   },
   {
    "verse": 8,
@@ -79,6 +79,20 @@
   {
    "verse": 20,
    "text": "And when Moses heard this explanation, he was satisfied."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Sin of Nadab and Abihu"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Restrictions for Priests"
   }
  ]
 }

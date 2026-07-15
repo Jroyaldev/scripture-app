@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "This is to My Father’s glory, that you bear much fruit, proving yourselves to be My disciples. No Greater Love"
+   "text": "This is to My Father’s glory, that you bear much fruit, proving yourselves to be My disciples."
   },
   {
    "verse": 9,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "This is My command to you: Love one another. The Hatred of the World"
+   "text": "This is My command to you: Love one another."
   },
   {
    "verse": 18,
@@ -107,6 +107,26 @@
   {
    "verse": 27,
    "text": "And you also must testify, because you have been with Me from the beginning.[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus the True Vine"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "No Greater Love"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "The Hatred of the World"
   }
  ]
 }

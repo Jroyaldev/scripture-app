@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "So they called that place Bochim and offered sacrifices there to the LORD. Joshua’s Death and Burial ()"
+   "text": "So they called that place Bochim and offered sacrifices there to the LORD."
   },
   {
    "verse": 6,
@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "They buried him in the land of his inheritance, at Timnath-heres in the hill country of Ephraim, north of Mount Gaash. Israel’s Unfaithfulness (; )"
+   "text": "They buried him in the land of his inheritance, at Timnath-heres in the hill country of Ephraim, north of Mount Gaash."
   },
   {
    "verse": 10,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "Wherever Israel marched out, the hand of the LORD was against them to bring calamity, just as He had sworn to them. So they were greatly distressed. Judges Raised Up"
+   "text": "Wherever Israel marched out, the hand of the LORD was against them to bring calamity, just as He had sworn to them. So they were greatly distressed."
   },
   {
    "verse": 16,
@@ -91,6 +91,32 @@
   {
    "verse": 23,
    "text": "That is why the LORD had left those nations in place and had not driven them out immediately by delivering them into the hand of Joshua."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Israel Rebuked at Bochim"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "Joshua’s Death and Burial"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Israel’s Unfaithfulness"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Judges Raised Up"
   }
  ]
 }

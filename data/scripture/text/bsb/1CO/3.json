@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "For we are God’s fellow workers; you are God’s field, God’s building. Christ Our Foundation (; ; )"
+   "text": "For we are God’s fellow workers; you are God’s field, God’s building."
   },
   {
    "verse": 10,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "If it is burned up, he will suffer loss. He himself will be saved, but only as if through the flames. God’s Temple and God’s Wisdom (; )"
+   "text": "If it is burned up, he will suffer loss. He himself will be saved, but only as if through the flames."
   },
   {
    "verse": 16,
@@ -91,6 +91,26 @@
   {
    "verse": 23,
    "text": "and you belong to Christ, and Christ belongs to God."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Fellow Workers"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Christ Our Foundation"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Temple and God’s Wisdom"
   }
  ]
 }

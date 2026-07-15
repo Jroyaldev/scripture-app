@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "After Joseph had buried his father, he returned to Egypt with his brothers and all who had gone with him to bury his father. Joseph Comforts His Brothers"
+   "text": "After Joseph had buried his father, he returned to Egypt with his brothers and all who had gone with him to bury his father."
   },
   {
    "verse": 15,
@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "Therefore do not be afraid. I will provide for you and your little ones.” So Joseph reassured his brothers and spoke kindly to them. The Death of Joseph"
+   "text": "Therefore do not be afraid. I will provide for you and your little ones.” So Joseph reassured his brothers and spoke kindly to them."
   },
   {
    "verse": 22,
@@ -103,6 +103,26 @@
   {
    "verse": 26,
    "text": "So Joseph died at the age of 110. And they embalmed his body and placed it in a coffin in Egypt."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Mourning and Burial for Jacob"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Joseph Comforts His Brothers"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "The Death of Joseph"
   }
  ]
 }

@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "He did the same for all his foreign wives, who burned incense and sacrificed to their gods. God’s Anger against Solomon"
+   "text": "He did the same for all his foreign wives, who burned incense and sacrificed to their gods."
   },
   {
    "verse": 9,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "Yet I will not tear the whole kingdom away from him. I will give one tribe to your son for the sake of My servant David and for the sake of Jerusalem, which I have chosen.” Hadad’s Return"
+   "text": "Yet I will not tear the whole kingdom away from him. I will give one tribe to your son for the sake of My servant David and for the sake of Jerusalem, which I have chosen.”"
   },
   {
    "verse": 14,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "But Pharaoh asked him, “What have you lacked here with me that you suddenly want to go back to your own country?” “Nothing,” Hadad replied, “but please let me go.” Rezon’s Hostility"
+   "text": "But Pharaoh asked him, “What have you lacked here with me that you suddenly want to go back to your own country?” “Nothing,” Hadad replied, “but please let me go.”"
   },
   {
    "verse": 23,
@@ -98,7 +98,7 @@
   },
   {
    "verse": 25,
-   "text": "Rezon was Israel’s enemy throughout the days of Solomon, adding to the trouble caused by Hadad. So Rezon ruled over Aram with hostility toward Israel. Jeroboam’s Rebellion"
+   "text": "Rezon was Israel’s enemy throughout the days of Solomon, adding to the trouble caused by Hadad. So Rezon ruled over Aram with hostility toward Israel."
   },
   {
    "verse": 26,
@@ -158,7 +158,7 @@
   },
   {
    "verse": 40,
-   "text": "Solomon therefore sought to kill Jeroboam. But Jeroboam arose and fled to Egypt, to Shishak king of Egypt, where he remained until the death of Solomon. The Death of Solomon ()"
+   "text": "Solomon therefore sought to kill Jeroboam. But Jeroboam arose and fled to Egypt, to Shishak king of Egypt, where he remained until the death of Solomon."
   },
   {
    "verse": 41,
@@ -171,6 +171,44 @@
   {
    "verse": 43,
    "text": "And Solomon rested with his fathers and was buried in the city of his father David. And his son Rehoboam reigned in his place."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Solomon’s Foreign Wives"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Anger against Solomon"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Hadad’s Return"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "Rezon’s Hostility"
+  },
+  {
+   "beforeVerse": 26,
+   "kind": "section",
+   "level": 1,
+   "text": "Jeroboam’s Rebellion"
+  },
+  {
+   "beforeVerse": 41,
+   "kind": "section",
+   "level": 1,
+   "text": "The Death of Solomon"
   }
  ]
 }

@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "So the king did not listen to the people, and indeed this turn of events was from the LORD, to fulfill the word He had spoken to Jeroboam son of Nebat through Ahijah the Shilonite. The Kingdom Divided ()"
+   "text": "So the king did not listen to the people, and indeed this turn of events was from the LORD, to fulfill the word He had spoken to Jeroboam son of Nebat through Ahijah the Shilonite."
   },
   {
    "verse": 16,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "So to this day Israel has been in rebellion against the house of David. Shemaiah’s Prophecy ()"
+   "text": "So to this day Israel has been in rebellion against the house of David."
   },
   {
    "verse": 20,
@@ -94,7 +94,7 @@
   },
   {
    "verse": 24,
-   "text": "that this is what the LORD says: ‘You are not to go up and fight against your brothers, the Israelites. Each of you must return home, for this is My doing.’” So they listened to the word of the LORD and turned back according to the word of the LORD. Jeroboam’s Idolatry"
+   "text": "that this is what the LORD says: ‘You are not to go up and fight against your brothers, the Israelites. Each of you must return home, for this is My doing.’” So they listened to the word of the LORD and turned back according to the word of the LORD."
   },
   {
    "verse": 25,
@@ -131,6 +131,32 @@
   {
    "verse": 33,
    "text": "On the fifteenth day of the eighth month, a month of his own choosing, Jeroboam offered sacrifices on the altar he had set up in Bethel. So he ordained a feast for the Israelites, offered sacrifices on the altar, and burned incense."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Rebellion against Rehoboam"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "The Kingdom Divided"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "Shemaiah’s Prophecy"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "Jeroboam’s Idolatry"
   }
  ]
 }

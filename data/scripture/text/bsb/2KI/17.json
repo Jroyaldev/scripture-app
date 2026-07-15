@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "But the king of Assyria discovered that Hoshea had conspired to send envoys to King So of Egypt, and that he had not paid tribute to the king of Assyria as in previous years. Therefore the king of Assyria arrested Hoshea and put him in prison. Israel Carried Captive to Assyria"
+   "text": "But the king of Assyria discovered that Hoshea had conspired to send envoys to King So of Egypt, and that he had not paid tribute to the king of Assyria as in previous years. Therefore the king of Assyria arrested Hoshea and put him in prison."
   },
   {
    "verse": 5,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "Finally, the LORD removed Israel from His presence, as He had declared through all His servants the prophets. So Israel was exiled from their homeland into Assyria, where they are to this day. Samaria Resettled"
+   "text": "Finally, the LORD removed Israel from His presence, as He had declared through all His servants the prophets. So Israel was exiled from their homeland into Assyria, where they are to this day."
   },
   {
    "verse": 24,
@@ -163,6 +163,26 @@
   {
    "verse": 41,
    "text": "So these nations worshiped the LORD but also served their idols, and to this day their children and grandchildren continue to do as their fathers did."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Hoshea the Last King of Israel"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "Israel Carried Captive to Assyria"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "Samaria Resettled"
   }
  ]
 }

@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "She grabbed Joseph by his cloak and said, “Sleep with me!” But leaving his cloak in her hand, he escaped and ran outside. Joseph Falsely Imprisoned"
+   "text": "She grabbed Joseph by his cloak and said, “Sleep with me!” But leaving his cloak in her hand, he escaped and ran outside."
   },
   {
    "verse": 13,
@@ -91,6 +91,20 @@
   {
    "verse": 23,
    "text": "The warden did not concern himself with anything under Joseph’s care, because the LORD was with Joseph and gave him success in whatever he did."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Joseph and Potiphar’s Wife"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Joseph Falsely Imprisoned"
   }
  ]
 }

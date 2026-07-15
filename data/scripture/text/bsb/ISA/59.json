@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "He put on righteousness like a breastplate, and the helmet of salvation on His head; He put on garments of vengeance and wrapped Himself in a cloak of zeal. The Covenant of the Redeemer"
+   "text": "He put on righteousness like a breastplate, and the helmet of salvation on His head; He put on garments of vengeance and wrapped Himself in a cloak of zeal."
   },
   {
    "verse": 18,
@@ -83,6 +83,20 @@
   {
    "verse": 21,
    "text": "“As for Me, this is My covenant with them,” says the LORD. “My Spirit will not depart from you, and My words that I have put in your mouth will not depart from your mouth or from the mouths of your children and grandchildren, from now on and forevermore,” says the LORD."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Sin Separates Us from God"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "The Covenant of the Redeemer"
   }
  ]
 }

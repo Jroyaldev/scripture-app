@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "Now behold, I will tie you up with ropes so you cannot turn from side to side until you have finished the days of your siege. The Defiled Bread"
+   "text": "Now behold, I will tie you up with ropes so you cannot turn from side to side until you have finished the days of your siege."
   },
   {
    "verse": 9,
@@ -67,6 +67,20 @@
   {
    "verse": 17,
    "text": "So they will lack food and water; they will be appalled at the sight of one another wasting away in their iniquity.[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Sign of Jerusalem’s Siege"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "The Defiled Bread"
   }
  ]
 }

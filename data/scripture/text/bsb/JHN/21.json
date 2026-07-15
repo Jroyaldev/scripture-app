@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "This was now the third time that Jesus appeared to the disciples after He was raised from the dead. Jesus and Peter"
+   "text": "This was now the third time that Jesus appeared to the disciples after He was raised from the dead."
   },
   {
    "verse": 15,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "Jesus said this to indicate the kind of death by which Peter would glorify God. And after He had said this, He told him, “Follow Me.” Jesus and the Beloved Disciple"
+   "text": "Jesus said this to indicate the kind of death by which Peter would glorify God. And after He had said this, He told him, “Follow Me.”"
   },
   {
    "verse": 20,
@@ -99,6 +99,26 @@
   {
    "verse": 25,
    "text": "There are many more things that Jesus did. If all of them were written down, I suppose that not even the world itself would have space for the books that would be written."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Appears by the Sea of Tiberias"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus and Peter"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus and the Beloved Disciple"
   }
  ]
 }

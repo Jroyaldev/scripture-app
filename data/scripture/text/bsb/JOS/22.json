@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "saying, “Return to your homes with your great wealth, with immense herds of livestock, with silver, gold, bronze, iron, and very many clothes. Divide with your brothers the spoil of your enemies.” The Altar of Witness"
+   "text": "saying, “Return to your homes with your great wealth, with immense herds of livestock, with silver, gold, bronze, iron, and very many clothes. Divide with your brothers the spoil of your enemies.”"
   },
   {
    "verse": 9,
@@ -135,6 +135,20 @@
   {
    "verse": 34,
    "text": "So the Reubenites and Gadites named the altar Witness, for they said, “It is a witness between us that the LORD is God.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Eastern Tribes Return Home"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "The Altar of Witness"
   }
  ]
 }

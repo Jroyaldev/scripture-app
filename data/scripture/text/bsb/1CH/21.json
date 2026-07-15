@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "But Joab did not include Levi and Benjamin in the count, because the king’s command was detestable to him. Judgment for David’s Sin ()"
+   "text": "But Joab did not include Levi and Benjamin in the count, because the king’s command was detestable to him."
   },
   {
    "verse": 7,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "David answered Gad, “I am deeply distressed. Please, let me fall into the hand of the LORD, for His mercies are very great; but do not let me fall into the hands of men.” A Plague on Israel ()"
+   "text": "David answered Gad, “I am deeply distressed. Please, let me fall into the hand of the LORD, for His mercies are very great; but do not let me fall into the hands of men.”"
   },
   {
    "verse": 14,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "And David said to God, “Was it not I who gave the order to count the people? I am the one who has sinned and acted wickedly. But these sheep, what have they done? O LORD my God, please let Your hand fall upon me and my father’s house, but do not let this plague remain upon Your people.” David Builds an Altar ()"
+   "text": "And David said to God, “Was it not I who gave the order to count the people? I am the one who has sinned and acted wickedly. But these sheep, what have they done? O LORD my God, please let Your hand fall upon me and my father’s house, but do not let this plague remain upon Your people.”"
   },
   {
    "verse": 18,
@@ -119,6 +119,32 @@
   {
    "verse": 30,
    "text": "but David could not go before it to inquire of God, because he was afraid of the sword of the angel of the LORD."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "David’s Military Census"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Judgment for David’s Sin"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "A Plague on Israel"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "David Builds an Altar"
   }
  ]
 }

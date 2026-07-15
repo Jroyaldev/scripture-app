@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "Once a year Aaron shall make atonement on the horns of the altar. Throughout your generations he shall make atonement on it annually with the blood of the sin offering of atonement. The altar is most holy to the LORD.” The Census Offering (; )"
+   "text": "Once a year Aaron shall make atonement on the horns of the altar. Throughout your generations he shall make atonement on it annually with the blood of the sin offering of atonement. The altar is most holy to the LORD.”"
   },
   {
    "verse": 11,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "Take the atonement money from the Israelites and use it for the service of the Tent of Meeting. It will serve as a memorial for the Israelites before the LORD to make atonement for your lives.” The Bronze Basin ()"
+   "text": "Take the atonement money from the Israelites and use it for the service of the Tent of Meeting. It will serve as a memorial for the Israelites before the LORD to make atonement for your lives.”"
   },
   {
    "verse": 17,
@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "Thus they are to wash their hands and feet so that they will not die; this shall be a permanent statute for Aaron and his descendants for the generations to come.” The Anointing Oil"
+   "text": "Thus they are to wash their hands and feet so that they will not die; this shall be a permanent statute for Aaron and his descendants for the generations to come.”"
   },
   {
    "verse": 22,
@@ -130,7 +130,7 @@
   },
   {
    "verse": 33,
-   "text": "Anyone who mixes perfume like it or puts it on an outsider shall be cut off from his people.’” The Incense"
+   "text": "Anyone who mixes perfume like it or puts it on an outsider shall be cut off from his people.’”"
   },
   {
    "verse": 34,
@@ -151,6 +151,38 @@
   {
    "verse": 38,
    "text": "Anyone who makes something like it to enjoy its fragrance shall be cut off from his people.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Altar of Incense"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "The Census Offering"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "The Bronze Basin"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "The Anointing Oil"
+  },
+  {
+   "beforeVerse": 34,
+   "kind": "section",
+   "level": 1,
+   "text": "The Incense"
   }
  ]
 }

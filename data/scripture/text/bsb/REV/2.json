@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "He who has an ear, let him hear what the Spirit says to the churches. To the one who overcomes, I will grant the right to eat from the tree of life in the Paradise of God. To the Church in Smyrna"
+   "text": "He who has an ear, let him hear what the Spirit says to the churches. To the one who overcomes, I will grant the right to eat from the tree of life in the Paradise of God."
   },
   {
    "verse": 8,
@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "He who has an ear, let him hear what the Spirit says to the churches. The one who overcomes will not be harmed by the second death. To the Church in Pergamum"
+   "text": "He who has an ear, let him hear what the Spirit says to the churches. The one who overcomes will not be harmed by the second death."
   },
   {
    "verse": 12,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "He who has an ear, let him hear what the Spirit says to the churches. To the one who overcomes, I will give the hidden manna. I will also give him a white stone inscribed with a new name, known only to the one who receives it. To the Church in Thyatira ()"
+   "text": "He who has an ear, let him hear what the Spirit says to the churches. To the one who overcomes, I will give the hidden manna. I will also give him a white stone inscribed with a new name, known only to the one who receives it."
   },
   {
    "verse": 18,
@@ -115,6 +115,32 @@
   {
    "verse": 29,
    "text": "He who has an ear, let him hear what the Spirit says to the churches.[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "To the Church in Ephesus"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "To the Church in Smyrna"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "To the Church in Pergamum"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "To the Church in Thyatira"
   }
  ]
 }

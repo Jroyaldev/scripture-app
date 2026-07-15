@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "But Christ is faithful as the Son over God’s house. And we are His house, if we hold firmly to our confidence and the hope of which we boast. Do Not Harden Your Hearts ()"
+   "text": "But Christ is faithful as the Son over God’s house. And we are His house, if we hold firmly to our confidence and the hope of which we boast."
   },
   {
    "verse": 7,
@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "So I swore on oath in My anger, ‘They shall never enter My rest.’” The Peril of Unbelief"
+   "text": "So I swore on oath in My anger, ‘They shall never enter My rest.’”"
   },
   {
    "verse": 12,
@@ -75,6 +75,26 @@
   {
    "verse": 19,
    "text": "So we see that it was because of their unbelief that they were unable to enter."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Our Apostle and High Priest"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Do Not Harden Your Hearts"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "The Peril of Unbelief"
   }
  ]
 }

@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "And offer the second lamb at twilight, with the same grain offering and drink offering as in the morning. It is a food offering, a pleasing aroma to the LORD. The Sabbath Offerings"
+   "text": "And offer the second lamb at twilight, with the same grain offering and drink offering as in the morning. It is a food offering, a pleasing aroma to the LORD."
   },
   {
    "verse": 9,
@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "This is the burnt offering for every Sabbath, in addition to the regular burnt offering and its drink offering. The Monthly Offerings"
+   "text": "This is the burnt offering for every Sabbath, in addition to the regular burnt offering and its drink offering."
   },
   {
    "verse": 11,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "In addition to the regular burnt offering with its drink offering, one male goat is to be presented to the LORD as a sin offering. Passover and the Feast of Unleavened Bread (; ; )"
+   "text": "In addition to the regular burnt offering with its drink offering, one male goat is to be presented to the LORD as a sin offering."
   },
   {
    "verse": 16,
@@ -98,7 +98,7 @@
   },
   {
    "verse": 25,
-   "text": "On the seventh day you shall hold a sacred assembly; you must not do any regular work. The Feast of Weeks ()"
+   "text": "On the seventh day you shall hold a sacred assembly; you must not do any regular work."
   },
   {
    "verse": 26,
@@ -123,6 +123,38 @@
   {
    "verse": 31,
    "text": "Offer them with their drink offerings in addition to the regular burnt offering and its grain offering. The animals must be unblemished.[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Daily Offerings"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "The Sabbath Offerings"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "The Monthly Offerings"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Passover and the Feast of Unleavened Bread"
+  },
+  {
+   "beforeVerse": 26,
+   "kind": "section",
+   "level": 1,
+   "text": "The Feast of Weeks"
   }
  ]
 }

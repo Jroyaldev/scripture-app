@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "Greet one another with a holy kiss. All the churches of Christ send you greetings. Avoid Divisions ()"
+   "text": "Greet one another with a holy kiss. All the churches of Christ send you greetings."
   },
   {
    "verse": 17,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "The God of peace will soon crush Satan under your feet. The grace of our Lord Jesus Christ be with you. Greetings from Paul’s Fellow Workers ()"
+   "text": "The God of peace will soon crush Satan under your feet. The grace of our Lord Jesus Christ be with you."
   },
   {
    "verse": 21,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "Gaius, who has hosted me and all the church, sends you greetings. Erastus, the city treasurer, sends you greetings, as does our brother Quartus. Doxology ()"
+   "text": "Gaius, who has hosted me and all the church, sends you greetings. Erastus, the city treasurer, sends you greetings, as does our brother Quartus."
   },
   {
    "verse": 25,
@@ -103,6 +103,32 @@
   {
    "verse": 27,
    "text": "to the only wise God be glory forever through Jesus Christ! Amen."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Personal Greetings and Love"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Avoid Divisions"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "Greetings from Paul’s Fellow Workers"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "Doxology"
   }
  ]
 }

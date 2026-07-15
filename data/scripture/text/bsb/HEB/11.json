@@ -10,7 +10,7 @@
   },
   {
    "verse": 3,
-   "text": "By faith we understand that the universe was formed at God’s command, so that what is seen was not made out of what was visible. The Faith of Abel, Enoch, Noah ()"
+   "text": "By faith we understand that the universe was formed at God’s command, so that what is seen was not made out of what was visible."
   },
   {
    "verse": 4,
@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "By faith Noah, when warned about things not yet seen, in godly fear built an ark to save his family. By faith he condemned the world and became heir of the righteousness that comes by faith. The Faith of Abraham and Sarah (; )"
+   "text": "By faith Noah, when warned about things not yet seen, in godly fear built an ark to save his family. By faith he condemned the world and became heir of the righteousness that comes by faith."
   },
   {
    "verse": 8,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "Abraham reasoned that God could raise the dead, and in a sense, he did receive Isaac back from death. The Faith of Isaac, Jacob, and Joseph ()"
+   "text": "Abraham reasoned that God could raise the dead, and in a sense, he did receive Isaac back from death."
   },
   {
    "verse": 20,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "By faith Joseph, when his end was near, spoke about the exodus of the Israelites and gave instructions about his bones. The Faith of Moses (; )"
+   "text": "By faith Joseph, when his end was near, spoke about the exodus of the Israelites and gave instructions about his bones."
   },
   {
    "verse": 23,
@@ -114,7 +114,7 @@
   },
   {
    "verse": 29,
-   "text": "By faith the people passed through the Red Sea as on dry land; but when the Egyptians tried to follow, they were drowned. The Faith of Many ()"
+   "text": "By faith the people passed through the Red Sea as on dry land; but when the Egyptians tried to follow, they were drowned."
   },
   {
    "verse": 30,
@@ -159,6 +159,44 @@
   {
    "verse": 40,
    "text": "God had planned something better for us, so that together with us they would be made perfect."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Faith and Assurance"
+  },
+  {
+   "beforeVerse": 4,
+   "kind": "section",
+   "level": 1,
+   "text": "The Faith of Abel, Enoch, Noah"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "The Faith of Abraham and Sarah"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "The Faith of Isaac, Jacob, and Joseph"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "The Faith of Moses"
+  },
+  {
+   "beforeVerse": 30,
+   "kind": "section",
+   "level": 1,
+   "text": "The Faith of Many"
   }
  ]
 }

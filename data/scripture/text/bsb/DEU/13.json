@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "Then all Israel will hear and be afraid, and will never again do such a wicked thing among you. Idolatrous Cities to Be Destroyed"
+   "text": "Then all Israel will hear and be afraid, and will never again do such a wicked thing among you."
   },
   {
    "verse": 12,
@@ -71,6 +71,20 @@
   {
    "verse": 18,
    "text": "because you obey the LORD your God, keeping all His commandments I am giving you today and doing what is right in the eyes of the LORD your God."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Idolaters to Be Put to Death"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Idolatrous Cities to Be Destroyed"
   }
  ]
 }

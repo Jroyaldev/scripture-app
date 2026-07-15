@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "I will make the sun’s shadow that falls on the stairway of Ahaz go back ten steps.’” So the sunlight went back the ten steps it had descended. Hezekiah’s Song of Thanksgiving"
+   "text": "I will make the sun’s shadow that falls on the stairway of Ahaz go back ten steps.’” So the sunlight went back the ten steps it had descended."
   },
   {
    "verse": 9,
@@ -87,6 +87,20 @@
   {
    "verse": 22,
    "text": "And Hezekiah had asked, “What will be the sign that I will go up to the house of the LORD?”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Hezekiah’s Illness and Recovery"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Hezekiah’s Song of Thanksgiving"
   }
  ]
 }

@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "And the woman fled into the wilderness, where God had prepared a place for her to be nourished for 1,260 days. The War in Heaven"
+   "text": "And the woman fled into the wilderness, where God had prepared a place for her to be nourished for 1,260 days."
   },
   {
    "verse": 7,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "Therefore rejoice, O heavens, and you who dwell in them! But woe to the earth and the sea; with great fury the devil has come down to you, knowing he has only a short time.” The Woman Persecuted"
+   "text": "Therefore rejoice, O heavens, and you who dwell in them! But woe to the earth and the sea; with great fury the devil has come down to you, knowing he has only a short time.”"
   },
   {
    "verse": 13,
@@ -67,6 +67,26 @@
   {
    "verse": 17,
    "text": "And the dragon was enraged at the woman and went to make war with the rest of her children, who keep the commandments of God and hold to the testimony of Jesus. And the dragon stood on the shore of the sea."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Woman and the Dragon"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "The War in Heaven"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Woman Persecuted"
   }
  ]
 }

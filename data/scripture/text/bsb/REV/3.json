@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "He who has an ear, let him hear what the Spirit says to the churches. To the Church in Philadelphia"
+   "text": "He who has an ear, let him hear what the Spirit says to the churches."
   },
   {
    "verse": 7,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "He who has an ear, let him hear what the Spirit says to the churches. To the Church in Laodicea ()"
+   "text": "He who has an ear, let him hear what the Spirit says to the churches."
   },
   {
    "verse": 14,
@@ -87,6 +87,26 @@
   {
    "verse": 22,
    "text": "He who has an ear, let him hear what the Spirit says to the churches.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "To the Church in Sardis"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "To the Church in Philadelphia"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "To the Church in Laodicea"
   }
  ]
 }

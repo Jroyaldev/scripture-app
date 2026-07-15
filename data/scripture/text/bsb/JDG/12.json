@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "Jephthah judged Israel six years, and when he died, he was buried in one of the cities of Gilead. Ibzan, Elon, and Abdon"
+   "text": "Jephthah judged Israel six years, and when he died, he was buried in one of the cities of Gilead."
   },
   {
    "verse": 8,
@@ -59,6 +59,20 @@
   {
    "verse": 15,
    "text": "Then Abdon son of Hillel, from Pirathon, died, and he was buried at Pirathon in Ephraim, in the hill country of the Amalekites."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jephthah Defeats Ephraim"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Ibzan, Elon, and Abdon"
   }
  ]
 }

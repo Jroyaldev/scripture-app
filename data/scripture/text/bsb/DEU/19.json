@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "You must not move your neighbor’s boundary marker, which was set up by your ancestors to mark the inheritance you shall receive in the land that the LORD your God is giving you to possess. The Testimony of Two or Three Witnesses ()"
+   "text": "You must not move your neighbor’s boundary marker, which was set up by your ancestors to mark the inheritance you shall receive in the land that the LORD your God is giving you to possess."
   },
   {
    "verse": 15,
@@ -83,6 +83,20 @@
   {
    "verse": 21,
    "text": "You must show no pity: life for life, eye for eye, tooth for tooth, hand for hand, and foot for foot."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Cities of Refuge"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "The Testimony of Two or Three Witnesses"
   }
  ]
 }

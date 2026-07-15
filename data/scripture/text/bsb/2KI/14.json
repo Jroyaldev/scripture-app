@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "Amaziah struck down 10,000 Edomites in the Valley of Salt. He took Sela in battle and called it Joktheel, which is its name to this very day. Jehoash Defeats Amaziah ()"
+   "text": "Amaziah struck down 10,000 Edomites in the Valley of Salt. He took Sela in battle and called it Joktheel, which is its name to this very day."
   },
   {
    "verse": 8,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "He took all the gold and silver and all the articles found in the house of the LORD and in the treasuries of the royal palace, as well as some hostages. Then he returned to Samaria. Jeroboam II Succeeds Jehoash in Israel"
+   "text": "He took all the gold and silver and all the articles found in the house of the LORD and in the treasuries of the royal palace, as well as some hostages. Then he returned to Samaria."
   },
   {
    "verse": 15,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "And Jehoash rested with his fathers and was buried in Samaria with the kings of Israel. And his son Jeroboam reigned in his place. The Death of Amaziah ()"
+   "text": "And Jehoash rested with his fathers and was buried in Samaria with the kings of Israel. And his son Jeroboam reigned in his place."
   },
   {
    "verse": 17,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "They carried him back on horses and buried him in Jerusalem with his fathers in the City of David. Azariah Succeeds Amaziah in Judah ()"
+   "text": "They carried him back on horses and buried him in Jerusalem with his fathers in the City of David."
   },
   {
    "verse": 21,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "Azariah was the one who rebuilt Elath and restored it to Judah after King Amaziah rested with his fathers. Jeroboam II Reigns in Israel"
+   "text": "Azariah was the one who rebuilt Elath and restored it to Judah after King Amaziah rested with his fathers."
   },
   {
    "verse": 23,
@@ -115,6 +115,44 @@
   {
    "verse": 29,
    "text": "And Jeroboam rested with his fathers, the kings of Israel. And his son Zechariah reigned in his place."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Amaziah Reigns in Judah"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Jehoash Defeats Amaziah"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Jeroboam II Succeeds Jehoash in Israel"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "The Death of Amaziah"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "Azariah Succeeds Amaziah in Judah"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "Jeroboam II Reigns in Israel"
   }
  ]
 }

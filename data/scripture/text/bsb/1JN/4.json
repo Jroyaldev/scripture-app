@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "We are from God. Whoever knows God listens to us; whoever is not from God does not listen to us. That is how we know the Spirit of truth and the spirit of deception. Love Comes from God"
+   "text": "We are from God. Whoever knows God listens to us; whoever is not from God does not listen to us. That is how we know the Spirit of truth and the spirit of deception."
   },
   {
    "verse": 7,
@@ -83,6 +83,20 @@
   {
    "verse": 21,
    "text": "And we have this commandment from Him: Whoever loves God must love his brother as well."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Testing the Spirits"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Love Comes from God"
   }
  ]
 }

@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "So the last will be first, and the first will be last.” The Third Prediction of the Passion (; )"
+   "text": "So the last will be first, and the first will be last.”"
   },
   {
    "verse": 17,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "and will deliver Him over to the Gentiles to be mocked and flogged and crucified. And on the third day He will be raised to life.” A Mother’s Request ()"
+   "text": "and will deliver Him over to the Gentiles to be mocked and flogged and crucified. And on the third day He will be raised to life.”"
   },
   {
    "verse": 20,
@@ -110,7 +110,7 @@
   },
   {
    "verse": 28,
-   "text": "just as the Son of Man did not come to be served, but to serve, and to give His life as a ransom for many.” The Blind Men by the Road (; )"
+   "text": "just as the Son of Man did not come to be served, but to serve, and to give His life as a ransom for many.”"
   },
   {
    "verse": 29,
@@ -135,6 +135,32 @@
   {
    "verse": 34,
    "text": "Moved with compassion, Jesus touched their eyes, and at once they received their sight and followed Him."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parable of the Workers"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "The Third Prediction of the Passion"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "A Mother’s Request"
+  },
+  {
+   "beforeVerse": 29,
+   "kind": "section",
+   "level": 1,
+   "text": "The Blind Men by the Road"
   }
  ]
 }

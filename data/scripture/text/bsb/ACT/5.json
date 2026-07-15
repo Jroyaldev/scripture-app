@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "And great fear came over the whole church and all who heard about these events. The Apostles Heal Many"
+   "text": "And great fear came over the whole church and all who heard about these events."
   },
   {
    "verse": 12,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "Crowds also gathered from the towns around Jerusalem, bringing the sick and those tormented by unclean spirits, and all of them were healed. The Apostles Arrested and Freed"
+   "text": "Crowds also gathered from the towns around Jerusalem, bringing the sick and those tormented by unclean spirits, and all of them were healed."
   },
   {
    "verse": 17,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "“We found the jail securely locked, with the guards posted at the doors; but when we opened them, we found no one inside.” The Apostles before the Sanhedrin"
+   "text": "“We found the jail securely locked, with the guards posted at the doors; but when we opened them, we found no one inside.”"
   },
   {
    "verse": 24,
@@ -126,7 +126,7 @@
   },
   {
    "verse": 32,
-   "text": "We are witnesses of these things, and so is the Holy Spirit, whom God has given to those who obey Him.” Gamaliel’s Advice"
+   "text": "We are witnesses of these things, and so is the Holy Spirit, whom God has given to those who obey Him.”"
   },
   {
    "verse": 33,
@@ -167,6 +167,38 @@
   {
    "verse": 42,
    "text": "Every day, in the temple courts and from house to house, they did not stop teaching and proclaiming the good news that Jesus is the Christ."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Ananias and Sapphira"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "The Apostles Heal Many"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "The Apostles Arrested and Freed"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "The Apostles before the Sanhedrin"
+  },
+  {
+   "beforeVerse": 33,
+   "kind": "section",
+   "level": 1,
+   "text": "Gamaliel’s Advice"
   }
  ]
 }

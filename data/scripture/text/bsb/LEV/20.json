@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "If anyone curses his father or mother, he must be put to death. He has cursed his father or mother; his blood shall be upon him. Punishments for Sexual Immorality (; )"
+   "text": "If anyone curses his father or mother, he must be put to death. He has cursed his father or mother; his blood shall be upon him."
   },
   {
    "verse": 10,
@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "If a man marries his brother’s wife, it is an act of impurity. He has uncovered the nakedness of his brother; they shall be childless. Distinguish between Clean and Unclean"
+   "text": "If a man marries his brother’s wife, it is an act of impurity. He has uncovered the nakedness of his brother; they shall be childless."
   },
   {
    "verse": 22,
@@ -107,6 +107,26 @@
   {
    "verse": 27,
    "text": "A man or a woman who is a medium or spiritist must surely be put to death. They shall be stoned; their blood is upon them.’”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Punishments for Disobedience"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Punishments for Sexual Immorality"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "Distinguish between Clean and Unclean"
   }
  ]
 }

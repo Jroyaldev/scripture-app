@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "It has laid waste My grapevine and splintered My fig tree. It has stripped off the bark and thrown it away; the branches have turned white. A Call to Mourning"
+   "text": "It has laid waste My grapevine and splintered My fig tree. It has stripped off the bark and thrown it away; the branches have turned white."
   },
   {
    "verse": 8,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "The grapevine is dried up, and the fig tree is withered; the pomegranate, palm, and apple— all the trees of the orchard— are withered. Surely the joy of mankind has dried up. A Call to Repentance (; ; )"
+   "text": "The grapevine is dried up, and the fig tree is withered; the pomegranate, palm, and apple— all the trees of the orchard— are withered. Surely the joy of mankind has dried up."
   },
   {
    "verse": 13,
@@ -79,6 +79,26 @@
   {
    "verse": 20,
    "text": "Even the beasts of the field pant for You, for the streams of water have dried up, and fire has consumed the open pastures."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Invasion of Locusts"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "A Call to Mourning"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "A Call to Repentance"
   }
  ]
 }

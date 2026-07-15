@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "Blessed and holy are those who share in the first resurrection! The second death has no power over them, but they will be priests of God and of Christ and will reign with Him for a thousand years. Satan Cast into the Lake of Fire"
+   "text": "Blessed and holy are those who share in the first resurrection! The second death has no power over them, but they will be priests of God and of Christ and will reign with Him for a thousand years."
   },
   {
    "verse": 7,
@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "And the devil who had deceived them was thrown into the lake of fire and sulfur, into which the beast and the false prophet had already been thrown. There they will be tormented day and night forever and ever. Judgment before the Great White Throne"
+   "text": "And the devil who had deceived them was thrown into the lake of fire and sulfur, into which the beast and the false prophet had already been thrown. There they will be tormented day and night forever and ever."
   },
   {
    "verse": 11,
@@ -59,6 +59,26 @@
   {
    "verse": 15,
    "text": "And if anyone was found whose name was not written in the Book of Life, he was thrown into the lake of fire."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Satan Bound"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Satan Cast into the Lake of Fire"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "Judgment before the Great White Throne"
   }
  ]
 }

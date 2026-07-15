@@ -10,7 +10,7 @@
   },
   {
    "verse": 3,
-   "text": "When all the Israelites saw the fire coming down and the glory of the LORD above the temple, they bowed down on the pavement with their faces to the ground, and they worshiped and gave thanks to the LORD: “For He is good; His loving devotion endures forever.” Sacrifices of Dedication ()"
+   "text": "When all the Israelites saw the fire coming down and the glory of the LORD above the temple, they bowed down on the pavement with their faces to the ground, and they worshiped and gave thanks to the LORD: “For He is good; His loving devotion endures forever.”"
   },
   {
    "verse": 4,
@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "On the twenty-third day of the seventh month, Solomon sent the people away to their homes, joyful and glad of heart for the good things that the LORD had done for David, for Solomon, and for His people Israel. The LORD’s Response to Solomon ()"
+   "text": "On the twenty-third day of the seventh month, Solomon sent the people away to their homes, joyful and glad of heart for the good things that the LORD had done for David, for Solomon, and for His people Israel."
   },
   {
    "verse": 11,
@@ -87,6 +87,26 @@
   {
    "verse": 22,
    "text": "And others will answer, ‘Because they have forsaken the LORD, the God of their fathers, who brought them out of the land of Egypt, and have embraced other gods, worshiping and serving them— because of this, He has brought all this disaster upon them.’”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Fire from Heaven"
+  },
+  {
+   "beforeVerse": 4,
+   "kind": "section",
+   "level": 1,
+   "text": "Sacrifices of Dedication"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "The LORD’s Response to Solomon"
   }
  ]
 }

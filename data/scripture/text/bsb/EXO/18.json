@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "Then Moses’ father-in-law Jethro brought a burnt offering and sacrifices to God, and Aaron came with all the elders of Israel to eat bread with Moses’ father-in-law in the presence of God. Jethro Advises Moses ()"
+   "text": "Then Moses’ father-in-law Jethro brought a burnt offering and sacrifices to God, and Aaron came with all the elders of Israel to eat bread with Moses’ father-in-law in the presence of God."
   },
   {
    "verse": 13,
@@ -107,6 +107,20 @@
   {
    "verse": 27,
    "text": "Then Moses sent his father-in-law on his way, and Jethro returned to his own land."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Visit of Jethro"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Jethro Advises Moses"
   }
  ]
 }

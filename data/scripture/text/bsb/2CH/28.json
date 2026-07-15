@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "And he sacrificed and burned incense on the high places, on the hills, and under every green tree. Aram Defeats Judah ()"
+   "text": "And he sacrificed and burned incense on the high places, on the hills, and under every green tree."
   },
   {
    "verse": 5,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "Then the men who were designated by name arose, took charge of the captives, and provided from the plunder clothing for the naked. They clothed them, gave them sandals and food and drink, anointed their wounds, and put all the feeble on donkeys. So they brought them to Jericho, the City of Palms, to their brothers. Then they returned to Samaria. The Idolatry of Ahaz ()"
+   "text": "Then the men who were designated by name arose, took charge of the captives, and provided from the plunder clothing for the naked. They clothed them, gave them sandals and food and drink, anointed their wounds, and put all the feeble on donkeys. So they brought them to Jericho, the City of Palms, to their brothers. Then they returned to Samaria."
   },
   {
    "verse": 16,
@@ -107,6 +107,26 @@
   {
    "verse": 27,
    "text": "And Ahaz rested with his fathers and was buried in the city of Jerusalem, but he was not placed in the tombs of the kings of Israel. And his son Hezekiah reigned in his place."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Ahaz Reigns in Judah"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "Aram Defeats Judah"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "The Idolatry of Ahaz"
   }
  ]
 }

@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "You know the way to the place where I am going.” The Way, the Truth, and the Life"
+   "text": "You know the way to the place where I am going.”"
   },
   {
    "verse": 5,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "If you ask Me for anything in My name, I will do it. Jesus Promises the Holy Spirit ()"
+   "text": "If you ask Me for anything in My name, I will do it."
   },
   {
    "verse": 15,
@@ -102,7 +102,7 @@
   },
   {
    "verse": 26,
-   "text": "But the Advocate, the Holy Spirit, whom the Father will send in My name, will teach you all things and will remind you of everything I have told you. Peace I Leave with You"
+   "text": "But the Advocate, the Holy Spirit, whom the Father will send in My name, will teach you all things and will remind you of everything I have told you."
   },
   {
    "verse": 27,
@@ -123,6 +123,32 @@
   {
    "verse": 31,
    "text": "But I do exactly what the Father has commanded Me, so that the world may know that I love the Father. Get up! Let us go on from here.[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "In My Father’s House Are Many Rooms"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "The Way, the Truth, and the Life"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Promises the Holy Spirit"
+  },
+  {
+   "beforeVerse": 27,
+   "kind": "section",
+   "level": 1,
+   "text": "Peace I Leave with You"
   }
  ]
 }

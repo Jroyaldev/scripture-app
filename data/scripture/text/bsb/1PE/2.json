@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "Conduct yourselves with such honor among the Gentiles that, though they slander you as evildoers, they may see your good deeds and glorify God on the day He visits us. Submission to Authorities ()"
+   "text": "Conduct yourselves with such honor among the Gentiles that, though they slander you as evildoers, they may see your good deeds and glorify God on the day He visits us."
   },
   {
    "verse": 13,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "How is it to your credit if you are beaten for doing wrong and you endure it? But if you suffer for doing good and you endure it, this is commendable before God. Christ’s Example of Suffering ()"
+   "text": "How is it to your credit if you are beaten for doing wrong and you endure it? But if you suffer for doing good and you endure it, this is commendable before God."
   },
   {
    "verse": 21,
@@ -99,6 +99,26 @@
   {
    "verse": 25,
    "text": "For “you were like sheep going astray,” but now you have returned to the Shepherd and Overseer of your souls."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Living Stone and Chosen People"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Submission to Authorities"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "Christ’s Example of Suffering"
   }
  ]
 }

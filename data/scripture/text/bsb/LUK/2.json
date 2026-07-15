@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "And she gave birth to her firstborn, a Son. She wrapped Him in swaddling cloths and laid Him in a manger, because there was no room for them in the inn. The Shepherds and the Angels"
+   "text": "And she gave birth to her firstborn, a Son. She wrapped Him in swaddling cloths and laid Him in a manger, because there was no room for them in the inn."
   },
   {
    "verse": 8,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "The shepherds returned, glorifying and praising God for all they had heard and seen, which was just as the angel had told them. Jesus Presented at the Temple"
+   "text": "The shepherds returned, glorifying and praising God for all they had heard and seen, which was just as the angel had told them."
   },
   {
    "verse": 21,
@@ -94,7 +94,7 @@
   },
   {
    "verse": 24,
-   "text": "and to offer the sacrifice specified in the Law of the Lord: “A pair of turtledoves or two young pigeons.” The Prophecy of Simeon"
+   "text": "and to offer the sacrifice specified in the Law of the Lord: “A pair of turtledoves or two young pigeons.”"
   },
   {
    "verse": 25,
@@ -138,7 +138,7 @@
   },
   {
    "verse": 35,
-   "text": "so that the thoughts of many hearts will be revealed — and a sword will pierce your soul as well.” The Prophecy of Anna"
+   "text": "so that the thoughts of many hearts will be revealed — and a sword will pierce your soul as well.”"
   },
   {
    "verse": 36,
@@ -150,7 +150,7 @@
   },
   {
    "verse": 38,
-   "text": "Coming forward at that moment, she gave thanks to God and spoke about the Child to all who were waiting for the redemption of Jerusalem. The Return to Nazareth ()"
+   "text": "Coming forward at that moment, she gave thanks to God and spoke about the Child to all who were waiting for the redemption of Jerusalem."
   },
   {
    "verse": 39,
@@ -158,7 +158,7 @@
   },
   {
    "verse": 40,
-   "text": "And the Child grew and became strong. He was filled with wisdom, and the grace of God was upon Him. The Boy Jesus at the Temple"
+   "text": "And the Child grew and became strong. He was filled with wisdom, and the grace of God was upon Him."
   },
   {
    "verse": 41,
@@ -207,6 +207,50 @@
   {
    "verse": 52,
    "text": "And Jesus grew in wisdom and stature, and in favor with God and man."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Birth of Jesus"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "The Shepherds and the Angels"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Presented at the Temple"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "The Prophecy of Simeon"
+  },
+  {
+   "beforeVerse": 36,
+   "kind": "section",
+   "level": 1,
+   "text": "The Prophecy of Anna"
+  },
+  {
+   "beforeVerse": 39,
+   "kind": "section",
+   "level": 1,
+   "text": "The Return to Nazareth"
+  },
+  {
+   "beforeVerse": 41,
+   "kind": "section",
+   "level": 1,
+   "text": "The Boy Jesus at the Temple"
   }
  ]
 }

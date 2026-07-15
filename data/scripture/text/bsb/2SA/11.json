@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "Then David invited Uriah to eat and drink with him, and he got Uriah drunk. And in the evening Uriah went out to lie down on his cot with his master’s servants, but he did not go home. David Arranges Uriah’s Death"
+   "text": "Then David invited Uriah to eat and drink with him, and he got Uriah drunk. And in the evening Uriah went out to lie down on his cot with his master’s servants, but he did not go home."
   },
   {
    "verse": 14,
@@ -98,7 +98,7 @@
   },
   {
    "verse": 25,
-   "text": "Then David told the messenger, “Say this to Joab: ‘Do not let this matter upset you, for the sword devours one as well as another. Strengthen your attack against the city and demolish it.’ Encourage him with these words.” David Marries Bathsheba"
+   "text": "Then David told the messenger, “Say this to Joab: ‘Do not let this matter upset you, for the sword devours one as well as another. Strengthen your attack against the city and demolish it.’ Encourage him with these words.”"
   },
   {
    "verse": 26,
@@ -107,6 +107,26 @@
   {
    "verse": 27,
    "text": "And when the time of mourning was over, David had her brought to his house, and she became his wife and bore him a son. But the thing that David had done was evil in the sight of the LORD."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "David and Bathsheba"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "David Arranges Uriah’s Death"
+  },
+  {
+   "beforeVerse": 26,
+   "kind": "section",
+   "level": 1,
+   "text": "David Marries Bathsheba"
   }
  ]
 }

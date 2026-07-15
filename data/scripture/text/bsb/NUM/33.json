@@ -194,7 +194,7 @@
   },
   {
    "verse": 49,
-   "text": "And there on the plains of Moab they camped by the Jordan, from Beth-jeshimoth to Abel-shittim. Instructions for Occupying Canaan"
+   "text": "And there on the plains of Moab they camped by the Jordan, from Beth-jeshimoth to Abel-shittim."
   },
   {
    "verse": 50,
@@ -223,6 +223,20 @@
   {
    "verse": 56,
    "text": "And then I will do to you what I had planned to do to them.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Forty-Two Journeys of the Israelites"
+  },
+  {
+   "beforeVerse": 50,
+   "kind": "section",
+   "level": 1,
+   "text": "Instructions for Occupying Canaan"
   }
  ]
 }

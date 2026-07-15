@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "The LORD within her is righteous; He does no wrong. He applies His justice morning by morning; He does not fail at dawn, yet the unjust know no shame. Purification of the Nations"
+   "text": "The LORD within her is righteous; He does no wrong. He applies His justice morning by morning; He does not fail at dawn, yet the unjust know no shame."
   },
   {
    "verse": 6,
@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "Therefore wait for Me,” declares the LORD, “until the day I rise to testify. For My decision is to gather nations, to assemble kingdoms, to pour out upon them My indignation — all My burning anger. For all the earth will be consumed by the fire of My jealousy. A Faithful Remnant"
+   "text": "Therefore wait for Me,” declares the LORD, “until the day I rise to testify. For My decision is to gather nations, to assemble kingdoms, to pour out upon them My indignation — all My burning anger. For all the earth will be consumed by the fire of My jealousy."
   },
   {
    "verse": 9,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "The remnant of Israel will no longer do wrong or speak lies, nor will a deceitful tongue be found in their mouths. But they will feed and lie down, with no one to make them tremble.” Israel’s Restoration"
+   "text": "The remnant of Israel will no longer do wrong or speak lies, nor will a deceitful tongue be found in their mouths. But they will feed and lie down, with no one to make them tremble.”"
   },
   {
    "verse": 14,
@@ -79,6 +79,32 @@
   {
    "verse": 20,
    "text": "At that time I will bring you in; yes, at that time I will gather you. For I will give you fame and praise among all the peoples of the earth when I restore your captives before your very eyes,” says the LORD."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Judgment on Jerusalem"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "Purification of the Nations"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "A Faithful Remnant"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Israel’s Restoration"
   }
  ]
 }

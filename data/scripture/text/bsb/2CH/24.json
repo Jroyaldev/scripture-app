@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "When they were finished, they brought the rest of the money to the king and Jehoiada, and with it were made articles for the house of the LORD — utensils for the service and for the burnt offerings, dishes, and other objects of gold and silver. Throughout the days of Jehoiada, burnt offerings were presented regularly in the house of the LORD. Jehoiada’s Death and Burial"
+   "text": "When they were finished, they brought the rest of the money to the king and Jehoiada, and with it were made articles for the house of the LORD — utensils for the service and for the burnt offerings, dishes, and other objects of gold and silver. Throughout the days of Jehoiada, burnt offerings were presented regularly in the house of the LORD."
   },
   {
    "verse": 15,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "And Jehoiada was buried with the kings in the City of David, because he had done what was good in Israel for God and His temple. The Wickedness of Joash"
+   "text": "And Jehoiada was buried with the kings in the City of David, because he had done what was good in Israel for God and His temple."
   },
   {
    "verse": 17,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "Thus King Joash failed to remember the kindness that Zechariah’s father Jehoiada had extended to him. Instead, Joash killed Jehoiada’s son. As he lay dying, Zechariah said, “May the LORD see this and call you to account.” The Death of Joash ()"
+   "text": "Thus King Joash failed to remember the kindness that Zechariah’s father Jehoiada had extended to him. Instead, Joash killed Jehoiada’s son. As he lay dying, Zechariah said, “May the LORD see this and call you to account.”"
   },
   {
    "verse": 23,
@@ -107,6 +107,32 @@
   {
    "verse": 27,
    "text": "The accounts of the sons of Joash and the many pronouncements about him, and of the restoration of the house of God, are indeed written in the Treatise of the Book of the Kings. And his son Amaziah reigned in his place."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Joash Repairs the Temple"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Jehoiada’s Death and Burial"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "The Wickedness of Joash"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "The Death of Joash"
   }
  ]
 }

@@ -6,7 +6,7 @@
   },
   {
    "verse": 2,
-   "text": "To Timothy, my beloved child: Grace, mercy, and peace from God the Father and Christ Jesus our Lord. Faithfulness under Persecution ()"
+   "text": "To Timothy, my beloved child: Grace, mercy, and peace from God the Father and Christ Jesus our Lord."
   },
   {
    "verse": 3,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "For this reason, even though I suffer as I do, I am not ashamed; for I know whom I have believed, and I am convinced that He is able to guard what I have entrusted to Him for that day. Holding to Sound Teaching"
+   "text": "For this reason, even though I suffer as I do, I am not ashamed; for I know whom I have believed, and I am convinced that He is able to guard what I have entrusted to Him for that day."
   },
   {
    "verse": 13,
@@ -71,6 +71,26 @@
   {
    "verse": 18,
    "text": "May the Lord grant Onesiphorus His mercy on that day. You know very well how much he ministered to me in Ephesus."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Greeting to Timothy"
+  },
+  {
+   "beforeVerse": 3,
+   "kind": "section",
+   "level": 1,
+   "text": "Faithfulness under Persecution"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Holding to Sound Teaching"
   }
  ]
 }

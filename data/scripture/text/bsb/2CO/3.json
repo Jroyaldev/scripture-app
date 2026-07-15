@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "And He has qualified us as ministers of a new covenant, not of the letter but of the Spirit; for the letter kills, but the Spirit gives life. The Glory of the New Covenant ()"
+   "text": "And He has qualified us as ministers of a new covenant, not of the letter but of the Spirit; for the letter kills, but the Spirit gives life."
   },
   {
    "verse": 7,
@@ -71,6 +71,20 @@
   {
    "verse": 18,
    "text": "And we, who with unveiled faces all reflect the glory of the Lord, are being transformed into His image with intensifying glory, which comes from the Lord, who is the Spirit."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Ministers of a New Covenant"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "The Glory of the New Covenant"
   }
  ]
 }

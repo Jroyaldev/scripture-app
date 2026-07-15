@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "And when the messengers returned to the house, they found the servant in good health. Jesus Raises a Widow’s Son"
+   "text": "And when the messengers returned to the house, they found the servant in good health."
   },
   {
    "verse": 11,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "And the news about Jesus spread throughout Judea and all the surrounding region. John’s Inquiry ()"
+   "text": "And the news about Jesus spread throughout Judea and all the surrounding region."
   },
   {
    "verse": 18,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "Blessed is the one who does not fall away on account of Me.” Jesus Testifies about John (; )"
+   "text": "Blessed is the one who does not fall away on account of Me.”"
   },
   {
    "verse": 24,
@@ -138,7 +138,7 @@
   },
   {
    "verse": 35,
-   "text": "But wisdom is vindicated by all her children.” A Sinful Woman Anoints Jesus (; ; )"
+   "text": "But wisdom is vindicated by all her children.”"
   },
   {
    "verse": 36,
@@ -199,6 +199,38 @@
   {
    "verse": 50,
    "text": "And Jesus told the woman, “Your faith has saved you; go in peace.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Faith of the Centurion"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Raises a Widow’s Son"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "John’s Inquiry"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Testifies about John"
+  },
+  {
+   "beforeVerse": 36,
+   "kind": "section",
+   "level": 1,
+   "text": "A Sinful Woman Anoints Jesus"
   }
  ]
 }

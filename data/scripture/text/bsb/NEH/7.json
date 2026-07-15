@@ -10,7 +10,7 @@
   },
   {
    "verse": 3,
-   "text": "And I told them, “Do not open the gates of Jerusalem until the sun is hot. While the guards are on duty, keep the doors shut and securely fastened. And appoint the residents of Jerusalem as guards, some at their posts and some at their own homes.” The List of Returning Exiles ()"
+   "text": "And I told them, “Do not open the gates of Jerusalem until the sun is hot. While the guards are on duty, keep the doors shut and securely fastened. And appoint the residents of Jerusalem as guards, some at their posts and some at their own homes.”"
   },
   {
    "verse": 4,
@@ -274,7 +274,7 @@
   },
   {
    "verse": 69,
-   "text": "435 camels, and 6,720 donkeys. Offerings by the Exiles (; )"
+   "text": "435 camels, and 6,720 donkeys."
   },
   {
    "verse": 70,
@@ -291,6 +291,26 @@
   {
    "verse": 73,
    "text": "So the priests, Levites, gatekeepers, singers, and temple servants, along with some of the people and the rest of the Israelites, settled in their own towns. And by the seventh month the Israelites had settled in their towns."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Securing the City"
+  },
+  {
+   "beforeVerse": 4,
+   "kind": "section",
+   "level": 1,
+   "text": "The List of Returning Exiles"
+  },
+  {
+   "beforeVerse": 70,
+   "kind": "section",
+   "level": 1,
+   "text": "Offerings by the Exiles"
   }
  ]
 }

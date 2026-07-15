@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "Then He will judge between the nations and arbitrate for many peoples. They will beat their swords into plowshares and their spears into pruning hooks. Nation will no longer take up the sword against nation, nor train anymore for war. The Day of Reckoning"
+   "text": "Then He will judge between the nations and arbitrate for many peoples. They will beat their swords into plowshares and their spears into pruning hooks. Nation will no longer take up the sword against nation, nor train anymore for war."
   },
   {
    "verse": 5,
@@ -87,6 +87,20 @@
   {
    "verse": 22,
    "text": "Put no more trust in man, who has only the breath in his nostrils. Of what account is he?"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Mountain of the House of the LORD"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "The Day of Reckoning"
   }
  ]
 }

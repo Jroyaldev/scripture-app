@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "Therefore, you will now go into exile as the first of the captives, and your feasting and lounging will come to an end. The Pride of Israel"
+   "text": "Therefore, you will now go into exile as the first of the captives, and your feasting and lounging will come to an end."
   },
   {
    "verse": 8,
@@ -55,6 +55,20 @@
   {
    "verse": 14,
    "text": "For behold, I will raise up a nation against you, O house of Israel,” declares the LORD, the God of Hosts, “and they will oppress you from Lebo-hamath to the Brook of the Arabah.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Woe to Those at Ease in Zion"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "The Pride of Israel"
   }
  ]
 }

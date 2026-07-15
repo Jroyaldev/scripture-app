@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "So Jeremiah went to Gedaliah son of Ahikam at Mizpah and stayed with him among the people who were left in the land. Gedaliah Governs in Judah ()"
+   "text": "So Jeremiah went to Gedaliah son of Ahikam at Mizpah and stayed with him among the people who were left in the land."
   },
   {
    "verse": 7,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "they all returned from all the places to which they had been banished and came to the land of Judah, to Gedaliah at Mizpah. And they gathered an abundance of wine grapes and summer fruit. The Plot against Gedaliah"
+   "text": "they all returned from all the places to which they had been banished and came to the land of Judah, to Gedaliah at Mizpah. And they gathered an abundance of wine grapes and summer fruit."
   },
   {
    "verse": 13,
@@ -63,6 +63,26 @@
   {
    "verse": 16,
    "text": "But Gedaliah son of Ahikam said to Johanan son of Kareah, “Do not do such a thing! What you are saying about Ishmael is a lie.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jeremiah Remains in Judah"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Gedaliah Governs in Judah"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Plot against Gedaliah"
   }
  ]
 }

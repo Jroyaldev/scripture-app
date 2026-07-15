@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "The prince must not take any of the inheritance of the people by evicting them from their property. He is to provide an inheritance for his sons from his own property, so that none of My people will be displaced from his property.’” The Courts for Boiling and Baking"
+   "text": "The prince must not take any of the inheritance of the people by evicting them from their property. He is to provide an inheritance for his sons from his own property, so that none of My people will be displaced from his property.’”"
   },
   {
    "verse": 19,
@@ -95,6 +95,20 @@
   {
    "verse": 24,
    "text": "And he said to me, “These are the kitchens where those who minister at the temple will cook the sacrifices offered by the people.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Prince’s Offerings"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "The Courts for Boiling and Baking"
   }
  ]
 }

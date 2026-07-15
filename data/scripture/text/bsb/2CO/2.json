@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "in order that Satan should not outwit us. For we are not unaware of his schemes. Triumph in Christ"
+   "text": "in order that Satan should not outwit us. For we are not unaware of his schemes."
   },
   {
    "verse": 12,
@@ -67,6 +67,20 @@
   {
    "verse": 17,
    "text": "For we are not like so many others, who peddle the word of God for profit. On the contrary, in Christ we speak before God with sincerity, as men sent from God."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Reaffirm Your Love"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Triumph in Christ"
   }
  ]
 }

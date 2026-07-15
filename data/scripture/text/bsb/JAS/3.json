@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "My brothers, can a fig tree grow olives, or a grapevine bear figs? Neither can a salt spring produce fresh water. The Wisdom from Above"
+   "text": "My brothers, can a fig tree grow olives, or a grapevine bear figs? Neither can a salt spring produce fresh water."
   },
   {
    "verse": 13,
@@ -71,6 +71,20 @@
   {
    "verse": 18,
    "text": "Peacemakers who sow in peace reap the fruit of righteousness."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Taming the Tongue"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Wisdom from Above"
   }
  ]
 }

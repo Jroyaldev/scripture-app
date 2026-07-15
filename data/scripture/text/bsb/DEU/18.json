@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "They shall eat equal portions, even though he has received money from the sale of his father’s estate. Sorcery Forbidden ()"
+   "text": "They shall eat equal portions, even though he has received money from the sale of his father’s estate."
   },
   {
    "verse": 9,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "Though these nations, which you will dispossess, listen to conjurers and diviners, the LORD your God has not permitted you to do so. A Prophet Like Moses ()"
+   "text": "Though these nations, which you will dispossess, listen to conjurers and diviners, the LORD your God has not permitted you to do so."
   },
   {
    "verse": 15,
@@ -87,6 +87,26 @@
   {
    "verse": 22,
    "text": "When a prophet speaks in the name of the LORD and the message does not come to pass or come true, that is a message the LORD has not spoken. The prophet has spoken presumptuously. Do not be afraid of him."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Provision for Priests and Levites"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Sorcery Forbidden"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "A Prophet Like Moses"
   }
  ]
 }

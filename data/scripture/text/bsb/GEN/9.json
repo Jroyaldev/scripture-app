@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "So God said to Noah, “This is the sign of the covenant that I have established between Me and every creature on the earth.” Noah’s Shame and Canaan’s Curse"
+   "text": "So God said to Noah, “This is the sign of the covenant that I have established between Me and every creature on the earth.”"
   },
   {
    "verse": 18,
@@ -98,7 +98,7 @@
   },
   {
    "verse": 25,
-   "text": "he said, “Cursed be Canaan! A servant of servants shall he be to his brothers.” Shem’s Blessing and Noah’s Death"
+   "text": "he said, “Cursed be Canaan! A servant of servants shall he be to his brothers.”"
   },
   {
    "verse": 26,
@@ -115,6 +115,26 @@
   {
    "verse": 29,
    "text": "So Noah lived a total of 950 years, and then he died."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Covenant of the Rainbow"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Noah’s Shame and Canaan’s Curse"
+  },
+  {
+   "beforeVerse": 26,
+   "kind": "section",
+   "level": 1,
+   "text": "Shem’s Blessing and Noah’s Death"
   }
  ]
 }

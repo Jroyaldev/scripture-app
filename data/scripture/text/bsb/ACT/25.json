@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "But Festus, wishing to do the Jews a favor, said to Paul, “Are you willing to go up to Jerusalem to stand trial before me on these charges?” Paul Appeals to Caesar"
+   "text": "But Festus, wishing to do the Jews a favor, said to Paul, “Are you willing to go up to Jerusalem to stand trial before me on these charges?”"
   },
   {
    "verse": 10,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "Then Festus conferred with his council and replied, “You have appealed to Caesar. To Caesar you will go!” Festus Consults Agrippa"
+   "text": "Then Festus conferred with his council and replied, “You have appealed to Caesar. To Caesar you will go!”"
   },
   {
    "verse": 13,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "Then Agrippa said to Festus, “I would like to hear this man myself.” “Tomorrow you will hear him,” Festus declared. Paul before Agrippa and Bernice"
+   "text": "Then Agrippa said to Festus, “I would like to hear this man myself.” “Tomorrow you will hear him,” Festus declared."
   },
   {
    "verse": 23,
@@ -107,6 +107,32 @@
   {
    "verse": 27,
    "text": "For it seems unreasonable to me to send on a prisoner without specifying the charges against him.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Trial before Festus"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul Appeals to Caesar"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Festus Consults Agrippa"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul before Agrippa and Bernice"
   }
  ]
 }

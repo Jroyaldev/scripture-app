@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "and the priests Benaiah and Jahaziel blew the trumpets regularly before the ark of the covenant of God. David’s Psalm of Thanksgiving ()"
+   "text": "and the priests Benaiah and Jahaziel blew the trumpets regularly before the ark of the covenant of God."
   },
   {
    "verse": 7,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "‘Do not touch My anointed ones! Do no harm to My prophets!’ Sing to the LORD, All the Earth ()"
+   "text": "‘Do not touch My anointed ones! Do no harm to My prophets!’"
   },
   {
    "verse": 23,
@@ -142,7 +142,7 @@
   },
   {
    "verse": 36,
-   "text": "Blessed be the LORD, the God of Israel, from everlasting to everlasting.” Then all the people said, “Amen!” and “Praise the LORD!” Worship before the Ark"
+   "text": "Blessed be the LORD, the God of Israel, from everlasting to everlasting.” Then all the people said, “Amen!” and “Praise the LORD!”"
   },
   {
    "verse": 37,
@@ -171,6 +171,32 @@
   {
    "verse": 43,
    "text": "Then all the people departed for their homes, and David returned home to bless his household."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Tent for the Ark"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "David’s Psalm of Thanksgiving"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "Sing to the LORD, All the Earth"
+  },
+  {
+   "beforeVerse": 37,
+   "kind": "section",
+   "level": 1,
+   "text": "Worship before the Ark"
   }
  ]
 }

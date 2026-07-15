@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "“This is so that they may believe that the LORD, the God of their fathers — the God of Abraham, the God of Isaac, and the God of Jacob — has appeared to you.” Moses’ Hand"
+   "text": "“This is so that they may believe that the LORD, the God of their fathers — the God of Abraham, the God of Isaac, and the God of Jacob — has appeared to you.”"
   },
   {
    "verse": 6,
@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "But if they do not believe even these two signs or listen to your voice, take some water from the Nile and pour it on the dry ground. Then the water you take from the Nile will become blood on the ground.” The Appointment of Aaron"
+   "text": "But if they do not believe even these two signs or listen to your voice, take some water from the Nile and pour it on the dry ground. Then the water you take from the Nile will become blood on the ground.”"
   },
   {
    "verse": 10,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "But take this staff in your hand so you can perform signs with it.” Moses Leaves for Egypt"
+   "text": "But take this staff in your hand so you can perform signs with it.”"
   },
   {
    "verse": 18,
@@ -102,7 +102,7 @@
   },
   {
    "verse": 26,
-   "text": "So the LORD let him alone. (When she said, “bridegroom of blood,” she was referring to the circumcision.) The People Believe Moses and Aaron"
+   "text": "So the LORD let him alone. (When she said, “bridegroom of blood,” she was referring to the circumcision.)"
   },
   {
    "verse": 27,
@@ -123,6 +123,38 @@
   {
    "verse": 31,
    "text": "and they believed. And when they heard that the LORD had attended to the Israelites and had seen their affliction, they bowed down and worshiped."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Moses’ Staff"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "Moses’ Hand"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "The Appointment of Aaron"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Moses Leaves for Egypt"
+  },
+  {
+   "beforeVerse": 27,
+   "kind": "section",
+   "level": 1,
+   "text": "The People Believe Moses and Aaron"
   }
  ]
 }

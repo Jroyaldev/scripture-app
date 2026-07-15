@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "The Ammonites marched out and arrayed themselves for battle at the entrance of the city gate, while the Arameans of Zobah and Rehob and the men of Tob and Maacah were by themselves in the open country. David Defeats Ammon and Aram ()"
+   "text": "The Ammonites marched out and arrayed themselves for battle at the entrance of the city gate, while the Arameans of Zobah and Rehob and the men of Tob and Maacah were by themselves in the open country."
   },
   {
    "verse": 9,
@@ -75,6 +75,20 @@
   {
    "verse": 19,
    "text": "When all the kings who were subject to Hadadezer saw that they had been defeated by Israel, they made peace with Israel and became subject to them. So the Arameans were afraid to help the Ammonites anymore."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "David’s Messengers Disgraced"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "David Defeats Ammon and Aram"
   }
  ]
 }

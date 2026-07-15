@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "Now therefore, order that cedars of Lebanon be cut down for me. My servants will be with your servants, and I will pay your servants whatever wages you set, for you know that there are none among us as skilled in logging as the Sidonians.” Hiram’s Reply to Solomon ()"
+   "text": "Now therefore, order that cedars of Lebanon be cut down for me. My servants will be with your servants, and I will pay your servants whatever wages you set, for you know that there are none among us as skilled in logging as the Sidonians.”"
   },
   {
    "verse": 7,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "And the LORD gave Solomon wisdom, as He had promised him. There was peace between Hiram and Solomon, and the two of them made a treaty. Solomon’s Labor Force"
+   "text": "And the LORD gave Solomon wisdom, as He had promised him. There was peace between Hiram and Solomon, and the two of them made a treaty."
   },
   {
    "verse": 13,
@@ -71,6 +71,26 @@
   {
    "verse": 18,
    "text": "So Solomon’s and Hiram’s builders, along with the Gebalites, quarried the stone and prepared the timber and stone for the construction of the temple."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Preparations for the Temple"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Hiram’s Reply to Solomon"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Solomon’s Labor Force"
   }
  ]
 }

@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "Why not say, as some slanderously claim that we say, “Let us do evil that good may result”? Their condemnation is deserved! There Is No One Righteous (; ; )"
+   "text": "Why not say, as some slanderously claim that we say, “Let us do evil that good may result”? Their condemnation is deserved!"
   },
   {
    "verse": 9,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "Therefore no one will be justified in His sight by works of the law. For the law merely brings awareness of sin. Righteousness through Faith in Christ ()"
+   "text": "Therefore no one will be justified in His sight by works of the law. For the law merely brings awareness of sin."
   },
   {
    "verse": 21,
@@ -123,6 +123,26 @@
   {
    "verse": 31,
    "text": "Do we, then, nullify the law by this faith? Certainly not! Instead, we uphold the law."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "God Remains Faithful"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "There Is No One Righteous"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "Righteousness through Faith in Christ"
   }
  ]
 }

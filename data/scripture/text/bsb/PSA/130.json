@@ -32,5 +32,13 @@
    "verse": 8,
    "text": "And He will redeem Israel from all iniquity."
   }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Out of the Depths"
+  }
  ]
 }

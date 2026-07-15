@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "Whether, then, it was I or they, this is what we preach, and this is what you believed. The Resurrection of the Dead"
+   "text": "Whether, then, it was I or they, this is what we preach, and this is what you believed."
   },
   {
    "verse": 12,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "If our hope in Christ is for this life alone, we are to be pitied more than all men. The Order of Resurrection"
+   "text": "If our hope in Christ is for this life alone, we are to be pitied more than all men."
   },
   {
    "verse": 20,
@@ -134,7 +134,7 @@
   },
   {
    "verse": 34,
-   "text": "Sober up as you ought, and stop sinning; for some of you are ignorant of God. I say this to your shame. The Resurrection Body"
+   "text": "Sober up as you ought, and stop sinning; for some of you are ignorant of God. I say this to your shame."
   },
   {
    "verse": 35,
@@ -194,7 +194,7 @@
   },
   {
    "verse": 49,
-   "text": "And just as we have borne the likeness of the earthly man, so also shall we bear the likeness of the heavenly man. Where, O Death, Is Your Victory? ()"
+   "text": "And just as we have borne the likeness of the earthly man, so also shall we bear the likeness of the heavenly man."
   },
   {
    "verse": 50,
@@ -231,6 +231,38 @@
   {
    "verse": 58,
    "text": "Therefore, my beloved brothers, be steadfast and immovable. Always excel in the work of the Lord, because you know that your labor in the Lord is not in vain."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Resurrection of Christ"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "The Resurrection of the Dead"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "The Order of Resurrection"
+  },
+  {
+   "beforeVerse": 35,
+   "kind": "section",
+   "level": 1,
+   "text": "The Resurrection Body"
+  },
+  {
+   "beforeVerse": 50,
+   "kind": "section",
+   "level": 1,
+   "text": "Where, O Death, Is Your Victory?"
   }
  ]
 }

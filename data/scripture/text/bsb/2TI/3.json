@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "But they will not advance much further. For just like Jannes and Jambres, their folly will be plain to everyone. All Scripture Is God-Breathed ()"
+   "text": "But they will not advance much further. For just like Jannes and Jambres, their folly will be plain to everyone."
   },
   {
    "verse": 10,
@@ -67,6 +67,20 @@
   {
    "verse": 17,
    "text": "so that the man of God may be complete, fully equipped for every good work."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Evil in the Last Days"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "All Scripture Is God-Breathed"
   }
  ]
 }

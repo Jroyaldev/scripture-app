@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "“Lift it out,” he said, and the man reached out his hand and took it. Elisha Captures the Blinded Arameans"
+   "text": "“Lift it out,” he said, and the man reached out his hand and took it."
   },
   {
    "verse": 8,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "So the king prepared a great feast for them, and after they had finished eating and drinking, he sent them away, and they returned to their master. And the Aramean raiders did not come into the land of Israel again. The Siege and Famine of Samaria"
+   "text": "So the king prepared a great feast for them, and after they had finished eating and drinking, he sent them away, and they returned to their master. And the Aramean raiders did not come into the land of Israel again."
   },
   {
    "verse": 24,
@@ -131,6 +131,26 @@
   {
    "verse": 33,
    "text": "While Elisha was still speaking with them, the messenger came down to him. And the king said, “This calamity is from the LORD. Why should I wait for the LORD any longer?”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Axe Head Floats"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Elisha Captures the Blinded Arameans"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "The Siege and Famine of Samaria"
   }
  ]
 }

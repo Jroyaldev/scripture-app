@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "a false witness who gives false testimony, and one who stirs up discord among brothers. Warnings against Adultery"
+   "text": "a false witness who gives false testimony, and one who stirs up discord among brothers."
   },
   {
    "verse": 20,
@@ -139,6 +139,20 @@
   {
    "verse": 35,
    "text": "He will not be appeased by any ransom, or persuaded by lavish gifts."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Warnings against Foolishness"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "Warnings against Adultery"
   }
  ]
 }

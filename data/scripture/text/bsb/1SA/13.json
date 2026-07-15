@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "Some Hebrews even crossed the Jordan into the land of Gad and Gilead. Saul, however, remained at Gilgal, and all his troops were quaking in fear. Saul’s Unlawful Sacrifice"
+   "text": "Some Hebrews even crossed the Jordan into the land of Gad and Gilead. Saul, however, remained at Gilgal, and all his troops were quaking in fear."
   },
   {
    "verse": 8,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "Then Samuel set out from Gilgal and went up to Gibeah in Benjamin. And Saul numbered the troops who were with him, about six hundred men. Israel without Weapons"
+   "text": "Then Samuel set out from Gilgal and went up to Gibeah in Benjamin. And Saul numbered the troops who were with him, about six hundred men."
   },
   {
    "verse": 16,
@@ -91,6 +91,26 @@
   {
    "verse": 23,
    "text": "And a garrison of the Philistines had gone out to the pass at Michmash."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "War with the Philistines"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Saul’s Unlawful Sacrifice"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Israel without Weapons"
   }
  ]
 }

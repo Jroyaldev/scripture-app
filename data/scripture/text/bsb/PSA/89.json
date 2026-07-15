@@ -208,5 +208,13 @@
    "verse": 52,
    "text": "Blessed be the LORD forever! Amen and amen."
   }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "I Will Sing of His Love Forever"
+  }
  ]
 }

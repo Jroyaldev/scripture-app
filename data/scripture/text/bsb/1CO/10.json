@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "No temptation has seized you except what is common to man. And God is faithful; He will not let you be tempted beyond what you can bear. But when you are tempted, He will also provide an escape, so that you can stand up under it. Flee from Idolatry ()"
+   "text": "No temptation has seized you except what is common to man. And God is faithful; He will not let you be tempted beyond what you can bear. But when you are tempted, He will also provide an escape, so that you can stand up under it."
   },
   {
    "verse": 14,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "Are we trying to provoke the Lord to jealousy? Are we stronger than He? All to God’s Glory ()"
+   "text": "Are we trying to provoke the Lord to jealousy? Are we stronger than He?"
   },
   {
    "verse": 23,
@@ -131,6 +131,26 @@
   {
    "verse": 33,
    "text": "as I also try to please everyone in all I do. For I am not seeking my own good, but the good of many, that they may be saved."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Warnings from Israel’s Past"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Flee from Idolatry"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "All to God’s Glory"
   }
  ]
 }

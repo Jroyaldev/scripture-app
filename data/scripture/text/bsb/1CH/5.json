@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "During the days of Saul they waged war against the Hagrites, who were defeated at their hands, and they occupied the dwellings of the Hagrites throughout the region east of Gilead. The Descendants of Gad"
+   "text": "During the days of Saul they waged war against the Hagrites, who were defeated at their hands, and they occupied the dwellings of the Hagrites throughout the region east of Gilead."
   },
   {
    "verse": 11,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "and many others fell slain, because the battle belonged to God. And they occupied the land until the exile. The Half-Tribe of Manasseh"
+   "text": "and many others fell slain, because the battle belonged to God. And they occupied the land until the exile."
   },
   {
    "verse": 23,
@@ -103,6 +103,26 @@
   {
    "verse": 26,
    "text": "So the God of Israel stirred up the spirit of Pul king of Assyria (that is, Tiglath-pileser king of Assyria) to take the Reubenites, the Gadites, and the half-tribe of Manasseh into exile. And he brought them to Halah, Habor, Hara, and the river of Gozan, where they remain to this day."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Descendants of Reuben"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "The Descendants of Gad"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "The Half-Tribe of Manasseh"
   }
  ]
 }

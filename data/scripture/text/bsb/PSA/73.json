@@ -112,5 +112,25 @@
    "verse": 28,
    "text": "But as for me, it is good to draw near to God. I have made the Lord GOD my refuge, that I may proclaim all Your works."
   }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "major-section",
+   "level": 1,
+   "text": "BOOK III"
+  },
+  {
+   "beforeVerse": 1,
+   "kind": "description",
+   "level": 1,
+   "text": "Psalms 73–89"
+  },
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Surely God Is Good to Israel"
+  }
  ]
 }

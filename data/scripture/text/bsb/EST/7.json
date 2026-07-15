@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "Esther replied, “The adversary and enemy is this wicked man — Haman!” And Haman stood in terror before the king and queen. The Hanging of Haman"
+   "text": "Esther replied, “The adversary and enemy is this wicked man — Haman!” And Haman stood in terror before the king and queen."
   },
   {
    "verse": 7,
@@ -39,6 +39,20 @@
   {
    "verse": 10,
    "text": "So they hanged Haman on the gallows he had prepared for Mordecai. Then the fury of the king subsided."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Esther Pleads for Her People"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "The Hanging of Haman"
   }
  ]
 }

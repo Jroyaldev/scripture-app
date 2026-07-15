@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "Then the disciples understood that He was speaking to them about John the Baptist. The Boy with a Demon (; )"
+   "text": "Then the disciples understood that He was speaking to them about John the Baptist."
   },
   {
    "verse": 14,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "Then Jesus rebuked the demon, and it came out of the boy, and he was healed from that moment. The Power of Faith ()"
+   "text": "Then Jesus rebuked the demon, and it came out of the boy, and he was healed from that moment."
   },
   {
    "verse": 19,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "“Because you have so little faith,” He answered. “For truly I tell you, if you have faith the size of a mustard seed, you can say to this mountain, ‘Move from here to there,’ and it will move. Nothing will be impossible for you.” The Second Prediction of the Passion (; )"
+   "text": "“Because you have so little faith,” He answered. “For truly I tell you, if you have faith the size of a mustard seed, you can say to this mountain, ‘Move from here to there,’ and it will move. Nothing will be impossible for you.”"
   },
   {
    "verse": 22,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 23,
-   "text": "They will kill Him, and on the third day He will be raised to life.” And the disciples were deeply grieved. The Temple Tax"
+   "text": "They will kill Him, and on the third day He will be raised to life.” And the disciples were deeply grieved."
   },
   {
    "verse": 24,
@@ -103,6 +103,38 @@
   {
    "verse": 27,
    "text": "“But so that we may not offend them, go to the sea, cast a hook, and take the first fish you catch. When you open its mouth, you will find a four-drachma coin. Take it and give it to them for My tax and yours.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Transfiguration"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "The Boy with a Demon"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "The Power of Faith"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "The Second Prediction of the Passion"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "The Temple Tax"
   }
  ]
 }

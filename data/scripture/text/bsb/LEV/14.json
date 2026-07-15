@@ -126,7 +126,7 @@
   },
   {
    "verse": 32,
-   "text": "This is the law for someone who has a skin disease and cannot afford the cost of his cleansing.” Signs of Home Contamination"
+   "text": "This is the law for someone who has a skin disease and cannot afford the cost of his cleansing.”"
   },
   {
    "verse": 33,
@@ -186,7 +186,7 @@
   },
   {
    "verse": 47,
-   "text": "And anyone who sleeps in the house or eats in it must wash his clothes. Cleansing a Home"
+   "text": "And anyone who sleeps in the house or eats in it must wash his clothes."
   },
   {
    "verse": 48,
@@ -227,6 +227,26 @@
   {
    "verse": 57,
    "text": "to determine when something is clean or unclean. This is the law regarding skin diseases and mildew.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Cleansing from Skin Diseases"
+  },
+  {
+   "beforeVerse": 33,
+   "kind": "section",
+   "level": 1,
+   "text": "Signs of Home Contamination"
+  },
+  {
+   "beforeVerse": 48,
+   "kind": "section",
+   "level": 1,
+   "text": "Cleansing a Home"
   }
  ]
 }

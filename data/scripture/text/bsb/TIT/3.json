@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "This saying is trustworthy. And I want you to emphasize these things, so that those who have believed God will take care to devote themselves to good deeds. These things are excellent and profitable for the people. Avoid Divisions ()"
+   "text": "This saying is trustworthy. And I want you to emphasize these things, so that those who have believed God will take care to devote themselves to good deeds. These things are excellent and profitable for the people."
   },
   {
    "verse": 9,
@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "knowing that such a man is corrupt and sinful; he is self-condemned. Final Remarks and Greetings"
+   "text": "knowing that such a man is corrupt and sinful; he is self-condemned."
   },
   {
    "verse": 12,
@@ -59,6 +59,26 @@
   {
    "verse": 15,
    "text": "All who are with me send you greetings. Greet those who love us in the faith. Grace be with all of you."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Heirs of Grace"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Avoid Divisions"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Final Remarks and Greetings"
   }
  ]
 }

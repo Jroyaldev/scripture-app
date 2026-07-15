@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "And if it is advisable for me to go also, they can travel with me. Paul’s Travel Plans ()"
+   "text": "And if it is advisable for me to go also, they can travel with me."
   },
   {
    "verse": 5,
@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "because a great door for effective work has opened to me, even though many oppose me. Timothy and Apollos ()"
+   "text": "because a great door for effective work has opened to me, even though many oppose me."
   },
   {
    "verse": 10,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "Now about our brother Apollos: I strongly urged him to go to you with the brothers. He was not at all inclined to go now, but he will go when he has the opportunity. Concluding Exhortations"
+   "text": "Now about our brother Apollos: I strongly urged him to go to you with the brothers. He was not at all inclined to go now, but he will go when he has the opportunity."
   },
   {
    "verse": 13,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "For they refreshed my spirit and yours as well. Show your appreciation, therefore, to such men. Signature and Final Greetings (; )"
+   "text": "For they refreshed my spirit and yours as well. Show your appreciation, therefore, to such men."
   },
   {
    "verse": 19,
@@ -95,6 +95,38 @@
   {
    "verse": 24,
    "text": "My love be with all of you in Christ Jesus. Amen."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Collection for the Saints"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Travel Plans"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Timothy and Apollos"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Concluding Exhortations"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "Signature and Final Greetings"
   }
  ]
 }

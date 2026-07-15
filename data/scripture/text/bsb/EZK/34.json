@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "This is what the Lord GOD says: ‘Behold, I am against the shepherds, and I will demand from them My flock and remove them from tending the flock, so that they can no longer feed themselves. For I will deliver My flock from their mouths, and it will no longer be food for them.’ The Good Shepherd (; )"
+   "text": "This is what the Lord GOD says: ‘Behold, I am against the shepherds, and I will demand from them My flock and remove them from tending the flock, so that they can no longer feed themselves. For I will deliver My flock from their mouths, and it will no longer be food for them.’"
   },
   {
    "verse": 11,
@@ -94,7 +94,7 @@
   },
   {
    "verse": 24,
-   "text": "I, the LORD, will be their God, and My servant David will be a prince among them. I, the LORD, have spoken. The Covenant of Peace"
+   "text": "I, the LORD, will be their God, and My servant David will be a prince among them. I, the LORD, have spoken."
   },
   {
    "verse": 25,
@@ -123,6 +123,26 @@
   {
    "verse": 31,
    "text": "‘You are My flock, the sheep of My pasture, My people, and I am your God,’ declares the Lord GOD.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Prophecy against Israel’s Shepherds"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "The Good Shepherd"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "The Covenant of Peace"
   }
  ]
 }

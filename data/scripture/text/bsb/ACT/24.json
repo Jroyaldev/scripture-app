@@ -30,7 +30,7 @@
   },
   {
    "verse": 9,
-   "text": "The Jews concurred, asserting that these charges were true. Paul’s Defense to Felix"
+   "text": "The Jews concurred, asserting that these charges were true."
   },
   {
    "verse": 10,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 21,
-   "text": "unless it was this one thing I called out as I stood in their presence: ‘It is concerning the resurrection of the dead that I am on trial before you today.’” The Verdict Postponed"
+   "text": "unless it was this one thing I called out as I stood in their presence: ‘It is concerning the resurrection of the dead that I am on trial before you today.’”"
   },
   {
    "verse": 22,
@@ -103,6 +103,26 @@
   {
    "verse": 27,
    "text": "After two years had passed, Felix was succeeded by Porcius Festus. And wishing to do the Jews a favor, Felix left Paul in prison."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Tertullus Prosecutes Paul"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Defense to Felix"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "The Verdict Postponed"
   }
  ]
 }

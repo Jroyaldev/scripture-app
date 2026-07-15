@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "Any clay pot that the man with the discharge touches must be broken, and any wooden utensil must be rinsed with water. The Cleansing of Men"
+   "text": "Any clay pot that the man with the discharge touches must be broken, and any wooden utensil must be rinsed with water."
   },
   {
    "verse": 13,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "If a man lies with a woman and there is an emission of semen, both must bathe with water, and they will remain unclean until evening. The Uncleanness of Women"
+   "text": "If a man lies with a woman and there is an emission of semen, both must bathe with water, and they will remain unclean until evening."
   },
   {
    "verse": 19,
@@ -106,7 +106,7 @@
   },
   {
    "verse": 27,
-   "text": "Anyone who touches these things will be unclean; he must wash his clothes and bathe with water, and he will be unclean until evening. The Cleansing of Women"
+   "text": "Anyone who touches these things will be unclean; he must wash his clothes and bathe with water, and he will be unclean until evening."
   },
   {
    "verse": 28,
@@ -131,6 +131,32 @@
   {
    "verse": 33,
    "text": "of a woman in her menstrual period, of any male or female who has a discharge, and of a man who lies with an unclean woman.’”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Uncleanness of Men"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Cleansing of Men"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "The Uncleanness of Women"
+  },
+  {
+   "beforeVerse": 28,
+   "kind": "section",
+   "level": 1,
+   "text": "The Cleansing of Women"
   }
  ]
 }

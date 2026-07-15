@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "So Isaiah the prophet called out to the LORD, and He brought the shadow back the ten steps it had descended on the stairway of Ahaz. Hezekiah Shows His Treasures ()"
+   "text": "So Isaiah the prophet called out to the LORD, and He brought the shadow back the ten steps it had descended on the stairway of Ahaz."
   },
   {
    "verse": 12,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "But Hezekiah said to Isaiah, “The word of the LORD that you have spoken is good.” For he thought, “Will there not at least be peace and security in my lifetime?” Manasseh Succeeds Hezekiah"
+   "text": "But Hezekiah said to Isaiah, “The word of the LORD that you have spoken is good.” For he thought, “Will there not at least be peace and security in my lifetime?”"
   },
   {
    "verse": 20,
@@ -83,6 +83,26 @@
   {
    "verse": 21,
    "text": "And Hezekiah rested with his fathers, and his son Manasseh reigned in his place."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Hezekiah’s Illness and Recovery"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Hezekiah Shows His Treasures"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "Manasseh Succeeds Hezekiah"
   }
  ]
 }

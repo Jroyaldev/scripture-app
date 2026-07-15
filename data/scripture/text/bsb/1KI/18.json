@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "Then Elijah said, “As surely as the LORD of Hosts lives, before whom I stand, I will present myself to Ahab today.” Elijah on Mount Carmel"
+   "text": "Then Elijah said, “As surely as the LORD of Hosts lives, before whom I stand, I will present myself to Ahab today.”"
   },
   {
    "verse": 16,
@@ -138,7 +138,7 @@
   },
   {
    "verse": 35,
-   "text": "So the water ran down around the altar and even filled the trench. Elijah’s Prayer"
+   "text": "So the water ran down around the altar and even filled the trench."
   },
   {
    "verse": 36,
@@ -158,7 +158,7 @@
   },
   {
    "verse": 40,
-   "text": "Then Elijah ordered them, “Seize the prophets of Baal! Do not let a single one escape.” So they seized them, and Elijah brought them down to the Kishon Valley and slaughtered them there. The LORD Sends Rain"
+   "text": "Then Elijah ordered them, “Seize the prophets of Baal! Do not let a single one escape.” So they seized them, and Elijah brought them down to the Kishon Valley and slaughtered them there."
   },
   {
    "verse": 41,
@@ -183,6 +183,32 @@
   {
    "verse": 46,
    "text": "And the hand of the LORD came upon Elijah, and he tucked his cloak into his belt and ran ahead of Ahab all the way to Jezreel."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Elijah’s Message to Ahab"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Elijah on Mount Carmel"
+  },
+  {
+   "beforeVerse": 36,
+   "kind": "section",
+   "level": 1,
+   "text": "Elijah’s Prayer"
+  },
+  {
+   "beforeVerse": 41,
+   "kind": "section",
+   "level": 1,
+   "text": "The LORD Sends Rain"
   }
  ]
 }

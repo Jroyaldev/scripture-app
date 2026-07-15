@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "“Do not be afraid,” said Jesus. “Go and tell My brothers to go to Galilee. There they will see Me.” The Report of the Guards"
+   "text": "“Do not be afraid,” said Jesus. “Go and tell My brothers to go to Galilee. There they will see Me.”"
   },
   {
    "verse": 11,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "So the guards took the money and did as they were instructed. And this account has been circulated among the Jews to this very day. The Great Commission ()"
+   "text": "So the guards took the money and did as they were instructed. And this account has been circulated among the Jews to this very day."
   },
   {
    "verse": 16,
@@ -79,6 +79,26 @@
   {
    "verse": 20,
    "text": "and teaching them to obey all that I have commanded you. And surely I am with you always, even to the end of the age.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Resurrection"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "The Report of the Guards"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "The Great Commission"
   }
  ]
 }

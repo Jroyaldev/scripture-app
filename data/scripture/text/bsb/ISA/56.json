@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "Thus declares the Lord GOD, who gathers the dispersed of Israel: “I will gather to them still others besides those already gathered.” Israel’s Sinful Leaders"
+   "text": "Thus declares the Lord GOD, who gathers the dispersed of Israel: “I will gather to them still others besides those already gathered.”"
   },
   {
    "verse": 9,
@@ -47,6 +47,20 @@
   {
    "verse": 12,
    "text": "“Come, let me get the wine, let us imbibe the strong drink, and tomorrow will be like today, only far better!”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Salvation for Foreigners"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Israel’s Sinful Leaders"
   }
  ]
 }

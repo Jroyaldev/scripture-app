@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "Therefore do not be partakers with them. Children of Light"
+   "text": "Therefore do not be partakers with them."
   },
   {
    "verse": 8,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "always giving thanks to God the Father for everything in the name of our Lord Jesus Christ. Wives and Husbands (; )"
+   "text": "always giving thanks to God the Father for everything in the name of our Lord Jesus Christ."
   },
   {
    "verse": 21,
@@ -131,6 +131,26 @@
   {
    "verse": 33,
    "text": "Nevertheless, each one of you also must love his wife as he loves himself, and the wife must respect her husband."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Imitators of God"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Children of Light"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "Wives and Husbands"
   }
  ]
 }

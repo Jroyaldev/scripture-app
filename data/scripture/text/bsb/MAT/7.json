@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "Do not give dogs what is holy; do not throw your pearls before swine. If you do, they may trample them under their feet, and then turn and tear you to pieces. Ask, Seek, Knock ()"
+   "text": "Do not give dogs what is holy; do not throw your pearls before swine. If you do, they may trample them under their feet, and then turn and tear you to pieces."
   },
   {
    "verse": 7,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "In everything, then, do to others as you would have them do to you. For this is the essence of the Law and the Prophets. The Narrow Gate ()"
+   "text": "In everything, then, do to others as you would have them do to you. For this is the essence of the Law and the Prophets."
   },
   {
    "verse": 13,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "But small is the gate and narrow the way that leads to life, and only a few find it. A Tree and Its Fruit ()"
+   "text": "But small is the gate and narrow the way that leads to life, and only a few find it."
   },
   {
    "verse": 15,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "Then I will tell them plainly, ‘I never knew you; depart from Me, you workers of lawlessness!’ The House on the Rock ()"
+   "text": "Then I will tell them plainly, ‘I never knew you; depart from Me, you workers of lawlessness!’"
   },
   {
    "verse": 24,
@@ -106,7 +106,7 @@
   },
   {
    "verse": 27,
-   "text": "The rain fell, the torrents raged, and the winds blew and beat against that house, and it fell— and great was its collapse!” The Authority of Jesus"
+   "text": "The rain fell, the torrents raged, and the winds blew and beat against that house, and it fell— and great was its collapse!”"
   },
   {
    "verse": 28,
@@ -115,6 +115,44 @@
   {
    "verse": 29,
    "text": "because He taught as one who had authority, and not as their scribes."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Judging Others"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Ask, Seek, Knock"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Narrow Gate"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "A Tree and Its Fruit"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "The House on the Rock"
+  },
+  {
+   "beforeVerse": 28,
+   "kind": "section",
+   "level": 1,
+   "text": "The Authority of Jesus"
   }
  ]
 }

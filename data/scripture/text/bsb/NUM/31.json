@@ -94,7 +94,7 @@
   },
   {
    "verse": 24,
-   "text": "On the seventh day you are to wash your clothes, and you will be clean. After that you may enter the camp.” Division of the Spoils"
+   "text": "On the seventh day you are to wash your clothes, and you will be clean. After that you may enter the camp.”"
   },
   {
    "verse": 25,
@@ -186,7 +186,7 @@
   },
   {
    "verse": 47,
-   "text": "From the Israelites’ half, Moses took one out of every fifty persons and animals and gave them to the Levites who kept charge of the tabernacle of the LORD, as the LORD had commanded him. The Voluntary Offering"
+   "text": "From the Israelites’ half, Moses took one out of every fifty persons and animals and gave them to the Levites who kept charge of the tabernacle of the LORD, as the LORD had commanded him."
   },
   {
    "verse": 48,
@@ -215,6 +215,26 @@
   {
    "verse": 54,
    "text": "And Moses and Eleazar the priest received the gold from the commanders of thousands and of hundreds and brought it into the Tent of Meeting as a memorial for the Israelites before the LORD."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Vengeance on Midian"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "Division of the Spoils"
+  },
+  {
+   "beforeVerse": 48,
+   "kind": "section",
+   "level": 1,
+   "text": "The Voluntary Offering"
   }
  ]
 }

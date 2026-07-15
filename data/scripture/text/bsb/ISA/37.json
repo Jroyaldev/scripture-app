@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "Behold, I will put a spirit in him so that he will hear a rumor and return to his own land, where I will cause him to fall by the sword.’” Sennacherib’s Blasphemous Letter ()"
+   "text": "Behold, I will put a spirit in him so that he will hear a rumor and return to his own land, where I will cause him to fall by the sword.’”"
   },
   {
    "verse": 8,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "Where are the kings of Hamath, Arpad, Sepharvaim, Hena, and Ivvah?’” Hezekiah’s Prayer ()"
+   "text": "Where are the kings of Hamath, Arpad, Sepharvaim, Hena, and Ivvah?’”"
   },
   {
    "verse": 14,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "And now, O LORD our God, save us from his hand, so that all the kingdoms of the earth may know that You alone, O LORD, are God.” Sennacherib’s Fall Prophesied ()"
+   "text": "And now, O LORD our God, save us from his hand, so that all the kingdoms of the earth may know that You alone, O LORD, are God.”"
   },
   {
    "verse": 21,
@@ -138,7 +138,7 @@
   },
   {
    "verse": 35,
-   "text": "‘I will defend this city and save it for My own sake and for the sake of My servant David.’” Jerusalem Delivered from the Assyrians (; )"
+   "text": "‘I will defend this city and save it for My own sake and for the sake of My servant David.’”"
   },
   {
    "verse": 36,
@@ -151,6 +151,38 @@
   {
    "verse": 38,
    "text": "One day, while he was worshiping in the temple of his god Nisroch, his sons Adrammelech and Sharezer put him to the sword and escaped to the land of Ararat. And his son Esar-haddon reigned in his place."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Isaiah’s Message of Deliverance"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Sennacherib’s Blasphemous Letter"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Hezekiah’s Prayer"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "Sennacherib’s Fall Prophesied"
+  },
+  {
+   "beforeVerse": 36,
+   "kind": "section",
+   "level": 1,
+   "text": "Jerusalem Delivered from the Assyrians"
   }
  ]
 }

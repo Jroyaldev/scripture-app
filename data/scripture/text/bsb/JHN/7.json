@@ -94,7 +94,7 @@
   },
   {
    "verse": 24,
-   "text": "Stop judging by outward appearances, and start judging justly.” Is Jesus the Christ?"
+   "text": "Stop judging by outward appearances, and start judging justly.”"
   },
   {
    "verse": 25,
@@ -142,7 +142,7 @@
   },
   {
    "verse": 36,
-   "text": "What does He mean by saying, ‘You will look for Me, but you will not find Me,’ and, ‘Where I am, you cannot come’?” Living Water"
+   "text": "What does He mean by saying, ‘You will look for Me, but you will not find Me,’ and, ‘Where I am, you cannot come’?”"
   },
   {
    "verse": 37,
@@ -154,7 +154,7 @@
   },
   {
    "verse": 39,
-   "text": "He was speaking about the Spirit, whom those who believed in Him were later to receive. For the Spirit had not yet been given, because Jesus had not yet been glorified. Division over Jesus"
+   "text": "He was speaking about the Spirit, whom those who believed in Him were later to receive. For the Spirit had not yet been given, because Jesus had not yet been glorified."
   },
   {
    "verse": 40,
@@ -174,7 +174,7 @@
   },
   {
    "verse": 44,
-   "text": "Some of them wanted to seize Him, but no one laid a hand on Him. The Unbelief of the Jewish Leaders"
+   "text": "Some of them wanted to seize Him, but no one laid a hand on Him."
   },
   {
    "verse": 45,
@@ -211,6 +211,38 @@
   {
    "verse": 53,
    "text": "Then each went to his own home."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Teaches at the Feast"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "Is Jesus the Christ?"
+  },
+  {
+   "beforeVerse": 37,
+   "kind": "section",
+   "level": 1,
+   "text": "Living Water"
+  },
+  {
+   "beforeVerse": 40,
+   "kind": "section",
+   "level": 1,
+   "text": "Division over Jesus"
+  },
+  {
+   "beforeVerse": 45,
+   "kind": "section",
+   "level": 1,
+   "text": "The Unbelief of the Jewish Leaders"
   }
  ]
 }

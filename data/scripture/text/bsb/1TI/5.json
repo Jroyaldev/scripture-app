@@ -6,7 +6,7 @@
   },
   {
    "verse": 2,
-   "text": "older women as mothers, and younger women as sisters, with absolute purity. Honoring True Widows ()"
+   "text": "older women as mothers, and younger women as sisters, with absolute purity."
   },
   {
    "verse": 3,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "If any believing woman has dependent widows, she must assist them and not allow the church to be burdened, so that it can help the widows who are truly in need. Honoring Elders"
+   "text": "If any believing woman has dependent widows, she must assist them and not allow the church to be burdened, so that it can help the widows who are truly in need."
   },
   {
    "verse": 17,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "But those who persist in sin should be rebuked in front of everyone, so that the others will stand in fear of sin. A Charge to Timothy"
+   "text": "But those who persist in sin should be rebuked in front of everyone, so that the others will stand in fear of sin."
   },
   {
    "verse": 21,
@@ -99,6 +99,32 @@
   {
    "verse": 25,
    "text": "In the same way, good deeds are obvious, and even the ones that are inconspicuous cannot remain hidden."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Reproof and Respect"
+  },
+  {
+   "beforeVerse": 3,
+   "kind": "section",
+   "level": 1,
+   "text": "Honoring True Widows"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Honoring Elders"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "A Charge to Timothy"
   }
  ]
 }

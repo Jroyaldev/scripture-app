@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "You are not to eat any carcass; you may give it to the foreigner residing within your gates, and he may eat it, or you may sell it to a foreigner. For you are a holy people belonging to the LORD your God. You must not cook a young goat in its mother’s milk. Giving Tithes (; ; )"
+   "text": "You are not to eat any carcass; you may give it to the foreigner residing within your gates, and he may eat it, or you may sell it to a foreigner. For you are a holy people belonging to the LORD your God. You must not cook a young goat in its mother’s milk."
   },
   {
    "verse": 22,
@@ -115,6 +115,20 @@
   {
    "verse": 29,
    "text": "Then the Levite (because he has no portion or inheritance among you), the foreigner, the fatherless, and the widow within your gates may come and eat and be satisfied. And the LORD your God will bless you in all the work of your hands."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Clean and Unclean Animals"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "Giving Tithes"
   }
  ]
 }

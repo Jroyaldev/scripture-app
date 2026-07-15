@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "so that he does not defile his offspring among his people, for I am the LORD who sanctifies him.” Restrictions against Those with Blemishes"
+   "text": "so that he does not defile his offspring among his people, for I am the LORD who sanctifies him.”"
   },
   {
    "verse": 16,
@@ -95,6 +95,20 @@
   {
    "verse": 24,
    "text": "Moses told this to Aaron and his sons and to all the Israelites."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Holiness Required of Priests"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Restrictions against Those with Blemishes"
   }
  ]
 }

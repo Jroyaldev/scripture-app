@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "But the LORD hardened Pharaoh’s heart, and he would not let the Israelites go. The Ninth Plague: Darkness"
+   "text": "But the LORD hardened Pharaoh’s heart, and he would not let the Israelites go."
   },
   {
    "verse": 21,
@@ -115,6 +115,20 @@
   {
    "verse": 29,
    "text": "“As you say,” Moses replied, “I will never see your face again.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Eighth Plague: Locusts"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "The Ninth Plague: Darkness"
   }
  ]
 }

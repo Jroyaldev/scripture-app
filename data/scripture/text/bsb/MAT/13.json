@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "He who has ears, let him hear.” The Purpose of Jesus’ Parables (; ; )"
+   "text": "He who has ears, let him hear.”"
   },
   {
    "verse": 10,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "For truly I tell you, many prophets and righteous men longed to see what you see but did not see it, and to hear what you hear but did not hear it. The Parable of the Sower Explained (; )"
+   "text": "For truly I tell you, many prophets and righteous men longed to see what you see but did not see it, and to hear what you hear but did not hear it."
   },
   {
    "verse": 18,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "But the seed sown on good soil is the one who hears the word and understands it. He indeed bears fruit and produces a crop — a hundredfold, sixtyfold, or thirtyfold.” The Parable of the Weeds ()"
+   "text": "But the seed sown on good soil is the one who hears the word and understands it. He indeed bears fruit and produces a crop — a hundredfold, sixtyfold, or thirtyfold.”"
   },
   {
    "verse": 24,
@@ -118,7 +118,7 @@
   },
   {
    "verse": 30,
-   "text": "Let both grow together until the harvest. At that time I will tell the harvesters: First collect the weeds and tie them in bundles to be burned; then gather the wheat into my barn.’” The Parable of the Mustard Seed (; )"
+   "text": "Let both grow together until the harvest. At that time I will tell the harvesters: First collect the weeds and tie them in bundles to be burned; then gather the wheat into my barn.’”"
   },
   {
    "verse": 31,
@@ -126,11 +126,11 @@
   },
   {
    "verse": 32,
-   "text": "Although it is the smallest of all seeds, yet it grows into the largest of garden plants and becomes a tree, so that the birds of the air come and nest in its branches.” The Parable of the Leaven ()"
+   "text": "Although it is the smallest of all seeds, yet it grows into the largest of garden plants and becomes a tree, so that the birds of the air come and nest in its branches.”"
   },
   {
    "verse": 33,
-   "text": "He told them still another parable: “The kingdom of heaven is like leaven that a woman took and mixed into three measures of flour, until all of it was leavened.” I Will Open My Mouth in Parables ()"
+   "text": "He told them still another parable: “The kingdom of heaven is like leaven that a woman took and mixed into three measures of flour, until all of it was leavened.”"
   },
   {
    "verse": 34,
@@ -138,7 +138,7 @@
   },
   {
    "verse": 35,
-   "text": "So was fulfilled what was spoken through the prophet: “I will open My mouth in parables; I will utter things hidden since the foundation of the world.” The Parable of the Weeds Explained ()"
+   "text": "So was fulfilled what was spoken through the prophet: “I will open My mouth in parables; I will utter things hidden since the foundation of the world.”"
   },
   {
    "verse": 36,
@@ -170,7 +170,7 @@
   },
   {
    "verse": 43,
-   "text": "Then the righteous will shine like the sun in the kingdom of their Father. He who has ears, let him hear. The Parables of the Treasure and the Pearl"
+   "text": "Then the righteous will shine like the sun in the kingdom of their Father. He who has ears, let him hear."
   },
   {
    "verse": 44,
@@ -182,7 +182,7 @@
   },
   {
    "verse": 46,
-   "text": "When he found one very precious pearl, he went away and sold all he had and bought it. The Parable of the Net"
+   "text": "When he found one very precious pearl, he went away and sold all he had and bought it."
   },
   {
    "verse": 47,
@@ -206,7 +206,7 @@
   },
   {
    "verse": 52,
-   "text": "Then He told them, “For this reason, every scribe who has been discipled in the kingdom of heaven is like a homeowner who brings out of his storeroom new treasures as well as old.” The Rejection at Nazareth (; )"
+   "text": "Then He told them, “For this reason, every scribe who has been discipled in the kingdom of heaven is like a homeowner who brings out of his storeroom new treasures as well as old.”"
   },
   {
    "verse": 53,
@@ -231,6 +231,74 @@
   {
    "verse": 58,
    "text": "And He did not do many miracles there, because of their unbelief."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parable of the Sower"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "The Purpose of Jesus’ Parables"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parable of the Sower Explained"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parable of the Weeds"
+  },
+  {
+   "beforeVerse": 31,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parable of the Mustard Seed"
+  },
+  {
+   "beforeVerse": 33,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parable of the Leaven"
+  },
+  {
+   "beforeVerse": 34,
+   "kind": "section",
+   "level": 1,
+   "text": "I Will Open My Mouth in Parables"
+  },
+  {
+   "beforeVerse": 36,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parable of the Weeds Explained"
+  },
+  {
+   "beforeVerse": 44,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parables of the Treasure and the Pearl"
+  },
+  {
+   "beforeVerse": 47,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parable of the Net"
+  },
+  {
+   "beforeVerse": 53,
+   "kind": "section",
+   "level": 1,
+   "text": "The Rejection at Nazareth"
   }
  ]
 }

@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "if we are faithless, He remains faithful, for He cannot deny Himself. The Lord’s Approved Workman"
+   "text": "if we are faithless, He remains faithful, for He cannot deny Himself."
   },
   {
    "verse": 14,
@@ -103,6 +103,20 @@
   {
    "verse": 26,
    "text": "Then they will come to their senses and escape the snare of the devil, who has taken them captive to his will."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Grace and Perseverance"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "The Lord’s Approved Workman"
   }
  ]
 }

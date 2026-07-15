@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "If anyone speaks, he should speak as one conveying the words of God. If anyone serves, he should serve with the strength God provides, so that in all things God may be glorified through Jesus Christ, to whom be the glory and the power forever and ever. Amen. Suffering as Christians"
+   "text": "If anyone speaks, he should speak as one conveying the words of God. If anyone serves, he should serve with the strength God provides, so that in all things God may be glorified through Jesus Christ, to whom be the glory and the power forever and ever. Amen."
   },
   {
    "verse": 12,
@@ -75,6 +75,20 @@
   {
    "verse": 19,
    "text": "So then, those who suffer according to God’s will should entrust their souls to their faithful Creator and continue to do good."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Living for God’s Glory"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Suffering as Christians"
   }
  ]
 }

@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "King Solomon gave the queen of Sheba all she desired — whatever she asked — far more than she had brought the king. Then she left and returned to her own country, along with her servants. Solomon’s Wealth and Splendor ()"
+   "text": "King Solomon gave the queen of Sheba all she desired — whatever she asked — far more than she had brought the king. Then she left and returned to her own country, along with her servants."
   },
   {
    "verse": 13,
@@ -110,7 +110,7 @@
   },
   {
    "verse": 28,
-   "text": "Solomon’s horses were imported from Egypt and from all the lands. The Death of Solomon ()"
+   "text": "Solomon’s horses were imported from Egypt and from all the lands."
   },
   {
    "verse": 29,
@@ -123,6 +123,26 @@
   {
    "verse": 31,
    "text": "And Solomon rested with his fathers and was buried in the city of his father David. And his son Rehoboam reigned in his place."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Queen of Sheba"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Solomon’s Wealth and Splendor"
+  },
+  {
+   "beforeVerse": 29,
+   "kind": "section",
+   "level": 1,
+   "text": "The Death of Solomon"
   }
  ]
 }

@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "All this I have seen, applying my mind to every deed that is done under the sun; there is a time when one man lords it over another to his own detriment. Fear God ()"
+   "text": "All this I have seen, applying my mind to every deed that is done under the sun; there is a time when one man lords it over another to his own detriment."
   },
   {
    "verse": 10,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "Yet because the wicked do not fear God, it will not go well with them, and their days will not lengthen like a shadow. God’s Ways Are Mysterious"
+   "text": "Yet because the wicked do not fear God, it will not go well with them, and their days will not lengthen like a shadow."
   },
   {
    "verse": 14,
@@ -67,6 +67,26 @@
   {
    "verse": 17,
    "text": "I saw every work of God, and that a man is unable to comprehend the work that is done under the sun. Despite his efforts to search it out, he cannot find its meaning; even if the wise man claims to know, he is unable to comprehend."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Obey the King"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Fear God"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Ways Are Mysterious"
   }
  ]
 }

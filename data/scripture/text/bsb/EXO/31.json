@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "in addition to the anointing oil and fragrant incense for the Holy Place. They are to make them according to all that I have commanded you.” The Sign of the Sabbath ()"
+   "text": "in addition to the anointing oil and fragrant incense for the Holy Place. They are to make them according to all that I have commanded you.”"
   },
   {
    "verse": 12,
@@ -66,11 +66,31 @@
   },
   {
    "verse": 17,
-   "text": "It is a sign between Me and the Israelites forever; for in six days the LORD made the heavens and the earth, but on the seventh day He rested and was refreshed.’” Moses Receives the Tablets"
+   "text": "It is a sign between Me and the Israelites forever; for in six days the LORD made the heavens and the earth, but on the seventh day He rested and was refreshed.’”"
   },
   {
    "verse": 18,
    "text": "When the LORD had finished speaking with Moses on Mount Sinai, He gave him the two tablets of the Testimony, tablets of stone inscribed by the finger of God."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Bezalel and Oholiab"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "The Sign of the Sabbath"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Moses Receives the Tablets"
   }
  ]
 }

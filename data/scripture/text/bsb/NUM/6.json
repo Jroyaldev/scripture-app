@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "This is the law of the Nazirite who vows his offering to the LORD for his separation, in addition to whatever else he can afford; he must fulfill whatever vow he makes, according to the law of his separation.” Aaron’s Blessing"
+   "text": "This is the law of the Nazirite who vows his offering to the LORD for his separation, in addition to whatever else he can afford; he must fulfill whatever vow he makes, according to the law of his separation.”"
   },
   {
    "verse": 22,
@@ -107,6 +107,20 @@
   {
    "verse": 27,
    "text": "So they shall put My name on the Israelites, and I will bless them.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Nazirite Vow"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "Aaron’s Blessing"
   }
  ]
 }

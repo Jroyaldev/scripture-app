@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "And Abijam rested with his fathers and was buried in the City of David, and his son Asa reigned in his place. Asa Reigns in Judah (; )"
+   "text": "And Abijam rested with his fathers and was buried in the City of David, and his son Asa reigned in his place."
   },
   {
    "verse": 9,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "And he brought into the house of the LORD the silver and gold and the articles that he and his father had dedicated. War between Asa and Baasha ()"
+   "text": "And he brought into the house of the LORD the silver and gold and the articles that he and his father had dedicated."
   },
   {
    "verse": 16,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "Then King Asa summoned all the men of Judah, with no exceptions, and they carried away the stones of Ramah and the timbers Baasha had used for building. And with these materials King Asa built up Geba of Benjamin, as well as Mizpah. Jehoshaphat Succeeds Asa ()"
+   "text": "Then King Asa summoned all the men of Judah, with no exceptions, and they carried away the stones of Ramah and the timbers Baasha had used for building. And with these materials King Asa built up Geba of Benjamin, as well as Mizpah."
   },
   {
    "verse": 23,
@@ -94,7 +94,7 @@
   },
   {
    "verse": 24,
-   "text": "And Asa rested with his fathers and was buried with them in the city of his father David, and his son Jehoshaphat reigned in his place. Nadab Reigns in Israel"
+   "text": "And Asa rested with his fathers and was buried with them in the city of his father David, and his son Jehoshaphat reigned in his place."
   },
   {
    "verse": 25,
@@ -126,7 +126,7 @@
   },
   {
    "verse": 32,
-   "text": "And there was war between Asa and Baasha king of Israel throughout their days. Baasha Reigns in Israel"
+   "text": "And there was war between Asa and Baasha king of Israel throughout their days."
   },
   {
    "verse": 33,
@@ -135,6 +135,44 @@
   {
    "verse": 34,
    "text": "And Baasha did evil in the sight of the LORD and walked in the way of Jeroboam and in his sin, which he had caused Israel to commit."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Abijam Reigns in Judah"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Asa Reigns in Judah"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "War between Asa and Baasha"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "Jehoshaphat Succeeds Asa"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "Nadab Reigns in Israel"
+  },
+  {
+   "beforeVerse": 33,
+   "kind": "section",
+   "level": 1,
+   "text": "Baasha Reigns in Israel"
   }
  ]
 }

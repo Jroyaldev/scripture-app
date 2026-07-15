@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "and Koz, who was the father of Anub and Zobebah and of the clans of Aharhel son of Harum. The Prayer of Jabez"
+   "text": "and Koz, who was the father of Anub and Zobebah and of the clans of Aharhel son of Harum."
   },
   {
    "verse": 9,
@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "And Jabez called out to the God of Israel, “If only You would bless me and enlarge my territory! May Your hand be with me and keep me from harm, so that I will be free from pain.” And God granted the request of Jabez. More Descendants of Judah"
+   "text": "And Jabez called out to the God of Israel, “If only You would bless me and enlarge my territory! May Your hand be with me and keep me from harm, so that I will be free from pain.” And God granted the request of Jabez."
   },
   {
    "verse": 11,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "These were the potters who lived at Netaim and Gederah. They lived there in the service of the king. The Descendants of Simeon"
+   "text": "These were the potters who lived at Netaim and Gederah. They lived there in the service of the king."
   },
   {
    "verse": 24,
@@ -171,6 +171,32 @@
   {
    "verse": 43,
    "text": "and struck down the remnant of the Amalekites who had escaped. And they have lived there to this day."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Descendants of Judah"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "The Prayer of Jabez"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "More Descendants of Judah"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "The Descendants of Simeon"
   }
  ]
 }

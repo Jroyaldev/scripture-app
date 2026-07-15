@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "And one man from each tribe, the head of each family, must be there with you. The Leaders of the Tribes"
+   "text": "And one man from each tribe, the head of each family, must be there with you."
   },
   {
    "verse": 5,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "These men were appointed from the congregation; they were the leaders of the tribes of their fathers, the heads of the clans of Israel. The Number of Every Tribe"
+   "text": "These men were appointed from the congregation; they were the leaders of the tribes of their fathers, the heads of the clans of Israel."
   },
   {
    "verse": 17,
@@ -182,7 +182,7 @@
   },
   {
    "verse": 46,
-   "text": "And all those counted totaled 603,550. The Exemption of the Levites"
+   "text": "And all those counted totaled 603,550."
   },
   {
    "verse": 47,
@@ -215,6 +215,32 @@
   {
    "verse": 54,
    "text": "Thus the Israelites did everything just as the LORD had commanded Moses."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The First Census of Israel"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "The Leaders of the Tribes"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "The Number of Every Tribe"
+  },
+  {
+   "beforeVerse": 47,
+   "kind": "section",
+   "level": 1,
+   "text": "The Exemption of the Levites"
   }
  ]
 }

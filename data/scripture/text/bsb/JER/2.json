@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "“For My people have committed two evils: They have forsaken Me, the fountain of living water, and they have dug their own cisterns — broken cisterns that cannot hold water. The Consequence of Israel’s Sin"
+   "text": "“For My people have committed two evils: They have forsaken Me, the fountain of living water, and they have dug their own cisterns — broken cisterns that cannot hold water."
   },
   {
    "verse": 14,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "Although you wash with lye and use an abundance of soap, the stain of your guilt is still before Me,” declares the Lord GOD. Israel’s Unfaithfulness (; )"
+   "text": "Although you wash with lye and use an abundance of soap, the stain of your guilt is still before Me,” declares the Lord GOD."
   },
   {
    "verse": 23,
@@ -147,6 +147,26 @@
   {
    "verse": 37,
    "text": "Moreover, you will leave that place with your hands on your head, for the LORD has rejected those you trust; you will not prosper by their help.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Israel Has Forsaken God"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "The Consequence of Israel’s Sin"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "Israel’s Unfaithfulness"
   }
  ]
 }

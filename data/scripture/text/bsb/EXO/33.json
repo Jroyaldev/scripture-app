@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "So the Israelites stripped themselves of their jewelry from Mount Horeb onward. The Tent of Meeting"
+   "text": "So the Israelites stripped themselves of their jewelry from Mount Horeb onward."
   },
   {
    "verse": 7,
@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "Thus the LORD would speak to Moses face to face, as a man speaks to his friend. Then Moses would return to the camp, but his young assistant Joshua son of Nun would not leave the tent. The Promise of God’s Presence"
+   "text": "Thus the LORD would speak to Moses face to face, as a man speaks to his friend. Then Moses would return to the camp, but his young assistant Joshua son of Nun would not leave the tent."
   },
   {
    "verse": 12,
@@ -91,6 +91,26 @@
   {
    "verse": 23,
    "text": "Then I will take My hand away, and you will see My back; but My face must not be seen.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Command to Leave Sinai"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "The Tent of Meeting"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "The Promise of God’s Presence"
   }
  ]
 }

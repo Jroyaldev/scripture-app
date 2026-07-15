@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "And they will rule the land of Assyria with the sword, and the land of Nimrod with the blade drawn. So He will deliver us when Assyria invades our land and marches into our borders. The Remnant of Jacob ()"
+   "text": "And they will rule the land of Assyria with the sword, and the land of Nimrod with the blade drawn. So He will deliver us when Assyria invades our land and marches into our borders."
   },
   {
    "verse": 7,
@@ -59,6 +59,20 @@
   {
    "verse": 15,
    "text": "I will take vengeance in anger and wrath upon the nations that have not obeyed Me.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Ruler from Bethlehem"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "The Remnant of Jacob"
   }
  ]
 }

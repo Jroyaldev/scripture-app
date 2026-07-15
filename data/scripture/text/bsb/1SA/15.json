@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "Saul and his troops spared Agag, along with the best of the sheep and cattle, the fat calves and lambs, and the best of everything else. They were unwilling to devote them to destruction, but they devoted to destruction all that was despised and worthless. Samuel Denounces Saul"
+   "text": "Saul and his troops spared Agag, along with the best of the sheep and cattle, the fat calves and lambs, and the best of everything else. They were unwilling to devote them to destruction, but they devoted to destruction all that was despised and worthless."
   },
   {
    "verse": 10,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "For rebellion is like the sin of divination, and arrogance is like the wickedness of idolatry. Because you have rejected the word of the LORD, He has rejected you as king.” Saul’s Confession"
+   "text": "For rebellion is like the sin of divination, and arrogance is like the wickedness of idolatry. Because you have rejected the word of the LORD, He has rejected you as king.”"
   },
   {
    "verse": 24,
@@ -139,6 +139,26 @@
   {
    "verse": 35,
    "text": "And to the day of his death, Samuel never again visited Saul. Samuel mourned for Saul, and the LORD regretted that He had made Saul king over Israel."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Saul’s Disobedience"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Samuel Denounces Saul"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "Saul’s Confession"
   }
  ]
 }

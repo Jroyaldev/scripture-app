@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "May the LORD be our judge and decide between you and me. May He take notice and plead my case and deliver me from your hand.” David’s Oath to Saul"
+   "text": "May the LORD be our judge and decide between you and me. May He take notice and plead my case and deliver me from your hand.”"
   },
   {
    "verse": 16,
@@ -87,6 +87,20 @@
   {
    "verse": 22,
    "text": "So David gave his oath to Saul. Then Saul returned home, but David and his men went up to the stronghold."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "David Spares Saul"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "David’s Oath to Saul"
   }
  ]
 }

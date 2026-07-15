@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "Nation will rise against nation, and kingdom against kingdom. There will be earthquakes in various places, as well as famines. These are the beginning of birth pains. Witnessing to All Nations (; )"
+   "text": "Nation will rise against nation, and kingdom against kingdom. There will be earthquakes in various places, as well as famines. These are the beginning of birth pains."
   },
   {
    "verse": 9,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "You will be hated by everyone because of My name, but the one who perseveres to the end will be saved. The Abomination of Desolation (; )"
+   "text": "You will be hated by everyone because of My name, but the one who perseveres to the end will be saved."
   },
   {
    "verse": 14,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "So be on your guard; I have told you everything in advance. The Return of the Son of Man (; )"
+   "text": "So be on your guard; I have told you everything in advance."
   },
   {
    "verse": 24,
@@ -106,7 +106,7 @@
   },
   {
    "verse": 27,
-   "text": "And He will send out the angels to gather His elect from the four winds, from the ends of the earth to the ends of heaven. The Lesson of the Fig Tree (; )"
+   "text": "And He will send out the angels to gather His elect from the four winds, from the ends of the earth to the ends of heaven."
   },
   {
    "verse": 28,
@@ -122,7 +122,7 @@
   },
   {
    "verse": 31,
-   "text": "Heaven and earth will pass away, but My words will never pass away. Readiness at Any Hour (; )"
+   "text": "Heaven and earth will pass away, but My words will never pass away."
   },
   {
    "verse": 32,
@@ -147,6 +147,44 @@
   {
    "verse": 37,
    "text": "And what I say to you, I say to everyone: Keep watch!”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Temple Destruction and Other Signs"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Witnessing to All Nations"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "The Abomination of Desolation"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "The Return of the Son of Man"
+  },
+  {
+   "beforeVerse": 28,
+   "kind": "section",
+   "level": 1,
+   "text": "The Lesson of the Fig Tree"
+  },
+  {
+   "beforeVerse": 32,
+   "kind": "section",
+   "level": 1,
+   "text": "Readiness at Any Hour"
   }
  ]
 }

@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "This is the lament they will chant for her; the daughters of the nations will chant it. Over Egypt and all her multitudes they will chant it, declares the Lord GOD.” Egypt Cast into the Pit"
+   "text": "This is the lament they will chant for her; the daughters of the nations will chant it. Over Egypt and all her multitudes they will chant it, declares the Lord GOD.”"
   },
   {
    "verse": 17,
@@ -127,6 +127,20 @@
   {
    "verse": 32,
    "text": "For I will spread My terror in the land of the living, so that Pharaoh and all his multitude will be laid to rest among the uncircumcised, with those slain by the sword, declares the Lord GOD.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Lament for Pharaoh King of Egypt"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Egypt Cast into the Pit"
   }
  ]
 }

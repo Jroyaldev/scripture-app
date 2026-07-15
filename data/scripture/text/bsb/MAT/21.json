@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "The crowds replied, “This is Jesus, the prophet from Nazareth in Galilee.” Jesus Cleanses the Temple (; ; )"
+   "text": "The crowds replied, “This is Jesus, the prophet from Nazareth in Galilee.”"
   },
   {
    "verse": 12,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "Then He left them and went out of the city to Bethany, where He spent the night. The Barren Fig Tree (; )"
+   "text": "Then He left them and went out of the city to Bethany, where He spent the night."
   },
   {
    "verse": 18,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "If you believe, you will receive whatever you ask for in prayer.” Jesus’ Authority Challenged (; )"
+   "text": "If you believe, you will receive whatever you ask for in prayer.”"
   },
   {
    "verse": 23,
@@ -106,7 +106,7 @@
   },
   {
    "verse": 27,
-   "text": "So they answered, “We do not know.” And Jesus replied, “Neither will I tell you by what authority I am doing these things. The Parable of the Two Sons"
+   "text": "So they answered, “We do not know.” And Jesus replied, “Neither will I tell you by what authority I am doing these things."
   },
   {
    "verse": 28,
@@ -126,7 +126,7 @@
   },
   {
    "verse": 32,
-   "text": "For John came to you in the way of righteousness, and you did not believe him, but the tax collectors and prostitutes did. And even after you saw this, you did not repent and believe him. The Parable of the Wicked Tenants (; )"
+   "text": "For John came to you in the way of righteousness, and you did not believe him, but the tax collectors and prostitutes did. And even after you saw this, you did not repent and believe him."
   },
   {
    "verse": 33,
@@ -183,6 +183,44 @@
   {
    "verse": 46,
    "text": "Although they wanted to arrest Him, they were afraid of the crowds, because the people regarded Him as a prophet."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Triumphal Entry"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Cleanses the Temple"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "The Barren Fig Tree"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus’ Authority Challenged"
+  },
+  {
+   "beforeVerse": 28,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parable of the Two Sons"
+  },
+  {
+   "beforeVerse": 33,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parable of the Wicked Tenants"
   }
  ]
 }

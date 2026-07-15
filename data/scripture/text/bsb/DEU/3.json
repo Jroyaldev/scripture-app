@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "(For only Og king of Bashan had remained of the remnant of the Rephaim. His bed of iron, nine cubits long and four cubits wide, is still in Rabbah of the Ammonites.) Land Division East of the Jordan (; )"
+   "text": "(For only Og king of Bashan had remained of the remnant of the Rephaim. His bed of iron, nine cubits long and four cubits wide, is still in Rabbah of the Ammonites.)"
   },
   {
    "verse": 12,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "Do not be afraid of them, for the LORD your God Himself will fight for you.” Moses Forbidden to Cross the Jordan ()"
+   "text": "Do not be afraid of them, for the LORD your God Himself will fight for you.”"
   },
   {
    "verse": 23,
@@ -115,6 +115,26 @@
   {
    "verse": 29,
    "text": "So we stayed in the valley opposite Beth-peor."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Defeat of Og"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Land Division East of the Jordan"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "Moses Forbidden to Cross the Jordan"
   }
  ]
 }

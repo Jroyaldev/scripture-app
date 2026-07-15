@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "But to the cowardly and unbelieving and abominable and murderers and sexually immoral and sorcerers and idolaters and all liars, their place will be in the lake that burns with fire and sulfur. This is the second death.” The New Jerusalem"
+   "text": "But to the cowardly and unbelieving and abominable and murderers and sexually immoral and sorcerers and idolaters and all liars, their place will be in the lake that burns with fire and sulfur. This is the second death.”"
   },
   {
    "verse": 9,
@@ -107,6 +107,20 @@
   {
    "verse": 27,
    "text": "But nothing unclean will ever enter it, nor anyone who practices an abomination or a lie, but only those whose names are written in the Lamb’s Book of Life."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A New Heaven and a New Earth"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "The New Jerusalem"
   }
  ]
 }

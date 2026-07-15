@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "So Manasseh led the people of Judah and Jerusalem astray, so that they did greater evil than the nations that the LORD had destroyed before the Israelites. Manasseh’s Repentance and Restoration ()"
+   "text": "So Manasseh led the people of Judah and Jerusalem astray, so that they did greater evil than the nations that the LORD had destroyed before the Israelites."
   },
   {
    "verse": 10,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "And Manasseh rested with his fathers and was buried at his palace. And his son Amon reigned in his place. Amon Reigns in Judah ()"
+   "text": "And Manasseh rested with his fathers and was buried at his palace. And his son Amon reigned in his place."
   },
   {
    "verse": 21,
@@ -99,6 +99,26 @@
   {
    "verse": 25,
    "text": "But the people of the land killed all those who had conspired against King Amon, and they made his son Josiah king in his place."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Manasseh Reigns in Judah"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Manasseh’s Repentance and Restoration"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "Amon Reigns in Judah"
   }
  ]
 }

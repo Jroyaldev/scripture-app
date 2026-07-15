@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "The following night the Lord stood near Paul and said, “Take courage! As you have testified about Me in Jerusalem, so also you must testify in Rome.” The Plot to Kill Paul ()"
+   "text": "The following night the Lord stood near Paul and said, “Take courage! As you have testified about Me in Jerusalem, so also you must testify in Rome.”"
   },
   {
    "verse": 12,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "So the commander dismissed the young man and instructed him, “Do not tell anyone that you have reported this to me.” Paul Sent to Felix"
+   "text": "So the commander dismissed the young man and instructed him, “Do not tell anyone that you have reported this to me.”"
   },
   {
    "verse": 23,
@@ -139,6 +139,26 @@
   {
    "verse": 35,
    "text": "he said, “I will hear your case when your accusers arrive.” Then he ordered that Paul be kept under guard in Herod’s Praetorium."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul before the Sanhedrin"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "The Plot to Kill Paul"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul Sent to Felix"
   }
  ]
 }

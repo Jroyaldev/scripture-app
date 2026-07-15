@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "Then Barak pursued the chariots and army as far as Harosheth-hagoyim, and the whole army of Sisera fell by the sword; not a single man was left. Jael Kills Sisera"
+   "text": "Then Barak pursued the chariots and army as far as Harosheth-hagoyim, and the whole army of Sisera fell by the sword; not a single man was left."
   },
   {
    "verse": 17,
@@ -95,6 +95,20 @@
   {
    "verse": 24,
    "text": "And the hand of the Israelites grew stronger and stronger against Jabin king of Canaan until they destroyed him."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Deborah and Barak"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Jael Kills Sisera"
   }
  ]
 }

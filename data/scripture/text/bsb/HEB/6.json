@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "Then you will not be sluggish, but will imitate those who through faith and patience inherit what has been promised. God’s Unchangeable Promise"
+   "text": "Then you will not be sluggish, but will imitate those who through faith and patience inherit what has been promised."
   },
   {
    "verse": 13,
@@ -79,6 +79,20 @@
   {
    "verse": 20,
    "text": "where Jesus our forerunner has entered on our behalf. He has become a high priest forever in the order of Melchizedek."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Call to Maturity"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Unchangeable Promise"
   }
  ]
 }

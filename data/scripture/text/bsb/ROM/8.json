@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "And if the Spirit of Him who raised Jesus from the dead is living in you, He who raised Christ Jesus from the dead will also give life to your mortal bodies through His Spirit, who lives in you. Heirs with Christ"
+   "text": "And if the Spirit of Him who raised Jesus from the dead is living in you, He who raised Christ Jesus from the dead will also give life to your mortal bodies through His Spirit, who lives in you."
   },
   {
    "verse": 12,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "And if we are children, then we are heirs: heirs of God and co-heirs with Christ — if indeed we suffer with Him, so that we may also be glorified with Him. Future Glory ()"
+   "text": "And if we are children, then we are heirs: heirs of God and co-heirs with Christ — if indeed we suffer with Him, so that we may also be glorified with Him."
   },
   {
    "verse": 18,
@@ -106,7 +106,7 @@
   },
   {
    "verse": 27,
-   "text": "And He who searches our hearts knows the mind of the Spirit, because the Spirit intercedes for the saints according to the will of God. God Works in All Things ()"
+   "text": "And He who searches our hearts knows the mind of the Spirit, because the Spirit intercedes for the saints according to the will of God."
   },
   {
    "verse": 28,
@@ -134,7 +134,7 @@
   },
   {
    "verse": 34,
-   "text": "Who is there to condemn us? For Christ Jesus, who died, and more than that was raised to life, is at the right hand of God— and He is interceding for us. More than Conquerors ()"
+   "text": "Who is there to condemn us? For Christ Jesus, who died, and more than that was raised to life, is at the right hand of God— and He is interceding for us."
   },
   {
    "verse": 35,
@@ -155,6 +155,38 @@
   {
    "verse": 39,
    "text": "neither height nor depth, nor anything else in all creation, will be able to separate us from the love of God that is in Christ Jesus our Lord."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Walking by the Spirit"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Heirs with Christ"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Future Glory"
+  },
+  {
+   "beforeVerse": 28,
+   "kind": "section",
+   "level": 1,
+   "text": "God Works in All Things"
+  },
+  {
+   "beforeVerse": 35,
+   "kind": "section",
+   "level": 1,
+   "text": "More than Conquerors"
   }
  ]
 }

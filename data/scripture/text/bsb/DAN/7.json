@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "While I was contemplating the horns, suddenly another horn, a little one, came up among them, and three of the first horns were uprooted before it. This horn had eyes like those of a man and a mouth that spoke words of arrogance. Daniel’s Vision of the Ancient of Days"
+   "text": "While I was contemplating the horns, suddenly another horn, a little one, came up among them, and three of the first horns were uprooted before it. This horn had eyes like those of a man and a mouth that spoke words of arrogance."
   },
   {
    "verse": 9,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "As for the rest of the beasts, their dominion was removed, but they were granted an extension of life for a season and a time. Daniel’s Vision of the Son of Man"
+   "text": "As for the rest of the beasts, their dominion was removed, but they were granted an extension of life for a season and a time."
   },
   {
    "verse": 13,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "And He was given dominion, glory, and kingship, that the people of every nation and language should serve Him. His dominion is an everlasting dominion that will not pass away, and His kingdom is one that will never be destroyed. Daniel’s Visions Interpreted"
+   "text": "And He was given dominion, glory, and kingship, that the people of every nation and language should serve Him. His dominion is an everlasting dominion that will not pass away, and His kingdom is one that will never be destroyed."
   },
   {
    "verse": 15,
@@ -111,6 +111,32 @@
   {
    "verse": 28,
    "text": "Thus ends the matter. As for me, Daniel, my thoughts troubled me greatly, and my face turned pale. But I kept the matter to myself.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Daniel’s Vision of the Four Beasts"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Daniel’s Vision of the Ancient of Days"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Daniel’s Vision of the Son of Man"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Daniel’s Visions Interpreted"
   }
  ]
 }

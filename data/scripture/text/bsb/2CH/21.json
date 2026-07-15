@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "Yet the LORD was unwilling to destroy the house of David, because of the covenant He had made with David, and since He had promised to maintain a lamp for David and his descendants forever. Edom and Libnah Rebel ()"
+   "text": "Yet the LORD was unwilling to destroy the house of David, because of the covenant He had made with David, and since He had promised to maintain a lamp for David and his descendants forever."
   },
   {
    "verse": 8,
@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "Jehoram had also built high places on the hills of Judah; he had caused the people of Jerusalem to prostitute themselves and had led Judah astray. Elijah’s Letter to Jehoram"
+   "text": "Jehoram had also built high places on the hills of Judah; he had caused the people of Jerusalem to prostitute themselves and had led Judah astray."
   },
   {
    "verse": 12,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "And day after day you yourself will suffer from a severe illness, a disease of your bowels, until it causes your bowels to come out.’” Jehoram’s Disease and Death"
+   "text": "And day after day you yourself will suffer from a severe illness, a disease of your bowels, until it causes your bowels to come out.’”"
   },
   {
    "verse": 16,
@@ -79,6 +79,32 @@
   {
    "verse": 20,
    "text": "Jehoram was thirty-two years old when he became king, and he reigned in Jerusalem eight years. He died, to no one’s regret, and was buried in the City of David, but not in the tombs of the kings."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jehoram Reigns in Judah"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Edom and Libnah Rebel"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Elijah’s Letter to Jehoram"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Jehoram’s Disease and Death"
   }
  ]
 }

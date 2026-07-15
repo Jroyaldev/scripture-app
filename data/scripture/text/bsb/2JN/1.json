@@ -10,7 +10,7 @@
   },
   {
    "verse": 3,
-   "text": "Grace, mercy, and peace from God the Father and from Jesus Christ, the Son of the Father, will be with us in truth and love. Walking in the Truth ()"
+   "text": "Grace, mercy, and peace from God the Father and from Jesus Christ, the Son of the Father, will be with us in truth and love."
   },
   {
    "verse": 4,
@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "And this is love, that we walk according to His commandments. This is the very commandment you have heard from the beginning, that you must walk in love. Beware of Deceivers"
+   "text": "And this is love, that we walk according to His commandments. This is the very commandment you have heard from the beginning, that you must walk in love."
   },
   {
    "verse": 7,
@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "Whoever greets such a person shares in his evil deeds. Conclusion ()"
+   "text": "Whoever greets such a person shares in his evil deeds."
   },
   {
    "verse": 12,
@@ -51,6 +51,32 @@
   {
    "verse": 13,
    "text": "The children of your elect sister send you greetings."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Greeting from the Elder"
+  },
+  {
+   "beforeVerse": 4,
+   "kind": "section",
+   "level": 1,
+   "text": "Walking in the Truth"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Beware of Deceivers"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Conclusion"
   }
  ]
 }

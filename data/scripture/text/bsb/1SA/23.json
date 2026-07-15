@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "(Now Abiathar son of Ahimelech had brought the ephod with him when he fled to David at Keilah.) Saul Pursues David ()"
+   "text": "(Now Abiathar son of Ahimelech had brought the ephod with him when he fled to David at Keilah.)"
   },
   {
    "verse": 7,
@@ -115,6 +115,20 @@
   {
    "verse": 29,
    "text": "And David went up from there and lived in the strongholds of En-gedi."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "David Delivers Keilah"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Saul Pursues David"
   }
  ]
 }

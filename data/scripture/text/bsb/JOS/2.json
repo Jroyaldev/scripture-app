@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "So the king’s men set out in pursuit of the spies along the road to the fords of the Jordan, and as soon as they had gone out, the gate was shut. The Promise to Rahab"
+   "text": "So the king’s men set out in pursuit of the spies along the road to the fords of the Jordan, and as soon as they had gone out, the gate was shut."
   },
   {
    "verse": 8,
@@ -95,6 +95,20 @@
   {
    "verse": 24,
    "text": "“The LORD has surely delivered the entire land into our hands,” they said to Joshua. “Indeed, all who dwell in the land are melting in fear of us.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Rahab Welcomes the Spies"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "The Promise to Rahab"
   }
  ]
 }

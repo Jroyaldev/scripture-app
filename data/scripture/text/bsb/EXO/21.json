@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "If, however, he does not provide her with these three things, she is free to go without monetary payment. Personal Injury Laws"
+   "text": "If, however, he does not provide her with these three things, she is free to go without monetary payment."
   },
   {
    "verse": 12,
@@ -143,6 +143,20 @@
   {
    "verse": 36,
    "text": "But if it was known that the ox had a habit of goring, yet its owner failed to restrain it, he shall pay full compensation, ox for ox, and the dead animal will be his.[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Hebrew Servants"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Personal Injury Laws"
   }
  ]
 }

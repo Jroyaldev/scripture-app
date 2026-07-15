@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "For how could I bear to see the disaster that would befall my people? How could I bear to see the destruction of my kindred?” The Decree of Xerxes"
+   "text": "For how could I bear to see the disaster that would befall my people? How could I bear to see the destruction of my kindred?”"
   },
   {
    "verse": 7,
@@ -67,6 +67,20 @@
   {
    "verse": 17,
    "text": "In every province and every city, wherever the king’s edict and decree reached, there was joy and gladness among the Jews, with feasting and celebrating. And many of the people of the land themselves became Jews, because the fear of the Jews had fallen upon them."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Esther Appeals for the Jews"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "The Decree of Xerxes"
   }
  ]
 }

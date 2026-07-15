@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "When Jehu came to Samaria, he struck down everyone belonging to Ahab who remained there, until he had destroyed them, according to the word that the LORD had spoken to Elijah. Jehu Kills the Priests of Baal"
+   "text": "When Jehu came to Samaria, he struck down everyone belonging to Ahab who remained there, until he had destroyed them, according to the word that the LORD had spoken to Elijah."
   },
   {
    "verse": 18,
@@ -106,7 +106,7 @@
   },
   {
    "verse": 27,
-   "text": "They also demolished the sacred pillar of Baal. Then they tore down the temple of Baal and made it into a latrine, which it is to this day. Jehu Repeats Jeroboam’s Sins"
+   "text": "They also demolished the sacred pillar of Baal. Then they tore down the temple of Baal and made it into a latrine, which it is to this day."
   },
   {
    "verse": 28,
@@ -130,7 +130,7 @@
   },
   {
    "verse": 33,
-   "text": "from the Jordan eastward through all the land of Gilead (the region of Gad, Reuben, and Manasseh), and from Aroer by the Arnon Valley through Gilead to Bashan. Jehoahaz Succeeds Jehu in Israel"
+   "text": "from the Jordan eastward through all the land of Gilead (the region of Gad, Reuben, and Manasseh), and from Aroer by the Arnon Valley through Gilead to Bashan."
   },
   {
    "verse": 34,
@@ -143,6 +143,32 @@
   {
    "verse": 36,
    "text": "So the duration of Jehu’s reign over Israel in Samaria was twenty-eight years."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Ahab’s Seventy Sons Killed"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Jehu Kills the Priests of Baal"
+  },
+  {
+   "beforeVerse": 28,
+   "kind": "section",
+   "level": 1,
+   "text": "Jehu Repeats Jeroboam’s Sins"
+  },
+  {
+   "beforeVerse": 34,
+   "kind": "section",
+   "level": 1,
+   "text": "Jehoahaz Succeeds Jehu in Israel"
   }
  ]
 }

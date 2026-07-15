@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "Nor should you stand at the crossroads to cut off their fugitives, nor deliver up their survivors in the day of their distress. The Deliverance of Israel"
+   "text": "Nor should you stand at the crossroads to cut off their fugitives, nor deliver up their survivors in the day of their distress."
   },
   {
    "verse": 15,
@@ -83,6 +83,20 @@
   {
    "verse": 21,
    "text": "The deliverers will ascend Mount Zion to rule over the mountains of Esau. And the kingdom will belong to the LORD."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Destruction of Edom"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "The Deliverance of Israel"
   }
  ]
 }

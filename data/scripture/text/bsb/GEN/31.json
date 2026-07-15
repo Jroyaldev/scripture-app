@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "So he fled with all his possessions, crossed the Euphrates, and headed for the hill country of Gilead. Laban Pursues Jacob"
+   "text": "So he fled with all his possessions, crossed the Euphrates, and headed for the hill country of Gilead."
   },
   {
    "verse": 22,
@@ -166,7 +166,7 @@
   },
   {
    "verse": 42,
-   "text": "If the God of my father, the God of Abraham and the Fear of Isaac, had not been with me, surely by now you would have sent me away empty-handed. But God has seen my affliction and the toil of my hands, and last night He rendered judgment.” Jacob’s Covenant with Laban"
+   "text": "If the God of my father, the God of Abraham and the Fear of Isaac, had not been with me, surely by now you would have sent me away empty-handed. But God has seen my affliction and the toil of my hands, and last night He rendered judgment.”"
   },
   {
    "verse": 43,
@@ -219,6 +219,26 @@
   {
    "verse": 55,
    "text": "Early the next morning, Laban got up and kissed his grandchildren and daughters and blessed them. Then he left to return home."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jacob Flees from Laban"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "Laban Pursues Jacob"
+  },
+  {
+   "beforeVerse": 43,
+   "kind": "section",
+   "level": 1,
+   "text": "Jacob’s Covenant with Laban"
   }
  ]
 }

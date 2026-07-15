@@ -138,7 +138,7 @@
   },
   {
    "verse": 35,
-   "text": "Some of the wise will fall so that they may be refined, purified, and made spotless until the time of the end, for it will still come at the appointed time. The King Who Exalts Himself"
+   "text": "Some of the wise will fall so that they may be refined, purified, and made spotless until the time of the end, for it will still come at the appointed time."
   },
   {
    "verse": 36,
@@ -179,6 +179,20 @@
   {
    "verse": 45,
    "text": "He will pitch his royal tents between the sea and the beautiful holy mountain, but he will meet his end with no one to help him.[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Kings of the South and North"
+  },
+  {
+   "beforeVerse": 36,
+   "kind": "section",
+   "level": 1,
+   "text": "The King Who Exalts Himself"
   }
  ]
 }

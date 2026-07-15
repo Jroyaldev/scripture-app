@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "For it is your own eyes that have seen every great work that the LORD has done. God’s Great Blessings ()"
+   "text": "For it is your own eyes that have seen every great work that the LORD has done."
   },
   {
    "verse": 8,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "or the anger of the LORD will be kindled against you. He will shut the heavens so that there will be no rain, nor will the land yield its produce, and you will soon perish from the good land that the LORD is giving you. Remember God’s Words"
+   "text": "or the anger of the LORD will be kindled against you. He will shut the heavens so that there will be no rain, nor will the land yield its produce, and you will soon perish from the good land that the LORD is giving you."
   },
   {
    "verse": 18,
@@ -98,7 +98,7 @@
   },
   {
    "verse": 25,
-   "text": "No man will be able to stand against you; the LORD your God will put the fear and dread of you upon all the land, wherever you set foot, as He has promised you. A Blessing and a Curse"
+   "text": "No man will be able to stand against you; the LORD your God will put the fear and dread of you upon all the land, wherever you set foot, as He has promised you."
   },
   {
    "verse": 26,
@@ -127,6 +127,32 @@
   {
    "verse": 32,
    "text": "be careful to follow all the statutes and ordinances that I am setting before you today."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Obedience and Discipline"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Great Blessings"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Remember God’s Words"
+  },
+  {
+   "beforeVerse": 26,
+   "kind": "section",
+   "level": 1,
+   "text": "A Blessing and a Curse"
   }
  ]
 }

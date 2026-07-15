@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "In the cities of the hill country, the foothills, and the Negev, in the land of Benjamin and the cities surrounding Jerusalem, and in the cities of Judah, the flocks will again pass under the hands of the one who counts them, says the LORD. The Covenant with David"
+   "text": "In the cities of the hill country, the foothills, and the Negev, in the land of Benjamin and the cities surrounding Jerusalem, and in the cities of Judah, the flocks will again pass under the hands of the one who counts them, says the LORD."
   },
   {
    "verse": 14,
@@ -103,6 +103,20 @@
   {
    "verse": 26,
    "text": "then I would also reject the descendants of Jacob and of My servant David, so as not to take from his descendants rulers over the descendants of Abraham, Isaac, and Jacob. For I will restore them from captivity and will have compassion on them.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Excellence of the Restored Nation"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "The Covenant with David"
   }
  ]
 }

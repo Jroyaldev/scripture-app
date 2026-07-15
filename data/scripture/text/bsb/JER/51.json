@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "The LORD of Hosts has sworn by Himself: “Surely I will fill you up with men as with locusts, and they will shout in triumph over you.” Praise to the God of Jacob ()"
+   "text": "The LORD of Hosts has sworn by Himself: “Surely I will fill you up with men as with locusts, and they will shout in triumph over you.”"
   },
   {
    "verse": 15,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "The Portion of Jacob is not like these, for He is the Maker of all things, and of the tribe of His inheritance — the LORD of Hosts is His name. Babylon’s Punishment"
+   "text": "The Portion of Jacob is not like these, for He is the Maker of all things, and of the tribe of His inheritance — the LORD of Hosts is His name."
   },
   {
    "verse": 20,
@@ -230,7 +230,7 @@
   },
   {
    "verse": 58,
-   "text": "This is what the LORD of Hosts says: “Babylon’s thick walls will be leveled, and her high gates consumed by fire. So the labor of the people will be for nothing; the nations will exhaust themselves to fuel the flames.” Jeremiah’s Message to Seraiah"
+   "text": "This is what the LORD of Hosts says: “Babylon’s thick walls will be leveled, and her high gates consumed by fire. So the labor of the people will be for nothing; the nations will exhaust themselves to fuel the flames.”"
   },
   {
    "verse": 59,
@@ -255,6 +255,32 @@
   {
    "verse": 64,
    "text": "Then you are to say, ‘In the same way Babylon will sink and never rise again, because of the disaster I will bring upon her. And her people will grow weary.’” Here end the words of Jeremiah."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Judgment on Babylon"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Praise to the God of Jacob"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "Babylon’s Punishment"
+  },
+  {
+   "beforeVerse": 59,
+   "kind": "section",
+   "level": 1,
+   "text": "Jeremiah’s Message to Seraiah"
   }
  ]
 }

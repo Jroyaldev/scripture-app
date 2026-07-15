@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "Then Jesus said, “He who has ears to hear, let him hear.” The Purpose of Jesus’ Parables (; ; )"
+   "text": "Then Jesus said, “He who has ears to hear, let him hear.”"
   },
   {
    "verse": 10,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "so that, ‘they may be ever seeing but never perceiving, and ever hearing but never understanding; otherwise they might turn and be forgiven.’” The Parable of the Sower Explained (; )"
+   "text": "so that, ‘they may be ever seeing but never perceiving, and ever hearing but never understanding; otherwise they might turn and be forgiven.’”"
   },
   {
    "verse": 13,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "Still others are like the seeds sown on good soil. They hear the word, receive it, and produce a crop — thirtyfold, sixtyfold, or a hundredfold.” The Lesson of the Lamp ()"
+   "text": "Still others are like the seeds sown on good soil. They hear the word, receive it, and produce a crop — thirtyfold, sixtyfold, or a hundredfold.”"
   },
   {
    "verse": 21,
@@ -98,7 +98,7 @@
   },
   {
    "verse": 25,
-   "text": "For whoever has will be given more. But whoever does not have, even what he has will be taken away from him.” The Seed Growing Secretly"
+   "text": "For whoever has will be given more. But whoever does not have, even what he has will be taken away from him.”"
   },
   {
    "verse": 26,
@@ -114,7 +114,7 @@
   },
   {
    "verse": 29,
-   "text": "And as soon as the grain is ripe, he swings the sickle, because the harvest has come.” The Parable of the Mustard Seed (; )"
+   "text": "And as soon as the grain is ripe, he swings the sickle, because the harvest has come.”"
   },
   {
    "verse": 30,
@@ -134,7 +134,7 @@
   },
   {
    "verse": 34,
-   "text": "He did not tell them anything without using a parable. But privately He explained everything to His own disciples. Jesus Calms the Storm (; ; )"
+   "text": "He did not tell them anything without using a parable. But privately He explained everything to His own disciples."
   },
   {
    "verse": 35,
@@ -163,6 +163,50 @@
   {
    "verse": 41,
    "text": "Overwhelmed with fear, they asked one another, “Who is this, that even the wind and the sea obey Him?”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parable of the Sower"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "The Purpose of Jesus’ Parables"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parable of the Sower Explained"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "The Lesson of the Lamp"
+  },
+  {
+   "beforeVerse": 26,
+   "kind": "section",
+   "level": 1,
+   "text": "The Seed Growing Secretly"
+  },
+  {
+   "beforeVerse": 30,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parable of the Mustard Seed"
+  },
+  {
+   "beforeVerse": 35,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Calms the Storm"
   }
  ]
 }

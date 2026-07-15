@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "the Spirit, the water, and the blood — and these three are in agreement. God’s Testimony about His Son"
+   "text": "the Spirit, the water, and the blood — and these three are in agreement."
   },
   {
    "verse": 9,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "Whoever has the Son has life; whoever does not have the Son of God does not have life. Effective Prayer"
+   "text": "Whoever has the Son has life; whoever does not have the Son of God does not have life."
   },
   {
    "verse": 13,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "All unrighteousness is sin, yet there is sin that does not lead to death. The True God"
+   "text": "All unrighteousness is sin, yet there is sin that does not lead to death."
   },
   {
    "verse": 18,
@@ -83,6 +83,32 @@
   {
    "verse": 21,
    "text": "Little children, keep yourselves from idols."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Overcoming the World"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Testimony about His Son"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Effective Prayer"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "The True God"
   }
  ]
 }

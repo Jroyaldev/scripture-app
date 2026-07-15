@@ -120,5 +120,13 @@
    "verse": 30,
    "text": "Lashes and wounds scour evil, and beatings cleanse the inmost parts."
   }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Wine Is a Mocker"
+  }
  ]
 }

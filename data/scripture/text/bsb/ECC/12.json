@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "“Futility of futilities,” says the Teacher. “Everything is futile!” The Whole Duty of Man"
+   "text": "“Futility of futilities,” says the Teacher. “Everything is futile!”"
   },
   {
    "verse": 9,
@@ -55,6 +55,20 @@
   {
    "verse": 14,
    "text": "For God will bring every deed into judgment, along with every hidden thing, whether good or evil."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Remember Your Creator"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "The Whole Duty of Man"
   }
  ]
 }

@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "So keep the commandments and statutes and ordinances that I am giving you to follow this day. The Promises of God ()"
+   "text": "So keep the commandments and statutes and ordinances that I am giving you to follow this day."
   },
   {
    "verse": 12,
@@ -103,6 +103,20 @@
   {
    "verse": 26,
    "text": "And you must not bring any detestable thing into your house, or you, like it, will be set apart for destruction. You are to utterly detest and abhor it, because it is set apart for destruction."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Drive Out the Nations"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "The Promises of God"
   }
  ]
 }

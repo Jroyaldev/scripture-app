@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "King Solomon gave the queen of Sheba all she desired — whatever she asked — besides what he had given her out of his royal bounty. Then she left and returned to her own country, along with her servants. Solomon’s Wealth and Splendor (; )"
+   "text": "King Solomon gave the queen of Sheba all she desired — whatever she asked — besides what he had given her out of his royal bounty. Then she left and returned to her own country, along with her servants."
   },
   {
    "verse": 14,
@@ -115,6 +115,20 @@
   {
    "verse": 29,
    "text": "A chariot could be imported from Egypt for six hundred shekels of silver, and a horse for a hundred and fifty. Likewise, they exported them to all the kings of the Hittites and to the kings of Aram."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Queen of Sheba"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Solomon’s Wealth and Splendor"
   }
  ]
 }

@@ -192,5 +192,13 @@
    "verse": 48,
    "text": "Blessed be the LORD, the God of Israel, from everlasting to everlasting. Let all the people say, “Amen!” Hallelujah!"
   }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Give Thanks to the LORD, for He Is Good"
+  }
  ]
 }

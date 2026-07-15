@@ -2,7 +2,7 @@
  "verses": [
   {
    "verse": 1,
-   "text": "This is the account of Noah’s sons Shem, Ham, and Japheth, who also had sons after the flood. The Japhethites"
+   "text": "This is the account of Noah’s sons Shem, Ham, and Japheth, who also had sons after the flood."
   },
   {
    "verse": 2,
@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "From these, the maritime peoples separated into their territories, according to their languages, by clans within their nations. The Hamites"
+   "text": "From these, the maritime peoples separated into their territories, according to their languages, by clans within their nations."
   },
   {
    "verse": 6,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "These are the sons of Ham according to their clans, languages, lands, and nations. The Semites"
+   "text": "These are the sons of Ham according to their clans, languages, lands, and nations."
   },
   {
    "verse": 21,
@@ -127,6 +127,32 @@
   {
    "verse": 32,
    "text": "All these are the clans of Noah’s sons, according to their generations and nations. From these the nations of the earth spread out after the flood."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Table of Nations"
+  },
+  {
+   "beforeVerse": 2,
+   "kind": "section",
+   "level": 2,
+   "text": "The Japhethites"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 2,
+   "text": "The Hamites"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 2,
+   "text": "The Semites"
   }
  ]
 }

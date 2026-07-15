@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "As the LORD had commanded His servant Moses, so Moses commanded Joshua. That is what Joshua did, leaving nothing undone of all that the LORD had commanded Moses. Joshua Takes the Whole Land"
+   "text": "As the LORD had commanded His servant Moses, so Moses commanded Joshua. That is what Joshua did, leaving nothing undone of all that the LORD had commanded Moses."
   },
   {
    "verse": 16,
@@ -91,6 +91,20 @@
   {
    "verse": 23,
    "text": "So Joshua took the entire land, in keeping with all that the LORD had spoken to Moses. And Joshua gave it as an inheritance to Israel according to the allotments to their tribes. Then the land had rest from war."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Conquest of the Northern Cities"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Joshua Takes the Whole Land"
   }
  ]
 }

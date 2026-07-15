@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "But did not My words and My statutes, which I commanded My servants the prophets, overtake your fathers? They repented and said, ‘Just as the LORD of Hosts purposed to do to us according to our ways and deeds, so He has done to us.’” The Vision of the Horses"
+   "text": "But did not My words and My statutes, which I commanded My servants the prophets, overtake your fathers? They repented and said, ‘Just as the LORD of Hosts purposed to do to us according to our ways and deeds, so He has done to us.’”"
   },
   {
    "verse": 7,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "Proclaim further that this is what the LORD of Hosts says: ‘My cities will again overflow with prosperity; the LORD will again comfort Zion and choose Jerusalem.’” The Vision of the Horns and the Craftsmen"
+   "text": "Proclaim further that this is what the LORD of Hosts says: ‘My cities will again overflow with prosperity; the LORD will again comfort Zion and choose Jerusalem.’”"
   },
   {
    "verse": 18,
@@ -83,6 +83,26 @@
   {
    "verse": 21,
    "text": "“What are these coming to do?” I asked. And He replied, “These are the horns that scattered Judah so that no one could raise his head; but the craftsmen have come to terrify them and throw down these horns of the nations that have lifted up their horns against the land of Judah to scatter it.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Call to Repentance"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "The Vision of the Horses"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "The Vision of the Horns and the Craftsmen"
   }
  ]
 }

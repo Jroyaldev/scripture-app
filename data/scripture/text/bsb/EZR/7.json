@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "For Ezra had set his heart to study the Law of the LORD, to practice it, and to teach its statutes and ordinances in Israel. Artaxerxes’ Letter for Ezra"
+   "text": "For Ezra had set his heart to study the Law of the LORD, to practice it, and to teach its statutes and ordinances in Israel."
   },
   {
    "verse": 11,
@@ -102,7 +102,7 @@
   },
   {
    "verse": 26,
-   "text": "If anyone does not keep the law of your God and the law of the king, let a strict judgment be executed against him, whether death, banishment, confiscation of property, or imprisonment. Ezra Blesses God"
+   "text": "If anyone does not keep the law of your God and the law of the king, let a strict judgment be executed against him, whether death, banishment, confiscation of property, or imprisonment."
   },
   {
    "verse": 27,
@@ -111,6 +111,26 @@
   {
    "verse": 28,
    "text": "and who has shown me favor before the king, his counselors, and all his powerful officials. And because the hand of the LORD my God was upon me, I took courage and gathered the leaders of Israel to return with me."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Ezra Arrives in Jerusalem"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "Artaxerxes’ Letter for Ezra"
+  },
+  {
+   "beforeVerse": 27,
+   "kind": "section",
+   "level": 1,
+   "text": "Ezra Blesses God"
   }
  ]
 }

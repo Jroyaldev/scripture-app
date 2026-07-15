@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "But now, having died to what bound us, we have been released from the law, so that we serve in the new way of the Spirit, and not in the old way of the written code. God’s Law Is Holy"
+   "text": "But now, having died to what bound us, we have been released from the law, so that we serve in the new way of the Spirit, and not in the old way of the written code."
   },
   {
    "verse": 7,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "So then, the law is holy, and the commandment is holy, righteous, and good. Struggling with Sin"
+   "text": "So then, the law is holy, and the commandment is holy, righteous, and good."
   },
   {
    "verse": 13,
@@ -99,6 +99,26 @@
   {
    "verse": 25,
    "text": "Thanks be to God, through Jesus Christ our Lord! So then, with my mind I serve the law of God, but with my flesh I serve the law of sin."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Release from the Law"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Law Is Holy"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Struggling with Sin"
   }
  ]
 }

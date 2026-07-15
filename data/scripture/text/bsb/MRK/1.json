@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "And a voice came from heaven: “You are My beloved Son; in You I am well pleased.” The Temptation and Preaching of Jesus (; )"
+   "text": "And a voice came from heaven: “You are My beloved Son; in You I am well pleased.”"
   },
   {
    "verse": 12,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "“The time is fulfilled,” He said, “and the kingdom of God is near. Repent and believe in the gospel!” The First Disciples (; ; )"
+   "text": "“The time is fulfilled,” He said, “and the kingdom of God is near. Repent and believe in the gospel!”"
   },
   {
    "verse": 16,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "Immediately Jesus called them, and they left their father Zebedee in the boat with the hired men and followed Him. Jesus Expels an Unclean Spirit ()"
+   "text": "Immediately Jesus called them, and they left their father Zebedee in the boat with the hired men and followed Him."
   },
   {
    "verse": 21,
@@ -110,7 +110,7 @@
   },
   {
    "verse": 28,
-   "text": "And the news about Jesus spread quickly through the whole region of Galilee. Jesus Heals at Peter’s House (; )"
+   "text": "And the news about Jesus spread quickly through the whole region of Galilee."
   },
   {
    "verse": 29,
@@ -134,7 +134,7 @@
   },
   {
    "verse": 34,
-   "text": "And He healed many who were ill with various diseases and drove out many demons. But He would not allow the demons to speak, because they knew who He was. Jesus Prays and Preaches ()"
+   "text": "And He healed many who were ill with various diseases and drove out many demons. But He would not allow the demons to speak, because they knew who He was."
   },
   {
    "verse": 35,
@@ -154,7 +154,7 @@
   },
   {
    "verse": 39,
-   "text": "So He went throughout Galilee, preaching in their synagogues and driving out demons. The Leper’s Prayer (; ; )"
+   "text": "So He went throughout Galilee, preaching in their synagogues and driving out demons."
   },
   {
    "verse": 40,
@@ -179,6 +179,50 @@
   {
    "verse": 45,
    "text": "But the man went out and openly began to proclaim and spread the news. Consequently, Jesus could no longer enter a town in plain view, but He stayed out in solitary places. Yet people came to Him from every quarter."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Mission of John the Baptist"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "The Temptation and Preaching of Jesus"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "The First Disciples"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Expels an Unclean Spirit"
+  },
+  {
+   "beforeVerse": 29,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Heals at Peter’s House"
+  },
+  {
+   "beforeVerse": 35,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Prays and Preaches"
+  },
+  {
+   "beforeVerse": 40,
+   "kind": "section",
+   "level": 1,
+   "text": "The Leper’s Prayer"
   }
  ]
 }

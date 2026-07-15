@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "He inserted the poles into the rings on the sides of the ark in order to carry it. The Mercy Seat ()"
+   "text": "He inserted the poles into the rings on the sides of the ark in order to carry it."
   },
   {
    "verse": 6,
@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "And the cherubim had wings that spread upward, overshadowing the mercy seat. The cherubim faced each other, looking toward the mercy seat. The Table of Showbread (; )"
+   "text": "And the cherubim had wings that spread upward, overshadowing the mercy seat. The cherubim faced each other, looking toward the mercy seat."
   },
   {
    "verse": 10,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "He also made the utensils for the table out of pure gold: its plates and dishes, as well as its bowls and pitchers for pouring drink offerings. The Lampstand (; )"
+   "text": "He also made the utensils for the table out of pure gold: its plates and dishes, as well as its bowls and pitchers for pouring drink offerings."
   },
   {
    "verse": 17,
@@ -94,7 +94,7 @@
   },
   {
    "verse": 24,
-   "text": "He made the lampstand and all its utensils from a talent of pure gold. The Altar of Incense ()"
+   "text": "He made the lampstand and all its utensils from a talent of pure gold."
   },
   {
    "verse": 25,
@@ -115,6 +115,38 @@
   {
    "verse": 29,
    "text": "He also made the sacred anointing oil and the pure, fragrant incense, the work of a perfumer."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Constructing the Ark"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "The Mercy Seat"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "The Table of Showbread"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "The Lampstand"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "The Altar of Incense"
   }
  ]
 }

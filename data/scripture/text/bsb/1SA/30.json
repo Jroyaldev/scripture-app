@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "And David was greatly distressed because the people spoke of stoning him, because the soul of every man grieved for his sons and daughters. But David found strength in the LORD his God. David Destroys the Amalekites"
+   "text": "And David was greatly distressed because the people spoke of stoning him, because the soul of every man grieved for his sons and daughters. But David found strength in the LORD his God."
   },
   {
    "verse": 7,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "And he took all the flocks and herds, which his men drove ahead of the other livestock, calling out, “This is David’s plunder!” The Spoils Are Divided"
+   "text": "And he took all the flocks and herds, which his men drove ahead of the other livestock, calling out, “This is David’s plunder!”"
   },
   {
    "verse": 21,
@@ -123,6 +123,26 @@
   {
    "verse": 31,
    "text": "and to those in Hebron and in all the places where David and his men had roamed."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Amalekites Raid Ziklag"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "David Destroys the Amalekites"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "The Spoils Are Divided"
   }
  ]
 }

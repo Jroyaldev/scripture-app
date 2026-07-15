@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "See, I have placed the land before you. Enter and possess the land that the LORD swore He would give to your fathers Abraham, Isaac, and Jacob, and to their descendants after them.” Moses Appoints Leaders ()"
+   "text": "See, I have placed the land before you. Enter and possess the land that the LORD swore He would give to your fathers Abraham, Isaac, and Jacob, and to their descendants after them.”"
   },
   {
    "verse": 9,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "And at that time I commanded you all the things you were to do. Twelve Spies Sent Out ()"
+   "text": "And at that time I commanded you all the things you were to do."
   },
   {
    "verse": 19,
@@ -98,7 +98,7 @@
   },
   {
    "verse": 25,
-   "text": "They took some of the fruit of the land in their hands, carried it down to us, and brought us word: “It is a good land that the LORD our God is giving us.” Israel’s Rebellion ()"
+   "text": "They took some of the fruit of the land in their hands, carried it down to us, and brought us word: “It is a good land that the LORD our God is giving us.”"
   },
   {
    "verse": 26,
@@ -130,7 +130,7 @@
   },
   {
    "verse": 33,
-   "text": "who went before you on the journey, in the fire by night and in the cloud by day, to seek out a place for you to camp and to show you the road to travel. Israel’s Penalty ()"
+   "text": "who went before you on the journey, in the fire by night and in the cloud by day, to seek out a place for you to camp and to show you the road to travel."
   },
   {
    "verse": 34,
@@ -158,7 +158,7 @@
   },
   {
    "verse": 40,
-   "text": "But you are to turn back and head for the wilderness along the route to the Red Sea.” The Defeat at Hormah ()"
+   "text": "But you are to turn back and head for the wilderness along the route to the Red Sea.”"
   },
   {
    "verse": 41,
@@ -183,6 +183,44 @@
   {
    "verse": 46,
    "text": "For this reason you stayed in Kadesh for a long time — a very long time."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Command to Leave Horeb"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Moses Appoints Leaders"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "Twelve Spies Sent Out"
+  },
+  {
+   "beforeVerse": 26,
+   "kind": "section",
+   "level": 1,
+   "text": "Israel’s Rebellion"
+  },
+  {
+   "beforeVerse": 34,
+   "kind": "section",
+   "level": 1,
+   "text": "Israel’s Penalty"
+  },
+  {
+   "beforeVerse": 41,
+   "kind": "section",
+   "level": 1,
+   "text": "The Defeat at Hormah"
   }
  ]
 }

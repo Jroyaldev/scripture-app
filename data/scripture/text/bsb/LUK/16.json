@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "No servant can serve two masters. Either he will hate the one and love the other, or he will be devoted to the one and despise the other. You cannot serve both God and money.” The Law and the Prophets"
+   "text": "No servant can serve two masters. Either he will hate the one and love the other, or he will be devoted to the one and despise the other. You cannot serve both God and money.”"
   },
   {
    "verse": 14,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "Anyone who divorces his wife and marries another woman commits adultery, and he who marries a divorced woman commits adultery. The Rich Man and Lazarus ()"
+   "text": "Anyone who divorces his wife and marries another woman commits adultery, and he who marries a divorced woman commits adultery."
   },
   {
    "verse": 19,
@@ -123,6 +123,26 @@
   {
    "verse": 31,
    "text": "Then Abraham said to him, ‘If they do not listen to Moses and the Prophets, they will not be persuaded even if someone rises from the dead.’”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parable of the Shrewd Manager"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "The Law and the Prophets"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "The Rich Man and Lazarus"
   }
  ]
 }

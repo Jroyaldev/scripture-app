@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "Pay everyone what you owe him: taxes to whom taxes are due, revenue to whom revenue is due, respect to whom respect is due, honor to whom honor is due. Love Fulfills the Law ()"
+   "text": "Pay everyone what you owe him: taxes to whom taxes are due, revenue to whom revenue is due, respect to whom respect is due, honor to whom honor is due."
   },
   {
    "verse": 8,
@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "Love does no wrong to its neighbor. Therefore love is the fulfillment of the law. The Day Is Near"
+   "text": "Love does no wrong to its neighbor. Therefore love is the fulfillment of the law."
   },
   {
    "verse": 11,
@@ -55,6 +55,26 @@
   {
    "verse": 14,
    "text": "Instead, clothe yourselves with the Lord Jesus Christ, and make no provision for the desires of the flesh."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Submission to Authorities"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Love Fulfills the Law"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "The Day Is Near"
   }
  ]
 }

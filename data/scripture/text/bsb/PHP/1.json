@@ -6,7 +6,7 @@
   },
   {
    "verse": 2,
-   "text": "Grace and peace to you from God our Father and the Lord Jesus Christ. Thanksgiving and Prayer (; )"
+   "text": "Grace and peace to you from God our Father and the Lord Jesus Christ."
   },
   {
    "verse": 3,
@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "filled with the fruit of righteousness that comes through Jesus Christ, to the glory and praise of God. Paul’s Trials Advance the Gospel ()"
+   "text": "filled with the fruit of righteousness that comes through Jesus Christ, to the glory and praise of God."
   },
   {
    "verse": 12,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "I eagerly expect and hope that I will in no way be ashamed, but will have complete boldness so that now as always Christ will be exalted in my body, whether by life or by death. To Live Is Christ"
+   "text": "I eagerly expect and hope that I will in no way be ashamed, but will have complete boldness so that now as always Christ will be exalted in my body, whether by life or by death."
   },
   {
    "verse": 21,
@@ -102,7 +102,7 @@
   },
   {
    "verse": 26,
-   "text": "so that through my coming to you again your exultation in Christ Jesus will resound on account of me. Worthy of the Gospel"
+   "text": "so that through my coming to you again your exultation in Christ Jesus will resound on account of me."
   },
   {
    "verse": 27,
@@ -119,6 +119,38 @@
   {
    "verse": 30,
    "text": "since you are encountering the same struggle you saw I had, and now hear that I still have."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Greetings from Paul and Timothy"
+  },
+  {
+   "beforeVerse": 3,
+   "kind": "section",
+   "level": 1,
+   "text": "Thanksgiving and Prayer"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Trials Advance the Gospel"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "To Live Is Christ"
+  },
+  {
+   "beforeVerse": 27,
+   "kind": "section",
+   "level": 1,
+   "text": "Worthy of the Gospel"
   }
  ]
 }

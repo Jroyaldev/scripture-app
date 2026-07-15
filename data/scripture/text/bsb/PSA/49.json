@@ -80,5 +80,13 @@
    "verse": 20,
    "text": "A man who has riches without understanding is like the beasts that perish."
   }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Evanescence of Wealth"
+  }
  ]
 }

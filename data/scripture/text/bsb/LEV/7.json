@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "and every grain offering, whether dry or mixed with oil, belongs equally to all the sons of Aaron. The Peace Offering ()"
+   "text": "and every grain offering, whether dry or mixed with oil, belongs equally to all the sons of Aaron."
   },
   {
    "verse": 11,
@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "If one touches anything unclean, whether human uncleanness, an unclean animal, or any unclean, detestable thing, and then eats any of the meat of the peace offering that belongs to the LORD, that person must be cut off from his people.” Fat and Blood Forbidden"
+   "text": "If one touches anything unclean, whether human uncleanness, an unclean animal, or any unclean, detestable thing, and then eats any of the meat of the peace offering that belongs to the LORD, that person must be cut off from his people.”"
   },
   {
    "verse": 22,
@@ -106,7 +106,7 @@
   },
   {
    "verse": 27,
-   "text": "If anyone eats blood, that person must be cut off from his people.’” The Priests’ Portion"
+   "text": "If anyone eats blood, that person must be cut off from his people.’”"
   },
   {
    "verse": 28,
@@ -151,6 +151,32 @@
   {
    "verse": 38,
    "text": "which the LORD gave Moses on Mount Sinai on the day He commanded the Israelites to present their offerings to the LORD in the Wilderness of Sinai."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Guilt Offering"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "The Peace Offering"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "Fat and Blood Forbidden"
+  },
+  {
+   "beforeVerse": 28,
+   "kind": "section",
+   "level": 1,
+   "text": "The Priests’ Portion"
   }
  ]
 }

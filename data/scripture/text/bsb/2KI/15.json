@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "And Azariah rested with his fathers and was buried near them in the City of David. And his son Jotham reigned in his place. Zechariah Reigns in Israel"
+   "text": "And Azariah rested with his fathers and was buried near them in the City of David. And his son Jotham reigned in his place."
   },
   {
    "verse": 8,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "So the word of the LORD spoken to Jehu was fulfilled: “Four generations of your sons will sit on the throne of Israel.” Shallum Reigns in Israel"
+   "text": "So the word of the LORD spoken to Jehu was fulfilled: “Four generations of your sons will sit on the throne of Israel.”"
   },
   {
    "verse": 13,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "At that time Menahem, starting from Tirzah, attacked Tiphsah and everyone in its vicinity, because they would not open their gates. So he attacked Tiphsah and ripped open all the pregnant women. Menahem Reigns in Israel"
+   "text": "At that time Menahem, starting from Tirzah, attacked Tiphsah and everyone in its vicinity, because they would not open their gates. So he attacked Tiphsah and ripped open all the pregnant women."
   },
   {
    "verse": 17,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "And Menahem rested with his fathers, and his son Pekahiah reigned in his place. Pekahiah Reigns in Israel"
+   "text": "And Menahem rested with his fathers, and his son Pekahiah reigned in his place."
   },
   {
    "verse": 23,
@@ -102,7 +102,7 @@
   },
   {
    "verse": 26,
-   "text": "As for the rest of the acts of Pekahiah, along with all his accomplishments, they are indeed written in the Book of the Chronicles of the Kings of Israel. Pekah Reigns in Israel"
+   "text": "As for the rest of the acts of Pekahiah, along with all his accomplishments, they are indeed written in the Book of the Chronicles of the Kings of Israel."
   },
   {
    "verse": 27,
@@ -122,7 +122,7 @@
   },
   {
    "verse": 31,
-   "text": "As for the rest of the acts of Pekah, along with all his accomplishments, they are indeed written in the Book of the Chronicles of the Kings of Israel. Jotham Reigns in Judah ()"
+   "text": "As for the rest of the acts of Pekah, along with all his accomplishments, they are indeed written in the Book of the Chronicles of the Kings of Israel."
   },
   {
    "verse": 32,
@@ -151,6 +151,50 @@
   {
    "verse": 38,
    "text": "And Jotham rested with his fathers and was buried with them in the City of David his father. And his son Ahaz reigned in his place."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Azariah Reigns in Judah"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Zechariah Reigns in Israel"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Shallum Reigns in Israel"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Menahem Reigns in Israel"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "Pekahiah Reigns in Israel"
+  },
+  {
+   "beforeVerse": 27,
+   "kind": "section",
+   "level": 1,
+   "text": "Pekah Reigns in Israel"
+  },
+  {
+   "beforeVerse": 32,
+   "kind": "section",
+   "level": 1,
+   "text": "Jotham Reigns in Judah"
   }
  ]
 }

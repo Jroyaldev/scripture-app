@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "I tell you, it will be more bearable on that day for Sodom than for that town. Woe to the Unrepentant ()"
+   "text": "I tell you, it will be more bearable on that day for Sodom than for that town."
   },
   {
    "verse": 13,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "Whoever listens to you listens to Me; whoever rejects you rejects Me; and whoever rejects Me rejects the One who sent Me.” The Joyful Return"
+   "text": "Whoever listens to you listens to Me; whoever rejects you rejects Me; and whoever rejects Me rejects the One who sent Me.”"
   },
   {
    "verse": 17,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "Nevertheless, do not rejoice that the spirits submit to you, but rejoice that your names are written in heaven.” Jesus’ Prayer of Thanksgiving ()"
+   "text": "Nevertheless, do not rejoice that the spirits submit to you, but rejoice that your names are written in heaven.”"
   },
   {
    "verse": 21,
@@ -94,7 +94,7 @@
   },
   {
    "verse": 24,
-   "text": "For I tell you that many prophets and kings desired to see what you see but did not see it, and to hear what you hear but did not hear it.” The Parable of the Good Samaritan"
+   "text": "For I tell you that many prophets and kings desired to see what you see but did not see it, and to hear what you hear but did not hear it.”"
   },
   {
    "verse": 25,
@@ -146,7 +146,7 @@
   },
   {
    "verse": 37,
-   "text": "“The one who showed him mercy,” replied the expert in the law. Then Jesus told him, “Go and do likewise.” Martha and Mary"
+   "text": "“The one who showed him mercy,” replied the expert in the law. Then Jesus told him, “Go and do likewise.”"
   },
   {
    "verse": 38,
@@ -167,6 +167,44 @@
   {
    "verse": 42,
    "text": "But only one thing is necessary. Mary has chosen the good portion, and it will not be taken away from her.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Sends the Seventy-Two"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Woe to the Unrepentant"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "The Joyful Return"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus’ Prayer of Thanksgiving"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parable of the Good Samaritan"
+  },
+  {
+   "beforeVerse": 38,
+   "kind": "section",
+   "level": 1,
+   "text": "Martha and Mary"
   }
  ]
 }

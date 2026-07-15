@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "But God did not lay His hand on the nobles of Israel; they saw Him, and they ate and drank. Moses on the Mountain"
+   "text": "But God did not lay His hand on the nobles of Israel; they saw Him, and they ate and drank."
   },
   {
    "verse": 12,
@@ -71,6 +71,20 @@
   {
    "verse": 18,
    "text": "Moses entered the cloud as he went up on the mountain, and he remained on the mountain forty days and forty nights."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Covenant Sealed"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Moses on the Mountain"
   }
  ]
 }

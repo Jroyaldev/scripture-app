@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "Therefore, as we have opportunity, let us do good to everyone, and especially to the family of faith. Final Warnings and Blessings"
+   "text": "Therefore, as we have opportunity, let us do good to everyone, and especially to the family of faith."
   },
   {
    "verse": 11,
@@ -71,6 +71,20 @@
   {
    "verse": 18,
    "text": "The grace of our Lord Jesus Christ be with your spirit, brothers. Amen."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Carry One Another’s Burdens"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "Final Warnings and Blessings"
   }
  ]
 }

@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "For I will be a wall of fire around it, declares the LORD, and I will be the glory within it.’” The Redemption of Zion ()"
+   "text": "For I will be a wall of fire around it, declares the LORD, and I will be the glory within it.’”"
   },
   {
    "verse": 6,
@@ -51,6 +51,20 @@
   {
    "verse": 13,
    "text": "Be silent before the LORD, all people, for He has roused Himself from His holy dwelling.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Vision of the Measuring Line"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "The Redemption of Zion"
   }
  ]
 }

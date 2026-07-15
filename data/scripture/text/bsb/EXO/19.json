@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "“Be prepared for the third day,” he said to the people. “Do not draw near to a woman.” The LORD Visits Sinai"
+   "text": "“Be prepared for the third day,” he said to the people. “Do not draw near to a woman.”"
   },
   {
    "verse": 16,
@@ -99,6 +99,20 @@
   {
    "verse": 25,
    "text": "So Moses went down to the people and spoke to them."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Israel at Mount Sinai"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "The LORD Visits Sinai"
   }
  ]
 }

@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "For many nations and great kings will enslave them, and I will repay them according to their deeds and according to the work of their hands.’” The Cup of God’s Wrath"
+   "text": "For many nations and great kings will enslave them, and I will repay them according to their deeds and according to the work of their hands.’”"
   },
   {
    "verse": 15,
@@ -130,7 +130,7 @@
   },
   {
    "verse": 33,
-   "text": "Those slain by the LORD on that day will be spread from one end of the earth to the other. They will not be mourned, gathered, or buried. They will be like dung lying on the ground. The Cry of the Shepherds"
+   "text": "Those slain by the LORD on that day will be spread from one end of the earth to the other. They will not be mourned, gathered, or buried. They will be like dung lying on the ground."
   },
   {
    "verse": 34,
@@ -151,6 +151,26 @@
   {
    "verse": 38,
    "text": "He has left His den like a lion, for their land has been made a desolation by the sword of the oppressor, and because of the fierce anger of the LORD."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Seventy Years of Captivity"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "The Cup of God’s Wrath"
+  },
+  {
+   "beforeVerse": 34,
+   "kind": "section",
+   "level": 1,
+   "text": "The Cry of the Shepherds"
   }
  ]
 }

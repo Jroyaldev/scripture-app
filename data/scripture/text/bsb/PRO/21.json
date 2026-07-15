@@ -124,5 +124,13 @@
    "verse": 31,
    "text": "A horse is prepared for the day of battle, but victory is of the LORD."
   }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The King’s Heart"
+  }
  ]
 }

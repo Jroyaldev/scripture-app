@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "then I will make this house like Shiloh, and I will make this city an object of cursing among all the nations of the earth.’” Jeremiah Threatened with Death"
+   "text": "then I will make this house like Shiloh, and I will make this city an object of cursing among all the nations of the earth.’”"
   },
   {
    "verse": 7,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "But know for certain that if you put me to death, you will bring innocent blood upon yourselves, upon this city, and upon its residents; for truly the LORD has sent me to speak all these words in your hearing.” Jeremiah Spared from Death"
+   "text": "But know for certain that if you put me to death, you will bring innocent blood upon yourselves, upon this city, and upon its residents; for truly the LORD has sent me to speak all these words in your hearing.”"
   },
   {
    "verse": 16,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "Did Hezekiah king of Judah or anyone else in Judah put him to death? Did Hezekiah not fear the LORD and seek His favor, and did not the LORD relent of the disaster He had pronounced against them? But we are about to bring great harm on ourselves!” The Prophet Uriah"
+   "text": "Did Hezekiah king of Judah or anyone else in Judah put him to death? Did Hezekiah not fear the LORD and seek His favor, and did not the LORD relent of the disaster He had pronounced against them? But we are about to bring great harm on ourselves!”"
   },
   {
    "verse": 20,
@@ -95,6 +95,32 @@
   {
    "verse": 24,
    "text": "Nevertheless, Ahikam son of Shaphan supported Jeremiah, so he was not handed over to the people to be put to death."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Warning to the Cities of Judah"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Jeremiah Threatened with Death"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Jeremiah Spared from Death"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "The Prophet Uriah"
   }
  ]
 }

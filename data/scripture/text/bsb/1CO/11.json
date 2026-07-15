@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "If anyone is inclined to dispute this, we have no other practice, nor do the churches of God. Sharing in the Lord’s Supper (; ; )"
+   "text": "If anyone is inclined to dispute this, we have no other practice, nor do the churches of God."
   },
   {
    "verse": 17,
@@ -135,6 +135,20 @@
   {
    "verse": 34,
    "text": "If anyone is hungry, he should eat at home, so that when you come together it will not result in judgment. And when I come, I will give instructions about the remaining matters."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Roles in Worship"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Sharing in the Lord’s Supper"
   }
  ]
 }

@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "because it is sanctified by the word of God and prayer. A Good Servant of Jesus Christ"
+   "text": "because it is sanctified by the word of God and prayer."
   },
   {
    "verse": 6,
@@ -63,6 +63,20 @@
   {
    "verse": 16,
    "text": "Pay close attention to your life and to your teaching. Persevere in these things, for by so doing you will save both yourself and those who hear you."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Warning against Apostasy"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "A Good Servant of Jesus Christ"
   }
  ]
 }

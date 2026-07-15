@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "Therefore King Darius signed the written decree. Daniel in the Lions’ Den"
+   "text": "Therefore King Darius signed the written decree."
   },
   {
    "verse": 10,
@@ -94,7 +94,7 @@
   },
   {
    "verse": 24,
-   "text": "At the command of the king, the men who had falsely accused Daniel were brought and thrown into the den of lions— they and their children and wives. And before they had reached the bottom of the den, the lions overpowered them and crushed all their bones. Darius Honors God"
+   "text": "At the command of the king, the men who had falsely accused Daniel were brought and thrown into the den of lions— they and their children and wives. And before they had reached the bottom of the den, the lions overpowered them and crushed all their bones."
   },
   {
    "verse": 25,
@@ -111,6 +111,26 @@
   {
    "verse": 28,
    "text": "So Daniel prospered during the reign of Darius and the reign of Cyrus the Persian."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Plot against Daniel"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Daniel in the Lions’ Den"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "Darius Honors God"
   }
  ]
 }

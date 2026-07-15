@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "And though one may be overpowered, two can resist. Moreover, a cord of three strands is not quickly broken. The Futility of Power"
+   "text": "And though one may be overpowered, two can resist. Moreover, a cord of three strands is not quickly broken."
   },
   {
    "verse": 13,
@@ -63,6 +63,20 @@
   {
    "verse": 16,
    "text": "There is no limit to all the people who were before them. Yet the successor will not be celebrated by those who come even later. This too is futile and a pursuit of the wind."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Evil of Oppression"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Futility of Power"
   }
  ]
 }

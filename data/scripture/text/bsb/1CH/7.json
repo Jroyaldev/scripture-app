@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "Their kinsmen belonging to all the families of Issachar who were mighty men of valor totaled 87,000, as listed in their genealogies. The Descendants of Benjamin"
+   "text": "Their kinsmen belonging to all the families of Issachar who were mighty men of valor totaled 87,000, as listed in their genealogies."
   },
   {
    "verse": 6,
@@ -46,11 +46,11 @@
   },
   {
    "verse": 12,
-   "text": "The Shuppites and Huppites were descendants of Ir, and the Hushites were descendants of Aher. The Descendants of Naphtali"
+   "text": "The Shuppites and Huppites were descendants of Ir, and the Hushites were descendants of Aher."
   },
   {
    "verse": 13,
-   "text": "The sons of Naphtali: Jahziel, Guni, Jezer, and Shallum— the descendants of Bilhah. The Descendants of Manasseh"
+   "text": "The sons of Naphtali: Jahziel, Guni, Jezer, and Shallum— the descendants of Bilhah."
   },
   {
    "verse": 14,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "And these were the sons of Shemida: Ahian, Shechem, Likhi, and Aniam. The Descendants of Ephraim"
+   "text": "And these were the sons of Shemida: Ahian, Shechem, Likhi, and Aniam."
   },
   {
    "verse": 20,
@@ -114,7 +114,7 @@
   },
   {
    "verse": 29,
-   "text": "And along the borders of Manasseh were Beth-shean, Taanach, Megiddo, and Dor, together with their villages. The descendants of Joseph son of Israel lived in these towns. The Descendants of Asher"
+   "text": "And along the borders of Manasseh were Beth-shean, Taanach, Megiddo, and Dor, together with their villages. The descendants of Joseph son of Israel lived in these towns."
   },
   {
    "verse": 30,
@@ -159,6 +159,44 @@
   {
    "verse": 40,
    "text": "All these were the descendants of Asher — heads of their families, choice and mighty men of valor, and chiefs among the leaders. The number of men fit for battle, recorded in their genealogies, was 26,000."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Descendants of Issachar"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "The Descendants of Benjamin"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Descendants of Naphtali"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "The Descendants of Manasseh"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "The Descendants of Ephraim"
+  },
+  {
+   "beforeVerse": 30,
+   "kind": "section",
+   "level": 1,
+   "text": "The Descendants of Asher"
   }
  ]
 }

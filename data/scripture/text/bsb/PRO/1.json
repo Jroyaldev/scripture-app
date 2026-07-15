@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "The fear of the LORD is the beginning of knowledge, but fools despise wisdom and discipline. The Enticement of Sin"
+   "text": "The fear of the LORD is the beginning of knowledge, but fools despise wisdom and discipline."
   },
   {
    "verse": 8,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "Such is the fate of all who are greedy, whose unjust gain takes the lives of its possessors. Wisdom Calls Aloud"
+   "text": "Such is the fate of all who are greedy, whose unjust gain takes the lives of its possessors."
   },
   {
    "verse": 20,
@@ -131,6 +131,26 @@
   {
    "verse": 33,
    "text": "But whoever listens to me will dwell in safety, secure from the fear of evil.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Beginning of Knowledge"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "The Enticement of Sin"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "Wisdom Calls Aloud"
   }
  ]
 }

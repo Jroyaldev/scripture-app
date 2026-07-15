@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "was caught up to Paradise. The things he heard were inexpressible, things that man is not permitted to tell. Paul’s Thorn and God’s Grace"
+   "text": "was caught up to Paradise. The things he heard were inexpressible, things that man is not permitted to tell."
   },
   {
    "verse": 5,
@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "That is why, for the sake of Christ, I delight in weaknesses, in insults, in hardships, in persecutions, in difficulties. For when I am weak, then I am strong. Paul’s Concern for the Corinthians"
+   "text": "That is why, for the sake of Christ, I delight in weaknesses, in insults, in hardships, in persecutions, in difficulties. For when I am weak, then I am strong."
   },
   {
    "verse": 11,
@@ -83,6 +83,26 @@
   {
    "verse": 21,
    "text": "I am afraid that when I come again, my God will humble me before you, and I will be grieved over many who have sinned earlier and have not repented of their acts of impurity, sexual immorality, and debauchery."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Revelation"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Thorn and God’s Grace"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Concern for the Corinthians"
   }
  ]
 }

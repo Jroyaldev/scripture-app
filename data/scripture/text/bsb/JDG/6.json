@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "And I said to you: ‘I am the LORD your God. You must not fear the gods of the Amorites, in whose land you dwell.’ But you did not obey Me.” The Call of Gideon"
+   "text": "And I said to you: ‘I am the LORD your God. You must not fear the gods of the Amorites, in whose land you dwell.’ But you did not obey Me.”"
   },
   {
    "verse": 11,
@@ -94,7 +94,7 @@
   },
   {
    "verse": 24,
-   "text": "So Gideon built an altar to the LORD there and called it The LORD Is Peace. To this day it stands in Ophrah of the Abiezrites. Gideon Destroys Baal’s Altar"
+   "text": "So Gideon built an altar to the LORD there and called it The LORD Is Peace. To this day it stands in Ophrah of the Abiezrites."
   },
   {
    "verse": 25,
@@ -126,7 +126,7 @@
   },
   {
    "verse": 32,
-   "text": "So on that day Gideon was called Jerubbaal, that is to say, “Let Baal contend with him,” because he had torn down Baal’s altar. The Sign of the Fleece"
+   "text": "So on that day Gideon was called Jerubbaal, that is to say, “Let Baal contend with him,” because he had torn down Baal’s altar."
   },
   {
    "verse": 33,
@@ -159,6 +159,32 @@
   {
    "verse": 40,
    "text": "And that night God did so. Only the fleece was dry, and dew covered the ground."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Midian Oppresses Israel"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "The Call of Gideon"
+  },
+  {
+   "beforeVerse": 25,
+   "kind": "section",
+   "level": 1,
+   "text": "Gideon Destroys Baal’s Altar"
+  },
+  {
+   "beforeVerse": 33,
+   "kind": "section",
+   "level": 1,
+   "text": "The Sign of the Fleece"
   }
  ]
 }

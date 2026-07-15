@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "I also shook out the folds of my robe and said, “May God likewise shake out of his house and possessions every man who does not keep this promise. May such a man be shaken out and have nothing!” The whole assembly said, “Amen,” and they praised the LORD. And the people did as they had promised. Nehemiah’s Generosity"
+   "text": "I also shook out the folds of my robe and said, “May God likewise shake out of his house and possessions every man who does not keep this promise. May such a man be shaken out and have nothing!” The whole assembly said, “Amen,” and they praised the LORD. And the people did as they had promised."
   },
   {
    "verse": 14,
@@ -75,6 +75,20 @@
   {
    "verse": 19,
    "text": "Remember me favorably, O my God, for all that I have done for this people."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Nehemiah Defends the Oppressed"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Nehemiah’s Generosity"
   }
  ]
 }

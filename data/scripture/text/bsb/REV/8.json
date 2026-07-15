@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "Then the angel took the censer, filled it with fire from the altar, and hurled it to the earth; and there were peals of thunder, rumblings, flashes of lightning, and an earthquake. The First Four Trumpets"
+   "text": "Then the angel took the censer, filled it with fire from the altar, and hurled it to the earth; and there were peals of thunder, rumblings, flashes of lightning, and an earthquake."
   },
   {
    "verse": 6,
@@ -51,6 +51,20 @@
   {
    "verse": 13,
    "text": "And as I observed, I heard an eagle flying overhead, calling in a loud voice, “Woe! Woe! Woe to those who dwell on the earth, because of the trumpet blasts about to be sounded by the remaining three angels!”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Seventh Seal"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "The First Four Trumpets"
   }
  ]
 }

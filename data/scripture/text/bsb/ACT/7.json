@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "Then God gave Abraham the covenant of circumcision, and Abraham became the father of Isaac and circumcised him on the eighth day. And Isaac became the father of Jacob, and Jacob of the twelve patriarchs. Joseph Sold into Egypt ()"
+   "text": "Then God gave Abraham the covenant of circumcision, and Abraham became the father of Isaac and circumcised him on the eighth day. And Isaac became the father of Jacob, and Jacob of the twelve patriarchs."
   },
   {
    "verse": 9,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "Then Joseph sent for his father Jacob and all his relatives, seventy-five in all. Israel Oppressed in Egypt ()"
+   "text": "Then Joseph sent for his father Jacob and all his relatives, seventy-five in all."
   },
   {
    "verse": 15,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "He exploited our people and oppressed our fathers, forcing them to abandon their infants so they would die. The Birth and Adoption of Moses (; )"
+   "text": "He exploited our people and oppressed our fathers, forcing them to abandon their infants so they would die."
   },
   {
    "verse": 20,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "So Moses was educated in all the wisdom of the Egyptians and was powerful in speech and action. The Rejection and Flight of Moses ()"
+   "text": "So Moses was educated in all the wisdom of the Egyptians and was powerful in speech and action."
   },
   {
    "verse": 23,
@@ -114,7 +114,7 @@
   },
   {
    "verse": 29,
-   "text": "At this remark, Moses fled to the land of Midian, where he lived as a foreigner and had two sons. The Call of Moses ()"
+   "text": "At this remark, Moses fled to the land of Midian, where he lived as a foreigner and had two sons."
   },
   {
    "verse": 30,
@@ -150,7 +150,7 @@
   },
   {
    "verse": 38,
-   "text": "He was in the assembly in the wilderness with the angel who spoke to him on Mount Sinai, and with our fathers. And he received living words to pass on to us. The Rebellion of Israel (; ; )"
+   "text": "He was in the assembly in the wilderness with the angel who spoke to him on Mount Sinai, and with our fathers. And he received living words to pass on to us."
   },
   {
    "verse": 39,
@@ -170,7 +170,7 @@
   },
   {
    "verse": 43,
-   "text": "You have taken along the tabernacle of Molech and the star of your god Rephan, the idols you made to worship. Therefore I will send you into exile beyond Babylon.’ The Tabernacle of the Testimony (; )"
+   "text": "You have taken along the tabernacle of Molech and the star of your god Rephan, the idols you made to worship. Therefore I will send you into exile beyond Babylon.’"
   },
   {
    "verse": 44,
@@ -210,7 +210,7 @@
   },
   {
    "verse": 53,
-   "text": "you who received the law ordained by angels, yet have not kept it.” The Stoning of Stephen"
+   "text": "you who received the law ordained by angels, yet have not kept it.”"
   },
   {
    "verse": 54,
@@ -239,6 +239,62 @@
   {
    "verse": 60,
    "text": "Falling on his knees, he cried out in a loud voice, “Lord, do not hold this sin against them.” And when he had said this, he fell asleep."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Stephen’s Address: The Call of Abraham"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Joseph Sold into Egypt"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Israel Oppressed in Egypt"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "The Birth and Adoption of Moses"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "The Rejection and Flight of Moses"
+  },
+  {
+   "beforeVerse": 30,
+   "kind": "section",
+   "level": 1,
+   "text": "The Call of Moses"
+  },
+  {
+   "beforeVerse": 39,
+   "kind": "section",
+   "level": 1,
+   "text": "The Rebellion of Israel"
+  },
+  {
+   "beforeVerse": 44,
+   "kind": "section",
+   "level": 1,
+   "text": "The Tabernacle of the Testimony"
+  },
+  {
+   "beforeVerse": 54,
+   "kind": "section",
+   "level": 1,
+   "text": "The Stoning of Stephen"
   }
  ]
 }

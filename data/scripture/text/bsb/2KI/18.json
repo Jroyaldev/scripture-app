@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "This happened because they did not listen to the voice of the LORD their God, but violated His covenant— all that Moses the servant of the LORD had commanded — and would neither listen nor obey. Sennacherib Invades Judah (; )"
+   "text": "This happened because they did not listen to the voice of the LORD their God, but violated His covenant— all that Moses the servant of the LORD had commanded — and would neither listen nor obey."
   },
   {
    "verse": 13,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "At that time Hezekiah stripped the gold with which he had plated the doors and doorposts of the temple of the LORD, and he gave it to the king of Assyria. Sennacherib Threatens Jerusalem (; )"
+   "text": "At that time Hezekiah stripped the gold with which he had plated the doors and doorposts of the temple of the LORD, and he gave it to the king of Assyria."
   },
   {
    "verse": 17,
@@ -147,6 +147,26 @@
   {
    "verse": 37,
    "text": "Then Hilkiah’s son Eliakim the palace administrator, Shebna the scribe, and Asaph’s son Joah the recorder came to Hezekiah with their clothes torn, and they relayed to him the words of the Rabshakeh."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Hezekiah Destroys Idolatry in Judah"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Sennacherib Invades Judah"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Sennacherib Threatens Jerusalem"
   }
  ]
 }

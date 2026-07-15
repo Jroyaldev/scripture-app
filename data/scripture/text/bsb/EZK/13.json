@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "those prophets of Israel who prophesied to Jerusalem and saw a vision of peace for her when there was no peace, declares the Lord GOD.’ Reproof of False Prophetesses"
+   "text": "those prophets of Israel who prophesied to Jerusalem and saw a vision of peace for her when there was no peace, declares the Lord GOD.’"
   },
   {
    "verse": 17,
@@ -91,6 +91,20 @@
   {
    "verse": 23,
    "text": "therefore you will no longer see false visions or practice divination. I will deliver My people from your hands. Then you will know that I am the LORD.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Reproof of False Prophets"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Reproof of False Prophetesses"
   }
  ]
 }

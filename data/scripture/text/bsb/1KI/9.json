@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "And others will answer, ‘Because they have forsaken the LORD their God who brought their fathers out of the land of Egypt, and have embraced other gods, worshiping and serving them— because of this, the LORD has brought all this disaster upon them.’” Solomon’s Additional Achievements ()"
+   "text": "And others will answer, ‘Because they have forsaken the LORD their God who brought their fathers out of the land of Egypt, and have embraced other gods, worshiping and serving them— because of this, the LORD has brought all this disaster upon them.’”"
   },
   {
    "verse": 10,
@@ -111,6 +111,20 @@
   {
    "verse": 28,
    "text": "They sailed to Ophir and imported gold from there— 420 talents— and delivered it to Solomon."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The LORD’s Response to Solomon"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Solomon’s Additional Achievements"
   }
  ]
 }

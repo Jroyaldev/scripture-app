@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "I will take away their harvest, declares the LORD. There will be no grapes on the vine, nor figs on the tree, and even the leaf will wither. Whatever I have given them will be lost to them.” The People Respond"
+   "text": "I will take away their harvest, declares the LORD. There will be no grapes on the vine, nor figs on the tree, and even the leaf will wither. Whatever I have given them will be lost to them.”"
   },
   {
    "verse": 14,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "“For behold, I will send snakes among you, vipers that cannot be charmed, and they will bite you,” declares the LORD. Jeremiah Weeps for His People"
+   "text": "“For behold, I will send snakes among you, vipers that cannot be charmed, and they will bite you,” declares the LORD."
   },
   {
    "verse": 18,
@@ -87,6 +87,26 @@
   {
    "verse": 22,
    "text": "Is there no balm in Gilead? Is no physician there? Why then has the health of the daughter of my people not been restored?"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Judah’s Sin and Punishment"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "The People Respond"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Jeremiah Weeps for His People"
   }
  ]
 }

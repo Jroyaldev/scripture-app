@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "But the eye of their God was on the elders of the Jews, so that they were not stopped until a report was sent to Darius and written instructions about this matter were returned. Tattenai’s Letter to Darius"
+   "text": "But the eye of their God was on the elders of the Jews, so that they were not stopped until a report was sent to Darius and written instructions about this matter were returned."
   },
   {
    "verse": 6,
@@ -67,6 +67,20 @@
   {
    "verse": 17,
    "text": "Now, therefore, if it pleases the king, let a search be made of the royal archives in Babylon to see if King Cyrus did indeed issue a decree to rebuild the house of God in Jerusalem. Then let the king send us his decision in this matter."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Temple Rebuilding Resumes"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "Tattenai’s Letter to Darius"
   }
  ]
 }

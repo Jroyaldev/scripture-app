@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "But while he was still alive, Abraham gave gifts to the sons of his concubines and sent them away from his son Isaac to the land of the east. The Death of Abraham"
+   "text": "But while he was still alive, Abraham gave gifts to the sons of his concubines and sent them away from his son Isaac to the land of the east."
   },
   {
    "verse": 7,
@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "After Abraham’s death, God blessed his son Isaac, who lived near Beer-lahai-roi. The Descendants of Ishmael ()"
+   "text": "After Abraham’s death, God blessed his son Isaac, who lived near Beer-lahai-roi."
   },
   {
    "verse": 12,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "Ishmael’s descendants settled from Havilah to Shur, which is near the border of Egypt as you go toward Asshur. And they lived in hostility toward all their brothers. Jacob and Esau (; )"
+   "text": "Ishmael’s descendants settled from Havilah to Shur, which is near the border of Egypt as you go toward Asshur. And they lived in hostility toward all their brothers."
   },
   {
    "verse": 19,
@@ -110,7 +110,7 @@
   },
   {
    "verse": 28,
-   "text": "Because Isaac had a taste for wild game, he loved Esau; but Rebekah loved Jacob. Esau Sells His Birthright"
+   "text": "Because Isaac had a taste for wild game, he loved Esau; but Rebekah loved Jacob."
   },
   {
    "verse": 29,
@@ -135,6 +135,38 @@
   {
    "verse": 34,
    "text": "Then Jacob gave some bread and lentil stew to Esau, who ate and drank and then got up and went away. Thus Esau despised his birthright."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Abraham and Keturah"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "The Death of Abraham"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "The Descendants of Ishmael"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "Jacob and Esau"
+  },
+  {
+   "beforeVerse": 29,
+   "kind": "section",
+   "level": 1,
+   "text": "Esau Sells His Birthright"
   }
  ]
 }

@@ -10,7 +10,7 @@
   },
   {
    "verse": 3,
-   "text": "Grace and peace to you from God our Father and the Lord Jesus Christ. Thanksgiving (; )"
+   "text": "Grace and peace to you from God our Father and the Lord Jesus Christ."
   },
   {
    "verse": 4,
@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "God, who has called you into fellowship with His Son Jesus Christ our Lord, is faithful. Unity in the Church (; )"
+   "text": "God, who has called you into fellowship with His Son Jesus Christ our Lord, is faithful."
   },
   {
    "verse": 10,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "For Christ did not send me to baptize, but to preach the gospel, not with words of wisdom, lest the cross of Christ be emptied of its power. The Message of the Cross"
+   "text": "For Christ did not send me to baptize, but to preach the gospel, not with words of wisdom, lest the cross of Christ be emptied of its power."
   },
   {
    "verse": 18,
@@ -98,7 +98,7 @@
   },
   {
    "verse": 25,
-   "text": "For the foolishness of God is wiser than man’s wisdom, and the weakness of God is stronger than man’s strength. Wisdom from God"
+   "text": "For the foolishness of God is wiser than man’s wisdom, and the weakness of God is stronger than man’s strength."
   },
   {
    "verse": 26,
@@ -123,6 +123,38 @@
   {
    "verse": 31,
    "text": "Therefore, as it is written: “Let him who boasts boast in the Lord.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Greetings from Paul and Sosthenes"
+  },
+  {
+   "beforeVerse": 4,
+   "kind": "section",
+   "level": 1,
+   "text": "Thanksgiving"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Unity in the Church"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "The Message of the Cross"
+  },
+  {
+   "beforeVerse": 26,
+   "kind": "section",
+   "level": 1,
+   "text": "Wisdom from God"
   }
  ]
 }

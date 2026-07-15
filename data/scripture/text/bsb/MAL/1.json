@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "You will see this with your own eyes, and you yourselves will say, ‘The LORD is great — even beyond the borders of Israel.’” The Polluted Offerings"
+   "text": "You will see this with your own eyes, and you yourselves will say, ‘The LORD is great — even beyond the borders of Israel.’”"
   },
   {
    "verse": 6,
@@ -55,6 +55,20 @@
   {
    "verse": 14,
    "text": "“But cursed is the deceiver who has an acceptable male in his flock and vows to give it, but sacrifices a defective animal to the Lord. For I am a great King,” says the LORD of Hosts, “and My name is to be feared among the nations.[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The LORD’s Love for Israel"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "The Polluted Offerings"
   }
  ]
 }

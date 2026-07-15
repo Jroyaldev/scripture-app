@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "Then the LORD summoned me and said, “Behold, those going to the land of the north have given rest to My Spirit in the land of the north.” The Crown and the Temple"
+   "text": "Then the LORD summoned me and said, “Behold, those going to the land of the north have given rest to My Spirit in the land of the north.”"
   },
   {
    "verse": 9,
@@ -59,6 +59,20 @@
   {
    "verse": 15,
    "text": "Even those far away will come and build the temple of the LORD, and you will know that the LORD of Hosts has sent Me to you. This will happen if you diligently obey the voice of the LORD your God.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Vision of the Four Chariots"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "The Crown and the Temple"
   }
  ]
 }

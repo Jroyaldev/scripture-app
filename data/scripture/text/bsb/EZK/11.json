@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "Then you will know that I am the LORD. For you have neither followed My statutes nor practiced My ordinances, but you have conformed to the ordinances of the nations around you.” A Promise of Restoration ()"
+   "text": "Then you will know that I am the LORD. For you have neither followed My statutes nor practiced My ordinances, but you have conformed to the ordinances of the nations around you.”"
   },
   {
    "verse": 13,
@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "But as for those whose hearts pursue detestable things and abominations, I will bring their conduct down upon their own heads, declares the Lord GOD.” God’s Glory Leaves Jerusalem"
+   "text": "But as for those whose hearts pursue detestable things and abominations, I will bring their conduct down upon their own heads, declares the Lord GOD.”"
   },
   {
    "verse": 22,
@@ -99,6 +99,26 @@
   {
    "verse": 25,
    "text": "I told the exiles everything the LORD had shown me."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Evil in High Places"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "A Promise of Restoration"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Glory Leaves Jerusalem"
   }
  ]
 }

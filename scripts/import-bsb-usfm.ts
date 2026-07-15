@@ -11,6 +11,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 import type { BackboneData } from "../src/core/reference/types.js";
+import { parseUsfmText } from "../src/core/importer/usfm-text.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, "..");
@@ -54,70 +55,10 @@ function findUsfm(dir: string): string[] {
 const files = findUsfm(tmpDir);
 console.log(`Found ${files.length} USFM files`);
 
-/**
- * Minimal USFM verse extractor: tracks \c N and \v N text until next marker.
- * Strips footnotes \f … \f*, cross-refs, and character markers for plain reading text.
- */
-function parseUsfm(content: string): Map<number, Array<{ verse: number; text: string }>> {
-  const chapters = new Map<number, Array<{ verse: number; text: string }>>();
-  let chapter = 0;
-  // Normalize: put markers on predictable boundaries
-  const flat = content.replace(/\r\n/g, "\n");
-
-  // Split keeping markers roughly by scanning with regex
-  const re = /\\c\s+(\d+)|\\v\s+(\d+)\s+/g;
-  const parts: Array<{ kind: "c" | "v"; n: number; start: number; markEnd: number }> = [];
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(flat))) {
-    if (m[1]) parts.push({ kind: "c", n: parseInt(m[1], 10), start: m.index, markEnd: re.lastIndex });
-    else if (m[2]) parts.push({ kind: "v", n: parseInt(m[2], 10), start: m.index, markEnd: re.lastIndex });
-  }
-
-  for (let i = 0; i < parts.length; i++) {
-    const p = parts[i]!;
-    if (p.kind === "c") {
-      chapter = p.n;
-      if (!chapters.has(chapter)) chapters.set(chapter, []);
-      continue;
-    }
-    if (chapter === 0) continue;
-    const end = i + 1 < parts.length ? parts[i + 1]!.start : flat.length;
-    let text = flat.slice(p.markEnd, end);
-    text = stripUsfmMarkup(text);
-    if (!text) continue;
-    const list = chapters.get(chapter) ?? [];
-    // Merge multi-chunk same verse if USFM repeats (rare)
-    const existing = list.find((v) => v.verse === p.n);
-    if (existing) existing.text = `${existing.text} ${text}`.trim();
-    else list.push({ verse: p.n, text });
-    chapters.set(chapter, list);
-  }
-
-  for (const list of chapters.values()) list.sort((a, b) => a.verse - b.verse);
-  return chapters;
-}
-
-function stripUsfmMarkup(raw: string): string {
-  let s = raw;
-  // Footnotes and cross-refs
-  s = s.replace(/\\f\s+[\s\S]*?\\f\*/g, "");
-  s = s.replace(/\\x\s+[\s\S]*?\\x\*/g, "");
-  s = s.replace(/\\ref\s+[\s\S]*?\\ref\*/g, "");
-  // Character styles: \add …\add*, \wj …\wj*, \nd …\nd*, \qt …, \bk …, \tl …, \fqa …
-  s = s.replace(/\\[a-zA-Z]+\d*\s*\*/g, ""); // closing markers
-  s = s.replace(/\\[a-zA-Z]+\d*\s+/g, ""); // opening markers with space
-  s = s.replace(/\\[a-zA-Z]+\d*/g, "");
-  // Remaining backslash junk
-  s = s.replace(/\\[^\s]*/g, "");
-  // HTML leftovers
-  s = s.replace(/<[^>]+>/g, "");
-  s = s.replace(/\s+/g, " ").trim();
-  // Smart quotes normalize lightly
-  return s;
-}
-
 let totalVerses = 0;
 let filesWritten = 0;
+let totalHeadings = 0;
+let structuralLinesDropped = 0;
 const mismatches: string[] = [];
 
 /** Occasional BSB filename quirks → our USFM codes. */
@@ -135,21 +76,26 @@ for (const file of files) {
     continue;
   }
   const content = readFileSync(file, "utf-8");
-  const chapters = parseUsfm(content);
+  const parsed = parseUsfmText(content);
+  const chapters = parsed.chapters;
+  structuralLinesDropped += parsed.structuralLinesDropped;
   const expected = backbone.books[book]!.chapters;
   const bookDir = join(outText, book);
   mkdirSync(bookDir, { recursive: true });
 
   for (let ch = 1; ch <= expected.length; ch++) {
-    const verses = chapters.get(ch) ?? [];
+    const parsedChapter = chapters.get(ch) ?? { verses: [], headings: [] };
+    const { verses, headings } = parsedChapter;
     const exp = expected[ch - 1]!;
     if (verses.length !== exp) {
       mismatches.push(`${book} ${ch}: ${verses.length}/${exp}`);
     }
     if (verses.length === 0) continue;
-    writeFileSync(join(bookDir, `${ch}.json`), JSON.stringify({ verses }, null, 1) + "\n");
+    const chapterData = headings.length > 0 ? { verses, headings } : { verses };
+    writeFileSync(join(bookDir, `${ch}.json`), JSON.stringify(chapterData, null, 1) + "\n");
     filesWritten++;
     totalVerses += verses.length;
+    totalHeadings += headings.length;
   }
   process.stdout.write(`  ${book}: ${chapters.size} ch\n`);
 }
@@ -183,15 +129,31 @@ const manifest = {
     totalVerses,
     filesWritten,
     backboneMismatches: mismatches.length,
-    importedAt: new Date().toISOString(),
+    structuralHeadings: totalHeadings,
+    structuralLinesDropped,
+    importedAt: (() => {
+      try {
+        const previous = JSON.parse(readFileSync(join(outPkg, "manifest.json"), "utf-8")) as { doctor?: { importedAt?: string } };
+        return previous.doctor?.importedAt ?? new Date().toISOString();
+      } catch {
+        return new Date().toISOString();
+      }
+    })(),
   },
 };
 writeFileSync(join(outPkg, "manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
-writeFileSync(join(outPkg, "doctor-report.json"), JSON.stringify({ mismatches: mismatches.slice(0, 50), total: mismatches.length }, null, 2) + "\n");
+writeFileSync(join(outPkg, "doctor-report.json"), JSON.stringify({
+  mismatches: mismatches.slice(0, 50),
+  total: mismatches.length,
+  structuralHeadings: totalHeadings,
+  structuralLinesDropped,
+}, null, 2) + "\n");
 
 console.log("\n=== Doctor ===");
 console.log(`  chapter files: ${filesWritten}`);
 console.log(`  verses:        ${totalVerses}`);
+console.log(`  headings:      ${totalHeadings} (preserved separately)`);
+console.log(`  structure:     ${structuralLinesDropped} nonverse lines removed from prose`);
 console.log(`  backbone Δ:    ${mismatches.length}`);
 if (mismatches.length) {
   for (const m of mismatches.slice(0, 15)) console.log(`    ${m}`);

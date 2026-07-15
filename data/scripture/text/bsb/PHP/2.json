@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "Each of you should look not only to your own interests, but also to the interests of others. The Mind of Christ ()"
+   "text": "Each of you should look not only to your own interests, but also to the interests of others."
   },
   {
    "verse": 5,
@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "and every tongue confess that Jesus Christ is Lord, to the glory of God the Father. Lights in the World ()"
+   "text": "and every tongue confess that Jesus Christ is Lord, to the glory of God the Father."
   },
   {
    "verse": 12,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "So you too should be glad and rejoice with me. Timothy and Epaphroditus ()"
+   "text": "So you too should be glad and rejoice with me."
   },
   {
    "verse": 19,
@@ -119,6 +119,32 @@
   {
    "verse": 30,
    "text": "because he nearly died for the work of Christ, risking his life to make up for your deficit of service to me."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "One in Christ"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "The Mind of Christ"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Lights in the World"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "Timothy and Epaphroditus"
   }
  ]
 }

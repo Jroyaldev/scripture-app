@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "against Chedorlaomer king of Elam, Tidal king of Goiim, Amraphel king of Shinar, and Arioch king of Ellasar— four kings against five. Abram Rescues Lot"
+   "text": "against Chedorlaomer king of Elam, Tidal king of Goiim, Amraphel king of Shinar, and Arioch king of Ellasar— four kings against five."
   },
   {
    "verse": 10,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "He retrieved all the goods, as well as his relative Lot and his possessions, together with the women and the rest of the people. Melchizedek Blesses Abram (; )"
+   "text": "He retrieved all the goods, as well as his relative Lot and his possessions, together with the women and the rest of the people."
   },
   {
    "verse": 17,
@@ -95,6 +95,26 @@
   {
    "verse": 24,
    "text": "I will accept nothing but what my men have eaten and the share for the men who went with me— Aner, Eshcol, and Mamre. They may take their portion.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The War of the Kings"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Abram Rescues Lot"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Melchizedek Blesses Abram"
   }
  ]
 }

@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "At this, they shouted, “Away with Him! Away with Him! Crucify Him!” “Shall I crucify your King?” Pilate asked. “We have no king but Caesar,” replied the chief priests. The Crucifixion (; ; ; )"
+   "text": "At this, they shouted, “Away with Him! Away with Him! Crucify Him!” “Shall I crucify your King?” Pilate asked. “We have no king but Caesar,” replied the chief priests."
   },
   {
    "verse": 16,
@@ -106,7 +106,7 @@
   },
   {
    "verse": 27,
-   "text": "Then He said to the disciple, “Here is your mother.” So from that hour, this disciple took her into his home. The Death of Jesus (; ; ; )"
+   "text": "Then He said to the disciple, “Here is your mother.” So from that hour, this disciple took her into his home."
   },
   {
    "verse": 28,
@@ -118,7 +118,7 @@
   },
   {
    "verse": 30,
-   "text": "When Jesus had received the sour wine, He said, “It is finished.” And bowing His head, He yielded up His spirit. Jesus’ Side Is Pierced ()"
+   "text": "When Jesus had received the sour wine, He said, “It is finished.” And bowing His head, He yielded up His spirit."
   },
   {
    "verse": 31,
@@ -146,7 +146,7 @@
   },
   {
    "verse": 37,
-   "text": "And, as another Scripture says: “They will look on the One they have pierced.” The Burial of Jesus (; ; ; )"
+   "text": "And, as another Scripture says: “They will look on the One they have pierced.”"
   },
   {
    "verse": 38,
@@ -167,6 +167,38 @@
   {
    "verse": 42,
    "text": "And because it was the Jewish day of Preparation and the tomb was nearby, they placed Jesus there."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Soldiers Mock Jesus"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "The Crucifixion"
+  },
+  {
+   "beforeVerse": 28,
+   "kind": "section",
+   "level": 1,
+   "text": "The Death of Jesus"
+  },
+  {
+   "beforeVerse": 31,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus’ Side Is Pierced"
+  },
+  {
+   "beforeVerse": 38,
+   "kind": "section",
+   "level": 1,
+   "text": "The Burial of Jesus"
   }
  ]
 }

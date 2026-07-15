@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "Jacob called the place where God had spoken with him Bethel. Benjamin Born, Rachel Dies"
+   "text": "Jacob called the place where God had spoken with him Bethel."
   },
   {
    "verse": 16,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "Jacob set up a pillar on her grave; it marks Rachel’s tomb to this day. The Sons of Jacob ()"
+   "text": "Jacob set up a pillar on her grave; it marks Rachel’s tomb to this day."
   },
   {
    "verse": 21,
@@ -102,7 +102,7 @@
   },
   {
    "verse": 26,
-   "text": "And the sons of Leah’s maidservant Zilpah were Gad and Asher. These are the sons of Jacob, who were born to him in Paddan-aram. The Death of Isaac"
+   "text": "And the sons of Leah’s maidservant Zilpah were Gad and Asher. These are the sons of Jacob, who were born to him in Paddan-aram."
   },
   {
    "verse": 27,
@@ -115,6 +115,32 @@
   {
    "verse": 29,
    "text": "Then he breathed his last and died and was gathered to his people, old and full of years. And his sons Esau and Jacob buried him."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jacob Returns to Bethel"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Benjamin Born, Rachel Dies"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "The Sons of Jacob"
+  },
+  {
+   "beforeVerse": 27,
+   "kind": "section",
+   "level": 1,
+   "text": "The Death of Isaac"
   }
  ]
 }

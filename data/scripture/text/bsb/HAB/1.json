@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "Therefore the law is paralyzed, and justice never goes forth. For the wicked hem in the righteous, so that justice is perverted. The LORD’s Answer"
+   "text": "Therefore the law is paralyzed, and justice never goes forth. For the wicked hem in the righteous, so that justice is perverted."
   },
   {
    "verse": 5,
@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "Then they sweep by like the wind and pass through. They are guilty; their own strength is their god.” Habakkuk’s Second Complaint ()"
+   "text": "Then they sweep by like the wind and pass through. They are guilty; their own strength is their god.”"
   },
   {
    "verse": 12,
@@ -67,6 +67,26 @@
   {
    "verse": 17,
    "text": "Will he, therefore, empty his net and continue to slay nations without mercy?"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Habakkuk’s First Complaint"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "The LORD’s Answer"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Habakkuk’s Second Complaint"
   }
  ]
 }

@@ -6,7 +6,7 @@
   },
   {
    "verse": 2,
-   "text": "Those who walk uprightly enter into peace; they find rest, lying down in death. God Condemns Idolatry"
+   "text": "Those who walk uprightly enter into peace; they find rest, lying down in death."
   },
   {
    "verse": 3,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "When you cry out, let your companies of idols deliver you! Yet the wind will carry off all of them, a breath will take them away. But he who seeks refuge in Me will inherit the land and possess My holy mountain.” Healing for the Repentant"
+   "text": "When you cry out, let your companies of idols deliver you! Yet the wind will carry off all of them, a breath will take them away. But he who seeks refuge in Me will inherit the land and possess My holy mountain.”"
   },
   {
    "verse": 14,
@@ -83,6 +83,26 @@
   {
    "verse": 21,
    "text": "“There is no peace,” says my God, “for the wicked.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Blessed Death of the Righteous"
+  },
+  {
+   "beforeVerse": 3,
+   "kind": "section",
+   "level": 1,
+   "text": "God Condemns Idolatry"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Healing for the Repentant"
   }
  ]
 }

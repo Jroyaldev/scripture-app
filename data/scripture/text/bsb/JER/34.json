@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "as the army of the king of Babylon was fighting against Jerusalem and the remaining cities of Judah— against Lachish and Azekah. For these were the only fortified cities remaining in Judah. Freedom for Hebrew Slaves"
+   "text": "as the army of the king of Babylon was fighting against Jerusalem and the remaining cities of Judah— against Lachish and Azekah. For these were the only fortified cities remaining in Judah."
   },
   {
    "verse": 8,
@@ -87,6 +87,20 @@
   {
    "verse": 22,
    "text": "Behold, I am going to give the command, declares the LORD, and I will bring them back to this city. They will fight against it, capture it, and burn it down. And I will make the cities of Judah a desolation, without inhabitant.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Prophecy against Zedekiah"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Freedom for Hebrew Slaves"
   }
  ]
 }

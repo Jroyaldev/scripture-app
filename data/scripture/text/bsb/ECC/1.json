@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "There is no remembrance of those who came before, and those yet to come will not be remembered by those who follow after. With Wisdom Comes Sorrow"
+   "text": "There is no remembrance of those who came before, and those yet to come will not be remembered by those who follow after."
   },
   {
    "verse": 12,
@@ -71,6 +71,20 @@
   {
    "verse": 18,
    "text": "For with much wisdom comes much sorrow, and as knowledge grows, grief increases."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Everything Is Futile"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "With Wisdom Comes Sorrow"
   }
  ]
 }

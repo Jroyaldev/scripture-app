@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "So Samuel took the horn of oil and anointed him in the presence of his brothers, and the Spirit of the LORD rushed upon David from that day forward. Then Samuel set out and went to Ramah. David Serves Saul"
+   "text": "So Samuel took the horn of oil and anointed him in the presence of his brothers, and the Spirit of the LORD rushed upon David from that day forward. Then Samuel set out and went to Ramah."
   },
   {
    "verse": 14,
@@ -91,6 +91,20 @@
   {
    "verse": 23,
    "text": "And whenever the spirit from God came upon Saul, David would pick up his harp and play. Then Saul would find relief and feel better, and the spirit of distress would depart from him."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Samuel Anoints David"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "David Serves Saul"
   }
  ]
 }

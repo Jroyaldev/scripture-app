@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "Then Samson continued on his way down and spoke to the woman, because she was pleasing to his eyes. Samson’s Riddle"
+   "text": "Then Samson continued on his way down and spoke to the woman, because she was pleasing to his eyes."
   },
   {
    "verse": 8,
@@ -79,6 +79,20 @@
   {
    "verse": 20,
    "text": "and his wife was given to one of the men who had accompanied him."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Samson’s Marriage"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Samson’s Riddle"
   }
  ]
 }

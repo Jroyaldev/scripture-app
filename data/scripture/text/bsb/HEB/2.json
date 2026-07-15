@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "and was affirmed by God through signs, wonders, various miracles, and gifts of the Holy Spirit distributed according to His will. Jesus like His Brothers"
+   "text": "and was affirmed by God through signs, wonders, various miracles, and gifts of the Holy Spirit distributed according to His will."
   },
   {
    "verse": 5,
@@ -71,6 +71,20 @@
   {
    "verse": 18,
    "text": "Because He Himself suffered when He was tempted, He is able to help those who are being tempted."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Salvation Confirmed"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus like His Brothers"
   }
  ]
 }

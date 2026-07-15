@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "And you, Pashhur, and all who live in your house, will go into captivity. You will go to Babylon, and there you will die and be buried — you and all your friends to whom you have prophesied these lies.’” Jeremiah’s Complaint"
+   "text": "And you, Pashhur, and all who live in your house, will go into captivity. You will go to Babylon, and there you will die and be buried — you and all your friends to whom you have prophesied these lies.’”"
   },
   {
    "verse": 7,
@@ -71,6 +71,20 @@
   {
    "verse": 18,
    "text": "Why did I come out of the womb to see only trouble and sorrow, and to end my days in shame?"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Pashhur Persecutes Jeremiah"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Jeremiah’s Complaint"
   }
  ]
 }

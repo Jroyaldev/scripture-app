@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "Herod added this to them all: He locked John up in prison. The Baptism of Jesus (; ; )"
+   "text": "Herod added this to them all: He locked John up in prison."
   },
   {
    "verse": 21,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "and the Holy Spirit descended on Him in a bodily form like a dove. And a voice came from heaven: “You are My beloved Son; in You I am well pleased.” The Genealogy of Jesus (; )"
+   "text": "and the Holy Spirit descended on Him in a bodily form like a dove. And a voice came from heaven: “You are My beloved Son; in You I am well pleased.”"
   },
   {
    "verse": 23,
@@ -151,6 +151,26 @@
   {
    "verse": 38,
    "text": "the son of Enosh, the son of Seth, the son of Adam, the son of God."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Mission of John the Baptist"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "The Baptism of Jesus"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "The Genealogy of Jesus"
   }
  ]
 }

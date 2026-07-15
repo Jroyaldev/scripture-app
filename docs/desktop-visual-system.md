@@ -59,6 +59,7 @@ The picker is named **Reading atmosphere**, not Theme. Its compact explanation i
 ## Reading canvas contract
 
 - A chapter is one semantic article with a real heading and one continuous reading measure. It is not a stack of cards, and note-derived theme labels do not sit inside canonical Scripture.
+- Translation publication structure never flattens into canonical verse prose. BSB headings remain separately addressable source data until the reader gives them a dedicated presentation treatment.
 - Verse rows use a stable number gutter and a text column. The number remains quiet; Source Serif and whitespace carry the reading rhythm.
 - Hover is a faint material wash. Verse focus uses a short gold rail instead of a perimeter around the text. Existing highlight colors remain the semantic layer and are never replaced by generic selection chrome.
 - Arrow Up/Down, Home/End, and Enter/Space form a complete spatial keyboard path through the chapter. A chapter change returns the reader to the top; an explicit bottom continuation focuses the next chapter landmark.

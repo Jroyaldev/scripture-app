@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "But if you do not obey these words, then I swear by Myself, declares the LORD, that this house will become a pile of rubble.’” A Warning about the Palace"
+   "text": "But if you do not obey these words, then I swear by Myself, declares the LORD, that this house will become a pile of rubble.’”"
   },
   {
    "verse": 6,
@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "Then people will reply, ‘Because they have forsaken the covenant of the LORD their God and have worshiped and served other gods.’” A Warning about Shallum"
+   "text": "Then people will reply, ‘Because they have forsaken the covenant of the LORD their God and have worshiped and served other gods.’”"
   },
   {
    "verse": 10,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "but he will die in the place to which he was exiled; he will never see this land again.” A Warning about Jehoiakim"
+   "text": "but he will die in the place to which he was exiled; he will never see this land again.”"
   },
   {
    "verse": 13,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "O inhabitant of Lebanon, nestled in the cedars, how you will groan when pangs of anguish come upon you, agony like a woman in labor.” A Warning to Coniah"
+   "text": "O inhabitant of Lebanon, nestled in the cedars, how you will groan when pangs of anguish come upon you, agony like a woman in labor.”"
   },
   {
    "verse": 24,
@@ -119,6 +119,38 @@
   {
    "verse": 30,
    "text": "This is what the LORD says: “Enroll this man as childless, a man who will not prosper in his lifetime. None of his descendants will prosper to sit on the throne of David or to rule again in Judah.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Warning to Judah’s Kings"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "A Warning about the Palace"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "A Warning about Shallum"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "A Warning about Jehoiakim"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "A Warning to Coniah"
   }
  ]
 }

@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "and for your livestock and the wild animals in your land. All its growth may serve as food. The Year of Jubilee"
+   "text": "and for your livestock and the wild animals in your land. All its growth may serve as food."
   },
   {
    "verse": 8,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "For it is a Jubilee; it shall be holy to you. You may eat only the crops taken directly from the field. Return of Property"
+   "text": "For it is a Jubilee; it shall be holy to you. You may eat only the crops taken directly from the field."
   },
   {
    "verse": 13,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "Do not take advantage of each other, but fear your God; for I am the LORD your God. The Blessing of Obedience ()"
+   "text": "Do not take advantage of each other, but fear your God; for I am the LORD your God."
   },
   {
    "verse": 18,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "While you are sowing in the eighth year, you will be eating from the previous harvest, until the ninth year’s harvest comes in. The Law of Redemption"
+   "text": "While you are sowing in the eighth year, you will be eating from the previous harvest, until the ninth year’s harvest comes in."
   },
   {
    "verse": 23,
@@ -134,7 +134,7 @@
   },
   {
    "verse": 34,
-   "text": "But the open pastureland around their cities may not be sold, for this is their permanent possession. Redemption of the Poor"
+   "text": "But the open pastureland around their cities may not be sold, for this is their permanent possession."
   },
   {
    "verse": 35,
@@ -150,7 +150,7 @@
   },
   {
    "verse": 38,
-   "text": "I am the LORD your God, who brought you out of the land of Egypt to give you the land of Canaan and to be your God. Redemption of Bondmen"
+   "text": "I am the LORD your God, who brought you out of the land of Egypt to give you the land of Canaan and to be your God."
   },
   {
    "verse": 39,
@@ -182,7 +182,7 @@
   },
   {
    "verse": 46,
-   "text": "You may leave them to your sons after you to inherit as property; you can make them slaves for life. But as for your brothers, the Israelites, no man may rule harshly over his brother. Redemption of Servants"
+   "text": "You may leave them to your sons after you to inherit as property; you can make them slaves for life. But as for your brothers, the Israelites, no man may rule harshly over his brother."
   },
   {
    "verse": 47,
@@ -219,6 +219,56 @@
   {
    "verse": 55,
    "text": "For the Israelites are My servants. They are My servants, whom I brought out of the land of Egypt. I am the LORD your God.[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Seventh Year"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "The Year of Jubilee"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Return of Property"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "The Blessing of Obedience"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "The Law of Redemption"
+  },
+  {
+   "beforeVerse": 35,
+   "kind": "section",
+   "level": 1,
+   "text": "Redemption of the Poor"
+  },
+  {
+   "beforeVerse": 39,
+   "kind": "section",
+   "level": 1,
+   "text": "Redemption of Bondmen"
+  },
+  {
+   "beforeVerse": 47,
+   "kind": "section",
+   "level": 1,
+   "text": "Redemption of Servants"
   }
  ]
 }

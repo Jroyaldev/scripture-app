@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "So the LORD saved Israel that day, and the battle moved on beyond Beth-aven. Jonathan Eats the Honey"
+   "text": "So the LORD saved Israel that day, and the battle moved on beyond Beth-aven."
   },
   {
    "verse": 24,
@@ -142,7 +142,7 @@
   },
   {
    "verse": 36,
-   "text": "And Saul said, “Let us go down after the Philistines by night and plunder them until dawn, leaving no man alive!” “Do what seems good to you,” the troops replied. But the priest said, “We must consult God here.” The People Save Jonathan"
+   "text": "And Saul said, “Let us go down after the Philistines by night and plunder them until dawn, leaving no man alive!” “Do what seems good to you,” the troops replied. But the priest said, “We must consult God here.”"
   },
   {
    "verse": 37,
@@ -182,7 +182,7 @@
   },
   {
    "verse": 46,
-   "text": "Then Saul gave up his pursuit of the Philistines, and the Philistines returned to their own land. Saul’s Victories"
+   "text": "Then Saul gave up his pursuit of the Philistines, and the Philistines returned to their own land."
   },
   {
    "verse": 47,
@@ -207,6 +207,32 @@
   {
    "verse": 52,
    "text": "And the war with the Philistines was fierce for all the days of Saul. So whenever he noticed any strong or brave man, Saul would enlist him."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jonathan’s Victory over the Philistines"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "Jonathan Eats the Honey"
+  },
+  {
+   "beforeVerse": 37,
+   "kind": "section",
+   "level": 1,
+   "text": "The People Save Jonathan"
+  },
+  {
+   "beforeVerse": 47,
+   "kind": "section",
+   "level": 1,
+   "text": "Saul’s Victories"
   }
  ]
 }

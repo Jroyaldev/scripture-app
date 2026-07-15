@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "All her carved images will be smashed to pieces; all her wages will be burned in the fire, and I will destroy all her idols. Since she collected the wages of a prostitute, they will be used again on a prostitute. Weeping and Mourning"
+   "text": "All her carved images will be smashed to pieces; all her wages will be burned in the fire, and I will destroy all her idols. Since she collected the wages of a prostitute, they will be used again on a prostitute."
   },
   {
    "verse": 8,
@@ -63,6 +63,20 @@
   {
    "verse": 16,
    "text": "Shave yourselves bald and cut off your hair in mourning for your precious children; make yourselves as bald as an eagle, for they will go from you into exile."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Judgment to Come"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Weeping and Mourning"
   }
  ]
 }

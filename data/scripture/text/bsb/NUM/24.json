@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "He crouches, he lies down like a lion, like a lioness— who dares to rouse him? Blessed are those who bless you and cursed are those who curse you.” Balak Dismisses Balaam"
+   "text": "He crouches, he lies down like a lion, like a lioness— who dares to rouse him? Blessed are those who bless you and cursed are those who curse you.”"
   },
   {
    "verse": 10,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "Now I am going back to my people, but come, let me warn you what this people will do to your people in the days to come.” Balaam’s Fourth Oracle"
+   "text": "Now I am going back to my people, but come, let me warn you what this people will do to your people in the days to come.”"
   },
   {
    "verse": 15,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "A ruler will come from Jacob and destroy the survivors of the city.” Balaam’s Final Three Oracles"
+   "text": "A ruler will come from Jacob and destroy the survivors of the city.”"
   },
   {
    "verse": 20,
@@ -99,6 +99,32 @@
   {
    "verse": 25,
    "text": "Then Balaam arose and returned to his homeland, and Balak also went on his way."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Balaam’s Third Oracle"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Balak Dismisses Balaam"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Balaam’s Fourth Oracle"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "Balaam’s Final Three Oracles"
   }
  ]
 }

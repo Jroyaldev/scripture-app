@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "And the glory of the LORD will be revealed, and all humanity together will see it.” For the mouth of the LORD has spoken. The Enduring Word ()"
+   "text": "And the glory of the LORD will be revealed, and all humanity together will see it.” For the mouth of the LORD has spoken."
   },
   {
    "verse": 6,
@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "The grass withers and the flowers fall, but the word of our God stands forever.” Here Is Your God! ()"
+   "text": "The grass withers and the flowers fall, but the word of our God stands forever.”"
   },
   {
    "verse": 9,
@@ -123,6 +123,26 @@
   {
    "verse": 31,
    "text": "But those who wait upon the LORD will renew their strength; they will mount up with wings like eagles; they will run and not grow weary, they will walk and not faint."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Prepare the Way for the LORD"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "The Enduring Word"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Here Is Your God!"
   }
  ]
 }

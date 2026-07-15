@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "There is nothing Egypt can do — head or tail, palm or reed. A Blessing upon the Earth"
+   "text": "There is nothing Egypt can do — head or tail, palm or reed."
   },
   {
    "verse": 16,
@@ -99,6 +99,20 @@
   {
    "verse": 25,
    "text": "The LORD of Hosts will bless them, saying, “Blessed be Egypt My people, Assyria My handiwork, and Israel My inheritance.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Burden against Egypt"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "A Blessing upon the Earth"
   }
  ]
 }

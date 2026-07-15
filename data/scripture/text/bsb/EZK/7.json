@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "The seller will surely not recover what he sold while both remain alive. For the vision concerning the whole multitude will not be revoked, and because of their iniquity, not one of them will preserve his life. The Desolation of Israel"
+   "text": "The seller will surely not recover what he sold while both remain alive. For the vision concerning the whole multitude will not be revoked, and because of their iniquity, not one of them will preserve his life."
   },
   {
    "verse": 14,
@@ -107,6 +107,20 @@
   {
    "verse": 27,
    "text": "The king will mourn, the prince will be clothed with despair, and the hands of the people of the land will tremble. I will deal with them according to their conduct, and I will judge them by their own standards. Then they will know that I am the LORD.’”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Hour of Doom"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "The Desolation of Israel"
   }
  ]
 }

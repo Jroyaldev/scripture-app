@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "For a son dishonors his father, a daughter rises against her mother, and a daughter-in-law against her mother-in-law. A man’s enemies are the members of his own household. Israel’s Confession and Comfort"
+   "text": "For a son dishonors his father, a daughter rises against her mother, and a daughter-in-law against her mother-in-law. A man’s enemies are the members of his own household."
   },
   {
    "verse": 7,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "Then the earth will become desolate because of its inhabitants, as the fruit of their deeds. God’s Compassion on Israel"
+   "text": "Then the earth will become desolate because of its inhabitants, as the fruit of their deeds."
   },
   {
    "verse": 14,
@@ -79,6 +79,26 @@
   {
    "verse": 20,
    "text": "You will show faithfulness to Jacob and loving devotion to Abraham, as You swore to our fathers from the days of old."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Israel’s Great Misery"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Israel’s Confession and Comfort"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Compassion on Israel"
   }
  ]
 }

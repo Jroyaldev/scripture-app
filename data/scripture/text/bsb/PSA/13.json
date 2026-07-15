@@ -24,5 +24,13 @@
    "verse": 6,
    "text": "I will sing to the LORD, for He has been good to me."
   }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "How Long, O LORD?"
+  }
  ]
 }

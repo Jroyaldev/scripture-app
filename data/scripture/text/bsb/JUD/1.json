@@ -6,7 +6,7 @@
   },
   {
    "verse": 2,
-   "text": "Mercy, peace, and love be multiplied to you. God’s Judgment on the Ungodly ()"
+   "text": "Mercy, peace, and love be multiplied to you."
   },
   {
    "verse": 3,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "These men are discontented grumblers, following after their own lusts; their mouths spew arrogance; they flatter others for their own advantage. A Call to Persevere (; )"
+   "text": "These men are discontented grumblers, following after their own lusts; their mouths spew arrogance; they flatter others for their own advantage."
   },
   {
    "verse": 17,
@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "save others by snatching them from the fire; and to still others show mercy tempered with fear, hating even the clothing stained by the flesh. Doxology ()"
+   "text": "save others by snatching them from the fire; and to still others show mercy tempered with fear, hating even the clothing stained by the flesh."
   },
   {
    "verse": 24,
@@ -99,6 +99,32 @@
   {
    "verse": 25,
    "text": "to the only God our Savior be glory, majesty, dominion, and authority through Jesus Christ our Lord before all time, and now, and for all eternity. Amen."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Greeting from Jude"
+  },
+  {
+   "beforeVerse": 3,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Judgment on the Ungodly"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "A Call to Persevere"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "Doxology"
   }
  ]
 }

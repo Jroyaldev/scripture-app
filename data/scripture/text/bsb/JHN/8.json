@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "“No one, Lord,” she answered. “Then neither do I condemn you,” Jesus declared. “Now go and sin no more.” Jesus the Light of the World ()"
+   "text": "“No one, Lord,” she answered. “Then neither do I condemn you,” Jesus declared. “Now go and sin no more.”"
   },
   {
    "verse": 12,
@@ -114,7 +114,7 @@
   },
   {
    "verse": 29,
-   "text": "He who sent Me is with Me. He has not left Me alone, because I always do what pleases Him.” The Truth Will Set You Free ()"
+   "text": "He who sent Me is with Me. He has not left Me alone, because I always do what pleases Him.”"
   },
   {
    "verse": 30,
@@ -186,7 +186,7 @@
   },
   {
    "verse": 47,
-   "text": "Whoever belongs to God hears the words of God. The reason you do not hear is that you do not belong to God.” Before Abraham Was Born, I Am"
+   "text": "Whoever belongs to God hears the words of God. The reason you do not hear is that you do not belong to God.”"
   },
   {
    "verse": 48,
@@ -235,6 +235,32 @@
   {
    "verse": 59,
    "text": "At this, they picked up stones to throw at Him. But Jesus was hidden and went out of the temple area."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Woman Caught in Adultery"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus the Light of the World"
+  },
+  {
+   "beforeVerse": 30,
+   "kind": "section",
+   "level": 1,
+   "text": "The Truth Will Set You Free"
+  },
+  {
+   "beforeVerse": 48,
+   "kind": "section",
+   "level": 1,
+   "text": "Before Abraham Was Born, I Am"
   }
  ]
 }

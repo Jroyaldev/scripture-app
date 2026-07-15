@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "Understand, then, that it is not because of your righteousness that the LORD your God is giving you this good land to possess, for you are a stiff-necked people. The Golden Calf (; )"
+   "text": "Understand, then, that it is not because of your righteousness that the LORD your God is giving you this good land to possess, for you are a stiff-necked people."
   },
   {
    "verse": 7,
@@ -115,6 +115,20 @@
   {
    "verse": 29,
    "text": "But they are Your people, Your inheritance, whom You brought out by Your great power and outstretched arm.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Assurance of Victory"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "The Golden Calf"
   }
  ]
 }

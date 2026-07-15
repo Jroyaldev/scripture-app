@@ -2,7 +2,7 @@
  "verses": [
   {
    "verse": 1,
-   "text": "When Samuel died, all Israel gathered to mourn for him; and they buried him at his home in Ramah. Then David set out and went down to the Wilderness of Paran. David, Nabal, and Abigail"
+   "text": "When Samuel died, all Israel gathered to mourn for him; and they buried him at his home in Ramah. Then David set out and went down to the Wilderness of Paran."
   },
   {
    "verse": 2,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "Now consider carefully what you must do, because disaster looms over our master and all his household. For he is such a scoundrel that nobody can speak to him!” Abigail Intercedes for Nabal"
+   "text": "Now consider carefully what you must do, because disaster looms over our master and all his household. For he is such a scoundrel that nobody can speak to him!”"
   },
   {
    "verse": 18,
@@ -150,7 +150,7 @@
   },
   {
    "verse": 38,
-   "text": "About ten days later, the LORD struck Nabal dead. David Marries Abigail"
+   "text": "About ten days later, the LORD struck Nabal dead."
   },
   {
    "verse": 39,
@@ -175,6 +175,32 @@
   {
    "verse": 44,
    "text": "But Saul had given his daughter Michal, David’s wife, to Palti son of Laish, who was from Gallim."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Death of Samuel"
+  },
+  {
+   "beforeVerse": 2,
+   "kind": "section",
+   "level": 1,
+   "text": "David, Nabal, and Abigail"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Abigail Intercedes for Nabal"
+  },
+  {
+   "beforeVerse": 39,
+   "kind": "section",
+   "level": 1,
+   "text": "David Marries Abigail"
   }
  ]
 }

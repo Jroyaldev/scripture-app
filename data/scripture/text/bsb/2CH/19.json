@@ -10,7 +10,7 @@
   },
   {
    "verse": 3,
-   "text": "However, some good is found in you, for you have removed the Asherah poles from the land and have set your heart on seeking God.” Jehoshaphat’s Reforms"
+   "text": "However, some good is found in you, for you have removed the Asherah poles from the land and have set your heart on seeking God.”"
   },
   {
    "verse": 4,
@@ -43,6 +43,20 @@
   {
    "verse": 11,
    "text": "Note that Amariah, the chief priest, will be over you in all that pertains to the LORD, and Zebadiah son of Ishmael, the ruler of the house of Judah, in all that pertains to the king. And the Levites will serve as officers before you. Act resolutely; may the LORD be with the upright!”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jehoshaphat Reproved by Jehu"
+  },
+  {
+   "beforeVerse": 4,
+   "kind": "section",
+   "level": 1,
+   "text": "Jehoshaphat’s Reforms"
   }
  ]
 }

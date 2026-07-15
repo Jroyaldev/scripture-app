@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "Now listen to their voice; but you must solemnly warn them and show them the manner of the king who will reign over them.” Samuel’s Warning"
+   "text": "Now listen to their voice; but you must solemnly warn them and show them the manner of the king who will reign over them.”"
   },
   {
    "verse": 10,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "When that day comes, you will beg for relief from the king you have chosen, but the LORD will not answer you on that day.” God Grants the Request"
+   "text": "When that day comes, you will beg for relief from the king you have chosen, but the LORD will not answer you on that day.”"
   },
   {
    "verse": 19,
@@ -87,6 +87,26 @@
   {
    "verse": 22,
    "text": "“Listen to their voice,” the LORD said to Samuel. “Appoint a king for them.” Then Samuel told the men of Israel, “Everyone must go back to his city.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Israel Demands a King"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Samuel’s Warning"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "God Grants the Request"
   }
  ]
 }

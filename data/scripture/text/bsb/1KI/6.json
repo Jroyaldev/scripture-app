@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "He also had narrow windows framed high in the temple. The Chambers"
+   "text": "He also had narrow windows framed high in the temple."
   },
   {
    "verse": 5,
@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "He built chambers all along the temple, each five cubits high and attached to the temple with beams of cedar. God’s Promise to Solomon"
+   "text": "He built chambers all along the temple, each five cubits high and attached to the temple with beams of cedar."
   },
   {
    "verse": 11,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "And I will dwell among the Israelites and will not abandon My people Israel.” The Temple’s Interior ()"
+   "text": "And I will dwell among the Israelites and will not abandon My people Israel.”"
   },
   {
    "verse": 14,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "So he overlaid with gold the whole interior of the temple, until everything was completely finished. He also overlaid with gold the entire altar that belonged to the inner sanctuary. The Cherubim ()"
+   "text": "So he overlaid with gold the whole interior of the temple, until everything was completely finished. He also overlaid with gold the entire altar that belonged to the inner sanctuary."
   },
   {
    "verse": 23,
@@ -118,7 +118,7 @@
   },
   {
    "verse": 30,
-   "text": "And he overlaid the temple floor with gold in both the inner and outer sanctuaries. The Doors"
+   "text": "And he overlaid the temple floor with gold in both the inner and outer sanctuaries."
   },
   {
    "verse": 31,
@@ -138,7 +138,7 @@
   },
   {
    "verse": 35,
-   "text": "He carved into them cherubim, palm trees, and open flowers, and he overlaid them with gold hammered evenly over the carvings. The Courtyard"
+   "text": "He carved into them cherubim, palm trees, and open flowers, and he overlaid them with gold hammered evenly over the carvings."
   },
   {
    "verse": 36,
@@ -151,6 +151,50 @@
   {
    "verse": 38,
    "text": "In the eleventh year, in the month of Bul, the eighth month, the temple was finished in every detail and according to every specification. So he built the temple in seven years."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Temple Construction Begins"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "The Chambers"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Promise to Solomon"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "The Temple’s Interior"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "The Cherubim"
+  },
+  {
+   "beforeVerse": 31,
+   "kind": "section",
+   "level": 1,
+   "text": "The Doors"
+  },
+  {
+   "beforeVerse": 36,
+   "kind": "section",
+   "level": 1,
+   "text": "The Courtyard"
   }
  ]
 }

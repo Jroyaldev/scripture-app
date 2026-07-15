@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "She went and told the man of God, and he said, “Go, sell the oil, and pay your debt. Then you and your sons can live on the remainder.” The Shunammite Woman ()"
+   "text": "She went and told the man of God, and he said, “Go, sell the oil, and pay your debt. Then you and your sons can live on the remainder.”"
   },
   {
    "verse": 8,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "But the woman did conceive, and at that time the next year she gave birth to a son, just as Elisha had told her. Elisha Raises the Shunammite’s Son ()"
+   "text": "But the woman did conceive, and at that time the next year she gave birth to a son, just as Elisha had told her."
   },
   {
    "verse": 18,
@@ -146,7 +146,7 @@
   },
   {
    "verse": 37,
-   "text": "She came in, fell at his feet, and bowed to the ground. Then she picked up her son and went out. Elisha Purifies the Poisonous Stew"
+   "text": "She came in, fell at his feet, and bowed to the ground. Then she picked up her son and went out."
   },
   {
    "verse": 38,
@@ -162,7 +162,7 @@
   },
   {
    "verse": 41,
-   "text": "Then Elisha said, “Get some flour.” He threw it into the pot and said, “Pour it out for the people to eat.” And there was nothing harmful in the pot. Feeding a Hundred Men (; )"
+   "text": "Then Elisha said, “Get some flour.” He threw it into the pot and said, “Pour it out for the people to eat.” And there was nothing harmful in the pot."
   },
   {
    "verse": 42,
@@ -175,6 +175,38 @@
   {
    "verse": 44,
    "text": "So he set it before them, and they ate and had some left over, according to the word of the LORD."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Widow’s Oil"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "The Shunammite Woman"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Elisha Raises the Shunammite’s Son"
+  },
+  {
+   "beforeVerse": 38,
+   "kind": "section",
+   "level": 1,
+   "text": "Elisha Purifies the Poisonous Stew"
+  },
+  {
+   "beforeVerse": 42,
+   "kind": "section",
+   "level": 1,
+   "text": "Feeding a Hundred Men"
   }
  ]
 }

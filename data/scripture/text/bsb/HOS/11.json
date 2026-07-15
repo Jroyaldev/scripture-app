@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "My people are bent on turning from Me. Though they call to the Most High, He will by no means exalt them. God’s Love for Israel"
+   "text": "My people are bent on turning from Me. Though they call to the Most High, He will by no means exalt them."
   },
   {
    "verse": 8,
@@ -47,6 +47,20 @@
   {
    "verse": 12,
    "text": "Ephraim surrounds Me with lies, the house of Israel with deceit; but Judah still walks with God and is faithful to the Holy One."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Out of Egypt I Called My Son"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Love for Israel"
   }
  ]
 }

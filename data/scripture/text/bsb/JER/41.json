@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "Then Ishmael took captive all the remnant of the people of Mizpah— the daughters of the king along with all the others who remained in Mizpah— over whom Nebuzaradan captain of the guard had appointed Gedaliah son of Ahikam. Ishmael son of Nethaniah took them captive and set off to cross over to the Ammonites. Johanan Rescues the Captives"
+   "text": "Then Ishmael took captive all the remnant of the people of Mizpah— the daughters of the king along with all the others who remained in Mizpah— over whom Nebuzaradan captain of the guard had appointed Gedaliah son of Ahikam. Ishmael son of Nethaniah took them captive and set off to cross over to the Ammonites."
   },
   {
    "verse": 11,
@@ -71,6 +71,20 @@
   {
    "verse": 18,
    "text": "to escape the Chaldeans. For they were afraid of the Chaldeans because Ishmael son of Nethaniah had struck down Gedaliah son of Ahikam, whom the king of Babylon had appointed over the land."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Murder of Gedaliah"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "Johanan Rescues the Captives"
   }
  ]
 }

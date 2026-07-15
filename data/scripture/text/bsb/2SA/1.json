@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "For David had said to the Amalekite, “Your blood be on your own head because your own mouth has testified against you, saying, ‘I killed the LORD’s anointed.’” David’s Song for Saul and Jonathan"
+   "text": "For David had said to the Amalekite, “Your blood be on your own head because your own mouth has testified against you, saying, ‘I killed the LORD’s anointed.’”"
   },
   {
    "verse": 17,
@@ -107,6 +107,20 @@
   {
    "verse": 27,
    "text": "How the mighty have fallen, and the weapons of war have perished!”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Saul’s Death Reported to David"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "David’s Song for Saul and Jonathan"
   }
  ]
 }

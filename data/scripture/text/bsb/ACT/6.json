@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "So the word of God continued to spread. The number of disciples in Jerusalem grew rapidly, and a great number of priests became obedient to the faith. The Arrest of Stephen"
+   "text": "So the word of God continued to spread. The number of disciples in Jerusalem grew rapidly, and a great number of priests became obedient to the faith."
   },
   {
    "verse": 8,
@@ -59,6 +59,20 @@
   {
    "verse": 15,
    "text": "All who were sitting in the Sanhedrin looked intently at Stephen, and they saw that his face was like the face of an angel."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Choosing of the Seven"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "The Arrest of Stephen"
   }
  ]
 }

@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "Therefore encourage and build one another up, just as you are already doing. Christian Living"
+   "text": "Therefore encourage and build one another up, just as you are already doing."
   },
   {
    "verse": 12,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "Abstain from every form of evil. Final Blessings and Instructions"
+   "text": "Abstain from every form of evil."
   },
   {
    "verse": 23,
@@ -111,6 +111,26 @@
   {
    "verse": 28,
    "text": "The grace of our Lord Jesus Christ be with you."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Day of the Lord"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Christian Living"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "Final Blessings and Instructions"
   }
  ]
 }

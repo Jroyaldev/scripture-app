@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "He arrested him and put him in prison, handing him over to be guarded by four squads of four soldiers each. Herod intended to bring him out to the people after the Passover. The Rescue of Peter"
+   "text": "He arrested him and put him in prison, handing him over to be guarded by four squads of four soldiers each. Herod intended to bring him out to the people after the Passover."
   },
   {
    "verse": 5,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "After Herod had searched for him unsuccessfully, he examined the guards and ordered that they be executed. Then he went down from Judea to Caesarea and spent some time there. The Death of Herod"
+   "text": "After Herod had searched for him unsuccessfully, he examined the guards and ordered that they be executed. Then he went down from Judea to Caesarea and spent some time there."
   },
   {
    "verse": 20,
@@ -99,6 +99,26 @@
   {
    "verse": 25,
    "text": "When Barnabas and Saul had fulfilled their mission to Jerusalem, they returned, bringing with them John, also called Mark."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "James Killed, Peter Imprisoned"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "The Rescue of Peter"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "The Death of Herod"
   }
  ]
 }

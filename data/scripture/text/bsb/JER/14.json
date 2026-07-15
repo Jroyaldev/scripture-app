@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "If I go out to the country, I see those slain by the sword; if I enter the city, I see those ravaged by famine! For both prophet and priest travel to a land they do not know.’” A Prayer for Mercy ()"
+   "text": "If I go out to the country, I see those slain by the sword; if I enter the city, I see those ravaged by famine! For both prophet and priest travel to a land they do not know.’”"
   },
   {
    "verse": 19,
@@ -87,6 +87,20 @@
   {
    "verse": 22,
    "text": "Can the worthless idols of the nations bring rain? Do the skies alone send showers? Is this not by You, O LORD our God? So we put our hope in You, for You have done all these things."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Drought, Famine, Sword, and Plague"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "A Prayer for Mercy"
   }
  ]
 }

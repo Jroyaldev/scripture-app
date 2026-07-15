@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "All these are the sons of Esau (that is, Edom), and they were their chiefs. The Descendants of Seir ()"
+   "text": "All these are the sons of Esau (that is, Edom), and they were their chiefs."
   },
   {
    "verse": 20,
@@ -118,7 +118,7 @@
   },
   {
    "verse": 30,
-   "text": "Dishon, Ezer, and Dishan. They are the chiefs of the Horites, according to their divisions in the land of Seir. The Kings of Edom ()"
+   "text": "Dishon, Ezer, and Dishan. They are the chiefs of the Horites, according to their divisions in the land of Seir."
   },
   {
    "verse": 31,
@@ -171,6 +171,26 @@
   {
    "verse": 43,
    "text": "Magdiel, and Iram. These were the chiefs of Edom, according to their settlements in the land they possessed. Esau was the father of the Edomites."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Descendants of Esau"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "The Descendants of Seir"
+  },
+  {
+   "beforeVerse": 31,
+   "kind": "section",
+   "level": 1,
+   "text": "The Kings of Edom"
   }
  ]
 }

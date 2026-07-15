@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "Therefore, you will have no one in the assembly of the LORD to divide the land by lot. Reproof of False Prophets ()"
+   "text": "Therefore, you will have no one in the assembly of the LORD to divide the land by lot."
   },
   {
    "verse": 6,
@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "If a man of wind were to come and say falsely, “I will preach to you of wine and strong drink,” he would be just the preacher for this people! The Remnant of Israel ()"
+   "text": "If a man of wind were to come and say falsely, “I will preach to you of wine and strong drink,” he would be just the preacher for this people!"
   },
   {
    "verse": 12,
@@ -51,6 +51,26 @@
   {
    "verse": 13,
    "text": "One who breaks open the way will go up before them; they will break through the gate, and go out by it. Their King will pass through before them, the LORD as their leader."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Woe to Oppressors"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "Reproof of False Prophets"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "The Remnant of Israel"
   }
  ]
 }

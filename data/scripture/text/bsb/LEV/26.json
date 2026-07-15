@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "I am the LORD your God, who brought you out of the land of Egypt so that you would no longer be slaves to the Egyptians. I broke the bars of your yoke and enabled you to walk in uprightness. Punishments for Disobedience (; )"
+   "text": "I am the LORD your God, who brought you out of the land of Egypt so that you would no longer be slaves to the Egyptians. I broke the bars of your yoke and enabled you to walk in uprightness."
   },
   {
    "verse": 14,
@@ -154,7 +154,7 @@
   },
   {
    "verse": 39,
-   "text": "Those of you who survive in the lands of your enemies will waste away in their iniquity and will decay in the sins of their fathers. God Remembers Those Who Repent"
+   "text": "Those of you who survive in the lands of your enemies will waste away in their iniquity and will decay in the sins of their fathers."
   },
   {
    "verse": 40,
@@ -183,6 +183,26 @@
   {
    "verse": 46,
    "text": "These are the statutes, ordinances, and laws that the LORD established between Himself and the Israelites through Moses on Mount Sinai."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Additional Blessings of Obedience"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Punishments for Disobedience"
+  },
+  {
+   "beforeVerse": 40,
+   "kind": "section",
+   "level": 1,
+   "text": "God Remembers Those Who Repent"
   }
  ]
 }

@@ -52,5 +52,13 @@
    "verse": 13,
    "text": "Be exalted, O LORD, in Your strength; we will sing and praise Your power."
   }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "After the Battle"
+  }
  ]
 }

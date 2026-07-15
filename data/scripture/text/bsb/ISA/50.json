@@ -10,7 +10,7 @@
   },
   {
    "verse": 3,
-   "text": "I clothe the heavens in black and make sackcloth their covering.” The Servant’s Obedience (; ; ; )"
+   "text": "I clothe the heavens in black and make sackcloth their covering.”"
   },
   {
    "verse": 4,
@@ -43,6 +43,20 @@
   {
    "verse": 11,
    "text": "Behold, all you who kindle a fire, who array yourselves with firebrands, walk in the light of your fire and of the firebrands you have lit! This is what you will receive from My hand: You will lie down in a place of torment."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Israel’s Sin"
+  },
+  {
+   "beforeVerse": 4,
+   "kind": "section",
+   "level": 1,
+   "text": "The Servant’s Obedience"
   }
  ]
 }

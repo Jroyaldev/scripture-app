@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "Fathers, do not provoke your children to wrath; instead, bring them up in the discipline and instruction of the Lord. Serving with Honor (; )"
+   "text": "Fathers, do not provoke your children to wrath; instead, bring them up in the discipline and instruction of the Lord."
   },
   {
    "verse": 5,
@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "And masters, do the same for your slaves. Give up your use of threats, because you know that He who is both their Master and yours is in heaven, and there is no favoritism with Him. The Full Armor of God"
+   "text": "And masters, do the same for your slaves. Give up your use of threats, because you know that He who is both their Master and yours is in heaven, and there is no favoritism with Him."
   },
   {
    "verse": 10,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "for which I am an ambassador in chains. Pray that I may proclaim it fearlessly, as I should. Final Greetings (; )"
+   "text": "for which I am an ambassador in chains. Pray that I may proclaim it fearlessly, as I should."
   },
   {
    "verse": 21,
@@ -95,6 +95,32 @@
   {
    "verse": 24,
    "text": "Grace to all who love our Lord Jesus Christ with an undying love."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Children and Parents"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "Serving with Honor"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "The Full Armor of God"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "Final Greetings"
   }
  ]
 }

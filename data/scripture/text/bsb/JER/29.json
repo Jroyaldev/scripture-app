@@ -90,7 +90,7 @@
   },
   {
    "verse": 23,
-   "text": "For they have committed an outrage in Israel by committing adultery with the wives of their neighbors and speaking lies in My name, which I did not command them to do. I am He who knows, and I am a witness, declares the LORD.” The Message to Shemaiah"
+   "text": "For they have committed an outrage in Israel by committing adultery with the wives of their neighbors and speaking lies in My name, which I did not command them to do. I am He who knows, and I am a witness, declares the LORD.”"
   },
   {
    "verse": 24,
@@ -127,6 +127,20 @@
   {
    "verse": 32,
    "text": "this is what the LORD says: ‘I will surely punish Shemaiah the Nehelamite and his descendants. He will have no one left among this people, nor will he see the good that I will bring to My people, declares the LORD, for he has preached rebellion against the LORD.’”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jeremiah’s Letter to the Exiles"
+  },
+  {
+   "beforeVerse": 24,
+   "kind": "section",
+   "level": 1,
+   "text": "The Message to Shemaiah"
   }
  ]
 }

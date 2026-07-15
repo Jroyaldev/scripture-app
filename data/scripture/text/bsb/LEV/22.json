@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "by allowing the people to eat the sacred offerings and thus to bear the punishment for guilt. For I am the LORD who sanctifies them.” Worthy Offerings"
+   "text": "by allowing the people to eat the sacred offerings and thus to bear the punishment for guilt. For I am the LORD who sanctifies them.”"
   },
   {
    "verse": 17,
@@ -131,6 +131,20 @@
   {
    "verse": 33,
    "text": "who brought you out of the land of Egypt to be your God. I am the LORD.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Restrictions against the Unclean"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Worthy Offerings"
   }
  ]
 }

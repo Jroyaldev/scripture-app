@@ -10,7 +10,7 @@
   },
   {
    "verse": 3,
-   "text": "For six days work may be done, but the seventh day is a Sabbath of complete rest, a day of sacred assembly. You must not do any work; wherever you live, it is a Sabbath to the LORD. Passover and the Feast of Unleavened Bread (; ; )"
+   "text": "For six days work may be done, but the seventh day is a Sabbath of complete rest, a day of sacred assembly. You must not do any work; wherever you live, it is a Sabbath to the LORD."
   },
   {
    "verse": 4,
@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "For seven days you are to present a food offering to the LORD. On the seventh day there shall be a sacred assembly; you must not do any regular work.’” The Feast of Firstfruits"
+   "text": "For seven days you are to present a food offering to the LORD. On the seventh day there shall be a sacred assembly; you must not do any regular work.’”"
   },
   {
    "verse": 9,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "You must not eat any bread or roasted or new grain until the very day you have brought this offering to your God. This is to be a permanent statute for the generations to come, wherever you live. The Feast of Weeks ()"
+   "text": "You must not eat any bread or roasted or new grain until the very day you have brought this offering to your God. This is to be a permanent statute for the generations to come, wherever you live."
   },
   {
    "verse": 15,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "When you reap the harvest of your land, do not reap all the way to the edges of your field or gather the gleanings of your harvest. Leave them for the poor and the foreign resident. I am the LORD your God.’” The Feast of Trumpets ()"
+   "text": "When you reap the harvest of your land, do not reap all the way to the edges of your field or gather the gleanings of your harvest. Leave them for the poor and the foreign resident. I am the LORD your God.’”"
   },
   {
    "verse": 23,
@@ -98,7 +98,7 @@
   },
   {
    "verse": 25,
-   "text": "You must not do any regular work, but you are to present a food offering to the LORD.’” The Day of Atonement (; )"
+   "text": "You must not do any regular work, but you are to present a food offering to the LORD.’”"
   },
   {
    "verse": 26,
@@ -126,7 +126,7 @@
   },
   {
    "verse": 32,
-   "text": "It will be a Sabbath of complete rest for you, and you shall humble yourselves. From the evening of the ninth day of the month until the following evening you are to keep your Sabbath.” The Feast of Tabernacles (; )"
+   "text": "It will be a Sabbath of complete rest for you, and you shall humble yourselves. From the evening of the ninth day of the month until the following evening you are to keep your Sabbath.”"
   },
   {
    "verse": 33,
@@ -175,6 +175,50 @@
   {
    "verse": 44,
    "text": "So Moses announced to the Israelites the appointed feasts of the LORD."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Feasts and Sabbaths"
+  },
+  {
+   "beforeVerse": 4,
+   "kind": "section",
+   "level": 1,
+   "text": "Passover and the Feast of Unleavened Bread"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "The Feast of Firstfruits"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "The Feast of Weeks"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "The Feast of Trumpets"
+  },
+  {
+   "beforeVerse": 26,
+   "kind": "section",
+   "level": 1,
+   "text": "The Day of Atonement"
+  },
+  {
+   "beforeVerse": 33,
+   "kind": "section",
+   "level": 1,
+   "text": "The Feast of Tabernacles"
   }
  ]
 }

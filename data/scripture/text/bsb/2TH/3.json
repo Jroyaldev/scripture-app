@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "May the Lord direct your hearts into God’s love and Christ’s perseverance. A Warning against Idleness"
+   "text": "May the Lord direct your hearts into God’s love and Christ’s perseverance."
   },
   {
    "verse": 6,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "Yet do not regard him as an enemy, but admonish him as a brother. Signature and Final Greetings (; )"
+   "text": "Yet do not regard him as an enemy, but admonish him as a brother."
   },
   {
    "verse": 16,
@@ -71,6 +71,26 @@
   {
    "verse": 18,
    "text": "The grace of our Lord Jesus Christ be with all of you."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Request for Prayer"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "A Warning against Idleness"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Signature and Final Greetings"
   }
  ]
 }

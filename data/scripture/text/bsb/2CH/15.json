@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "But as for you, be strong; do not be discouraged, for your work will be rewarded.” Asa’s Reforms ()"
+   "text": "But as for you, be strong; do not be discouraged, for your work will be rewarded.”"
   },
   {
    "verse": 8,
@@ -75,6 +75,20 @@
   {
    "verse": 19,
    "text": "And there was no war until the thirty-fifth year of Asa’s reign."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Prophecy of Azariah"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Asa’s Reforms"
   }
  ]
 }

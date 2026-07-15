@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "It was a handbreadth thick, and its rim was fashioned like the brim of a cup, like a lily blossom. It could hold three thousand baths. The Ten Basins, Lampstands, and Tables ()"
+   "text": "It was a handbreadth thick, and its rim was fashioned like the brim of a cup, like a lily blossom. It could hold three thousand baths."
   },
   {
    "verse": 6,
@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "Additionally, he made ten tables and placed them in the temple, five on the south side and five on the north. He also made a hundred gold bowls. The Courts"
+   "text": "Additionally, he made ten tables and placed them in the temple, five on the south side and five on the north. He also made a hundred gold bowls."
   },
   {
    "verse": 9,
@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "He put the Sea on the south side, at the southeast corner. Completion of the Bronze Works ()"
+   "text": "He put the Sea on the south side, at the southeast corner."
   },
   {
    "verse": 11,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "Solomon made all these articles in such great abundance that the weight of the bronze could not be determined. Completion of the Gold Furnishings ()"
+   "text": "Solomon made all these articles in such great abundance that the weight of the bronze could not be determined."
   },
   {
    "verse": 19,
@@ -87,6 +87,38 @@
   {
    "verse": 22,
    "text": "the wick trimmers, sprinkling bowls, ladles, and censers of pure gold; and the gold doors of the temple: the inner doors to the Most Holy Place as well as the doors of the main hall."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Bronze Altar and Molten Sea"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "The Ten Basins, Lampstands, and Tables"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "The Courts"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "Completion of the Bronze Works"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "Completion of the Gold Furnishings"
   }
  ]
 }

@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "They shall use gold, along with blue, purple, and scarlet yarn, and fine linen. The Ephod ()"
+   "text": "They shall use gold, along with blue, purple, and scarlet yarn, and fine linen."
   },
   {
    "verse": 6,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "and two chains of pure gold, made of braided cord work; and attach these chains to the settings. The Breastpiece ()"
+   "text": "and two chains of pure gold, made of braided cord work; and attach these chains to the settings."
   },
   {
    "verse": 15,
@@ -118,7 +118,7 @@
   },
   {
    "verse": 30,
-   "text": "And place the Urim and Thummim in the breastpiece of judgment, so that they will also be over Aaron’s heart whenever he comes before the LORD. Aaron will continually carry the judgment of the sons of Israel over his heart before the LORD. Additional Priestly Garments ()"
+   "text": "And place the Urim and Thummim in the breastpiece of judgment, so that they will also be over Aaron’s heart whenever he comes before the LORD. Aaron will continually carry the judgment of the sons of Israel over his heart before the LORD."
   },
   {
    "verse": 31,
@@ -171,6 +171,32 @@
   {
    "verse": 43,
    "text": "Aaron and his sons must wear them whenever they enter the Tent of Meeting or approach the altar to minister in the Holy Place, so that they will not incur guilt and die. This is to be a permanent statute for Aaron and his descendants.[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Garments for the Priests"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "The Ephod"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "The Breastpiece"
+  },
+  {
+   "beforeVerse": 31,
+   "kind": "section",
+   "level": 1,
+   "text": "Additional Priestly Garments"
   }
  ]
 }

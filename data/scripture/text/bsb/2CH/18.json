@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "And all the prophets were prophesying the same, saying, “Go up to Ramoth-gilead and triumph, for the LORD will deliver it into the hand of the king.” Micaiah Prophesies against Ahab ()"
+   "text": "And all the prophets were prophesying the same, saying, “Go up to Ramoth-gilead and triumph, for the LORD will deliver it into the hand of the king.”"
   },
   {
    "verse": 12,
@@ -106,7 +106,7 @@
   },
   {
    "verse": 27,
-   "text": "But Micaiah replied, “If you ever return safely, the LORD has not spoken through me.” Then he added, “Take heed, all you people!” Ahab’s Defeat and Death ()"
+   "text": "But Micaiah replied, “If you ever return safely, the LORD has not spoken through me.” Then he added, “Take heed, all you people!”"
   },
   {
    "verse": 28,
@@ -135,6 +135,26 @@
   {
    "verse": 34,
    "text": "The battle raged throughout that day, and the king of Israel propped himself up in his chariot facing the Arameans until evening. And at sunset he died."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jehoshaphat Allies with Ahab"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Micaiah Prophesies against Ahab"
+  },
+  {
+   "beforeVerse": 28,
+   "kind": "section",
+   "level": 1,
+   "text": "Ahab’s Defeat and Death"
   }
  ]
 }

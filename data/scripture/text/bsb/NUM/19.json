@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "The man who has gathered up the ashes of the heifer must also wash his clothes, and he will be ceremonially unclean until evening. This is a permanent statute for the Israelites and for the foreigner residing among them. Purification of the Unclean"
+   "text": "The man who has gathered up the ashes of the heifer must also wash his clothes, and he will be ceremonially unclean until evening. This is a permanent statute for the Israelites and for the foreigner residing among them."
   },
   {
    "verse": 11,
@@ -87,6 +87,20 @@
   {
    "verse": 22,
    "text": "Anything the unclean person touches will become unclean, and anyone who touches it will be unclean until evening.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Red Heifer"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "Purification of the Unclean"
   }
  ]
 }

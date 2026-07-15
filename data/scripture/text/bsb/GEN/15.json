@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "The LORD also told him, “I am the LORD, who brought you out of Ur of the Chaldeans to give you this land to possess.” God Confirms His Promise (; )"
+   "text": "The LORD also told him, “I am the LORD, who brought you out of Ur of the Chaldeans to give you this land to possess.”"
   },
   {
    "verse": 8,
@@ -83,6 +83,20 @@
   {
    "verse": 21,
    "text": "Amorites, Canaanites, Girgashites, and Jebusites.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Covenant with Abram"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "God Confirms His Promise"
   }
  ]
 }

@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "When Pharaoh saw that there was relief, however, he hardened his heart and would not listen to Moses and Aaron, just as the LORD had said. The Third Plague: Gnats"
+   "text": "When Pharaoh saw that there was relief, however, he hardened his heart and would not listen to Moses and Aaron, just as the LORD had said."
   },
   {
    "verse": 16,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "“This is the finger of God,” the magicians said to Pharaoh. But Pharaoh’s heart was hardened, and he would not listen to them, just as the LORD had said. The Fourth Plague: Flies"
+   "text": "“This is the finger of God,” the magicians said to Pharaoh. But Pharaoh’s heart was hardened, and he would not listen to them, just as the LORD had said."
   },
   {
    "verse": 20,
@@ -127,6 +127,26 @@
   {
    "verse": 32,
    "text": "But Pharaoh hardened his heart this time as well, and he would not let the people go."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Second Plague: Frogs"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "The Third Plague: Gnats"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "The Fourth Plague: Flies"
   }
  ]
 }

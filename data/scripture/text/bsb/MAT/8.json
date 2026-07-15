@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "Then Jesus instructed him, “See that you don’t tell anyone. But go, show yourself to the priest and offer the gift prescribed by Moses, as a testimony to them.” The Faith of the Centurion (; )"
+   "text": "Then Jesus instructed him, “See that you don’t tell anyone. But go, show yourself to the priest and offer the gift prescribed by Moses, as a testimony to them.”"
   },
   {
    "verse": 5,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "Then Jesus said to the centurion, “Go! As you have believed, so will it be done for you.” And his servant was healed at that very hour. Jesus Heals at Peter’s House (; )"
+   "text": "Then Jesus said to the centurion, “Go! As you have believed, so will it be done for you.” And his servant was healed at that very hour."
   },
   {
    "verse": 14,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "This was to fulfill what was spoken through the prophet Isaiah: “He took up our infirmities and carried our diseases.” The Cost of Discipleship (; ; )"
+   "text": "This was to fulfill what was spoken through the prophet Isaiah: “He took up our infirmities and carried our diseases.”"
   },
   {
    "verse": 18,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "But Jesus told him, “Follow Me, and let the dead bury their own dead.” Jesus Calms the Storm (; ; )"
+   "text": "But Jesus told him, “Follow Me, and let the dead bury their own dead.”"
   },
   {
    "verse": 23,
@@ -106,7 +106,7 @@
   },
   {
    "verse": 27,
-   "text": "The men were amazed and asked, “What kind of man is this? Even the winds and the sea obey Him!” The Demons and the Pigs (; )"
+   "text": "The men were amazed and asked, “What kind of man is this? Even the winds and the sea obey Him!”"
   },
   {
    "verse": 28,
@@ -135,6 +135,44 @@
   {
    "verse": 34,
    "text": "Then the whole town went out to meet Jesus. And when they saw Him, they begged Him to leave their region."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Leper’s Prayer"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "The Faith of the Centurion"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Heals at Peter’s House"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "The Cost of Discipleship"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Calms the Storm"
+  },
+  {
+   "beforeVerse": 28,
+   "kind": "section",
+   "level": 1,
+   "text": "The Demons and the Pigs"
   }
  ]
 }

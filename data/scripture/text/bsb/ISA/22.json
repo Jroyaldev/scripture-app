@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "The LORD of Hosts has revealed in my hearing: “Until your dying day, this sin of yours will never be atoned for,” says the Lord GOD of Hosts. A Message for Shebna"
+   "text": "The LORD of Hosts has revealed in my hearing: “Until your dying day, this sin of yours will never be atoned for,” says the Lord GOD of Hosts."
   },
   {
    "verse": 15,
@@ -99,6 +99,20 @@
   {
    "verse": 25,
    "text": "In that day, declares the LORD of Hosts, the peg driven into a firm place will give way; it will be sheared off and fall, and the load upon it will be cut down.” Indeed, the LORD has spoken."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Valley of Vision"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "A Message for Shebna"
   }
  ]
 }

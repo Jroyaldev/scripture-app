@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "Therefore her plagues will come in one day — death and grief and famine — and she will be consumed by fire, for mighty is the Lord God who judges her.” Lament over Babylon"
+   "text": "Therefore her plagues will come in one day — death and grief and famine — and she will be consumed by fire, for mighty is the Lord God who judges her.”"
   },
   {
    "verse": 9,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "Rejoice over her, O heaven, and you saints and apostles and prophets, because God has pronounced for you His judgment against her. The Doom of Babylon"
+   "text": "Rejoice over her, O heaven, and you saints and apostles and prophets, because God has pronounced for you His judgment against her."
   },
   {
    "verse": 21,
@@ -95,6 +95,26 @@
   {
    "verse": 24,
    "text": "And there was found in her the blood of prophets and saints, and of all who had been slain on the earth."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Babylon Is Fallen"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Lament over Babylon"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "The Doom of Babylon"
   }
  ]
 }

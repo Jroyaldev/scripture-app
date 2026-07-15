@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "And Miriam sang back to them: “Sing to the LORD, for He is highly exalted; the horse and rider He has thrown into the sea.” The Waters of Marah"
+   "text": "And Miriam sang back to them: “Sing to the LORD, for He is highly exalted; the horse and rider He has thrown into the sea.”"
   },
   {
    "verse": 22,
@@ -107,6 +107,20 @@
   {
    "verse": 27,
    "text": "Then they came to Elim, where there were twelve springs of water and seventy palm trees, and they camped there by the waters."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Song at the Sea"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "The Waters of Marah"
   }
  ]
 }

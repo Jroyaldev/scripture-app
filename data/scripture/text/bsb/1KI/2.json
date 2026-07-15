@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "Now therefore, do not hold him guiltless, for you are a wise man. You know what you ought to do to him to bring his gray head down to Sheol in blood.” David’s Reign and Death ()"
+   "text": "Now therefore, do not hold him guiltless, for you are a wise man. You know what you ought to do to him to bring his gray head down to Sheol in blood.”"
   },
   {
    "verse": 10,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "So Solomon sat on the throne of his father David, and his kingdom was firmly established. The Execution of Adonijah"
+   "text": "So Solomon sat on the throne of his father David, and his kingdom was firmly established."
   },
   {
    "verse": 13,
@@ -106,7 +106,7 @@
   },
   {
    "verse": 27,
-   "text": "So Solomon banished Abiathar from the priesthood of the LORD and thus fulfilled the word that the LORD had spoken at Shiloh against the house of Eli. The Execution of Joab"
+   "text": "So Solomon banished Abiathar from the priesthood of the LORD and thus fulfilled the word that the LORD had spoken at Shiloh against the house of Eli."
   },
   {
    "verse": 28,
@@ -138,7 +138,7 @@
   },
   {
    "verse": 35,
-   "text": "And the king appointed Benaiah son of Jehoiada in Joab’s place over the army, and he appointed Zadok the priest in Abiathar’s place. The Execution of Shimei"
+   "text": "And the king appointed Benaiah son of Jehoiada in Joab’s place over the army, and he appointed Zadok the priest in Abiathar’s place."
   },
   {
    "verse": 36,
@@ -183,6 +183,38 @@
   {
    "verse": 46,
    "text": "Then the king commanded Benaiah son of Jehoiada, and he went out and struck Shimei down, and he died. Thus the kingdom was firmly established in the hand of Solomon."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "David Instructs Solomon"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "David’s Reign and Death"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Execution of Adonijah"
+  },
+  {
+   "beforeVerse": 28,
+   "kind": "section",
+   "level": 1,
+   "text": "The Execution of Joab"
+  },
+  {
+   "beforeVerse": 36,
+   "kind": "section",
+   "level": 1,
+   "text": "The Execution of Shimei"
   }
  ]
 }

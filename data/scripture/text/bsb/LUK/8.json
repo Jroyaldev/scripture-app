@@ -10,7 +10,7 @@
   },
   {
    "verse": 3,
-   "text": "Joanna the wife of Herod’s household manager Chuza, Susanna, and many others. These women were ministering to them out of their own means. The Parable of the Sower (; )"
+   "text": "Joanna the wife of Herod’s household manager Chuza, Susanna, and many others. These women were ministering to them out of their own means."
   },
   {
    "verse": 4,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "But the seeds on good soil are those with a noble and good heart, who hear the word, cling to it, and by persevering produce a crop. The Lesson of the Lamp ()"
+   "text": "But the seeds on good soil are those with a noble and good heart, who hear the word, cling to it, and by persevering produce a crop."
   },
   {
    "verse": 16,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "Pay attention, therefore, to how you listen. Whoever has will be given more, but whoever does not have, even what he thinks he has will be taken away from him.” Jesus’ Mother and Brothers (; )"
+   "text": "Pay attention, therefore, to how you listen. Whoever has will be given more, but whoever does not have, even what he thinks he has will be taken away from him.”"
   },
   {
    "verse": 19,
@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "But He replied, “My mother and brothers are those who hear the word of God and carry it out.” Jesus Calms the Storm (; ; )"
+   "text": "But He replied, “My mother and brothers are those who hear the word of God and carry it out.”"
   },
   {
    "verse": 22,
@@ -98,7 +98,7 @@
   },
   {
    "verse": 25,
-   "text": "“Where is your faith?” He asked. Frightened and amazed, they asked one another, “Who is this? He commands even the winds and the water, and they obey Him!” The Demons and the Pigs (; )"
+   "text": "“Where is your faith?” He asked. Frightened and amazed, they asked one another, “Who is this? He commands even the winds and the water, and they obey Him!”"
   },
   {
    "verse": 26,
@@ -154,7 +154,7 @@
   },
   {
    "verse": 39,
-   "text": "“Return home and describe how much God has done for you.” So the man went away and proclaimed all over the town how much Jesus had done for him. The Healing Touch of Jesus (; )"
+   "text": "“Return home and describe how much God has done for you.” So the man went away and proclaimed all over the town how much Jesus had done for him."
   },
   {
    "verse": 40,
@@ -223,6 +223,50 @@
   {
    "verse": 56,
    "text": "Her parents were astounded, but Jesus ordered them not to tell anyone what had happened."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Women Minister to Jesus"
+  },
+  {
+   "beforeVerse": 4,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parable of the Sower"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "The Lesson of the Lamp"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus’ Mother and Brothers"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Calms the Storm"
+  },
+  {
+   "beforeVerse": 26,
+   "kind": "section",
+   "level": 1,
+   "text": "The Demons and the Pigs"
+  },
+  {
+   "beforeVerse": 40,
+   "kind": "section",
+   "level": 1,
+   "text": "The Healing Touch of Jesus"
   }
  ]
 }

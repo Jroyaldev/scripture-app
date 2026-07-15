@@ -68,5 +68,25 @@
    "verse": 17,
    "text": "May the favor of the Lord our God rest upon us; establish for us the work of our hands— yes, establish the work of our hands!"
   }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "major-section",
+   "level": 1,
+   "text": "BOOK IV"
+  },
+  {
+   "beforeVerse": 1,
+   "kind": "description",
+   "level": 1,
+   "text": "Psalms 90–106"
+  },
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "From Everlasting to Everlasting"
+  }
  ]
 }

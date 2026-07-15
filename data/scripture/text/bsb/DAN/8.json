@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "He said to me, “It will take 2,300 evenings and mornings; then the sanctuary will be properly restored.” Gabriel Interprets Daniel’s Vision"
+   "text": "He said to me, “It will take 2,300 evenings and mornings; then the sanctuary will be properly restored.”"
   },
   {
    "verse": 15,
@@ -107,6 +107,20 @@
   {
    "verse": 27,
    "text": "I, Daniel, was exhausted and lay ill for days. Then I got up and went about the king’s business. I was confounded by the vision; it was beyond understanding."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Daniel’s Vision of the Ram and the Goat"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Gabriel Interprets Daniel’s Vision"
   }
  ]
 }

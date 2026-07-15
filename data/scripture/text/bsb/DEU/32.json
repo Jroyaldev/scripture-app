@@ -186,7 +186,7 @@
   },
   {
    "verse": 47,
-   "text": "For they are not idle words to you, because they are your life, and by them you will live long in the land that you are crossing the Jordan to possess.” Moses’ Death Foretold"
+   "text": "For they are not idle words to you, because they are your life, and by them you will live long in the land that you are crossing the Jordan to possess.”"
   },
   {
    "verse": 48,
@@ -207,6 +207,20 @@
   {
    "verse": 52,
    "text": "Although you shall see from a distance the land that I am giving the Israelites, you shall not enter it.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Song of Moses"
+  },
+  {
+   "beforeVerse": 48,
+   "kind": "section",
+   "level": 1,
+   "text": "Moses’ Death Foretold"
   }
  ]
 }

@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "And Joshua cast lots for them in the presence of the LORD at Shiloh, where he distributed the land to the Israelites according to their divisions. Benjamin’s Inheritance"
+   "text": "And Joshua cast lots for them in the presence of the LORD at Shiloh, where he distributed the land to the Israelites according to their divisions."
   },
   {
    "verse": 11,
@@ -111,6 +111,20 @@
   {
    "verse": 28,
    "text": "Zelah, Haeleph, Jebus (that is, Jerusalem), Gibeah, and Kiriath-jearim— fourteen cities, along with their villages. This was the inheritance of the clans of the tribe of Benjamin."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Remainder Divided"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "Benjamin’s Inheritance"
   }
  ]
 }

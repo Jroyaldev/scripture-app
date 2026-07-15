@@ -6,7 +6,7 @@
   },
   {
    "verse": 2,
-   "text": "To Timothy, my true child in the faith: Grace, mercy, and peace from God the Father and Christ Jesus our Lord. Correcting False Teachers ()"
+   "text": "To Timothy, my true child in the faith: Grace, mercy, and peace from God the Father and Christ Jesus our Lord."
   },
   {
    "verse": 3,
@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "that agrees with the glorious gospel of the blessed God, with which I have been entrusted. God’s Grace to Paul"
+   "text": "that agrees with the glorious gospel of the blessed God, with which I have been entrusted."
   },
   {
    "verse": 12,
@@ -79,6 +79,26 @@
   {
    "verse": 20,
    "text": "Among them are Hymenaeus and Alexander, whom I have handed over to Satan to be taught not to blaspheme."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Greeting to Timothy"
+  },
+  {
+   "beforeVerse": 3,
+   "kind": "section",
+   "level": 1,
+   "text": "Correcting False Teachers"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Grace to Paul"
   }
  ]
 }

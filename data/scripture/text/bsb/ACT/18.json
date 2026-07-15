@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "So Paul stayed for a year and a half, teaching the word of God among the Corinthians. Paul before Gallio"
+   "text": "So Paul stayed for a year and a half, teaching the word of God among the Corinthians."
   },
   {
    "verse": 12,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "At this, the crowd seized Sosthenes the synagogue leader and beat him in front of the judgment seat. But none of this was of concern to Gallio. Paul Returns to Antioch"
+   "text": "At this, the crowd seized Sosthenes the synagogue leader and beat him in front of the judgment seat. But none of this was of concern to Gallio."
   },
   {
    "verse": 18,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "When Paul had landed at Caesarea, he went up and greeted the church at Jerusalem. Then he went down to Antioch. Paul’s Third Missionary Journey Begins (; )"
+   "text": "When Paul had landed at Caesarea, he went up and greeted the church at Jerusalem. Then he went down to Antioch."
   },
   {
    "verse": 23,
@@ -111,6 +111,32 @@
   {
    "verse": 28,
    "text": "For he powerfully refuted the Jews in public debate, proving from the Scriptures that Jesus is the Christ."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul Ministers in Corinth"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul before Gallio"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul Returns to Antioch"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Third Missionary Journey Begins"
   }
  ]
 }

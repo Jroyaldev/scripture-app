@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "So I say, “My strength has perished, along with my hope from the LORD.” The Prophet’s Hope"
+   "text": "So I say, “My strength has perished, along with my hope from the LORD.”"
   },
   {
    "verse": 19,
@@ -142,7 +142,7 @@
   },
   {
    "verse": 36,
-   "text": "to subvert a man in his lawsuit— of these the Lord does not approve. God’s Justice"
+   "text": "to subvert a man in his lawsuit— of these the Lord does not approve."
   },
   {
    "verse": 37,
@@ -263,6 +263,26 @@
   {
    "verse": 66,
    "text": "You will pursue them in anger and exterminate them from under Your heavens, O LORD."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Prophet’s Afflictions"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "The Prophet’s Hope"
+  },
+  {
+   "beforeVerse": 37,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Justice"
   }
  ]
 }

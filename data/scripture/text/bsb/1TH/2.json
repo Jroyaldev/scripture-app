@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "hindering us from telling the Gentiles how they may be saved. As a result, they continue to heap up their sins to full capacity; the utmost wrath has come upon them. Paul’s Longing to Visit"
+   "text": "hindering us from telling the Gentiles how they may be saved. As a result, they continue to heap up their sins to full capacity; the utmost wrath has come upon them."
   },
   {
    "verse": 17,
@@ -79,6 +79,20 @@
   {
    "verse": 20,
    "text": "You are indeed our glory and our joy."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Ministry"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Longing to Visit"
   }
  ]
 }

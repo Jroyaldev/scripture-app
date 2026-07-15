@@ -2,7 +2,7 @@
  "verses": [
   {
    "verse": 1,
-   "text": "James, a servant of God and of the Lord Jesus Christ, To the twelve tribes of the Dispersion: Greetings. Rejoicing in Trials ()"
+   "text": "James, a servant of God and of the Lord Jesus Christ, To the twelve tribes of the Dispersion: Greetings."
   },
   {
    "verse": 2,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "Blessed is the man who perseveres under trial, because when he has stood the test, he will receive the crown of life that God has promised to those who love Him. Good and Perfect Gifts"
+   "text": "Blessed is the man who perseveres under trial, because when he has stood the test, he will receive the crown of life that God has promised to those who love Him."
   },
   {
    "verse": 13,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "He chose to give us birth through the word of truth, that we would be a kind of firstfruits of His creation. Hearing and Doing"
+   "text": "He chose to give us birth through the word of truth, that we would be a kind of firstfruits of His creation."
   },
   {
    "verse": 19,
@@ -107,6 +107,32 @@
   {
    "verse": 27,
    "text": "Pure and undefiled religion before our God and Father is this: to care for orphans and widows in their distress, and to keep oneself from being polluted by the world."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Greeting from James"
+  },
+  {
+   "beforeVerse": 2,
+   "kind": "section",
+   "level": 1,
+   "text": "Rejoicing in Trials"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Good and Perfect Gifts"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "Hearing and Doing"
   }
  ]
 }

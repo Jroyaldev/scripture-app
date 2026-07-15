@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "Indeed, if you were to strike down the entire army of the Chaldeans that is fighting against you, and only wounded men remained in their tents, they would still get up and burn this city down.” Jeremiah Imprisoned"
+   "text": "Indeed, if you were to strike down the entire army of the Chaldeans that is fighting against you, and only wounded men remained in their tents, they would still get up and burn this city down.”"
   },
   {
    "verse": 11,
@@ -83,6 +83,20 @@
   {
    "verse": 21,
    "text": "So King Zedekiah gave orders for Jeremiah to be placed in the courtyard of the guard and given a loaf of bread daily from the street of the bakers, until all the bread in the city was gone. So Jeremiah remained in the courtyard of the guard."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jeremiah Warns Zedekiah"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "Jeremiah Imprisoned"
   }
  ]
 }

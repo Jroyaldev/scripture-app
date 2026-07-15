@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "And his brothers were jealous of him, but his father kept in mind what he had said. Joseph Sold into Egypt ()"
+   "text": "And his brothers were jealous of him, but his father kept in mind what he had said."
   },
   {
    "verse": 12,
@@ -118,7 +118,7 @@
   },
   {
    "verse": 30,
-   "text": "returned to his brothers, and said, “The boy is gone! What am I going to do?” Jacob Mourns Joseph"
+   "text": "returned to his brothers, and said, “The boy is gone! What am I going to do?”"
   },
   {
    "verse": 31,
@@ -143,6 +143,26 @@
   {
    "verse": 36,
    "text": "Meanwhile, the Midianites sold Joseph in Egypt to Potiphar, an officer of Pharaoh and captain of the guard."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Joseph’s Dreams"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "Joseph Sold into Egypt"
+  },
+  {
+   "beforeVerse": 31,
+   "kind": "section",
+   "level": 1,
+   "text": "Jacob Mourns Joseph"
   }
  ]
 }

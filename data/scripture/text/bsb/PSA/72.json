@@ -80,5 +80,13 @@
    "verse": 20,
    "text": "Thus conclude the prayers of David son of Jesse."
   }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Endow the King with Your Justice"
+  }
  ]
 }

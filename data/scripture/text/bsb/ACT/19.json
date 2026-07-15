@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "There were about twelve men in all. Paul Ministers in Ephesus (; )"
+   "text": "There were about twelve men in all."
   },
   {
    "verse": 8,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "so that even handkerchiefs and aprons that had touched him were taken to the sick, and the diseases and evil spirits left them. Seven Sons of Sceva"
+   "text": "so that even handkerchiefs and aprons that had touched him were taken to the sick, and the diseases and evil spirits left them."
   },
   {
    "verse": 13,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "So the word of the Lord powerfully continued to spread and prevail. The Riot in Ephesus"
+   "text": "So the word of the Lord powerfully continued to spread and prevail."
   },
   {
    "verse": 21,
@@ -163,6 +163,32 @@
   {
    "verse": 41,
    "text": "After he had said this, he dismissed the assembly."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Holy Spirit Received at Ephesus"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul Ministers in Ephesus"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Seven Sons of Sceva"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "The Riot in Ephesus"
   }
  ]
 }

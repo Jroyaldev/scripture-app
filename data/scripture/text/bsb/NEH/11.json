@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "And the gatekeepers: Akkub, Talmon, and their associates, who kept watch at the gates — 172 men. Residents Outside Jerusalem"
+   "text": "And the gatekeepers: Akkub, Talmon, and their associates, who kept watch at the gates — 172 men."
   },
   {
    "verse": 20,
@@ -143,6 +143,20 @@
   {
    "verse": 36,
    "text": "And some divisions of the Levites of Judah settled in Benjamin."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jerusalem’s New Settlers"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "Residents Outside Jerusalem"
   }
  ]
 }

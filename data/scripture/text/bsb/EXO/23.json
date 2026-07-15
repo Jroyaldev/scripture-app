@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "Do not oppress a foreign resident, since you yourselves know how it feels to be foreigners; for you were foreigners in the land of Egypt. Sabbath Laws (; )"
+   "text": "Do not oppress a foreign resident, since you yourselves know how it feels to be foreigners; for you were foreigners in the land of Egypt."
   },
   {
    "verse": 10,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "Pay close attention to everything I have said to you. You must not invoke the names of other gods; they must not be heard on your lips. The Three Feasts of Pilgrimage ()"
+   "text": "Pay close attention to everything I have said to you. You must not invoke the names of other gods; they must not be heard on your lips."
   },
   {
    "verse": 14,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "Bring the best of the firstfruits of your soil to the house of the LORD your God. You must not cook a young goat in its mother’s milk. God’s Angel to Lead ()"
+   "text": "Bring the best of the firstfruits of your soil to the house of the LORD your God. You must not cook a young goat in its mother’s milk."
   },
   {
    "verse": 20,
@@ -131,6 +131,32 @@
   {
    "verse": 33,
    "text": "They must not remain in your land, lest they cause you to sin against Me. For if you serve their gods, it will surely be a snare to you.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Justice and Mercy"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Sabbath Laws"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "The Three Feasts of Pilgrimage"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Angel to Lead"
   }
  ]
 }

@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "Salvation exists in no one else, for there is no other name under heaven given to men by which we must be saved.” The Name Forbidden"
+   "text": "Salvation exists in no one else, for there is no other name under heaven given to men by which we must be saved.”"
   },
   {
    "verse": 13,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "For the man who was miraculously healed was over forty years old. The Believers’ Prayer ()"
+   "text": "For the man who was miraculously healed was over forty years old."
   },
   {
    "verse": 23,
@@ -122,7 +122,7 @@
   },
   {
    "verse": 31,
-   "text": "After they had prayed, their meeting place was shaken, and they were all filled with the Holy Spirit and spoke the word of God boldly. Sharing among Believers ()"
+   "text": "After they had prayed, their meeting place was shaken, and they were all filled with the Holy Spirit and spoke the word of God boldly."
   },
   {
    "verse": 32,
@@ -147,6 +147,32 @@
   {
    "verse": 37,
    "text": "sold a field he owned, brought the money, and laid it at the apostles’ feet."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Peter and John before the Sanhedrin"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Name Forbidden"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "The Believers’ Prayer"
+  },
+  {
+   "beforeVerse": 32,
+   "kind": "section",
+   "level": 1,
+   "text": "Sharing among Believers"
   }
  ]
 }

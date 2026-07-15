@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "So Gideon sent the rest of the Israelites to their tents but kept the three hundred men, who took charge of the provisions and rams’ horns of the others. And the camp of Midian lay below him in the valley. The Sword of Gideon"
+   "text": "So Gideon sent the rest of the Israelites to their tents but kept the three hundred men, who took charge of the provisions and rams’ horns of the others. And the camp of Midian lay below him in the valley."
   },
   {
    "verse": 9,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "His friend replied: “This is nothing less than the sword of Gideon son of Joash, the Israelite. God has delivered Midian and the whole camp into his hand.” Gideon Defeats Midian"
+   "text": "His friend replied: “This is nothing less than the sword of Gideon son of Joash, the Israelite. God has delivered Midian and the whole camp into his hand.”"
   },
   {
    "verse": 15,
@@ -99,6 +99,26 @@
   {
    "verse": 25,
    "text": "They also captured Oreb and Zeeb, the two princes of Midian; and they killed Oreb at the rock of Oreb and Zeeb at the winepress of Zeeb. So they pursued the Midianites and brought the heads of Oreb and Zeeb to Gideon on the other side of the Jordan."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Gideon’s Army of Three Hundred"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "The Sword of Gideon"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Gideon Defeats Midian"
   }
  ]
 }

@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "For we are God’s workmanship, created in Christ Jesus to do good works, which God prepared in advance as our way of life. One in Christ ()"
+   "text": "For we are God’s workmanship, created in Christ Jesus to do good works, which God prepared in advance as our way of life."
   },
   {
    "verse": 11,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "For through Him we both have access to the Father by one Spirit. Christ Our Cornerstone (; ; )"
+   "text": "For through Him we both have access to the Father by one Spirit."
   },
   {
    "verse": 19,
@@ -87,6 +87,26 @@
   {
    "verse": 22,
    "text": "And in Him you too are being built together into a dwelling place for God in His Spirit."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Alive with Christ"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "One in Christ"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "Christ Our Cornerstone"
   }
  ]
 }

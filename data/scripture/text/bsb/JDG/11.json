@@ -110,7 +110,7 @@
   },
   {
    "verse": 28,
-   "text": "But the king of the Ammonites paid no heed to the message Jephthah sent him. Jephthah’s Tragic Vow"
+   "text": "But the king of the Ammonites paid no heed to the message Jephthah sent him."
   },
   {
    "verse": 29,
@@ -159,6 +159,20 @@
   {
    "verse": 40,
    "text": "that each year the young women of Israel go out for four days to lament the daughter of Jephthah the Gileadite."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jephthah Delivers Israel"
+  },
+  {
+   "beforeVerse": 29,
+   "kind": "section",
+   "level": 1,
+   "text": "Jephthah’s Tragic Vow"
   }
  ]
 }

@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "He named the place Massah and Meribah because the Israelites quarreled, and because they tested the LORD, saying, “Is the LORD among us or not?” The Defeat of the Amalekites"
+   "text": "He named the place Massah and Meribah because the Israelites quarreled, and because they tested the LORD, saying, “Is the LORD among us or not?”"
   },
   {
    "verse": 8,
@@ -63,6 +63,20 @@
   {
    "verse": 16,
    "text": "“Indeed,” he said, “a hand was lifted up toward the throne of the LORD. The LORD will war against Amalek from generation to generation.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Water from the Rock"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "The Defeat of the Amalekites"
   }
  ]
 }

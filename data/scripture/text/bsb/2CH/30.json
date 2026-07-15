@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "Moreover, the power of God was on the people in Judah to give them one heart to obey the command of the king and his officials according to the word of the LORD. Hezekiah Celebrates the Passover"
+   "text": "Moreover, the power of God was on the people in Judah to give them one heart to obey the command of the king and his officials according to the word of the LORD."
   },
   {
    "verse": 13,
@@ -107,6 +107,20 @@
   {
    "verse": 27,
    "text": "Then the priests and the Levites stood to bless the people, and God heard their voice, and their prayer came into His holy dwelling place in heaven."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Hezekiah Proclaims a Passover"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Hezekiah Celebrates the Passover"
   }
  ]
 }

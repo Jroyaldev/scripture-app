@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "So Nathan relayed to David all the words of this entire revelation. David’s Prayer of Thanksgiving ()"
+   "text": "So Nathan relayed to David all the words of this entire revelation."
   },
   {
    "verse": 18,
@@ -115,6 +115,20 @@
   {
    "verse": 29,
    "text": "Now therefore, may it please You to bless the house of Your servant, that it may continue forever before You. For You, O Lord GOD, have spoken, and with Your blessing the house of Your servant will be blessed forever.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Covenant with David"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "David’s Prayer of Thanksgiving"
   }
  ]
 }

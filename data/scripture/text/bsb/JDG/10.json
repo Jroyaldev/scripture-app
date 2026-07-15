@@ -6,7 +6,7 @@
   },
   {
    "verse": 2,
-   "text": "Tola judged Israel twenty-three years, and when he died, he was buried in Shamir. Jair"
+   "text": "Tola judged Israel twenty-three years, and when he died, he was buried in Shamir."
   },
   {
    "verse": 3,
@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "When Jair died, he was buried in Kamon. Oppression by the Philistines and Ammonites"
+   "text": "When Jair died, he was buried in Kamon."
   },
   {
    "verse": 6,
@@ -71,6 +71,26 @@
   {
    "verse": 18,
    "text": "And the rulers of Gilead said to one another, “Whoever will launch the attack against the Ammonites will be the head of all who live in Gilead.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Tola"
+  },
+  {
+   "beforeVerse": 3,
+   "kind": "section",
+   "level": 1,
+   "text": "Jair"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "Oppression by the Philistines and Ammonites"
   }
  ]
 }

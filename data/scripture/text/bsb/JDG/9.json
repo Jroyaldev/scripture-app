@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "Then all the leaders of Shechem and Beth-millo gathered beside the oak at the pillar in Shechem and proceeded to make Abimelech their king. Jotham’s Parable"
+   "text": "Then all the leaders of Shechem and Beth-millo gathered beside the oak at the pillar in Shechem and proceeded to make Abimelech their king."
   },
   {
    "verse": 7,
@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "Then Jotham ran away, escaping to Beer, and he lived there for fear of his brother Abimelech. Gaal Conspires with the Shechemites"
+   "text": "Then Jotham ran away, escaping to Beer, and he lived there for fear of his brother Abimelech."
   },
   {
    "verse": 22,
@@ -114,7 +114,7 @@
   },
   {
    "verse": 29,
-   "text": "If only this people were under my authority, I would remove Abimelech; I would say to him, ‘Muster your army and come out!’” The Fall of Shechem"
+   "text": "If only this people were under my authority, I would remove Abimelech; I would say to him, ‘Muster your army and come out!’”"
   },
   {
    "verse": 30,
@@ -194,7 +194,7 @@
   },
   {
    "verse": 49,
-   "text": "So each man also cut his own branch and followed Abimelech. Then they piled the branches against the inner chamber and set it on fire above them, killing everyone in the tower of Shechem, about a thousand men and women. Abimelech’s Punishment"
+   "text": "So each man also cut his own branch and followed Abimelech. Then they piled the branches against the inner chamber and set it on fire above them, killing everyone in the tower of Shechem, about a thousand men and women."
   },
   {
    "verse": 50,
@@ -227,6 +227,38 @@
   {
    "verse": 57,
    "text": "And God also brought all the wickedness of the men of Shechem back upon their own heads. So the curse of Jotham son of Jerubbaal came upon them."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Abimelech’s Conspiracy"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Jotham’s Parable"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "Gaal Conspires with the Shechemites"
+  },
+  {
+   "beforeVerse": 30,
+   "kind": "section",
+   "level": 1,
+   "text": "The Fall of Shechem"
+  },
+  {
+   "beforeVerse": 50,
+   "kind": "section",
+   "level": 1,
+   "text": "Abimelech’s Punishment"
   }
  ]
 }

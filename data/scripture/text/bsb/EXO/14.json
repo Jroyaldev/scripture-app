@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "The LORD will fight for you; you need only to be still.” Parting the Red Sea"
+   "text": "The LORD will fight for you; you need only to be still.”"
   },
   {
    "verse": 15,
@@ -123,6 +123,20 @@
   {
    "verse": 31,
    "text": "When Israel saw the great power that the LORD had exercised over the Egyptians, the people feared the LORD and believed in Him and in His servant Moses."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Pharaoh Pursues the Israelites"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Parting the Red Sea"
   }
  ]
 }

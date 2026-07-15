@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "When we had finished our voyage from Tyre, we landed at Ptolemais, where we greeted the brothers and stayed with them for a day. Paul Visits Philip the Evangelist"
+   "text": "When we had finished our voyage from Tyre, we landed at Ptolemais, where we greeted the brothers and stayed with them for a day."
   },
   {
    "verse": 8,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "Some of the disciples from Caesarea accompanied us, and they took us to stay at the home of Mnason the Cypriot, an early disciple. Paul’s Arrival at Jerusalem"
+   "text": "Some of the disciples from Caesarea accompanied us, and they took us to stay at the home of Mnason the Cypriot, an early disciple."
   },
   {
    "verse": 17,
@@ -102,7 +102,7 @@
   },
   {
    "verse": 26,
-   "text": "So the next day Paul took the men and purified himself along with them. Then he entered the temple to give notice of the date when their purification would be complete and the offering would be made for each of them. Paul Seized at the Temple"
+   "text": "So the next day Paul took the men and purified himself along with them. Then he entered the temple to give notice of the date when their purification would be complete and the offering would be made for each of them."
   },
   {
    "verse": 27,
@@ -142,7 +142,7 @@
   },
   {
    "verse": 36,
-   "text": "For the crowd that followed him kept shouting, “Away with him!” Paul Addresses the Crowd"
+   "text": "For the crowd that followed him kept shouting, “Away with him!”"
   },
   {
    "verse": 37,
@@ -159,6 +159,38 @@
   {
    "verse": 40,
    "text": "Having received permission, Paul stood on the steps and motioned to the crowd. A great hush came over the crowd, and he addressed them in Hebrew:"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Journey to Jerusalem"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul Visits Philip the Evangelist"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Arrival at Jerusalem"
+  },
+  {
+   "beforeVerse": 27,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul Seized at the Temple"
+  },
+  {
+   "beforeVerse": 37,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul Addresses the Crowd"
   }
  ]
 }

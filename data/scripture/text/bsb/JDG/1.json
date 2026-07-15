@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "Then Adoni-bezek said, “Seventy kings with their thumbs and big toes cut off have gathered the scraps under my table. As I have done to them, so God has repaid me.” And they brought him to Jerusalem, where he died. The Capture of Jerusalem and Hebron ()"
+   "text": "Then Adoni-bezek said, “Seventy kings with their thumbs and big toes cut off have gathered the scraps under my table. As I have done to them, so God has repaid me.” And they brought him to Jerusalem, where he died."
   },
   {
    "verse": 8,
@@ -102,7 +102,7 @@
   },
   {
    "verse": 26,
-   "text": "And the man went to the land of the Hittites, built a city, and called it Luz, which is its name to this day. The Failure to Complete the Conquest"
+   "text": "And the man went to the land of the Hittites, built a city, and called it Luz, which is its name to this day."
   },
   {
    "verse": 27,
@@ -143,6 +143,26 @@
   {
    "verse": 36,
    "text": "And the border of the Amorites extended from the Ascent of Akrabbim to Sela and beyond."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Conquest of Canaan Proceeds"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "The Capture of Jerusalem and Hebron"
+  },
+  {
+   "beforeVerse": 27,
+   "kind": "section",
+   "level": 1,
+   "text": "The Failure to Complete the Conquest"
   }
  ]
 }

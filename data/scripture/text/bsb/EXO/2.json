@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "When the child had grown older, she brought him to Pharaoh’s daughter, and he became her son. She named him Moses and explained, “I drew him out of the water.” The Rejection and Flight of Moses ()"
+   "text": "When the child had grown older, she brought him to Pharaoh’s daughter, and he became her son. She named him Moses and explained, “I drew him out of the water.”"
   },
   {
    "verse": 11,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "And she gave birth to a son, and Moses named him Gershom, saying, “I have become a foreigner in a foreign land.” God Hears the Cry of the Israelites"
+   "text": "And she gave birth to a son, and Moses named him Gershom, saying, “I have become a foreigner in a foreign land.”"
   },
   {
    "verse": 23,
@@ -99,6 +99,26 @@
   {
    "verse": 25,
    "text": "God saw the Israelites and took notice."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Birth and Adoption of Moses"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "The Rejection and Flight of Moses"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "God Hears the Cry of the Israelites"
   }
  ]
 }

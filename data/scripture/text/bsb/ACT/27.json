@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "Since the harbor was unsuitable to winter in, the majority decided to sail on, hoping that somehow they could reach Phoenix to winter there. Phoenix was a harbor in Crete facing both southwest and northwest. The Storm at Sea ()"
+   "text": "Since the harbor was unsuitable to winter in, the majority decided to sail on, hoping that somehow they could reach Phoenix to winter there. Phoenix was a harbor in Crete facing both southwest and northwest."
   },
   {
    "verse": 13,
@@ -102,7 +102,7 @@
   },
   {
    "verse": 26,
-   "text": "However, we must run aground on some island.” The Shipwreck"
+   "text": "However, we must run aground on some island.”"
   },
   {
    "verse": 27,
@@ -175,6 +175,26 @@
   {
    "verse": 44,
    "text": "The rest were to follow on planks and various parts of the ship. In this way everyone was brought safely to land."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul Sails for Rome"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Storm at Sea"
+  },
+  {
+   "beforeVerse": 27,
+   "kind": "section",
+   "level": 1,
+   "text": "The Shipwreck"
   }
  ]
 }

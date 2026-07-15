@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "Husbands, in the same way, treat your wives with consideration as a delicate vessel, and with honor as fellow heirs of the gracious gift of life, so that your prayers will not be hindered. Turning from Evil"
+   "text": "Husbands, in the same way, treat your wives with consideration as a delicate vessel, and with honor as fellow heirs of the gracious gift of life, so that your prayers will not be hindered."
   },
   {
    "verse": 8,
@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "Who can harm you if you are zealous for what is good? Suffering for Righteousness"
+   "text": "Who can harm you if you are zealous for what is good?"
   },
   {
    "verse": 14,
@@ -87,6 +87,26 @@
   {
    "verse": 22,
    "text": "who has gone into heaven and is at the right hand of God, with angels, authorities, and powers subject to Him."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Wives and Husbands"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Turning from Evil"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Suffering for Righteousness"
   }
  ]
 }

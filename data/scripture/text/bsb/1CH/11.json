@@ -10,7 +10,7 @@
   },
   {
    "verse": 3,
-   "text": "So all the elders of Israel came to the king at Hebron, where David made a covenant with them before the LORD. And they anointed him king over Israel, according to the word of the LORD through Samuel. David Conquers Jerusalem ()"
+   "text": "So all the elders of Israel came to the king at Hebron, where David made a covenant with them before the LORD. And they anointed him king over Israel, according to the word of the LORD through Samuel."
   },
   {
    "verse": 4,
@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "And David became greater and greater, for the LORD of Hosts was with him. David’s Mighty Men ()"
+   "text": "And David became greater and greater, for the LORD of Hosts was with him."
   },
   {
    "verse": 10,
@@ -187,6 +187,26 @@
   {
    "verse": 47,
    "text": "Eliel, Obed, and Jaasiel the Mezobaite."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "David Anointed King of All Israel"
+  },
+  {
+   "beforeVerse": 4,
+   "kind": "section",
+   "level": 1,
+   "text": "David Conquers Jerusalem"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "David’s Mighty Men"
   }
  ]
 }

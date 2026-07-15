@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "but the Israelites were fruitful and increased rapidly; they multiplied and became exceedingly numerous, so that the land was filled with them. Oppression by a New King ()"
+   "text": "but the Israelites were fruitful and increased rapidly; they multiplied and became exceedingly numerous, so that the land was filled with them."
   },
   {
    "verse": 8,
@@ -87,6 +87,20 @@
   {
    "verse": 22,
    "text": "Then Pharaoh commanded all his people: “Every son born to the Hebrews you must throw into the Nile, but every daughter you may allow to live.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Israelites Multiply in Egypt"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Oppression by a New King"
   }
  ]
 }

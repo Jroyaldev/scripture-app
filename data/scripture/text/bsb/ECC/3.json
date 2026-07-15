@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "a time to love and a time to hate, a time for war and a time for peace. God’s Works Remain Forever"
+   "text": "a time to love and a time to hate, a time for war and a time for peace."
   },
   {
    "verse": 9,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "What exists has already been, and what will be has already been, for God will call to account what has passed. From Dust to Dust"
+   "text": "What exists has already been, and what will be has already been, for God will call to account what has passed."
   },
   {
    "verse": 16,
@@ -87,6 +87,26 @@
   {
    "verse": 22,
    "text": "I have seen that there is nothing better for a man than to enjoy his work, because that is his lot. For who can bring him to see what will come after him?"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "To Everything There Is a Season"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Works Remain Forever"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "From Dust to Dust"
   }
  ]
 }

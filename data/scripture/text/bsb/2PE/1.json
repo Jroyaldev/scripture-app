@@ -6,7 +6,7 @@
   },
   {
    "verse": 2,
-   "text": "Grace and peace be multiplied to you through the knowledge of God and of Jesus our Lord. Partakers of the Divine Nature"
+   "text": "Grace and peace be multiplied to you through the knowledge of God and of Jesus our Lord."
   },
   {
    "verse": 3,
@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "And I will make every effort to ensure that after my departure, you will be able to recall these things at all times. Eyewitnesses of His Majesty (; ; )"
+   "text": "And I will make every effort to ensure that after my departure, you will be able to recall these things at all times."
   },
   {
    "verse": 16,
@@ -83,6 +83,26 @@
   {
    "verse": 21,
    "text": "For no such prophecy was ever brought forth by the will of man, but men spoke from God as they were carried along by the Holy Spirit."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Greeting from Peter"
+  },
+  {
+   "beforeVerse": 3,
+   "kind": "section",
+   "level": 1,
+   "text": "Partakers of the Divine Nature"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Eyewitnesses of His Majesty"
   }
  ]
 }

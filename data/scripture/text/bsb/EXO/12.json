@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "The blood on the houses where you are staying will be a sign; when I see the blood, I will pass over you. No plague will fall on you to destroy you when I strike the land of Egypt. The Feast of Unleavened Bread (; ; )"
+   "text": "The blood on the houses where you are staying will be a sign; when I see the blood, I will pass over you. No plague will fall on you to destroy you when I strike the land of Egypt."
   },
   {
    "verse": 14,
@@ -110,7 +110,7 @@
   },
   {
    "verse": 28,
-   "text": "And the Israelites went and did just what the LORD had commanded Moses and Aaron. The Tenth Plague: Death of the Firstborn"
+   "text": "And the Israelites went and did just what the LORD had commanded Moses and Aaron."
   },
   {
    "verse": 29,
@@ -118,7 +118,7 @@
   },
   {
    "verse": 30,
-   "text": "During the night Pharaoh got up — he and all his officials and all the Egyptians — and there was loud wailing in Egypt; for there was no house without someone dead. The Exodus Begins"
+   "text": "During the night Pharaoh got up — he and all his officials and all the Egyptians — and there was loud wailing in Egypt; for there was no house without someone dead."
   },
   {
    "verse": 31,
@@ -166,7 +166,7 @@
   },
   {
    "verse": 42,
-   "text": "Because the LORD kept a vigil that night to bring them out of the land of Egypt, this same night is to be a vigil to the LORD, to be observed by all the Israelites for the generations to come. Instructions for the Passover"
+   "text": "Because the LORD kept a vigil that night to bring them out of the land of Egypt, this same night is to be a vigil to the LORD, to be observed by all the Israelites for the generations to come."
   },
   {
    "verse": 43,
@@ -203,6 +203,38 @@
   {
    "verse": 51,
    "text": "And on that very day the LORD brought the Israelites out of the land of Egypt by their divisions."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The First Passover"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "The Feast of Unleavened Bread"
+  },
+  {
+   "beforeVerse": 29,
+   "kind": "section",
+   "level": 1,
+   "text": "The Tenth Plague: Death of the Firstborn"
+  },
+  {
+   "beforeVerse": 31,
+   "kind": "section",
+   "level": 1,
+   "text": "The Exodus Begins"
+  },
+  {
+   "beforeVerse": 43,
+   "kind": "section",
+   "level": 1,
+   "text": "Instructions for the Passover"
   }
  ]
 }

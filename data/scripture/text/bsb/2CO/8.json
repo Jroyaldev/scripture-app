@@ -58,7 +58,7 @@
   },
   {
    "verse": 15,
-   "text": "As it is written: “He who gathered much had no excess, and he who gathered little had no shortfall.” Titus Commended ()"
+   "text": "As it is written: “He who gathered much had no excess, and he who gathered little had no shortfall.”"
   },
   {
    "verse": 16,
@@ -95,6 +95,20 @@
   {
    "verse": 24,
    "text": "In full view of the churches, then, show these men the proof of your love and the reason for our boasting about you."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Generosity Commended"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 1,
+   "text": "Titus Commended"
   }
  ]
 }

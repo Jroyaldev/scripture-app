@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "They worship Me in vain; they teach as doctrine the precepts of men.’” What Defiles a Man ()"
+   "text": "They worship Me in vain; they teach as doctrine the precepts of men.’”"
   },
   {
    "verse": 10,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "These are what defile a man, but eating with unwashed hands does not defile him.” The Faith of the Canaanite Woman ()"
+   "text": "These are what defile a man, but eating with unwashed hands does not defile him.”"
   },
   {
    "verse": 21,
@@ -110,7 +110,7 @@
   },
   {
    "verse": 28,
-   "text": "“O woman,” Jesus answered, “your faith is great! Let it be done for you as you desire.” And her daughter was healed from that very hour. The Feeding of the Four Thousand (; )"
+   "text": "“O woman,” Jesus answered, “your faith is great! Let it be done for you as you desire.” And her daughter was healed from that very hour."
   },
   {
    "verse": 29,
@@ -155,6 +155,32 @@
   {
    "verse": 39,
    "text": "After Jesus had dismissed the crowds, He got into the boat and went to the region of Magadan."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Tradition of the Elders"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "What Defiles a Man"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "The Faith of the Canaanite Woman"
+  },
+  {
+   "beforeVerse": 29,
+   "kind": "section",
+   "level": 1,
+   "text": "The Feeding of the Four Thousand"
   }
  ]
 }

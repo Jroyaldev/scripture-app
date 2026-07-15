@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "I trampled the nations in My anger; in My wrath I made them drunk and poured out their blood on the ground.” God’s Mercies Recalled"
+   "text": "I trampled the nations in My anger; in My wrath I made them drunk and poured out their blood on the ground.”"
   },
   {
    "verse": 7,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "Like cattle going down to the valley, the Spirit of the LORD gave them rest. You led Your people this way to make for Yourself a glorious name. A Prayer for Mercy ()"
+   "text": "Like cattle going down to the valley, the Spirit of the LORD gave them rest. You led Your people this way to make for Yourself a glorious name."
   },
   {
    "verse": 15,
@@ -75,6 +75,26 @@
   {
    "verse": 19,
    "text": "We have become like those You never ruled, like those not called by Your name."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Vengeance on the Nations"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "God’s Mercies Recalled"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "A Prayer for Mercy"
   }
  ]
 }

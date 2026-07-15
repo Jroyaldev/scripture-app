@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "They gave money to the masons and carpenters, and food and drink and oil to the people of Sidon and Tyre to bring cedar logs from Lebanon to Joppa by sea, as authorized by Cyrus king of Persia. Temple Restoration Begins"
+   "text": "They gave money to the masons and carpenters, and food and drink and oil to the people of Sidon and Tyre to bring cedar logs from Lebanon to Joppa by sea, as authorized by Cyrus king of Persia."
   },
   {
    "verse": 8,
@@ -51,6 +51,20 @@
   {
    "verse": 13,
    "text": "The people could not distinguish the shouts of joy from the sound of weeping, because the people were making so much noise. And the sound was heard from afar."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Sacrifices Restored"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "Temple Restoration Begins"
   }
  ]
 }

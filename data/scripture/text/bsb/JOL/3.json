@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "The LORD will roar from Zion and raise His voice from Jerusalem; heaven and earth will tremble. But the LORD will be a refuge for His people, a stronghold for the people of Israel. Blessings for God’s People"
+   "text": "The LORD will roar from Zion and raise His voice from Jerusalem; heaven and earth will tremble. But the LORD will be a refuge for His people, a stronghold for the people of Israel."
   },
   {
    "verse": 17,
@@ -83,6 +83,20 @@
   {
    "verse": 21,
    "text": "For I will avenge their blood, which I have not yet avenged.” For the LORD dwells in Zion."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The LORD Judges the Nations"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Blessings for God’s People"
   }
  ]
 }

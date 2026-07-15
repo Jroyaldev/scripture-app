@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "So David took the spear and water jug by Saul’s head, and they departed. No one saw them or knew about it, nor did anyone wake up; they all remained asleep, because a deep sleep from the LORD had fallen on them. David Reproves Abner"
+   "text": "So David took the spear and water jug by Saul’s head, and they departed. No one saw them or knew about it, nor did anyone wake up; they all remained asleep, because a deep sleep from the LORD had fallen on them."
   },
   {
    "verse": 13,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "So do not let my blood fall to the ground far from the presence of the LORD. For the king of Israel has come out to look for a flea, like one who hunts a partridge in the mountains.” Saul Acknowledges His Sin"
+   "text": "So do not let my blood fall to the ground far from the presence of the LORD. For the king of Israel has come out to look for a flea, like one who hunts a partridge in the mountains.”"
   },
   {
    "verse": 21,
@@ -99,6 +99,26 @@
   {
    "verse": 25,
    "text": "Saul said to him, “May you be blessed, David my son. You will accomplish great things and will surely prevail.” So David went on his way, and Saul returned home."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "David Again Spares Saul"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "David Reproves Abner"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "Saul Acknowledges His Sin"
   }
  ]
 }

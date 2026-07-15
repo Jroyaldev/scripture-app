@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "All these are the beginning of birth pains. Witnessing to All Nations (; )"
+   "text": "All these are the beginning of birth pains."
   },
   {
    "verse": 9,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "And this gospel of the kingdom will be preached in all the world as a testimony to all nations, and then the end will come. The Abomination of Desolation (; )"
+   "text": "And this gospel of the kingdom will be preached in all the world as a testimony to all nations, and then the end will come."
   },
   {
    "verse": 15,
@@ -98,7 +98,7 @@
   },
   {
    "verse": 25,
-   "text": "See, I have told you in advance. The Return of the Son of Man (; )"
+   "text": "See, I have told you in advance."
   },
   {
    "verse": 26,
@@ -122,7 +122,7 @@
   },
   {
    "verse": 31,
-   "text": "And He will send out His angels with a loud trumpet call, and they will gather His elect from the four winds, from one end of the heavens to the other. The Lesson of the Fig Tree (; )"
+   "text": "And He will send out His angels with a loud trumpet call, and they will gather His elect from the four winds, from one end of the heavens to the other."
   },
   {
    "verse": 32,
@@ -138,7 +138,7 @@
   },
   {
    "verse": 35,
-   "text": "Heaven and earth will pass away, but My words will never pass away. Readiness at Any Hour (; ; )"
+   "text": "Heaven and earth will pass away, but My words will never pass away."
   },
   {
    "verse": 36,
@@ -203,6 +203,44 @@
   {
    "verse": 51,
    "text": "Then he will cut him to pieces and assign him a place with the hypocrites, where there will be weeping and gnashing of teeth.[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Temple Destruction and Other Signs"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Witnessing to All Nations"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "The Abomination of Desolation"
+  },
+  {
+   "beforeVerse": 26,
+   "kind": "section",
+   "level": 1,
+   "text": "The Return of the Son of Man"
+  },
+  {
+   "beforeVerse": 32,
+   "kind": "section",
+   "level": 1,
+   "text": "The Lesson of the Fig Tree"
+  },
+  {
+   "beforeVerse": 36,
+   "kind": "section",
+   "level": 1,
+   "text": "Readiness at Any Hour"
   }
  ]
 }

@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "Consider now that the LORD has chosen you to build a house for the sanctuary. Be strong and do it.” The Plans for the Temple"
+   "text": "Consider now that the LORD has chosen you to build a house for the sanctuary. Be strong and do it.”"
   },
   {
    "verse": 11,
@@ -83,6 +83,20 @@
   {
    "verse": 21,
    "text": "The divisions of the priests and Levites are ready for all the service of the house of God, and every willing man of every skill will be at your disposal for the work. The officials and all the people are fully at your command.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "David Commissions Solomon"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "The Plans for the Temple"
   }
  ]
 }

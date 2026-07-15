@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "Will He be angry forever? Will He be indignant to the end?’ This you have spoken, but you keep doing all the evil you can.” Judah Follows Israel’s Example"
+   "text": "Will He be angry forever? Will He be indignant to the end?’ This you have spoken, but you keep doing all the evil you can.”"
   },
   {
    "verse": 6,
@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "Yet in spite of all this, her unfaithful sister Judah did not return to Me with all her heart, but only in pretense,” declares the LORD. A Call to Repentance (; )"
+   "text": "Yet in spite of all this, her unfaithful sister Judah did not return to Me with all her heart, but only in pretense,” declares the LORD."
   },
   {
    "verse": 11,
@@ -99,6 +99,26 @@
   {
    "verse": 25,
    "text": "Let us lie down in our shame; let our disgrace cover us. We have sinned against the LORD our God, both we and our fathers; from our youth even to this day we have not obeyed the voice of the LORD our God.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Wages of the Harlot"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "Judah Follows Israel’s Example"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "A Call to Repentance"
   }
  ]
 }

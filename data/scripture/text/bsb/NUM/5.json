@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "So the Israelites did this, sending such people outside the camp. They did just as the LORD had instructed Moses. Confession and Restitution ()"
+   "text": "So the Israelites did this, sending such people outside the camp. They did just as the LORD had instructed Moses."
   },
   {
    "verse": 5,
@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "Each man’s sacred gifts are his own, but whatever he gives to the priest will belong to the priest.” The Adultery Test"
+   "text": "Each man’s sacred gifts are his own, but whatever he gives to the priest will belong to the priest.”"
   },
   {
    "verse": 11,
@@ -123,6 +123,26 @@
   {
    "verse": 31,
    "text": "The husband will be free from guilt, but the woman shall bear her iniquity.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Cleansing the Camps"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "Confession and Restitution"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "The Adultery Test"
   }
  ]
 }

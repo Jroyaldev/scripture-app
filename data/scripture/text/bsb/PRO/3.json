@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "for the LORD disciplines the one He loves, as does a father the son in whom he delights. The Blessings of Wisdom"
+   "text": "for the LORD disciplines the one He loves, as does a father the son in whom he delights."
   },
   {
    "verse": 13,
@@ -139,6 +139,20 @@
   {
    "verse": 35,
    "text": "The wise will inherit honor, but fools are held up to shame."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Trust in the LORD with All Your Heart"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Blessings of Wisdom"
   }
  ]
 }

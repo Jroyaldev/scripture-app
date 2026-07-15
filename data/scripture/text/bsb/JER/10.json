@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "The Portion of Jacob is not like these, for He is the Maker of all things, and Israel is the tribe of His inheritance— the LORD of Hosts is His name. The Coming Captivity of Judah"
+   "text": "The Portion of Jacob is not like these, for He is the Maker of all things, and Israel is the tribe of His inheritance— the LORD of Hosts is His name."
   },
   {
    "verse": 17,
@@ -99,6 +99,20 @@
   {
    "verse": 25,
    "text": "Pour out Your wrath on the nations that do not acknowledge You, and on the families that do not call on Your name. For they have devoured Jacob; they have consumed him and finished him off; they have devastated his homeland."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Sovereignty of God"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "The Coming Captivity of Judah"
   }
  ]
 }

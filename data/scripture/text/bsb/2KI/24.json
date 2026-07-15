@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "As for the rest of the acts of Jehoiakim, along with all his accomplishments, are they not written in the Book of the Chronicles of the Kings of Judah? Jehoiachin Reigns in Judah ()"
+   "text": "As for the rest of the acts of Jehoiakim, along with all his accomplishments, are they not written in the Book of the Chronicles of the Kings of Judah?"
   },
   {
    "verse": 6,
@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "And he did evil in the sight of the LORD, just as his father had done. The Captivity of Jerusalem ()"
+   "text": "And he did evil in the sight of the LORD, just as his father had done."
   },
   {
    "verse": 10,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "Then the king of Babylon made Mattaniah, Jehoiachin’s uncle, king in his place and changed his name to Zedekiah. Zedekiah Reigns in Judah (; )"
+   "text": "Then the king of Babylon made Mattaniah, Jehoiachin’s uncle, king in his place and changed his name to Zedekiah."
   },
   {
    "verse": 18,
@@ -79,6 +79,32 @@
   {
    "verse": 20,
    "text": "For because of the anger of the LORD, all this happened in Jerusalem and Judah, until He finally banished them from His presence. And Zedekiah also rebelled against the king of Babylon."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Babylon Controls Jehoiakim"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "Jehoiachin Reigns in Judah"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "The Captivity of Jerusalem"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Zedekiah Reigns in Judah"
   }
  ]
 }

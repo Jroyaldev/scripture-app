@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "So Ezra got up and made the leading priests, Levites, and all Israel take an oath to do what had been said. And they took the oath. The People’s Confession of Sin"
+   "text": "So Ezra got up and made the leading priests, Levites, and all Israel take an oath to do what had been said. And they took the oath."
   },
   {
    "verse": 6,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "and by the first day of the first month they had dealt with all the men who had married foreign women. Those Guilty of Intermarriage"
+   "text": "and by the first day of the first month they had dealt with all the men who had married foreign women."
   },
   {
    "verse": 18,
@@ -175,6 +175,26 @@
   {
    "verse": 44,
    "text": "All these men had married foreign women, and some of them had children by these wives."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Shecaniah’s Encouragement"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "The People’s Confession of Sin"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Those Guilty of Intermarriage"
   }
  ]
 }

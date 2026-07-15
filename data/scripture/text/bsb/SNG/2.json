@@ -2,11 +2,11 @@
  "verses": [
   {
    "verse": 1,
-   "text": "I am a rose of Sharon, a lily of the valley. The Bridegroom"
+   "text": "I am a rose of Sharon, a lily of the valley."
   },
   {
    "verse": 2,
-   "text": "Like a lily among the thorns is my darling among the maidens. The Bride"
+   "text": "Like a lily among the thorns is my darling among the maidens."
   },
   {
    "verse": 3,
@@ -50,15 +50,15 @@
   },
   {
    "verse": 13,
-   "text": "The fig tree ripens its figs; the blossoming vines spread their fragrance. Arise, come away, my darling; come away with me, my beautiful one.” The Bridegroom"
+   "text": "The fig tree ripens its figs; the blossoming vines spread their fragrance. Arise, come away, my darling; come away with me, my beautiful one.”"
   },
   {
    "verse": 14,
-   "text": "O my dove in the clefts of the rock, in the crevices of the cliff, let me see your face, let me hear your voice; for your voice is sweet, and your countenance is lovely. The Friends"
+   "text": "O my dove in the clefts of the rock, in the crevices of the cliff, let me see your face, let me hear your voice; for your voice is sweet, and your countenance is lovely."
   },
   {
    "verse": 15,
-   "text": "Catch for us the foxes— the little foxes that ruin the vineyards— for our vineyards are in bloom. The Bride"
+   "text": "Catch for us the foxes— the little foxes that ruin the vineyards— for our vineyards are in bloom."
   },
   {
    "verse": 16,
@@ -67,6 +67,50 @@
   {
    "verse": 17,
    "text": "Before the day breaks and shadows flee, turn, my beloved, and be like a gazelle or a young stag on the mountains of Bether."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Bride’s Admiration"
+  },
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 2,
+   "text": "The Bride"
+  },
+  {
+   "beforeVerse": 2,
+   "kind": "section",
+   "level": 2,
+   "text": "The Bridegroom"
+  },
+  {
+   "beforeVerse": 3,
+   "kind": "section",
+   "level": 2,
+   "text": "The Bride"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 2,
+   "text": "The Bridegroom"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 2,
+   "text": "The Friends"
+  },
+  {
+   "beforeVerse": 16,
+   "kind": "section",
+   "level": 2,
+   "text": "The Bride"
   }
  ]
 }

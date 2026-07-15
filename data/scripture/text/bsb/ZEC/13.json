@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "If someone asks him, ‘What are these wounds on your chest?’ he will answer, ‘These are the wounds I received in the house of my friends.’ The Shepherd Struck, the Sheep Scattered (; )"
+   "text": "If someone asks him, ‘What are these wounds on your chest?’ he will answer, ‘These are the wounds I received in the house of my friends.’"
   },
   {
    "verse": 7,
@@ -35,6 +35,20 @@
   {
    "verse": 9,
    "text": "This third I will bring through the fire; I will refine them like silver and test them like gold. They will call on My name, and I will answer them. I will say, ‘They are My people,’ and they will say, ‘The LORD is our God.’”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "An End to Idolatry"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "The Shepherd Struck, the Sheep Scattered"
   }
  ]
 }

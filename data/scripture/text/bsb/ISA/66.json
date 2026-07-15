@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "Hear the uproar from the city; listen to the voice from the temple! It is the voice of the LORD, repaying His enemies what they deserve! Rejoice with Jerusalem"
+   "text": "Hear the uproar from the city; listen to the voice from the temple! It is the voice of the LORD, repaying His enemies what they deserve!"
   },
   {
    "verse": 7,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "When you see, you will rejoice, and you will flourish like grass; then the hand of the LORD will be revealed to His servants, but His wrath will be shown to His enemies. Final Judgments against the Wicked"
+   "text": "When you see, you will rejoice, and you will flourish like grass; then the hand of the LORD will be revealed to His servants, but His wrath will be shown to His enemies."
   },
   {
    "verse": 15,
@@ -95,6 +95,26 @@
   {
    "verse": 24,
    "text": "“As they go forth, they will see the corpses of the men who have rebelled against Me; for their worm will never die, their fire will never be quenched, and they will be a horror to all mankind.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Heaven Is My Throne"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Rejoice with Jerusalem"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Final Judgments against the Wicked"
   }
  ]
 }

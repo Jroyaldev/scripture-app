@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "And immediately the man got up, picked up his mat, and walked out in front of them all. As a result, they were all astounded and glorified God, saying, “We have never seen anything like this!” Jesus Calls Levi (; )"
+   "text": "And immediately the man got up, picked up his mat, and walked out in front of them all. As a result, they were all astounded and glorified God, saying, “We have never seen anything like this!”"
   },
   {
    "verse": 13,
@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "On hearing this, Jesus told them, “It is not the healthy who need a doctor, but the sick. I have not come to call the righteous, but sinners.” Questions about Fasting (; )"
+   "text": "On hearing this, Jesus told them, “It is not the healthy who need a doctor, but the sick. I have not come to call the righteous, but sinners.”"
   },
   {
    "verse": 18,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "But the time will come when the bridegroom will be taken from them; then they will fast. The Patches and the Wineskins (; )"
+   "text": "But the time will come when the bridegroom will be taken from them; then they will fast."
   },
   {
    "verse": 21,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "And no one pours new wine into old wineskins. If he does, the wine will burst the skins, and both the wine and the wineskins will be ruined. Instead, new wine is poured into new wineskins.” The Lord of the Sabbath (; ; )"
+   "text": "And no one pours new wine into old wineskins. If he does, the wine will burst the skins, and both the wine and the wineskins will be ruined. Instead, new wine is poured into new wineskins.”"
   },
   {
    "verse": 23,
@@ -111,6 +111,38 @@
   {
    "verse": 28,
    "text": "Therefore, the Son of Man is Lord even of the Sabbath.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Heals a Paralytic"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Calls Levi"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Questions about Fasting"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "The Patches and the Wineskins"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "The Lord of the Sabbath"
   }
  ]
 }

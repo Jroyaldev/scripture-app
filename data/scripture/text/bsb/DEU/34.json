@@ -48,5 +48,13 @@
    "verse": 12,
    "text": "and no prophet who performed all the mighty acts of power and awesome deeds that Moses did in the sight of all Israel."
   }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Death of Moses"
+  }
  ]
 }

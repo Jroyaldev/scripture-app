@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "And where these have been forgiven, an offering for sin is no longer needed. A Call to Persevere ()"
+   "text": "And where these have been forgiven, an offering for sin is no longer needed."
   },
   {
    "verse": 19,
@@ -155,6 +155,20 @@
   {
    "verse": 39,
    "text": "But we are not of those who shrink back and are destroyed, but of those who have faith and preserve their souls."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Christ’s Perfect Sacrifice"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "A Call to Persevere"
   }
  ]
 }

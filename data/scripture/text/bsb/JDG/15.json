@@ -80,5 +80,13 @@
    "verse": 20,
    "text": "And Samson judged Israel for twenty years in the days of the Philistines."
   }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Samson’s Revenge"
+  }
  ]
 }

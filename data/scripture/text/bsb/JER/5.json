@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "The prophets are but wind, for the word is not in them. So let their own predictions befall them.” Judgment Proclaimed"
+   "text": "The prophets are but wind, for the word is not in them. So let their own predictions befall them.”"
   },
   {
    "verse": 14,
@@ -123,6 +123,20 @@
   {
    "verse": 31,
    "text": "The prophets prophesy falsely, and the priests rule by their own authority. My people love it so, but what will you do in the end?[’’]"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "No One Is Just"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Judgment Proclaimed"
   }
  ]
 }

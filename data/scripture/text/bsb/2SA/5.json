@@ -18,7 +18,7 @@
   },
   {
    "verse": 5,
-   "text": "In Hebron he reigned over Judah seven years and six months, and in Jerusalem he reigned thirty-three years over all Israel and Judah. David Conquers Jerusalem ()"
+   "text": "In Hebron he reigned over Judah seven years and six months, and in Jerusalem he reigned thirty-three years over all Israel and Judah."
   },
   {
    "verse": 6,
@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "Now Hiram king of Tyre sent envoys to David, along with cedar logs, carpenters, and stonemasons, and they built a palace for David. David’s Family Grows ()"
+   "text": "Now Hiram king of Tyre sent envoys to David, along with cedar logs, carpenters, and stonemasons, and they built a palace for David."
   },
   {
    "verse": 12,
@@ -62,7 +62,7 @@
   },
   {
    "verse": 16,
-   "text": "Elishama, Eliada, and Eliphelet. Two Victories over the Philistines ()"
+   "text": "Elishama, Eliada, and Eliphelet."
   },
   {
    "verse": 17,
@@ -99,6 +99,32 @@
   {
    "verse": 25,
    "text": "So David did as the LORD had commanded him, and he struck down the Philistines all the way from Gibeon to Gezer."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "David Anointed King of All Israel"
+  },
+  {
+   "beforeVerse": 6,
+   "kind": "section",
+   "level": 1,
+   "text": "David Conquers Jerusalem"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "David’s Family Grows"
+  },
+  {
+   "beforeVerse": 17,
+   "kind": "section",
+   "level": 1,
+   "text": "Two Victories over the Philistines"
   }
  ]
 }

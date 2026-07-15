@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "but Jacob went on to Succoth, where he built a house for himself and shelters for his livestock; that is why the place was called Succoth. Jacob Settles in Shechem"
+   "text": "but Jacob went on to Succoth, where he built a house for himself and shelters for his livestock; that is why the place was called Succoth."
   },
   {
    "verse": 18,
@@ -79,6 +79,20 @@
   {
    "verse": 20,
    "text": "There he set up an altar and called it El-Elohe-Israel."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jacob Meets Esau"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Jacob Settles in Shechem"
   }
  ]
 }

@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "Let us, therefore, make every effort to enter that rest, so that no one will fall by following the same pattern of disobedience. The Living Word ()"
+   "text": "Let us, therefore, make every effort to enter that rest, so that no one will fall by following the same pattern of disobedience."
   },
   {
    "verse": 12,
@@ -63,6 +63,20 @@
   {
    "verse": 16,
    "text": "Let us then approach the throne of grace with confidence, so that we may receive mercy and find grace to help us in our time of need."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Sabbath Rest"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "The Living Word"
   }
  ]
 }

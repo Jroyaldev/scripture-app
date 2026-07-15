@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "Judah will have one portion bordering the territory of Reuben from east to west. The Portions for the Priests and Levites"
+   "text": "Judah will have one portion bordering the territory of Reuben from east to west."
   },
   {
    "verse": 8,
@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "They must not sell or exchange any of it, and they must not transfer this best part of the land, for it is holy to the LORD. The Common Portion"
+   "text": "They must not sell or exchange any of it, and they must not transfer this best part of the land, for it is holy to the LORD."
   },
   {
    "verse": 15,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "The entire portion will be a square, 25,000 cubits by 25,000 cubits. You are to set apart the holy portion, along with the city property. The Portion for the Prince"
+   "text": "The entire portion will be a square, 25,000 cubits by 25,000 cubits. You are to set apart the holy portion, along with the city property."
   },
   {
    "verse": 21,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "So the Levitical property and the city property will lie in the center of the area belonging to the prince— the area between the borders of Judah and Benjamin. The Portions for the Remaining Tribes"
+   "text": "So the Levitical property and the city property will lie in the center of the area belonging to the prince— the area between the borders of Judah and Benjamin."
   },
   {
    "verse": 23,
@@ -114,7 +114,7 @@
   },
   {
    "verse": 29,
-   "text": "This is the land you are to allot as an inheritance to the tribes of Israel, and these will be their portions,” declares the Lord GOD. The City Gates and Dimensions"
+   "text": "This is the land you are to allot as an inheritance to the tribes of Israel, and these will be their portions,” declares the Lord GOD."
   },
   {
    "verse": 30,
@@ -139,6 +139,44 @@
   {
    "verse": 35,
    "text": "The perimeter of the city will be 18,000 cubits, and from that day on the name of the city will be: THE LORD IS THERE.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Portions for the Tribes"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "The Portions for the Priests and Levites"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "The Common Portion"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "The Portion for the Prince"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "The Portions for the Remaining Tribes"
+  },
+  {
+   "beforeVerse": 30,
+   "kind": "section",
+   "level": 1,
+   "text": "The City Gates and Dimensions"
   }
  ]
 }

@@ -66,7 +66,7 @@
   },
   {
    "verse": 17,
-   "text": "And whatever you do, in word or deed, do it all in the name of the Lord Jesus, giving thanks to God the Father through Him. Christian Households ()"
+   "text": "And whatever you do, in word or deed, do it all in the name of the Lord Jesus, giving thanks to God the Father through Him."
   },
   {
    "verse": 18,
@@ -82,7 +82,7 @@
   },
   {
    "verse": 21,
-   "text": "Fathers, do not provoke your children, so they will not become discouraged. Serving with Honor (; )"
+   "text": "Fathers, do not provoke your children, so they will not become discouraged."
   },
   {
    "verse": 22,
@@ -99,6 +99,26 @@
   {
    "verse": 25,
    "text": "Whoever does wrong will be repaid for his wrong, and there is no favoritism."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Put On the New Self"
+  },
+  {
+   "beforeVerse": 18,
+   "kind": "section",
+   "level": 1,
+   "text": "Christian Households"
+  },
+  {
+   "beforeVerse": 22,
+   "kind": "section",
+   "level": 1,
+   "text": "Serving with Honor"
   }
  ]
 }

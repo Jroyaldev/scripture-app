@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "when we are slandered, we answer gently. Up to this moment we have become the scum of the earth, the refuse of the world. Paul’s Fatherly Warning"
+   "text": "when we are slandered, we answer gently. Up to this moment we have become the scum of the earth, the refuse of the world."
   },
   {
    "verse": 14,
@@ -83,6 +83,20 @@
   {
    "verse": 21,
    "text": "Which do you prefer? Shall I come to you with a rod, or in love and with a gentle spirit?"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Servants of Christ"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Fatherly Warning"
   }
  ]
 }

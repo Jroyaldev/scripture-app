@@ -14,7 +14,7 @@
   },
   {
    "verse": 4,
-   "text": "This is how the lampstand was constructed: it was made of hammered gold from its base to its blossoms, fashioned according to the pattern the LORD had shown Moses. Cleansing the Levites"
+   "text": "This is how the lampstand was constructed: it was made of hammered gold from its base to its blossoms, fashioned according to the pattern the LORD had shown Moses."
   },
   {
    "verse": 5,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "After that, the Levites came to perform their service at the Tent of Meeting in the presence of Aaron and his sons. Thus they did with the Levites just as the LORD had commanded Moses. Retirement for Levites"
+   "text": "After that, the Levites came to perform their service at the Tent of Meeting in the presence of Aaron and his sons. Thus they did with the Levites just as the LORD had commanded Moses."
   },
   {
    "verse": 23,
@@ -103,6 +103,26 @@
   {
    "verse": 26,
    "text": "After that, they may assist their brothers in fulfilling their duties at the Tent of Meeting, but they themselves are not to do the work. This is how you are to assign responsibilities to the Levites.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Lampstand"
+  },
+  {
+   "beforeVerse": 5,
+   "kind": "section",
+   "level": 1,
+   "text": "Cleansing the Levites"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "Retirement for Levites"
   }
  ]
 }

@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "Whoever eats it will bear his iniquity, for he has profaned what is holy to the LORD. That person must be cut off from his people. Love Your Neighbor ()"
+   "text": "Whoever eats it will bear his iniquity, for he has profaned what is holy to the LORD. That person must be cut off from his people."
   },
   {
    "verse": 9,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "Do not seek revenge or bear a grudge against any of your people, but love your neighbor as yourself. I am the LORD. Keep My Statutes"
+   "text": "Do not seek revenge or bear a grudge against any of your people, but love your neighbor as yourself. I am the LORD."
   },
   {
    "verse": 19,
@@ -147,6 +147,26 @@
   {
    "verse": 37,
    "text": "You must keep all My statutes and all My ordinances and follow them. I am the LORD.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Commandments for Holiness"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Love Your Neighbor"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "Keep My Statutes"
   }
  ]
 }

@@ -50,7 +50,7 @@
   },
   {
    "verse": 13,
-   "text": "So I ask you not to be discouraged because of my sufferings for you, which are your glory. Paul’s Prayer for the Ephesians"
+   "text": "So I ask you not to be discouraged because of my sufferings for you, which are your glory."
   },
   {
    "verse": 14,
@@ -83,6 +83,20 @@
   {
    "verse": 21,
    "text": "to Him be the glory in the church and in Christ Jesus throughout all generations, forever and ever. Amen."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Mystery of the Gospel"
+  },
+  {
+   "beforeVerse": 14,
+   "kind": "section",
+   "level": 1,
+   "text": "Paul’s Prayer for the Ephesians"
   }
  ]
 }

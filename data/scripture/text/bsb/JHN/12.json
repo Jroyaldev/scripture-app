@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "The poor you will always have with you, but you will not always have Me.” The Plot to Kill Lazarus"
+   "text": "The poor you will always have with you, but you will not always have Me.”"
   },
   {
    "verse": 9,
@@ -42,7 +42,7 @@
   },
   {
    "verse": 11,
-   "text": "for on account of him many of the Jews were deserting them and believing in Jesus. The Triumphal Entry (; ; ; )"
+   "text": "for on account of him many of the Jews were deserting them and believing in Jesus."
   },
   {
    "verse": 12,
@@ -74,7 +74,7 @@
   },
   {
    "verse": 19,
-   "text": "Then the Pharisees said to one another, “You can see that this is doing you no good. Look how the whole world has gone after Him!” Jesus Predicts His Death"
+   "text": "Then the Pharisees said to one another, “You can see that this is doing you no good. Look how the whole world has gone after Him!”"
   },
   {
    "verse": 20,
@@ -142,7 +142,7 @@
   },
   {
    "verse": 36,
-   "text": "While you have the Light, believe in the Light, so that you may become sons of light.” After Jesus had spoken these things, He went away and was hidden from them. Belief and Unbelief"
+   "text": "While you have the Light, believe in the Light, so that you may become sons of light.” After Jesus had spoken these things, He went away and was hidden from them."
   },
   {
    "verse": 37,
@@ -199,6 +199,38 @@
   {
    "verse": 50,
    "text": "And I know that His command leads to eternal life. So I speak exactly what the Father has told Me to say.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Mary Anoints Jesus"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "The Plot to Kill Lazarus"
+  },
+  {
+   "beforeVerse": 12,
+   "kind": "section",
+   "level": 1,
+   "text": "The Triumphal Entry"
+  },
+  {
+   "beforeVerse": 20,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Predicts His Death"
+  },
+  {
+   "beforeVerse": 37,
+   "kind": "section",
+   "level": 1,
+   "text": "Belief and Unbelief"
   }
  ]
 }

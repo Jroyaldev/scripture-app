@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "“Where is He?” they asked. “I do not know,” he answered. The Pharisees Investigate the Healing"
+   "text": "“Where is He?” they asked. “I do not know,” he answered."
   },
   {
    "verse": 13,
@@ -134,7 +134,7 @@
   },
   {
    "verse": 34,
-   "text": "They replied, “You were born in utter sin, and you are instructing us?” And they threw him out. Spiritual Blindness"
+   "text": "They replied, “You were born in utter sin, and you are instructing us?” And they threw him out."
   },
   {
    "verse": 35,
@@ -163,6 +163,26 @@
   {
    "verse": 41,
    "text": "“If you were blind,” Jesus replied, “you would not be guilty of sin. But since you claim you can see, your guilt remains.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jesus Heals the Man Born Blind"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Pharisees Investigate the Healing"
+  },
+  {
+   "beforeVerse": 35,
+   "kind": "section",
+   "level": 1,
+   "text": "Spiritual Blindness"
   }
  ]
 }

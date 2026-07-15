@@ -38,7 +38,7 @@
   },
   {
    "verse": 10,
-   "text": "So the man of God went another way and did not return by the way he had come to Bethel. The Old Prophet and the Man of God"
+   "text": "So the man of God went another way and did not return by the way he had come to Bethel."
   },
   {
    "verse": 11,
@@ -135,6 +135,20 @@
   {
    "verse": 34,
    "text": "And this was the sin of the house of Jeroboam that led to its extermination and destruction from the face of the earth."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Jeroboam’s Hand Withers"
+  },
+  {
+   "beforeVerse": 11,
+   "kind": "section",
+   "level": 1,
+   "text": "The Old Prophet and the Man of God"
   }
  ]
 }

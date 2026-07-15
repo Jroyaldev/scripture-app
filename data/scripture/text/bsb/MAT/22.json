@@ -54,7 +54,7 @@
   },
   {
    "verse": 14,
-   "text": "For many are called, but few are chosen.” Paying Taxes to Caesar (; )"
+   "text": "For many are called, but few are chosen.”"
   },
   {
    "verse": 15,
@@ -86,7 +86,7 @@
   },
   {
    "verse": 22,
-   "text": "And when they heard this, they were amazed. So they left Him and went away. The Sadducees and the Resurrection (; )"
+   "text": "And when they heard this, they were amazed. So they left Him and went away."
   },
   {
    "verse": 23,
@@ -130,7 +130,7 @@
   },
   {
    "verse": 33,
-   "text": "When the crowds heard this, they were astonished at His teaching. The Greatest Commandment (; )"
+   "text": "When the crowds heard this, they were astonished at His teaching."
   },
   {
    "verse": 34,
@@ -158,7 +158,7 @@
   },
   {
    "verse": 40,
-   "text": "All the Law and the Prophets hang on these two commandments.” Whose Son Is the Christ? (; )"
+   "text": "All the Law and the Prophets hang on these two commandments.”"
   },
   {
    "verse": 41,
@@ -183,6 +183,38 @@
   {
    "verse": 46,
    "text": "No one was able to answer a word, and from that day on no one dared to question Him any further."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "The Parable of the Banquet"
+  },
+  {
+   "beforeVerse": 15,
+   "kind": "section",
+   "level": 1,
+   "text": "Paying Taxes to Caesar"
+  },
+  {
+   "beforeVerse": 23,
+   "kind": "section",
+   "level": 1,
+   "text": "The Sadducees and the Resurrection"
+  },
+  {
+   "beforeVerse": 34,
+   "kind": "section",
+   "level": 1,
+   "text": "The Greatest Commandment"
+  },
+  {
+   "beforeVerse": 41,
+   "kind": "section",
+   "level": 1,
+   "text": "Whose Son Is the Christ?"
   }
  ]
 }

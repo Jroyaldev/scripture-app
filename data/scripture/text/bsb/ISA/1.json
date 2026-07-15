@@ -34,7 +34,7 @@
   },
   {
    "verse": 9,
-   "text": "Unless the LORD of Hosts had left us a few survivors, we would have become like Sodom, we would have resembled Gomorrah. Meaningless Offerings"
+   "text": "Unless the LORD of Hosts had left us a few survivors, we would have become like Sodom, we would have resembled Gomorrah."
   },
   {
    "verse": 10,
@@ -78,7 +78,7 @@
   },
   {
    "verse": 20,
-   "text": "But if you resist and rebel, you will be devoured by the sword.” For the mouth of the LORD has spoken. The Corruption of Zion"
+   "text": "But if you resist and rebel, you will be devoured by the sword.” For the mouth of the LORD has spoken."
   },
   {
    "verse": 21,
@@ -123,6 +123,26 @@
   {
    "verse": 31,
    "text": "The strong man will become tinder and his work will be a spark; both will burn together, with no one to quench the flames."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Judah’s Rebellion"
+  },
+  {
+   "beforeVerse": 10,
+   "kind": "section",
+   "level": 1,
+   "text": "Meaningless Offerings"
+  },
+  {
+   "beforeVerse": 21,
+   "kind": "section",
+   "level": 1,
+   "text": "The Corruption of Zion"
   }
  ]
 }

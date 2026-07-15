@@ -22,7 +22,7 @@
   },
   {
    "verse": 6,
-   "text": "You have condemned and murdered the righteous, who did not resist you. Patience in Suffering ()"
+   "text": "You have condemned and murdered the righteous, who did not resist you."
   },
   {
    "verse": 7,
@@ -46,7 +46,7 @@
   },
   {
    "verse": 12,
-   "text": "Above all, my brothers, do not swear, not by heaven or earth or by any other oath. Simply let your “Yes” be yes, and your “No,” no, so that you will not fall under judgment. The Prayer of Faith"
+   "text": "Above all, my brothers, do not swear, not by heaven or earth or by any other oath. Simply let your “Yes” be yes, and your “No,” no, so that you will not fall under judgment."
   },
   {
    "verse": 13,
@@ -70,7 +70,7 @@
   },
   {
    "verse": 18,
-   "text": "Again he prayed, and the heavens gave rain, and the earth yielded its crops. Restoring a Sinner"
+   "text": "Again he prayed, and the heavens gave rain, and the earth yielded its crops."
   },
   {
    "verse": 19,
@@ -79,6 +79,32 @@
   {
    "verse": 20,
    "text": "consider this: Whoever turns a sinner from the error of his way will save his soul from death and cover over a multitude of sins."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "A Warning to the Rich"
+  },
+  {
+   "beforeVerse": 7,
+   "kind": "section",
+   "level": 1,
+   "text": "Patience in Suffering"
+  },
+  {
+   "beforeVerse": 13,
+   "kind": "section",
+   "level": 1,
+   "text": "The Prayer of Faith"
+  },
+  {
+   "beforeVerse": 19,
+   "kind": "section",
+   "level": 1,
+   "text": "Restoring a Sinner"
   }
  ]
 }

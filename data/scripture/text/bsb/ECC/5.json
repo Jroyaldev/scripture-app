@@ -26,7 +26,7 @@
   },
   {
    "verse": 7,
-   "text": "For as many dreams bring futility, so do many words. Therefore, fear God. The Futility of Wealth ()"
+   "text": "For as many dreams bring futility, so do many words. Therefore, fear God."
   },
   {
    "verse": 8,
@@ -79,6 +79,20 @@
   {
    "verse": 20,
    "text": "For a man seldom considers the days of his life, because God keeps him occupied with the joy of his heart."
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Approaching God with Fear"
+  },
+  {
+   "beforeVerse": 8,
+   "kind": "section",
+   "level": 1,
+   "text": "The Futility of Wealth"
   }
  ]
 }

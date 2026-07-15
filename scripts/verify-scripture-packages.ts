@@ -7,6 +7,7 @@ import { parseCrossReferenceKey } from "../src/core/cross-references/index.js";
 
 type ChapterData = {
   verses: Array<{ verse: number; text: string }>;
+  headings?: Array<{ beforeVerse: number; kind: string; level: number; text: string }>;
 };
 
 type SyntaxNodeData = {
@@ -36,6 +37,7 @@ const packageIds = ["web", "kjv", "ylt", "akjv-strongs", "bsb"];
 
 let checkedFiles = 0;
 let checkedVerses = 0;
+let checkedBsbHeadings = 0;
 
 function fail(message: string): never {
   throw new Error(message);
@@ -87,6 +89,26 @@ for (const pkgId of packageIds) {
           fail(`${pkgId.toUpperCase()} ${book} ${chapter}: expected ${expected} verses, got ${actual}`);
         }
       }
+
+      if (pkgId === "bsb") {
+        for (const heading of data.headings ?? []) {
+          if (
+            !Number.isInteger(heading.beforeVerse)
+            || heading.beforeVerse < 1
+            || heading.beforeVerse > expected
+            || !heading.text.trim()
+            || !["section", "major-section", "description", "speaker", "acrostic"].includes(heading.kind)
+          ) {
+            fail(`BSB ${book} ${chapter}: malformed structural heading`);
+          }
+          for (const verse of data.verses) {
+            if (verse.text.endsWith(` ${heading.text}`)) {
+              fail(`BSB ${book} ${chapter}:${verse.verse}: structural heading leaked into verse prose: ${heading.text}`);
+            }
+          }
+          checkedBsbHeadings++;
+        }
+      }
     }
 
     console.error(`[verify:data] ${pkgId.toUpperCase()} ${book} ok (${chapters.length} chapters)`);
@@ -97,6 +119,11 @@ for (const pkgId of packageIds) {
     );
   }
 }
+
+if (checkedBsbHeadings < 3_000) {
+  fail(`BSB structural heading coverage is incomplete: ${checkedBsbHeadings}`);
+}
+console.error(`[verify:data] BSB: ${checkedBsbHeadings} noncanonical headings preserved outside verse prose`);
 
 function collectSyntaxLeaves(node: SyntaxNodeData, out: SyntaxNodeData[]): void {
   if (node.tokenId) out.push(node);

@@ -30,7 +30,7 @@
   },
   {
    "verse": 8,
-   "text": "Therefore let us keep the feast, not with the old bread, leavened with malice and wickedness, but with the unleavened bread of sincerity and of truth. Expel the Immoral Brother"
+   "text": "Therefore let us keep the feast, not with the old bread, leavened with malice and wickedness, but with the unleavened bread of sincerity and of truth."
   },
   {
    "verse": 9,
@@ -51,6 +51,20 @@
   {
    "verse": 13,
    "text": "God will judge those outside. “Expel the wicked man from among you.”"
+  }
+ ],
+ "headings": [
+  {
+   "beforeVerse": 1,
+   "kind": "section",
+   "level": 1,
+   "text": "Immorality Rebuked"
+  },
+  {
+   "beforeVerse": 9,
+   "kind": "section",
+   "level": 1,
+   "text": "Expel the Immoral Brother"
   }
  ]
 }
