@@ -83,6 +83,17 @@ The picker is named **Reading atmosphere**, not Theme. Its compact explanation i
 - Toasts are typed neutral/success/warning/error status surfaces with correct live-region behavior, a dismiss label, optional action, bounded timer, exit motion, and a quiet progress line. They inherit the active reading material even though they sit outside the shell layout.
 - Modal note capture contains focus, restores it to the real invoking control or its Scripture fallback, and uses the shared fields/actions. Specialized study meaning and visualizers remain untouched until the dedicated overlay pass.
 
+## Settings, onboarding, and import contract
+
+- Settings is one titled local-library workspace with a stable five-section rail: Library, Reading, Intelligence, Import, and About. The current section follows scroll position, and the rail compacts without clipping content at the supported 900px desktop floor.
+- Library identity and counts come from the active library. Installed reading texts expose their real names and license posture; disclosure stays adjacent rather than hiding provenance behind a generic package count.
+- Library switching, index rebuilds, and network-backed assistance are explicit user actions. Busy, success, failure, retry, and cancellation-safe states use the shared status language instead of native alerts or silent mutation.
+- Reading atmosphere, text size, measure, and verse-number controls reuse the shared keyboard-complete choice system. Material changes never alter Scripture, coordinates, or authored data.
+- Intelligence settings say when network use is allowed, distinguish the active mode from its daily limit, and save editable limits deliberately instead of persisting on every keystroke.
+- Import is a staged flow: choose a source vault, review what will happen, then explicitly import. The source remains unchanged; progress, completion, transport failure, importer failure, retry, and start-over states are all visible.
+- First run leads with ownership: plain files, local by default, and one movable folder. The recommended location is presented before creation, and a custom location is shown for confirmation before the library is initialized.
+- `qa:setup` exercises every Settings section in Paper, Ink, Glass, and Candlelight, keyboard choice behavior, the 900px desktop floor, and an isolated temporary first-run profile without mutating the active library.
+
 ## Interaction language
 
 - Hover changes surface or text tone without lifting the entire component.
@@ -102,7 +113,7 @@ Each item is a separate bounded B2 pass with before/after desktop captures in al
 4. **Reading canvas — landed.** Semantic chapter article, responsive reading measure, quiet number gutter, material hover, rail-only verse focus, highlight-safe range selection, deliberate loading/error/empty states, chapter continuation, 900px desktop safety, and repeatable all-look QA.
 5. **Living Margin frame — landed.** Persistent three-mode study frame, real chapter overview, reading eye-line context, finishable selected state, bounded passage quote, progressive local-library disclosure, passage-scoped semantic truth, distinct provenance, focus recovery, and repeatable all-look QA.
 6. **Shared controls and floating layers — landed.** Unified button/input/card/menu geometry and states, keyboard-complete segmented controls, lightweight named popovers, delayed accessible tooltips, typed live-region toasts, modal focus containment/recovery, and repeatable all-look QA.
-7. **Settings, onboarding, and import.** Information architecture, first-run guidance, library choice, sources, progress, failure, and recovery.
+7. **Settings, onboarding, and import — landed.** One five-section local-library workspace, truthful package/licensing and network disclosures, deliberate mutations, ownership-first setup, staged non-destructive import, complete recovery states, 900px desktop compaction, and isolated four-atmosphere QA.
 8. **Write, Notes, and Search.** Calm working surfaces, strong empty states, save feedback, results hierarchy, and keyboard flow.
 9. **Study overlays.** Language cards, Structure, note capture, highlight palette, and cross-reference previews receive final system alignment without changing source truth.
 10. **Consolidation.** Remove remaining static inline styles and unjustified color/radius/shadow literals; run full four-atmosphere regression tours and interaction checks.

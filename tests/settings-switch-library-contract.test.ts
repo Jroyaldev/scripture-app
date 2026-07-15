@@ -21,20 +21,20 @@ test("SettingsPage wires Switch Library and Reveal in Finder actions", () => {
   const reloadIdx = source.indexOf("window.location.reload()", initIdx);
   assert.notEqual(reloadIdx, -1, "expected window.location.reload() to follow a successful init");
 
-  // Failure path must alert and NOT reload.
-  const switchBlockEnd = source.indexOf("Switch Library…");
+  // Failure path must report through the shared toast system and NOT reload.
+  const switchBlockEnd = source.indexOf("const rebuildIndex", dialogIdx);
   const switchBlock = source.slice(dialogIdx, switchBlockEnd);
-  assert.match(switchBlock, /alert\(`Switch failed: \$\{res\.error\}`\)/);
+  assert.match(switchBlock, /showToast\(/);
+  assert.match(switchBlock, /tone: "error"/);
+  assert.doesNotMatch(switchBlock, /alert\(/);
 
   // Reveal in Finder action.
   assert.ok(
     source.includes("window.api.library.revealInFinder()"),
     "expected SettingsPage to call window.api.library.revealInFinder()",
   );
-  assert.match(source, /Reveal in Finder/);
+  assert.match(source, /Show in Finder/);
 
-  // A description explaining the switch action, matching the existing
-  // .settings-description pattern used elsewhere in this file.
-  const descCount = (source.match(/className="settings-description"/g) ?? []).length;
-  assert.ok(descCount >= 2, "expected at least two settings-description blocks (rebuild + switch library)");
+  assert.match(source, /Open another Scripture Library folder/);
+  assert.match(source, /Authored files are not changed/);
 });

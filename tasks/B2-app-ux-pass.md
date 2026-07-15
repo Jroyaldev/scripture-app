@@ -20,6 +20,22 @@ The sixth bounded desktop visual-system pass is complete. It consolidates the st
 
 The next bounded component is **Settings, onboarding, and import**. Mobile remains explicitly outside this worktree.
 
+## Progress — 2026-07-15 (Settings, onboarding, and import)
+
+The seventh bounded desktop visual-system pass is complete. It replaces the disconnected setup surfaces with one ownership-first library workflow while leaving source ingestion internals, sync, and mobile outside this pass:
+
+- **One navigable Settings workspace:** Library, Reading, Intelligence, Import, and About share one H1, helper copy, scroll-aware section rail, and restrained row geometry. The rail compacts horizontally at the supported 900px desktop floor without covering headings or introducing horizontal overflow.
+- **Truthful local-library status:** Settings reports the active path and real library summary, exposes Show in Finder, Switch Library, and Rebuild Index as explicit actions, and lists all five bundled reading texts with their names and license posture.
+- **Shared reading controls:** atmosphere, text size, measure, and verse-number choices use the keyboard-complete segmented primitive. The four atmospheres keep identical structure and meaning.
+- **Deliberate intelligence limits:** network permission, operating mode, daily token limit, current usage, and job behavior are explained separately. Editable limits save explicitly rather than on each digit, and every IPC outcome uses shared busy/toast feedback instead of `alert()`.
+- **Staged non-destructive import:** the user chooses a vault, reviews that the source will remain unchanged, and then starts import. Progress, completion, importer error, transport error, retry, and start-over states are all designed.
+- **Ownership-first onboarding:** first run now explains plain files, local-by-default storage, and portability before asking for a location. Recommended and custom paths are visible before initialization, with busy and recovery states on the real actions.
+- **Repeatable isolated QA:** `npm run qa:setup` covers all five Settings sections in Paper, Ink, Glass, and Candlelight, keyboard choice behavior, the 900px desktop floor, and a separate temporary first-run Electron profile. Captures live in `docs/ui-audit/setup/`.
+
+**Verification:** `npm run lint`, full `npm test` (**390 tests: 380 passing, 10 expected Electron-ABI skips**), renderer build, `npm run qa:setup`, and `git diff --check` pass. PDF/source-shelf ingestion remains B4 work, sync remains C2 work, and mobile remains outside this worktree.
+
+The next bounded component is **Write, Notes, and Search**.
+
 ## Progress — 2026-07-15 (Living Margin frame)
 
 The fifth bounded desktop visual-system pass is complete. It turns the right rail into one calm, stateful study companion while preserving the proven language, cross-reference, senses, and Structure visualizers:
