@@ -2,7 +2,7 @@
  * Desktop-only visual and interaction QA for the Living Margin frame.
  *
  * Requires Electron on --remote-debugging-port=9222. Exercises the deliberate
- * Chapter / In view / Selected scope model; Passage / Connections / Notes tab
+ * Chapter / In view / Selected scope model; Cross refs / Passage / Notes tab
  * navigation; progressive disclosure, provenance, focus recovery, preserved
  * tab choice, and all four reading atmospheres. The tour never creates,
  * removes, or recolors authored data.
@@ -283,11 +283,13 @@ assert.equal(chapterState.mode, "Chapter");
 assert.equal(chapterState.view, "chapter");
 assert.equal(chapterState.done, false);
 assert.equal(chapterState.tabs.length, 3);
-assert.match(chapterState.tabs[0] ?? "", /^Passage/);
-assert.match(chapterState.tabs[1] ?? "", /^Connections/);
+assert.match(chapterState.tabs[0] ?? "", /^Cross refs/);
+assert.match(chapterState.tabs[1] ?? "", /^Passage/);
 assert.match(chapterState.tabs[2] ?? "", /^Notes/);
-assert.equal(chapterState.activeTab, "margin-passage-tab");
+assert.equal(chapterState.activeTab, "margin-connections-tab");
 console.log("chapter", chapterState);
+await screenshot("paper-default-crossrefs", ".living-margin");
+await selectMarginTab("passage");
 await screenshot("paper-chapter-overview");
 await screenshot("paper-chapter-overview-margin", ".living-margin");
 
@@ -353,15 +355,15 @@ await waitFor(`document.querySelector(".margin-quote-toggle")?.getAttribute("ari
 await screenshot("paper-expanded-selection-margin", ".living-margin");
 await evaluate(`document.querySelector(".margin-quote-toggle")?.click()`);
 
-await selectMarginTab("passage");
-await evaluate(`document.querySelector("#margin-passage-tab")?.focus()`);
+await selectMarginTab("connections");
+await evaluate(`document.querySelector("#margin-connections-tab")?.focus()`);
 await pressKey("ArrowRight", "ArrowRight");
-await waitFor(`document.activeElement?.id === "margin-connections-tab"`);
-await waitFor(`document.querySelector("#margin-connections-tab")?.getAttribute("aria-selected") === "true"`);
+await waitFor(`document.activeElement?.id === "margin-passage-tab"`);
+await waitFor(`document.querySelector("#margin-passage-tab")?.getAttribute("aria-selected") === "true"`);
 await pressKey("ArrowRight", "ArrowRight");
 await waitFor(`document.activeElement?.id === "margin-notes-tab"`);
 await pressKey("Home", "Home");
-await waitFor(`document.activeElement?.id === "margin-passage-tab"`);
+await waitFor(`document.activeElement?.id === "margin-connections-tab"`);
 await pressKey("End", "End");
 await waitFor(`document.activeElement?.id === "margin-notes-tab"`);
 console.log("margin tab keyboard path ok");
@@ -424,7 +426,7 @@ assert.equal(
 );
 await screenshot("paper-done-focus-margin", ".living-margin");
 
-await selectMarginTab("passage");
+await selectMarginTab("connections");
 await navigatePassage(leavePassage ?? original.passage);
 await setTranslation(leavePackage ?? original.packageId);
 await setMargin(original.margin);

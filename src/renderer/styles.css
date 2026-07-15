@@ -4457,14 +4457,14 @@ html, body, #root {
 .margin-tab::after {
   content: "";
   position: absolute;
-  right: 9px;
   bottom: -1px;
-  left: 9px;
+  left: 50%;
+  width: 28px;
   height: 2px;
   border-radius: 2px 2px 0 0;
   background: var(--study-gold);
   opacity: 0;
-  transform: scaleX(0.72);
+  transform: translateX(-50%) scaleX(0.65);
   transition: opacity var(--transition-fast), transform var(--transition-fast);
 }
 
@@ -4479,7 +4479,7 @@ html, body, #root {
 
 .margin-tab.is-active::after {
   opacity: 1;
-  transform: scaleX(1);
+  transform: translateX(-50%) scaleX(1);
 }
 
 .margin-tab:focus-visible {
@@ -4493,6 +4493,11 @@ html, body, #root {
   font-family: var(--font-mono);
   font-size: 0.5625rem;
   font-variant-numeric: tabular-nums;
+  transform: translateY(-0.08em);
+}
+
+.margin-tab.is-active .margin-tab-count {
+  color: color-mix(in srgb, var(--text-secondary) 82%, var(--study-gold));
 }
 
 .margin-tab-panel[hidden] {
@@ -8384,7 +8389,7 @@ button.lang-phrase-diagram-node:focus-visible {
   font-weight: var(--fw-medium);
   cursor: pointer;
   font-family: var(--font-ui);
-  margin-left: 0;
+  margin-left: 3px;
   padding: 3px 0;
   transition: color var(--transition-fast);
 }
@@ -10013,10 +10018,16 @@ textarea:focus-visible,
   color: var(--text-secondary);
   font-weight: var(--fw-medium);
 }
+.margin-pin-action-label {
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  font-weight: var(--fw-semibold);
+}
 .margin-pin-status-label {
   font-size: 0.6875rem;
   color: var(--text-tertiary);
-  flex: 1;
+  margin-left: auto;
   min-width: 0;
 }
 .margin-pin-note-btn {

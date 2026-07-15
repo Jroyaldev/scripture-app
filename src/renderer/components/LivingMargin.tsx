@@ -21,8 +21,8 @@ export interface PinnedRange {
 type MarginTab = "passage" | "connections" | "notes";
 
 const MARGIN_TABS: Array<{ id: MarginTab; label: string }> = [
+  { id: "connections", label: "Cross refs" },
   { id: "passage", label: "Passage" },
-  { id: "connections", label: "Connections" },
   { id: "notes", label: "Notes" },
 ];
 
@@ -346,7 +346,7 @@ export function LivingMargin({
   const [pinnedClaims, setPinnedClaims] = useState<Set<string>>(new Set());
   const [pendingClaimId, setPendingClaimId] = useState<string | null>(null);
   const [claimPinError, setClaimPinError] = useState<{ id: string; message: string } | null>(null);
-  const [activeTab, setActiveTab] = useState<MarginTab>("passage");
+  const [activeTab, setActiveTab] = useState<MarginTab>("connections");
   const frameTitleRef = useRef<HTMLHeadingElement>(null);
   const marginRef = useRef<HTMLElement>(null);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
@@ -628,11 +628,11 @@ export function LivingMargin({
                   </div>
                   <div className="margin-stat">
                     <span className="margin-stat-num">{crossRefs?.totalCount ?? 0}</span>
-                    <span className="margin-stat-label">Connections</span>
+                    <span className="margin-stat-label">Cross refs</span>
                   </div>
                 </div>
                 <p className="margin-invite">
-                  Select a verse to study its language, add a highlight, or narrow every tab to that passage.
+                  Select a verse to study its language, add a highlight, or narrow each view to that passage.
                 </p>
               </>
             )}
@@ -659,10 +659,6 @@ export function LivingMargin({
             aria-labelledby="margin-connections-tab"
             hidden={activeTab !== "connections"}
           >
-            <div className="margin-view-heading">
-              <h3>Connections</h3>
-              <p>Ranked relationships aggregated across this chapter.</p>
-            </div>
             {crossRefs && crossRefs.items.length > 0 ? (
               <CrossRefsBlock result={crossRefs} onNavigate={onNavigateToRef} />
             ) : (
@@ -681,7 +677,7 @@ export function LivingMargin({
             hidden={activeTab !== "notes"}
           >
             <div className="margin-view-heading">
-              <h3>Notes</h3>
+              <h3>In this chapter</h3>
               <p>Material from your local library for this chapter.</p>
             </div>
             {semanticData && semanticData.threads.length > 0 && (
@@ -741,10 +737,6 @@ export function LivingMargin({
             aria-labelledby="margin-connections-tab"
             hidden={activeTab !== "connections"}
           >
-            <div className="margin-view-heading">
-              <h3>Connections</h3>
-              <p>Ranked relationships for the verse at your reading eye-line.</p>
-            </div>
             {crossRefs && crossRefs.items.length > 0 ? (
               <CrossRefsBlock result={crossRefs} onNavigate={onNavigateToRef} />
             ) : (
@@ -763,7 +755,7 @@ export function LivingMargin({
             hidden={activeTab !== "notes"}
           >
             <div className="margin-view-heading">
-              <h3>Notes</h3>
+              <h3>At this verse</h3>
               <p>Your local library at this verse.</p>
             </div>
             {nearNote ? (
@@ -798,16 +790,14 @@ export function LivingMargin({
               Margin shows pin status + neutral multi-color state when needed. */}
           <div className="margin-selection-tools">
             <div className={`margin-pin-status${pinnedColors.length > 1 ? " is-mixed" : ""}`}>
-              <span className="margin-pin-status-label">
+              <span className="margin-pin-action-label">Highlight</span>
+              <span className="margin-pin-status-label" aria-live="polite">
                 {pinnedColors.length > 1
-                  ? "Mixed highlights"
+                  ? "Mixed"
                   : pinnedHighlightColor
-                    ? `${pinnedHighlightColor.charAt(0).toUpperCase() + pinnedHighlightColor.slice(1)} highlight`
-                    : "Unhighlighted"}
+                    ? pinnedHighlightColor.charAt(0).toUpperCase() + pinnedHighlightColor.slice(1)
+                    : "None"}
               </span>
-              {pinnedColors.length > 1 && (
-                <span className="hl-toolbar-mixed-badge">Mixed</span>
-              )}
               {pinnedHighlights.length > 0 && onRemoveHighlights && (
                 <button
                   type="button"
@@ -855,10 +845,6 @@ export function LivingMargin({
             aria-labelledby="margin-connections-tab"
             hidden={activeTab !== "connections"}
           >
-            <div className="margin-view-heading">
-              <h3>Connections</h3>
-              <p>Public cross references and personal connections, kept visibly separate.</p>
-            </div>
             {(crossRefs?.items.length ?? 0) > 0 && crossRefs && (
               <CrossRefsBlock result={crossRefs} onNavigate={onNavigateToRef} />
             )}
@@ -885,7 +871,7 @@ export function LivingMargin({
           >
             <div className="margin-view-heading margin-view-heading--action">
               <div>
-                <h3>Notes</h3>
+                <h3>For this passage</h3>
                 <p>Your anchored note and grounded library context.</p>
               </div>
               {onCreateNote && (

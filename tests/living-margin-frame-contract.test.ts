@@ -18,8 +18,10 @@ test("Living Margin is one labelled frame with truthful chapter, reading, and se
   assert.match(css, /\.margin-frame-header\s*\{[\s\S]*position: sticky/);
 });
 
-test("Passage, Connections, and Notes are stable keyboard tabs over the current scope", () => {
+test("Cross refs is the leftmost default, with stable keyboard tabs over the current scope", () => {
   assert.match(margin, /type MarginTab = "passage" \| "connections" \| "notes"/);
+  assert.match(margin, /const MARGIN_TABS[\s\S]*\{ id: "connections", label: "Cross refs" \}[\s\S]*\{ id: "passage", label: "Passage" \}/);
+  assert.match(margin, /useState<MarginTab>\("connections"\)/);
   assert.match(margin, /role="tablist" aria-label="Study views" aria-orientation="horizontal"/);
   assert.match(margin, /aria-selected=\{selected\}/);
   assert.match(margin, /aria-controls=\{`margin-\$\{tab\.id\}-panel`\}/);
@@ -54,7 +56,8 @@ test("tab content preserves public and personal trust boundaries", () => {
   assert.match(passagePanel, /LanguageWordsSection/);
   assert.match(connectionsPanel, /CrossRefsBlock/);
   assert.match(connectionsPanel, /NoteCrossRefsBlock/);
-  assert.match(connectionsPanel, /Public cross references and personal connections, kept visibly separate/);
+  assert.match(margin, /Cross References/);
+  assert.match(margin, /Connections in your library/);
   assert.match(notesPanel, /Passage insight/);
   assert.match(notesPanel, /More from your notes/);
   assert.doesNotMatch(notesPanel, /NoteCrossRefsBlock/);
