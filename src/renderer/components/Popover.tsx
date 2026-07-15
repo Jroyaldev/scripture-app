@@ -7,6 +7,7 @@ interface Props {
   onClose: () => void;
   width?: number;
   className?: string;
+  ariaLabel?: string;
   children: React.ReactNode;
 }
 
@@ -41,7 +42,7 @@ function computePosition(anchorRect: DOMRect, width: number): PanelPosition {
  * plus a positioned panel anchored below `anchorRect`. Used by later phases
  * for the library popover, passage picker, and version picker.
  */
-export function Popover({ anchorRect, onClose, width = 280, className, children }: Props): React.JSX.Element | null {
+export function Popover({ anchorRect, onClose, width = 280, className, ariaLabel, children }: Props): React.JSX.Element | null {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const [position, setPosition] = useState<PanelPosition | null>(null);
 
@@ -97,6 +98,8 @@ export function Popover({ anchorRect, onClose, width = 280, className, children 
         ref={panelRef}
         className={`popover-panel ${materialClasses}${className ? ` ${className}` : ""}`}
         style={{ top: position.top, left: position.left, width }}
+        role={ariaLabel ? "dialog" : undefined}
+        aria-label={ariaLabel}
       >
         {children}
       </div>

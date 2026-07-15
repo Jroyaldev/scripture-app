@@ -79,7 +79,6 @@ interface AppSettingsSchema {
   readingSize: "s" | "m" | "l";
   readingWidth: "narrow" | "medium" | "wide";
   verseNumbers: "always" | "faint" | "hover";
-  sidebarStyle: "original" | "compact" | "rail";
   recentPassages: Array<{
     book: string;
     chapter: number;
@@ -105,7 +104,6 @@ const store = new Store<AppSettingsSchema>({
     readingSize: "m",
     readingWidth: "medium",
     verseNumbers: "always",
-    sidebarStyle: "original",
     recentPassages: [],
     lastRead: null,
     windowBounds: null,

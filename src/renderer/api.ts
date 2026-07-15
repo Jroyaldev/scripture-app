@@ -131,8 +131,6 @@ declare global {
 export type ReadingSize = "s" | "m" | "l";
 export type ReadingWidth = "narrow" | "medium" | "wide";
 export type VerseNumberMode = "always" | "faint" | "hover";
-/** Sidebar layout lab modes — switch while testing chrome density. */
-export type SidebarStyle = "original" | "compact" | "rail";
 
 /** One stop in the passage-picker recents list. */
 export interface RecentPassageSetting {
@@ -150,7 +148,6 @@ export interface AppSettings {
   readingSize: ReadingSize;
   readingWidth: ReadingWidth;
   verseNumbers: VerseNumberMode;
-  sidebarStyle: SidebarStyle;
   recentPassages: RecentPassageSetting[];
   /** Where the reader last was — restored on launch. */
   lastRead: { book: string; chapter: number; packageId: string } | null;

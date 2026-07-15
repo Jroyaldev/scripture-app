@@ -6,7 +6,6 @@ import type {
   BookNameData,
   ReadingSize,
   ReadingWidth,
-  SidebarStyle,
   VerseNumberMode,
 } from "./api.js";
 import { ScripturePage } from "./components/ScripturePage.js";
@@ -119,6 +118,7 @@ function NavItem({ active, onClick, label, icon, shortcut }: NavItemProps): Reac
       title={tip}
       aria-label={tip}
       aria-keyshortcuts={shortcut}
+      aria-current={active ? "page" : undefined}
     >
       {icon}
       <span className="nav-label">{label}</span>
@@ -126,12 +126,6 @@ function NavItem({ active, onClick, label, icon, shortcut }: NavItemProps): Reac
     </button>
   );
 }
-
-const SIDEBAR_STYLES: { id: SidebarStyle; label: string; hint: string }[] = [
-  { id: "original", label: "Original", hint: "Current wide rail" },
-  { id: "compact", label: "Compact", hint: "Tighter spacing" },
-  { id: "rail", label: "Rail", hint: "Icons-first narrow" },
-];
 
 export function App(): React.JSX.Element {
   const [view, setView] = useState<View>("scripture");
@@ -146,15 +140,13 @@ export function App(): React.JSX.Element {
   const [readingSize, setReadingSize] = useState<ReadingSize>("m");
   const [readingWidth, setReadingWidth] = useState<ReadingWidth>("medium");
   const [verseNumbers, setVerseNumbers] = useState<VerseNumberMode>("always");
-  const [sidebarStyle, setSidebarStyle] = useState<SidebarStyle>("original");
   const [focusMode, setFocusMode] = useState(false);
   /** Margin visibility before focus mode — restored on exit. */
   const preFocusMargin = useRef(true);
   const [aiBusy, setAiBusy] = useState(false);
   const [libraryPopoverOpen, setLibraryPopoverOpen] = useState(false);
-  const brandRowRef = useRef<HTMLDivElement>(null);
-  const footerAvatarRef = useRef<HTMLButtonElement>(null);
-  const [brandRect, setBrandRect] = useState<DOMRect | null>(null);
+  const libraryTriggerRef = useRef<HTMLButtonElement>(null);
+  const [libraryAnchorRect, setLibraryAnchorRect] = useState<DOMRect | null>(null);
   const settingsLoaded = useRef(false);
   // Tracks which persisted settings the user has already changed via the UI
   // before the initial settings.get() resolved. The load effect must not
@@ -244,7 +236,6 @@ export function App(): React.JSX.Element {
         if (res.value.readingSize) setReadingSize(res.value.readingSize);
         if (res.value.readingWidth) setReadingWidth(res.value.readingWidth);
         if (res.value.verseNumbers) setVerseNumbers(res.value.verseNumbers);
-        if (res.value.sidebarStyle) setSidebarStyle(res.value.sidebarStyle);
       }
     });
     return () => {
@@ -270,8 +261,8 @@ export function App(): React.JSX.Element {
 
   useEffect(() => {
     if (!settingsLoaded.current) return;
-    void safeCall(() => window.api.settings.set({ readingSize, readingWidth, verseNumbers, sidebarStyle }));
-  }, [readingSize, readingWidth, verseNumbers, sidebarStyle]);
+    void safeCall(() => window.api.settings.set({ readingSize, readingWidth, verseNumbers }));
+  }, [readingSize, readingWidth, verseNumbers]);
 
   const handleCreateNoteFromPassage = (prefillBody?: string) => {
     setEditNoteBody(prefillBody ?? "");
@@ -289,8 +280,8 @@ export function App(): React.JSX.Element {
   };
 
   const toggleLibraryPopover = () => {
-    if (!libraryPopoverOpen && brandRowRef.current) {
-      setBrandRect(brandRowRef.current.getBoundingClientRect());
+    if (!libraryPopoverOpen && libraryTriggerRef.current) {
+      setLibraryAnchorRect(libraryTriggerRef.current.getBoundingClientRect());
     }
     setLibraryPopoverOpen((prev) => !prev);
   };
@@ -371,11 +362,6 @@ export function App(): React.JSX.Element {
     return () => window.removeEventListener("keydown", onKey);
   }, [focusMode, toggleFocusMode]);
 
-  const openLibraryPopoverFrom = (el: HTMLElement | null) => {
-    if (el) setBrandRect(el.getBoundingClientRect());
-    setLibraryPopoverOpen(true);
-  };
-
   const shellClass = [
     "app-shell",
     `theme-${theme}`,
@@ -384,7 +370,6 @@ export function App(): React.JSX.Element {
     `reading-size-${readingSize}`,
     `reading-width-${readingWidth}`,
     `verse-nums-${verseNumbers}`,
-    `sidebar-style-${sidebarStyle}`,
   ]
     .filter(Boolean)
     .join(" ");
@@ -430,9 +415,17 @@ export function App(): React.JSX.Element {
   const avatarInitial = libraryName.charAt(0).toUpperCase() || "?";
 
   const libraryPopover = libraryPopoverOpen && (
-    <Popover anchorRect={brandRect} onClose={closeLibraryPopover} width={280} className="library-popover">
+    <Popover
+      anchorRect={libraryAnchorRect}
+      onClose={closeLibraryPopover}
+      width={280}
+      className="library-popover"
+      ariaLabel="Library menu"
+    >
+      <div className="library-popover-kicker">Current library</div>
       <div className="library-popover-name">{libraryName}</div>
       <div className="library-popover-path" title={libraryPath}>{libraryPath}</div>
+      <div className="library-popover-section-label">Installed Scripture</div>
       <div className="package-chip-row">
         <div className="package-chip">
           <span className="package-chip-name">WEB</span>
@@ -478,41 +471,25 @@ export function App(): React.JSX.Element {
         <div className={shellClass} data-theme={theme}>
           {!focusMode && (
             <nav
-              className={`sidebar${sidebarCollapsed || sidebarStyle === "rail" ? " collapsed" : ""}${sidebarStyle === "rail" ? " rail-locked" : ""}`}
+              className={`sidebar${sidebarCollapsed ? " collapsed" : ""}`}
+              aria-label="Primary navigation"
             >
-              {sidebarStyle !== "rail" && (
-                <button
-                  className="sidebar-collapse-btn"
-                  onClick={toggleSidebarCollapsed}
-                  title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                >
-                  <PanelToggleIcon />
-                </button>
-              )}
+              <button
+                className="sidebar-collapse-btn"
+                onClick={toggleSidebarCollapsed}
+                title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                aria-expanded={!sidebarCollapsed}
+              >
+                <PanelToggleIcon />
+              </button>
               <div className="sidebar-header">
-                <div
-                  className="brand-row"
-                  ref={brandRowRef}
-                  onClick={toggleLibraryPopover}
-                  title="Library"
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      toggleLibraryPopover();
-                    }
-                  }}
-                >
+                <div className="brand-row" aria-label="Scripture">
                   <div className="brand-mark">
                     <BookMarkIcon />
                   </div>
                   <div className="brand-word">Scripture</div>
-                  <div className={`brand-chev${libraryPopoverOpen ? " open" : ""}`}>
-                    <ChevronDownIcon />
-                  </div>
                 </div>
-                {libraryPopover}
               </div>
               <div className="sidebar-nav">
                 <NavItem active={view === "scripture"} onClick={() => setView("scripture")} label="Read" icon={<ReadIcon />} shortcut="1" />
@@ -523,45 +500,33 @@ export function App(): React.JSX.Element {
                 <NavItem active={view === "settings"} onClick={() => setView("settings")} label="Settings" icon={<SettingsIcon />} shortcut="5" />
               </div>
               <div className="sidebar-spacer" />
-
-              {/* Lab: try sidebar densities without committing permanently */}
-              <div className="sidebar-lab" title="Sidebar layout lab">
-                {SIDEBAR_STYLES.map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    className={`sidebar-lab-tab${sidebarStyle === s.id ? " active" : ""}`}
-                    onClick={() => setSidebarStyle(s.id)}
-                    title={s.hint}
-                    aria-pressed={sidebarStyle === s.id}
-                  >
-                    {s.label}
-                  </button>
-                ))}
-              </div>
-
               <div className="sidebar-footer">
                 <button
                   type="button"
-                  ref={footerAvatarRef}
-                  className={`footer-avatar${aiBusy ? " analyzing" : ""}`}
-                  onClick={() => {
-                    if (libraryPopoverOpen) closeLibraryPopover();
-                    else openLibraryPopoverFrom(footerAvatarRef.current);
-                  }}
+                  ref={libraryTriggerRef}
+                  className={`library-switcher${aiBusy ? " analyzing" : ""}`}
+                  onClick={toggleLibraryPopover}
                   title={`${libraryName} — library menu`}
                   aria-label={`Library: ${libraryName}`}
+                  aria-haspopup="dialog"
+                  aria-expanded={libraryPopoverOpen}
                 >
-                  {avatarInitial}
+                  <span className={`footer-avatar${aiBusy ? " analyzing" : ""}`} aria-hidden="true">
+                    {avatarInitial}
+                  </span>
+                  <span className="footer-lib-text">
+                    <span className="footer-lib-name" title={libraryPath}>{libraryName}</span>
+                    <span className={`footer-ai-status${aiBusy ? " analyzing" : " idle"}`} aria-live="polite">
+                      <i className="footer-ai-dot" aria-hidden="true" />
+                      {aiBusy ? "Studying passage…" : "Local library"}
+                    </span>
+                  </span>
+                  <span className={`footer-chevron${libraryPopoverOpen ? " open" : ""}`} aria-hidden="true">
+                    <ChevronDownIcon />
+                  </span>
                 </button>
-                <div className="footer-lib-text">
-                  <div className="footer-lib-name" title={libraryPath}>{libraryName}</div>
-                  <div className={`footer-ai-status${aiBusy ? " analyzing" : " idle"}`}>
-                    <i className="footer-ai-dot" />
-                    {aiBusy ? "Analyzing passage..." : "Up to date"}
-                  </div>
-                </div>
               </div>
+              {libraryPopover}
             </nav>
           )}
           <div className="main-content">

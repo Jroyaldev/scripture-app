@@ -417,10 +417,10 @@ html, body, #root {
 }
 
 .sidebar {
-  width: 260px;
+  width: 228px;
   /* Flex items default to min-width:auto, which floors the used width at
      the content's min-content size — without this override, collapsing to
-     72px silently does nothing once any child (nav label, footer text) has
+     64px silently does nothing once any child (nav label, footer text) has
      a wider intrinsic minimum, regardless of the width/flex-shrink values.
      min-width:0 alone is sufficient (the automatic-minimum-size floor only
      applies when min-width is `auto`); deliberately NOT using overflow:hidden
@@ -439,16 +439,16 @@ html, body, #root {
 }
 
 .sidebar.collapsed {
-  width: 72px;
+  width: 64px;
 }
 
 .sidebar-collapse-btn {
   -webkit-app-region: no-drag;
   position: absolute;
   top: calc(env(titlebar-area-height, 28px) + var(--sp-sm));
-  right: -12px;
-  width: 24px;
-  height: 24px;
+  right: -11px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: var(--bg-surface);
   border: 1px solid var(--border-medium);
@@ -458,13 +458,14 @@ html, body, #root {
   justify-content: center;
   color: var(--text-secondary);
   cursor: pointer;
-  opacity: 0;
+  opacity: 0.55;
   transition: opacity var(--transition-fast), background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
   z-index: 6;
 }
 
 .sidebar:hover .sidebar-collapse-btn,
-.sidebar.collapsed .sidebar-collapse-btn {
+.sidebar.collapsed .sidebar-collapse-btn,
+.sidebar-collapse-btn:focus-visible {
   opacity: 1;
 }
 
@@ -479,7 +480,7 @@ html, body, #root {
 
 .sidebar-header {
   -webkit-app-region: drag;
-  padding: var(--sp-lg) var(--sp-xl) var(--sp-lg);
+  padding: 16px 18px 18px;
   position: relative;
 }
 
@@ -488,7 +489,6 @@ html, body, #root {
   display: flex;
   align-items: center;
   gap: 10px;
-  cursor: pointer;
 }
 
 .sidebar.collapsed .sidebar-header {
@@ -502,9 +502,9 @@ html, body, #root {
 }
 
 .brand-mark {
-  width: 28px;
-  height: 28px;
-  border-radius: 7px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
   background: var(--accent-current);
   display: flex;
   align-items: center;
@@ -514,52 +514,32 @@ html, body, #root {
 
 .brand-word {
   font-family: var(--font-reading);
-  font-size: 15px;
+  font-size: 15.5px;
   font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
-  max-width: 160px;
+  max-width: 150px;
   opacity: 1;
   transition: opacity var(--transition-fast), max-width var(--transition-normal);
 }
 
-.brand-chev {
-  margin-left: auto;
-  color: var(--text-tertiary);
-  flex-shrink: 0;
-  display: flex;
-  overflow: hidden;
-  max-width: 20px;
-  opacity: 1;
-  transition: opacity var(--transition-fast), max-width var(--transition-normal), transform var(--transition-fast);
-}
-
-.brand-chev svg {
-  transition: transform var(--transition-fast);
-}
-
-.brand-chev.open svg {
-  transform: rotate(180deg);
-}
-
-.sidebar.collapsed .brand-word,
-.sidebar.collapsed .brand-chev {
+.sidebar.collapsed .brand-word {
   opacity: 0;
   max-width: 0;
 }
 
-.sidebar.collapsed .brand-chev {
-  margin-left: 0;
-}
-
 .sidebar-nav {
-  padding: 0 12px;
+  padding: 0 10px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   -webkit-app-region: no-drag;
+}
+
+.sidebar.collapsed .sidebar-nav {
+  padding-inline: 8px;
 }
 
 .nav-divider {
@@ -573,39 +553,19 @@ html, body, #root {
   align-items: center;
   gap: 11px;
   width: 100%;
-  padding: 8px 10px;
+  min-height: 40px;
+  padding: 9px 10px;
   border: none;
   border-radius: var(--radius-md);
   background: none;
   color: var(--text-secondary);
   font-family: var(--font-ui);
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   text-align: left;
   position: relative;
-  transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
-}
-
-.nav-item::before {
-  content: '';
-  position: absolute;
-  left: -12px;
-  top: 50%;
-  width: 3px;
-  height: 0;
-  border-radius: 0 3px 3px 0;
-  background: var(--accent-current);
-  transform: translateY(-50%);
-  transition: height var(--transition-normal);
-}
-
-.nav-item.active::before {
-  height: 16px;
-}
-
-.sidebar.collapsed .nav-item::before {
-  display: none;
+  transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .nav-item:active {
@@ -624,7 +584,7 @@ html, body, #root {
 .nav-item.active {
   background: var(--bg-surface);
   color: var(--text-primary);
-  box-shadow: var(--shadow-subtle);
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
 }
 
 .nav-item.active svg {
@@ -633,7 +593,7 @@ html, body, #root {
 
 .sidebar.collapsed .nav-item {
   justify-content: center;
-  padding: 8px;
+  padding: 9px;
   gap: 0;
 }
 
@@ -6476,27 +6436,55 @@ button.lang-phrase-diagram-node:focus-visible {
 /* --- Sidebar footer --- */
 
 .sidebar-footer {
-  padding: 14px 20px 16px;
-  margin: 0 12px;
+  padding: 10px;
+  margin: 0;
   border-top: 1px solid var(--border-subtle);
-  display: flex;
-  align-items: center;
-  gap: 9px;
   -webkit-app-region: no-drag;
 }
 
 .sidebar.collapsed .sidebar-footer {
-  padding: 14px 0 16px;
-  margin: 0 8px;
+  padding: 10px 8px;
+  margin: 0;
   border-top: none;
+}
+
+.library-switcher {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 14px;
+  align-items: center;
+  gap: 9px;
+  padding: 8px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+}
+
+.library-switcher:hover,
+.library-switcher[aria-expanded="true"] {
+  background: var(--study-hover-surface);
+}
+
+.library-switcher:active {
+  transform: scale(0.985);
+}
+
+.sidebar.collapsed .library-switcher {
+  display: flex;
   justify-content: center;
-  gap: 0;
+  padding: 8px;
 }
 
 .footer-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
   background: var(--accent-current);
   color: #fff;
   font-size: 12px;
@@ -6517,8 +6505,12 @@ button.lang-phrase-diagram-node:focus-visible {
 }
 
 .footer-lib-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
   opacity: 1;
-  max-width: 160px;
+  max-width: 150px;
   overflow: hidden;
   transition: opacity var(--transition-fast), max-width var(--transition-normal);
 }
@@ -6529,8 +6521,9 @@ button.lang-phrase-diagram-node:focus-visible {
 }
 
 .footer-lib-name {
-  font-size: 12.5px;
-  font-weight: 500;
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
@@ -6538,9 +6531,9 @@ button.lang-phrase-diagram-node:focus-visible {
 }
 
 .footer-ai-status {
+  display: flex;
   font-size: 11px;
   color: var(--text-tertiary);
-  display: flex;
   align-items: center;
   gap: 4px;
   white-space: nowrap;
@@ -6554,14 +6547,34 @@ button.lang-phrase-diagram-node:focus-visible {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: var(--healthy);
+  background: var(--text-tertiary);
+  opacity: 0.68;
   display: inline-block;
   flex-shrink: 0;
 }
 
 .footer-ai-status.analyzing .footer-ai-dot {
-  background: var(--warning);
+  background: var(--accent-current);
+  opacity: 1;
   animation: footer-ai-dot-pulse 1.4s ease-in-out infinite;
+}
+
+.footer-chevron {
+  display: flex;
+  color: var(--text-tertiary);
+  transition: transform var(--transition-fast), color var(--transition-fast), opacity var(--transition-fast);
+}
+
+.library-switcher:hover .footer-chevron {
+  color: var(--text-secondary);
+}
+
+.footer-chevron.open {
+  transform: rotate(180deg);
+}
+
+.sidebar.collapsed .footer-chevron {
+  display: none;
 }
 
 @keyframes footer-ai-dot-pulse {
@@ -6569,11 +6582,29 @@ button.lang-phrase-diagram-node:focus-visible {
   50% { opacity: 0.5; transform: scale(1.3); }
 }
 
-/* --- Library popover (brand row) --- */
+/* --- Library popover --- */
 
 .library-popover {
   -webkit-app-region: no-drag;
   padding: 16px;
+}
+
+.library-popover-kicker,
+.library-popover-section-label {
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.library-popover-kicker {
+  margin-bottom: 5px;
+}
+
+.library-popover-section-label {
+  margin-top: 14px;
 }
 
 .library-popover-name {
@@ -6581,7 +6612,7 @@ button.lang-phrase-diagram-node:focus-visible {
   font-size: 14.5px;
   font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: 3px;
+  margin-bottom: 4px;
 }
 
 .library-popover-path {
@@ -6589,7 +6620,7 @@ button.lang-phrase-diagram-node:focus-visible {
   font-size: 10.5px;
   color: var(--text-tertiary);
   word-break: break-all;
-  margin-bottom: 14px;
+  margin-bottom: 0;
 }
 
 .package-chip {
@@ -6597,8 +6628,10 @@ button.lang-phrase-diagram-node:focus-visible {
   align-items: baseline;
   justify-content: space-between;
   gap: 10px;
-  padding: 7px 0;
-  border-top: 1px solid var(--border-subtle);
+  padding: 5px 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
 }
 
 .package-chip-name {
@@ -6609,21 +6642,22 @@ button.lang-phrase-diagram-node:focus-visible {
 
 .library-popover-settings {
   width: 100%;
-  margin-top: 14px;
-  padding: 8px 0;
+  margin-top: 2px;
+  padding: 8px 9px;
   background: none;
-  border: 1px solid var(--border-medium);
+  border: 0;
   border-radius: var(--radius-sm);
   color: var(--text-secondary);
   font-family: var(--font-ui);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
+  text-align: left;
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
 .library-popover-settings:hover {
-  background: var(--bg-secondary);
+  background: var(--study-hover-surface);
   color: var(--text-primary);
 }
 
@@ -7082,7 +7116,7 @@ textarea:focus-visible,
 }
 
 /* ==========================================================================
-   UX pass — reading comfort, mini toolbar, sidebar lab, focus, ambient polish
+   UX pass — reading comfort, mini toolbar, focus, ambient polish
    ========================================================================== */
 
 /* --- Reading size / width / verse numbers (applied on .app-shell) --- */
@@ -7118,101 +7152,34 @@ textarea:focus-visible,
   opacity: 1;
 }
 
-/* --- Sidebar style lab --- */
-
-.app-shell.sidebar-style-compact .sidebar:not(.collapsed) {
-  width: 220px;
-}
-.app-shell.sidebar-style-compact .sidebar-header {
-  padding: var(--sp-md) var(--sp-lg);
-}
-.app-shell.sidebar-style-compact .nav-item {
-  padding: 8px 12px;
-  font-size: 13px;
-}
-.app-shell.sidebar-style-compact .sidebar-footer {
-  padding: var(--sp-sm) var(--sp-md);
-}
-
-.app-shell.sidebar-style-rail .sidebar {
-  width: 72px;
-}
-.app-shell.sidebar-style-rail .sidebar.rail-locked .sidebar-collapse-btn {
-  display: none;
-}
-
-.sidebar-lab {
-  display: flex;
-  gap: 2px;
-  margin: 0 var(--sp-sm) var(--sp-sm);
-  padding: 3px;
-  background: var(--bg-secondary);
-  border-radius: 8px;
-  border: 1px solid var(--border-subtle);
-}
-.sidebar.collapsed .sidebar-lab {
-  flex-direction: column;
-  margin: 0 8px var(--sp-sm);
-}
-.sidebar-lab-tab {
-  flex: 1;
-  border: none;
-  background: transparent;
-  color: var(--text-tertiary);
-  font-family: var(--font-ui);
-  font-size: 10px;
-  font-weight: var(--fw-medium);
-  letter-spacing: 0.02em;
-  padding: 5px 4px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast);
-}
-.sidebar-lab-tab:hover {
-  color: var(--text-secondary);
-}
-.sidebar-lab-tab.active {
-  background: var(--bg-surface);
-  color: var(--text-primary);
-  box-shadow: var(--shadow-subtle);
-}
-.sidebar.collapsed .sidebar-lab-tab {
-  font-size: 9px;
-  padding: 4px 2px;
-}
-
 .nav-shortcut {
   margin-left: auto;
   font-size: 10px;
   font-weight: var(--fw-medium);
   color: var(--text-tertiary);
-  opacity: 0.7;
+  opacity: 0;
+  transform: translateX(2px);
   font-variant-numeric: tabular-nums;
   min-width: 1em;
   text-align: right;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.nav-item:hover .nav-shortcut,
+.nav-item:focus-visible .nav-shortcut {
+  opacity: 0.72;
+  transform: translateX(0);
 }
 .sidebar.collapsed .nav-shortcut {
   display: none;
 }
 
-.footer-avatar {
-  border: none;
-  font: inherit;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-.footer-avatar:hover {
-  filter: brightness(1.05);
-}
-.footer-avatar:focus-visible {
-  outline: 2px solid var(--accent-current);
-  outline-offset: 2px;
-}
-
 .package-chip-row {
   display: flex;
   gap: 6px;
-  margin: var(--sp-sm) 0;
+  margin: 7px 0 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 /* Soft scrim behind popovers — reading stays visible but clearly modal */

@@ -38,6 +38,14 @@ The picker is named **Reading atmosphere**, not Theme. Its compact explanation i
 - **Inset:** grouped controls and local selected states.
 - **Float:** popovers, menus, transient palettes, and dialogs. Floating content is intentionally more opaque than glass canvases.
 
+## Sidebar contract
+
+- Expanded width is 228px; the optional collapsed rail is 64px. These are the production densities, not user-selectable visual experiments.
+- The Scripture wordmark identifies the application and does not open a library menu. The footer switcher is the single place that identifies and changes the active local library.
+- The active destination combines a neutral inset material with one gold icon. Hover is a quieter material change. Keyboard focus keeps the visible gold ring.
+- Numeric shortcuts remain `1–5`, but their labels appear only on the hovered or keyboard-focused destination so the idle column stays quiet.
+- The idle footer says `Local library`. It never implies cloud sync. While source-backed passage work is active it says `Studying passage…` and pulses the avatar.
+
 ## Interaction language
 
 - Hover changes surface or text tone without lifting the entire component.
@@ -52,7 +60,7 @@ The picker is named **Reading atmosphere**, not Theme. Its compact explanation i
 Each item is a separate bounded B2 pass with before/after desktop captures in all four atmospheres. No mobile-specific work belongs in this worktree.
 
 1. **Global shell and atmosphere system — landed.** Tokens, Paper/Ink/Glass/Candlelight, picker, portal-safe floating layers, Settings gallery, and automated all-look QA.
-2. **Sidebar and primary navigation.** Remove the visible layout lab, choose the final density, refine brand/library identity, active/hover/focus states, shortcuts, and footer status.
+2. **Sidebar and primary navigation — landed.** One 228px/64px density, static product identity, single footer library switcher, quiet current/hover/focus states, contextual shortcut hints, truthful local/busy status, and repeatable all-look interaction QA.
 3. **Reading topbar.** Passage/version selection, previous/next, jump field, reading controls, Living Margin control, and atmosphere trigger.
 4. **Reading canvas.** Chapter hierarchy, verse rhythm, selection, hover, highlights, loading/error/empty states, and focus mode.
 5. **Living Margin frame.** Section hierarchy, disclosure, provenance, action affordances, and card rhythm while preserving the proven language, cross-reference, and Structure visualizers.

@@ -4,6 +4,20 @@
 > **Predecessors:** A0 (snapshot), A1 (native build), B1 (scripture data).
 > **Contracts:** §4.2 (event fold), §4.4 (SQLite materialized view), §4.6 (note format), INV-7 (append-only), INV-9 (safe to rebuild).
 
+## Progress — 2026-07-15 (sidebar and primary navigation)
+
+The second bounded desktop visual-system pass is complete. It converts the sidebar from a layout experiment into production navigation without changing the reading canvas, topbar, Living Margin, or mobile worktree:
+
+- **One deliberate density:** the visible `Original | Compact | Rail` lab and its persisted `sidebarStyle` setting are removed. The final sidebar is 228px expanded and a 64px collapsed rail, with the existing collapse preference retained.
+- **Clear identity hierarchy:** the top row is now the static Scripture product identity. Library selection lives once, in a full-width footer switcher, rather than being duplicated on the wordmark and avatar.
+- **Quiet navigation states:** the current destination uses a neutral inset surface with one gold icon instead of a shadow plus a second gold edge. Hover is a low-contrast material change; keyboard focus remains fully visible; 1–5 hints appear only on the relevant hovered or focused row.
+- **Truthful footer state:** idle copy is `Local library`, not the sync-like `Up to date`. The active analysis state is `Studying passage…`; the footer avatar continues to pulse while work is running. The library panel uses a labeled dialog relationship, reports installed texts, and presents its actions as a compact menu rather than three heavy outlined buttons.
+- **Repeatable interaction QA:** `npm run qa:sidebar` asserts the chosen widths, absence of the layout lab, single library trigger, active-page semantics, 1–5 keyboard navigation, hover shortcut reveal, keyboard focus, collapse/expand, Escape dismissal, and all four atmosphere materials. Captures live in `docs/ui-audit/sidebar/`.
+
+**Verification:** `npm run lint`, full `npm test` (**372 tests: 362 passing, 10 expected Electron-ABI skips**), Electron build, renderer build, `npm run qa:sidebar`, and `git diff --check` pass.
+
+The next bounded component is **Reading topbar**. Mobile remains explicitly outside this worktree.
+
 ## Progress — 2026-07-15 (desktop visual-system foundation)
 
 The first bounded pass of the whole-interface refinement is complete. It establishes the shared material and interaction foundation without changing the proven language, Structure, cross-reference, or highlight semantics:
@@ -15,7 +29,7 @@ The first bounded pass of the whole-interface refinement is complete. It establi
 - **Reliable floating layers:** shared Popovers now portal above backdrop-filter surfaces while inheriting the active atmosphere. This fixes Electron compositor clipping in both glass modes and improves every existing picker, not only the new one.
 - **Repeatable desktop QA:** `scripts/qa-theme-tour.mjs` verifies and captures the shell, atmosphere picker, and Settings in all four looks. `qa-screenshot-tour.mjs` now covers all four atmospheres and successfully captured Greek and Hebrew language cards across every pill.
 
-The governing contract and bounded continuation order are in `docs/desktop-visual-system.md`. Next is **Sidebar and primary navigation**; mobile remains explicitly outside this worktree.
+The governing contract and bounded continuation order are in `docs/desktop-visual-system.md`.
 
 ## Progress — 2026-07-15 (OpenBible cross-reference study surface)
 

@@ -82,6 +82,6 @@ test("App's settings-load effect does not clobber a setting the user already tog
   // invariant — don't write back defaults before real settings arrive —
   // must be preserved by the fix).
   const persistGuards = source.match(/if \(!settingsLoaded\.current\) return;/g) ?? [];
-  // sidebarCollapsed, marginVisible, theme, and reading/sidebar chrome prefs
+  // sidebarCollapsed, marginVisible, theme, and reading preferences
   assert.equal(persistGuards.length, 4, "expected all persist effects to still guard on settingsLoaded");
 });
