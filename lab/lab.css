@@ -117,25 +117,27 @@ body.theme-glass, body.theme-dark-glass {
 }
 .sheet-compact .vrow .vtext { font-size: 0.92rem; line-height: 1.55; }
 
-/* ── the phrase key: near-invisible at rest, ink on awaken ─ */
+/* ── the phrase key: at rest the words themselves carry a faint ink
+ * tint toward their kind hue — no underline, no dots, nothing drawn.
+ * The line only exists once the pattern wakes. ── */
 .pk {
   --h: var(--text-tertiary);
   cursor: pointer;
-  border-bottom: 1px dotted color-mix(in srgb, var(--h) var(--hint-mix), transparent);
+  color: color-mix(in srgb, var(--h) var(--hint-mix), var(--text-primary));
   background: linear-gradient(var(--h), var(--h)) no-repeat 0 100% / 0% 1.5px;
   box-decoration-break: clone; -webkit-box-decoration-break: clone;
   padding-bottom: 1px;
-  transition: background-size 300ms cubic-bezier(.3,.7,.3,1), border-color 180ms ease, color 220ms ease;
+  transition: background-size 300ms cubic-bezier(.3,.7,.3,1), color 220ms ease;
 }
 .pk.on, body.reveal .pk {
   background-size: 100% 1.5px;
-  border-bottom-color: transparent;
 }
 /* awake: the rest of the page recedes; members keep full ink */
 .sheet.awake .vtext { color: color-mix(in srgb, var(--text-primary) 44%, transparent); }
 .sheet.awake .vnum { opacity: 0.35; }
 .sheet.awake .chap-head, .sheet.awake .letter-head { color: color-mix(in srgb, var(--text-tertiary) 50%, transparent); }
 .sheet.awake .pk.on { color: var(--text-primary); }
+.sheet.awake .pk:not(.on) { color: color-mix(in srgb, var(--text-primary) 44%, transparent); }
 
 /* overlay svg shares the sheet's coordinate space */
 .overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
@@ -214,6 +216,27 @@ body.theme-glass, body.theme-dark-glass {
 }
 .pcard-row .pr-dir { flex: none; font: 500 0.62rem var(--font-mono); color: var(--text-tertiary); width: 10px; }
 .pcard-row.off .pr-txt { color: var(--text-tertiary); }
+.pcard-del:hover { color: var(--k-contrast); }
+
+/* authoring bar — kind palette on select, status chip mid-session */
+.authbar {
+  position: fixed; z-index: 60; display: none; align-items: center; gap: 2px;
+  background: color-mix(in srgb, var(--bg-surface) 96%, transparent); backdrop-filter: blur(8px);
+  border: 1px solid var(--border-subtle); border-radius: 999px;
+  padding: 4px 6px; box-shadow: 0 8px 26px rgba(56, 43, 27, 0.16);
+}
+.authbar.on { display: flex; }
+.authbar .ak {
+  appearance: none; border: 0; background: transparent; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  font: 500 0.68rem var(--font-mono); letter-spacing: 0.04em;
+  color: var(--text-secondary); padding: 5px 9px; border-radius: 999px;
+  transition: background var(--tr), color var(--tr);
+}
+.authbar .ak:hover { background: var(--bg-canvas); color: var(--text-primary); }
+.authbar .ak i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.authbar .ak.act { background: var(--gold-soft); color: var(--text-primary); }
+.authbar .hint { font: 400 0.68rem var(--font-mono); color: var(--text-tertiary); padding: 0 4px; }
 
 /* legend — quiet affordance row, hover to awaken */
 .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--border-subtle); }

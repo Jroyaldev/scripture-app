@@ -55,7 +55,26 @@ const GIDS = {};
 function addGid(gid, study, kind, label, keys, conn) {
   GIDS[gid] = { gid, study, kind, hue: KIND_HUE[kind], label, keys: keys.filter(Boolean), conn, spans: [], anchors: [] };
 }
+
+/* user-authored marks — same record shape, persisted locally */
+const USER_KEY = "shape-marks-user";
+let USER = [];
+try { USER = JSON.parse(localStorage.getItem(USER_KEY) || "[]"); } catch { USER = []; }
+function saveUser() { localStorage.setItem(USER_KEY, JSON.stringify(USER)); }
+function refStudy(ref) {
+  const chKey = ref.split(".").slice(0, 2).join(".");
+  for (const [sid, cfg] of Object.entries(SHEETS))
+    if (cfg.chapters.some((c) => c.key === chKey)) return sid;
+  return null;
+}
+function shortQuote(s, n = 24) { return s.length > n ? s.slice(0, n - 1).trimEnd() + "…" : s; }
+function userLabel(kind, members) {
+  if (kind === "series") return `“${shortQuote(members[0].phrase)}” ×${members.length}`;
+  return `“${shortQuote(members[0].phrase, 18)}” ↔ “${shortQuote(members[1].phrase, 18)}”`;
+}
+
 function buildGids() {
+  for (const k of Object.keys(GIDS)) delete GIDS[k];
   for (const p of PATTERNS.psa) {
     addGid(p.id, "psa", p.kind, `${KIND_LABEL[p.kind]} · ${p.label}`, p.members.map((m) => m.key), "arc");
   }
@@ -73,6 +92,13 @@ function buildGids() {
   };
   for (const el of Object.keys(ELEMS)) {
     addGid(`rev23:${el}`, "rev", "series", `series · ${ELEMS[el]}`, R.members.map((m) => m.keys[el]), "thread");
+  }
+  for (const p of USER) {
+    const study = refStudy(p.members[0].ref);
+    if (!study) continue;
+    addGid(p.id, study, p.kind, `${KIND_LABEL[p.kind]} · ${p.label}`,
+      p.members.map((m) => ({ ref: m.ref, phrase: m.phrase })),
+      p.members.length > 2 ? "thread" : "arc");
   }
 }
 
@@ -168,7 +194,10 @@ function buildSheets() {
     sheet.appendChild(S("svg", { class: "overlay" }));
     const wh = document.createElement("div"); wh.className = "whisper"; sheet.appendChild(wh);
     const legend = document.createElement("div"); legend.className = "legend";
-    for (const entry of LEGEND[id]()) {
+    const entries = [...LEGEND[id](),
+      ...USER.filter((p) => refStudy(p.members[0].ref) === id)
+        .map((p) => ({ label: `${KIND_LABEL[p.kind]} · ${p.label}`, kind: p.kind, gids: [p.id] }))];
+    for (const entry of entries) {
       const chip = document.createElement("span");
       chip.className = "chip"; chip.dataset.gids = entry.gids.join(" ");
       chip.innerHTML = `<svg width="9" height="9"><circle cx="4.5" cy="4.5" r="3" fill="${KIND_HUE[entry.kind]}"/></svg>${entry.label}`;
@@ -267,20 +296,32 @@ function drawThread(g, rects, hue, laneX) {
   });
 }
 
+/* the ink filter — a whisper of turbulence so strokes feel hand-laid, not CAD */
+function ensureInk(svg, sid) {
+  if (svg.querySelector("defs")) return;
+  const defs = S("defs", {}, svg);
+  const f = S("filter", { id: `ink-${sid}`, x: "-20%", y: "-20%", width: "140%", height: "140%" }, defs);
+  S("feTurbulence", { type: "fractalNoise", baseFrequency: "0.02", numOctaves: "1", seed: "7", result: "n" }, f);
+  S("feDisplacementMap", { in: "SourceGraphic", in2: "n", scale: "1.8" }, f);
+}
+
 function drawOverlay(sid, gids) {
   const sheet = document.querySelector(`[data-sheet="${sid}"]`);
   const svg = sheet.querySelector("svg.overlay");
   const key = gids.slice().sort().join("|");
   if (svg.dataset.key === key) return;
   svg.dataset.key = key;
+  const live = svg.querySelector("g.live");
   svg.innerHTML = "";
+  ensureInk(svg, sid);
+  if (live) svg.appendChild(live);
   if (!gids.length) return;
   const M = measure(sid);
   gids.forEach((gid, i) => {
     const G = GIDS[gid];
     const rects = G.anchors.map((a) => firstRect(M, a.el)).filter(Boolean);
     if (rects.length < 2) return;
-    const g = S("g", {}, svg);
+    const g = S("g", { filter: `url(#ink-${sid})` }, svg);
     if (G.conn === "thread") drawThread(g, rects, G.hue, M.textLeft - 46 - i * 10);
     else drawArc(g, rects[0], rects[rects.length - 1], G.hue, G.kind, M.textLeft - 40 - i * 10, M.textLeft - 12);
   });
@@ -384,6 +425,17 @@ function updateCard() {
       const head = document.createElement("div"); head.className = "pcard-head";
       head.innerHTML = `<svg width="8" height="8"><circle cx="4" cy="4" r="3" fill="${G.hue}"/></svg>`;
       const title = document.createElement("span"); title.className = "pcard-title"; title.textContent = G.label;
+      const exp = document.createElement("button"); exp.className = "pcard-x"; exp.textContent = "⤓";
+      exp.title = "export as card";
+      exp.addEventListener("click", (e) => { e.stopPropagation(); exportCard(gid); });
+      head.append(title, exp);
+      if (gid.startsWith("u-")) {
+        const del = document.createElement("button"); del.className = "pcard-x pcard-del";
+        del.innerHTML = `<svg width="11" height="12" viewBox="0 0 14 15" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M2 4h10M5.5 4V2.5h3V4M3.5 4l.7 9h5.6l.7-9M5.8 6.5v4M8.2 6.5v4"/></svg>`;
+        del.title = "delete this mark";
+        del.addEventListener("click", (e) => { e.stopPropagation(); deleteUserPattern(gid); });
+        head.appendChild(del);
+      }
       const close = document.createElement("button"); close.className = "pcard-x"; close.textContent = "×";
       close.title = "unpin (esc)";
       close.addEventListener("click", (e) => {
@@ -391,7 +443,7 @@ function updateCard() {
         pinned.delete(gid);
         applyActive();
       });
-      head.append(title, close);
+      head.appendChild(close);
       sec.appendChild(head);
       for (const a of G.anchors) {
         const row = document.createElement("div"); row.className = "pcard-row";
@@ -420,6 +472,55 @@ function updateCardView() {
     row.classList.toggle("off", !!off);
     row.querySelector(".pr-dir").textContent = off;
   });
+}
+
+/* ── export — a pinned pattern as a letterpress card (SVG) ─
+ * Cream stock, the pattern's own mark language on the left spine,
+ * ref + phrase per member, kind named in small caps. Shareable. */
+const EXPORT_HUES = {
+  "link:parallel": "#4E9A5F", "link:contrast": "#C05A80", "link:echo": "#4678C8",
+  hinge: "#4E9A5F", mirror: "#8760C4", series: "#C8961E",
+};
+function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+function exportCard(gid) {
+  const G = GIDS[gid];
+  const hue = EXPORT_HUES[G.kind];
+  const cfg = SHEETS[G.study];
+  const W = 900, rowH = 58, padX = 84, top = 168;
+  const rows = G.anchors.map((a) => {
+    const [, ch, v] = a.ref.split(".");
+    return { ref: `${ch}:${v}`, phrase: a.phrase };
+  });
+  const H = top + rows.length * rowH + 96;
+  const spineX = padX + 34, refX = padX + 118, txtX = padX + 138;
+  const y0 = top + rowH / 2, y1 = top + (rows.length - 1) * rowH + rowH / 2;
+  const spine = rows.length > 2
+    ? `<path d="M ${spineX} ${y0} V ${y1}" stroke="${hue}" stroke-width="1.2" opacity="0.55"/>`
+    : `<path d="M ${spineX + 24} ${y0} C ${spineX - 14} ${y0 + 4}, ${spineX - 14} ${y1 - 4}, ${spineX + 24} ${y1}" fill="none" stroke="${hue}" stroke-width="1.4"${G.kind === "link:echo" ? ' stroke-dasharray="0.1 6" stroke-linecap="round" stroke-width="2"' : ""}/>`;
+  const marks = rows.map((r, i) => {
+    const y = top + i * rowH + rowH / 2;
+    return `<path d="M ${spineX} ${y} H ${refX - 26}" stroke="${hue}" stroke-width="1" opacity="0.35"/>
+      <circle cx="${refX - 26}" cy="${y}" r="2.4" fill="${hue}"/>
+      <text x="${refX}" y="${y + 4}" text-anchor="end" font-family="ui-monospace, 'JetBrains Mono', monospace" font-size="12" fill="#6B6254">${r.ref}</text>
+      <text x="${txtX}" y="${y + 6}" font-family="'Source Serif 4', Georgia, serif" font-size="21" fill="#181511">${esc(shortQuote(r.phrase, 52))}</text>
+      <path d="M ${txtX} ${y + 14} H ${txtX + Math.min(r.phrase.length, 52) * 9.6}" stroke="${hue}" stroke-width="1.4" opacity="0.85"/>`;
+  }).join("\n");
+  const [kindWord, ...rest] = G.label.split(" · ");
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+  <rect width="${W}" height="${H}" rx="26" fill="#FAF6EC"/>
+  <rect x="0.5" y="0.5" width="${W - 1}" height="${H - 1}" rx="25.5" fill="none" stroke="#E4DAC9"/>
+  <circle cx="${padX}" cy="76" r="5" fill="${hue}"/>
+  <text x="${padX + 18}" y="81" font-family="ui-monospace, 'JetBrains Mono', monospace" font-size="13" letter-spacing="3" fill="#6B6254">${esc(kindWord.toUpperCase())} · ${esc(cfg.title.toUpperCase())}</text>
+  <text x="${padX}" y="128" font-family="'Source Serif 4', Georgia, serif" font-size="30" font-weight="600" fill="#181511">${esc(rest.join(" · "))}</text>
+  ${spine}
+  ${marks}
+  <text x="${padX}" y="${H - 44}" font-family="ui-monospace, 'JetBrains Mono', monospace" font-size="11" letter-spacing="1.5" fill="#9A8F7D">${esc(cfg.ref)} · PATTERN SHAPES</text>
+</svg>`;
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
+  a.download = `${(rest.join("-") || gid).replace(/[^\w-]+/g, "-").replace(/^-+|-+$/g, "").toLowerCase() || "pattern"}.svg`;
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 
 /* ── revelation matrix panel ─────────────────────────────── */
@@ -454,6 +555,152 @@ function buildRevPanel() {
   });
 }
 
+/* ── authoring — select words, pick a tool, wire the counterpart ──
+ * Selection is the gesture (picking words is what selection is for);
+ * the tldraw part is the live wire that follows the cursor until the
+ * counterpart is chosen. Records land in localStorage as the same
+ * shape-marks payload the built-ins use. */
+let SESSION = null; // { kind, members: [{ref, phrase, range}], study }
+const AUTHOR_KINDS = ["link:parallel", "link:contrast", "link:echo", "mirror", "series", "hinge"];
+const authbar = document.createElement("div");
+authbar.className = "authbar";
+document.body.appendChild(authbar);
+
+function nodeRow(n) { return (n.nodeType === 3 ? n.parentElement : n)?.closest?.(".vrow") || null; }
+function selectionInfo() {
+  const sel = getSelection();
+  if (!sel.rangeCount || sel.isCollapsed) return null;
+  const range = sel.getRangeAt(0);
+  const row = nodeRow(range.commonAncestorContainer);
+  if (!row || !row.closest(".sheet")) return null;
+  const phrase = sel.toString().replace(/\s+/g, " ").trim();
+  if (phrase.length < 2) return null;
+  return { ref: row.dataset.key, phrase, range: range.cloneRange() };
+}
+function placeAuthbar(rect) {
+  authbar.style.left = Math.max(12, Math.min(rect.left + rect.width / 2 - authbar.offsetWidth / 2, innerWidth - authbar.offsetWidth - 12)) + "px";
+  authbar.style.top = Math.max(60, rect.top - 46) + "px";
+}
+function showKindPalette(info) {
+  authbar.innerHTML = "";
+  for (const kind of AUTHOR_KINDS) {
+    const b = document.createElement("button");
+    b.className = "ak";
+    b.innerHTML = `<i style="background:${KIND_HUE[kind]}"></i>${KIND_LABEL[kind]}`;
+    b.addEventListener("mousedown", (e) => e.preventDefault()); // keep the selection
+    b.addEventListener("click", (e) => {
+      e.stopPropagation();
+      startSession(kind, info);
+    });
+    authbar.appendChild(b);
+  }
+  authbar.classList.add("on");
+  placeAuthbar(info.range.getBoundingClientRect());
+}
+function sessionBar(msg) {
+  const G = SESSION;
+  authbar.innerHTML = `<span class="ak" style="cursor:default"><i style="background:${KIND_HUE[G.kind]}"></i>${KIND_LABEL[G.kind]}</span>
+    <span class="hint">${msg}</span>`;
+  if (G.kind === "series" && G.members.length >= 2) {
+    const done = document.createElement("button"); done.className = "ak act"; done.textContent = "done";
+    done.addEventListener("click", (e) => { e.stopPropagation(); finalizeSession(); });
+    authbar.appendChild(done);
+  }
+  const cancel = document.createElement("button"); cancel.className = "ak"; cancel.textContent = "cancel";
+  cancel.addEventListener("click", (e) => { e.stopPropagation(); endSession(); });
+  authbar.appendChild(cancel);
+  authbar.classList.add("on");
+  placeAuthbar(G.members[G.members.length - 1].range.getBoundingClientRect());
+}
+function startSession(kind, info) {
+  const study = refStudy(info.ref);
+  if (!study) { endSession(); return; }
+  SESSION = { kind, members: [info], study };
+  getSelection().removeAllRanges();
+  sessionBar(kind === "series" ? "select the next occurrence" : "select the counterpart");
+  liveWire();
+}
+function captureMember() {
+  const info = selectionInfo();
+  if (!info) return;
+  if (refStudy(info.ref) !== SESSION.study) { sessionBar("stay within this passage"); return; }
+  if (SESSION.members.some((m) => m.ref === info.ref && m.phrase === info.phrase)) return;
+  SESSION.members.push(info);
+  getSelection().removeAllRanges();
+  if (SESSION.kind !== "series" && SESSION.members.length === 2) { finalizeSession(); return; }
+  sessionBar(`${SESSION.members.length} marked · select the next, or finish`);
+}
+function finalizeSession() {
+  const { kind, members } = SESSION;
+  const rec = {
+    id: `u-${Date.now()}`,
+    kind,
+    label: userLabel(kind, members),
+    members: members.map(({ ref, phrase }) => ({ ref, phrase })),
+  };
+  USER.push(rec);
+  saveUser();
+  endSession();
+  rebuildAll();
+  pinned.clear(); hovered.clear();
+  pinned.add(rec.id);
+  applyActive();
+}
+function endSession() {
+  SESSION = null;
+  authbar.classList.remove("on");
+  document.querySelectorAll("svg.overlay g.live").forEach((g) => g.remove());
+  document.querySelectorAll("svg.overlay").forEach((s) => { s.dataset.key = "~"; });
+  applyActive();
+}
+function deleteUserPattern(gid) {
+  USER = USER.filter((p) => p.id !== gid);
+  saveUser();
+  pinned.delete(gid); hovered.delete(gid);
+  rebuildAll();
+  applyActive();
+}
+
+/* the live wire — provisional marks + a dashed thread chasing the cursor */
+function liveWire(e) {
+  if (!SESSION) return;
+  const M = measure(SESSION.study);
+  ensureInk(M.svg, SESSION.study);
+  let g = M.svg.querySelector("g.live");
+  if (!g) g = S("g", { class: "live", filter: `url(#ink-${SESSION.study})` }, M.svg);
+  g.innerHTML = "";
+  const hue = KIND_HUE[SESSION.kind];
+  let last = null;
+  for (const m of SESSION.members) {
+    const rects = [...m.range.getClientRects()];
+    for (const r of rects) {
+      S("path", {
+        d: `M ${r.left - M.base.left} ${r.bottom - M.base.top + 2.5} H ${r.right - M.base.left}`,
+        stroke: hue, "stroke-width": 1.6, fill: "none", "stroke-linecap": "round",
+      }, g);
+    }
+    if (rects[0]) last = { x: rects[0].left - M.base.left - 2, y: rects[0].bottom - M.base.top + 2.5 };
+    if (last) S("circle", { cx: last.x, cy: last.y, r: 2, fill: hue }, g);
+  }
+  if (last && e) {
+    S("path", {
+      d: `M ${last.x} ${last.y} L ${e.clientX - M.base.left} ${e.clientY - M.base.top}`,
+      stroke: hue, "stroke-width": 1.2, fill: "none",
+      "stroke-dasharray": "0.1 5", "stroke-linecap": "round", opacity: 0.7,
+    }, g);
+  }
+}
+addEventListener("mousemove", (e) => { if (SESSION) requestAnimationFrame(() => liveWire(e)); });
+document.addEventListener("mouseup", (e) => {
+  if (e.target.closest?.(".authbar")) return;
+  setTimeout(() => {
+    if (SESSION) { captureMember(); return; }
+    const info = selectionInfo();
+    if (info) showKindPalette(info);
+    else authbar.classList.remove("on");
+  }, 0);
+});
+
 /* ── events ──────────────────────────────────────────────── */
 function gidsOf(el) { return el.dataset.gids.split(" "); }
 
@@ -473,6 +720,7 @@ function wire() {
       hideWhisper();
     });
     scope.addEventListener("click", (e) => {
+      if (SESSION || !getSelection().isCollapsed) return; // authoring owns the gesture
       const t = e.target.closest("[data-gids]");
       if (!t) {
         if (pinned.size && !e.target.closest(".rail")) { pinned.clear(); applyActive(); }
@@ -485,7 +733,9 @@ function wire() {
     });
   });
   addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && (pinned.size || hovered.size)) {
+    if (e.key !== "Escape") return;
+    if (SESSION) { endSession(); return; }
+    if (pinned.size || hovered.size) {
       pinned.clear(); hovered.clear(); applyActive(); hideWhisper();
     }
   });
@@ -507,13 +757,18 @@ function redrawActive() {
 }
 
 /* ── boot ────────────────────────────────────────────────── */
-buildGids();
-buildSheets();
-buildRevPanel();
-for (const s of Object.keys(SHEETS)) {
-  const pre = document.querySelector(`[data-payload="${s}"]`);
-  if (pre) pre.textContent = JSON.stringify(PATTERNS[s], null, 2);
+function rebuildAll() {
+  buildGids();
+  buildSheets();
+  for (const s of Object.keys(SHEETS)) {
+    const pre = document.querySelector(`[data-payload="${s}"]`);
+    if (!pre) continue;
+    const mine = USER.filter((p) => refStudy(p.members[0].ref) === s);
+    pre.textContent = JSON.stringify(mine.length ? { builtIn: PATTERNS[s], yours: mine } : PATTERNS[s], null, 2);
+  }
 }
+rebuildAll();
+buildRevPanel();
 wire();
 applyActive();
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(redrawActive);
