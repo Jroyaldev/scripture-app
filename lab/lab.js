@@ -475,9 +475,7 @@ function drawArc(g, a, b, hue, kind, stagger, gx, touchY) {
   // one bow for every kind — mirror's reflection is carried by the twin
   // width profile (two swells pinched at the midpoint), not by reversing
   // the curve, which never survived contact with real spans
-  let pts = ROUTE === "traces"
-    ? tracePts(gx, lane, y1, y2, nSamp)
-    : sampleCubic({ x: gx, y: y1 }, { x: lane, y: y1 + 3 }, { x: lane, y: y2 - 3 }, { x: gx, y: y2 }, nSamp);
+  let pts = sampleCubic({ x: gx, y: y1 }, { x: lane, y: y1 + 3 }, { x: lane, y: y2 - 3 }, { x: gx, y: y2 }, nSamp);
   // ink flows from the touched member toward its counterpart
   const flip = touchY != null && Math.abs(touchY - y2) < Math.abs(touchY - y1);
   if (flip) pts = pts.slice().reverse();
@@ -485,9 +483,7 @@ function drawArc(g, a, b, hue, kind, stagger, gx, touchY) {
   const far = flip ? { x: a.x - 2, y: y1 } : { x: b.x - 2, y: y2 };
   if (kind === "link:echo") {
     const p = S("path", {
-      d: ROUTE === "traces"
-        ? tracePathD(gx, lane, y1, y2)
-        : `M ${gx} ${y1} C ${lane} ${y1 + 3}, ${lane} ${y2 - 3}, ${gx} ${y2}`,
+      d: `M ${gx} ${y1} C ${lane} ${y1 + 3}, ${lane} ${y2 - 3}, ${gx} ${y2}`,
       fill: "none", stroke: hue, "stroke-width": 1.3, "stroke-linecap": "round",
     }, g);
     dashFor(p, kind);
@@ -570,7 +566,7 @@ function drawThread(g, rects, hue, laneX, touchY, kind) {
 function drawOverlay(sid, gids) {
   const sheet = document.querySelector(`[data-sheet="${sid}"]`);
   const svg = sheet.querySelector("svg.overlay");
-  const key = gids.slice().sort().join("|");
+  const key = gids.slice().sort().join("|") + "·" + ROUTE;
   if (svg.dataset.key === key) return;
   svg.dataset.key = key;
   const live = svg.querySelector("g.live");
@@ -579,6 +575,7 @@ function drawOverlay(sid, gids) {
   if (!gids.length) return;
   const M = measure(sid);
   const touchY = touchYIn(M);
+  if (ROUTE === "traces") { drawTracesLayer(svg, M, gids, touchY); return; }
   gids.forEach((gid, i) => {
     const G = GIDS[gid];
     const rects = G.anchors.map((a) => firstRect(M, a.el)).filter(Boolean);
@@ -587,6 +584,145 @@ function drawOverlay(sid, gids) {
     if (G.conn === "thread") drawThread(g, rects, G.hue, M.textLeft - 46 - i * 10, touchY, G.kind);
     else drawArc(g, rects[0], rects[rects.length - 1], G.hue, G.kind, i * 10, M.textLeft - 12, touchY);
   });
+}
+
+/* ── the traces layer: cable management ──────────────────────
+ * One shape family for every annotation. Constant-width strokes,
+ * rounded elbows, plumb verticals — no swells, no fancy angles.
+ * Lanes are allocated like a cable tray: every connector claims a
+ * vertical interval; the shortest span nests innermost and anything
+ * overlapping steps outward one pitch. Kind signs ride the stroke:
+ * echo dashed · parallel twin wires · mirror a midpoint tie ·
+ * contrast a gap mid-run · series the plain rule. */
+const TRACE = { w: 1.5, pitch: 10, pad: 16 };
+
+function drawTracesLayer(svg, M, gids, touchY) {
+  const gx = M.textLeft - 12;
+  const items = gids.map((gid) => {
+    const G = GIDS[gid];
+    const rects = G.anchors.map((a) => firstRect(M, a.el)).filter(Boolean);
+    if (rects.length < 2) return null;
+    const ys = rects.map((r) => r.bottom + 2.5);
+    return {
+      G, rects, ys,
+      top: Math.min(...ys), bot: Math.max(...ys),
+      sameLine: rects.length === 2 && Math.abs(ys[0] - ys[1]) < 5,
+    };
+  }).filter(Boolean);
+  // lane allocation: shortest span innermost; overlap pushes outward
+  const laned = items.filter((it) => !it.sameLine).sort((a, b) => (a.bot - a.top) - (b.bot - b.top));
+  for (const it of laned) {
+    let lane = 0;
+    while (laned.some((o) => o !== it && o.lane !== undefined && o.lane === lane &&
+      o.top < it.bot + 8 && it.top < o.bot + 8)) lane++;
+    it.lane = lane;
+  }
+  for (const it of items) {
+    const g = S("g", {}, svg);
+    const laneX = gx - TRACE.pad - (it.lane || 0) * TRACE.pitch;
+    if (it.sameLine) drawTraceBracket(g, it);
+    else if (it.rects.length > 2) drawTraceThread(g, it, laneX, touchY);
+    else drawTracePair(g, it, laneX, gx, touchY);
+  }
+}
+
+function cableStroke(g, d, hue, { w = TRACE.w, dash = null, opacity = 1 } = {}) {
+  const p = S("path", {
+    d, fill: "none", stroke: hue, "stroke-width": w,
+    "stroke-linecap": "round", "stroke-linejoin": "round",
+  }, g);
+  if (dash) p.setAttribute("stroke-dasharray", dash);
+  if (opacity < 1) p.setAttribute("opacity", opacity);
+  return p;
+}
+
+function drawTracePair(g, it, laneX, gx, touchY) {
+  const { G } = it;
+  const hue = G.hue, kind = G.kind;
+  const flip = touchY != null && Math.abs(touchY - it.ys[1]) < Math.abs(touchY - it.ys[0]);
+  const [ya, yb] = flip ? [it.ys[1], it.ys[0]] : [it.ys[0], it.ys[1]];
+  const [ra, rb] = flip ? [it.rects[1], it.rects[0]] : [it.rects[0], it.rects[1]];
+  if (kind === "link:echo") {
+    const p = cableStroke(g, tracePathD(gx, laneX, ya, yb), hue, { w: 1.9, dash: "0.1 5" });
+    animFade(p);
+    leg(g, gx, ra.x - 2, ya, hue, kind);
+    leg(g, gx, rb.x - 2, yb, hue, kind);
+    touchDot(g, ra.x - 2, ya, hue);
+    touchDot(g, rb.x - 2, yb, hue);
+    return;
+  }
+  leg(g, gx, ra.x - 2, ya, hue, kind, 30);
+  touchDot(g, ra.x - 2, ya, hue, 30);
+  if (kind === "link:contrast") {
+    // the gap mid-run is the sign — two cables that do not join
+    const dir = yb > ya ? 1 : -1;
+    const r = Math.max(3, Math.min(9, Math.abs(yb - ya) / 2 - 2, gx - laneX - 2));
+    const sweep = dir > 0 ? 0 : 1;
+    const ym = (ya + yb) / 2;
+    const d1 = `M ${gx} ${ya} H ${laneX + r} A ${r} ${r} 0 0 ${sweep} ${laneX} ${ya + dir * r} V ${ym - dir * 5}`;
+    const d2 = `M ${laneX} ${ym + dir * 5} V ${yb - dir * r} A ${r} ${r} 0 0 ${sweep} ${laneX + r} ${yb} H ${gx}`;
+    const p1 = cableStroke(g, d1, hue); animDraw(p1, 200); p1.style.transitionDelay = "90ms";
+    const p2 = cableStroke(g, d2, hue);
+    p2.style.opacity = 0;
+    setTimeout(() => { if (p2.isConnected) { p2.style.opacity = 1; animDraw(p2, 200); } }, 330);
+  } else if (kind === "link:parallel") {
+    // twin wires the whole route
+    const pts = tracePts(gx, laneX, ya, yb, 60);
+    for (const d of [-1.5, 1.5]) {
+      const off = offsetPts(pts, d);
+      const p = cableStroke(g, `M${off.map((q) => `${q.x.toFixed(2)},${q.y.toFixed(2)}`).join("L")}`, hue, { w: 1.1 });
+      animDraw(p, 380);
+    }
+  } else {
+    const p = cableStroke(g, tracePathD(gx, laneX, ya, yb), hue);
+    animDraw(p, 380);
+    if (kind === "mirror") {
+      // the tie: a small perpendicular mark at the reflection point
+      const ym = (ya + yb) / 2;
+      animFade(cableStroke(g, `M ${laneX - 3.5} ${ym} H ${laneX + 3.5}`, hue), 200, 260);
+    }
+  }
+  leg(g, gx, rb.x - 2, yb, hue, kind, kind === "link:contrast" ? 520 : 400);
+  touchDot(g, rb.x - 2, yb, hue, kind === "link:contrast" ? 520 : 400);
+}
+
+/* same-line pairs (hinge and short links): an under-bracket in the
+ * same cable language — down, along, up, rounded at both elbows */
+function drawTraceBracket(g, it) {
+  const { G } = it;
+  const y = it.ys[0], drop = 8, r = 3.5;
+  const sx = it.rects[0].right + 3, ex = it.rects[1].x - 3;
+  const d = `M ${sx} ${y} V ${y + drop - r} A ${r} ${r} 0 0 0 ${sx + r} ${y + drop} H ${ex - r} A ${r} ${r} 0 0 0 ${ex} ${y + drop - r} V ${y}`;
+  const p = cableStroke(g, d, G.hue, G.kind === "link:echo" ? { w: 1.9, dash: "0.1 5" } : {});
+  G.kind === "link:echo" ? animFade(p) : animDraw(p, 300);
+}
+
+function drawTraceThread(g, it, laneX, touchY) {
+  const { G, rects, ys } = it;
+  const hue = G.hue;
+  const yTop = it.top, yBot = it.bot;
+  const flip = touchY != null && Math.abs(touchY - yBot) < Math.abs(touchY - yTop);
+  const dur = 460;
+  rects.forEach((r, i) => {
+    const frac = (yBot === yTop) ? 0 : (flip ? (yBot - ys[i]) / (yBot - yTop) : (ys[i] - yTop) / (yBot - yTop));
+    const delay = 40 + dur * frac * 0.85;
+    const dy = ys[i] <= yTop + 1 ? 6 : -6;
+    const l = cableStroke(g, `M ${laneX} ${ys[i] + dy} Q ${laneX} ${ys[i]} ${laneX + 5.5} ${ys[i]} H ${r.x - 2}`, hue, { w: 1, opacity: 0.25 });
+    animFade(l, 200, delay);
+    touchDot(g, r.x - 2, ys[i], hue, delay);
+  });
+  const dSpine = flip ? `M ${laneX} ${yBot} V ${yTop}` : `M ${laneX} ${yTop} V ${yBot}`;
+  if (G.kind === "link:echo") {
+    animFade(cableStroke(g, dSpine, hue, { w: 1.9, dash: "0.1 5", opacity: 0.75 }), 300, 40);
+  } else if (G.kind === "link:parallel") {
+    for (const dx of [-1.5, 1.5]) {
+      const p = cableStroke(g, flip ? `M ${laneX + dx} ${yBot} V ${yTop}` : `M ${laneX + dx} ${yTop} V ${yBot}`, hue, { w: 1.0, opacity: 0.75 });
+      animDraw(p, dur); p.style.transitionDelay = "40ms";
+    }
+  } else {
+    const p = cableStroke(g, dSpine, hue, { w: TRACE.w, opacity: 0.75 });
+    animDraw(p, dur); p.style.transitionDelay = "40ms";
+  }
 }
 
 /* ── awaken state ────────────────────────────────────────── */
