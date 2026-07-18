@@ -437,6 +437,22 @@ export function planRoute(block, ann, opts = {}) {
   }
 }
 
+/* ── companion ranking (the density policy's ordering) ─────── */
+/* Rank candidates "beside" a focus interval: overlapping first, then
+ * nearest; ties break smaller-span-first (local companions beat
+ * page-spanning ones), then top order, then id. Pure and exported so
+ * hosts share one definition of "beside". */
+export function rankCompanions(intervals, focusId) {
+  const f = intervals.find((i) => i.id === focusId);
+  if (!f) return intervals.map((i) => i.id);
+  const dist = (i) => (i.top > f.bottom ? i.top - f.bottom : f.top > i.bottom ? f.top - i.bottom : 0);
+  const span = (i) => i.bottom - i.top;
+  return intervals
+    .filter((i) => i.id !== focusId)
+    .sort((a, b) => dist(a) - dist(b) || span(a) - span(b) || a.top - b.top || (a.id < b.id ? -1 : 1))
+    .map((i) => i.id);
+}
+
 /* ── stable strand assignment (the loom) ───────────────────── */
 /* anns: [{id, top, bottom, focused}] → Map id → strandIndex.
  * Focused gets strand 0 (nearest the text); others stack outward in

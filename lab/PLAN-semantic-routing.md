@@ -51,7 +51,7 @@ floor under the GAP:                    floor under the PAIR:
 - **Prettier:** calmness insurance — a pin's curl can provably hug only its own word's ink, never a neighbor's descender; near-miss smudges become honest needs-space (our vocabulary for held).
 - **Accept:** new validate() check — no sampled point inside an expanded obstacle without a matching owned fragment; Dense Psalm/Long text before/after, small held-count uptick expected and correct.
 
-### 4. Companion ranking hoisted + preview bug — *adapt*
+### 4. Companion ranking hoisted + preview bug — *adapt* — ✅ LANDED
 - **Build:** export `rankCompanions(intervals, focusId, {overlapPad: 0.5, pageSpan})` from route-engine.js beside assignStrands (sort: intervalDistance asc, span asc, top, id; `pageSpanning` demoted to a diagnostic — the 0.62 sort key is provably subsumed by span-asc). run() imports it; **rank against committed `focusedId`, not `effectiveFocus`** so hover-bloom previews additively instead of reshuffling the woven pair.
 - **Prettier:** margin activity follows the reader's eye; hover stops making the margin flicker.
 - **Accept:** hover a held tick on Long text — the two companions do not swap; node:test on overlap-first/span-tie ordering (engine is import-clean).

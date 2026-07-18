@@ -6,7 +6,7 @@
  * companions in quiet ink, and every other annotation as whisper
  * underline + one held-rail tick. Corridor claims and strand budget
  * belong only to threads that paint. */
-import { planRoute, assignStrands } from "./route-engine.js";
+import { planRoute, assignStrands, rankCompanions } from "./route-engine.js";
 
 const SVGNS = "http://www.w3.org/2000/svg";
 const HUES = {
@@ -547,21 +547,19 @@ function run() {
   const focusAnn = anns.find((a) => a.id === effectiveFocus) || anns[0];
   if (focusAnn) { tryPlan(focusAnn, 0, true); }
 
-  /* companions ranked "beside" the focus: overlapping intervals first, then
-   * nearest; a page-spanning interval ranks behind local ones (span tie);
-   * acceptance requires an actual valid route on its strand */
-  const fiv = focusAnn ? iv.get(focusAnn.id) : { top: 0, bottom: 0 };
-  const dist = (a) => {
-    const i = iv.get(a.id);
-    return i.top > fiv.bottom ? i.top - fiv.bottom : fiv.top > i.bottom ? fiv.top - i.bottom : 0;
-  };
-  const span = (a) => { const i = iv.get(a.id); return i.bottom - i.top; };
+  /* companions ranked "beside" the COMMITTED focus, not the preview — a
+   * hover bloom adds the previewed thread and demotes the committed focus
+   * to a woven companion, instead of reshuffling the whole margin.
+   * Acceptance still requires an actual valid route on a strand. */
   const overlaps = (a, bId) => {
     const A = iv.get(a.id), B = iv.get(bId);
     return A.top < B.bottom + 6 && B.top < A.bottom + 6;
   };
-  const ranked = anns.filter((a) => a !== focusAnn).sort((x, y) =>
-    dist(x) - dist(y) || span(x) - span(y) || iv.get(x.id).top - iv.get(y.id).top || (x.id < y.id ? -1 : 1));
+  const rankAnchorId = anns.some((a) => a.id === focusedId) ? focusedId : focusAnn ? focusAnn.id : null;
+  const intervals = anns.map((a) => ({ id: a.id, ...iv.get(a.id) }));
+  const ranked = rankCompanions(intervals, rankAnchorId)
+    .map((id) => anns.find((a) => a.id === id))
+    .filter((a) => a !== focusAnn);
 
   if (weaveOn && focusAnn) {
     for (const cand of ranked) {
@@ -629,15 +627,13 @@ if (weaveBox) weaveBox.addEventListener("change", () => { weaveOn = weaveBox.che
 addEventListener("resize", () => requestAnimationFrame(run));
 
 /* a bloomed tick re-renders as a thread, so its own mouseleave can never
- * fire — the bloom ends when the pointer returns to the text column */
-let previewClearQueued = false;
+ * fire — the bloom ends when the pointer returns to the text column.
+ * Direct call, no rAF: frames are on-demand in headless surfaces, and the
+ * previewId guard already makes this a one-shot. */
 sheet.addEventListener("pointermove", (e) => {
-  if (!previewId || previewClearQueued) return;
+  if (!previewId) return;
   const r = sheet.getBoundingClientRect();
-  if (e.clientX - r.left > lastLoomInner + 24) {
-    previewClearQueued = true;
-    requestAnimationFrame(() => { previewClearQueued = false; previewId = null; run(); });
-  }
+  if (e.clientX - r.left > lastLoomInner + 24) { previewId = null; run(); }
 });
 
 buildSheet();

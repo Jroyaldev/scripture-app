@@ -220,3 +220,13 @@ fragment's expanded rect plus the departure wedge at its own pin
 (expand+1 disc); floors, shoulders, swoops, spines, and drips have no
 privileges. The old any-contact expand+3 radial blanket is gone. All 14
 fixtures route focused, suite green at every width 460–760.
+
+### Step 4 landed (same day)
+
+Companion ranking is engine-owned: `rankCompanions(intervals, focusId)`
+exported beside assignStrands (overlap-first, then nearest; smaller spans
+beat page-spanning ones). The host ranks against the COMMITTED focus, not
+the hover preview — a tick bloom adds the previewed thread and keeps the
+woven pair fixed instead of reshuffling the margin. The preview-clear
+listener no longer rides requestAnimationFrame (frames are on-demand in
+headless surfaces; the previewId guard already makes it one-shot).
