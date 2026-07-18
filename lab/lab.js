@@ -332,6 +332,40 @@ function animFade(el, ms = 240) {
 function dashFor(p, kind) {
   if (kind === "link:echo") { p.setAttribute("stroke-dasharray", "0.1 5"); p.setAttribute("stroke-width", 1.9); }
 }
+
+/* ── ink ribbons ─────────────────────────────────────────────
+ * A premium line is not a uniform stroke: it is a filled outline
+ * around a centerline with a designed width profile — tapered ends,
+ * restrained swell midway (≈55%→115% of nominal). The perfect-freehand
+ * insight, composed rather than gestured: no pressure, no wobble. */
+function sampleCubic(p0, p1, p2, p3, n = 44) {
+  const pts = [];
+  for (let i = 0; i <= n; i++) {
+    const t = i / n, u = 1 - t;
+    pts.push({
+      x: u * u * u * p0.x + 3 * u * u * t * p1.x + 3 * u * t * t * p2.x + t * t * t * p3.x,
+      y: u * u * u * p0.y + 3 * u * u * t * p1.y + 3 * u * t * t * p2.y + t * t * t * p3.y,
+    });
+  }
+  return pts;
+}
+function ribbon(g, pts, hue, w = 1.6, opacity = 1) {
+  const n = pts.length, L = [], R = [];
+  for (let i = 0; i < n; i++) {
+    const t = i / (n - 1);
+    const ramp = Math.min(1, Math.min(t, 1 - t) / 0.16); // endpoint taper
+    const r = (w / 2) * (0.55 + 0.6 * Math.sin(Math.PI * t)) * (0.3 + 0.7 * ramp);
+    const a = pts[Math.max(0, i - 1)], b = pts[Math.min(n - 1, i + 1)];
+    const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1;
+    const nx = -dy / len, ny = dx / len;
+    L.push(`${(pts[i].x + nx * r).toFixed(2)},${(pts[i].y + ny * r).toFixed(2)}`);
+    R.push(`${(pts[i].x - nx * r).toFixed(2)},${(pts[i].y - ny * r).toFixed(2)}`);
+  }
+  const p = S("path", { d: `M${L.join("L")}L${R.reverse().join("L")}Z`, fill: hue, stroke: "none" }, g);
+  if (opacity < 1) p.setAttribute("opacity", opacity);
+  animFade(p);
+  return p;
+}
 function leg(g, x1, x2, y, hue, kind) {
   const p = S("path", {
     d: `M ${x1} ${y} H ${x2}`, fill: "none", stroke: hue,
@@ -349,21 +383,33 @@ function drawArc(g, a, b, hue, kind, lane, gx) {
   const sameLine = Math.abs(y1 - y2) < 5;
   if (sameLine) {
     const sx = a.right + 4, ex = b.x - 4, dip = 12;
+    if (kind === "link:echo") {
+      const p = S("path", {
+        d: `M ${sx} ${y1} C ${sx + 4} ${y1 + dip}, ${ex - 4} ${y2 + dip}, ${ex} ${y2}`,
+        fill: "none", stroke: hue, "stroke-width": 1.3, "stroke-linecap": "round",
+      }, g);
+      dashFor(p, kind);
+      animFade(p);
+    } else {
+      ribbon(g, sampleCubic({ x: sx, y: y1 }, { x: sx + 4, y: y1 + dip }, { x: ex - 4, y: y2 + dip }, { x: ex, y: y2 }), hue);
+    }
+    return;
+  }
+  const pts = sampleCubic({ x: gx, y: y1 }, { x: lane, y: y1 + 3 }, { x: lane, y: y2 - 3 }, { x: gx, y: y2 });
+  if (kind === "link:echo") {
     const p = S("path", {
-      d: `M ${sx} ${y1} C ${sx + 4} ${y1 + dip}, ${ex - 4} ${y2 + dip}, ${ex} ${y2}`,
+      d: `M ${gx} ${y1} C ${lane} ${y1 + 3}, ${lane} ${y2 - 3}, ${gx} ${y2}`,
       fill: "none", stroke: hue, "stroke-width": 1.3, "stroke-linecap": "round",
     }, g);
     dashFor(p, kind);
-    animDraw(p);
-    return;
+    animFade(p);
+  } else if (kind === "link:contrast") {
+    // broken at midpoint: two ribbons, each tapering into the gap
+    ribbon(g, pts.slice(0, Math.floor(pts.length * 0.45)), hue);
+    ribbon(g, pts.slice(Math.ceil(pts.length * 0.55)), hue);
+  } else {
+    ribbon(g, pts, hue);
   }
-  const p = S("path", {
-    d: `M ${gx} ${y1} C ${lane} ${y1 + 3}, ${lane} ${y2 - 3}, ${gx} ${y2}`,
-    fill: "none", stroke: hue, "stroke-width": 1.3, "stroke-linecap": "round",
-  }, g);
-  if (kind === "link:echo") { dashFor(p, kind); animFade(p); }
-  else if (kind === "link:contrast") { p.setAttribute("pathLength", 100); p.setAttribute("stroke-dasharray", "45.5 9 45.5"); animFade(p); }
-  else animDraw(p);
   leg(g, gx, a.x - 2, y1, hue, kind);
   leg(g, gx, b.x - 2, y2, hue, kind);
   touchDot(g, a.x - 2, y1, hue);
@@ -372,8 +418,9 @@ function drawArc(g, a, b, hue, kind, lane, gx) {
 
 function drawThread(g, rects, hue, laneX) {
   const ys = rects.map((r) => r.bottom + 2.5);
-  const line = S("path", { d: `M ${laneX} ${ys[0]} V ${ys[ys.length - 1]}`, stroke: hue, "stroke-width": 1, fill: "none", opacity: 0.55 }, g);
-  animDraw(line, 420);
+  const spine = [];
+  for (let i = 0; i <= 32; i++) spine.push({ x: laneX, y: ys[0] + ((ys[ys.length - 1] - ys[0]) * i) / 32 });
+  ribbon(g, spine, hue, 1.35, 0.7);
   rects.forEach((r, i) => {
     const l = S("path", { d: `M ${laneX} ${ys[i]} H ${r.x - 2}`, stroke: hue, "stroke-width": 1, opacity: 0.35 }, g);
     animFade(l, 200 + i * 40);
