@@ -1,4 +1,4 @@
-/* Pattern shapes lab — tokens copied 1:1 from src/renderer/design-tokens.json */
+/* Pattern shapes lab v3 — tokens copied 1:1 from src/renderer/design-tokens.json */
 
 :root {
   --bg-primary: #F3EDE0; --bg-secondary: #EEE6D8; --bg-surface: #FAF6EC;
@@ -19,6 +19,7 @@
   --k-echo:     #4678C8;
   --k-mirror:   #8760C4;
   --k-series:   #C8961E;
+  --hint-mix: 34%;   /* how present a keyed phrase is at rest */
 }
 
 body.theme-dark, body.theme-dark-glass {
@@ -34,6 +35,7 @@ body.theme-dark, body.theme-dark-glass {
   --k-echo:     #7DAFE8;
   --k-mirror:   #B494E4;
   --k-series:   #EBBE5A;
+  --hint-mix: 42%;
 }
 
 body.theme-glass      { --bg-image: url("assets/glass-light.png"); }
@@ -59,7 +61,7 @@ body.theme-glass, body.theme-dark-glass {
 }
 .lab-brand { font-family: var(--font-reading); font-size: 1.15rem; font-weight: 600; }
 .lab-sub { font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-tertiary); font-weight: 400; }
-.lab-controls { display: flex; gap: 16px; }
+.lab-controls { display: flex; gap: 16px; align-items: center; }
 .seg { display: flex; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 999px; padding: 2px; }
 .seg button {
   appearance: none; border: 0; background: transparent; color: var(--text-secondary);
@@ -68,9 +70,16 @@ body.theme-glass, body.theme-dark-glass {
 }
 .seg button[aria-checked="true"] { background: var(--bg-surface); color: var(--text-primary); box-shadow: inset 0 -2px 0 var(--gold); }
 .seg button:hover { color: var(--text-primary); }
+.ghost-btn {
+  appearance: none; background: var(--bg-secondary); border: 1px solid var(--border-subtle);
+  border-radius: 999px; padding: 6px 16px; font: 500 0.8rem var(--font-ui);
+  color: var(--text-secondary); cursor: pointer; transition: all var(--tr);
+}
+.ghost-btn:hover { color: var(--text-primary); }
+.ghost-btn[aria-pressed="true"] { background: var(--bg-surface); color: var(--text-primary); box-shadow: inset 0 -2px 0 var(--gold); }
 
 /* ── study sections ──────────────────────────────────────── */
-.lab-main { max-width: 1440px; margin: 0 auto; padding: 28px 32px 96px; display: grid; gap: 44px; }
+.lab-main { max-width: 1360px; margin: 0 auto; padding: 28px 32px 120px; display: grid; gap: 56px; }
 .study-head h2 { font-family: var(--font-reading); font-size: 1.5rem; font-weight: 600; margin: 0 0 4px; display: flex; align-items: baseline; gap: 14px; }
 .kind-tags { font: 500 0.72rem var(--font-mono); color: var(--text-tertiary); display: inline-flex; align-items: center; gap: 6px; }
 .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-left: 10px; }
@@ -79,84 +88,119 @@ body.theme-glass, body.theme-dark-glass {
 .dot.k-series { background: var(--k-series); }
 .study-note { margin: 0 0 14px; color: var(--text-tertiary); font-size: 0.86rem; }
 
-.study-body { display: grid; grid-template-columns: minmax(520px, 680px) 1fr; gap: 24px; align-items: start; }
+.study-body { display: grid; grid-template-columns: minmax(540px, 720px); }
+.study-body.with-panel { grid-template-columns: minmax(540px, 720px) 1fr; gap: 24px; align-items: start; }
 
 /* ── reading sheet ───────────────────────────────────────── */
 .sheet {
   position: relative; background: var(--bg-reading); border: 1px solid var(--border-subtle);
-  border-radius: var(--r-lg); padding: 28px 40px 28px 118px;
+  border-radius: var(--r-lg); padding: 30px 44px 26px 120px;
   transition: background var(--tr);
 }
 .sheet .sheet-title { font-family: var(--font-reading); font-size: 1.28rem; font-weight: 600; margin: 0 0 2px; }
 .sheet .sheet-ref { font: 500 0.7rem var(--font-mono); color: var(--text-tertiary); margin-bottom: 16px; }
 .sheet .chap-head { font: 600 0.82rem var(--font-ui); color: var(--text-secondary); margin: 18px 0 6px; }
+.sheet .letter-head {
+  font: 500 0.64rem var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-tertiary); margin: 14px 0 3px; transition: color var(--tr);
+}
 .vrow { display: grid; grid-template-columns: 0 1fr; padding: 1.5px 0; }
 .vrow .vnum {
   grid-column: 1; justify-self: start; transform: translateX(-34px);
   font: 500 0.68rem var(--font-mono); color: var(--verse-number);
   padding-top: 0.42em; user-select: none; width: 26px; text-align: right;
+  transition: opacity 200ms ease;
 }
-.vrow .vtext { font-family: var(--font-reading); font-size: 1.05rem; line-height: 1.62; color: var(--text-primary); }
-.sheet-compact .vrow .vtext { font-size: 0.92rem; line-height: 1.5; }
-.vrow .vtext.dimmed-tail { color: var(--text-tertiary); }
+.vrow .vtext {
+  font-family: var(--font-reading); font-size: 1.05rem; line-height: 1.66; color: var(--text-primary);
+  transition: color 220ms ease;
+}
+.sheet-compact .vrow .vtext { font-size: 0.92rem; line-height: 1.55; }
+
+/* ── the phrase key: near-invisible at rest, ink on awaken ─ */
+.pk {
+  --h: var(--text-tertiary);
+  cursor: pointer;
+  border-bottom: 1px dotted color-mix(in srgb, var(--h) var(--hint-mix), transparent);
+  background: linear-gradient(var(--h), var(--h)) no-repeat 0 100% / 0% 1.5px;
+  box-decoration-break: clone; -webkit-box-decoration-break: clone;
+  padding-bottom: 1px;
+  transition: background-size 300ms cubic-bezier(.3,.7,.3,1), border-color 180ms ease, color 220ms ease;
+}
+.pk.on, body.reveal .pk {
+  background-size: 100% 1.5px;
+  border-bottom-color: transparent;
+}
+/* awake: the rest of the page recedes; members keep full ink */
+.sheet.awake .vtext { color: color-mix(in srgb, var(--text-primary) 44%, transparent); }
+.sheet.awake .vnum { opacity: 0.35; }
+.sheet.awake .chap-head, .sheet.awake .letter-head { color: color-mix(in srgb, var(--text-tertiary) 50%, transparent); }
+.sheet.awake .pk.on { color: var(--text-primary); }
 
 /* overlay svg shares the sheet's coordinate space */
 .overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
-.overlay .pm { transition: opacity var(--tr), stroke var(--tr), fill var(--tr); pointer-events: visibleStroke; cursor: pointer; }
-.overlay .pm-fill { pointer-events: all; cursor: pointer; }
-.overlay.hovering .pm { opacity: 0.14; }
-.overlay.hovering .pm.focus { opacity: 1; }
-.overlay.hovering .pm.focus .stroke-main { stroke: var(--gold); }
-.overlay.hovering .pm.focus .fill-main { fill: var(--gold); }
-.overlay text { pointer-events: none; }
 
-/* ── shape panel ─────────────────────────────────────────── */
+/* whisper — the pattern names itself beside the touched words */
+.whisper {
+  position: absolute; z-index: 5; pointer-events: none;
+  font: 500 0.62rem var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase;
+  background: color-mix(in srgb, var(--bg-reading) 82%, transparent);
+  padding: 2px 6px; border-radius: var(--r-sm); backdrop-filter: blur(4px);
+  opacity: 0; transform: translateY(4px);
+  transition: opacity 200ms ease 60ms, transform 200ms ease 60ms;
+  max-width: 460px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.whisper.on { opacity: 1; transform: translateY(0); }
+
+/* off-screen members — quiet pills at the viewport edge */
+.pill {
+  position: fixed; z-index: 40; transform: translateX(-50%);
+  appearance: none; border: 1px solid var(--border-subtle); cursor: pointer;
+  background: color-mix(in srgb, var(--bg-surface) 92%, transparent); backdrop-filter: blur(8px);
+  font: 500 0.7rem var(--font-mono); letter-spacing: 0.06em;
+  padding: 4px 12px; border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(56, 43, 27, 0.10);
+  opacity: 0; pointer-events: none; transition: opacity 180ms ease;
+}
+.pill.on { opacity: 1; pointer-events: auto; }
+.pill-up { top: 58px; } .pill-down { bottom: 16px; }
+
+/* legend — quiet affordance row, hover to awaken */
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--border-subtle); }
+.legend .chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  font: 500 0.72rem var(--font-ui); color: var(--text-tertiary); cursor: pointer;
+  padding: 3px 6px; border-radius: var(--r-sm); transition: color var(--tr), background var(--tr);
+}
+.legend .chip:hover, .legend .chip.on { color: var(--text-primary); background: var(--bg-canvas); }
+.legend .chip svg { display: block; opacity: 0.75; }
+
+/* ── revelation matrix panel ─────────────────────────────── */
 .panel {
   background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--r-lg);
-  padding: 22px 24px; min-height: 200px; transition: background var(--tr);
+  padding: 22px 24px; transition: background var(--tr);
+  position: sticky; top: 68px;
 }
 .panel h3 { font: 600 0.86rem var(--font-ui); margin: 0 0 2px; }
 .panel .panel-sub { font: 400 0.74rem var(--font-mono); color: var(--text-tertiary); margin-bottom: 16px; }
-.panel .cell-excerpt { font-family: var(--font-reading); font-size: 0.85rem; line-height: 1.45; color: var(--text-secondary); }
+.panel .panel-note { font: 400 0.72rem var(--font-ui); color: var(--text-tertiary); margin-top: 14px; }
 .panel .cell-ref { font: 500 0.66rem var(--font-mono); color: var(--text-tertiary); }
-.panel .pm { transition: opacity var(--tr); cursor: pointer; }
-.panel.hovering .pm { opacity: 0.16; }
-.panel.hovering .pm.focus { opacity: 1; }
 
-/* lattice (gen) + two-ways (psa) shared grid language */
-.lattice { display: grid; gap: 10px 34px; position: relative; }
-.lattice .lcell { border: 1px solid var(--border-subtle); border-radius: var(--r-md); padding: 10px 12px; background: var(--bg-canvas); transition: border-color var(--tr), box-shadow var(--tr); }
-.lattice .lcell.focus { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
-.lattice .lcell .day { font: 600 0.7rem var(--font-mono); letter-spacing: 0.04em; margin-bottom: 3px; }
-.coda-strip { margin-top: 12px; border-top: 1px dashed var(--border-medium); padding-top: 10px; }
-
-/* matrix (rev) */
 .matrix { display: grid; gap: 4px; align-items: center; }
-.matrix .mhead { font: 500 0.62rem var(--font-mono); color: var(--text-tertiary); text-align: center; padding-bottom: 4px; }
-.matrix .mrow-label { font: 600 0.74rem var(--font-ui); color: var(--text-secondary); padding-right: 8px; white-space: nowrap; }
+.matrix .mhead {
+  font: 500 0.62rem var(--font-mono); color: var(--text-tertiary); text-align: center;
+  padding: 3px 0 5px; border-radius: var(--r-sm); transition: background var(--tr), color var(--tr);
+}
+.matrix .mhead[data-gids] { cursor: pointer; }
+.matrix .mhead.on, .matrix .mhead[data-gids]:hover { background: color-mix(in srgb, var(--k-series) 14%, transparent); color: var(--text-primary); }
+.matrix .mrow-label { font: 600 0.74rem var(--font-ui); color: var(--text-secondary); padding-right: 8px; white-space: nowrap; cursor: pointer; border-radius: var(--r-sm); transition: color var(--tr); }
+.matrix .mrow-label:hover { color: var(--link); }
 .matrix .mrow-label .cell-ref { display: block; font-weight: 500; }
 .matrix .mcell { display: flex; align-items: center; justify-content: center; height: 30px; border-radius: var(--r-sm); transition: background var(--tr); }
+.matrix .mcell[data-gids] { cursor: pointer; }
+.matrix .mcell.on, .matrix .mcell[data-gids]:hover { background: color-mix(in srgb, var(--k-series) 14%, transparent); }
 .matrix .mrow { display: contents; }
-.matrix .mrow:hover .mcell, .matrix .mrow:hover .mrow-label { background: var(--gold-soft); color: var(--text-primary); }
-.matrix .mrow.focus .mcell { background: var(--gold-soft); }
 .matrix svg.glyph { display: block; }
-
-/* legend */
-.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-subtle); }
-.legend .chip { display: inline-flex; align-items: center; gap: 7px; font: 500 0.72rem var(--font-ui); color: var(--text-secondary); cursor: pointer; padding: 3px 6px; border-radius: var(--r-sm); transition: background var(--tr); }
-.legend .chip:hover { background: var(--gold-soft); color: var(--text-primary); }
-.legend .chip svg { display: block; }
-
-/* hover tooltip — the pattern names itself only on request */
-.mark-tip {
-  position: fixed; z-index: 50; pointer-events: none;
-  background: var(--bg-surface); color: var(--text-secondary);
-  border: 1px solid var(--border-subtle); border-radius: var(--r-sm);
-  font: 500 0.7rem var(--font-ui); padding: 4px 9px;
-  opacity: 0; transform: translateY(3px); transition: opacity var(--tr), transform var(--tr);
-  box-shadow: 0 4px 14px rgba(56, 43, 27, 0.10); max-width: 320px;
-}
-.mark-tip.on { opacity: 1; transform: translateY(0); }
 
 /* payload disclosure */
 .payload { margin-top: 14px; }

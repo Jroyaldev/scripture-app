@@ -11,13 +11,9 @@
 <body class="theme-light">
 
 <header class="lab-topbar">
-  <div class="lab-brand">Pattern shapes <span class="lab-sub">· visual lab · worktree only</span></div>
+  <div class="lab-brand">Pattern shapes <span class="lab-sub">· the text awakens · worktree only</span></div>
   <div class="lab-controls">
-    <div class="seg" id="motif-seg" role="radiogroup" aria-label="Motif family">
-      <button role="radio" aria-checked="true"  data-motif="arcs">Arcs &amp; ribbons</button>
-      <button role="radio" aria-checked="false" data-motif="ortho">Orthogonal</button>
-      <button role="radio" aria-checked="false" data-motif="glyphs">Glyph-first</button>
-    </div>
+    <button class="ghost-btn" id="reveal-btn" aria-pressed="false">Reveal all</button>
     <div class="seg" id="atm-seg" role="radiogroup" aria-label="Atmosphere">
       <button role="radio" aria-checked="true"  data-theme="light">Paper</button>
       <button role="radio" aria-checked="false" data-theme="dark">Ink</button>
@@ -32,11 +28,10 @@
   <section class="study" id="study-psa">
     <header class="study-head">
       <h2>Psalm 1 <span class="kind-tags"><i class="dot k-contrast"></i>contrast <i class="dot k-echo"></i>echo <i class="dot k-parallel"></i>hinge</span></h2>
-      <p class="study-note">Same chapter: the two ways (vv. 1–3 / 4–5), the frame echo (vv. 1 / 6), and the v. 6 hinge.</p>
+      <p class="study-note">Touch a faintly dotted phrase. Its counterpart wakes, the connector draws itself, everything else recedes. Click to pin · Esc to clear.</p>
     </header>
     <div class="study-body">
       <div class="sheet" data-sheet="psa"></div>
-      <aside class="panel" data-panel="psa"></aside>
     </div>
     <details class="payload"><summary>pattern records · shape-marks.jsonl prototype</summary><pre data-payload="psa"></pre></details>
   </section>
@@ -44,11 +39,10 @@
   <section class="study" id="study-gen">
     <header class="study-head">
       <h2>Genesis 1:3 – 2:3 <span class="kind-tags"><i class="dot k-mirror"></i>mirror <i class="dot k-series"></i>series</span></h2>
-      <p class="study-note">Days 1–3 form, days 4–6 fill; each forming day answers its filling day. Day 7 rests as coda.</p>
+      <p class="study-note">Each forming day answers its filling day — hover a “Let there be …” to see its answer. The goodness refrain threads the week.</p>
     </header>
     <div class="study-body">
       <div class="sheet" data-sheet="gen"></div>
-      <aside class="panel" data-panel="gen"></aside>
     </div>
     <details class="payload"><summary>pattern records · shape-marks.jsonl prototype</summary><pre data-payload="gen"></pre></details>
   </section>
@@ -56,9 +50,9 @@
   <section class="study" id="study-rev">
     <header class="study-head">
       <h2>Revelation 2–3 <span class="kind-tags"><i class="dot k-series"></i>series</span></h2>
-      <p class="study-note">One letter shape, seven times. Absent elements stay absent; the ear-glyph flips side after Thyatira.</p>
+      <p class="study-note">One letter shape, seven times. Hover any recurring phrase — its six siblings wake across both chapters, with edge pills for the ones off-screen.</p>
     </header>
-    <div class="study-body">
+    <div class="study-body with-panel">
       <div class="sheet sheet-compact" data-sheet="rev"></div>
       <aside class="panel" data-panel="rev"></aside>
     </div>

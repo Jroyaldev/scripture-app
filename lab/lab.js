@@ -1,9 +1,12 @@
-/* Pattern shapes lab — phrase-anchored pattern marks.
- * Marks key on exact words (Range-measured, same approach as HighlightUnderlay):
- * a fine phrase underline + hairline connectors drawn word-to-word.
- * The gutter stays nearly empty; the text itself carries the shape. */
+/* Pattern shapes lab · v3 — "the text awakens".
+ * At rest the page is almost plain scripture: keyed phrases carry only a
+ * whisper of a dotted hint. Touch one and its whole pattern wakes — sibling
+ * phrases ink in, a connector draws itself through the gutter, the rest of
+ * the page recedes, and a small whisper names the shape. Click pins it.
+ * No dialect switcher, no chrome at rest: one opinionated language. */
 
-const state = { motif: "arcs", theme: "light" };
+const hovered = new Set(); // gids under the cursor
+const pinned = new Set();  // gids pinned by click
 
 const KIND_HUE = {
   "link:parallel": "var(--k-parallel)",
@@ -26,6 +29,7 @@ function S(tag, attrs = {}, parent) {
   return el;
 }
 
+/* glyphs — used only by the Revelation matrix panel */
 const GLYPH_PATHS = {
   address: "M7 3.4 A3.6 3.6 0 1 1 6.9 3.4 Z",
   know:    "M7 2.4 L11.6 7 L7 11.6 L2.4 7 Z",
@@ -34,21 +38,7 @@ const GLYPH_PATHS = {
   exhort:  "M4.2 2.8 L9.8 7 L4.2 11.2",
   promise: "M7 1.8 C7.9 5.1 8.9 6.1 12.2 7 C8.9 7.9 7.9 8.9 7 12.2 C6.1 8.9 5.1 7.9 1.8 7 C5.1 6.1 6.1 5.1 7 1.8 Z",
   ear:     "M4.6 10.6 A4.4 4.4 0 1 1 10.4 8.6",
-  contrast:"M7 2.2 A4.8 4.8 0 0 1 7 11.8 Z M7 2.2 A4.8 4.8 0 0 0 7 11.8",
-  echo:    "M3 9.4 A3.8 3.8 0 1 1 6.8 10.8 M3 9.4 L2.8 6.6 M3 9.4 L5.8 9.2",
-  mirror:  "M2.4 3 L6.2 7 L2.4 11 Z M11.6 3 L7.8 7 L11.6 11 Z",
-  hinge:   "M7 2.6 L11.4 7 L7 11.4 L2.6 7 Z M7 5.4 L8.6 7 L7 8.6 L5.4 7 Z",
 };
-function glyph(name, x, y, hue, opts = {}) {
-  const g = document.createElementNS(SVGNS, "g");
-  g.setAttribute("transform", `translate(${x - 7} ${y - 7})${opts.scale ? ` scale(${opts.scale})` : ""}`);
-  const p = S("path", {
-    d: GLYPH_PATHS[name], fill: opts.fill ? hue : "none", stroke: hue,
-    "stroke-width": opts.sw || 1.5, "stroke-linecap": "round", "stroke-linejoin": "round",
-  }, g);
-  if (opts.dash) p.setAttribute("stroke-dasharray", opts.dash);
-  return g;
-}
 
 /* ── sheets ──────────────────────────────────────────────── */
 const SHEETS = {
@@ -58,374 +48,382 @@ const SHEETS = {
 };
 const TRUNCATE = { rev: 190 };
 
+/* ── awaken groups (gids) ────────────────────────────────── */
+/* A gid is one touchable pattern instance: hover any of its phrases and
+ * every member wakes together. Derived from PATTERNS, never stored. */
+const GIDS = {};
+function addGid(gid, study, kind, label, keys, conn) {
+  GIDS[gid] = { gid, study, kind, hue: KIND_HUE[kind], label, keys: keys.filter(Boolean), conn, spans: [], anchors: [] };
+}
+function buildGids() {
+  for (const p of PATTERNS.psa) {
+    addGid(p.id, "psa", p.kind, `${KIND_LABEL[p.kind]} · ${p.label}`, p.members.map((m) => m.key), "arc");
+  }
+  PATTERNS.gen[0].pairs.forEach((pair, i) => {
+    addGid(`gen1-form-fill:${i}`, "gen", "mirror", `mirror · ${pair.label}`, [pair.a, pair.b], "arc");
+  });
+  addGid("gen1-refrain", "gen", "series", "series · “God saw that it was good” ×7",
+    PATTERNS.gen[1].members.map((m) => m.key), "thread");
+  const R = PATTERNS.rev[0];
+  const ELEMS = {
+    address: "“To the angel … write” ×7",
+    know: "“I know your works” ×7",
+    promise: "“he who overcomes” ×7",
+    ear: "“he who has an ear” ×7",
+  };
+  for (const el of Object.keys(ELEMS)) {
+    addGid(`rev23:${el}`, "rev", "series", `series · ${ELEMS[el]}`, R.members.map((m) => m.keys[el]), "thread");
+  }
+}
+
+const LEGEND = {
+  psa: () => PATTERNS.psa.map((p) => ({ label: `${KIND_LABEL[p.kind]} · ${p.label}`, kind: p.kind, gids: [p.id] })),
+  gen: () => [
+    { label: "mirror · forming ↔ filling", kind: "mirror", gids: ["gen1-form-fill:0", "gen1-form-fill:1", "gen1-form-fill:2"] },
+    { label: "series · the goodness refrain", kind: "series", gids: ["gen1-refrain"] },
+  ],
+  rev: () => [
+    { label: "the address", kind: "series", gids: ["rev23:address"] },
+    { label: "“I know your works”", kind: "series", gids: ["rev23:know"] },
+    { label: "the overcomer promise", kind: "series", gids: ["rev23:promise"] },
+    { label: "“he who has an ear”", kind: "series", gids: ["rev23:ear"] },
+  ],
+};
+
+/* letter boundaries for Revelation — quiet structural heads, like chapter heads */
+const LETTER_STARTS = {};
+for (const m of PATTERNS.rev[0].members) LETTER_STARTS[m.range[0]] = m.role;
+
+/* ── build: verses with phrase spans woven in ────────────── */
+function versePlan(study, ref, text) {
+  const ranges = [];
+  for (const gid in GIDS) {
+    const G = GIDS[gid];
+    if (G.study !== study) continue;
+    for (const k of G.keys) {
+      if (k.ref !== ref) continue;
+      const idx = text.indexOf(k.phrase);
+      if (idx < 0) { console.warn("phrase missing", ref, k.phrase); continue; }
+      ranges.push({ start: idx, end: idx + k.phrase.length, gid });
+    }
+  }
+  return ranges;
+}
+
+function appendSegments(container, text, ranges) {
+  const pts = new Set([0, text.length]);
+  ranges.forEach((r) => { pts.add(r.start); pts.add(r.end); });
+  const cuts = [...pts].sort((a, b) => a - b);
+  for (let i = 0; i < cuts.length - 1; i++) {
+    const s = cuts[i], e = cuts[i + 1];
+    const seg = text.slice(s, e);
+    const cover = ranges.filter((r) => r.start <= s && r.end >= e);
+    if (!cover.length) { container.appendChild(document.createTextNode(seg)); continue; }
+    const el = document.createElement("span");
+    el.className = "pk"; el.textContent = seg;
+    el.dataset.gids = cover.map((r) => r.gid).join(" ");
+    el.style.setProperty("--h", GIDS[cover[0].gid].hue);
+    container.appendChild(el);
+    cover.forEach((r) => {
+      GIDS[r.gid].spans.push(el);
+      if (r.start === s) GIDS[r.gid].anchors.push(el);
+    });
+  }
+}
+
 function buildSheets() {
   for (const [id, cfg] of Object.entries(SHEETS)) {
     const sheet = document.querySelector(`[data-sheet="${id}"]`);
     sheet.innerHTML = "";
+    for (const gid in GIDS) if (GIDS[gid].study === id) { GIDS[gid].spans = []; GIDS[gid].anchors = []; }
     const t = document.createElement("div"); t.className = "sheet-title"; t.textContent = cfg.title;
     const r = document.createElement("div"); r.className = "sheet-ref"; r.textContent = cfg.ref;
     sheet.append(t, r);
     for (const ch of cfg.chapters) {
       if (ch.head) { const h = document.createElement("div"); h.className = "chap-head"; h.textContent = ch.head; sheet.appendChild(h); }
       for (const v of VERSES[ch.key]) {
+        const ref = `${ch.key}.${v.verse}`;
+        if (LETTER_STARTS[ref] && id === "rev") {
+          const lh = document.createElement("div");
+          lh.className = "letter-head"; lh.dataset.letter = LETTER_STARTS[ref];
+          lh.textContent = LETTER_STARTS[ref];
+          sheet.appendChild(lh);
+        }
+        let text = v.text;
+        const ranges = versePlan(id, ref, text);
+        const limit = TRUNCATE[id];
+        if (limit && text.length > limit) {
+          const cut = text.slice(0, limit);
+          const cutAt = cut.lastIndexOf(" ");
+          if (ranges.every((rg) => rg.end <= cutAt)) text = cut.slice(0, cutAt) + " …";
+        }
         const row = document.createElement("div");
-        row.className = "vrow"; row.dataset.key = `${ch.key}.${v.verse}`;
+        row.className = "vrow"; row.dataset.key = ref;
         const num = document.createElement("span"); num.className = "vnum"; num.textContent = v.verse;
         const txt = document.createElement("span"); txt.className = "vtext";
-        const limit = TRUNCATE[id];
-        if (limit && v.text.length > limit) {
-          const cut = v.text.slice(0, limit);
-          txt.textContent = cut.slice(0, cut.lastIndexOf(" ")) + " …";
-        } else txt.textContent = v.text;
+        appendSegments(txt, text, ranges.filter((rg) => rg.end <= text.length));
         row.append(num, txt); sheet.appendChild(row);
       }
     }
-    const svg = S("svg", { class: "overlay", "data-overlay": id }); sheet.appendChild(svg);
-    const legend = document.createElement("div"); legend.className = "legend"; legend.dataset.legend = id;
+    sheet.appendChild(S("svg", { class: "overlay" }));
+    const wh = document.createElement("div"); wh.className = "whisper"; sheet.appendChild(wh);
+    const legend = document.createElement("div"); legend.className = "legend";
+    for (const entry of LEGEND[id]()) {
+      const chip = document.createElement("span");
+      chip.className = "chip"; chip.dataset.gids = entry.gids.join(" ");
+      chip.innerHTML = `<svg width="9" height="9"><circle cx="4.5" cy="4.5" r="3" fill="${KIND_HUE[entry.kind]}"/></svg>${entry.label}`;
+      legend.appendChild(chip);
+    }
     sheet.appendChild(legend);
   }
 }
 
-/* ── phrase measurement ──────────────────────────────────── */
-function measureBase(sheetId) {
-  const sheet = document.querySelector(`[data-sheet="${sheetId}"]`);
+/* ── overlay: connectors that draw themselves on awaken ──── */
+function measure(sid) {
+  const sheet = document.querySelector(`[data-sheet="${sid}"]`);
   const svg = sheet.querySelector("svg.overlay");
-  const base = svg.getBoundingClientRect();
-  const rows = {};
+  const base = sheet.getBoundingClientRect();
+  svg.setAttribute("width", base.width); svg.setAttribute("height", base.height);
   let textLeft = Infinity;
-  sheet.querySelectorAll(".vrow").forEach((row) => {
-    const r = row.getBoundingClientRect();
-    rows[row.dataset.key] = { top: r.top - base.top, bottom: r.bottom - base.top, mid: r.top - base.top + r.height / 2 };
-    textLeft = Math.min(textLeft, row.querySelector(".vtext").getBoundingClientRect().left - base.left);
+  sheet.querySelectorAll(".vrow .vtext").forEach((el) => {
+    textLeft = Math.min(textLeft, el.getBoundingClientRect().left - base.left);
   });
-  const W = sheet.getBoundingClientRect().width, H = sheet.getBoundingClientRect().height;
-  svg.setAttribute("width", W); svg.setAttribute("height", H);
-  return { sheet, svg, base, rows, textLeft, W, H };
+  return { sheet, svg, base, textLeft };
+}
+function firstRect(M, el) {
+  const r = el.getClientRects()[0];
+  if (!r) return null;
+  return { x: r.left - M.base.left, right: r.right - M.base.left, top: r.top - M.base.top, bottom: r.bottom - M.base.top };
+}
+function animDraw(p, ms = 340) {
+  const L = p.getTotalLength();
+  p.style.strokeDasharray = L; p.style.strokeDashoffset = L;
+  p.getBoundingClientRect();
+  p.style.transition = `stroke-dashoffset ${ms}ms cubic-bezier(.3,.7,.3,1)`;
+  p.style.strokeDashoffset = 0;
+}
+function animFade(el, ms = 240) {
+  el.style.opacity = 0;
+  el.getBoundingClientRect();
+  el.style.transition = `opacity ${ms}ms ease`;
+  el.style.opacity = 1;
 }
 
-/* exact-word geometry: all line rects the phrase spans, in overlay coordinates */
-function phraseRects(G, ref, phrase) {
-  const vt = G.sheet.querySelector(`[data-key="${ref}"] .vtext`);
-  if (!vt || !vt.firstChild) return null;
-  const node = vt.firstChild;
-  const idx = node.textContent.indexOf(phrase);
-  if (idx < 0) { console.warn("phrase missing", ref, phrase); return null; }
-  const range = document.createRange();
-  range.setStart(node, idx); range.setEnd(node, idx + phrase.length);
-  return [...range.getClientRects()].map((r) => ({
-    x: r.left - G.base.left, right: r.right - G.base.left,
-    top: r.top - G.base.top, bottom: r.bottom - G.base.top,
-  }));
-}
-
-/* ── mark primitives ─────────────────────────────────────── */
-function mark(G, pid, member, draw) {
-  const g = S("g", { class: "pm", "data-pid": pid }, G.svg);
-  if (member) g.dataset.member = member;
-  draw(g);
-  return g;
-}
-const UL = 3.5; // underline offset below baseline box
-
-function underline(g, rects, hue, { style = "solid", sw = 1.6 } = {}) {
-  for (const r of rects) {
-    const y = r.bottom + UL - 2;
-    const p = S("path", {
-      d: `M ${r.x + 0.5} ${y} H ${r.right - 0.5}`, fill: "none", stroke: hue,
-      "stroke-width": sw, "stroke-linecap": "round", class: "stroke-main",
-    }, g);
-    if (style === "dotted") { p.setAttribute("stroke-dasharray", "0.1 4.6"); p.setAttribute("stroke-width", sw + 0.5); }
-    if (style === "double") S("path", {
-      d: `M ${r.x + 0.5} ${y + 3.2} H ${r.right - 0.5}`, fill: "none", stroke: hue,
-      "stroke-width": 1, "stroke-linecap": "round", class: "stroke-main", opacity: 0.8,
-    }, g);
-  }
-}
-
-/* bezier word-to-word connector, bowing fully into the margin lane */
-function connect(g, a, b, hue, { style = "solid", sw = 1.3, lane } = {}) {
-  const x1 = a.x, y1 = a.bottom + UL, x2 = b.x, y2 = b.bottom + UL;
+/* connectors live entirely in the gutter: a dot at each member's line,
+ * a curve bowing left between them. The underline marks the words;
+ * the gutter curve only carries the relationship. Never crosses text. */
+function drawArc(g, a, b, hue, kind, lane, gx) {
+  const y1 = a.bottom + 2.5, y2 = b.bottom + 2.5;
   const sameLine = Math.abs(y1 - y2) < 5;
   let d;
   if (sameLine) {
-    const sx = a.right + 4, ex = b.x - 4, dip = 13;
+    const sx = a.right + 4, ex = b.x - 4, dip = 12;
     d = `M ${sx} ${y1} C ${sx + 4} ${y1 + dip}, ${ex - 4} ${y2 + dip}, ${ex} ${y2}`;
   } else {
-    // deep enough bow that the curve's leftmost point rests in the gutter lane
-    const target = lane ?? Math.min(x1, x2) - 30;
-    const bow = Math.max((Math.min(x1, x2) - target) / 0.72, 14);
-    d = `M ${x1} ${y1} C ${x1 - bow} ${y1 + 2}, ${x2 - bow} ${y2 - 2}, ${x2} ${y2}`;
+    d = `M ${gx} ${y1} C ${lane} ${y1 + 3}, ${lane} ${y2 - 3}, ${gx} ${y2}`;
   }
-  const p = S("path", {
-    d, fill: "none", stroke: hue, "stroke-width": sw,
-    "stroke-linecap": "round", class: "stroke-main",
-  }, g);
-  if (style === "dotted") { p.setAttribute("stroke-dasharray", "0.1 5"); p.setAttribute("stroke-width", sw + 0.6); }
-  if (style === "broken") { p.setAttribute("pathLength", "100"); p.setAttribute("stroke-dasharray", "45.5 9 45.5"); }
-  S("path", { d, fill: "none", stroke: "transparent", "stroke-width": 12 }, g); // hit area
+  const p = S("path", { d, fill: "none", stroke: hue, "stroke-width": 1.3, "stroke-linecap": "round" }, g);
+  if (kind === "link:echo") { p.setAttribute("stroke-dasharray", "0.1 5"); p.setAttribute("stroke-width", 1.9); animFade(p); }
+  else if (kind === "link:contrast") { p.setAttribute("pathLength", 100); p.setAttribute("stroke-dasharray", "45.5 9 45.5"); animFade(p); }
+  else animDraw(p);
   if (!sameLine) {
-    S("circle", { cx: x1, cy: y1, r: 2.1, fill: hue, class: "fill-main" }, g);
-    S("circle", { cx: x2, cy: y2, r: 2.1, fill: hue, class: "fill-main" }, g);
-  }
-  return p;
-}
-
-/* orthogonal variant — the vertical leg always rests in the gutter lane */
-function connectElbow(g, a, b, hue, { style = "solid", sw = 1.2, lane } = {}) {
-  const x1 = a.x, y1 = a.bottom + UL, x2 = b.x, y2 = b.bottom + UL;
-  const laneX = lane ?? Math.min(x1, x2) - 20;
-  const d = `M ${x1} ${y1} H ${laneX + 3} Q ${laneX} ${y1} ${laneX} ${y1 + 3} V ${y2 - 3} Q ${laneX} ${y2} ${laneX + 3} ${y2} H ${x2}`;
-  const p = S("path", {
-    d, fill: "none", stroke: hue, "stroke-width": sw,
-    "stroke-linecap": "round", "stroke-linejoin": "round", class: "stroke-main",
-  }, g);
-  if (style === "dotted" || style === "broken") p.setAttribute("stroke-dasharray", style === "broken" ? "5 4" : "0.1 4.5");
-  S("path", { d, fill: "none", stroke: "transparent", "stroke-width": 12 }, g);
-  S("circle", { cx: x1, cy: y1, r: 1.8, fill: hue, class: "fill-main" }, g);
-  S("circle", { cx: x2, cy: y2, r: 1.8, fill: hue, class: "fill-main" }, g);
-}
-
-/* whisper-quiet block spine for wide structures */
-function spine(g, x, top, bottom, hue, label) {
-  S("path", { d: `M ${x} ${top} V ${bottom}`, stroke: hue, "stroke-width": 1, opacity: 0.22, class: "stroke-main" }, g);
-  if (label) {
-    const lx = x - 52; // labels sit left of every connector lane, never under a curve
-    const t = S("text", {
-      x: lx, y: (top + bottom) / 2, "text-anchor": "middle", "font-size": 8.5,
-      "letter-spacing": "0.14em", "font-family": "var(--font-mono)", fill: "var(--text-tertiary)",
-      opacity: 0.8, transform: `rotate(-90 ${lx} ${(top + bottom) / 2})`,
-    }, g);
-    t.textContent = label.toUpperCase();
+    for (const [cx, cy] of [[gx, y1], [gx, y2]]) animFade(S("circle", { cx, cy, r: 2, fill: hue }, g));
   }
 }
 
-/* ── shared per-study logic, parameterized by motif ──────── */
-function drawLink(G, pattern, style, elbow) {
-  const hue = KIND_HUE[pattern.kind];
-  const rects = pattern.members.map((m) => phraseRects(G, m.key.ref, m.key.phrase));
-  if (rects.some((r) => !r)) return;
-  mark(G, pattern.id, null, (g) => {
-    const ulStyle = pattern.kind === "link:echo" ? "dotted" : pattern.kind === "hinge" ? "double" : "solid";
-    underline(g, rects[0], hue, { style: ulStyle });
-    underline(g, rects[1], hue, { style: ulStyle });
-    const linkStyle = style === "broken" ? "broken" : pattern.kind === "link:echo" ? "dotted" : "solid";
-    (elbow ? connectElbow : connect)(g, rects[0][0], rects[1][0], hue, { style: linkStyle, lane: G.textLeft - 16 });
+function drawThread(g, rects, hue, laneX) {
+  const ys = rects.map((r) => r.bottom + 2.5);
+  const line = S("path", { d: `M ${laneX} ${ys[0]} V ${ys[ys.length - 1]}`, stroke: hue, "stroke-width": 1, fill: "none", opacity: 0.55 }, g);
+  animDraw(line, 420);
+  rects.forEach((r, i) => {
+    animFade(S("circle", { cx: laneX, cy: ys[i], r: 1.9, fill: hue }, g), 200 + i * 40);
+    const tick = S("path", { d: `M ${laneX + 4} ${ys[i]} H ${laneX + 11}`, stroke: hue, "stroke-width": 1, opacity: 0.4 }, g);
+    animFade(tick, 200 + i * 40);
   });
 }
 
-function drawPsalm(G, motif) {
-  const elbow = motif === "ortho";
-  for (const p of PATTERNS.psa) {
-    if (p.id === "psa1-two-ways") drawLink(G, p, "broken", elbow);
-    else drawLink(G, p, "solid", elbow);
-    if (motif === "glyphs") {
-      // glyph-first: symbol above each key phrase's first word
-      const hue = KIND_HUE[p.kind];
-      const glyphName = p.kind === "link:contrast" ? "contrast" : p.kind === "link:echo" ? "echo" : "hinge";
-      mark(G, p.id, null, (g) => {
-        for (const m of p.members) {
-          const rs = phraseRects(G, m.key.ref, m.key.phrase);
-          if (rs) g.appendChild(glyph(glyphName, rs[0].x + 5, rs[0].top - 7, hue, { scale: 0.85 }));
-        }
-      });
-    }
-  }
-}
-
-function drawGen(G, motif) {
-  const mirror = PATTERNS.gen[0], refrain = PATTERNS.gen[1];
-  const hueM = KIND_HUE.mirror, hueS = KIND_HUE.series;
-  const elbow = motif === "ortho";
-  mark(G, mirror.id, null, (g) => {
-    const form = { top: G.rows["GEN.1.3"].top, bottom: G.rows["GEN.1.13"].bottom };
-    const fill = { top: G.rows["GEN.1.14"].top, bottom: G.rows["GEN.1.31"].bottom };
-    spine(g, G.textLeft - 10, form.top, form.bottom, hueM, motif === "glyphs" ? null : "forming");
-    spine(g, G.textLeft - 10, fill.top, fill.bottom, hueM, motif === "glyphs" ? null : "filling");
-    for (const [i, pair] of mirror.pairs.entries()) {
-      const ra = phraseRects(G, pair.a.ref, pair.a.phrase);
-      const rb = phraseRects(G, pair.b.ref, pair.b.phrase);
-      if (!ra || !rb) continue;
-      underline(g, ra, hueM); underline(g, rb, hueM);
-      (elbow ? connectElbow : connect)(g, ra[0], rb[0], hueM, { lane: G.textLeft - 26 - i * 11 });
-      if (motif === "glyphs") {
-        g.appendChild(glyph("mirror", ra[0].x + 5, ra[0].top - 7, hueM, { scale: 0.85 }));
-        g.appendChild(glyph("mirror", rb[0].x + 5, rb[0].top - 7, hueM, { scale: 0.85 }));
-      }
-    }
-  });
-  mark(G, refrain.id, null, (g) => {
-    let prevTop = null;
-    for (const m of refrain.members) {
-      const rs = phraseRects(G, m.key.ref, m.key.phrase);
-      if (!rs) continue;
-      if (motif === "glyphs") {
-        g.appendChild(glyph("promise", rs[0].x + 5, rs[0].top - 7, hueS, { scale: 0.7 }));
-      } else {
-        underline(g, rs, hueS, { sw: 1.4 });
-      }
-      if (prevTop === null) prevTop = rs[0].top;
-    }
+function drawOverlay(sid, gids) {
+  const sheet = document.querySelector(`[data-sheet="${sid}"]`);
+  const svg = sheet.querySelector("svg.overlay");
+  const key = gids.slice().sort().join("|");
+  if (svg.dataset.key === key) return;
+  svg.dataset.key = key;
+  svg.innerHTML = "";
+  if (!gids.length) return;
+  const M = measure(sid);
+  gids.forEach((gid, i) => {
+    const G = GIDS[gid];
+    const rects = G.anchors.map((a) => firstRect(M, a)).filter(Boolean);
+    if (rects.length < 2) return;
+    const g = S("g", {}, svg);
+    if (G.conn === "thread") drawThread(g, rects, G.hue, M.textLeft - 46 - i * 10);
+    else drawArc(g, rects[0], rects[rects.length - 1], G.hue, G.kind, M.textLeft - 40 - i * 10, M.textLeft - 12);
   });
 }
 
-function drawRev(G, motif) {
-  const letters = PATTERNS.rev[0];
-  const hue = KIND_HUE.series;
-  const keyOrder = ["address", "know", "promise", "ear"];
-  for (const m of letters.members) {
-    mark(G, letters.id, m.role, (g) => {
-      const first = G.rows[m.range[0]], last = G.rows[m.range[1]];
-      spine(g, G.textLeft - 10, first.top + 2, last.bottom - 2, hue, null);
-      const label = S("text", {
-        x: G.textLeft - 16, y: first.top + 8, "text-anchor": "end", "font-size": 8,
-        "letter-spacing": "0.12em", "font-family": "var(--font-mono)", fill: "var(--text-tertiary)",
-      }, g);
-      label.textContent = m.role.toUpperCase();
-      for (const el of keyOrder) {
-        const k = m.keys[el];
-        const rs = phraseRects(G, k.ref, k.phrase);
-        if (!rs) continue;
-        if (motif === "glyphs") {
-          g.appendChild(glyph(el, rs[0].x + 5, rs[0].top - 7, hue, { scale: 0.8 }));
-        } else {
-          underline(g, rs, hue, { sw: 1.4 });
-        }
-      }
-    });
+/* ── awaken state ────────────────────────────────────────── */
+function activeGids() { return new Set([...pinned, ...hovered]); }
+
+function applyActive() {
+  const act = activeGids();
+  for (const sid of Object.keys(SHEETS)) {
+    const sheet = document.querySelector(`[data-sheet="${sid}"]`);
+    const local = [...act].filter((g) => GIDS[g].study === sid);
+    sheet.classList.toggle("awake", local.length > 0);
+    sheet.querySelectorAll(".pk.on").forEach((el) => el.classList.remove("on"));
+    for (const gid of local) for (const el of GIDS[gid].spans) el.classList.add("on");
+    drawOverlay(sid, local);
   }
+  document.querySelectorAll("[data-gids]").forEach((c) => {
+    if (!c.classList.contains("chip") && !c.classList.contains("mcell") && !c.classList.contains("mhead")) return;
+    c.classList.toggle("on", c.dataset.gids.split(" ").some((g) => act.has(g)));
+  });
+  updatePills();
 }
 
-const STUDY_DRAW = { psa: drawPsalm, gen: drawGen, rev: drawRev };
-
-/* ── panels ──────────────────────────────────────────────── */
-function buildPanel(study) {
-  const panel = document.querySelector(`[data-panel="${study}"]`);
-  panel.innerHTML = "";
-  if (study === "psa") {
-    panel.innerHTML = `<h3>Shape view · the two ways</h3><div class="panel-sub">PSA.1 · contrast + frame</div>
-      <div class="lattice" style="grid-template-columns: 1fr 1fr">
-        <div class="lcell pm" data-pid="psa1-two-ways"><div class="day" style="color:${KIND_HUE["link:contrast"]}">the righteous · 1–3</div><div class="cell-excerpt">${excerpt("PSA.1.1", 14)}</div><div class="cell-ref">tree · water · fruit · prospering</div></div>
-        <div class="lcell pm" data-pid="psa1-two-ways"><div class="day" style="color:${KIND_HUE["link:contrast"]}">the wicked · 4–5</div><div class="cell-excerpt">${excerpt("PSA.1.4", 8)}</div><div class="cell-ref">chaff · wind · no standing</div></div>
-      </div>
-      <div class="coda-strip pm" data-pid="psa1-frame"><div class="day" style="color:${KIND_HUE["link:echo"]}">frame · 1 &amp; 6</div><div class="cell-excerpt">${excerpt("PSA.1.6", 12)}</div></div>`;
-  }
-  if (study === "gen") {
-    const pairs = PATTERNS.gen[0].pairs;
-    panel.innerHTML = `<h3>Shape view · forming &amp; filling</h3><div class="panel-sub">GEN.1.3–31 · mirror</div>
-      <div class="lattice" style="grid-template-columns: 1fr 1fr">
-        ${pairs.map((p, i) => `
-          <div class="lcell pm" data-pid="gen1-form-fill"><div class="day" style="color:${KIND_HUE.mirror}">day ${i + 1} · formed</div><div class="cell-excerpt">${excerpt(p.a.ref, 9)}</div></div>
-          <div class="lcell pm" data-pid="gen1-form-fill"><div class="day" style="color:${KIND_HUE.mirror}">day ${i + 4} · filled</div><div class="cell-excerpt">${excerpt(p.b.ref, 9)}</div></div>`).join("")}
-      </div>
-      <div class="coda-strip pm" data-pid="gen1-refrain"><div class="day" style="color:${KIND_HUE.series}">the refrain · “it was good” ×7</div><div class="cell-excerpt">${excerpt("GEN.1.31", 12)}</div></div>`;
-  }
-  if (study === "rev") {
-    const P = PATTERNS.rev[0];
-    const els = P.elementSchema;
-    panel.innerHTML = `<h3>Shape view · one letter, seven times</h3><div class="panel-sub">REV.2–3 · series · absence is data</div>
-      <div class="matrix" style="grid-template-columns: 110px repeat(7, 1fr)">
-        <div></div>${els.map((e) => `<div class="mhead">${e}</div>`).join("")}
-        ${P.members.map((m) => `<div class="mrow pm" data-pid="rev23-letters" data-member="${m.role}">
-          <div class="mrow-label">${m.role}<span class="cell-ref">${m.range[0].replace("REV.", "Rv ")}–${m.range[1].split(".")[2]}</span></div>
-          ${els.map((el) => {
-            const has = !!m.elements[el];
-            const partial = (m.partial || []).includes(el);
-            return `<div class="mcell">${has ? glyphSVGString(el, partial, el === "ear" ? m.earPos : null) : `<span style="color:var(--border-medium);font-size:9px">·</span>`}</div>`;
-          }).join("")}
-        </div>`).join("")}
-      </div>
-      <div class="legend"><span class="chip" style="cursor:default">≺ ear before promise · ≻ ear after — the flip after Thyatira is the shape changing</span></div>`;
-  }
+/* whisper — the pattern names itself, anchored to the touched phrase */
+function showWhisper(pk) {
+  const sheet = pk.closest(".sheet");
+  const wh = sheet.querySelector(".whisper");
+  const gids = pk.dataset.gids.split(" ");
+  wh.textContent = gids.map((g) => GIDS[g].label).join("  +  ");
+  wh.style.color = GIDS[gids[0]].hue;
+  const base = sheet.getBoundingClientRect();
+  const r = pk.getClientRects()[0];
+  wh.style.left = Math.max(8, Math.min(r.left - base.left, base.width - 300)) + "px";
+  wh.style.top = (r.top - base.top - 24) + "px";
+  wh.classList.add("on");
 }
+function hideWhisper() {
+  document.querySelectorAll(".whisper.on").forEach((w) => w.classList.remove("on"));
+}
+
+/* off-screen awareness — quiet pills at the viewport edge */
+const pillUp = document.createElement("button");
+const pillDown = document.createElement("button");
+pillUp.className = "pill pill-up"; pillDown.className = "pill pill-down";
+document.body.append(pillUp, pillDown);
+let pillTargets = { up: null, down: null };
+pillUp.addEventListener("click", () => pillTargets.up && pillTargets.up.scrollIntoView({ behavior: "smooth", block: "center" }));
+pillDown.addEventListener("click", () => pillTargets.down && pillTargets.down.scrollIntoView({ behavior: "smooth", block: "center" }));
+
+function updatePills() {
+  const act = [...activeGids()];
+  if (!act.length) { pillUp.classList.remove("on"); pillDown.classList.remove("on"); return; }
+  const anchors = act.flatMap((g) => GIDS[g].anchors);
+  const above = [], below = [];
+  let sheetRect = null;
+  for (const a of anchors) {
+    const r = a.getBoundingClientRect();
+    if (r.bottom < 64) above.push(a);
+    else if (r.top > innerHeight - 36) below.push(a);
+    if (!sheetRect) sheetRect = a.closest(".sheet").getBoundingClientRect();
+  }
+  const hue = GIDS[act[0]].hue;
+  const cx = sheetRect ? sheetRect.left + 62 : innerWidth / 2;
+  for (const [pill, list, arrow] of [[pillUp, above, "↑"], [pillDown, below, "↓"]]) {
+    if (list.length) {
+      pill.textContent = `${arrow} ${list.length} more`;
+      pill.style.color = hue; pill.style.left = cx + "px";
+      pill.classList.add("on");
+    } else pill.classList.remove("on");
+  }
+  pillTargets = { up: above[above.length - 1] || null, down: below[0] || null };
+}
+addEventListener("scroll", () => { if (activeGids().size) updatePills(); }, { passive: true });
+
+/* ── revelation matrix panel ─────────────────────────────── */
 function glyphSVGString(name, partial, earPos) {
   const extra = earPos ? `<text x="${earPos === "pre" ? -4 : 18}" y="10" font-size="7" font-family="var(--font-mono)" fill="var(--text-tertiary)">${earPos === "pre" ? "≺" : "≻"}</text>` : "";
   return `<svg class="glyph" width="18" height="18" viewBox="-4 -4 22 22" style="overflow:visible;opacity:${partial ? 0.45 : 1}"><path d="${GLYPH_PATHS[name]}" fill="none" stroke="var(--k-series)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>${extra}</svg>`;
 }
-
-/* ── legend ──────────────────────────────────────────────── */
-function buildLegend(study, patterns) {
-  const el = document.querySelector(`[data-legend="${study}"]`);
-  el.innerHTML = "";
-  for (const p of patterns) {
-    const chip = document.createElement("span"); chip.className = "chip";
-    chip.innerHTML = `<svg width="10" height="10"><circle cx="5" cy="5" r="3.4" fill="${KIND_HUE[p.kind]}"/></svg>${KIND_LABEL[p.kind]} · ${p.label}`;
-    chip.dataset.pid = p.id;
-    el.appendChild(chip);
-  }
-}
-
-/* ── hover: gold is a verb, and a name appears on request ── */
-const tip = document.createElement("div");
-tip.className = "mark-tip"; document.body.appendChild(tip);
-let tipText = {};
-
-function wireHover() {
-  document.querySelectorAll(".study").forEach((scope) => {
-    scope.addEventListener("mouseover", (e) => {
-      const t = e.target.closest(".pm, .chip"); if (!t || !scope.contains(t)) return;
-      const pid = t.dataset.pid, member = t.dataset.member;
-      scope.querySelectorAll("svg.overlay, .panel").forEach((o) => o.classList.add("hovering"));
-      scope.querySelectorAll(".pm").forEach((m) => {
-        if (m.dataset.pid === pid && (!member || m.dataset.member === member)) m.classList.add("focus");
-      });
-      if (tipText[pid]) {
-        tip.textContent = (member ? member + " · " : "") + tipText[pid];
-        tip.classList.add("on");
-      }
-    });
-    scope.addEventListener("mousemove", (e) => {
-      if (tip.classList.contains("on")) { tip.style.left = e.clientX + 14 + "px"; tip.style.top = e.clientY + 16 + "px"; }
-    });
-    scope.addEventListener("mouseout", (e) => {
-      if (e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest(".pm, .chip")) return;
-      scope.querySelectorAll(".hovering").forEach((o) => o.classList.remove("hovering"));
-      scope.querySelectorAll(".pm.focus").forEach((m) => m.classList.remove("focus"));
-      tip.classList.remove("on");
+function buildRevPanel() {
+  const panel = document.querySelector('[data-panel="rev"]');
+  const P = PATTERNS.rev[0];
+  const els = P.elementSchema;
+  const keyed = new Set(["address", "know", "promise", "ear"]);
+  panel.innerHTML = `<h3>One letter, seven times</h3><div class="panel-sub">absence is data · hover a column to trace it in the text</div>
+    <div class="matrix" style="grid-template-columns: 96px repeat(7, 1fr)">
+      <div></div>${els.map((e) => `<div class="mhead" ${keyed.has(e) ? `data-gids="rev23:${e}"` : ""}>${e}</div>`).join("")}
+      ${P.members.map((m) => `<div class="mrow" data-letter="${m.role}">
+        <div class="mrow-label">${m.role}<span class="cell-ref">${m.range[0].replace("REV.", "")}–${m.range[1].split(".")[2]}</span></div>
+        ${els.map((el) => {
+          const has = !!m.elements[el];
+          const partial = (m.partial || []).includes(el);
+          const gid = keyed.has(el) ? ` data-gids="rev23:${el}"` : "";
+          return `<div class="mcell"${gid}>${has ? glyphSVGString(el, partial, el === "ear" ? m.earPos : null) : `<span style="color:var(--border-medium);font-size:9px">·</span>`}</div>`;
+        }).join("")}
+      </div>`).join("")}
+    </div>
+    <div class="panel-note">≺ ear before promise · ≻ after — the flip lands after Thyatira. Rows: click a name to jump to that letter.</div>`;
+  panel.querySelectorAll(".mrow-label").forEach((lbl) => {
+    lbl.addEventListener("click", () => {
+      const head = document.querySelector(`.letter-head[data-letter="${lbl.parentElement.dataset.letter}"]`);
+      if (head) head.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   });
 }
 
-/* ── render cycle ────────────────────────────────────────── */
-function renderOverlays() {
-  for (const study of ["psa", "gen", "rev"]) {
-    const sheet = document.querySelector(`[data-sheet="${study}"]`);
-    let svg = sheet.querySelector("svg.overlay");
-    svg.remove();
-    svg = S("svg", { class: "overlay", "data-overlay": study });
-    sheet.insertBefore(svg, sheet.querySelector(".legend"));
-    const G = measureBase(study);
-    STUDY_DRAW[study](G, state.motif);
-  }
+/* ── events ──────────────────────────────────────────────── */
+function gidsOf(el) { return el.dataset.gids.split(" "); }
+
+function wire() {
+  document.querySelectorAll(".study").forEach((scope) => {
+    scope.addEventListener("mouseover", (e) => {
+      const t = e.target.closest("[data-gids]");
+      if (!t || !scope.contains(t)) return;
+      hovered.clear(); gidsOf(t).forEach((g) => hovered.add(g));
+      applyActive();
+      if (t.classList.contains("pk")) showWhisper(t);
+    });
+    scope.addEventListener("mouseout", (e) => {
+      const to = e.relatedTarget;
+      if (to && to.closest && to.closest("[data-gids]")) return;
+      if (hovered.size) { hovered.clear(); applyActive(); }
+      hideWhisper();
+    });
+    scope.addEventListener("click", (e) => {
+      const t = e.target.closest("[data-gids]");
+      if (!t) {
+        if (pinned.size) { pinned.clear(); applyActive(); }
+        return;
+      }
+      const gs = gidsOf(t);
+      const all = gs.every((g) => pinned.has(g));
+      gs.forEach((g) => (all ? pinned.delete(g) : pinned.add(g)));
+      applyActive();
+    });
+  });
+  addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && (pinned.size || hovered.size)) {
+      pinned.clear(); hovered.clear(); applyActive(); hideWhisper();
+    }
+  });
+  document.getElementById("reveal-btn").addEventListener("click", (e) => {
+    const on = document.body.classList.toggle("reveal");
+    e.currentTarget.setAttribute("aria-pressed", on);
+  });
+  document.getElementById("atm-seg").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    document.querySelectorAll("#atm-seg button").forEach((x) => x.setAttribute("aria-checked", x === b));
+    document.body.className = `theme-${b.dataset.theme}` + (document.body.classList.contains("reveal") ? " reveal" : "");
+    requestAnimationFrame(redrawActive);
+  });
+  addEventListener("resize", () => requestAnimationFrame(redrawActive));
 }
-function renderAll() {
-  buildSheets();
-  tipText = {};
-  for (const s of ["psa", "gen", "rev"]) {
-    buildPanel(s); buildLegend(s, PATTERNS[s]);
-    for (const p of PATTERNS[s]) tipText[p.id] = `${KIND_LABEL[p.kind]} · ${p.label}`;
-    document.querySelector(`[data-payload="${s}"]`).textContent = JSON.stringify(PATTERNS[s], null, 2);
-  }
-  renderOverlays();
+function redrawActive() {
+  document.querySelectorAll("svg.overlay").forEach((s) => { s.dataset.key = "~"; });
+  applyActive();
 }
 
-/* ── switchers ───────────────────────────────────────────── */
-function syncSeg() {
-  document.querySelectorAll("#motif-seg button").forEach((x) => x.setAttribute("aria-checked", x.dataset.motif === state.motif));
-  document.querySelectorAll("#atm-seg button").forEach((x) => x.setAttribute("aria-checked", x.dataset.theme === state.theme));
+/* ── boot ────────────────────────────────────────────────── */
+buildGids();
+buildSheets();
+buildRevPanel();
+for (const s of Object.keys(SHEETS)) {
+  const pre = document.querySelector(`[data-payload="${s}"]`);
+  if (pre) pre.textContent = JSON.stringify(PATTERNS[s], null, 2);
 }
-document.getElementById("motif-seg").addEventListener("click", (e) => {
-  const b = e.target.closest("button"); if (!b) return;
-  state.motif = b.dataset.motif; syncSeg(); renderOverlays();
-});
-document.getElementById("atm-seg").addEventListener("click", (e) => {
-  const b = e.target.closest("button"); if (!b) return;
-  state.theme = b.dataset.theme; syncSeg();
-  document.body.className = `theme-${state.theme}`;
-  requestAnimationFrame(renderOverlays);
-});
-
-window.addEventListener("resize", () => requestAnimationFrame(renderOverlays));
-syncSeg();
-renderAll();
-wireHover();
-if (document.fonts && document.fonts.ready) document.fonts.ready.then(renderOverlays);
+wire();
+applyActive();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(redrawActive);
