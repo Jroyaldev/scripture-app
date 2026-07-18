@@ -75,6 +75,9 @@ const SWOOP_DIP = 3.2;   // ideal vertical dip of the port swoop
 const SWOOP_DIP_MIN = 1.5;
 const CLAIM_GAP = 2.2;   // min separation of two shoulders in one corridor
 const BAND_MIN = 4.2;    // corridor must be at least this tall to be legal
+const FLOOR_MIN = 5;         // a cradle floor must really exist
+const GAP_FACING_MIN = 12;   // ≈ 2·DROP_MIN + FLOOR_MIN — below this, two facing turns can't fit
+const GAP_EMBRACE_MAX = 16;  // embrace rescues facing only in the 12..16 overlap band
 
 /* ── the planner ───────────────────────────────────────────── */
 /* block: TextBlock (measured), ann: Annotation.
@@ -131,34 +134,41 @@ export function planRoute(block, ann, opts = {}) {
   const clearRun = (y, xa, xb) =>
     !obstacles.some((o) => y > o.top && y < o.bottom && Math.min(xa, xb) < o.right && Math.max(xa, xb) > o.left);
 
-  /* pick a shoulder y inside corridor ci. Needs DROP_MIN room toward the
-   * contact (the terminal turn); a shoulder that will pour through a port
-   * (needsDip) also needs SWOOP_DIP_MIN room on the down side. A cradle
-   * floor has no port, so it may settle to the bottom of the band.
+  /* pick a shoulder y inside corridor ci. The hard bounds — DROP_MIN room
+   * toward the contact, SWOOP_DIP_MIN room below when the shoulder pours
+   * through a port (a cradle floor has none, so it may settle low) — are a
+   * precomputed legal WINDOW, and the ladder walks it centered, skipping
+   * out-of-range rungs instead of burning them on rejections. A caller may
+   * pass fits(y) for per-slot acceptance (e.g. the cradle's floor length):
+   * a slot that fails retries 0.6px away instead of killing the plan.
    * Honors prior claims. */
-  const corridorYFor = (ci, xa, xb, contactY, needsDip = true) => {
+  const corridorYFor = (ci, xa, xb, contactY, needsDip = true, fits = null) => {
     const band = corridors[ci];
     if (!band) return null;
-    const mid = (band.top + band.bottom) / 2;
+    const minY = Math.max(band.top + 0.25, contactY != null ? contactY + DROP_MIN : -Infinity);
+    const maxY = needsDip ? band.bottom - 0.25 - SWOOP_DIP_MIN : band.bottom - 0.05;
+    if (minY > maxY) return null;
+    const base = (minY + maxY) / 2;
     const tried = [];
     const ladder = [0];
     for (let step = 0.6; step <= 5.4; step += 0.6) ladder.push(-step, step);
     for (const dy of ladder) {
-      const y = mid + dy;
+      const y = base + dy;
+      if (y < minY - 1e-6 || y > maxY + 1e-6) continue;
       let why = null;
-      if (y - 0.25 < band.top) why = "edge-top";
-      else if (contactY != null && Math.abs(y - contactY) < DROP_MIN) why = "drop";
-      else if (needsDip && Math.min(SWOOP_DIP, band.bottom - y - 0.25) < SWOOP_DIP_MIN) why = "swoop-room";
-      else if (!needsDip && y > band.bottom - 0.05) why = "edge-bottom";
-      else if (!clearRun(y, xa, xb)) why = "obstacle";
+      if (!clearRun(y, xa, xb)) why = "obstacle";
       else if (claims.some((cl) => cl.corridor === ci &&
         Math.abs(cl.y - y) < CLAIM_GAP + claimPad + (cl.pad || 0))) why = "claim";
+      else if (fits) {
+        const verdict = fits(y);
+        if (verdict !== true) why = verdict || "fits";
+      }
       if (!why) return { y, dip: Math.min(SWOOP_DIP, Math.max(0, band.bottom - y - 0.25)) };
       tried.push(why);
     }
     if (typeof window !== "undefined" && window.__ROUTE_DEBUG__) {
       (window.__ROUTE_DEBUG__.corridors = window.__ROUTE_DEBUG__.corridors || [])
-        .push({ ci, band: { top: +band.top.toFixed(1), bottom: +band.bottom.toFixed(1) }, xa: +xa.toFixed(1), xb: +xb.toFixed(1), contactY: +contactY?.toFixed(1), tried });
+        .push({ ci, band: { top: +band.top.toFixed(1), bottom: +band.bottom.toFixed(1) }, window: { minY: +minY.toFixed(1), maxY: +maxY.toFixed(1) }, xa: +xa.toFixed(1), xb: +xb.toFixed(1), contactY: +contactY?.toFixed(1), tried });
     }
     return null;
   };
@@ -189,30 +199,60 @@ export function planRoute(block, ann, opts = {}) {
   if (strandX < block.bounds.left - (block.availableLeftMargin ?? 60)) return fail("needs-space");
   if (strandX < block.bounds.left + 4) return fail("needs-space");
 
-  /* ── same-line cradle (two anchors, one rendered line) ── */
+  /* ── same-line cradle (two anchors, one rendered line) ──
+   * Three regimes decide how the hammock takes hold:
+   *   FACING (pins on the facing ends, floor under the gap) is the default
+   *   — the drawing narrates the link in reading order.
+   *   EMBRACE (pins on the outer ends, floor under the pair) takes over
+   *   when the gap is too tight for two terminal turns, and is preferred
+   *   for short closed single-word pairs (Day/Night), where inside pins
+   *   would crowd the punctuation and enclosure is the truer drawing.
+   * Embrace requires both anchors closed — a wrap edge is not a phrase
+   * end. The floor-length test lives INSIDE the slot ladder, so a slot
+   * whose radii would invert or starve the floor retries shallower
+   * instead of aborting the cradle. */
   const allSameLine = branchesIn.every((b) => b.li === branchesIn[0].li);
   if (allSameLine && branchesIn.length === 2) {
     const [A, B] = [...branchesIn].sort((a, b) => a.frag.left - b.frag.left);
-    const ax = A.frag.right - 0.5, bx = B.frag.left + 0.5;
-    const ay = A.frag.bottom + underlineDy, by = B.frag.bottom + underlineDy;
     const ci = A.li + 1;
-    /* the cradle has no port swoop — it may settle low in the band */
-    const slot = corridorYFor(ci, ax, bx, Math.max(ay, by), false);
-    if (slot && bx - ax >= 16) {
+    const gap = B.frag.left - A.frag.right;
+    const span = B.frag.right - A.frag.left;
+    const wA = A.frag.right - A.frag.left, wB = B.frag.right - B.frag.left;
+    const closed = (b) => b.anchor.fragments.length === 1;
+    const embraceEligible = closed(A) && closed(B) && span <= 7 * fontSize;
+    const facing = {
+      variant: "facing",
+      ax: A.frag.right - 0.5, ay: A.frag.bottom + underlineDy,
+      bx: B.frag.left + 0.5, by: B.frag.bottom + underlineDy,
+    };
+    const embrace = {
+      variant: "embrace",
+      ax: A.frag.left + 0.5, ay: A.frag.bottom + underlineDy,
+      bx: B.frag.right - 0.5, by: B.frag.bottom + underlineDy,
+    };
+    const shortPair = embraceEligible && wA <= 2.5 * fontSize && wB <= 2.5 * fontSize && gap <= 2 * fontSize;
+    const candidates = shortPair
+      ? [embrace, facing]
+      : gap >= GAP_FACING_MIN
+        ? (embraceEligible && gap <= GAP_EMBRACE_MAX ? [facing, embrace] : [facing])
+        : embraceEligible ? [embrace] : [];
+    for (const c of candidates) {
+      /* the cradle has no port swoop — it may settle low in the band */
+      const slot = corridorYFor(ci, c.ax, c.bx, Math.max(c.ay, c.by), false, (y) =>
+        (c.bx - c.ax) - (y - c.ay) - (y - c.by) >= FLOOR_MIN ? true : "floor");
+      if (!slot) continue;
       const fy = slot.y;
-      const r1 = fy - ay, r2 = fy - by;
-      if (r1 >= DROP_MIN && r2 >= DROP_MIN) {
-        const segs = [
-          quarterVH(ax, ay, ax + r1, fy),          // pour down-right from pin A
-          L(ax + r1, fy, bx - r2, fy),             // the hammock floor
-          quarterHV(bx - r2, fy, bx, by),          // rise into pin B
-        ];
-        return finalize(segs, "same-line",
-          [{ x: ax, y: ay }, { x: bx, y: by }],
-          [fy], [ci], null, null, []);
-      }
+      const r1 = fy - c.ay, r2 = fy - c.by;
+      const segs = [
+        quarterVH(c.ax, c.ay, c.ax + r1, fy),        // pour down-right from pin A
+        L(c.ax + r1, fy, c.bx - r2, fy),             // the hammock floor
+        quarterHV(c.bx - r2, fy, c.bx, c.by),        // rise into pin B
+      ];
+      return finalize(segs, "same-line",
+        [{ x: c.ax, y: c.ay }, { x: c.bx, y: c.by }],
+        [fy], [ci], null, null, [], c.variant);
     }
-    /* cradle cannot fit → fall through to the margin, never squash */
+    /* no legal cradle → fall through to the margin, never squash */
   }
 
   /* ── margin route ──
@@ -294,7 +334,7 @@ export function planRoute(block, ann, opts = {}) {
   return finalize(centerline, mode, contacts, corridorYs, corridorIdx, strandX, spine, ports);
 
   /* ── shared finish: sample, validate, diagnose ── */
-  function finalize(segs, mode, contacts, corridorYs, corridorIdx, railXOut, spine, ports) {
+  function finalize(segs, mode, contacts, corridorYs, corridorIdx, railXOut, spine, ports, cradleVariant) {
     const sampled = [];
     for (const s of segs) sampled.push(...segPoints(s, 1));
     for (const p of sampled) {
@@ -318,6 +358,7 @@ export function planRoute(block, ann, opts = {}) {
       valid: true,
       side: "left",
       mode,
+      cradleVariant,
       contacts,
       corridors: corridorYs,
       corridorIdx,

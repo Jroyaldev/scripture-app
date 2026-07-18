@@ -38,6 +38,10 @@ const FIXTURES = [
     keys: [3, 6, 9, 11, 14, 20, 24, 26, 28, 29].map((v) => ({ ref: `GEN.1.${v}`, phrase: "God said" })) },
   { id: "same-line-multi", name: "several on one line", kind: "parallel",
     keys: [{ ref: "GEN.1.11", phrase: "grass" }, { ref: "GEN.1.11", phrase: "herbs" }, { ref: "GEN.1.11", phrase: "fruit trees" }] },
+  { id: "adjacent-pair", name: "adjacent words · tight gap", kind: "hinge",
+    keys: [{ ref: "GEN.1.11", phrase: "grass" }, { ref: "GEN.1.11", phrase: "herbs" }] },
+  { id: "short-pair", name: "short closed pair", kind: "contrast",
+    keys: [{ ref: "GEN.1.14", phrase: "days" }, { ref: "GEN.1.14", phrase: "years" }] },
   { id: "wrapped", name: "phrase that wraps", kind: "echo",
     keys: [{ ref: "GEN.1.14", phrase: "in the expanse of the sky to divide the day from the night" }, { ref: "GEN.1.15", phrase: "lights in the expanse" }] },
   { id: "first-last", name: "first ↔ last block line", kind: "mirror",
@@ -434,6 +438,14 @@ function validate(measured, ann, plan, drawnPlans) {
   }
   if (drawnPlans.length > 1) push("weave clears", weaveBad === 0, weaveBad ? `${weaveBad} hits` : "ok");
 
+  /* cradle floor: really exists and never inverts (the floor-length test
+   * lives in the engine's slot ladder; this proves it end to end) */
+  if (plan.mode === "same-line") {
+    const floor = plan.centerline.find((s) => s.type === "L");
+    const len = floor ? floor.x2 - floor.x1 : -1;
+    push("cradle floor ≥5", len >= 5 - 0.01, `${len.toFixed(1)}px · ${plan.cradleVariant || "?"}`);
+  }
+
   push("clearance", plan.diagnostics.minimumClearance >= 0, `${plan.diagnostics.minimumClearance}px`);
   return checks;
 }
@@ -563,7 +575,7 @@ function run() {
     btn.innerHTML = `<span class="frow"><i class="dot" style="background:${HUES[ann.kind]}"></i>
       <span class="fname">${ann.fixture.name}</span>${strandBadge}${chip}</span>
       <span class="fdiag">${plan && plan.valid
-        ? `${plan.mode} · clear ${plan.diagnostics.minimumClearance}px · ${plan.diagnostics.totalLength}px · ${ann.anchors.length} anchor${ann.anchors.length > 1 ? "s" : ""}${plan.renderHops && plan.renderHops.length ? ` · ${plan.renderHops.length} hops` : ""}`
+        ? `${plan.mode}${plan.cradleVariant ? "·" + plan.cradleVariant : ""} · clear ${plan.diagnostics.minimumClearance}px · ${plan.diagnostics.totalLength}px · ${ann.anchors.length} anchor${ann.anchors.length > 1 ? "s" : ""}${plan.renderHops && plan.renderHops.length ? ` · ${plan.renderHops.length} hops` : ""}`
         : `${ann.anchors.length} anchor${ann.anchors.length > 1 ? "s" : ""}`}</span>`;
     btn.addEventListener("click", () => { focusedId = ann.id; previewId = null; run(); });
     list.appendChild(btn);

@@ -188,3 +188,23 @@ CSS, the export card's dotted echo spine, and the dashed provisional
 authoring wire (now the same line at 0.45 opacity — uncommitted reads as
 reticence, not a dash). `trace-geometry.js` still exports the old helpers
 for its tests; the lab no longer calls them.
+
+### Steps 0+1 of PLAN-semantic-routing landed (same day)
+
+The same-line grammar is amended: **same-line pair = hammock: pins on the
+facing underline ends when the gap can carry two terminal turns and a real
+floor (gap ≥ 12); pins on the outer ends — the held pair, "embrace" — when
+the gap is too tight (< 12) or both phrases are single short closed words
+(each ≤ 2.5em, gap ≤ 2em, span ≤ 7em).** Embrace requires both anchors
+closed (one fragment) — a wrap edge is not a phrase end. The floor-length
+test `(bx−ax) − r1 − r2 ≥ 5` lives INSIDE the slot ladder (new `fits(y)`
+callback on corridorYFor), which kills the latent floor-inversion bug and
+lets a too-deep slot retry shallower. Plans carry `cradleVariant`.
+
+corridorYFor now precomputes its legal window (minY = contact + DROP_MIN,
+maxY = band bottom − dip room) and centers the ladder on the window instead
+of the band — shoulders sit at the optical center of the room they actually
+have, and razor-thin 0.01px-clearance plans became honest 0.3px ones.
+Fixtures added: adjacent-pair (grass/herbs, embrace by necessity),
+short-pair (days/years, facing — its gap sits just past the 2em preference
+boundary). Suite gains a cradle-floor ≥ 5 check.
