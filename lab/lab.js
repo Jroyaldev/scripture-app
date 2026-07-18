@@ -89,10 +89,10 @@ function renameUser(gid, label) {
   const G = GIDS[gid];
   if (G) G.label = `${KIND_LABEL[G.kind]} · ${rec.label}`;
 }
-function removeMember(gid, ref, phrase) {
+function removeMember(gid, ref, phrase, occ = 0) {
   const rec = USER.find((p) => p.id === gid);
   if (!rec) return;
-  rec.members = rec.members.filter((m) => !(m.ref === ref && m.phrase === phrase));
+  rec.members = rec.members.filter((m) => !(m.ref === ref && m.phrase === phrase && (m.occ || 0) === occ));
   if (rec.members.length < 2) { deleteUserPattern(gid); return; }
   if (!rec.custom) rec.label = userLabel(rec.kind, rec.members);
   saveUser();
@@ -138,7 +138,7 @@ function buildGids() {
     const study = refStudy(p.members[0].ref);
     if (!study) continue;
     addGid(p.id, study, p.kind, `${KIND_LABEL[p.kind]} · ${p.label}`,
-      p.members.map((m) => ({ ref: m.ref, phrase: m.phrase })),
+      p.members.map((m) => ({ ref: m.ref, phrase: m.phrase, occ: m.occ })),
       p.members.length > 2 ? "thread" : "arc");
   }
 }
@@ -169,9 +169,11 @@ function versePlan(study, ref, text) {
     if (G.study !== study) continue;
     for (const k of G.keys) {
       if (k.ref !== ref) continue;
-      const idx = text.indexOf(k.phrase);
+      // k.occ picks the nth occurrence — "law" the second time, not the first
+      let idx = -1;
+      for (let n = 0; n <= (k.occ || 0); n++) idx = text.indexOf(k.phrase, idx + 1);
       if (idx < 0) { console.warn("phrase missing", ref, k.phrase); continue; }
-      ranges.push({ start: idx, end: idx + k.phrase.length, gid, ref, phrase: k.phrase });
+      ranges.push({ start: idx, end: idx + k.phrase.length, gid, ref, phrase: k.phrase, occ: k.occ || 0 });
     }
   }
   return ranges;
@@ -193,7 +195,7 @@ function appendSegments(container, text, ranges) {
     container.appendChild(el);
     cover.forEach((r) => {
       GIDS[r.gid].spans.push(el);
-      if (r.start === s) GIDS[r.gid].anchors.push({ el, ref: r.ref, phrase: r.phrase });
+      if (r.start === s) GIDS[r.gid].anchors.push({ el, ref: r.ref, phrase: r.phrase, occ: r.occ });
     });
   }
 }
@@ -518,7 +520,7 @@ function updateCard() {
         if (gid.startsWith("u-")) {
           const rm = document.createElement("button"); rm.className = "pr-rm"; rm.textContent = "–";
           rm.title = "remove these words from the pattern";
-          rm.addEventListener("click", (e) => { e.stopPropagation(); removeMember(gid, a.ref, a.phrase); });
+          rm.addEventListener("click", (e) => { e.stopPropagation(); removeMember(gid, a.ref, a.phrase, a.occ); });
           row.appendChild(rm);
         }
         row.addEventListener("click", (e) => {
@@ -677,7 +679,20 @@ function selectionInfo() {
   if (!row || !row.closest(".sheet")) return null;
   const phrase = sel.toString().replace(/\s+/g, " ").trim();
   if (phrase.length < 2) return null;
-  return { ref: row.dataset.key, phrase, range: range.cloneRange() };
+  // which occurrence did they actually select? measure the selection's
+  // absolute offset in the verse, then rank it among the phrase's matches
+  const vt = row.querySelector(".vtext");
+  const pre = document.createRange();
+  pre.selectNodeContents(vt);
+  pre.setEnd(range.startContainer, range.startOffset);
+  const raw = sel.toString();
+  const abs = pre.toString().length + (raw.length - raw.trimStart().length);
+  const full = vt.textContent;
+  const positions = [];
+  for (let i = full.indexOf(phrase); i !== -1; i = full.indexOf(phrase, i + 1)) positions.push(i);
+  let occ = positions.indexOf(abs);
+  if (occ === -1) occ = Math.max(0, positions.findIndex((p) => p >= abs));
+  return { ref: row.dataset.key, phrase, occ, range: range.cloneRange() };
 }
 function placeAuthbar(rect) {
   authbar.style.left = Math.max(12, Math.min(rect.left + rect.width / 2 - authbar.offsetWidth / 2, innerWidth - authbar.offsetWidth - 12)) + "px";
@@ -740,8 +755,8 @@ function captureMember() {
   if (SESSION.extend) {
     // extending an existing pattern: each selection lands immediately
     const rec = USER.find((p) => p.id === SESSION.extend);
-    if (!rec || rec.members.some((m) => m.ref === info.ref && m.phrase === info.phrase)) return;
-    rec.members.push({ ref: info.ref, phrase: info.phrase });
+    if (!rec || rec.members.some((m) => m.ref === info.ref && m.phrase === info.phrase && (m.occ || 0) === info.occ)) return;
+    rec.members.push({ ref: info.ref, phrase: info.phrase, ...(info.occ ? { occ: info.occ } : {}) });
     if (!rec.custom) rec.label = userLabel(rec.kind, rec.members);
     saveUser();
     getSelection().removeAllRanges();
@@ -750,7 +765,7 @@ function captureMember() {
     sessionBar(`${rec.members.length} in the pattern · select more, or finish`);
     return;
   }
-  if (SESSION.members.some((m) => m.ref === info.ref && m.phrase === info.phrase)) return;
+  if (SESSION.members.some((m) => m.ref === info.ref && m.phrase === info.phrase && m.occ === info.occ)) return;
   SESSION.members.push(info);
   getSelection().removeAllRanges();
   if (BINARY_KINDS.has(SESSION.kind) && SESSION.members.length === 2) { finalizeSession(); return; }
@@ -769,7 +784,7 @@ function finalizeSession() {
     id: `u-${Date.now()}`,
     kind,
     label: userLabel(kind, members),
-    members: members.map(({ ref, phrase }) => ({ ref, phrase })),
+    members: members.map(({ ref, phrase, occ }) => ({ ref, phrase, ...(occ ? { occ } : {}) })),
   };
   USER.push(rec);
   saveUser();
