@@ -238,34 +238,41 @@ function pathD(segs) {
   }
   return d.trim();
 }
-/* split sampled points into continuous runs (never draw across jumps) */
-function sampleRuns(plan) {
-  const runs = [];
-  let cur = [];
-  for (const p of plan.sampledPoints) {
-    const prev = cur[cur.length - 1];
-    if (prev && Math.hypot(p.x - prev.x, p.y - prev.y) > 3) { runs.push(cur); cur = []; }
-    cur.push(p);
-  }
-  if (cur.length) runs.push(cur);
-  return runs;
-}
 /* One line type, everywhere. Doubled rails (polyline offsets, then a carved
  * tube) and dashed strokes were tried and rejected — at reading size any
  * second line type reads as a rendering artifact, not a meaning. A thread's
  * kind speaks only through its hue when focused. */
-/* spine path with woven hop gaps (and an optional contrast gap) */
-function spineD(plan, extraGaps = []) {
-  if (!plan.spine) return "";
-  const gaps = [...(plan.renderHops || []), ...extraGaps].sort((a, b) => a - b);
-  const segs = [];
-  let y0 = plan.spine.top;
-  for (const g of gaps) {
-    if (g - 1.7 > y0) segs.push(`M ${plan.spine.x} ${y0.toFixed(2)} L ${plan.spine.x} ${(g - 1.7).toFixed(2)}`);
-    y0 = g + 1.7;
+/* split a spine into drawn segments around its hop gaps: gap intervals are
+ * clamped to the spine, merged when they touch (tol 0.2), and slivers under
+ * 0.25px are dropped — overlapping crossings can never mince the spine */
+function splitSpine(spine, gapCenters) {
+  if (!spine) return [];
+  const y1 = spine.top, y2 = spine.bottom;
+  if (y2 - y1 < 0.01) return [];
+  const intervals = gapCenters
+    .map((y) => [Math.max(y1, y - 1.7), Math.min(y2, y + 1.7)])
+    .filter(([a, b]) => b > a)
+    .sort((a, b) => a[0] - b[0]);
+  const merged = [];
+  for (const iv of intervals) {
+    const prev = merged[merged.length - 1];
+    if (prev && iv[0] <= prev[1] + 0.2) prev[1] = Math.max(prev[1], iv[1]);
+    else merged.push([...iv]);
   }
-  if (plan.spine.bottom > y0) segs.push(`M ${plan.spine.x} ${y0.toFixed(2)} L ${plan.spine.x} ${plan.spine.bottom.toFixed(2)}`);
-  return segs.join(" ");
+  const segments = [];
+  let cursor = y1;
+  for (const [a, b] of merged) {
+    if (a - cursor > 0.25) segments.push([cursor, a]);
+    cursor = Math.max(cursor, b);
+  }
+  if (y2 - cursor > 0.25) segments.push([cursor, y2]);
+  return segments;
+}
+function spineD(plan) {
+  if (!plan.spine) return "";
+  return splitSpine(plan.spine, plan.renderHops || [])
+    .map(([a, b]) => `M ${plan.spine.x} ${a.toFixed(2)} L ${plan.spine.x} ${b.toFixed(2)}`)
+    .join(" ");
 }
 
 /* ── rendering ─────────────────────────────────────────────── */
@@ -351,9 +358,21 @@ function render(measured, ctx) {
             Math.abs(s.y2 - s.y1) > 4))
       : plan.centerline;
 
-    const sd = spineD(plan, []);
+    const sd = spineD(plan);
     if (sd) S("path", { ...base, d: sd }, g);
     S("path", { ...base, d: pathD(nonSpine) }, g);
+
+    /* weave pause under the focused spine: an angle-invariant mask bite
+     * instead of a paper-colored rect — theme-proof by construction */
+    if (!focused && plan.renderPatches && plan.renderPatches.length) {
+      const W = +svg.getAttribute("width") + 40, H = +svg.getAttribute("height") + 40;
+      let defs = svg.querySelector("defs");
+      if (!defs) { defs = document.createElementNS(SVGNS, "defs"); svg.insertBefore(defs, svg.firstChild); }
+      const mask = S("mask", { id: `weave-${ann.id}`, maskUnits: "userSpaceOnUse", x: -20, y: -20, width: W, height: H }, defs);
+      S("rect", { x: -20, y: -20, width: W, height: H, fill: "#fff" }, mask);
+      for (const pt of plan.renderPatches) S("circle", { cx: pt.x, cy: pt.y, r: 2.6, fill: "#000" }, mask);
+      g.setAttribute("mask", `url(#weave-${ann.id})`);
+    }
 
     /* pins: exactly on the underline endpoints, over the thread start */
     for (const c of plan.contacts) S("circle", { cx: c.x, cy: c.y, r: focused ? 2.6 : 2.4, fill: hue, opacity: tone }, g);
@@ -363,13 +382,6 @@ function render(measured, ctx) {
     if (ann.id === focusedId) continue;
     drawOne(ann);
   }
-  /* eraser patches: woven travelers pause where the focused spine passes */
-  for (const ann of drawn) {
-    const plan = plans.get(ann.id);
-    for (const pt of plan.renderPatches || []) {
-      S("rect", { x: pt.x - 1.9, y: pt.y - 2.6, width: 3.8, height: 5.2, fill: "var(--bg-reading)" }, svg);
-    }
-  }
   const focusedAnn = drawn.find((a) => a.id === focusedId);
   if (focusedAnn) drawOne(focusedAnn);
 }
@@ -378,31 +390,46 @@ function render(measured, ctx) {
  * Default: the traveling shoulder passes, the spine pauses (a hop gap).
  * Hierarchy: the focused thread is never gapped — a shoulder crossing a
  * focused spine takes the gap itself (an eraser patch under the spine). */
-function computeHops(drawnPlans, focusedId) {
+/* exact crossing: where does a traveler's centerline cross vertical X?
+ * Horizontal travels answer directly; curved segments (all x-monotone
+ * quarter cubics) answer by bisection — the gap lands exactly on the
+ * curve instead of on a sampled-cluster average. */
+function solveCubicYAtX(s, x) {
+  const minX = Math.min(s.x1, s.x2), maxX = Math.max(s.x1, s.x2);
+  if (x < minX - 0.001 || x > maxX + 0.001) return null;
+  let lo = 0, hi = 1;
+  const dec = s.x2 < s.x1;
+  for (let i = 0; i < 24; i++) {
+    const mid = (lo + hi) / 2, u = 1 - mid;
+    const px = u * u * u * s.x1 + 3 * u * u * mid * s.c1x + 3 * u * mid * mid * s.c2x + mid * mid * mid * s.x2;
+    if ((dec && px > x) || (!dec && px < x)) lo = mid;
+    else hi = mid;
+  }
+  const t = (lo + hi) / 2, u = 1 - t;
+  return u * u * u * s.y1 + 3 * u * u * t * s.c1y + 3 * u * t * t * s.c2y + t * t * t * s.y2;
+}
+function crossingsAt(plan, x) {
+  const ys = [];
+  for (const s of plan.centerline) {
+    if (s.type === "L") {
+      /* horizontal travels cross; verticals are strand-parallel, never */
+      if (Math.abs(s.y2 - s.y1) < 0.01 &&
+          x >= Math.min(s.x1, s.x2) - 0.001 && x <= Math.max(s.x1, s.x2) + 0.001) ys.push(s.y1);
+    } else {
+      const y = solveCubicYAtX(s, x);
+      if (y !== null) ys.push(y);
+    }
+  }
+  return ys;
+}
+function computeHops(drawnPlans) {
   for (const p of drawnPlans) { p.renderHops = []; p.renderPatches = []; }
   for (const A of drawnPlans) {
     if (!A.valid) continue;
-    const runs = sampleRuns(A);
     for (const B of drawnPlans) {
       if (A === B || !B.valid || !B.spine) continue;
-      const hits = [];
-      for (const run of runs) {
-        for (const p of run) {
-          if (Math.abs(p.x - B.spine.x) < 1.05 && p.y > B.spine.top + 2 && p.y < B.spine.bottom - 2) {
-            hits.push(p.y);
-          }
-        }
-      }
-      if (!hits.length) continue;
-      hits.sort((a, b) => a - b);
-      const clusters = [];
-      for (const y of hits) {
-        const lastC = clusters[clusters.length - 1];
-        if (lastC && y - lastC[lastC.length - 1] < 3) lastC.push(y);
-        else clusters.push([y]);
-      }
-      for (const c of clusters) {
-        const y = c.reduce((s, v) => s + v, 0) / c.length;
+      for (const y of crossingsAt(A, B.spine.x)) {
+        if (y < B.spine.top + 2 || y > B.spine.bottom - 2) continue;
         /* never gap a port merge — the weave yields there */
         if (B.ports.some((pt) => Math.abs(pt.y - y) < 2.6)) continue;
         if (B.focused && !A.focused) {
@@ -464,7 +491,7 @@ function validate(measured, ann, plan, drawnPlans) {
     if (B === plan || !B.valid || !B.spine) continue;
     for (const p of plan.sampledPoints) {
       if (Math.abs(p.x - B.spine.x) < 1.7 && p.y > B.spine.top + 1 && p.y < B.spine.bottom - 1) {
-        const hopped = (B.renderHops || []).some((h) => Math.abs(p.y - h) < 2.2);
+        const hopped = (B.renderHops || []).some((h) => Math.abs(p.y - h) < 1.9);
         const patched = (plan.renderPatches || []).some((pt) => Math.abs(pt.x - B.spine.x) < 1 && Math.abs(pt.y - p.y) < 2.8);
         if (!hopped && !patched) weaveBad++;
       }
@@ -581,7 +608,7 @@ function run() {
 
   const drawnPlans = [...drawnIds].map((id) => plans.get(id));
   drawnPlans.forEach((p) => { p.focused = p === plans.get(effectiveFocus); });
-  computeHops(drawnPlans, effectiveFocus);
+  computeHops(drawnPlans);
 
   render(measured, { plans, focusedId: effectiveFocus, drawnIds, loomInner, strandPitch: 6 });
 

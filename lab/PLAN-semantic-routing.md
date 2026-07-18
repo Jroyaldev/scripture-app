@@ -56,7 +56,7 @@ floor under the GAP:                    floor under the PAIR:
 - **Prettier:** margin activity follows the reader's eye; hover stops making the margin flicker.
 - **Accept:** hover a held tick on Long text — the two companions do not swap; node:test on overlap-first/span-tie ordering (engine is import-clean).
 
-### 5. Weave exactness and polish — *adapt* (split-spine + mask eraser + solveCubicYAtX)
+### 5. Weave exactness and polish — *adapt* (split-spine + mask eraser + solveCubicYAtX) — ✅ LANDED
 - **Build:** `splitSpine(spine, gaps)` with merged intervals (±1.7, merge tol 0.2, drop slivers <0.25px) replacing the sliver-prone loop at route-lab.js:220-231; eraser becomes an SVG `<mask>` circle **r 2.6** (angle-invariant bite; reference's 2.32 under-covers the 2.8 validation band) replacing the 3.8×5.2 paper rect at :332; name the layers (held/woven/mask/focus). Adopt `solveCubicYAtX` (24 bisection iters, x-monotone guard, cluster-average fallback) as computeHops' narrow phase; finalize returns `segments`. Reject `cubicClear`/`cubicLengthEstimate` — segPoints' control-polygon bound is already conservative at ≤1px. Tighten weave-clear tolerance 2.2 → 1.9.
 - **Prettier:** hop gaps land exactly where the traveler crosses (today ~0.3-0.5px off on swoops — reads as a nicked spine at 3x); erasers are theme-proof (no paper-colored coins on Glass/Candlelight).
 - **Accept:** suite at 1.9 tolerance green on both dense fixtures; zoom a strand-1-over-strand-0 crossing — gap centered on the curve.
