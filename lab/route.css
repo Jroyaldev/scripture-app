@@ -1,0 +1,82 @@
+/* Route lab — standalone page; tokens mirror the app (read-only copy). */
+:root {
+  --bg-primary: #F3EDE0; --bg-surface: #FAF6EC; --bg-reading: #FAF6EC; --bg-canvas: #F6F0E5;
+  --text-primary: #181511; --text-secondary: #4D463C; --text-tertiary: #6B6254;
+  --verse-number: #776C5D;
+  --border-subtle: #E4DAC9; --border-medium: #D3C5AF;
+  --gold: #97683A; --gold-soft: rgba(151, 104, 58, 0.16);
+  --k-parallel: #4E9A5F; --k-contrast: #C05A80; --k-echo: #4678C8;
+  --k-mirror: #8760C4; --k-series: #C8961E;
+  --ok: #4E9A5F; --bad: #C05A80;
+  --font-reading: 'Source Serif 4', Georgia, serif;
+  --font-ui: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', Consolas, monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg-primary); color: var(--text-primary); font-family: var(--font-ui); }
+
+.topbar {
+  position: sticky; top: 0; z-index: 10; display: flex; align-items: center;
+  justify-content: space-between; padding: 10px 24px;
+  background: color-mix(in srgb, var(--bg-surface) 92%, transparent);
+  border-bottom: 1px solid var(--border-subtle); backdrop-filter: blur(10px);
+}
+.brand { font-family: var(--font-reading); font-size: 1.1rem; font-weight: 600; }
+.sub { font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-tertiary); font-weight: 400; }
+.widthctl { font: 500 0.72rem var(--font-mono); color: var(--text-tertiary); display: flex; align-items: center; gap: 8px; }
+.widthctl input { accent-color: var(--gold); }
+
+.main { max-width: 1380px; margin: 0 auto; padding: 26px 32px 120px; }
+.stage { display: grid; grid-template-columns: auto 1fr; gap: 24px; align-items: start; }
+
+/* the reading column reserves real margin room: verse numbers + rail + lanes */
+.sheet {
+  position: relative; width: 640px;
+  background: var(--bg-reading); border: 1px solid var(--border-subtle);
+  border-radius: 18px; padding: 34px 40px 34px 128px;
+}
+.sheet .sheet-title { font-family: var(--font-reading); font-size: 1.2rem; font-weight: 600; margin: 0 0 2px; }
+.sheet .sheet-ref { font: 500 0.68rem var(--font-mono); color: var(--text-tertiary); margin-bottom: 14px; }
+.sheet .chap-head { font: 600 0.8rem var(--font-ui); color: var(--text-secondary); margin: 16px 0 6px; }
+.vrow { display: grid; grid-template-columns: 0 1fr; padding: 1.5px 0; }
+.vrow .vnum {
+  grid-column: 1; justify-self: start; align-self: start; transform: translateX(-32px);
+  font: 500 0.66rem var(--font-mono); color: var(--verse-number);
+  padding-top: 0.45em; width: 24px; text-align: right; user-select: none;
+}
+.vrow .vtext {
+  font-family: var(--font-reading); font-size: 1.02rem;
+  /* annotation mode reserves interline room for one envelope + clearance */
+  line-height: 2.0;
+  color: var(--text-primary);
+}
+.anchor { border-radius: 3px; }
+.sheet.dimmed .vtext { color: color-mix(in srgb, var(--text-primary) 46%, transparent); }
+.sheet.dimmed .vnum { opacity: 0.4; }
+.sheet.dimmed .anchor.lit { color: var(--text-primary); background: color-mix(in srgb, var(--h, var(--gold)) 13%, transparent); }
+
+.overlay { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.overlay .held { opacity: 0.3; }
+
+/* panel */
+.panel {
+  background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 18px;
+  padding: 18px 20px; position: sticky; top: 64px; max-height: calc(100vh - 90px); overflow: auto;
+}
+.panel h3 { font: 600 0.85rem var(--font-ui); margin: 0 0 8px; }
+.suite-summary { font: 500 0.72rem var(--font-mono); color: var(--text-secondary); padding-bottom: 10px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 8px; }
+.fixture {
+  display: block; width: 100%; text-align: left; appearance: none; background: transparent;
+  border: 0; border-radius: 8px; padding: 7px 9px; cursor: pointer; margin: 1px 0;
+  font: 500 0.74rem var(--font-ui); color: var(--text-secondary);
+  transition: background 150ms ease;
+}
+.fixture:hover { background: var(--bg-canvas); }
+.fixture.sel { background: var(--gold-soft); color: var(--text-primary); }
+.fixture .frow { display: flex; align-items: center; gap: 7px; }
+.fixture .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.fixture .fname { flex: 1; }
+.fixture .chip { font: 500 0.62rem var(--font-mono); padding: 1px 7px; border-radius: 999px; }
+.fixture .chip.ok { color: var(--ok); background: color-mix(in srgb, var(--ok) 12%, transparent); }
+.fixture .chip.bad { color: var(--bad); background: color-mix(in srgb, var(--bad) 14%, transparent); }
+.fixture .fdiag { font: 400 0.62rem var(--font-mono); color: var(--text-tertiary); margin: 3px 0 0 14px; }
