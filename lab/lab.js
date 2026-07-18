@@ -569,7 +569,7 @@ function drawThread(g, rects, hue, laneX, touchY, kind) {
 function drawOverlay(sid, gids) {
   const sheet = document.querySelector(`[data-sheet="${sid}"]`);
   const svg = sheet.querySelector("svg.overlay");
-  const key = gids.slice().sort().join("|") + "·" + ROUTE;
+  const key = gids.slice().sort().join("|") + "·" + ROUTE + "·" + [...hovered].join(",") + "·" + (FOCUS_GID || "");
   if (svg.dataset.key === key) return;
   svg.dataset.key = key;
   const live = svg.querySelector("g.live");
@@ -598,30 +598,48 @@ function drawOverlay(sid, gids) {
  * a small vertical offset like a patch panel. Kind signs ride the
  * stroke: echo dashed · parallel twin wires converging at the ports ·
  * mirror a midpoint tie · contrast a gap mid-run · series the rule. */
-const TRACE = { w: 1.5, pitch: 10, pad: 16, portR: 2, breakout: 3.5 };
+const TRACE = { w: 1.5, pitch: 10, pad: 16, portR: 2, breakout: 3, localSpan: 44 };
+/* attention discipline: the most recently touched pattern is the lit
+ * circuit; other pinned patterns stay in the harness as quiet ghosts */
+let FOCUS_GID = null;
 
 function drawTracesLayer(svg, M, gids, touchY) {
   const portX = M.textLeft - 5;
+  const gx = M.textLeft - 12;
+  const focus = hovered.size
+    ? new Set(hovered)
+    : new Set(FOCUS_GID && gids.includes(FOCUS_GID) ? [FOCUS_GID] : gids.slice(-1));
   const items = gids.map((gid) => {
     const G = GIDS[gid];
     const rects = G.anchors.map((a) => firstRect(M, a.el)).filter(Boolean);
     if (rects.length < 2) return null;
     const ys = rects.map((r) => r.bottom + 2.5);
+    const top = Math.min(...ys), bot = Math.max(...ys);
     return {
-      G, rects, ys,
-      top: Math.min(...ys), bot: Math.max(...ys),
+      gid, G, rects, ys, top, bot,
+      ghost: !focus.has(gid),
       sameLine: rects.length === 2 && Math.abs(ys[0] - ys[1]) < 5,
+      local: rects.length === 2 && Math.abs(ys[0] - ys[1]) >= 5 && (bot - top) <= TRACE.localSpan,
     };
   }).filter(Boolean);
-  // lane allocation: shortest span innermost; overlap pushes outward
-  const laned = items.filter((it) => !it.sameLine).sort((a, b) => (a.bot - a.top) - (b.bot - b.top));
-  for (const it of laned) {
+  // route by distance: brackets under the line, locals in a tight inset
+  // band beside the text, distant pairs and threads in the shared tray
+  const tray = items.filter((it) => !it.sameLine && !it.local)
+    .sort((a, b) => (a.bot - a.top) - (b.bot - b.top));
+  for (const it of tray) {
     let lane = 0;
-    while (laned.some((o) => o !== it && o.lane !== undefined && o.lane === lane &&
+    while (tray.some((o) => o !== it && o.lane !== undefined && o.lane === lane &&
       o.top < it.bot + 8 && it.top < o.bot + 8)) lane++;
     it.lane = lane;
   }
-  // breakout: wires leaving the same line stack down by a small offset
+  const locals = items.filter((it) => it.local).sort((a, b) => (a.bot - a.top) - (b.bot - b.top));
+  for (const it of locals) {
+    let lane = 0;
+    while (locals.some((o) => o !== it && o.lane !== undefined && o.lane === lane &&
+      o.top < it.bot + 6 && it.top < o.bot + 6)) lane++;
+    it.lane = lane;
+  }
+  // junction discipline: ports assign inner-lane-first, ghosts after focus
   const used = new Map();
   const portY = (y) => {
     const key = Math.round(y / 4) * 4;
@@ -629,10 +647,16 @@ function drawTracesLayer(svg, M, gids, touchY) {
     used.set(key, n + 1);
     return y + n * TRACE.breakout;
   };
-  for (const it of items) {
+  const bracketDrops = new Map();
+  const ordered = [...items].sort((a, b) =>
+    (a.ghost === b.ghost ? (a.lane || 0) - (b.lane || 0) : a.ghost ? 1 : -1));
+  for (const it of ordered) {
     const g = S("g", {}, svg);
-    const laneX = M.textLeft - 12 - TRACE.pad - (it.lane || 0) * TRACE.pitch;
-    if (it.sameLine) drawTraceBracket(g, it);
+    if (it.ghost) g.setAttribute("class", "ghost-wire");
+    const laneX = it.local
+      ? gx - 4 - it.lane * 7
+      : M.textLeft - 12 - TRACE.pad - (it.lane || 0) * TRACE.pitch;
+    if (it.sameLine) drawTraceBracket(g, it, bracketDrops);
     else if (it.rects.length > 2) drawTraceThread(g, it, laneX, portX, portY, touchY);
     else drawTracePair(g, it, laneX, portX, portY, touchY);
   }
@@ -647,8 +671,19 @@ function cableStroke(g, d, hue, { w = TRACE.w, dash = null, opacity = 1 } = {}) 
   if (opacity < 1) p.setAttribute("opacity", opacity);
   return p;
 }
-function port(g, x, y, hue, delay = 0) {
-  animFade(S("circle", { cx: x, cy: y, r: TRACE.portR, fill: hue }, g), 200, delay);
+function port(g, x, y, hue, delay = 0, ghost = false) {
+  const c = S("circle", { cx: x, cy: y, r: ghost ? 1.6 : TRACE.portR, fill: hue }, g);
+  if (!ghost) animFade(c, 200, delay);
+}
+/* ghosts render instantly and quietly; the focused wire performs */
+function wireAnim(it, p, ms, delay = 0) {
+  if (it.ghost) return;
+  animDraw(p, ms);
+  if (delay) p.style.transitionDelay = `${delay}ms`;
+}
+function wireFade(it, el, ms, delay = 0) {
+  if (it.ghost) return;
+  animFade(el, ms, delay);
 }
 
 function drawTracePair(g, it, laneX, portX, portY, touchY) {
@@ -658,12 +693,12 @@ function drawTracePair(g, it, laneX, portX, portY, touchY) {
   let ya = portY(it.ys[0]), yb = portY(it.ys[1]);
   if (flip) [ya, yb] = [yb, ya];
   if (kind === "link:echo") {
-    animFade(cableStroke(g, tracePathD(portX, laneX, ya, yb), hue, { w: 1.9, dash: "0.1 5" }));
-    port(g, portX, ya, hue);
-    port(g, portX, yb, hue);
+    wireFade(it, cableStroke(g, tracePathD(portX, laneX, ya, yb), hue, { w: 1.9, dash: "0.1 5" }), 240);
+    port(g, portX, ya, hue, 0, it.ghost);
+    port(g, portX, yb, hue, 0, it.ghost);
     return;
   }
-  port(g, portX, ya, hue, 30);
+  port(g, portX, ya, hue, 30, it.ghost);
   if (kind === "link:contrast") {
     // the gap mid-run is the sign — two cables that do not join
     const dir = yb > ya ? 1 : -1;
@@ -672,11 +707,14 @@ function drawTracePair(g, it, laneX, portX, portY, touchY) {
     const ym = (ya + yb) / 2;
     const d1 = `M ${portX} ${ya} H ${laneX + r} A ${r} ${r} 0 0 ${sweep} ${laneX} ${ya + dir * r} V ${ym - dir * 5}`;
     const d2 = `M ${laneX} ${ym + dir * 5} V ${yb - dir * r} A ${r} ${r} 0 0 ${sweep} ${laneX + r} ${yb} H ${portX}`;
-    const p1 = cableStroke(g, d1, hue); animDraw(p1, 200); p1.style.transitionDelay = "90ms";
+    const p1 = cableStroke(g, d1, hue);
     const p2 = cableStroke(g, d2, hue);
-    p2.style.opacity = 0;
-    setTimeout(() => { if (p2.isConnected) { p2.style.opacity = 1; animDraw(p2, 200); } }, 330);
-    port(g, portX, yb, hue, 520);
+    wireAnim(it, p1, 200, 90);
+    if (!it.ghost) {
+      p2.style.opacity = 0;
+      setTimeout(() => { if (p2.isConnected) { p2.style.opacity = 1; animDraw(p2, 200); } }, 330);
+    }
+    port(g, portX, yb, hue, 520, it.ghost);
     return;
   }
   if (kind === "link:parallel") {
@@ -692,29 +730,33 @@ function drawTracePair(g, it, laneX, portX, portY, touchY) {
         return { x: q.x + (-dy / len) * d * ramp, y: q.y + (dx / len) * d * ramp };
       });
       const p = cableStroke(g, `M${off.map((q) => `${q.x.toFixed(2)},${q.y.toFixed(2)}`).join("L")}`, hue, { w: 1.1 });
-      animDraw(p, 380); p.style.transitionDelay = "90ms";
+      wireAnim(it, p, 380, 90);
     }
   } else {
     const p = cableStroke(g, tracePathD(portX, laneX, ya, yb), hue);
-    animDraw(p, 380); p.style.transitionDelay = "90ms";
+    wireAnim(it, p, 380, 90);
     if (kind === "mirror") {
       // the tie: a small perpendicular mark at the reflection point
       const ym = (ya + yb) / 2;
-      animFade(cableStroke(g, `M ${laneX - 3.5} ${ym} H ${laneX + 3.5}`, hue), 200, 300);
+      wireFade(it, cableStroke(g, `M ${laneX - 3.5} ${ym} H ${laneX + 3.5}`, hue), 200, 300);
     }
   }
-  port(g, portX, yb, hue, 400);
+  port(g, portX, yb, hue, 400, it.ghost);
 }
 
 /* same-line pairs (hinge and short links): an under-bracket in the
- * same cable language — down, along, up, rounded at both elbows */
-function drawTraceBracket(g, it) {
+ * same cable language — down, along, up, rounded at both elbows.
+ * Stacked brackets on one line breakout downward like everything else. */
+function drawTraceBracket(g, it, drops) {
   const { G } = it;
-  const y = it.ys[0], drop = 8, r = 3.5;
+  const key = Math.round(it.ys[0] / 4) * 4;
+  const n = drops.get(key) || 0;
+  drops.set(key, n + 1);
+  const y = it.ys[0], drop = 8 + n * 4.5, r = 3.5;
   const sx = it.rects[0].right + 3, ex = it.rects[1].x - 3;
   const d = `M ${sx} ${y} V ${y + drop - r} A ${r} ${r} 0 0 0 ${sx + r} ${y + drop} H ${ex - r} A ${r} ${r} 0 0 0 ${ex} ${y + drop - r} V ${y}`;
   const p = cableStroke(g, d, G.hue, G.kind === "link:echo" ? { w: 1.9, dash: "0.1 5" } : {});
-  G.kind === "link:echo" ? animFade(p) : animDraw(p, 300);
+  if (!it.ghost) (G.kind === "link:echo" ? animFade(p) : animDraw(p, 300));
 }
 
 function drawTraceThread(g, it, laneX, portX, portY, touchY) {
@@ -731,20 +773,20 @@ function drawTraceThread(g, it, laneX, portX, portY, touchY) {
     // stub: fillet out of the rail, straight run to the port — full weight
     const dy = ys[i] <= yTop + 1 ? R : -R;
     const stub = cableStroke(g, `M ${laneX} ${py + dy} Q ${laneX} ${py} ${laneX + R} ${py} H ${portX}`, hue);
-    animFade(stub, 200, delay);
-    port(g, portX, py, hue, delay);
+    wireFade(it, stub, 200, delay);
+    port(g, portX, py, hue, delay, it.ghost);
   });
   const dSpine = flip ? `M ${laneX} ${yBot} V ${yTop}` : `M ${laneX} ${yTop} V ${yBot}`;
   if (G.kind === "link:echo") {
-    animFade(cableStroke(g, dSpine, hue, { w: 1.9, dash: "0.1 5" }), 300, 40);
+    wireFade(it, cableStroke(g, dSpine, hue, { w: 1.9, dash: "0.1 5" }), 300, 40);
   } else if (G.kind === "link:parallel") {
     for (const dx of [-1.4, 1.4]) {
       const p = cableStroke(g, flip ? `M ${laneX + dx} ${yBot} V ${yTop}` : `M ${laneX + dx} ${yTop} V ${yBot}`, hue, { w: 1.1 });
-      animDraw(p, dur); p.style.transitionDelay = "40ms";
+      wireAnim(it, p, dur, 40);
     }
   } else {
     const p = cableStroke(g, dSpine, hue);
-    animDraw(p, dur); p.style.transitionDelay = "40ms";
+    wireAnim(it, p, dur, 40);
   }
 }
 
@@ -1215,6 +1257,7 @@ function finalizeSession() {
   rebuildAll();
   pinned.clear(); hovered.clear();
   pinned.add(rec.id);
+  FOCUS_GID = rec.id;
   applyActive();
 }
 function endSession() {
@@ -1330,6 +1373,7 @@ function wire() {
       // the display and the whisper follow the click immediately
       if (t.classList.contains("pk")) LAST_TOUCH = t;
       gs.forEach((g) => hovered.delete(g));
+      FOCUS_GID = gs.find((x) => pinned.has(x)) || [...pinned].pop() || null;
       applyActive();
       if (t.classList.contains("pk")) showWhisper(t);
     });
