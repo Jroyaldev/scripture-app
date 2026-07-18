@@ -358,7 +358,7 @@ function ribbonOutline(pts, w, frac = 1, even = false) {
     const ramp = Math.min(1, Math.min(t, 1 - t) / 0.16); // endpoint taper
     // series is regularity: an even rule. Everything else swells like a nib stroke.
     let r = even
-      ? (w / 2) * (0.35 + 0.65 * ramp)
+      ? (w / 2) * (0.55 + 0.45 * ramp)
       : (w / 2) * (0.55 + 0.6 * Math.sin(Math.PI * t)) * (0.3 + 0.7 * ramp);
     if (frac < 1) {
       // mid-draw the leading edge narrows to a nib tip
@@ -438,16 +438,23 @@ function drawArc(g, a, b, hue, kind, stagger, gx, touchY) {
   // bow depth breathes with the span: near lines stay tight, far lines go deep
   const span = Math.abs(y2 - y1);
   const lane = gx - Math.min(44, 16 + span * 0.05) - stagger;
+  // short spans get thin, simply-bowed strokes — expressive silhouettes
+  // must earn their room, or they curdle into pretzels and claws
+  const w = span < 60 ? 1.15 : 1.6;
+  const nSamp = Math.max(18, Math.min(44, Math.round(span / 5)));
   let pts;
-  if (kind === "mirror") {
-    // reflection: the gesture itself reverses at the midpoint — an S
-    const ym = (y1 + y2) / 2, midX = gx - 6;
+  if (kind === "mirror" && span >= 90) {
+    // reflection: the gesture reverses at the midpoint — an S that lives
+    // entirely inside the margin band, never crowding the verse numbers
+    const ym = (y1 + y2) / 2;
+    const midX = gx - (gx - lane) * 0.55;
+    const shallow = gx - (gx - lane) * 0.3;
     pts = [
-      ...sampleCubic({ x: gx, y: y1 }, { x: lane, y: y1 + 4 }, { x: lane, y: ym - 6 }, { x: midX, y: ym }, 22),
-      ...sampleCubic({ x: midX, y: ym }, { x: gx + 5, y: ym + 6 }, { x: gx + 5, y: y2 - 4 }, { x: gx, y: y2 }, 22).slice(1),
+      ...sampleCubic({ x: gx, y: y1 }, { x: lane, y: y1 + 4 }, { x: lane, y: ym - 8 }, { x: midX, y: ym }, Math.ceil(nSamp / 2)),
+      ...sampleCubic({ x: midX, y: ym }, { x: shallow, y: ym + 8 }, { x: shallow, y: y2 - 4 }, { x: gx, y: y2 }, Math.ceil(nSamp / 2)).slice(1),
     ];
   } else {
-    pts = sampleCubic({ x: gx, y: y1 }, { x: lane, y: y1 + 3 }, { x: lane, y: y2 - 3 }, { x: gx, y: y2 });
+    pts = sampleCubic({ x: gx, y: y1 }, { x: lane, y: y1 + 3 }, { x: lane, y: y2 - 3 }, { x: gx, y: y2 }, nSamp);
   }
   // ink flows from the touched member toward its counterpart
   const flip = touchY != null && Math.abs(touchY - y2) < Math.abs(touchY - y1);
@@ -471,21 +478,23 @@ function drawArc(g, a, b, hue, kind, stagger, gx, touchY) {
   leg(g, gx, near.x, near.y, hue, kind, 30);
   touchDot(g, near.x, near.y, hue, 30);
   if (kind === "link:contrast") {
-    // opposition: two strokes sheared at the break — they pass, never meet
-    const h1 = offsetPts(pts.slice(0, Math.floor(pts.length * 0.46)), -1.4);
-    const h2 = offsetPts(pts.slice(Math.ceil(pts.length * 0.54)), 1.4);
-    ribbonDraw(g, h1, hue, { delay: 90, dur: 210 });
-    ribbonDraw(g, h2, hue, { delay: 360, dur: 210 });
+    // opposition: two strokes at the break — sheared apart only when the
+    // span gives the shear room to read as passing, not as a kink
+    const shear = span >= 70 ? 1.2 : 0;
+    const h1 = offsetPts(pts.slice(0, Math.floor(pts.length * 0.46)), -shear);
+    const h2 = offsetPts(pts.slice(Math.ceil(pts.length * 0.54)), shear);
+    ribbonDraw(g, h1, hue, { w, delay: 90, dur: 210 });
+    ribbonDraw(g, h2, hue, { w, delay: 360, dur: 210 });
     leg(g, gx, far.x, far.y, hue, kind, 520);
     touchDot(g, far.x, far.y, hue, 520);
-  } else if (kind === "link:parallel") {
+  } else if (kind === "link:parallel" && span >= 60) {
     // parallelism's own sign: two lines running together, bent into the bow
-    ribbonDraw(g, offsetPts(pts, -1.7), hue, { w: 1.15, delay: 90, dur: 380 });
-    ribbonDraw(g, offsetPts(pts, 1.7), hue, { w: 1.15, delay: 90, dur: 380 });
+    ribbonDraw(g, offsetPts(pts, -1.7), hue, { w: 1.1, delay: 90, dur: 380 });
+    ribbonDraw(g, offsetPts(pts, 1.7), hue, { w: 1.1, delay: 90, dur: 380 });
     leg(g, gx, far.x, far.y, hue, kind, 400);
     touchDot(g, far.x, far.y, hue, 400);
   } else {
-    ribbonDraw(g, pts, hue, { delay: 90, dur: 380 });
+    ribbonDraw(g, pts, hue, { w, delay: 90, dur: 380 });
     leg(g, gx, far.x, far.y, hue, kind, 400);
     touchDot(g, far.x, far.y, hue, 400);
   }
@@ -502,20 +511,20 @@ function drawThread(g, rects, hue, laneX, touchY) {
     spine.push({ x: laneX, y: flip ? yBot - (yBot - yTop) * t : yTop + (yBot - yTop) * t });
   }
   const dur = 460;
-  // a refrain is regularity: the spine is an even rule, not a swelling stroke
-  ribbonDraw(g, spine, hue, { w: 1.5, opacity: 0.7, delay: 40, dur, even: true });
+  // ticks first (under the spine), quiet and filleted — several threads
+  // pinned together should layer as combs, never close into grid boxes
   rects.forEach((r, i) => {
-    // each member lights as the ink passes its line
     const frac = (yBot === yTop) ? 0 : (flip ? (yBot - ys[i]) / (yBot - yTop) : (ys[i] - yTop) / (yBot - yTop));
     const delay = 40 + dur * frac * 0.85;
-    // filleted shoulder: the tick leaves the spine on a small radius, never square
     const l = S("path", {
-      d: `M ${laneX} ${ys[i] - 3} Q ${laneX} ${ys[i]} ${laneX + 3.5} ${ys[i]} H ${r.x - 2}`,
-      fill: "none", stroke: hue, "stroke-width": 1, "stroke-linecap": "round", opacity: 0.35,
+      d: `M ${laneX} ${ys[i] - 6} Q ${laneX} ${ys[i]} ${laneX + 5.5} ${ys[i]} H ${r.x - 2}`,
+      fill: "none", stroke: hue, "stroke-width": 1, "stroke-linecap": "round", opacity: 0.25,
     }, g);
     animFade(l, 200, delay);
     touchDot(g, r.x - 2, ys[i], hue, delay);
   });
+  // a refrain is regularity: the spine is an even rule, not a swelling stroke
+  ribbonDraw(g, spine, hue, { w: 1.5, opacity: 0.7, delay: 40, dur, even: true });
 }
 
 function drawOverlay(sid, gids) {
