@@ -66,7 +66,7 @@ floor under the GAP:                    floor under the PAIR:
 - **Prettier:** zero ink — protects the honest-failure contract; when a thread becomes a tick the answer is a sentence, not a loosened clearance.
 - **Accept:** declined emitted only when a branch was genuinely attempted (3-anchor annotation never claims "cradle didn't fit"); shadow-plan reasons labeled "if focused now".
 
-### 7. Held-tick hit targets — *adapt* (side choice deferred)
+### 7. Held-tick hit targets — *adapt* (side choice deferred) — ✅ LANDED
 - **Build:** invisible 15.5×12 hit rects per tick in a `gHits` group, widths clipped to the 7px collision step; **roving tabindex** (one tab stop, arrows move, Enter focuses) — never per-tick tabindex=0 (dozens of stops on Long text — one per held tick, not per annotation — and Tab cycles study lenses by design). Keep tick 5.5 @ 0.55.
 - **Prettier:** pixel-identical at rest; hover stops being a 1.2px pixel hunt.
 - **Accept:** stacked-tick fixture — each hover previews the correct annotation; keyboard path reaches every held tick without polluting Tab order.

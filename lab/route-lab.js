@@ -284,6 +284,9 @@ function spineD(plan) {
 function render(measured, ctx) {
   const { plans, focusedId, drawnIds, loomInner, strandPitch } = ctx;
   const svg = sheet.querySelector(".overlay");
+  /* capture keyboard position BEFORE the wipe resets activeElement */
+  const priorTickAnn = (document.activeElement && document.activeElement.getAttribute &&
+    document.activeElement.getAttribute("data-tick-ann")) || null;
   svg.innerHTML = "";
   sheet.classList.toggle("dimmed", true);
   sheet.querySelectorAll(".anchor").forEach((el) => { el.classList.remove("lit"); el.style.removeProperty("--h"); });
@@ -291,12 +294,18 @@ function render(measured, ctx) {
   const drawn = measured.annotations.filter((a) => drawnIds.has(a.id));
   const held = measured.annotations.filter((a) => !drawnIds.has(a.id));
 
-  /* held layer: whisper underlines + ink ticks on the held rail */
+  /* held layer: whisper underlines + ink ticks on the held rail.
+   * Tick LAYOUT includes a tick-previewed annotation (its thread is
+   * bloomed, its tick invisible) so positions and the keyboard's roving
+   * focus stay stable through the bloom. */
   const gHeld = S("g", { class: "held-layer" }, svg);
   const heldRailX = loomInner - strandPitch * 3 - 4;
   const usedTicks = [];
-  for (const ann of held) {
-    for (const a of ann.anchors) for (const f of a.fragments) {
+  const tickHits = [];
+  const heldForTicks = measured.annotations.filter((a) => !drawnIds.has(a.id) || a.id === previewId);
+  for (const ann of heldForTicks) {
+    const visible = !drawnIds.has(ann.id);
+    if (visible) for (const a of ann.anchors) for (const f of a.fragments) {
       S("path", {
         d: `M ${f.left + 0.5} ${f.bottom + 2} H ${f.right - 0.5}`,
         stroke: INK, "stroke-width": 1.1, fill: "none", "stroke-linecap": "round", opacity: 0.30,
@@ -311,17 +320,14 @@ function render(measured, ctx) {
       if (!lineYs.some((v) => Math.abs(v - y) < 3)) lineYs.push(y);
     }
     for (const y of lineYs) {
-      let x = heldRailX;
-      while (usedTicks.some((u) => Math.abs(u.y - y) < 2.5 && Math.abs(u.x - x) < 1)) x -= 7;
+      let x = heldRailX, stacked = false;
+      while (usedTicks.some((u) => Math.abs(u.y - y) < 2.5 && Math.abs(u.x - x) < 1)) { x -= 7; stacked = true; }
       usedTicks.push({ x, y });
-      const tick = S("path", {
+      if (visible) S("path", {
         d: `M ${x.toFixed(2)} ${y.toFixed(2)} h -5.5`, stroke: INK,
         "stroke-width": 1.2, fill: "none", "stroke-linecap": "round", opacity: 0.55, class: "tick",
       }, gHeld);
-      tick.style.pointerEvents = "stroke";
-      tick.style.cursor = "pointer";
-      tick.addEventListener("mouseenter", () => { if (previewId !== ann.id) { previewId = ann.id; run(); } });
-      tick.addEventListener("click", () => { focusedId = ann.id; previewId = null; run(); });
+      tickHits.push({ x, y, ann, stacked });
     }
   }
 
@@ -384,6 +390,55 @@ function render(measured, ctx) {
   }
   const focusedAnn = drawn.find((a) => a.id === focusedId);
   if (focusedAnn) drawOne(focusedAnn);
+
+  /* invisible hit targets for the held ticks — hover was a 1.2px hunt.
+   * One roving tab stop: arrows walk the rail, Enter holds, Escape lets
+   * go. Stacked ticks get 7px-clipped targets so neighbors stay distinct. */
+  const gHits = S("g", { class: "tick-hits" }, svg);
+  tickHits.sort((a, b) => a.y - b.y || b.x - a.x);
+  const restoreAnn = priorTickAnn;
+  tickHits.forEach((t, i) => {
+    const w = t.stacked ? 7 : 15.5;
+    const rx = t.stacked ? t.x - 6.25 : t.x - 10.5;
+    const r = S("rect", {
+      x: rx.toFixed(2), y: (t.y - 6).toFixed(2), width: w, height: 12,
+      fill: "transparent", class: "tick-hit", "data-tick-ann": t.ann.id,
+      tabindex: i === 0 ? 0 : -1,
+    }, gHits);
+    r.style.pointerEvents = "all";
+    r.style.cursor = "pointer";
+    r.style.outline = "none";
+    r.addEventListener("mouseenter", () => { if (previewId !== t.ann.id) { previewId = t.ann.id; run(); } });
+    r.addEventListener("click", () => { focusedId = t.ann.id; previewId = null; run(); });
+    r.addEventListener("focus", () => { if (previewId !== t.ann.id) { previewId = t.ann.id; run(); } });
+    r.addEventListener("keydown", (e) => {
+      const rects = [...svg.querySelectorAll(".tick-hit")];
+      const idx = rects.indexOf(r);
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        /* drive the preview from the keydown itself — programmatic focus
+         * events are unreliable on unfocused surfaces; render's restore
+         * pass moves DOM focus to the previewed rect */
+        const nxt = rects[(idx + (e.key === "ArrowDown" ? 1 : rects.length - 1)) % rects.length];
+        previewId = nxt.getAttribute("data-tick-ann");
+        run();
+      } else if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        focusedId = t.ann.id; previewId = null; run();
+      } else if (e.key === "Escape") {
+        previewId = null; run();
+      }
+    });
+  });
+  if (restoreAnn) {
+    const rects = [...gHits.querySelectorAll(".tick-hit")];
+    const again = rects.find((r) => r.getAttribute("data-tick-ann") === (previewId || restoreAnn)) ||
+      rects.find((r) => r.getAttribute("data-tick-ann") === restoreAnn) || rects[0];
+    if (again) {
+      rects.forEach((r) => r.setAttribute("tabindex", r === again ? 0 : -1));
+      again.focus({ preventScroll: true });
+    }
+  }
 }
 
 /* ── woven crossings: one line pauses, the other passes ──
