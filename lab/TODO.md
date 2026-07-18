@@ -53,8 +53,11 @@ visible to the naked eye.
 
 ## 5. Light theme premium pass (in progress)
 
-Dark themes are cinematic; light read as whitewashed beige. First
-iteration shipped in the lab (deeper ground #EDE4D1, brighter paper
-#FCF9F1, real elevation shadows, ink-deep hues, hint-mix 58%) — the lab
-light theme now intentionally diverges from design-tokens.json as a
-proposal. If it holds up, feed the values back into the app tokens.
+Dark themes are cinematic; light read as whitewashed beige. Constraint
+settled: the lab must NOT diverge from the app's established theme
+tokens (a token-divergence iteration was tried and reverted). Current
+direction: the rest-state affordance adapts per theme — light lays a
+quiet highlight wash behind keyed words (the app's existing annotation
+language, likely part of a connected annotation system), dark keeps the
+ink tint. Keep iterating light's presence/cinematics within the existing
+tokens; wash strength is the current dial (--wash).

@@ -399,20 +399,6 @@ function drawOverlay(sid, gids) {
     const g = S("g", {}, svg);
     if (G.conn === "thread") drawThread(g, rects, G.hue, M.textLeft - 46 - i * 10);
     else drawArc(g, rects[0], rects[rects.length - 1], G.hue, G.kind, M.textLeft - 40 - i * 10, M.textLeft - 12);
-    // wrapped phrases: a small fold at each line break — the underline turns
-    // down where the line ends and turns up where it resumes, so the second
-    // line reads as a continuation, never an orphan
-    for (const elm of G.spans) {
-      if (!elm.classList.contains("on")) continue;
-      const rs = [...elm.getClientRects()];
-      for (let r = 0; r < rs.length - 1; r++) {
-        if (rs[r + 1].top < rs[r].bottom - 2) continue; // same visual line
-        const y1 = rs[r].bottom - M.base.top - 1, y2 = rs[r + 1].bottom - M.base.top - 1;
-        const xe = rs[r].right - M.base.left, xs = rs[r + 1].left - M.base.left;
-        animFade(S("path", { d: `M ${xe} ${y1} q 3.4 0 3.4 3.4`, fill: "none", stroke: G.hue, "stroke-width": 1.5, "stroke-linecap": "round" }, g));
-        animFade(S("path", { d: `M ${xs} ${y2} q -3.4 0 -3.4 -3.4`, fill: "none", stroke: G.hue, "stroke-width": 1.5, "stroke-linecap": "round" }, g));
-      }
-    }
   });
 }
 

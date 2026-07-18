@@ -1,28 +1,30 @@
-/* Pattern shapes lab v3 — dark themes track src/renderer/design-tokens.json 1:1.
- * The LIGHT theme intentionally diverges (deeper ground, brighter paper, real
- * elevation, ink-deep hues) — a proposal to feed back into the app tokens. */
+/* Pattern shapes lab v3 — tokens copied 1:1 from src/renderer/design-tokens.json.
+ * The lab does not diverge from app themes; the rest-state affordance adapts
+ * per theme instead: light rests on a highlight wash (the app's established
+ * annotation language), dark rests on an ink tint. */
 
 :root {
-  --bg-primary: #EDE4D1; --bg-secondary: #E7DCC6; --bg-surface: #FCF9F1;
-  --bg-canvas: #F4EEDF; --bg-sidebar: #EBE1CD; --bg-reading: #FCF9F1;
-  --text-primary: #171410; --text-secondary: #4A4338; --text-tertiary: #6B6254;
+  --bg-primary: #F3EDE0; --bg-secondary: #EEE6D8; --bg-surface: #FAF6EC;
+  --bg-canvas: #F6F0E5; --bg-sidebar: #EFE7D8; --bg-reading: #FAF6EC;
+  --text-primary: #181511; --text-secondary: #4D463C; --text-tertiary: #6B6254;
   --verse-number: #776C5D; --link: #8B5D30;
-  --border-subtle: #DED2BB; --border-medium: #CBBA9E; --border-strong: #AC997C;
+  --border-subtle: #E4DAC9; --border-medium: #D3C5AF; --border-strong: #B7A78E;
   --gold: #97683A; --gold-soft: rgba(151, 104, 58, 0.16);
-  --elev: 0 1px 2px rgba(56, 43, 27, 0.05), 0 12px 36px rgba(56, 43, 27, 0.08);
   --font-reading: 'Source Serif 4', Georgia, 'Times New Roman', serif;
   --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
   --r-sm: 6px; --r-md: 12px; --r-lg: 20px;
   --tr: 150ms ease;
 
-  /* kind hues — ink-deep for light so they read as pigment, not wash */
-  --k-parallel: #35854A;
-  --k-contrast: #B14370;
-  --k-echo:     #3564BE;
-  --k-mirror:   #744BBB;
-  --k-series:   #A87A12;
-  --hint-mix: 58%;   /* how present a keyed phrase is at rest */
+  /* kind hues — strokes deepened from the five highlight washes for legibility */
+  --k-parallel: #4E9A5F;
+  --k-contrast: #C05A80;
+  --k-echo:     #4678C8;
+  --k-mirror:   #8760C4;
+  --k-series:   #C8961E;
+  /* rest-state affordance: wash behind the words (light) / tint of the words (dark) */
+  --wash: 13%;
+  --tint: 0%;
 }
 
 body.theme-dark, body.theme-dark-glass {
@@ -38,8 +40,8 @@ body.theme-dark, body.theme-dark-glass {
   --k-echo:     #7DAFE8;
   --k-mirror:   #B494E4;
   --k-series:   #EBBE5A;
-  --hint-mix: 46%;
-  --elev: none;
+  --wash: 0%;
+  --tint: 46%;
 }
 
 body.theme-glass      { --bg-image: url("assets/glass-light.png"); }
@@ -99,7 +101,6 @@ body.theme-glass, body.theme-dark-glass {
 .sheet {
   position: relative; background: var(--bg-reading); border: 1px solid var(--border-subtle);
   border-radius: var(--r-lg); padding: 30px 44px 26px 120px;
-  box-shadow: var(--elev);
   transition: background var(--tr);
 }
 .sheet .sheet-title { font-family: var(--font-reading); font-size: 1.28rem; font-weight: 600; margin: 0 0 2px; }
@@ -122,29 +123,40 @@ body.theme-glass, body.theme-dark-glass {
 }
 .sheet-compact .vrow .vtext { font-size: 0.92rem; line-height: 1.55; }
 
-/* ── the phrase key: at rest the words themselves carry a faint ink
- * tint toward their kind hue — no underline, no dots, nothing drawn.
- * The line only exists once the pattern wakes. ── */
+/* ── the phrase key at rest: light themes lay a quiet highlight wash
+ * behind the words (the app's own annotation language); dark themes
+ * tint the words' ink. Nothing is drawn until the pattern wakes. ── */
 .pk {
   --h: var(--text-tertiary);
   cursor: pointer;
-  color: color-mix(in srgb, var(--h) var(--hint-mix), var(--text-primary));
-  background: linear-gradient(var(--h), var(--h)) no-repeat 0 100% / 0% 1.5px;
+  color: color-mix(in srgb, var(--h) var(--tint), var(--text-primary));
+  background-color: color-mix(in srgb, var(--h) var(--wash), transparent);
+  background-image: linear-gradient(var(--h), var(--h));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1.5px;
+  border-radius: 3px;
   box-decoration-break: clone; -webkit-box-decoration-break: clone;
   padding-bottom: 1px;
-  transition: background-size 300ms cubic-bezier(.3,.7,.3,1), color 220ms ease;
+  transition: background-size 300ms cubic-bezier(.3,.7,.3,1), color 220ms ease, background-color 220ms ease;
 }
 .pk.on, body.reveal .pk {
   background-size: 100% 1.5px;
 }
 .pk.stack { padding-bottom: 4px; }
-.pk.pk-shared:not(.on) { color: color-mix(in srgb, var(--gold) 48%, var(--text-primary)); }
+.pk.pk-shared:not(.on) {
+  color: color-mix(in srgb, var(--gold) calc(var(--tint) + 2%), var(--text-primary));
+  background-color: color-mix(in srgb, var(--gold) var(--wash), transparent);
+}
 /* awake: the rest of the page recedes; members keep full ink */
 .sheet.awake .vtext { color: color-mix(in srgb, var(--text-primary) 44%, transparent); }
 .sheet.awake .vnum { opacity: 0.35; }
 .sheet.awake .chap-head, .sheet.awake .letter-head { color: color-mix(in srgb, var(--text-tertiary) 50%, transparent); }
 .sheet.awake .pk.on { color: var(--text-primary); }
-.sheet.awake .pk:not(.on) { color: color-mix(in srgb, var(--text-primary) 44%, transparent); }
+.sheet.awake .pk:not(.on) {
+  color: color-mix(in srgb, var(--text-primary) 44%, transparent);
+  background-color: transparent;
+}
 
 /* overlay svg shares the sheet's coordinate space */
 .overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
@@ -189,7 +201,7 @@ body.theme-glass, body.theme-dark-glass {
   width: min(360px, 100%);
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle); border-radius: var(--r-lg);
-  box-shadow: var(--elev);
+  box-shadow: 0 6px 22px rgba(56, 43, 27, 0.08);
   padding: 4px 0;
   overflow: auto; flex: none; max-height: 46vh;
   opacity: 0; transform: translateY(6px); pointer-events: none;
@@ -318,7 +330,6 @@ body.theme-glass, body.theme-dark-glass {
 .panel {
   background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--r-lg);
   padding: 22px 24px; transition: background var(--tr);
-  box-shadow: var(--elev);
   position: sticky; top: 68px;
 }
 .panel h3 { font: 600 0.86rem var(--font-ui); margin: 0 0 2px; }
