@@ -222,7 +222,9 @@ function appendSegments(container, text, ranges) {
     const cover = ranges.filter((r) => r.start <= s && r.end >= e);
     if (!cover.length) { container.appendChild(document.createTextNode(seg)); continue; }
     const el = document.createElement("span");
-    el.className = "pk"; el.textContent = seg;
+    // shared words rest in neutral gold — "more than one shape lives here"
+    el.className = cover.length > 1 ? "pk pk-shared" : "pk";
+    el.textContent = seg;
     el.dataset.gids = cover.map((r) => r.gid).join(" ");
     el.style.setProperty("--h", GIDS[cover[0].gid].hue);
     container.appendChild(el);
@@ -438,25 +440,28 @@ function applyActive() {
 }
 
 /* whisper — the pattern names itself, anchored to the touched phrase */
+/* whisper grammar — dots carry identity, words stay few:
+ *   one shape       ● echo · "the wicked" frames the psalm
+ *   several, none   ●● 2 shapes · click to focus
+ *   one focused     ● hinge · 2 of 2 · click for next
+ *   all focused     ●● all 2 · click to clear                */
+function wdot(hue) { return `<i class="wdot" style="background:${hue}"></i>`; }
 function showWhisper(pk) {
   const sheet = pk.closest(".sheet");
   const wh = sheet.querySelector(".whisper");
   const gids = pk.dataset.gids.split(" ");
-  let text, hueGid = gids[0];
+  const short = (s, n) => (s.length > n ? s.slice(0, n - 1).trimEnd() + "…" : s);
+  let html;
   if (gids.length === 1) {
-    text = GIDS[gids[0]].label;
+    html = wdot(GIDS[gids[0]].hue) + esc(short(GIDS[gids[0]].label, 44));
   } else {
-    // shared words explain their own cycle
     const pinnedIn = gids.filter((g) => pinned.has(g));
-    if (pinnedIn.length === 0) text = gids.map((g) => GIDS[g].label).join("  +  ") + "  ·  click to focus one";
-    else if (pinnedIn.length === gids.length) text = `all ${gids.length} shapes here · click to clear`;
-    else {
-      hueGid = pinnedIn[0];
-      text = `${GIDS[pinnedIn[0]].label} · ${gids.indexOf(pinnedIn[0]) + 1} of ${gids.length} · click for next`;
-    }
+    const dots = gids.map((g) => wdot(GIDS[g].hue)).join("");
+    if (pinnedIn.length === 0) html = `${dots}${gids.length} shapes · click to focus`;
+    else if (pinnedIn.length === gids.length) html = `${dots}all ${gids.length} · click to clear`;
+    else html = `${wdot(GIDS[pinnedIn[0]].hue)}${esc(KIND_LABEL[GIDS[pinnedIn[0]].kind])} · ${gids.indexOf(pinnedIn[0]) + 1} of ${gids.length} · click for next`;
   }
-  wh.textContent = text;
-  wh.style.color = GIDS[hueGid].hue;
+  wh.innerHTML = html;
   const base = sheet.getBoundingClientRect();
   const r = pk.getClientRects()[0];
   wh.style.left = Math.max(8, Math.min(r.left - base.left, base.width - 300)) + "px";

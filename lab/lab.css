@@ -19,7 +19,7 @@
   --k-echo:     #4678C8;
   --k-mirror:   #8760C4;
   --k-series:   #C8961E;
-  --hint-mix: 34%;   /* how present a keyed phrase is at rest */
+  --hint-mix: 52%;   /* how present a keyed phrase is at rest */
 }
 
 body.theme-dark, body.theme-dark-glass {
@@ -35,7 +35,7 @@ body.theme-dark, body.theme-dark-glass {
   --k-echo:     #7DAFE8;
   --k-mirror:   #B494E4;
   --k-series:   #EBBE5A;
-  --hint-mix: 42%;
+  --hint-mix: 46%;
 }
 
 body.theme-glass      { --bg-image: url("assets/glass-light.png"); }
@@ -133,6 +133,7 @@ body.theme-glass, body.theme-dark-glass {
   background-size: 100% 1.5px;
 }
 .pk.stack { padding-bottom: 4px; }
+.pk.pk-shared:not(.on) { color: color-mix(in srgb, var(--gold) 48%, var(--text-primary)); }
 /* awake: the rest of the page recedes; members keep full ink */
 .sheet.awake .vtext { color: color-mix(in srgb, var(--text-primary) 44%, transparent); }
 .sheet.awake .vnum { opacity: 0.35; }
@@ -146,6 +147,7 @@ body.theme-glass, body.theme-dark-glass {
 /* whisper — the pattern names itself beside the touched words */
 .whisper {
   position: absolute; z-index: 5; pointer-events: none;
+  color: var(--text-secondary);
   font: 500 0.62rem var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase;
   background: color-mix(in srgb, var(--bg-reading) 82%, transparent);
   padding: 2px 6px; border-radius: var(--r-sm); backdrop-filter: blur(4px);
@@ -154,6 +156,7 @@ body.theme-glass, body.theme-dark-glass {
   max-width: 460px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .whisper.on { opacity: 1; transform: translateY(0); }
+.whisper .wdot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin: 0 5px 0 0; }
 
 /* off-screen members — quiet pills at the viewport edge */
 .pill {

@@ -20,17 +20,20 @@ Plan of attack:
   offer a one-click "remap in this translation" that reopens the selection
   session for that member.
 
-## 2. Marks library (design discussion open)
+## 2. Marks library — DEFERRED until authoring is well established
 
 All user patterns across studies in one place: searchable list, jump-to,
-kind filter, `shape-marks.jsonl` export/import. The pcard row grammar is
-already the row design. Question: standalone view or a rail mode?
+kind filter, `shape-marks.jsonl` export/import. Direction agreed: not a
+manager screen — a *commonplace book*: marks in the order made, with their
+notes, each entry rendered in the export-card grammar. Revisit once the
+marking feature has settled.
 
-## 3. Rest-state collision policy (design discussion open)
+## 3. Rest-state collision policy — first pass shipped
 
-A word covered by two patterns wears the first pattern's tint arbitrarily.
-Needs a rule — strongest-kind-wins, neutral ink for shared words, or a subtle
-blend. Related: partially-overlapping phrases produce per-segment tint seams.
+Shared words now rest in neutral gold ("more than one shape lives here")
+instead of arbitrarily wearing the first pattern's hue. Still open:
+partially-overlapping phrases produce per-segment tint seams; light/dark
+tint strengths may need further tuning per theme.
 
 ## 4. Chapter skeleton / semantic zoom (design discussion open)
 
