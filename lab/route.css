@@ -6,7 +6,8 @@
   --border-subtle: #E4DAC9; --border-medium: #D3C5AF;
   --gold: #97683A; --gold-soft: rgba(151, 104, 58, 0.16);
   --k-parallel: #4E9A5F; --k-contrast: #C05A80; --k-echo: #4678C8;
-  --k-mirror: #8760C4; --k-series: #C8961E;
+  --k-hinge: #B07A3A; --k-mirror: #8760C4; --k-series: #C8961E; --k-note: #6B6254;
+  --thread-ink: #6A5638;
   --ok: #4E9A5F; --bad: #C05A80;
   --font-reading: 'Source Serif 4', Georgia, serif;
   --font-ui: 'Inter', -apple-system, sans-serif;
@@ -46,17 +47,18 @@ body { margin: 0; background: var(--bg-primary); color: var(--text-primary); fon
 }
 .vrow .vtext {
   font-family: var(--font-reading); font-size: 1.02rem;
-  /* annotation mode reserves interline room for one envelope + clearance */
-  line-height: 2.0;
+  /* annotation mode reserves interline room for shoulder + swoop + clearance */
+  line-height: 2.1;
   color: var(--text-primary);
 }
 .anchor { border-radius: 3px; }
-.sheet.dimmed .vtext { color: color-mix(in srgb, var(--text-primary) 46%, transparent); }
-.sheet.dimmed .vnum { opacity: 0.4; }
+.sheet.dimmed .vtext { color: color-mix(in srgb, var(--text-primary) 76%, transparent); }
+.sheet.dimmed .vnum { opacity: 0.55; }
 .sheet.dimmed .anchor.lit { color: var(--text-primary); background: color-mix(in srgb, var(--h, var(--gold)) 13%, transparent); }
 
 .overlay { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
-.overlay .held { opacity: 0.3; }
+.overlay .tick { transition: opacity 120ms ease; }
+.overlay .tick:hover { opacity: 1; }
 
 /* panel */
 .panel {
@@ -80,3 +82,18 @@ body { margin: 0; background: var(--bg-primary); color: var(--text-primary); fon
 .fixture .chip.ok { color: var(--ok); background: color-mix(in srgb, var(--ok) 12%, transparent); }
 .fixture .chip.bad { color: var(--bad); background: color-mix(in srgb, var(--bad) 14%, transparent); }
 .fixture .fdiag { font: 400 0.62rem var(--font-mono); color: var(--text-tertiary); margin: 3px 0 0 14px; }
+.fixture .chip.held { color: var(--text-tertiary); background: color-mix(in srgb, var(--text-tertiary) 10%, transparent); }
+.fixture .strand {
+  font: 500 0.6rem var(--font-mono); color: var(--gold);
+  border: 1px solid color-mix(in srgb, var(--gold) 35%, transparent);
+  border-radius: 4px; padding: 0 4px; line-height: 1.5;
+}
+
+/* grammar footnote: the five moves, for anyone reading the lab */
+.grammar {
+  margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-subtle);
+  font: 500 0.62rem var(--font-mono); color: var(--text-tertiary); line-height: 2;
+}
+.grammar b { color: var(--text-secondary); font-weight: 600; }
+.weavectl { display: flex; align-items: center; gap: 6px; font: 500 0.72rem var(--font-mono); color: var(--text-tertiary); }
+.weavectl input { accent-color: var(--gold); }

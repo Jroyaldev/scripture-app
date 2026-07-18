@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Route lab · obstacle-aware marginalia</title>
+<title>Loom lab · marginalia threading</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="route.css">
@@ -11,8 +11,9 @@
 <body>
 
 <header class="topbar">
-  <div class="brand">Route lab <span class="sub">· obstacle-aware marginalia · engine-first</span></div>
-  <div class="controls">
+  <div class="brand">Loom lab <span class="sub">· one thread, woven marginalia · engine-first</span></div>
+  <div class="controls" style="display:flex; align-items:center; gap:18px;">
+    <label class="weavectl"><input id="weave-toggle" type="checkbox" checked> weave</label>
     <label class="widthctl">column <input id="width-slider" type="range" min="460" max="760" value="640"> <span id="width-val">640</span>px</label>
   </div>
 </header>
@@ -24,6 +25,12 @@
       <h3>Validation suite</h3>
       <div class="suite-summary" id="suite-summary"></div>
       <div id="fixture-list"></div>
+      <div class="grammar">
+        <b>the grammar</b><br>
+        pin → turn → shoulder → swoop → spine<br>
+        one line type · kind speaks as hue on focus · ≤2 woven in ink<br>
+        held annotations live as ticks — hover to bloom
+      </div>
     </aside>
   </div>
 </main>

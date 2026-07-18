@@ -13,10 +13,13 @@
 <header class="lab-topbar">
   <div class="lab-brand">Pattern shapes <span class="lab-sub">· the text awakens · worktree only</span></div>
   <div class="lab-controls">
-    <div class="seg" id="route-seg" role="radiogroup" aria-label="Line routing">
-      <button role="radio" aria-checked="true"  data-route="bows">Bows</button>
-      <button role="radio" aria-checked="false" data-route="traces">Traces</button>
+    <div class="seg" id="route-seg" role="radiogroup" aria-label="Study view">
+      <button role="radio" aria-checked="false" data-route="bows">Reading</button>
+      <button role="radio" aria-checked="true"  data-route="traces">Traces</button>
     </div>
+    <button class="ghost-btn density-btn" id="density-btn" aria-pressed="false">Dense Psalm</button>
+    <button class="ghost-btn long-btn" id="long-btn" aria-pressed="false">Long text</button>
+    <button class="ghost-btn angles-btn" id="angles-btn" aria-pressed="false">Angle proof</button>
     <button class="ghost-btn" id="reveal-btn" aria-pressed="false">Reveal all</button>
     <div class="seg" id="atm-seg" role="radiogroup" aria-label="Atmosphere">
       <button role="radio" aria-checked="true"  data-theme="light">Paper</button>
@@ -32,7 +35,7 @@
   <section class="study" id="study-psa">
     <header class="study-head">
       <h2>Psalm 1 <span class="kind-tags"><i class="dot k-contrast"></i>contrast <i class="dot k-echo"></i>echo <i class="dot k-parallel"></i>hinge</span></h2>
-      <p class="study-note">Touch a faintly dotted phrase. Its counterpart wakes, the connector draws itself, everything else recedes. Click to pin · Esc to clear.</p>
+      <p class="study-note">Touch a marked phrase and the text reveals its relationship. Click to hold more than one · Esc to clear.</p>
     </header>
     <div class="study-body with-panel">
       <div class="sheet" data-sheet="psa"></div>
@@ -44,7 +47,7 @@
   <section class="study" id="study-gen">
     <header class="study-head">
       <h2>Genesis 1:3 – 2:3 <span class="kind-tags"><i class="dot k-mirror"></i>mirror <i class="dot k-series"></i>series</span></h2>
-      <p class="study-note">Each forming day answers its filling day — hover a “Let there be …” to see its answer. The goodness refrain threads the week.</p>
+      <p class="study-note">Each forming day answers its filling day. Hold several traces to compare the week without losing the words.</p>
     </header>
     <div class="study-body with-panel">
       <div class="sheet" data-sheet="gen"></div>
@@ -56,7 +59,7 @@
   <section class="study" id="study-rev">
     <header class="study-head">
       <h2>Revelation 2–3 <span class="kind-tags"><i class="dot k-series"></i>series</span></h2>
-      <p class="study-note">One letter shape, seven times. Hover any recurring phrase — its six siblings wake across both chapters, with edge pills for the ones off-screen.</p>
+      <p class="study-note">Seven letters, fifty-one verses. Long text adds eighteen overlapping annotations to pressure-test the routed margin and its score.</p>
     </header>
     <div class="study-body with-panel">
       <div class="sheet sheet-compact" data-sheet="rev"></div>
@@ -67,10 +70,23 @@
     <details class="payload"><summary>pattern records · shape-marks.jsonl prototype</summary><pre data-payload="rev"></pre></details>
   </section>
 
+  <section class="study geometry-study" id="study-qa" hidden>
+    <header class="study-head">
+      <h2>Line-angle proof <span class="kind-tags"><i class="dot k-parallel"></i>six kinds <i class="dot k-series"></i>three distances <i class="dot k-echo"></i>middle → right</span></h2>
+      <p class="study-note">Eighteen isolated traces test the route itself inside one synthetic text row: a middle phrase to a right-end phrase on the same rendered line, exactly one rendered line apart, and many rendered lines apart. These are lab-only geometry records, not Scripture anchors.</p>
+    </header>
+    <div class="study-body with-panel">
+      <div class="sheet sheet-geometry" data-sheet="qa"></div>
+      <aside class="rail" data-rail="qa"></aside>
+    </div>
+    <details class="payload"><summary>geometry proof records · reversible lab fixture</summary><pre data-payload="qa"></pre></details>
+  </section>
+
 </main>
 
 <script src="verses.js"></script>
 <script src="patterns.js"></script>
+<script src="trace-geometry.js"></script>
 <script src="lab.js"></script>
 </body>
 </html>

@@ -7,6 +7,9 @@
 
 const hovered = new Set(); // gids under the cursor
 const pinned = new Set();  // gids pinned by click
+const REDUCED_MOTION = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const TG = globalThis.TraceGeometry;
+if (!TG) throw new Error("trace-geometry.js must load before lab.js");
 
 const KIND_HUE = {
   "link:parallel": "var(--k-parallel)",
@@ -45,15 +48,76 @@ const SHEETS = {
   psa: { title: "Psalm 1", ref: "PSA.1.1–6 · WEB", chapters: [{ head: null, key: "PSA.1" }] },
   gen: { title: "The creation week", ref: "GEN.1.1 – 2.3 · WEB", chapters: [{ head: "Genesis 1", key: "GEN.1" }, { head: "Genesis 2", key: "GEN.2" }] },
   rev: { title: "Letters to the seven assemblies", ref: "REV.2.1 – 3.22 · WEB", chapters: [{ head: "Revelation 2", key: "REV.2" }, { head: "Revelation 3", key: "REV.3" }] },
+  qa: { title: "Line-angle proof", ref: "MIDDLE → RIGHT / SAME · +1 LINE · +MANY LINES", chapters: [{ head: null, key: "QA.1" }] },
 };
 const TRUNCATE = { rev: 190 };
+
+/* A fixed-width, lab-only proof matrix. Every case lives in one synthetic row;
+ * preserved newlines create the rendered-line distance, so verse boundaries
+ * cannot make the result look better than the actual route. */
+const GEOMETRY_KINDS = [
+  { kind: "link:parallel", slug: "parallel", label: "Parallelism" },
+  { kind: "link:contrast", slug: "contrast", label: "Contrast" },
+  { kind: "link:echo", slug: "echo", label: "Echo" },
+  { kind: "hinge", slug: "hinge", label: "Hinge" },
+  { kind: "mirror", slug: "mirror", label: "Mirror" },
+  { kind: "series", slug: "series", label: "Series" },
+];
+function geometryFixture() {
+  const verses = [];
+  const patterns = [];
+  let verse = 1;
+  const push = (lines) => {
+    const current = verse++;
+    const qaLines = lines.map((line) => typeof line === "string" ? { text: line, align: "left" } : line);
+    verses.push({ verse: current, text: qaLines.map((line) => line.text).join("\n"), qaLines });
+    return `QA.1.${current}`;
+  };
+  for (const entry of GEOMETRY_KINDS) {
+    const middle = `${entry.label} middle`;
+    const edge = `${entry.label} edge`;
+    const middleLine = `Opening words · ${middle} · continue onward.`;
+    const edgeLine = `The line continues across until · ${edge}`;
+
+    const sameRef = push([{ text: `Opening words · ${middle} · continue until · ${edge}`, align: "right" }]);
+    patterns.push({
+      id: `qa-${entry.slug}-same`, kind: entry.kind, label: `${entry.label} · middle to right · same rendered line`,
+      qaDistance: "same", qaPlacement: "middle-right",
+      members: [{ ref: sameRef, phrase: middle }, { ref: sameRef, phrase: edge }],
+    });
+
+    const adjacentRef = push([
+      { text: middleLine, align: "middle" },
+      { text: edgeLine, align: "right" },
+    ]);
+    patterns.push({
+      id: `qa-${entry.slug}-adjacent`, kind: entry.kind, label: `${entry.label} · middle to right · one rendered line apart`,
+      qaDistance: "adjacent", qaPlacement: "middle-right",
+      members: [{ ref: adjacentRef, phrase: middle }, { ref: adjacentRef, phrase: edge }],
+    });
+
+    const farRef = push([
+      { text: middleLine, align: "middle" },
+      ...Array.from({ length: 5 }, (_, gap) => ({ text: `Clear line ${gap + 1} preserves the marginal corridor.`, align: "left" })),
+      { text: edgeLine, align: "right" },
+    ]);
+    patterns.push({
+      id: `qa-${entry.slug}-far`, kind: entry.kind, label: `${entry.label} · middle to right · many rendered lines apart`,
+      qaDistance: "far", qaPlacement: "middle-right",
+      members: [{ ref: farRef, phrase: middle }, { ref: farRef, phrase: edge }],
+    });
+  }
+  return { verses, patterns };
+}
+const GEOMETRY_FIXTURE = geometryFixture();
+VERSES["QA.1"] = GEOMETRY_FIXTURE.verses;
 
 /* ── awaken groups (gids) ────────────────────────────────── */
 /* A gid is one touchable pattern instance: hover any of its phrases and
  * every member wakes together. Derived from PATTERNS, never stored. */
 const GIDS = {};
-function addGid(gid, study, kind, label, keys, conn) {
-  GIDS[gid] = { gid, study, kind, hue: KIND_HUE[kind], label, keys: keys.filter(Boolean), conn, spans: [], anchors: [] };
+function addGid(gid, study, kind, label, keys, conn, meta = {}) {
+  GIDS[gid] = { gid, study, kind, hue: KIND_HUE[kind], label, keys: keys.filter(Boolean), conn, spans: [], anchors: [], ...meta };
 }
 
 /* user-authored marks — same record shape, persisted locally */
@@ -61,6 +125,196 @@ const USER_KEY = "shape-marks-user";
 let USER = [];
 try { USER = JSON.parse(localStorage.getItem(USER_KEY) || "[]"); } catch { USER = []; }
 function saveUser() { localStorage.setItem(USER_KEY, JSON.stringify(USER)); }
+
+/* A reversible density fixture. Three marks flatter almost any margin; these
+ * eleven additional, overlapping relationships make the design answer to a
+ * real studied page (14 traces total) without contaminating pattern records. */
+let DENSITY_MODE = false;
+let ANGLE_MODE = false;
+const DENSITY_PATTERNS = [
+  { id: "stress-standing", kind: "link:echo", label: "standing at the two outcomes", members: [
+    { ref: "PSA.1.1", phrase: "stand on the path of sinners" },
+    { ref: "PSA.1.5", phrase: "stand in the judgment" },
+  ] },
+  { id: "stress-seats", kind: "link:contrast", label: "seat and congregation", members: [
+    { ref: "PSA.1.1", phrase: "sit in the seat of scoffers" },
+    { ref: "PSA.1.5", phrase: "congregation of the righteous" },
+  ] },
+  { id: "stress-tree-chaff", kind: "link:contrast", label: "rooted and driven", members: [
+    { ref: "PSA.1.3", phrase: "a tree planted by the streams of water" },
+    { ref: "PSA.1.4", phrase: "the chaff which the wind drives away" },
+  ] },
+  { id: "stress-law", kind: "link:echo", label: "the law repeated", members: [
+    { ref: "PSA.1.2", phrase: "Yahweh’s law" },
+    { ref: "PSA.1.2", phrase: "his law" },
+  ] },
+  { id: "stress-wicked", kind: "series", label: "the wicked ×4", members: [
+    { ref: "PSA.1.1", phrase: "the wicked" },
+    { ref: "PSA.1.4", phrase: "The wicked" },
+    { ref: "PSA.1.5", phrase: "the wicked" },
+    { ref: "PSA.1.6", phrase: "the wicked" },
+  ] },
+  { id: "stress-righteous", kind: "link:echo", label: "the righteous named twice", members: [
+    { ref: "PSA.1.5", phrase: "the righteous" },
+    { ref: "PSA.1.6", phrase: "the righteous" },
+  ] },
+  { id: "stress-fruit", kind: "link:parallel", label: "meditation becomes fruit", members: [
+    { ref: "PSA.1.2", phrase: "meditates day and night" },
+    { ref: "PSA.1.3", phrase: "produces its fruit in its season" },
+  ] },
+  { id: "stress-endings", kind: "link:contrast", label: "does not wither / shall perish", members: [
+    { ref: "PSA.1.3", phrase: "does not wither" },
+    { ref: "PSA.1.6", phrase: "shall perish" },
+  ] },
+  { id: "stress-path-way", kind: "mirror", label: "path and way", members: [
+    { ref: "PSA.1.1", phrase: "the path of sinners" },
+    { ref: "PSA.1.6", phrase: "the way of the righteous" },
+  ] },
+  { id: "stress-delight-meditation", kind: "hinge", label: "delight turns to meditation", members: [
+    { ref: "PSA.1.2", phrase: "his delight is in Yahweh’s law" },
+    { ref: "PSA.1.2", phrase: "On his law he meditates" },
+  ] },
+  { id: "stress-opening-ending", kind: "mirror", label: "blessing and perishing", members: [
+    { ref: "PSA.1.1", phrase: "Blessed is the man" },
+    { ref: "PSA.1.6", phrase: "the wicked shall perish" },
+  ] },
+];
+
+/* The short Psalm fixture tests overlap. This separate long-passage fixture
+ * tests distance, recurrence, and a score with enough tracks to need its own
+ * navigation. Revelation stays complete while this mode is on: none of its
+ * 51 source verses are visually truncated. */
+let LONG_MODE = false;
+const LONG_PATTERNS = [
+  { id: "revstress-speaker-portraits", kind: "series", label: "the speaker names himself seven ways", members: [
+    { ref: "REV.2.1", phrase: "He who holds the seven stars in his right hand" },
+    { ref: "REV.2.8", phrase: "The first and the last, who was dead, and has come to life" },
+    { ref: "REV.2.12", phrase: "He who has the sharp two-edged sword" },
+    { ref: "REV.2.18", phrase: "The Son of God, who has his eyes like a flame of fire, and his feet are like burnished brass" },
+    { ref: "REV.3.1", phrase: "He who has the seven Spirits of God, and the seven stars" },
+    { ref: "REV.3.7", phrase: "He who is holy, he who is true, he who has the key of David" },
+    { ref: "REV.3.14", phrase: "The Amen, the Faithful and True Witness, the Beginning of God’s creation" },
+  ] },
+  { id: "revstress-repent", kind: "series", label: "the call to repent", members: [
+    { ref: "REV.2.5", phrase: "repent" },
+    { ref: "REV.2.5", phrase: "repent", occ: 1 },
+    { ref: "REV.2.16", phrase: "Repent" },
+    { ref: "REV.2.21", phrase: "repent" },
+    { ref: "REV.2.21", phrase: "repent", occ: 1 },
+    { ref: "REV.2.22", phrase: "repent" },
+    { ref: "REV.3.3", phrase: "repent" },
+    { ref: "REV.3.19", phrase: "repent" },
+  ] },
+  { id: "revstress-coming", kind: "series", label: "the coming refrain", members: [
+    { ref: "REV.2.5", phrase: "I am coming to you swiftly" },
+    { ref: "REV.2.16", phrase: "I am coming to you quickly" },
+    { ref: "REV.2.25", phrase: "until I come" },
+    { ref: "REV.3.3", phrase: "I will come as a thief" },
+    { ref: "REV.3.3", phrase: "I will come upon you" },
+    { ref: "REV.3.11", phrase: "I am coming quickly" },
+    { ref: "REV.3.20", phrase: "I will come in to him" },
+  ] },
+  { id: "revstress-hold-keep", kind: "series", label: "hold, keep, endure", members: [
+    { ref: "REV.2.13", phrase: "You hold firmly to my name" },
+    { ref: "REV.2.15", phrase: "hold to the teaching of the Nicolaitans" },
+    { ref: "REV.2.25", phrase: "hold that which you have firmly" },
+    { ref: "REV.2.26", phrase: "keeps my works to the end" },
+    { ref: "REV.3.2", phrase: "keep the things that remain" },
+    { ref: "REV.3.3", phrase: "Keep it and repent" },
+    { ref: "REV.3.8", phrase: "kept my word" },
+    { ref: "REV.3.10", phrase: "kept my command to endure" },
+    { ref: "REV.3.10", phrase: "I also will keep you" },
+    { ref: "REV.3.11", phrase: "Hold firmly that which you have" },
+  ] },
+  { id: "revstress-life-death", kind: "series", label: "life and death trade places", members: [
+    { ref: "REV.2.7", phrase: "tree of life" },
+    { ref: "REV.2.8", phrase: "was dead, and has come to life" },
+    { ref: "REV.2.10", phrase: "Be faithful to death" },
+    { ref: "REV.2.10", phrase: "crown of life" },
+    { ref: "REV.2.11", phrase: "second death" },
+    { ref: "REV.2.23", phrase: "I will kill her children with Death" },
+    { ref: "REV.3.1", phrase: "reputation of being alive, but you are dead" },
+    { ref: "REV.3.5", phrase: "book of life" },
+  ] },
+  { id: "revstress-names", kind: "series", label: "names kept, confessed, and given", members: [
+    { ref: "REV.2.3", phrase: "my name’s sake" },
+    { ref: "REV.2.13", phrase: "my name" },
+    { ref: "REV.2.17", phrase: "a new name written" },
+    { ref: "REV.3.4", phrase: "a few names in Sardis" },
+    { ref: "REV.3.5", phrase: "his name" },
+    { ref: "REV.3.5", phrase: "his name", occ: 1 },
+    { ref: "REV.3.8", phrase: "my name" },
+    { ref: "REV.3.12", phrase: "the name of my God" },
+    { ref: "REV.3.12", phrase: "the name of the city of my God" },
+    { ref: "REV.3.12", phrase: "my own new name" },
+  ] },
+  { id: "revstress-white", kind: "series", label: "white stone and white garments", members: [
+    { ref: "REV.2.17", phrase: "a white stone" },
+    { ref: "REV.3.4", phrase: "walk with me in white" },
+    { ref: "REV.3.5", phrase: "white garments" },
+    { ref: "REV.3.18", phrase: "white garments" },
+  ] },
+  { id: "revstress-testing", kind: "series", label: "testing the testers", members: [
+    { ref: "REV.2.2", phrase: "have tested those who call themselves apostles" },
+    { ref: "REV.2.10", phrase: "that you may be tested" },
+    { ref: "REV.3.10", phrase: "the hour of testing" },
+    { ref: "REV.3.10", phrase: "to test those who dwell on the earth" },
+  ] },
+  { id: "revstress-false-claims", kind: "link:parallel", label: "claimed identity versus revealed condition", members: [
+    { ref: "REV.2.2", phrase: "call themselves apostles, and they are not" },
+    { ref: "REV.2.9", phrase: "say they are Jews, and they are not" },
+    { ref: "REV.3.1", phrase: "a reputation of being alive, but you are dead" },
+    { ref: "REV.3.9", phrase: "say they are Jews, and they are not" },
+    { ref: "REV.3.17", phrase: "you say, ‘I am rich, and have gotten riches, and have need of nothing;’" },
+  ] },
+  { id: "revstress-satan", kind: "series", label: "Satan named by place and claim", members: [
+    { ref: "REV.2.9", phrase: "a synagogue of Satan" },
+    { ref: "REV.2.13", phrase: "where Satan’s throne is" },
+    { ref: "REV.2.13", phrase: "where Satan dwells" },
+    { ref: "REV.2.24", phrase: "the deep things of Satan" },
+    { ref: "REV.3.9", phrase: "the synagogue of Satan" },
+  ] },
+  { id: "revstress-rich-poor", kind: "link:contrast", label: "poor yet rich; rich yet poor", members: [
+    { ref: "REV.2.9", phrase: "your poverty (but you are rich)" },
+    { ref: "REV.3.17", phrase: "you are the wretched one, miserable, poor, blind, and naked" },
+  ] },
+  { id: "revstress-open-shut", kind: "mirror", label: "open and shut", members: [
+    { ref: "REV.3.7", phrase: "he who opens and no one can shut" },
+    { ref: "REV.3.7", phrase: "who shuts and no one opens" },
+  ] },
+  { id: "revstress-doors", kind: "link:echo", label: "the open door and the knocking door", members: [
+    { ref: "REV.3.8", phrase: "an open door, which no one can shut" },
+    { ref: "REV.3.20", phrase: "I stand at the door and knock" },
+  ] },
+  { id: "revstress-crowns", kind: "link:echo", label: "a crown given and guarded", members: [
+    { ref: "REV.2.10", phrase: "I will give you the crown of life" },
+    { ref: "REV.3.11", phrase: "so that no one takes your crown" },
+  ] },
+  { id: "revstress-thrones", kind: "link:contrast", label: "Satan’s throne and Christ’s throne", members: [
+    { ref: "REV.2.13", phrase: "Satan’s throne" },
+    { ref: "REV.3.21", phrase: "my throne" },
+  ] },
+  { id: "revstress-promise-gifts", kind: "series", label: "seven gifts to the one who overcomes", members: [
+    { ref: "REV.2.7", phrase: "eat from the tree of life" },
+    { ref: "REV.2.10", phrase: "the crown of life" },
+    { ref: "REV.2.17", phrase: "the hidden manna" },
+    { ref: "REV.2.28", phrase: "the morning star" },
+    { ref: "REV.3.5", phrase: "arrayed in white garments" },
+    { ref: "REV.3.12", phrase: "a pillar in the temple of my God" },
+    { ref: "REV.3.21", phrase: "sit down with me on my throne" },
+  ] },
+  { id: "revstress-first-last", kind: "series", label: "first and last", members: [
+    { ref: "REV.2.4", phrase: "your first love" },
+    { ref: "REV.2.5", phrase: "the first works" },
+    { ref: "REV.2.8", phrase: "The first and the last" },
+    { ref: "REV.2.19", phrase: "your last works are more than the first" },
+  ] },
+  { id: "revstress-fire-eyes", kind: "link:parallel", label: "eyes and fire", members: [
+    { ref: "REV.2.18", phrase: "eyes like a flame of fire" },
+    { ref: "REV.3.18", phrase: "gold refined by fire" },
+    { ref: "REV.3.18", phrase: "eye salve to anoint your eyes" },
+  ] },
+];
 
 /* notes — observations attach to any pattern, yours or built-in */
 const NOTES_KEY = "shape-marks-notes";
@@ -71,12 +325,12 @@ function getNote(gid) {
   return NOTES[gid] || "";
 }
 function setNote(gid, text) {
-  text = text.trim();
+  const empty = !text.trim();
   if (gid.startsWith("u-")) {
     const rec = USER.find((p) => p.id === gid);
-    if (rec) { if (text) rec.note = text; else delete rec.note; saveUser(); }
+    if (rec) { if (!empty) rec.note = text; else delete rec.note; saveUser(); }
   } else {
-    if (text) NOTES[gid] = text; else delete NOTES[gid];
+    if (!empty) NOTES[gid] = text; else delete NOTES[gid];
     localStorage.setItem(NOTES_KEY, JSON.stringify(NOTES));
   }
 }
@@ -167,6 +421,25 @@ function buildGids() {
   for (const el of Object.keys(ELEMS)) {
     addGid(`rev23:${el}`, "rev", "series", `series · ${ELEMS[el]}`, R.members.map((m) => m.keys[el]), "thread");
   }
+  if (DENSITY_MODE) {
+    for (const p of DENSITY_PATTERNS) {
+      addGid(p.id, "psa", p.kind, `${KIND_LABEL[p.kind]} · ${p.label}`, p.members, p.members.length > 2 ? "thread" : "arc");
+    }
+  }
+  if (LONG_MODE) {
+    for (const p of LONG_PATTERNS) {
+      addGid(p.id, "rev", p.kind, `${KIND_LABEL[p.kind]} · ${p.label}`, p.members, p.members.length > 2 ? "thread" : "arc");
+    }
+  }
+  if (ANGLE_MODE) {
+    for (const p of GEOMETRY_FIXTURE.patterns) {
+      addGid(p.id, "qa", p.kind, `${KIND_LABEL[p.kind]} · ${p.label}`, p.members, "arc", {
+        qaKind: p.kind,
+        qaDistance: p.qaDistance,
+        qaPlacement: p.qaPlacement,
+      });
+    }
+  }
   for (const p of USER) {
     const study = refStudy(p.members[0].ref);
     if (!study) continue;
@@ -188,6 +461,9 @@ const LEGEND = {
     { label: "the overcomer promise", kind: "series", gids: ["rev23:promise"] },
     { label: "“he who has an ear”", kind: "series", gids: ["rev23:ear"] },
   ],
+  qa: () => ANGLE_MODE
+    ? GEOMETRY_FIXTURE.patterns.map((p) => ({ label: `${KIND_LABEL[p.kind]} · ${p.label}`, kind: p.kind, gids: [p.id] }))
+    : [],
 };
 
 /* letter boundaries for Revelation — quiet structural heads, like chapter heads */
@@ -214,6 +490,7 @@ function versePlan(study, ref, text) {
 
 function appendSegments(container, text, ranges) {
   const pts = new Set([0, text.length]);
+  const pieces = new Map(ranges.map((range) => [range, []]));
   ranges.forEach((r) => { pts.add(r.start); pts.add(r.end); });
   const cuts = [...pts].sort((a, b) => a - b);
   for (let i = 0; i < cuts.length - 1; i++) {
@@ -230,9 +507,28 @@ function appendSegments(container, text, ranges) {
     container.appendChild(el);
     cover.forEach((r) => {
       GIDS[r.gid].spans.push(el);
-      if (r.start === s) GIDS[r.gid].anchors.push({ el, ref: r.ref, phrase: r.phrase, occ: r.occ });
+      pieces.get(r).push(el);
     });
   }
+  [...ranges].sort((a, b) => a.start - b.start).forEach((r) => {
+    const els = pieces.get(r);
+    if (els?.length) GIDS[r.gid].anchors.push({ el: els[0], els, ref: r.ref, phrase: r.phrase, occ: r.occ });
+  });
+}
+
+function appendQaLines(container, lines, ranges) {
+  let offset = 0;
+  lines.forEach((line, index) => {
+    const lineEl = document.createElement("span");
+    lineEl.className = "qa-line";
+    lineEl.dataset.align = line.align;
+    const lineRanges = ranges
+      .filter((range) => range.start >= offset && range.end <= offset + line.text.length)
+      .map((range) => ({ ...range, start: range.start - offset, end: range.end - offset }));
+    appendSegments(lineEl, line.text, lineRanges);
+    container.appendChild(lineEl);
+    offset += line.text.length + (index < lines.length - 1 ? 1 : 0);
+  });
 }
 
 function buildSheets() {
@@ -255,7 +551,7 @@ function buildSheets() {
         }
         let text = v.text;
         const ranges = versePlan(id, ref, text);
-        const limit = TRUNCATE[id];
+        const limit = id === "rev" && LONG_MODE ? null : TRUNCATE[id];
         if (limit && text.length > limit) {
           const cut = text.slice(0, limit);
           const cutAt = cut.lastIndexOf(" ");
@@ -265,7 +561,9 @@ function buildSheets() {
         row.className = "vrow"; row.dataset.key = ref;
         const num = document.createElement("span"); num.className = "vnum"; num.textContent = v.verse;
         const txt = document.createElement("span"); txt.className = "vtext";
-        appendSegments(txt, text, ranges.filter((rg) => rg.end <= text.length));
+        const visibleRanges = ranges.filter((rg) => rg.end <= text.length);
+        if (id === "qa" && v.qaLines) appendQaLines(txt, v.qaLines, visibleRanges);
+        else appendSegments(txt, text, visibleRanges);
         row.append(num, txt); sheet.appendChild(row);
       }
     }
@@ -304,12 +602,12 @@ function measure(sid) {
   });
   return { sheet, svg, base, textLeft };
 }
-function firstRect(M, el) {
-  const r = el.getClientRects()[0];
-  if (!r) return null;
-  return { x: r.left - M.base.left, right: r.right - M.base.left, top: r.top - M.base.top, bottom: r.bottom - M.base.top };
+function measureAnchor(M, anchor, underlineOffset = 0) {
+  const rects = (anchor.els || [anchor.el]).flatMap((el) => TG.relativeClientRects(M.base, el.getClientRects()));
+  return TG.planMember(rects, underlineOffset);
 }
 function animDraw(p, ms = 340) {
+  if (REDUCED_MOTION) return;
   const L = p.getTotalLength();
   p.style.strokeDasharray = L; p.style.strokeDashoffset = L;
   p.getBoundingClientRect();
@@ -317,6 +615,7 @@ function animDraw(p, ms = 340) {
   p.style.strokeDashoffset = 0;
 }
 function animFade(el, ms = 240, delay = 0) {
+  if (REDUCED_MOTION) return;
   const target = el.getAttribute("opacity") || 1;
   el.style.opacity = 0;
   el.getBoundingClientRect();
@@ -324,45 +623,25 @@ function animFade(el, ms = 240, delay = 0) {
   el.style.opacity = target;
 }
 
-/* Connectors are one continuous gesture that actually touches the marks:
- * underline → touch dot → leg (hairline at underline height, quieter) →
- * gutter spine (always the same margin) → leg → touch dot → underline.
- * The spine never crosses text; the legs run at underline level so they
- * read as the underline reaching out to the margin. */
-function dashFor(p, kind) {
-  if (kind === "link:echo") { p.setAttribute("stroke-dasharray", "0.1 5"); p.setAttribute("stroke-width", 1.9); }
-}
+/* Connectors share the exact contact used by the underline and terminal dot.
+ * Binary marks draw one contact-to-contact gesture; multi-member marks leave
+ * rounded spine ports and converge directly into each phrase. */
 
-/* ── ink ribbons ─────────────────────────────────────────────
+/* ── the ink ribbon — the one line ───────────────────────────
  * A premium line is not a uniform stroke: it is a filled outline
  * around a centerline with a designed width profile — tapered ends,
  * restrained swell midway (≈55%→115% of nominal). The perfect-freehand
- * insight, composed rather than gestured: no pressure, no wobble. */
-function sampleCubic(p0, p1, p2, p3, n = 44) {
-  const pts = [];
-  for (let i = 0; i <= n; i++) {
-    const t = i / n, u = 1 - t;
-    pts.push({
-      x: u * u * u * p0.x + 3 * u * u * t * p1.x + 3 * u * t * t * p2.x + t * t * t * p3.x,
-      y: u * u * u * p0.y + 3 * u * u * t * p1.y + 3 * u * t * t * p2.y + t * t * t * p3.y,
-    });
-  }
-  return pts;
-}
-function ribbonOutline(pts, w, frac = 1, even = false, twin = false) {
+ * insight, composed rather than gestured: no pressure, no wobble.
+ * There is exactly one profile. Kind never bends the line — it only
+ * chooses the hue. */
+function ribbonOutline(pts, w, frac = 1) {
   const total = pts.length;
   const count = Math.max(2, Math.round(total * Math.min(1, frac)));
   const L = [], R = [];
   for (let i = 0; i < count; i++) {
     const t = i / (total - 1);
-    const ramp = Math.min(1, Math.min(t, 1 - t) / 0.16); // endpoint taper
-    // series is regularity: an even rule. Everything else swells like a nib stroke.
-    let r = even
-      ? (w / 2) * (0.55 + 0.45 * ramp)
-      : twin
-        // mirror: two swells with a waist at the reflection point
-        ? (w / 2) * (0.55 + 0.6 * Math.sin(Math.PI * ((t < 0.5 ? t : t - 0.5) * 2))) * (0.3 + 0.7 * ramp)
-        : (w / 2) * (0.55 + 0.6 * Math.sin(Math.PI * t)) * (0.3 + 0.7 * ramp);
+    const ramp = Math.min(1, t / 0.16, (1 - t) / 0.16);
+    let r = (w / 2) * (0.55 + 0.6 * Math.sin(Math.PI * t)) * (0.3 + 0.7 * ramp);
     if (frac < 1) {
       // mid-draw the leading edge narrows to a nib tip
       r *= Math.min(1, (count - 1 - i) / Math.max(1, total * 0.12));
@@ -377,193 +656,97 @@ function ribbonOutline(pts, w, frac = 1, even = false, twin = false) {
 }
 /* the ribbon draws itself: the ink flows point by point along the
  * centerline, leading edge tapered like a nib in contact */
-function ribbonDraw(g, pts, hue, { w = 1.6, opacity = 1, delay = 0, dur = 380, even = false, twin = false } = {}) {
-  const p = S("path", { d: "", fill: hue, stroke: "none" }, g);
+function ribbonDraw(g, pts, hue, { w = 1.6, opacity = 1, delay = 0, dur = 380, role = "connector" } = {}) {
+  const p = S("path", { d: "", fill: hue, stroke: "none", "data-role": role }, g);
   if (opacity < 1) p.setAttribute("opacity", opacity);
+  if (REDUCED_MOTION) {
+    p.setAttribute("d", ribbonOutline(pts, w, 1));
+    return p;
+  }
   const t0 = performance.now() + delay;
   const ease = (x) => 1 - Math.pow(1 - x, 3);
   function frame(now) {
     if (!p.isConnected) return; // overlay cleared mid-flight
     const u = Math.min(1, Math.max(0, (now - t0) / dur));
-    if (u > 0) p.setAttribute("d", ribbonOutline(pts, w, ease(u), even, twin));
+    if (u > 0) p.setAttribute("d", ribbonOutline(pts, w, ease(u)));
     if (u < 1) requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
   return p;
 }
-/* cable-management routing: gutter runs as rounded-corner traces.
- * Same ink, same kind signs — only the path geometry changes. */
-let ROUTE = "bows"; // "bows" | "traces"
-function traceR(lane, x0, y1, y2) {
-  return Math.max(3, Math.min(6, Math.abs(y2 - y1) / 2 - 1, x0 - lane - 2));
-}
-function tracePts(x0, lane, y1, y2, n = 48) {
-  const dir = y2 > y1 ? 1 : -1;
-  const r = traceR(lane, x0, y1, y2);
-  const h = x0 - lane - r, v = Math.abs(y2 - y1) - 2 * r, arc = (Math.PI / 2) * r;
-  const total = 2 * h + 2 * arc + v;
-  const pts = [];
-  for (let i = 0; i <= n; i++) {
-    let d = (i / n) * total, x, y;
-    if (d <= h) { x = x0 - d; y = y1; }
-    else if ((d -= h) <= arc) { const t = d / r; x = lane + r - Math.sin(t) * r; y = y1 + dir * (r - Math.cos(t) * r); }
-    else if ((d -= arc) <= v) { x = lane; y = y1 + dir * (r + d); }
-    else if ((d -= v) <= arc) { const t = d / r; x = lane + r - Math.cos(t) * r; y = y2 - dir * (r - Math.sin(t) * r); }
-    else { d -= arc; x = lane + r + d; y = y2; }
-    pts.push({ x, y });
-  }
-  return pts;
-}
-function tracePathD(x0, lane, y1, y2) {
-  const dir = y2 > y1 ? 1 : -1;
-  const r = traceR(lane, x0, y1, y2);
-  const sweep = dir > 0 ? 0 : 1;
-  return `M ${x0} ${y1} H ${lane + r} A ${r} ${r} 0 0 ${sweep} ${lane} ${y1 + dir * r} V ${y2 - dir * r} A ${r} ${r} 0 0 ${sweep} ${lane + r} ${y2} H ${x0}`;
-}
+const ROUTE_KEY = "shape-marks-route";
+let ROUTE = localStorage.getItem(ROUTE_KEY) === "bows" ? "bows" : "traces";
+let FOCUS_GID = null;
+const MAX_MARGIN_TRACES = 4;
 
-/* shift a centerline sideways along its normals — double ribbons, shears */
-function offsetPts(pts, d) {
-  const n = pts.length;
-  return pts.map((p, i) => {
-    const a = pts[Math.max(0, i - 1)], b = pts[Math.min(n - 1, i + 1)];
-    const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1;
-    return { x: p.x + (-dy / len) * d, y: p.y + (dx / len) * d };
-  });
-}
-function leg(g, x1, x2, y, hue, kind, delay = 0) {
-  const p = S("path", {
-    d: `M ${x1} ${y} H ${x2}`, fill: "none", stroke: hue,
-    "stroke-width": 1.1, "stroke-linecap": "round", opacity: 0.4,
+function traceDot(g, point, hue, delay = 0, radius = TG.constants.TOUCH_RADIUS, opacity = 1) {
+  const dot = S("circle", {
+    cx: point.x, cy: point.y, r: radius, fill: hue, opacity, "data-role": "contact",
   }, g);
-  dashFor(p, kind);
-  animFade(p, 220, delay);
-}
-function touchDot(g, x, y, hue, delay = 0) {
-  animFade(S("circle", { cx: x, cy: y, r: 1.8, fill: hue }, g), 200, delay);
+  animFade(dot, 200, delay);
+  return dot;
 }
 
-/* the member you touched is where the ink starts */
-let LAST_TOUCH = null;
-function touchYIn(M) {
-  if (!LAST_TOUCH || !LAST_TOUCH.isConnected) return null;
-  const r = LAST_TOUCH.getClientRects()[0];
-  return r ? r.top - M.base.top : null;
-}
-
-function drawArc(g, a, b, hue, kind, stagger, gx, touchY) {
-  const y1 = a.bottom + 2.5, y2 = b.bottom + 2.5;
-  const sameLine = Math.abs(y1 - y2) < 5;
-  if (sameLine) {
-    // hinge and short pairs: the cradle dip — a balance pan under the line
-    const sx = a.right + 4, ex = b.x - 4, dip = 12;
-    if (kind === "link:echo") {
-      const p = S("path", {
-        d: `M ${sx} ${y1} C ${sx + 4} ${y1 + dip}, ${ex - 4} ${y2 + dip}, ${ex} ${y2}`,
-        fill: "none", stroke: hue, "stroke-width": 1.3, "stroke-linecap": "round",
-      }, g);
-      dashFor(p, kind);
-      animFade(p);
-    } else {
-      ribbonDraw(g, sampleCubic({ x: sx, y: y1 }, { x: sx + 4, y: y1 + dip }, { x: ex - 4, y: y2 + dip }, { x: ex, y: y2 }), hue, { dur: 300 });
-    }
-    return;
-  }
-  // bow depth breathes with the span: near lines stay tight, far lines go deep
-  const span = Math.abs(y2 - y1);
-  const lane = gx - Math.min(44, 16 + span * 0.05) - stagger;
-  // short spans get thin, simply-bowed strokes — expressive silhouettes
-  // must earn their room, or they curdle into pretzels and claws
-  const w = span < 60 ? 1.15 : 1.6;
-  const nSamp = Math.max(18, Math.min(44, Math.round(span / 5)));
-  // one bow for every kind — mirror's reflection is carried by the twin
-  // width profile (two swells pinched at the midpoint), not by reversing
-  // the curve, which never survived contact with real spans
-  let pts = sampleCubic({ x: gx, y: y1 }, { x: lane, y: y1 + 3 }, { x: lane, y: y2 - 3 }, { x: gx, y: y2 }, nSamp);
-  // ink flows from the touched member toward its counterpart
-  const flip = touchY != null && Math.abs(touchY - y2) < Math.abs(touchY - y1);
-  if (flip) pts = pts.slice().reverse();
-  const near = flip ? { x: b.x - 2, y: y2 } : { x: a.x - 2, y: y1 };
-  const far = flip ? { x: a.x - 2, y: y1 } : { x: b.x - 2, y: y2 };
-  if (kind === "link:echo") {
-    const p = S("path", {
-      d: `M ${gx} ${y1} C ${lane} ${y1 + 3}, ${lane} ${y2 - 3}, ${gx} ${y2}`,
-      fill: "none", stroke: hue, "stroke-width": 1.3, "stroke-linecap": "round",
-    }, g);
-    dashFor(p, kind);
-    animFade(p);
-    leg(g, gx, a.x - 2, y1, hue, kind);
-    leg(g, gx, b.x - 2, y2, hue, kind);
-    touchDot(g, a.x - 2, y1, hue);
-    touchDot(g, b.x - 2, y2, hue);
-    return;
-  }
-  // choreography: pen sets down at the near member, draws, arrives at the far
-  leg(g, gx, near.x, near.y, hue, kind, 30);
-  touchDot(g, near.x, near.y, hue, 30);
-  if (kind === "link:contrast") {
-    // opposition: two strokes at the break — sheared apart only when the
-    // span gives the shear room to read as passing, not as a kink
-    const shear = span >= 70 ? 1.2 : 0;
-    const h1 = offsetPts(pts.slice(0, Math.floor(pts.length * 0.46)), -shear);
-    const h2 = offsetPts(pts.slice(Math.ceil(pts.length * 0.54)), shear);
-    ribbonDraw(g, h1, hue, { w, delay: 90, dur: 210 });
-    ribbonDraw(g, h2, hue, { w, delay: 360, dur: 210 });
-    leg(g, gx, far.x, far.y, hue, kind, 520);
-    touchDot(g, far.x, far.y, hue, 520);
-  } else if (kind === "link:parallel" && span >= 60) {
-    // parallelism's own sign: two lines running together, bent into the bow
-    ribbonDraw(g, offsetPts(pts, -1.7), hue, { w: 1.1, delay: 90, dur: 380 });
-    ribbonDraw(g, offsetPts(pts, 1.7), hue, { w: 1.1, delay: 90, dur: 380 });
-    leg(g, gx, far.x, far.y, hue, kind, 400);
-    touchDot(g, far.x, far.y, hue, 400);
-  } else {
-    ribbonDraw(g, pts, hue, { w: kind === "mirror" ? w + 0.25 : w, delay: 90, dur: 380, twin: kind === "mirror" && span >= 44 });
-    leg(g, gx, far.x, far.y, hue, kind, 400);
-    touchDot(g, far.x, far.y, hue, 400);
-  }
-}
-
-function drawThread(g, rects, hue, laneX, touchY, kind) {
-  const ys = rects.map((r) => r.bottom + 2.5);
-  const yTop = ys[0], yBot = ys[ys.length - 1];
-  // ink starts nearest the touched member and runs the length of the spine
-  const flip = touchY != null && Math.abs(touchY - yBot) < Math.abs(touchY - yTop);
-  const spine = [];
-  for (let i = 0; i <= 32; i++) {
-    const t = i / 32;
-    spine.push({ x: laneX, y: flip ? yBot - (yBot - yTop) * t : yTop + (yBot - yTop) * t });
-  }
-  const dur = 460;
-  // ticks first (under the spine), quiet and filleted — several threads
-  // pinned together should layer as combs, never close into grid boxes
-  rects.forEach((r, i) => {
-    const frac = (yBot === yTop) ? 0 : (flip ? (yBot - ys[i]) / (yBot - yTop) : (ys[i] - yTop) / (yBot - yTop));
-    const delay = 40 + dur * frac * 0.85;
-    // the shoulder curves in from the side the spine actually exists on:
-    // the topmost member joins from below, everyone else from above
-    const dy = ys[i] <= yTop + 1 ? 6 : -6;
-    const l = S("path", {
-      d: `M ${laneX} ${ys[i] + dy} Q ${laneX} ${ys[i]} ${laneX + 5.5} ${ys[i]} H ${r.x - 2}`,
-      fill: "none", stroke: hue, "stroke-width": 1, "stroke-linecap": "round", opacity: 0.25,
-    }, g);
-    animFade(l, 200, delay);
-    touchDot(g, r.x - 2, ys[i], hue, delay);
+function drawWrappedTerminals(g, members, hue, endpoints) {
+  const occupied = new Set(endpoints.map((point) => `${point.x.toFixed(2)}:${point.y.toFixed(2)}`));
+  members.forEach((member) => {
+    if (member.fragments.length < 2) return;
+    member.continuationContacts.forEach((point) => {
+      const key = `${point.x.toFixed(2)}:${point.y.toFixed(2)}`;
+      if (!occupied.has(key)) traceDot(g, point, hue, 120, 1.35, 0.72);
+    });
   });
-  // the rule keeps the kind's sign: echo stays dotted, parallel stays
-  // double, series is the plain even rule
-  if (kind === "link:echo") {
-    const p = S("path", {
-      d: `M ${laneX} ${yTop} V ${yBot}`, fill: "none", stroke: hue,
-      "stroke-width": 1.9, "stroke-linecap": "round", "stroke-dasharray": "0.1 5", opacity: 0.75,
-    }, g);
-    animFade(p, 300, 40);
-  } else if (kind === "link:parallel") {
-    const twin = (dx) => spine.map((p) => ({ x: p.x + dx, y: p.y }));
-    ribbonDraw(g, twin(-1.6), hue, { w: 1.0, opacity: 0.7, delay: 40, dur, even: true });
-    ribbonDraw(g, twin(1.6), hue, { w: 1.0, opacity: 0.7, delay: 40, dur, even: true });
-  } else {
-    ribbonDraw(g, spine, hue, { w: 1.5, opacity: 0.7, delay: 40, dur, even: true });
+}
+
+/* one line type for every kind — the ribbon, in the kind's hue */
+function renderKindPath(g, plan, hue) {
+  const w = plan.mode === "far" ? 1.55 : plan.mode === "same-line" ? 1.35 : 1.2;
+  ribbonDraw(g, plan.points, hue, { w, delay: 50, dur: 360 });
+}
+
+function drawArc(g, a, b, hue, stagger, gutterX, lineHeight) {
+  const plan = TG.planArc(a, b, { gutterX, laneOffset: stagger, lineHeight });
+  g.dataset.distance = plan.mode;
+  g.dataset.route = plan.route || "cradle";
+  if (plan.route === "corridor") {
+    g.dataset.laneX = plan.laneX;
+    g.dataset.corridorTop = plan.corridorTop;
+    g.dataset.corridorBottom = plan.corridorBottom;
   }
+  renderKindPath(g, plan, hue);
+  traceDot(g, plan.start, hue, 30);
+  traceDot(g, plan.end, hue, 390);
+  drawWrappedTerminals(g, [a, b], hue, [plan.start, plan.end]);
+  return plan;
+}
+
+function threadPath(g, d, hue, role, opacity = 0.66, delay = 40) {
+  const path = S("path", {
+    d, fill: "none", stroke: hue, "stroke-width": 1.1,
+    "stroke-linecap": "round", "stroke-linejoin": "round", opacity,
+    "data-role": role,
+  }, g);
+  animFade(path, 240, delay);
+  return path;
+}
+
+function drawThread(g, members, hue, laneX, lineHeight) {
+  const plan = TG.planThread(members, { laneX, lineHeight });
+  if (!plan) return null;
+  g.dataset.distance = plan.mode;
+  g.dataset.route = plan.route || "thread";
+
+  if (plan.mode === "inline-thread") {
+    threadPath(g, `M ${plan.spine.start.x} ${plan.spine.start.y} H ${plan.spine.end.x}`, hue, "spine", 0.72);
+    plan.branches.forEach((branch, index) => threadPath(g, branch.d, hue, "shoulder", 0.62, 60 + index * 24));
+  } else {
+    plan.branches.forEach((branch, index) => threadPath(g, branch.d, hue, "shoulder", 0.62, 60 + index * 24));
+    threadPath(g, `M ${plan.spine.start.x} ${plan.spine.start.y} V ${plan.spine.end.y}`, hue, "spine", 0.74, 30);
+  }
+
+  plan.contacts.forEach((contact, index) => traceDot(g, contact, hue, 70 + index * 24));
+  drawWrappedTerminals(g, members, hue, plan.contacts);
+  return plan;
 }
 
 function drawOverlay(sid, gids) {
@@ -577,217 +760,34 @@ function drawOverlay(sid, gids) {
   if (live) svg.appendChild(live);
   if (!gids.length) return;
   const M = measure(sid);
-  const touchY = touchYIn(M);
-  if (ROUTE === "traces") { drawTracesLayer(svg, M, gids, touchY); return; }
-  gids.forEach((gid, i) => {
+  const lineHeight = parseFloat(getComputedStyle(M.sheet.querySelector(".vtext")).lineHeight) || 26;
+  const preview = [...hovered].filter((gid) => GIDS[gid]?.study === sid).at(-1);
+  const localFocus = preview || (FOCUS_GID && gids.includes(FOCUS_GID) ? FOCUS_GID : gids.at(-1));
+  /* Annotation lines remain the primary Traces language. Density is handled
+   * through progressive disclosure: the focused line plus the three most
+   * recent comparisons receive deterministic gutter lanes. Everything held
+   * still remains directly switchable in the passage score. */
+  const inked = ROUTE === "traces"
+    ? [...gids.filter((gid) => gid !== localFocus).slice(-(MAX_MARGIN_TRACES - 1)), localFocus].filter(Boolean)
+    : gids;
+  inked.forEach((gid, i) => {
     const G = GIDS[gid];
-    const rects = G.anchors.map((a) => firstRect(M, a.el)).filter(Boolean);
-    if (rects.length < 2) return;
-    const g = S("g", {}, svg);
-    if (G.conn === "thread") drawThread(g, rects, G.hue, M.textLeft - 46 - i * 10, touchY, G.kind);
-    else drawArc(g, rects[0], rects[rects.length - 1], G.hue, G.kind, i * 10, M.textLeft - 12, touchY);
+    const members = G.anchors.map((anchor) => measureAnchor(M, anchor)).filter(Boolean);
+    if (members.length < 2) return;
+    const isFocus = gid === localFocus;
+    const lane = isFocus ? 0 : i + 1;
+    const g = S("g", {
+      class: ROUTE === "traces" ? `margin-annotation ${isFocus ? "is-focus" : "is-held"}` : "reading-annotation",
+      "data-gid": gid,
+    }, svg);
+    g.dataset.kind = G.kind;
+    if (G.qaKind) g.dataset.qaKind = G.qaKind;
+    if (G.qaDistance) g.dataset.qaDistance = G.qaDistance;
+    if (G.qaPlacement) g.dataset.qaPlacement = G.qaPlacement;
+    const marginLaneX = M.textLeft - 46;
+    if (G.conn === "thread") drawThread(g, members, G.hue, marginLaneX - lane * 10, lineHeight);
+    else drawArc(g, members[0], members[members.length - 1], G.hue, lane * 10, marginLaneX, lineHeight);
   });
-}
-
-/* ── the traces layer: cable management ──────────────────────
- * One continuous wire per connection: port at the text margin, stub
- * into the tray, rail along the lane, stub out, port. Constant width,
- * one corner radius, full weight everywhere — the dimmed page carries
- * the contrast. Lanes allocate like a cable tray (shortest innermost,
- * overlap steps outward); wires exiting the same line break out with
- * a small vertical offset like a patch panel. Kind signs ride the
- * stroke: echo dashed · parallel twin wires converging at the ports ·
- * mirror a midpoint tie · contrast a gap mid-run · series the rule. */
-const TRACE = { w: 1.5, pitch: 10, pad: 16, portR: 2, breakout: 3, localSpan: 44 };
-/* attention discipline: the most recently touched pattern is the lit
- * circuit; other pinned patterns stay in the harness as quiet ghosts */
-let FOCUS_GID = null;
-
-function drawTracesLayer(svg, M, gids, touchY) {
-  const portX = M.textLeft - 5;
-  const gx = M.textLeft - 12;
-  const focus = hovered.size
-    ? new Set(hovered)
-    : new Set(FOCUS_GID && gids.includes(FOCUS_GID) ? [FOCUS_GID] : gids.slice(-1));
-  const items = gids.map((gid) => {
-    const G = GIDS[gid];
-    const rects = G.anchors.map((a) => firstRect(M, a.el)).filter(Boolean);
-    if (rects.length < 2) return null;
-    const ys = rects.map((r) => r.bottom + 2.5);
-    const top = Math.min(...ys), bot = Math.max(...ys);
-    return {
-      gid, G, rects, ys, top, bot,
-      ghost: !focus.has(gid),
-      sameLine: rects.length === 2 && Math.abs(ys[0] - ys[1]) < 5,
-      local: rects.length === 2 && Math.abs(ys[0] - ys[1]) >= 5 && (bot - top) <= TRACE.localSpan,
-    };
-  }).filter(Boolean);
-  // route by distance: brackets under the line, locals in a tight inset
-  // band beside the text, distant pairs and threads in the shared tray
-  const tray = items.filter((it) => !it.sameLine && !it.local)
-    .sort((a, b) => (a.bot - a.top) - (b.bot - b.top));
-  for (const it of tray) {
-    let lane = 0;
-    while (tray.some((o) => o !== it && o.lane !== undefined && o.lane === lane &&
-      o.top < it.bot + 8 && it.top < o.bot + 8)) lane++;
-    it.lane = lane;
-  }
-  const locals = items.filter((it) => it.local).sort((a, b) => (a.bot - a.top) - (b.bot - b.top));
-  for (const it of locals) {
-    let lane = 0;
-    while (locals.some((o) => o !== it && o.lane !== undefined && o.lane === lane &&
-      o.top < it.bot + 6 && it.top < o.bot + 6)) lane++;
-    it.lane = lane;
-  }
-  // junction discipline: ports assign inner-lane-first, ghosts after focus
-  const used = new Map();
-  const portY = (y) => {
-    const key = Math.round(y / 4) * 4;
-    const n = used.get(key) || 0;
-    used.set(key, n + 1);
-    return y + n * TRACE.breakout;
-  };
-  const bracketDrops = new Map();
-  const ordered = [...items].sort((a, b) =>
-    (a.ghost === b.ghost ? (a.lane || 0) - (b.lane || 0) : a.ghost ? 1 : -1));
-  for (const it of ordered) {
-    const g = S("g", {}, svg);
-    if (it.ghost) g.setAttribute("class", "ghost-wire");
-    const laneX = it.local
-      ? gx - 4 - it.lane * 7
-      : M.textLeft - 12 - TRACE.pad - (it.lane || 0) * TRACE.pitch;
-    if (it.sameLine) drawTraceBracket(g, it, bracketDrops);
-    else if (it.rects.length > 2) drawTraceThread(g, it, laneX, portX, portY, touchY);
-    else drawTracePair(g, it, laneX, portX, portY, touchY);
-  }
-}
-
-function cableStroke(g, d, hue, { w = TRACE.w, dash = null, opacity = 1 } = {}) {
-  const p = S("path", {
-    d, fill: "none", stroke: hue, "stroke-width": w,
-    "stroke-linecap": "round", "stroke-linejoin": "round",
-  }, g);
-  if (dash) p.setAttribute("stroke-dasharray", dash);
-  if (opacity < 1) p.setAttribute("opacity", opacity);
-  return p;
-}
-function port(g, x, y, hue, delay = 0, ghost = false) {
-  const c = S("circle", { cx: x, cy: y, r: ghost ? 1.6 : TRACE.portR, fill: hue }, g);
-  if (!ghost) animFade(c, 200, delay);
-}
-/* ghosts render instantly and quietly; the focused wire performs */
-function wireAnim(it, p, ms, delay = 0) {
-  if (it.ghost) return;
-  animDraw(p, ms);
-  if (delay) p.style.transitionDelay = `${delay}ms`;
-}
-function wireFade(it, el, ms, delay = 0) {
-  if (it.ghost) return;
-  animFade(el, ms, delay);
-}
-
-function drawTracePair(g, it, laneX, portX, portY, touchY) {
-  const { G } = it;
-  const hue = G.hue, kind = G.kind;
-  const flip = touchY != null && Math.abs(touchY - it.ys[1]) < Math.abs(touchY - it.ys[0]);
-  let ya = portY(it.ys[0]), yb = portY(it.ys[1]);
-  if (flip) [ya, yb] = [yb, ya];
-  if (kind === "link:echo") {
-    wireFade(it, cableStroke(g, tracePathD(portX, laneX, ya, yb), hue, { w: 1.9, dash: "0.1 5" }), 240);
-    port(g, portX, ya, hue, 0, it.ghost);
-    port(g, portX, yb, hue, 0, it.ghost);
-    return;
-  }
-  port(g, portX, ya, hue, 30, it.ghost);
-  if (kind === "link:contrast") {
-    // the gap mid-run is the sign — two cables that do not join
-    const dir = yb > ya ? 1 : -1;
-    const r = traceR(laneX, portX, ya, yb);
-    const sweep = dir > 0 ? 0 : 1;
-    const ym = (ya + yb) / 2;
-    const d1 = `M ${portX} ${ya} H ${laneX + r} A ${r} ${r} 0 0 ${sweep} ${laneX} ${ya + dir * r} V ${ym - dir * 5}`;
-    const d2 = `M ${laneX} ${ym + dir * 5} V ${yb - dir * r} A ${r} ${r} 0 0 ${sweep} ${laneX + r} ${yb} H ${portX}`;
-    const p1 = cableStroke(g, d1, hue);
-    const p2 = cableStroke(g, d2, hue);
-    wireAnim(it, p1, 200, 90);
-    if (!it.ghost) {
-      p2.style.opacity = 0;
-      setTimeout(() => { if (p2.isConnected) { p2.style.opacity = 1; animDraw(p2, 200); } }, 330);
-    }
-    port(g, portX, yb, hue, 520, it.ghost);
-    return;
-  }
-  if (kind === "link:parallel") {
-    // twin wires sharing both ports: the offset tapers away at the ends
-    const pts = tracePts(portX, laneX, ya, yb, 64);
-    const n = pts.length;
-    for (const d of [-1.4, 1.4]) {
-      const off = pts.map((q, i) => {
-        const t = i / (n - 1);
-        const ramp = Math.min(1, Math.min(t, 1 - t) / 0.08);
-        const a = pts[Math.max(0, i - 1)], b = pts[Math.min(n - 1, i + 1)];
-        const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1;
-        return { x: q.x + (-dy / len) * d * ramp, y: q.y + (dx / len) * d * ramp };
-      });
-      const p = cableStroke(g, `M${off.map((q) => `${q.x.toFixed(2)},${q.y.toFixed(2)}`).join("L")}`, hue, { w: 1.1 });
-      wireAnim(it, p, 380, 90);
-    }
-  } else {
-    const p = cableStroke(g, tracePathD(portX, laneX, ya, yb), hue);
-    wireAnim(it, p, 380, 90);
-    if (kind === "mirror") {
-      // the tie: a small perpendicular mark at the reflection point
-      const ym = (ya + yb) / 2;
-      wireFade(it, cableStroke(g, `M ${laneX - 3.5} ${ym} H ${laneX + 3.5}`, hue), 200, 300);
-    }
-  }
-  port(g, portX, yb, hue, 400, it.ghost);
-}
-
-/* same-line pairs (hinge and short links): an under-bracket in the
- * same cable language — down, along, up, rounded at both elbows.
- * Stacked brackets on one line breakout downward like everything else. */
-function drawTraceBracket(g, it, drops) {
-  const { G } = it;
-  const key = Math.round(it.ys[0] / 4) * 4;
-  const n = drops.get(key) || 0;
-  drops.set(key, n + 1);
-  const y = it.ys[0], drop = 8 + n * 4.5, r = 3.5;
-  const sx = it.rects[0].right + 3, ex = it.rects[1].x - 3;
-  const d = `M ${sx} ${y} V ${y + drop - r} A ${r} ${r} 0 0 0 ${sx + r} ${y + drop} H ${ex - r} A ${r} ${r} 0 0 0 ${ex} ${y + drop - r} V ${y}`;
-  const p = cableStroke(g, d, G.hue, G.kind === "link:echo" ? { w: 1.9, dash: "0.1 5" } : {});
-  if (!it.ghost) (G.kind === "link:echo" ? animFade(p) : animDraw(p, 300));
-}
-
-function drawTraceThread(g, it, laneX, portX, portY, touchY) {
-  const { G, rects, ys } = it;
-  const hue = G.hue;
-  const yTop = it.top, yBot = it.bot;
-  const flip = touchY != null && Math.abs(touchY - yBot) < Math.abs(touchY - yTop);
-  const dur = 460;
-  const R = 5;
-  rects.forEach((r, i) => {
-    const frac = (yBot === yTop) ? 0 : (flip ? (yBot - ys[i]) / (yBot - yTop) : (ys[i] - yTop) / (yBot - yTop));
-    const delay = 40 + dur * frac * 0.85;
-    const py = portY(ys[i]);
-    // stub: fillet out of the rail, straight run to the port — full weight
-    const dy = ys[i] <= yTop + 1 ? R : -R;
-    const stub = cableStroke(g, `M ${laneX} ${py + dy} Q ${laneX} ${py} ${laneX + R} ${py} H ${portX}`, hue);
-    wireFade(it, stub, 200, delay);
-    port(g, portX, py, hue, delay, it.ghost);
-  });
-  const dSpine = flip ? `M ${laneX} ${yBot} V ${yTop}` : `M ${laneX} ${yTop} V ${yBot}`;
-  if (G.kind === "link:echo") {
-    wireFade(it, cableStroke(g, dSpine, hue, { w: 1.9, dash: "0.1 5" }), 300, 40);
-  } else if (G.kind === "link:parallel") {
-    for (const dx of [-1.4, 1.4]) {
-      const p = cableStroke(g, flip ? `M ${laneX + dx} ${yBot} V ${yTop}` : `M ${laneX + dx} ${yTop} V ${yBot}`, hue, { w: 1.1 });
-      wireAnim(it, p, dur, 40);
-    }
-  } else {
-    const p = cableStroke(g, dSpine, hue);
-    wireAnim(it, p, dur, 40);
-  }
 }
 
 /* ── awaken state ────────────────────────────────────────── */
@@ -795,6 +795,9 @@ function activeGids() { return new Set([...pinned, ...hovered]); }
 
 function applyActive() {
   const act = activeGids();
+  const activeOrder = [...act];
+  const focus = [...hovered].at(-1) || (FOCUS_GID && act.has(FOCUS_GID) ? FOCUS_GID : [...act].at(-1));
+  const hueByGid = Object.fromEntries(Object.entries(GIDS).map(([gid, G]) => [gid, G.hue]));
   for (const sid of Object.keys(SHEETS)) {
     const sheet = document.querySelector(`[data-sheet="${sid}"]`);
     const local = [...act].filter((g) => GIDS[g].study === sid);
@@ -802,14 +805,17 @@ function applyActive() {
     sheet.querySelectorAll(".pk").forEach((el) => {
       const gs = gidsOf(el);
       const activeG = gs.filter((g) => act.has(g));
+      const orderedActive = TG.orderSegmentGids(gs, activeOrder, focus);
       el.classList.toggle("on", activeG.length > 0);
-      // the words wear the hue of the pattern you chose, not just the first
-      el.style.setProperty("--h", GIDS[activeG[0] || gs[0]].hue);
-      // both patterns awake on the same words → stacked underlines, one per hue
+      el.classList.toggle("trace-focus", !!focus && gs.includes(focus));
+      // Focus owns both the text wash and the underline nearest its touch dot.
+      el.style.setProperty("--h", TG.resolveSegmentHue(gs, activeOrder, focus, hueByGid));
+      el.dataset.focusGid = focus && gs.includes(focus) ? focus : "";
+      // Shared words keep quieter held lines above the focused underline.
       el.classList.toggle("stack", activeG.length > 1);
-      if (activeG.length > 1) {
-        el.style.backgroundImage = activeG.map((g) => `linear-gradient(${GIDS[g].hue}, ${GIDS[g].hue})`).join(", ");
-        el.style.backgroundPosition = activeG.map((_, i) => `0 calc(100% - ${(activeG.length - 1 - i) * 3}px)`).join(", ");
+      if (orderedActive.length > 1) {
+        el.style.backgroundImage = orderedActive.map((g) => `linear-gradient(${GIDS[g].hue}, ${GIDS[g].hue})`).join(", ");
+        el.style.backgroundPosition = orderedActive.map((_, i) => `0 calc(100% - ${(orderedActive.length - 1 - i) * 3}px)`).join(", ");
         el.style.backgroundSize = "100% 1.5px";
         el.style.backgroundRepeat = "no-repeat";
       } else {
@@ -900,15 +906,293 @@ addEventListener("scroll", () => { if (activeGids().size) { updatePills(); updat
  * ref + phrase, off-screen rows dim with a direction arrow, click to jump.
  * One card per study, visible only while one of its patterns is pinned. */
 const CARDS = {};
+const TRACE_STAGES = {};
 for (const sid of Object.keys(SHEETS)) {
   const rail = document.querySelector(`[data-rail="${sid}"]`);
   const card = document.createElement("div");
   card.className = "pcard";
   rail.prepend(card);
   CARDS[sid] = card;
+  const stage = document.createElement("section");
+  stage.className = "trace-stage";
+  stage.dataset.traceStage = sid;
+  stage.setAttribute("aria-label", `${SHEETS[sid].title} traces`);
+  rail.prepend(stage);
+  TRACE_STAGES[sid] = stage;
+}
+
+function traceTitle(G) {
+  const prefix = `${KIND_LABEL[G.kind]} · `;
+  return G.label.startsWith(prefix) ? G.label.slice(prefix.length) : G.label;
+}
+
+function traceKindClass(kind) {
+  return kind.replace("link:", "").replace(/[^a-z-]/g, "-");
+}
+
+function traceKindMark(kind, hue) {
+  /* one line type — the kind speaks as hue, named in the row's own text */
+  const common = `fill="none" stroke="${hue}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"`;
+  return `<svg class="trace-kind-mark" viewBox="0 0 44 14" aria-hidden="true"><path d="M2 7 H42" ${common}/></svg>`;
+}
+
+function traceOverview(G) {
+  const sheet = document.querySelector(`[data-sheet="${G.study}"]`);
+  const rows = [...sheet.querySelectorAll(".vrow")];
+  const indexes = G.anchors.map((a) => Math.max(0, rows.indexOf(a.el.closest(".vrow"))));
+  const denom = Math.max(1, rows.length - 1);
+  const totals = new Map();
+  const seen = new Map();
+  indexes.forEach((n) => totals.set(n, (totals.get(n) || 0) + 1));
+  const xs = indexes.map((n) => {
+    const base = 7 + (n / denom) * 78;
+    const total = totals.get(n) || 1;
+    if (total === 1) return base;
+    const ordinal = seen.get(n) || 0;
+    seen.set(n, ordinal + 1);
+    const spread = Math.min(14, total * 5);
+    const start = Math.max(7, Math.min(85 - spread, base - spread / 2));
+    return start + (ordinal / (total - 1)) * spread;
+  });
+  const min = Math.min(...xs), max = Math.max(...xs);
+  const hue = G.hue;
+  const cls = traceKindClass(G.kind);
+  const stops = xs.map((x) => `<path d="M${x.toFixed(1)} 5 V13"/>`).join("");
+  return `<svg class="trace-overview is-${cls}" viewBox="0 0 92 18" aria-hidden="true" style="--trace-hue:${hue}">
+    <path class="trace-overview-rule" d="M${min.toFixed(1)} 9 H${max.toFixed(1)}"/>
+    <g class="trace-overview-stops">${stops}</g>
+  </svg>`;
+}
+
+function focusTrace(gid, { pin = true } = {}) {
+  if (!GIDS[gid]) return;
+  if (pin) {
+    /* Set insertion order is our deterministic recency order for the three
+     * quiet comparison lanes. Refocusing a held trace makes it recent. */
+    pinned.delete(gid);
+    pinned.add(gid);
+  }
+  FOCUS_GID = gid;
+  hovered.clear();
+  applyActive();
+}
+
+function updateTraceStages() {
+  for (const sid of Object.keys(SHEETS)) {
+    const stage = TRACE_STAGES[sid];
+    const priorScroll = stage.scrollTop;
+    const priorActive = stage.dataset.active || null;
+    const focusedControl = stage.contains(document.activeElement)
+      ? document.activeElement.closest("[data-trace-focus]")
+      : null;
+    const focusedTrack = focusedControl?.closest(".trace-track");
+    const priorFocus = focusedTrack
+      ? { gid: focusedTrack.dataset.gid, key: focusedControl.dataset.traceFocus }
+      : null;
+    const all = Object.values(GIDS).filter((G) => G.study === sid && G.anchors.length > 1);
+    const held = [...pinned].filter((gid) => GIDS[gid]?.study === sid);
+    const preview = [...hovered].filter((gid) => GIDS[gid]?.study === sid).at(-1) || null;
+    const active = preview || (FOCUS_GID && held.includes(FOCUS_GID) ? FOCUS_GID : held.at(-1)) || null;
+    stage.dataset.active = active || "";
+    stage.innerHTML = "";
+
+    const head = document.createElement("header");
+    head.className = "trace-stage-head";
+    const heading = document.createElement("div");
+    heading.innerHTML = `<span class="trace-kicker">Passage score</span><h3>${SHEETS[sid].title}</h3>`;
+    const meta = document.createElement("span");
+    meta.className = "trace-stage-meta";
+    meta.textContent = `${all.length} ${all.length === 1 ? "trace" : "traces"}${held.length ? ` · ${held.length} held` : ""}${held.length > MAX_MARGIN_TRACES ? ` · ${MAX_MARGIN_TRACES} lined` : ""}`;
+    head.append(heading, meta);
+    stage.appendChild(head);
+
+    if (!all.length) {
+      const empty = document.createElement("p");
+      empty.className = "trace-stage-empty";
+      empty.textContent = "Select words in the passage to begin its first trace.";
+      stage.appendChild(empty);
+      continue;
+    }
+
+    const intro = document.createElement("p");
+    intro.className = "trace-stage-intro";
+    intro.textContent = active
+      ? "The active annotation owns the nearest margin lane. Choose any source moment to return."
+      : "Choose an annotation to draw its source path through the passage margin.";
+    stage.appendChild(intro);
+
+    const list = document.createElement("div");
+    list.className = "trace-list";
+    for (const G of all) {
+      const isHeld = held.includes(G.gid);
+      const isActive = G.gid === active;
+      const track = document.createElement("article");
+      track.className = `trace-track is-${traceKindClass(G.kind)}${isHeld ? " is-held" : ""}${isActive ? " is-active" : ""}`;
+      track.style.setProperty("--trace-hue", G.hue);
+      track.dataset.gid = G.gid;
+      if (G.qaKind) track.dataset.qaKind = G.qaKind;
+      if (G.qaDistance) track.dataset.qaDistance = G.qaDistance;
+      if (G.qaPlacement) track.dataset.qaPlacement = G.qaPlacement;
+
+      const trackHead = document.createElement("button");
+      trackHead.className = "trace-track-head";
+      trackHead.type = "button";
+      trackHead.dataset.traceFocus = "head";
+      trackHead.setAttribute("aria-expanded", isActive);
+      trackHead.innerHTML = `<span class="trace-track-sign">${traceKindMark(G.kind, G.hue)}</span>
+        <span class="trace-track-copy"><span class="trace-track-kind">${KIND_LABEL[G.kind]}</span><strong>${traceTitle(G)}</strong></span>
+        <span class="trace-track-count">${G.anchors.length}</span>${traceOverview(G)}`;
+      trackHead.addEventListener("click", (e) => { e.stopPropagation(); focusTrace(G.gid); });
+      track.appendChild(trackHead);
+
+      if (isActive) {
+        const detail = document.createElement("div");
+        detail.className = "trace-detail";
+        if (G.gid.startsWith("u-")) {
+          const rec = USER.find((pattern) => pattern.id === G.gid);
+          const renameLabel = document.createElement("label");
+          renameLabel.className = "trace-rename";
+          renameLabel.appendChild(Object.assign(document.createElement("span"), { textContent: "Trace name" }));
+          const rename = document.createElement("input");
+          rename.type = "text";
+          rename.value = rec?.label || traceTitle(G);
+          rename.autocomplete = "off";
+          rename.dataset.traceFocus = "rename";
+          rename.setAttribute("aria-label", `Trace name for ${traceTitle(G)}`);
+          rename.addEventListener("click", (e) => e.stopPropagation());
+          rename.addEventListener("input", () => {
+            trackHead.querySelector("strong").textContent = rename.value.trim() || traceTitle(G);
+          });
+          const commitRename = () => {
+            if (!rename.value.trim()) { rename.value = rec?.label || traceTitle(G); return; }
+            renameUser(G.gid, rename.value);
+            const nextTitle = traceTitle(G);
+            trackHead.querySelector("strong").textContent = nextTitle;
+            rename.setAttribute("aria-label", `Trace name for ${nextTitle}`);
+            const legendChip = [...document.querySelectorAll(".legend .chip")]
+              .find((chip) => (chip.dataset.gids || "").split(" ").includes(G.gid));
+            const legendText = legendChip
+              ? [...legendChip.childNodes].find((node) => node.nodeType === Node.TEXT_NODE)
+              : null;
+            if (legendText) legendText.textContent = G.label;
+          };
+          rename.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") { e.preventDefault(); commitRename(); }
+          });
+          rename.addEventListener("change", commitRename);
+          renameLabel.appendChild(rename);
+          detail.appendChild(renameLabel);
+        }
+        const actions = document.createElement("div");
+        actions.className = "trace-actions";
+        const exportBtn = document.createElement("button");
+        exportBtn.type = "button"; exportBtn.textContent = "Export SVG"; exportBtn.dataset.traceFocus = "export";
+        exportBtn.addEventListener("click", (e) => { e.stopPropagation(); exportCard(G.gid); });
+        const release = document.createElement("button");
+        release.type = "button"; release.textContent = isHeld ? "Release" : "Close"; release.dataset.traceFocus = "release";
+        release.addEventListener("click", (e) => {
+          e.stopPropagation();
+          pinned.delete(G.gid);
+          hovered.delete(G.gid);
+          FOCUS_GID = [...pinned].filter((gid) => GIDS[gid]?.study === sid).at(-1) || null;
+          applyActive();
+        });
+        actions.append(exportBtn, release);
+        if (G.gid.startsWith("u-")) {
+          const add = document.createElement("button");
+          add.type = "button"; add.textContent = "Add words"; add.dataset.traceFocus = "add";
+          add.addEventListener("click", (e) => { e.stopPropagation(); startExtend(G.gid); });
+          const del = document.createElement("button");
+          del.type = "button"; del.className = "is-danger"; del.textContent = "Delete"; del.dataset.traceFocus = "delete";
+          del.addEventListener("click", (e) => { e.stopPropagation(); deleteUserPattern(G.gid); });
+          actions.prepend(add); actions.append(del);
+        }
+        detail.appendChild(actions);
+
+        const score = document.createElement("ol");
+        score.className = `trace-score is-${traceKindClass(G.kind)}`;
+        score.setAttribute("aria-label", `${traceTitle(G)} source path`);
+        G.anchors.forEach((a, index) => {
+          const member = document.createElement("li");
+          member.className = "trace-member";
+          member._el = a.el;
+          const jump = document.createElement("button");
+          jump.type = "button";
+          jump.className = "trace-member-jump";
+          jump.dataset.traceFocus = `member-${index}`;
+          const [book, ch, v] = a.ref.split(".");
+          jump.setAttribute("aria-label", `${book} ${ch}:${v}, ${a.phrase}`);
+          jump.innerHTML = `<span class="trace-stop" aria-hidden="true">${String(index + 1).padStart(2, "0")}</span>
+            <span class="trace-member-copy"><span class="trace-member-ref">${book} ${ch}:${v}</span><span class="trace-member-phrase">${a.phrase}</span></span>
+            <span class="trace-member-state" aria-hidden="true"></span>`;
+          jump.addEventListener("click", (e) => {
+            e.stopPropagation();
+            a.el.scrollIntoView({ behavior: REDUCED_MOTION ? "auto" : "smooth", block: "center" });
+            requestAnimationFrame(() => { FOCUS_GID = G.gid; applyActive(); });
+          });
+          member.appendChild(jump);
+          if (G.gid.startsWith("u-")) {
+            const remove = document.createElement("button");
+            remove.type = "button"; remove.className = "trace-member-remove";
+            remove.dataset.traceFocus = `remove-${index}`;
+            remove.textContent = "Remove";
+            remove.addEventListener("click", (e) => { e.stopPropagation(); removeMember(G.gid, a.ref, a.phrase, a.occ); });
+            member.appendChild(remove);
+          }
+          score.appendChild(member);
+        });
+        detail.appendChild(score);
+
+        const noteLabel = document.createElement("label");
+        noteLabel.className = "trace-note";
+        noteLabel.appendChild(Object.assign(document.createElement("span"), { textContent: "Observation" }));
+        const note = document.createElement("textarea");
+        note.rows = 2;
+        note.dataset.traceFocus = "note";
+        note.placeholder = "Why do these moments belong together?";
+        note.value = getNote(G.gid);
+        /* The score is rebuilt when another trace receives focus. Persist on
+         * input so that rebuild cannot outrun a pending blur/change event. */
+        note.addEventListener("input", () => setNote(G.gid, note.value));
+        note.addEventListener("click", (e) => e.stopPropagation());
+        noteLabel.appendChild(note);
+        detail.appendChild(noteLabel);
+        track.appendChild(detail);
+      }
+      list.appendChild(track);
+    }
+    stage.appendChild(list);
+    if (priorFocus) {
+      const nextTrack = [...list.querySelectorAll(".trace-track")]
+        .find((track) => track.dataset.gid === priorFocus.gid);
+      const nextFocus = nextTrack?.querySelector(`[data-trace-focus="${priorFocus.key}"]`)
+        || nextTrack?.querySelector(".trace-track-head");
+      nextFocus?.focus({ preventScroll: true });
+    }
+    if (active && active !== priorActive) {
+      const activeTrack = [...list.querySelectorAll(".trace-track")].find((track) => track.dataset.gid === active);
+      requestAnimationFrame(() => {
+        const stageRect = stage.getBoundingClientRect();
+        const trackRect = activeTrack?.getBoundingClientRect();
+        const trackTop = trackRect ? trackRect.top - stageRect.top + stage.scrollTop : 0;
+        stage.scrollTop = Math.max(0, trackTop - head.offsetHeight);
+        updateCardView();
+      });
+    } else {
+      stage.scrollTop = priorScroll;
+    }
+  }
+  updateCardView();
 }
 
 function updateCard() {
+  const inTraces = ROUTE === "traces";
+  for (const stage of Object.values(TRACE_STAGES)) stage.hidden = !inTraces;
+  for (const card of Object.values(CARDS)) card.hidden = inTraces;
+  if (inTraces) {
+    updateTraceStages();
+    return;
+  }
   for (const sid of Object.keys(SHEETS)) {
     const card = CARDS[sid];
     const gids = [...pinned].filter((g) => GIDS[g].study === sid);
@@ -1007,6 +1291,19 @@ function updateCardView() {
     row.classList.toggle("off", !!off);
     row.querySelector(".pr-dir").textContent = off;
   });
+  const members = [...document.querySelectorAll(".trace-track.is-active .trace-member")];
+  let closest = null;
+  let closestDistance = Infinity;
+  members.forEach((member) => {
+    const r = member._el.getBoundingClientRect();
+    const off = r.bottom < 72 ? "↑" : r.top > innerHeight - 36 ? "↓" : "";
+    member.classList.toggle("is-away", !!off);
+    const state = member.querySelector(".trace-member-state");
+    state.textContent = off || "here";
+    const distance = Math.abs((r.top + r.bottom) / 2 - innerHeight * 0.42);
+    if (!off && distance < closestDistance) { closest = member; closestDistance = distance; }
+  });
+  members.forEach((member) => member.classList.toggle("is-current", member === closest));
 }
 
 /* ── export — a pinned pattern as a letterpress card (SVG) ─
@@ -1043,7 +1340,7 @@ function exportCard(gid) {
   const y0 = top + rowH / 2, y1 = top + (rows.length - 1) * rowH + rowH / 2;
   const spine = rows.length > 2
     ? `<path d="M ${spineX} ${y0} V ${y1}" stroke="${hue}" stroke-width="1.2" opacity="0.55"/>`
-    : `<path d="M ${spineX + 24} ${y0} C ${spineX - 14} ${y0 + 4}, ${spineX - 14} ${y1 - 4}, ${spineX + 24} ${y1}" fill="none" stroke="${hue}" stroke-width="1.4"${G.kind === "link:echo" ? ' stroke-dasharray="0.1 6" stroke-linecap="round" stroke-width="2"' : ""}/>`;
+    : `<path d="M ${spineX + 24} ${y0} C ${spineX - 14} ${y0 + 4}, ${spineX - 14} ${y1 - 4}, ${spineX + 24} ${y1}" fill="none" stroke="${hue}" stroke-width="1.4" stroke-linecap="round"/>`;
   const marks = rows.map((r, i) => {
     const y = top + i * rowH + rowH / 2;
     return `<path d="M ${spineX} ${y} H ${refX - 26}" stroke="${hue}" stroke-width="1" opacity="0.35"/>
@@ -1201,8 +1498,13 @@ function sessionBar(msg) {
   const anchor = G.members[G.members.length - 1];
   if (anchor) placeAuthbar(anchor.range.getBoundingClientRect());
   else {
-    const card = document.querySelector(`[data-rail="${G.study}"] .pcard`);
-    if (card) placeAuthbar(card.getBoundingClientRect());
+    const rail = document.querySelector(`[data-rail="${G.study}"]`);
+    const activeTrace = G.extend && ROUTE === "traces"
+      ? [...rail.querySelectorAll(".trace-track")]
+        .find((track) => track.dataset.gid === G.extend)?.querySelector(".trace-track-head")
+      : null;
+    const target = activeTrace || rail.querySelector(".pcard:not([hidden])");
+    if (target) placeAuthbar(target.getBoundingClientRect());
   }
 }
 function startSession(kind, info) {
@@ -1290,18 +1592,23 @@ function liveWire(e) {
     const rects = [...m.range.getClientRects()];
     for (const r of rects) {
       S("path", {
-        d: `M ${r.left - M.base.left} ${r.bottom - M.base.top + 2.5} H ${r.right - M.base.left}`,
+        d: `M ${r.left - M.base.left} ${r.bottom - M.base.top - TG.constants.UNDERLINE_CENTER_OFFSET} H ${r.right - M.base.left}`,
         stroke: hue, "stroke-width": 1.6, fill: "none", "stroke-linecap": "round",
       }, g);
     }
-    if (rects[0]) last = { x: rects[0].left - M.base.left - 2, y: rects[0].bottom - M.base.top + 2.5 };
-    if (last) S("circle", { cx: last.x, cy: last.y, r: 2, fill: hue }, g);
+    if (rects[0]) last = {
+      x: rects[0].left - M.base.left - (TG.constants.TOUCH_RADIUS - TG.constants.TOUCH_OVERLAP),
+      y: rects[0].bottom - M.base.top - TG.constants.UNDERLINE_CENTER_OFFSET,
+    };
+    if (last) S("circle", { cx: last.x, cy: last.y, r: TG.constants.TOUCH_RADIUS, fill: hue }, g);
   }
   if (last && e) {
+    /* the provisional wire is the same line as everything else —
+     * its uncommitted state reads as reticence, not a dash pattern */
     S("path", {
       d: `M ${last.x} ${last.y} L ${e.clientX - M.base.left} ${e.clientY - M.base.top}`,
       stroke: hue, "stroke-width": 1.2, fill: "none",
-      "stroke-dasharray": "0.1 5", "stroke-linecap": "round", opacity: 0.7,
+      "stroke-linecap": "round", opacity: 0.45,
     }, g);
   }
 }
@@ -1330,7 +1637,6 @@ function wire() {
       if (!t || !scope.contains(t)) return;
       clearTimeout(sleepTimer);
       clearTimeout(hoverTimer);
-      if (t.classList.contains("pk")) LAST_TOUCH = t;
       hoverTimer = setTimeout(() => {
         const gs = gidsOf(t);
         hovered.clear();
@@ -1371,7 +1677,6 @@ function wire() {
         else gs.forEach((g) => pinned.add(g));
       }
       // the display and the whisper follow the click immediately
-      if (t.classList.contains("pk")) LAST_TOUCH = t;
       gs.forEach((g) => hovered.delete(g));
       FOCUS_GID = gs.find((x) => pinned.has(x)) || [...pinned].pop() || null;
       applyActive();
@@ -1388,8 +1693,58 @@ function wire() {
   document.getElementById("route-seg").addEventListener("click", (e) => {
     const b = e.target.closest("button"); if (!b) return;
     ROUTE = b.dataset.route;
-    document.querySelectorAll("#route-seg button").forEach((x) => x.setAttribute("aria-checked", x === b));
+    localStorage.setItem(ROUTE_KEY, ROUTE);
+    document.body.dataset.route = ROUTE;
+    syncRadioGroup(e.currentTarget, b);
     redrawActive();
+  });
+  document.getElementById("density-btn").addEventListener("click", (e) => {
+    DENSITY_MODE = !DENSITY_MODE;
+    e.currentTarget.setAttribute("aria-pressed", DENSITY_MODE);
+    e.currentTarget.textContent = DENSITY_MODE ? "Dense Psalm · 14" : "Dense Psalm";
+    if (!DENSITY_MODE) {
+      for (const gid of [...pinned, ...hovered]) {
+        if (gid.startsWith("stress-")) { pinned.delete(gid); hovered.delete(gid); }
+      }
+      if (FOCUS_GID?.startsWith("stress-")) FOCUS_GID = [...pinned].at(-1) || null;
+    }
+    rebuildAll();
+    applyActive();
+  });
+  document.getElementById("long-btn").addEventListener("click", (e) => {
+    LONG_MODE = !LONG_MODE;
+    e.currentTarget.setAttribute("aria-pressed", LONG_MODE);
+    e.currentTarget.textContent = LONG_MODE ? "Long text · 22" : "Long text";
+    document.body.dataset.longText = LONG_MODE ? "true" : "false";
+    if (!LONG_MODE) {
+      for (const gid of [...pinned, ...hovered]) {
+        if (gid.startsWith("revstress-")) { pinned.delete(gid); hovered.delete(gid); }
+      }
+      if (FOCUS_GID?.startsWith("revstress-")) FOCUS_GID = [...pinned].at(-1) || null;
+    }
+    rebuildAll();
+    applyActive();
+    if (LONG_MODE) requestAnimationFrame(() => {
+      document.getElementById("study-rev")?.scrollIntoView({ behavior: REDUCED_MOTION ? "auto" : "smooth", block: "start" });
+    });
+  });
+  document.getElementById("angles-btn").addEventListener("click", (e) => {
+    ANGLE_MODE = !ANGLE_MODE;
+    e.currentTarget.setAttribute("aria-pressed", ANGLE_MODE);
+    e.currentTarget.textContent = ANGLE_MODE ? `Angle proof · ${GEOMETRY_FIXTURE.patterns.length}` : "Angle proof";
+    document.body.dataset.angleProof = ANGLE_MODE ? "true" : "false";
+    document.getElementById("study-qa").hidden = !ANGLE_MODE;
+    if (!ANGLE_MODE) {
+      for (const gid of [...pinned, ...hovered]) {
+        if (gid.startsWith("qa-")) { pinned.delete(gid); hovered.delete(gid); }
+      }
+      if (FOCUS_GID?.startsWith("qa-")) FOCUS_GID = [...pinned].at(-1) || null;
+    }
+    rebuildAll();
+    applyActive();
+    if (ANGLE_MODE) requestAnimationFrame(() => {
+      document.getElementById("study-qa")?.scrollIntoView({ behavior: REDUCED_MOTION ? "auto" : "smooth", block: "start" });
+    });
   });
   document.getElementById("reveal-btn").addEventListener("click", (e) => {
     const on = document.body.classList.toggle("reveal");
@@ -1397,15 +1752,44 @@ function wire() {
   });
   document.getElementById("atm-seg").addEventListener("click", (e) => {
     const b = e.target.closest("button"); if (!b) return;
-    document.querySelectorAll("#atm-seg button").forEach((x) => x.setAttribute("aria-checked", x === b));
+    syncRadioGroup(e.currentTarget, b);
     document.body.className = `theme-${b.dataset.theme}` + (document.body.classList.contains("reveal") ? " reveal" : "");
     requestAnimationFrame(redrawActive);
   });
-  addEventListener("resize", () => requestAnimationFrame(redrawActive));
+  addEventListener("resize", () => {
+    /* Responsive reflow changes every track's offset. Force the active row to
+     * reclaim the visible score position instead of restoring stale scrollTop. */
+    for (const stage of Object.values(TRACE_STAGES)) stage.dataset.active = "";
+    requestAnimationFrame(redrawActive);
+  });
 }
 function redrawActive() {
   document.querySelectorAll("svg.overlay").forEach((s) => { s.dataset.key = "~"; });
   applyActive();
+}
+
+function syncRadioGroup(group, selected) {
+  group.querySelectorAll('button[role="radio"]').forEach((button) => {
+    const checked = button === selected;
+    button.setAttribute("aria-checked", checked);
+    button.tabIndex = checked ? 0 : -1;
+  });
+}
+
+function wireRadioKeys(group) {
+  group.addEventListener("keydown", (event) => {
+    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+    const buttons = [...group.querySelectorAll('button[role="radio"]')];
+    const current = Math.max(0, buttons.indexOf(document.activeElement));
+    const next = event.key === "Home"
+      ? 0
+      : event.key === "End"
+        ? buttons.length - 1
+        : (current + (event.key === "ArrowRight" ? 1 : -1) + buttons.length) % buttons.length;
+    event.preventDefault();
+    buttons[next].focus();
+    buttons[next].click();
+  });
 }
 
 /* ── boot ────────────────────────────────────────────────── */
@@ -1416,11 +1800,19 @@ function rebuildAll() {
     const pre = document.querySelector(`[data-payload="${s}"]`);
     if (!pre) continue;
     const mine = USER.filter((p) => refStudy(p.members[0].ref) === s);
-    pre.textContent = JSON.stringify(mine.length ? { builtIn: PATTERNS[s], yours: mine } : PATTERNS[s], null, 2);
+    const builtIn = s === "qa" ? (ANGLE_MODE ? GEOMETRY_FIXTURE.patterns : []) : PATTERNS[s];
+    pre.textContent = JSON.stringify(mine.length ? { builtIn, yours: mine } : builtIn, null, 2);
   }
 }
 rebuildAll();
 buildRevPanel();
 wire();
+document.body.dataset.route = ROUTE;
+const routeGroup = document.getElementById("route-seg");
+const atmosphereGroup = document.getElementById("atm-seg");
+syncRadioGroup(routeGroup, routeGroup.querySelector(`[data-route="${ROUTE}"]`));
+syncRadioGroup(atmosphereGroup, atmosphereGroup.querySelector('[aria-checked="true"]'));
+wireRadioKeys(routeGroup);
+wireRadioKeys(atmosphereGroup);
 applyActive();
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(redrawActive);

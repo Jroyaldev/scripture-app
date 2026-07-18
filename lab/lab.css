@@ -65,9 +65,9 @@ body.theme-glass, body.theme-dark-glass {
   padding: 10px 24px; background: color-mix(in srgb, var(--bg-surface) 92%, transparent);
   border-bottom: 1px solid var(--border-subtle); backdrop-filter: blur(10px);
 }
-.lab-brand { font-family: var(--font-reading); font-size: 1.15rem; font-weight: 600; }
+.lab-brand { min-width: 0; font-family: var(--font-reading); font-size: 1.15rem; font-weight: 600; }
 .lab-sub { font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-tertiary); font-weight: 400; }
-.lab-controls { display: flex; gap: 16px; align-items: center; }
+.lab-controls { min-width: 0; display: flex; gap: 12px; align-items: center; }
 .seg { display: flex; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 999px; padding: 2px; }
 .seg button {
   appearance: none; border: 0; background: transparent; color: var(--text-secondary);
@@ -93,6 +93,7 @@ body.theme-glass, body.theme-dark-glass {
 .dot.k-parallel { background: var(--k-parallel); } .dot.k-mirror { background: var(--k-mirror); }
 .dot.k-series { background: var(--k-series); }
 .study-note { margin: 0 0 14px; color: var(--text-tertiary); font-size: 0.86rem; }
+.study { scroll-margin-top: 84px; }
 
 .study-body { display: grid; grid-template-columns: minmax(540px, 720px); }
 .study-body.with-panel { grid-template-columns: minmax(540px, 720px) 1fr; gap: 24px; align-items: start; }
@@ -143,7 +144,7 @@ body.theme-glass, body.theme-dark-glass {
 .pk.on, body.reveal .pk {
   background-size: 100% 1.5px;
 }
-.pk.stack { padding-bottom: 4px; }
+.pk.stack { padding-bottom: 1px; }
 .pk.pk-shared:not(.on) {
   color: color-mix(in srgb, var(--gold) calc(var(--tint) + 2%), var(--text-primary));
   background-color: color-mix(in srgb, var(--gold) var(--wash), transparent);
@@ -162,6 +163,12 @@ body.theme-glass, body.theme-dark-glass {
 .overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
 /* pinned-but-unfocused wires stay in the harness, quietly */
 .overlay .ghost-wire { opacity: 0.32; transition: opacity var(--tr); }
+.overlay .margin-annotation {
+  opacity: 0.2;
+  transition: opacity 180ms ease;
+}
+.overlay .margin-annotation.is-focus { opacity: 0.92; }
+.overlay .margin-annotation.is-held { opacity: 0.22; }
 
 /* whisper — the pattern names itself beside the touched words */
 .whisper {
@@ -362,4 +369,429 @@ body.theme-glass, body.theme-dark-glass {
   background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: var(--r-md);
   padding: 14px 16px; font: 400 0.72rem/1.5 var(--font-mono); color: var(--text-secondary);
   overflow: auto; max-height: 320px;
+}
+
+/* ── Traces · bounded passage score ────────────────────────
+ * Reading keeps ink inside the page. Traces moves the passage's architecture
+ * beside it: a stable list, one expanded source path, no margin cable soup. */
+.trace-stage[hidden] { display: none; }
+.trace-stage {
+  width: min(420px, 100%);
+  max-height: calc(100vh - 96px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: color-mix(in srgb, var(--bg-surface) 94%, transparent);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-lg);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-medium) transparent;
+}
+body.theme-glass .trace-stage,
+body.theme-dark-glass .trace-stage {
+  background: color-mix(in srgb, var(--bg-surface) 76%, transparent);
+  backdrop-filter: blur(18px) saturate(1.08);
+}
+.trace-stage-head {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 20px 10px;
+  background: color-mix(in srgb, var(--bg-surface) 96%, transparent);
+  backdrop-filter: blur(12px);
+}
+.trace-kicker {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-tertiary);
+  font: 500 0.6rem/1 var(--font-mono);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.trace-stage-head h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font: 600 1.2rem/1.15 var(--font-reading);
+}
+.trace-stage-meta {
+  flex: none;
+  padding-bottom: 2px;
+  color: var(--text-tertiary);
+  font: 500 0.64rem/1.2 var(--font-mono);
+  white-space: nowrap;
+}
+.trace-stage-intro,
+.trace-stage-empty {
+  margin: 0;
+  padding: 0 20px 16px;
+  color: var(--text-tertiary);
+  font: 400 0.78rem/1.45 var(--font-ui);
+}
+.trace-list {
+  border-top: 1px solid var(--border-subtle);
+}
+.trace-track {
+  position: relative;
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background var(--tr), opacity var(--tr);
+}
+.trace-track:last-child { border-bottom: 0; }
+.trace-track.is-held:not(.is-active) {
+  background: color-mix(in srgb, var(--trace-hue) 3%, transparent);
+}
+.trace-track.is-active {
+  background: color-mix(in srgb, var(--trace-hue) 7%, var(--bg-surface));
+  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--trace-hue) 82%, transparent);
+}
+.trace-track-head {
+  width: 100%;
+  min-height: 62px;
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) 24px 92px;
+  align-items: center;
+  gap: 9px;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 9px 14px 9px 16px;
+  text-align: left;
+  cursor: pointer;
+}
+.trace-track-head:hover { background: color-mix(in srgb, var(--trace-hue) 5%, transparent); }
+.trace-track-head:focus-visible,
+.trace-member-jump:focus-visible,
+.trace-actions button:focus-visible,
+.trace-rename input:focus-visible,
+.trace-note textarea:focus-visible,
+.trace-member-remove:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--trace-hue, var(--gold)) 72%, transparent);
+  outline-offset: -2px;
+}
+.trace-track-sign { display: grid; place-items: center; }
+.trace-kind-mark { width: 44px; height: 14px; overflow: visible; }
+.trace-track-copy { min-width: 0; display: grid; gap: 3px; }
+.trace-track-kind {
+  color: var(--text-tertiary);
+  font: 500 0.57rem/1 var(--font-mono);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+.trace-track-copy strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font: 500 0.78rem/1.25 var(--font-ui);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.trace-track.is-active .trace-track-copy strong { color: var(--text-primary); }
+.trace-track-count {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 50%;
+  color: var(--text-tertiary);
+  font: 500 0.6rem/1 var(--font-mono);
+}
+.trace-overview { width: 92px; height: 18px; overflow: visible; }
+.trace-overview path {
+  fill: none;
+  stroke: color-mix(in srgb, var(--trace-hue) 62%, var(--text-tertiary));
+  stroke-width: 1.2;
+  stroke-linecap: round;
+}
+.trace-overview-stops path { opacity: 0.55; }
+/* one line type: the overview rule never varies by kind — hue carries it */
+
+.trace-detail {
+  padding: 0 16px 18px;
+  animation: trace-detail-in 220ms cubic-bezier(.2,.72,.2,1) both;
+}
+.trace-rename {
+  display: grid;
+  gap: 5px;
+  margin: 2px 0 8px 55px;
+}
+.trace-rename span {
+  color: var(--text-tertiary);
+  font: 500 0.56rem/1 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.trace-rename input {
+  width: 100%;
+  appearance: none;
+  border: 0;
+  border-bottom: 1px solid var(--border-medium);
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-primary);
+  padding: 4px 0 6px;
+  font: 500 0.78rem/1.2 var(--font-ui);
+}
+@keyframes trace-detail-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.trace-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0 12px 55px;
+}
+.trace-actions button,
+.trace-member-remove {
+  appearance: none;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-tertiary);
+  padding: 5px 7px;
+  font: 500 0.64rem/1 var(--font-ui);
+  cursor: pointer;
+}
+.trace-actions button:hover,
+.trace-member-remove:hover { color: var(--text-primary); background: var(--bg-canvas); }
+.trace-actions button.is-danger:hover { color: var(--k-contrast); }
+
+.trace-score {
+  position: relative;
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding: 2px 0;
+  list-style: none;
+}
+/* one line type: the score spine is the same rule for every kind */
+.trace-score::before {
+  content: "";
+  position: absolute;
+  left: 21px;
+  top: 26px;
+  bottom: 26px;
+  width: 1.5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--trace-hue) 64%, transparent);
+  pointer-events: none;
+}
+.trace-member {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.trace-member-jump {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-width: 0;
+  min-height: 54px;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 10px;
+  appearance: none;
+  border: 0;
+  border-radius: var(--r-md);
+  background: transparent;
+  color: inherit;
+  padding: 7px 7px 7px 0;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--tr), opacity var(--tr);
+}
+.trace-member-jump:hover { background: color-mix(in srgb, var(--trace-hue) 8%, transparent); }
+.trace-stop {
+  justify-self: center;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 1.25px solid color-mix(in srgb, var(--trace-hue) 78%, var(--border-medium));
+  border-radius: 50%;
+  background: var(--bg-surface);
+  color: var(--text-tertiary);
+  font: 500 0.53rem/1 var(--font-mono);
+  transition: background var(--tr), color var(--tr), transform var(--tr);
+}
+.trace-score.is-hinge .trace-stop { border-radius: 5px; }
+.trace-member.is-current .trace-stop {
+  background: var(--trace-hue);
+  color: var(--bg-surface);
+  transform: scale(1.05);
+}
+.trace-member-copy { min-width: 0; display: grid; gap: 3px; }
+.trace-member-ref {
+  color: var(--text-tertiary);
+  font: 500 0.57rem/1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.trace-member-phrase {
+  min-width: 0;
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--text-primary);
+  font: 400 0.84rem/1.3 var(--font-reading);
+  text-overflow: ellipsis;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.trace-member-state {
+  color: var(--text-tertiary);
+  font: 500 0.56rem/1 var(--font-mono);
+  text-align: right;
+  text-transform: uppercase;
+}
+.trace-member.is-away .trace-member-jump { opacity: 0.62; }
+.trace-member-remove { flex: none; }
+.trace-note {
+  display: grid;
+  gap: 6px;
+  margin: 10px 2px 0 55px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-subtle);
+}
+.trace-note > span {
+  color: var(--text-tertiary);
+  font: 500 0.58rem/1 var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.trace-note textarea {
+  width: 100%;
+  resize: vertical;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-primary);
+  padding: 6px 0;
+  font: italic 400 0.8rem/1.4 var(--font-reading);
+}
+.trace-note textarea::placeholder { color: var(--text-tertiary); }
+.density-btn[aria-pressed="true"],
+.long-btn[aria-pressed="true"] {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  box-shadow: inset 0 -2px 0 var(--gold);
+}
+
+body[data-route="traces"] .sheet.awake .pk.on:not(.trace-focus) {
+  color: color-mix(in srgb, var(--text-primary) 64%, transparent);
+  background-size: 100% 1px;
+  background-color: color-mix(in srgb, var(--h) 5%, transparent);
+}
+body[data-route="traces"] .sheet.awake .pk.trace-focus {
+  color: var(--text-primary);
+  background-color: color-mix(in srgb, var(--h) 12%, transparent);
+}
+
+.sheet-geometry .vrow { padding-block: 1px; }
+.sheet-geometry .vrow .vtext { font-size: 1rem; line-height: 1.65; }
+.sheet-geometry .qa-line { display: block; white-space: nowrap; }
+.sheet-geometry .qa-line[data-align="middle"] { text-align: center; }
+.sheet-geometry .qa-line[data-align="right"] { text-align: right; }
+body[data-route="traces"] .legend { display: none; }
+/* The matrix remains a Reading aid. In Traces it competed with the passage
+ * score for the same margin and created two nested scroll regions. */
+body[data-route="traces"] .rail .panel { display: none; }
+
+@media (max-width: 1360px) {
+  .lab-sub { display: none; }
+  .lab-controls { gap: 8px; }
+}
+
+@media (max-width: 1100px) {
+  .lab-main { padding-inline: 22px; }
+  .study-body.with-panel { grid-template-columns: minmax(0, 1fr) minmax(282px, 340px); gap: 18px; }
+  .sheet { min-width: 0; padding-left: 98px; padding-right: 30px; }
+  .trace-track-head { grid-template-columns: 42px minmax(0, 1fr) 24px 72px; padding-inline: 12px; }
+  .trace-overview { width: 72px; }
+}
+
+@media (max-width: 860px) {
+  .lab-topbar { flex-wrap: wrap; gap: 8px; padding: 10px 16px; }
+  .lab-brand { width: 100%; }
+  .lab-controls {
+    width: 100%;
+    display: grid;
+    grid-template-columns: max-content max-content max-content max-content minmax(0, 1fr);
+    gap: 8px;
+    overflow: visible;
+    padding-bottom: 0;
+  }
+  #atm-seg {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: 100%;
+  }
+  #atm-seg button { padding-inline: 8px; }
+  .lab-main { padding: 22px 16px 88px; gap: 44px; }
+  .study-body.with-panel,
+  .study-body { grid-template-columns: minmax(0, 1fr); }
+  .study-body.with-panel { gap: 14px; }
+  .rail {
+    position: static;
+    max-height: none;
+    width: 100%;
+  }
+  .trace-stage { width: 100%; max-height: min(72vh, 640px); }
+  .pcard { width: 100%; max-height: none; }
+  .rail .panel,
+  body[data-route="traces"] .rail .panel { max-height: none; }
+  .sheet { width: 100%; min-width: 0; }
+}
+
+@media (max-width: 600px) {
+  .lab-sub { display: none; }
+  .lab-controls { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  #route-seg {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+  .ghost-btn { width: 100%; }
+  .seg button { padding-inline: 11px; }
+  .ghost-btn { padding-inline: 12px; }
+  .study-head h2 { flex-wrap: wrap; gap: 7px; }
+  .kind-tags { width: 100%; flex-wrap: wrap; }
+  .kind-tags .dot:first-child { margin-left: 0; }
+  .study-note { line-height: 1.45; }
+  .sheet {
+    border-radius: var(--r-md);
+    padding: 24px 18px 22px 62px;
+  }
+  .vrow .vnum { transform: translateX(-27px); }
+  .vrow .vtext { font-size: 1rem; line-height: 1.62; }
+  .sheet-compact .vrow .vtext { font-size: 0.9rem; }
+  .trace-stage-head { padding: 17px 16px 9px; }
+  .trace-stage-intro,
+  .trace-stage-empty { padding-inline: 16px; }
+  .trace-track-head { grid-template-columns: 40px minmax(0, 1fr) 22px 62px; gap: 7px; min-height: 60px; }
+  .trace-overview { width: 62px; }
+  .trace-detail { padding-inline: 12px; }
+  .trace-rename { margin-left: 48px; }
+  .trace-actions { padding-left: 48px; flex-wrap: wrap; }
+  .trace-member-jump { grid-template-columns: 38px minmax(0, 1fr) 24px; min-height: 58px; }
+  .trace-note { margin-left: 48px; }
+  .payload pre { padding-inline: 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
