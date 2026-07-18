@@ -509,8 +509,11 @@ function drawThread(g, rects, hue, laneX, touchY) {
   rects.forEach((r, i) => {
     const frac = (yBot === yTop) ? 0 : (flip ? (yBot - ys[i]) / (yBot - yTop) : (ys[i] - yTop) / (yBot - yTop));
     const delay = 40 + dur * frac * 0.85;
+    // the shoulder curves in from the side the spine actually exists on:
+    // the topmost member joins from below, everyone else from above
+    const dy = ys[i] <= yTop + 1 ? 6 : -6;
     const l = S("path", {
-      d: `M ${laneX} ${ys[i] - 6} Q ${laneX} ${ys[i]} ${laneX + 5.5} ${ys[i]} H ${r.x - 2}`,
+      d: `M ${laneX} ${ys[i] + dy} Q ${laneX} ${ys[i]} ${laneX + 5.5} ${ys[i]} H ${r.x - 2}`,
       fill: "none", stroke: hue, "stroke-width": 1, "stroke-linecap": "round", opacity: 0.25,
     }, g);
     animFade(l, 200, delay);
