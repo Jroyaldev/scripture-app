@@ -264,6 +264,37 @@ body.theme-glass, body.theme-dark-glass {
 .authbar .ak i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
 .authbar .ak.act { background: var(--gold-soft); color: var(--text-primary); }
 .authbar .hint { font: 400 0.68rem var(--font-mono); color: var(--text-tertiary); padding: 0 4px; }
+.authbar.palette { flex-direction: column; align-items: stretch; border-radius: 16px; padding: 5px 6px 6px; }
+.authrow { display: flex; gap: 2px; }
+.authdef {
+  font: 400 0.64rem var(--font-mono); color: var(--text-tertiary);
+  border-top: 1px dashed var(--border-subtle); margin-top: 4px; padding: 5px 10px 1px;
+  min-height: 1.2em; letter-spacing: 0.02em;
+}
+
+/* undo toast */
+.toast {
+  position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(6px);
+  z-index: 70; display: flex; align-items: center; gap: 12px;
+  background: color-mix(in srgb, var(--bg-surface) 96%, transparent); backdrop-filter: blur(8px);
+  border: 1px solid var(--border-subtle); border-radius: 999px;
+  padding: 7px 8px 7px 16px; box-shadow: 0 8px 26px rgba(56, 43, 27, 0.16);
+  font: 400 0.7rem var(--font-mono); color: var(--text-secondary);
+  opacity: 0; pointer-events: none; transition: opacity 180ms ease, transform 180ms ease;
+}
+.toast.on { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+.toast button {
+  appearance: none; border: 0; cursor: pointer; background: var(--gold-soft);
+  color: var(--gold); font: 500 0.7rem var(--font-mono); letter-spacing: 0.04em;
+  padding: 4px 12px; border-radius: 999px; transition: background var(--tr);
+}
+.toast button:hover { background: color-mix(in srgb, var(--gold) 26%, transparent); }
+
+/* first-mark hint */
+.mark-hint {
+  margin-top: 10px; font: 400 0.66rem var(--font-mono); letter-spacing: 0.04em;
+  color: var(--text-tertiary); opacity: 0.75;
+}
 
 /* legend — quiet affordance row, hover to awaken */
 .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--border-subtle); }

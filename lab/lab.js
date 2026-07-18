@@ -89,15 +89,48 @@ function renameUser(gid, label) {
   const G = GIDS[gid];
   if (G) G.label = `${KIND_LABEL[G.kind]} · ${rec.label}`;
 }
+/* undo — destructive edits keep a six-second door open */
+const toast = document.createElement("div");
+toast.className = "toast";
+document.body.appendChild(toast);
+let undoTimer = 0;
+function offerUndo(msg, snapshot, gidToRestore) {
+  toast.innerHTML = "";
+  const span = document.createElement("span"); span.textContent = msg;
+  const btn = document.createElement("button"); btn.textContent = "undo";
+  btn.addEventListener("click", () => {
+    USER = JSON.parse(snapshot);
+    saveUser();
+    rebuildAll();
+    if (gidToRestore) pinned.add(gidToRestore);
+    applyActive();
+    clearTimeout(undoTimer);
+    toast.classList.remove("on");
+  });
+  toast.append(span, btn);
+  toast.classList.add("on");
+  clearTimeout(undoTimer);
+  undoTimer = setTimeout(() => toast.classList.remove("on"), 6000);
+}
+
 function removeMember(gid, ref, phrase, occ = 0) {
   const rec = USER.find((p) => p.id === gid);
   if (!rec) return;
+  const snap = JSON.stringify(USER);
   rec.members = rec.members.filter((m) => !(m.ref === ref && m.phrase === phrase && (m.occ || 0) === occ));
-  if (rec.members.length < 2) { deleteUserPattern(gid); return; }
+  if (rec.members.length < 2) {
+    USER = USER.filter((p) => p.id !== gid);
+    saveUser();
+    pinned.delete(gid); hovered.delete(gid);
+    rebuildAll(); applyActive();
+    offerUndo("mark deleted — a pattern needs two members", snap, gid);
+    return;
+  }
   if (!rec.custom) rec.label = userLabel(rec.kind, rec.members);
   saveUser();
   rebuildAll();
   applyActive();
+  offerUndo("words removed", snap, gid);
 }
 function refStudy(ref) {
   const chKey = ref.split(".").slice(0, 2).join(".");
@@ -247,6 +280,13 @@ function buildSheets() {
       legend.appendChild(chip);
     }
     sheet.appendChild(legend);
+    // until the first mark exists, the first sheet teaches the gesture
+    if (id === "psa" && USER.length === 0) {
+      const hint = document.createElement("div");
+      hint.className = "mark-hint";
+      hint.textContent = "✎ select any words to begin a pattern of your own";
+      sheet.appendChild(hint);
+    }
   }
 }
 
@@ -402,8 +442,21 @@ function showWhisper(pk) {
   const sheet = pk.closest(".sheet");
   const wh = sheet.querySelector(".whisper");
   const gids = pk.dataset.gids.split(" ");
-  wh.textContent = gids.map((g) => GIDS[g].label).join("  +  ");
-  wh.style.color = GIDS[gids[0]].hue;
+  let text, hueGid = gids[0];
+  if (gids.length === 1) {
+    text = GIDS[gids[0]].label;
+  } else {
+    // shared words explain their own cycle
+    const pinnedIn = gids.filter((g) => pinned.has(g));
+    if (pinnedIn.length === 0) text = gids.map((g) => GIDS[g].label).join("  +  ") + "  ·  click to focus one";
+    else if (pinnedIn.length === gids.length) text = `all ${gids.length} shapes here · click to clear`;
+    else {
+      hueGid = pinnedIn[0];
+      text = `${GIDS[pinnedIn[0]].label} · ${gids.indexOf(pinnedIn[0]) + 1} of ${gids.length} · click for next`;
+    }
+  }
+  wh.textContent = text;
+  wh.style.color = GIDS[hueGid].hue;
   const base = sheet.getBoundingClientRect();
   const r = pk.getClientRects()[0];
   wh.style.left = Math.max(8, Math.min(r.left - base.left, base.width - 300)) + "px";
@@ -698,24 +751,43 @@ function placeAuthbar(rect) {
   authbar.style.left = Math.max(12, Math.min(rect.left + rect.width / 2 - authbar.offsetWidth / 2, innerWidth - authbar.offsetWidth - 12)) + "px";
   authbar.style.top = Math.max(60, rect.top - 46) + "px";
 }
+/* each kind explains itself in plain words while you decide */
+const KIND_DEF = {
+  "link:parallel": "the same thought, said again in other words",
+  "link:contrast": "two things set against each other",
+  "link:echo": "a word or phrase that returns from earlier",
+  mirror: "paired halves that answer each other in order",
+  series: "the same phrase recurring — a refrain",
+  hinge: "one line that weighs both sides",
+};
+const DEF_RESTING = "what kind of connection is this?";
+
 function showKindPalette(info) {
   authbar.innerHTML = "";
+  authbar.classList.add("palette");
+  const row = document.createElement("div"); row.className = "authrow";
+  const def = document.createElement("div"); def.className = "authdef";
+  def.textContent = DEF_RESTING;
   for (const kind of AUTHOR_KINDS) {
     const b = document.createElement("button");
     b.className = "ak";
     b.innerHTML = `<i style="background:${KIND_HUE[kind]}"></i>${KIND_LABEL[kind]}`;
     b.addEventListener("mousedown", (e) => e.preventDefault()); // keep the selection
+    b.addEventListener("mouseenter", () => { def.textContent = KIND_DEF[kind]; });
     b.addEventListener("click", (e) => {
       e.stopPropagation();
       startSession(kind, info);
     });
-    authbar.appendChild(b);
+    row.appendChild(b);
   }
+  row.addEventListener("mouseleave", () => { def.textContent = DEF_RESTING; });
+  authbar.append(row, def);
   authbar.classList.add("on");
   placeAuthbar(info.range.getBoundingClientRect());
 }
 function sessionBar(msg) {
   const G = SESSION;
+  authbar.classList.remove("palette");
   authbar.innerHTML = `<span class="ak" style="cursor:default"><i style="background:${KIND_HUE[G.kind]}"></i>${KIND_LABEL[G.kind]}</span>
     <span class="hint">${msg}</span>`;
   if (G.extend) {
@@ -801,12 +873,14 @@ function endSession() {
   document.querySelectorAll("svg.overlay").forEach((s) => { s.dataset.key = "~"; });
   applyActive();
 }
-function deleteUserPattern(gid) {
+function deleteUserPattern(gid, silent) {
+  const snap = JSON.stringify(USER);
   USER = USER.filter((p) => p.id !== gid);
   saveUser();
   pinned.delete(gid); hovered.delete(gid);
   rebuildAll();
   applyActive();
+  if (!silent) offerUndo("mark deleted", snap, gid);
 }
 
 /* the live wire — provisional marks + a dashed thread chasing the cursor */
@@ -851,23 +925,34 @@ document.addEventListener("mouseup", (e) => {
 /* ── events ──────────────────────────────────────────────── */
 function gidsOf(el) { return el.dataset.gids.split(" "); }
 
+/* hover intent — the page only awakens for a deliberate pause, and
+ * survives the cursor crossing small gaps without flickering asleep */
+let hoverTimer = 0, sleepTimer = 0;
+
 function wire() {
   document.querySelectorAll(".study").forEach((scope) => {
     scope.addEventListener("mouseover", (e) => {
       const t = e.target.closest("[data-gids]");
       if (!t || !scope.contains(t)) return;
-      const gs = gidsOf(t);
-      hovered.clear();
-      // once you've cycled to a specific pattern, hover defers to your choice
-      if (!gs.some((g) => pinned.has(g))) gs.forEach((g) => hovered.add(g));
-      applyActive();
-      if (t.classList.contains("pk")) showWhisper(t);
+      clearTimeout(sleepTimer);
+      clearTimeout(hoverTimer);
+      hoverTimer = setTimeout(() => {
+        const gs = gidsOf(t);
+        hovered.clear();
+        // once you've cycled to a specific pattern, hover defers to your choice
+        if (!gs.some((g) => pinned.has(g))) gs.forEach((g) => hovered.add(g));
+        applyActive();
+        if (t.classList.contains("pk")) showWhisper(t);
+      }, 140);
     });
     scope.addEventListener("mouseout", (e) => {
       const to = e.relatedTarget;
       if (to && to.closest && to.closest("[data-gids]")) return;
-      if (hovered.size) { hovered.clear(); applyActive(); }
-      hideWhisper();
+      clearTimeout(hoverTimer);
+      sleepTimer = setTimeout(() => {
+        if (hovered.size) { hovered.clear(); applyActive(); }
+        hideWhisper();
+      }, 90);
     });
     scope.addEventListener("click", (e) => {
       if (SESSION || !getSelection().isCollapsed) return; // authoring owns the gesture
@@ -890,7 +975,10 @@ function wire() {
         else if (idx < gs.length - 1) pinned.add(gs[idx + 1]);
         else gs.forEach((g) => pinned.add(g));
       }
+      // the display and the whisper follow the click immediately
+      gs.forEach((g) => hovered.delete(g));
       applyActive();
+      if (t.classList.contains("pk")) showWhisper(t);
     });
   });
   addEventListener("keydown", (e) => {
