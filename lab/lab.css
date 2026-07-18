@@ -217,6 +217,18 @@ body.theme-glass, body.theme-dark-glass {
 .pcard-row .pr-dir { flex: none; font: 500 0.62rem var(--font-mono); color: var(--text-tertiary); width: 10px; }
 .pcard-row.off .pr-txt { color: var(--text-tertiary); }
 .pcard-del:hover { color: var(--k-contrast); }
+.pcard-title[contenteditable] { cursor: text; border-radius: 3px; }
+.pcard-title[contenteditable]:hover { background: var(--bg-canvas); }
+.pcard-title[contenteditable]:focus { outline: 1px solid var(--border-medium); background: var(--bg-canvas); }
+.pcard-note {
+  display: block; width: calc(100% - 16px); margin: 6px 8px 2px;
+  border: 0; border-top: 1px dashed var(--border-subtle); border-radius: 0;
+  background: transparent; resize: none; overflow: hidden;
+  font: italic 400 0.78rem/1.5 var(--font-reading); color: var(--text-secondary);
+  padding: 7px 0 2px; min-height: 0;
+}
+.pcard-note::placeholder { color: var(--text-tertiary); opacity: 0.7; font-style: italic; }
+.pcard-note:focus { outline: none; border-top-color: var(--border-medium); }
 
 /* authoring bar — kind palette on select, status chip mid-session */
 .authbar {

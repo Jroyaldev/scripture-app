@@ -61,6 +61,33 @@ const USER_KEY = "shape-marks-user";
 let USER = [];
 try { USER = JSON.parse(localStorage.getItem(USER_KEY) || "[]"); } catch { USER = []; }
 function saveUser() { localStorage.setItem(USER_KEY, JSON.stringify(USER)); }
+
+/* notes — observations attach to any pattern, yours or built-in */
+const NOTES_KEY = "shape-marks-notes";
+let NOTES = {};
+try { NOTES = JSON.parse(localStorage.getItem(NOTES_KEY) || "{}"); } catch { NOTES = {}; }
+function getNote(gid) {
+  if (gid.startsWith("u-")) return USER.find((p) => p.id === gid)?.note || "";
+  return NOTES[gid] || "";
+}
+function setNote(gid, text) {
+  text = text.trim();
+  if (gid.startsWith("u-")) {
+    const rec = USER.find((p) => p.id === gid);
+    if (rec) { if (text) rec.note = text; else delete rec.note; saveUser(); }
+  } else {
+    if (text) NOTES[gid] = text; else delete NOTES[gid];
+    localStorage.setItem(NOTES_KEY, JSON.stringify(NOTES));
+  }
+}
+function renameUser(gid, label) {
+  const rec = USER.find((p) => p.id === gid);
+  if (!rec || !label.trim()) return;
+  rec.label = label.trim();
+  saveUser();
+  const G = GIDS[gid];
+  if (G) G.label = `${KIND_LABEL[G.kind]} · ${rec.label}`;
+}
 function refStudy(ref) {
   const chKey = ref.split(".").slice(0, 2).join(".");
   for (const [sid, cfg] of Object.entries(SHEETS))
@@ -68,8 +95,11 @@ function refStudy(ref) {
   return null;
 }
 function shortQuote(s, n = 24) { return s.length > n ? s.slice(0, n - 1).trimEnd() + "…" : s; }
+/* contrast, hinge, and mirror are two-sided by nature; parallelism,
+ * echo, and series may run as long as the text does */
+const BINARY_KINDS = new Set(["link:contrast", "hinge", "mirror"]);
 function userLabel(kind, members) {
-  if (kind === "series") return `“${shortQuote(members[0].phrase)}” ×${members.length}`;
+  if (members.length > 2 || kind === "series") return `“${shortQuote(members[0].phrase)}” ×${members.length}`;
   return `“${shortQuote(members[0].phrase, 18)}” ↔ “${shortQuote(members[1].phrase, 18)}”`;
 }
 
@@ -296,15 +326,6 @@ function drawThread(g, rects, hue, laneX) {
   });
 }
 
-/* the ink filter — a whisper of turbulence so strokes feel hand-laid, not CAD */
-function ensureInk(svg, sid) {
-  if (svg.querySelector("defs")) return;
-  const defs = S("defs", {}, svg);
-  const f = S("filter", { id: `ink-${sid}`, x: "-20%", y: "-20%", width: "140%", height: "140%" }, defs);
-  S("feTurbulence", { type: "fractalNoise", baseFrequency: "0.02", numOctaves: "1", seed: "7", result: "n" }, f);
-  S("feDisplacementMap", { in: "SourceGraphic", in2: "n", scale: "1.8" }, f);
-}
-
 function drawOverlay(sid, gids) {
   const sheet = document.querySelector(`[data-sheet="${sid}"]`);
   const svg = sheet.querySelector("svg.overlay");
@@ -313,7 +334,6 @@ function drawOverlay(sid, gids) {
   svg.dataset.key = key;
   const live = svg.querySelector("g.live");
   svg.innerHTML = "";
-  ensureInk(svg, sid);
   if (live) svg.appendChild(live);
   if (!gids.length) return;
   const M = measure(sid);
@@ -321,7 +341,7 @@ function drawOverlay(sid, gids) {
     const G = GIDS[gid];
     const rects = G.anchors.map((a) => firstRect(M, a.el)).filter(Boolean);
     if (rects.length < 2) return;
-    const g = S("g", { filter: `url(#ink-${sid})` }, svg);
+    const g = S("g", {}, svg);
     if (G.conn === "thread") drawThread(g, rects, G.hue, M.textLeft - 46 - i * 10);
     else drawArc(g, rects[0], rects[rects.length - 1], G.hue, G.kind, M.textLeft - 40 - i * 10, M.textLeft - 12);
   });
@@ -336,8 +356,13 @@ function applyActive() {
     const sheet = document.querySelector(`[data-sheet="${sid}"]`);
     const local = [...act].filter((g) => GIDS[g].study === sid);
     sheet.classList.toggle("awake", local.length > 0);
-    sheet.querySelectorAll(".pk.on").forEach((el) => el.classList.remove("on"));
-    for (const gid of local) for (const el of GIDS[gid].spans) el.classList.add("on");
+    sheet.querySelectorAll(".pk").forEach((el) => {
+      const gs = gidsOf(el);
+      const activeG = gs.filter((g) => act.has(g));
+      el.classList.toggle("on", activeG.length > 0);
+      // the words wear the hue of the pattern you chose, not just the first
+      el.style.setProperty("--h", GIDS[activeG[0] || gs[0]].hue);
+    });
     drawOverlay(sid, local);
   }
   document.querySelectorAll("[data-gids]").forEach((c) => {
@@ -424,7 +449,23 @@ function updateCard() {
       const sec = document.createElement("div"); sec.className = "pcard-sec";
       const head = document.createElement("div"); head.className = "pcard-head";
       head.innerHTML = `<svg width="8" height="8"><circle cx="4" cy="4" r="3" fill="${G.hue}"/></svg>`;
-      const title = document.createElement("span"); title.className = "pcard-title"; title.textContent = G.label;
+      const title = document.createElement("span"); title.className = "pcard-title";
+      if (gid.startsWith("u-")) {
+        const rec = USER.find((p) => p.id === gid);
+        title.textContent = rec?.label || G.label;
+        title.contentEditable = "plaintext-only";
+        title.spellcheck = false;
+        title.title = "click to rename";
+        title.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); title.blur(); } });
+        title.addEventListener("blur", () => {
+          renameUser(gid, title.textContent);
+          rebuildAll();
+          applyActive();
+        });
+        title.addEventListener("click", (ev) => ev.stopPropagation());
+      } else {
+        title.textContent = G.label;
+      }
       const exp = document.createElement("button"); exp.className = "pcard-x"; exp.textContent = "⤓";
       exp.title = "export as card";
       exp.addEventListener("click", (e) => { e.stopPropagation(); exportCard(gid); });
@@ -459,6 +500,18 @@ function updateCard() {
         row._el = a.el;
         sec.appendChild(row);
       }
+      const note = document.createElement("textarea");
+      note.className = "pcard-note";
+      note.rows = 1;
+      note.placeholder = "why these? note an observation…";
+      note.value = getNote(gid);
+      const grow = () => { note.style.height = "auto"; note.style.height = note.scrollHeight + "px"; };
+      note.addEventListener("input", grow);
+      note.addEventListener("change", () => setNote(gid, note.value));
+      note.addEventListener("click", (ev) => ev.stopPropagation());
+      note.addEventListener("mouseup", (ev) => ev.stopPropagation());
+      sec.appendChild(note);
+      requestAnimationFrame(grow);
       card.appendChild(sec);
     }
     card.classList.add("on");
@@ -491,7 +544,19 @@ function exportCard(gid) {
     const [, ch, v] = a.ref.split(".");
     return { ref: `${ch}:${v}`, phrase: a.phrase };
   });
-  const H = top + rows.length * rowH + 96;
+  const noteLines = [];
+  const noteText = getNote(gid);
+  if (noteText) {
+    let line = "";
+    for (const w of noteText.split(/\s+/)) {
+      if ((line + " " + w).trim().length > 62) { noteLines.push(line.trim()); line = w; }
+      else line += " " + w;
+      if (noteLines.length === 5) break;
+    }
+    if (line.trim() && noteLines.length < 6) noteLines.push(line.trim());
+  }
+  const noteH = noteLines.length ? 34 + noteLines.length * 26 : 0;
+  const H = top + rows.length * rowH + noteH + 96;
   const spineX = padX + 34, refX = padX + 118, txtX = padX + 138;
   const y0 = top + rowH / 2, y1 = top + (rows.length - 1) * rowH + rowH / 2;
   const spine = rows.length > 2
@@ -514,6 +579,9 @@ function exportCard(gid) {
   <text x="${padX}" y="128" font-family="'Source Serif 4', Georgia, serif" font-size="30" font-weight="600" fill="#181511">${esc(rest.join(" · "))}</text>
   ${spine}
   ${marks}
+  ${noteLines.map((l, i) =>
+    `<text x="${padX}" y="${top + rows.length * rowH + 44 + i * 26}" font-family="'Source Serif 4', Georgia, serif" font-size="16" font-style="italic" fill="#4D463C">${esc(l)}</text>`
+  ).join("\n")}
   <text x="${padX}" y="${H - 44}" font-family="ui-monospace, 'JetBrains Mono', monospace" font-size="11" letter-spacing="1.5" fill="#9A8F7D">${esc(cfg.ref)} · PATTERN SHAPES</text>
 </svg>`;
   const a = document.createElement("a");
@@ -601,7 +669,7 @@ function sessionBar(msg) {
   const G = SESSION;
   authbar.innerHTML = `<span class="ak" style="cursor:default"><i style="background:${KIND_HUE[G.kind]}"></i>${KIND_LABEL[G.kind]}</span>
     <span class="hint">${msg}</span>`;
-  if (G.kind === "series" && G.members.length >= 2) {
+  if (!BINARY_KINDS.has(G.kind) && G.members.length >= 2) {
     const done = document.createElement("button"); done.className = "ak act"; done.textContent = "done";
     done.addEventListener("click", (e) => { e.stopPropagation(); finalizeSession(); });
     authbar.appendChild(done);
@@ -617,7 +685,7 @@ function startSession(kind, info) {
   if (!study) { endSession(); return; }
   SESSION = { kind, members: [info], study };
   getSelection().removeAllRanges();
-  sessionBar(kind === "series" ? "select the next occurrence" : "select the counterpart");
+  sessionBar(BINARY_KINDS.has(kind) ? "select the counterpart" : "select the next occurrence");
   liveWire();
 }
 function captureMember() {
@@ -627,7 +695,7 @@ function captureMember() {
   if (SESSION.members.some((m) => m.ref === info.ref && m.phrase === info.phrase)) return;
   SESSION.members.push(info);
   getSelection().removeAllRanges();
-  if (SESSION.kind !== "series" && SESSION.members.length === 2) { finalizeSession(); return; }
+  if (BINARY_KINDS.has(SESSION.kind) && SESSION.members.length === 2) { finalizeSession(); return; }
   sessionBar(`${SESSION.members.length} marked · select the next, or finish`);
 }
 function finalizeSession() {
@@ -665,9 +733,8 @@ function deleteUserPattern(gid) {
 function liveWire(e) {
   if (!SESSION) return;
   const M = measure(SESSION.study);
-  ensureInk(M.svg, SESSION.study);
   let g = M.svg.querySelector("g.live");
-  if (!g) g = S("g", { class: "live", filter: `url(#ink-${SESSION.study})` }, M.svg);
+  if (!g) g = S("g", { class: "live" }, M.svg);
   g.innerHTML = "";
   const hue = KIND_HUE[SESSION.kind];
   let last = null;
@@ -709,7 +776,10 @@ function wire() {
     scope.addEventListener("mouseover", (e) => {
       const t = e.target.closest("[data-gids]");
       if (!t || !scope.contains(t)) return;
-      hovered.clear(); gidsOf(t).forEach((g) => hovered.add(g));
+      const gs = gidsOf(t);
+      hovered.clear();
+      // once you've cycled to a specific pattern, hover defers to your choice
+      if (!gs.some((g) => pinned.has(g))) gs.forEach((g) => hovered.add(g));
       applyActive();
       if (t.classList.contains("pk")) showWhisper(t);
     });
@@ -726,9 +796,20 @@ function wire() {
         if (pinned.size && !e.target.closest(".rail")) { pinned.clear(); applyActive(); }
         return;
       }
+      /* one pattern: click toggles. Shared words: click cycles through
+       * what they carry — first pattern → second → … → all → none. */
       const gs = gidsOf(t);
-      const all = gs.every((g) => pinned.has(g));
-      gs.forEach((g) => (all ? pinned.delete(g) : pinned.add(g)));
+      if (gs.length === 1) {
+        pinned.has(gs[0]) ? pinned.delete(gs[0]) : pinned.add(gs[0]);
+      } else {
+        const all = gs.every((g) => pinned.has(g));
+        const idx = gs.findIndex((g) => pinned.has(g));
+        gs.forEach((g) => pinned.delete(g));
+        if (all) { /* → none */ }
+        else if (idx === -1) pinned.add(gs[0]);
+        else if (idx < gs.length - 1) pinned.add(gs[idx + 1]);
+        else gs.forEach((g) => pinned.add(g));
+      }
       applyActive();
     });
   });
