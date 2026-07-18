@@ -349,14 +349,17 @@ function sampleCubic(p0, p1, p2, p3, n = 44) {
   }
   return pts;
 }
-function ribbonOutline(pts, w, frac = 1) {
+function ribbonOutline(pts, w, frac = 1, even = false) {
   const total = pts.length;
   const count = Math.max(2, Math.round(total * Math.min(1, frac)));
   const L = [], R = [];
   for (let i = 0; i < count; i++) {
     const t = i / (total - 1);
     const ramp = Math.min(1, Math.min(t, 1 - t) / 0.16); // endpoint taper
-    let r = (w / 2) * (0.55 + 0.6 * Math.sin(Math.PI * t)) * (0.3 + 0.7 * ramp);
+    // series is regularity: an even rule. Everything else swells like a nib stroke.
+    let r = even
+      ? (w / 2) * (0.35 + 0.65 * ramp)
+      : (w / 2) * (0.55 + 0.6 * Math.sin(Math.PI * t)) * (0.3 + 0.7 * ramp);
     if (frac < 1) {
       // mid-draw the leading edge narrows to a nib tip
       r *= Math.min(1, (count - 1 - i) / Math.max(1, total * 0.12));
@@ -371,7 +374,7 @@ function ribbonOutline(pts, w, frac = 1) {
 }
 /* the ribbon draws itself: the ink flows point by point along the
  * centerline, leading edge tapered like a nib in contact */
-function ribbonDraw(g, pts, hue, { w = 1.6, opacity = 1, delay = 0, dur = 380 } = {}) {
+function ribbonDraw(g, pts, hue, { w = 1.6, opacity = 1, delay = 0, dur = 380, even = false } = {}) {
   const p = S("path", { d: "", fill: hue, stroke: "none" }, g);
   if (opacity < 1) p.setAttribute("opacity", opacity);
   const t0 = performance.now() + delay;
@@ -379,11 +382,20 @@ function ribbonDraw(g, pts, hue, { w = 1.6, opacity = 1, delay = 0, dur = 380 } 
   function frame(now) {
     if (!p.isConnected) return; // overlay cleared mid-flight
     const u = Math.min(1, Math.max(0, (now - t0) / dur));
-    if (u > 0) p.setAttribute("d", ribbonOutline(pts, w, ease(u)));
+    if (u > 0) p.setAttribute("d", ribbonOutline(pts, w, ease(u), even));
     if (u < 1) requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
   return p;
+}
+/* shift a centerline sideways along its normals — double ribbons, shears */
+function offsetPts(pts, d) {
+  const n = pts.length;
+  return pts.map((p, i) => {
+    const a = pts[Math.max(0, i - 1)], b = pts[Math.min(n - 1, i + 1)];
+    const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1;
+    return { x: p.x + (-dy / len) * d, y: p.y + (dx / len) * d };
+  });
 }
 function leg(g, x1, x2, y, hue, kind, delay = 0) {
   const p = S("path", {
@@ -405,10 +417,11 @@ function touchYIn(M) {
   return r ? r.top - M.base.top : null;
 }
 
-function drawArc(g, a, b, hue, kind, lane, gx, touchY) {
+function drawArc(g, a, b, hue, kind, stagger, gx, touchY) {
   const y1 = a.bottom + 2.5, y2 = b.bottom + 2.5;
   const sameLine = Math.abs(y1 - y2) < 5;
   if (sameLine) {
+    // hinge and short pairs: the cradle dip — a balance pan under the line
     const sx = a.right + 4, ex = b.x - 4, dip = 12;
     if (kind === "link:echo") {
       const p = S("path", {
@@ -422,7 +435,20 @@ function drawArc(g, a, b, hue, kind, lane, gx, touchY) {
     }
     return;
   }
-  let pts = sampleCubic({ x: gx, y: y1 }, { x: lane, y: y1 + 3 }, { x: lane, y: y2 - 3 }, { x: gx, y: y2 });
+  // bow depth breathes with the span: near lines stay tight, far lines go deep
+  const span = Math.abs(y2 - y1);
+  const lane = gx - Math.min(44, 16 + span * 0.05) - stagger;
+  let pts;
+  if (kind === "mirror") {
+    // reflection: the gesture itself reverses at the midpoint — an S
+    const ym = (y1 + y2) / 2, midX = gx - 6;
+    pts = [
+      ...sampleCubic({ x: gx, y: y1 }, { x: lane, y: y1 + 4 }, { x: lane, y: ym - 6 }, { x: midX, y: ym }, 22),
+      ...sampleCubic({ x: midX, y: ym }, { x: gx + 5, y: ym + 6 }, { x: gx + 5, y: y2 - 4 }, { x: gx, y: y2 }, 22).slice(1),
+    ];
+  } else {
+    pts = sampleCubic({ x: gx, y: y1 }, { x: lane, y: y1 + 3 }, { x: lane, y: y2 - 3 }, { x: gx, y: y2 });
+  }
   // ink flows from the touched member toward its counterpart
   const flip = touchY != null && Math.abs(touchY - y2) < Math.abs(touchY - y1);
   if (flip) pts = pts.slice().reverse();
@@ -445,11 +471,19 @@ function drawArc(g, a, b, hue, kind, lane, gx, touchY) {
   leg(g, gx, near.x, near.y, hue, kind, 30);
   touchDot(g, near.x, near.y, hue, 30);
   if (kind === "link:contrast") {
-    // two strokes with a beat between — the pen lifts at the break
-    ribbonDraw(g, pts.slice(0, Math.floor(pts.length * 0.45)), hue, { delay: 90, dur: 210 });
-    ribbonDraw(g, pts.slice(Math.ceil(pts.length * 0.55)), hue, { delay: 360, dur: 210 });
+    // opposition: two strokes sheared at the break — they pass, never meet
+    const h1 = offsetPts(pts.slice(0, Math.floor(pts.length * 0.46)), -1.4);
+    const h2 = offsetPts(pts.slice(Math.ceil(pts.length * 0.54)), 1.4);
+    ribbonDraw(g, h1, hue, { delay: 90, dur: 210 });
+    ribbonDraw(g, h2, hue, { delay: 360, dur: 210 });
     leg(g, gx, far.x, far.y, hue, kind, 520);
     touchDot(g, far.x, far.y, hue, 520);
+  } else if (kind === "link:parallel") {
+    // parallelism's own sign: two lines running together, bent into the bow
+    ribbonDraw(g, offsetPts(pts, -1.7), hue, { w: 1.15, delay: 90, dur: 380 });
+    ribbonDraw(g, offsetPts(pts, 1.7), hue, { w: 1.15, delay: 90, dur: 380 });
+    leg(g, gx, far.x, far.y, hue, kind, 400);
+    touchDot(g, far.x, far.y, hue, 400);
   } else {
     ribbonDraw(g, pts, hue, { delay: 90, dur: 380 });
     leg(g, gx, far.x, far.y, hue, kind, 400);
@@ -468,12 +502,17 @@ function drawThread(g, rects, hue, laneX, touchY) {
     spine.push({ x: laneX, y: flip ? yBot - (yBot - yTop) * t : yTop + (yBot - yTop) * t });
   }
   const dur = 460;
-  ribbonDraw(g, spine, hue, { w: 1.35, opacity: 0.7, delay: 40, dur });
+  // a refrain is regularity: the spine is an even rule, not a swelling stroke
+  ribbonDraw(g, spine, hue, { w: 1.5, opacity: 0.7, delay: 40, dur, even: true });
   rects.forEach((r, i) => {
     // each member lights as the ink passes its line
     const frac = (yBot === yTop) ? 0 : (flip ? (yBot - ys[i]) / (yBot - yTop) : (ys[i] - yTop) / (yBot - yTop));
     const delay = 40 + dur * frac * 0.85;
-    const l = S("path", { d: `M ${laneX} ${ys[i]} H ${r.x - 2}`, stroke: hue, "stroke-width": 1, opacity: 0.35 }, g);
+    // filleted shoulder: the tick leaves the spine on a small radius, never square
+    const l = S("path", {
+      d: `M ${laneX} ${ys[i] - 3} Q ${laneX} ${ys[i]} ${laneX + 3.5} ${ys[i]} H ${r.x - 2}`,
+      fill: "none", stroke: hue, "stroke-width": 1, "stroke-linecap": "round", opacity: 0.35,
+    }, g);
     animFade(l, 200, delay);
     touchDot(g, r.x - 2, ys[i], hue, delay);
   });
@@ -497,7 +536,7 @@ function drawOverlay(sid, gids) {
     if (rects.length < 2) return;
     const g = S("g", {}, svg);
     if (G.conn === "thread") drawThread(g, rects, G.hue, M.textLeft - 46 - i * 10, touchY);
-    else drawArc(g, rects[0], rects[rects.length - 1], G.hue, G.kind, M.textLeft - 40 - i * 10, M.textLeft - 12, touchY);
+    else drawArc(g, rects[0], rects[rects.length - 1], G.hue, G.kind, i * 10, M.textLeft - 12, touchY);
   });
 }
 
