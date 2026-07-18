@@ -165,26 +165,42 @@ body.theme-glass, body.theme-dark-glass {
 .pill.on { opacity: 1; pointer-events: auto; }
 .pill-up { top: 58px; } .pill-down { bottom: 16px; }
 
-/* pattern card — the pinned pattern condensed to one glance */
-.pcard {
-  position: fixed; right: 20px; bottom: 20px; z-index: 45; width: 308px;
-  max-height: 56vh; overflow: auto;
-  background: color-mix(in srgb, var(--bg-surface) 94%, transparent); backdrop-filter: blur(10px);
-  border: 1px solid var(--border-subtle); border-radius: var(--r-lg);
-  box-shadow: 0 10px 34px rgba(56, 43, 27, 0.14);
-  padding: 6px 0 0;
-  opacity: 0; transform: translateY(8px); pointer-events: none;
-  transition: opacity 200ms ease, transform 200ms ease;
+/* right rail — the study's inspector column; card + (rev) matrix live here */
+.rail {
+  position: sticky; top: 76px; align-self: start;
+  display: flex; flex-direction: column; gap: 14px;
+  max-height: calc(100vh - 96px); min-width: 0;
 }
-.pcard.on { opacity: 1; transform: translateY(0); pointer-events: auto; }
-.pcard-sec { padding: 8px 10px 6px; }
+.rail .panel { position: static; overflow: auto; }
+
+/* pattern card — the pinned pattern condensed to one glance, docked in the rail */
+.pcard {
+  width: min(360px, 100%);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle); border-radius: var(--r-lg);
+  box-shadow: 0 6px 22px rgba(56, 43, 27, 0.08);
+  padding: 4px 0;
+  overflow: auto; flex: none; max-height: 46vh;
+  opacity: 0; transform: translateY(6px); pointer-events: none;
+  transition: opacity 200ms ease, transform 200ms ease;
+  display: none;
+}
+.pcard.on { opacity: 1; transform: translateY(0); pointer-events: auto; display: block; }
+.pcard-sec { padding: 8px 10px 7px; }
 .pcard-sec + .pcard-sec { border-top: 1px solid var(--border-subtle); }
 .pcard-head {
   display: flex; align-items: center; gap: 7px;
   font: 500 0.62rem var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--text-tertiary); padding: 2px 8px 6px;
+  color: var(--text-tertiary); padding: 2px 4px 6px 8px;
 }
 .pcard-head svg { flex: none; }
+.pcard-title { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.pcard-x {
+  flex: none; appearance: none; border: 0; background: transparent; cursor: pointer;
+  font: 400 0.9rem/1 var(--font-ui); color: var(--text-tertiary);
+  padding: 2px 6px; border-radius: var(--r-sm); transition: color var(--tr), background var(--tr);
+}
+.pcard-x:hover { color: var(--text-primary); background: var(--bg-canvas); }
 .pcard-row {
   display: flex; align-items: baseline; gap: 8px;
   padding: 3.5px 8px; border-radius: var(--r-sm); cursor: pointer;
@@ -198,10 +214,6 @@ body.theme-glass, body.theme-dark-glass {
 }
 .pcard-row .pr-dir { flex: none; font: 500 0.62rem var(--font-mono); color: var(--text-tertiary); width: 10px; }
 .pcard-row.off .pr-txt { color: var(--text-tertiary); }
-.pcard-foot {
-  font: 400 0.58rem var(--font-mono); letter-spacing: 0.06em; color: var(--text-tertiary);
-  padding: 6px 18px 9px; border-top: 1px solid var(--border-subtle); margin-top: 4px; opacity: 0.8;
-}
 
 /* legend — quiet affordance row, hover to awaken */
 .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--border-subtle); }

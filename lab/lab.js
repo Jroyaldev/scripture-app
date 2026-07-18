@@ -203,10 +203,11 @@ function animDraw(p, ms = 340) {
   p.style.strokeDashoffset = 0;
 }
 function animFade(el, ms = 240) {
+  const target = el.getAttribute("opacity") || 1;
   el.style.opacity = 0;
   el.getBoundingClientRect();
   el.style.transition = `opacity ${ms}ms ease`;
-  el.style.opacity = 1;
+  el.style.opacity = target;
 }
 
 /* Connectors are one continuous gesture that actually touches the marks:
@@ -359,48 +360,61 @@ function updatePills() {
 addEventListener("scroll", () => { if (activeGids().size) { updatePills(); updateCardView(); } }, { passive: true });
 
 /* pattern card — the pinned pattern, condensed to one glance.
- * Every member as ref + phrase; off-screen rows dim with a direction arrow;
- * click a row to jump. Appears only while something is pinned. */
-const card = document.createElement("div");
-card.className = "pcard";
-document.body.appendChild(card);
+ * Docked in the study's right rail like an app inspector: every member as
+ * ref + phrase, off-screen rows dim with a direction arrow, click to jump.
+ * One card per study, visible only while one of its patterns is pinned. */
+const CARDS = {};
+for (const sid of Object.keys(SHEETS)) {
+  const rail = document.querySelector(`[data-rail="${sid}"]`);
+  const card = document.createElement("div");
+  card.className = "pcard";
+  rail.prepend(card);
+  CARDS[sid] = card;
+}
 
 function updateCard() {
-  const gids = [...pinned];
-  if (!gids.length) { card.classList.remove("on"); return; }
-  card.innerHTML = "";
-  for (const gid of gids) {
-    const G = GIDS[gid];
-    const sec = document.createElement("div"); sec.className = "pcard-sec";
-    const head = document.createElement("div"); head.className = "pcard-head";
-    head.innerHTML = `<svg width="8" height="8"><circle cx="4" cy="4" r="3" fill="${G.hue}"/></svg>`;
-    head.appendChild(document.createTextNode(G.label));
-    sec.appendChild(head);
-    for (const a of G.anchors) {
-      const row = document.createElement("div"); row.className = "pcard-row";
-      const [, ch, v] = a.ref.split(".");
-      const ref = document.createElement("span"); ref.className = "pr-ref"; ref.textContent = `${ch}:${v}`;
-      const txt = document.createElement("span"); txt.className = "pr-txt"; txt.textContent = a.phrase;
-      const dir = document.createElement("span"); dir.className = "pr-dir";
-      row.append(ref, txt, dir);
-      row.addEventListener("click", (e) => {
+  for (const sid of Object.keys(SHEETS)) {
+    const card = CARDS[sid];
+    const gids = [...pinned].filter((g) => GIDS[g].study === sid);
+    if (!gids.length) { card.classList.remove("on"); continue; }
+    card.innerHTML = "";
+    for (const gid of gids) {
+      const G = GIDS[gid];
+      const sec = document.createElement("div"); sec.className = "pcard-sec";
+      const head = document.createElement("div"); head.className = "pcard-head";
+      head.innerHTML = `<svg width="8" height="8"><circle cx="4" cy="4" r="3" fill="${G.hue}"/></svg>`;
+      const title = document.createElement("span"); title.className = "pcard-title"; title.textContent = G.label;
+      const close = document.createElement("button"); close.className = "pcard-x"; close.textContent = "×";
+      close.title = "unpin (esc)";
+      close.addEventListener("click", (e) => {
         e.stopPropagation();
-        a.el.scrollIntoView({ behavior: "smooth", block: "center" });
+        pinned.delete(gid);
+        applyActive();
       });
-      row._el = a.el;
-      sec.appendChild(row);
+      head.append(title, close);
+      sec.appendChild(head);
+      for (const a of G.anchors) {
+        const row = document.createElement("div"); row.className = "pcard-row";
+        const [, ch, v] = a.ref.split(".");
+        const ref = document.createElement("span"); ref.className = "pr-ref"; ref.textContent = `${ch}:${v}`;
+        const txt = document.createElement("span"); txt.className = "pr-txt"; txt.textContent = a.phrase;
+        const dir = document.createElement("span"); dir.className = "pr-dir";
+        row.append(ref, txt, dir);
+        row.addEventListener("click", (e) => {
+          e.stopPropagation();
+          a.el.scrollIntoView({ behavior: "smooth", block: "center" });
+        });
+        row._el = a.el;
+        sec.appendChild(row);
+      }
+      card.appendChild(sec);
     }
-    card.appendChild(sec);
+    card.classList.add("on");
   }
-  const foot = document.createElement("div"); foot.className = "pcard-foot";
-  foot.textContent = "click a line to jump · esc clears";
-  card.appendChild(foot);
-  card.classList.add("on");
   updateCardView();
 }
 function updateCardView() {
-  if (!card.classList.contains("on")) return;
-  card.querySelectorAll(".pcard-row").forEach((row) => {
+  document.querySelectorAll(".pcard.on .pcard-row").forEach((row) => {
     const r = row._el.getBoundingClientRect();
     const off = r.bottom < 60 ? "↑" : r.top > innerHeight - 30 ? "↓" : "";
     row.classList.toggle("off", !!off);
@@ -461,7 +475,7 @@ function wire() {
     scope.addEventListener("click", (e) => {
       const t = e.target.closest("[data-gids]");
       if (!t) {
-        if (pinned.size) { pinned.clear(); applyActive(); }
+        if (pinned.size && !e.target.closest(".rail")) { pinned.clear(); applyActive(); }
         return;
       }
       const gs = gidsOf(t);
