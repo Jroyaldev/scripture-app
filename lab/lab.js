@@ -391,6 +391,33 @@ function ribbonDraw(g, pts, hue, { w = 1.6, opacity = 1, delay = 0, dur = 380, e
   requestAnimationFrame(frame);
   return p;
 }
+/* cable-management routing: gutter runs as rounded-corner traces.
+ * Same ink, same kind signs — only the path geometry changes. */
+let ROUTE = "bows"; // "bows" | "traces"
+function tracePts(gx, lane, y1, y2, n = 48) {
+  const dir = y2 > y1 ? 1 : -1;
+  const r = Math.max(3, Math.min(9, Math.abs(y2 - y1) / 2 - 2, gx - lane - 2));
+  const h = gx - lane - r, v = Math.abs(y2 - y1) - 2 * r, arc = (Math.PI / 2) * r;
+  const total = 2 * h + 2 * arc + v;
+  const pts = [];
+  for (let i = 0; i <= n; i++) {
+    let d = (i / n) * total, x, y;
+    if (d <= h) { x = gx - d; y = y1; }
+    else if ((d -= h) <= arc) { const t = d / r; x = lane + r - Math.sin(t) * r; y = y1 + dir * (r - Math.cos(t) * r); }
+    else if ((d -= arc) <= v) { x = lane; y = y1 + dir * (r + d); }
+    else if ((d -= v) <= arc) { const t = d / r; x = lane + r - Math.cos(t) * r; y = y2 - dir * (r - Math.sin(t) * r); }
+    else { d -= arc; x = lane + r + d; y = y2; }
+    pts.push({ x, y });
+  }
+  return pts;
+}
+function tracePathD(gx, lane, y1, y2) {
+  const dir = y2 > y1 ? 1 : -1;
+  const r = Math.max(3, Math.min(9, Math.abs(y2 - y1) / 2 - 2, gx - lane - 2));
+  const sweep = dir > 0 ? 0 : 1;
+  return `M ${gx} ${y1} H ${lane + r} A ${r} ${r} 0 0 ${sweep} ${lane} ${y1 + dir * r} V ${y2 - dir * r} A ${r} ${r} 0 0 ${sweep} ${lane + r} ${y2} H ${gx}`;
+}
+
 /* shift a centerline sideways along its normals — double ribbons, shears */
 function offsetPts(pts, d) {
   const n = pts.length;
@@ -448,7 +475,9 @@ function drawArc(g, a, b, hue, kind, stagger, gx, touchY) {
   // one bow for every kind — mirror's reflection is carried by the twin
   // width profile (two swells pinched at the midpoint), not by reversing
   // the curve, which never survived contact with real spans
-  let pts = sampleCubic({ x: gx, y: y1 }, { x: lane, y: y1 + 3 }, { x: lane, y: y2 - 3 }, { x: gx, y: y2 }, nSamp);
+  let pts = ROUTE === "traces"
+    ? tracePts(gx, lane, y1, y2, nSamp)
+    : sampleCubic({ x: gx, y: y1 }, { x: lane, y: y1 + 3 }, { x: lane, y: y2 - 3 }, { x: gx, y: y2 }, nSamp);
   // ink flows from the touched member toward its counterpart
   const flip = touchY != null && Math.abs(touchY - y2) < Math.abs(touchY - y1);
   if (flip) pts = pts.slice().reverse();
@@ -456,7 +485,9 @@ function drawArc(g, a, b, hue, kind, stagger, gx, touchY) {
   const far = flip ? { x: a.x - 2, y: y1 } : { x: b.x - 2, y: y2 };
   if (kind === "link:echo") {
     const p = S("path", {
-      d: `M ${gx} ${y1} C ${lane} ${y1 + 3}, ${lane} ${y2 - 3}, ${gx} ${y2}`,
+      d: ROUTE === "traces"
+        ? tracePathD(gx, lane, y1, y2)
+        : `M ${gx} ${y1} C ${lane} ${y1 + 3}, ${lane} ${y2 - 3}, ${gx} ${y2}`,
       fill: "none", stroke: hue, "stroke-width": 1.3, "stroke-linecap": "round",
     }, g);
     dashFor(p, kind);
@@ -1150,6 +1181,12 @@ function wire() {
     if (pinned.size || hovered.size) {
       pinned.clear(); hovered.clear(); applyActive(); hideWhisper();
     }
+  });
+  document.getElementById("route-seg").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    ROUTE = b.dataset.route;
+    document.querySelectorAll("#route-seg button").forEach((x) => x.setAttribute("aria-checked", x === b));
+    redrawActive();
   });
   document.getElementById("reveal-btn").addEventListener("click", (e) => {
     const on = document.body.classList.toggle("reveal");
