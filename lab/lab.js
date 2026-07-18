@@ -493,7 +493,7 @@ function drawArc(g, a, b, hue, kind, stagger, gx, touchY) {
   }
 }
 
-function drawThread(g, rects, hue, laneX, touchY) {
+function drawThread(g, rects, hue, laneX, touchY, kind) {
   const ys = rects.map((r) => r.bottom + 2.5);
   const yTop = ys[0], yBot = ys[ys.length - 1];
   // ink starts nearest the touched member and runs the length of the spine
@@ -519,8 +519,21 @@ function drawThread(g, rects, hue, laneX, touchY) {
     animFade(l, 200, delay);
     touchDot(g, r.x - 2, ys[i], hue, delay);
   });
-  // a refrain is regularity: the spine is an even rule, not a swelling stroke
-  ribbonDraw(g, spine, hue, { w: 1.5, opacity: 0.7, delay: 40, dur, even: true });
+  // the rule keeps the kind's sign: echo stays dotted, parallel stays
+  // double, series is the plain even rule
+  if (kind === "link:echo") {
+    const p = S("path", {
+      d: `M ${laneX} ${yTop} V ${yBot}`, fill: "none", stroke: hue,
+      "stroke-width": 1.9, "stroke-linecap": "round", "stroke-dasharray": "0.1 5", opacity: 0.75,
+    }, g);
+    animFade(p, 300, 40);
+  } else if (kind === "link:parallel") {
+    const twin = (dx) => spine.map((p) => ({ x: p.x + dx, y: p.y }));
+    ribbonDraw(g, twin(-1.6), hue, { w: 1.0, opacity: 0.7, delay: 40, dur, even: true });
+    ribbonDraw(g, twin(1.6), hue, { w: 1.0, opacity: 0.7, delay: 40, dur, even: true });
+  } else {
+    ribbonDraw(g, spine, hue, { w: 1.5, opacity: 0.7, delay: 40, dur, even: true });
+  }
 }
 
 function drawOverlay(sid, gids) {
@@ -540,7 +553,7 @@ function drawOverlay(sid, gids) {
     const rects = G.anchors.map((a) => firstRect(M, a.el)).filter(Boolean);
     if (rects.length < 2) return;
     const g = S("g", {}, svg);
-    if (G.conn === "thread") drawThread(g, rects, G.hue, M.textLeft - 46 - i * 10, touchY);
+    if (G.conn === "thread") drawThread(g, rects, G.hue, M.textLeft - 46 - i * 10, touchY, G.kind);
     else drawArc(g, rects[0], rects[rects.length - 1], G.hue, G.kind, i * 10, M.textLeft - 12, touchY);
   });
 }
