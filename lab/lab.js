@@ -349,7 +349,7 @@ function sampleCubic(p0, p1, p2, p3, n = 44) {
   }
   return pts;
 }
-function ribbonOutline(pts, w, frac = 1, even = false) {
+function ribbonOutline(pts, w, frac = 1, even = false, twin = false) {
   const total = pts.length;
   const count = Math.max(2, Math.round(total * Math.min(1, frac)));
   const L = [], R = [];
@@ -359,7 +359,10 @@ function ribbonOutline(pts, w, frac = 1, even = false) {
     // series is regularity: an even rule. Everything else swells like a nib stroke.
     let r = even
       ? (w / 2) * (0.55 + 0.45 * ramp)
-      : (w / 2) * (0.55 + 0.6 * Math.sin(Math.PI * t)) * (0.3 + 0.7 * ramp);
+      : twin
+        // mirror: two swells with a waist at the reflection point
+        ? (w / 2) * (0.55 + 0.6 * Math.sin(Math.PI * ((t < 0.5 ? t : t - 0.5) * 2))) * (0.3 + 0.7 * ramp)
+        : (w / 2) * (0.55 + 0.6 * Math.sin(Math.PI * t)) * (0.3 + 0.7 * ramp);
     if (frac < 1) {
       // mid-draw the leading edge narrows to a nib tip
       r *= Math.min(1, (count - 1 - i) / Math.max(1, total * 0.12));
@@ -374,7 +377,7 @@ function ribbonOutline(pts, w, frac = 1, even = false) {
 }
 /* the ribbon draws itself: the ink flows point by point along the
  * centerline, leading edge tapered like a nib in contact */
-function ribbonDraw(g, pts, hue, { w = 1.6, opacity = 1, delay = 0, dur = 380, even = false } = {}) {
+function ribbonDraw(g, pts, hue, { w = 1.6, opacity = 1, delay = 0, dur = 380, even = false, twin = false } = {}) {
   const p = S("path", { d: "", fill: hue, stroke: "none" }, g);
   if (opacity < 1) p.setAttribute("opacity", opacity);
   const t0 = performance.now() + delay;
@@ -382,7 +385,7 @@ function ribbonDraw(g, pts, hue, { w = 1.6, opacity = 1, delay = 0, dur = 380, e
   function frame(now) {
     if (!p.isConnected) return; // overlay cleared mid-flight
     const u = Math.min(1, Math.max(0, (now - t0) / dur));
-    if (u > 0) p.setAttribute("d", ribbonOutline(pts, w, ease(u), even));
+    if (u > 0) p.setAttribute("d", ribbonOutline(pts, w, ease(u), even, twin));
     if (u < 1) requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
@@ -447,8 +450,10 @@ function drawArc(g, a, b, hue, kind, stagger, gx, touchY) {
     // reflection: the gesture reverses at the midpoint — an S that lives
     // entirely inside the margin band, never crowding the verse numbers
     const ym = (y1 + y2) / 2;
-    const midX = gx - (gx - lane) * 0.55;
     const shallow = gx - (gx - lane) * 0.3;
+    // tangent-continuous joint: the midpoint sits exactly between the two
+    // bow depths, so the halves meet without a corner
+    const midX = (lane + shallow) / 2;
     pts = [
       ...sampleCubic({ x: gx, y: y1 }, { x: lane, y: y1 + 4 }, { x: lane, y: ym - 8 }, { x: midX, y: ym }, Math.ceil(nSamp / 2)),
       ...sampleCubic({ x: midX, y: ym }, { x: shallow, y: ym + 8 }, { x: shallow, y: y2 - 4 }, { x: gx, y: y2 }, Math.ceil(nSamp / 2)).slice(1),
@@ -494,7 +499,7 @@ function drawArc(g, a, b, hue, kind, stagger, gx, touchY) {
     leg(g, gx, far.x, far.y, hue, kind, 400);
     touchDot(g, far.x, far.y, hue, 400);
   } else {
-    ribbonDraw(g, pts, hue, { w, delay: 90, dur: 380 });
+    ribbonDraw(g, pts, hue, { w, delay: 90, dur: 380, twin: kind === "mirror" && span >= 90 });
     leg(g, gx, far.x, far.y, hue, kind, 400);
     touchDot(g, far.x, far.y, hue, 400);
   }
