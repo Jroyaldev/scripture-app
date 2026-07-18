@@ -40,3 +40,21 @@ tint strengths may need further tuning per theme.
 Zoom out: text fades, shapes remain — the chapter as its own diagram.
 With 8+ patterns live in Psalm 1 the shape-of-the-shapes is now the
 interesting object. Likely the lab's next big view.
+
+Relationship to the marks library (they are distinct): the library is
+*your collection without the text* (unit: the mark; question: "what have
+I seen?"); the skeleton is *the text's shape without the words* (unit:
+the passage; question: "what shape is this chapter?"). Both draw from the
+same records. The skeleton is really the reading view at a different
+altitude — built-ins and user marks alike appear in it — and its endgame
+is comparison: chapter skeletons side by side (Psalm 1 next to Psalm 2;
+all 150 psalms as a wall) where frames, chiasms, and acrostics become
+visible to the naked eye.
+
+## 5. Light theme premium pass (in progress)
+
+Dark themes are cinematic; light read as whitewashed beige. First
+iteration shipped in the lab (deeper ground #EDE4D1, brighter paper
+#FCF9F1, real elevation shadows, ink-deep hues, hint-mix 58%) — the lab
+light theme now intentionally diverges from design-tokens.json as a
+proposal. If it holds up, feed the values back into the app tokens.

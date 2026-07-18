@@ -1,25 +1,28 @@
-/* Pattern shapes lab v3 — tokens copied 1:1 from src/renderer/design-tokens.json */
+/* Pattern shapes lab v3 — dark themes track src/renderer/design-tokens.json 1:1.
+ * The LIGHT theme intentionally diverges (deeper ground, brighter paper, real
+ * elevation, ink-deep hues) — a proposal to feed back into the app tokens. */
 
 :root {
-  --bg-primary: #F3EDE0; --bg-secondary: #EEE6D8; --bg-surface: #FAF6EC;
-  --bg-canvas: #F6F0E5; --bg-sidebar: #EFE7D8; --bg-reading: #FAF6EC;
-  --text-primary: #181511; --text-secondary: #4D463C; --text-tertiary: #6B6254;
+  --bg-primary: #EDE4D1; --bg-secondary: #E7DCC6; --bg-surface: #FCF9F1;
+  --bg-canvas: #F4EEDF; --bg-sidebar: #EBE1CD; --bg-reading: #FCF9F1;
+  --text-primary: #171410; --text-secondary: #4A4338; --text-tertiary: #6B6254;
   --verse-number: #776C5D; --link: #8B5D30;
-  --border-subtle: #E4DAC9; --border-medium: #D3C5AF; --border-strong: #B7A78E;
+  --border-subtle: #DED2BB; --border-medium: #CBBA9E; --border-strong: #AC997C;
   --gold: #97683A; --gold-soft: rgba(151, 104, 58, 0.16);
+  --elev: 0 1px 2px rgba(56, 43, 27, 0.05), 0 12px 36px rgba(56, 43, 27, 0.08);
   --font-reading: 'Source Serif 4', Georgia, 'Times New Roman', serif;
   --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
   --r-sm: 6px; --r-md: 12px; --r-lg: 20px;
   --tr: 150ms ease;
 
-  /* kind hues — strokes deepened from the five highlight washes for legibility */
-  --k-parallel: #4E9A5F;
-  --k-contrast: #C05A80;
-  --k-echo:     #4678C8;
-  --k-mirror:   #8760C4;
-  --k-series:   #C8961E;
-  --hint-mix: 52%;   /* how present a keyed phrase is at rest */
+  /* kind hues — ink-deep for light so they read as pigment, not wash */
+  --k-parallel: #35854A;
+  --k-contrast: #B14370;
+  --k-echo:     #3564BE;
+  --k-mirror:   #744BBB;
+  --k-series:   #A87A12;
+  --hint-mix: 58%;   /* how present a keyed phrase is at rest */
 }
 
 body.theme-dark, body.theme-dark-glass {
@@ -36,6 +39,7 @@ body.theme-dark, body.theme-dark-glass {
   --k-mirror:   #B494E4;
   --k-series:   #EBBE5A;
   --hint-mix: 46%;
+  --elev: none;
 }
 
 body.theme-glass      { --bg-image: url("assets/glass-light.png"); }
@@ -95,6 +99,7 @@ body.theme-glass, body.theme-dark-glass {
 .sheet {
   position: relative; background: var(--bg-reading); border: 1px solid var(--border-subtle);
   border-radius: var(--r-lg); padding: 30px 44px 26px 120px;
+  box-shadow: var(--elev);
   transition: background var(--tr);
 }
 .sheet .sheet-title { font-family: var(--font-reading); font-size: 1.28rem; font-weight: 600; margin: 0 0 2px; }
@@ -184,7 +189,7 @@ body.theme-glass, body.theme-dark-glass {
   width: min(360px, 100%);
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle); border-radius: var(--r-lg);
-  box-shadow: 0 6px 22px rgba(56, 43, 27, 0.08);
+  box-shadow: var(--elev);
   padding: 4px 0;
   overflow: auto; flex: none; max-height: 46vh;
   opacity: 0; transform: translateY(6px); pointer-events: none;
@@ -313,6 +318,7 @@ body.theme-glass, body.theme-dark-glass {
 .panel {
   background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--r-lg);
   padding: 22px 24px; transition: background var(--tr);
+  box-shadow: var(--elev);
   position: sticky; top: 68px;
 }
 .panel h3 { font: 600 0.86rem var(--font-ui); margin: 0 0 2px; }
