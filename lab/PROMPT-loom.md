@@ -208,3 +208,15 @@ have, and razor-thin 0.01px-clearance plans became honest 0.3px ones.
 Fixtures added: adjacent-pair (grass/herbs, embrace by necessity),
 short-pair (days/years, facing — its gap sits just past the 2em preference
 boundary). Suite gains a cradle-floor ≥ 5 check.
+
+### Steps 2+3 landed (same day)
+
+Collision truth is now **word runs** (per-word ink rects, per-font slack,
+cached on layout dimensions, y-bucketed index) — a strict subset of line
+rects, so routes only become more legal; corridors and the loom datum
+still derive from merged lines. And the terminal exemption is now
+**ownership-scoped**: a terminal turn may pass only through its OWN
+fragment's expanded rect plus the departure wedge at its own pin
+(expand+1 disc); floors, shoulders, swoops, spines, and drips have no
+privileges. The old any-contact expand+3 radial blanket is gone. All 14
+fixtures route focused, suite green at every width 460–760.

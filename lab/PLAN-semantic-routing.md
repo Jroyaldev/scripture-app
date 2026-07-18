@@ -41,12 +41,12 @@ floor under the GAP:                    floor under the PAIR:
 - **Prettier:** shoulders sit at the optical center of the room they actually have (~1.5px higher, consistently); threads that today silently demote to ticks land 0.6-1.2px off-center and paint — the trio is actually a trio on dense passages. Zero new strokes.
 - **Accept:** suite green; Dense Psalm + Long text: needs-space count drops, `kink` nearly vanishes from diagnostics; tight-band test (4.2-5.5px, minY forced by contact) still plans.
 
-### 2. Word-run obstacles — *adapt*
+### 2. Word-run obstacles — *adapt* — ✅ LANDED
 - **Build:** `measure()` in route-lab.js grows a `textRunRects` pass (TreeWalker, `/\S+/g`, Range rects filtered width>0.4/height>1, **per-parent inkSlack** — fixes the single-slack cache at :131-135), stamped `{owners, li}`, emitted as `block.wordRuns`. Corridors/BAND_MIN still derive from merged lines; `hardObstacles = wordRuns + vnums + additional`, li-bucketed Map so clearRun/finalize check only adjacent-line buckets. No interior-shaft candidate rides in; the module-header constraint list stays verbatim.
 - **Prettier:** subtractive wins only — companions that failed because one descender poked an otherwise-clear shoulder span now draw; shoulders stop dodging ink that isn't there. Text column gains zero ink.
 - **Accept:** loom datum unchanged (assert min word-left == min line-left); Dense Psalm picks up ≥1 previously-skipped companion; relayout stays low-single-digit ms.
 
-### 3. Ownership-scoped terminal exemption — *adapt*
+### 3. Ownership-scoped terminal exemption — *adapt* — ✅ LANDED
 - **Build:** replace finalize's radial `expand+3` blanket (route-engine.js:305) with per-segment exempt sets keyed by `anchorKey`: terminals exempt only their own contact's fragment, shoulder/port the group union, spine/drip nothing. `block.anchorFragments` from measure; kill the +3 constant. This is the load-bearing prerequisite for any right/opposite pin.
 - **Prettier:** calmness insurance — a pin's curl can provably hug only its own word's ink, never a neighbor's descender; near-miss smudges become honest needs-space (our vocabulary for held).
 - **Accept:** new validate() check — no sampled point inside an expanded obstacle without a matching owned fragment; Dense Psalm/Long text before/after, small held-count uptick expected and correct.

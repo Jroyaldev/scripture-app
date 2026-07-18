@@ -279,7 +279,11 @@ export function planRoute(block, ann, opts = {}) {
       ];
       return finalize(segs, "same-line",
         [{ x: c.ax, y: c.ay }, { x: c.bx, y: c.by }],
-        [fy], [ci], null, null, [], c.variant);
+        [fy], [ci], null, null, [], c.variant, [
+          [{ rect: expandRect(A.frag, expand), cx: c.ax, cy: c.ay }],
+          null,
+          [{ rect: expandRect(B.frag, expand), cx: c.bx, cy: c.by }],
+        ]);
     }
     /* no legal cradle → fall through to the margin, never squash */
   }
@@ -311,6 +315,7 @@ export function planRoute(block, ann, opts = {}) {
 
   const contacts = [];
   const centerline = [];
+  const exempts = [];  // parallel to centerline: terminal-only ink privileges
   const ports = [];
   const corridorYs = [];
   const corridorIdx = [];
@@ -327,14 +332,17 @@ export function planRoute(block, ann, opts = {}) {
       if (r < DROP_MIN) throw { kink: true };
       contacts.push(c);
       centerline.push(quarterVH(c.x, c.y, c.x - r, y));
+      exempts.push([{ rect: expandRect(m.frag, expand), cx: c.x, cy: c.y }]);
       minEndX = Math.min(minEndX, c.x - r);
     }
     /* shoulder: one hairline through every terminal's merge point */
     const reach = Math.min(SWOOP_REACH, Math.max(4, (minEndX - strandX) * 0.5));
     centerline.push(L(minEndX, y, strandX + reach, y));
+    exempts.push(null);
     /* port: shallow swoop pouring down onto the strand */
     const dip = g.dip;
     centerline.push(quarterHV(strandX + reach, y, strandX, y + dip));
+    exempts.push(null);
     ports.push({ x: strandX, y: y + dip });
     g.portY = y + dip;
     });
@@ -349,38 +357,55 @@ export function planRoute(block, ann, opts = {}) {
     const top = Math.min(...groups.map((g) => g.portY));
     const bot = Math.max(...groups.map((g) => g.portY));
     centerline.push(L(strandX, top, strandX, bot));
+    exempts.push(null);
     spine = { x: strandX, top, bottom: bot };
   } else {
     /* single-group arrival: the swoop ends in a short drip */
     const g = groups[0];
     centerline.push(L(strandX, g.portY, strandX, g.portY + 2.5));
+    exempts.push(null);
   }
 
   const mode = ann.anchors.length === 1 ? "tag"
     : groups.length > 1 ? (ann.anchors.length > 2 || groups.length > 2 ? "multipoint" : "corridor")
     : "corridor";
 
-  return finalize(centerline, mode, contacts, corridorYs, corridorIdx, strandX, spine, ports);
+  return finalize(centerline, mode, contacts, corridorYs, corridorIdx, strandX, spine, ports, undefined, exempts);
 
-  /* ── shared finish: sample, validate, diagnose ── */
-  function finalize(segs, mode, contacts, corridorYs, corridorIdx, railXOut, spine, ports, cradleVariant) {
+  /* ── shared finish: sample, validate, diagnose ──
+   * Ink privileges are ownership-scoped: a terminal segment may pass
+   * through its OWN fragment's expanded rect (and the departure wedge at
+   * its own pin, where neighbor expansions unavoidably overlap); every
+   * other segment — floors, shoulders, swoops, spines, drips — must be
+   * genuinely clear of everything. */
+  function finalize(segs, mode, contacts, corridorYs, corridorIdx, railXOut, spine, ports, cradleVariant, exempts) {
     const sampled = [];
-    for (const s of segs) sampled.push(...segPoints(s, 1));
+    segs.forEach((s, si) => {
+      const ex = exempts ? exempts[si] : null;
+      for (const p of segPoints(s, 1)) {
+        if (ex) p.ex = ex;
+        sampled.push(p);
+      }
+    });
     for (const p of sampled) {
       if (!isFinite(p.x) || !isFinite(p.y)) return fail("nan");
     }
     let minClear = Infinity;
     for (const p of sampled) {
-      const exempt = contacts.some((c) => Math.hypot(p.x - c.x, p.y - c.y) < expand + 3);
       for (const o of obstaclesNear(p.y, 32)) {
-        if (!exempt && inRect(p.x, p.y, o)) {
-          const f = fail("obstacle-collision");
-          f.debug = { x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10, obstacle: o };
-          return f;
+        if (inRect(p.x, p.y, o)) {
+          const excused = p.ex && p.ex.some((e) =>
+            inRect(p.x, p.y, e.rect) || Math.hypot(p.x - e.cx, p.y - e.cy) < expand + 1);
+          if (!excused) {
+            const f = fail("obstacle-collision");
+            f.debug = { x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10, obstacle: o };
+            return f;
+          }
+        } else {
+          const dx = Math.max(o.left - p.x, 0, p.x - o.right);
+          const dy = Math.max(o.top - p.y, 0, p.y - o.bottom);
+          minClear = Math.min(minClear, Math.hypot(dx, dy));
         }
-        const dx = Math.max(o.left - p.x, 0, p.x - o.right);
-        const dy = Math.max(o.top - p.y, 0, p.y - o.bottom);
-        if (!inRect(p.x, p.y, o)) minClear = Math.min(minClear, Math.hypot(dx, dy));
       }
     }
     if (!isFinite(minClear)) minClear = 99;
