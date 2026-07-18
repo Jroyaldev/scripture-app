@@ -71,7 +71,7 @@ floor under the GAP:                    floor under the PAIR:
 - **Prettier:** pixel-identical at rest; hover stops being a 1.2px pixel hunt.
 - **Accept:** stacked-tick fixture — each hover previews the correct annotation; keyboard path reaches every held tick without polluting Tab order.
 
-### 8. Spine-separation tripwire — *adapt*
+### 8. Spine-separation tripwire — *adapt* — ✅ LANDED
 - **Build:** in finalize(), reject `spine-separation` when any `opts.spineClaims` entry overlaps the spine's y-interval (pad **2.6**, not the reference's 1 — 1px permits a visually broken single line) within `SPINE_SEP = min(4.8, strandPitch − 1.2)`. New `spineClaimOut` field (never folded into claimsOut); suite check added. Provably inert today at pitch 6 — document it as the tripwire for shafts/right-margin, or a cleanup pass will delete it.
 - **Prettier:** a doubled rail was rejected as vocabulary; it cannot be re-admitted as a routing accident.
 - **Accept:** suite assertion green; distinct failure reason surfaces in diagnostics, backfill from ranked list works.

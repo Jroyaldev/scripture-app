@@ -554,6 +554,16 @@ function validate(measured, ann, plan, drawnPlans) {
   }
   if (drawnPlans.length > 1) push("weave clears", weaveBad === 0, weaveBad ? `${weaveBad} hits` : "ok");
 
+  /* two drawn spines may never sit close enough to read as one broken
+   * line — the engine's tripwire, proven end to end */
+  if (plan.spine && drawnPlans.length > 1) {
+    const SEP = Math.min(4.8, 6 - 1.2);
+    const clash = drawnPlans.some((B) => B !== plan && B.valid && B.spine &&
+      Math.abs(B.spine.x - plan.spine.x) < SEP &&
+      B.spine.top - 2.6 < plan.spine.bottom && plan.spine.top < B.spine.bottom + 2.6);
+    push("spine separation", !clash, clash ? "overlap" : "ok");
+  }
+
   /* cradle floor: really exists and never inverts (the floor-length test
    * lives in the engine's slot ladder; this proves it end to end) */
   if (plan.mode === "same-line") {
@@ -638,12 +648,13 @@ function run() {
   const plans = new Map();
   const strands = new Map();
   const claims = [];
+  const spineClaims = [];
   const drawnIds = new Set();
   const tryPlan = (ann, strand, commit) => {
     try {
       const p = planRoute(measured.block, ann, {
         fontSize: measured.fontSize, strandIndex: strand,
-        corridorClaims: claims, loomX: loomInner,
+        corridorClaims: claims, spineClaims, loomX: loomInner,
         disableCradle: !cradleOn,
         /* every claim carries a little air so stacked shoulders never
          * read as one line */
@@ -652,6 +663,7 @@ function run() {
       plans.set(ann.id, p);
       if (p.valid && commit) {
         claims.push(...p.claimsOut);
+        if (p.spineClaimOut) spineClaims.push(p.spineClaimOut);
         drawnIds.add(ann.id);
         strands.set(ann.id, strand);
       }

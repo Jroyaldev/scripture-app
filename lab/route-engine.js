@@ -96,6 +96,12 @@ export function planRoute(block, ann, opts = {}) {
   /* claimPad widens this thread's corridor claim on both sides — a
    * double-railed treatment is optically wider than its centerline */
   const claimPad = opts.claimPad ?? 0;
+  /* two spines closer than this with overlapping y-intervals would read
+   * as one broken line — the doubled rail was rejected as vocabulary and
+   * cannot be re-admitted as a routing accident. Inert at pitch 6 today;
+   * it is the tripwire for interior shafts and right-margin routing. */
+  const SPINE_SEP = Math.min(4.8, strandPitch - 1.2);
+  const spineClaims = opts.spineClaims || [];
 
   /* declined: structured facts about moves this plan attempted and gave
    * up — never prose. Hosts turn them into explanations. */
@@ -397,6 +403,14 @@ export function planRoute(block, ann, opts = {}) {
     for (const p of sampled) {
       if (!isFinite(p.x) || !isFinite(p.y)) return fail("nan");
     }
+    if (spine) {
+      for (const sc of spineClaims) {
+        if (Math.abs(sc.x - spine.x) < SPINE_SEP &&
+            sc.top - 2.6 < spine.bottom && spine.top < sc.bottom + 2.6) {
+          return fail("spine-separation", { x: spine.x, against: sc.x });
+        }
+      }
+    }
     let minClear = Infinity;
     for (const p of sampled) {
       for (const o of obstaclesNear(p.y, 32)) {
@@ -433,6 +447,7 @@ export function planRoute(block, ann, opts = {}) {
         ? { marginStart: spine.top, marginEnd: spine.bottom }
         : corridorYs.length ? { marginStart: corridorYs[0], marginEnd: corridorYs[0] } : {},
       claimsOut: corridorIdx.map((ci, i) => ({ corridor: ci, y: corridorYs[i], pad: claimPad })),
+      spineClaimOut: spine ? { x: spine.x, top: spine.top, bottom: spine.bottom } : null,
       diagnostics: {
         minimumClearance: Math.round(minClear * 100) / 100,
         intersections: 0,
