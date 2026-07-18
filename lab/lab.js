@@ -403,7 +403,7 @@ function offsetPts(pts, d) {
 function leg(g, x1, x2, y, hue, kind, delay = 0) {
   const p = S("path", {
     d: `M ${x1} ${y} H ${x2}`, fill: "none", stroke: hue,
-    "stroke-width": 1.2, "stroke-linecap": "round", opacity: 0.5,
+    "stroke-width": 1.1, "stroke-linecap": "round", opacity: 0.4,
   }, g);
   dashFor(p, kind);
   animFade(p, 220, delay);
@@ -445,22 +445,10 @@ function drawArc(g, a, b, hue, kind, stagger, gx, touchY) {
   // must earn their room, or they curdle into pretzels and claws
   const w = span < 60 ? 1.15 : 1.6;
   const nSamp = Math.max(18, Math.min(44, Math.round(span / 5)));
-  let pts;
-  if (kind === "mirror" && span >= 90) {
-    // reflection: the gesture reverses at the midpoint — an S that lives
-    // entirely inside the margin band, never crowding the verse numbers
-    const ym = (y1 + y2) / 2;
-    const shallow = gx - (gx - lane) * 0.3;
-    // tangent-continuous joint: the midpoint sits exactly between the two
-    // bow depths, so the halves meet without a corner
-    const midX = (lane + shallow) / 2;
-    pts = [
-      ...sampleCubic({ x: gx, y: y1 }, { x: lane, y: y1 + 4 }, { x: lane, y: ym - 8 }, { x: midX, y: ym }, Math.ceil(nSamp / 2)),
-      ...sampleCubic({ x: midX, y: ym }, { x: shallow, y: ym + 8 }, { x: shallow, y: y2 - 4 }, { x: gx, y: y2 }, Math.ceil(nSamp / 2)).slice(1),
-    ];
-  } else {
-    pts = sampleCubic({ x: gx, y: y1 }, { x: lane, y: y1 + 3 }, { x: lane, y: y2 - 3 }, { x: gx, y: y2 }, nSamp);
-  }
+  // one bow for every kind — mirror's reflection is carried by the twin
+  // width profile (two swells pinched at the midpoint), not by reversing
+  // the curve, which never survived contact with real spans
+  const pts = sampleCubic({ x: gx, y: y1 }, { x: lane, y: y1 + 3 }, { x: lane, y: y2 - 3 }, { x: gx, y: y2 }, nSamp);
   // ink flows from the touched member toward its counterpart
   const flip = touchY != null && Math.abs(touchY - y2) < Math.abs(touchY - y1);
   if (flip) pts = pts.slice().reverse();
@@ -499,7 +487,7 @@ function drawArc(g, a, b, hue, kind, stagger, gx, touchY) {
     leg(g, gx, far.x, far.y, hue, kind, 400);
     touchDot(g, far.x, far.y, hue, 400);
   } else {
-    ribbonDraw(g, pts, hue, { w, delay: 90, dur: 380, twin: kind === "mirror" && span >= 90 });
+    ribbonDraw(g, pts, hue, { w: kind === "mirror" ? w + 0.25 : w, delay: 90, dur: 380, twin: kind === "mirror" && span >= 44 });
     leg(g, gx, far.x, far.y, hue, kind, 400);
     touchDot(g, far.x, far.y, hue, 400);
   }
