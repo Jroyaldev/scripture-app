@@ -61,7 +61,7 @@ floor under the GAP:                    floor under the PAIR:
 - **Prettier:** hop gaps land exactly where the traveler crosses (today ~0.3-0.5px off on swoops — reads as a nicked spine at 3x); erasers are theme-proof (no paper-colored coins on Glass/Candlelight).
 - **Accept:** suite at 1.9 tolerance green on both dense fixtures; zoom a strand-1-over-strand-0 crossing — gap centered on the curve.
 
-### 6. Explanation plumbing — *adapt* (mode control deferred)
+### 6. Explanation plumbing — *adapt* (mode control deferred) — ✅ LANDED
 - **Build:** engine records structured facts only — `diagnostics.declined` (as a list, scorer-ready), `fail(reason, detail)`, corridor displacement counts. Host-side pure `explainPlan(plan, ann)` renders label + one sentence in the fdiag row; status line `${painted} painted · ${held} held · ${label}`. Add a `force margin` checkbox (`opts.disableCradle`); do NOT add the left/right select (dead UI).
 - **Prettier:** zero ink — protects the honest-failure contract; when a thread becomes a tick the answer is a sentence, not a loosened clearance.
 - **Accept:** declined emitted only when a branch was genuinely attempted (3-anchor annotation never claims "cradle didn't fit"); shadow-plan reasons labeled "if focused now".

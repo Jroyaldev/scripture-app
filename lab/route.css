@@ -82,6 +82,10 @@ body { margin: 0; background: var(--bg-primary); color: var(--text-primary); fon
 .fixture .chip.ok { color: var(--ok); background: color-mix(in srgb, var(--ok) 12%, transparent); }
 .fixture .chip.bad { color: var(--bad); background: color-mix(in srgb, var(--bad) 14%, transparent); }
 .fixture .fdiag { font: 400 0.62rem var(--font-mono); color: var(--text-tertiary); margin: 3px 0 0 14px; }
+.fixture .freason {
+  display: block; font: 400 0.66rem var(--font-ui); font-style: italic;
+  color: var(--text-secondary); margin: 4px 0 1px 14px; line-height: 1.45;
+}
 .fixture .chip.held { color: var(--text-tertiary); background: color-mix(in srgb, var(--text-tertiary) 10%, transparent); }
 .fixture .strand {
   font: 500 0.6rem var(--font-mono); color: var(--gold);

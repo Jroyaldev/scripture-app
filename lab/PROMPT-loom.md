@@ -230,3 +230,21 @@ the hover preview — a tick bloom adds the previewed thread and keeps the
 woven pair fixed instead of reshuffling the margin. The preview-clear
 listener no longer rides requestAnimationFrame (frames are on-demand in
 headless surfaces; the previewId guard already makes it one-shot).
+
+### Steps 5+6 landed (same day)
+
+Weave crossings are EXACT: computeHops solves each traveler segment
+against the crossed spine (horizontal travels directly; x-monotone
+quarter cubics by 24-step bisection) — the hop gap lands on the curve,
+not a sampled-cluster average. splitSpine merges overlapping gaps and
+drops slivers; the pause under a focused spine is an angle-invariant SVG
+mask bite (r 2.6), theme-proof by construction. Weave suite tolerance
+tightened to 1.9.
+
+And the loom explains itself: planRoute records structured facts —
+diagnostics.declined ({move, why}), fail(reason, detail) — and the host's
+explainPlan() turns them into one honest sentence under the focused
+fixture row plus a route label in the suite summary ("direct hammock ·
+embrace", "left loom · tributaries", …). A cradle checkbox in the topbar
+forces margin routing (opts.disableCradle) so the fallback is always one
+click away from inspection.

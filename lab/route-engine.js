@@ -97,7 +97,10 @@ export function planRoute(block, ann, opts = {}) {
    * double-railed treatment is optically wider than its centerline */
   const claimPad = opts.claimPad ?? 0;
 
-  const fail = (reason) => ({ valid: false, reason, laneIndex: strandIndex });
+  /* declined: structured facts about moves this plan attempted and gave
+   * up — never prose. Hosts turn them into explanations. */
+  const declined = [];
+  const fail = (reason, detail) => ({ valid: false, reason, detail, declined, laneIndex: strandIndex });
 
   const lines = [...block.renderedLines].sort((a, b) => a.top - b.top);
   if (!lines.length) return fail("no-rendered-lines");
@@ -241,7 +244,10 @@ export function planRoute(block, ann, opts = {}) {
    * whose radii would invert or starve the floor retries shallower
    * instead of aborting the cradle. */
   const allSameLine = branchesIn.every((b) => b.li === branchesIn[0].li);
-  if (allSameLine && branchesIn.length === 2) {
+  if (allSameLine && branchesIn.length === 2 && opts.disableCradle) {
+    declined.push({ move: "cradle", why: "disabled" });
+  }
+  if (allSameLine && branchesIn.length === 2 && !opts.disableCradle) {
     const [A, B] = [...branchesIn].sort((a, b) => a.frag.left - b.frag.left);
     const ci = A.li + 1;
     const gap = B.frag.left - A.frag.right;
@@ -265,11 +271,12 @@ export function planRoute(block, ann, opts = {}) {
       : gap >= GAP_FACING_MIN
         ? (embraceEligible && gap <= GAP_EMBRACE_MAX ? [facing, embrace] : [facing])
         : embraceEligible ? [embrace] : [];
+    if (!candidates.length) declined.push({ move: "cradle", why: "gap-too-tight" });
     for (const c of candidates) {
       /* the cradle has no port swoop — it may settle low in the band */
       const slot = corridorYFor(ci, c.ax, c.bx, Math.max(c.ay, c.by), false, (y) =>
         (c.bx - c.ax) - (y - c.ay) - (y - c.by) >= FLOOR_MIN ? true : "floor");
-      if (!slot) continue;
+      if (!slot) { declined.push({ move: `cradle:${c.variant}`, why: "no-corridor-slot" }); continue; }
       const fy = slot.y;
       const r1 = fy - c.ay, r2 = fy - c.by;
       const segs = [
@@ -432,6 +439,7 @@ export function planRoute(block, ann, opts = {}) {
         cornerRadii: [],
         totalLength: Math.round(segmentsLength(segs)),
         laneIndex: strandIndex,
+        declined,
       },
     };
   }

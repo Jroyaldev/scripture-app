@@ -511,10 +511,45 @@ function validate(measured, ann, plan, drawnPlans) {
   return checks;
 }
 
+/* ── route explanations: structured engine facts → one honest sentence ── */
+function explainPlan(plan) {
+  if (!plan) return { label: "held", reason: "not planned" };
+  if (!plan.valid) {
+    const why = {
+      "needs-space": "no corridor slot or strand is free in the current weave — held as ticks",
+      kink: "a terminal turn had no room to breathe",
+      "obstacle-collision": "every legal path would touch ink",
+      held: "outside the drawn trio — whisper underline and tick",
+    }[plan.reason] || plan.reason;
+    return { label: plan.reason === "held" ? "held" : plan.reason, reason: why };
+  }
+  const labels = {
+    "same-line": plan.cradleVariant === "embrace" ? "direct hammock · embrace" : "direct hammock",
+    tag: "loom tag",
+    corridor: "left loom",
+    multipoint: "left loom · tributaries",
+  };
+  const reasons = {
+    "same-line": plan.cradleVariant === "embrace"
+      ? "the pair is held as one — outer pins, floor beneath both words; the margin never enters"
+      : "both ideas share one verified corridor, so the margin detour disappears",
+    tag: "a single idea; its pin pours into the loom beside its own line",
+    corridor: "the ideas span rendered lines; one quiet spine on the left loom carries them",
+    multipoint: "each line's pins comb into tributaries feeding one spine on the loom",
+  };
+  let reason = reasons[plan.mode] || "";
+  const cradleDecline = (plan.diagnostics.declined || []).find((d) => d.move.startsWith("cradle"));
+  if ((plan.mode === "corridor" || plan.mode === "multipoint") && cradleDecline) {
+    reason = `the cradle declined (${cradleDecline.why}); the left loom carries the pair instead`;
+  }
+  return { label: labels[plan.mode] || plan.mode, reason };
+}
+
 /* ── orchestration ─────────────────────────────────────────── */
 let focusedId = "far-pair";
 let previewId = null;
 let weaveOn = true;
+let cradleOn = true;
 let lastLoomInner = 0;
 
 function run() {
@@ -554,6 +589,7 @@ function run() {
       const p = planRoute(measured.block, ann, {
         fontSize: measured.fontSize, strandIndex: strand,
         corridorClaims: claims, loomX: loomInner,
+        disableCradle: !cradleOn,
         /* every claim carries a little air so stacked shoulders never
          * read as one line */
         claimPad: 0.25,
@@ -631,16 +667,18 @@ function run() {
         ? `<span class="chip held">held</span>`
         : `<span class="chip held">${plan && plan.reason ? plan.reason : "held"}</span>`;
     const strandBadge = isDrawn ? `<span class="strand s${strands.get(ann.id)}">s${strands.get(ann.id)}</span>` : "";
+    const ex = explainPlan(plan);
     btn.innerHTML = `<span class="frow"><i class="dot" style="background:${HUES[ann.kind]}"></i>
       <span class="fname">${ann.fixture.name}</span>${strandBadge}${chip}</span>
       <span class="fdiag">${plan && plan.valid
         ? `${plan.mode}${plan.cradleVariant ? "·" + plan.cradleVariant : ""} · clear ${plan.diagnostics.minimumClearance}px · ${plan.diagnostics.totalLength}px · ${ann.anchors.length} anchor${ann.anchors.length > 1 ? "s" : ""}${plan.renderHops && plan.renderHops.length ? ` · ${plan.renderHops.length} hops` : ""}`
-        : `${ann.anchors.length} anchor${ann.anchors.length > 1 ? "s" : ""}`}</span>`;
+        : `${ann.anchors.length} anchor${ann.anchors.length > 1 ? "s" : ""}`}</span>${
+      ann.id === effectiveFocus ? `<span class="freason">${ex.label} — ${ex.reason}</span>` : ""}`;
     btn.addEventListener("click", () => { focusedId = ann.id; previewId = null; run(); });
     list.appendChild(btn);
   }
   document.getElementById("suite-summary").textContent =
-    `${drawnIds.size} drawn (${pass}/${drawnIds.size} pass) · ${anns.length - drawnIds.size} held as ticks · ${measured.block.renderedLines.length} rendered lines`;
+    `${drawnIds.size} drawn (${pass}/${drawnIds.size} pass) · ${anns.length - drawnIds.size} held as ticks · ${explainPlan(plans.get(effectiveFocus)).label}`;
 }
 
 const slider = document.getElementById("width-slider");
@@ -651,6 +689,8 @@ slider.addEventListener("input", () => {
 });
 const weaveBox = document.getElementById("weave-toggle");
 if (weaveBox) weaveBox.addEventListener("change", () => { weaveOn = weaveBox.checked; run(); });
+const cradleBox = document.getElementById("cradle-toggle");
+if (cradleBox) cradleBox.addEventListener("change", () => { cradleOn = cradleBox.checked; run(); });
 addEventListener("resize", () => requestAnimationFrame(run));
 
 /* a bloomed tick re-renders as a thread, so its own mouseleave can never
