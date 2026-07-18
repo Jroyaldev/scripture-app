@@ -84,9 +84,20 @@ function renameUser(gid, label) {
   const rec = USER.find((p) => p.id === gid);
   if (!rec || !label.trim()) return;
   rec.label = label.trim();
+  rec.custom = true; // a chosen name survives membership edits
   saveUser();
   const G = GIDS[gid];
   if (G) G.label = `${KIND_LABEL[G.kind]} · ${rec.label}`;
+}
+function removeMember(gid, ref, phrase) {
+  const rec = USER.find((p) => p.id === gid);
+  if (!rec) return;
+  rec.members = rec.members.filter((m) => !(m.ref === ref && m.phrase === phrase));
+  if (rec.members.length < 2) { deleteUserPattern(gid); return; }
+  if (!rec.custom) rec.label = userLabel(rec.kind, rec.members);
+  saveUser();
+  rebuildAll();
+  applyActive();
 }
 function refStudy(ref) {
   const chKey = ref.split(".").slice(0, 2).join(".");
@@ -362,6 +373,17 @@ function applyActive() {
       el.classList.toggle("on", activeG.length > 0);
       // the words wear the hue of the pattern you chose, not just the first
       el.style.setProperty("--h", GIDS[activeG[0] || gs[0]].hue);
+      // both patterns awake on the same words → stacked underlines, one per hue
+      el.classList.toggle("stack", activeG.length > 1);
+      if (activeG.length > 1) {
+        el.style.backgroundImage = activeG.map((g) => `linear-gradient(${GIDS[g].hue}, ${GIDS[g].hue})`).join(", ");
+        el.style.backgroundPosition = activeG.map((_, i) => `0 calc(100% - ${(activeG.length - 1 - i) * 3}px)`).join(", ");
+        el.style.backgroundSize = "100% 1.5px";
+        el.style.backgroundRepeat = "no-repeat";
+      } else {
+        el.style.backgroundImage = ""; el.style.backgroundPosition = "";
+        el.style.backgroundSize = ""; el.style.backgroundRepeat = "";
+      }
     });
     drawOverlay(sid, local);
   }
@@ -493,12 +515,24 @@ function updateCard() {
         const txt = document.createElement("span"); txt.className = "pr-txt"; txt.textContent = a.phrase;
         const dir = document.createElement("span"); dir.className = "pr-dir";
         row.append(ref, txt, dir);
+        if (gid.startsWith("u-")) {
+          const rm = document.createElement("button"); rm.className = "pr-rm"; rm.textContent = "–";
+          rm.title = "remove these words from the pattern";
+          rm.addEventListener("click", (e) => { e.stopPropagation(); removeMember(gid, a.ref, a.phrase); });
+          row.appendChild(rm);
+        }
         row.addEventListener("click", (e) => {
           e.stopPropagation();
           a.el.scrollIntoView({ behavior: "smooth", block: "center" });
         });
         row._el = a.el;
         sec.appendChild(row);
+      }
+      if (gid.startsWith("u-")) {
+        const add = document.createElement("button"); add.className = "pcard-add";
+        add.textContent = "+ add words";
+        add.addEventListener("click", (e) => { e.stopPropagation(); startExtend(gid); });
+        sec.appendChild(add);
       }
       const note = document.createElement("textarea");
       note.className = "pcard-note";
@@ -669,16 +703,27 @@ function sessionBar(msg) {
   const G = SESSION;
   authbar.innerHTML = `<span class="ak" style="cursor:default"><i style="background:${KIND_HUE[G.kind]}"></i>${KIND_LABEL[G.kind]}</span>
     <span class="hint">${msg}</span>`;
-  if (!BINARY_KINDS.has(G.kind) && G.members.length >= 2) {
+  if (G.extend) {
     const done = document.createElement("button"); done.className = "ak act"; done.textContent = "done";
-    done.addEventListener("click", (e) => { e.stopPropagation(); finalizeSession(); });
+    done.addEventListener("click", (e) => { e.stopPropagation(); endSession(); });
     authbar.appendChild(done);
+  } else {
+    if (!BINARY_KINDS.has(G.kind) && G.members.length >= 2) {
+      const done = document.createElement("button"); done.className = "ak act"; done.textContent = "done";
+      done.addEventListener("click", (e) => { e.stopPropagation(); finalizeSession(); });
+      authbar.appendChild(done);
+    }
+    const cancel = document.createElement("button"); cancel.className = "ak"; cancel.textContent = "cancel";
+    cancel.addEventListener("click", (e) => { e.stopPropagation(); endSession(); });
+    authbar.appendChild(cancel);
   }
-  const cancel = document.createElement("button"); cancel.className = "ak"; cancel.textContent = "cancel";
-  cancel.addEventListener("click", (e) => { e.stopPropagation(); endSession(); });
-  authbar.appendChild(cancel);
   authbar.classList.add("on");
-  placeAuthbar(G.members[G.members.length - 1].range.getBoundingClientRect());
+  const anchor = G.members[G.members.length - 1];
+  if (anchor) placeAuthbar(anchor.range.getBoundingClientRect());
+  else {
+    const card = document.querySelector(`[data-rail="${G.study}"] .pcard`);
+    if (card) placeAuthbar(card.getBoundingClientRect());
+  }
 }
 function startSession(kind, info) {
   const study = refStudy(info.ref);
@@ -692,11 +737,31 @@ function captureMember() {
   const info = selectionInfo();
   if (!info) return;
   if (refStudy(info.ref) !== SESSION.study) { sessionBar("stay within this passage"); return; }
+  if (SESSION.extend) {
+    // extending an existing pattern: each selection lands immediately
+    const rec = USER.find((p) => p.id === SESSION.extend);
+    if (!rec || rec.members.some((m) => m.ref === info.ref && m.phrase === info.phrase)) return;
+    rec.members.push({ ref: info.ref, phrase: info.phrase });
+    if (!rec.custom) rec.label = userLabel(rec.kind, rec.members);
+    saveUser();
+    getSelection().removeAllRanges();
+    rebuildAll();
+    applyActive();
+    sessionBar(`${rec.members.length} in the pattern · select more, or finish`);
+    return;
+  }
   if (SESSION.members.some((m) => m.ref === info.ref && m.phrase === info.phrase)) return;
   SESSION.members.push(info);
   getSelection().removeAllRanges();
   if (BINARY_KINDS.has(SESSION.kind) && SESSION.members.length === 2) { finalizeSession(); return; }
   sessionBar(`${SESSION.members.length} marked · select the next, or finish`);
+}
+function startExtend(gid) {
+  const G = GIDS[gid];
+  SESSION = { kind: G.kind, members: [], study: G.study, extend: gid };
+  pinned.add(gid);
+  applyActive();
+  sessionBar("select the words to add");
 }
 function finalizeSession() {
   const { kind, members } = SESSION;

@@ -132,6 +132,7 @@ body.theme-glass, body.theme-dark-glass {
 .pk.on, body.reveal .pk {
   background-size: 100% 1.5px;
 }
+.pk.stack { padding-bottom: 4px; }
 /* awake: the rest of the page recedes; members keep full ink */
 .sheet.awake .vtext { color: color-mix(in srgb, var(--text-primary) 44%, transparent); }
 .sheet.awake .vnum { opacity: 0.35; }
@@ -217,6 +218,20 @@ body.theme-glass, body.theme-dark-glass {
 .pcard-row .pr-dir { flex: none; font: 500 0.62rem var(--font-mono); color: var(--text-tertiary); width: 10px; }
 .pcard-row.off .pr-txt { color: var(--text-tertiary); }
 .pcard-del:hover { color: var(--k-contrast); }
+.pcard-row .pr-rm {
+  flex: none; appearance: none; border: 0; background: transparent; cursor: pointer;
+  font: 500 0.8rem/1 var(--font-mono); color: var(--text-tertiary);
+  padding: 0 4px; border-radius: 3px; opacity: 0; transition: opacity var(--tr), color var(--tr);
+}
+.pcard-row:hover .pr-rm { opacity: 1; }
+.pcard-row .pr-rm:hover { color: var(--k-contrast); }
+.pcard-add {
+  display: block; appearance: none; border: 0; background: transparent; cursor: pointer;
+  font: 500 0.64rem var(--font-mono); letter-spacing: 0.06em; color: var(--text-tertiary);
+  padding: 4px 8px; margin-top: 2px; border-radius: var(--r-sm);
+  transition: color var(--tr), background var(--tr);
+}
+.pcard-add:hover { color: var(--text-primary); background: var(--bg-canvas); }
 .pcard-title[contenteditable] { cursor: text; border-radius: 3px; }
 .pcard-title[contenteditable]:hover { background: var(--bg-canvas); }
 .pcard-title[contenteditable]:focus { outline: 1px solid var(--border-medium); background: var(--bg-canvas); }
