@@ -104,7 +104,7 @@ function versePlan(study, ref, text) {
       if (k.ref !== ref) continue;
       const idx = text.indexOf(k.phrase);
       if (idx < 0) { console.warn("phrase missing", ref, k.phrase); continue; }
-      ranges.push({ start: idx, end: idx + k.phrase.length, gid });
+      ranges.push({ start: idx, end: idx + k.phrase.length, gid, ref, phrase: k.phrase });
     }
   }
   return ranges;
@@ -126,7 +126,7 @@ function appendSegments(container, text, ranges) {
     container.appendChild(el);
     cover.forEach((r) => {
       GIDS[r.gid].spans.push(el);
-      if (r.start === s) GIDS[r.gid].anchors.push(el);
+      if (r.start === s) GIDS[r.gid].anchors.push({ el, ref: r.ref, phrase: r.phrase });
     });
   }
 }
@@ -209,26 +209,50 @@ function animFade(el, ms = 240) {
   el.style.opacity = 1;
 }
 
-/* connectors live entirely in the gutter: a dot at each member's line,
- * a curve bowing left between them. The underline marks the words;
- * the gutter curve only carries the relationship. Never crosses text. */
+/* Connectors are one continuous gesture that actually touches the marks:
+ * underline → touch dot → leg (hairline at underline height, quieter) →
+ * gutter spine (always the same margin) → leg → touch dot → underline.
+ * The spine never crosses text; the legs run at underline level so they
+ * read as the underline reaching out to the margin. */
+function dashFor(p, kind) {
+  if (kind === "link:echo") { p.setAttribute("stroke-dasharray", "0.1 5"); p.setAttribute("stroke-width", 1.9); }
+}
+function leg(g, x1, x2, y, hue, kind) {
+  const p = S("path", {
+    d: `M ${x1} ${y} H ${x2}`, fill: "none", stroke: hue,
+    "stroke-width": 1.2, "stroke-linecap": "round", opacity: 0.5,
+  }, g);
+  dashFor(p, kind);
+  animFade(p);
+}
+function touchDot(g, x, y, hue, delay = 0) {
+  animFade(S("circle", { cx: x, cy: y, r: 1.8, fill: hue }, g), 200 + delay);
+}
+
 function drawArc(g, a, b, hue, kind, lane, gx) {
   const y1 = a.bottom + 2.5, y2 = b.bottom + 2.5;
   const sameLine = Math.abs(y1 - y2) < 5;
-  let d;
   if (sameLine) {
     const sx = a.right + 4, ex = b.x - 4, dip = 12;
-    d = `M ${sx} ${y1} C ${sx + 4} ${y1 + dip}, ${ex - 4} ${y2 + dip}, ${ex} ${y2}`;
-  } else {
-    d = `M ${gx} ${y1} C ${lane} ${y1 + 3}, ${lane} ${y2 - 3}, ${gx} ${y2}`;
+    const p = S("path", {
+      d: `M ${sx} ${y1} C ${sx + 4} ${y1 + dip}, ${ex - 4} ${y2 + dip}, ${ex} ${y2}`,
+      fill: "none", stroke: hue, "stroke-width": 1.3, "stroke-linecap": "round",
+    }, g);
+    dashFor(p, kind);
+    animDraw(p);
+    return;
   }
-  const p = S("path", { d, fill: "none", stroke: hue, "stroke-width": 1.3, "stroke-linecap": "round" }, g);
-  if (kind === "link:echo") { p.setAttribute("stroke-dasharray", "0.1 5"); p.setAttribute("stroke-width", 1.9); animFade(p); }
+  const p = S("path", {
+    d: `M ${gx} ${y1} C ${lane} ${y1 + 3}, ${lane} ${y2 - 3}, ${gx} ${y2}`,
+    fill: "none", stroke: hue, "stroke-width": 1.3, "stroke-linecap": "round",
+  }, g);
+  if (kind === "link:echo") { dashFor(p, kind); animFade(p); }
   else if (kind === "link:contrast") { p.setAttribute("pathLength", 100); p.setAttribute("stroke-dasharray", "45.5 9 45.5"); animFade(p); }
   else animDraw(p);
-  if (!sameLine) {
-    for (const [cx, cy] of [[gx, y1], [gx, y2]]) animFade(S("circle", { cx, cy, r: 2, fill: hue }, g));
-  }
+  leg(g, gx, a.x - 2, y1, hue, kind);
+  leg(g, gx, b.x - 2, y2, hue, kind);
+  touchDot(g, a.x - 2, y1, hue);
+  touchDot(g, b.x - 2, y2, hue);
 }
 
 function drawThread(g, rects, hue, laneX) {
@@ -236,9 +260,9 @@ function drawThread(g, rects, hue, laneX) {
   const line = S("path", { d: `M ${laneX} ${ys[0]} V ${ys[ys.length - 1]}`, stroke: hue, "stroke-width": 1, fill: "none", opacity: 0.55 }, g);
   animDraw(line, 420);
   rects.forEach((r, i) => {
-    animFade(S("circle", { cx: laneX, cy: ys[i], r: 1.9, fill: hue }, g), 200 + i * 40);
-    const tick = S("path", { d: `M ${laneX + 4} ${ys[i]} H ${laneX + 11}`, stroke: hue, "stroke-width": 1, opacity: 0.4 }, g);
-    animFade(tick, 200 + i * 40);
+    const l = S("path", { d: `M ${laneX} ${ys[i]} H ${r.x - 2}`, stroke: hue, "stroke-width": 1, opacity: 0.35 }, g);
+    animFade(l, 200 + i * 40);
+    touchDot(g, r.x - 2, ys[i], hue, i * 40);
   });
 }
 
@@ -253,7 +277,7 @@ function drawOverlay(sid, gids) {
   const M = measure(sid);
   gids.forEach((gid, i) => {
     const G = GIDS[gid];
-    const rects = G.anchors.map((a) => firstRect(M, a)).filter(Boolean);
+    const rects = G.anchors.map((a) => firstRect(M, a.el)).filter(Boolean);
     if (rects.length < 2) return;
     const g = S("g", {}, svg);
     if (G.conn === "thread") drawThread(g, rects, G.hue, M.textLeft - 46 - i * 10);
@@ -279,6 +303,7 @@ function applyActive() {
     c.classList.toggle("on", c.dataset.gids.split(" ").some((g) => act.has(g)));
   });
   updatePills();
+  updateCard();
 }
 
 /* whisper — the pattern names itself, anchored to the touched phrase */
@@ -309,8 +334,9 @@ pillDown.addEventListener("click", () => pillTargets.down && pillTargets.down.sc
 
 function updatePills() {
   const act = [...activeGids()];
-  if (!act.length) { pillUp.classList.remove("on"); pillDown.classList.remove("on"); return; }
-  const anchors = act.flatMap((g) => GIDS[g].anchors);
+  // while a pattern is pinned the card is the navigator; pills serve hover only
+  if (!act.length || pinned.size) { pillUp.classList.remove("on"); pillDown.classList.remove("on"); return; }
+  const anchors = act.flatMap((g) => GIDS[g].anchors.map((a) => a.el));
   const above = [], below = [];
   let sheetRect = null;
   for (const a of anchors) {
@@ -330,7 +356,57 @@ function updatePills() {
   }
   pillTargets = { up: above[above.length - 1] || null, down: below[0] || null };
 }
-addEventListener("scroll", () => { if (activeGids().size) updatePills(); }, { passive: true });
+addEventListener("scroll", () => { if (activeGids().size) { updatePills(); updateCardView(); } }, { passive: true });
+
+/* pattern card — the pinned pattern, condensed to one glance.
+ * Every member as ref + phrase; off-screen rows dim with a direction arrow;
+ * click a row to jump. Appears only while something is pinned. */
+const card = document.createElement("div");
+card.className = "pcard";
+document.body.appendChild(card);
+
+function updateCard() {
+  const gids = [...pinned];
+  if (!gids.length) { card.classList.remove("on"); return; }
+  card.innerHTML = "";
+  for (const gid of gids) {
+    const G = GIDS[gid];
+    const sec = document.createElement("div"); sec.className = "pcard-sec";
+    const head = document.createElement("div"); head.className = "pcard-head";
+    head.innerHTML = `<svg width="8" height="8"><circle cx="4" cy="4" r="3" fill="${G.hue}"/></svg>`;
+    head.appendChild(document.createTextNode(G.label));
+    sec.appendChild(head);
+    for (const a of G.anchors) {
+      const row = document.createElement("div"); row.className = "pcard-row";
+      const [, ch, v] = a.ref.split(".");
+      const ref = document.createElement("span"); ref.className = "pr-ref"; ref.textContent = `${ch}:${v}`;
+      const txt = document.createElement("span"); txt.className = "pr-txt"; txt.textContent = a.phrase;
+      const dir = document.createElement("span"); dir.className = "pr-dir";
+      row.append(ref, txt, dir);
+      row.addEventListener("click", (e) => {
+        e.stopPropagation();
+        a.el.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+      row._el = a.el;
+      sec.appendChild(row);
+    }
+    card.appendChild(sec);
+  }
+  const foot = document.createElement("div"); foot.className = "pcard-foot";
+  foot.textContent = "click a line to jump · esc clears";
+  card.appendChild(foot);
+  card.classList.add("on");
+  updateCardView();
+}
+function updateCardView() {
+  if (!card.classList.contains("on")) return;
+  card.querySelectorAll(".pcard-row").forEach((row) => {
+    const r = row._el.getBoundingClientRect();
+    const off = r.bottom < 60 ? "↑" : r.top > innerHeight - 30 ? "↓" : "";
+    row.classList.toggle("off", !!off);
+    row.querySelector(".pr-dir").textContent = off;
+  });
+}
 
 /* ── revelation matrix panel ─────────────────────────────── */
 function glyphSVGString(name, partial, earPos) {
