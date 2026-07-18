@@ -316,11 +316,11 @@ function animDraw(p, ms = 340) {
   p.style.transition = `stroke-dashoffset ${ms}ms cubic-bezier(.3,.7,.3,1)`;
   p.style.strokeDashoffset = 0;
 }
-function animFade(el, ms = 240) {
+function animFade(el, ms = 240, delay = 0) {
   const target = el.getAttribute("opacity") || 1;
   el.style.opacity = 0;
   el.getBoundingClientRect();
-  el.style.transition = `opacity ${ms}ms ease`;
+  el.style.transition = `opacity ${ms}ms ease ${delay}ms`;
   el.style.opacity = target;
 }
 
@@ -349,36 +349,63 @@ function sampleCubic(p0, p1, p2, p3, n = 44) {
   }
   return pts;
 }
-function ribbon(g, pts, hue, w = 1.6, opacity = 1) {
-  const n = pts.length, L = [], R = [];
-  for (let i = 0; i < n; i++) {
-    const t = i / (n - 1);
+function ribbonOutline(pts, w, frac = 1) {
+  const total = pts.length;
+  const count = Math.max(2, Math.round(total * Math.min(1, frac)));
+  const L = [], R = [];
+  for (let i = 0; i < count; i++) {
+    const t = i / (total - 1);
     const ramp = Math.min(1, Math.min(t, 1 - t) / 0.16); // endpoint taper
-    const r = (w / 2) * (0.55 + 0.6 * Math.sin(Math.PI * t)) * (0.3 + 0.7 * ramp);
-    const a = pts[Math.max(0, i - 1)], b = pts[Math.min(n - 1, i + 1)];
+    let r = (w / 2) * (0.55 + 0.6 * Math.sin(Math.PI * t)) * (0.3 + 0.7 * ramp);
+    if (frac < 1) {
+      // mid-draw the leading edge narrows to a nib tip
+      r *= Math.min(1, (count - 1 - i) / Math.max(1, total * 0.12));
+    }
+    const a = pts[Math.max(0, i - 1)], b = pts[Math.min(total - 1, i + 1)];
     const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1;
     const nx = -dy / len, ny = dx / len;
     L.push(`${(pts[i].x + nx * r).toFixed(2)},${(pts[i].y + ny * r).toFixed(2)}`);
     R.push(`${(pts[i].x - nx * r).toFixed(2)},${(pts[i].y - ny * r).toFixed(2)}`);
   }
-  const p = S("path", { d: `M${L.join("L")}L${R.reverse().join("L")}Z`, fill: hue, stroke: "none" }, g);
+  return `M${L.join("L")}L${R.reverse().join("L")}Z`;
+}
+/* the ribbon draws itself: the ink flows point by point along the
+ * centerline, leading edge tapered like a nib in contact */
+function ribbonDraw(g, pts, hue, { w = 1.6, opacity = 1, delay = 0, dur = 380 } = {}) {
+  const p = S("path", { d: "", fill: hue, stroke: "none" }, g);
   if (opacity < 1) p.setAttribute("opacity", opacity);
-  animFade(p);
+  const t0 = performance.now() + delay;
+  const ease = (x) => 1 - Math.pow(1 - x, 3);
+  function frame(now) {
+    if (!p.isConnected) return; // overlay cleared mid-flight
+    const u = Math.min(1, Math.max(0, (now - t0) / dur));
+    if (u > 0) p.setAttribute("d", ribbonOutline(pts, w, ease(u)));
+    if (u < 1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
   return p;
 }
-function leg(g, x1, x2, y, hue, kind) {
+function leg(g, x1, x2, y, hue, kind, delay = 0) {
   const p = S("path", {
     d: `M ${x1} ${y} H ${x2}`, fill: "none", stroke: hue,
     "stroke-width": 1.2, "stroke-linecap": "round", opacity: 0.5,
   }, g);
   dashFor(p, kind);
-  animFade(p);
+  animFade(p, 220, delay);
 }
 function touchDot(g, x, y, hue, delay = 0) {
-  animFade(S("circle", { cx: x, cy: y, r: 1.8, fill: hue }, g), 200 + delay);
+  animFade(S("circle", { cx: x, cy: y, r: 1.8, fill: hue }, g), 200, delay);
 }
 
-function drawArc(g, a, b, hue, kind, lane, gx) {
+/* the member you touched is where the ink starts */
+let LAST_TOUCH = null;
+function touchYIn(M) {
+  if (!LAST_TOUCH || !LAST_TOUCH.isConnected) return null;
+  const r = LAST_TOUCH.getClientRects()[0];
+  return r ? r.top - M.base.top : null;
+}
+
+function drawArc(g, a, b, hue, kind, lane, gx, touchY) {
   const y1 = a.bottom + 2.5, y2 = b.bottom + 2.5;
   const sameLine = Math.abs(y1 - y2) < 5;
   if (sameLine) {
@@ -391,11 +418,16 @@ function drawArc(g, a, b, hue, kind, lane, gx) {
       dashFor(p, kind);
       animFade(p);
     } else {
-      ribbon(g, sampleCubic({ x: sx, y: y1 }, { x: sx + 4, y: y1 + dip }, { x: ex - 4, y: y2 + dip }, { x: ex, y: y2 }), hue);
+      ribbonDraw(g, sampleCubic({ x: sx, y: y1 }, { x: sx + 4, y: y1 + dip }, { x: ex - 4, y: y2 + dip }, { x: ex, y: y2 }), hue, { dur: 300 });
     }
     return;
   }
-  const pts = sampleCubic({ x: gx, y: y1 }, { x: lane, y: y1 + 3 }, { x: lane, y: y2 - 3 }, { x: gx, y: y2 });
+  let pts = sampleCubic({ x: gx, y: y1 }, { x: lane, y: y1 + 3 }, { x: lane, y: y2 - 3 }, { x: gx, y: y2 });
+  // ink flows from the touched member toward its counterpart
+  const flip = touchY != null && Math.abs(touchY - y2) < Math.abs(touchY - y1);
+  if (flip) pts = pts.slice().reverse();
+  const near = flip ? { x: b.x - 2, y: y2 } : { x: a.x - 2, y: y1 };
+  const far = flip ? { x: a.x - 2, y: y1 } : { x: b.x - 2, y: y2 };
   if (kind === "link:echo") {
     const p = S("path", {
       d: `M ${gx} ${y1} C ${lane} ${y1 + 3}, ${lane} ${y2 - 3}, ${gx} ${y2}`,
@@ -403,28 +435,47 @@ function drawArc(g, a, b, hue, kind, lane, gx) {
     }, g);
     dashFor(p, kind);
     animFade(p);
-  } else if (kind === "link:contrast") {
-    // broken at midpoint: two ribbons, each tapering into the gap
-    ribbon(g, pts.slice(0, Math.floor(pts.length * 0.45)), hue);
-    ribbon(g, pts.slice(Math.ceil(pts.length * 0.55)), hue);
-  } else {
-    ribbon(g, pts, hue);
+    leg(g, gx, a.x - 2, y1, hue, kind);
+    leg(g, gx, b.x - 2, y2, hue, kind);
+    touchDot(g, a.x - 2, y1, hue);
+    touchDot(g, b.x - 2, y2, hue);
+    return;
   }
-  leg(g, gx, a.x - 2, y1, hue, kind);
-  leg(g, gx, b.x - 2, y2, hue, kind);
-  touchDot(g, a.x - 2, y1, hue);
-  touchDot(g, b.x - 2, y2, hue);
+  // choreography: pen sets down at the near member, draws, arrives at the far
+  leg(g, gx, near.x, near.y, hue, kind, 30);
+  touchDot(g, near.x, near.y, hue, 30);
+  if (kind === "link:contrast") {
+    // two strokes with a beat between — the pen lifts at the break
+    ribbonDraw(g, pts.slice(0, Math.floor(pts.length * 0.45)), hue, { delay: 90, dur: 210 });
+    ribbonDraw(g, pts.slice(Math.ceil(pts.length * 0.55)), hue, { delay: 360, dur: 210 });
+    leg(g, gx, far.x, far.y, hue, kind, 520);
+    touchDot(g, far.x, far.y, hue, 520);
+  } else {
+    ribbonDraw(g, pts, hue, { delay: 90, dur: 380 });
+    leg(g, gx, far.x, far.y, hue, kind, 400);
+    touchDot(g, far.x, far.y, hue, 400);
+  }
 }
 
-function drawThread(g, rects, hue, laneX) {
+function drawThread(g, rects, hue, laneX, touchY) {
   const ys = rects.map((r) => r.bottom + 2.5);
+  const yTop = ys[0], yBot = ys[ys.length - 1];
+  // ink starts nearest the touched member and runs the length of the spine
+  const flip = touchY != null && Math.abs(touchY - yBot) < Math.abs(touchY - yTop);
   const spine = [];
-  for (let i = 0; i <= 32; i++) spine.push({ x: laneX, y: ys[0] + ((ys[ys.length - 1] - ys[0]) * i) / 32 });
-  ribbon(g, spine, hue, 1.35, 0.7);
+  for (let i = 0; i <= 32; i++) {
+    const t = i / 32;
+    spine.push({ x: laneX, y: flip ? yBot - (yBot - yTop) * t : yTop + (yBot - yTop) * t });
+  }
+  const dur = 460;
+  ribbonDraw(g, spine, hue, { w: 1.35, opacity: 0.7, delay: 40, dur });
   rects.forEach((r, i) => {
+    // each member lights as the ink passes its line
+    const frac = (yBot === yTop) ? 0 : (flip ? (yBot - ys[i]) / (yBot - yTop) : (ys[i] - yTop) / (yBot - yTop));
+    const delay = 40 + dur * frac * 0.85;
     const l = S("path", { d: `M ${laneX} ${ys[i]} H ${r.x - 2}`, stroke: hue, "stroke-width": 1, opacity: 0.35 }, g);
-    animFade(l, 200 + i * 40);
-    touchDot(g, r.x - 2, ys[i], hue, i * 40);
+    animFade(l, 200, delay);
+    touchDot(g, r.x - 2, ys[i], hue, delay);
   });
 }
 
@@ -439,13 +490,14 @@ function drawOverlay(sid, gids) {
   if (live) svg.appendChild(live);
   if (!gids.length) return;
   const M = measure(sid);
+  const touchY = touchYIn(M);
   gids.forEach((gid, i) => {
     const G = GIDS[gid];
     const rects = G.anchors.map((a) => firstRect(M, a.el)).filter(Boolean);
     if (rects.length < 2) return;
     const g = S("g", {}, svg);
-    if (G.conn === "thread") drawThread(g, rects, G.hue, M.textLeft - 46 - i * 10);
-    else drawArc(g, rects[0], rects[rects.length - 1], G.hue, G.kind, M.textLeft - 40 - i * 10, M.textLeft - 12);
+    if (G.conn === "thread") drawThread(g, rects, G.hue, M.textLeft - 46 - i * 10, touchY);
+    else drawArc(g, rects[0], rects[rects.length - 1], G.hue, G.kind, M.textLeft - 40 - i * 10, M.textLeft - 12, touchY);
   });
 }
 
@@ -988,6 +1040,7 @@ function wire() {
       if (!t || !scope.contains(t)) return;
       clearTimeout(sleepTimer);
       clearTimeout(hoverTimer);
+      if (t.classList.contains("pk")) LAST_TOUCH = t;
       hoverTimer = setTimeout(() => {
         const gs = gidsOf(t);
         hovered.clear();
@@ -1028,6 +1081,7 @@ function wire() {
         else gs.forEach((g) => pinned.add(g));
       }
       // the display and the whisper follow the click immediately
+      if (t.classList.contains("pk")) LAST_TOUCH = t;
       gs.forEach((g) => hovered.delete(g));
       applyActive();
       if (t.classList.contains("pk")) showWhisper(t);
