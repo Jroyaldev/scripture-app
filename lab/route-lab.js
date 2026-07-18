@@ -105,7 +105,9 @@ function buildSheet() {
 function inkSlack(el) {
   const cs = getComputedStyle(el);
   const key = `${cs.fontWeight}|${cs.fontSize}|${cs.fontFamily}`;
-  if (inkSlack._key === key) return inkSlack._val;
+  const cache = inkSlack._cache || (inkSlack._cache = new Map());
+  const hit = cache.get(key);
+  if (hit) return hit;
   const ctx = (inkSlack._canvas || (inkSlack._canvas = document.createElement("canvas"))).getContext("2d");
   ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
   const m = ctx.measureText("Mahglpqy");
@@ -113,7 +115,7 @@ function inkSlack(el) {
     top: Math.max(0, m.fontBoundingBoxAscent - m.actualBoundingBoxAscent),
     bottom: Math.max(0, m.fontBoundingBoxDescent - m.actualBoundingBoxDescent),
   };
-  inkSlack._key = key; inkSlack._val = val;
+  cache.set(key, val);
   return val;
 }
 
@@ -146,6 +148,38 @@ function measure() {
   const renderedLines = mergeByLine(lineRects).map((r) => ({
     left: r.left, right: r.right, top: r.top + slack.top, bottom: r.bottom - slack.bottom,
   }));
+  /* word runs: the collision truth is words, not lines — the whitespace
+   * between words is real routing room. Corridors and the loom datum still
+   * derive from merged lines; only clearance checks use these. The walk is
+   * ~1ms-per-1000-words expensive, so it caches on layout dimensions —
+   * focus/hover replans reuse it; only reflow rebuilds. */
+  const wrKey = `${base.width}x${sheet.scrollHeight}`;
+  let wordRuns = measure._wrKey === wrKey ? measure._wrVal : null;
+  if (!wordRuns) {
+    wordRuns = [];
+    const range = document.createRange();
+    sheet.querySelectorAll(".vtext").forEach((el) => {
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      let node;
+      while ((node = walker.nextNode())) {
+        const text = node.nodeValue || "";
+        if (!text.trim()) continue;
+        const s = inkSlack(node.parentElement);
+        const re = /\S+/g;
+        let m;
+        while ((m = re.exec(text))) {
+          range.setStart(node, m.index);
+          range.setEnd(node, m.index + m[0].length);
+          for (const r of range.getClientRects()) {
+            if (r.width <= 0.4 || r.height <= 1) continue;
+            const rr = rel(r);
+            wordRuns.push({ left: rr.left, right: rr.right, top: rr.top + s.top, bottom: rr.bottom - s.bottom });
+          }
+        }
+      }
+    });
+    measure._wrKey = wrKey; measure._wrVal = wordRuns;
+  }
   /* measure number glyphs — a grid-stretched span lies about its box */
   const verseNumberRects = [...sheet.querySelectorAll(".vnum")].map((el) => {
     const range = document.createRange();
@@ -159,7 +193,7 @@ function measure() {
   const lineHeight = parseFloat(getComputedStyle(sheet.querySelector(".vtext")).lineHeight);
   const block = {
     bounds: rel(base),
-    renderedLines, verseNumberRects, additionalObstacles,
+    renderedLines, wordRuns, verseNumberRects, additionalObstacles,
     lineHeight,
     preferredMargin: "left",
     availableLeftMargin: 116,

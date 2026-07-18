@@ -101,11 +101,40 @@ export function planRoute(block, ann, opts = {}) {
 
   const lines = [...block.renderedLines].sort((a, b) => a.top - b.top);
   if (!lines.length) return fail("no-rendered-lines");
+  /* collision truth is words when the host measured them — the whitespace
+   * between words is real routing room. Word runs are a strict subset of
+   * their line rects, so this only ever legalizes routes. Corridors, line
+   * indexing, and the loom datum still come from merged lines. */
+  const hardRects = block.wordRuns && block.wordRuns.length ? block.wordRuns : lines;
   const obstacles = [
-    ...lines,
+    ...hardRects,
     ...(block.verseNumberRects || []),
     ...(block.additionalObstacles || []),
   ].map((r) => expandRect(r, expand));
+
+  /* y-bucketed index: sampling checks only obstacles near the point */
+  const BUCKET = 16;
+  const bucketIndex = new Map();
+  for (const o of obstacles) {
+    for (let b = Math.floor(o.top / BUCKET); b <= Math.floor(o.bottom / BUCKET); b++) {
+      let arr = bucketIndex.get(b);
+      if (!arr) bucketIndex.set(b, arr = []);
+      arr.push(o);
+    }
+  }
+  const nearCache = new Map();
+  const obstaclesNear = (y, reach = 0) => {
+    const b0 = Math.floor((y - reach) / BUCKET), b1 = Math.floor((y + reach) / BUCKET);
+    if (b0 === b1) return bucketIndex.get(b0) || [];
+    const key = b0 * 4096 + b1;
+    let out = nearCache.get(key);
+    if (!out) {
+      out = [];
+      for (let b = b0; b <= b1; b++) { const a = bucketIndex.get(b); if (a) out.push(...a); }
+      nearCache.set(key, out);
+    }
+    return out;
+  };
 
   /* corridors: the whitespace band between consecutive expanded lines,
    * plus overscan bands above the first and below the last */
@@ -132,7 +161,7 @@ export function planRoute(block, ann, opts = {}) {
 
   /* a horizontal run at y over [xa,xb] must clear every expanded obstacle */
   const clearRun = (y, xa, xb) =>
-    !obstacles.some((o) => y > o.top && y < o.bottom && Math.min(xa, xb) < o.right && Math.max(xa, xb) > o.left);
+    !obstaclesNear(y).some((o) => y > o.top && y < o.bottom && Math.min(xa, xb) < o.right && Math.max(xa, xb) > o.left);
 
   /* pick a shoulder y inside corridor ci. The hard bounds — DROP_MIN room
    * toward the contact, SWOOP_DIP_MIN room below when the shoulder pours
@@ -343,7 +372,7 @@ export function planRoute(block, ann, opts = {}) {
     let minClear = Infinity;
     for (const p of sampled) {
       const exempt = contacts.some((c) => Math.hypot(p.x - c.x, p.y - c.y) < expand + 3);
-      for (const o of obstacles) {
+      for (const o of obstaclesNear(p.y, 32)) {
         if (!exempt && inRect(p.x, p.y, o)) {
           const f = fail("obstacle-collision");
           f.debug = { x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10, obstacle: o };
@@ -354,6 +383,7 @@ export function planRoute(block, ann, opts = {}) {
         if (!inRect(p.x, p.y, o)) minClear = Math.min(minClear, Math.hypot(dx, dy));
       }
     }
+    if (!isFinite(minClear)) minClear = 99;
     return {
       valid: true,
       side: "left",
