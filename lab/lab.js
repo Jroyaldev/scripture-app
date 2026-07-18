@@ -448,7 +448,7 @@ function drawArc(g, a, b, hue, kind, stagger, gx, touchY) {
   // one bow for every kind — mirror's reflection is carried by the twin
   // width profile (two swells pinched at the midpoint), not by reversing
   // the curve, which never survived contact with real spans
-  const pts = sampleCubic({ x: gx, y: y1 }, { x: lane, y: y1 + 3 }, { x: lane, y: y2 - 3 }, { x: gx, y: y2 }, nSamp);
+  let pts = sampleCubic({ x: gx, y: y1 }, { x: lane, y: y1 + 3 }, { x: lane, y: y2 - 3 }, { x: gx, y: y2 }, nSamp);
   // ink flows from the touched member toward its counterpart
   const flip = touchY != null && Math.abs(touchY - y2) < Math.abs(touchY - y1);
   if (flip) pts = pts.slice().reverse();
