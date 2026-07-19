@@ -585,6 +585,7 @@ function buildSheets() {
     sheet.innerHTML = "";
     for (const gid in GIDS) if (GIDS[gid].study === id) { GIDS[gid].spans = []; GIDS[gid].anchors = []; }
     sheet.appendChild(S("svg", { class: "hl-underlay" })); // washes beneath the text ink
+    sheet.appendChild(S("svg", { class: "pk-underlay" })); // pattern emphasis washes, above the highlight layer
     const t = document.createElement("div"); t.className = "sheet-title"; t.textContent = cfg.title;
     const r = document.createElement("div"); r.className = "sheet-ref"; r.textContent = cfg.ref;
     sheet.append(t, r);
@@ -764,6 +765,101 @@ function drawHighlights(sid) {
   }
 }
 function drawAllHighlights() { for (const sid of Object.keys(SHEETS)) drawHighlights(sid); }
+
+/* ── pattern emphasis — one phrase, one mark ────────────────
+ * Overlapping keys split a verse into many adjacent .pk segments, and
+ * per-segment CSS painted every fragment as its own rounded box: chopped
+ * washes, broken underlines, a checkerboard at rest. Emphasis is now
+ * painted from measured merged rects instead — the same discipline as the
+ * highlight washes above. Each anchor phrase gets ONE wash silhouette
+ * (rounded only at the true phrase ends and the line-wrap rag) in the
+ * svg.pk-underlay beneath the ink; drawOverlay paints ONE continuous
+ * underline per rendered line into the overlay so it exports with routes.
+ * Geometry repaints on reflow in one batched pass; rest/awake/focus
+ * strength stays in CSS on the painted paths (lab.css .pw rules), so
+ * atmosphere and focus changes never re-measure. The .pk spans remain in
+ * the DOM purely as interaction targets and engine measurement anchors. */
+const PK_WASH_RADIUS = 3;
+function pkLineBands(els, base) {
+  return mergeInkLines(
+    els.flatMap((el) => [...el.getClientRects()].map((r) => ({
+      left: r.left - base.left, right: r.right - base.left,
+      top: r.top - base.top, bottom: r.bottom - base.top,
+      width: r.width, height: r.height,
+    }))),
+  ).sort((a, b) => a.top - b.top || a.left - b.left);
+}
+/* line bands → hlPath-ready stacked bands sharing exact midpoint seams,
+ * exactly like hlMergeRects does for the highlight washes */
+function pkWashBands(els, base) {
+  const bands = pkLineBands(els, base).map((b) => ({ x0: b.left, y0: b.top, x1: b.right, y1: b.bottom }));
+  for (let i = 0; i < bands.length - 1; i++) {
+    const seam = (bands[i].y1 + bands[i + 1].y0) / 2;
+    bands[i].y1 = seam; bands[i + 1].y0 = seam;
+  }
+  return bands;
+}
+function drawEmphasis(sid) {
+  const sheet = document.querySelector(`[data-sheet="${sid}"]`);
+  const svg = sheet?.querySelector("svg.pk-underlay");
+  if (!svg) return;
+  const base = svg.getBoundingClientRect();
+  svg.setAttribute("width", base.width); svg.setAttribute("height", base.height);
+  svg.innerHTML = "";
+  if (!base.width || !base.height) return;
+  /* shared words rest in neutral gold — merged per run of adjacent shared
+   * segments. At rest the runs also knock the phrase washes out beneath
+   * them (mask holes) so the gold reads pure instead of a muddy blend;
+   * when the sheet wakes the holes turn white (lab.css .pw-shared-hole)
+   * and each active phrase regains its one continuous silhouette. */
+  const sharedRuns = [];
+  sheet.querySelectorAll(".pk.pk-shared").forEach((el) => {
+    const run = sharedRuns.at(-1);
+    if (run && run.at(-1) === el.previousSibling) run.push(el);
+    else sharedRuns.push([el]);
+  });
+  const sharedBandSets = sharedRuns.map((run) => pkWashBands(run, base)).filter((bands) => bands.length);
+  const maskId = `pk-shared-mask-${sid}`;
+  const defs = S("defs", {}, svg);
+  const mask = S("mask", {
+    id: maskId, maskUnits: "userSpaceOnUse", x: 0, y: 0, width: base.width, height: base.height,
+  }, defs);
+  S("rect", { x: 0, y: 0, width: base.width, height: base.height, fill: "#fff" }, mask);
+  for (const bands of sharedBandSets) {
+    S("path", { d: hlPath(bands, PK_WASH_RADIUS), class: "pw-shared-hole" }, mask);
+  }
+  const phrases = S("g", { class: "pw-phrases", mask: `url(#${maskId})` }, svg);
+  for (const gid in GIDS) {
+    const G = GIDS[gid];
+    if (G.study !== sid) continue;
+    G.anchors.forEach((anchor, anchorIndex) => {
+      const bands = pkWashBands(anchor.els || [anchor.el], base);
+      if (!bands.length) return;
+      const path = S("path", {
+        d: hlPath(bands, PK_WASH_RADIUS), class: "pw", "data-gid": gid,
+        "data-anchor-index": anchorIndex, "data-source-ref": anchor.ref,
+      }, phrases);
+      path.style.setProperty("--h", G.hue);
+    });
+  }
+  for (const bands of sharedBandSets) {
+    S("path", { d: hlPath(bands, PK_WASH_RADIUS), class: "pw-shared" }, svg);
+  }
+  syncEmphasis(sid);
+}
+function drawAllEmphasis() { for (const sid of Object.keys(SHEETS)) drawEmphasis(sid); }
+/* state lives as classes on the painted paths; lab.css maps them to the
+ * same strengths the per-span rules used per route and atmosphere */
+function syncEmphasis(sid) {
+  const act = activeGids();
+  const focus = [...hovered].at(-1) || (FOCUS_GID && act.has(FOCUS_GID) ? FOCUS_GID : [...act].at(-1));
+  const sheet = document.querySelector(`[data-sheet="${sid}"]`);
+  sheet?.querySelectorAll(".pk-underlay .pw").forEach((path) => {
+    const gid = path.dataset.gid;
+    path.classList.toggle("on", act.has(gid));
+    path.classList.toggle("focus", Boolean(focus) && gid === focus);
+  });
+}
 
 /* ── overlay: connectors that draw themselves on awaken ──── */
 function measure(sid) {
@@ -2517,6 +2613,63 @@ function traceDot(g, point, hue, delay = 0, radius = TG.constants.TOUCH_RADIUS, 
   return dot;
 }
 
+/* painted phrase underlines — one continuous line per rendered line of each
+ * active phrase, through every internal segment boundary and the spaces
+ * between segments. Each line centers exactly on (.pk box bottom − 0.75px),
+ * the same datum the engine's pins land on (see underlinePinDy below), so a
+ * bracket's level run still extends the drawn underline seamlessly. Shared
+ * words keep the established stacking: the focused group owns the nearest
+ * underline, the others step up in ~3px levels — but every level stays one
+ * continuous parallel line for its whole rendered-line run. */
+function drawPhraseUnderlines(svg, gids, base, localFocus) {
+  const group = S("g", { class: "phrase-underlines" }, svg);
+  const activeOrder = [...activeGids()];
+  const records = [];
+  for (const gid of gids) {
+    GIDS[gid].anchors.forEach((anchor, anchorIndex) => {
+      for (const band of pkLineBands(anchor.els || [anchor.el], base)) {
+        records.push({ gid, anchorIndex, band });
+      }
+    });
+  }
+  /* connected overlap components per rendered line decide the stack levels */
+  const parent = records.map((_, index) => index);
+  const find = (index) => (parent[index] === index ? index : (parent[index] = find(parent[index])));
+  for (let i = 0; i < records.length; i++) {
+    for (let j = i + 1; j < records.length; j++) {
+      const a = records[i].band, b = records[j].band;
+      if (records[i].gid !== records[j].gid &&
+          Math.abs(a.bottom - b.bottom) <= 2 && a.left < b.right - 0.5 && b.left < a.right - 0.5) {
+        parent[find(i)] = find(j);
+      }
+    }
+  }
+  const components = new Map();
+  records.forEach((record, index) => {
+    const root = find(index);
+    if (!components.has(root)) components.set(root, []);
+    components.get(root).push(record);
+  });
+  for (const members of components.values()) {
+    const seen = [...new Set(members.map((record) => record.gid))]
+      .sort((a, b) => activeOrder.indexOf(a) - activeOrder.indexOf(b));
+    const ordered = TG.orderSegmentGids(seen, activeOrder, localFocus);
+    for (const record of members) {
+      const level = Math.max(0, ordered.length - 1 - ordered.indexOf(record.gid));
+      const y = record.band.bottom - TG.constants.UNDERLINE_CENTER_OFFSET - level * 3;
+      const width = record.gid === localFocus ? TG.constants.UNDERLINE_HEIGHT
+        : ROUTE === "traces" ? 1 : TG.constants.UNDERLINE_HEIGHT;
+      const path = S("path", {
+        d: `M ${record.band.left.toFixed(2)} ${y.toFixed(2)} H ${record.band.right.toFixed(2)}`,
+        stroke: GIDS[record.gid].hue, "stroke-width": width, fill: "none",
+        "data-role": "phrase-underline", "data-gid": record.gid,
+        "data-anchor-index": record.anchorIndex, "data-level": level,
+      }, group);
+      animDraw(path, 300);
+    }
+  }
+}
+
 function drawOverlay(sid, gids) {
   const sheet = document.querySelector(`[data-sheet="${sid}"]`);
   const svg = sheet.querySelector("svg.overlay");
@@ -2566,6 +2719,8 @@ function drawOverlay(sid, gids) {
     const leftLoomInner = minLeft - 10;
     const rightLoomInner = maxRight + 10;
     const anns = new Map(gids.map((gid) => [gid, annFor(M, gid)]));
+    /* painted first, so the routes, contacts, and ticks ink above it */
+    drawPhraseUnderlines(svg, gids, M.base, localFocus);
     const intervals = gids.map((gid) => {
       const fr = anns.get(gid).anchors.flatMap((a) => a.fragments);
       return fr.length ? { id: gid, top: Math.min(...fr.map((f) => f.top)), bottom: Math.max(...fr.map((f) => f.bottom)) } : null;
@@ -2883,25 +3038,17 @@ function applyActive() {
     sheet.querySelectorAll(".pk").forEach((el) => {
       const gs = gidsOf(el);
       const activeG = gs.filter((g) => act.has(g));
-      const orderedActive = TG.orderSegmentGids(gs, activeOrder, focus);
       el.classList.toggle("on", activeG.length > 0);
       el.classList.toggle("trace-focus", !!focus && gs.includes(focus));
-      // Focus owns both the text wash and the underline nearest its touch dot.
+      // Focus owns the segment hue (dark ink tint, reveal affordance).
       el.style.setProperty("--h", TG.resolveSegmentHue(gs, activeOrder, focus, hueByGid));
       el.dataset.focusGid = focus && gs.includes(focus) ? focus : "";
-      // Shared words keep quieter held lines above the focused underline.
+      // Shared words are marked; their washes and stacked underlines are
+      // painted per phrase (drawEmphasis / drawPhraseUnderlines), not here.
       el.classList.toggle("stack", activeG.length > 1);
-      if (orderedActive.length > 1) {
-        el.style.backgroundImage = orderedActive.map((g) => `linear-gradient(${GIDS[g].hue}, ${GIDS[g].hue})`).join(", ");
-        el.style.backgroundPosition = orderedActive.map((_, i) => `0 calc(100% - ${(orderedActive.length - 1 - i) * 3}px)`).join(", ");
-        el.style.backgroundSize = "100% 1.5px";
-        el.style.backgroundRepeat = "no-repeat";
-      } else {
-        el.style.backgroundImage = ""; el.style.backgroundPosition = "";
-        el.style.backgroundSize = ""; el.style.backgroundRepeat = "";
-      }
     });
     drawOverlay(sid, local);
+    syncEmphasis(sid);
   }
   document.querySelectorAll("[data-gids]").forEach((c) => {
     if (!c.classList.contains("chip") && !c.classList.contains("mcell") && !c.classList.contains("mhead")) return;
@@ -3311,6 +3458,26 @@ const KIND_DEF = {
 };
 const DEF_RESTING = "connect the words — or lay a wash";
 
+/* ── palette host ───────────────────────────────────────────────
+ * shapes.html uses the built-in authbar below. A sibling page may
+ * register window.LAB_PALETTE to replace the authoring surface while
+ * reusing this whole engine; each host hook returning truthy means
+ * "handled — skip the built-in chrome". Nothing registered = the
+ * built-in palette behaves exactly as it always has. */
+window.LAB_AUTHOR = {
+  kinds: AUTHOR_KINDS, hues: KIND_HUE, labels: KIND_LABEL, defs: KIND_DEF,
+  colors: HIGHLIGHT_COLORS, binary: BINARY_KINDS, resting: DEF_RESTING,
+  selectionInfo, startSession, finalizeSession, endSession,
+  createHighlight, removeHighlight, highlightAt, startExtend,
+  getNote, setNote, offerUndo, studyOf: refStudy,
+  session: () => SESSION,
+  pinMark(gid) { pinned.clear(); pinned.add(gid); FOCUS_GID = gid; applyActive(); },
+  focusCardNote() {
+    const ta = document.querySelector(".ccard.on .ccard-note");
+    if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+  },
+};
+
 /* one menu, two quiet rows: connection kinds above, highlight washes below.
  * Same selection gesture feeds both; a divider keeps the vocabularies apart. */
 function showKindPalette(info) {
@@ -3352,6 +3519,7 @@ function showKindPalette(info) {
   placeAuthbar(info.range.getBoundingClientRect());
 }
 function sessionBar(msg) {
+  if (window.LAB_PALETTE?.onSession?.(msg)) return; // host renders session status
   const G = SESSION;
   authbar.classList.remove("palette");
   authbar.innerHTML = `<span class="ak" style="cursor:default"><i style="background:${KIND_HUE[G.kind]}"></i>${KIND_LABEL[G.kind]}</span>
@@ -3440,6 +3608,7 @@ function endSession() {
   document.querySelectorAll("svg.overlay g.live").forEach((g) => g.remove());
   document.querySelectorAll("svg.overlay").forEach((s) => { s.dataset.key = "~"; });
   applyActive();
+  window.LAB_PALETTE?.onSessionEnd?.();
 }
 function createHighlight(info, color) {
   USER.push({
@@ -3542,12 +3711,17 @@ function liveWire(e) {
 }
 addEventListener("mousemove", (e) => { if (SESSION) requestAnimationFrame(() => liveWire(e)); });
 document.addEventListener("mouseup", (e) => {
-  if (e.target.closest?.(".authbar")) return;
+  if (e.target.closest?.(".authbar") || e.target.closest?.("[data-pz]")) return;
   setTimeout(() => {
     if (SESSION) { captureMember(); return; }
     const info = selectionInfo();
-    if (info) showKindPalette(info);
-    else authbar.classList.remove("on");
+    if (info) {
+      if (window.LAB_PALETTE?.onSelection?.(info)) return; // host's own surface
+      showKindPalette(info);
+    } else {
+      authbar.classList.remove("on");
+      window.LAB_PALETTE?.onSelectionCleared?.();
+    }
   }, 0);
 });
 
@@ -3566,6 +3740,7 @@ function scheduleResponsiveRedraw() {
     responsiveRedrawFrame = 0;
     redrawActive();
     drawAllHighlights();
+    drawAllEmphasis();
   });
 }
 
@@ -3654,7 +3829,8 @@ function wire() {
       // even when a pattern claims the same words.
       const sheetEl = e.target.closest(".sheet");
       const hit = sheetEl ? highlightAt(sheetEl.dataset.sheet, e.clientX, e.clientY) : null;
-      if (hit) showHlRemove(hit, e.clientX, e.clientY);
+      if (hit && !window.LAB_PALETTE?.onHighlightTap?.(hit, e.clientX, e.clientY))
+        showHlRemove(hit, e.clientX, e.clientY);
       const t = e.target.closest("[data-gids]");
       if (!t) {
         if (pinned.size && !e.target.closest(".rail")) { pinned.clear(); applyActive(); }
@@ -3683,6 +3859,7 @@ function wire() {
   });
   addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
+    if (window.LAB_PALETTE?.onEscape?.()) return; // host exits its mode first
     if (hlbar.classList.contains("on")) { hideHlbar(); return; }
     if (SESSION) { endSession(); return; }
     if (pinned.size || hovered.size) {
@@ -3699,6 +3876,7 @@ function wire() {
     /* the view toggle reflows the reading column — washes must remeasure
      * with the connectors, not a ResizeObserver frame later */
     drawAllHighlights();
+    drawAllEmphasis();
   });
   document.getElementById("density-btn").addEventListener("click", (e) => {
     DENSITY_MODE = !DENSITY_MODE;
@@ -3809,6 +3987,7 @@ function rebuildAll() {
   }
   warmBlocks();
   drawAllHighlights();
+  drawAllEmphasis();
 }
 rebuildAll();
 buildRevPanel();
@@ -3825,5 +4004,5 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => {
   /* metrics measured before the webfont landed poison the ink-slack cache
    * (and with it every fragment bottom) — drop them and remeasure */
   inkSlackFor._cache = new Map();
-  redrawActive(); warmBlocks(); drawAllHighlights();
+  redrawActive(); warmBlocks(); drawAllHighlights(); drawAllEmphasis();
 });

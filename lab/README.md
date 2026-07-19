@@ -14,12 +14,26 @@ cd lab && python3 -m http.server 8791
 
 ## The language (v6 — annotation ink and the connection card)
 
-The page stays scripture-first. In Paper, keyed phrases rest on a quiet highlight
+The page stays scripture-first. In Paper, keyed phrases rest on a quiet
 wash; in dark atmospheres their ink carries a faint kind tint. Touching a phrase
 wakes its siblings and clicking holds the relationship. Shared words can still
 carry more than one pattern. The marked phrases, the washes, and the in-text
 whisper are the whole discovery surface — the margin never lists what is not
 held.
+
+Phrase emphasis is painted, not per-span CSS. Overlapping keys split a verse
+into many adjacent `.pk` segments (which stay in the DOM as hover/click and
+measurement targets), but each anchor phrase is drawn as ONE mark from
+measured merged rects — the same discipline as the highlight underlay: a
+single wash silhouette per phrase (rounded only at the true phrase ends and
+the line-wrap rag) in an underlay svg, and one continuous underline per
+rendered line in the overlay svg, centered exactly on the pin datum the Loom
+brackets extend (box bottom − 0.75px). Where held groups share words, the
+focused group owns the nearest underline and the others stack ~3px above as
+parallel continuous lines. At rest the same painted washes carry the quiet
+affordance — overlapping keys meet in the neutral gold shared band rather
+than a checkerboard of boxes — and dark atmospheres keep the ink-tint rest
+look with no wash at all.
 
 The two views share one connector grammar and one reading aid:
 

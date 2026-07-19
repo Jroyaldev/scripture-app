@@ -172,30 +172,31 @@ body[data-route="traces"][data-long-text="true"] [data-sheet="rev"] .letter-head
   margin-top: 0;
 }
 
-/* ── the phrase key at rest: light themes lay a quiet highlight wash
- * behind the words (the app's own annotation language); dark themes
- * tint the words' ink. Nothing is drawn until the pattern wakes. ── */
+/* ── the phrase key at rest: light themes lay a quiet wash behind the
+ * words (painted per PHRASE in svg.pk-underlay — see lab.js drawEmphasis);
+ * dark themes tint the words' ink. The .pk span itself carries no wash or
+ * radius any more: overlapping keys split a phrase into many segments, and
+ * per-segment boxes read as chopped marks. Only the ink tint and the
+ * reveal-all underline affordance stay on the span. ── */
 .pk {
   --h: var(--text-tertiary);
   cursor: pointer;
   color: color-mix(in srgb, var(--h) var(--tint), var(--text-primary));
-  background-color: color-mix(in srgb, var(--h) var(--wash), transparent);
   background-image: linear-gradient(var(--h), var(--h));
   background-repeat: no-repeat;
   background-position: 0 100%;
   background-size: 0% 1.5px;
-  border-radius: 3px;
-  box-decoration-break: clone; -webkit-box-decoration-break: clone;
   padding-bottom: 1px;
-  transition: background-size 300ms cubic-bezier(.3,.7,.3,1), color 220ms ease, background-color 220ms ease;
+  transition: background-size 300ms cubic-bezier(.3,.7,.3,1), color 220ms ease;
 }
-.pk.on, body.reveal .pk {
+/* active underlines are painted per phrase in the overlay svg; the CSS
+ * gradient remains only for the reveal-all affordance */
+body.reveal .pk {
   background-size: 100% 1.5px;
 }
 .pk.stack { padding-bottom: 1px; }
 .pk.pk-shared:not(.on) {
   color: color-mix(in srgb, var(--gold) calc(var(--tint) + 2%), var(--text-primary));
-  background-color: color-mix(in srgb, var(--gold) var(--wash), transparent);
 }
 /* awake: the rest of the page recedes; members keep full ink */
 .sheet.awake .vtext { color: color-mix(in srgb, var(--text-primary) 44%, transparent); }
@@ -204,13 +205,37 @@ body[data-route="traces"][data-long-text="true"] [data-sheet="rev"] .letter-head
 .sheet.awake .pk.on { color: var(--text-primary); }
 .sheet.awake .pk:not(.on) {
   color: color-mix(in srgb, var(--text-primary) 44%, transparent);
-  background-color: transparent;
 }
 
 /* overlay svg shares the sheet's coordinate space */
 .overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
 /* highlight washes: same coordinate space, beneath the text ink */
 .hl-underlay { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; overflow: visible; }
+/* pattern emphasis washes: one merged silhouette per phrase, painted from
+ * measured rects (lab.js drawEmphasis). Geometry is repainted on reflow;
+ * these rules carry the STATE — the same rest/awake/focus strengths the
+ * per-span rules used, per route and atmosphere. --h is set per path. */
+.pk-underlay { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; overflow: visible; }
+.pk-underlay .pw {
+  fill: color-mix(in srgb, var(--h) var(--wash), transparent);
+  transition: fill 220ms ease;
+}
+.pk-underlay .pw-shared {
+  fill: color-mix(in srgb, var(--gold) var(--wash), transparent);
+  transition: fill 220ms ease;
+}
+.sheet.awake .pk-underlay .pw:not(.on),
+.sheet.awake .pk-underlay .pw-shared { fill: transparent; }
+/* at rest, shared runs knock the phrase washes out beneath the gold band;
+ * on wake the holes fill white and the phrase silhouettes read whole */
+.pk-underlay .pw-shared-hole { fill: #000; transition: fill 220ms ease; }
+.sheet.awake .pk-underlay .pw-shared-hole { fill: #fff; }
+body[data-route="traces"] .sheet.awake .pk-underlay .pw.on:not(.focus) {
+  fill: color-mix(in srgb, var(--h) 5%, transparent);
+}
+body[data-route="traces"] .sheet.awake .pk-underlay .pw.on.focus {
+  fill: color-mix(in srgb, var(--h) 12%, transparent);
+}
 /* pinned-but-unfocused wires stay in the harness, quietly */
 .overlay .ghost-wire { opacity: 0.32; transition: opacity var(--tr); }
 .overlay .margin-annotation {
@@ -489,14 +514,13 @@ body.theme-glass .ccard, body.theme-dark-glass .ccard {
   box-shadow: inset 0 -2px 0 var(--gold);
 }
 
+/* traces: held members concede ink to the focus; their washes and thinner
+ * underlines are painted per phrase (lab.js .pw rules above, overlay) */
 body[data-route="traces"] .sheet.awake .pk.on:not(.trace-focus) {
   color: color-mix(in srgb, var(--text-primary) 64%, transparent);
-  background-size: 100% 1px;
-  background-color: color-mix(in srgb, var(--h) 5%, transparent);
 }
 body[data-route="traces"] .sheet.awake .pk.trace-focus {
   color: var(--text-primary);
-  background-color: color-mix(in srgb, var(--h) 12%, transparent);
 }
 
 .sheet-geometry .vrow { padding-block: 1px; }
