@@ -175,10 +175,17 @@ test("disjoint claim reuse never weakens verse-number obstacle clearance", () =>
       pad: 0,
     }],
   });
-  assert.equal(blocked.valid, false);
-  assert.equal(blocked.reason, "needs-space");
-  assert.ok(blocked.declined.some((entry: { move: string; why: string }) =>
+  /* C0.5c: the cradle still declines, and the bracket margin route carries
+   * the pair at underline level instead — but the obstacle's RAW ink stays
+   * untouchable regardless of any claim pressure. */
+  assert.ok(blocked.diagnostics.declined.some((entry: { move: string; why: string }) =>
     entry.move === "cradle:facing" && entry.why === "no-corridor-slot"));
+  assert.equal(blocked.valid, true);
+  assert.equal(blocked.mode, "corridor");
+  const raw = rect(150, 170, 35, 40);
+  assert.ok(blocked.sampledPoints.every((point: { x: number; y: number }) =>
+    !(point.x > raw.left && point.x < raw.right && point.y > raw.top && point.y < raw.bottom)),
+  "no sampled point may enter the obstacle's raw ink");
 });
 
 test("every route family emits finite normalized horizontal extents", () => {
@@ -202,21 +209,23 @@ test("every route family emits finite normalized horizontal extents", () => {
   );
   assert.equal(localLevel.mode, "local-tag");
   assert.deepEqual(localLevel.diagnostics.exits, ["level"]);
-  assertFiniteClaims(localLevel, 2);
-  assert.equal(localLevel.claimsOut[1].xMin, localLevel.claimsOut[1].xMax, "local drip must reserve its own X");
+  /* C0.5c: the local tag is one straight run and one claim — no drip */
+  assertFiniteClaims(localLevel, 1);
 
   const localDropFragment = rect(160, 190, 20, 30);
-  const localDrop = planRoute(
+  /* C0.5c: only RAW ink vetoes underline-level travel, and there is no
+   * offset shoulder to dodge into — a raw box sitting on the underline band
+   * holds the route honestly instead of drawing a parallel line below. */
+  const localBlocked = planRoute(
     makeBlock(
       [rect(80, 320, 20, 30), rect(80, 180, 50, 60)],
-      [rect(146, 153, 20, 30), localDropFragment],
+      [rect(150, 155, 20, 33), localDropFragment],
     ),
-    makeAnn("local-drop", [localDropFragment]),
+    makeAnn("local-blocked", [localDropFragment]),
     common,
   );
-  assert.equal(localDrop.mode, "local-tag");
-  assert.equal(localDrop.diagnostics.exits, undefined);
-  assertFiniteClaims(localDrop, 2);
+  assert.equal(localBlocked.valid, false);
+  assert.equal(localBlocked.reason, "needs-space");
 
   const localCombFragments = [
     rect(160, 175, 20, 30),
@@ -232,7 +241,7 @@ test("every route family emits finite normalized horizontal extents", () => {
     common,
   );
   assert.equal(localComb.mode, "local-comb");
-  assertFiniteClaims(localComb, 2);
+  assertFiniteClaims(localComb, 1);
 
   const middleFragments = [rect(120, 150, 20, 30), rect(190, 220, 50, 60)];
   const middle = planRoute(
@@ -260,11 +269,13 @@ test("every route family emits finite normalized horizontal extents", () => {
     { ...common, disableCradle: true, disableLocal: true, allowMiddle: false },
   );
   assert.equal(margin.mode, "multipoint");
-  assert.deepEqual(margin.diagnostics.exits, ["level+comb", "level"]);
-  assertFiniteClaims(margin, 3);
+  /* C0.5c: every group is one colinear run and one soft corner — the
+   * bottom group's corner turns up, but both are "level" exits */
+  assert.deepEqual(margin.diagnostics.exits, ["level", "level"]);
+  assertFiniteClaims(margin, 2);
 });
 
-test("a claimed level exit falls back to a legal dropped local route", () => {
+test("a claimed underline rung holds honestly instead of dodging below", () => {
   const fragment = rect(160, 190, 20, 30);
   const block = makeBlock(
     [rect(80, 320, 20, 30), rect(80, 180, 50, 60)],
@@ -273,12 +284,13 @@ test("a claimed level exit falls back to a legal dropped local route", () => {
   const baseline = planRoute(block, makeAnn("level-baseline", [fragment]), common);
   assert.deepEqual(baseline.diagnostics.exits, ["level"]);
 
+  /* C0.5c: the underline rung is the only legal horizontal for this contact.
+   * When another thread owns it, the honest answer is a held tick — never a
+   * parallel line drawn offset below the underline. */
   const blocked = planRoute(block, makeAnn("level-blocked", [fragment]), {
     ...common,
     corridorClaims: [baseline.claimsOut[0]],
   });
-  assert.equal(blocked.valid, true);
-  assert.equal(blocked.mode, "local-tag");
-  assert.equal(blocked.diagnostics.exits, undefined);
-  assertFiniteClaims(blocked, 2);
+  assert.equal(blocked.valid, false);
+  assert.equal(blocked.reason, "needs-space");
 });

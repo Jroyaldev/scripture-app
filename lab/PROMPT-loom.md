@@ -481,3 +481,72 @@ Long Revelation's real `revstress-sardis-philadelphia` trace, “Sardis nearly
 loses; Philadelphia keeps,” holds one stable right→left S at 1280px and 640px
 in Paper, Ink, Glass, and Candlelight; held ticks stay section-correct, the
 passage score stays untouched, and the page does not overflow.
+
+### C0.5 landed — the bracket grammar (visual amendment)
+
+The user reviewed the C0.4 silhouettes at reading scale and superseded the
+older silhouette rules twice during this gate; the landed form is the third
+and simplest. Routing legality, claims, ownership, disclosure, and the
+section solver are unchanged; this gate re-formed only how the line touches
+words and changes direction, plus the paint it is drawn with.
+
+**One vocabulary: horizontals colinear with underlines, verticals, and one
+soft rounded right-angle corner token (`CORNER = 6`, shrinking only for
+measured room).** Nothing slants, settles, swoops, dips, hooks, or loops.
+Nothing ever runs parallel to an underline at an offset.
+
+**The margin bracket.** Every group is ONE level run straight off its
+underline — colinear, threading every dot in the group — plus ONE soft
+corner at the rail. The route's bottommost group (and the final section's)
+turns UP into the rail; every other group turns down with the flow. When
+the whole route is one group, the line simply ENDS at the rail datum — no
+corner, no drip: a corner exists only where the rail genuinely connects two
+runs. The run breaks at every dot, so each contact is a true vertex. Underline-level travel sits below
+every glyph box on its own line, so only RAW measured ink may veto it;
+expanded clearance skirts are passed deliberately under a raw-guarded
+envelope exempt. A vetoed or claim-blocked run holds honestly as
+`needs-space` — the drop/shoulder family is gone, and no route may dodge
+into a parallel line below the underline.
+
+**The cradle** is the squared hammock: level lead off pin A, corner down,
+wall, corner onto one genuinely flat floor, then the exact mirror rising
+level into pin B. Facing and embrace share the identical grammar.
+`GAP_FACING_MIN` = 18, `GAP_EMBRACE_MAX` = 24.
+
+**The section crossing.** "S" names the topology, not a glyph: straight rail
+continuation → soft corner → one genuinely horizontal run centered in the
+declared gap → mirrored corner → straight rail continuation. All C0.4 hard
+constraints hold: the whole crossing stays inside its declared gap, clears
+every expanded obstacle, honors handoff claims, and descends monotonically.
+
+**The middle shaft** failed the visual gate and no host requests it
+(`allowMiddle: false` in Shapes). Its code remains only as a tested,
+host-disabled family; it may return only if it can speak this grammar.
+
+**The paint.** One clean uniform stroke, round caps and joins, in both lab
+hosts — the same discipline as the production highlight underlay. The
+calligraphic swell profile is retired. Kind still only chooses hue.
+
+**Terminal ink privilege, tightened.** The level run must pass through the
+expanded clearance skirts of neighboring words (the underline level sits
+inside them by construction). Each run carries a small explicit envelope
+exempt — bounded by the drawn run, never above or below it by more than
+0.75px — and an envelope point is excused ONLY if it is also outside the
+obstacle's RAW measured rect. Expanded-skirt passage is deliberate; real-ink
+crossing remains impossible. `minimumClearance` consequently reads near zero
+for legal routes — it measures distance to skirts the grammar intentionally
+occupies; the hard gates are the raw-ink guard plus non-excused expanded
+sampling.
+
+The four pause screenshots are reproduced as `lab/c05-fixtures.html` — the
+smallest visible fixture sheet: the bracket, facing and embrace cradles, the
+ex-staircase relation on a whole-side margin route, and a right→left section
+crossing. All five render the amended grammar and validate their expected
+topology inline.
+
+Golden geometry was rebaselined (route choice byte-stable: every golden
+mode, side, and strand unchanged). The "one monotone stretched S" handoff
+assertions became the corner–flat-run–corner contract in the engine tests
+and both host validators. The frozen C0.3 projection oracle was re-walked
+and re-frozen. Verification at this gate is recorded in
+`tasks/C0.5-calm-terminal-grammar.md`.

@@ -199,36 +199,45 @@ const c03GoldenPlans = {
   ),
 };
 
+/* Rebaselined 2026-07-19 for the C0.5 bracket grammar: every contact comes
+ * straight off its underline in ONE colinear level run (raw-ink guarded,
+ * skirt passage enveloped) and meets the rail in ONE soft right-angle
+ * corner — the route's bottommost group turns up, every other group turns
+ * down. The cradle is the squared hammock (lead, corner, wall, corner, one
+ * flat floor, mirrored). No shoulder, settle, swoop, dip, or under-run
+ * exists outside the host-disabled middle shaft. Route CHOICE is unchanged
+ * — every mode/side/strand below matches the pre-amendment table; only the
+ * silhouettes moved. */
 const c03GoldenExpected = {
   cradle: {
-    mode: "same-line", side: "left", strand: null, samples: 53,
-    sampleSha256: "16994f8859728cae31576e6e0f5764d79ffaecf0a2dfe556620fa05bead04945",
-    sha256: "622739910ffdbf14bf58e0461d4ab9453b6d33b49b081c3e1cf8b58b2ba12328",
+    mode: "same-line", side: "left", strand: null, samples: 60,
+    sampleSha256: "795c7fcdd9136408fb24ccf6da81dcff35bfb94cb068ab871b454958e8d0993c",
+    sha256: "ef3ff6dbc64d425b7b831dbe9ef855b85d5842d030ced116116bf7f61bfe4a50",
   },
   local: {
-    mode: "local-tag", side: "left", strand: null, samples: 31,
-    sampleSha256: "095fa7ceaafdb4b1df7b16f31cd4ae089e974574c03055f2ad5feeb960896e3e",
-    sha256: "1c22d32d9c57f7115bfacae6d6d7e4146cabdf909a21d624809382eb97ad4cf0",
+    mode: "local-tag", side: "left", strand: null, samples: 17,
+    sampleSha256: "2610b23cee233b7b7351c8cc5a40c0555d89373acc311a7e6104274c5bd9a684",
+    sha256: "688f048dc56ec903f88b7d1ba138e26d4067a95104842d26f58f4276d3dfb4da",
   },
   middle: {
-    mode: "middle-shaft", side: "left", strand: null, samples: 101,
-    sampleSha256: "5e7b4f6dda8ef3efd8ede9007a7f6b37f9dc0f70284f1333320fac3c0581efe7",
-    sha256: "029132e06a6317937f6a2f38fe92e7babc81c46d8c986a419cbe8ff06692f15a",
+    mode: "middle-shaft", side: "left", strand: null, samples: 111,
+    sampleSha256: "372daf46dd5e0b96ada55b2432d222d1eb2f073758b31fc28ef6d2faf6ca47f7",
+    sha256: "398b8e3ac8d1fbb3bca7ef6d982cf1c2ba4e29c164affe8e115b4f0d75794138",
   },
   leftMargin: {
-    mode: "corridor", side: "left", strand: 0, samples: 351,
-    sampleSha256: "d20ab38c7a912b8bfdb98caaf7678c5938adec73be4ce320f1e0dd6b42f4ae2d",
-    sha256: "a146d72289776a3dbb75dde0440c26beb69e23480de4e9d87c77d56c616999b4",
+    mode: "corridor", side: "left", strand: 0, samples: 345,
+    sampleSha256: "ea6bf0f23afae9cf3091211ac2de0fce8aa4f882a6a6efe5c804a78926ea0cb8",
+    sha256: "dcf7702bcecca67256eeb418372ee803687a8e4e65d0137b3d00a72fbe3da427",
   },
   rightMargin: {
-    mode: "corridor", side: "right", strand: 0, samples: 351,
-    sampleSha256: "6450882fecd684c7325974a3d0d6abba67f095ebd0a09b8db6d5344891400512",
-    sha256: "6df1e9608be14ada39ed1bb6c568e8f0bf3d9d10f4c295d67cfd337f15f8eb57",
+    mode: "corridor", side: "right", strand: 0, samples: 345,
+    sampleSha256: "148222cadebc8ab5211c176b5e50dccadaf424f7db3ba0d6949aace4c4352bdd",
+    sha256: "87f0ed490fd04f8acc2acceb9a976e9f27d75ae4f174f3f664b6e82808006d45",
   },
   multipoint: {
-    mode: "multipoint", side: "left", strand: 0, samples: 347,
-    sampleSha256: "1a4d00f0c631ef216961c49039b8fcf8ba690c213a38692cd9e4c6c82737f75a",
-    sha256: "16bf709647267a9a2c90fbaf9511807f23c15fb9a333e3231e05931d76a2c302",
+    mode: "multipoint", side: "left", strand: 0, samples: 256,
+    sampleSha256: "d4c497d16bc2aa0790e05a53a9d07f2bf3f07781c1edd3ceeffb8e582e5ca12f",
+    sha256: "6ccf6e7db76614900c2878a46cc5a756cd879d622455d4ee13db8a6371e4857f",
   },
 } as const;
 
@@ -756,8 +765,14 @@ function assertCanonicalSectionPlan(
     assert.ok(spineIds.has(handoff.fromSpineId) && spineIds.has(handoff.toSpineId),
       `${label}: handoff names an unknown spine`);
     const segments = handoffSegments(plan, handoff);
-    assert.equal(segments.length, 1, `${label}: handoff must be one monotone stretched S`);
-    assert.equal(segments[0].type, "C", `${label}: handoff added a dead section-rule plateau`);
+    /* C0.5 visual amendment: "S" names the topology, not a glyph. The
+     * crossing is two compact rounded edge turns around one near-flat run
+     * (plus optional straight rail continuations), never one page-wide
+     * diagonal cubic. */
+    assert.ok(segments.length >= 2 && segments.length <= 5,
+      `${label}: handoff must be edge turns around a near-flat crossing`);
+    assert.equal(segments.filter((segment) => segment.type === "C").length, 2,
+      `${label}: handoff must turn exactly twice`);
     assert.ok(segments.every((segment) => segment.role === "handoff" &&
       segment.handoffId === handoff.id), `${label}: handoff segment ownership is ambiguous`);
   }
@@ -864,12 +879,36 @@ function assertHandoffGeometry(
     const segments = handoffSegments(plan, handoff);
     const first = segments[0]!;
     const last = segments.at(-1)!;
-    near(first.x1, fromSpine.x, 1e-8, `${label}: S starts on source spine`);
-    near(last.x2, toSpine.x, 1e-8, `${label}: S ends on target spine`);
-    assert.equal(first.type, "C", `${label}: S must leave with a tangent curve`);
-    assert.equal(last.type, "C", `${label}: S must arrive with a tangent curve`);
-    near(first.c1x!, first.x1, 1e-8, `${label}: source tangent is vertical`);
-    near(last.c2x!, last.x2, 1e-8, `${label}: target tangent is vertical`);
+    near(first.x1, fromSpine.x, 1e-8, `${label}: crossing starts on source spine`);
+    near(last.x2, toSpine.x, 1e-8, `${label}: crossing ends on target spine`);
+    /* C0.5: the crossing leaves and arrives vertically (continuing each
+     * rail), turns exactly twice with the shared compact corner token, and
+     * carries one genuinely horizontal run between the turns whenever the
+     * rails are farther apart than the two corners. */
+    if (first.type === "C") near(first.c1x!, first.x1, 1e-8, `${label}: source tangent is vertical`);
+    else near(first.x2, first.x1, 1e-8, `${label}: source continuation is vertical`);
+    if (last.type === "C") near(last.c2x!, last.x2, 1e-8, `${label}: target tangent is vertical`);
+    else near(last.x2, last.x1, 1e-8, `${label}: target continuation is vertical`);
+    const corners = segments.filter((segment) => segment.type === "C");
+    assert.equal(corners.length, 2, `${label}: crossing must turn exactly twice`);
+    for (const corner of corners) {
+      assert.ok(Math.abs(corner.y2 - corner.y1) <= 6 + 1e-6 &&
+        Math.abs(corner.x2 - corner.x1) <= 6 + 1e-6,
+      `${label}: edge turn exceeds the shared corner token`);
+    }
+    for (const straight of segments.filter((segment) => segment.type === "L")) {
+      assert.ok(Math.abs(straight.x2 - straight.x1) < 1e-8 ||
+        Math.abs(straight.y2 - straight.y1) < 1e-8,
+      `${label}: every straight in a crossing must be axis-aligned`);
+    }
+    const flats = segments.filter((segment) => segment.type === "L" &&
+      Math.abs(segment.y2 - segment.y1) < 1e-8);
+    const span = Math.abs(toSpine.x - fromSpine.x);
+    if (span > 12) {
+      assert.equal(flats.length, 1, `${label}: crossing lacks its near-flat run`);
+      assert.ok(Math.abs(flats[0]!.x2 - flats[0]!.x1) >= span - 12.002,
+        `${label}: the flat run must genuinely cross between the rails`);
+    }
     assert.ok(first.y1 < last.y2, `${label}: handoff does not descend in document order`);
 
     const points = pointsForSegments(segments);
@@ -909,7 +948,7 @@ function assertHandoffGeometry(
   }
 }
 
-test("legal left-right and right-left section topologies are exact mirrored stretched S routes", () => {
+test("legal left-right and right-left section topologies are exact mirrored crossings", () => {
   const leftRightFixture = makeSectionFixture(["left", "right"], "mirror-sections");
   const rightLeftFixture = mirroredSectionFixture(leftRightFixture);
   const leftRight = planRoute(leftRightFixture.block, leftRightFixture.ann, leftRightFixture.opts);

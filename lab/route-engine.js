@@ -35,6 +35,12 @@ function quarterVH(x1, y1, x2, y2) {
 function quarterHV(x1, y1, x2, y2) {
   return C(x1, y1, x1 + KAPPA * (x2 - x1), y1, x2, y2 - KAPPA * (y2 - y1), x2, y2);
 }
+/* settle cubic: horizontal tangent at BOTH ends. Retired from the drawn
+ * grammar by the C0.5 bracket amendment (only the host-disabled middle
+ * shaft still reaches it through contactTerminal). */
+function settleHH(x1, y1, x2, y2) {
+  return C(x1, y1, x1 + KAPPA * (x2 - x1), y1, x2 - KAPPA * (x2 - x1), y2, x2, y2);
+}
 function segPoints(s, step = 1) {
   const pts = [];
   if (s.type === "L") {
@@ -69,19 +75,58 @@ function segmentsLength(segs) {
 }
 
 /* tuning constants of the grammar — one place, deliberately few */
-const DROP_MIN = 3.2;    // terminal turn radius floor (contact → shoulder)
+const DROP_MIN = 3.2;    // minimum level change between a contact and its run
+const CONTACT_LEAD = 6;  // straight, colinear horizontal lead at every phrase dot
+const CONTACT_LEAD_MIN = 3; // the lead may shrink this far for measured room, never vanish
+const CORNER = 6;        // the one shared rounded-corner token (section crossings)
+const SETTLE_MIN = 3.5;  // narrowest legal settle width
+const SETTLE_MAX = 14;   // widest — a settle is a level change, not a journey
 const SWOOP_REACH = 11;  // horizontal length of the port swoop
 const SWOOP_DIP = 3.2;   // ideal vertical dip of the port swoop
 const SWOOP_DIP_MIN = 1.5;
 const CLAIM_GAP = 2.2;   // min separation of two shoulders in one corridor
 const BAND_MIN = 4.2;    // corridor must be at least this tall to be legal
 const FLOOR_MIN = 5;         // a cradle floor must really exist
-const GAP_FACING_MIN = 12;   // ≈ 2·DROP_MIN + FLOOR_MIN — below this, two facing turns can't fit
-const GAP_EMBRACE_MAX = 16;  // embrace rescues facing only in the 12..16 overlap band
+const GAP_FACING_MIN = 18;   // ≈ 2 min leads + 2 min settles + FLOOR_MIN
+const GAP_EMBRACE_MAX = 24;  // embrace rescues facing only in the 18..24 overlap band
 const SECTION_HYSTERESIS = 12;
 const MAX_SECTION_STRANDS = 3;
 const HANDOFF_EDGE_INSET = 1;
 const HANDOFF_MIN_SPAN = 8;
+
+/* ── lead + settle terminal (middle shaft only) ─────────────────
+ * Retired from the drawn grammar by the C0.5 bracket amendment: margins,
+ * locals, and cradles now use only colinear level runs and soft corners.
+ * The host-disabled middle shaft still attaches with this construction.
+ * dir is the lead direction (−1 left, +1 right); null means no room. */
+const settleWidth = (depth) => Math.max(SETTLE_MIN, Math.min(depth * 1.25, SETTLE_MAX));
+function contactTerminal(pin, dir, runY, maxSpan = Infinity) {
+  const depth = runY - pin.y;
+  if (depth < DROP_MIN) return null;
+  let lead = CONTACT_LEAD;
+  let settle = settleWidth(depth);
+  if (lead + settle > maxSpan) {
+    /* measured room may compress the construction, never distort it */
+    lead = Math.max(CONTACT_LEAD_MIN, Math.min(CONTACT_LEAD, maxSpan - settle));
+    settle = Math.min(settle, maxSpan - lead);
+    if (settle < SETTLE_MIN || lead + settle > maxSpan) return null;
+  }
+  const leadX = pin.x + dir * lead;
+  const landX = leadX + dir * settle;
+  return {
+    segs: [L(pin.x, pin.y, leadX, pin.y), settleHH(leadX, pin.y, landX, runY)],
+    landX,
+    /* the lead + settle live below the underline, never above it, and only
+     * as far sideways as the settle itself — a deliberate, tiny privilege
+     * through neighboring clearance skirts, guarded against real ink */
+    envelope: {
+      left: Math.min(pin.x, landX) - 0.5,
+      right: Math.max(pin.x, landX) + 0.5,
+      top: pin.y - 0.75,
+      bottom: runY + 0.75,
+    },
+  };
+}
 
 /* Keep the measured score raw. Tenth-pixel calm is a comparator on a complete
  * topology, never a second round of already-rounded atomic contributions. */
@@ -587,7 +632,7 @@ export function planRoute(block, ann, opts = {}) {
     ...hardRects,
     ...(block.verseNumberRects || []),
     ...(block.additionalObstacles || []),
-  ].map((r) => expandRect(r, expand));
+  ].map((r) => Object.assign(expandRect(r, expand), { raw: r }));
 
   /* y-bucketed index: sampling checks only obstacles near the point */
   const BUCKET = 16;
@@ -642,6 +687,16 @@ export function planRoute(block, ann, opts = {}) {
   const clearRun = (y, xa, xb) =>
     !obstaclesNear(y).some((o) => y > o.top && y < o.bottom && Math.min(xa, xb) < o.right && Math.max(xa, xb) > o.left);
 
+  /* underline-level travel sits below every glyph box on its own line by
+   * construction, so only RAW measured ink (a deep box, a heading, an
+   * intruding obstacle) may forbid it. Expanded clearance skirts are passed
+   * deliberately, under a raw-guarded envelope exempt — this is what lets a
+   * top contact come straight off its underline in ONE level run instead of
+   * jogging down into the corridor and back. */
+  const rawBlocked = (y, xa, xb) => obstaclesNear(y, 2).some((o) => o.raw &&
+    y > o.raw.top - 0.75 && y < o.raw.bottom + 0.75 &&
+    Math.min(xa, xb) < o.raw.right && Math.max(xa, xb) > o.raw.left);
+
   /* pick a shoulder y inside corridor ci. The hard bounds — DROP_MIN room
    * toward the contact, SWOOP_DIP_MIN room below when the shoulder pours
    * through a port (a cradle floor has none, so it may settle low) — are a
@@ -659,7 +714,11 @@ export function planRoute(block, ann, opts = {}) {
     const base = (minY + maxY) / 2;
     const tried = [];
     const ladder = [0];
-    for (let step = 0.6; step <= 5.4; step += 0.6) ladder.push(-step, step);
+    /* the ladder spans the whole legal window: a caller's fits() may only
+     * be satisfiable at its shallow or deep extreme (the squared cradle in
+     * a tight gap needs the shallowest slot a tall corridor offers) */
+    const reachEnd = Math.max(5.4, (maxY - minY) / 2 + 0.3);
+    for (let step = 0.6; step <= reachEnd; step += 0.6) ladder.push(-step, step);
     for (const dy of ladder) {
       const y = base + dy;
       if (y < minY - 1e-6 || y > maxY + 1e-6) continue;
@@ -778,116 +837,111 @@ export function planRoute(block, ann, opts = {}) {
         ? (embraceEligible && gap <= GAP_EMBRACE_MAX ? [facing, embrace] : [facing])
         : embraceEligible ? [embrace] : [];
     if (!candidates.length) declined.push({ move: "cradle", why: "gap-too-tight" });
+    /* one sizing rule shared by the slot ladder and the build, so a slot
+     * that fits is exactly a slot that draws */
+    const cradleFit = (c, y) => {
+      const avail = c.bx - c.ax;
+      const dA = y - c.ay, dB = y - c.by;
+      if (dA < DROP_MIN || dB < DROP_MIN) return null;
+      const lead = Math.min(CONTACT_LEAD, Math.max(CONTACT_LEAD_MIN, avail * 0.16));
+      const rA = Math.min(CORNER, dA / 2);
+      const rB = Math.min(CORNER, dB / 2);
+      const aFloor = c.ax + lead + 2 * rA;
+      const bFloor = c.bx - lead - 2 * rB;
+      if (bFloor - aFloor < FLOOR_MIN) return null;
+      return { lead, rA, rB, aFloor, bFloor };
+    };
     for (const c of candidates) {
-      /* the cradle has no port swoop — it may settle low in the band */
+      /* the cradle has no port — it may settle low in the band */
       const slot = corridorYFor(ci, c.ax, c.bx, Math.max(c.ay, c.by), false, (y) =>
-        (c.bx - c.ax) - (y - c.ay) - (y - c.by) >= FLOOR_MIN ? true : "floor");
+        cradleFit(c, y) ? true : "floor");
       if (!slot) { declined.push({ move: `cradle:${c.variant}`, why: "no-corridor-slot" }); continue; }
       const fy = slot.y;
-      const r1 = fy - c.ay, r2 = fy - c.by;
-      const segs = [
-        quarterVH(c.ax, c.ay, c.ax + r1, fy),        // pour down-right from pin A
-        L(c.ax + r1, fy, c.bx - r2, fy),             // the hammock floor
-        quarterHV(c.bx - r2, fy, c.bx, c.by),        // rise into pin B
+      const fit = cradleFit(c, fy);
+      /* the squared hammock, all soft right angles: level lead off pin A,
+       * corner down, wall, corner onto one genuinely flat floor, then the
+       * exact mirror rising level into pin B */
+      const exA = [
+        { rect: expandRect(A.frag, expand), cx: c.ax, cy: c.ay },
+        { rect: { left: c.ax - 0.5, right: fit.aFloor + 0.5, top: c.ay - 0.75, bottom: fy + 0.75 },
+          cx: c.ax, cy: c.ay, guardRaw: true },
       ];
+      const exB = [
+        { rect: expandRect(B.frag, expand), cx: c.bx, cy: c.by },
+        { rect: { left: fit.bFloor - 0.5, right: c.bx + 0.5, top: c.by - 0.75, bottom: fy + 0.75 },
+          cx: c.bx, cy: c.by, guardRaw: true },
+      ];
+      const wallAX = c.ax + fit.lead + fit.rA;
+      const wallBX = c.bx - fit.lead - fit.rB;
+      const segs = [];
+      const segEx = [];
+      const put = (seg, ex) => { segs.push(seg); segEx.push(ex); };
+      put(L(c.ax, c.ay, c.ax + fit.lead, c.ay), exA);
+      put(quarterHV(c.ax + fit.lead, c.ay, wallAX, c.ay + fit.rA), exA);
+      if (fy - fit.rA - (c.ay + fit.rA) > 0.05) {
+        put(L(wallAX, c.ay + fit.rA, wallAX, fy - fit.rA), exA);
+      }
+      put(quarterVH(wallAX, fy - fit.rA, fit.aFloor, fy), exA);
+      put(L(fit.aFloor, fy, fit.bFloor, fy), null);
+      put(quarterHV(fit.bFloor, fy, wallBX, fy - fit.rB), exB);
+      if (fy - fit.rB - (c.by + fit.rB) > 0.05) {
+        put(L(wallBX, fy - fit.rB, wallBX, c.by + fit.rB), exB);
+      }
+      put(quarterVH(wallBX, c.by + fit.rB, c.bx - fit.lead, c.by), exB);
+      put(L(c.bx - fit.lead, c.by, c.bx, c.by), exB);
       return finalize(segs, "same-line",
         [{ x: c.ax, y: c.ay }, { x: c.bx, y: c.by }],
-        [fy], [ci], null, null, [], c.variant, [
-          [{ rect: expandRect(A.frag, expand), cx: c.ax, cy: c.ay }],
-          null,
-          [{ rect: expandRect(B.frag, expand), cx: c.bx, cy: c.by }],
-        ], [slot.claim]);
+        [fy], [ci], null, null, [], c.variant, segEx, [slot.claim]);
     }
     /* no legal cradle → fall through to the margin, never squash */
   }
 
   /* ── local rail (single-line ideas stay beside their line) ──
-   * A one-word tag dragging a dead shoulder across the page to the loom
-   * for a 2.5px drip is the worst ink in the grammar. When every anchor
-   * shares one rendered line and the cradle declined, try a short rail
-   * just left of the phrase group — same pin → turn → shoulder → swoop
-   * grammar, the drip pooled inside the corridor. Candidates step 6px
-   * outward from the phrase and never enter the loom's own air.
-   * Falls through to the margin, never squashes. */
+   * A one-word tag dragging its line across the page to the loom for a
+   * 2.5px drip is the worst ink in the grammar. When every anchor shares
+   * one rendered line and the cradle declined, the whole route stays
+   * beside the idea: one colinear level run straight off the underline
+   * through every dot, one soft right-angle corner down, one short drip.
+   * Candidates step outward from the phrase and never enter the loom's
+   * own air. Falls through to the margin, never squashes. */
   if (allSameLine && !opts.disableLocal) {
     const members = [...branchesIn].sort((a, b) => a.frag.left - b.frag.left);
     const li = members[0].li, ci = li + 1;
     const localContacts = members.map((m) => pinOf(m.frag));
-    const xMinPin = Math.min(...localContacts.map((c) => c.x));
-    const xMaxPin = Math.max(...localContacts.map((c) => c.x)) + 1;
+    const innerPinX = Math.max(...localContacts.map((c) => c.x));
+    const outerPinX = Math.min(...localContacts.map((c) => c.x));
     const cy = Math.max(...localContacts.map((c) => c.y));
     const band = corridors[ci];
-    const off = SWOOP_REACH + DROP_MIN + 8;
+    const off = CORNER + 10;
     let planned = null;
-    if (band) for (const localX of [xMinPin - off, xMinPin - off - 6, xMinPin - off - 12]) {
+    if (band) for (const localX of [outerPinX - off, outerPinX - off - 6, outerPinX - off - 12]) {
       if (localX < loomInner + 6) continue;
-      /* LEVEL EXIT first: a lone clear pin continues straight from its
-       * underline into the rail — no turn, no dip */
-      if (members.length === 1) {
-        const c = localContacts[0];
-        const levelEnd = members[0].frag.left - expand - 0.6;
-        if (levelEnd > localX + 6 && clearRun(c.y, localX + 0.5, levelEnd)) {
-          const portY = c.y + SWOOP_DIP;
-          const drip = Math.min(2.5, Math.max(1.0, band.bottom - 0.25 - portY));
-          const reach = Math.min(SWOOP_REACH, Math.max(4, (c.x - localX) * 0.5));
-          const levelClaim = makeCorridorClaim(ci, c.y, localX, c.x, claimPad);
-          const dripClaim = makeCorridorClaim(ci, portY + drip / 2, localX, localX, claimPad);
-          const fixedClaims = [levelClaim, dripClaim];
-          if (fixedClaims.every(Boolean) &&
-              !fixedClaims.some((candidate) => claims.some((cl) => corridorClaimsConflict(cl, candidate)))) {
-            const plan = finalize([
-              L(c.x, c.y, localX + reach, c.y),
-              quarterHV(localX + reach, c.y, localX, portY),
-              L(localX, portY, localX, portY + drip),
-            ], "local-tag", [c], [c.y], [ci], localX, null, [{ x: localX, y: portY }], undefined, [
-              [{ rect: expandRect(members[0].frag, expand), cx: c.x, cy: c.y }],
-              null, null,
-            ], fixedClaims);
-            if (plan.valid) {
-              plan.diagnostics.exits = ["level"];
-              planned = plan;
-              break;
-            }
-          }
-        }
+      if (rawBlocked(cy, localX + 0.5, innerPinX)) break;
+      /* the whole route is one straight line off the underline — it ENDS,
+       * with no corner or drip, exactly like a single-group margin route */
+      const levelClaim = makeCorridorClaim(ci, cy, localX, innerPinX, claimPad);
+      if (!levelClaim || claims.some((cl) => corridorClaimsConflict(cl, levelClaim))) {
+        continue;
       }
-      /* the slot needs full dip room AND at least 1px of drip below it */
-      const slot = corridorYFor(ci, localX, xMaxPin, cy, true, (y) => {
-        const dip = Math.min(SWOOP_DIP, Math.max(0, band.bottom - y - 0.25));
-        const room = band.bottom - 0.25 - (y + dip);
-        if (room < 1.0) return "drip-room";
-        const portY = y + dip;
-        const drip = Math.min(2.5, Math.max(1.0, room));
-        const dripClaim = makeCorridorClaim(ci, portY + drip / 2, localX, localX, claimPad);
-        return dripClaim && !claims.some((cl) => corridorClaimsConflict(cl, dripClaim)) ? true : "claim";
-      });
-      if (!slot) continue;
-      const y = slot.y, dip = slot.dip;
-      const portY = y + dip;
-      const drip = Math.min(2.5, Math.max(1.0, band.bottom - 0.25 - portY));
-      const segsL = [];
-      const exemptsL = [];
-      let minEndX = Infinity;
-      let kinked = false;
-      for (const m of [...members].sort((a, b) => b.frag.left - a.frag.left)) {
-        const c = pinOf(m.frag);
-        const r = y - c.y;
-        if (r < DROP_MIN) { kinked = true; break; }
-        segsL.push(quarterVH(c.x, c.y, c.x - r, y));
-        exemptsL.push([{ rect: expandRect(m.frag, expand), cx: c.x, cy: c.y }]);
-        minEndX = Math.min(minEndX, c.x - r);
+      const ex = [
+        ...members.map((m, i) => ({ rect: expandRect(m.frag, expand), cx: localContacts[i].x, cy: localContacts[i].y })),
+        { rect: { left: localX - 0.5, right: innerPinX + 0.5, top: cy - 0.75, bottom: cy + 0.75 },
+          cx: innerPinX, cy, guardRaw: true },
+      ];
+      /* the run breaks at every dot so each contact is a true vertex */
+      const segs = [];
+      const stops = [...new Set(localContacts.map((c) => c.x))].sort((a, b) => b - a);
+      let atX = stops[0];
+      for (const stop of stops.slice(1)) {
+        segs.push(L(atX, cy, stop, cy));
+        atX = stop;
       }
-      if (kinked) continue;
-      const reach = Math.min(SWOOP_REACH, Math.max(4, (minEndX - localX) * 0.5));
-      if (minEndX <= localX + reach + 1.5) continue;
-      segsL.push(L(minEndX, y, localX + reach, y)); exemptsL.push(null);
-      segsL.push(quarterHV(localX + reach, y, localX, portY)); exemptsL.push(null);
-      segsL.push(L(localX, portY, localX, portY + drip)); exemptsL.push(null);
-      const mode = members.length === 1 ? "local-tag" : "local-comb";
-      const dripClaim = makeCorridorClaim(ci, portY + drip / 2, localX, localX, claimPad);
-      const plan = finalize(segsL, mode, localContacts, [y], [ci], localX, null,
-        [{ x: localX, y: portY }], undefined, exemptsL, [slot.claim, dripClaim]);
+      segs.push(L(atX, cy, localX, cy));
+      const plan = finalize(segs, members.length === 1 ? "local-tag" : "local-comb",
+        localContacts, [cy], [ci], localX, null, [{ x: localX, y: cy }], undefined,
+        segs.map(() => ex), [levelClaim]);
       if (plan.valid) {
+        plan.diagnostics.exits = ["level"];
         planned = plan;
         break;
       }
@@ -973,21 +1027,28 @@ export function planRoute(block, ann, opts = {}) {
           const slot = corridorYFor(ci, spanA, spanB, cy);
           if (!slot) { ok = false; break; }
           const y = slot.y;
-          let endX = g.side === "right" ? -Infinity : Infinity;
+          const dir = g.side === "right" ? 1 : -1;
+          let nearLand = g.side === "right" ? -Infinity : Infinity;
+          let farLand = g.side === "right" ? Infinity : -Infinity;
           for (const p of (g.side === "right" ? [...pins].sort((a, b) => a.x - b.x) : [...pins].sort((a, b) => b.x - a.x))) {
-            const r = y - p.y;
-            if (r < DROP_MIN) { ok = false; break; }
+            const t = contactTerminal(p, dir, y, (shaftX - p.x) * dir - 6);
+            if (!t) { ok = false; break; }
             contactsM.push({ x: p.x, y: p.y });
-            segsM.push(quarterVH(p.x, p.y, g.side === "right" ? p.x + r : p.x - r, y));
-            exemptsM.push([{ rect: expandRect(p.m.frag, expand), cx: p.x, cy: p.y }]);
-            endX = g.side === "right" ? Math.max(endX, p.x + r) : Math.min(endX, p.x - r);
+            const ex = [
+              { rect: expandRect(p.m.frag, expand), cx: p.x, cy: p.y },
+              { rect: t.envelope, cx: p.x, cy: p.y, guardRaw: true },
+            ];
+            segsM.push(t.segs[0], t.segs[1]);
+            exemptsM.push(ex, ex);
+            nearLand = g.side === "right" ? Math.max(nearLand, t.landX) : Math.min(nearLand, t.landX);
+            farLand = g.side === "right" ? Math.min(farLand, t.landX) : Math.max(farLand, t.landX);
           }
           if (!ok) break;
-          const gapToShaft = Math.abs(shaftX - endX);
+          const gapToShaft = (shaftX - nearLand) * dir;
           const reach = Math.min(SWOOP_REACH, Math.max(4, gapToShaft * 0.5));
           if (gapToShaft <= reach + 1.5) { ok = false; break; }
           const approachX = g.side === "right" ? shaftX - reach : shaftX + reach;
-          segsM.push(L(endX, y, approachX, y)); exemptsM.push(null);
+          segsM.push(L(farLand, y, approachX, y)); exemptsM.push(null);
           segsM.push(quarterHV(approachX, y, shaftX, y + slot.dip)); exemptsM.push(null);
           portsM.push({ x: shaftX, y: y + slot.dip });
           corYs.push(y); corIdx.push(ci); corClaims.push(slot.claim);
@@ -1026,47 +1087,45 @@ export function planRoute(block, ann, opts = {}) {
     }
 
     const gs = marginGroups.map((g) => ({ ...g }));
-    for (const g of gs) {
-      /* LEVEL EXIT: when everything between the margin-facing pin and port
-       * is genuinely clear, the connector continues straight from the
-       * underline — no turn, no dip. The dip grammar is for anchors with
-       * ink in the way. Within a group, only the nearest-to-rail member
-       * can be clear; the rest comb below in the corridor. */
-      const m0 = right
-        ? g.members.reduce((best, member) => member.frag.right > best.frag.right ? member : best)
-        : g.members[0];
-      const c0 = pinOf(m0.frag, side);
-      const levelEnd = right ? m0.frag.right + expand + 0.6 : m0.frag.left - expand - 0.6;
-      const levelGap = (levelEnd - strandX) * textward;
-      const canExitLevel = levelGap > 6 && clearRun(c0.y, strandX + textward * 0.5, levelEnd);
-      const levelClaim = canExitLevel
-        ? makeCorridorClaim(g.li + 1, c0.y, strandX, c0.x, claimPad)
-        : null;
-      g.level = canExitLevel && levelClaim &&
-        !claims.some((cl) => corridorClaimsConflict(cl, levelClaim))
-        ? { c: c0, m: m0, claim: levelClaim } : null;
-      const combMembers = g.level
-        ? g.members.filter((member) => member !== m0)
-        : g.members;
-      g.combMembers = combMembers;
-      if (combMembers.length) {
-        /* bottom pins can only leave downward: the corridor below the
-         * group's rendered line is the only legal one. If it cannot host
-         * a shoulder, the honest answer is needs-space — never a climb. */
-        const ci = g.li + 1;
-        const combContacts = combMembers.map((m) => pinOf(m.frag, side));
-        const cyC = Math.max(...combContacts.map((c) => c.y));
-        const farX = right
-          ? Math.min(...combContacts.map((c) => c.x)) - 1
-          : Math.max(...combContacts.map((c) => c.x)) + 1;
-        const slot = corridorYFor(ci, strandX, farX, cyC);
-        if (!slot) return { valid: false, reason: "needs-space" };
-        g.ci = ci; g.shoulderY = slot.y; g.dip = slot.dip; g.farX = farX; g.claim = slot.claim;
-      } else {
-        g.ci = g.li + 1; g.shoulderY = c0.y; g.dip = SWOOP_DIP;
-      }
+    /* The whole bracket: every group is ONE colinear level run straight off
+     * its underline plus ONE soft right-angle corner at the rail. The
+     * route's bottommost group turns UP into the rail; every other group
+     * turns down with the flow. Nothing in this grammar runs parallel to an
+     * underline at an offset, settles, dips, or loops below a phrase. */
+    let returnG = null;
+    if (sectionContext ? sectionContext.final : gs.length > 1) {
+      for (const g of gs) if (!returnG || g.cy > returnG.cy) returnG = g;
     }
-    gs.sort((a, b) => (a.level ? a.level.c.y : a.shoulderY) - (b.level ? b.level.c.y : b.shoulderY));
+    for (const g of gs) {
+      /* Underline-level travel is vetoed only by RAW ink — expanded
+       * clearance skirts pass under the raw-guarded envelope. A vetoed run
+       * holds honestly instead of dodging into the corridor. */
+      const pins = g.members.map((m) => pinOf(m.frag, side));
+      const runY = Math.max(...pins.map((p) => p.y));
+      const innerPinX = right ? Math.min(...pins.map((p) => p.x)) : Math.max(...pins.map((p) => p.x));
+      const outerPinX = right ? Math.max(...pins.map((p) => p.x)) : Math.min(...pins.map((p) => p.x));
+      const runGap = (outerPinX - strandX) * textward;
+      if (runGap < 7 || rawBlocked(runY, strandX + textward * 0.5, innerPinX)) {
+        return { valid: false, reason: "needs-space" };
+      }
+      const claim = makeCorridorClaim(g.li + 1, runY, strandX, innerPinX, claimPad);
+      if (!claim || claims.some((cl) => corridorClaimsConflict(cl, claim))) {
+        return { valid: false, reason: "needs-space" };
+      }
+      g.pins = pins;
+      g.runY = runY;
+      g.innerPinX = innerPinX;
+      g.r = Math.min(CORNER, Math.max(2.5, runGap - 1));
+      g.up = g === returnG;
+      g.claim = claim;
+    }
+    gs.sort((a, b) => a.runY - b.runY);
+    /* one corner radius per route, capped so adjacent corners never meet on
+     * the rail — a short rail must still visibly reach both runs */
+    for (let i = 1; i < gs.length; i++) {
+      const cap = Math.max(2.5, (gs[i].runY - gs[i - 1].runY) / 2 - 1);
+      for (const g of gs) g.r = Math.min(g.r, cap);
+    }
 
     const contacts = [];
     const contactOwners = [];
@@ -1077,72 +1136,62 @@ export function planRoute(block, ann, opts = {}) {
     const corridorIdx = [];
     const corridorClaimsOut = [];
 
+    /* When the whole route is one group, the whole route is one straight
+     * line: it comes off the underline and simply ENDS at the rail datum.
+     * A corner exists only where the rail genuinely connects two runs. */
+    const single = !sectionContext && gs.length === 1;
     for (const g of gs) {
-      if (g.level) {
-        /* the underline runs on: level travel, then the same pour */
-        const c = g.level.c;
-        const reach = Math.min(SWOOP_REACH, Math.max(4,
-          (right ? strandX - c.x : c.x - strandX) * 0.5));
-        const approachX = strandX + textward * reach;
-        contacts.push(c);
-        contactOwners.push({ anchorId: g.level.m.anchor.id });
-        centerline.push(L(c.x, c.y, approachX, c.y));
-        exempts.push([{ rect: expandRect(g.level.m.frag, expand), cx: c.x, cy: c.y }]);
-        centerline.push(quarterHV(approachX, c.y, strandX, c.y + SWOOP_DIP));
-        exempts.push(null);
-        ports.push({ x: strandX, y: c.y + SWOOP_DIP });
-        corridorYs.push(c.y); corridorIdx.push(g.li + 1);
-        corridorClaimsOut.push(g.level.claim);
+      /* dots in drawing order, then ONE run through all of them — and one
+       * soft corner only when a rail continues past it */
+      const ordered = [...g.members].sort((a, b) =>
+        right ? b.frag.right - a.frag.right : a.frag.left - b.frag.left);
+      for (const m of ordered) {
+        contacts.push(pinOf(m.frag, side));
+        contactOwners.push({ anchorId: m.anchor.id });
       }
-      if (g.combMembers.length) {
-        const y = g.shoulderY;
-        corridorYs.push(y); corridorIdx.push(g.ci);
-        corridorClaimsOut.push(g.claim);
-        /* terminals comb from the text toward the margin; right routes are
-         * the exact horizontal reflection of the established left grammar */
-        let mergeX = right ? -Infinity : Infinity;
-        const orderedMembers = [...g.combMembers].sort((a, b) =>
-          right ? a.frag.right - b.frag.right : b.frag.left - a.frag.left);
-        for (const m of orderedMembers) {
-          const c = pinOf(m.frag, side);
-          const r = Math.abs(y - c.y);
-          if (r < DROP_MIN) return { valid: false, reason: "kink" };
-          contacts.push(c);
-          contactOwners.push({ anchorId: m.anchor.id });
-          const endX = c.x + outward * r;
-          centerline.push(quarterVH(c.x, c.y, endX, y));
-          exempts.push([{ rect: expandRect(m.frag, expand), cx: c.x, cy: c.y }]);
-          mergeX = right ? Math.max(mergeX, endX) : Math.min(mergeX, endX);
-        }
-        /* shoulder: one hairline through every terminal's merge point */
-        const gapToStrand = (mergeX - strandX) * textward;
-        const reach = Math.min(SWOOP_REACH, Math.max(4, gapToStrand * 0.5));
-        const approachX = strandX + textward * reach;
-        centerline.push(L(mergeX, y, approachX, y));
-        exempts.push(null);
-        /* port: shallow swoop pouring down onto the strand */
-        centerline.push(quarterHV(approachX, y, strandX, y + g.dip));
-        exempts.push(null);
-        ports.push({ x: strandX, y: y + g.dip });
+      const ex = [
+        ...g.members.map((m, i) => ({ rect: expandRect(m.frag, expand), cx: g.pins[i].x, cy: g.pins[i].y })),
+        /* the run's envelope: colinear with the underline, raw-guarded */
+        { rect: { left: Math.min(strandX, g.innerPinX) - 0.5, right: Math.max(strandX, g.innerPinX) + 0.5,
+            top: g.runY - 0.75, bottom: g.runY + 0.75 },
+          cx: g.innerPinX, cy: g.runY, guardRaw: true },
+      ];
+      /* the run breaks at every dot so each contact is a true vertex —
+       * identical ink, honest anchoring */
+      const runEndX = single ? strandX : strandX + textward * g.r;
+      const stops = [...new Set(g.pins.map((p) => p.x))]
+        .filter((x) => (x - runEndX) * textward > 0.01)
+        .sort((a, b) => right ? a - b : b - a);
+      let atX = stops[0];
+      for (const stop of stops.slice(1)) {
+        centerline.push(L(atX, g.runY, stop, g.runY));
+        exempts.push(ex);
+        atX = stop;
       }
+      centerline.push(L(atX, g.runY, runEndX, g.runY));
+      exempts.push(ex);
+      if (single) {
+        ports.push({ x: strandX, y: g.runY });
+      } else {
+        centerline.push(quarterHV(runEndX, g.runY, strandX, g.runY + (g.up ? -g.r : g.r)));
+        exempts.push(ex);
+        ports.push({ x: strandX, y: g.runY + (g.up ? -g.r : g.r) });
+      }
+      corridorYs.push(g.runY);
+      corridorIdx.push(g.li + 1);
+      corridorClaimsOut.push(g.claim);
     }
 
     /* spine: one vertical from first port to last port, never overshooting.
      * Section states deliberately stop at their ports; the topology
      * materializer owns the maximal plural spine and any gap handoff. */
     let spine = null;
-    if (sectionContext) {
-      // no-op: plural topology connects these arrivals after bounded DP
-    } else if (ports.length > 1) {
+    if (!sectionContext && ports.length > 1) {
       const top = Math.min(...ports.map((p) => p.y));
       const bot = Math.max(...ports.map((p) => p.y));
       centerline.push(L(strandX, top, strandX, bot));
       exempts.push(null);
       spine = { x: strandX, top, bottom: bot };
-    } else {
-      /* single arrival: the swoop ends in a short drip */
-      centerline.push(L(strandX, ports[0].y, strandX, ports[0].y + 2.5));
-      exempts.push(null);
     }
 
     const plan = finalize(centerline, mode, contacts, corridorYs, corridorIdx, strandX, spine, ports, undefined, exempts, corridorClaimsOut);
@@ -1151,7 +1200,7 @@ export function planRoute(block, ann, opts = {}) {
       plan.side = side;
       plan.diagnostics.laneIndex = strand;
       plan.diagnostics.side = side;
-      plan.diagnostics.exits = gs.map((g) => g.level ? (g.combMembers.length ? "level+comb" : "level") : "drop");
+      plan.diagnostics.exits = gs.map(() => "level");
       plan.rawLength = segmentsLength(centerline);
       plan.semCenter = annotationCenter;
       plan.strandClaimOut = spine
@@ -1227,7 +1276,10 @@ export function planRoute(block, ann, opts = {}) {
         const side = sectionSides[sideRank];
         for (let strand = 0; strand < MAX_SECTION_STRANDS; strand++) {
           diagnostics.statesEvaluated++;
-          const plan = genMargin(side, strand, sectionGroups, { sectionId: section.id });
+          const plan = genMargin(side, strand, sectionGroups, {
+            sectionId: section.id,
+            final: sectionOrder === sectionMeta.sections.length - 1,
+          });
           if (!plan.valid || !plan.ports.length) {
             failures.push({ sectionId: section.id, side, strand, why: plan.reason || "no-port" });
             continue;
@@ -1271,12 +1323,30 @@ export function planRoute(block, ann, opts = {}) {
           to.x < gap.left || to.x > gap.right) return null;
       if (!runIntervalClear(from, from.maxPortY, top) ||
           !runIntervalClear(to, bottom, to.minPortY)) return null;
+      /* "S" names the topology, not a glyph. The crossing is two compact
+       * rounded edge turns around one genuinely horizontal run centered in
+       * the declared clear gap — never a page-wide diagonal cubic. The
+       * corner token shrinks only for measured room. */
       const dy = bottom - top;
-      const segment = C(from.x, top, from.x, top + dy / 3, to.x, bottom - dy / 3, to.x, bottom);
-      for (const point of segPoints(segment, 1)) {
-        if (point.x < gap.left - 1e-6 || point.x > gap.right + 1e-6 ||
-            point.y < gap.top - 1e-6 || point.y > gap.bottom + 1e-6 ||
-            obstaclesNear(point.y, 2).some((obstacle) => inRect(point.x, point.y, obstacle))) return null;
+      const dx = to.x - from.x;
+      const dir = dx >= 0 ? 1 : -1;
+      const r = Math.min(CORNER, dy / 2, Math.abs(dx) / 2);
+      if (!(r > 0.5)) return null;
+      const yRun = top + dy / 2;
+      const segments = [];
+      if (yRun - r - top > 0.05) segments.push(L(from.x, top, from.x, yRun - r));
+      segments.push(quarterVH(from.x, yRun - r, from.x + dir * r, yRun));
+      if (Math.abs(dx) - 2 * r > 0.05) {
+        segments.push(L(from.x + dir * r, yRun, to.x - dir * r, yRun));
+      }
+      segments.push(quarterHV(to.x - dir * r, yRun, to.x, yRun + r));
+      if (bottom - (yRun + r) > 0.05) segments.push(L(to.x, yRun + r, to.x, bottom));
+      for (const segment of segments) {
+        for (const point of segPoints(segment, 1)) {
+          if (point.x < gap.left - 1e-6 || point.x > gap.right + 1e-6 ||
+              point.y < gap.top - 1e-6 || point.y > gap.bottom + 1e-6 ||
+              obstaclesNear(point.y, 2).some((obstacle) => inRect(point.x, point.y, obstacle))) return null;
+        }
       }
       const claim = normalizeHandoffClaim({
         gapId: gap.id,
@@ -1291,7 +1361,7 @@ export function planRoute(block, ann, opts = {}) {
       if (!claim || handoffClaims.some((existing) =>
         (!normalizeHandoffClaim(existing) && (!existing?.gapId || existing.gapId === gap.id)) ||
         handoffClaimsConflict(existing, claim))) return null;
-      return { gap, segment, claim, fromY: top, toY: bottom, rawLength: segmentsLength([segment]) };
+      return { gap, segments, claim, fromY: top, toY: bottom, rawLength: segmentsLength(segments) };
     };
 
     const solved = solveSectionStateDP(statesBySection, (previousState, state) => {
@@ -1358,7 +1428,7 @@ export function planRoute(block, ann, opts = {}) {
         toSpineId: toRun.spineId,
         from: { x: fromState.x, y: transition.handoff.fromY },
         to: { x: toState.x, y: transition.handoff.toY },
-        _segment: transition.handoff.segment,
+        _segments: transition.handoff.segments,
         claim: transition.handoff.claim,
       });
     }
@@ -1393,14 +1463,15 @@ export function planRoute(block, ann, opts = {}) {
       return spine;
     });
     for (const handoff of handoffs) {
-      const segment = own(handoff._segment, {
+      const segments = handoff._segments.map((segment) => own(segment, {
         role: "handoff", ownerId: handoff.id, handoffId: handoff.id,
         fromRunId: handoff.fromRunId, toRunId: handoff.toRunId,
-      });
-      delete handoff._segment;
-      handoff.segments = [segment];
-      centerline.push(segment); exempts.push(null);
-      routeParts.push({ id: `part:${stableIdPart(handoff.id)}`, role: "handoff", ownerId: handoff.id, handoffId: handoff.id, segments: [segment] });
+      }));
+      delete handoff._segments;
+      handoff.segments = segments;
+      centerline.push(...segments);
+      for (const _ of segments) exempts.push(null);
+      routeParts.push({ id: `part:${stableIdPart(handoff.id)}`, role: "handoff", ownerId: handoff.id, handoffId: handoff.id, segments });
     }
 
     for (const spine of spines) {
@@ -1671,8 +1742,12 @@ export function planRoute(block, ann, opts = {}) {
     for (const p of sampled) {
       for (const o of obstaclesNear(p.y, 32)) {
         if (inRect(p.x, p.y, o)) {
+          /* an envelope exempt (guardRaw) buys passage through expanded
+           * clearance skirts only — never through real measured ink */
           const excused = p.ex && p.ex.some((e) =>
-            inRect(p.x, p.y, e.rect) || Math.hypot(p.x - e.cx, p.y - e.cy) < expand + 1);
+            (inRect(p.x, p.y, e.rect) ||
+              (!e.guardRaw && Math.hypot(p.x - e.cx, p.y - e.cy) < expand + 1)) &&
+            (!e.guardRaw || !o.raw || !inRect(p.x, p.y, o.raw)));
           if (!excused) {
             const f = fail("obstacle-collision");
             f.debug = { x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10, obstacle: o };
@@ -1759,6 +1834,10 @@ export function assignStrands(anns, maxStrands = 3) {
 export const _internals = {
   quarterVH,
   quarterHV,
+  settleHH,
+  contactTerminal,
+  CONTACT_LEAD,
+  CORNER,
   segPoints,
   expandRect,
   normalizeCorridorClaim,

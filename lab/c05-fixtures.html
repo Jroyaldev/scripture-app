@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>C0.5 · calm terminal and handoff grammar — fixture sheet</title>
+<style>
+  body { font: 12px/1.35 ui-monospace, monospace; background: #f4efe6; color: #333; margin: 12px; }
+  h1 { font-size: 14px; margin: 0 0 8px; }
+  #sheet { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 1560px; }
+  .case { background: #fbf8f2; border: 1px solid #ddd5c5; border-radius: 8px; padding: 8px 10px; }
+  .case.wide { grid-column: 1 / -1; }
+  .case h2 { font-size: 12px; margin: 2px 0 4px; }
+  .meta { color: #8a8272; font-size: 10px; margin: 3px 0; white-space: pre-wrap; }
+  svg { display: block; background: #fffdf8; border-radius: 6px; max-width: 100%; }
+  .fail { color: #b3261e; font-weight: 700; }
+</style>
+</head>
+<body>
+<h1>C0.5 fixture sheet — the four amended silhouettes</h1>
+<div id="sheet"></div>
+<script type="module">
+import { planRoute } from "./route-engine.js";
+
+const SCALE = 2;
+const sheet = document.getElementById("sheet");
+
+function rect(left, right, top, bottom) { return { left, right, top, bottom }; }
+
+/* one line of "words": splits [left,right] into word runs with 5px spaces */
+function wordsFor(line, widths) {
+  const runs = [];
+  let x = line.left;
+  for (const w of widths) {
+    if (x + w > line.right) break;
+    runs.push(rect(x, x + w, line.top, line.bottom));
+    x += w + 5;
+  }
+  return runs;
+}
+
+function segD(s) {
+  return s.type === "L"
+    ? `M${s.x1},${s.y1}L${s.x2},${s.y2}`
+    : `M${s.x1},${s.y1}C${s.c1x},${s.c1y} ${s.c2x},${s.c2y} ${s.x2},${s.y2}`;
+}
+
+function render(title, note, block, ann, opts, expected, wide = false) {
+  const plan = planRoute(block, ann, opts);
+  const el = document.createElement("div");
+  el.className = "case" + (wide ? " wide" : "");
+  const W = (block.bounds.right - block.bounds.left + 20) * SCALE;
+  const H = (block.bounds.bottom - block.bounds.top + 20) * SCALE;
+  const words = block.wordRuns || block.renderedLines;
+  const anchorRects = ann.anchors.flatMap((a) => a.fragments);
+  const gapRects = (block.sectionGaps || []).map((g) =>
+    `<rect x="${g.left}" y="${g.top}" width="${g.right - g.left}" height="${g.bottom - g.top}" fill="#e8f0e2" opacity="0.6"/>`).join("");
+  const wordInk = words.map((w) =>
+    `<rect x="${w.left}" y="${w.top}" width="${w.right - w.left}" height="${w.bottom - w.top}" rx="1.5" fill="#d8d0bf"/>`).join("");
+  const anchorInk = anchorRects.map((w) =>
+    `<rect x="${w.left}" y="${w.top}" width="${w.right - w.left}" height="${w.bottom - w.top}" rx="1.5" fill="#b9aa8d"/>` +
+    `<line x1="${w.left}" x2="${w.right}" y1="${w.bottom + 2}" y2="${w.bottom + 2}" stroke="#8c3a2e" stroke-width="1.1"/>`).join("");
+  let route = "";
+  let info = "";
+  if (plan.valid) {
+    route = plan.centerline.map((s) =>
+      `<path d="${segD(s)}" fill="none" stroke="#8c3a2e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`).join("");
+    route += plan.contacts.map((c) =>
+      `<circle cx="${c.x}" cy="${c.y}" r="1.7" fill="#8c3a2e"/>`).join("");
+    info = `mode=${plan.mode}${plan.cradleVariant ? " · " + plan.cradleVariant : ""}` +
+      `${plan.diagnostics.exits ? " · exits=" + plan.diagnostics.exits.join(",") : ""}` +
+      ` · clear=${plan.diagnostics.minimumClearance}px` +
+      `${plan.handoffs ? " · handoffs=" + plan.handoffs.length : ""}` +
+      `${plan.sideRuns ? " · runs=" + plan.sideRuns.map((r) => r.side + r.strand).join("→") : plan.side ? " · side=" + plan.side : ""}`;
+  } else {
+    info = `INVALID: ${plan.reason}`;
+  }
+  const ok = expected(plan);
+  el.innerHTML = `<h2>${title} ${ok ? "· ✓" : '· <span class="fail">UNEXPECTED</span>'}</h2>
+    <div class="meta">${note}\n${info}</div>
+    <svg width="${W}" height="${H}" viewBox="${block.bounds.left - 10} ${block.bounds.top - 10} ${W / SCALE} ${H / SCALE}">
+      ${gapRects}${wordInk}${anchorInk}${route}
+    </svg>`;
+  sheet.appendChild(el);
+  return plan;
+}
+
+const ann = (id, frags, extra = {}) => ({
+  id,
+  anchors: frags.map((f, i) => ({
+    id: `${id}:a${i}`, documentOrder: i,
+    fragments: Array.isArray(f) ? f : [f],
+    ...(extra.sectionIds ? { sectionId: extra.sectionIds[i] } : {}),
+  })),
+});
+
+/* ── case 1 · top→bottom left-margin relation (screenshot 1) ── */
+{
+  const lines = [
+    rect(60, 320, 20, 31),
+    rect(60, 320, 47, 58),
+    rect(60, 320, 74, 85),
+    rect(60, 320, 101, 112),
+  ];
+  const wordRuns = lines.flatMap((l) => wordsFor(l, [38, 26, 44, 30, 34, 28, 20]));
+  const A = wordRuns[2];                     // mid line 0
+  const B = wordRuns[3 * 7 + 1];             // early line 3
+  render("1 · the bracket", "both contacts come straight off their underlines; the top corner turns down, the bottom corner turns up — soft right angles only",
+    { bounds: rect(0, 360, 0, 140), renderedLines: lines, wordRuns },
+    ann("fx1", [A, B]),
+    { fontSize: 17, sides: ["left"], focused: true },
+    (p) => p.valid && (p.mode === "corridor") &&
+      p.diagnostics.exits?.every((exit) => exit === "level"));
+}
+
+/* ── case 3 · lower-left → upper-right (screenshot 3: was the staircase) ── */
+{
+  const lines = [
+    rect(60, 320, 20, 31),
+    rect(60, 250, 47, 58),   // ragged short line — the old shaft's void
+    rect(60, 320, 74, 85),
+  ];
+  const wordRuns = lines.flatMap((l) => wordsFor(l, [38, 26, 44, 30, 34, 28]));
+  const A = wordRuns.filter((w) => w.top === 74)[0];  // lower-left
+  const B = wordRuns.filter((w) => w.top === 20).at(-1); // upper-right
+  render("3 · lower-left → upper-right", "no interior staircase: the relation takes one calm whole-side margin route",
+    { bounds: rect(0, 360, 0, 115), renderedLines: lines, wordRuns },
+    ann("fx3", [B, A]),
+    { fontSize: 17, sides: ["left", "right"], focused: true, allowMiddle: false },
+    (p) => p.valid && p.mode !== "middle-shaft");
+}
+
+/* ── case 2 · same-line cradle, facing and embrace (screenshot 2) ── */
+{
+  const lines = [rect(60, 320, 20, 31), rect(60, 320, 47, 58)];
+  const wordRuns = lines.flatMap((l) => wordsFor(l, [34, 42, 30, 38, 26, 30]));
+  const A = wordRuns[1], B = wordRuns[3];    // facing pair, one word between
+  render("2a · same-line cradle (facing)", "squared hammock: level leads, soft corners, one genuinely flat floor, exact mirror",
+    { bounds: rect(0, 360, 0, 90), renderedLines: lines, wordRuns },
+    ann("fx2a", [A, B]),
+    { fontSize: 17, sides: ["left"], focused: true },
+    (p) => p.valid && p.mode === "same-line");
+  const C = wordRuns[4], D = wordRuns[5];    // adjacent short pair → embrace
+  render("2b · same-line cradle (embrace)", "outer pins, floor beneath the pair, identical contact grammar",
+    { bounds: rect(0, 360, 0, 90), renderedLines: lines, wordRuns },
+    ann("fx2b", [C, D]),
+    { fontSize: 17, sides: ["left"], focused: true },
+    (p) => p.valid && p.mode === "same-line");
+}
+
+/* ── case 4 · section side switch (screenshot 4 topology + amendment 5) ── */
+{
+  const s1Lines = [
+    { id: "l1", sectionId: "s1", documentOrder: 0, ...rect(60, 300, 20, 31) },
+    { id: "l2", sectionId: "s1", documentOrder: 1, ...rect(60, 300, 47, 58) },
+  ];
+  const s2Lines = [
+    { id: "l3", sectionId: "s2", documentOrder: 2, ...rect(60, 300, 110, 121) },
+    { id: "l4", sectionId: "s2", documentOrder: 3, ...rect(60, 300, 137, 148) },
+  ];
+  const lines = [...s1Lines, ...s2Lines];
+  const widths = [38, 26, 44, 30, 34, 28];
+  const wordRuns = lines.flatMap((l) => wordsFor(l, widths));
+  const perLine = wordsFor(s1Lines[0], widths).length;
+  /* two anchors per section, pinned to opposing edges: the semantic pull
+   * makes the mixed topology the honest minimum-ink choice */
+  const A1 = wordRuns[perLine - 1];              // s1 line 1, far right
+  const A2 = wordRuns[2 * perLine - 1];          // s1 line 2, far right
+  const B1 = wordRuns[2 * perLine];              // s2 line 1, far left
+  const B2 = wordRuns[3 * perLine];              // s2 line 2, far left
+  const block = {
+    bounds: rect(0, 360, 0, 175),
+    renderedLines: lines,
+    wordRuns,
+    sections: [
+      { id: "s1", documentOrder: 0, ...rect(50, 310, 15, 63) },
+      { id: "s2", documentOrder: 1, ...rect(50, 310, 105, 153) },
+    ],
+    sectionGaps: [
+      { id: "g1", fromSectionId: "s1", toSectionId: "s2", documentOrder: 0, hardClear: true, ...rect(0, 360, 63, 105) },
+    ],
+  };
+  const a = ann("fx4", [A1, A2, B1, B2], { sectionIds: ["s1", "s1", "s2", "s2"] });
+  render("4 · section side switch (right → left)", "the crossing is two compact edge turns around one near-flat run inside the declared gap",
+    block, a,
+    { fontSize: 17, sides: ["left", "right"], focused: true, sectionRouting: { enabled: true } },
+    (p) => p.valid && (p.handoffs?.length === 1), true);
+}
+</script>
+</body>
+</html>

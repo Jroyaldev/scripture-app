@@ -692,40 +692,31 @@ function animFade(el, ms = 240, delay = 0) {
  * Binary marks draw one contact-to-contact gesture; multi-member marks leave
  * rounded spine ports and converge directly into each phrase. */
 
-/* ── the ink ribbon — the one line ───────────────────────────
- * A premium line is not a uniform stroke: it is a filled outline
- * around a centerline with a designed width profile — tapered ends,
- * restrained swell midway (≈55%→115% of nominal). The perfect-freehand
- * insight, composed rather than gestured: no pressure, no wobble.
- * There is exactly one profile. Kind never bends the line — it only
- * chooses the hue. */
-function ribbonOutline(pts, w, frac = 1) {
+/* ── the one line ────────────────────────────────────────────
+ * A clean uniform stroke, the same discipline as the app's underlay:
+ * constant width, round caps and joins, no swell, no taper, no wobble.
+ * The earlier calligraphic ribbon (0.55→1.15 width profile) was retired
+ * with the C0.5 visual amendment — at reading size the swell read as a
+ * wedge at every rise and turn. Kind never bends or thickens the line —
+ * it only chooses the hue. */
+function strokeOutline(pts, frac = 1) {
   const total = pts.length;
   const count = Math.max(2, Math.round(total * Math.min(1, frac)));
-  const L = [], R = [];
+  let d = "";
   for (let i = 0; i < count; i++) {
-    const t = i / (total - 1);
-    const ramp = Math.min(1, t / 0.16, (1 - t) / 0.16);
-    let r = (w / 2) * (0.55 + 0.6 * Math.sin(Math.PI * t)) * (0.3 + 0.7 * ramp);
-    if (frac < 1) {
-      // mid-draw the leading edge narrows to a nib tip
-      r *= Math.min(1, (count - 1 - i) / Math.max(1, total * 0.12));
-    }
-    const a = pts[Math.max(0, i - 1)], b = pts[Math.min(total - 1, i + 1)];
-    const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1;
-    const nx = -dy / len, ny = dx / len;
-    L.push(`${(pts[i].x + nx * r).toFixed(2)},${(pts[i].y + ny * r).toFixed(2)}`);
-    R.push(`${(pts[i].x - nx * r).toFixed(2)},${(pts[i].y - ny * r).toFixed(2)}`);
+    d += `${i ? "L" : "M"}${pts[i].x.toFixed(2)},${pts[i].y.toFixed(2)}`;
   }
-  return `M${L.join("L")}L${R.reverse().join("L")}Z`;
+  return d;
 }
-/* the ribbon draws itself: the ink flows point by point along the
- * centerline, leading edge tapered like a nib in contact */
+/* the line draws itself point by point along the centerline */
 function ribbonDraw(g, pts, hue, { w = 1.6, opacity = 1, delay = 0, dur = 380, role = "connector", immediate = false } = {}) {
-  const p = S("path", { d: "", fill: hue, stroke: "none", "data-role": role }, g);
+  const p = S("path", {
+    d: "", fill: "none", stroke: hue, "stroke-width": w,
+    "stroke-linecap": "round", "stroke-linejoin": "round", "data-role": role,
+  }, g);
   if (opacity < 1) p.setAttribute("opacity", opacity);
   if (REDUCED_MOTION || immediate) {
-    p.setAttribute("d", ribbonOutline(pts, w, 1));
+    p.setAttribute("d", strokeOutline(pts, 1));
     return p;
   }
   const t0 = performance.now() + delay;
@@ -733,7 +724,7 @@ function ribbonDraw(g, pts, hue, { w = 1.6, opacity = 1, delay = 0, dur = 380, r
   function frame(now) {
     if (!p.isConnected) return; // overlay cleared mid-flight
     const u = Math.min(1, Math.max(0, (now - t0) / dur));
-    if (u > 0) p.setAttribute("d", ribbonOutline(pts, w, ease(u)));
+    if (u > 0) p.setAttribute("d", strokeOutline(pts, ease(u)));
     if (u < 1) requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
@@ -951,6 +942,20 @@ function canonicalSegmentEqual(a, b) {
 }
 const sameFiniteNumber = (a, b, epsilon = 1e-6) =>
   Number.isFinite(a) && Number.isFinite(b) && Math.abs(a - b) <= epsilon;
+function sampleHostSegment(segment, step = 0.75) {
+  if (segment?.type === "L") {
+    const length = Math.hypot(segment.x2 - segment.x1, segment.y2 - segment.y1);
+    const count = Math.max(2, Math.ceil(length / step));
+    return Array.from({ length: count + 1 }, (_, index) => {
+      const t = index / count;
+      return {
+        x: segment.x1 + (segment.x2 - segment.x1) * t,
+        y: segment.y1 + (segment.y2 - segment.y1) * t,
+      };
+    });
+  }
+  return sampleHostCubic(segment, step);
+}
 function sampleHostCubic(segment, step = 0.75) {
   if (segment?.type !== "C") return [];
   const polygonLength = Math.hypot(segment.c1x - segment.x1, segment.c1y - segment.y1) +
@@ -1047,12 +1052,14 @@ function validateHostTopology(plan, ann = null, block = null) {
         Math.abs(handoff.from.x - fromSpine.x) > 1e-6 || Math.abs(handoff.to.x - toSpine.x) > 1e-6) {
       errors.push(`handoff-owner:${id}`);
     }
+    /* C0.5: a handoff is a corner–flat-run–corner chain (with optional
+     * straight rail continuations), never one page-wide cubic */
     const handoffSegments = plan.centerline?.filter((segment) => segment.role === "handoff" && segment.handoffId === id) || [];
-    if (handoffSegments.length !== 1) {
+    if (handoffSegments.length < 2 || handoffSegments.length > 5) {
       errors.push(`handoff-segments:${id}`);
-    } else if (handoffSegments[0].fromRunId !== handoff.fromRunId || handoffSegments[0].toRunId !== handoff.toRunId ||
-        !Array.isArray(handoff.segments) || handoff.segments.length !== 1 ||
-        !canonicalSegmentEqual(handoff.segments[0], handoffSegments[0])) {
+    } else if (handoffSegments.some((segment) => segment.fromRunId !== handoff.fromRunId || segment.toRunId !== handoff.toRunId) ||
+        !Array.isArray(handoff.segments) || handoff.segments.length !== handoffSegments.length ||
+        handoff.segments.some((segment, index) => !canonicalSegmentEqual(segment, handoffSegments[index]))) {
       errors.push(`handoff-segment-owner:${id}`);
     }
     const fromIndex = activeSections.indexOf(handoff.fromSectionId);
@@ -1066,26 +1073,40 @@ function validateHostTopology(plan, ann = null, block = null) {
         handoff.from.x < gap.left || handoff.from.x > gap.right || handoff.to.x < gap.left || handoff.to.x > gap.right)) {
       errors.push(`handoff-gap:${id}`);
     }
-    const segment = handoffSegments[0];
-    if (segment && gap && fromSpine && toSpine) {
-      const controls = [
-        { x: segment.x1, y: segment.y1 }, { x: segment.c1x, y: segment.c1y },
-        { x: segment.c2x, y: segment.c2y }, { x: segment.x2, y: segment.y2 },
-      ];
+    if (handoffSegments.length >= 2 && gap && fromSpine && toSpine) {
+      const first = handoffSegments[0];
+      const last = handoffSegments[handoffSegments.length - 1];
+      const corners = handoffSegments.filter((segment) => segment.type === "C");
+      const flats = handoffSegments.filter((segment) =>
+        segment.type === "L" && sameFiniteNumber(segment.y1, segment.y2));
+      const chained = handoffSegments.every((segment, index) => index === 0 ||
+        (sameFiniteNumber(segment.x1, handoffSegments[index - 1].x2) &&
+          sameFiniteNumber(segment.y1, handoffSegments[index - 1].y2)));
+      const leaveVertical = first.type === "C"
+        ? sameFiniteNumber(first.c1x, first.x1) : sameFiniteNumber(first.x2, first.x1);
+      const arriveVertical = last.type === "C"
+        ? sameFiniteNumber(last.c2x, last.x2) : sameFiniteNumber(last.x2, last.x1);
+      const compactCorners = corners.every((corner) =>
+        Math.abs(corner.x2 - corner.x1) <= 6 + 1e-6 && Math.abs(corner.y2 - corner.y1) <= 6 + 1e-6);
       const insideGap = (point) => Number.isFinite(point.x) && Number.isFinite(point.y) &&
         point.x >= gap.left - 1e-6 && point.x <= gap.right + 1e-6 &&
         point.y >= gap.top - 1e-6 && point.y <= gap.bottom + 1e-6;
-      if (segment.type !== "C" ||
-          !sameFiniteNumber(segment.x1, handoff.from.x) || !sameFiniteNumber(segment.y1, handoff.from.y) ||
-          !sameFiniteNumber(segment.x2, handoff.to.x) || !sameFiniteNumber(segment.y2, handoff.to.y) ||
-          !sameFiniteNumber(segment.x1, fromSpine.x) || !sameFiniteNumber(segment.y1, fromSpine.bottom) ||
-          !sameFiniteNumber(segment.x2, toSpine.x) || !sameFiniteNumber(segment.y2, toSpine.top) ||
-          !sameFiniteNumber(segment.c1x, segment.x1) || !sameFiniteNumber(segment.c2x, segment.x2) ||
-          !(segment.y1 < segment.c1y && segment.c1y <= segment.c2y && segment.c2y < segment.y2) ||
+      const controls = handoffSegments.flatMap((segment) => segment.type === "C"
+        ? [{ x: segment.x1, y: segment.y1 }, { x: segment.c1x, y: segment.c1y },
+          { x: segment.c2x, y: segment.c2y }, { x: segment.x2, y: segment.y2 }]
+        : [{ x: segment.x1, y: segment.y1 }, { x: segment.x2, y: segment.y2 }]);
+      if (handoffSegments.some((segment) => segment.type !== "L" && segment.type !== "C") ||
+          corners.length !== 2 || !chained || !leaveVertical || !arriveVertical || !compactCorners ||
+          (Math.abs(last.x2 - first.x1) > 12 && flats.length !== 1) ||
+          !sameFiniteNumber(first.x1, handoff.from.x) || !sameFiniteNumber(first.y1, handoff.from.y) ||
+          !sameFiniteNumber(last.x2, handoff.to.x) || !sameFiniteNumber(last.y2, handoff.to.y) ||
+          !sameFiniteNumber(first.x1, fromSpine.x) || !sameFiniteNumber(first.y1, fromSpine.bottom) ||
+          !sameFiniteNumber(last.x2, toSpine.x) || !sameFiniteNumber(last.y2, toSpine.top) ||
+          !(first.y1 < last.y2) ||
           controls.some((point) => !insideGap(point))) {
         errors.push(`handoff-geometry:${id}`);
       } else {
-        const samples = sampleHostCubic(segment);
+        const samples = handoffSegments.flatMap((segment) => sampleHostSegment(segment));
         if (!samples.length || samples.some((point) => !insideGap(point) || handoffObstacles.some((obstacle) =>
           point.x > obstacle.left && point.x < obstacle.right && point.y > obstacle.top && point.y < obstacle.bottom))) {
           errors.push(`handoff-clearance:${id}`);
@@ -1319,7 +1340,11 @@ function validateHostTopology(plan, ann = null, block = null) {
     }
     for (const handoff of handoffs) {
       const handoffParts = parts.filter((part) => part.role === "handoff" && part.handoffId === handoff.id);
-      if (handoffParts.length !== 1 || handoffParts[0]?.ownerId !== handoff.id || handoffParts[0]?.segments?.length !== 1) {
+      /* C0.5: one part per handoff, carrying the 2–5 segment
+       * corner–flat-run–corner chain with exactly two rounded turns */
+      if (handoffParts.length !== 1 || handoffParts[0]?.ownerId !== handoff.id ||
+          !(handoffParts[0]?.segments?.length >= 2 && handoffParts[0].segments.length <= 5) ||
+          handoffParts[0].segments.filter((segment) => segment.type === "C").length !== 2) {
         errors.push(`handoff-part-cardinality:${handoff.id}`);
       }
     }
@@ -1812,7 +1837,7 @@ function explainShapesPlan(plan) {
     const sectionCount = new Set(sideRuns.flatMap((run) => run.sectionIds || [])).size;
     return {
       label: `section weave · ${sequence}`,
-      reason: `${sectionCount} declared sections use ${sideRuns.length} calm margin runs; ${handoffs.length === 1 ? "one measured gap carries the continuous S" : `${handoffs.length} measured gaps carry continuous S handoffs`}`,
+      reason: `${sectionCount} declared sections use ${sideRuns.length} calm margin runs; ${handoffs.length === 1 ? "one measured gap carries the near-flat crossing" : `${handoffs.length} measured gaps carry near-flat crossings`}`,
     };
   }
   const labels = {
@@ -2581,7 +2606,11 @@ function drawOverlay(sid, gids) {
           ...(sectionReady ? {
             sectionRouting: { enabled: true, previousSides: previousTopology?.sectionSides || [] },
           } : {}),
-          focused, allowMiddle: focused, claimPad: 0.25,
+          /* C0.5: the interior shaft's staircase silhouette failed the
+           * visual gate (screenshot 3) — no host may request it until it
+           * can attach with the calm grammar. Margin, cradle, and local
+           * families carry every relation. */
+          focused, allowMiddle: false, claimPad: 0.25,
         }), ann, block);
       } catch (e) {
         return { valid: false, reason: "engine-error" };

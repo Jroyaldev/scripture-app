@@ -31,11 +31,21 @@ The two views now answer different questions:
   than four are held, the score keeps them all switchable and says how many remain
   lined instead of allowing an unbounded cable field.
 - **One line type.** Every trace — any kind, any density — draws as the same
-  tapered ink ribbon; kind speaks as hue plus its named label in the score.
-  Per-kind line signatures (double rule, break, dotted, diamond, ticks,
-  bracket) were retired: at reading size a second line type reads as a
-  rendering artifact, not a meaning. The score's compact overview and
-  expanded source path use the same single rule.
+  clean uniform stroke (round caps and joins); kind speaks as hue plus its
+  named label in the score. Per-kind line signatures (double rule, break,
+  dotted, diamond, ticks, bracket) were retired, and the C0.5 amendment also
+  retired the tapered/swelling ribbon profile: at reading size a second line
+  type — or a width swell — reads as a rendering artifact, not a meaning. The
+  score's compact overview and expanded source path use the same single rule.
+- **The bracket (C0.5).** One vocabulary: horizontals colinear with
+  underlines, verticals, and one soft rounded right-angle corner. Every
+  contact comes straight off its underline in one level run and meets the
+  rail in one soft corner — down for the top, UP for the route's bottom;
+  the same-line cradle is the squared hammock; a section switch crosses its
+  declared gap genuinely flat between two compact corners. Nothing slants,
+  loops, or runs offset-parallel to an underline. `c05-fixtures.html`
+  renders the amended silhouettes directly from the engine as a standing
+  visual gate.
 - **Off-screen state is explicit.** Each source row says above, below, or here and
   remains a real button back to the passage.
 - **Dense study** is a reversible stress fixture: Psalm 1 grows from 3 to 14 traces,

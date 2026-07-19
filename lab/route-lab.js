@@ -187,8 +187,12 @@ if (FIXTURES.some((fixture) => !LEGACY_C03_FIXTURE_SET.has(fixture.id) &&
 /* Frozen from the isolated landed-C0.3 host universe: its 15 fixtures, its
  * measured pre-section surface, and its own side memory across every integer
  * width 460–760. It is intentionally not derived by the C0.4 sweep at runtime:
- * two equally wrong C0.4 passes must not be able to agree with each other. */
-const LEGACY_C03_PROJECTION_SHA256 = "323bc250ff08ab0304750d26faf878599a2d0adbb65a10e44b4158e7e482c5c8";
+ * two equally wrong C0.4 passes must not be able to agree with each other.
+ * Rebaselined 2026-07-19 for the C0.5 bracket-grammar visual amendment (was
+ * 323bc250ff08ab0304750d26faf878599a2d0adbb65a10e44b4158e7e482c5c8): the
+ * same 4,515 states re-walked with zero browser errors under the new
+ * grammar — route choice unchanged, silhouettes intentionally re-formed. */
+const LEGACY_C03_PROJECTION_SHA256 = "8b2dcd67ecc6cdbee5ebabf05810ae4f55ba2e321d7000719fc1f9012b1ca1cb";
 
 /* ── build the text block ──────────────────────────────────── */
 const sheet = document.getElementById("sheet");
@@ -1168,9 +1172,12 @@ function canonicalRoutePartEvidence(plan) {
     return { ok: false, detail: "spine part coverage" };
   }
   const handoffParts = plan.routeParts.filter((part) => part.role === "handoff");
+  /* C0.5: a handoff part is the corner–flat-run–corner chain */
   if (handoffParts.length !== handoffs.length || handoffs.some((handoff) =>
     handoffParts.filter((part) => part.ownerId === handoff.id && part.handoffId === handoff.id &&
-      part.segments.length === 1 && part.segments[0].type === "C").length !== 1)) {
+      part.segments.length >= 2 && part.segments.length <= 5 &&
+      part.segments.filter((segment) => segment.type === "C").length === 2 &&
+      part.segments.every((segment) => segment.type === "L" || segment.type === "C")).length !== 1)) {
     return { ok: false, detail: "handoff part coverage" };
   }
   const activeSections = Array.isArray(plan.sectionSides)
@@ -1411,25 +1418,40 @@ function validate(measured, ann, plan, drawnPlans, isDrawn = false) {
     for (const handoff of handoffs) {
       const gap = measured.block.sectionGaps.find((candidate) => candidate.id === handoff.gapId);
       const segments = handoffSegments(plan, handoff);
-      const segment = segments[0];
-      if (!gap || segments.length !== 1 || !segment || segment.type !== "C") {
-        gapErrors.push(`${handoff.id}:one-cubic`);
+      /* C0.5: two compact rounded edge turns around one genuinely horizontal
+       * run, plus optional straight rail continuations — never a page-wide
+       * diagonal cubic */
+      const corners = segments.filter((segment) => segment.type === "C");
+      if (!gap || segments.length < 2 || segments.length > 5 || corners.length !== 2 ||
+          segments.some((segment) => segment.type !== "L" && segment.type !== "C")) {
+        gapErrors.push(`${handoff.id}:corner-run-corner`);
         continue;
       }
-      const points = sampleSegment(segment, 0.5);
-      const xDirection = Math.sign(segment.x2 - segment.x1);
-      const verticalTangents = Math.abs(segment.c1x - segment.x1) <= 0.001 &&
-        Math.abs(segment.c2x - segment.x2) <= 0.001 &&
-        segment.c1y > segment.y1 && segment.c2y < segment.y2;
-      const monotone = xDirection !== 0 && segment.y2 > segment.y1 && points.every((point, index) => index === 0 ||
+      const first = segments[0];
+      const last = segments[segments.length - 1];
+      const chained = segments.every((segment, index) => index === 0 ||
+        (Math.abs(segment.x1 - segments[index - 1].x2) <= 0.001 &&
+          Math.abs(segment.y1 - segments[index - 1].y2) <= 0.001));
+      const points = segments.flatMap((segment) => sampleSegment(segment, 0.5));
+      const xDirection = Math.sign(last.x2 - first.x1);
+      const verticalTangents =
+        (first.type === "C" ? Math.abs(first.c1x - first.x1) <= 0.001 : Math.abs(first.x2 - first.x1) <= 0.001) &&
+        (last.type === "C" ? Math.abs(last.c2x - last.x2) <= 0.001 : Math.abs(last.x2 - last.x1) <= 0.001);
+      const compactCorners = corners.every((corner) =>
+        Math.abs(corner.x2 - corner.x1) <= 6.001 && Math.abs(corner.y2 - corner.y1) <= 6.001);
+      const flats = segments.filter((segment) =>
+        segment.type === "L" && Math.abs(segment.y2 - segment.y1) <= 0.001);
+      const flatRun = Math.abs(last.x2 - first.x1) <= 12.001 || flats.length === 1;
+      const monotone = xDirection !== 0 && last.y2 > first.y1 && points.every((point, index) => index === 0 ||
         (point.x - points[index - 1].x) * xDirection >= -0.0001 && point.y >= points[index - 1].y - 0.0001);
       const contained = points.every((point) =>
         point.x >= gap.left - 0.001 && point.x <= gap.right + 0.001 &&
         point.y >= gap.top - 0.001 && point.y <= gap.bottom + 0.001);
       const clear = points.every((point) => !obstacles.some((obstacle) => pointInsideRect(point, obstacle)));
-      const endpoints = Math.abs(segment.x1 - handoff.from.x) <= 0.001 && Math.abs(segment.y1 - handoff.from.y) <= 0.001 &&
-        Math.abs(segment.x2 - handoff.to.x) <= 0.001 && Math.abs(segment.y2 - handoff.to.y) <= 0.001;
-      const ownership = segment.role === "handoff" && segment.handoffId === handoff.id && segment.ownerId === handoff.id &&
+      const endpoints = Math.abs(first.x1 - handoff.from.x) <= 0.001 && Math.abs(first.y1 - handoff.from.y) <= 0.001 &&
+        Math.abs(last.x2 - handoff.to.x) <= 0.001 && Math.abs(last.y2 - handoff.to.y) <= 0.001;
+      const ownership = segments.every((segment) => segment.role === "handoff" &&
+        segment.handoffId === handoff.id && segment.ownerId === handoff.id) &&
         handoff.fromSpineId && spineIds.has(handoff.fromSpineId) && handoff.toSpineId && spineIds.has(handoff.toSpineId);
       const ownedClaims = Array.isArray(handoffClaims)
         ? handoffClaims.filter((claim) => claim.ownerHandoffId === handoff.id)
@@ -1437,9 +1459,12 @@ function validate(measured, ann, plan, drawnPlans, isDrawn = false) {
       const claim = ownedClaims[0];
       const claimExact = ownedClaims.length === 1 && handoff.claimOut === claim && claim.gapId === handoff.gapId &&
         claim.fromSectionId === handoff.fromSectionId && claim.toSectionId === handoff.toSectionId &&
-        claim.xMin === Math.min(segment.x1, segment.x2) && claim.xMax === Math.max(segment.x1, segment.x2) &&
-        claim.top === segment.y1 && claim.bottom === segment.y2;
+        claim.xMin === Math.min(first.x1, last.x2) && claim.xMax === Math.max(first.x1, last.x2) &&
+        claim.top === first.y1 && claim.bottom === last.y2;
+      if (!chained) gapErrors.push(`${handoff.id}:chain`);
       if (!verticalTangents) gapErrors.push(`${handoff.id}:tangents`);
+      if (!compactCorners) gapErrors.push(`${handoff.id}:corner-token`);
+      if (!flatRun) gapErrors.push(`${handoff.id}:flat-run`);
       if (!monotone) gapErrors.push(`${handoff.id}:monotone`);
       if (!contained) gapErrors.push(`${handoff.id}:containment`);
       if (!clear) gapErrors.push(`${handoff.id}:clearance`);
@@ -1448,8 +1473,8 @@ function validate(measured, ann, plan, drawnPlans, isDrawn = false) {
     }
     const transitionCardinality = handoffs.length === Math.max(0, runs.length - 1) &&
       handoffs.every((handoff, index) => handoff.fromRunId === runs[index].id && handoff.toRunId === runs[index + 1].id);
-    push("handoff cubic proof", gapErrors.length === 0 && handoffClaimShape && transitionCardinality,
-      gapErrors.join(",") || `${handoffs.length} hard-clear S`);
+    push("handoff crossing proof", gapErrors.length === 0 && handoffClaimShape && transitionCardinality,
+      gapErrors.join(",") || `${handoffs.length} hard-clear level crossings`);
 
     const sectionSides = plan.sectionSides;
     const memory = plan.topologyMemory;
@@ -1544,7 +1569,9 @@ let restoreTickFocusWithoutPreview = false;
 let weaveOn = true;
 let cradleOn = true;
 let localOn = true;
-let middleOn = true;
+/* C0.5: the interior shaft failed the visual gate — no host requests it
+ * by default; the toggle remains for deliberate inspection only. */
+let middleOn = false;
 let lastLeftLoomInner = 0;
 let lastRightLoomInner = 0;
 let qaSweepActive = false;

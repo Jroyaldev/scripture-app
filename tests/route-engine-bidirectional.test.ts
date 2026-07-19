@@ -205,8 +205,12 @@ test("right routes keep level, comb, tag, corridor, multipoint, and wrapped-anch
         [rect(270, 295, 20, 30)],
       ],
       mode: "corridor",
-      exits: ["level+comb"],
+      /* C0.5c: one colinear run threads every dot in the group */
+      exits: ["level"],
     },
+    /* C0.5c: every group is one colinear level run and one soft corner.
+     * The bottommost group's corner turns UP into the rail (the bracket);
+     * all exits are honest "level" — no drop family exists. */
     {
       name: "two-line corridor",
       anchors: [[rect(220, 250, 20, 30)], [rect(260, 290, 60, 70)]],
@@ -247,6 +251,25 @@ test("right routes keep level, comb, tag, corridor, multipoint, and wrapped-anch
     assert.equal(plan.mode, fixture.mode, fixture.name);
     assert.deepEqual(plan.diagnostics.exits, fixture.exits, fixture.name);
     assert.ok(plan.contacts.every((contact: Point) => contact.x < plan.marginRailX), fixture.name);
+    /* C0.5c bracket semantics, independent of the golden digests: every run
+     * is genuinely colinear with an underline, and in a multi-group route
+     * the bottommost corner turns UP (port above its run) while every other
+     * corner turns down (port below its run). */
+    const ports = [...plan.ports].sort((a: Point, b: Point) => a.y - b.y);
+    const runYs = [...new Set(plan.contacts.map((contact: Point) => contact.y))]
+      .sort((a: number, b: number) => a - b);
+    if (ports.length > 1) {
+      const bottomRunY = runYs[runYs.length - 1]!;
+      const bottomPort = ports[ports.length - 1]!;
+      assert.ok(bottomPort.y < bottomRunY,
+        `${fixture.name}: the bottom corner must turn UP into the rail`);
+      for (const port of ports.slice(0, -1)) {
+        const nearestRun = runYs.reduce((best: number, y: number) =>
+          Math.abs(y - port.y) < Math.abs(best - port.y) ? y : best, runYs[0]!);
+        assert.ok(port.y > nearestRun,
+          `${fixture.name}: a non-bottom corner must turn down with the flow`);
+      }
+    }
   }
 });
 
@@ -268,9 +291,11 @@ test("a right level exit selects the greatest right edge in an overlapping same-
 
   assertValidFinite(plan, "overlapping right selector");
   assert.equal(plan.mode, "corridor");
-  assert.deepEqual(plan.diagnostics.exits, ["level+comb"]);
-  assert.equal(plan.contacts[0].x, 319.5, "level pin must come from the greatest frag.right");
-  assert.equal(plan.claimsOut[0].xMin, 319.5, "level claim must begin at that right-facing pin");
+  /* C0.5c: the whole group rides one colinear run through every dot */
+  assert.deepEqual(plan.diagnostics.exits, ["level"]);
+  assert.equal(plan.contacts[0].x, 319.5, "drawing order starts from the greatest frag.right");
+  assert.equal(plan.claimsOut[0].xMin, 249.5,
+    "the run claim spans from the innermost dot to the rail");
 });
 
 test("strand claims are local to a side and each side escalates independently", () => {
@@ -390,6 +415,9 @@ test("right corridor claims reuse disjoint rungs and stagger overlapping spans",
   assertValidFinite(baseline, "right claim baseline");
   assert.equal(baseline.claimsOut.length, 1);
   const claim = baseline.claimsOut[0];
+  /* C0.5b: underline-level travel is only vetoed by RAW ink, so this tag
+   * exits level and claims the underline rung itself */
+  near(claim.y, 32);
 
   const disjoint = planRoute(block, ann, {
     ...opts,
@@ -402,15 +430,17 @@ test("right corridor claims reuse disjoint rungs and stagger overlapping spans",
     ...opts,
     corridorClaims: [{ corridor: claim.corridor, y: claim.y, xMin: 300, xMax: 350, pad: 0 }],
   });
-  assertValidFinite(overlapping, "right overlapping claim");
-  near(overlapping.claimsOut[0].y, claim.y - 2.4);
+  /* C0.5c: there is no offset shoulder to dodge into. A claimed underline
+   * rung holds honestly instead of drawing a parallel line below it. */
+  assert.equal(overlapping.valid, false, "right overlapping claim must hold");
+  assert.equal(overlapping.reason, "needs-space");
 
   const reversedOverlap = planRoute(block, ann, {
     ...opts,
     corridorClaims: [{ corridor: claim.corridor, y: claim.y, xMin: 350, xMax: 300, pad: 0 }],
   });
-  assertValidFinite(reversedOverlap, "right reversed overlapping claim");
-  near(reversedOverlap.claimsOut[0].y, overlapping.claimsOut[0].y);
+  assert.equal(reversedOverlap.valid, false, "reversed overlapping claim must hold");
+  assert.equal(reversedOverlap.reason, "needs-space");
 });
 
 test("right strands stay in measured margin air and at least four pixels inside bounds", () => {
