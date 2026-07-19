@@ -320,6 +320,31 @@ export function planRoute(block, ann, opts = {}) {
     let planned = null;
     if (band) for (const localX of [xMinPin - off, xMinPin - off - 6, xMinPin - off - 12]) {
       if (localX < loomInner + 6) continue;
+      /* LEVEL EXIT first: a lone clear pin continues straight from its
+       * underline into the rail — no turn, no dip */
+      if (members.length === 1) {
+        const c = localContacts[0];
+        const levelEnd = members[0].frag.left - expand - 0.6;
+        if (levelEnd > localX + 6 && clearRun(c.y, localX + 0.5, levelEnd)) {
+          const portY = c.y + SWOOP_DIP;
+          const drip = Math.min(2.5, Math.max(1.0, band.bottom - 0.25 - portY));
+          const reach = Math.min(SWOOP_REACH, Math.max(4, (c.x - localX) * 0.5));
+          const plan = finalize([
+            L(c.x, c.y, localX + reach, c.y),
+            quarterHV(localX + reach, c.y, localX, portY),
+            L(localX, portY, localX, portY + drip),
+          ], "local-tag", [c], [c.y], [ci], localX, null, [{ x: localX, y: portY }], undefined, [
+            [{ rect: expandRect(members[0].frag, expand), cx: c.x, cy: c.y }],
+            null, null,
+          ]);
+          if (plan.valid) {
+            plan.claimsOut.push({ corridor: ci, y: portY + drip / 2, pad: claimPad });
+            plan.diagnostics.exits = ["level"];
+            planned = plan;
+            break;
+          }
+        }
+      }
       /* the slot needs full dip room AND at least 1px of drip below it */
       const slot = corridorYFor(ci, localX, xMaxPin, cy, true, (y) =>
         band.bottom - 0.25 - (y + Math.min(SWOOP_DIP, band.bottom - y - 0.25)) >= 1.0 ? true : "drip-room");
@@ -390,14 +415,33 @@ export function planRoute(block, ann, opts = {}) {
 
     const gs = groups.map((g) => ({ ...g }));
     for (const g of gs) {
-      /* bottom pins can only leave downward: the corridor below the
-       * group's rendered line is the only legal one. If it cannot host a
-       * shoulder, the honest answer is needs-space — never a climb. */
-      const ci = g.li + 1, slot = corridorYFor(ci, strandX, g.xMax, g.cy);
-      if (!slot) return { valid: false, reason: "needs-space" };
-      g.ci = ci; g.shoulderY = slot.y; g.dip = slot.dip;
+      /* LEVEL EXIT: when everything between the leftmost pin and the port
+       * is genuinely clear, the connector continues straight from the
+       * underline — no turn, no dip. The dip grammar is for anchors with
+       * ink in the way. Within a group, only the nearest-to-rail member
+       * can be clear; the rest comb below in the corridor. */
+      const m0 = g.members[0];
+      const c0 = pinOf(m0.frag);
+      const levelEnd = m0.frag.left - expand - 0.6;
+      g.level = (levelEnd > strandX + 6 && clearRun(c0.y, strandX + 0.5, levelEnd))
+        ? { c: c0, m: m0 } : null;
+      const combMembers = g.level ? g.members.slice(1) : g.members;
+      g.combMembers = combMembers;
+      if (combMembers.length) {
+        /* bottom pins can only leave downward: the corridor below the
+         * group's rendered line is the only legal one. If it cannot host
+         * a shoulder, the honest answer is needs-space — never a climb. */
+        const ci = g.li + 1;
+        const cyC = Math.max(...combMembers.map((m) => pinOf(m.frag).y));
+        const xMaxC = Math.max(...combMembers.map((m) => pinOf(m.frag).x)) + 1;
+        const slot = corridorYFor(ci, strandX, xMaxC, cyC);
+        if (!slot) return { valid: false, reason: "needs-space" };
+        g.ci = ci; g.shoulderY = slot.y; g.dip = slot.dip; g.xMaxC = xMaxC;
+      } else {
+        g.ci = g.li + 1; g.shoulderY = c0.y; g.dip = SWOOP_DIP;
+      }
     }
-    gs.sort((a, b) => a.shoulderY - b.shoulderY);
+    gs.sort((a, b) => (a.level ? a.level.c.y : a.shoulderY) - (b.level ? b.level.c.y : b.shoulderY));
 
     const contacts = [];
     const centerline = [];
@@ -407,41 +451,54 @@ export function planRoute(block, ann, opts = {}) {
     const corridorIdx = [];
 
     for (const g of gs) {
-      const y = g.shoulderY;
-      corridorYs.push(y); corridorIdx.push(g.ci);
-      /* terminals: pins comb into the shoulder, right to left */
-      let minEndX = Infinity;
-      for (const m of [...g.members].sort((a, b) => b.frag.left - a.frag.left)) {
-        const c = pinOf(m.frag);
-        const r = Math.abs(y - c.y);
-        if (r < DROP_MIN) return { valid: false, reason: "kink" };
+      if (g.level) {
+        /* the underline runs on: level travel, then the same pour */
+        const c = g.level.c;
+        const reach = Math.min(SWOOP_REACH, Math.max(4, (c.x - strandX) * 0.5));
         contacts.push(c);
-        centerline.push(quarterVH(c.x, c.y, c.x - r, y));
-        exempts.push([{ rect: expandRect(m.frag, expand), cx: c.x, cy: c.y }]);
-        minEndX = Math.min(minEndX, c.x - r);
+        centerline.push(L(c.x, c.y, strandX + reach, c.y));
+        exempts.push([{ rect: expandRect(g.level.m.frag, expand), cx: c.x, cy: c.y }]);
+        centerline.push(quarterHV(strandX + reach, c.y, strandX, c.y + SWOOP_DIP));
+        exempts.push(null);
+        ports.push({ x: strandX, y: c.y + SWOOP_DIP });
+        corridorYs.push(c.y); corridorIdx.push(g.li + 1);
       }
-      /* shoulder: one hairline through every terminal's merge point */
-      const reach = Math.min(SWOOP_REACH, Math.max(4, (minEndX - strandX) * 0.5));
-      centerline.push(L(minEndX, y, strandX + reach, y));
-      exempts.push(null);
-      /* port: shallow swoop pouring down onto the strand */
-      centerline.push(quarterHV(strandX + reach, y, strandX, y + g.dip));
-      exempts.push(null);
-      ports.push({ x: strandX, y: y + g.dip });
-      g.portY = y + g.dip;
+      if (g.combMembers.length) {
+        const y = g.shoulderY;
+        corridorYs.push(y); corridorIdx.push(g.ci);
+        /* terminals: pins comb into the shoulder, right to left */
+        let minEndX = Infinity;
+        for (const m of [...g.combMembers].sort((a, b) => b.frag.left - a.frag.left)) {
+          const c = pinOf(m.frag);
+          const r = Math.abs(y - c.y);
+          if (r < DROP_MIN) return { valid: false, reason: "kink" };
+          contacts.push(c);
+          centerline.push(quarterVH(c.x, c.y, c.x - r, y));
+          exempts.push([{ rect: expandRect(m.frag, expand), cx: c.x, cy: c.y }]);
+          minEndX = Math.min(minEndX, c.x - r);
+        }
+        /* shoulder: one hairline through every terminal's merge point */
+        const reach = Math.min(SWOOP_REACH, Math.max(4, (minEndX - strandX) * 0.5));
+        centerline.push(L(minEndX, y, strandX + reach, y));
+        exempts.push(null);
+        /* port: shallow swoop pouring down onto the strand */
+        centerline.push(quarterHV(strandX + reach, y, strandX, y + g.dip));
+        exempts.push(null);
+        ports.push({ x: strandX, y: y + g.dip });
+      }
     }
 
     /* spine: one vertical from first port to last port, never overshooting */
     let spine = null;
-    if (gs.length > 1) {
-      const top = Math.min(...gs.map((g) => g.portY));
-      const bot = Math.max(...gs.map((g) => g.portY));
+    if (ports.length > 1) {
+      const top = Math.min(...ports.map((p) => p.y));
+      const bot = Math.max(...ports.map((p) => p.y));
       centerline.push(L(strandX, top, strandX, bot));
       exempts.push(null);
       spine = { x: strandX, top, bottom: bot };
     } else {
-      /* single-group arrival: the swoop ends in a short drip */
-      centerline.push(L(strandX, gs[0].portY, strandX, gs[0].portY + 2.5));
+      /* single arrival: the swoop ends in a short drip */
+      centerline.push(L(strandX, ports[0].y, strandX, ports[0].y + 2.5));
       exempts.push(null);
     }
 
@@ -450,6 +507,7 @@ export function planRoute(block, ann, opts = {}) {
       plan.strand = strand;
       plan.side = side;
       plan.diagnostics.laneIndex = strand;
+      plan.diagnostics.exits = gs.map((g) => g.level ? (g.combMembers.length ? "level+comb" : "level") : "drop");
       plan.rawLength = segmentsLength(centerline);
       plan.semCenter = contacts.reduce((s, c) => s + c.x, 0) / contacts.length;
       plan.strandClaimOut = spine

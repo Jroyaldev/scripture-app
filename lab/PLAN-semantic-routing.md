@@ -121,5 +121,6 @@ floor under the GAP:                    floor under the PAIR:
 - **Right-margin routing + shadow-plan-slaved tick sides** (12px hysteresis) — gated on renegotiating the shapes rail/sheet layout; scorer and strand specs are already shaped for it.
 - **Claim x-extents** — fixes corridor-claim coarseness that wide embrace/local floors make marginally worse.
 - **Word-run cradle depth** (ignore-own-line) — hammocks tracking the local gap instead of the line's deepest descender; recorded so it isn't reinvented as a new line type.
+- **Level exits** (landed): connectors continue straight from the underline when the run is clear — see PROMPT-loom.md.
 - **A-wraps-from-previous-line cradle** (exit-end facing pins) — pure facing grammar, currently misses to margin.
 - **exportCard miniature reflecting real route classes** — currently schematic by decision.

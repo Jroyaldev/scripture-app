@@ -485,15 +485,16 @@ function computeHops(drawnPlans) {
       if (A === B || !B.valid || !B.spine) continue;
       for (const y of crossingsAt(A, B.spine.x)) {
         if (y < B.spine.top + 2 || y > B.spine.bottom - 2) continue;
-        /* never gap a port merge — the weave yields there */
-        if (B.ports.some((pt) => Math.abs(pt.y - y) < 2.6)) continue;
         if (B.focused && !A.focused) {
-          /* focused spine stands: the traveler pauses instead */
+          /* focused spine stands: the traveler pauses instead — even near
+           * a port, since gapping the traveler never harms B's pour */
           if (!A.renderPatches.some((h) => Math.abs(h.y - y) < 3 && Math.abs(h.x - B.spine.x) < 1)) {
             A.renderPatches.push({ x: B.spine.x, y });
           }
-        } else if (!B.renderHops.some((h) => Math.abs(h - y) < 3)) {
-          B.renderHops.push(y);
+        } else {
+          /* never gap a spine at its own port merge — the weave yields */
+          if (B.ports.some((pt) => Math.abs(pt.y - y) < 2.6)) continue;
+          if (!B.renderHops.some((h) => Math.abs(h - y) < 3)) B.renderHops.push(y);
         }
       }
     }
@@ -548,7 +549,10 @@ function validate(measured, ann, plan, drawnPlans) {
       if (Math.abs(p.x - B.spine.x) < 1.7 && p.y > B.spine.top + 1 && p.y < B.spine.bottom - 1) {
         const hopped = (B.renderHops || []).some((h) => Math.abs(p.y - h) < 1.9);
         const patched = (plan.renderPatches || []).some((pt) => Math.abs(pt.x - B.spine.x) < 1 && Math.abs(pt.y - p.y) < 2.8);
-        if (!hopped && !patched) weaveBad++;
+        /* woven-over-woven crossings inside a port merge are yielded by
+         * design — converging pours are allowed to touch */
+        const yielded = !B.focused && (B.ports || []).some((pt) => Math.abs(pt.y - p.y) < 4.4);
+        if (!hopped && !patched && !yielded) weaveBad++;
       }
     }
   }

@@ -282,3 +282,24 @@ and a starved margin no longer starves them (the strandX bound checks
 moved out of the pre-cradle path). Failure reporting prefers
 needs-space over kink over obstacle-collision. assignStrands remains
 exported but demoted; the host's inline strand loops are gone.
+
+### Level exits landed (same day) — a grammar amendment
+
+**When everything between a pin and its rail is genuinely clear, the
+connector continues straight from the underline** — colinear, through
+the pin bead, one quarter corner into the spine: `———•‾‾‾‾` instead of
+the dip-and-hook. The terminal turn and corridor drop are now the
+grammar for anchors with ink in the way, not the default. Word-run
+obstacles make the clearance test honest (verse numbers are superscript
+ink and usually clear it; a mid-line anchor's left neighbors never do).
+Within a same-line group, only the nearest-to-rail member can be clear
+— it exits level and the rest comb below in the corridor, so stacking
+falls out of the clearance check rather than a rule. Applies to margin
+routes (per group) and single-member local rails; cradles unchanged.
+This amends hard constraint #2: horizontal travel is legal at underline
+level when the ENTIRE run verifies clear — it crosses only margin air.
+
+Rode along: the port-merge yield now applies only to hop gaps (gapping
+a traveler near a focused port never harms the pour, so patches apply
+everywhere), and the weave suite check credits yielded woven-over-woven
+crossings at ports. diagnostics.exits records level/drop per group.
