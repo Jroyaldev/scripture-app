@@ -12,38 +12,40 @@ cd lab && python3 -m http.server 8791
 # open http://localhost:8791/shapes.html
 ```
 
-## The language (v5 — annotation ink and passage score)
+## The language (v6 — annotation ink and the connection card)
 
 The page stays scripture-first. In Paper, keyed phrases rest on a quiet highlight
 wash; in dark atmospheres their ink carries a faint kind tint. Touching a phrase
 wakes its siblings and clicking holds the relationship. Shared words can still
-carry more than one pattern.
+carry more than one pattern. The marked phrases, the washes, and the in-text
+whisper are the whole discovery surface — the margin never lists what is not
+held.
 
-The two views now answer different questions:
+The two views share one connector grammar and one reading aid:
 
-- **Reading** asks “where does this relationship live in the prose?” It keeps the
-  exact-word emphasis and now draws every relationship with the same Loom-engine
-  bracket grammar as Traces — brackets, cradles, and quiet held rail ticks. Only
-  the reading aid differs: a passage-score card panel instead of the authoring rail.
-- **Traces** asks “what architecture have I annotated in this passage?” The lines
-  remain core: the focused annotation owns the nearest gutter lane at full ink,
-  while up to three held comparisons remain as quiet routed lanes. A bounded
-  passage score in the right margin lists every annotation as one compact row —
-  a short kind-hue tick (the line vocabulary, not an icon), the title, a quiet
-  kind label with its moments count, and plain-text state (drawn / held / off
-  screen). Expanding a row shows the observation first, then the exact source
-  path as clean ref + phrase rows that return to each marked phrase. A quiet
-  HIGHLIGHTS group closes the index: one row per wash — swatch, phrase,
-  reference — with the authoring chip's remove language and no expansion. If
-  more than four traces are held, the score keeps them all switchable and says
-  how many remain lined instead of allowing an unbounded cable field.
+- **Reading** and **Traces** differ only in the page's typographic set (Traces
+  reserves the interline room the Loom routing contract needs). Both draw every
+  relationship with the same Loom-engine bracket grammar — brackets, cradles,
+  and quiet held rail ticks.
+- **The connection card** appears in the right margin only while a connection
+  is held (click); hover alone never shows it. It presents exactly the focused
+  connection: a short kind-hue tick (the line vocabulary, not an icon), the
+  title (rename in place for your own marks), a quiet `kind · N moments` line,
+  the observation, then the source moments as clean ref + phrase rows — the
+  whole row returns to the verse and says here / above / below. Quiet actions
+  close the card: Add words, Export SVG, Release, Delete, with the same
+  six-second undo door as everywhere else. When several connections are held,
+  the card follows the focus — switch by clicking phrases (shared words cycle:
+  “2 of 3 · click for next”) or the held rail ticks — and concedes only one
+  plain-text phrase to the others: `· 2 more held`. Nothing else. If more than
+  four traces are held, the margin still draws at most four routed lanes; the
+  rest stay switchable as ticks instead of an unbounded cable field.
 - **One line type.** Every trace — any kind, any density — draws as the same
   clean uniform stroke (round caps and joins); kind speaks as hue plus its
-  named label in the score. Per-kind line signatures (double rule, break,
+  named label on the card. Per-kind line signatures (double rule, break,
   dotted, diamond, ticks, bracket) were retired, and the C0.5 amendment also
   retired the tapered/swelling ribbon profile: at reading size a second line
-  type — or a width swell — reads as a rendering artifact, not a meaning. The
-  score's compact overview and expanded source path use the same single rule.
+  type — or a width swell — reads as a rendering artifact, not a meaning.
 - **The bracket (C0.5).** One vocabulary: horizontals colinear with
   underlines, verticals, and one soft rounded right-angle corner. Every
   contact comes straight off its underline in one level run and meets the
@@ -53,8 +55,8 @@ The two views now answer different questions:
   loops, or runs offset-parallel to an underline. `c05-fixtures.html`
   renders the amended silhouettes directly from the engine as a standing
   visual gate.
-- **Off-screen state is explicit.** Each source row says above, below, or here and
-  remains a real button back to the passage.
+- **Off-screen state is explicit.** Each moment row says above, below, or here
+  and remains a real button back to the passage.
 - **Dense study** is a reversible stress fixture: Psalm 1 grows from 3 to 14 traces,
   including overlap, same-line, adjacent-line, multi-member, and full-span cases.
   It exists to expose a false density strategy before anything reaches the app.
@@ -77,9 +79,11 @@ below a divider. Highlights are not connections: they lay a quiet rounded wash
 under the exact words (the production `HighlightUnderlay` discipline), coexist
 with patterns on the same words (wash under, underline and connector above), and
 persist in the same local store as authored patterns
-(`{ type: "highlight", color, key }`). Click washed words with nothing selected
-to remove one. The live provisional wire, notes, rename, member editing, undo,
-local prototype persistence, and SVG export remain available in both views.
+(`{ type: "highlight", color, key }`). A wash is managed entirely in the text —
+it never appears in the margin: click the washed words with nothing selected and
+a small chip offers the one action a wash has, remove (with undo). The live
+provisional wire, notes, rename, member editing, undo, local prototype
+persistence, and SVG export remain available in both views.
 
 Connector planning is the Loom engine (`route-engine.js`), shared with `route.html`
 and exercised by the focused Route Engine suites; both lab views paint its output
@@ -97,10 +101,11 @@ unit-tested reference — no Shapes render path reaches them any longer.
 - **Genesis 1:3–2:3** — mirror: hover a forming day's "Let there be …" and its
   filling-day answer wakes (day 1↔4, 2↔5, 3↔6); the goodness refrain threads ×7.
 - **Revelation 2–3** — series: hover "I know your works" and its siblings wake
-  across both chapters; the passage score makes every off-screen member directly
-  navigable. The optional long-text fixture pressure-tests routed annotation lanes,
-  long observations, and first-to-last source return. The matrix remains a Reading
-  aid and keeps absence as data (Smyrna has no rebuke, Laodicea no commendation).
+  across both chapters; hold one and the connection card makes every off-screen
+  moment directly navigable. The optional long-text fixture pressure-tests routed
+  annotation lanes, long observations, and first-to-last source return. The matrix
+  remains a Reading aid and keeps absence as data (Smyrna has no rebuke, Laodicea
+  no commendation).
 
 ## Research direction
 
@@ -122,8 +127,8 @@ The redesign borrows interaction principles, not another product's surface:
 - [Logos visual filters](https://support.logos.com/hc/en-us/articles/360016529972-Visual-Filters)
   reinforce phrase-level marking in biblical text, while
   [Biblearc](https://app.biblearc.com/about-tools) treats structure as an explicit
-  study object. The passage score combines those two instincts without converting
-  the page into a generic node graph.
+  study object. The held-lane margin and the connection card combine those two
+  instincts without converting the page into a generic node graph.
 
 The deliberate rejection is a global force graph or infinite canvas. Those are
 good overview tools, but they sacrifice reading order and exact-source trust at

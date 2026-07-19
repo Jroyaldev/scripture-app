@@ -5,8 +5,9 @@
  * the page recedes, and a small whisper names the shape. Click pins it.
  * No dialect switcher, no chrome at rest: one opinionated language.
  * Both views route with the Loom engine (route-engine.js) — the same planner
- * as route.html; the Reading/Traces toggle now swaps only the reading aid
- * (passage-score cards vs. authoring rail), never the connector grammar. */
+ * as route.html; the Reading/Traces toggle changes only the page's set, never
+ * the connector grammar. One connection card serves both views: it appears
+ * only while a connection is held and shows exactly the focused one. */
 import { planRoute, rankCompanions } from "./route-engine.js";
 import { _internals as routeInternals } from "./route-engine.js";
 
@@ -192,8 +193,8 @@ const DENSITY_PATTERNS = [
 ];
 
 /* The short Psalm fixture tests overlap. This separate long-passage fixture
- * tests distance, recurrence, and a score with enough tracks to need its own
- * navigation. Revelation stays complete while this mode is on: none of its
+ * tests distance, recurrence, and a margin with enough held traces to need
+ * real navigation. Revelation stays complete while this mode is on: none of its
  * 51 source verses are visually truncated. */
 let LONG_MODE = false;
 const LONG_PATTERNS = [
@@ -837,9 +838,9 @@ function ribbonDraw(g, pts, hue, { w = 1.6, opacity = 1, delay = 0, dur = 380, r
   return p;
 }
 const ROUTE_KEY = "shape-marks-route";
-/* Two views, one connector grammar: "reading" = passage-score cards, "traces"
- * = authoring rail. The overlay is identical in both; the value only picks the
- * reading aid. ("bows" is the retired pre-C0.5 value — migrate it forward.) */
+/* Two views, one connector grammar and one connection card. The overlay is
+ * identical in both; the value only picks the page's typographic set.
+ * ("bows" is the retired pre-C0.5 value — migrate it forward.) */
 let ROUTE = /^(reading|bows)$/.test(localStorage.getItem(ROUTE_KEY) || "") ? "reading" : "traces";
 document.body.dataset.route = ROUTE;
 let FOCUS_GID = null;
@@ -1597,11 +1598,9 @@ function commitHeldShape(gid) {
   hovered.delete(gid);
   TICK_PREVIEW_GID = null;
   applyActive();
-  const stage = document.querySelector(`[data-trace-stage="${GIDS[gid].study}"]`);
-  const track = stage && [...stage.querySelectorAll(".trace-track")]
-    .find((candidate) => candidate.dataset.gid === gid);
-  const head = track && track.querySelector(".trace-track-head");
-  if (head) head.focus({ preventScroll: true });
+  /* keyboard focus hands off from the rail tick into the card it opened */
+  const card = CARDS[GIDS[gid].study];
+  if (card?.classList.contains("on")) card.focus({ preventScroll: true });
 }
 
 /* ── the Loom engine host (Traces view) ─────────────────────
@@ -1926,49 +1925,6 @@ function segPtsFor(s) {
   return pts;
 }
 /* the route explains itself — shapes wording over engine facts */
-function explainShapesPlan(plan) {
-  if (!plan) return null;
-  if (!plan.valid) {
-    const why = {
-      "needs-space": "no corridor slot or strand is free in the current weave — held as a tick",
-      kink: "a terminal turn had no room to breathe — held as a tick",
-      "obstacle-collision": "every legal path would touch ink — held as a tick",
-      "no-anchors": "its phrases are not in this rendering",
-      "host-topology-invalid": "the plural route failed its host ownership check — held rather than drawn ambiguously",
-      "host-paint-invalid": "the canonical route parts did not survive native SVG validation — held rather than drawn partially",
-    }[plan.reason] || `${plan.reason} — held as a tick`;
-    return { label: "held", reason: why };
-  }
-  const handoffs = Array.isArray(plan.handoffs) ? plan.handoffs : [];
-  if (handoffs.length) {
-    const sideRuns = planSideRuns(plan);
-    const sequence = sideRuns.map((run) => run.side === "right" ? "right" : "left").join(" → ");
-    const sectionCount = new Set(sideRuns.flatMap((run) => run.sectionIds || [])).size;
-    return {
-      label: `section weave · ${sequence}`,
-      reason: `${sectionCount} declared sections use ${sideRuns.length} calm margin runs; ${handoffs.length === 1 ? "one measured gap carries the near-flat crossing" : `${handoffs.length} measured gaps carry near-flat crossings`}`,
-    };
-  }
-  const labels = {
-    "same-line": plan.cradleVariant === "embrace" ? "direct hammock · embrace" : "direct hammock",
-    "local-tag": "local tag", "local-comb": "local comb",
-    "middle-shaft": "middle shaft",
-    tag: "loom tag", corridor: `${plan.side} loom`, multipoint: `${plan.side} loom · tributaries`,
-  };
-  const reasons = {
-    "same-line": plan.cradleVariant === "embrace"
-      ? "the pair is held as one — outer pins, floor beneath both words"
-      : "both phrases share one verified corridor, so the margin detour disappears",
-    "local-tag": "the whole route fits beside the idea itself",
-    "local-comb": "the line's pins comb into one short rail beside the phrase",
-    "middle-shaft": "a clear vertical stands in the void beside the ideas — neither endpoint visits the page edge",
-    tag: "a single idea; its pin pours into the loom beside its own line",
-    corridor: `the phrases span lines; one quiet spine on the ${plan.side} loom carries them`,
-    multipoint: `each line's pins comb into tributaries feeding one spine on the ${plan.side} loom`,
-  };
-  return { label: labels[plan.mode] || plan.mode, reason: reasons[plan.mode] || "" };
-}
-
 /* warm the measurement caches while the page is idle, so the first wake
  * of a big sheet (51 verses in Long mode) doesn't pay the word walk */
 function warmBlocks() {
@@ -2583,8 +2539,7 @@ function drawOverlay(sid, gids) {
   const localFocus = preview || (FOCUS_GID && gids.includes(FOCUS_GID) ? FOCUS_GID : gids.at(-1));
   /* C0.5: one overlay grammar for both views. Reading retired its local bows;
    * the Loom engine now plans every inked trace and everything held becomes a
-   * quiet rail tick. The Reading/Traces toggle changes only the reading aid
-   * (cards vs. rail), never the connectors. */
+   * quiet rail tick. The Reading/Traces toggle never changes the connectors. */
   {
     /* the Loom engine plans every inked trace: focused first (it claims
      * corridors and strand 0 first), then companions ranked BESIDE the
@@ -3011,24 +2966,25 @@ function updatePills() {
 }
 addEventListener("scroll", () => { if (activeGids().size) { updatePills(); updateCardView(); } }, { passive: true });
 
-/* pattern card — the pinned pattern, condensed to one glance.
- * Docked in the study's right rail like an app inspector: every member as
- * ref + phrase, off-screen rows dim with a direction arrow, click to jump.
- * One card per study, visible only while one of its patterns is pinned. */
+/* connection card — the one held connection, condensed to one glance.
+ * Docked in the study's right rail in the app's Living Margin voice: dense
+ * UI type, hairline separations, no heavy fills. One implementation serves
+ * both views; the Reading/Traces toggle changes the page, never the card.
+ * It appears only while a connection is held (click) — hover alone never
+ * shows it — and it presents exactly the focused connection. Switching
+ * happens in the text (phrase cycling) or on the held rail ticks.
+ * Structured to map 1:1 onto a future React <ConnectionCard>: one container,
+ * flat class names, the kind hue carried by one custom property. */
 const CARDS = {};
-const TRACE_STAGES = {};
 for (const sid of Object.keys(SHEETS)) {
   const rail = document.querySelector(`[data-rail="${sid}"]`);
-  const card = document.createElement("div");
-  card.className = "pcard";
+  const card = document.createElement("aside");
+  card.className = "ccard";
+  card.tabIndex = -1;
+  card.dataset.study = sid;
+  card.setAttribute("aria-label", `${SHEETS[sid].title} · active connection`);
   rail.prepend(card);
   CARDS[sid] = card;
-  const stage = document.createElement("section");
-  stage.className = "trace-stage";
-  stage.dataset.traceStage = sid;
-  stage.setAttribute("aria-label", `${SHEETS[sid].title} traces`);
-  rail.prepend(stage);
-  TRACE_STAGES[sid] = stage;
 }
 
 function traceTitle(G) {
@@ -3036,436 +2992,164 @@ function traceTitle(G) {
   return G.label.startsWith(prefix) ? G.label.slice(prefix.length) : G.label;
 }
 
-function traceKindClass(kind) {
-  return kind.replace("link:", "").replace(/[^a-z-]/g, "-");
-}
-
 /* one card language: the kind tick is a short rule — an echo of the line
  * vocabulary, never an icon. Hue carries the kind; text names it. */
-function kindTick(hue) {
-  return `<i class="card-tick"${hue ? ` style="background:${hue}"` : ""} aria-hidden="true"></i>`;
+function kindTick() {
+  return `<i class="card-tick" aria-hidden="true"></i>`;
 }
 function momentsWord(n) { return `${n} ${n === 1 ? "moment" : "moments"}`; }
 
-function focusTrace(gid, { pin = true } = {}) {
-  if (!GIDS[gid]) return;
-  if (pin) {
-    /* Set insertion order is our deterministic recency order for the three
-     * quiet comparison lanes. Refocusing a held trace makes it recent. */
-    pinned.delete(gid);
-    pinned.add(gid);
-  }
-  FOCUS_GID = gid;
-  hovered.clear();
-  applyActive();
-}
-
-/* highlights close the index: one quiet row per wash — swatch, phrase, ref.
- * No expansion, no notes; remove speaks the authoring chip's language. */
-function appendHighlightGroup(stage, sid) {
-  const hls = userHighlights().filter((h) => recStudy(h) === sid);
-  if (!hls.length) return;
-  const group = document.createElement("div");
-  group.className = "hl-group";
-  const head = document.createElement("div");
-  head.className = "hl-group-head";
-  head.innerHTML = `<span class="trace-kicker">Highlights</span><span class="trace-stage-meta">${hls.length}</span>`;
-  group.appendChild(head);
-  for (const h of hls) {
-    const [book, ch, v] = h.key.ref.split(".");
-    const row = document.createElement("div");
-    row.className = "hl-row";
-    const jump = document.createElement("button");
-    jump.type = "button";
-    jump.className = "hl-jump";
-    jump.setAttribute("aria-label", `${book} ${ch}:${v}, ${h.key.phrase}, ${h.color} highlight`);
-    jump.innerHTML = `<i class="hl-swatch" style="background:var(--hl-${h.color});border-color:color-mix(in srgb, var(--hl-${h.color}-ink) 55%, transparent)" aria-hidden="true"></i>
-      <span class="trace-member-copy"><span class="trace-member-ref">${book} ${ch}:${v}</span><span class="trace-member-phrase">${h.key.phrase}</span></span>`;
-    jump.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const el = document.querySelector(`[data-sheet="${sid}"] .vrow[data-key="${h.key.ref}"]`);
-      el?.scrollIntoView({ behavior: REDUCED_MOTION ? "auto" : "smooth", block: "center" });
-    });
-    const rm = document.createElement("button");
-    rm.type = "button";
-    rm.className = "hl-remove";
-    rm.setAttribute("aria-label", `remove ${h.color} highlight`);
-    rm.textContent = "Remove";
-    rm.addEventListener("click", (e) => { e.stopPropagation(); removeHighlight(h.id); });
-    row.append(jump, rm);
-    group.appendChild(row);
-  }
-  stage.appendChild(group);
-}
-
-function updateTraceStages() {
-  for (const sid of Object.keys(SHEETS)) {
-    const stage = TRACE_STAGES[sid];
-    const priorScroll = stage.scrollTop;
-    const priorActive = stage.dataset.active || null;
-    const focusedControl = stage.contains(document.activeElement)
-      ? document.activeElement.closest("[data-trace-focus]")
-      : null;
-    const focusedTrack = focusedControl?.closest(".trace-track");
-    const priorFocus = focusedTrack
-      ? { gid: focusedTrack.dataset.gid, key: focusedControl.dataset.traceFocus }
-      : null;
-    const all = Object.values(GIDS).filter((G) => G.study === sid && G.anchors.length > 1);
-    const held = [...pinned].filter((gid) => GIDS[gid]?.study === sid);
-    const preview = [...hovered].filter((gid) => GIDS[gid]?.study === sid).at(-1) || null;
-    const active = preview || (FOCUS_GID && held.includes(FOCUS_GID) ? FOCUS_GID : held.at(-1)) || null;
-    stage.dataset.active = active || "";
-    stage.innerHTML = "";
-
-    const head = document.createElement("header");
-    head.className = "trace-stage-head";
-    const heading = document.createElement("div");
-    heading.innerHTML = `<span class="trace-kicker">Passage score</span><h3>${SHEETS[sid].title}</h3>`;
-    const meta = document.createElement("span");
-    meta.className = "trace-stage-meta";
-    meta.textContent = `${all.length} ${all.length === 1 ? "trace" : "traces"}${held.length ? ` · ${held.length} held` : ""}${held.length > MAX_MARGIN_TRACES ? ` · ${MAX_MARGIN_TRACES} lined` : ""}`;
-    head.append(heading, meta);
-    stage.appendChild(head);
-
-    if (!all.length) {
-      const empty = document.createElement("p");
-      empty.className = "trace-stage-empty";
-      empty.textContent = "Select words in the passage to begin its first trace.";
-      stage.appendChild(empty);
-      appendHighlightGroup(stage, sid);
-      continue;
-    }
-
-    const intro = document.createElement("p");
-    intro.className = "trace-stage-intro";
-    intro.textContent = active
-      ? "The active annotation owns the nearest margin lane. Choose any source moment to return."
-      : "Choose an annotation to draw its source path through the passage margin.";
-    stage.appendChild(intro);
-
-    /* drawn = the route is inked in the margin right now (focus + the ranked
-     * companions the overlay actually painted); everything else held is a tick */
-    const inkedNow = LAST_INKED.get(sid) || new Set();
-    const planValid = (gid) => Boolean(LAST_PLANS.get(sid)?.get(gid)?.valid);
-    const drawnNow = (gid) => (gid === active || inkedNow.has(gid)) && planValid(gid);
-
-    const list = document.createElement("div");
-    list.className = "trace-list";
-    for (const G of all) {
-      const isHeld = held.includes(G.gid);
-      const isActive = G.gid === active;
-      const track = document.createElement("article");
-      track.className = `trace-track is-${traceKindClass(G.kind)}${isHeld ? " is-held" : ""}${isActive ? " is-active" : ""}`;
-      track.style.setProperty("--trace-hue", G.hue);
-      track.dataset.gid = G.gid;
-      track.dataset.state = drawnNow(G.gid) ? "drawn" : isHeld || isActive ? "held" : "";
-      const trackPlan = LAST_PLANS.get(sid)?.get(G.gid);
-      if (Number.isFinite(trackPlan?.score)) track.dataset.score = String(trackPlan.score);
-      if (Number.isFinite(trackPlan?.scoreRaw)) track.dataset.scoreRaw = String(trackPlan.scoreRaw);
-      if (G.qaKind) track.dataset.qaKind = G.qaKind;
-      if (G.qaDistance) track.dataset.qaDistance = G.qaDistance;
-      if (G.qaPlacement) track.dataset.qaPlacement = G.qaPlacement;
-
-      const trackHead = document.createElement("button");
-      trackHead.className = "trace-track-head";
-      trackHead.type = "button";
-      trackHead.dataset.traceFocus = "head";
-      trackHead.setAttribute("aria-expanded", isActive);
-      trackHead.innerHTML = `${kindTick()}
-        <span class="trace-track-copy"><strong>${traceTitle(G)}</strong><span class="trace-track-kind">${KIND_LABEL[G.kind]} · ${momentsWord(G.anchors.length)}</span></span>
-        <span class="trace-track-state"></span>`;
-      trackHead.addEventListener("click", (e) => { e.stopPropagation(); focusTrace(G.gid); });
-      track.appendChild(trackHead);
-
-      if (isActive) {
-        const detail = document.createElement("div");
-        detail.className = "trace-detail";
-        /* the route explains itself: label + one honest sentence from
-         * the Loom plan that actually drew (or declined) this trace */
-        const planNote = explainShapesPlan(LAST_PLANS.get(sid)?.get(G.gid));
-        if (planNote) {
-          const note = document.createElement("p");
-          note.className = "trace-route-note";
-          note.innerHTML = `<strong>${planNote.label}</strong> — ${planNote.reason}`;
-          detail.appendChild(note);
-        }
-        if (G.gid.startsWith("u-")) {
-          const rec = USER.find((pattern) => pattern.id === G.gid);
-          const renameLabel = document.createElement("label");
-          renameLabel.className = "trace-rename";
-          renameLabel.appendChild(Object.assign(document.createElement("span"), { textContent: "Trace name" }));
-          const rename = document.createElement("input");
-          rename.type = "text";
-          rename.value = rec?.label || traceTitle(G);
-          rename.autocomplete = "off";
-          rename.dataset.traceFocus = "rename";
-          rename.setAttribute("aria-label", `Trace name for ${traceTitle(G)}`);
-          rename.addEventListener("click", (e) => e.stopPropagation());
-          rename.addEventListener("input", () => {
-            trackHead.querySelector("strong").textContent = rename.value.trim() || traceTitle(G);
-          });
-          const commitRename = () => {
-            if (!rename.value.trim()) { rename.value = rec?.label || traceTitle(G); return; }
-            renameUser(G.gid, rename.value);
-            const nextTitle = traceTitle(G);
-            trackHead.querySelector("strong").textContent = nextTitle;
-            rename.setAttribute("aria-label", `Trace name for ${nextTitle}`);
-            const legendChip = [...document.querySelectorAll(".legend .chip")]
-              .find((chip) => (chip.dataset.gids || "").split(" ").includes(G.gid));
-            const legendText = legendChip
-              ? [...legendChip.childNodes].find((node) => node.nodeType === Node.TEXT_NODE)
-              : null;
-            if (legendText) legendText.textContent = G.label;
-          };
-          rename.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") { e.preventDefault(); commitRename(); }
-          });
-          rename.addEventListener("change", commitRename);
-          renameLabel.appendChild(rename);
-          detail.appendChild(renameLabel);
-        }
-        /* card order: observation first, then the source path, actions last */
-        const noteLabel = document.createElement("label");
-        noteLabel.className = "trace-note";
-        noteLabel.appendChild(Object.assign(document.createElement("span"), { textContent: "Observation" }));
-        const note = document.createElement("textarea");
-        note.rows = 2;
-        note.dataset.traceFocus = "note";
-        note.placeholder = "Why do these moments belong together?";
-        note.value = getNote(G.gid);
-        /* The score is rebuilt when another trace receives focus. Persist on
-         * input so that rebuild cannot outrun a pending blur/change event. */
-        note.addEventListener("input", () => setNote(G.gid, note.value));
-        note.addEventListener("click", (e) => e.stopPropagation());
-        noteLabel.appendChild(note);
-        detail.appendChild(noteLabel);
-
-        const score = document.createElement("ol");
-        score.className = `trace-score is-${traceKindClass(G.kind)}`;
-        score.setAttribute("aria-label", `${traceTitle(G)} source path`);
-        G.anchors.forEach((a, index) => {
-          const member = document.createElement("li");
-          member.className = "trace-member";
-          member._el = a.el;
-          const jump = document.createElement("button");
-          jump.type = "button";
-          jump.className = "trace-member-jump";
-          jump.dataset.traceFocus = `member-${index}`;
-          const [book, ch, v] = a.ref.split(".");
-          jump.setAttribute("aria-label", `${book} ${ch}:${v}, ${a.phrase}`);
-          jump.innerHTML = `<span class="trace-member-copy"><span class="trace-member-ref">${book} ${ch}:${v}</span><span class="trace-member-phrase">${a.phrase}</span></span>
-            <span class="trace-member-state" aria-hidden="true"></span>`;
-          jump.addEventListener("click", (e) => {
-            e.stopPropagation();
-            a.el.scrollIntoView({ behavior: REDUCED_MOTION ? "auto" : "smooth", block: "center" });
-            requestAnimationFrame(() => { FOCUS_GID = G.gid; applyActive(); });
-          });
-          member.appendChild(jump);
-          if (G.gid.startsWith("u-")) {
-            const remove = document.createElement("button");
-            remove.type = "button"; remove.className = "trace-member-remove";
-            remove.dataset.traceFocus = `remove-${index}`;
-            remove.textContent = "Remove";
-            remove.addEventListener("click", (e) => { e.stopPropagation(); removeMember(G.gid, a.ref, a.phrase, a.occ); });
-            member.appendChild(remove);
-          }
-          score.appendChild(member);
-        });
-        detail.appendChild(score);
-
-        const actions = document.createElement("div");
-        actions.className = "trace-actions";
-        const exportBtn = document.createElement("button");
-        exportBtn.type = "button"; exportBtn.textContent = "Export SVG"; exportBtn.dataset.traceFocus = "export";
-        exportBtn.addEventListener("click", (e) => { e.stopPropagation(); exportCard(G.gid); });
-        const release = document.createElement("button");
-        release.type = "button"; release.textContent = isHeld ? "Release" : "Close"; release.dataset.traceFocus = "release";
-        release.addEventListener("click", (e) => {
-          e.stopPropagation();
-          pinned.delete(G.gid);
-          hovered.delete(G.gid);
-          FOCUS_GID = [...pinned].filter((gid) => GIDS[gid]?.study === sid).at(-1) || null;
-          applyActive();
-        });
-        actions.append(exportBtn, release);
-        if (G.gid.startsWith("u-")) {
-          const add = document.createElement("button");
-          add.type = "button"; add.textContent = "Add words"; add.dataset.traceFocus = "add";
-          add.addEventListener("click", (e) => { e.stopPropagation(); startExtend(G.gid); });
-          const del = document.createElement("button");
-          del.type = "button"; del.className = "is-danger"; del.textContent = "Delete"; del.dataset.traceFocus = "delete";
-          del.addEventListener("click", (e) => { e.stopPropagation(); deleteUserPattern(G.gid); });
-          actions.prepend(add); actions.append(del);
-        }
-        detail.appendChild(actions);
-        track.appendChild(detail);
-      }
-      list.appendChild(track);
-    }
-    stage.appendChild(list);
-    appendHighlightGroup(stage, sid);
-    if (priorFocus) {
-      const nextTrack = [...list.querySelectorAll(".trace-track")]
-        .find((track) => track.dataset.gid === priorFocus.gid);
-      const nextFocus = nextTrack?.querySelector(`[data-trace-focus="${priorFocus.key}"]`)
-        || nextTrack?.querySelector(".trace-track-head");
-      nextFocus?.focus({ preventScroll: true });
-    }
-    if (active && active !== priorActive) {
-      const activeTrack = [...list.querySelectorAll(".trace-track")].find((track) => track.dataset.gid === active);
-      requestAnimationFrame(() => {
-        const stageRect = stage.getBoundingClientRect();
-        const trackRect = activeTrack?.getBoundingClientRect();
-        const trackTop = trackRect ? trackRect.top - stageRect.top + stage.scrollTop : 0;
-        stage.scrollTop = Math.max(0, trackTop - head.offsetHeight);
-        updateCardView();
-      });
-    } else {
-      stage.scrollTop = priorScroll;
-    }
-  }
-  updateCardView();
-}
-
+/* the card appears only while a connection is held; it shows exactly the
+ * focused one. The marked phrases, washes, and the in-text whisper are the
+ * whole discovery surface — the margin never lists what is not held. */
 function updateCard() {
-  const inTraces = ROUTE === "traces";
-  for (const stage of Object.values(TRACE_STAGES)) stage.hidden = !inTraces;
-  for (const card of Object.values(CARDS)) card.hidden = inTraces;
-  if (inTraces) {
-    updateTraceStages();
-    return;
-  }
   for (const sid of Object.keys(SHEETS)) {
     const card = CARDS[sid];
-    const gids = [...pinned].filter((g) => GIDS[g].study === sid);
-    if (!gids.length) { card.classList.remove("on"); continue; }
+    const held = [...pinned].filter((g) => GIDS[g]?.study === sid);
+    const gid = FOCUS_GID && held.includes(FOCUS_GID) ? FOCUS_GID : held.at(-1);
+    if (!gid) {
+      card.classList.remove("on");
+      card.dataset.key = "";
+      card.innerHTML = "";
+      continue;
+    }
+    const G = GIDS[gid];
+    /* rebuild only when the card's content actually changes, so hover and
+     * scroll churn never steal focus from the observation mid-sentence */
+    const key = `${gid}|${held.join(",")}|${G.anchors.length}|${G.label}`;
+    if (card.dataset.key === key && card.classList.contains("on")) continue;
+    card.dataset.key = key;
+    card.dataset.gid = gid;
+    card.style.setProperty("--ccard-hue", G.hue);
     card.innerHTML = "";
-    for (const gid of gids) {
-      const G = GIDS[gid];
-      const sec = document.createElement("div"); sec.className = "pcard-sec";
-      const head = document.createElement("div"); head.className = "pcard-head";
-      head.innerHTML = kindTick(G.hue);
-      const title = document.createElement("span"); title.className = "pcard-title";
-      if (gid.startsWith("u-")) {
-        const rec = USER.find((p) => p.id === gid);
-        title.textContent = rec?.label || G.label;
-        title.contentEditable = "plaintext-only";
-        title.spellcheck = false;
-        title.title = "click to rename";
-        title.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); title.blur(); } });
-        title.addEventListener("blur", () => {
-          renameUser(gid, title.textContent);
-          rebuildAll();
-          applyActive();
-        });
-        title.addEventListener("click", (ev) => ev.stopPropagation());
-      } else {
-        title.textContent = traceTitle(G); // kind already speaks in the meta line
-      }
-      const exp = document.createElement("button"); exp.className = "pcard-x"; exp.textContent = "⤓";
-      exp.title = "export as card";
-      exp.addEventListener("click", (e) => { e.stopPropagation(); exportCard(gid); });
-      head.append(title, exp);
-      if (gid.startsWith("u-")) {
-        const del = document.createElement("button"); del.className = "pcard-x pcard-del";
-        del.innerHTML = `<svg width="11" height="12" viewBox="0 0 14 15" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M2 4h10M5.5 4V2.5h3V4M3.5 4l.7 9h5.6l.7-9M5.8 6.5v4M8.2 6.5v4"/></svg>`;
-        del.title = "delete this mark";
-        del.addEventListener("click", (e) => { e.stopPropagation(); deleteUserPattern(gid); });
-        head.appendChild(del);
-      }
-      const close = document.createElement("button"); close.className = "pcard-x"; close.textContent = "×";
-      close.title = "unpin (esc)";
-      close.addEventListener("click", (e) => {
-        e.stopPropagation();
-        pinned.delete(gid);
+
+    const head = document.createElement("header");
+    head.className = "ccard-head";
+    head.innerHTML = kindTick();
+    const title = document.createElement("span");
+    title.className = "ccard-title";
+    if (gid.startsWith("u-")) {
+      const rec = USER.find((p) => p.id === gid);
+      title.textContent = rec?.label || traceTitle(G);
+      title.contentEditable = "plaintext-only";
+      title.spellcheck = false;
+      title.title = "click to rename";
+      title.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); title.blur(); } });
+      title.addEventListener("blur", () => {
+        renameUser(gid, title.textContent);
+        rebuildAll();
         applyActive();
       });
-      head.appendChild(close);
-      sec.appendChild(head);
-      /* same anatomy as the Traces track: quiet kind label + moments + state */
-      const inkedNow = LAST_INKED.get(sid) || new Set();
-      const focusNow = FOCUS_GID && gids.includes(FOCUS_GID) ? FOCUS_GID : gids.at(-1);
-      const drawn = (gid === focusNow || inkedNow.has(gid)) && Boolean(LAST_PLANS.get(sid)?.get(gid)?.valid);
-      const meta = document.createElement("div"); meta.className = "pcard-kind";
-      meta.textContent = `${KIND_LABEL[G.kind]} · ${momentsWord(G.anchors.length)} · ${drawn ? "drawn" : "held"}`;
-      sec.appendChild(meta);
-      const note = document.createElement("textarea");
-      note.className = "pcard-note";
-      note.rows = 1;
-      note.placeholder = "why these? note an observation…";
-      note.value = getNote(gid);
-      const grow = () => { note.style.height = "auto"; note.style.height = note.scrollHeight + "px"; };
-      note.addEventListener("input", grow);
-      note.addEventListener("change", () => setNote(gid, note.value));
-      note.addEventListener("click", (ev) => ev.stopPropagation());
-      note.addEventListener("mouseup", (ev) => ev.stopPropagation());
-      sec.appendChild(note);
-      requestAnimationFrame(grow);
-      for (const a of G.anchors) {
-        const row = document.createElement("div"); row.className = "pcard-row";
-        const [, ch, v] = a.ref.split(".");
-        const ref = document.createElement("span"); ref.className = "pr-ref"; ref.textContent = `${ch}:${v}`;
-        const txt = document.createElement("span"); txt.className = "pr-txt"; txt.textContent = a.phrase;
-        const dir = document.createElement("span"); dir.className = "pr-dir";
-        row.append(ref, txt, dir);
-        if (gid.startsWith("u-")) {
-          const rm = document.createElement("button"); rm.className = "pr-rm"; rm.textContent = "–";
-          rm.title = "remove these words from the pattern";
-          rm.addEventListener("click", (e) => { e.stopPropagation(); removeMember(gid, a.ref, a.phrase, a.occ); });
-          row.appendChild(rm);
-        }
-        row.addEventListener("click", (e) => {
-          e.stopPropagation();
-          a.el.scrollIntoView({ behavior: "smooth", block: "center" });
-        });
-        row._el = a.el;
-        sec.appendChild(row);
-      }
-      if (gid.startsWith("u-")) {
-        const add = document.createElement("button"); add.className = "pcard-add";
-        add.textContent = "+ add words";
-        add.addEventListener("click", (e) => { e.stopPropagation(); startExtend(gid); });
-        sec.appendChild(add);
-      }
-      card.appendChild(sec);
+      title.addEventListener("click", (ev) => ev.stopPropagation());
+    } else {
+      title.textContent = traceTitle(G); // kind already speaks in the meta line
     }
+    head.appendChild(title);
+    card.appendChild(head);
+
+    /* the one concession to plurality: plain text, no interaction */
+    const others = held.length - 1;
+    const kindLine = document.createElement("p");
+    kindLine.className = "ccard-kind";
+    kindLine.textContent = `${KIND_LABEL[G.kind]} · ${momentsWord(G.anchors.length)}`
+      + (others > 0 ? ` · ${others} more held` : "");
+    card.appendChild(kindLine);
+
+    const note = document.createElement("textarea");
+    note.className = "ccard-note";
+    note.rows = 1;
+    note.placeholder = "why these? note an observation…";
+    note.value = getNote(gid);
+    const grow = () => { note.style.height = "auto"; note.style.height = note.scrollHeight + "px"; };
+    /* persist on input so a rebuild cannot outrun a pending change event */
+    note.addEventListener("input", () => { grow(); setNote(gid, note.value); });
+    note.addEventListener("click", (ev) => ev.stopPropagation());
+    note.addEventListener("mouseup", (ev) => ev.stopPropagation());
+    card.appendChild(note);
+    requestAnimationFrame(grow);
+
+    const moments = document.createElement("ol");
+    moments.className = "ccard-moments";
+    moments.setAttribute("aria-label", `${traceTitle(G)} source moments`);
+    for (const a of G.anchors) {
+      const row = document.createElement("li");
+      row.className = "ccard-moment";
+      row._el = a.el;
+      const jump = document.createElement("button");
+      jump.type = "button";
+      jump.className = "ccard-jump";
+      const [book, ch, v] = a.ref.split(".");
+      jump.setAttribute("aria-label", `${book} ${ch}:${v}, ${a.phrase}`);
+      const ref = document.createElement("span"); ref.className = "ccard-ref"; ref.textContent = `${ch}:${v}`;
+      const phrase = document.createElement("span"); phrase.className = "ccard-phrase"; phrase.textContent = a.phrase;
+      const state = document.createElement("span"); state.className = "ccard-state"; state.setAttribute("aria-hidden", "true");
+      jump.append(ref, phrase, state);
+      jump.addEventListener("click", (e) => {
+        e.stopPropagation();
+        a.el.scrollIntoView({ behavior: REDUCED_MOTION ? "auto" : "smooth", block: "center" });
+      });
+      row.appendChild(jump);
+      if (gid.startsWith("u-")) {
+        const rm = document.createElement("button");
+        rm.type = "button"; rm.className = "ccard-remove"; rm.textContent = "Remove";
+        rm.setAttribute("aria-label", `remove ${ch}:${v} “${a.phrase}” from this connection`);
+        rm.addEventListener("click", (e) => { e.stopPropagation(); removeMember(gid, a.ref, a.phrase, a.occ); });
+        row.appendChild(rm);
+      }
+      moments.appendChild(row);
+    }
+    card.appendChild(moments);
+
+    const actions = document.createElement("div");
+    actions.className = "ccard-actions";
+    if (gid.startsWith("u-")) {
+      const add = document.createElement("button");
+      add.type = "button"; add.textContent = "Add words";
+      add.addEventListener("click", (e) => { e.stopPropagation(); startExtend(gid); });
+      actions.appendChild(add);
+    }
+    const exportBtn = document.createElement("button");
+    exportBtn.type = "button"; exportBtn.textContent = "Export SVG";
+    exportBtn.addEventListener("click", (e) => { e.stopPropagation(); exportCard(gid); });
+    const release = document.createElement("button");
+    release.type = "button"; release.textContent = "Release";
+    release.addEventListener("click", (e) => {
+      e.stopPropagation();
+      pinned.delete(gid);
+      hovered.delete(gid);
+      FOCUS_GID = [...pinned].filter((g) => GIDS[g]?.study === sid).at(-1) || null;
+      applyActive();
+    });
+    actions.append(exportBtn, release);
+    if (gid.startsWith("u-")) {
+      const del = document.createElement("button");
+      del.type = "button"; del.className = "is-danger"; del.textContent = "Delete";
+      del.addEventListener("click", (e) => { e.stopPropagation(); deleteUserPattern(gid); });
+      actions.appendChild(del);
+    }
+    card.appendChild(actions);
     card.classList.add("on");
   }
   updateCardView();
 }
 function updateCardView() {
-  /* off-screen speaks in plain words, everywhere the card language lives */
-  document.querySelectorAll(".pcard.on .pcard-row").forEach((row) => {
-    const r = row._el.getBoundingClientRect();
-    const off = r.bottom < 60 ? "above" : r.top > innerHeight - 30 ? "below" : "";
-    row.classList.toggle("off", !!off);
-    row.querySelector(".pr-dir").textContent = off;
-  });
-  document.querySelectorAll(".trace-track[data-state]").forEach((track) => {
-    const base = track.dataset.state;
-    const state = track.querySelector(".trace-track-state");
-    if (!state) return;
-    if (!base) { state.textContent = ""; return; }
-    const G = GIDS[track.dataset.gid];
-    const allAway = G?.anchors.length && G.anchors.every((a) => {
-      const r = a.el.getBoundingClientRect();
-      return r.bottom < 72 || r.top > innerHeight - 36;
+  /* off-screen speaks in plain words — above, below, here — and the row
+   * nearest the reading position carries the same quiet inset rule */
+  for (const card of Object.values(CARDS)) {
+    if (!card.classList.contains("on")) continue;
+    const rows = [...card.querySelectorAll(".ccard-moment")];
+    let closest = null;
+    let closestDistance = Infinity;
+    rows.forEach((row) => {
+      const r = row._el.getBoundingClientRect();
+      const off = r.bottom < 72 ? "above" : r.top > innerHeight - 36 ? "below" : "";
+      row.classList.toggle("is-away", !!off);
+      row.querySelector(".ccard-state").textContent = off || "here";
+      const distance = Math.abs((r.top + r.bottom) / 2 - innerHeight * 0.42);
+      if (!off && distance < closestDistance) { closest = row; closestDistance = distance; }
     });
-    state.textContent = allAway ? "off screen" : base;
-  });
-  const members = [...document.querySelectorAll(".trace-track.is-active .trace-member")];
-  let closest = null;
-  let closestDistance = Infinity;
-  members.forEach((member) => {
-    const r = member._el.getBoundingClientRect();
-    const off = r.bottom < 72 ? "above" : r.top > innerHeight - 36 ? "below" : "";
-    member.classList.toggle("is-away", !!off);
-    const state = member.querySelector(".trace-member-state");
-    state.textContent = off || "here";
-    const distance = Math.abs((r.top + r.bottom) / 2 - innerHeight * 0.42);
-    if (!off && distance < closestDistance) { closest = member; closestDistance = distance; }
-  });
-  members.forEach((member) => member.classList.toggle("is-current", member === closest));
+    rows.forEach((row) => row.classList.toggle("is-current", row === closest));
+  }
 }
 
 /* ── export — a pinned pattern as a letterpress card (SVG) ─
@@ -3678,11 +3362,7 @@ function sessionBar(msg) {
   if (anchor) placeAuthbar(anchor.range.getBoundingClientRect());
   else {
     const rail = document.querySelector(`[data-rail="${G.study}"]`);
-    const activeTrace = G.extend && ROUTE === "traces"
-      ? [...rail.querySelectorAll(".trace-track")]
-        .find((track) => track.dataset.gid === G.extend)?.querySelector(".trace-track-head")
-      : null;
-    const target = activeTrace || rail.querySelector(".pcard:not([hidden])");
+    const target = rail.querySelector(".ccard.on");
     if (target) placeAuthbar(target.getBoundingClientRect());
   }
 }
@@ -3871,9 +3551,6 @@ function scheduleResponsiveRedraw() {
   if (responsiveRedrawFrame) return;
   responsiveRedrawFrame = requestAnimationFrame(() => {
     responsiveRedrawFrame = 0;
-    /* Responsive reflow changes every track's offset. Force the active row to
-     * reclaim the visible score position instead of restoring stale scrollTop. */
-    for (const stage of Object.values(TRACE_STAGES)) stage.dataset.active = "";
     redrawActive();
     drawAllHighlights();
   });
@@ -4107,6 +3784,9 @@ function wireRadioKeys(group) {
 function rebuildAll() {
   buildGids();
   buildSheets();
+  /* the sheets were rebuilt, so every anchor element the card rows point at
+   * is new — force the next updateCard() to re-render instead of skipping */
+  for (const card of Object.values(CARDS)) card.dataset.key = "";
   for (const s of Object.keys(SHEETS)) {
     const pre = document.querySelector(`[data-payload="${s}"]`);
     if (!pre) continue;
