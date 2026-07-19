@@ -737,7 +737,8 @@ function drawHighlights(sid) {
   const sheet = document.querySelector(`[data-sheet="${sid}"]`);
   const svg = sheet?.querySelector("svg.hl-underlay");
   if (!svg) return;
-  const base = sheet.getBoundingClientRect();
+  /* same rule as measure(): the paint frame is the coordinate base */
+  const base = svg.getBoundingClientRect();
   svg.setAttribute("width", base.width); svg.setAttribute("height", base.height);
   svg.innerHTML = "";
   const hits = (HL_HITS[sid] = []);
@@ -768,7 +769,11 @@ function drawAllHighlights() { for (const sid of Object.keys(SHEETS)) drawHighli
 function measure(sid) {
   const sheet = document.querySelector(`[data-sheet="${sid}"]`);
   const svg = sheet.querySelector("svg.overlay");
-  const base = sheet.getBoundingClientRect();
+  /* Measure against the overlay's OWN box — the exact frame every route,
+   * wash, and tick is painted in. The sheet's border box sits 1px outside
+   * the overlay's origin, and that 1px painted every run visibly below
+   * the underline it should extend. */
+  const base = svg.getBoundingClientRect();
   svg.setAttribute("width", base.width); svg.setAttribute("height", base.height);
   let textLeft = Infinity, textRight = -Infinity;
   sheet.querySelectorAll(".vrow .vtext").forEach((el) => {
