@@ -115,7 +115,8 @@ function corridorClaimsConflict(existing, candidate) {
 /* ── the planner ───────────────────────────────────────────── */
 /* block: TextBlock (measured), ann: Annotation.
  * opts: { fontSize, envelope, underlineDy, strandIndex, strandPitch,
- *         corridorClaims: [{corridor, y, xMin, xMax, pad}], loomAir } */
+ *         corridorClaims: [{corridor, y, xMin, xMax, pad}], loomAir,
+ *         leftLoomX, rightLoomX, loomX (legacy left alias), sides } */
 export function planRoute(block, ann, opts = {}) {
   const fontSize = opts.fontSize || 17;
   const clearance = Math.max(2.5, fontSize * 0.12);
@@ -262,7 +263,12 @@ export function planRoute(block, ann, opts = {}) {
     const frag = [...a.fragments].sort((f, g) => f.top - g.top || f.left - g.left)[0];
     return { anchor: a, frag, li: lineIndexOf(frag) };
   });
-  const pinOf = (frag) => ({ x: frag.left + 0.5, y: frag.bottom + underlineDy });
+  const annotationCenter = branchesIn.reduce((sum, branch) =>
+    sum + (branch.frag.left + branch.frag.right) / 2, 0) / branchesIn.length;
+  const pinOf = (frag, side = "left") => ({
+    x: side === "right" ? frag.right - 0.5 : frag.left + 0.5,
+    y: frag.bottom + underlineDy,
+  });
 
   /* ── loom datum ──
    * The loom is a passage-level datum: one inner edge computed from EVERY
@@ -271,10 +277,19 @@ export function planRoute(block, ann, opts = {}) {
    * The host may pin it explicitly via opts.loomX. Strand CHOICE is the
    * engine's (see the margin route); cradles and local rails need no
    * strand, so a starved margin no longer starves them. */
-  let minLeft = Infinity;
-  for (const o of obstacles) minLeft = Math.min(minLeft, o.left);
+  let minLeft = Infinity, maxRight = -Infinity;
+  for (const o of obstacles) {
+    minLeft = Math.min(minLeft, o.left);
+    maxRight = Math.max(maxRight, o.right);
+  }
   if (!isFinite(minLeft)) minLeft = block.bounds.left + 40;
-  const loomInner = opts.loomX ?? (minLeft - loomAir);
+  if (!isFinite(maxRight)) maxRight = block.bounds.right - 40;
+  const leftLoomInner = opts.leftLoomX ?? opts.loomX ?? (minLeft - loomAir);
+  const rightLoomInner = opts.rightLoomX ?? (maxRight + loomAir);
+  /* Local rails and the gated middle-shaft predate the second datum. Keep
+   * their left datum exactly stable; only the whole-trace margin generator
+   * is bidirectional in this gate. */
+  const loomInner = leftLoomInner;
 
   /* ── same-line cradle (two anchors, one rendered line) ──
    * Three regimes decide how the hammock takes hold:
@@ -545,39 +560,58 @@ export function planRoute(block, ann, opts = {}) {
   }
 
   const genMargin = (side, strand) => {
-    const strandX = loomInner - strand * strandPitch;
-    if (strandX < block.bounds.left - (block.availableLeftMargin ?? 60)) return { valid: false, reason: "needs-space" };
-    if (strandX < block.bounds.left + 4) return { valid: false, reason: "needs-space" };
+    const right = side === "right";
+    const outward = right ? 1 : -1;
+    const textward = -outward;
+    const loom = right ? rightLoomInner : leftLoomInner;
+    const strandX = right ? loom + strand * strandPitch : loom - strand * strandPitch;
+    if (right) {
+      if (strandX < maxRight + loomAir - 1e-6) return { valid: false, reason: "needs-space" };
+      if (strandX > block.bounds.right + (block.availableRightMargin ?? 60)) return { valid: false, reason: "needs-space" };
+      if (strandX > block.bounds.right - 4) return { valid: false, reason: "needs-space" };
+    } else {
+      if (strandX > minLeft - loomAir + 1e-6) return { valid: false, reason: "needs-space" };
+      if (strandX < block.bounds.left - (block.availableLeftMargin ?? 60)) return { valid: false, reason: "needs-space" };
+      if (strandX < block.bounds.left + 4) return { valid: false, reason: "needs-space" };
+    }
 
     const gs = groups.map((g) => ({ ...g }));
     for (const g of gs) {
-      /* LEVEL EXIT: when everything between the leftmost pin and the port
+      /* LEVEL EXIT: when everything between the margin-facing pin and port
        * is genuinely clear, the connector continues straight from the
        * underline — no turn, no dip. The dip grammar is for anchors with
        * ink in the way. Within a group, only the nearest-to-rail member
        * can be clear; the rest comb below in the corridor. */
-      const m0 = g.members[0];
-      const c0 = pinOf(m0.frag);
-      const levelEnd = m0.frag.left - expand - 0.6;
-      const canExitLevel = levelEnd > strandX + 6 && clearRun(c0.y, strandX + 0.5, levelEnd);
+      const m0 = right
+        ? g.members.reduce((best, member) => member.frag.right > best.frag.right ? member : best)
+        : g.members[0];
+      const c0 = pinOf(m0.frag, side);
+      const levelEnd = right ? m0.frag.right + expand + 0.6 : m0.frag.left - expand - 0.6;
+      const levelGap = (levelEnd - strandX) * textward;
+      const canExitLevel = levelGap > 6 && clearRun(c0.y, strandX + textward * 0.5, levelEnd);
       const levelClaim = canExitLevel
         ? makeCorridorClaim(g.li + 1, c0.y, strandX, c0.x, claimPad)
         : null;
       g.level = canExitLevel && levelClaim &&
         !claims.some((cl) => corridorClaimsConflict(cl, levelClaim))
         ? { c: c0, m: m0, claim: levelClaim } : null;
-      const combMembers = g.level ? g.members.slice(1) : g.members;
+      const combMembers = g.level
+        ? g.members.filter((member) => member !== m0)
+        : g.members;
       g.combMembers = combMembers;
       if (combMembers.length) {
         /* bottom pins can only leave downward: the corridor below the
          * group's rendered line is the only legal one. If it cannot host
          * a shoulder, the honest answer is needs-space — never a climb. */
         const ci = g.li + 1;
-        const cyC = Math.max(...combMembers.map((m) => pinOf(m.frag).y));
-        const xMaxC = Math.max(...combMembers.map((m) => pinOf(m.frag).x)) + 1;
-        const slot = corridorYFor(ci, strandX, xMaxC, cyC);
+        const combContacts = combMembers.map((m) => pinOf(m.frag, side));
+        const cyC = Math.max(...combContacts.map((c) => c.y));
+        const farX = right
+          ? Math.min(...combContacts.map((c) => c.x)) - 1
+          : Math.max(...combContacts.map((c) => c.x)) + 1;
+        const slot = corridorYFor(ci, strandX, farX, cyC);
         if (!slot) return { valid: false, reason: "needs-space" };
-        g.ci = ci; g.shoulderY = slot.y; g.dip = slot.dip; g.xMaxC = xMaxC; g.claim = slot.claim;
+        g.ci = ci; g.shoulderY = slot.y; g.dip = slot.dip; g.farX = farX; g.claim = slot.claim;
       } else {
         g.ci = g.li + 1; g.shoulderY = c0.y; g.dip = SWOOP_DIP;
       }
@@ -596,11 +630,13 @@ export function planRoute(block, ann, opts = {}) {
       if (g.level) {
         /* the underline runs on: level travel, then the same pour */
         const c = g.level.c;
-        const reach = Math.min(SWOOP_REACH, Math.max(4, (c.x - strandX) * 0.5));
+        const reach = Math.min(SWOOP_REACH, Math.max(4,
+          (right ? strandX - c.x : c.x - strandX) * 0.5));
+        const approachX = strandX + textward * reach;
         contacts.push(c);
-        centerline.push(L(c.x, c.y, strandX + reach, c.y));
+        centerline.push(L(c.x, c.y, approachX, c.y));
         exempts.push([{ rect: expandRect(g.level.m.frag, expand), cx: c.x, cy: c.y }]);
-        centerline.push(quarterHV(strandX + reach, c.y, strandX, c.y + SWOOP_DIP));
+        centerline.push(quarterHV(approachX, c.y, strandX, c.y + SWOOP_DIP));
         exempts.push(null);
         ports.push({ x: strandX, y: c.y + SWOOP_DIP });
         corridorYs.push(c.y); corridorIdx.push(g.li + 1);
@@ -610,23 +646,29 @@ export function planRoute(block, ann, opts = {}) {
         const y = g.shoulderY;
         corridorYs.push(y); corridorIdx.push(g.ci);
         corridorClaimsOut.push(g.claim);
-        /* terminals: pins comb into the shoulder, right to left */
-        let minEndX = Infinity;
-        for (const m of [...g.combMembers].sort((a, b) => b.frag.left - a.frag.left)) {
-          const c = pinOf(m.frag);
+        /* terminals comb from the text toward the margin; right routes are
+         * the exact horizontal reflection of the established left grammar */
+        let mergeX = right ? -Infinity : Infinity;
+        const orderedMembers = [...g.combMembers].sort((a, b) =>
+          right ? a.frag.right - b.frag.right : b.frag.left - a.frag.left);
+        for (const m of orderedMembers) {
+          const c = pinOf(m.frag, side);
           const r = Math.abs(y - c.y);
           if (r < DROP_MIN) return { valid: false, reason: "kink" };
           contacts.push(c);
-          centerline.push(quarterVH(c.x, c.y, c.x - r, y));
+          const endX = c.x + outward * r;
+          centerline.push(quarterVH(c.x, c.y, endX, y));
           exempts.push([{ rect: expandRect(m.frag, expand), cx: c.x, cy: c.y }]);
-          minEndX = Math.min(minEndX, c.x - r);
+          mergeX = right ? Math.max(mergeX, endX) : Math.min(mergeX, endX);
         }
         /* shoulder: one hairline through every terminal's merge point */
-        const reach = Math.min(SWOOP_REACH, Math.max(4, (minEndX - strandX) * 0.5));
-        centerline.push(L(minEndX, y, strandX + reach, y));
+        const gapToStrand = (mergeX - strandX) * textward;
+        const reach = Math.min(SWOOP_REACH, Math.max(4, gapToStrand * 0.5));
+        const approachX = strandX + textward * reach;
+        centerline.push(L(mergeX, y, approachX, y));
         exempts.push(null);
         /* port: shallow swoop pouring down onto the strand */
-        centerline.push(quarterHV(strandX + reach, y, strandX, y + g.dip));
+        centerline.push(quarterHV(approachX, y, strandX, y + g.dip));
         exempts.push(null);
         ports.push({ x: strandX, y: y + g.dip });
       }
@@ -651,9 +693,10 @@ export function planRoute(block, ann, opts = {}) {
       plan.strand = strand;
       plan.side = side;
       plan.diagnostics.laneIndex = strand;
+      plan.diagnostics.side = side;
       plan.diagnostics.exits = gs.map((g) => g.level ? (g.combMembers.length ? "level+comb" : "level") : "drop");
       plan.rawLength = segmentsLength(centerline);
-      plan.semCenter = contacts.reduce((s, c) => s + c.x, 0) / contacts.length;
+      plan.semCenter = annotationCenter;
       plan.strandClaimOut = spine
         ? { side, strand, top: spine.top, bottom: spine.bottom }
         : null;
@@ -667,43 +710,69 @@ export function planRoute(block, ann, opts = {}) {
   const annTop = Math.min(...branchesIn.map((b) => b.frag.top));
   const annBottom = Math.max(...ann.anchors.flatMap((a) => a.fragments.map((f) => f.bottom)));
   const strandClaims = opts.strandClaims || [];
-  const sides = opts.sides || ["left"];
-  const openStrands = opts.focused ? [0] : [0, 1, 2].filter((s) =>
-    !strandClaims.some((sc) => sc.strand === s && sides.includes(sc.side) &&
-      sc.top < annBottom + 6 && annTop < sc.bottom + 6));
-  if (!openStrands.length) return fail("needs-space", "no-strand");
+  const requestedSides = Array.isArray(opts.sides) ? opts.sides : ["left"];
+  const sides = [];
+  for (const side of requestedSides) {
+    if (side !== "left" && side !== "right") {
+      declined.push({ move: `margin:${side}`, why: "unsupported" });
+    } else if (!sides.includes(side)) sides.push(side);
+  }
+  if (!sides.length) return fail("needs-space", "no-supported-side");
 
+  /* Each side owns its own strand stack. Search outward independently and
+   * compare the first legal route on each side; a committed left strand 0
+   * must never suppress right strand 0 (or vice versa). */
   const candidates = [];
   const failReasons = [];
-  for (const strand of openStrands) {
-    for (const side of sides) {
-      if (side !== "left") { declined.push({ move: `margin:${side}`, why: "unsupported" }); continue; }
-      const res = genMargin(side, strand);
-      if (res.valid) candidates.push(res);
-      else failReasons.push(res.reason);
+  for (const side of sides) {
+    const openStrands = opts.focused ? [0] : [0, 1, 2].filter((strand) =>
+      !strandClaims.some((sc) => sc.side === side && sc.strand === strand &&
+        sc.top < annBottom + 6 && annTop < sc.bottom + 6));
+    if (!openStrands.length) {
+      failReasons.push("needs-space");
+      declined.push({ move: `margin:${side}`, why: "no-strand" });
+      continue;
     }
-    if (candidates.length) break;  // escalate strands only on failure
+    for (const strand of openStrands) {
+      const res = genMargin(side, strand);
+      if (res.valid) {
+        candidates.push(res);
+        break;
+      }
+      failReasons.push(res.reason);
+    }
   }
   if (!candidates.length) {
     const order = ["needs-space", "kink", "obstacle-collision"];
     return fail(order.find((r) => failReasons.includes(r)) || failReasons[0] || "needs-space");
   }
 
-  /* the dormant scorer: raw ink length + side fit + side hysteresis.
-   * With sides ['left'] this is the identity — the seam exists so a
-   * future right margin arrives as a continuous preference, not a rule. */
+  /* Whole-route scorer: ink length + a quiet semantic-side preference +
+   * committed-side hysteresis. Side selection stays continuous, never a
+   * special-case routing rule. */
   const textCenter = (Math.min(...lines.map((l) => l.left)) + Math.max(...lines.map((l) => l.right))) / 2;
   for (const c of candidates) {
     const wrongSide = c.side === "left"
       ? Math.max(0, c.semCenter - textCenter) * 0.035
       : Math.max(0, textCenter - c.semCenter) * 0.035;
     const hysteresis = opts.previousSide && opts.previousSide !== c.side ? 12 : 0;
-    c.score = Math.round((c.rawLength + wrongSide + hysteresis) * 10) / 10;
+    c.scoreRaw = c.rawLength + wrongSide + hysteresis;
+    c.score = Math.round(c.scoreRaw * 10) / 10;
   }
-  candidates.sort((a, b) => a.score - b.score || (a.strand ?? 9) - (b.strand ?? 9));
+  const sideOrder = new Map(sides.map((side, index) => [side, index]));
+  candidates.sort((a, b) => {
+    /* The scorer's 0.1px quantization is deliberate calm: sub-tenth
+     * measurement noise is a tie, so requested-side order owns it. */
+    const scoreDelta = a.score - b.score;
+    if (scoreDelta) return scoreDelta;
+    return sideOrder.get(a.side) - sideOrder.get(b.side) ||
+      (a.strand ?? 9) - (b.strand ?? 9);
+  });
   const best = candidates[0];
   best.diagnostics.score = best.score;
-  best.diagnostics.alternativesConsidered = candidates.slice(1).map((c) => ({ side: c.side, strand: c.strand, score: c.score }));
+  best.diagnostics.alternativesConsidered = candidates.slice(1).map((c) => ({
+    side: c.side, strand: c.strand, score: c.score,
+  }));
   return best;
 
   /* ── shared finish: sample, validate, diagnose ──

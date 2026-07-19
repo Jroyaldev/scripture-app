@@ -599,11 +599,13 @@ function measure(sid) {
   const svg = sheet.querySelector("svg.overlay");
   const base = sheet.getBoundingClientRect();
   svg.setAttribute("width", base.width); svg.setAttribute("height", base.height);
-  let textLeft = Infinity;
+  let textLeft = Infinity, textRight = -Infinity;
   sheet.querySelectorAll(".vrow .vtext").forEach((el) => {
-    textLeft = Math.min(textLeft, el.getBoundingClientRect().left - base.left);
+    const r = el.getBoundingClientRect();
+    textLeft = Math.min(textLeft, r.left - base.left);
+    textRight = Math.max(textRight, r.right - base.left);
   });
-  return { sheet, svg, base, textLeft };
+  return { sheet, svg, base, textLeft, textRight };
 }
 function measureAnchor(M, anchor, underlineOffset = 0) {
   const rects = (anchor.els || [anchor.el]).flatMap((el) => TG.relativeClientRects(M.base, el.getClientRects()));
@@ -684,6 +686,25 @@ let FOCUS_GID = null;
 const MAX_MARGIN_TRACES = 4;
 const LAST_PLANS = new Map();   // sid → Map(gid → plan) from the last Traces render
 const LAST_INKED = new Map();   // sid → Set(companion gids) for lane hysteresis
+const LAST_SIDES = new Map();   // sid|gid → last valid route side that actually painted
+const LAST_TICK_LAYOUTS = new Map(); // sid|gid → pre-bloom held tick positions
+const isMarginPlan = (plan) => plan && plan.valid && Number.isInteger(plan.strand);
+let TICK_PREVIEW_GID = null;
+const TICK_FOCUS_KEYS = new Map();
+
+function commitHeldShape(gid) {
+  if (!gid || !GIDS[gid]) return;
+  pinned.add(gid);
+  FOCUS_GID = gid;
+  hovered.delete(gid);
+  TICK_PREVIEW_GID = null;
+  applyActive();
+  const stage = document.querySelector(`[data-trace-stage="${GIDS[gid].study}"]`);
+  const track = stage && [...stage.querySelectorAll(".trace-track")]
+    .find((candidate) => candidate.dataset.gid === gid);
+  const head = track && track.querySelector(".trace-track-head");
+  if (head) head.focus({ preventScroll: true });
+}
 
 /* ── the Loom engine host (Traces view) ─────────────────────
  * Measurement and weave helpers matching route-lab.js: ink-tightened
@@ -768,6 +789,8 @@ function blockFor(sid, M) {
     renderedLines, wordRuns, verseNumberRects, additionalObstacles,
     lineHeight: parseFloat(getComputedStyle(M.sheet.querySelector(".vtext")).lineHeight) || 26,
     availableLeftMargin: Math.max(60, M.textLeft - 8),
+    availableRightMargin: Math.max(30, M.base.width - M.textRight - 8),
+    preferredMargin: "left",
   };
 }
 function annFor(M, gid) {
@@ -857,6 +880,29 @@ function splitSpine(spine, gapCenters) {
   if (y2 - cursor > 0.25) segments.push([cursor, y2]);
   return segments;
 }
+
+function placeHeldTick(side, rawX, rawY, used, width, height) {
+  const outward = side === "right" ? 1 : -1;
+  const minX = 5.5, maxX = Math.max(minX, width - 5.5);
+  const baseX = Math.max(minX, Math.min(maxX, rawX));
+  const free = (x, y) => !used.some((u) =>
+    u.side === side && Math.abs(u.y - y) < 2.5 && Math.abs(u.x - x) < 1);
+  for (let step = 0; step < 24; step++) {
+    const x = baseX + outward * step * 7;
+    if (x < minX || x > maxX) break;
+    if (free(x, rawY)) return { x, y: rawY, side, stacked: step > 0 };
+  }
+  const minY = 6, maxY = Math.max(minY, height - 6);
+  for (let step = 1; step < 24; step++) {
+    for (const sign of [-1, 1]) {
+      const y = rawY + sign * step * 12;
+      if (y >= minY && y <= maxY && free(baseX, y)) {
+        return { x: baseX, y, side, stacked: true };
+      }
+    }
+  }
+  return { x: baseX, y: Math.max(minY, Math.min(maxY, rawY)), side, stacked: true };
+}
 function segPtsFor(s) {
   const pts = [];
   if (s.type === "L") {
@@ -889,7 +935,7 @@ function explainShapesPlan(plan) {
     "same-line": plan.cradleVariant === "embrace" ? "direct hammock · embrace" : "direct hammock",
     "local-tag": "local tag", "local-comb": "local comb",
     "middle-shaft": "middle shaft",
-    tag: "loom tag", corridor: "left loom", multipoint: "left loom · tributaries",
+    tag: "loom tag", corridor: `${plan.side} loom`, multipoint: `${plan.side} loom · tributaries`,
   };
   const reasons = {
     "same-line": plan.cradleVariant === "embrace"
@@ -899,8 +945,8 @@ function explainShapesPlan(plan) {
     "local-comb": "the line's pins comb into one short rail beside the phrase",
     "middle-shaft": "a clear vertical stands in the void beside the ideas — neither endpoint visits the page edge",
     tag: "a single idea; its pin pours into the loom beside its own line",
-    corridor: "the phrases span lines; one quiet spine on the left loom carries them",
-    multipoint: "each line's pins comb into tributaries feeding one spine on the loom",
+    corridor: `the phrases span lines; one quiet spine on the ${plan.side} loom carries them`,
+    multipoint: `each line's pins comb into tributaries feeding one spine on the ${plan.side} loom`,
   };
   return { label: labels[plan.mode] || plan.mode, reason: reasons[plan.mode] || "" };
 }
@@ -1034,6 +1080,11 @@ function drawOverlay(sid, gids) {
   const svg = sheet.querySelector("svg.overlay");
   const key = gids.slice().sort().join("|") + "·" + ROUTE + "·" + [...hovered].join(",") + "·" + (FOCUS_GID || "");
   if (svg.dataset.key === key) return;
+  const activeTickKey = svg.contains(document.activeElement)
+    ? document.activeElement.getAttribute?.("data-tick-key")
+    : null;
+  const requestedTickKey = TICK_FOCUS_KEYS.get(sid) || activeTickKey;
+  const restoreTickFocus = Boolean(activeTickKey || TICK_FOCUS_KEYS.has(sid));
   svg.dataset.key = key;
   const live = svg.querySelector("g.live");
   svg.innerHTML = "";
@@ -1059,6 +1110,15 @@ function drawOverlay(sid, gids) {
      * drawn becomes a held tick on the rail. */
     const fontSize = parseFloat(getComputedStyle(M.sheet.querySelector(".vtext")).fontSize) || 17;
     const block = blockFor(sid, M);
+    const expandLoom = Math.max(2.5, fontSize * 0.12) + 2.5;
+    const datumRects = block.wordRuns.length ? block.wordRuns : block.renderedLines;
+    let minLeft = Infinity, maxRight = -Infinity;
+    for (const r of [...datumRects, ...block.verseNumberRects, ...block.additionalObstacles]) {
+      minLeft = Math.min(minLeft, r.left - expandLoom);
+      maxRight = Math.max(maxRight, r.right + expandLoom);
+    }
+    const leftLoomInner = minLeft - 10;
+    const rightLoomInner = maxRight + 10;
     const anns = new Map(gids.map((gid) => [gid, annFor(M, gid)]));
     const intervals = gids.map((gid) => {
       const fr = anns.get(gid).anchors.flatMap((a) => a.fragments);
@@ -1080,34 +1140,47 @@ function drawOverlay(sid, gids) {
     const claims = [], spineClaims = [], strandClaims = [];
     const plans = new Map();
     const ordered = [localFocus, ...drawnOrder.filter((gid) => gid !== localFocus)].filter(Boolean);
-    for (const gid of ordered) {
+    const planOne = (gid, focused) => {
       const ann = anns.get(gid);
-      if (!ann.anchors.length) { plans.set(gid, { valid: false, reason: "no-anchors" }); continue; }
-      let plan;
+      if (!ann.anchors.length) return { valid: false, reason: "no-anchors" };
       try {
-        plan = planRoute(block, ann, {
+        return planRoute(block, ann, {
           fontSize, corridorClaims: claims, spineClaims, strandClaims,
-          focused: gid === localFocus, allowMiddle: gid === localFocus, claimPad: 0.25,
+          loomX: leftLoomInner, leftLoomX: leftLoomInner, rightLoomX: rightLoomInner,
+          sides: ["left", "right"], previousSide: LAST_SIDES.get(`${sid}|${gid}`),
+          focused, allowMiddle: focused, claimPad: 0.25,
         });
       } catch (e) {
-        plan = { valid: false, reason: "engine-error" };
+        return { valid: false, reason: "engine-error" };
       }
+    };
+    for (const gid of ordered) {
+      const plan = planOne(gid, gid === localFocus);
       plans.set(gid, plan);
       if (plan.valid) {
         plan.focused = gid === localFocus;
         claims.push(...plan.claimsOut);
         if (plan.spineClaimOut) spineClaims.push(plan.spineClaimOut);
         if (plan.strandClaimOut) strandClaims.push(plan.strandClaimOut);
+        if (isMarginPlan(plan)) LAST_SIDES.set(`${sid}|${gid}`, plan.side);
       }
     }
+    /* Every held trace gets a side-effect-free shadow plan so its tick can
+     * live on the side where that trace would actually bloom. Shadows see
+     * committed claims but never consume claims, strands, or side memory. */
+    for (const gid of gids) {
+      if (!plans.has(gid)) plans.set(gid, planOne(gid, false));
+    }
     LAST_PLANS.set(sid, plans);
-    computeHops([...plans.values()].filter((p) => p.valid));
+    computeHops(drawnOrder.map((gid) => plans.get(gid)).filter((p) => p && p.valid));
     for (const gid of drawnOrder) {
       const G = GIDS[gid];
       const plan = plans.get(gid);
       const g = S("g", {
         class: `margin-annotation ${gid === localFocus ? "is-focus" : "is-held"}`,
         "data-gid": gid,
+        "data-side": plan && isMarginPlan(plan) ? plan.side : "direct",
+        "data-strand": plan && Number.isInteger(plan.strand) ? plan.strand : "",
       }, svg);
       g.dataset.kind = G.kind;
       if (G.qaKind) g.dataset.qaKind = G.qaKind;
@@ -1119,7 +1192,10 @@ function drawOverlay(sid, gids) {
         /* continuation dots on wrapped fragments */
         const ann = anns.get(gid);
         for (const a of ann.anchors) for (const f of a.fragments.slice(1)) {
-          traceDot(g, { x: f.left + 0.5, y: f.bottom + 2 }, G.hue, 120, 1.35, 0.72);
+          traceDot(g, {
+            x: plan.side === "right" ? f.right - 0.5 : f.left + 0.5,
+            y: f.bottom + 2,
+          }, G.hue, 120, 1.35, 0.72);
         }
       } else {
         /* honest failure: the phrase keys still glow; a tick marks it */
@@ -1129,12 +1205,6 @@ function drawOverlay(sid, gids) {
 
     /* held ticks: everything active-but-not-drawn gets one quiet tick per
      * anchor line on the held rail — hover previews, click holds */
-    const expandT = Math.max(2.5, fontSize * 0.12) + 2.5;
-    let minLeft = Infinity;
-    for (const r of [...block.wordRuns, ...block.verseNumberRects, ...block.additionalObstacles]) {
-      minLeft = Math.min(minLeft, r.left - expandT);
-    }
-    const heldRailX = (minLeft - 10) - 22;
     /* tick LAYOUT includes a tick-previewed gid (its thread is bloomed,
      * its tick invisible) so positions persist and mouseleave can fire
      * on the phantom hit rect at the same spot */
@@ -1145,6 +1215,28 @@ function drawOverlay(sid, gids) {
     });
     const gTicks = S("g", { class: "held-ticks" }, svg);
     const used = [];
+    const tickNodes = [];
+    const svgBox = svg.getBoundingClientRect();
+    const svgWidth = svgBox.width;
+    const svgHeight = svgBox.height;
+    let outerLeftRail = leftLoomInner, outerRightRail = rightLoomInner;
+    for (const plan of plans.values()) {
+      if (!isMarginPlan(plan)) continue;
+      if (plan.side === "right") outerRightRail = Math.max(outerRightRail, plan.marginRailX);
+      else outerLeftRail = Math.min(outerLeftRail, plan.marginRailX);
+    }
+    const beginTickPreview = (gid) => {
+      let changed = false;
+      if (TICK_PREVIEW_GID && TICK_PREVIEW_GID !== gid) changed = hovered.delete(TICK_PREVIEW_GID) || changed;
+      TICK_PREVIEW_GID = gid;
+      if (!hovered.has(gid)) { hovered.add(gid); changed = true; }
+      if (changed) applyActive();
+    };
+    const endTickPreview = (gid) => {
+      if (TICK_PREVIEW_GID !== gid) return;
+      TICK_PREVIEW_GID = null;
+      if (hovered.delete(gid)) applyActive();
+    };
     for (const gid of heldForTicks) {
       const ann = anns.get(gid);
       if (!ann || !ann.anchors.length) continue;
@@ -1156,25 +1248,149 @@ function drawOverlay(sid, gids) {
         const y = (f.top + f.bottom) / 2;
         if (!lineYs.some((v) => Math.abs(v - y) < 3)) lineYs.push(y);
       }
-      for (const y of lineYs) {
-        let x = heldRailX;
-        while (used.some((u) => Math.abs(u.y - y) < 2.5 && Math.abs(u.x - x) < 1)) x -= 7;
-        used.push({ x, y });
+      const layoutKey = `${sid}|${gid}`;
+      const savedLayout = !visible && TICK_PREVIEW_GID === gid
+        ? LAST_TICK_LAYOUTS.get(layoutKey)
+        : null;
+      const frozen = savedLayout && Math.abs(savedLayout.width - svgWidth) < 0.5 &&
+        Math.abs(savedLayout.height - svgHeight) < 0.5
+        ? savedLayout.ticks
+        : null;
+      const layouts = [];
+      for (let lineIndex = 0; lineIndex < lineYs.length; lineIndex++) {
+        const lineY = lineYs[lineIndex];
+        const priorSide = LAST_SIDES.get(`${sid}|${gid}`);
+        const plannedSide = isMarginPlan(p)
+          ? p.side
+          : priorSide || "left";
+        const plannedOutward = plannedSide === "right" ? 1 : -1;
+        const heldRailX = (plannedSide === "right" ? outerRightRail : outerLeftRail) + plannedOutward * 4;
+        const tick = frozen && frozen[lineIndex]
+          ? { ...frozen[lineIndex] }
+          : placeHeldTick(plannedSide, heldRailX, lineY, used, svgWidth, svgHeight);
+        const { x, y, stacked } = tick;
+        const side = tick.side;
+        const outward = side === "right" ? 1 : -1;
+        used.push(tick);
+        layouts.push(tick);
         if (visible) S("path", {
-          d: `M ${x.toFixed(2)} ${y.toFixed(2)} h -5.5`, stroke: "var(--text-tertiary)",
+          d: `M ${x.toFixed(2)} ${y.toFixed(2)} h ${(outward * 5.5).toFixed(1)}`, stroke: "var(--text-tertiary)",
           "stroke-width": 1.2, fill: "none", "stroke-linecap": "round", opacity: 0.55, class: "tick",
+          "data-tick-side": side, "data-tick-gid": gid,
         }, gTicks);
-        const hit = S("rect", {
-          x: (x - 11).toFixed(2), y: (y - 6).toFixed(2), width: 17, height: 12,
-          fill: "transparent", class: "tick-hit",
+        const hitWidth = stacked ? 7 : 17;
+        const rawHitX = side === "right"
+          ? (stacked ? x - 0.75 : x - 5)
+          : (stacked ? x - 6.25 : x - 11);
+        const hitX = Math.max(0, Math.min(svgWidth - hitWidth, rawHitX));
+        const tickKey = `${gid}:${lineIndex}`;
+        const hit = S("a", {
+          href: "#", class: "tick-hit", role: "button", tabindex: -1,
+          "data-tick-key": tickKey, "data-tick-gid": gid, "data-tick-side": side,
+          "aria-label": `${GIDS[gid].label || gid} · held on ${side} margin`,
         }, gTicks);
+        S("rect", {
+          x: hitX.toFixed(2), y: (y - 6).toFixed(2), width: hitWidth, height: 12,
+          fill: "transparent", class: "tick-hit-shape",
+        }, hit);
         hit.style.pointerEvents = "all";
         hit.style.cursor = "pointer";
-        hit.addEventListener("mouseenter", () => { if (!hovered.has(gid)) { hovered.add(gid); applyActive(); } });
-        hit.addEventListener("mouseleave", () => { if (hovered.has(gid)) { hovered.delete(gid); applyActive(); } });
-        hit.addEventListener("click", () => { pinned.add(gid); FOCUS_GID = gid; hovered.delete(gid); applyActive(); });
+        hit.addEventListener("mouseenter", () => beginTickPreview(gid));
+        hit.addEventListener("mouseleave", () => endTickPreview(gid));
+        hit.addEventListener("focus", () => beginTickPreview(gid));
+        const commitTick = () => commitHeldShape(gid);
+        hit.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          /* Pointer activation belongs to the completed-gesture delegate.
+           * detail=0 preserves keyboard, assistive-tech, and programmatic clicks. */
+          if (e.detail === 0) commitTick();
+        });
+        hit.addEventListener("keydown", (e) => {
+          const key = (e.key || "").toLowerCase();
+          const index = tickNodes.indexOf(hit);
+          if (key === "arrowdown" || key === "arrowup") {
+            e.preventDefault();
+            const next = tickNodes[(index + (key === "arrowdown" ? 1 : tickNodes.length - 1)) % tickNodes.length];
+            TICK_FOCUS_KEYS.set(sid, next.getAttribute("data-tick-key"));
+            beginTickPreview(next.getAttribute("data-tick-gid"));
+          } else if (key === "enter" || key === "return" || key === " " || key === "spacebar" ||
+              e.code === "Enter" || e.code === "NumpadEnter" || e.code === "Space") {
+            e.preventDefault();
+            commitTick();
+          } else if (key === "escape" || e.code === "Escape") {
+            e.preventDefault();
+            endTickPreview(gid);
+          }
+        });
+        tickNodes.push(hit);
       }
+      if (visible) LAST_TICK_LAYOUTS.set(layoutKey, {
+        width: svgWidth,
+        height: svgHeight,
+        ticks: layouts.map((tick) => ({ ...tick })),
+      });
     }
+    if (tickNodes.length) {
+      const focusTarget = tickNodes.find((node) => node.getAttribute("data-tick-key") === requestedTickKey);
+      const rovingTarget = focusTarget || tickNodes[0];
+      tickNodes.forEach((node) => node.setAttribute("tabindex", node === rovingTarget ? 0 : -1));
+      if (restoreTickFocus && focusTarget) focusTarget.focus({ preventScroll: true });
+    }
+
+    /* The overlay survives active-state redraws even when a hovered tick's
+     * child link is replaced. Capture pointer activation at that stable
+     * boundary and re-hit-test the fresh link under the pointer. */
+    if (svg.dataset.tickPointerDelegate !== "true") {
+      svg.dataset.tickPointerDelegate = "true";
+      let pendingTickPointer = null;
+      let suppressTickClick = null;
+      const tickAtPointer = (event) => {
+        const direct = event.target && event.target.closest && event.target.closest(".tick-hit");
+        if (direct && svg.contains(direct)) return direct;
+        return [...svg.querySelectorAll(".tick-hit")].find((candidate) => {
+          const r = candidate.getBoundingClientRect();
+          return event.clientX >= r.left && event.clientX <= r.right &&
+            event.clientY >= r.top && event.clientY <= r.bottom;
+        }) || null;
+      };
+      svg.addEventListener("pointerdown", (event) => {
+        if (event.button !== 0 || event.isPrimary === false) return;
+        const hit = tickAtPointer(event);
+        if (!hit) return;
+        pendingTickPointer = {
+          pointerId: event.pointerId,
+          key: hit.getAttribute("data-tick-key"),
+          x: event.clientX,
+          y: event.clientY,
+        };
+      }, true);
+      const activationScope = svg.closest(".study") || svg;
+      activationScope.addEventListener("pointerup", (event) => {
+        const pending = pendingTickPointer;
+        pendingTickPointer = null;
+        if (!pending || pending.pointerId !== event.pointerId) return;
+        /* A tick-origin gesture owns its one follow-up click even when movement
+         * or a bloom rerender makes the completed gesture ineligible to commit. */
+        suppressTickClick = { x: event.clientX, y: event.clientY, until: performance.now() + 250 };
+        if (Math.hypot(event.clientX - pending.x, event.clientY - pending.y) > 8) return;
+        const hit = tickAtPointer(event);
+        if (!hit || hit.getAttribute("data-tick-key") !== pending.key) return;
+        event.preventDefault();
+        event.stopPropagation();
+        commitHeldShape(hit.getAttribute("data-tick-gid"));
+      }, true);
+      activationScope.addEventListener("pointercancel", () => { pendingTickPointer = null; }, true);
+      activationScope.addEventListener("click", (event) => {
+        const suppression = suppressTickClick;
+        suppressTickClick = null;
+        if (!suppression || performance.now() > suppression.until ||
+            Math.hypot(event.clientX - suppression.x, event.clientY - suppression.y) > 8) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }, true);
+    }
+    TICK_FOCUS_KEYS.delete(sid);
     return;
   }
 

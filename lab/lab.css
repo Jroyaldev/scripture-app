@@ -49,6 +49,12 @@ body.theme-dark-glass { --bg-image: url("assets/glass-dark.png"); }
 body.theme-glass .sheet, body.theme-dark-glass .sheet { background: color-mix(in srgb, var(--bg-reading) 78%, transparent); backdrop-filter: blur(14px); }
 body.theme-glass .panel, body.theme-dark-glass .panel { background: color-mix(in srgb, var(--bg-surface) 74%, transparent); backdrop-filter: blur(14px); }
 
+.overlay .tick-hit:focus-visible .tick-hit-shape {
+  fill: color-mix(in srgb, var(--gold) 12%, transparent);
+  stroke: var(--gold);
+  stroke-width: 1.2;
+}
+
 * { box-sizing: border-box; }
 body {
   margin: 0; background: var(--bg-primary); color: var(--text-primary);

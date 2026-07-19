@@ -385,3 +385,43 @@ signatures, and retained the 14-trace Dense Psalm and 22-trace Long Revelation
 disclosure at 1280px and 640px without malformed SVG, overflow, or console
 errors. This is the precision prerequisite for mirrored margins; it does not
 silently introduce right routing or section handoffs.
+
+### C0.3 landed — bidirectional whole-margin routing
+
+`left` and `right` are now real candidates for the complete margin route.
+The engine derives both loom data from the full obstacle field, mirrors pins,
+level exits, comb order, terminals, shoulders, swoops, ports, spines, and
+X-bounded claims, and keeps legacy `loomX` as a pixel-identical left alias.
+Each side searches its own `(side, strand)` occupancy stack; a left strand-0
+claim can never consume right strand 0. Unsupported side names decline
+explicitly instead of falling through to left.
+
+The scorer compares the first legal route on each requested side using real
+unrounded ink, the semantic-center preference, and the existing 12-unit
+committed-side hysteresis. Its displayed tenth-pixel score is also the calm
+tie boundary: requested-side order, then strand, resolves a quantized tie.
+Only a valid painted margin plan updates side memory or commits claims.
+Cradles, local rails, and middle shafts do neither.
+
+Both hosts now request both sides. Drawn groups expose side/strand metadata;
+held annotations use their side-effect-free shadow plan's margin and retain a
+deterministic prior-side/left fallback when no margin plan is legal. Ticks are
+bounded inside the measured SVG, preserve exact annotation-plus-line focus and
+dimension-matched phantom positions through a bloom, show a quiet focus ring,
+and activate only after a completed pointer gesture. Activation transfers
+focus to the selected fixture/score row instead of dropping it into the page.
+
+Direct engine tests prove exact reflection, every right route family, nested
+right level selection, side-local strand escalation, hysteresis thresholds,
+right-side C0.2 sharing, measured-air bounds, legacy left identity, and strict
+unsupported-side refusal. The query-only rendered gate
+`route.html?qa=c03-sweep` repeats all 15 focus states at every integer width
+460–760 from the same empty side-memory seed, checking native SVG lengths,
+finite plans, validation, side-correct ticks, focus structure, bounds, and a
+second-pass signature. Dense Psalm and Long Revelation visibly use both
+margins without entering the passage score in all four atmospheres at 1280px
+and 640px.
+
+This remains **one side per whole route**. Section-aware plural spines and a
+legal left-to-right handoff through declared section whitespace are the next
+geometry contract; no S-through-section behavior is implied here.

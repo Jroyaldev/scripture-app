@@ -15,6 +15,7 @@ const HUES = {
 };
 const INK = "var(--thread-ink)";
 const MAX_STRANDS = 3;
+const isMarginPlan = (plan) => plan && plan.valid && Number.isInteger(plan.strand);
 
 /* ── fixtures: the contract's matrix plus the tag case ── */
 const FIXTURES = [
@@ -199,7 +200,7 @@ function measure() {
     lineHeight,
     preferredMargin: "left",
     availableLeftMargin: 116,
-    availableRightMargin: 24,
+    availableRightMargin: 40,
   };
   const annotations = FIXTURES.map((f) => {
     const anchors = [];
@@ -239,6 +240,32 @@ function pathD(segs) {
     cx = s.x2; cy = s.y2;
   }
   return d.trim();
+}
+
+/* A held tick stays inside the SVG even when several annotations share one
+ * line. It stacks outward while room exists, then uses tiny vertical rungs
+ * at the same rail instead of trespassing into prose or the adjacent panel. */
+function placeHeldTick(side, rawX, rawY, used, width, height) {
+  const outward = side === "right" ? 1 : -1;
+  const minX = 5.5, maxX = Math.max(minX, width - 5.5);
+  const baseX = Math.max(minX, Math.min(maxX, rawX));
+  const free = (x, y) => !used.some((u) =>
+    u.side === side && Math.abs(u.y - y) < 2.5 && Math.abs(u.x - x) < 1);
+  for (let step = 0; step < 24; step++) {
+    const x = baseX + outward * step * 7;
+    if (x < minX || x > maxX) break;
+    if (free(x, rawY)) return { x, y: rawY, side, stacked: step > 0 };
+  }
+  const minY = 6, maxY = Math.max(minY, height - 6);
+  for (let step = 1; step < 24; step++) {
+    for (const sign of [-1, 1]) {
+      const y = rawY + sign * step * 12;
+      if (y >= minY && y <= maxY && free(baseX, y)) {
+        return { x: baseX, y, side, stacked: true };
+      }
+    }
+  }
+  return { x: baseX, y: Math.max(minY, Math.min(maxY, rawY)), side, stacked: true };
 }
 /* One line type, everywhere. Doubled rails (polyline offsets, then a carved
  * tube) and dashed strokes were tried and rejected — at reading size any
@@ -284,11 +311,12 @@ function spineD(plan) {
  * annotations are whisper underlines plus one ink tick per anchor line on
  * a dedicated held rail outside the strands — never on top of a spine. */
 function render(measured, ctx) {
-  const { plans, focusedId, drawnIds, loomInner, strandPitch } = ctx;
+  const { plans, focusedId, drawnIds, leftLoomInner, rightLoomInner, strandPitch } = ctx;
   const svg = sheet.querySelector(".overlay");
   /* capture keyboard position BEFORE the wipe resets activeElement */
-  const priorTickAnn = (document.activeElement && document.activeElement.getAttribute &&
-    document.activeElement.getAttribute("data-tick-ann")) || null;
+  const priorTickKey = requestedTickKey || (document.activeElement && document.activeElement.getAttribute &&
+    document.activeElement.getAttribute("data-tick-key")) || null;
+  requestedTickKey = null;
   svg.innerHTML = "";
   sheet.classList.toggle("dimmed", true);
   sheet.querySelectorAll(".anchor").forEach((el) => { el.classList.remove("lit"); el.style.removeProperty("--h"); });
@@ -301,7 +329,15 @@ function render(measured, ctx) {
    * bloomed, its tick invisible) so positions and the keyboard's roving
    * focus stay stable through the bloom. */
   const gHeld = S("g", { class: "held-layer" }, svg);
-  const heldRailX = loomInner - strandPitch * 3 - 4;
+  const svgBox = svg.getBoundingClientRect();
+  const svgWidth = svgBox.width;
+  const svgHeight = svgBox.height;
+  let outerLeftRail = leftLoomInner, outerRightRail = rightLoomInner;
+  for (const plan of plans.values()) {
+    if (!isMarginPlan(plan)) continue;
+    if (plan.side === "right") outerRightRail = Math.max(outerRightRail, plan.marginRailX);
+    else outerLeftRail = Math.min(outerLeftRail, plan.marginRailX);
+  }
   const usedTicks = [];
   const tickHits = [];
   const heldForTicks = measured.annotations.filter((a) => !drawnIds.has(a.id) || a.id === previewId);
@@ -321,15 +357,32 @@ function render(measured, ctx) {
       const y = (f.top + f.bottom) / 2;
       if (!lineYs.some((v) => Math.abs(v - y) < 3)) lineYs.push(y);
     }
-    for (const y of lineYs) {
-      let x = heldRailX, stacked = false;
-      while (usedTicks.some((u) => Math.abs(u.y - y) < 2.5 && Math.abs(u.x - x) < 1)) { x -= 7; stacked = true; }
-      usedTicks.push({ x, y });
+    const frozen = previewTickLayouts && previewTickLayouts.annId === ann.id &&
+      Math.abs(previewTickLayouts.width - svgWidth) < 0.5 &&
+      Math.abs(previewTickLayouts.height - svgHeight) < 0.5
+      ? previewTickLayouts.ticks
+      : null;
+    for (let lineIndex = 0; lineIndex < lineYs.length; lineIndex++) {
+      const lineY = lineYs[lineIndex];
+      const shadow = plans.get(ann.id);
+      const plannedSide = isMarginPlan(shadow)
+        ? shadow.side
+        : lastSides.get(ann.id) || "left";
+      const plannedOutward = plannedSide === "right" ? 1 : -1;
+      const heldRailX = (plannedSide === "right" ? outerRightRail : outerLeftRail) + plannedOutward * 4;
+      const tick = frozen && frozen[lineIndex]
+        ? { ...frozen[lineIndex] }
+        : placeHeldTick(plannedSide, heldRailX, lineY, usedTicks, svgWidth, svgHeight);
+      const { x, y, stacked } = tick;
+      const side = tick.side;
+      const outward = side === "right" ? 1 : -1;
+      usedTicks.push(tick);
       if (visible) S("path", {
-        d: `M ${x.toFixed(2)} ${y.toFixed(2)} h -5.5`, stroke: INK,
+        d: `M ${x.toFixed(2)} ${y.toFixed(2)} h ${(outward * 5.5).toFixed(1)}`, stroke: INK,
         "stroke-width": 1.2, fill: "none", "stroke-linecap": "round", opacity: 0.55, class: "tick",
+        "data-tick-side": side,
       }, gHeld);
-      tickHits.push({ x, y, ann, stacked });
+      tickHits.push({ x, y, ann, lineIndex, stacked, side });
     }
   }
 
@@ -345,7 +398,11 @@ function render(measured, ctx) {
         el.classList.add("lit"); el.style.setProperty("--h", hue);
       }
     });
-    const g = S("g", { class: focused ? "thread focused" : "thread woven" }, svg);
+    const g = S("g", {
+      class: focused ? "thread focused" : "thread woven",
+      "data-side": isMarginPlan(plan) ? plan.side : "direct",
+      "data-strand": Number.isInteger(plan.strand) ? plan.strand : "",
+    }, svg);
 
     /* underlines: one per fragment, never bridging a wrap */
     for (const a of ann.anchors) for (const f of a.fragments) {
@@ -397,45 +454,75 @@ function render(measured, ctx) {
    * One roving tab stop: arrows walk the rail, Enter holds, Escape lets
    * go. Stacked ticks get 7px-clipped targets so neighbors stay distinct. */
   const gHits = S("g", { class: "tick-hits" }, svg);
-  tickHits.sort((a, b) => a.y - b.y || b.x - a.x);
-  const restoreAnn = priorTickAnn;
+  tickHits.sort((a, b) => a.y - b.y ||
+    ({ left: 0, right: 1 }[a.side] - { left: 0, right: 1 }[b.side]) || b.x - a.x);
+  const restoreKey = priorTickKey;
+  const freezeTickLayout = (annId) => {
+    previewTickLayouts = {
+      annId, width: svgWidth, height: svgHeight,
+      ticks: tickHits.filter((hit) => hit.ann.id === annId).map(({ x, y, side, stacked }) =>
+        ({ x, y, side, stacked })),
+    };
+  };
   tickHits.forEach((t, i) => {
     const w = t.stacked ? 7 : 15.5;
-    const rx = t.stacked ? t.x - 6.25 : t.x - 10.5;
-    const r = S("rect", {
-      x: rx.toFixed(2), y: (t.y - 6).toFixed(2), width: w, height: 12,
-      fill: "transparent", class: "tick-hit", "data-tick-ann": t.ann.id,
+    const rawRx = t.side === "right"
+      ? (t.stacked ? t.x - 0.75 : t.x - 5)
+      : (t.stacked ? t.x - 6.25 : t.x - 10.5);
+    const rx = Math.max(0, Math.min(svgWidth - w, rawRx));
+    const r = S("a", {
+      href: "#", class: "tick-hit", "data-tick-ann": t.ann.id,
+      "data-tick-key": `${t.ann.id}:${t.lineIndex}`,
+      "data-tick-side": t.side,
+      role: "button", "aria-label": `${t.ann.fixture.name} · held on ${t.side} margin`,
       tabindex: i === 0 ? 0 : -1,
     }, gHits);
+    S("rect", {
+      x: rx.toFixed(2), y: (t.y - 6).toFixed(2), width: w, height: 12,
+      fill: "transparent", class: "tick-hit-shape",
+    }, r);
     r.style.pointerEvents = "all";
     r.style.cursor = "pointer";
-    r.style.outline = "none";
-    r.addEventListener("mouseenter", () => { if (previewId !== t.ann.id) { previewId = t.ann.id; run(); } });
-    r.addEventListener("click", () => { focusedId = t.ann.id; previewId = null; run(); });
-    r.addEventListener("focus", () => { if (previewId !== t.ann.id) { previewId = t.ann.id; run(); } });
+    r.addEventListener("mouseenter", () => {
+      if (previewId !== t.ann.id) { freezeTickLayout(t.ann.id); previewId = t.ann.id; run(); }
+    });
+    const commitTick = () => commitHeldAnnotation(t.ann.id);
+    r.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      /* Pointer activation belongs to the completed-gesture delegate.
+       * detail=0 preserves keyboard, assistive-tech, and programmatic clicks. */
+      if (e.detail === 0) commitTick();
+    });
+    r.addEventListener("focus", () => {
+      if (previewId !== t.ann.id) { freezeTickLayout(t.ann.id); previewId = t.ann.id; run(); }
+    });
     r.addEventListener("keydown", (e) => {
+      const key = (e.key || "").toLowerCase();
       const rects = [...svg.querySelectorAll(".tick-hit")];
       const idx = rects.indexOf(r);
-      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      if (key === "arrowdown" || key === "arrowup") {
         e.preventDefault();
         /* drive the preview from the keydown itself — programmatic focus
          * events are unreliable on unfocused surfaces; render's restore
          * pass moves DOM focus to the previewed rect */
-        const nxt = rects[(idx + (e.key === "ArrowDown" ? 1 : rects.length - 1)) % rects.length];
+        const nxt = rects[(idx + (key === "arrowdown" ? 1 : rects.length - 1)) % rects.length];
+        requestedTickKey = nxt.getAttribute("data-tick-key");
+        freezeTickLayout(nxt.getAttribute("data-tick-ann"));
         previewId = nxt.getAttribute("data-tick-ann");
         run();
-      } else if (e.key === "Enter" || e.key === " ") {
+      } else if (key === "enter" || key === "return" || key === " " || key === "spacebar" ||
+          e.code === "Enter" || e.code === "NumpadEnter" || e.code === "Space") {
         e.preventDefault();
-        focusedId = t.ann.id; previewId = null; run();
-      } else if (e.key === "Escape") {
-        previewId = null; run();
+        commitTick();
+      } else if (key === "escape" || e.code === "Escape") {
+        previewId = null; previewTickLayouts = null; run();
       }
     });
   });
-  if (restoreAnn) {
+  if (restoreKey) {
     const rects = [...gHits.querySelectorAll(".tick-hit")];
-    const again = rects.find((r) => r.getAttribute("data-tick-ann") === (previewId || restoreAnn)) ||
-      rects.find((r) => r.getAttribute("data-tick-ann") === restoreAnn) || rects[0];
+    const again = rects.find((r) => r.getAttribute("data-tick-key") === restoreKey);
     if (again) {
       rects.forEach((r) => r.setAttribute("tabindex", r === again ? 0 : -1));
       again.focus({ preventScroll: true });
@@ -600,8 +687,8 @@ function explainPlan(plan) {
     "local-comb": "local comb",
     "middle-shaft": "middle shaft",
     tag: "loom tag",
-    corridor: "left loom",
-    multipoint: "left loom · tributaries",
+    corridor: `${plan.side} loom`,
+    multipoint: `${plan.side} loom · tributaries`,
   };
   const reasons = {
     "same-line": plan.cradleVariant === "embrace"
@@ -611,13 +698,13 @@ function explainPlan(plan) {
     "local-comb": "the line's pins comb into one short rail beside the phrase; the loom never enters",
     "middle-shaft": "a clear vertical stands in the void beside the ideas — neither endpoint visits the page edge",
     tag: "a single idea; its pin pours into the loom beside its own line",
-    corridor: "the ideas span rendered lines; one quiet spine on the left loom carries them",
-    multipoint: "each line's pins comb into tributaries feeding one spine on the loom",
+    corridor: `the ideas span rendered lines; one quiet spine on the ${plan.side} loom carries them`,
+    multipoint: `each line's pins comb into tributaries feeding one spine on the ${plan.side} loom`,
   };
   let reason = reasons[plan.mode] || "";
   const cradleDecline = (plan.diagnostics.declined || []).find((d) => d.move.startsWith("cradle"));
   if ((plan.mode === "corridor" || plan.mode === "multipoint") && cradleDecline) {
-    reason = `the cradle declined (${cradleDecline.why}); the left loom carries the pair instead`;
+    reason = `the cradle declined (${cradleDecline.why}); the ${plan.side} loom carries the pair instead`;
   }
   return { label: labels[plan.mode] || plan.mode, reason };
 }
@@ -625,14 +712,270 @@ function explainPlan(plan) {
 /* ── orchestration ─────────────────────────────────────────── */
 let focusedId = "far-pair";
 let previewId = null;
+let previewTickLayouts = null;
+let requestedTickKey = null;
 let weaveOn = true;
 let cradleOn = true;
 let localOn = true;
 let middleOn = true;
-let lastLoomInner = 0;
+let lastLeftLoomInner = 0;
+let lastRightLoomInner = 0;
 /* side memory for the scorer's hysteresis — a held thread refocusing
  * shouldn't flap margins once a right margin exists */
 const lastSides = new Map();
+
+function commitHeldAnnotation(annId) {
+  focusedId = annId;
+  previewId = null;
+  previewTickLayouts = null;
+  run();
+  const fixtureButton = [...document.querySelectorAll(".fixture")]
+    .find((button) => button.dataset.fixtureId === annId);
+  if (fixtureButton) fixtureButton.focus({ preventScroll: true });
+}
+
+/* Hover blooms rebuild the SVG. A capture listener on the stable overlay
+ * therefore owns pointer activation: it re-hit-tests the fresh tick at the
+ * pointer coordinate instead of trusting the child that existed at hover
+ * time. Keyboard/click fallbacks stay on each semantic link. */
+function heldTickAtPointer(svg, event) {
+  const direct = event.target && event.target.closest && event.target.closest(".tick-hit");
+  if (direct && svg.contains(direct)) return direct;
+  return [...svg.querySelectorAll(".tick-hit")].find((hit) => {
+    const r = hit.getBoundingClientRect();
+    return event.clientX >= r.left && event.clientX <= r.right &&
+      event.clientY >= r.top && event.clientY <= r.bottom;
+  }) || null;
+}
+
+function qaHash(text) {
+  let a = 0x811c9dc5, b = 0x9e3779b9;
+  for (let i = 0; i < text.length; i++) {
+    const code = text.charCodeAt(i);
+    a = Math.imul(a ^ code, 0x01000193);
+    b = Math.imul(b ^ code, 0x85ebca6b) ^ (b >>> 13);
+  }
+  return `${text.length}:${a >>> 0}:${b >>> 0}`;
+}
+
+function qaRound(value) {
+  if (typeof value === "number") return Number.isFinite(value) ? Math.round(value * 1000) / 1000 : String(value);
+  if (Array.isArray(value)) return value.map(qaRound);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.keys(value).sort().map((key) => [key, qaRound(value[key])]));
+  }
+  return value;
+}
+
+function qaHasNonFinite(value) {
+  if (typeof value === "number") return !Number.isFinite(value);
+  if (Array.isArray(value)) return value.some(qaHasNonFinite);
+  if (value && typeof value === "object") return Object.values(value).some(qaHasNonFinite);
+  return false;
+}
+
+function qaPlanState(plan) {
+  if (!plan) return null;
+  return {
+    valid: plan.valid, reason: plan.reason, mode: plan.mode,
+    cradleVariant: plan.cradleVariant, side: plan.side, strand: plan.strand,
+    score: plan.diagnostics && plan.diagnostics.score, scoreRaw: plan.scoreRaw,
+    contacts: plan.contacts, centerline: plan.centerline, sampledPoints: plan.sampledPoints,
+    ports: plan.ports, spine: plan.spine, claimsOut: plan.claimsOut,
+    spineClaimOut: plan.spineClaimOut, strandClaimOut: plan.strandClaimOut,
+    renderHops: plan.renderHops, renderPatches: plan.renderPatches,
+  };
+}
+
+function qaPaintSignature(snapshot, width, focusId) {
+  const svg = sheet.querySelector(".overlay");
+  const svgBox = svg.getBoundingClientRect();
+  const ticks = [...svg.querySelectorAll(".tick-hit")].map((hit) => {
+    const r = hit.getBoundingClientRect();
+    return {
+      key: hit.getAttribute("data-tick-key"),
+      ann: hit.getAttribute("data-tick-ann"),
+      side: hit.getAttribute("data-tick-side"),
+      x: r.left - svgBox.left, y: r.top - svgBox.top, width: r.width, height: r.height,
+      tabindex: hit.getAttribute("tabindex"),
+    };
+  });
+  const state = {
+    width, focusId,
+    annotations: snapshot.measured.annotations.map((ann) => ({
+      id: ann.id,
+      anchors: ann.anchors.map((anchor) => anchor.fragments),
+    })),
+    drawn: [...snapshot.drawnIds],
+    plans: snapshot.measured.annotations.map((ann) => [ann.id, qaPlanState(snapshot.plans.get(ann.id))]),
+    checks: snapshot.measured.annotations.map((ann) => [ann.id, snapshot.checks.get(ann.id)]),
+    ticks,
+  };
+  return qaHash(JSON.stringify(qaRound(state)));
+}
+
+async function qaSha256(text) {
+  const bytes = new TextEncoder().encode(text);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+/* Query-only browser gate: `route.html?qa=c03-sweep` walks every fixture at
+ * every integer width twice from the same empty side-memory seed. It tests
+ * the real rendered DOM, but adds no normal-page control or test dependency.
+ * A visible status node lets an external browser poll without page mutation. */
+async function runC03Sweep() {
+  const output = document.createElement("output");
+  output.id = "c03-sweep-result";
+  output.dataset.c03Sweep = "running";
+  output.dataset.status = "running";
+  document.documentElement.dataset.c03Sweep = "running";
+  output.setAttribute("role", "status");
+  output.style.cssText = "display:block;margin:0 0 12px;font:500 11px/1.5 var(--mono,monospace);";
+  document.querySelector(".panel").prepend(output);
+
+  const original = {
+    focusedId, previewId, previewTickLayouts,
+    width: sheet.style.width,
+    slider: slider.value,
+    widthLabel: document.getElementById("width-val").textContent,
+    sides: new Map(lastSides),
+  };
+  const ids = FIXTURES.map((fixture) => fixture.id);
+  const expectedStates = (760 - 460 + 1) * ids.length;
+  const signatures = new Map();
+  const signatureSequence = [];
+  const failures = [];
+  const rightWinners = new Set();
+  const observedMargins = new Set();
+  const browserErrors = [];
+  let states = 0, renders = 0, failureCount = 0, digest = "";
+  const recordFailure = (failure) => {
+    failureCount++;
+    if (failures.length < 20) failures.push(failure);
+  };
+  const onError = (event) => browserErrors.push(event.message || "window error");
+  const onRejection = (event) => browserErrors.push(`unhandled rejection: ${event.reason && event.reason.message ? event.reason.message : event.reason}`);
+  addEventListener("error", onError);
+  addEventListener("unhandledrejection", onRejection);
+  const nextFrame = () => new Promise((resolve) => requestAnimationFrame(resolve));
+
+  const traverse = async (compare) => {
+    lastSides.clear();
+    for (let width = 460; width <= 760; width++) {
+      sheet.style.width = `${width}px`;
+      slider.value = String(width);
+      document.getElementById("width-val").textContent = String(width);
+      await nextFrame();
+      for (const id of ids) {
+        focusedId = id;
+        previewId = null;
+        previewTickLayouts = null;
+        const snapshot = run();
+        renders++;
+        const passNo = compare ? 2 : 1;
+        const svg = sheet.querySelector(".overlay");
+        const svgBox = svg.getBoundingClientRect();
+        const actualWidth = sheet.getBoundingClientRect().width;
+        const badDrawn = [...snapshot.drawnIds].filter((drawnId) =>
+          !(snapshot.checks.get(drawnId) || []).every((check) => check.ok));
+        const nonFinitePlans = ids.filter((annId) => qaHasNonFinite(qaPlanState(snapshot.plans.get(annId))));
+        let malformed = false;
+        for (const path of svg.querySelectorAll("path")) {
+          if (/(?:NaN|Infinity|undefined|null)/.test(path.getAttribute("d") || "")) malformed = true;
+          try { if (!Number.isFinite(path.getTotalLength())) malformed = true; } catch { malformed = true; }
+        }
+        const heldIds = ids.filter((annId) => !snapshot.drawnIds.has(annId));
+        const hits = [...svg.querySelectorAll(".tick-hit")];
+        const hitIds = new Set(hits.map((hit) => hit.getAttribute("data-tick-ann")));
+        const missingTicks = heldIds.filter((annId) => !hitIds.has(annId));
+        const wrongTickSides = hits.flatMap((hit) => {
+          const annId = hit.getAttribute("data-tick-ann");
+          const plan = snapshot.plans.get(annId);
+          const expected = isMarginPlan(plan) ? plan.side : lastSides.get(annId) || "left";
+          return hit.getAttribute("data-tick-side") === expected ? [] : [{ annId, expected, actual: hit.getAttribute("data-tick-side") }];
+        });
+        const tickBounds = hits.every((hit) => {
+          const r = hit.getBoundingClientRect();
+          return r.left >= svgBox.left - 0.1 && r.right <= svgBox.right + 0.1 &&
+            r.top >= svgBox.top - 0.1 && r.bottom <= svgBox.bottom + 0.1;
+        });
+        const tabStops = hits.filter((hit) => hit.getAttribute("tabindex") === "0").length;
+        const threadBounds = [...svg.querySelectorAll(".thread")].every((thread) => {
+          const r = thread.getBoundingClientRect();
+          return r.left >= svgBox.left - 3 && r.right <= svgBox.right + 3 &&
+            r.top >= svgBox.top - 3 && r.bottom <= svgBox.bottom + 3;
+        });
+        if (Math.abs(actualWidth - width) > 0.1 || snapshot.measured.annotations.length !== ids.length ||
+            snapshot.drawnIds.size > 3 || badDrawn.length || nonFinitePlans.length || malformed ||
+            missingTicks.length || wrongTickSides.length || !tickBounds || !threadBounds ||
+            tabStops !== (hits.length ? 1 : 0) || sheet.querySelectorAll(".chip.bad").length) {
+          recordFailure({ pass: passNo, width, id, actualWidth, annotations: snapshot.measured.annotations.length,
+            drawn: snapshot.drawnIds.size, badDrawn, nonFinitePlans, malformed, missingTicks,
+            wrongTickSides, tickBounds, threadBounds, tabStops });
+        }
+        for (const plan of snapshot.plans.values()) if (isMarginPlan(plan)) observedMargins.add(plan.side);
+        const focusThread = sheet.querySelector('.overlay .thread.focused[data-side="right"]');
+        if (!compare && focusThread) rightWinners.add(id);
+        const key = `${width}:${id}`;
+        const signature = qaPaintSignature(snapshot, width, id);
+        if (compare) {
+          if (signatures.get(key) !== signature) recordFailure({ pass: 2, width, id, nondeterministic: true });
+        } else {
+          signatures.set(key, signature);
+          signatureSequence.push(`${key}:${signature}`);
+          states++;
+        }
+      }
+      if ((width - 459) % 10 === 0 || width === 760) {
+        output.textContent = `C0.3 rendered sweep · pass ${compare ? 2 : 1}/2 · ${width}px`;
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      }
+    }
+  };
+
+  let fatalError = null;
+  try {
+    await traverse(false);
+    await traverse(true);
+    digest = await qaSha256(signatureSequence.join("\n"));
+  } catch (error) {
+    fatalError = error && error.message ? error.message : String(error);
+  } finally {
+    try {
+      focusedId = original.focusedId;
+      previewId = original.previewId;
+      previewTickLayouts = original.previewTickLayouts;
+      sheet.style.width = original.width;
+      slider.value = original.slider;
+      document.getElementById("width-val").textContent = original.widthLabel;
+      lastSides.clear();
+      for (const [id, side] of original.sides) lastSides.set(id, side);
+      run();
+    } catch (error) {
+      fatalError ||= `restore: ${error && error.message ? error.message : error}`;
+    }
+    removeEventListener("error", onError);
+    removeEventListener("unhandledrejection", onRejection);
+  }
+
+  if (states !== expectedStates) recordFailure({ states, expectedStates });
+  if (!rightWinners.size) recordFailure({ rightWinner: "missing" });
+  if (!observedMargins.has("left") || !observedMargins.has("right")) {
+    recordFailure({ observedMargins: [...observedMargins] });
+  }
+  if (browserErrors.length) recordFailure({ browserErrors: browserErrors.slice(0, 5) });
+  if (fatalError) recordFailure({ fatalError });
+  const status = failureCount ? "fail" : "pass";
+  output.dataset.c03Sweep = status;
+  output.dataset.status = status;
+  document.documentElement.dataset.c03Sweep = status;
+  if (failureCount) {
+    output.textContent = `C0.3 sweep FAIL · ${failureCount} failures · ${states} states · ${renders} renders · ${JSON.stringify(failures.slice(0, 5))}`;
+  } else {
+    output.textContent = `C0.3 sweep PASS · ${states} unique states · ${renders} deterministic renders · right winners ${rightWinners.size} · SHA-256 ${digest}`;
+  }
+}
 
 function run() {
   const measured = measure();
@@ -651,12 +994,15 @@ function run() {
   /* the loom is a page-level datum: one inner edge for the whole block,
    * computed once, handed to every plan */
   const expand = Math.max(2.5, measured.fontSize * 0.12) + 2.5;
-  let minLeft = Infinity;
+  let minLeft = Infinity, maxRight = -Infinity;
   for (const r of [...measured.block.renderedLines, ...measured.block.verseNumberRects, ...measured.block.additionalObstacles]) {
     minLeft = Math.min(minLeft, r.left - expand);
+    maxRight = Math.max(maxRight, r.right + expand);
   }
-  const loomInner = minLeft - 10;
-  lastLoomInner = loomInner;
+  const leftLoomInner = minLeft - 10;
+  const rightLoomInner = maxRight + 10;
+  lastLeftLoomInner = leftLoomInner;
+  lastRightLoomInner = rightLoomInner;
 
   /* density policy IS the aesthetic: the focused thread fully drawn, at most
    * two companions woven beside it, everything else held as ticks. Corridor
@@ -672,8 +1018,9 @@ function run() {
     try {
       const p = planRoute(measured.block, ann, {
         fontSize: measured.fontSize,
-        corridorClaims: claims, spineClaims, strandClaims, loomX: loomInner,
-        focused, sides: ["left"], previousSide: lastSides.get(ann.id),
+        corridorClaims: claims, spineClaims, strandClaims,
+        loomX: leftLoomInner, leftLoomX: leftLoomInner, rightLoomX: rightLoomInner,
+        focused, sides: ["left", "right"], previousSide: lastSides.get(ann.id),
         allowMiddle: focused && middleOn,
         disableCradle: !cradleOn, disableLocal: !localOn,
         /* every claim carries a little air so stacked shoulders never
@@ -688,7 +1035,7 @@ function run() {
         drawnIds.add(ann.id);
         /* cradles and local rails never touch the loom — no strand (-2) */
         strands.set(ann.id, p.strand ?? -2);
-        lastSides.set(ann.id, p.side);
+        if (isMarginPlan(p)) lastSides.set(ann.id, p.side);
       }
       return p.valid;
     } catch (e) {
@@ -728,21 +1075,33 @@ function run() {
   drawnPlans.forEach((p) => { p.focused = p === plans.get(effectiveFocus); });
   computeHops(drawnPlans);
 
-  render(measured, { plans, focusedId: effectiveFocus, drawnIds, loomInner, strandPitch: 6 });
+  render(measured, {
+    plans, focusedId: effectiveFocus, drawnIds,
+    leftLoomInner, rightLoomInner, strandPitch: 6,
+  });
+  window.__RL_STATE = {
+    focusedId, previewId,
+    effectiveFocus,
+    drawnIds: [...drawnIds],
+    sides: Object.fromEntries(lastSides),
+  };
 
   /* panel */
   const list = document.getElementById("fixture-list");
   list.innerHTML = "";
+  const checksById = new Map();
   let pass = 0;
   for (const ann of anns) {
     const plan = plans.get(ann.id);
     const isDrawn = drawnIds.has(ann.id);
     const checks = plan && plan.valid ? validate(measured, ann, plan, isDrawn ? drawnPlans : [plan]) : [];
+    checksById.set(ann.id, checks);
     (window.__CHECKS = window.__CHECKS || {})[ann.id] = checks;
     const ok = plan && plan.valid && checks.every((c) => c.ok);
     if (isDrawn && ok) pass++;
     const btn = document.createElement("button");
     btn.className = "fixture" + (ann.id === effectiveFocus ? " sel" : "");
+    btn.dataset.fixtureId = ann.id;
     const chip = isDrawn
       ? `<span class="chip ${ok ? "ok" : "bad"}">${ok ? "pass" : "fail"}</span>`
       : plan && plan.valid
@@ -751,7 +1110,7 @@ function run() {
     const st = strands.get(ann.id);
     const strandBadge = isDrawn
       ? (st >= 0
-        ? `<span class="strand s${st}">s${st}</span>`
+        ? `<span class="strand s${st}">${plan.side === "right" ? "r" : "l"}${st}</span>`
         : `<span class="strand">${plan.mode === "same-line" ? "direct" : plan.mode === "middle-shaft" ? "shaft" : "local"}</span>`)
       : "";
     const ex = explainPlan(plan);
@@ -761,11 +1120,14 @@ function run() {
         ? `${plan.mode}${plan.cradleVariant ? "·" + plan.cradleVariant : ""} · clear ${plan.diagnostics.minimumClearance}px · ${plan.diagnostics.totalLength}px · ${ann.anchors.length} anchor${ann.anchors.length > 1 ? "s" : ""}${plan.renderHops && plan.renderHops.length ? ` · ${plan.renderHops.length} hops` : ""}`
         : `${ann.anchors.length} anchor${ann.anchors.length > 1 ? "s" : ""}`}</span>${
       ann.id === effectiveFocus ? `<span class="freason">${ex.label} — ${ex.reason}</span>` : ""}`;
-    btn.addEventListener("click", () => { focusedId = ann.id; previewId = null; run(); });
+    btn.addEventListener("click", () => {
+      focusedId = ann.id; previewId = null; previewTickLayouts = null; run();
+    });
     list.appendChild(btn);
   }
   document.getElementById("suite-summary").textContent =
     `${drawnIds.size} drawn (${pass}/${drawnIds.size} pass) · ${anns.length - drawnIds.size} held as ticks · ${explainPlan(plans.get(effectiveFocus)).label}`;
+  return { measured, plans, drawnIds: new Set(drawnIds), checks: checksById };
 }
 
 const slider = document.getElementById("width-slider");
@@ -791,12 +1153,68 @@ addEventListener("resize", () => requestAnimationFrame(run));
 sheet.addEventListener("pointermove", (e) => {
   if (!previewId) return;
   const r = sheet.getBoundingClientRect();
-  if (e.clientX - r.left > lastLoomInner + 24) { previewId = null; run(); }
+  const x = e.clientX - r.left;
+  if (x > lastLeftLoomInner + 24 && x < lastRightLoomInner - 24) {
+    previewId = null;
+    previewTickLayouts = null;
+    run();
+  }
 });
 
 buildSheet();
-if (document.fonts && document.fonts.ready) document.fonts.ready.then(run);
-else run();
+const stableOverlay = sheet.querySelector(".overlay");
+let pendingTickPointer = null;
+let suppressTickClick = null;
+stableOverlay.addEventListener("pointerdown", (event) => {
+  if (event.button !== 0 || event.isPrimary === false) return;
+  const hit = heldTickAtPointer(stableOverlay, event);
+  if (!hit) return;
+  pendingTickPointer = {
+    pointerId: event.pointerId,
+    key: hit.getAttribute("data-tick-key"),
+    x: event.clientX,
+    y: event.clientY,
+  };
+}, true);
+sheet.addEventListener("pointerup", (event) => {
+  const pending = pendingTickPointer;
+  pendingTickPointer = null;
+  if (!pending || pending.pointerId !== event.pointerId) return;
+  /* A tick-origin gesture owns its one follow-up click even when movement or
+   * a bloom rerender makes the completed gesture ineligible to commit. */
+  suppressTickClick = { x: event.clientX, y: event.clientY, until: performance.now() + 250 };
+  if (Math.hypot(event.clientX - pending.x, event.clientY - pending.y) > 8) return;
+  const hit = heldTickAtPointer(stableOverlay, event);
+  if (!hit || hit.getAttribute("data-tick-key") !== pending.key) return;
+  event.preventDefault();
+  event.stopPropagation();
+  commitHeldAnnotation(hit.getAttribute("data-tick-ann"));
+}, true);
+sheet.addEventListener("pointercancel", () => { pendingTickPointer = null; }, true);
+sheet.addEventListener("click", (event) => {
+  const suppression = suppressTickClick;
+  suppressTickClick = null;
+  if (!suppression || performance.now() > suppression.until ||
+      Math.hypot(event.clientX - suppression.x, event.clientY - suppression.y) > 8) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}, true);
+const routeFontsReady = document.fonts && document.fonts.ready
+  ? document.fonts.ready
+  : Promise.resolve();
+routeFontsReady.then(() => {
+  run();
+  if (new URLSearchParams(location.search).get("qa") === "c03-sweep") {
+    setTimeout(runC03Sweep, 0);
+  }
+});
 
 /* lab introspection */
-window.RL = { measure, planRoute, assignStrands, FIXTURES, focus: (id) => { focusedId = id; previewId = null; run(); } };
+window.RL = {
+  measure, planRoute, assignStrands, FIXTURES,
+  focus: (id) => { focusedId = id; previewId = null; previewTickLayouts = null; run(); },
+  state: () => ({
+    focusedId, previewId,
+    sides: Object.fromEntries(lastSides),
+  }),
+};
