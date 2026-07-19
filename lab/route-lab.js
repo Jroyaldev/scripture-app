@@ -40,6 +40,8 @@ const FIXTURES = [
     keys: [{ ref: "GEN.1.11", phrase: "grass" }, { ref: "GEN.1.11", phrase: "herbs" }, { ref: "GEN.1.11", phrase: "fruit trees" }] },
   { id: "adjacent-pair", name: "adjacent words · tight gap", kind: "hinge",
     keys: [{ ref: "GEN.1.11", phrase: "grass" }, { ref: "GEN.1.11", phrase: "herbs" }] },
+  { id: "day-night", name: "adjacent lines · void right", kind: "mirror",
+    keys: [{ ref: "PSA.1.2", phrase: "he meditates" }, { ref: "PSA.1.2", phrase: "night" }] },
   { id: "short-pair", name: "short closed pair", kind: "contrast",
     keys: [{ ref: "GEN.1.14", phrase: "days" }, { ref: "GEN.1.14", phrase: "years" }] },
   { id: "wrapped", name: "phrase that wraps", kind: "echo",
@@ -596,6 +598,7 @@ function explainPlan(plan) {
     "same-line": plan.cradleVariant === "embrace" ? "direct hammock · embrace" : "direct hammock",
     "local-tag": "local tag",
     "local-comb": "local comb",
+    "middle-shaft": "middle shaft",
     tag: "loom tag",
     corridor: "left loom",
     multipoint: "left loom · tributaries",
@@ -606,6 +609,7 @@ function explainPlan(plan) {
       : "both ideas share one verified corridor, so the margin detour disappears",
     "local-tag": "the whole route fits beside the idea itself — a page-edge detour would add ink without adding meaning",
     "local-comb": "the line's pins comb into one short rail beside the phrase; the loom never enters",
+    "middle-shaft": "a clear vertical stands in the void beside the ideas — neither endpoint visits the page edge",
     tag: "a single idea; its pin pours into the loom beside its own line",
     corridor: "the ideas span rendered lines; one quiet spine on the left loom carries them",
     multipoint: "each line's pins comb into tributaries feeding one spine on the loom",
@@ -624,6 +628,7 @@ let previewId = null;
 let weaveOn = true;
 let cradleOn = true;
 let localOn = true;
+let middleOn = true;
 let lastLoomInner = 0;
 /* side memory for the scorer's hysteresis — a held thread refocusing
  * shouldn't flap margins once a right margin exists */
@@ -669,6 +674,7 @@ function run() {
         fontSize: measured.fontSize,
         corridorClaims: claims, spineClaims, strandClaims, loomX: loomInner,
         focused, sides: ["left"], previousSide: lastSides.get(ann.id),
+        allowMiddle: focused && middleOn,
         disableCradle: !cradleOn, disableLocal: !localOn,
         /* every claim carries a little air so stacked shoulders never
          * read as one line */
@@ -746,7 +752,7 @@ function run() {
     const strandBadge = isDrawn
       ? (st >= 0
         ? `<span class="strand s${st}">s${st}</span>`
-        : `<span class="strand">${plan.mode === "same-line" ? "direct" : "local"}</span>`)
+        : `<span class="strand">${plan.mode === "same-line" ? "direct" : plan.mode === "middle-shaft" ? "shaft" : "local"}</span>`)
       : "";
     const ex = explainPlan(plan);
     btn.innerHTML = `<span class="frow"><i class="dot" style="background:${HUES[ann.kind]}"></i>
@@ -774,6 +780,8 @@ const cradleBox = document.getElementById("cradle-toggle");
 if (cradleBox) cradleBox.addEventListener("change", () => { cradleOn = cradleBox.checked; run(); });
 const localBox = document.getElementById("local-toggle");
 if (localBox) localBox.addEventListener("change", () => { localOn = localBox.checked; run(); });
+const middleBox = document.getElementById("middle-toggle");
+if (middleBox) middleBox.addEventListener("change", () => { middleOn = middleBox.checked; run(); });
 addEventListener("resize", () => requestAnimationFrame(run));
 
 /* a bloomed tick re-renders as a thread, so its own mouseleave can never

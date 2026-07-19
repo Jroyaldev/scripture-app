@@ -330,3 +330,20 @@ What the port taught us (all landed engine/host-side):
 Phase B remains: held ticks + explanations in the score panel, lane
 hysteresis, rankCompanions replacing recency disclosure, cold-wake perf
 on the 51-verse sheet, exportCard reflecting real route classes.
+
+### Step 13 landed — the middle shaft (gated constraint amendment)
+
+For the FOCUSED thread only (opts.allowMiddle, host-gated), when anchors
+sit within three rendered lines, a short interior vertical may stand in
+genuine whitespace near the semantic center. Crossing a line's ink
+extent is ILLEGAL, not scored: the shaft must clear every crossed line
+entirely (hard zero-crossing filter), so it fires in ragged-right voids
+and short-line shortfalls, never through justified prose. Candidates:
+semantic center ± 6px grid to ±36, first legal wins. Pins face the
+shaft per group (mirrored terminals — the same machinery a right margin
+needs); no strand consumed; spine claims emitted so the separation
+tripwire guards it. Amends hard constraint #3 for this one mode.
+Fixture: day-night ("he meditates" → "night") draws the becoming
+pattern — two shoulders from opposite sides into a shaft standing in
+the void of the short line — 311px of ink for what was a ~900px margin
+round trip. Deterministic 460–760. Toggle: middle checkbox.

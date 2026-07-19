@@ -410,6 +410,91 @@ export function planRoute(block, ann, opts = {}) {
     : groups.length > 1 ? (ann.anchors.length > 2 || groups.length > 2 ? "multipoint" : "corridor")
     : "corridor";
 
+  /* ── middle shaft (the one gated constraint amendment) ──
+   * For the FOCUSED thread only, when its anchors sit within three
+   * rendered lines of each other, a short interior vertical may stand in
+   * genuine whitespace beside the ideas — near their semantic center —
+   * instead of traveling to the margin. Crossing a line's ink extent is
+   * ILLEGAL, not merely expensive: the shaft must clear every crossed
+   * line entirely, so it fires in ragged-right voids and verse-end
+   * shortfalls, never through justified prose. Pins face the shaft
+   * (per-group approach side); same grammar, mirrored where needed. */
+  if (opts.allowMiddle && groups.length >= 2) {
+    const liTop = Math.min(...groups.map((g) => g.li));
+    const liBottom = Math.max(...groups.map((g) => g.li));
+    if (liBottom - liTop > 3) {
+      declined.push({ move: "middle", why: "span" });
+    } else {
+      for (const g of groups) {
+        g.left = Math.min(...g.members.map((m) => m.frag.left));
+        g.right = Math.max(...g.members.map((m) => m.frag.right));
+      }
+      const centers = branchesIn.map((b) => (b.frag.left + b.frag.right) / 2);
+      const semCenter = centers.reduce((s, v) => s + v, 0) / centers.length;
+      const shaftCandidates = [0, 6, -6, 12, -12, 18, -18, 24, -24, 30, -30, 36, -36]
+        .map((d) => semCenter + d)
+        .filter((x) => x > loomInner + 20 && x < block.bounds.right - 6);
+      const crossed = lines.slice(liTop + 1, liBottom + 1);
+      let shaftPlan = null;
+      for (const shaftX of shaftCandidates) {
+        /* hard zero-crossing: the shaft clears every crossed line's ink */
+        if (crossed.some((l) => shaftX > l.left - expand - 1 && shaftX < l.right + expand + 1)) continue;
+        /* per-group approach side: every pin must face the shaft cleanly */
+        const sides = groups.map((g) =>
+          shaftX >= g.right + DROP_MIN + 2 ? "right" : shaftX <= g.left - DROP_MIN - 2 ? "left" : null);
+        if (sides.some((s) => !s)) continue;
+
+        const gs = groups.map((g, i) => ({ ...g, side: sides[i] }));
+        const segsM = [], exemptsM = [], contactsM = [], portsM = [], corYs = [], corIdx = [];
+        let ok = true;
+        for (const g of gs) {
+          const ci = g.li + 1;
+          const pins = g.members.map((m) => {
+            const f = m.frag;
+            return { m, x: (g.side === "right" ? f.right - 0.5 : f.left + 0.5), y: f.bottom + underlineDy };
+          });
+          const xs = pins.map((p) => p.x);
+          const spanA = Math.min(shaftX, ...xs) - 1, spanB = Math.max(shaftX, ...xs) + 1;
+          const cy = Math.max(...pins.map((p) => p.y));
+          const slot = corridorYFor(ci, spanA, spanB, cy);
+          if (!slot) { ok = false; break; }
+          const y = slot.y;
+          let endX = g.side === "right" ? -Infinity : Infinity;
+          for (const p of (g.side === "right" ? [...pins].sort((a, b) => a.x - b.x) : [...pins].sort((a, b) => b.x - a.x))) {
+            const r = y - p.y;
+            if (r < DROP_MIN) { ok = false; break; }
+            contactsM.push({ x: p.x, y: p.y });
+            segsM.push(quarterVH(p.x, p.y, g.side === "right" ? p.x + r : p.x - r, y));
+            exemptsM.push([{ rect: expandRect(p.m.frag, expand), cx: p.x, cy: p.y }]);
+            endX = g.side === "right" ? Math.max(endX, p.x + r) : Math.min(endX, p.x - r);
+          }
+          if (!ok) break;
+          const gapToShaft = Math.abs(shaftX - endX);
+          const reach = Math.min(SWOOP_REACH, Math.max(4, gapToShaft * 0.5));
+          if (gapToShaft <= reach + 1.5) { ok = false; break; }
+          const approachX = g.side === "right" ? shaftX - reach : shaftX + reach;
+          segsM.push(L(endX, y, approachX, y)); exemptsM.push(null);
+          segsM.push(quarterHV(approachX, y, shaftX, y + slot.dip)); exemptsM.push(null);
+          portsM.push({ x: shaftX, y: y + slot.dip });
+          corYs.push(y); corIdx.push(ci);
+        }
+        if (!ok) continue;
+        const top = Math.min(...portsM.map((p) => p.y));
+        const bot = Math.max(...portsM.map((p) => p.y));
+        segsM.push(L(shaftX, top, shaftX, bot)); exemptsM.push(null);
+        const spineM = { x: shaftX, top, bottom: bot };
+        const plan = finalize(segsM, "middle-shaft", contactsM, corYs, corIdx, shaftX, spineM, portsM, undefined, exemptsM);
+        if (plan.valid) {
+          plan.spineClaimOut = { x: shaftX, top, bottom: bot };
+          shaftPlan = plan;
+          break;
+        }
+      }
+      if (shaftPlan) return shaftPlan;
+      declined.push({ move: "middle", why: "no-clear-shaft" });
+    }
+  }
+
   const genMargin = (side, strand) => {
     const strandX = loomInner - strand * strandPitch;
     if (strandX < block.bounds.left - (block.availableLeftMargin ?? 60)) return { valid: false, reason: "needs-space" };

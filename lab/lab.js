@@ -1023,7 +1023,7 @@ function drawOverlay(sid, gids) {
       try {
         plan = planRoute(block, ann, {
           fontSize, corridorClaims: claims, spineClaims, strandClaims,
-          focused: gid === localFocus, claimPad: 0.25,
+          focused: gid === localFocus, allowMiddle: gid === localFocus, claimPad: 0.25,
         });
       } catch (e) {
         plan = { valid: false, reason: "engine-error" };
