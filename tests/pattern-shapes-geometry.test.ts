@@ -232,7 +232,7 @@ test("thread spines stop at rounded ports and parallel shoulders join both rails
   });
 });
 
-test("the lab is wired to the tested geometry and exposes the 18-case proof", () => {
+test("the lab is wired to the tested geometry, Loom engine, and 18-case proof", () => {
   const lab = readFileSync(new URL("../lab/lab.js", import.meta.url), "utf8");
   const html = readFileSync(new URL("../lab/shapes.html", import.meta.url), "utf8");
   const css = readFileSync(new URL("../lab/lab.css", import.meta.url), "utf8");
@@ -251,6 +251,7 @@ test("the lab is wired to the tested geometry and exposes the 18-case proof", ()
   assert.match(css, /\.qa-line\[data-align="right"\]/);
   assert.match(html, /id="angles-btn"/);
   assert.match(html, /src="trace-geometry\.js"/);
-  assert.match(lab, /"data-role": "mirror-joint"/);
-  assert.match(lab, /"data-role": "series-tick"/);
+  assert.match(lab, /import \{ planRoute, rankCompanions \} from "\.\/route-engine\.js"/);
+  assert.match(lab, /planRoute\(block, ann/);
+  assert.doesNotMatch(lab, /"data-role": "(?:mirror-joint|series-tick)"/);
 });

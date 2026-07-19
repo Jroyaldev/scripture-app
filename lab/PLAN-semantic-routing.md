@@ -119,7 +119,10 @@ floor under the GAP:                    floor under the PAIR:
 ## Later
 
 - **Right-margin routing + shadow-plan-slaved tick sides** (12px hysteresis) — gated on renegotiating the shapes rail/sheet layout; scorer and strand specs are already shaped for it.
-- **Claim x-extents** — fixes corridor-claim coarseness that wide embrace/local floors make marginally worse.
+- **Claim x-extents** — ✅ LANDED in C0.2. Claims now carry finite normalized
+  `xMin/xMax`; only padded Y-and-X overlap conflicts, while legacy/malformed
+  claims remain corridor-wide. Level exits and local drips participate in the
+  same committed-claim contract.
 - **Word-run cradle depth** (ignore-own-line) — hammocks tracking the local gap instead of the line's deepest descender; recorded so it isn't reinvented as a new line type.
 - **Level exits** (landed): connectors continue straight from the underline when the run is clear — see PROMPT-loom.md.
 - **A-wraps-from-previous-line cradle** (exit-end facing pins) — pure facing grammar, currently misses to margin.

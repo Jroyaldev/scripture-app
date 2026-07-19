@@ -79,10 +79,43 @@ const FLOOR_MIN = 5;         // a cradle floor must really exist
 const GAP_FACING_MIN = 12;   // ≈ 2·DROP_MIN + FLOOR_MIN — below this, two facing turns can't fit
 const GAP_EMBRACE_MAX = 16;  // embrace rescues facing only in the 12..16 overlap band
 
+/* Corridor occupancy is two-dimensional. A finite route claim owns only
+ * the horizontal run it actually verified; older claims without X bounds
+ * remain corridor-wide so malformed input can never legalize an overlap. */
+function normalizeCorridorClaim(claim) {
+  if (!claim || !Number.isFinite(claim.corridor) || !Number.isFinite(claim.y) ||
+      !Number.isFinite(claim.xMin) || !Number.isFinite(claim.xMax)) return null;
+  return {
+    corridor: claim.corridor,
+    y: claim.y,
+    xMin: Math.min(claim.xMin, claim.xMax),
+    xMax: Math.max(claim.xMin, claim.xMax),
+    pad: Number.isFinite(claim.pad) ? Math.max(0, claim.pad) : 0,
+  };
+}
+function makeCorridorClaim(corridor, y, xa, xb, pad = 0) {
+  return normalizeCorridorClaim({ corridor, y, xMin: xa, xMax: xb, pad });
+}
+function corridorClaimsConflict(existing, candidate) {
+  if (!existing || !candidate || existing.corridor !== candidate.corridor) return false;
+  if ((existing.pad != null && !Number.isFinite(existing.pad)) ||
+      (candidate.pad != null && !Number.isFinite(candidate.pad))) return true;
+  const existingPad = Number.isFinite(existing.pad) ? Math.max(0, existing.pad) : 0;
+  const candidatePad = Number.isFinite(candidate.pad) ? Math.max(0, candidate.pad) : 0;
+  /* A malformed claim on the same corridor is conservative. In particular,
+   * it cannot turn NaN into permission to share a slot. */
+  if (!Number.isFinite(existing.y) || !Number.isFinite(candidate.y)) return true;
+  if (Math.abs(existing.y - candidate.y) >= CLAIM_GAP + existingPad + candidatePad) return false;
+  const a = normalizeCorridorClaim(existing);
+  const b = normalizeCorridorClaim(candidate);
+  if (!a || !b) return true;
+  return a.xMin - a.pad <= b.xMax + b.pad && b.xMin - b.pad <= a.xMax + a.pad;
+}
+
 /* ── the planner ───────────────────────────────────────────── */
 /* block: TextBlock (measured), ann: Annotation.
  * opts: { fontSize, envelope, underlineDy, strandIndex, strandPitch,
- *         corridorClaims: [{corridor, y}], loomAir } */
+ *         corridorClaims: [{corridor, y, xMin, xMax, pad}], loomAir } */
 export function planRoute(block, ann, opts = {}) {
   const fontSize = opts.fontSize || 17;
   const clearance = Math.max(2.5, fontSize * 0.12);
@@ -195,15 +228,20 @@ export function planRoute(block, ann, opts = {}) {
     for (const dy of ladder) {
       const y = base + dy;
       if (y < minY - 1e-6 || y > maxY + 1e-6) continue;
+      const candidateClaim = makeCorridorClaim(ci, y, xa, xb, claimPad);
       let why = null;
-      if (!clearRun(y, xa, xb)) why = "obstacle";
-      else if (claims.some((cl) => cl.corridor === ci &&
-        Math.abs(cl.y - y) < CLAIM_GAP + claimPad + (cl.pad || 0))) why = "claim";
+      if (!candidateClaim) why = "claim-bounds";
+      else if (!clearRun(y, xa, xb)) why = "obstacle";
+      else if (claims.some((cl) => corridorClaimsConflict(cl, candidateClaim))) why = "claim";
       else if (fits) {
         const verdict = fits(y);
         if (verdict !== true) why = verdict || "fits";
       }
-      if (!why) return { y, dip: Math.min(SWOOP_DIP, Math.max(0, band.bottom - y - 0.25)) };
+      if (!why) return {
+        y,
+        dip: Math.min(SWOOP_DIP, Math.max(0, band.bottom - y - 0.25)),
+        claim: candidateClaim,
+      };
       tried.push(why);
     }
     if (typeof window !== "undefined" && window.__ROUTE_DEBUG__) {
@@ -297,7 +335,7 @@ export function planRoute(block, ann, opts = {}) {
           [{ rect: expandRect(A.frag, expand), cx: c.ax, cy: c.ay }],
           null,
           [{ rect: expandRect(B.frag, expand), cx: c.bx, cy: c.by }],
-        ]);
+        ], [slot.claim]);
     }
     /* no legal cradle → fall through to the margin, never squash */
   }
@@ -331,25 +369,37 @@ export function planRoute(block, ann, opts = {}) {
           const portY = c.y + SWOOP_DIP;
           const drip = Math.min(2.5, Math.max(1.0, band.bottom - 0.25 - portY));
           const reach = Math.min(SWOOP_REACH, Math.max(4, (c.x - localX) * 0.5));
-          const plan = finalize([
-            L(c.x, c.y, localX + reach, c.y),
-            quarterHV(localX + reach, c.y, localX, portY),
-            L(localX, portY, localX, portY + drip),
-          ], "local-tag", [c], [c.y], [ci], localX, null, [{ x: localX, y: portY }], undefined, [
-            [{ rect: expandRect(members[0].frag, expand), cx: c.x, cy: c.y }],
-            null, null,
-          ]);
-          if (plan.valid) {
-            plan.claimsOut.push({ corridor: ci, y: portY + drip / 2, pad: claimPad });
-            plan.diagnostics.exits = ["level"];
-            planned = plan;
-            break;
+          const levelClaim = makeCorridorClaim(ci, c.y, localX, c.x, claimPad);
+          const dripClaim = makeCorridorClaim(ci, portY + drip / 2, localX, localX, claimPad);
+          const fixedClaims = [levelClaim, dripClaim];
+          if (fixedClaims.every(Boolean) &&
+              !fixedClaims.some((candidate) => claims.some((cl) => corridorClaimsConflict(cl, candidate)))) {
+            const plan = finalize([
+              L(c.x, c.y, localX + reach, c.y),
+              quarterHV(localX + reach, c.y, localX, portY),
+              L(localX, portY, localX, portY + drip),
+            ], "local-tag", [c], [c.y], [ci], localX, null, [{ x: localX, y: portY }], undefined, [
+              [{ rect: expandRect(members[0].frag, expand), cx: c.x, cy: c.y }],
+              null, null,
+            ], fixedClaims);
+            if (plan.valid) {
+              plan.diagnostics.exits = ["level"];
+              planned = plan;
+              break;
+            }
           }
         }
       }
       /* the slot needs full dip room AND at least 1px of drip below it */
-      const slot = corridorYFor(ci, localX, xMaxPin, cy, true, (y) =>
-        band.bottom - 0.25 - (y + Math.min(SWOOP_DIP, band.bottom - y - 0.25)) >= 1.0 ? true : "drip-room");
+      const slot = corridorYFor(ci, localX, xMaxPin, cy, true, (y) => {
+        const dip = Math.min(SWOOP_DIP, Math.max(0, band.bottom - y - 0.25));
+        const room = band.bottom - 0.25 - (y + dip);
+        if (room < 1.0) return "drip-room";
+        const portY = y + dip;
+        const drip = Math.min(2.5, Math.max(1.0, room));
+        const dripClaim = makeCorridorClaim(ci, portY + drip / 2, localX, localX, claimPad);
+        return dripClaim && !claims.some((cl) => corridorClaimsConflict(cl, dripClaim)) ? true : "claim";
+      });
       if (!slot) continue;
       const y = slot.y, dip = slot.dip;
       const portY = y + dip;
@@ -373,11 +423,10 @@ export function planRoute(block, ann, opts = {}) {
       segsL.push(quarterHV(localX + reach, y, localX, portY)); exemptsL.push(null);
       segsL.push(L(localX, portY, localX, portY + drip)); exemptsL.push(null);
       const mode = members.length === 1 ? "local-tag" : "local-comb";
+      const dripClaim = makeCorridorClaim(ci, portY + drip / 2, localX, localX, claimPad);
       const plan = finalize(segsL, mode, localContacts, [y], [ci], localX, null,
-        [{ x: localX, y: portY }], undefined, exemptsL);
+        [{ x: localX, y: portY }], undefined, exemptsL, [slot.claim, dripClaim]);
       if (plan.valid) {
-        /* dual claims: the shoulder AND the drip zone hold the corridor */
-        plan.claimsOut.push({ corridor: ci, y: portY + drip / 2, pad: claimPad });
         planned = plan;
         break;
       }
@@ -445,7 +494,7 @@ export function planRoute(block, ann, opts = {}) {
         if (sides.some((s) => !s)) continue;
 
         const gs = groups.map((g, i) => ({ ...g, side: sides[i] }));
-        const segsM = [], exemptsM = [], contactsM = [], portsM = [], corYs = [], corIdx = [];
+        const segsM = [], exemptsM = [], contactsM = [], portsM = [], corYs = [], corIdx = [], corClaims = [];
         let ok = true;
         for (const g of gs) {
           const ci = g.li + 1;
@@ -476,14 +525,14 @@ export function planRoute(block, ann, opts = {}) {
           segsM.push(L(endX, y, approachX, y)); exemptsM.push(null);
           segsM.push(quarterHV(approachX, y, shaftX, y + slot.dip)); exemptsM.push(null);
           portsM.push({ x: shaftX, y: y + slot.dip });
-          corYs.push(y); corIdx.push(ci);
+          corYs.push(y); corIdx.push(ci); corClaims.push(slot.claim);
         }
         if (!ok) continue;
         const top = Math.min(...portsM.map((p) => p.y));
         const bot = Math.max(...portsM.map((p) => p.y));
         segsM.push(L(shaftX, top, shaftX, bot)); exemptsM.push(null);
         const spineM = { x: shaftX, top, bottom: bot };
-        const plan = finalize(segsM, "middle-shaft", contactsM, corYs, corIdx, shaftX, spineM, portsM, undefined, exemptsM);
+        const plan = finalize(segsM, "middle-shaft", contactsM, corYs, corIdx, shaftX, spineM, portsM, undefined, exemptsM, corClaims);
         if (plan.valid) {
           plan.spineClaimOut = { x: shaftX, top, bottom: bot };
           shaftPlan = plan;
@@ -510,8 +559,13 @@ export function planRoute(block, ann, opts = {}) {
       const m0 = g.members[0];
       const c0 = pinOf(m0.frag);
       const levelEnd = m0.frag.left - expand - 0.6;
-      g.level = (levelEnd > strandX + 6 && clearRun(c0.y, strandX + 0.5, levelEnd))
-        ? { c: c0, m: m0 } : null;
+      const canExitLevel = levelEnd > strandX + 6 && clearRun(c0.y, strandX + 0.5, levelEnd);
+      const levelClaim = canExitLevel
+        ? makeCorridorClaim(g.li + 1, c0.y, strandX, c0.x, claimPad)
+        : null;
+      g.level = canExitLevel && levelClaim &&
+        !claims.some((cl) => corridorClaimsConflict(cl, levelClaim))
+        ? { c: c0, m: m0, claim: levelClaim } : null;
       const combMembers = g.level ? g.members.slice(1) : g.members;
       g.combMembers = combMembers;
       if (combMembers.length) {
@@ -523,7 +577,7 @@ export function planRoute(block, ann, opts = {}) {
         const xMaxC = Math.max(...combMembers.map((m) => pinOf(m.frag).x)) + 1;
         const slot = corridorYFor(ci, strandX, xMaxC, cyC);
         if (!slot) return { valid: false, reason: "needs-space" };
-        g.ci = ci; g.shoulderY = slot.y; g.dip = slot.dip; g.xMaxC = xMaxC;
+        g.ci = ci; g.shoulderY = slot.y; g.dip = slot.dip; g.xMaxC = xMaxC; g.claim = slot.claim;
       } else {
         g.ci = g.li + 1; g.shoulderY = c0.y; g.dip = SWOOP_DIP;
       }
@@ -536,6 +590,7 @@ export function planRoute(block, ann, opts = {}) {
     const ports = [];
     const corridorYs = [];
     const corridorIdx = [];
+    const corridorClaimsOut = [];
 
     for (const g of gs) {
       if (g.level) {
@@ -549,10 +604,12 @@ export function planRoute(block, ann, opts = {}) {
         exempts.push(null);
         ports.push({ x: strandX, y: c.y + SWOOP_DIP });
         corridorYs.push(c.y); corridorIdx.push(g.li + 1);
+        corridorClaimsOut.push(g.level.claim);
       }
       if (g.combMembers.length) {
         const y = g.shoulderY;
         corridorYs.push(y); corridorIdx.push(g.ci);
+        corridorClaimsOut.push(g.claim);
         /* terminals: pins comb into the shoulder, right to left */
         let minEndX = Infinity;
         for (const m of [...g.combMembers].sort((a, b) => b.frag.left - a.frag.left)) {
@@ -589,7 +646,7 @@ export function planRoute(block, ann, opts = {}) {
       exempts.push(null);
     }
 
-    const plan = finalize(centerline, mode, contacts, corridorYs, corridorIdx, strandX, spine, ports, undefined, exempts);
+    const plan = finalize(centerline, mode, contacts, corridorYs, corridorIdx, strandX, spine, ports, undefined, exempts, corridorClaimsOut);
     if (plan.valid) {
       plan.strand = strand;
       plan.side = side;
@@ -655,7 +712,13 @@ export function planRoute(block, ann, opts = {}) {
    * its own pin, where neighbor expansions unavoidably overlap); every
    * other segment — floors, shoulders, swoops, spines, drips — must be
    * genuinely clear of everything. */
-  function finalize(segs, mode, contacts, corridorYs, corridorIdx, railXOut, spine, ports, cradleVariant, exempts) {
+  function finalize(segs, mode, contacts, corridorYs, corridorIdx, railXOut, spine, ports, cradleVariant, exempts, corridorClaimsOut) {
+    const normalizedClaims = [];
+    for (const claim of corridorClaimsOut || []) {
+      const normalized = normalizeCorridorClaim(claim);
+      if (!normalized) return fail("nan", { claim });
+      normalizedClaims.push(normalized);
+    }
     const sampled = [];
     segs.forEach((s, si) => {
       const ex = exempts ? exempts[si] : null;
@@ -710,7 +773,7 @@ export function planRoute(block, ann, opts = {}) {
       markerRanges: spine
         ? { marginStart: spine.top, marginEnd: spine.bottom }
         : corridorYs.length ? { marginStart: corridorYs[0], marginEnd: corridorYs[0] } : {},
-      claimsOut: corridorIdx.map((ci, i) => ({ corridor: ci, y: corridorYs[i], pad: claimPad })),
+      claimsOut: normalizedClaims,
       spineClaimOut: spine ? { x: spine.x, top: spine.top, bottom: spine.bottom } : null,
       diagnostics: {
         minimumClearance: Math.round(minClear * 100) / 100,
@@ -764,4 +827,13 @@ export function assignStrands(anns, maxStrands = 3) {
   return out;
 }
 
-export const _internals = { quarterVH, quarterHV, segPoints, expandRect, KAPPA };
+export const _internals = {
+  quarterVH,
+  quarterHV,
+  segPoints,
+  expandRect,
+  normalizeCorridorClaim,
+  makeCorridorClaim,
+  corridorClaimsConflict,
+  KAPPA,
+};

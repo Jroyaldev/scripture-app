@@ -360,3 +360,28 @@ hammock — both phrases share one verified corridor…", "held — no
 corridor slot or strand is free…"). And warmBlocks() pre-warms the
 word-run caches on idle after every rebuild: cold wake of the 51-verse
 Long sheet dropped ~2000ms → ~200ms.
+
+### C0.2 landed — X-bounded corridor claims
+
+Corridor occupancy is now genuinely two-dimensional. Every committed
+reservation is a finite normalized `{ corridor, y, xMin, xMax, pad }`
+record derived from the verified run that was actually planned. Nearby Y
+claims conflict only when their padded X spans overlap, so far-apart
+shoulders may reuse the exact same rung without relaxing word, verse-number,
+spine, or zero-crossing clearance. Reversed bounds normalize; legacy or
+malformed claims stay conservatively corridor-wide.
+
+The contract covers the whole grammar, including paths that used to bypass
+the slot picker: cradle floors, local level/drop/comb shoulders, local drips,
+middle-shaft approaches, and margin level/comb exits. A claimed level exit
+now falls back to the dropped grammar; a claimed drip participates in the
+same 0.6px slot ladder. Shadow plans remain side-effect free and hosts still
+commit claims only for valid painted plans.
+
+Direct Node tests now exercise route-engine.js itself rather than accepting
+the older trace-geometry suite as proxy proof. Browser verification kept all
+15 focus states green, repeated every integer width 460–760 with identical
+signatures, and retained the 14-trace Dense Psalm and 22-trace Long Revelation
+disclosure at 1280px and 640px without malformed SVG, overflow, or console
+errors. This is the precision prerequisite for mirrored margins; it does not
+silently introduce right routing or section handoffs.
