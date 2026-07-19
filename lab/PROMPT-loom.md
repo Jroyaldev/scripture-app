@@ -248,3 +248,20 @@ fixture row plus a route label in the suite summary ("direct hammock ·
 embrace", "left loom · tributaries", …). A cradle checkbox in the topbar
 forces margin routing (opts.disableCradle) so the fallback is always one
 click away from inspection.
+
+### Steps 7+8+9 landed (same day)
+
+Held ticks got real hit targets (15.5×12 invisible rects, 7px-clipped
+when stacked) and a roving keyboard: one tab stop, arrows walk the rail,
+Enter holds, Escape lets go; a tick-previewed annotation keeps a phantom
+hit rect through its bloom so layout and focus never jump. The engine
+gained the spine-separation tripwire (fail "spine-separation" when a
+committed spine claim overlaps within min(4.8, pitch−1.2); inert at
+pitch 6, armed for shafts/right margin). And single-line ideas now stay
+LOCAL: when every anchor shares one rendered line and the cradle
+declined, a short rail plants 22–34px left of the phrase group — same
+pin → turn → shoulder → swoop grammar, adaptive 1–2.5px drip pooled in
+the corridor, dual corridor claims (shoulder + drip zone), no strand
+consumed (modes local-tag / local-comb). A one-word tag is now a ~25px
+scribal flick instead of a page-crossing dead shoulder. Toggles: cradle
++ local checkboxes force margin routing for inspection.

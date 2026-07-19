@@ -301,6 +301,66 @@ export function planRoute(block, ann, opts = {}) {
     /* no legal cradle → fall through to the margin, never squash */
   }
 
+  /* ── local rail (single-line ideas stay beside their line) ──
+   * A one-word tag dragging a dead shoulder across the page to the loom
+   * for a 2.5px drip is the worst ink in the grammar. When every anchor
+   * shares one rendered line and the cradle declined, try a short rail
+   * just left of the phrase group — same pin → turn → shoulder → swoop
+   * grammar, the drip pooled inside the corridor. Candidates step 6px
+   * outward from the phrase and never enter the loom's own air.
+   * Falls through to the margin, never squashes. */
+  if (allSameLine && !opts.disableLocal) {
+    const members = [...branchesIn].sort((a, b) => a.frag.left - b.frag.left);
+    const li = members[0].li, ci = li + 1;
+    const localContacts = members.map((m) => pinOf(m.frag));
+    const xMinPin = Math.min(...localContacts.map((c) => c.x));
+    const xMaxPin = Math.max(...localContacts.map((c) => c.x)) + 1;
+    const cy = Math.max(...localContacts.map((c) => c.y));
+    const band = corridors[ci];
+    const off = SWOOP_REACH + DROP_MIN + 8;
+    let planned = null;
+    if (band) for (const localX of [xMinPin - off, xMinPin - off - 6, xMinPin - off - 12]) {
+      if (localX < loomInner + 6) continue;
+      /* the slot needs full dip room AND at least 1px of drip below it */
+      const slot = corridorYFor(ci, localX, xMaxPin, cy, true, (y) =>
+        band.bottom - 0.25 - (y + Math.min(SWOOP_DIP, band.bottom - y - 0.25)) >= 1.0 ? true : "drip-room");
+      if (!slot) continue;
+      const y = slot.y, dip = slot.dip;
+      const portY = y + dip;
+      const drip = Math.min(2.5, Math.max(1.0, band.bottom - 0.25 - portY));
+      const segsL = [];
+      const exemptsL = [];
+      let minEndX = Infinity;
+      let kinked = false;
+      for (const m of [...members].sort((a, b) => b.frag.left - a.frag.left)) {
+        const c = pinOf(m.frag);
+        const r = y - c.y;
+        if (r < DROP_MIN) { kinked = true; break; }
+        segsL.push(quarterVH(c.x, c.y, c.x - r, y));
+        exemptsL.push([{ rect: expandRect(m.frag, expand), cx: c.x, cy: c.y }]);
+        minEndX = Math.min(minEndX, c.x - r);
+      }
+      if (kinked) continue;
+      const reach = Math.min(SWOOP_REACH, Math.max(4, (minEndX - localX) * 0.5));
+      if (minEndX <= localX + reach + 1.5) continue;
+      segsL.push(L(minEndX, y, localX + reach, y)); exemptsL.push(null);
+      segsL.push(quarterHV(localX + reach, y, localX, portY)); exemptsL.push(null);
+      segsL.push(L(localX, portY, localX, portY + drip)); exemptsL.push(null);
+      const mode = members.length === 1 ? "local-tag" : "local-comb";
+      const plan = finalize(segsL, mode, localContacts, [y], [ci], localX, null,
+        [{ x: localX, y: portY }], undefined, exemptsL);
+      if (plan.valid) {
+        /* dual claims: the shoulder AND the drip zone hold the corridor */
+        plan.claimsOut.push({ corridor: ci, y: portY + drip / 2, pad: claimPad });
+        planned = plan;
+        break;
+      }
+      /* finalize rejected this rail (collision) — step further out */
+    }
+    if (planned) return planned;
+    declined.push({ move: "local", why: "no-slot" });
+  }
+
   /* ── margin route ──
    * group anchors per rendered line; each group gets one corridor
    * shoulder; every shoulder swoops into the strand. */

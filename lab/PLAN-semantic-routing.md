@@ -76,7 +76,7 @@ floor under the GAP:                    floor under the PAIR:
 - **Prettier:** a doubled rail was rejected as vocabulary; it cannot be re-admitted as a routing accident.
 - **Accept:** suite assertion green; distinct failure reason surfaces in diagnostics, backfill from ranked list works.
 
-### 9. Local rails for single-line ideas — *adapt*
+### 9. Local rails for single-line ideas — *adapt* — ✅ LANDED
 - **Build:** new branch between cradle and margin, gated `groups.length === 1` and cradle declined: candidates `uniqueXs([xMin−22.2, −28.2, −34.2])` (off = SWOOP_REACH 11 + DROP_MIN 3.2 + 8; dedupe 0.55), floor `x >= loomInner + 6`; drop textCenter and right-mirror candidates. **Adaptive drip** `clamp(band.bottom − portY − 0.25, 1.0, 2.5)` + `tailMin` param on corridorYFor (our ~8-10px bands otherwise kill most local tags), **dual claimsOut** (shoulder y + drip midpoint) and `plan.spine = {x: localX, ...}` so hops see the drip. Modes `local-tag`/`local-comb`; committed local plans consume no strand; trio cap on drawnIds untouched. First legal candidate wins.
 - **Prettier:** the worst case today — a one-word tag dragging a 200-300px dead shoulder to the loom for a 2.5px drip — becomes a ~25px scribal flick beside the word; the loom becomes legible as "these ideas travel."
 - **Accept:** validate() additions: drip span ≤ 6, dual claims present, local x >= loomInner+6, no strand consumed; dense fixtures show no uncovered crossings through the drip window.

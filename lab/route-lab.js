@@ -590,6 +590,8 @@ function explainPlan(plan) {
   }
   const labels = {
     "same-line": plan.cradleVariant === "embrace" ? "direct hammock · embrace" : "direct hammock",
+    "local-tag": "local tag",
+    "local-comb": "local comb",
     tag: "loom tag",
     corridor: "left loom",
     multipoint: "left loom · tributaries",
@@ -598,6 +600,8 @@ function explainPlan(plan) {
     "same-line": plan.cradleVariant === "embrace"
       ? "the pair is held as one — outer pins, floor beneath both words; the margin never enters"
       : "both ideas share one verified corridor, so the margin detour disappears",
+    "local-tag": "the whole route fits beside the idea itself — a page-edge detour would add ink without adding meaning",
+    "local-comb": "the line's pins comb into one short rail beside the phrase; the loom never enters",
     tag: "a single idea; its pin pours into the loom beside its own line",
     corridor: "the ideas span rendered lines; one quiet spine on the left loom carries them",
     multipoint: "each line's pins comb into tributaries feeding one spine on the loom",
@@ -615,6 +619,7 @@ let focusedId = "far-pair";
 let previewId = null;
 let weaveOn = true;
 let cradleOn = true;
+let localOn = true;
 let lastLoomInner = 0;
 
 function run() {
@@ -655,7 +660,7 @@ function run() {
       const p = planRoute(measured.block, ann, {
         fontSize: measured.fontSize, strandIndex: strand,
         corridorClaims: claims, spineClaims, loomX: loomInner,
-        disableCradle: !cradleOn,
+        disableCradle: !cradleOn, disableLocal: !localOn,
         /* every claim carries a little air so stacked shoulders never
          * read as one line */
         claimPad: 0.25,
@@ -665,7 +670,10 @@ function run() {
         claims.push(...p.claimsOut);
         if (p.spineClaimOut) spineClaims.push(p.spineClaimOut);
         drawnIds.add(ann.id);
-        strands.set(ann.id, strand);
+        /* cradles and local rails never touch the loom — they consume no
+         * strand (-2), so later companions may still share the budget */
+        const strandFree = p.mode === "same-line" || p.mode === "local-tag" || p.mode === "local-comb";
+        strands.set(ann.id, strandFree ? -2 : strand);
       }
       return p.valid;
     } catch (e) {
@@ -733,7 +741,10 @@ function run() {
       : plan && plan.valid
         ? `<span class="chip held">held</span>`
         : `<span class="chip held">${plan && plan.reason ? plan.reason : "held"}</span>`;
-    const strandBadge = isDrawn ? `<span class="strand s${strands.get(ann.id)}">s${strands.get(ann.id)}</span>` : "";
+    const st = strands.get(ann.id);
+    const strandBadge = isDrawn
+      ? (st >= 0 ? `<span class="strand s${st}">s${st}</span>` : `<span class="strand">local</span>`)
+      : "";
     const ex = explainPlan(plan);
     btn.innerHTML = `<span class="frow"><i class="dot" style="background:${HUES[ann.kind]}"></i>
       <span class="fname">${ann.fixture.name}</span>${strandBadge}${chip}</span>
@@ -758,6 +769,8 @@ const weaveBox = document.getElementById("weave-toggle");
 if (weaveBox) weaveBox.addEventListener("change", () => { weaveOn = weaveBox.checked; run(); });
 const cradleBox = document.getElementById("cradle-toggle");
 if (cradleBox) cradleBox.addEventListener("change", () => { cradleOn = cradleBox.checked; run(); });
+const localBox = document.getElementById("local-toggle");
+if (localBox) localBox.addEventListener("change", () => { localOn = localBox.checked; run(); });
 addEventListener("resize", () => requestAnimationFrame(run));
 
 /* a bloomed tick re-renders as a thread, so its own mouseleave can never
