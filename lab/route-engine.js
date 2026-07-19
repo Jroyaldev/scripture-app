@@ -79,6 +79,7 @@ const DROP_MIN = 3.2;    // minimum level change between a contact and its run
 const CONTACT_LEAD = 6;  // straight, colinear horizontal lead at every phrase dot
 const CONTACT_LEAD_MIN = 3; // the lead may shrink this far for measured room, never vanish
 const CORNER = 6;        // the one shared rounded-corner token (section crossings)
+const UNDERLINE_STRIP = 2.25; // bottom strip of a box where underlines (and runs) live
 const SETTLE_MIN = 3.5;  // narrowest legal settle width
 const SETTLE_MAX = 14;   // widest — a settle is a level change, not a journey
 const SWOOP_REACH = 11;  // horizontal length of the port swoop
@@ -687,14 +688,18 @@ export function planRoute(block, ann, opts = {}) {
   const clearRun = (y, xa, xb) =>
     !obstaclesNear(y).some((o) => y > o.top && y < o.bottom && Math.min(xa, xb) < o.right && Math.max(xa, xb) > o.left);
 
-  /* underline-level travel sits below every glyph box on its own line by
-   * construction, so only RAW measured ink (a deep box, a heading, an
-   * intruding obstacle) may forbid it. Expanded clearance skirts are passed
-   * deliberately, under a raw-guarded envelope exempt — this is what lets a
-   * top contact come straight off its underline in ONE level run instead of
-   * jogging down into the corridor and back. */
-  const rawBlocked = (y, xa, xb) => obstaclesNear(y, 2).some((o) => o.raw &&
-    y > o.raw.top - 0.75 && y < o.raw.bottom + 0.75 &&
+  /* The bottom strip of any measured box is where underlines legally live —
+   * a run riding there IS the underline extended, exactly level with it.
+   * Ink begins above the strip: only raw boxes that genuinely CROSS the
+   * run's level (a heading, a drop cap, an intruding obstacle reaching
+   * deeper than the strip) may veto underline-level travel. Expanded
+   * clearance skirts are passed deliberately, under a raw-guarded envelope
+   * exempt — this is what lets a contact come straight off its underline in
+   * ONE level run instead of jogging below and back. */
+  const rawInkAt = (x, y, raw) => x > raw.left && x < raw.right &&
+    y > raw.top - 0.75 && y < raw.bottom - UNDERLINE_STRIP;
+  const rawBlocked = (y, xa, xb) => obstaclesNear(y, 4).some((o) => o.raw &&
+    y > o.raw.top - 0.75 && y < o.raw.bottom - UNDERLINE_STRIP &&
     Math.min(xa, xb) < o.raw.right && Math.max(xa, xb) > o.raw.left);
 
   /* pick a shoulder y inside corridor ci. The hard bounds — DROP_MIN room
@@ -1743,11 +1748,12 @@ export function planRoute(block, ann, opts = {}) {
       for (const o of obstaclesNear(p.y, 32)) {
         if (inRect(p.x, p.y, o)) {
           /* an envelope exempt (guardRaw) buys passage through expanded
-           * clearance skirts only — never through real measured ink */
+           * clearance skirts and the underline strip — never through the
+           * ink zone above the strip */
           const excused = p.ex && p.ex.some((e) =>
             (inRect(p.x, p.y, e.rect) ||
               (!e.guardRaw && Math.hypot(p.x - e.cx, p.y - e.cy) < expand + 1)) &&
-            (!e.guardRaw || !o.raw || !inRect(p.x, p.y, o.raw)));
+            (!e.guardRaw || !o.raw || !rawInkAt(p.x, p.y, o.raw)));
           if (!excused) {
             const f = fail("obstacle-collision");
             f.debug = { x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10, obstacle: o };

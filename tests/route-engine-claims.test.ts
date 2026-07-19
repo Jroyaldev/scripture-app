@@ -214,12 +214,13 @@ test("every route family emits finite normalized horizontal extents", () => {
 
   const localDropFragment = rect(160, 190, 20, 30);
   /* C0.5c: only RAW ink vetoes underline-level travel, and there is no
-   * offset shoulder to dodge into — a raw box sitting on the underline band
-   * holds the route honestly instead of drawing a parallel line below. */
+   * offset shoulder to dodge into — a raw box whose ink zone genuinely
+   * crosses the run's level (deeper than the underline strip) holds the
+   * route honestly instead of drawing a parallel line below. */
   const localBlocked = planRoute(
     makeBlock(
       [rect(80, 320, 20, 30), rect(80, 180, 50, 60)],
-      [rect(150, 155, 20, 33), localDropFragment],
+      [rect(150, 155, 20, 36), localDropFragment],
     ),
     makeAnn("local-blocked", [localDropFragment]),
     common,

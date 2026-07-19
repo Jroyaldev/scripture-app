@@ -2588,6 +2588,13 @@ function drawOverlay(sid, gids) {
     const paintedPlans = [];
     const routeGroups = new Map();
     const ordered = [localFocus, ...companionPriority].filter(Boolean);
+    /* Pin runs on the drawn underline's center, exactly. Fragments are
+     * element rects minus the measured ink slack; adding the same slack
+     * back and stepping up half the underline height lands on the center
+     * of the 1.5px line the .pk paints — font metrics cancel out. */
+    const sheetText = document.querySelector(`[data-sheet="${sid}"] .vtext`);
+    const underlinePinDy = (sheetText ? inkSlackFor(sheetText).bottom : 0)
+      - TG.constants.UNDERLINE_CENTER_OFFSET;
     const planOne = (gid, focused) => {
       const ann = anns.get(gid);
       if (!ann.anchors.length) return { valid: false, reason: "no-anchors" };
@@ -2598,6 +2605,7 @@ function drawOverlay(sid, gids) {
         return hostValidatedPlan(planRoute(block, ann, {
           fontSize, corridorClaims: claims, spineClaims, strandClaims, handoffClaims,
           loomX: leftLoomInner, leftLoomX: leftLoomInner, rightLoomX: rightLoomInner,
+          underlineDy: underlinePinDy,
           sides: ["left", "right"], previousSide: previousTopology?.side || undefined,
           previousTopology: previousTopology || undefined,
           previousSectionSides: previousTopology?.sectionSides || undefined,
@@ -3808,4 +3816,9 @@ syncRadioGroup(atmosphereGroup, atmosphereGroup.querySelector('[aria-checked="tr
 wireRadioKeys(routeGroup);
 wireRadioKeys(atmosphereGroup);
 applyActive();
-if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { redrawActive(); warmBlocks(); drawAllHighlights(); });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => {
+  /* metrics measured before the webfont landed poison the ink-slack cache
+   * (and with it every fragment bottom) — drop them and remeasure */
+  inkSlackFor._cache = new Map();
+  redrawActive(); warmBlocks(); drawAllHighlights();
+});

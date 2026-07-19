@@ -257,8 +257,11 @@ body[data-route="traces"][data-long-text="true"] [data-sheet="rev"] .letter-head
 
 /* ── connection card — the one held connection, nothing else ──
  * The app's Living Margin voice (LivingMargin.tsx / .margin-card): dense UI
- * type, hairline separations, no heavy fills. Flat class names map 1:1 onto
- * a future React <ConnectionCard>; --ccard-hue is the one theming input. */
+ * type, hairline separations, no heavy fills. Ink on paper: the 12×2 kind
+ * tick beside the title is the card's ONLY colored element — every state
+ * (current, hover, away) speaks through the type itself. Flat class names
+ * map 1:1 onto a future React <ConnectionCard>; --ccard-hue is the one
+ * theming input. */
 .ccard {
   display: none;
   width: min(340px, 100%);
@@ -274,10 +277,7 @@ body[data-route="traces"][data-long-text="true"] [data-sheet="rev"] .letter-head
 }
 .ccard.on { display: block; }
 .ccard:focus { outline: none; }
-.ccard:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--ccard-hue, var(--gold)) 60%, transparent);
-  outline-offset: 2px;
-}
+.ccard:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 body.theme-glass .ccard, body.theme-dark-glass .ccard {
   background: color-mix(in srgb, var(--bg-surface) 78%, transparent);
   backdrop-filter: blur(14px);
@@ -297,9 +297,10 @@ body.theme-glass .ccard, body.theme-dark-glass .ccard {
   overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
   font: 500 0.8125rem/1.4 var(--font-ui); color: var(--text-primary);
 }
-.ccard-title[contenteditable] { cursor: text; border-radius: 3px; }
-.ccard-title[contenteditable]:hover { background: var(--bg-canvas); }
-.ccard-title[contenteditable]:focus { outline: 1px solid var(--border-medium); background: var(--bg-canvas); }
+/* rename affordance is a hairline under the words, never a filled field */
+.ccard-title[contenteditable] { cursor: text; }
+.ccard-title[contenteditable]:hover { box-shadow: 0 1px 0 var(--border-medium); }
+.ccard-title[contenteditable]:focus { outline: none; box-shadow: 0 1px 0 var(--border-medium); }
 .ccard-kind {
   margin: 3px 0 8px 20px;
   font: 500 0.6875rem/1.25 var(--font-ui); letter-spacing: 0.075em;
@@ -316,60 +317,67 @@ body.theme-glass .ccard, body.theme-dark-glass .ccard {
 .ccard-note::placeholder { color: var(--text-tertiary); opacity: 0.7; font-style: italic; }
 .ccard-note:focus { outline: none; border-bottom-color: var(--border-medium); }
 
-.ccard-moments { margin: 0; padding: 0; list-style: none; display: grid; gap: 1px; }
-.ccard-moment { display: flex; align-items: center; gap: 4px; min-width: 0; }
+/* moment rows read as a typeset index: right-aligned mono refs, serif
+ * phrases, the state word in quiet small caps. The current row simply sits
+ * at full ink while the others rest — no bars, no fills, no outlines. */
+.ccard-moments { margin: 0; padding: 0; list-style: none; }
+.ccard-moment { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
 .ccard-jump {
   flex: 1; min-width: 0;
-  display: grid; grid-template-columns: 34px minmax(0, 1fr) auto;
-  align-items: baseline; gap: 8px;
-  appearance: none; border: 0; border-radius: var(--r-sm);
+  display: grid; grid-template-columns: 30px minmax(0, 1fr) auto;
+  align-items: baseline; gap: 10px;
+  appearance: none; border: 0; border-radius: 0;
   background: transparent; color: inherit;
-  padding: 4px 6px 4px 2px; text-align: left; cursor: pointer;
-  transition: background var(--tr), opacity var(--tr);
+  padding: 3px 0; text-align: left; cursor: pointer;
 }
-.ccard-jump:hover { background: color-mix(in srgb, var(--ccard-hue, var(--gold)) 8%, transparent); }
-/* the reading position carries the same quiet inset rule as the focus ink */
-.ccard-moment.is-current .ccard-jump {
-  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--ccard-hue) 82%, transparent);
+.ccard-ref {
+  font: 400 0.6875rem/1.5 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right; color: var(--text-tertiary);
 }
-.ccard-ref { font: 500 0.6875rem/1.4 var(--font-mono); color: var(--text-tertiary); }
 .ccard-phrase {
   min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
-  font: 400 0.8125rem/1.4 var(--font-reading); color: var(--text-primary);
+  font: 400 0.8125rem/1.5 var(--font-reading); color: var(--text-secondary);
+  transition: color var(--tr);
 }
 /* off-screen state is plain small text — above, below, here */
 .ccard-state {
-  font: 500 0.575rem/1 var(--font-mono); letter-spacing: 0.08em;
-  text-transform: uppercase; color: var(--text-tertiary);
+  font: 400 0.6875rem/1.5 var(--font-ui);
+  font-variant-caps: all-small-caps; letter-spacing: 0.06em;
+  color: var(--text-tertiary);
 }
+.ccard-moment.is-current .ccard-ref,
+.ccard-moment.is-current .ccard-phrase { color: var(--text-primary); }
+.ccard-jump:hover .ccard-phrase { color: var(--text-primary); }
 .ccard-moment.is-away .ccard-jump { opacity: 0.62; }
 .ccard-remove {
   flex: none; appearance: none; border: 0; background: transparent; cursor: pointer;
-  font: 500 0.6875rem/1 var(--font-ui); color: var(--text-tertiary);
-  padding: 3px 6px; border-radius: var(--r-sm); opacity: 0;
-  transition: opacity var(--tr), color var(--tr), background var(--tr);
+  font: 400 0.6875rem/1 var(--font-ui); color: var(--text-tertiary);
+  padding: 3px 4px; border-radius: 0; opacity: 0;
+  transition: opacity var(--tr), color var(--tr);
 }
 .ccard-moment:hover .ccard-remove, .ccard-remove:focus-visible { opacity: 1; }
-.ccard-remove:hover { color: var(--k-contrast); background: var(--bg-canvas); }
+.ccard-remove:hover { color: var(--text-primary); }
 
+/* actions are rarely used — smaller and quieter than everything above */
 .ccard-actions {
-  display: flex; align-items: center; flex-wrap: wrap; gap: 4px;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
   margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border-subtle);
 }
 .ccard-actions button {
-  appearance: none; border: 0; border-radius: var(--r-sm);
+  appearance: none; border: 0; border-radius: 0;
   background: transparent; color: var(--text-tertiary);
-  padding: 5px 8px; font: 500 0.6875rem/1 var(--font-ui); cursor: pointer;
-  transition: color var(--tr), background var(--tr);
+  padding: 3px 0; font: 400 0.625rem/1 var(--font-ui); letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: color var(--tr);
 }
-.ccard-actions button:hover { color: var(--text-primary); background: var(--bg-canvas); }
-.ccard-actions button.is-danger:hover { color: var(--k-contrast); }
+.ccard-actions button:hover { color: var(--text-primary); }
+/* the gold ring serves keyboard focus only; pointer states stay ink */
 .ccard-jump:focus-visible,
 .ccard-remove:focus-visible,
-.ccard-actions button:focus-visible,
-.ccard-note:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--ccard-hue, var(--gold)) 72%, transparent);
-  outline-offset: -2px;
+.ccard-actions button:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 1px;
 }
 
 /* authoring bar — kinds + highlight rows on select, status chip mid-session.
