@@ -4,8 +4,9 @@
  * phrases ink in, a connector draws itself through the gutter, the rest of
  * the page recedes, and a small whisper names the shape. Click pins it.
  * No dialect switcher, no chrome at rest: one opinionated language.
- * Traces routing is the Loom engine (route-engine.js) — the same planner
- * as route.html; Reading keeps trace-geometry's local bows. */
+ * Both views route with the Loom engine (route-engine.js) — the same planner
+ * as route.html; the Reading/Traces toggle now swaps only the reading aid
+ * (passage-score cards vs. authoring rail), never the connector grammar. */
 import { planRoute, rankCompanions } from "./route-engine.js";
 import { _internals as routeInternals } from "./route-engine.js";
 
@@ -129,6 +130,12 @@ const USER_KEY = "shape-marks-user";
 let USER = [];
 try { USER = JSON.parse(localStorage.getItem(USER_KEY) || "[]"); } catch { USER = []; }
 function saveUser() { localStorage.setItem(USER_KEY, JSON.stringify(USER)); }
+/* The store carries two record species: patterns ({kind, members}) and
+ * highlights ({type:"highlight", color, key}). Untyped records are
+ * patterns, so pre-highlight stores load unchanged. */
+const userPatterns = () => USER.filter((r) => r.type !== "highlight");
+const userHighlights = () => USER.filter((r) => r.type === "highlight");
+const recStudy = (r) => refStudy(r.type === "highlight" ? r.key.ref : r.members[0].ref);
 
 /* A reversible density fixture. Three marks flatter almost any margin; these
  * eleven additional, overlapping relationships make the design answer to a
@@ -446,7 +453,7 @@ function buildGids() {
       });
     }
   }
-  for (const p of USER) {
+  for (const p of userPatterns()) {
     const study = refStudy(p.members[0].ref);
     if (!study) continue;
     addGid(p.id, study, p.kind, `${KIND_LABEL[p.kind]} · ${p.label}`,
@@ -576,6 +583,7 @@ function buildSheets() {
     const sheet = document.querySelector(`[data-sheet="${id}"]`);
     sheet.innerHTML = "";
     for (const gid in GIDS) if (GIDS[gid].study === id) { GIDS[gid].spans = []; GIDS[gid].anchors = []; }
+    sheet.appendChild(S("svg", { class: "hl-underlay" })); // washes beneath the text ink
     const t = document.createElement("div"); t.className = "sheet-title"; t.textContent = cfg.title;
     const r = document.createElement("div"); r.className = "sheet-ref"; r.textContent = cfg.ref;
     sheet.append(t, r);
@@ -634,7 +642,7 @@ function buildSheets() {
     const wh = document.createElement("div"); wh.className = "whisper"; sheet.appendChild(wh);
     const legend = document.createElement("div"); legend.className = "legend";
     const entries = [...LEGEND[id](),
-      ...USER.filter((p) => refStudy(p.members[0].ref) === id)
+      ...userPatterns().filter((p) => refStudy(p.members[0].ref) === id)
         .map((p) => ({ label: `${KIND_LABEL[p.kind]} · ${p.label}`, kind: p.kind, gids: [p.id] }))];
     for (const entry of entries) {
       const chip = document.createElement("span");
@@ -653,6 +661,108 @@ function buildSheets() {
   }
 }
 
+/* ── highlights — a quiet rounded wash behind the exact words ──
+ * Same discipline as the app's HighlightUnderlay/highlightPath.ts: measure
+ * the phrase with a Range (one rect per visual line), merge bands, share
+ * seams between lines, trace one rounded silhouette per record. Washes are
+ * not connections — no connector, no dots, no underline change; they live in
+ * svg.hl-underlay under the ink while patterns keep the layer above. */
+const HL_PAD_H = 2.5, HL_PAD_V = 1.5, HL_RADIUS = 5, HL_JUNCTION = 1.5;
+const HL_HITS = {}; // sid → [{ id, color, rects }] in sheet-relative coords
+
+function hlTextPoint(root, charOffset) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let acc = 0;
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const len = node.textContent.length;
+    if (acc + len >= charOffset) return { node, offset: charOffset - acc };
+    acc += len;
+  }
+  return null;
+}
+/* duplicate rects on one visual line collapse to one band; consecutive
+ * bands then share the exact midpoint seam — no overlap, no gap */
+function hlMergeRects(list) {
+  const sorted = [...list].sort((a, b) => a.y0 - b.y0 || a.x0 - b.x0);
+  const bands = [];
+  for (const r of sorted) {
+    const p = bands[bands.length - 1];
+    if (p && Math.abs(p.y0 - r.y0) <= 1.5 && Math.abs(p.y1 - r.y1) <= 1.5 && r.x0 <= p.x1 + 1.5) {
+      p.x0 = Math.min(p.x0, r.x0); p.y0 = Math.min(p.y0, r.y0);
+      p.x1 = Math.max(p.x1, r.x1); p.y1 = Math.max(p.y1, r.y1);
+    } else bands.push({ ...r });
+  }
+  for (let i = 0; i < bands.length - 1; i++) {
+    const seam = (bands[i].y1 + bands[i + 1].y0) / 2;
+    bands[i].y1 = seam; bands[i + 1].y0 = seam;
+  }
+  return bands;
+}
+/* one rounded outline around the stacked bands — broad exterior corners,
+ * compact ~1.5px eased steps where the text rag changes (the production
+ * tracer's grammar, distilled; near-equal widths read as a straight edge) */
+function hlPath(rects, radius = HL_RADIUS) {
+  const n = rects.length;
+  if (!n) return "";
+  const EPS = 1.5;
+  const f = (v) => Math.round(v * 100) / 100;
+  const rOf = (b) => Math.max(0, Math.min(radius, (b.x1 - b.x0) / 2, (b.y1 - b.y0) / 2));
+  const step = (a, b, delta) =>
+    Math.max(0, Math.min(HL_JUNCTION, (a.y1 - a.y0) / 4, (b.y1 - b.y0) / 4, Math.abs(delta) / 2));
+  const first = rects[0], last = rects[n - 1];
+  const r0 = rOf(first), r1 = rOf(last);
+  let d = `M${f(first.x0 + r0)},${f(first.y0)}L${f(first.x1 - r0)},${f(first.y0)}` +
+    `Q${f(first.x1)},${f(first.y0)} ${f(first.x1)},${f(first.y0 + r0)}`;
+  for (let i = 0; i < n - 1; i++) { // right side, top to bottom
+    const a = rects[i], b = rects[i + 1], seam = a.y1, delta = b.x1 - a.x1;
+    if (Math.abs(delta) <= EPS) { d += `L${f(b.x1)},${f(seam)}`; continue; }
+    const r = step(a, b, delta), s = Math.sign(delta);
+    d += `L${f(a.x1)},${f(seam - r)}Q${f(a.x1)},${f(seam)} ${f(a.x1 + s * r)},${f(seam)}`;
+    d += `L${f(b.x1 - s * r)},${f(seam)}Q${f(b.x1)},${f(seam)} ${f(b.x1)},${f(seam + r)}`;
+  }
+  d += `L${f(last.x1)},${f(last.y1 - r1)}Q${f(last.x1)},${f(last.y1)} ${f(last.x1 - r1)},${f(last.y1)}`;
+  d += `L${f(last.x0 + r1)},${f(last.y1)}Q${f(last.x0)},${f(last.y1)} ${f(last.x0)},${f(last.y1 - r1)}`;
+  for (let i = n - 2; i >= 0; i--) { // left side, bottom to top
+    const a = rects[i], b = rects[i + 1], seam = a.y1, delta = a.x0 - b.x0;
+    if (Math.abs(delta) <= EPS) { d += `L${f(a.x0)},${f(seam)}`; continue; }
+    const r = step(a, b, delta), s = Math.sign(delta);
+    d += `L${f(b.x0)},${f(seam + r)}Q${f(b.x0)},${f(seam)} ${f(b.x0 + s * r)},${f(seam)}`;
+    d += `L${f(a.x0 - s * r)},${f(seam)}Q${f(a.x0)},${f(seam)} ${f(a.x0)},${f(seam - r)}`;
+  }
+  d += `L${f(first.x0)},${f(first.y0 + r0)}Q${f(first.x0)},${f(first.y0)} ${f(first.x0 + r0)},${f(first.y0)}`;
+  return d + "Z";
+}
+function drawHighlights(sid) {
+  const sheet = document.querySelector(`[data-sheet="${sid}"]`);
+  const svg = sheet?.querySelector("svg.hl-underlay");
+  if (!svg) return;
+  const base = sheet.getBoundingClientRect();
+  svg.setAttribute("width", base.width); svg.setAttribute("height", base.height);
+  svg.innerHTML = "";
+  const hits = (HL_HITS[sid] = []);
+  for (const h of userHighlights()) {
+    if (recStudy(h) !== sid) continue;
+    const vt = sheet.querySelector(`.vrow[data-key="${h.key.ref}"] .vtext`);
+    if (!vt) continue;
+    const text = vt.textContent;
+    let idx = -1;
+    for (let occ = 0; occ <= (h.key.occ || 0); occ++) idx = text.indexOf(h.key.phrase, idx + 1);
+    if (idx < 0) continue; // phrase absent in this rendering — record kept, wash silent
+    const start = hlTextPoint(vt, idx), end = hlTextPoint(vt, idx + h.key.phrase.length);
+    if (!start || !end) continue;
+    const range = document.createRange();
+    range.setStart(start.node, start.offset); range.setEnd(end.node, end.offset);
+    const rects = hlMergeRects([...range.getClientRects()].map((r) => ({
+      x0: r.left - base.left - HL_PAD_H, y0: r.top - base.top - HL_PAD_V,
+      x1: r.right - base.left + HL_PAD_H, y1: r.bottom - base.top + HL_PAD_V,
+    })));
+    if (!rects.length) continue;
+    S("path", { d: hlPath(rects), fill: `var(--hl-${h.color})`, "data-hl": h.id }, svg);
+    hits.push({ id: h.id, color: h.color, rects });
+  }
+}
+function drawAllHighlights() { for (const sid of Object.keys(SHEETS)) drawHighlights(sid); }
+
 /* ── overlay: connectors that draw themselves on awaken ──── */
 function measure(sid) {
   const sheet = document.querySelector(`[data-sheet="${sid}"]`);
@@ -666,10 +776,6 @@ function measure(sid) {
     textRight = Math.max(textRight, r.right - base.left);
   });
   return { sheet, svg, base, textLeft, textRight };
-}
-function measureAnchor(M, anchor, underlineOffset = 0) {
-  const rects = (anchor.els || [anchor.el]).flatMap((el) => TG.relativeClientRects(M.base, el.getClientRects()));
-  return TG.planMember(rects, underlineOffset);
 }
 function animDraw(p, ms = 340) {
   if (REDUCED_MOTION) return;
@@ -731,7 +837,10 @@ function ribbonDraw(g, pts, hue, { w = 1.6, opacity = 1, delay = 0, dur = 380, r
   return p;
 }
 const ROUTE_KEY = "shape-marks-route";
-let ROUTE = localStorage.getItem(ROUTE_KEY) === "bows" ? "bows" : "traces";
+/* Two views, one connector grammar: "reading" = passage-score cards, "traces"
+ * = authoring rail. The overlay is identical in both; the value only picks the
+ * reading aid. ("bows" is the retired pre-C0.5 value — migrate it forward.) */
+let ROUTE = /^(reading|bows)$/.test(localStorage.getItem(ROUTE_KEY) || "") ? "reading" : "traces";
 document.body.dataset.route = ROUTE;
 let FOCUS_GID = null;
 const MAX_MARGIN_TRACES = 4;
@@ -2447,68 +2556,6 @@ function traceDot(g, point, hue, delay = 0, radius = TG.constants.TOUCH_RADIUS, 
   return dot;
 }
 
-function drawWrappedTerminals(g, members, hue, endpoints) {
-  const occupied = new Set(endpoints.map((point) => `${point.x.toFixed(2)}:${point.y.toFixed(2)}`));
-  members.forEach((member) => {
-    if (member.fragments.length < 2) return;
-    member.continuationContacts.forEach((point) => {
-      const key = `${point.x.toFixed(2)}:${point.y.toFixed(2)}`;
-      if (!occupied.has(key)) traceDot(g, point, hue, 120, 1.35, 0.72);
-    });
-  });
-}
-
-/* one line type for every kind — the ribbon, in the kind's hue */
-function renderKindPath(g, plan, hue) {
-  const w = plan.mode === "far" ? 1.55 : plan.mode === "same-line" ? 1.35 : 1.2;
-  ribbonDraw(g, plan.points, hue, { w, delay: 50, dur: 360 });
-}
-
-function drawArc(g, a, b, hue, stagger, gutterX, lineHeight) {
-  const plan = TG.planArc(a, b, { gutterX, laneOffset: stagger, lineHeight });
-  g.dataset.distance = plan.mode;
-  g.dataset.route = plan.route || "cradle";
-  if (plan.route === "corridor") {
-    g.dataset.laneX = plan.laneX;
-    g.dataset.corridorTop = plan.corridorTop;
-    g.dataset.corridorBottom = plan.corridorBottom;
-  }
-  renderKindPath(g, plan, hue);
-  traceDot(g, plan.start, hue, 30);
-  traceDot(g, plan.end, hue, 390);
-  drawWrappedTerminals(g, [a, b], hue, [plan.start, plan.end]);
-  return plan;
-}
-
-function threadPath(g, d, hue, role, opacity = 0.66, delay = 40) {
-  const path = S("path", {
-    d, fill: "none", stroke: hue, "stroke-width": 1.1,
-    "stroke-linecap": "round", "stroke-linejoin": "round", opacity,
-    "data-role": role,
-  }, g);
-  animFade(path, 240, delay);
-  return path;
-}
-
-function drawThread(g, members, hue, laneX, lineHeight) {
-  const plan = TG.planThread(members, { laneX, lineHeight });
-  if (!plan) return null;
-  g.dataset.distance = plan.mode;
-  g.dataset.route = plan.route || "thread";
-
-  if (plan.mode === "inline-thread") {
-    threadPath(g, `M ${plan.spine.start.x} ${plan.spine.start.y} H ${plan.spine.end.x}`, hue, "spine", 0.72);
-    plan.branches.forEach((branch, index) => threadPath(g, branch.d, hue, "shoulder", 0.62, 60 + index * 24));
-  } else {
-    plan.branches.forEach((branch, index) => threadPath(g, branch.d, hue, "shoulder", 0.62, 60 + index * 24));
-    threadPath(g, `M ${plan.spine.start.x} ${plan.spine.start.y} V ${plan.spine.end.y}`, hue, "spine", 0.74, 30);
-  }
-
-  plan.contacts.forEach((contact, index) => traceDot(g, contact, hue, 70 + index * 24));
-  drawWrappedTerminals(g, members, hue, plan.contacts);
-  return plan;
-}
-
 function drawOverlay(sid, gids) {
   const sheet = document.querySelector(`[data-sheet="${sid}"]`);
   const svg = sheet.querySelector("svg.overlay");
@@ -2534,15 +2581,11 @@ function drawOverlay(sid, gids) {
   const lineHeight = parseFloat(getComputedStyle(M.sheet.querySelector(".vtext")).lineHeight) || 26;
   const preview = [...hovered].filter((gid) => GIDS[gid]?.study === sid).at(-1);
   const localFocus = preview || (FOCUS_GID && gids.includes(FOCUS_GID) ? FOCUS_GID : gids.at(-1));
-  /* Annotation lines remain the primary Traces language. Density is handled
-   * through progressive disclosure: the focused line plus the three most
-   * recent comparisons receive deterministic gutter lanes. Everything held
-   * still remains directly switchable in the passage score. */
-  const inked = ROUTE === "traces"
-    ? [...gids.filter((gid) => gid !== localFocus).slice(-(MAX_MARGIN_TRACES - 1)), localFocus].filter(Boolean)
-    : gids;
-
-  if (ROUTE === "traces") {
+  /* C0.5: one overlay grammar for both views. Reading retired its local bows;
+   * the Loom engine now plans every inked trace and everything held becomes a
+   * quiet rail tick. The Reading/Traces toggle changes only the reading aid
+   * (cards vs. rail), never the connectors. */
+  {
     /* the Loom engine plans every inked trace: focused first (it claims
      * corridors and strand 0 first), then companions ranked BESIDE the
      * focus (engine rankCompanions) with ~35px lane hysteresis so lanes
@@ -2854,24 +2897,7 @@ function drawOverlay(sid, gids) {
     }
 
     TICK_FOCUS_KEYS.delete(sid);
-    return;
   }
-
-  inked.forEach((gid, i) => {
-    const G = GIDS[gid];
-    const members = G.anchors.map((anchor) => measureAnchor(M, anchor)).filter(Boolean);
-    if (members.length < 2) return;
-    const isFocus = gid === localFocus;
-    const lane = isFocus ? 0 : i + 1;
-    const g = S("g", {
-      class: "reading-annotation",
-      "data-gid": gid,
-    }, svg);
-    g.dataset.kind = G.kind;
-    const marginLaneX = M.textLeft - 46;
-    if (G.conn === "thread") drawThread(g, members, G.hue, marginLaneX - lane * 10, lineHeight);
-    else drawArc(g, members[0], members[members.length - 1], G.hue, lane * 10, marginLaneX, lineHeight);
-  });
 }
 
 /* ── awaken state ────────────────────────────────────────── */
@@ -3014,39 +3040,12 @@ function traceKindClass(kind) {
   return kind.replace("link:", "").replace(/[^a-z-]/g, "-");
 }
 
-function traceKindMark(kind, hue) {
-  /* one line type — the kind speaks as hue, named in the row's own text */
-  const common = `fill="none" stroke="${hue}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"`;
-  return `<svg class="trace-kind-mark" viewBox="0 0 44 14" aria-hidden="true"><path d="M2 7 H42" ${common}/></svg>`;
+/* one card language: the kind tick is a short rule — an echo of the line
+ * vocabulary, never an icon. Hue carries the kind; text names it. */
+function kindTick(hue) {
+  return `<i class="card-tick"${hue ? ` style="background:${hue}"` : ""} aria-hidden="true"></i>`;
 }
-
-function traceOverview(G) {
-  const sheet = document.querySelector(`[data-sheet="${G.study}"]`);
-  const rows = [...sheet.querySelectorAll(".vrow")];
-  const indexes = G.anchors.map((a) => Math.max(0, rows.indexOf(a.el.closest(".vrow"))));
-  const denom = Math.max(1, rows.length - 1);
-  const totals = new Map();
-  const seen = new Map();
-  indexes.forEach((n) => totals.set(n, (totals.get(n) || 0) + 1));
-  const xs = indexes.map((n) => {
-    const base = 7 + (n / denom) * 78;
-    const total = totals.get(n) || 1;
-    if (total === 1) return base;
-    const ordinal = seen.get(n) || 0;
-    seen.set(n, ordinal + 1);
-    const spread = Math.min(14, total * 5);
-    const start = Math.max(7, Math.min(85 - spread, base - spread / 2));
-    return start + (ordinal / (total - 1)) * spread;
-  });
-  const min = Math.min(...xs), max = Math.max(...xs);
-  const hue = G.hue;
-  const cls = traceKindClass(G.kind);
-  const stops = xs.map((x) => `<path d="M${x.toFixed(1)} 5 V13"/>`).join("");
-  return `<svg class="trace-overview is-${cls}" viewBox="0 0 92 18" aria-hidden="true" style="--trace-hue:${hue}">
-    <path class="trace-overview-rule" d="M${min.toFixed(1)} 9 H${max.toFixed(1)}"/>
-    <g class="trace-overview-stops">${stops}</g>
-  </svg>`;
-}
+function momentsWord(n) { return `${n} ${n === 1 ? "moment" : "moments"}`; }
 
 function focusTrace(gid, { pin = true } = {}) {
   if (!GIDS[gid]) return;
@@ -3059,6 +3058,44 @@ function focusTrace(gid, { pin = true } = {}) {
   FOCUS_GID = gid;
   hovered.clear();
   applyActive();
+}
+
+/* highlights close the index: one quiet row per wash — swatch, phrase, ref.
+ * No expansion, no notes; remove speaks the authoring chip's language. */
+function appendHighlightGroup(stage, sid) {
+  const hls = userHighlights().filter((h) => recStudy(h) === sid);
+  if (!hls.length) return;
+  const group = document.createElement("div");
+  group.className = "hl-group";
+  const head = document.createElement("div");
+  head.className = "hl-group-head";
+  head.innerHTML = `<span class="trace-kicker">Highlights</span><span class="trace-stage-meta">${hls.length}</span>`;
+  group.appendChild(head);
+  for (const h of hls) {
+    const [book, ch, v] = h.key.ref.split(".");
+    const row = document.createElement("div");
+    row.className = "hl-row";
+    const jump = document.createElement("button");
+    jump.type = "button";
+    jump.className = "hl-jump";
+    jump.setAttribute("aria-label", `${book} ${ch}:${v}, ${h.key.phrase}, ${h.color} highlight`);
+    jump.innerHTML = `<i class="hl-swatch" style="background:var(--hl-${h.color});border-color:color-mix(in srgb, var(--hl-${h.color}-ink) 55%, transparent)" aria-hidden="true"></i>
+      <span class="trace-member-copy"><span class="trace-member-ref">${book} ${ch}:${v}</span><span class="trace-member-phrase">${h.key.phrase}</span></span>`;
+    jump.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const el = document.querySelector(`[data-sheet="${sid}"] .vrow[data-key="${h.key.ref}"]`);
+      el?.scrollIntoView({ behavior: REDUCED_MOTION ? "auto" : "smooth", block: "center" });
+    });
+    const rm = document.createElement("button");
+    rm.type = "button";
+    rm.className = "hl-remove";
+    rm.setAttribute("aria-label", `remove ${h.color} highlight`);
+    rm.textContent = "Remove";
+    rm.addEventListener("click", (e) => { e.stopPropagation(); removeHighlight(h.id); });
+    row.append(jump, rm);
+    group.appendChild(row);
+  }
+  stage.appendChild(group);
 }
 
 function updateTraceStages() {
@@ -3095,6 +3132,7 @@ function updateTraceStages() {
       empty.className = "trace-stage-empty";
       empty.textContent = "Select words in the passage to begin its first trace.";
       stage.appendChild(empty);
+      appendHighlightGroup(stage, sid);
       continue;
     }
 
@@ -3105,6 +3143,12 @@ function updateTraceStages() {
       : "Choose an annotation to draw its source path through the passage margin.";
     stage.appendChild(intro);
 
+    /* drawn = the route is inked in the margin right now (focus + the ranked
+     * companions the overlay actually painted); everything else held is a tick */
+    const inkedNow = LAST_INKED.get(sid) || new Set();
+    const planValid = (gid) => Boolean(LAST_PLANS.get(sid)?.get(gid)?.valid);
+    const drawnNow = (gid) => (gid === active || inkedNow.has(gid)) && planValid(gid);
+
     const list = document.createElement("div");
     list.className = "trace-list";
     for (const G of all) {
@@ -3114,6 +3158,7 @@ function updateTraceStages() {
       track.className = `trace-track is-${traceKindClass(G.kind)}${isHeld ? " is-held" : ""}${isActive ? " is-active" : ""}`;
       track.style.setProperty("--trace-hue", G.hue);
       track.dataset.gid = G.gid;
+      track.dataset.state = drawnNow(G.gid) ? "drawn" : isHeld || isActive ? "held" : "";
       const trackPlan = LAST_PLANS.get(sid)?.get(G.gid);
       if (Number.isFinite(trackPlan?.score)) track.dataset.score = String(trackPlan.score);
       if (Number.isFinite(trackPlan?.scoreRaw)) track.dataset.scoreRaw = String(trackPlan.scoreRaw);
@@ -3126,9 +3171,9 @@ function updateTraceStages() {
       trackHead.type = "button";
       trackHead.dataset.traceFocus = "head";
       trackHead.setAttribute("aria-expanded", isActive);
-      trackHead.innerHTML = `<span class="trace-track-sign">${traceKindMark(G.kind, G.hue)}</span>
-        <span class="trace-track-copy"><span class="trace-track-kind">${KIND_LABEL[G.kind]}</span><strong>${traceTitle(G)}</strong></span>
-        <span class="trace-track-count">${G.anchors.length}</span>${traceOverview(G)}`;
+      trackHead.innerHTML = `${kindTick()}
+        <span class="trace-track-copy"><strong>${traceTitle(G)}</strong><span class="trace-track-kind">${KIND_LABEL[G.kind]} · ${momentsWord(G.anchors.length)}</span></span>
+        <span class="trace-track-state"></span>`;
       trackHead.addEventListener("click", (e) => { e.stopPropagation(); focusTrace(G.gid); });
       track.appendChild(trackHead);
 
@@ -3179,6 +3224,55 @@ function updateTraceStages() {
           renameLabel.appendChild(rename);
           detail.appendChild(renameLabel);
         }
+        /* card order: observation first, then the source path, actions last */
+        const noteLabel = document.createElement("label");
+        noteLabel.className = "trace-note";
+        noteLabel.appendChild(Object.assign(document.createElement("span"), { textContent: "Observation" }));
+        const note = document.createElement("textarea");
+        note.rows = 2;
+        note.dataset.traceFocus = "note";
+        note.placeholder = "Why do these moments belong together?";
+        note.value = getNote(G.gid);
+        /* The score is rebuilt when another trace receives focus. Persist on
+         * input so that rebuild cannot outrun a pending blur/change event. */
+        note.addEventListener("input", () => setNote(G.gid, note.value));
+        note.addEventListener("click", (e) => e.stopPropagation());
+        noteLabel.appendChild(note);
+        detail.appendChild(noteLabel);
+
+        const score = document.createElement("ol");
+        score.className = `trace-score is-${traceKindClass(G.kind)}`;
+        score.setAttribute("aria-label", `${traceTitle(G)} source path`);
+        G.anchors.forEach((a, index) => {
+          const member = document.createElement("li");
+          member.className = "trace-member";
+          member._el = a.el;
+          const jump = document.createElement("button");
+          jump.type = "button";
+          jump.className = "trace-member-jump";
+          jump.dataset.traceFocus = `member-${index}`;
+          const [book, ch, v] = a.ref.split(".");
+          jump.setAttribute("aria-label", `${book} ${ch}:${v}, ${a.phrase}`);
+          jump.innerHTML = `<span class="trace-member-copy"><span class="trace-member-ref">${book} ${ch}:${v}</span><span class="trace-member-phrase">${a.phrase}</span></span>
+            <span class="trace-member-state" aria-hidden="true"></span>`;
+          jump.addEventListener("click", (e) => {
+            e.stopPropagation();
+            a.el.scrollIntoView({ behavior: REDUCED_MOTION ? "auto" : "smooth", block: "center" });
+            requestAnimationFrame(() => { FOCUS_GID = G.gid; applyActive(); });
+          });
+          member.appendChild(jump);
+          if (G.gid.startsWith("u-")) {
+            const remove = document.createElement("button");
+            remove.type = "button"; remove.className = "trace-member-remove";
+            remove.dataset.traceFocus = `remove-${index}`;
+            remove.textContent = "Remove";
+            remove.addEventListener("click", (e) => { e.stopPropagation(); removeMember(G.gid, a.ref, a.phrase, a.occ); });
+            member.appendChild(remove);
+          }
+          score.appendChild(member);
+        });
+        detail.appendChild(score);
+
         const actions = document.createElement("div");
         actions.className = "trace-actions";
         const exportBtn = document.createElement("button");
@@ -3204,60 +3298,12 @@ function updateTraceStages() {
           actions.prepend(add); actions.append(del);
         }
         detail.appendChild(actions);
-
-        const score = document.createElement("ol");
-        score.className = `trace-score is-${traceKindClass(G.kind)}`;
-        score.setAttribute("aria-label", `${traceTitle(G)} source path`);
-        G.anchors.forEach((a, index) => {
-          const member = document.createElement("li");
-          member.className = "trace-member";
-          member._el = a.el;
-          const jump = document.createElement("button");
-          jump.type = "button";
-          jump.className = "trace-member-jump";
-          jump.dataset.traceFocus = `member-${index}`;
-          const [book, ch, v] = a.ref.split(".");
-          jump.setAttribute("aria-label", `${book} ${ch}:${v}, ${a.phrase}`);
-          jump.innerHTML = `<span class="trace-stop" aria-hidden="true">${String(index + 1).padStart(2, "0")}</span>
-            <span class="trace-member-copy"><span class="trace-member-ref">${book} ${ch}:${v}</span><span class="trace-member-phrase">${a.phrase}</span></span>
-            <span class="trace-member-state" aria-hidden="true"></span>`;
-          jump.addEventListener("click", (e) => {
-            e.stopPropagation();
-            a.el.scrollIntoView({ behavior: REDUCED_MOTION ? "auto" : "smooth", block: "center" });
-            requestAnimationFrame(() => { FOCUS_GID = G.gid; applyActive(); });
-          });
-          member.appendChild(jump);
-          if (G.gid.startsWith("u-")) {
-            const remove = document.createElement("button");
-            remove.type = "button"; remove.className = "trace-member-remove";
-            remove.dataset.traceFocus = `remove-${index}`;
-            remove.textContent = "Remove";
-            remove.addEventListener("click", (e) => { e.stopPropagation(); removeMember(G.gid, a.ref, a.phrase, a.occ); });
-            member.appendChild(remove);
-          }
-          score.appendChild(member);
-        });
-        detail.appendChild(score);
-
-        const noteLabel = document.createElement("label");
-        noteLabel.className = "trace-note";
-        noteLabel.appendChild(Object.assign(document.createElement("span"), { textContent: "Observation" }));
-        const note = document.createElement("textarea");
-        note.rows = 2;
-        note.dataset.traceFocus = "note";
-        note.placeholder = "Why do these moments belong together?";
-        note.value = getNote(G.gid);
-        /* The score is rebuilt when another trace receives focus. Persist on
-         * input so that rebuild cannot outrun a pending blur/change event. */
-        note.addEventListener("input", () => setNote(G.gid, note.value));
-        note.addEventListener("click", (e) => e.stopPropagation());
-        noteLabel.appendChild(note);
-        detail.appendChild(noteLabel);
         track.appendChild(detail);
       }
       list.appendChild(track);
     }
     stage.appendChild(list);
+    appendHighlightGroup(stage, sid);
     if (priorFocus) {
       const nextTrack = [...list.querySelectorAll(".trace-track")]
         .find((track) => track.dataset.gid === priorFocus.gid);
@@ -3298,7 +3344,7 @@ function updateCard() {
       const G = GIDS[gid];
       const sec = document.createElement("div"); sec.className = "pcard-sec";
       const head = document.createElement("div"); head.className = "pcard-head";
-      head.innerHTML = `<svg width="8" height="8"><circle cx="4" cy="4" r="3" fill="${G.hue}"/></svg>`;
+      head.innerHTML = kindTick(G.hue);
       const title = document.createElement("span"); title.className = "pcard-title";
       if (gid.startsWith("u-")) {
         const rec = USER.find((p) => p.id === gid);
@@ -3314,7 +3360,7 @@ function updateCard() {
         });
         title.addEventListener("click", (ev) => ev.stopPropagation());
       } else {
-        title.textContent = G.label;
+        title.textContent = traceTitle(G); // kind already speaks in the meta line
       }
       const exp = document.createElement("button"); exp.className = "pcard-x"; exp.textContent = "⤓";
       exp.title = "export as card";
@@ -3336,6 +3382,25 @@ function updateCard() {
       });
       head.appendChild(close);
       sec.appendChild(head);
+      /* same anatomy as the Traces track: quiet kind label + moments + state */
+      const inkedNow = LAST_INKED.get(sid) || new Set();
+      const focusNow = FOCUS_GID && gids.includes(FOCUS_GID) ? FOCUS_GID : gids.at(-1);
+      const drawn = (gid === focusNow || inkedNow.has(gid)) && Boolean(LAST_PLANS.get(sid)?.get(gid)?.valid);
+      const meta = document.createElement("div"); meta.className = "pcard-kind";
+      meta.textContent = `${KIND_LABEL[G.kind]} · ${momentsWord(G.anchors.length)} · ${drawn ? "drawn" : "held"}`;
+      sec.appendChild(meta);
+      const note = document.createElement("textarea");
+      note.className = "pcard-note";
+      note.rows = 1;
+      note.placeholder = "why these? note an observation…";
+      note.value = getNote(gid);
+      const grow = () => { note.style.height = "auto"; note.style.height = note.scrollHeight + "px"; };
+      note.addEventListener("input", grow);
+      note.addEventListener("change", () => setNote(gid, note.value));
+      note.addEventListener("click", (ev) => ev.stopPropagation());
+      note.addEventListener("mouseup", (ev) => ev.stopPropagation());
+      sec.appendChild(note);
+      requestAnimationFrame(grow);
       for (const a of G.anchors) {
         const row = document.createElement("div"); row.className = "pcard-row";
         const [, ch, v] = a.ref.split(".");
@@ -3362,18 +3427,6 @@ function updateCard() {
         add.addEventListener("click", (e) => { e.stopPropagation(); startExtend(gid); });
         sec.appendChild(add);
       }
-      const note = document.createElement("textarea");
-      note.className = "pcard-note";
-      note.rows = 1;
-      note.placeholder = "why these? note an observation…";
-      note.value = getNote(gid);
-      const grow = () => { note.style.height = "auto"; note.style.height = note.scrollHeight + "px"; };
-      note.addEventListener("input", grow);
-      note.addEventListener("change", () => setNote(gid, note.value));
-      note.addEventListener("click", (ev) => ev.stopPropagation());
-      note.addEventListener("mouseup", (ev) => ev.stopPropagation());
-      sec.appendChild(note);
-      requestAnimationFrame(grow);
       card.appendChild(sec);
     }
     card.classList.add("on");
@@ -3381,18 +3434,31 @@ function updateCard() {
   updateCardView();
 }
 function updateCardView() {
+  /* off-screen speaks in plain words, everywhere the card language lives */
   document.querySelectorAll(".pcard.on .pcard-row").forEach((row) => {
     const r = row._el.getBoundingClientRect();
-    const off = r.bottom < 60 ? "↑" : r.top > innerHeight - 30 ? "↓" : "";
+    const off = r.bottom < 60 ? "above" : r.top > innerHeight - 30 ? "below" : "";
     row.classList.toggle("off", !!off);
     row.querySelector(".pr-dir").textContent = off;
+  });
+  document.querySelectorAll(".trace-track[data-state]").forEach((track) => {
+    const base = track.dataset.state;
+    const state = track.querySelector(".trace-track-state");
+    if (!state) return;
+    if (!base) { state.textContent = ""; return; }
+    const G = GIDS[track.dataset.gid];
+    const allAway = G?.anchors.length && G.anchors.every((a) => {
+      const r = a.el.getBoundingClientRect();
+      return r.bottom < 72 || r.top > innerHeight - 36;
+    });
+    state.textContent = allAway ? "off screen" : base;
   });
   const members = [...document.querySelectorAll(".trace-track.is-active .trace-member")];
   let closest = null;
   let closestDistance = Infinity;
   members.forEach((member) => {
     const r = member._el.getBoundingClientRect();
-    const off = r.bottom < 72 ? "↑" : r.top > innerHeight - 36 ? "↓" : "";
+    const off = r.bottom < 72 ? "above" : r.top > innerHeight - 36 ? "below" : "";
     member.classList.toggle("is-away", !!off);
     const state = member.querySelector(".trace-member-state");
     state.textContent = off || "here";
@@ -3546,14 +3612,16 @@ const KIND_DEF = {
   series: "the same phrase recurring — a refrain",
   hinge: "one line that weighs both sides",
 };
-const DEF_RESTING = "what kind of connection is this?";
+const DEF_RESTING = "connect the words — or lay a wash";
 
+/* one menu, two quiet rows: connection kinds above, highlight washes below.
+ * Same selection gesture feeds both; a divider keeps the vocabularies apart. */
 function showKindPalette(info) {
   authbar.innerHTML = "";
   authbar.classList.add("palette");
-  const row = document.createElement("div"); row.className = "authrow";
   const def = document.createElement("div"); def.className = "authdef";
   def.textContent = DEF_RESTING;
+  const row = document.createElement("div"); row.className = "authrow";
   for (const kind of AUTHOR_KINDS) {
     const b = document.createElement("button");
     b.className = "ak";
@@ -3567,7 +3635,22 @@ function showKindPalette(info) {
     row.appendChild(b);
   }
   row.addEventListener("mouseleave", () => { def.textContent = DEF_RESTING; });
-  authbar.append(row, def);
+  const hlrow = document.createElement("div"); hlrow.className = "authrow hlrow";
+  for (const color of HIGHLIGHT_COLORS) {
+    const b = document.createElement("button");
+    b.className = "ak hl";
+    b.setAttribute("aria-label", `highlight ${color}`);
+    b.innerHTML = `<i style="background:var(--hl-${color}-ink)"></i>${color}`;
+    b.addEventListener("mousedown", (e) => e.preventDefault()); // keep the selection
+    b.addEventListener("mouseenter", () => { def.textContent = `a quiet ${color} wash behind these words`; });
+    b.addEventListener("click", (e) => {
+      e.stopPropagation();
+      createHighlight(info, color);
+    });
+    hlrow.appendChild(b);
+  }
+  hlrow.addEventListener("mouseleave", () => { def.textContent = DEF_RESTING; });
+  authbar.append(row, hlrow, def);
   authbar.classList.add("on");
   placeAuthbar(info.range.getBoundingClientRect());
 }
@@ -3665,6 +3748,62 @@ function endSession() {
   document.querySelectorAll("svg.overlay").forEach((s) => { s.dataset.key = "~"; });
   applyActive();
 }
+function createHighlight(info, color) {
+  USER.push({
+    id: `h-${Date.now()}`, type: "highlight", color,
+    key: { ref: info.ref, phrase: info.phrase, ...(info.occ ? { occ: info.occ } : {}) },
+  });
+  saveUser();
+  getSelection().removeAllRanges();
+  authbar.classList.remove("on");
+  rebuildAll();
+  applyActive();
+}
+
+/* removing a highlight — click the washed words while nothing is selected
+ * and a small chip offers the one action a wash has */
+const hlbar = document.createElement("div");
+hlbar.className = "hlbar";
+document.body.appendChild(hlbar);
+function hideHlbar() { hlbar.classList.remove("on"); }
+function highlightAt(sid, x, y) {
+  const sheet = document.querySelector(`[data-sheet="${sid}"]`);
+  if (!sheet) return null;
+  const base = sheet.getBoundingClientRect();
+  const px = x - base.left, py = y - base.top;
+  const list = HL_HITS[sid] || [];
+  for (let i = list.length - 1; i >= 0; i--) { // last drawn wins, like paint order
+    if (list[i].rects.some((r) => px >= r.x0 && px <= r.x1 && py >= r.y0 && py <= r.y1)) return list[i];
+  }
+  return null;
+}
+function showHlRemove(hit, x, y) {
+  hlbar.innerHTML = "";
+  const b = document.createElement("button");
+  b.className = "ak";
+  b.setAttribute("aria-label", `remove ${hit.color} highlight`);
+  b.innerHTML = `<i style="background:var(--hl-${hit.color}-ink)"></i>remove highlight`;
+  b.addEventListener("click", (e) => {
+    e.stopPropagation();
+    removeHighlight(hit.id);
+    hideHlbar();
+  });
+  hlbar.appendChild(b);
+  hlbar.classList.add("on");
+  hlbar.style.left = Math.max(12, Math.min(x - hlbar.offsetWidth / 2, innerWidth - hlbar.offsetWidth - 12)) + "px";
+  hlbar.style.top = Math.max(60, y - 40) + "px";
+}
+function removeHighlight(id) {
+  const snap = JSON.stringify(USER);
+  USER = USER.filter((r) => r.id !== id);
+  saveUser();
+  rebuildAll();
+  applyActive();
+  offerUndo("highlight removed", snap);
+}
+document.addEventListener("mousedown", (e) => { if (!e.target.closest?.(".hlbar")) hideHlbar(); });
+addEventListener("scroll", hideHlbar, { passive: true });
+
 function deleteUserPattern(gid, silent) {
   const snap = JSON.stringify(USER);
   USER = USER.filter((p) => p.id !== gid);
@@ -3736,6 +3875,7 @@ function scheduleResponsiveRedraw() {
      * reclaim the visible score position instead of restoring stale scrollTop. */
     for (const stage of Object.values(TRACE_STAGES)) stage.dataset.active = "";
     redrawActive();
+    drawAllHighlights();
   });
 }
 
@@ -3819,6 +3959,12 @@ function wire() {
     });
     scope.addEventListener("click", (e) => {
       if (SESSION || !getSelection().isCollapsed) return; // authoring owns the gesture
+      // a click on washed words offers the highlight's one edit: remove.
+      // The chip rides alongside pattern cycling, so a wash stays removable
+      // even when a pattern claims the same words.
+      const sheetEl = e.target.closest(".sheet");
+      const hit = sheetEl ? highlightAt(sheetEl.dataset.sheet, e.clientX, e.clientY) : null;
+      if (hit) showHlRemove(hit, e.clientX, e.clientY);
       const t = e.target.closest("[data-gids]");
       if (!t) {
         if (pinned.size && !e.target.closest(".rail")) { pinned.clear(); applyActive(); }
@@ -3847,6 +3993,7 @@ function wire() {
   });
   addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
+    if (hlbar.classList.contains("on")) { hideHlbar(); return; }
     if (SESSION) { endSession(); return; }
     if (pinned.size || hovered.size) {
       pinned.clear(); hovered.clear(); applyActive(); hideWhisper();
@@ -3859,6 +4006,9 @@ function wire() {
     document.body.dataset.route = ROUTE;
     syncRadioGroup(e.currentTarget, b);
     redrawActive();
+    /* the view toggle reflows the reading column — washes must remeasure
+     * with the connectors, not a ResizeObserver frame later */
+    drawAllHighlights();
   });
   document.getElementById("density-btn").addEventListener("click", (e) => {
     DENSITY_MODE = !DENSITY_MODE;
@@ -3960,11 +4110,12 @@ function rebuildAll() {
   for (const s of Object.keys(SHEETS)) {
     const pre = document.querySelector(`[data-payload="${s}"]`);
     if (!pre) continue;
-    const mine = USER.filter((p) => refStudy(p.members[0].ref) === s);
+    const mine = USER.filter((p) => recStudy(p) === s);
     const builtIn = s === "qa" ? (ANGLE_MODE ? GEOMETRY_FIXTURE.patterns : []) : PATTERNS[s];
     pre.textContent = JSON.stringify(mine.length ? { builtIn, yours: mine } : builtIn, null, 2);
   }
   warmBlocks();
+  drawAllHighlights();
 }
 rebuildAll();
 buildRevPanel();
@@ -3977,4 +4128,4 @@ syncRadioGroup(atmosphereGroup, atmosphereGroup.querySelector('[aria-checked="tr
 wireRadioKeys(routeGroup);
 wireRadioKeys(atmosphereGroup);
 applyActive();
-if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { redrawActive(); warmBlocks(); });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { redrawActive(); warmBlocks(); drawAllHighlights(); });

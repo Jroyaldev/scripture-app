@@ -25,6 +25,18 @@
   /* rest-state affordance: wash behind the words (light) / tint of the words (dark) */
   --wash: 13%;
   --tint: 0%;
+
+  /* highlight pigments — sober, closed vocabulary (patterns.js). The -ink var
+   * is the chip pigment; the bare name is the wash laid under the text,
+   * mixed to a restrained strength per atmosphere. */
+  --hl-amber-ink: #C89B3C; --hl-sage-ink: #7FA46B; --hl-sky-ink: #6E9BC8;
+  --hl-rose-ink: #C87F96; --hl-violet-ink: #9B84C4;
+  --hl-wash: 30%;
+  --hl-amber: color-mix(in srgb, var(--hl-amber-ink) var(--hl-wash), transparent);
+  --hl-sage: color-mix(in srgb, var(--hl-sage-ink) var(--hl-wash), transparent);
+  --hl-sky: color-mix(in srgb, var(--hl-sky-ink) var(--hl-wash), transparent);
+  --hl-rose: color-mix(in srgb, var(--hl-rose-ink) var(--hl-wash), transparent);
+  --hl-violet: color-mix(in srgb, var(--hl-violet-ink) var(--hl-wash), transparent);
 }
 
 body.theme-dark, body.theme-dark-glass {
@@ -42,6 +54,20 @@ body.theme-dark, body.theme-dark-glass {
   --k-series:   #EBBE5A;
   --wash: 0%;
   --tint: 46%;
+
+  /* dark washes: brighter pigments, slightly lower strength, so the tint
+   * stays readable under light ink in Ink and Candlelight. The composed
+   * --hl-<name> vars MUST be redeclared here: a custom property resolves
+   * its var() references where it is DECLARED, so the :root composition
+   * would otherwise bake the light pigments in forever. */
+  --hl-amber-ink: #D8B15E; --hl-sage-ink: #93BC80; --hl-sky-ink: #85AEDC;
+  --hl-rose-ink: #D897AC; --hl-violet-ink: #AF9AD8;
+  --hl-wash: 24%;
+  --hl-amber: color-mix(in srgb, var(--hl-amber-ink) var(--hl-wash), transparent);
+  --hl-sage: color-mix(in srgb, var(--hl-sage-ink) var(--hl-wash), transparent);
+  --hl-sky: color-mix(in srgb, var(--hl-sky-ink) var(--hl-wash), transparent);
+  --hl-rose: color-mix(in srgb, var(--hl-rose-ink) var(--hl-wash), transparent);
+  --hl-violet: color-mix(in srgb, var(--hl-violet-ink) var(--hl-wash), transparent);
 }
 
 body.theme-glass      { --bg-image: url("assets/glass-light.png"); }
@@ -106,7 +132,8 @@ body.theme-glass, body.theme-dark-glass {
 
 /* ── reading sheet ───────────────────────────────────────── */
 .sheet {
-  position: relative; background: var(--bg-reading); border: 1px solid var(--border-subtle);
+  position: relative; isolation: isolate; /* keeps the z-index:-1 wash layer above the sheet's own background */
+  background: var(--bg-reading); border: 1px solid var(--border-subtle);
   border-radius: var(--r-lg); padding: 30px 44px 26px 120px;
   transition: background var(--tr);
 }
@@ -182,6 +209,8 @@ body[data-route="traces"][data-long-text="true"] [data-sheet="rev"] .letter-head
 
 /* overlay svg shares the sheet's coordinate space */
 .overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+/* highlight washes: same coordinate space, beneath the text ink */
+.hl-underlay { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; overflow: visible; }
 /* pinned-but-unfocused wires stay in the harness, quietly */
 .overlay .ghost-wire { opacity: 0.32; transition: opacity var(--tr); }
 .overlay .margin-annotation {
@@ -226,6 +255,14 @@ body[data-route="traces"][data-long-text="true"] [data-sheet="rev"] .letter-head
 }
 .rail .panel { position: static; overflow: auto; }
 
+/* one card language — the kind tick is a short rule, an echo of the line
+ * vocabulary; hue carries the kind in both the pcard and the passage score */
+.card-tick {
+  flex: none; justify-self: start;
+  width: 12px; height: 2px; border-radius: 999px;
+  background: var(--trace-hue, var(--text-tertiary));
+}
+
 /* pattern card — the pinned pattern condensed to one glance, docked in the rail */
 .pcard {
   width: min(360px, 100%);
@@ -246,8 +283,12 @@ body[data-route="traces"][data-long-text="true"] [data-sheet="rev"] .letter-head
   font: 500 0.62rem var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--text-tertiary); padding: 2px 4px 6px 8px;
 }
-.pcard-head svg { flex: none; }
 .pcard-title { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.pcard-kind {
+  padding: 0 8px 4px 27px;
+  font: 500 0.57rem/1 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-tertiary);
+}
 .pcard-x {
   flex: none; appearance: none; border: 0; background: transparent; cursor: pointer;
   font: 400 0.9rem/1 var(--font-ui); color: var(--text-tertiary);
@@ -265,7 +306,10 @@ body[data-route="traces"][data-long-text="true"] [data-sheet="rev"] .letter-head
   flex: 1; font-family: var(--font-reading); font-size: 0.82rem; color: var(--text-primary);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.pcard-row .pr-dir { flex: none; font: 500 0.62rem var(--font-mono); color: var(--text-tertiary); width: 10px; }
+.pcard-row .pr-dir {
+  flex: none; font: 500 0.56rem var(--font-mono); letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text-tertiary);
+}
 .pcard-row.off .pr-txt { color: var(--text-tertiary); }
 .pcard-del:hover { color: var(--k-contrast); }
 .pcard-row .pr-rm {
@@ -285,37 +329,43 @@ body[data-route="traces"][data-long-text="true"] [data-sheet="rev"] .letter-head
 .pcard-title[contenteditable] { cursor: text; border-radius: 3px; }
 .pcard-title[contenteditable]:hover { background: var(--bg-canvas); }
 .pcard-title[contenteditable]:focus { outline: 1px solid var(--border-medium); background: var(--bg-canvas); }
+/* observation sits above the source rows; one hairline closes it off */
 .pcard-note {
-  display: block; width: calc(100% - 16px); margin: 6px 8px 2px;
-  border: 0; border-top: 1px dashed var(--border-subtle); border-radius: 0;
+  display: block; width: calc(100% - 16px); margin: 0 8px 4px;
+  border: 0; border-bottom: 1px solid var(--border-subtle); border-radius: 0;
   background: transparent; resize: none; overflow: hidden;
   font: italic 400 0.78rem/1.5 var(--font-reading); color: var(--text-secondary);
-  padding: 7px 0 2px; min-height: 0;
+  padding: 2px 0 6px; min-height: 0;
 }
 .pcard-note::placeholder { color: var(--text-tertiary); opacity: 0.7; font-style: italic; }
-.pcard-note:focus { outline: none; border-top-color: var(--border-medium); }
+.pcard-note:focus { outline: none; border-bottom-color: var(--border-medium); }
 
-/* authoring bar — kind palette on select, status chip mid-session */
-.authbar {
+/* authoring bar — kinds + highlight rows on select, status chip mid-session.
+ * .hlbar is the highlight-remove chip; it borrows the same dress. */
+.authbar, .hlbar {
   position: fixed; z-index: 60; display: none; align-items: center; gap: 2px;
   background: color-mix(in srgb, var(--bg-surface) 96%, transparent); backdrop-filter: blur(8px);
   border: 1px solid var(--border-subtle); border-radius: 999px;
   padding: 4px 6px; box-shadow: 0 8px 26px rgba(56, 43, 27, 0.16);
 }
-.authbar.on { display: flex; }
-.authbar .ak {
+.authbar.on, .hlbar.on { display: flex; }
+.authbar .ak, .hlbar .ak {
   appearance: none; border: 0; background: transparent; cursor: pointer;
   display: inline-flex; align-items: center; gap: 6px;
   font: 500 0.68rem var(--font-mono); letter-spacing: 0.04em;
   color: var(--text-secondary); padding: 5px 9px; border-radius: 999px;
   transition: background var(--tr), color var(--tr);
 }
-.authbar .ak:hover { background: var(--bg-canvas); color: var(--text-primary); }
-.authbar .ak i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.authbar .ak:hover, .hlbar .ak:hover { background: var(--bg-canvas); color: var(--text-primary); }
+.authbar .ak:focus-visible, .hlbar .ak:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+.authbar .ak i, .hlbar .ak i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+/* highlight chips: a rounded square distinguishes wash from connection dot */
+.authbar .ak.hl i, .hlbar .ak i { width: 9px; height: 9px; border-radius: 2.5px; }
 .authbar .ak.act { background: var(--gold-soft); color: var(--text-primary); }
 .authbar .hint { font: 400 0.68rem var(--font-mono); color: var(--text-tertiary); padding: 0 4px; }
-.authbar.palette { flex-direction: column; align-items: stretch; border-radius: 16px; padding: 5px 6px 6px; }
-.authrow { display: flex; gap: 2px; }
+.authbar.palette { flex-direction: column; align-items: stretch; border-radius: 16px; padding: 5px 6px 6px; max-width: min(92vw, 480px); }
+.authrow { display: flex; gap: 2px; flex-wrap: wrap; }
+.authrow.hlrow { border-top: 1px dashed var(--border-subtle); margin-top: 4px; padding-top: 4px; }
 .authdef {
   font: 400 0.64rem var(--font-mono); color: var(--text-tertiary);
   border-top: 1px dashed var(--border-subtle); margin-top: 4px; padding: 5px 10px 1px;
@@ -469,16 +519,16 @@ body.theme-dark-glass .trace-stage {
 }
 .trace-track-head {
   width: 100%;
-  min-height: 62px;
+  min-height: 52px;
   display: grid;
-  grid-template-columns: 46px minmax(0, 1fr) 24px 92px;
+  grid-template-columns: 14px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
   appearance: none;
   border: 0;
   background: transparent;
   color: inherit;
-  padding: 9px 14px 9px 16px;
+  padding: 9px 16px;
   text-align: left;
   cursor: pointer;
 }
@@ -488,12 +538,12 @@ body.theme-dark-glass .trace-stage {
 .trace-actions button:focus-visible,
 .trace-rename input:focus-visible,
 .trace-note textarea:focus-visible,
-.trace-member-remove:focus-visible {
+.trace-member-remove:focus-visible,
+.hl-jump:focus-visible,
+.hl-remove:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--trace-hue, var(--gold)) 72%, transparent);
   outline-offset: -2px;
 }
-.trace-track-sign { display: grid; place-items: center; }
-.trace-kind-mark { width: 44px; height: 14px; overflow: visible; }
 .trace-track-copy { min-width: 0; display: grid; gap: 3px; }
 .trace-track-kind {
   color: var(--text-tertiary);
@@ -510,32 +560,21 @@ body.theme-dark-glass .trace-stage {
   white-space: nowrap;
 }
 .trace-track.is-active .trace-track-copy strong { color: var(--text-primary); }
-.trace-track-count {
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 50%;
+/* state is plain small text — drawn, held, or off screen */
+.trace-track-state {
   color: var(--text-tertiary);
-  font: 500 0.6rem/1 var(--font-mono);
+  font: 500 0.56rem/1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
-.trace-overview { width: 92px; height: 18px; overflow: visible; }
-.trace-overview path {
-  fill: none;
-  stroke: color-mix(in srgb, var(--trace-hue) 62%, var(--text-tertiary));
-  stroke-width: 1.2;
-  stroke-linecap: round;
-}
-.trace-overview-stops path { opacity: 0.55; }
-/* one line type: the overview rule never varies by kind — hue carries it */
 
 .trace-detail {
   padding: 0 16px 18px;
   animation: trace-detail-in 220ms cubic-bezier(.2,.72,.2,1) both;
 }
 .trace-route-note {
-  margin: 2px 0 10px 55px;
+  margin: 2px 0 10px 24px;
   font: 400 0.72rem/1.5 var(--font-ui);
   font-style: italic;
   color: var(--text-secondary);
@@ -544,7 +583,7 @@ body.theme-dark-glass .trace-stage {
 .trace-rename {
   display: grid;
   gap: 5px;
-  margin: 2px 0 8px 55px;
+  margin: 2px 0 8px 24px;
 }
 .trace-rename span {
   color: var(--text-tertiary);
@@ -571,10 +610,11 @@ body.theme-dark-glass .trace-stage {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 2px 0 12px 55px;
+  padding: 8px 0 0 24px;
 }
 .trace-actions button,
-.trace-member-remove {
+.trace-member-remove,
+.hl-remove {
   appearance: none;
   border: 0;
   border-radius: var(--r-sm);
@@ -585,75 +625,44 @@ body.theme-dark-glass .trace-stage {
   cursor: pointer;
 }
 .trace-actions button:hover,
-.trace-member-remove:hover { color: var(--text-primary); background: var(--bg-canvas); }
+.trace-member-remove:hover,
+.hl-remove:hover { color: var(--text-primary); background: var(--bg-canvas); }
 .trace-actions button.is-danger:hover { color: var(--k-contrast); }
 
 .trace-score {
-  position: relative;
   display: grid;
-  gap: 3px;
-  margin: 0;
+  gap: 2px;
+  margin: 0 0 0 24px;
   padding: 2px 0;
   list-style: none;
 }
-/* one line type: the score spine is the same rule for every kind */
-.trace-score::before {
-  content: "";
-  position: absolute;
-  left: 21px;
-  top: 26px;
-  bottom: 26px;
-  width: 1.5px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--trace-hue) 64%, transparent);
-  pointer-events: none;
-}
 .trace-member {
-  position: relative;
   display: flex;
   align-items: center;
   gap: 4px;
   min-width: 0;
 }
 .trace-member-jump {
-  position: relative;
-  z-index: 1;
   width: 100%;
   min-width: 0;
-  min-height: 54px;
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) 28px;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
   appearance: none;
   border: 0;
-  border-radius: var(--r-md);
+  border-radius: var(--r-sm);
   background: transparent;
   color: inherit;
-  padding: 7px 7px 7px 0;
+  padding: 6px 8px 6px 4px;
   text-align: left;
   cursor: pointer;
   transition: background var(--tr), opacity var(--tr);
 }
 .trace-member-jump:hover { background: color-mix(in srgb, var(--trace-hue) 8%, transparent); }
-.trace-stop {
-  justify-self: center;
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  border: 1.25px solid color-mix(in srgb, var(--trace-hue) 78%, var(--border-medium));
-  border-radius: 50%;
-  background: var(--bg-surface);
-  color: var(--text-tertiary);
-  font: 500 0.53rem/1 var(--font-mono);
-  transition: background var(--tr), color var(--tr), transform var(--tr);
-}
-.trace-score.is-hinge .trace-stop { border-radius: 5px; }
-.trace-member.is-current .trace-stop {
-  background: var(--trace-hue);
-  color: var(--bg-surface);
-  transform: scale(1.05);
+/* the reading position: the same inset rule the active track carries */
+.trace-member.is-current .trace-member-jump {
+  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--trace-hue) 82%, transparent);
 }
 .trace-member-copy { min-width: 0; display: grid; gap: 3px; }
 .trace-member-ref {
@@ -683,10 +692,10 @@ body.theme-dark-glass .trace-stage {
 .trace-member-remove { flex: none; }
 .trace-note {
   display: grid;
-  gap: 6px;
-  margin: 10px 2px 0 55px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border-subtle);
+  gap: 4px;
+  margin: 2px 2px 8px 24px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-subtle);
 }
 .trace-note > span {
   color: var(--text-tertiary);
@@ -705,6 +714,54 @@ body.theme-dark-glass .trace-stage {
   font: italic 400 0.8rem/1.4 var(--font-reading);
 }
 .trace-note textarea::placeholder { color: var(--text-tertiary); }
+
+/* highlights close the index — quiet rows, no expansion */
+.hl-group {
+  border-top: 1px solid var(--border-subtle);
+  padding: 12px 16px 14px;
+}
+.hl-group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 0 6px;
+}
+.hl-group-head .trace-kicker { margin-bottom: 0; }
+.hl-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.hl-jump {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  appearance: none;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: inherit;
+  padding: 6px 8px 6px 2px;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--tr);
+}
+.hl-jump:hover { background: var(--gold-soft); }
+.hl-jump .trace-member-phrase { -webkit-line-clamp: 1; }
+.hl-swatch {
+  justify-self: start;
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  border: 1px solid;
+}
+.hl-remove { flex: none; }
+
 .density-btn[aria-pressed="true"],
 .long-btn[aria-pressed="true"] {
   background: var(--bg-surface);
@@ -741,8 +798,7 @@ body[data-route="traces"] .rail .panel { display: none; }
   .lab-main { padding-inline: 22px; }
   .study-body.with-panel { grid-template-columns: minmax(0, 1fr) minmax(282px, 340px); gap: 18px; }
   .sheet { min-width: 0; padding-left: 98px; padding-right: 30px; }
-  .trace-track-head { grid-template-columns: 42px minmax(0, 1fr) 24px 72px; padding-inline: 12px; }
-  .trace-overview { width: 72px; }
+  .trace-track-head { padding-inline: 12px; }
 }
 
 @media (max-width: 860px) {
@@ -805,13 +861,10 @@ body[data-route="traces"] .rail .panel { display: none; }
   .trace-stage-head { padding: 17px 16px 9px; }
   .trace-stage-intro,
   .trace-stage-empty { padding-inline: 16px; }
-  .trace-track-head { grid-template-columns: 40px minmax(0, 1fr) 22px 62px; gap: 7px; min-height: 60px; }
-  .trace-overview { width: 62px; }
+  .trace-track-head { gap: 8px; padding-inline: 12px; }
   .trace-detail { padding-inline: 12px; }
-  .trace-rename { margin-left: 48px; }
-  .trace-actions { padding-left: 48px; flex-wrap: wrap; }
-  .trace-member-jump { grid-template-columns: 38px minmax(0, 1fr) 24px; min-height: 58px; }
-  .trace-note { margin-left: 48px; }
+  .trace-actions { flex-wrap: wrap; }
+  .hl-group { padding-inline: 12px; }
   .payload pre { padding-inline: 10px; }
 }
 

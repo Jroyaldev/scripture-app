@@ -236,9 +236,16 @@ test("the lab is wired to the tested geometry, Loom engine, and 18-case proof", 
   const lab = readFileSync(new URL("../lab/lab.js", import.meta.url), "utf8");
   const html = readFileSync(new URL("../lab/shapes.html", import.meta.url), "utf8");
   const css = readFileSync(new URL("../lab/lab.css", import.meta.url), "utf8");
-  assert.match(lab, /TG\.relativeClientRects/);
-  assert.match(lab, /TG\.planArc/);
-  assert.match(lab, /TG\.planThread/);
+  /* C0.5: Reading retired its local bows — both views now paint the bracket
+   * grammar through the Loom engine (drawRouted), so lab.js no longer calls
+   * TG.planArc / TG.planThread / TG.relativeClientRects, and the drawArc /
+   * drawThread paint paths are gone. trace-geometry's measurement utilities
+   * stay covered directly by the geometry tests above. */
+  assert.match(lab, /drawRouted\(/);
+  assert.doesNotMatch(lab, /TG\.planArc/);
+  assert.doesNotMatch(lab, /TG\.planThread/);
+  assert.doesNotMatch(lab, /function drawArc\b/);
+  assert.doesNotMatch(lab, /function drawThread\b/);
   assert.match(lab, /TG\.resolveSegmentHue/);
   assert.doesNotMatch(lab, /function firstRect/);
   for (const kind of ["link:parallel", "link:contrast", "link:echo", "hinge", "mirror", "series"]) assert.match(lab, new RegExp(`kind: "${kind.replace(":", "\\:")}"`));

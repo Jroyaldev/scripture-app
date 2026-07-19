@@ -2,6 +2,10 @@
 // Coordinates are translation-free canonical refs (INV-5). Phrase keys anchor marks
 // to exact words; char offsets are computed per translation at render, never stored.
 // kind vocabulary is closed: series | mirror | link:parallel | link:contrast | link:echo | hinge
+// Highlight records share the same store and phrase-key anchoring, but carry no
+// connector: { id, type: "highlight", color, key: { ref, phrase, occ? } }.
+// color vocabulary is closed and sober; hues resolve per atmosphere in lab.css (--hl-<name>).
+const HIGHLIGHT_COLORS = ["amber", "sage", "sky", "rose", "violet"];
 
 const PATTERNS = {
 

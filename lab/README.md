@@ -22,14 +22,21 @@ carry more than one pattern.
 The two views now answer different questions:
 
 - **Reading** asks “where does this relationship live in the prose?” It keeps the
-  exact-word emphasis and the same source-linked line geometry inside the page.
+  exact-word emphasis and now draws every relationship with the same Loom-engine
+  bracket grammar as Traces — brackets, cradles, and quiet held rail ticks. Only
+  the reading aid differs: a passage-score card panel instead of the authoring rail.
 - **Traces** asks “what architecture have I annotated in this passage?” The lines
   remain core: the focused annotation owns the nearest gutter lane at full ink,
   while up to three held comparisons remain as quiet routed lanes. A bounded
-  passage score in the right margin lists every annotation, expands one exact
-  source path, carries its observation, and returns to each marked phrase. If more
-  than four are held, the score keeps them all switchable and says how many remain
-  lined instead of allowing an unbounded cable field.
+  passage score in the right margin lists every annotation as one compact row —
+  a short kind-hue tick (the line vocabulary, not an icon), the title, a quiet
+  kind label with its moments count, and plain-text state (drawn / held / off
+  screen). Expanding a row shows the observation first, then the exact source
+  path as clean ref + phrase rows that return to each marked phrase. A quiet
+  HIGHLIGHTS group closes the index: one row per wash — swatch, phrase,
+  reference — with the authoring chip's remove language and no expansion. If
+  more than four traces are held, the score keeps them all switchable and says
+  how many remain lined instead of allowing an unbounded cable field.
 - **One line type.** Every trace — any kind, any density — draws as the same
   clean uniform stroke (round caps and joins); kind speaks as hue plus its
   named label in the score. Per-kind line signatures (double rule, break,
@@ -64,18 +71,24 @@ The two views now answer different questions:
 - **Reveal all** keeps the precept-style phrase affordance. It does not reveal a
   connector field or pin every annotation.
 
-Select any words to author a pattern. The existing kind palette, live provisional
-wire, notes, rename, member editing, undo, local prototype persistence, and SVG
-export remain available in both views.
+Select any words and one compact menu offers both vocabularies: the connection
+kinds above, a highlight row (five sober washes — amber, sage, sky, rose, violet)
+below a divider. Highlights are not connections: they lay a quiet rounded wash
+under the exact words (the production `HighlightUnderlay` discipline), coexist
+with patterns on the same words (wash under, underline and connector above), and
+persist in the same local store as authored patterns
+(`{ type: "highlight", color, key }`). Click washed words with nothing selected
+to remove one. The live provisional wire, notes, rename, member editing, undo,
+local prototype persistence, and SVG export remain available in both views.
 
-Connector planning lives in `trace-geometry.js`, a browser-neutral helper shared
-by the lab renderer and `tests/pattern-shapes-geometry.test.ts`. It preserves all
-wrapped client rects and aligns the contact dot with the underline. Same-line
-relationships use a leading-constrained local cradle; different-line
-relationships drop into their measured interline corridors, turn on the true
-margin, and return through whitespace. Multi-member threads share that margin
-rail and use rounded, port-trimmed shoulders; members on one rendered line share
-a port before forking in the corridor.
+Connector planning is the Loom engine (`route-engine.js`), shared with `route.html`
+and exercised by the focused Route Engine suites; both lab views paint its output
+with the C0.5 bracket grammar. `trace-geometry.js` remains a browser-neutral
+measurement helper, shared by the lab renderer and
+`tests/pattern-shapes-geometry.test.ts`: it preserves every wrapped client rect,
+aligns the contact dot with the underline, and resolves the focused-segment hue.
+Its pre-C0.5 local bow/cradle/thread planners are retained only as a pure,
+unit-tested reference — no Shapes render path reaches them any longer.
 
 ## Studies
 
