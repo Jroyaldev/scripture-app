@@ -519,6 +519,13 @@ body.theme-dark-glass .trace-stage {
   padding: 0 16px 18px;
   animation: trace-detail-in 220ms cubic-bezier(.2,.72,.2,1) both;
 }
+.trace-route-note {
+  margin: 2px 0 10px 55px;
+  font: 400 0.72rem/1.5 var(--font-ui);
+  font-style: italic;
+  color: var(--text-secondary);
+}
+.trace-route-note strong { font-style: normal; font-weight: 600; color: var(--text-primary); }
 .trace-rename {
   display: grid;
   gap: 5px;

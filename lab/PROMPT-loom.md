@@ -347,3 +347,16 @@ Fixture: day-night ("he meditates" → "night") draws the becoming
 pattern — two shoulders from opposite sides into a shaft standing in
 the void of the short line — 311px of ink for what was a ~900px margin
 round trip. Deterministic 460–760. Toggle: middle checkbox.
+
+### Step 12 phase B landed — shapes disclosure, ticks, explanations, perf
+
+Disclosure is ranked, not recency: engine rankCompanions picks the three
+companions beside the focus, with 35px lane hysteresis so lanes don't
+reshuffle on focus hops. Everything active-but-not-drawn (over-budget or
+needs-space) gets a held tick on the rail — hover previews (phantom hit
+rects persist through the bloom), click holds. The expanded score row
+explains its route in one honest sentence from the actual plan ("direct
+hammock — both phrases share one verified corridor…", "held — no
+corridor slot or strand is free…"). And warmBlocks() pre-warms the
+word-run caches on idle after every rebuild: cold wake of the 51-verse
+Long sheet dropped ~2000ms → ~200ms.

@@ -6,7 +6,7 @@
  * No dialect switcher, no chrome at rest: one opinionated language.
  * Traces routing is the Loom engine (route-engine.js) — the same planner
  * as route.html; Reading keeps trace-geometry's local bows. */
-import { planRoute } from "./route-engine.js";
+import { planRoute, rankCompanions } from "./route-engine.js";
 
 const hovered = new Set(); // gids under the cursor
 const pinned = new Set();  // gids pinned by click
@@ -682,6 +682,8 @@ let ROUTE = localStorage.getItem(ROUTE_KEY) === "bows" ? "bows" : "traces";
 document.body.dataset.route = ROUTE;
 let FOCUS_GID = null;
 const MAX_MARGIN_TRACES = 4;
+const LAST_PLANS = new Map();   // sid → Map(gid → plan) from the last Traces render
+const LAST_INKED = new Map();   // sid → Set(companion gids) for lane hysteresis
 
 /* ── the Loom engine host (Traces view) ─────────────────────
  * Measurement and weave helpers matching route-lab.js: ink-tightened
@@ -871,8 +873,53 @@ function segPtsFor(s) {
   }
   return pts;
 }
+/* the route explains itself — shapes wording over engine facts */
+function explainShapesPlan(plan) {
+  if (!plan) return null;
+  if (!plan.valid) {
+    const why = {
+      "needs-space": "no corridor slot or strand is free in the current weave — held as a tick",
+      kink: "a terminal turn had no room to breathe — held as a tick",
+      "obstacle-collision": "every legal path would touch ink — held as a tick",
+      "no-anchors": "its phrases are not in this rendering",
+    }[plan.reason] || `${plan.reason} — held as a tick`;
+    return { label: "held", reason: why };
+  }
+  const labels = {
+    "same-line": plan.cradleVariant === "embrace" ? "direct hammock · embrace" : "direct hammock",
+    "local-tag": "local tag", "local-comb": "local comb",
+    "middle-shaft": "middle shaft",
+    tag: "loom tag", corridor: "left loom", multipoint: "left loom · tributaries",
+  };
+  const reasons = {
+    "same-line": plan.cradleVariant === "embrace"
+      ? "the pair is held as one — outer pins, floor beneath both words"
+      : "both phrases share one verified corridor, so the margin detour disappears",
+    "local-tag": "the whole route fits beside the idea itself",
+    "local-comb": "the line's pins comb into one short rail beside the phrase",
+    "middle-shaft": "a clear vertical stands in the void beside the ideas — neither endpoint visits the page edge",
+    tag: "a single idea; its pin pours into the loom beside its own line",
+    corridor: "the phrases span lines; one quiet spine on the left loom carries them",
+    multipoint: "each line's pins comb into tributaries feeding one spine on the loom",
+  };
+  return { label: labels[plan.mode] || plan.mode, reason: reasons[plan.mode] || "" };
+}
+
+/* warm the measurement caches while the page is idle, so the first wake
+ * of a big sheet (51 verses in Long mode) doesn't pay the word walk */
+function warmBlocks() {
+  const idle = globalThis.requestIdleCallback || ((fn) => setTimeout(fn, 180));
+  for (const sid of Object.keys(SHEETS)) {
+    idle(() => {
+      const sheet = document.querySelector(`[data-sheet="${sid}"]`);
+      if (!sheet || sheet.closest("[hidden]")) return;
+      try { blockFor(sid, measure(sid)); } catch (e) { /* sheet mid-rebuild */ }
+    });
+  }
+}
+
 /* lab introspection for the browser console */
-globalThis.__LAB = { blockFor, annFor, measure: (sid) => measure(sid), planRoute };
+globalThis.__LAB = { blockFor, annFor, measure: (sid) => measure(sid), planRoute, warmBlocks };
 
 /* an engine plan, drawn in shapes' own voice: the tapered ribbon */
 function drawRouted(svg, g, plan, hue, focused) {
@@ -1006,18 +1053,35 @@ function drawOverlay(sid, gids) {
 
   if (ROUTE === "traces") {
     /* the Loom engine plans every inked trace: focused first (it claims
-     * corridors and strand 0 first), then companions in recency order.
-     * Claims — corridor slots, spine intervals, strand bookings — flow
-     * through the shared arrays exactly as in route-lab. */
+     * corridors and strand 0 first), then companions ranked BESIDE the
+     * focus (engine rankCompanions) with ~35px lane hysteresis so lanes
+     * don't reshuffle on every focus hop. Everything active but not
+     * drawn becomes a held tick on the rail. */
     const fontSize = parseFloat(getComputedStyle(M.sheet.querySelector(".vtext")).fontSize) || 17;
     const block = blockFor(sid, M);
+    const anns = new Map(gids.map((gid) => [gid, annFor(M, gid)]));
+    const intervals = gids.map((gid) => {
+      const fr = anns.get(gid).anchors.flatMap((a) => a.fragments);
+      return fr.length ? { id: gid, top: Math.min(...fr.map((f) => f.top)), bottom: Math.max(...fr.map((f) => f.bottom)) } : null;
+    }).filter(Boolean);
+    const fiv = intervals.find((i) => i.id === localFocus);
+    const distTo = (id) => {
+      const i = intervals.find((x) => x.id === id);
+      if (!i || !fiv) return 1e9;
+      return i.top > fiv.bottom ? i.top - fiv.bottom : fiv.top > i.bottom ? fiv.top - i.bottom : 0;
+    };
+    const prevInked = LAST_INKED.get(sid) || new Set();
+    const companions = rankCompanions(intervals, localFocus)
+      .sort((a, b) => (distTo(a) - (prevInked.has(a) ? 35 : 0)) - (distTo(b) - (prevInked.has(b) ? 35 : 0)))
+      .slice(0, MAX_MARGIN_TRACES - 1);
+    LAST_INKED.set(sid, new Set(companions));
+    const drawnOrder = [...companions.reverse(), localFocus].filter(Boolean);
+
     const claims = [], spineClaims = [], strandClaims = [];
     const plans = new Map();
-    const anns = new Map();
-    const ordered = [localFocus, ...inked.filter((gid) => gid !== localFocus)].filter(Boolean);
+    const ordered = [localFocus, ...drawnOrder.filter((gid) => gid !== localFocus)].filter(Boolean);
     for (const gid of ordered) {
-      const ann = annFor(M, gid);
-      anns.set(gid, ann);
+      const ann = anns.get(gid);
       if (!ann.anchors.length) { plans.set(gid, { valid: false, reason: "no-anchors" }); continue; }
       let plan;
       try {
@@ -1036,8 +1100,9 @@ function drawOverlay(sid, gids) {
         if (plan.strandClaimOut) strandClaims.push(plan.strandClaimOut);
       }
     }
+    LAST_PLANS.set(sid, plans);
     computeHops([...plans.values()].filter((p) => p.valid));
-    for (const gid of inked) {
+    for (const gid of drawnOrder) {
       const G = GIDS[gid];
       const plan = plans.get(gid);
       const g = S("g", {
@@ -1057,8 +1122,57 @@ function drawOverlay(sid, gids) {
           traceDot(g, { x: f.left + 0.5, y: f.bottom + 2 }, G.hue, 120, 1.35, 0.72);
         }
       } else {
-        /* honest failure: the phrase keys still glow; no connector ink */
+        /* honest failure: the phrase keys still glow; a tick marks it */
         g.dataset.route = plan ? plan.reason : "none";
+      }
+    }
+
+    /* held ticks: everything active-but-not-drawn gets one quiet tick per
+     * anchor line on the held rail — hover previews, click holds */
+    const expandT = Math.max(2.5, fontSize * 0.12) + 2.5;
+    let minLeft = Infinity;
+    for (const r of [...block.wordRuns, ...block.verseNumberRects, ...block.additionalObstacles]) {
+      minLeft = Math.min(minLeft, r.left - expandT);
+    }
+    const heldRailX = (minLeft - 10) - 22;
+    /* tick LAYOUT includes a tick-previewed gid (its thread is bloomed,
+     * its tick invisible) so positions persist and mouseleave can fire
+     * on the phantom hit rect at the same spot */
+    const heldForTicks = gids.filter((gid) => {
+      const p = plans.get(gid);
+      const isDrawn = drawnOrder.includes(gid) && p && p.valid;
+      return !isDrawn || gid === preview;
+    });
+    const gTicks = S("g", { class: "held-ticks" }, svg);
+    const used = [];
+    for (const gid of heldForTicks) {
+      const ann = anns.get(gid);
+      if (!ann || !ann.anchors.length) continue;
+      const p = plans.get(gid);
+      const visible = !(drawnOrder.includes(gid) && p && p.valid);
+      const lineYs = [];
+      for (const a of ann.anchors) {
+        const f = [...a.fragments].sort((p2, q) => p2.top - q.top)[0];
+        const y = (f.top + f.bottom) / 2;
+        if (!lineYs.some((v) => Math.abs(v - y) < 3)) lineYs.push(y);
+      }
+      for (const y of lineYs) {
+        let x = heldRailX;
+        while (used.some((u) => Math.abs(u.y - y) < 2.5 && Math.abs(u.x - x) < 1)) x -= 7;
+        used.push({ x, y });
+        if (visible) S("path", {
+          d: `M ${x.toFixed(2)} ${y.toFixed(2)} h -5.5`, stroke: "var(--text-tertiary)",
+          "stroke-width": 1.2, fill: "none", "stroke-linecap": "round", opacity: 0.55, class: "tick",
+        }, gTicks);
+        const hit = S("rect", {
+          x: (x - 11).toFixed(2), y: (y - 6).toFixed(2), width: 17, height: 12,
+          fill: "transparent", class: "tick-hit",
+        }, gTicks);
+        hit.style.pointerEvents = "all";
+        hit.style.cursor = "pointer";
+        hit.addEventListener("mouseenter", () => { if (!hovered.has(gid)) { hovered.add(gid); applyActive(); } });
+        hit.addEventListener("mouseleave", () => { if (hovered.has(gid)) { hovered.delete(gid); applyActive(); } });
+        hit.addEventListener("click", () => { pinned.add(gid); FOCUS_GID = gid; hovered.delete(gid); applyActive(); });
       }
     }
     return;
@@ -1339,6 +1453,15 @@ function updateTraceStages() {
       if (isActive) {
         const detail = document.createElement("div");
         detail.className = "trace-detail";
+        /* the route explains itself: label + one honest sentence from
+         * the Loom plan that actually drew (or declined) this trace */
+        const planNote = explainShapesPlan(LAST_PLANS.get(sid)?.get(G.gid));
+        if (planNote) {
+          const note = document.createElement("p");
+          note.className = "trace-route-note";
+          note.innerHTML = `<strong>${planNote.label}</strong> — ${planNote.reason}`;
+          detail.appendChild(note);
+        }
         if (G.gid.startsWith("u-")) {
           const rec = USER.find((pattern) => pattern.id === G.gid);
           const renameLabel = document.createElement("label");
@@ -2094,6 +2217,7 @@ function rebuildAll() {
     const builtIn = s === "qa" ? (ANGLE_MODE ? GEOMETRY_FIXTURE.patterns : []) : PATTERNS[s];
     pre.textContent = JSON.stringify(mine.length ? { builtIn, yours: mine } : builtIn, null, 2);
   }
+  warmBlocks();
 }
 rebuildAll();
 buildRevPanel();
@@ -2106,4 +2230,4 @@ syncRadioGroup(atmosphereGroup, atmosphereGroup.querySelector('[aria-checked="tr
 wireRadioKeys(routeGroup);
 wireRadioKeys(atmosphereGroup);
 applyActive();
-if (document.fonts && document.fonts.ready) document.fonts.ready.then(redrawActive);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { redrawActive(); warmBlocks(); });
