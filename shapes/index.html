@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smart Shapes — Pericope Lab</title>
+<meta name="description" content="The connector grammar for marked relationships in Scripture: one line vocabulary, one authoring menu, one card.">
+<style>
+  :root {
+    --ink: #1d1d1f;
+    --ink-2: #4b4b50;
+    --ink-3: #86868b;
+    --paper: #ffffff;
+    --paper-2: #f5f5f7;
+    --line: rgba(0, 0, 0, 0.08);
+    --shadow-card: 0 1px 2px rgba(0,0,0,0.03), 0 12px 40px rgba(0,0,0,0.07);
+    --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+      "Helvetica Neue", "Segoe UI", Inter, Roboto, sans-serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+    /* figure palette — the lab's Paper atmosphere */
+    --fig-word: #e3ded2;
+    --fig-anchor: #c3b596;
+    --fig-line: #8c3a2e;
+    --fig-gap: #eef3ea;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: var(--font);
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+  header.page { padding: 88px 0 40px; }
+  .kicker {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .kicker a { color: inherit; text-decoration: none; }
+  .kicker a:hover { color: var(--ink-2); }
+  h1 {
+    font-size: clamp(36px, 6vw, 56px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 10px 0 14px;
+  }
+  .dek { font-size: 19px; color: var(--ink-2); max-width: 640px; }
+  section { padding: 44px 0; border-top: 1px solid var(--line); }
+  h2 { font-size: 24px; font-weight: 650; letter-spacing: -0.01em; margin-bottom: 6px; }
+  .sub { color: var(--ink-2); max-width: 640px; margin-bottom: 28px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+  figure.fig {
+    background: var(--paper-2);
+    border-radius: 18px;
+    padding: 26px 22px 16px;
+  }
+  figure.fig svg { width: 100%; height: auto; display: block; }
+  figcaption {
+    margin-top: 12px;
+    font-size: 14px;
+    color: var(--ink-2);
+  }
+  figcaption b { color: var(--ink); font-weight: 600; }
+  figure.shot { margin: 0; }
+  figure.shot img {
+    width: 100%; height: auto; display: block;
+    border-radius: 18px;
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-card);
+  }
+  figure.shot.bare img { box-shadow: none; }
+  .duo { display: grid; grid-template-columns: 5fr 4fr; gap: 18px; align-items: start; }
+  @media (max-width: 720px) { .duo { grid-template-columns: 1fr; } }
+  .rules { list-style: none; margin-top: 20px; display: grid; gap: 8px; max-width: 640px; }
+  .rules li { padding-left: 22px; position: relative; color: var(--ink-2); font-size: 15px; }
+  .rules li::before {
+    content: ""; position: absolute; left: 0; top: 0.62em;
+    width: 12px; height: 2px; border-radius: 1px; background: var(--fig-line);
+  }
+  footer { padding: 40px 0 72px; border-top: 1px solid var(--line); color: var(--ink-3); font-size: 14px; }
+  footer a { color: var(--ink-2); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="page">
+      <p class="kicker"><a href="../">Pericope</a> · Lab</p>
+      <h1>Smart Shapes</h1>
+      <p class="dek">Connections between marked phrases, drawn so quietly they read as part of
+      the page. One line vocabulary, one authoring menu, one card — the system now being
+      prepared for the app.</p>
+    </header>
+
+    <section>
+      <h2>The grammar</h2>
+      <p class="sub">Every connector is built from three moves and nothing else: a horizontal
+      colinear with the underline, a vertical in the margin, and one soft right-angle corner.
+      These four figures are rendered directly by the routing engine.</p>
+      <div class="grid">
+        <figure class="fig">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="10 0 340 132" role="img" aria-label="bracket"><rect x="60" y="20" width="38" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="103" y="20" width="26" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="134" y="20" width="44" height="11" rx="1.5" fill="var(--fig-anchor)"/><rect x="183" y="20" width="30" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="218" y="20" width="34" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="257" y="20" width="28" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="290" y="20" width="20" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="60" y="47" width="38" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="103" y="47" width="26" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="134" y="47" width="44" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="183" y="47" width="30" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="218" y="47" width="34" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="257" y="47" width="28" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="290" y="47" width="20" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="60" y="74" width="38" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="103" y="74" width="26" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="134" y="74" width="44" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="183" y="74" width="30" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="218" y="74" width="34" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="257" y="74" width="28" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="290" y="74" width="20" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="60" y="101" width="38" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="103" y="101" width="26" height="11" rx="1.5" fill="var(--fig-anchor)"/><rect x="134" y="101" width="44" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="183" y="101" width="30" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="218" y="101" width="34" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="257" y="101" width="28" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="290" y="101" width="20" height="11" rx="1.5" fill="var(--fig-word)"/><line x1="134" x2="178" y1="33" y2="33" stroke="var(--fig-line)" stroke-width="1.1"/><line x1="103" x2="129" y1="114" y2="114" stroke="var(--fig-line)" stroke-width="1.1"/><path d="M134.5,33L51,33" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M51,33C47.6862915012,33 45,35.6862915012 45,39" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M103.5,114L51,114" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M51,114C47.6862915012,114 45,111.3137084988 45,108" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M45,39L45,108" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="134.5" cy="33" r="1.7" fill="var(--fig-line)"/><circle cx="103.5" cy="114" r="1.7" fill="var(--fig-line)"/></svg>
+          <figcaption><b>The bracket.</b> The top phrase leaves straight off its underline and
+          turns down; the bottom phrase leaves straight and turns up. The rail meets both corners
+          exactly.</figcaption>
+        </figure>
+        <figure class="fig">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="130 0 200 78" role="img" aria-label="cradle"><rect x="60" y="20" width="34" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="99" y="20" width="42" height="11" rx="1.5" fill="var(--fig-anchor)"/><rect x="146" y="20" width="30" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="181" y="20" width="38" height="11" rx="1.5" fill="var(--fig-anchor)"/><rect x="224" y="20" width="26" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="255" y="20" width="30" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="60" y="47" width="34" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="99" y="47" width="42" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="146" y="47" width="30" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="181" y="47" width="38" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="224" y="47" width="26" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="255" y="47" width="30" height="11" rx="1.5" fill="var(--fig-word)"/><line x1="99" x2="141" y1="33" y2="33" stroke="var(--fig-line)" stroke-width="1.1"/><line x1="181" x2="219" y1="33" y2="33" stroke="var(--fig-line)" stroke-width="1.1"/><path d="M140.5,33L146.5,33" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M146.5,33C148.18446848689,33 149.55,34.36553151311 149.55,36.05" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M149.55,36.05C149.55,37.73446848689 150.91553151311,39.1 152.6,39.1" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M152.6,39.1L169.4,39.1" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M169.4,39.1C171.08446848689,39.1 172.45,37.73446848689 172.45,36.05" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M172.45,36.05C172.45,34.36553151311 173.81553151311,33 175.5,33" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M175.5,33L181.5,33" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="140.5" cy="33" r="1.7" fill="var(--fig-line)"/><circle cx="181.5" cy="33" r="1.7" fill="var(--fig-line)"/></svg>
+          <figcaption><b>The cradle.</b> Two phrases on one line share a squared hammock — level
+          leads, soft corners, one genuinely flat floor, exact mirror.</figcaption>
+        </figure>
+        <figure class="fig">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="30 0 340 105" role="img" aria-label="margin"><rect x="60" y="20" width="38" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="103" y="20" width="26" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="134" y="20" width="44" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="183" y="20" width="30" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="218" y="20" width="34" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="257" y="20" width="28" height="11" rx="1.5" fill="var(--fig-anchor)"/><rect x="60" y="47" width="38" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="103" y="47" width="26" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="134" y="47" width="44" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="183" y="47" width="30" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="60" y="74" width="38" height="11" rx="1.5" fill="var(--fig-anchor)"/><rect x="103" y="74" width="26" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="134" y="74" width="44" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="183" y="74" width="30" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="218" y="74" width="34" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="257" y="74" width="28" height="11" rx="1.5" fill="var(--fig-word)"/><line x1="257" x2="285" y1="33" y2="33" stroke="var(--fig-line)" stroke-width="1.1"/><line x1="60" x2="98" y1="87" y2="87" stroke="var(--fig-line)" stroke-width="1.1"/><path d="M284.5,33L294,33" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M294,33C297.3137084988,33 300,35.6862915012 300,39" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M97.5,87L294,87" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M294,87C297.3137084988,87 300,84.3137084988 300,81" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M300,39L300,81" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="284.5" cy="33" r="1.7" fill="var(--fig-line)"/><circle cx="97.5" cy="87" r="1.7" fill="var(--fig-line)"/></svg>
+          <figcaption><b>One side, whole route.</b> Lower-left to upper-right takes a single calm
+          margin — never a staircase through the text.</figcaption>
+        </figure>
+        <figure class="fig">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="20 0 330 168" role="img" aria-label="handoff"><rect x="0" y="63" width="360" height="42" fill="var(--fig-gap)"/><rect x="60" y="20" width="38" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="103" y="20" width="26" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="134" y="20" width="44" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="183" y="20" width="30" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="218" y="20" width="34" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="257" y="20" width="28" height="11" rx="1.5" fill="var(--fig-anchor)"/><rect x="60" y="47" width="38" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="103" y="47" width="26" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="134" y="47" width="44" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="183" y="47" width="30" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="218" y="47" width="34" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="257" y="47" width="28" height="11" rx="1.5" fill="var(--fig-anchor)"/><rect x="60" y="110" width="38" height="11" rx="1.5" fill="var(--fig-anchor)"/><rect x="103" y="110" width="26" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="134" y="110" width="44" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="183" y="110" width="30" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="218" y="110" width="34" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="257" y="110" width="28" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="60" y="137" width="38" height="11" rx="1.5" fill="var(--fig-anchor)"/><rect x="103" y="137" width="26" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="134" y="137" width="44" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="183" y="137" width="30" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="218" y="137" width="34" height="11" rx="1.5" fill="var(--fig-word)"/><rect x="257" y="137" width="28" height="11" rx="1.5" fill="var(--fig-word)"/><line x1="257" x2="285" y1="33" y2="33" stroke="var(--fig-line)" stroke-width="1.1"/><line x1="257" x2="285" y1="60" y2="60" stroke="var(--fig-line)" stroke-width="1.1"/><line x1="60" x2="98" y1="123" y2="123" stroke="var(--fig-line)" stroke-width="1.1"/><line x1="60" x2="98" y1="150" y2="150" stroke="var(--fig-line)" stroke-width="1.1"/><path d="M284.5,33L294,33" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M294,33C297.3137084988,33 300,35.6862915012 300,39" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M284.5,60L294,60" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M294,60C297.3137084988,60 300,62.6862915012 300,66" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M60.5,123L51,123" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M51,123C47.6862915012,123 45,125.6862915012 45,129" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M60.5,150L51,150" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M51,150C47.6862915012,150 45,147.3137084988 45,144" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M300,39L300,66" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M45,104L45,144" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M300,66L300,79" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M300,79C300,82.3137084988 297.3137084988,85 294,85" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M294,85L51,85" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M51,85C47.6862915012,85 45,87.6862915012 45,91" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M45,91L45,104" fill="none" stroke="var(--fig-line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="284.5" cy="33" r="1.7" fill="var(--fig-line)"/><circle cx="284.5" cy="60" r="1.7" fill="var(--fig-line)"/><circle cx="60.5" cy="123" r="1.7" fill="var(--fig-line)"/><circle cx="60.5" cy="150" r="1.7" fill="var(--fig-line)"/></svg>
+          <figcaption><b>The section crossing.</b> A side switch crosses declared whitespace
+          genuinely flat, between two compact corners.</figcaption>
+        </figure>
+      </div>
+      <ul class="rules">
+        <li>Nothing slants, swoops, loops, or runs offset-parallel to an underline.</li>
+        <li>Kind speaks only as hue — one clean uniform stroke for every relationship.</li>
+        <li>A route that cannot be drawn cleanly holds as an honest tick; it never dodges into ornament.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>One menu, two vocabularies</h2>
+      <p class="sub">Select words and one compact bar offers both: the connection kinds above,
+      five sober highlight washes below. Connect the words — or lay a wash.</p>
+      <figure class="shot">
+        <img src="assets/menu.png" alt="The authoring menu over a selection in Psalm 1: a row of connection kinds — parallelism, contrast, echo, mirror, series, hinge — above a divider, then five highlight swatches: amber, sage, sky, rose, violet." width="1200" height="452">
+      </figure>
+    </section>
+
+    <section>
+      <h2>The card</h2>
+      <p class="sub">The passage score lists every relationship as one quiet row — a kind-hue
+      tick, the title, its moments, its state. Expanding a row gives the observation and the
+      exact source path; every phrase is a way back into the text. Highlights close the index.</p>
+      <figure class="shot">
+        <img src="assets/card.png" alt="The passage score card for Psalm 1: 'The two ways', contrast, two moments, drawn — expanded to show the route explanation, the observation field, and two source rows (PSA 1:1 'Blessed is the man', PSA 1:4 'The wicked are not so') with Export SVG and Release actions." width="1104" height="1078" style="max-width: 560px; margin: 0 auto;">
+      </figure>
+    </section>
+
+    <section>
+      <h2>On the page</h2>
+      <p class="sub">The whole system at reading scale — the held contrast in Psalm 1 draws one
+      bracket down the left margin while the card carries the reading. The same surface in Paper
+      and Ink.</p>
+      <figure class="shot" style="margin-bottom: 18px;">
+        <img src="assets/traces-paper.png" alt="Psalm 1 in the Paper atmosphere: a rose bracket connects 'Blessed is the man' to 'The wicked are not so' down the left margin; the passage score sits at right." width="2720" height="1840">
+      </figure>
+      <figure class="shot">
+        <img src="assets/traces-ink.png" alt="The same held relationship in the Ink atmosphere: dark page, the bracket and card in the same quiet language." width="2720" height="1840">
+      </figure>
+    </section>
+
+    <footer>
+      A Pericope lab surface — the proving ground for annotations headed into the app.
+      <a href="../">Back to Pericope</a>
+    </footer>
+  </div>
+</body>
+</html>
