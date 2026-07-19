@@ -303,3 +303,30 @@ Rode along: the port-merge yield now applies only to hop gaps (gapping
 a traveler near a focused port never harms the pour, so patches apply
 everywhere), and the weave suite check credits yielded woven-over-woven
 crossings at ports. diagnostics.exits records level/drop per group.
+
+### Step 12 phase A landed — shapes.html Traces run on the Loom engine
+
+lab.js is a module importing planRoute. The Traces view plans every inked
+trace through the engine (focused first; corridor/spine/strand claims
+flow exactly as in route-lab) and renders plans in shapes' own voice —
+the tapered ribbon per continuous run, split spines around hop gaps,
+mask-bite weave pauses, contact dots. Reading view stays on
+trace-geometry's local bows; the geometry tests are untouched.
+
+What the port taught us (all landed engine/host-side):
+- Degenerate zero-size element rects must be filtered from additional
+  obstacles — one hidden element at (−16,−215) dragged the loom datum
+  off-page and killed every margin route.
+- Rendered lines now derive FROM the word runs (mergeInkLines of the
+  run rects) — element Range rects lie about leading on synthetic block
+  markup (the qa sheet), words never do.
+- The bottom overscan corridor is real page room: widened 6 → 16 (top
+  6 → 10) so a cradle floor and a staggered shoulder can coexist below
+  the last line.
+- Traces mode reserves the contract's leading (2.08 / compact 2.1 /
+  geometry 2.05) via body[data-route="traces"] — Reading keeps its
+  tighter set. Two staggered shoulders per corridor need it.
+
+Phase B remains: held ticks + explanations in the score panel, lane
+hysteresis, rankCompanions replacing recency disclosure, cold-wake perf
+on the 51-verse sheet, exportCard reflecting real route classes.

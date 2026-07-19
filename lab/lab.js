@@ -3,7 +3,10 @@
  * whisper of a dotted hint. Touch one and its whole pattern wakes — sibling
  * phrases ink in, a connector draws itself through the gutter, the rest of
  * the page recedes, and a small whisper names the shape. Click pins it.
- * No dialect switcher, no chrome at rest: one opinionated language. */
+ * No dialect switcher, no chrome at rest: one opinionated language.
+ * Traces routing is the Loom engine (route-engine.js) — the same planner
+ * as route.html; Reading keeps trace-geometry's local bows. */
+import { planRoute } from "./route-engine.js";
 
 const hovered = new Set(); // gids under the cursor
 const pinned = new Set();  // gids pinned by click
@@ -676,8 +679,238 @@ function ribbonDraw(g, pts, hue, { w = 1.6, opacity = 1, delay = 0, dur = 380, r
 }
 const ROUTE_KEY = "shape-marks-route";
 let ROUTE = localStorage.getItem(ROUTE_KEY) === "bows" ? "bows" : "traces";
+document.body.dataset.route = ROUTE;
 let FOCUS_GID = null;
 const MAX_MARGIN_TRACES = 4;
+
+/* ── the Loom engine host (Traces view) ─────────────────────
+ * Measurement and weave helpers matching route-lab.js: ink-tightened
+ * lines, word-run collision truth, exact crossings. The engine plans;
+ * the ribbon draws. */
+function inkSlackFor(el) {
+  const cs = getComputedStyle(el);
+  const key = `${cs.fontWeight}|${cs.fontSize}|${cs.fontFamily}`;
+  const cache = inkSlackFor._cache || (inkSlackFor._cache = new Map());
+  const hit = cache.get(key);
+  if (hit) return hit;
+  const ctx = (inkSlackFor._canvas || (inkSlackFor._canvas = document.createElement("canvas"))).getContext("2d");
+  ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+  const m = ctx.measureText("Mahglpqy");
+  const val = {
+    top: Math.max(0, m.fontBoundingBoxAscent - m.actualBoundingBoxAscent),
+    bottom: Math.max(0, m.fontBoundingBoxDescent - m.actualBoundingBoxDescent),
+  };
+  cache.set(key, val);
+  return val;
+}
+function mergeInkLines(rects, tol = 2) {
+  const out = [];
+  for (const r of rects) {
+    if (r.width < 1 || r.height < 1) continue;
+    const cy = (r.top + r.bottom) / 2;
+    const hit = out.find((o) => Math.abs((o.top + o.bottom) / 2 - cy) <= tol);
+    if (hit) {
+      hit.left = Math.min(hit.left, r.left); hit.right = Math.max(hit.right, r.right);
+      hit.top = Math.min(hit.top, r.top); hit.bottom = Math.max(hit.bottom, r.bottom);
+    } else out.push({ left: r.left, right: r.right, top: r.top, bottom: r.bottom });
+  }
+  return out;
+}
+function blockFor(sid, M) {
+  const rel = (r) => ({ left: r.left - M.base.left, right: r.right - M.base.left, top: r.top - M.base.top, bottom: r.bottom - M.base.top });
+  /* word runs cache on layout dimensions — focus/hover replans reuse it */
+  const wrKey = `${sid}|${M.base.width}x${M.sheet.scrollHeight}|${ROUTE}`;
+  const wrCache = blockFor._wr || (blockFor._wr = new Map());
+  let wordRuns = wrCache.get(wrKey);
+  if (!wordRuns) {
+    wordRuns = [];
+    const range = document.createRange();
+    M.sheet.querySelectorAll(".vrow .vtext").forEach((el) => {
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      let node;
+      while ((node = walker.nextNode())) {
+        const text = node.nodeValue || "";
+        if (!text.trim()) continue;
+        const s = inkSlackFor(node.parentElement);
+        const re = /\S+/g;
+        let mt;
+        while ((mt = re.exec(text))) {
+          range.setStart(node, mt.index);
+          range.setEnd(node, mt.index + mt[0].length);
+          for (const r of range.getClientRects()) {
+            if (r.width <= 0.4 || r.height <= 1) continue;
+            const rr = rel(r);
+            wordRuns.push({ left: rr.left, right: rr.right, top: rr.top + s.top, bottom: rr.bottom - s.bottom });
+          }
+        }
+      }
+    });
+    wrCache.set(wrKey, wordRuns);
+    if (wrCache.size > 12) wrCache.delete(wrCache.keys().next().value);
+  }
+  /* rendered lines come FROM the word runs — ink truth for any markup
+   * (the qa sheet's synthetic blocks return line-box element rects,
+   * which lie about leading; words never do) */
+  const renderedLines = mergeInkLines(wordRuns, 3);
+  const verseNumberRects = [...M.sheet.querySelectorAll(".vnum")].map((el) => {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const r = range.getClientRects()[0] || el.getBoundingClientRect();
+    return rel(r);
+  });
+  const additionalObstacles = [...M.sheet.querySelectorAll(".chap-head, .letter-head, .sheet-title, .sheet-ref, .legend, .mark-hint")]
+    .map((el) => rel(el.getBoundingClientRect()))
+    .filter((r) => r.right - r.left > 1 && r.bottom - r.top > 1);
+  return {
+    bounds: { left: 0, right: M.base.width, top: 0, bottom: M.base.height },
+    renderedLines, wordRuns, verseNumberRects, additionalObstacles,
+    lineHeight: parseFloat(getComputedStyle(M.sheet.querySelector(".vtext")).lineHeight) || 26,
+    availableLeftMargin: Math.max(60, M.textLeft - 8),
+  };
+}
+function annFor(M, gid) {
+  const rel = (r) => ({ left: r.left - M.base.left, right: r.right - M.base.left, top: r.top - M.base.top, bottom: r.bottom - M.base.top });
+  const G = GIDS[gid];
+  const anchors = [];
+  G.anchors.forEach((anchor, ki) => {
+    const els = anchor.els || [anchor.el];
+    const rects = els.flatMap((el) => [...el.getClientRects()].map(rel));
+    if (!rects.length) return;
+    const s = inkSlackFor(els[0].closest(".vtext") || els[0]);
+    anchors.push({
+      id: `${gid}:${ki}`,
+      fragments: mergeInkLines(rects).map((r) => ({ left: r.left, right: r.right, top: r.top + s.top, bottom: r.bottom - s.bottom })),
+      documentOrder: ki,
+    });
+  });
+  return { id: gid, anchors };
+}
+/* exact weave crossings (route-lab.js twins) */
+function solveCubicYAtX(s, x) {
+  const minX = Math.min(s.x1, s.x2), maxX = Math.max(s.x1, s.x2);
+  if (x < minX - 0.001 || x > maxX + 0.001) return null;
+  let lo = 0, hi = 1;
+  const dec = s.x2 < s.x1;
+  for (let i = 0; i < 24; i++) {
+    const mid = (lo + hi) / 2, u = 1 - mid;
+    const px = u * u * u * s.x1 + 3 * u * u * mid * s.c1x + 3 * u * mid * mid * s.c2x + mid * mid * mid * s.x2;
+    if ((dec && px > x) || (!dec && px < x)) lo = mid;
+    else hi = mid;
+  }
+  const t = (lo + hi) / 2, u = 1 - t;
+  return u * u * u * s.y1 + 3 * u * u * t * s.c1y + 3 * u * t * t * s.c2y + t * t * t * s.y2;
+}
+function crossingsAt(plan, x) {
+  const ys = [];
+  for (const s of plan.centerline) {
+    if (s.type === "L") {
+      if (Math.abs(s.y2 - s.y1) < 0.01 &&
+          x >= Math.min(s.x1, s.x2) - 0.001 && x <= Math.max(s.x1, s.x2) + 0.001) ys.push(s.y1);
+    } else {
+      const y = solveCubicYAtX(s, x);
+      if (y !== null) ys.push(y);
+    }
+  }
+  return ys;
+}
+function computeHops(drawnPlans) {
+  for (const p of drawnPlans) { p.renderHops = []; p.renderPatches = []; }
+  for (const A of drawnPlans) {
+    for (const B of drawnPlans) {
+      if (A === B || !B.spine) continue;
+      for (const y of crossingsAt(A, B.spine.x)) {
+        if (y < B.spine.top + 2 || y > B.spine.bottom - 2) continue;
+        if (B.focused && !A.focused) {
+          if (!A.renderPatches.some((h) => Math.abs(h.y - y) < 3 && Math.abs(h.x - B.spine.x) < 1)) {
+            A.renderPatches.push({ x: B.spine.x, y });
+          }
+        } else {
+          if (B.ports.some((pt) => Math.abs(pt.y - y) < 2.6)) continue;
+          if (!B.renderHops.some((h) => Math.abs(h - y) < 3)) B.renderHops.push(y);
+        }
+      }
+    }
+  }
+}
+function splitSpine(spine, gapCenters) {
+  if (!spine) return [];
+  const y1 = spine.top, y2 = spine.bottom;
+  if (y2 - y1 < 0.01) return [];
+  const intervals = gapCenters
+    .map((y) => [Math.max(y1, y - 1.7), Math.min(y2, y + 1.7)])
+    .filter(([a, b]) => b > a)
+    .sort((a, b) => a[0] - b[0]);
+  const merged = [];
+  for (const iv of intervals) {
+    const prev = merged[merged.length - 1];
+    if (prev && iv[0] <= prev[1] + 0.2) prev[1] = Math.max(prev[1], iv[1]);
+    else merged.push([...iv]);
+  }
+  const segments = [];
+  let cursor = y1;
+  for (const [a, b] of merged) {
+    if (a - cursor > 0.25) segments.push([cursor, a]);
+    cursor = Math.max(cursor, b);
+  }
+  if (y2 - cursor > 0.25) segments.push([cursor, y2]);
+  return segments;
+}
+function segPtsFor(s) {
+  const pts = [];
+  if (s.type === "L") {
+    const n = Math.max(1, Math.ceil(Math.hypot(s.x2 - s.x1, s.y2 - s.y1) / 1.5));
+    for (let i = 0; i <= n; i++) pts.push({ x: s.x1 + (s.x2 - s.x1) * (i / n), y: s.y1 + (s.y2 - s.y1) * (i / n) });
+  } else {
+    for (let i = 0; i <= 14; i++) {
+      const t = i / 14, u = 1 - t;
+      pts.push({
+        x: u * u * u * s.x1 + 3 * u * u * t * s.c1x + 3 * u * t * t * s.c2x + t * t * t * s.x2,
+        y: u * u * u * s.y1 + 3 * u * u * t * s.c1y + 3 * u * t * t * s.c2y + t * t * t * s.y2,
+      });
+    }
+  }
+  return pts;
+}
+/* lab introspection for the browser console */
+globalThis.__LAB = { blockFor, annFor, measure: (sid) => measure(sid), planRoute };
+
+/* an engine plan, drawn in shapes' own voice: the tapered ribbon */
+function drawRouted(svg, g, plan, hue, focused) {
+  const w = focused ? 1.5 : 1.25;
+  const nonSpine = plan.spine
+    ? plan.centerline.filter((s) =>
+        !(s.type === "L" && Math.abs(s.x1 - plan.spine.x) < 0.01 && Math.abs(s.x2 - plan.spine.x) < 0.01 &&
+          Math.abs(s.y2 - s.y1) > 4))
+    : plan.centerline;
+  const runs = [];
+  let cur = [];
+  for (const s of nonSpine) {
+    const pts = segPtsFor(s);
+    if (cur.length && Math.hypot(pts[0].x - cur[cur.length - 1].x, pts[0].y - cur[cur.length - 1].y) > 1.5) {
+      runs.push(cur); cur = [];
+    }
+    cur.push(...(cur.length ? pts.slice(1) : pts));
+  }
+  if (cur.length) runs.push(cur);
+  runs.forEach((pts, i) => ribbonDraw(g, pts, hue, { w, delay: 40 + i * 26, dur: 340 }));
+  if (plan.spine) {
+    for (const [a, b] of splitSpine(plan.spine, plan.renderHops || [])) {
+      const n = Math.max(6, Math.round((b - a) / 2));
+      const pts = Array.from({ length: n + 1 }, (_, k) => ({ x: plan.spine.x, y: a + ((b - a) * k) / n }));
+      ribbonDraw(g, pts, hue, { w: w - 0.12, delay: 70, dur: 380 });
+    }
+  }
+  if (plan.renderPatches && plan.renderPatches.length) {
+    const W = +svg.getAttribute("width") + 40, H = +svg.getAttribute("height") + 40;
+    let defs = svg.querySelector("defs");
+    if (!defs) { defs = document.createElementNS("http://www.w3.org/2000/svg", "defs"); svg.insertBefore(defs, svg.firstChild); }
+    const mask = S("mask", { id: `weave-${g.dataset.gid}`, maskUnits: "userSpaceOnUse", x: -20, y: -20, width: W, height: H }, defs);
+    S("rect", { x: -20, y: -20, width: W, height: H, fill: "#fff" }, mask);
+    for (const pt of plan.renderPatches) S("circle", { cx: pt.x, cy: pt.y, r: 2.6, fill: "#000" }, mask);
+    g.setAttribute("mask", `url(#weave-${g.dataset.gid})`);
+  }
+  plan.contacts.forEach((c, i) => traceDot(g, c, hue, 60 + i * 22));
+}
 
 function traceDot(g, point, hue, delay = 0, radius = TG.constants.TOUCH_RADIUS, opacity = 1) {
   const dot = S("circle", {
@@ -770,6 +1003,67 @@ function drawOverlay(sid, gids) {
   const inked = ROUTE === "traces"
     ? [...gids.filter((gid) => gid !== localFocus).slice(-(MAX_MARGIN_TRACES - 1)), localFocus].filter(Boolean)
     : gids;
+
+  if (ROUTE === "traces") {
+    /* the Loom engine plans every inked trace: focused first (it claims
+     * corridors and strand 0 first), then companions in recency order.
+     * Claims — corridor slots, spine intervals, strand bookings — flow
+     * through the shared arrays exactly as in route-lab. */
+    const fontSize = parseFloat(getComputedStyle(M.sheet.querySelector(".vtext")).fontSize) || 17;
+    const block = blockFor(sid, M);
+    const claims = [], spineClaims = [], strandClaims = [];
+    const plans = new Map();
+    const anns = new Map();
+    const ordered = [localFocus, ...inked.filter((gid) => gid !== localFocus)].filter(Boolean);
+    for (const gid of ordered) {
+      const ann = annFor(M, gid);
+      anns.set(gid, ann);
+      if (!ann.anchors.length) { plans.set(gid, { valid: false, reason: "no-anchors" }); continue; }
+      let plan;
+      try {
+        plan = planRoute(block, ann, {
+          fontSize, corridorClaims: claims, spineClaims, strandClaims,
+          focused: gid === localFocus, claimPad: 0.25,
+        });
+      } catch (e) {
+        plan = { valid: false, reason: "engine-error" };
+      }
+      plans.set(gid, plan);
+      if (plan.valid) {
+        plan.focused = gid === localFocus;
+        claims.push(...plan.claimsOut);
+        if (plan.spineClaimOut) spineClaims.push(plan.spineClaimOut);
+        if (plan.strandClaimOut) strandClaims.push(plan.strandClaimOut);
+      }
+    }
+    computeHops([...plans.values()].filter((p) => p.valid));
+    for (const gid of inked) {
+      const G = GIDS[gid];
+      const plan = plans.get(gid);
+      const g = S("g", {
+        class: `margin-annotation ${gid === localFocus ? "is-focus" : "is-held"}`,
+        "data-gid": gid,
+      }, svg);
+      g.dataset.kind = G.kind;
+      if (G.qaKind) g.dataset.qaKind = G.qaKind;
+      if (G.qaDistance) g.dataset.qaDistance = G.qaDistance;
+      if (G.qaPlacement) g.dataset.qaPlacement = G.qaPlacement;
+      if (plan && plan.valid) {
+        g.dataset.route = plan.mode + (plan.cradleVariant ? ":" + plan.cradleVariant : "");
+        drawRouted(svg, g, plan, G.hue, gid === localFocus);
+        /* continuation dots on wrapped fragments */
+        const ann = anns.get(gid);
+        for (const a of ann.anchors) for (const f of a.fragments.slice(1)) {
+          traceDot(g, { x: f.left + 0.5, y: f.bottom + 2 }, G.hue, 120, 1.35, 0.72);
+        }
+      } else {
+        /* honest failure: the phrase keys still glow; no connector ink */
+        g.dataset.route = plan ? plan.reason : "none";
+      }
+    }
+    return;
+  }
+
   inked.forEach((gid, i) => {
     const G = GIDS[gid];
     const members = G.anchors.map((anchor) => measureAnchor(M, anchor)).filter(Boolean);
@@ -777,13 +1071,10 @@ function drawOverlay(sid, gids) {
     const isFocus = gid === localFocus;
     const lane = isFocus ? 0 : i + 1;
     const g = S("g", {
-      class: ROUTE === "traces" ? `margin-annotation ${isFocus ? "is-focus" : "is-held"}` : "reading-annotation",
+      class: "reading-annotation",
       "data-gid": gid,
     }, svg);
     g.dataset.kind = G.kind;
-    if (G.qaKind) g.dataset.qaKind = G.qaKind;
-    if (G.qaDistance) g.dataset.qaDistance = G.qaDistance;
-    if (G.qaPlacement) g.dataset.qaPlacement = G.qaPlacement;
     const marginLaneX = M.textLeft - 46;
     if (G.conn === "thread") drawThread(g, members, G.hue, marginLaneX - lane * 10, lineHeight);
     else drawArc(g, members[0], members[members.length - 1], G.hue, lane * 10, marginLaneX, lineHeight);

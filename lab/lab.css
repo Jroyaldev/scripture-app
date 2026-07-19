@@ -123,6 +123,12 @@ body.theme-glass, body.theme-dark-glass {
   transition: color 220ms ease;
 }
 .sheet-compact .vrow .vtext { font-size: 0.92rem; line-height: 1.55; }
+/* the loom needs interline room — Traces mode reserves it (the routing
+ * contract's load-bearing leading, ≈2.0–2.1: two staggered shoulders
+ * must fit one corridor; Reading keeps its tighter set) */
+body[data-route="traces"] .vrow .vtext { line-height: 2.08; }
+body[data-route="traces"] .sheet-compact .vrow .vtext { line-height: 2.1; }
+body[data-route="traces"] .sheet-geometry .vrow .vtext { line-height: 2.05; }
 
 /* ── the phrase key at rest: light themes lay a quiet highlight wash
  * behind the words (the app's own annotation language); dark themes

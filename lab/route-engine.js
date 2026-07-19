@@ -149,14 +149,16 @@ export function planRoute(block, ann, opts = {}) {
    * plus overscan bands above the first and below the last */
   const corridors = [];
   const first = expandRect(lines[0], expand);
-  corridors.push({ top: first.top - 6, bottom: first.top, above: -1, below: 0 });
+  corridors.push({ top: first.top - 10, bottom: first.top, above: -1, below: 0 });
   for (let i = 0; i < lines.length - 1; i++) {
     const a = expandRect(lines[i], expand), b = expandRect(lines[i + 1], expand);
     corridors.push(b.top - a.bottom >= BAND_MIN
       ? { top: a.bottom, bottom: b.top, above: i, below: i + 1 } : null);
   }
+  /* below the last line the page itself is the corridor — give it real
+   * room (a cradle floor and a staggered shoulder must coexist there) */
   const last = expandRect(lines[lines.length - 1], expand);
-  corridors.push({ top: last.bottom, bottom: last.bottom + 6, above: lines.length - 1, below: -1 });
+  corridors.push({ top: last.bottom, bottom: last.bottom + 16, above: lines.length - 1, below: -1 });
 
   const lineIndexOf = (frag) => {
     const cy = (frag.top + frag.bottom) / 2;
