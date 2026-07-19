@@ -265,3 +265,20 @@ the corridor, dual corridor claims (shoulder + drip zone), no strand
 consumed (modes local-tag / local-comb). A one-word tag is now a ~25px
 scribal flick instead of a page-crossing dead shoulder. Toggles: cradle
 + local checkboxes force margin routing for inspection.
+
+### Steps 10+11 landed (same day)
+
+The margin route is now generated behind a **dormant scorer seam**:
+genMargin(side, strand) candidates are scored (raw ink length + 0.035/px
+wrong-side penalty + 12 side hysteresis) and the best returned with
+diagnostics.score + alternativesConsidered. With sides ['left'] the
+scorer is the identity — the seam exists so a future right margin
+arrives as a continuous preference, not a rule. And **strand choice is
+engine-owned and claims-driven**: committed spines emit strandClaimOut
+{side, strand, top, bottom}; a candidate takes the lowest strand whose
+claims (±6px slack) don't overlap its interval, escalating only on
+failure; focused always [0]. Cradles and local rails consume no strand,
+and a starved margin no longer starves them (the strandX bound checks
+moved out of the pre-cradle path). Failure reporting prefers
+needs-space over kink over obstacle-collision. assignStrands remains
+exported but demoted; the host's inline strand loops are gone.

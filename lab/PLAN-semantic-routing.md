@@ -81,12 +81,12 @@ floor under the GAP:                    floor under the PAIR:
 - **Prettier:** the worst case today — a one-word tag dragging a 200-300px dead shoulder to the loom for a 2.5px drip — becomes a ~25px scribal flick beside the word; the loom becomes legible as "these ideas travel."
 - **Accept:** validate() additions: drip span ≤ 6, dual claims present, local x >= loomInner+6, no strand consumed; dense fixtures show no uncovered crossings through the drip window.
 
-### 10. Dormant scorer — *adapt*
+### 10. Dormant scorer — *adapt* — ✅ LANDED
 - **Build:** split planRoute into `genCradle()`/`genMargin(side, strandIndex)` sharing the closure; cradle stays a **pre-emptive hard winner** (never scored — the reference's `length*0.25 − 40` is just "direct always beats margin" with a wasted sampling pass). Scoring seam between generators and return: `score = rawLength (UNROUNDED — never diagnostics.totalLength) + K[side] + wrongSide(0.035/px of group-center offset) + hysteresis(+12 if previousSide differs; never raise past ~20)`. Round to 0.1, tie-break modePriority `{same-line:0, tag:1, corridor:2, multipoint:2}` then innermost strandX. `opts.sides` defaults `['left']` — **pixel-identical day one**; emit `diagnostics.score` + alternativesConsidered. Budget: ≤3 finalize() calls per thread. Failure semantics: prefer needs-space over kink over obstacle-collision as the reported reason.
 - **Prettier:** when right-margin exists, threads choose the nearer, emptier margin as a quiet preference; +12 hysteresis keeps held threads from flapping sides on refocus.
 - **Accept:** pixel-identical on Dense Psalm and Long text (screenshot diff) with sides:['left']; score panel shows alternatives.
 
-### 11. Claims-driven strand availability — *adapt*
+### 11. Claims-driven strand availability — *adapt* — ✅ LANDED
 - **Build:** strand claims `{type:'strand', side, strand, interval}` in claimsOut (spined plans only — cradles/drips never claim); `availableStrands(side)` with **±6px interval slack** (the reference's 0.5 pad lets spines kiss); focused ⇒ [0]. Try lowest available strand, escalate only on failure; `[]` ⇒ needs-space. Delete run()'s inline while-loops (:523-534); demote engine `assignStrands`. Symmetric right datum (`rightLoomInner = maxRight + 10`) ships as spec, disabled.
 - **Prettier:** disjoint threads *share* strand 0 — the margin thins as reading proceeds instead of stacking three deep by recency.
 - **Accept:** two vertically disjoint companions land on the same strand; Long text refocus does not stutter (≤2 margin candidates per annotation).

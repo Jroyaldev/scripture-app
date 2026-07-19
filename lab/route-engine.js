@@ -224,18 +224,17 @@ export function planRoute(block, ann, opts = {}) {
   });
   const pinOf = (frag) => ({ x: frag.left + 0.5, y: frag.bottom + underlineDy });
 
-  /* ── loom strand x ──
+  /* ── loom datum ──
    * The loom is a passage-level datum: one inner edge computed from EVERY
    * obstacle in the block (the widest intrusion wins), never per
    * annotation — two annotations on strand k must land on the same x.
-   * The host may pin it explicitly via opts.loomX. */
+   * The host may pin it explicitly via opts.loomX. Strand CHOICE is the
+   * engine's (see the margin route); cradles and local rails need no
+   * strand, so a starved margin no longer starves them. */
   let minLeft = Infinity;
   for (const o of obstacles) minLeft = Math.min(minLeft, o.left);
   if (!isFinite(minLeft)) minLeft = block.bounds.left + 40;
   const loomInner = opts.loomX ?? (minLeft - loomAir);
-  const strandX = loomInner - strandIndex * strandPitch;
-  if (strandX < block.bounds.left - (block.availableLeftMargin ?? 60)) return fail("needs-space");
-  if (strandX < block.bounds.left + 4) return fail("needs-space");
 
   /* ── same-line cradle (two anchors, one rendered line) ──
    * Three regimes decide how the hammock takes hold:
@@ -363,7 +362,12 @@ export function planRoute(block, ann, opts = {}) {
 
   /* ── margin route ──
    * group anchors per rendered line; each group gets one corridor
-   * shoulder; every shoulder swoops into the strand. */
+   * shoulder; every shoulder swoops into the strand. Strand choice is
+   * claims-driven and engine-owned: focused takes strand 0; companions
+   * take the lowest strand whose committed spine intervals (±6px slack)
+   * don't overlap this annotation, escalating only on failure. A dormant
+   * scorer sits between the generators and the return — with one side it
+   * picks the only candidate, but side choice arrives continuous. */
   const groups = [];
   for (const b of branchesIn) {
     const g = groups.find((x) => x.li === b.li);
@@ -375,75 +379,130 @@ export function planRoute(block, ann, opts = {}) {
     g.xMax = Math.max(...g.contacts.map((c) => c.x)) + 1;
     g.cy = Math.max(...g.contacts.map((c) => c.y));
   }
-
-  for (const g of groups) {
-    /* bottom pins can only leave downward: the corridor below the group's
-     * rendered line is the only legal one. If it cannot host a shoulder,
-     * the honest answer is needs-space — never a climb through the line. */
-    const ci = g.li + 1, slot = corridorYFor(ci, strandX, g.xMax, g.cy);
-    if (!slot) return fail("needs-space");
-    g.ci = ci; g.shoulderY = slot.y; g.dip = slot.dip;
-  }
-  groups.sort((a, b) => a.shoulderY - b.shoulderY);
-
-  const contacts = [];
-  const centerline = [];
-  const exempts = [];  // parallel to centerline: terminal-only ink privileges
-  const ports = [];
-  const corridorYs = [];
-  const corridorIdx = [];
-
-  try {
-    groups.forEach((g, gi) => {
-    const y = g.shoulderY;
-    corridorYs.push(y); corridorIdx.push(g.ci);
-    /* terminals: pins comb into the shoulder, right to left */
-    let minEndX = Infinity;
-    for (const m of [...g.members].sort((a, b) => b.frag.left - a.frag.left)) {
-      const c = pinOf(m.frag);
-      const r = Math.abs(y - c.y);
-      if (r < DROP_MIN) throw { kink: true };
-      contacts.push(c);
-      centerline.push(quarterVH(c.x, c.y, c.x - r, y));
-      exempts.push([{ rect: expandRect(m.frag, expand), cx: c.x, cy: c.y }]);
-      minEndX = Math.min(minEndX, c.x - r);
-    }
-    /* shoulder: one hairline through every terminal's merge point */
-    const reach = Math.min(SWOOP_REACH, Math.max(4, (minEndX - strandX) * 0.5));
-    centerline.push(L(minEndX, y, strandX + reach, y));
-    exempts.push(null);
-    /* port: shallow swoop pouring down onto the strand */
-    const dip = g.dip;
-    centerline.push(quarterHV(strandX + reach, y, strandX, y + dip));
-    exempts.push(null);
-    ports.push({ x: strandX, y: y + dip });
-    g.portY = y + dip;
-    });
-  } catch (e) {
-    if (e && e.kink) return fail("kink");
-    throw e;
-  }
-
-  /* spine: one vertical from first port to last port, never overshooting */
-  let spine = null;
-  if (groups.length > 1) {
-    const top = Math.min(...groups.map((g) => g.portY));
-    const bot = Math.max(...groups.map((g) => g.portY));
-    centerline.push(L(strandX, top, strandX, bot));
-    exempts.push(null);
-    spine = { x: strandX, top, bottom: bot };
-  } else {
-    /* single-group arrival: the swoop ends in a short drip */
-    const g = groups[0];
-    centerline.push(L(strandX, g.portY, strandX, g.portY + 2.5));
-    exempts.push(null);
-  }
-
   const mode = ann.anchors.length === 1 ? "tag"
     : groups.length > 1 ? (ann.anchors.length > 2 || groups.length > 2 ? "multipoint" : "corridor")
     : "corridor";
 
-  return finalize(centerline, mode, contacts, corridorYs, corridorIdx, strandX, spine, ports, undefined, exempts);
+  const genMargin = (side, strand) => {
+    const strandX = loomInner - strand * strandPitch;
+    if (strandX < block.bounds.left - (block.availableLeftMargin ?? 60)) return { valid: false, reason: "needs-space" };
+    if (strandX < block.bounds.left + 4) return { valid: false, reason: "needs-space" };
+
+    const gs = groups.map((g) => ({ ...g }));
+    for (const g of gs) {
+      /* bottom pins can only leave downward: the corridor below the
+       * group's rendered line is the only legal one. If it cannot host a
+       * shoulder, the honest answer is needs-space — never a climb. */
+      const ci = g.li + 1, slot = corridorYFor(ci, strandX, g.xMax, g.cy);
+      if (!slot) return { valid: false, reason: "needs-space" };
+      g.ci = ci; g.shoulderY = slot.y; g.dip = slot.dip;
+    }
+    gs.sort((a, b) => a.shoulderY - b.shoulderY);
+
+    const contacts = [];
+    const centerline = [];
+    const exempts = [];  // parallel to centerline: terminal-only ink privileges
+    const ports = [];
+    const corridorYs = [];
+    const corridorIdx = [];
+
+    for (const g of gs) {
+      const y = g.shoulderY;
+      corridorYs.push(y); corridorIdx.push(g.ci);
+      /* terminals: pins comb into the shoulder, right to left */
+      let minEndX = Infinity;
+      for (const m of [...g.members].sort((a, b) => b.frag.left - a.frag.left)) {
+        const c = pinOf(m.frag);
+        const r = Math.abs(y - c.y);
+        if (r < DROP_MIN) return { valid: false, reason: "kink" };
+        contacts.push(c);
+        centerline.push(quarterVH(c.x, c.y, c.x - r, y));
+        exempts.push([{ rect: expandRect(m.frag, expand), cx: c.x, cy: c.y }]);
+        minEndX = Math.min(minEndX, c.x - r);
+      }
+      /* shoulder: one hairline through every terminal's merge point */
+      const reach = Math.min(SWOOP_REACH, Math.max(4, (minEndX - strandX) * 0.5));
+      centerline.push(L(minEndX, y, strandX + reach, y));
+      exempts.push(null);
+      /* port: shallow swoop pouring down onto the strand */
+      centerline.push(quarterHV(strandX + reach, y, strandX, y + g.dip));
+      exempts.push(null);
+      ports.push({ x: strandX, y: y + g.dip });
+      g.portY = y + g.dip;
+    }
+
+    /* spine: one vertical from first port to last port, never overshooting */
+    let spine = null;
+    if (gs.length > 1) {
+      const top = Math.min(...gs.map((g) => g.portY));
+      const bot = Math.max(...gs.map((g) => g.portY));
+      centerline.push(L(strandX, top, strandX, bot));
+      exempts.push(null);
+      spine = { x: strandX, top, bottom: bot };
+    } else {
+      /* single-group arrival: the swoop ends in a short drip */
+      centerline.push(L(strandX, gs[0].portY, strandX, gs[0].portY + 2.5));
+      exempts.push(null);
+    }
+
+    const plan = finalize(centerline, mode, contacts, corridorYs, corridorIdx, strandX, spine, ports, undefined, exempts);
+    if (plan.valid) {
+      plan.strand = strand;
+      plan.side = side;
+      plan.diagnostics.laneIndex = strand;
+      plan.rawLength = segmentsLength(centerline);
+      plan.semCenter = contacts.reduce((s, c) => s + c.x, 0) / contacts.length;
+      plan.strandClaimOut = spine
+        ? { side, strand, top: spine.top, bottom: spine.bottom }
+        : null;
+    }
+    return plan;
+  };
+
+  /* claims-driven strand availability: committed spine intervals block a
+   * strand only where they actually run (±6px slack — kissing spines on
+   * one strand read as a single broken line) */
+  const annTop = Math.min(...branchesIn.map((b) => b.frag.top));
+  const annBottom = Math.max(...ann.anchors.flatMap((a) => a.fragments.map((f) => f.bottom)));
+  const strandClaims = opts.strandClaims || [];
+  const sides = opts.sides || ["left"];
+  const openStrands = opts.focused ? [0] : [0, 1, 2].filter((s) =>
+    !strandClaims.some((sc) => sc.strand === s && sides.includes(sc.side) &&
+      sc.top < annBottom + 6 && annTop < sc.bottom + 6));
+  if (!openStrands.length) return fail("needs-space", "no-strand");
+
+  const candidates = [];
+  const failReasons = [];
+  for (const strand of openStrands) {
+    for (const side of sides) {
+      if (side !== "left") { declined.push({ move: `margin:${side}`, why: "unsupported" }); continue; }
+      const res = genMargin(side, strand);
+      if (res.valid) candidates.push(res);
+      else failReasons.push(res.reason);
+    }
+    if (candidates.length) break;  // escalate strands only on failure
+  }
+  if (!candidates.length) {
+    const order = ["needs-space", "kink", "obstacle-collision"];
+    return fail(order.find((r) => failReasons.includes(r)) || failReasons[0] || "needs-space");
+  }
+
+  /* the dormant scorer: raw ink length + side fit + side hysteresis.
+   * With sides ['left'] this is the identity — the seam exists so a
+   * future right margin arrives as a continuous preference, not a rule. */
+  const textCenter = (Math.min(...lines.map((l) => l.left)) + Math.max(...lines.map((l) => l.right))) / 2;
+  for (const c of candidates) {
+    const wrongSide = c.side === "left"
+      ? Math.max(0, c.semCenter - textCenter) * 0.035
+      : Math.max(0, textCenter - c.semCenter) * 0.035;
+    const hysteresis = opts.previousSide && opts.previousSide !== c.side ? 12 : 0;
+    c.score = Math.round((c.rawLength + wrongSide + hysteresis) * 10) / 10;
+  }
+  candidates.sort((a, b) => a.score - b.score || (a.strand ?? 9) - (b.strand ?? 9));
+  const best = candidates[0];
+  best.diagnostics.score = best.score;
+  best.diagnostics.alternativesConsidered = candidates.slice(1).map((c) => ({ side: c.side, strand: c.strand, score: c.score }));
+  return best;
 
   /* ── shared finish: sample, validate, diagnose ──
    * Ink privileges are ownership-scoped: a terminal segment may pass

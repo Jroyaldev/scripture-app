@@ -621,6 +621,9 @@ let weaveOn = true;
 let cradleOn = true;
 let localOn = true;
 let lastLoomInner = 0;
+/* side memory for the scorer's hysteresis — a held thread refocusing
+ * shouldn't flap margins once a right margin exists */
+const lastSides = new Map();
 
 function run() {
   const measured = measure();
@@ -654,12 +657,14 @@ function run() {
   const strands = new Map();
   const claims = [];
   const spineClaims = [];
+  const strandClaims = [];
   const drawnIds = new Set();
-  const tryPlan = (ann, strand, commit) => {
+  const tryPlan = (ann, commit, focused) => {
     try {
       const p = planRoute(measured.block, ann, {
-        fontSize: measured.fontSize, strandIndex: strand,
-        corridorClaims: claims, spineClaims, loomX: loomInner,
+        fontSize: measured.fontSize,
+        corridorClaims: claims, spineClaims, strandClaims, loomX: loomInner,
+        focused, sides: ["left"], previousSide: lastSides.get(ann.id),
         disableCradle: !cradleOn, disableLocal: !localOn,
         /* every claim carries a little air so stacked shoulders never
          * read as one line */
@@ -669,30 +674,27 @@ function run() {
       if (p.valid && commit) {
         claims.push(...p.claimsOut);
         if (p.spineClaimOut) spineClaims.push(p.spineClaimOut);
+        if (p.strandClaimOut) strandClaims.push(p.strandClaimOut);
         drawnIds.add(ann.id);
-        /* cradles and local rails never touch the loom — they consume no
-         * strand (-2), so later companions may still share the budget */
-        const strandFree = p.mode === "same-line" || p.mode === "local-tag" || p.mode === "local-comb";
-        strands.set(ann.id, strandFree ? -2 : strand);
+        /* cradles and local rails never touch the loom — no strand (-2) */
+        strands.set(ann.id, p.strand ?? -2);
+        lastSides.set(ann.id, p.side);
       }
       return p.valid;
     } catch (e) {
-      plans.set(ann.id, { valid: false, reason: "engine-error: " + (e.message || e), laneIndex: strand });
+      plans.set(ann.id, { valid: false, reason: "engine-error: " + (e.message || e) });
       return false;
     }
   };
 
   const focusAnn = anns.find((a) => a.id === effectiveFocus) || anns[0];
-  if (focusAnn) { tryPlan(focusAnn, 0, true); }
+  if (focusAnn) { tryPlan(focusAnn, true, true); }
 
   /* companions ranked "beside" the COMMITTED focus, not the preview — a
    * hover bloom adds the previewed thread and demotes the committed focus
    * to a woven companion, instead of reshuffling the whole margin.
-   * Acceptance still requires an actual valid route on a strand. */
-  const overlaps = (a, bId) => {
-    const A = iv.get(a.id), B = iv.get(bId);
-    return A.top < B.bottom + 6 && B.top < A.bottom + 6;
-  };
+   * Acceptance still requires an actual valid route; strand choice is the
+   * engine's, driven by committed strand claims. */
   const rankAnchorId = anns.some((a) => a.id === focusedId) ? focusedId : focusAnn ? focusAnn.id : null;
   const intervals = anns.map((a) => ({ id: a.id, ...iv.get(a.id) }));
   const ranked = rankCompanions(intervals, rankAnchorId)
@@ -702,19 +704,14 @@ function run() {
   if (weaveOn && focusAnn) {
     for (const cand of ranked) {
       if (drawnIds.size >= 3) break;
-      let s = 0;
-      while (s < MAX_STRANDS && [...drawnIds].some((id) => strands.get(id) === s && overlaps(cand, id))) s++;
-      if (s >= MAX_STRANDS) continue;
-      tryPlan(cand, s, true);
+      tryPlan(cand, true, false);
     }
   }
 
   /* everything else: shadow-plan for the suite (claims untouched), held */
   for (const ann of anns) {
     if (plans.has(ann.id)) continue;
-    let s = 0;
-    while (s < MAX_STRANDS && [...drawnIds].some((id) => strands.get(id) === s && overlaps(ann, id))) s++;
-    tryPlan(ann, Math.min(s, MAX_STRANDS - 1), false);
+    tryPlan(ann, false, false);
   }
 
   const drawnPlans = [...drawnIds].map((id) => plans.get(id));
@@ -743,7 +740,9 @@ function run() {
         : `<span class="chip held">${plan && plan.reason ? plan.reason : "held"}</span>`;
     const st = strands.get(ann.id);
     const strandBadge = isDrawn
-      ? (st >= 0 ? `<span class="strand s${st}">s${st}</span>` : `<span class="strand">local</span>`)
+      ? (st >= 0
+        ? `<span class="strand s${st}">s${st}</span>`
+        : `<span class="strand">${plan.mode === "same-line" ? "direct" : "local"}</span>`)
       : "";
     const ex = explainPlan(plan);
     btn.innerHTML = `<span class="frow"><i class="dot" style="background:${HUES[ann.kind]}"></i>
