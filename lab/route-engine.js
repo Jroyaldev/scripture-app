@@ -78,6 +78,440 @@ const BAND_MIN = 4.2;    // corridor must be at least this tall to be legal
 const FLOOR_MIN = 5;         // a cradle floor must really exist
 const GAP_FACING_MIN = 12;   // ≈ 2·DROP_MIN + FLOOR_MIN — below this, two facing turns can't fit
 const GAP_EMBRACE_MAX = 16;  // embrace rescues facing only in the 12..16 overlap band
+const SECTION_HYSTERESIS = 12;
+const MAX_SECTION_STRANDS = 3;
+const HANDOFF_EDGE_INSET = 1;
+const HANDOFF_MIN_SPAN = 8;
+
+/* Keep the measured score raw. Tenth-pixel calm is a comparator on a complete
+ * topology, never a second round of already-rounded atomic contributions. */
+function addScoreRaw(...parts) {
+  let total = 0;
+  for (const part of parts) {
+    if (!Number.isFinite(part)) return null;
+    total += part;
+    if (!Number.isFinite(total)) return null;
+  }
+  return total;
+}
+
+function scoreBucketFromRaw(scoreRaw) {
+  if (!Number.isFinite(scoreRaw)) return null;
+  const bucket = Math.round(scoreRaw * 10);
+  return Number.isSafeInteger(bucket) ? bucket : null;
+}
+
+function finiteRect(r) {
+  return !!r && Number.isFinite(r.left) && Number.isFinite(r.right) &&
+    Number.isFinite(r.top) && Number.isFinite(r.bottom) &&
+    r.left < r.right && r.top < r.bottom;
+}
+
+function normalizeHandoffClaim(claim) {
+  if (!claim || typeof claim.gapId !== "string" || !claim.gapId ||
+      !Number.isFinite(claim.xMin) || !Number.isFinite(claim.xMax) ||
+      !Number.isFinite(claim.top) || !Number.isFinite(claim.bottom)) return null;
+  return {
+    gapId: claim.gapId,
+    fromSectionId: typeof claim.fromSectionId === "string" ? claim.fromSectionId : undefined,
+    toSectionId: typeof claim.toSectionId === "string" ? claim.toSectionId : undefined,
+    xMin: Math.min(claim.xMin, claim.xMax),
+    xMax: Math.max(claim.xMin, claim.xMax),
+    top: Math.min(claim.top, claim.bottom),
+    bottom: Math.max(claim.top, claim.bottom),
+    pad: Number.isFinite(claim.pad) ? Math.max(0, claim.pad) : 0,
+  };
+}
+
+function handoffClaimsConflict(existing, candidate) {
+  if (!existing || !candidate || existing.gapId !== candidate.gapId) return false;
+  const a = normalizeHandoffClaim(existing);
+  const b = normalizeHandoffClaim(candidate);
+  if (!a || !b) return true;
+  return a.xMin - a.pad <= b.xMax + b.pad && b.xMin - b.pad <= a.xMax + a.pad &&
+    a.top - a.pad <= b.bottom + b.pad && b.top - b.pad <= a.bottom + a.pad;
+}
+
+function stableNumber(n) {
+  return Math.round(n * 1000) / 1000;
+}
+
+function stableIdPart(value) {
+  const text = String(value);
+  let encoded = "";
+  let chunkStart = 0;
+  const flush = (end) => {
+    if (end > chunkStart) encoded += encodeURIComponent(text.slice(chunkStart, end));
+  };
+  for (let i = 0; i < text.length; i++) {
+    const code = text.charCodeAt(i);
+    if (code >= 0xd800 && code <= 0xdbff &&
+        i + 1 < text.length && text.charCodeAt(i + 1) >= 0xdc00 &&
+        text.charCodeAt(i + 1) <= 0xdfff) {
+      i++;
+      continue;
+    }
+    if (code < 0xd800 || code > 0xdfff) continue;
+    flush(i);
+    /* encodeURIComponent rejects isolated UTF-16 surrogates. `%u` cannot
+     * collide with its well-formed output because a literal percent is
+     * encoded as `%25`; preserve the exact code unit instead of replacing
+     * distinct malformed IDs with the same U+FFFD value. */
+    encoded += `%u${code.toString(16).toUpperCase().padStart(4, "0")}`;
+    chunkStart = i + 1;
+  }
+  flush(text.length);
+  return encoded;
+}
+
+function sectionPairKey(fromSectionId, toSectionId) {
+  return JSON.stringify([fromSectionId, toSectionId]);
+}
+
+/* Validate section provenance as one closed semantic contract. Partial or
+ * contradictory declarations must never leak permission for a handoff. */
+function validateSectionMetadata(block, ann, enabled) {
+  const sections = block.sections;
+  const gaps = block.sectionGaps;
+  const lines = block.renderedLines;
+  if (enabled !== true) return { active: false, valid: false, reason: enabled === false ? "disabled" : "absent" };
+  const bad = (reason, detail) => ({ active: true, valid: false, reason, detail });
+  if (!Array.isArray(sections) || sections.length < 2) return bad("missing-sections");
+  if (!Array.isArray(gaps)) return bad("missing-section-gaps");
+
+  const ids = new Set();
+  for (let i = 0; i < sections.length; i++) {
+    const section = sections[i];
+    if (!section || typeof section.id !== "string" || !section.id) return bad("malformed-section", { index: i });
+    if (ids.has(section.id)) return bad("duplicate-section", { sectionId: section.id });
+    if (!Number.isFinite(section.documentOrder) || !finiteRect(section)) return bad("malformed-section", { sectionId: section.id });
+    if (i && (section.documentOrder <= sections[i - 1].documentOrder || section.top < sections[i - 1].bottom)) {
+      return bad("out-of-order-section", { sectionId: section.id });
+    }
+    ids.add(section.id);
+  }
+  const sectionIndex = new Map(sections.map((section, index) => [section.id, index]));
+
+  const lineIds = new Set();
+  const lineOrders = new Set();
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line || typeof line.id !== "string" || !line.id || lineIds.has(line.id) ||
+        !Number.isFinite(line.documentOrder) || lineOrders.has(line.documentOrder) ||
+        typeof line.sectionId !== "string" || !ids.has(line.sectionId) || !finiteRect(line)) {
+      return bad(lineIds.has(line?.id) ? "duplicate-rendered-line" : "malformed-rendered-line", { index: i });
+    }
+    const owner = sections[sectionIndex.get(line.sectionId)];
+    if (line.left < owner.left || line.right > owner.right ||
+        line.top < owner.top || line.bottom > owner.bottom) {
+      return bad("out-of-bounds-rendered-line", { lineId: line.id, sectionId: line.sectionId });
+    }
+    lineIds.add(line.id);
+    lineOrders.add(line.documentOrder);
+  }
+  const orderedLines = [...lines].sort((a, b) =>
+    a.documentOrder - b.documentOrder || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  for (let i = 1; i < orderedLines.length; i++) {
+    const before = orderedLines[i - 1], after = orderedLines[i];
+    if (after.top < before.top || sectionIndex.get(after.sectionId) < sectionIndex.get(before.sectionId)) {
+      return bad("out-of-order-rendered-line", { lineId: after.id });
+    }
+  }
+
+  const anchorIds = new Set();
+  const anchorOrders = new Set();
+  for (let i = 0; i < ann.anchors.length; i++) {
+    const anchor = ann.anchors[i];
+    if (!anchor || typeof anchor.id !== "string" || !anchor.id || anchorIds.has(anchor.id) ||
+        !Number.isFinite(anchor.documentOrder) || anchorOrders.has(anchor.documentOrder) ||
+        typeof anchor.sectionId !== "string" || !ids.has(anchor.sectionId) ||
+        !Array.isArray(anchor.fragments) || !anchor.fragments.length ||
+        anchor.fragments.some((fragment) => !finiteRect(fragment))) {
+      return bad(anchorIds.has(anchor?.id) ? "duplicate-anchor" : "malformed-anchor", { index: i });
+    }
+    const owner = sections[sectionIndex.get(anchor.sectionId)];
+    if (anchor.fragments.some((fragment) => fragment.left < owner.left || fragment.right > owner.right ||
+        fragment.top < owner.top || fragment.bottom > owner.bottom)) {
+      return bad("out-of-bounds-anchor", { anchorId: anchor.id, sectionId: anchor.sectionId });
+    }
+    anchorIds.add(anchor.id);
+    anchorOrders.add(anchor.documentOrder);
+  }
+  const orderedAnchors = [...ann.anchors].sort((a, b) =>
+    a.documentOrder - b.documentOrder || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  const firstFragment = (anchor) => [...anchor.fragments].sort((a, b) =>
+    a.top - b.top || a.left - b.left || a.bottom - b.bottom || a.right - b.right)[0];
+  for (let i = 1; i < orderedAnchors.length; i++) {
+    const before = orderedAnchors[i - 1], after = orderedAnchors[i];
+    const beforeFragment = firstFragment(before), afterFragment = firstFragment(after);
+    if (sectionIndex.get(after.sectionId) < sectionIndex.get(before.sectionId) ||
+        (after.sectionId === before.sectionId &&
+          (afterFragment.top < beforeFragment.top ||
+            (afterFragment.top === beforeFragment.top && afterFragment.left < beforeFragment.left)))) {
+      return bad("out-of-order-anchor", { anchorId: after.id });
+    }
+  }
+
+  const gapIds = new Set();
+  const gapPairs = new Set();
+  const gapByPair = new Map();
+  let lastGapOrder = -Infinity;
+  let lastGapFromIndex = -1;
+  for (let i = 0; i < gaps.length; i++) {
+    const gap = gaps[i];
+    const fromSectionId = gap?.fromSectionId ?? gap?.beforeSectionId;
+    const toSectionId = gap?.toSectionId ?? gap?.afterSectionId;
+    const fromIndex = sectionIndex.get(fromSectionId);
+    const toIndex = sectionIndex.get(toSectionId);
+    const pair = sectionPairKey(fromSectionId, toSectionId);
+    if (!gap || typeof gap.id !== "string" || !gap.id || gapIds.has(gap.id) || gapPairs.has(pair) ||
+        !Number.isFinite(gap.documentOrder) || gap.documentOrder <= lastGapOrder || !finiteRect(gap) ||
+        fromIndex == null || toIndex !== fromIndex + 1 || fromIndex <= lastGapFromIndex ||
+        gap.hardClear !== true) {
+      return bad(gapIds.has(gap?.id) ? "duplicate-section-gap" : gapPairs.has(pair) ? "duplicate-section-gap-pair" : "malformed-section-gap", { index: i });
+    }
+    const before = sections[fromIndex], after = sections[toIndex];
+    if (gap.top < before.bottom || gap.bottom > after.top) return bad("out-of-bounds-section-gap", { gapId: gap.id });
+    gapIds.add(gap.id);
+    gapPairs.add(pair);
+    gapByPair.set(pair, { ...gap, fromSectionId, toSectionId });
+    lastGapOrder = gap.documentOrder;
+    lastGapFromIndex = fromIndex;
+  }
+
+  const activeIds = [];
+  const activeSeen = new Set();
+  for (const anchor of orderedAnchors) {
+    if (activeIds[activeIds.length - 1] === anchor.sectionId) continue;
+    if (activeSeen.has(anchor.sectionId)) return bad("noncontiguous-anchor-section", { sectionId: anchor.sectionId });
+    activeSeen.add(anchor.sectionId);
+    activeIds.push(anchor.sectionId);
+  }
+  if (activeIds.length < 2) return { active: true, valid: false, reason: "single-active-section" };
+  let previous = -1;
+  for (const id of activeIds) {
+    const index = sectionIndex.get(id);
+    if (index <= previous) return bad("out-of-order-anchor-section", { sectionId: id });
+    previous = index;
+  }
+  return {
+    active: true,
+    valid: true,
+    sections: activeIds.map((id) => sections[sectionIndex.get(id)]),
+    sectionIndex,
+    gapByPair,
+  };
+}
+
+/* Exact complete-topology ordering without exponential assignments.
+ * For each geometric state and total handoff count, retain the minimum-raw
+ * backpointer label. That is sufficient to discover the winning complete
+ * decipixel bucket and the smallest feasible handoff count. Raw Number costs
+ * accumulate in document order and only complete topologies enter the tenth-
+ * pixel comparator. Suffix labels retain their forward increments so the lex
+ * reconstruction replays a candidate completion in that same order instead of
+ * changing a boundary result through floating-point regrouping. Six geometric
+ * states remain; labels grow only linearly with semantic sections, for
+ * O(section² × state²) work. */
+function solveSectionStateDP(statesBySection, transitionFor, diagnostics = {}) {
+  if (!statesBySection.length || statesBySection.some((states) => !states.length)) return null;
+  const unsafeScore = () => { diagnostics.scoreDeclineReason = "unsafe-score-range"; return null; };
+  const layers = statesBySection.map((states) => [...states].sort((a, b) =>
+    a.sideRank - b.sideRank || a.strand - b.strand));
+  const stateCosts = layers.map((states) => states.map((state) =>
+    Number.isFinite(state.baseCost) && state.baseCost >= 0 ? state.baseCost : null));
+  if (stateCosts.some((states) => states.some((score) => score == null))) return unsafeScore();
+  const edges = [];
+  const edgeCosts = [];
+  for (let layer = 0; layer < layers.length - 1; layer++) {
+    const edgeLayer = layers[layer].map(() => Array(layers[layer + 1].length).fill(null));
+    const costLayer = layers[layer].map(() => Array(layers[layer + 1].length).fill(null));
+    for (let fromIndex = 0; fromIndex < layers[layer].length; fromIndex++) {
+      for (let toIndex = 0; toIndex < layers[layer + 1].length; toIndex++) {
+        diagnostics.transitionsEvaluated = (diagnostics.transitionsEvaluated || 0) + 1;
+        const edge = transitionFor(
+          layers[layer][fromIndex], layers[layer + 1][toIndex], layer + 1,
+        );
+        if (!edge) continue;
+        if (!Number.isFinite(edge.cost) || edge.cost < 0) return unsafeScore();
+        edgeLayer[fromIndex][toIndex] = edge;
+        costLayer[fromIndex][toIndex] = edge.cost;
+      }
+    }
+    if (!edgeLayer.some((row) => row.some(Boolean))) return null;
+    edges.push(edgeLayer);
+    edgeCosts.push(costLayer);
+  }
+  /* All route costs are non-negative. A sum of each layer's largest state
+   * and transition is therefore a safe finite upper bound for every DP prefix
+   * and suffix. Scores too large to own a stable tenth bucket decline. */
+  const maximumPathRaw = addScoreRaw(
+    ...stateCosts.map((values) => Math.max(...values)),
+    ...edgeCosts.map((matrix) => Math.max(...matrix.flat().filter((value) => value != null))),
+  );
+  if (maximumPathRaw == null || scoreBucketFromRaw(maximumPathRaw) == null) return unsafeScore();
+  diagnostics.maximumPathRaw = maximumPathRaw;
+
+  const forward = layers.map((states) => states.map(() => new Map()));
+  for (let stateIndex = 0; stateIndex < layers[0].length; stateIndex++) {
+    const state = layers[0][stateIndex];
+    forward[0][stateIndex].set(0, {
+      state,
+      stateIndex,
+      scoreRaw: stateCosts[0][stateIndex],
+      handoffCount: 0,
+      previous: null,
+      transition: null,
+      lexRank: stateIndex,
+    });
+  }
+  diagnostics.maxFrontierSize = Math.max(...layers.map((layer) => layer.length));
+  diagnostics.maxLabelsPerState = 1;
+  diagnostics.maxFrontierLabels = layers[0].length;
+  diagnostics.labelsEvaluated = layers[0].length;
+
+  for (let layer = 1; layer < layers.length; layer++) {
+    for (let fromIndex = 0; fromIndex < layers[layer - 1].length; fromIndex++) {
+      for (const previous of forward[layer - 1][fromIndex].values()) {
+        for (let toIndex = 0; toIndex < layers[layer].length; toIndex++) {
+          const edge = edges[layer - 1][fromIndex][toIndex];
+          if (!edge) continue;
+          diagnostics.labelsEvaluated++;
+          const handoffDelta = edge.transition.kind === "handoff" ? 1 : 0;
+          const handoffCount = previous.handoffCount + handoffDelta;
+          const incrementRaw = addScoreRaw(stateCosts[layer][toIndex],
+            edgeCosts[layer - 1][fromIndex][toIndex]);
+          const scoreRaw = addScoreRaw(previous.scoreRaw, incrementRaw);
+          if (incrementRaw == null || scoreRaw == null) return unsafeScore();
+          const candidate = {
+            state: layers[layer][toIndex],
+            stateIndex: toIndex,
+            scoreRaw,
+            handoffCount,
+            previous,
+            transition: edge.transition,
+            lexRank: 0,
+          };
+          const existing = forward[layer][toIndex].get(handoffCount);
+          if (!existing || candidate.scoreRaw < existing.scoreRaw ||
+              (candidate.scoreRaw === existing.scoreRaw && previous.lexRank < existing.previous.lexRank)) {
+            forward[layer][toIndex].set(handoffCount, candidate);
+          }
+        }
+      }
+    }
+    const ranked = forward[layer].flatMap((labels) => [...labels.values()]);
+    ranked.sort((a, b) => a.previous.lexRank - b.previous.lexRank ||
+      a.state.sideRank - b.state.sideRank || a.state.strand - b.state.strand);
+    ranked.forEach((label, rank) => { label.lexRank = rank; });
+    diagnostics.maxLabelsPerState = Math.max(diagnostics.maxLabelsPerState,
+      ...forward[layer].map((labels) => labels.size));
+    diagnostics.maxFrontierLabels = Math.max(diagnostics.maxFrontierLabels, ranked.length);
+  }
+
+  const terminalLabels = forward.at(-1).flatMap((labels) => [...labels.values()]);
+  if (!terminalLabels.length) return null;
+  const terminalBuckets = terminalLabels.map((label) => scoreBucketFromRaw(label.scoreRaw));
+  if (terminalBuckets.some((bucket) => bucket == null)) return unsafeScore();
+  const winningBucket = Math.min(...terminalBuckets);
+  const winningHandoffs = Math.min(...terminalLabels
+    .filter((label) => scoreBucketFromRaw(label.scoreRaw) === winningBucket)
+    .map((label) => label.handoffCount));
+
+  const suffix = layers.map((states) => states.map(() => new Map()));
+  for (const labels of suffix.at(-1)) labels.set(0, {
+    scoreRaw: 0,
+    incrementRaw: null,
+    next: null,
+  });
+  for (let layer = layers.length - 2; layer >= 0; layer--) {
+    for (let fromIndex = 0; fromIndex < layers[layer].length; fromIndex++) {
+      for (let toIndex = 0; toIndex < layers[layer + 1].length; toIndex++) {
+        const edge = edges[layer][fromIndex][toIndex];
+        if (!edge) continue;
+        const handoffDelta = edge.transition.kind === "handoff" ? 1 : 0;
+        for (const [remainingHandoffs, next] of suffix[layer + 1][toIndex]) {
+          const handoffCount = handoffDelta + remainingHandoffs;
+          const incrementRaw = addScoreRaw(stateCosts[layer + 1][toIndex],
+            edgeCosts[layer][fromIndex][toIndex]);
+          const scoreRaw = addScoreRaw(incrementRaw, next.scoreRaw);
+          if (incrementRaw == null || scoreRaw == null) return unsafeScore();
+          const candidate = { scoreRaw, incrementRaw, next };
+          const existing = suffix[layer][fromIndex].get(handoffCount);
+          if (existing == null || candidate.scoreRaw < existing.scoreRaw) {
+            suffix[layer][fromIndex].set(handoffCount, candidate);
+          }
+        }
+      }
+    }
+  }
+
+  const replaySuffix = (prefixRaw, suffixLabel) => {
+    let scoreRaw = prefixRaw;
+    for (let label = suffixLabel; label?.next; label = label.next) {
+      scoreRaw = addScoreRaw(scoreRaw, label.incrementRaw);
+      if (scoreRaw == null) return null;
+    }
+    return scoreRaw;
+  };
+
+  const path = [];
+  const transitions = [];
+  let previousIndex = -1;
+  let remainingHandoffs = winningHandoffs;
+  let scoreRaw = 0;
+  for (let layer = 0; layer < layers.length; layer++) {
+    let selected = null;
+    for (let stateIndex = 0; stateIndex < layers[layer].length; stateIndex++) {
+      const state = layers[layer][stateIndex];
+      const edge = layer ? edges[layer - 1][previousIndex][stateIndex] : null;
+      if (layer && !edge) continue;
+      const handoffDelta = edge?.transition.kind === "handoff" ? 1 : 0;
+      const afterHandoffs = remainingHandoffs - handoffDelta;
+      if (afterHandoffs < 0) continue;
+      const suffixLabel = suffix[layer][stateIndex].get(afterHandoffs);
+      if (suffixLabel == null) continue;
+      const incrementRaw = addScoreRaw(stateCosts[layer][stateIndex],
+        edge ? edgeCosts[layer - 1][previousIndex][stateIndex] : 0);
+      const prefixRaw = addScoreRaw(scoreRaw, incrementRaw);
+      const completeRaw = replaySuffix(prefixRaw, suffixLabel);
+      if (incrementRaw == null || prefixRaw == null || completeRaw == null) return unsafeScore();
+      if (scoreBucketFromRaw(completeRaw) !== winningBucket) continue;
+      selected = { state, stateIndex, edge, handoffDelta, incrementRaw };
+      break;
+    }
+    if (!selected) return null;
+    path.push(selected.state);
+    if (selected.edge) transitions.push(selected.edge.transition);
+    scoreRaw = addScoreRaw(scoreRaw, selected.incrementRaw);
+    if (scoreRaw == null) return unsafeScore();
+    remainingHandoffs -= selected.handoffDelta;
+    previousIndex = selected.stateIndex;
+  }
+  if (remainingHandoffs !== 0 || scoreBucketFromRaw(scoreRaw) !== winningBucket) return null;
+  const chosen = {
+    state: path.at(-1),
+    scoreRaw,
+    score: winningBucket / 10,
+    handoffCount: winningHandoffs,
+    tieRank: 0,
+  };
+  diagnostics.winningBucket = winningBucket;
+  diagnostics.winningHandoffs = winningHandoffs;
+  diagnostics.tieScope = "all-complete-topologies";
+  return {
+    chosen,
+    path,
+    transitions,
+    terminalEntries: terminalLabels.map((label) => ({
+      side: label.state.side,
+      strand: label.state.strand,
+      scoreRaw: label.scoreRaw,
+      handoffCount: label.handoffCount,
+      tieRank: label.lexRank,
+    })),
+  };
+}
 
 /* Corridor occupancy is two-dimensional. A finite route claim owns only
  * the horizontal run it actually verified; older claims without X bounds
@@ -269,6 +703,18 @@ export function planRoute(block, ann, opts = {}) {
     x: side === "right" ? frag.right - 0.5 : frag.left + 0.5,
     y: frag.bottom + underlineDy,
   });
+  const sectionRoutingEnabled = opts.sectionRouting === true || opts.sectionRouting?.enabled === true
+    ? true : opts.sectionRouting === false || opts.sectionRouting?.enabled === false ? false : undefined;
+  let sectionMeta = validateSectionMetadata(block, ann, sectionRoutingEnabled);
+  if (sectionMeta.valid) {
+    const mismatched = branchesIn.find((branch) => lines[branch.li]?.sectionId !== branch.anchor.sectionId);
+    if (mismatched) {
+      sectionMeta = { active: true, valid: false, reason: "anchor-line-section-mismatch", detail: { anchorId: mismatched.anchor.id } };
+    }
+  }
+  if (sectionMeta.active && !sectionMeta.valid) {
+    declined.push({ move: "section-routing", why: sectionMeta.reason, detail: sectionMeta.detail });
+  }
 
   /* ── loom datum ──
    * The loom is a passage-level datum: one inner edge computed from EVERY
@@ -474,6 +920,10 @@ export function planRoute(block, ann, opts = {}) {
     : groups.length > 1 ? (ann.anchors.length > 2 || groups.length > 2 ? "multipoint" : "corridor")
     : "corridor";
 
+  if (sectionMeta.valid) {
+    for (const group of groups) group.sectionId = group.members[0].anchor.sectionId;
+  }
+
   /* ── middle shaft (the one gated constraint amendment) ──
    * For the FOCUSED thread only, when its anchors sit within three
    * rendered lines of each other, a short interior vertical may stand in
@@ -483,7 +933,7 @@ export function planRoute(block, ann, opts = {}) {
    * line entirely, so it fires in ragged-right voids and verse-end
    * shortfalls, never through justified prose. Pins face the shaft
    * (per-group approach side); same grammar, mirrored where needed. */
-  if (opts.allowMiddle && groups.length >= 2) {
+  if (opts.allowMiddle && groups.length >= 2 && !sectionMeta.valid) {
     const liTop = Math.min(...groups.map((g) => g.li));
     const liBottom = Math.max(...groups.map((g) => g.li));
     if (liBottom - liTop > 3) {
@@ -559,7 +1009,7 @@ export function planRoute(block, ann, opts = {}) {
     }
   }
 
-  const genMargin = (side, strand) => {
+  const genMargin = (side, strand, marginGroups = groups, sectionContext = null) => {
     const right = side === "right";
     const outward = right ? 1 : -1;
     const textward = -outward;
@@ -575,7 +1025,7 @@ export function planRoute(block, ann, opts = {}) {
       if (strandX < block.bounds.left + 4) return { valid: false, reason: "needs-space" };
     }
 
-    const gs = groups.map((g) => ({ ...g }));
+    const gs = marginGroups.map((g) => ({ ...g }));
     for (const g of gs) {
       /* LEVEL EXIT: when everything between the margin-facing pin and port
        * is genuinely clear, the connector continues straight from the
@@ -619,6 +1069,7 @@ export function planRoute(block, ann, opts = {}) {
     gs.sort((a, b) => (a.level ? a.level.c.y : a.shoulderY) - (b.level ? b.level.c.y : b.shoulderY));
 
     const contacts = [];
+    const contactOwners = [];
     const centerline = [];
     const exempts = [];  // parallel to centerline: terminal-only ink privileges
     const ports = [];
@@ -634,6 +1085,7 @@ export function planRoute(block, ann, opts = {}) {
           (right ? strandX - c.x : c.x - strandX) * 0.5));
         const approachX = strandX + textward * reach;
         contacts.push(c);
+        contactOwners.push({ anchorId: g.level.m.anchor.id });
         centerline.push(L(c.x, c.y, approachX, c.y));
         exempts.push([{ rect: expandRect(g.level.m.frag, expand), cx: c.x, cy: c.y }]);
         centerline.push(quarterHV(approachX, c.y, strandX, c.y + SWOOP_DIP));
@@ -656,6 +1108,7 @@ export function planRoute(block, ann, opts = {}) {
           const r = Math.abs(y - c.y);
           if (r < DROP_MIN) return { valid: false, reason: "kink" };
           contacts.push(c);
+          contactOwners.push({ anchorId: m.anchor.id });
           const endX = c.x + outward * r;
           centerline.push(quarterVH(c.x, c.y, endX, y));
           exempts.push([{ rect: expandRect(m.frag, expand), cx: c.x, cy: c.y }]);
@@ -674,9 +1127,13 @@ export function planRoute(block, ann, opts = {}) {
       }
     }
 
-    /* spine: one vertical from first port to last port, never overshooting */
+    /* spine: one vertical from first port to last port, never overshooting.
+     * Section states deliberately stop at their ports; the topology
+     * materializer owns the maximal plural spine and any gap handoff. */
     let spine = null;
-    if (ports.length > 1) {
+    if (sectionContext) {
+      // no-op: plural topology connects these arrivals after bounded DP
+    } else if (ports.length > 1) {
       const top = Math.min(...ports.map((p) => p.y));
       const bot = Math.max(...ports.map((p) => p.y));
       centerline.push(L(strandX, top, strandX, bot));
@@ -700,8 +1157,401 @@ export function planRoute(block, ann, opts = {}) {
       plan.strandClaimOut = spine
         ? { side, strand, top: spine.top, bottom: spine.bottom }
         : null;
+      if (sectionContext) {
+        plan.sectionId = sectionContext.sectionId;
+        plan._exempts = exempts;
+        plan._contactOwners = contactOwners;
+      }
     }
     return plan;
+  };
+
+  const buildSectionTopology = (sectionSides) => {
+    if (!sectionMeta.valid) return null;
+    const diagnostics = {
+      sectionCount: sectionMeta.sections.length,
+      maxStatesPerSection: sectionSides.length * MAX_SECTION_STRANDS,
+      statesEvaluated: 0,
+      transitionsEvaluated: 0,
+      handoffsEvaluated: 0,
+      scoreDefinition: "complete-tenth-raw-v5",
+      scoreAccumulator: "number-forward-document-order",
+      scoreQuantization: "complete-total-only",
+      predecessorStorage: "handoff-count-backpointer",
+      maxFrontierSize: 0,
+    };
+    const previousRaw = opts.previousTopology?.sectionSides ?? opts.previousSectionSides ??
+      opts.sectionRouting?.previousSides ?? [];
+    const previousSides = new Map();
+    if (previousRaw instanceof Map) {
+      for (const [sectionId, side] of previousRaw) previousSides.set(sectionId, side);
+    } else if (Array.isArray(previousRaw)) {
+      for (const item of previousRaw) if (item?.sectionId) previousSides.set(item.sectionId, item.side);
+    } else if (previousRaw && typeof previousRaw === "object") {
+      for (const [sectionId, side] of Object.entries(previousRaw)) previousSides.set(sectionId, side);
+    }
+    const handoffClaims = Array.isArray(opts.handoffClaims) ? opts.handoffClaims : [];
+    const statesBySection = [];
+    const failures = [];
+    const interval = (a, b) => ({ top: Math.min(a, b), bottom: Math.max(a, b) });
+    const spineIntervalClaimed = (x, topIn, bottomIn) => {
+      const span = interval(topIn, bottomIn);
+      return spineClaims.some((claim) => Number.isFinite(claim?.x) &&
+        Number.isFinite(claim?.top) && Number.isFinite(claim?.bottom) &&
+        Math.abs(claim.x - x) < SPINE_SEP &&
+        Math.min(claim.top, claim.bottom) - 2.6 < span.bottom &&
+        span.top < Math.max(claim.top, claim.bottom) + 2.6);
+    };
+    const strandIntervalClaimed = (side, strand, topIn, bottomIn) => {
+      const span = interval(topIn, bottomIn);
+      return strandClaims.some((claim) => claim?.side === side && claim?.strand === strand &&
+        Number.isFinite(claim?.top) && Number.isFinite(claim?.bottom) &&
+        Math.min(claim.top, claim.bottom) < span.bottom + 6 &&
+        span.top < Math.max(claim.top, claim.bottom) + 6);
+    };
+    const runIntervalClear = (state, top, bottom) =>
+      !spineIntervalClaimed(state.x, top, bottom) &&
+      !strandIntervalClaimed(state.side, state.strand, top, bottom);
+
+    for (let sectionOrder = 0; sectionOrder < sectionMeta.sections.length; sectionOrder++) {
+      const section = sectionMeta.sections[sectionOrder];
+      const sectionGroups = groups.filter((group) => group.sectionId === section.id);
+      const sectionBranches = branchesIn.filter((branch) => branch.anchor.sectionId === section.id);
+      const sectionLines = lines.filter((line) => line.sectionId === section.id);
+      const sectionTextCenter = (Math.min(...sectionLines.map((line) => line.left)) +
+        Math.max(...sectionLines.map((line) => line.right))) / 2;
+      const semanticCenter = sectionBranches.reduce((sum, branch) =>
+        sum + (branch.frag.left + branch.frag.right) / 2, 0) / sectionBranches.length;
+      const sectionStates = [];
+      for (let sideRank = 0; sideRank < sectionSides.length; sideRank++) {
+        const side = sectionSides[sideRank];
+        for (let strand = 0; strand < MAX_SECTION_STRANDS; strand++) {
+          diagnostics.statesEvaluated++;
+          const plan = genMargin(side, strand, sectionGroups, { sectionId: section.id });
+          if (!plan.valid || !plan.ports.length) {
+            failures.push({ sectionId: section.id, side, strand, why: plan.reason || "no-port" });
+            continue;
+          }
+          const x = plan.marginRailX;
+          const minPortY = Math.min(...plan.ports.map((port) => port.y));
+          const maxPortY = Math.max(...plan.ports.map((port) => port.y));
+          if (spineIntervalClaimed(x, minPortY, maxPortY)) {
+            failures.push({ sectionId: section.id, side, strand, why: "spine-claim" });
+            continue;
+          }
+          if (strandIntervalClaimed(side, strand, minPortY, maxPortY)) {
+            failures.push({ sectionId: section.id, side, strand, why: "strand-claim" });
+            continue;
+          }
+          const wrongSide = side === "left"
+            ? Math.max(0, semanticCenter - sectionTextCenter) * 0.035
+            : Math.max(0, sectionTextCenter - semanticCenter) * 0.035;
+          const hysteresis = previousSides.has(section.id) && previousSides.get(section.id) !== side
+            ? SECTION_HYSTERESIS : 0;
+          sectionStates.push({
+            section, sectionOrder, side, sideRank, strand, x, plan, minPortY, maxPortY,
+            baseCost: plan.rawLength + (maxPortY - minPortY) + wrongSide + hysteresis,
+          });
+        }
+      }
+      if (!sectionStates.length) return { valid: false, reason: "needs-space", diagnostics, failures };
+      statesBySection.push(sectionStates);
+    }
+
+    const makeHandoff = (from, to) => {
+      diagnostics.handoffsEvaluated++;
+      const gap = sectionMeta.gapByPair.get(sectionPairKey(from.section.id, to.section.id));
+      if (!gap) return null;
+      /* Attach only at the source run's bottom and destination run's top.
+       * If a branch port reaches into the declared whitespace, the handoff
+       * begins there — never above it with a dangling spine tail. */
+      const top = Math.max(gap.top + HANDOFF_EDGE_INSET, from.maxPortY);
+      const bottom = Math.min(gap.bottom - HANDOFF_EDGE_INSET, to.minPortY);
+      if (bottom - top < HANDOFF_MIN_SPAN || from.x < gap.left || from.x > gap.right ||
+          to.x < gap.left || to.x > gap.right) return null;
+      if (!runIntervalClear(from, from.maxPortY, top) ||
+          !runIntervalClear(to, bottom, to.minPortY)) return null;
+      const dy = bottom - top;
+      const segment = C(from.x, top, from.x, top + dy / 3, to.x, bottom - dy / 3, to.x, bottom);
+      for (const point of segPoints(segment, 1)) {
+        if (point.x < gap.left - 1e-6 || point.x > gap.right + 1e-6 ||
+            point.y < gap.top - 1e-6 || point.y > gap.bottom + 1e-6 ||
+            obstaclesNear(point.y, 2).some((obstacle) => inRect(point.x, point.y, obstacle))) return null;
+      }
+      const claim = normalizeHandoffClaim({
+        gapId: gap.id,
+        fromSectionId: from.section.id,
+        toSectionId: to.section.id,
+        xMin: from.x,
+        xMax: to.x,
+        top,
+        bottom,
+        pad: claimPad,
+      });
+      if (!claim || handoffClaims.some((existing) =>
+        (!normalizeHandoffClaim(existing) && (!existing?.gapId || existing.gapId === gap.id)) ||
+        handoffClaimsConflict(existing, claim))) return null;
+      return { gap, segment, claim, fromY: top, toY: bottom, rawLength: segmentsLength([segment]) };
+    };
+
+    const solved = solveSectionStateDP(statesBySection, (previousState, state) => {
+      if (previousState.side === state.side) {
+        if (previousState.strand !== state.strand ||
+            !runIntervalClear(state, previousState.maxPortY, state.minPortY)) return null;
+        return {
+          transition: { kind: "continue" },
+          cost: Math.max(0, state.minPortY - previousState.maxPortY),
+        };
+      }
+      const handoff = makeHandoff(previousState, state);
+      if (!handoff) return null;
+      return {
+        transition: { kind: "handoff", handoff },
+        cost: Math.max(0, handoff.fromY - previousState.maxPortY) + handoff.rawLength +
+          Math.max(0, state.minPortY - handoff.toY),
+      };
+    }, diagnostics);
+    if (!solved) return { valid: false, reason: diagnostics.scoreDeclineReason || "needs-space", diagnostics, failures };
+    const { chosen, path: chosenPath, transitions: chosenTransitions } = solved;
+    diagnostics.terminalStates = solved.terminalEntries;
+
+    const runs = [];
+    const stateRun = new Map();
+    const annKey = stableIdPart(ann.id);
+    for (const state of chosenPath) {
+      let run = runs[runs.length - 1];
+      if (!run || run.side !== state.side || run.strand !== state.strand) {
+        run = { side: state.side, strand: state.strand, railX: state.x, x: state.x, states: [], sectionIds: [] };
+        runs.push(run);
+      }
+      run.states.push(state);
+      run.sectionIds.push(state.section.id);
+      stateRun.set(state.section.id, run);
+    }
+    for (let index = 0; index < runs.length; index++) {
+      const run = runs[index];
+      const sectionKey = run.sectionIds.map(stableIdPart).join("+");
+      run.id = `run:${annKey}:${sectionKey}:${run.side}:${run.strand}`;
+      run.runIndex = index;
+      run.spineId = `spine:${annKey}:${sectionKey}:${run.side}:${run.strand}`;
+      const ys = run.states.flatMap((state) => state.plan.ports.map((port) => port.y));
+      run.top = Math.min(...ys);
+      run.bottom = Math.max(...ys);
+    }
+
+    const handoffs = [];
+    for (let index = 0; index < chosenTransitions.length; index++) {
+      const transition = chosenTransitions[index];
+      if (transition.kind !== "handoff") continue;
+      const fromState = chosenPath[index], toState = chosenPath[index + 1];
+      const fromRun = stateRun.get(fromState.section.id), toRun = stateRun.get(toState.section.id);
+      fromRun.bottom = Math.max(fromRun.bottom, transition.handoff.fromY);
+      toRun.top = Math.min(toRun.top, transition.handoff.toY);
+      handoffs.push({
+        id: `handoff:${annKey}:${stableIdPart(fromState.section.id)}>${stableIdPart(toState.section.id)}`,
+        gapId: transition.handoff.gap.id,
+        fromSectionId: fromState.section.id,
+        toSectionId: toState.section.id,
+        fromRunId: fromRun.id,
+        toRunId: toRun.id,
+        fromSpineId: fromRun.spineId,
+        toSpineId: toRun.spineId,
+        from: { x: fromState.x, y: transition.handoff.fromY },
+        to: { x: toState.x, y: transition.handoff.toY },
+        _segment: transition.handoff.segment,
+        claim: transition.handoff.claim,
+      });
+    }
+
+    const centerline = [];
+    const exempts = [];
+    const routeParts = [];
+    let segmentOrdinal = 0;
+    const own = (segment, metadata) => ({ ...segment, id: `segment:${annKey}:${segmentOrdinal++}`, ...metadata });
+    for (const state of chosenPath) {
+      const run = stateRun.get(state.section.id);
+      const segments = state.plan.centerline.map((segment) => own(segment, {
+        role: "tributary", ownerId: run.id, runId: run.id, sectionId: state.section.id,
+      }));
+      centerline.push(...segments);
+      exempts.push(...state.plan._exempts);
+      routeParts.push({
+        id: `part:${annKey}:tributary:${stableIdPart(state.section.id)}`,
+        role: "tributary", ownerId: run.id, runId: run.id, sectionId: state.section.id, segments,
+      });
+    }
+    const spines = runs.map((run) => {
+      const spine = {
+        id: run.spineId, kind: "margin", ownerRunId: run.id, runId: run.id, side: run.side, strand: run.strand,
+        x: run.railX, top: run.top, bottom: run.bottom, sectionIds: [...run.sectionIds],
+      };
+      const segment = own(L(spine.x, spine.top, spine.x, spine.bottom), {
+        role: "spine", ownerId: spine.id, runId: run.id, spineId: spine.id,
+      });
+      centerline.push(segment); exempts.push(null);
+      routeParts.push({ id: `part:${stableIdPart(spine.id)}`, role: "spine", ownerId: spine.id, runId: run.id, spineId: spine.id, segments: [segment] });
+      return spine;
+    });
+    for (const handoff of handoffs) {
+      const segment = own(handoff._segment, {
+        role: "handoff", ownerId: handoff.id, handoffId: handoff.id,
+        fromRunId: handoff.fromRunId, toRunId: handoff.toRunId,
+      });
+      delete handoff._segment;
+      handoff.segments = [segment];
+      centerline.push(segment); exempts.push(null);
+      routeParts.push({ id: `part:${stableIdPart(handoff.id)}`, role: "handoff", ownerId: handoff.id, handoffId: handoff.id, segments: [segment] });
+    }
+
+    for (const spine of spines) {
+      if (spineIntervalClaimed(spine.x, spine.top, spine.bottom)) {
+        /* This is an invariant check: DP state/transition feasibility must
+         * have rejected the occupied run before topology selection. */
+        return { valid: false, reason: "spine-separation", diagnostics, failures };
+      }
+    }
+    const corridorClaimsOut = [];
+    const contacts = [];
+    const contactIdByAnchor = new Map();
+    for (const state of chosenPath) {
+      const run = stateRun.get(state.section.id);
+      state.plan.claimsOut.forEach((claim, index) => corridorClaimsOut.push({
+        ...claim,
+        id: `corridor-claim:${annKey}:${stableIdPart(state.section.id)}:${index}`,
+        ownerRunId: run.id,
+        sectionId: state.section.id,
+      }));
+      state.plan.contacts.forEach((contact, index) => {
+        const owner = state.plan._contactOwners[index];
+        const id = `contact:${annKey}:${stableIdPart(owner.anchorId)}`;
+        contacts.push({
+          ...contact, id, role: "terminal-contact", ownerId: run.id, runId: run.id,
+          spineId: run.spineId, sectionId: state.section.id, anchorId: owner.anchorId,
+        });
+        contactIdByAnchor.set(owner.anchorId, id);
+      });
+    }
+    const ports = [];
+    for (const state of chosenPath) {
+      const run = stateRun.get(state.section.id);
+      const spineId = run.spineId;
+      state.plan.ports.forEach((port, index) => ports.push({
+        ...port, id: `port:${annKey}:${stableIdPart(state.section.id)}:${index}`, role: "tributary-port",
+        ownerId: run.id, runId: run.id, spineId, sectionId: state.section.id,
+      }));
+    }
+    for (const handoff of handoffs) {
+      const handoffKey = stableIdPart(handoff.id);
+      ports.push({ ...handoff.from, id: `port:${handoffKey}:from`, role: "handoff-port", ownerId: handoff.id, handoffId: handoff.id, runId: handoff.fromRunId, spineId: handoff.fromSpineId });
+      ports.push({ ...handoff.to, id: `port:${handoffKey}:to`, role: "handoff-port", ownerId: handoff.id, handoffId: handoff.id, runId: handoff.toRunId, spineId: handoff.toSpineId });
+    }
+    const finalized = finalize(centerline, mode, contacts,
+      chosenPath.flatMap((state) => state.plan.corridors),
+      chosenPath.flatMap((state) => state.plan.corridorIdx),
+      null, null, ports, undefined, exempts, corridorClaimsOut);
+    if (!finalized.valid) return { ...finalized, diagnostics: { ...diagnostics, finalize: finalized.diagnostics } };
+
+    const spineClaimsOut = spines.map((spine) => ({
+      id: `claim:${stableIdPart(spine.id)}`, ownerRunId: spine.ownerRunId, side: spine.side, strand: spine.strand,
+      x: spine.x, top: spine.top, bottom: spine.bottom,
+    }));
+    const strandClaimsOut = runs.map((run) => ({
+      id: `strand-claim:${stableIdPart(run.id)}`, ownerRunId: run.id, side: run.side, strand: run.strand,
+      top: run.top, bottom: run.bottom,
+    }));
+    const handoffClaimsOut = handoffs.map((handoff) => ({ ...handoff.claim, id: `claim:${stableIdPart(handoff.id)}`, ownerHandoffId: handoff.id }));
+    handoffs.forEach((handoff, index) => {
+      handoff.claimOut = handoffClaimsOut[index];
+      delete handoff.claim;
+    });
+    for (const run of runs) {
+      run.corridorClaimIds = corridorClaimsOut
+        .filter((claim) => claim.ownerRunId === run.id)
+        .map((claim) => claim.id);
+      run.spineClaimId = spineClaimsOut.find((claim) => claim.ownerRunId === run.id)?.id;
+      run.strandClaimId = strandClaimsOut.find((claim) => claim.ownerRunId === run.id)?.id;
+      const partClaims = new Map();
+      for (const claim of corridorClaimsOut.filter((candidate) => candidate.ownerRunId === run.id)) {
+        const ids = partClaims.get(claim.sectionId) || [];
+        ids.push(claim.id);
+        partClaims.set(claim.sectionId, ids);
+      }
+      for (const part of routeParts) {
+        if (part.runId === run.id && part.sectionId && partClaims.has(part.sectionId)) {
+          part.corridorClaimIds = partClaims.get(part.sectionId);
+        }
+      }
+    }
+    const outputSectionSides = chosenPath.map((state) => ({ sectionId: state.section.id, side: state.side }));
+    const topologySignature = `section-topology:v1|${chosenPath.map((state) =>
+      `${stableIdPart(state.section.id)}:${state.side[0]}${state.strand}`).join("|")}`;
+    const canonicalAnchors = [...ann.anchors].sort((a, b) =>
+      a.documentOrder - b.documentOrder || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+    const anchorRuns = canonicalAnchors.map((anchor, anchorIndex) => {
+      const run = stateRun.get(anchor.sectionId);
+      return {
+        anchorId: anchor.id, anchorIndex, contactId: contactIdByAnchor.get(anchor.id),
+        sectionId: anchor.sectionId, runId: run.id, side: run.side, strand: run.strand,
+      };
+    });
+    const rawLength = segmentsLength(centerline);
+    const markerRangesByRun = runs.map((run) => ({
+      runId: run.id,
+      marginStart: run.top,
+      marginEnd: run.bottom,
+    }));
+    const result = {
+      ...finalized,
+      topology: "sectioned",
+      sectionAware: true,
+      sideRuns: runs.map(({ states, ...run }) => run),
+      spines,
+      handoffs,
+      routeParts,
+      centerline,
+      ports,
+      anchorRuns,
+      corridorClaimsOut,
+      spineClaimsOut,
+      strandClaimsOut,
+      handoffClaimsOut,
+      topologySignature,
+      topologyMemory: { sectionSides: outputSectionSides, topologySignature },
+      sectionSides: outputSectionSides,
+      markerRangesByRun,
+      markerRanges: runs.length === 1
+        ? { marginStart: runs[0].top, marginEnd: runs[0].bottom }
+        : {},
+      rawLength,
+      scoreRaw: chosen.scoreRaw,
+      score: chosen.score,
+      diagnostics: {
+        ...finalized.diagnostics,
+        side: runs.length === 1 ? runs[0].side : "mixed",
+        laneIndex: runs.length === 1 ? runs[0].strand : null,
+        score: chosen.score,
+        sectionRouting: { status: "selected", topologySignature },
+        dp: diagnostics,
+        stateFailures: failures,
+      },
+    };
+    if (runs.length === 1) {
+      const run = runs[0], spine = spines[0];
+      result.side = run.side;
+      result.strand = run.strand;
+      result.marginRailX = run.railX;
+      result.spine = spine;
+      result.spineClaimOut = spineClaimsOut[0];
+      result.strandClaimOut = strandClaimsOut[0];
+    } else {
+      result.side = null;
+      result.strand = null;
+      result.marginRailX = null;
+      result.spine = null;
+      result.spineClaimOut = null;
+      result.strandClaimOut = null;
+    }
+    return result;
   };
 
   /* claims-driven strand availability: committed spine intervals block a
@@ -718,6 +1568,16 @@ export function planRoute(block, ann, opts = {}) {
     } else if (!sides.includes(side)) sides.push(side);
   }
   if (!sides.length) return fail("needs-space", "no-supported-side");
+
+  if (sectionMeta.valid) {
+    const sectionPlan = buildSectionTopology(sides);
+    if (sectionPlan?.valid) return sectionPlan;
+    declined.push({
+      move: "section-routing",
+      why: sectionPlan?.reason || "no-legal-topology",
+      detail: sectionPlan?.diagnostics,
+    });
+  }
 
   /* Each side owns its own strand stack. Search outward independently and
    * compare the first legal route on each side; a committed left strand 0
@@ -904,5 +1764,19 @@ export const _internals = {
   normalizeCorridorClaim,
   makeCorridorClaim,
   corridorClaimsConflict,
+  finiteRect,
+  validateSectionMetadata,
+  normalizeHandoffClaim,
+  handoffClaimsConflict,
+  SECTION_HYSTERESIS,
+  MAX_SECTION_STRANDS,
+  HANDOFF_EDGE_INSET,
+  HANDOFF_MIN_SPAN,
+  addScoreRaw,
+  scoreBucketFromRaw,
+  stableNumber,
+  stableIdPart,
+  sectionPairKey,
+  solveSectionStateDP,
   KAPPA,
 };

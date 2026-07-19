@@ -422,6 +422,62 @@ second-pass signature. Dense Psalm and Long Revelation visibly use both
 margins without entering the passage score in all four atmospheres at 1280px
 and 640px.
 
-This remains **one side per whole route**. Section-aware plural spines and a
-legal left-to-right handoff through declared section whitespace are the next
-geometry contract; no S-through-section behavior is implied here.
+This C0.3 contract remains **one side per whole route**. C0.4 below extends it
+only for explicitly declared semantic sections; annotations without that
+metadata continue through this isolated whole-route oracle.
+
+### C0.4 landed — section-aware plural spines and legal S handoffs
+
+Long traces may now use the calm margin beside each declared semantic section.
+The host supplies stable section IDs on anchors and rendered lines, ordered
+finite section bounds, and finite gaps between named adjacent sections. The
+engine never infers sections from reflow. Missing, malformed, duplicate, or
+out-of-order metadata records a structured decline and falls back to the C0.3
+whole-route planner.
+
+The canonical plan is plural: `sideRuns[]`, `spines[]`, `handoffs[]`, route
+parts, anchor runs, ownership, topology signature, and finite corridor/spine/
+strand/handoff claims. A side change is exactly one monotone stretched cubic S
+with vertical tangents, descending through a declared gap. The whole curve must
+remain inside that gap and hard-clear words, verse numbers, headings, additional
+obstacles, and committed handoff claims. It is never allowed to buy a prose
+crossing with score. Same-side sections coalesce; a mixed route exposes no false
+singular side, strand, or spine alias.
+
+The solver has six geometric `(side, strand)` cells per section. It retains up
+to `N` handoff-count labels in each cell because the final rounded-tenth then
+fewer-handoffs rule is a complete-route comparison, not a safe prefix-pruning
+rule. Additive ink, semantic-fit, and 12-unit per-section hysteresis costs stay
+as finite raw numbers in forward document order; only the completed route is
+rounded for comparison. Final routes compare lexicographically by complete
+tenth-pixel score, fewer handoffs, requested side order, strand, and stable
+section order. This is deterministic polynomial `O(N² × 36)` work rather than
+exponential enumeration.
+
+That numeric representation is a deliberate simplification. Exact-dyadic
+`BigInt` and atomic fixed-point scoring were both considered during the
+determinism review. `BigInt` added a second arithmetic system; atomic rounding
+could invert routes straddling a tenth-pixel boundary. Forward raw accumulation
+plus one complete-total rounding keeps the implementation small and preserves
+the actual complete-score decision.
+
+Both hosts now fail closed around canonical ownership: every path, contact,
+mask bite, claim, topology-memory update, and semantic held tick must belong to
+a valid painted plan; shadow plans remain side-effect free. Route Lab validates
+the complete provisional weave before any claim or memory commit. Shapes uses
+one hidden proof of that final weave followed by its normal animated paint,
+never repairs missing ownership, and keeps rejected routes visible as ticks
+using only committed side memory or the stable left default. The Route Lab
+keeps an isolated 4,515-state C0.3 oracle digest alongside the section gate, so
+the new topology cannot silently rewrite legacy geometry.
+
+Verified 2026-07-19: focused Route Engine + Shapes suites 43/43; full suite 488
+total, 478 pass, 10 expected better-sqlite3 ABI skips, 0 fail; lint, syntax, and
+diff checks clean. The rendered gate passed 5,719 states / 11,438 renders with
+three S fixtures, nine right winners, clean browser logs, C0.3 digest
+`323bc250ff08ab0304750d26faf878599a2d0adbb65a10e44b4158e7e482c5c8`, and
+final SHA `2b32817dff61b669e2c4915d433cea573d3f95bce2a54712fa0c7234c62622a0`.
+Long Revelation's real `revstress-sardis-philadelphia` trace, “Sardis nearly
+loses; Philadelphia keeps,” holds one stable right→left S at 1280px and 640px
+in Paper, Ink, Glass, and Candlelight; held ticks stay section-correct, the
+passage score stays untouched, and the page does not overflow.

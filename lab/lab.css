@@ -135,6 +135,15 @@ body.theme-glass, body.theme-dark-glass {
 body[data-route="traces"] .vrow .vtext { line-height: 2.08; }
 body[data-route="traces"] .sheet-compact .vrow .vtext { line-height: 2.1; }
 body[data-route="traces"] .sheet-geometry .vrow .vtext { line-height: 2.05; }
+/* Long Revelation names each letter as a real source section.  In Traces,
+ * give that semantic boundary one calm handoff bay; the planner still has to
+ * prove the bay is ink-clear before a side change is legal. */
+body[data-route="traces"][data-long-text="true"] [data-sheet="rev"] .letter-head {
+  margin-top: 52px;
+}
+body[data-route="traces"][data-long-text="true"] [data-sheet="rev"] .letter-head[data-section-order="0"] {
+  margin-top: 0;
+}
 
 /* ── the phrase key at rest: light themes lay a quiet highlight wash
  * behind the words (the app's own annotation language); dark themes

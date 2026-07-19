@@ -7,6 +7,7 @@
  * Traces routing is the Loom engine (route-engine.js) — the same planner
  * as route.html; Reading keeps trace-geometry's local bows. */
 import { planRoute, rankCompanions } from "./route-engine.js";
+import { _internals as routeInternals } from "./route-engine.js";
 
 const hovered = new Set(); // gids under the cursor
 const pinned = new Set();  // gids pinned by click
@@ -306,11 +307,13 @@ const LONG_PATTERNS = [
     { ref: "REV.3.12", phrase: "a pillar in the temple of my God" },
     { ref: "REV.3.21", phrase: "sit down with me on my throne" },
   ] },
-  { id: "revstress-first-last", kind: "series", label: "first and last", members: [
-    { ref: "REV.2.4", phrase: "your first love" },
-    { ref: "REV.2.5", phrase: "the first works" },
-    { ref: "REV.2.8", phrase: "The first and the last" },
-    { ref: "REV.2.19", phrase: "your last works are more than the first" },
+  { id: "revstress-sardis-philadelphia", kind: "link:contrast", label: "Sardis nearly loses; Philadelphia keeps", members: [
+    { ref: "REV.3.1", phrase: "I know your works" },
+    { ref: "REV.3.2", phrase: "you were about to throw away" },
+    { ref: "REV.3.3", phrase: "Keep it and repent" },
+    { ref: "REV.3.8", phrase: "I know your works" },
+    { ref: "REV.3.10", phrase: "Because you kept my command to endure" },
+    { ref: "REV.3.11", phrase: "I am coming quickly" },
   ] },
   { id: "revstress-fire-eyes", kind: "link:parallel", label: "eyes and fire", members: [
     { ref: "REV.2.18", phrase: "eyes like a flame of fire" },
@@ -469,9 +472,33 @@ const LEGEND = {
     : [],
 };
 
-/* letter boundaries for Revelation — quiet structural heads, like chapter heads */
-const LETTER_STARTS = {};
-for (const m of PATTERNS.rev[0].members) LETTER_STARTS[m.range[0]] = m.role;
+/* Revelation's seven letters are declared source structure, not a visual
+ * guess.  Keep the range, chapter provenance, and a stable routing id
+ * together so reflow can change geometry without changing topology. */
+const refTuple = (ref) => {
+  const [book, chapter, verse] = String(ref || "").split(".");
+  return { book, chapter: Number(chapter), verse: Number(verse) };
+};
+const refWithin = (ref, firstRef, lastRef) => {
+  const value = refTuple(ref), first = refTuple(firstRef), last = refTuple(lastRef);
+  if (!value.book || value.book !== first.book || first.book !== last.book) return false;
+  const n = value.chapter * 1000 + value.verse;
+  return n >= first.chapter * 1000 + first.verse && n <= last.chapter * 1000 + last.verse;
+};
+const sectionSlug = (value) => String(value).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const REVELATION_SECTIONS = PATTERNS.rev[0].members.map((member, order) => ({
+  id: `rev23:${sectionSlug(member.role)}`,
+  label: member.role,
+  order,
+  firstRef: member.range[0],
+  lastRef: member.range[1],
+  firstChapterId: member.range[0].split(".").slice(0, 2).join("."),
+  lastChapterId: member.range[1].split(".").slice(0, 2).join("."),
+}));
+const REVELATION_SECTION_STARTS = new Map(REVELATION_SECTIONS.map((section) => [section.firstRef, section]));
+const routingSectionFor = (study, ref) => study === "rev"
+  ? REVELATION_SECTIONS.find((section) => refWithin(ref, section.firstRef, section.lastRef)) || null
+  : null;
 
 /* ── build: verses with phrase spans woven in ────────────── */
 function versePlan(study, ref, text) {
@@ -515,7 +542,17 @@ function appendSegments(container, text, ranges) {
   }
   [...ranges].sort((a, b) => a.start - b.start).forEach((r) => {
     const els = pieces.get(r);
-    if (els?.length) GIDS[r.gid].anchors.push({ el: els[0], els, ref: r.ref, phrase: r.phrase, occ: r.occ });
+    if (els?.length) {
+      const section = routingSectionFor(GIDS[r.gid].study, r.ref);
+      els.forEach((el) => {
+        if (section) el.dataset.sectionId = section.id;
+        el.dataset.sourceRef = r.ref;
+      });
+      GIDS[r.gid].anchors.push({
+        el: els[0], els, ref: r.ref, phrase: r.phrase, occ: r.occ,
+        ...(section ? { sectionId: section.id, sectionOrder: section.order } : {}),
+      });
+    }
   });
 }
 
@@ -543,13 +580,29 @@ function buildSheets() {
     const r = document.createElement("div"); r.className = "sheet-ref"; r.textContent = cfg.ref;
     sheet.append(t, r);
     for (const ch of cfg.chapters) {
-      if (ch.head) { const h = document.createElement("div"); h.className = "chap-head"; h.textContent = ch.head; sheet.appendChild(h); }
+      if (ch.head) {
+        const h = document.createElement("div");
+        h.className = "chap-head";
+        h.textContent = ch.head;
+        h.dataset.chapterId = ch.key;
+        h.dataset.sourceRole = "chapter";
+        sheet.appendChild(h);
+      }
       for (const v of VERSES[ch.key]) {
         const ref = `${ch.key}.${v.verse}`;
-        if (LETTER_STARTS[ref] && id === "rev") {
+        const sourceSection = routingSectionFor(id, ref);
+        const startingSection = id === "rev" ? REVELATION_SECTION_STARTS.get(ref) : null;
+        if (startingSection) {
           const lh = document.createElement("div");
-          lh.className = "letter-head"; lh.dataset.letter = LETTER_STARTS[ref];
-          lh.textContent = LETTER_STARTS[ref];
+          lh.className = "letter-head";
+          lh.dataset.letter = startingSection.label;
+          lh.dataset.sectionId = startingSection.id;
+          lh.dataset.sectionOrder = String(startingSection.order);
+          lh.dataset.firstRef = startingSection.firstRef;
+          lh.dataset.lastRef = startingSection.lastRef;
+          lh.dataset.chapterId = ch.key;
+          lh.dataset.sourceRole = "letter";
+          lh.textContent = startingSection.label;
           sheet.appendChild(lh);
         }
         let text = v.text;
@@ -561,7 +614,14 @@ function buildSheets() {
           if (ranges.every((rg) => rg.end <= cutAt)) text = cut.slice(0, cutAt) + " …";
         }
         const row = document.createElement("div");
-        row.className = "vrow"; row.dataset.key = ref;
+        row.className = "vrow";
+        row.dataset.key = ref;
+        row.dataset.chapterId = ch.key;
+        row.dataset.sourceOrder = String(v.verse);
+        if (sourceSection) {
+          row.dataset.sectionId = sourceSection.id;
+          row.dataset.sectionOrder = String(sourceSection.order);
+        }
         const num = document.createElement("span"); num.className = "vnum"; num.textContent = v.verse;
         const txt = document.createElement("span"); txt.className = "vtext";
         const visibleRanges = ranges.filter((rg) => rg.end <= text.length);
@@ -661,10 +721,10 @@ function ribbonOutline(pts, w, frac = 1) {
 }
 /* the ribbon draws itself: the ink flows point by point along the
  * centerline, leading edge tapered like a nib in contact */
-function ribbonDraw(g, pts, hue, { w = 1.6, opacity = 1, delay = 0, dur = 380, role = "connector" } = {}) {
+function ribbonDraw(g, pts, hue, { w = 1.6, opacity = 1, delay = 0, dur = 380, role = "connector", immediate = false } = {}) {
   const p = S("path", { d: "", fill: hue, stroke: "none", "data-role": role }, g);
   if (opacity < 1) p.setAttribute("opacity", opacity);
-  if (REDUCED_MOTION) {
+  if (REDUCED_MOTION || immediate) {
     p.setAttribute("d", ribbonOutline(pts, w, 1));
     return p;
   }
@@ -686,11 +746,715 @@ let FOCUS_GID = null;
 const MAX_MARGIN_TRACES = 4;
 const LAST_PLANS = new Map();   // sid → Map(gid → plan) from the last Traces render
 const LAST_INKED = new Map();   // sid → Set(companion gids) for lane hysteresis
-const LAST_SIDES = new Map();   // sid|gid → last valid route side that actually painted
+const LAST_TOPOLOGIES = new Map(); // sid|gid → last valid PAINTED semantic side assignment
 const LAST_TICK_LAYOUTS = new Map(); // sid|gid → pre-bloom held tick positions
-const isMarginPlan = (plan) => plan && plan.valid && Number.isInteger(plan.strand);
 let TICK_PREVIEW_GID = null;
 const TICK_FOCUS_KEYS = new Map();
+
+/* C0.4 is plural-first.  These narrow adapters retain exact C0.3 behavior for
+ * non-section plans while keeping every consumer off the compatibility lies
+ * (`plan.side`, `plan.spine`) that mixed topologies deliberately omit. */
+function planSideRuns(plan) {
+  if (!plan?.valid) return [];
+  if (Array.isArray(plan.sideRuns)) return plan.sideRuns;
+  if ((plan.side === "left" || plan.side === "right") && Number.isInteger(plan.strand)) {
+    const legacyExtentYs = [
+      plan.markerRanges?.marginStart,
+      plan.markerRanges?.marginEnd,
+      ...(Array.isArray(plan.ports) ? plan.ports.flatMap((port) => [port?.y]) : []),
+    ].filter(Number.isFinite);
+    return [{
+      id: `${plan.side}:legacy:${plan.strand}`,
+      runIndex: 0,
+      sectionIds: [],
+      side: plan.side,
+      strand: plan.strand,
+      railX: plan.marginRailX,
+      x: plan.marginRailX,
+      top: plan.spine?.top ?? (legacyExtentYs.length ? Math.min(...legacyExtentYs) : undefined),
+      bottom: plan.spine?.bottom ?? (legacyExtentYs.length ? Math.max(...legacyExtentYs) : undefined),
+      spineId: plan.spine ? `${plan.side}:legacy:spine` : null,
+    }];
+  }
+  return [];
+}
+function planSpines(plan) {
+  if (!plan?.valid) return [];
+  if (Array.isArray(plan.spines)) return plan.spines;
+  return plan.spine ? [{
+    ...plan.spine,
+    id: `${plan.side || "route"}:legacy:spine`,
+    kind: plan.side ? "margin" : "middle",
+    side: plan.side || null,
+    strand: Number.isInteger(plan.strand) ? plan.strand : null,
+  }] : [];
+}
+function planSpineClaims(plan) {
+  if (!plan?.valid) return [];
+  if (Array.isArray(plan.spineClaimsOut)) return plan.spineClaimsOut;
+  return plan.spineClaimOut ? [plan.spineClaimOut] : [];
+}
+function planStrandClaims(plan) {
+  if (!plan?.valid) return [];
+  if (Array.isArray(plan.strandClaimsOut)) return plan.strandClaimsOut;
+  return plan.strandClaimOut ? [plan.strandClaimOut] : [];
+}
+function planCorridorClaims(plan) {
+  if (!plan?.valid) return [];
+  if (isSectionTopology(plan) && Array.isArray(plan.corridorClaimsOut)) return plan.corridorClaimsOut;
+  return Array.isArray(plan.claimsOut) ? plan.claimsOut : [];
+}
+const isMarginPlan = (plan) => planSideRuns(plan).length > 0;
+const isSectionTopology = (plan) => plan?.sectionAware === true || plan?.topology === "sectioned";
+const runIdOf = (run, index = 0) => String(run?.id ?? run?.runId ?? `run:${run?.runIndex ?? index}`);
+const spineIdOf = (spine, index = 0) => String(spine?.id ?? spine?.spineId ?? `spine:${index}`);
+function routeForAnchor(plan, anchor, anchorIndex) {
+  if (!isMarginPlan(plan)) return null;
+  const candidates = [
+    ...(Array.isArray(plan.anchorRuns) ? plan.anchorRuns : []),
+    ...(Array.isArray(plan.terminalRoutes) ? plan.terminalRoutes : []),
+  ];
+  /* Canonical identity wins outright.  A stale positional route must never
+   * shadow the later exact owner just because it appeared first. */
+  const direct = anchor?.id
+    ? candidates.find((route) => route.anchorId === anchor.id)
+    : null;
+  if (direct?.side === "left" || direct?.side === "right") return direct;
+  const runs = planSideRuns(plan);
+  /* A valid C0.3/single-section fallback owns one whole route. Incidental
+   * source section provenance must not make its held ticks ownerless. */
+  if (!isSectionTopology(plan)) {
+    const positional = candidates.find((route) =>
+      !route?.anchorId && route?.anchorIndex === anchorIndex);
+    if (positional?.side === "left" || positional?.side === "right") return positional;
+    if (runs.length === 1) return runs[0];
+  }
+  const sectionId = anchor?.sectionId || anchor?.fragments?.[0]?.sectionId;
+  if (isSectionTopology(plan) && runs.length > 1) return null;
+  const run = sectionId
+    ? runs.find((candidate) => candidate.sectionIds?.includes(sectionId))
+    : runs.length === 1 ? runs[0] : null;
+  return run && (run.side === "left" || run.side === "right") ? run : null;
+}
+function topologyMemoryForPlan(plan) {
+  const runs = planSideRuns(plan);
+  if (!runs.length) return null;
+  const seen = new Set();
+  const sectionSides = [];
+  const declared = Array.isArray(plan.topologyMemory?.sectionSides)
+    ? plan.topologyMemory.sectionSides
+    : Array.isArray(plan.sectionSides) ? plan.sectionSides : runs.flatMap((run) =>
+    (run.sectionIds || []).map((sectionId) => ({ sectionId, side: run.side })));
+  for (const item of declared) {
+    if (!item?.sectionId || (item.side !== "left" && item.side !== "right") || seen.has(item.sectionId)) continue;
+    seen.add(item.sectionId);
+    sectionSides.push({ sectionId: item.sectionId, side: item.side });
+  }
+  return {
+    side: runs.length === 1 ? runs[0].side : null,
+    sectionSides,
+    topologySignature: plan.topologySignature ?? sectionSides,
+  };
+}
+function topologySignatureText(plan) {
+  if (!plan?.valid) return "";
+  if (typeof plan.topologySignature === "string") return plan.topologySignature;
+  const memory = topologyMemoryForPlan(plan);
+  return memory ? JSON.stringify(memory.topologySignature) : "";
+}
+function ownSectionContacts(plan, ann) {
+  if (!isSectionTopology(plan) || !ann) return { contacts: plan.contacts || [], errors: [] };
+  const errors = [];
+  const runs = planSideRuns(plan);
+  const runById = new Map(runs.map((run, index) => [runIdOf(run, index), run]));
+  const routes = Array.isArray(plan.anchorRuns) ? plan.anchorRuns : [];
+  const contacts = Array.isArray(plan.contacts) ? plan.contacts : [];
+  const routeByAnchor = new Map();
+  const routeIndexes = new Set();
+  for (const route of routes) {
+    if (!route?.anchorId || routeByAnchor.has(route.anchorId)) {
+      errors.push(`anchor-run-id:${route?.anchorId || "missing"}`);
+    } else routeByAnchor.set(route.anchorId, route);
+    if (!Number.isInteger(route?.anchorIndex) || routeIndexes.has(route.anchorIndex)) {
+      errors.push(`anchor-run-index:${route?.anchorIndex ?? "missing"}`);
+    } else routeIndexes.add(route.anchorIndex);
+  }
+  const contactById = new Map();
+  const contactByAnchor = new Map();
+  for (const contact of contacts) {
+    if (!contact?.id || contactById.has(contact.id)) errors.push(`contact-id:${contact?.id || "missing"}`);
+    else contactById.set(contact.id, contact);
+    if (!contact?.anchorId || contactByAnchor.has(contact.anchorId)) {
+      errors.push(`contact-anchor-id:${contact?.anchorId || "missing"}`);
+    } else contactByAnchor.set(contact.anchorId, contact);
+  }
+  /* The engine publishes anchorIndex in canonical document order, independent
+   * of caller array order.  Verify against that contract, not input position. */
+  const canonicalAnchors = [...ann.anchors].sort((a, b) =>
+    a.documentOrder - b.documentOrder || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  canonicalAnchors.forEach((anchor, anchorIndex) => {
+    const route = routeByAnchor.get(anchor.id);
+    const run = route && runById.get(String(route.runId));
+    if (!route || !run || (route.side !== "left" && route.side !== "right")) {
+      errors.push(`anchor-run:${anchor.id}`);
+      return;
+    }
+    if (route.anchorId !== anchor.id) errors.push(`anchor-run-anchor:${anchor.id}`);
+    const sectionId = anchor.sectionId || anchor.fragments?.[0]?.sectionId;
+    if (!sectionId || route.sectionId !== sectionId || !run.sectionIds?.includes(sectionId)) {
+      errors.push(`anchor-run-section:${anchor.id}`);
+    }
+    if (route.side !== run.side || route.strand !== run.strand || String(route.runId) !== runIdOf(run)) {
+      errors.push(`anchor-run-owner:${anchor.id}`);
+    }
+    if (route.anchorIndex !== anchorIndex) errors.push(`anchor-run-order:${anchor.id}`);
+    const contact = typeof route.contactId === "string" ? contactById.get(route.contactId) : null;
+    const fragment = [...(anchor.fragments || [])].sort((a, b) => a.top - b.top || a.left - b.left)[0];
+    if (!contact || contactByAnchor.get(anchor.id) !== contact || !fragment) {
+      errors.push(`contact-owner:${anchor.id}`);
+      return;
+    }
+    const expectedMeta = {
+      id: route.contactId,
+      role: "terminal-contact",
+      ownerId: runIdOf(run),
+      runId: runIdOf(run),
+      spineId: String(run.spineId),
+      anchorId: anchor.id,
+      sectionId,
+    };
+    for (const [key, value] of Object.entries(expectedMeta)) {
+      if (contact[key] == null || String(contact[key]) !== String(value)) {
+        errors.push(`contact-${key}:${anchor.id}`);
+      }
+    }
+    if ((contact.side != null && contact.side !== route.side) ||
+        (contact.departureSide != null && contact.departureSide !== route.side)) {
+      errors.push(`contact-side:${anchor.id}`);
+    }
+    const expectedX = route.side === "right" ? fragment.right - 0.5 : fragment.left + 0.5;
+    const expectedY = fragment.bottom + 2;
+    if (!sameFiniteNumber(contact.x, expectedX, 1.25) || !sameFiniteNumber(contact.y, expectedY, 1.25)) {
+      errors.push(`contact-geometry:${anchor.id}`);
+    }
+  });
+  if (routes.length !== ann.anchors.length) errors.push("anchor-run-count");
+  if (contacts.length !== ann.anchors.length) errors.push("contact-count");
+  return { contacts, errors };
+}
+function canonicalSegmentEqual(a, b) {
+  if (!a || !b || a.id !== b.id || a.type !== b.type || a.role !== b.role || a.ownerId !== b.ownerId) return false;
+  const fields = a.type === "C"
+    ? ["x1", "y1", "c1x", "c1y", "c2x", "c2y", "x2", "y2"]
+    : ["x1", "y1", "x2", "y2"];
+  return fields.every((field) => Number.isFinite(a[field]) && Number.isFinite(b[field]) && Math.abs(a[field] - b[field]) < 1e-6);
+}
+const sameFiniteNumber = (a, b, epsilon = 1e-6) =>
+  Number.isFinite(a) && Number.isFinite(b) && Math.abs(a - b) <= epsilon;
+function sampleHostCubic(segment, step = 0.75) {
+  if (segment?.type !== "C") return [];
+  const polygonLength = Math.hypot(segment.c1x - segment.x1, segment.c1y - segment.y1) +
+    Math.hypot(segment.c2x - segment.c1x, segment.c2y - segment.c1y) +
+    Math.hypot(segment.x2 - segment.c2x, segment.y2 - segment.c2y);
+  const count = Math.max(8, Math.ceil(polygonLength / step));
+  return Array.from({ length: count + 1 }, (_, index) => {
+    const t = index / count, u = 1 - t;
+    return {
+      x: u * u * u * segment.x1 + 3 * u * u * t * segment.c1x +
+        3 * u * t * t * segment.c2x + t * t * t * segment.x2,
+      y: u * u * u * segment.y1 + 3 * u * u * t * segment.c1y +
+        3 * u * t * t * segment.c2y + t * t * t * segment.y2,
+    };
+  });
+}
+function expandedHandoffObstacles(block) {
+  if (!block) return [];
+  const fontSize = Number.isFinite(block.fontSize) ? block.fontSize : 17;
+  const expand = Math.max(2.5, fontSize * 0.12) + 2.5;
+  const hardRects = block.wordRuns?.length ? block.wordRuns : (block.renderedLines || []);
+  return [...hardRects, ...(block.verseNumberRects || []), ...(block.additionalObstacles || [])]
+    .filter((rect) => [rect.left, rect.right, rect.top, rect.bottom].every(Number.isFinite))
+    .map((rect) => ({
+      left: rect.left - expand,
+      right: rect.right + expand,
+      top: rect.top - expand,
+      bottom: rect.bottom + expand,
+    }));
+}
+function claimsMatch(a, b, keys) {
+  return keys.every((key) => typeof a?.[key] === "number" || typeof b?.[key] === "number"
+    ? sameFiniteNumber(a?.[key], b?.[key])
+    : String(a?.[key]) === String(b?.[key]));
+}
+function validateHostTopology(plan, ann = null, block = null) {
+  if (!plan?.valid) return { ok: false, errors: [plan?.reason || "invalid-plan"] };
+  const errors = [];
+  const finite = (...values) => values.every(Number.isFinite);
+  const runs = planSideRuns(plan);
+  const spines = planSpines(plan);
+  const handoffs = Array.isArray(plan.handoffs) ? plan.handoffs : [];
+  const sectioned = isSectionTopology(plan);
+  const orderedAnchors = [...(ann?.anchors || [])].sort((a, b) =>
+    (a.documentOrder ?? 0) - (b.documentOrder ?? 0) || String(a.id).localeCompare(String(b.id)));
+  const anchorSectionSequence = orderedAnchors.map((anchor) => anchor.sectionId).filter(Boolean);
+  const activeSections = [...new Set(anchorSectionSequence)];
+  const handoffObstacles = expandedHandoffObstacles(block);
+  const spineIds = new Set();
+  const spineById = new Map();
+  spines.forEach((spine, index) => {
+    const id = spineIdOf(spine, index);
+    if (!id || spineIds.has(id) || (sectioned && (typeof spine?.id !== "string" || !spine.id))) {
+      errors.push(`spine-id:${id || "missing"}`);
+    }
+    spineIds.add(id);
+    spineById.set(id, spine);
+    if (!finite(spine.x, spine.top, spine.bottom) || spine.bottom < spine.top) errors.push(`spine-bounds:${id}`);
+    if (sectioned && !plan.centerline?.some((segment) => segment.role === "spine" && segment.spineId === id)) {
+      errors.push(`spine-owner:${id}`);
+    }
+  });
+  const runIds = new Set();
+  const runById = new Map();
+  runs.forEach((run, index) => {
+    const id = runIdOf(run, index);
+    if (runIds.has(id) || (sectioned && (typeof run?.id !== "string" || !run.id || run.runIndex !== index))) {
+      errors.push(`run-id:${id}`);
+    }
+    runIds.add(id);
+    runById.set(id, run);
+    if ((run.side !== "left" && run.side !== "right") || !Number.isInteger(run.strand) || run.strand < 0 || run.strand > 2 ||
+        !finite(run.railX, run.x, run.top, run.bottom) || run.bottom < run.top ||
+        Math.abs(run.x - run.railX) > 1e-6) errors.push(`run-geometry:${id}`);
+    if (sectioned && (!Array.isArray(run.sectionIds) || !run.sectionIds.length)) errors.push(`run-sections:${id}`);
+    if (sectioned && (!run.spineId || !spineIds.has(String(run.spineId)))) errors.push(`run-spine:${id}`);
+    else if (run.spineId && !spineIds.has(String(run.spineId))) errors.push(`run-spine:${id}`);
+  });
+  const handoffIds = new Set();
+  handoffs.forEach((handoff, index) => {
+    const id = String(handoff?.id ?? `handoff:${index}`);
+    if (!handoff?.id || handoffIds.has(id)) errors.push(`handoff-id:${id}`);
+    handoffIds.add(id);
+    const fromRun = runById.get(String(handoff.fromRunId));
+    const toRun = runById.get(String(handoff.toRunId));
+    const fromSpine = spineById.get(String(handoff.fromSpineId));
+    const toSpine = spineById.get(String(handoff.toSpineId));
+    if (!handoff.gapId || !fromRun || !toRun || !fromSpine || !toSpine ||
+        String(fromRun.spineId) !== String(handoff.fromSpineId) ||
+        String(toRun.spineId) !== String(handoff.toSpineId) ||
+        !fromRun.sectionIds?.includes(handoff.fromSectionId) ||
+        !toRun.sectionIds?.includes(handoff.toSectionId) ||
+        fromRun.side === toRun.side || !finite(handoff.from?.x, handoff.from?.y, handoff.to?.x, handoff.to?.y) ||
+        Math.abs(handoff.from.x - fromSpine.x) > 1e-6 || Math.abs(handoff.to.x - toSpine.x) > 1e-6) {
+      errors.push(`handoff-owner:${id}`);
+    }
+    const handoffSegments = plan.centerline?.filter((segment) => segment.role === "handoff" && segment.handoffId === id) || [];
+    if (handoffSegments.length !== 1) {
+      errors.push(`handoff-segments:${id}`);
+    } else if (handoffSegments[0].fromRunId !== handoff.fromRunId || handoffSegments[0].toRunId !== handoff.toRunId ||
+        !Array.isArray(handoff.segments) || handoff.segments.length !== 1 ||
+        !canonicalSegmentEqual(handoff.segments[0], handoffSegments[0])) {
+      errors.push(`handoff-segment-owner:${id}`);
+    }
+    const fromIndex = activeSections.indexOf(handoff.fromSectionId);
+    if (fromIndex < 0 || activeSections[fromIndex + 1] !== handoff.toSectionId ||
+        fromRun.sectionIds?.at(-1) !== handoff.fromSectionId || toRun.sectionIds?.[0] !== handoff.toSectionId) {
+      errors.push(`handoff-adjacency:${id}`);
+    }
+    const gap = block?.sectionGaps?.find((candidate) => candidate.id === handoff.gapId);
+    if (block?.sectionGaps && (!gap || gap.hardClear !== true || gap.fromSectionId !== handoff.fromSectionId ||
+        gap.toSectionId !== handoff.toSectionId || handoff.from.y < gap.top || handoff.to.y > gap.bottom ||
+        handoff.from.x < gap.left || handoff.from.x > gap.right || handoff.to.x < gap.left || handoff.to.x > gap.right)) {
+      errors.push(`handoff-gap:${id}`);
+    }
+    const segment = handoffSegments[0];
+    if (segment && gap && fromSpine && toSpine) {
+      const controls = [
+        { x: segment.x1, y: segment.y1 }, { x: segment.c1x, y: segment.c1y },
+        { x: segment.c2x, y: segment.c2y }, { x: segment.x2, y: segment.y2 },
+      ];
+      const insideGap = (point) => Number.isFinite(point.x) && Number.isFinite(point.y) &&
+        point.x >= gap.left - 1e-6 && point.x <= gap.right + 1e-6 &&
+        point.y >= gap.top - 1e-6 && point.y <= gap.bottom + 1e-6;
+      if (segment.type !== "C" ||
+          !sameFiniteNumber(segment.x1, handoff.from.x) || !sameFiniteNumber(segment.y1, handoff.from.y) ||
+          !sameFiniteNumber(segment.x2, handoff.to.x) || !sameFiniteNumber(segment.y2, handoff.to.y) ||
+          !sameFiniteNumber(segment.x1, fromSpine.x) || !sameFiniteNumber(segment.y1, fromSpine.bottom) ||
+          !sameFiniteNumber(segment.x2, toSpine.x) || !sameFiniteNumber(segment.y2, toSpine.top) ||
+          !sameFiniteNumber(segment.c1x, segment.x1) || !sameFiniteNumber(segment.c2x, segment.x2) ||
+          !(segment.y1 < segment.c1y && segment.c1y <= segment.c2y && segment.c2y < segment.y2) ||
+          controls.some((point) => !insideGap(point))) {
+        errors.push(`handoff-geometry:${id}`);
+      } else {
+        const samples = sampleHostCubic(segment);
+        if (!samples.length || samples.some((point) => !insideGap(point) || handoffObstacles.some((obstacle) =>
+          point.x > obstacle.left && point.x < obstacle.right && point.y > obstacle.top && point.y < obstacle.bottom))) {
+          errors.push(`handoff-clearance:${id}`);
+        }
+      }
+    }
+  });
+  if (sectioned) {
+    const parts = Array.isArray(plan.routeParts) ? plan.routeParts : [];
+    if (!parts.length) errors.push("route-parts");
+    const corridorClaims = Array.isArray(plan.corridorClaimsOut) ? plan.corridorClaimsOut : [];
+    const normalizedCorridorClaims = Array.isArray(plan.claimsOut) ? plan.claimsOut : [];
+    const spineClaims = Array.isArray(plan.spineClaimsOut) ? plan.spineClaimsOut : [];
+    const strandClaims = Array.isArray(plan.strandClaimsOut) ? plan.strandClaimsOut : [];
+    const handoffClaims = Array.isArray(plan.handoffClaimsOut) ? plan.handoffClaimsOut : [];
+    const allClaimIds = [...corridorClaims, ...spineClaims, ...strandClaims, ...handoffClaims]
+      .map((claim) => claim?.id).filter(Boolean);
+    if (allClaimIds.length !== corridorClaims.length + spineClaims.length + strandClaims.length + handoffClaims.length ||
+        new Set(allClaimIds).size !== allClaimIds.length) errors.push("claim-ids");
+    if (corridorClaims.length !== normalizedCorridorClaims.length ||
+        corridorClaims.length !== (plan.corridors || []).length ||
+        corridorClaims.length !== (plan.corridorIdx || []).length) errors.push("corridor-claim-count");
+    corridorClaims.forEach((claim, index) => {
+      const run = runById.get(String(claim?.ownerRunId));
+      if (!claim?.id || !run || !run.sectionIds?.includes(claim.sectionId) ||
+          !Number.isFinite(claim.corridor) || !Number.isFinite(claim.y) ||
+          !Number.isFinite(claim.xMin) || !Number.isFinite(claim.xMax) || claim.xMax < claim.xMin ||
+          !claimsMatch(claim, normalizedCorridorClaims[index], ["corridor", "y", "xMin", "xMax", "pad"]) ||
+          !sameFiniteNumber(claim.corridor, plan.corridorIdx?.[index]) ||
+          !sameFiniteNumber(claim.y, plan.corridors?.[index])) {
+        errors.push(`corridor-claim:${claim?.id || index}`);
+      }
+    });
+    if (spineClaims.length !== runs.length || strandClaims.length !== runs.length) errors.push("run-claim-count");
+    runs.forEach((run, index) => {
+      const runId = runIdOf(run, index);
+      const spine = spineById.get(String(run.spineId));
+      const ownedSpineClaims = spineClaims.filter((claim) => String(claim.ownerRunId) === runId);
+      const ownedStrandClaims = strandClaims.filter((claim) => String(claim.ownerRunId) === runId);
+      const spineClaim = ownedSpineClaims[0], strandClaim = ownedStrandClaims[0];
+      if (ownedSpineClaims.length !== 1 || !spine || !spineClaim?.id || run.spineClaimId !== spineClaim.id ||
+          !claimsMatch(spineClaim, {
+            side: run.side, strand: run.strand, x: spine.x, top: spine.top, bottom: spine.bottom,
+          }, ["side", "strand", "x", "top", "bottom"])) {
+        errors.push(`spine-claim:${runId}`);
+      }
+      if (ownedStrandClaims.length !== 1 || !strandClaim?.id || run.strandClaimId !== strandClaim.id ||
+          !claimsMatch(strandClaim, {
+            side: run.side, strand: run.strand, top: run.top, bottom: run.bottom,
+          }, ["side", "strand", "top", "bottom"])) {
+        errors.push(`strand-claim:${runId}`);
+      }
+      const expectedCorridorIds = corridorClaims.filter((claim) => String(claim.ownerRunId) === runId)
+        .map((claim) => claim.id);
+      if (!Array.isArray(run.corridorClaimIds) || run.corridorClaimIds.length !== expectedCorridorIds.length ||
+          run.corridorClaimIds.some((claimId, claimIndex) => claimId !== expectedCorridorIds[claimIndex])) {
+        errors.push(`run-corridor-claims:${runId}`);
+      }
+    });
+    handoffs.forEach((handoff, index) => {
+      const owned = handoffClaims.filter((claim) => String(claim.ownerHandoffId) === String(handoff.id));
+      const claim = owned[0];
+      const expected = {
+        gapId: handoff.gapId,
+        fromSectionId: handoff.fromSectionId,
+        toSectionId: handoff.toSectionId,
+        xMin: Math.min(handoff.from.x, handoff.to.x),
+        xMax: Math.max(handoff.from.x, handoff.to.x),
+        top: handoff.from.y,
+        bottom: handoff.to.y,
+      };
+      if (owned.length !== 1 || !claim?.id || !Number.isFinite(claim.pad) || claim.pad < 0 ||
+          !claimsMatch(claim, expected, ["gapId", "fromSectionId", "toSectionId", "xMin", "xMax", "top", "bottom"]) ||
+          handoff.claimOut?.id !== claim.id ||
+          !claimsMatch(handoff.claimOut, claim, ["gapId", "fromSectionId", "toSectionId", "xMin", "xMax", "top", "bottom", "pad"])) {
+        errors.push(`handoff-claim:${handoff.id || index}`);
+      }
+    });
+    if (handoffClaims.length !== handoffs.length) errors.push("handoff-claim-count");
+    for (const part of parts.filter((candidate) => candidate.role === "tributary")) {
+      const expectedIds = corridorClaims.filter((claim) => String(claim.ownerRunId) === String(part.runId) &&
+        claim.sectionId === part.sectionId).map((claim) => claim.id);
+      const actualIds = Array.isArray(part.corridorClaimIds) ? part.corridorClaimIds : [];
+      if (!expectedIds.length || actualIds.length !== expectedIds.length ||
+          actualIds.some((claimId, index) => claimId !== expectedIds[index])) {
+        errors.push(`part-corridor-claims:${part.id || "missing"}`);
+      }
+    }
+    if (runs.length === 1 && (!claimsMatch(plan.spineClaimOut, spineClaims[0], ["side", "strand", "x", "top", "bottom"]) ||
+        !claimsMatch(plan.strandClaimOut, strandClaims[0], ["side", "strand", "top", "bottom"]))) {
+      errors.push("singular-claim-alias");
+    }
+    if (!activeSections.length || !runs.length) errors.push("active-sections");
+    const activeIndex = new Map(activeSections.map((sectionId, index) => [sectionId, index]));
+    let previousAnchorSection = -1;
+    for (const sectionId of anchorSectionSequence) {
+      const sectionIndex = activeIndex.get(sectionId);
+      if (sectionIndex == null || sectionIndex < previousAnchorSection) errors.push("anchor-section-order");
+      previousAnchorSection = sectionIndex ?? previousAnchorSection;
+    }
+    if (Array.isArray(block?.sections)) {
+      const declaredIds = [...block.sections]
+        .sort((a, b) => a.documentOrder - b.documentOrder || String(a.id).localeCompare(String(b.id)))
+        .map((section) => section.id);
+      if (new Set(declaredIds).size !== declaredIds.length) errors.push("declared-section-ids");
+      const activeSet = new Set(activeSections);
+      const declaredActive = declaredIds.filter((sectionId) => activeSet.has(sectionId));
+      if (declaredActive.length !== activeSections.length ||
+          declaredActive.some((sectionId, index) => sectionId !== activeSections[index])) {
+        errors.push("active-section-order");
+      }
+    }
+    const runSectionSequence = runs.flatMap((run) => run.sectionIds || []);
+    if (runSectionSequence.length !== activeSections.length ||
+        runSectionSequence.some((sectionId, index) => sectionId !== activeSections[index])) {
+      errors.push("run-section-bijection");
+    }
+    const expectedSectionSides = runs.flatMap((run) =>
+      (run.sectionIds || []).map((sectionId) => ({ sectionId, side: run.side })));
+    for (const declaredSides of [plan.sectionSides, plan.topologyMemory?.sectionSides]) {
+      if (!Array.isArray(declaredSides) || declaredSides.length !== expectedSectionSides.length ||
+          declaredSides.some((item, index) => item?.sectionId !== expectedSectionSides[index].sectionId ||
+            item?.side !== expectedSectionSides[index].side)) errors.push("topology-section-sides");
+    }
+    const expectedTopologySignature = `section-topology:v1|${runs.flatMap((run) =>
+      (run.sectionIds || []).map((sectionId) => `${routeInternals.stableIdPart(sectionId)}:${run.side[0]}${run.strand}`)).join("|")}`;
+    if (plan.topologySignature !== expectedTopologySignature ||
+        plan.topologyMemory?.topologySignature !== plan.topologySignature) errors.push("topology-signature");
+    if (spines.length !== runs.length) errors.push("run-spine-count");
+    runs.forEach((run, index) => {
+      const runId = runIdOf(run, index);
+      const ownedSpines = spines.filter((spine, spineIndex) =>
+        spineIdOf(spine, spineIndex) === String(run.spineId));
+      const spine = ownedSpines[0];
+      if (ownedSpines.length !== 1 || !spine || String(spine.runId ?? spine.ownerRunId) !== runId ||
+          spine.side !== run.side || spine.strand !== run.strand || Math.abs(spine.x - run.railX) > 1e-6 ||
+          spine.top !== run.top || spine.bottom !== run.bottom ||
+          (spine.sectionIds || []).length !== run.sectionIds.length ||
+          (spine.sectionIds || []).some((sectionId, sectionIndex) => sectionId !== run.sectionIds[sectionIndex])) {
+        errors.push(`run-spine-owner:${runId}`);
+      }
+      if (index > 0 && runs[index - 1].side === run.side) errors.push(`run-not-maximal:${runId}`);
+    });
+    if (handoffs.length !== Math.max(0, runs.length - 1)) errors.push("handoff-count");
+    for (let index = 0; index < runs.length - 1; index++) {
+      const handoff = handoffs[index];
+      if (!handoff || String(handoff.fromRunId) !== runIdOf(runs[index], index) ||
+          String(handoff.toRunId) !== runIdOf(runs[index + 1], index + 1)) {
+        errors.push(`handoff-order:${index}`);
+      }
+    }
+    const partIdSet = new Set();
+    const centerline = plan.centerline || [];
+    const centerlineIds = centerline.map((segment) => segment.id).filter(Boolean);
+    const centerlineById = new Map(centerline.map((segment) => [segment.id, segment]));
+    if (centerlineIds.length !== centerline.length || centerlineById.size !== centerline.length) errors.push("centerline-ids");
+    const ports = Array.isArray(plan.ports) ? plan.ports : [];
+    const portIds = ports.map((port) => port?.id).filter(Boolean);
+    if (portIds.length !== ports.length || new Set(portIds).size !== ports.length) errors.push("port-ids");
+    const tributaryPorts = ports.filter((port) => port.role === "tributary-port");
+    const expectedTributaryPorts = centerline.filter((segment) => {
+      if (segment.role !== "tributary") return false;
+      const run = runById.get(String(segment.runId));
+      const spine = run && spineById.get(String(run.spineId));
+      return Boolean(spine && sameFiniteNumber(segment.x2, spine.x) &&
+        segment.y2 >= spine.top - 1e-6 && segment.y2 <= spine.bottom + 1e-6);
+    });
+    if (tributaryPorts.length !== expectedTributaryPorts.length) errors.push("tributary-port-count");
+    const matchedTributarySegments = new Set();
+    for (const port of tributaryPorts) {
+      const run = runById.get(String(port.runId));
+      const spine = run && spineById.get(String(run.spineId));
+      const match = expectedTributaryPorts.find((segment) => !matchedTributarySegments.has(segment.id) &&
+        String(segment.runId) === String(port.runId) && segment.sectionId === port.sectionId &&
+        sameFiniteNumber(segment.x2, port.x) && sameFiniteNumber(segment.y2, port.y));
+      if (!run || !spine || port.ownerId !== runIdOf(run) || String(port.spineId) !== String(spine.id) ||
+          !run.sectionIds?.includes(port.sectionId) || !sameFiniteNumber(port.x, spine.x) || !match) {
+        errors.push(`tributary-port:${port.id || "missing"}`);
+      } else matchedTributarySegments.add(match.id);
+    }
+    for (const handoff of handoffs) {
+      const ownedPorts = ports.filter((port) => port.role === "handoff-port" && port.handoffId === handoff.id);
+      const expected = [
+        { point: handoff.from, runId: handoff.fromRunId, spineId: handoff.fromSpineId },
+        { point: handoff.to, runId: handoff.toRunId, spineId: handoff.toSpineId },
+      ];
+      if (ownedPorts.length !== 2 || expected.some((owner) => !ownedPorts.some((port) =>
+        port.ownerId === handoff.id && String(port.runId) === String(owner.runId) &&
+        String(port.spineId) === String(owner.spineId) && sameFiniteNumber(port.x, owner.point.x) &&
+        sameFiniteNumber(port.y, owner.point.y)))) errors.push(`handoff-ports:${handoff.id}`);
+    }
+    if (ports.some((port) => port.role !== "tributary-port" && port.role !== "handoff-port") ||
+        ports.length !== tributaryPorts.length + handoffs.length * 2) errors.push("port-roles");
+    const partSegments = parts.flatMap((part) => Array.isArray(part.segments) ? part.segments : []);
+    const partIds = partSegments.map((segment) => segment.id).filter(Boolean);
+    if (partSegments.length !== (plan.centerline || []).length || centerlineIds.length !== partIds.length) {
+      errors.push("route-part-coverage");
+    }
+    for (const id of centerlineIds) {
+      if (partIds.filter((candidate) => candidate === id).length !== 1) errors.push(`route-part-owner:${id}`);
+    }
+    for (const [spineId, spine] of spineById) {
+      const spineSegments = centerline.filter((segment) => segment.role === "spine" && String(segment.spineId) === spineId);
+      const spineParts = parts.filter((part) => part.role === "spine" && String(part.spineId) === spineId);
+      if (spineSegments.length !== 1 || spineParts.length !== 1 ||
+          spineSegments[0]?.ownerId !== spine.id || String(spineSegments[0]?.runId) !== String(spine.runId) ||
+          spineParts[0]?.ownerId !== spine.id || String(spineParts[0]?.runId) !== String(spine.runId)) {
+        errors.push(`spine-cardinality:${spineId}`);
+      }
+    }
+    for (const segment of centerline.filter((candidate) => candidate.role === "spine")) {
+      if (!spineById.has(String(segment.spineId))) errors.push(`spine-segment-owner:${segment.id || "missing"}`);
+    }
+    for (const part of parts.filter((candidate) => candidate.role === "spine")) {
+      if (!spineById.has(String(part.spineId))) errors.push(`spine-part-owner:${part.id || "missing"}`);
+    }
+    const allowedRoles = new Set(["tributary", "spine", "handoff"]);
+    if (centerline.some((segment) => !allowedRoles.has(segment.role)) ||
+        parts.some((part) => !allowedRoles.has(part.role))) errors.push("route-role-grammar");
+    for (const sectionId of activeSections) {
+      const sectionParts = parts.filter((part) => part.role === "tributary" && part.sectionId === sectionId);
+      const run = runs.find((candidate) => candidate.sectionIds?.includes(sectionId));
+      if (sectionParts.length !== 1 || !run || sectionParts[0]?.ownerId !== runIdOf(run) ||
+          String(sectionParts[0]?.runId) !== runIdOf(run)) errors.push(`tributary-cardinality:${sectionId}`);
+    }
+    for (const part of parts.filter((candidate) => candidate.role === "tributary")) {
+      const run = runById.get(String(part.runId));
+      if (!run || part.ownerId !== runIdOf(run) || !run.sectionIds?.includes(part.sectionId)) {
+        errors.push(`tributary-owner:${part.id || "missing"}`);
+      }
+    }
+    for (const handoff of handoffs) {
+      const handoffParts = parts.filter((part) => part.role === "handoff" && part.handoffId === handoff.id);
+      if (handoffParts.length !== 1 || handoffParts[0]?.ownerId !== handoff.id || handoffParts[0]?.segments?.length !== 1) {
+        errors.push(`handoff-part-cardinality:${handoff.id}`);
+      }
+    }
+    for (const part of parts.filter((candidate) => candidate.role === "handoff")) {
+      if (!handoffs.some((handoff) => handoff.id === part.handoffId && handoff.id === part.ownerId)) {
+        errors.push(`handoff-part-owner:${part.id || "missing"}`);
+      }
+    }
+    for (const segment of centerline.filter((candidate) => candidate.role === "handoff")) {
+      if (!handoffs.some((handoff) => handoff.id === segment.handoffId && handoff.id === segment.ownerId)) {
+        errors.push(`handoff-segment-orphan:${segment.id || "missing"}`);
+      }
+    }
+    for (const part of parts) {
+      if (!part.id || !part.role || !part.ownerId || !Array.isArray(part.segments) || !part.segments.length) {
+        errors.push(`route-part:${part.id || "missing"}`);
+      }
+      if (partIdSet.has(part.id)) errors.push(`route-part-id:${part.id}`);
+      partIdSet.add(part.id);
+      const requiredKeys = part.role === "tributary" ? ["runId", "sectionId"] :
+        part.role === "spine" ? ["runId", "spineId"] : part.role === "handoff" ? ["handoffId"] : [];
+      for (const key of requiredKeys) if (part[key] == null || part[key] === "") errors.push(`route-part-${key}:${part.id}`);
+      for (const segment of part.segments || []) {
+        if (!canonicalSegmentEqual(segment, centerlineById.get(segment.id))) errors.push(`route-part-segment:${segment.id || "missing"}`);
+        if (segment.role !== part.role || segment.ownerId !== part.ownerId) errors.push(`route-part-metadata:${part.id}`);
+        for (const key of ["runId", "spineId", "handoffId", "sectionId"]) {
+          if (part[key] != null && String(segment[key]) !== String(part[key])) errors.push(`route-part-${key}:${part.id}`);
+        }
+      }
+      if (part.role === "spine") {
+        const segment = part.segments?.[0];
+        const spine = spineById.get(String(part.spineId));
+        if (part.segments?.length !== 1 || !spine || segment?.type !== "L" ||
+            Math.abs(segment.x1 - segment.x2) > 1e-6 || Math.abs(segment.x1 - spine.x) > 1e-6 ||
+            Math.abs(Math.min(segment.y1, segment.y2) - spine.top) > 1e-6 ||
+            Math.abs(Math.max(segment.y1, segment.y2) - spine.bottom) > 1e-6) errors.push(`spine-part:${part.id}`);
+      }
+    }
+    for (const part of parts.filter((candidate) => candidate.role === "tributary")) {
+      const run = runById.get(String(part.runId));
+      const spine = run && spineById.get(String(run.spineId));
+      const claims = corridorClaims.filter((claim) => String(claim.ownerRunId) === String(part.runId) &&
+        claim.sectionId === part.sectionId);
+      const components = [];
+      let component = [];
+      for (const segment of part.segments || []) {
+        const prior = component.at(-1);
+        if (prior && Math.hypot(segment.x1 - prior.x2, segment.y1 - prior.y2) > 1.5) {
+          components.push(component);
+          component = [];
+        }
+        component.push(segment);
+      }
+      if (component.length) components.push(component);
+      const facts = components.map((segments) => {
+        const points = segments.flatMap((segment) => segPtsFor(segment));
+        const endpoint = segments.at(-1);
+        const ownedPort = tributaryPorts.find((port) => String(port.runId) === String(part.runId) &&
+          port.sectionId === part.sectionId && sameFiniteNumber(port.x, endpoint?.x2) &&
+          sameFiniteNumber(port.y, endpoint?.y2));
+        return {
+          segments,
+          points,
+          reachesSpine: Boolean(spine && ownedPort && sameFiniteNumber(endpoint?.x2, spine.x) &&
+            endpoint.y2 >= spine.top - 1e-6 && endpoint.y2 <= spine.bottom + 1e-6),
+          minX: points.length ? Math.min(...points.map((point) => point.x)) : Infinity,
+          maxX: points.length ? Math.max(...points.map((point) => point.x)) : -Infinity,
+        };
+      });
+      const carriers = facts.filter((fact) => fact.reachesSpine);
+      if (!spine || !claims.length || carriers.length !== claims.length) {
+        errors.push(`corridor-claim-carriers:${part.id}`);
+        continue;
+      }
+      const usedCarriers = new Set();
+      for (const claim of claims) {
+        const owns = (fact) => fact.points.some((point) => sameFiniteNumber(point.y, claim.y, 0.05)) &&
+          fact.minX >= claim.xMin - 0.05 && fact.maxX <= claim.xMax + 0.05;
+        const carrierIndex = carriers.findIndex((fact, index) => !usedCarriers.has(index) && owns(fact));
+        if (carrierIndex < 0 || claim.xMin > spine.x + 0.05 || claim.xMax < spine.x - 0.05) {
+          errors.push(`corridor-claim-geometry:${claim.id}`);
+        } else {
+          usedCarriers.add(carrierIndex);
+          const carrier = carriers[carrierIndex];
+          const start = carrier.segments[0];
+          const contact = (plan.contacts || []).find((candidate) =>
+            sameFiniteNumber(candidate.x, start.x1, 0.05) && sameFiniteNumber(candidate.y, start.y1, 0.05));
+          const anchor = contact && ann?.anchors?.find((candidate) => candidate.id === contact.anchorId);
+          const fragment = anchor?.fragments?.length
+            ? [...anchor.fragments].sort((a, b) => a.top - b.top || a.left - b.left)[0]
+            : null;
+          const lines = [...(block?.renderedLines || [])].sort((a, b) => a.top - b.top || a.documentOrder - b.documentOrder);
+          let expectedCorridor = null;
+          if (fragment && lines.length) {
+            const center = (fragment.top + fragment.bottom) / 2;
+            let nearest = 0, distance = Infinity;
+            lines.forEach((line, index) => {
+              const candidateDistance = Math.abs((line.top + line.bottom) / 2 - center);
+              if (candidateDistance < distance) { distance = candidateDistance; nearest = index; }
+            });
+            expectedCorridor = nearest + 1;
+          }
+          if (!contact || contact.sectionId !== part.sectionId ||
+              !Number.isInteger(expectedCorridor) || claim.corridor !== expectedCorridor) {
+            errors.push(`corridor-claim-index:${claim.id}`);
+          }
+        }
+      }
+      if (facts.some((fact) => !claims.some((claim) => fact.points.some((point) =>
+        sameFiniteNumber(point.y, claim.y, 0.05)) && fact.minX >= claim.xMin - 0.05 &&
+        fact.maxX <= claim.xMax + 0.05))) errors.push(`tributary-claim-coverage:${part.id}`);
+    }
+    const contactOwnership = ownSectionContacts(plan, ann);
+    errors.push(...contactOwnership.errors);
+    for (const contact of contactOwnership.contacts) {
+      if (!contact.id || contact.role !== "terminal-contact" || !contact.ownerId || !contact.anchorId ||
+          !contact.sectionId || !contact.runId || !contact.spineId) errors.push("contact-metadata");
+    }
+    if (runs.length > 1 && (plan.side != null || plan.strand != null || plan.marginRailX != null ||
+        plan.spine != null || plan.spineClaimOut != null || plan.strandClaimOut != null)) {
+      errors.push("mixed-singular-alias");
+    }
+  }
+  return { ok: errors.length === 0, errors };
+}
+function hostValidatedPlan(plan, ann, block = null) {
+  if (!plan?.valid) return plan;
+  const validation = validateHostTopology(plan, ann, block);
+  return validation.ok ? plan : {
+    ...plan,
+    valid: false,
+    reason: "host-topology-invalid",
+    hostValidationErrors: [...new Set(validation.errors)],
+  };
+}
 
 function commitHeldShape(gid) {
   if (!gid || !GIDS[gid]) return;
@@ -739,18 +1503,113 @@ function mergeInkLines(rects, tol = 2) {
   }
   return out;
 }
+function renderedLinesFromWordRuns(wordRuns) {
+  const rows = new Map();
+  for (const run of wordRuns) {
+    const key = run.sourceRef || `row-${run.rowOrder ?? 0}`;
+    if (!rows.has(key)) rows.set(key, []);
+    rows.get(key).push(run);
+  }
+  const out = [];
+  const orderedRows = [...rows.entries()].sort(([, a], [, b]) =>
+    (a[0]?.rowOrder ?? 0) - (b[0]?.rowOrder ?? 0));
+  let documentOrder = 0;
+  for (const [sourceRef, runs] of orderedRows) {
+    const sectionId = runs[0]?.sectionId;
+    const chapterId = runs[0]?.chapterId;
+    const lines = mergeInkLines(runs, 3).sort((a, b) => a.top - b.top || a.left - b.left);
+    lines.forEach((line, lineIndex) => out.push({
+      ...line,
+      id: `${sourceRef}:line:${lineIndex}`,
+      sourceRef,
+      chapterId,
+      documentOrder: documentOrder++,
+      ...(sectionId ? { sectionId } : {}),
+    }));
+  }
+  return out;
+}
+
+/* Measure only the whitespace the browser actually rendered between adjacent
+ * declared Revelation letters.  A gap grants the planner permission to try;
+ * headings remain obstacles, so declaration never substitutes for clearance. */
+function measuredSectionTopology(sid, M) {
+  if (sid !== "rev") return { sections: [], sectionGaps: [] };
+  const rel = (r) => ({
+    left: r.left - M.base.left, right: r.right - M.base.left,
+    top: r.top - M.base.top, bottom: r.bottom - M.base.top,
+  });
+  const sections = [];
+  for (const source of REVELATION_SECTIONS) {
+    const rows = [...M.sheet.querySelectorAll(`.vrow[data-section-id="${source.id}"]`)];
+    const head = M.sheet.querySelector(`.letter-head[data-section-id="${source.id}"]`);
+    if (!rows.length || !head) continue;
+    const rects = [head, ...rows].map((el) => rel(el.getBoundingClientRect()));
+    const left = Math.min(...rects.map((r) => r.left));
+    const right = Math.max(...rects.map((r) => r.right));
+    const top = Math.min(...rects.map((r) => r.top));
+    const bottom = Math.max(...rects.map((r) => r.bottom));
+    if (![left, right, top, bottom].every(Number.isFinite) || right <= left || bottom <= top) continue;
+    sections.push({
+      id: source.id,
+      label: source.label,
+      order: source.order,
+      documentOrder: source.order,
+      firstRef: source.firstRef,
+      lastRef: source.lastRef,
+      firstChapterId: source.firstChapterId,
+      lastChapterId: source.lastChapterId,
+      left,
+      right,
+      top,
+      bottom,
+    });
+  }
+  sections.sort((a, b) => a.order - b.order);
+  const sectionGaps = [];
+  for (let i = 0; i < sections.length - 1; i++) {
+    const before = sections[i], after = sections[i + 1];
+    const top = before.bottom, bottom = after.top;
+    if (![top, bottom].every(Number.isFinite) || bottom <= top) continue;
+    const id = `rev23:gap:${sectionSlug(before.label)}:${sectionSlug(after.label)}`;
+    sectionGaps.push({
+      id,
+      order: i,
+      documentOrder: i,
+      beforeSectionId: before.id,
+      afterSectionId: after.id,
+      /* Temporary aliases keep the measured host contract readable to both
+       * C0.4 consumers while the pure TypeScript port is still deferred. */
+      fromSectionId: before.id,
+      toSectionId: after.id,
+      left: 0,
+      right: M.base.width,
+      top,
+      bottom,
+      hardClear: true,
+    });
+    const nextHead = M.sheet.querySelector(`.letter-head[data-section-id="${after.id}"]`);
+    if (nextHead) nextHead.dataset.gapBeforeId = id;
+  }
+  return { sections, sectionGaps };
+}
 function blockFor(sid, M) {
   const rel = (r) => ({ left: r.left - M.base.left, right: r.right - M.base.left, top: r.top - M.base.top, bottom: r.bottom - M.base.top });
   /* word runs cache on layout dimensions — focus/hover replans reuse it */
-  const wrKey = `${sid}|${M.base.width}x${M.sheet.scrollHeight}|${ROUTE}`;
+  const wrKey = `c04|${sid}|${M.base.width}x${M.sheet.scrollHeight}|${ROUTE}`;
   const wrCache = blockFor._wr || (blockFor._wr = new Map());
-  let wordRuns = wrCache.get(wrKey);
-  if (!wordRuns) {
-    wordRuns = [];
+  let geometry = wrCache.get(wrKey);
+  if (!geometry) {
+    const wordRuns = [];
     const range = document.createRange();
-    M.sheet.querySelectorAll(".vrow .vtext").forEach((el) => {
+    M.sheet.querySelectorAll(".vrow .vtext").forEach((el, rowOrder) => {
+      const row = el.closest(".vrow");
+      const sectionId = row?.dataset.sectionId || null;
+      const sourceRef = row?.dataset.key || `${sid}:row:${rowOrder}`;
+      const chapterId = row?.dataset.chapterId || null;
       const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
       let node;
+      let wordOrder = 0;
       while ((node = walker.nextNode())) {
         const text = node.nodeValue || "";
         if (!text.trim()) continue;
@@ -763,18 +1622,29 @@ function blockFor(sid, M) {
           for (const r of range.getClientRects()) {
             if (r.width <= 0.4 || r.height <= 1) continue;
             const rr = rel(r);
-            wordRuns.push({ left: rr.left, right: rr.right, top: rr.top + s.top, bottom: rr.bottom - s.bottom });
+            wordRuns.push({
+              left: rr.left, right: rr.right,
+              top: rr.top + s.top, bottom: rr.bottom - s.bottom,
+              id: `${sourceRef}:word:${wordOrder++}`,
+              sourceRef,
+              chapterId,
+              rowOrder,
+              ...(sectionId ? { sectionId } : {}),
+            });
           }
         }
       }
     });
-    wrCache.set(wrKey, wordRuns);
+    const renderedLines = renderedLinesFromWordRuns(wordRuns);
+    const { sections, sectionGaps } = measuredSectionTopology(sid, M);
+    geometry = { wordRuns, renderedLines, sections, sectionGaps };
+    wrCache.set(wrKey, geometry);
     if (wrCache.size > 12) wrCache.delete(wrCache.keys().next().value);
   }
   /* rendered lines come FROM the word runs — ink truth for any markup
    * (the qa sheet's synthetic blocks return line-box element rects,
    * which lie about leading; words never do) */
-  const renderedLines = mergeInkLines(wordRuns, 3);
+  const { wordRuns, renderedLines, sections, sectionGaps } = geometry;
   const verseNumberRects = [...M.sheet.querySelectorAll(".vnum")].map((el) => {
     const range = document.createRange();
     range.selectNodeContents(el);
@@ -782,11 +1652,20 @@ function blockFor(sid, M) {
     return rel(r);
   });
   const additionalObstacles = [...M.sheet.querySelectorAll(".chap-head, .letter-head, .sheet-title, .sheet-ref, .legend, .mark-hint")]
-    .map((el) => rel(el.getBoundingClientRect()))
+    .map((el, index) => ({
+      ...rel(el.getBoundingClientRect()),
+      id: el.dataset.sectionId
+        ? `shape-section-head:${el.dataset.sectionId}`
+        : el.dataset.chapterId ? `shape-chapter-head:${el.dataset.chapterId}` : `shape-obstacle:${sid}:${index}`,
+      role: el.dataset.sourceRole || (el.classList.contains("sheet-title") ? "title" : "support"),
+      ...(el.dataset.sectionId ? { sectionId: el.dataset.sectionId } : {}),
+    }))
     .filter((r) => r.right - r.left > 1 && r.bottom - r.top > 1);
   return {
     bounds: { left: 0, right: M.base.width, top: 0, bottom: M.base.height },
     renderedLines, wordRuns, verseNumberRects, additionalObstacles,
+    ...(sections.length ? { sections, sectionGaps } : {}),
+    fontSize: parseFloat(getComputedStyle(M.sheet.querySelector(".vtext")).fontSize) || 17,
     lineHeight: parseFloat(getComputedStyle(M.sheet.querySelector(".vtext")).lineHeight) || 26,
     availableLeftMargin: Math.max(60, M.textLeft - 8),
     availableRightMargin: Math.max(30, M.base.width - M.textRight - 8),
@@ -802,10 +1681,22 @@ function annFor(M, gid) {
     const rects = els.flatMap((el) => [...el.getClientRects()].map(rel));
     if (!rects.length) return;
     const s = inkSlackFor(els[0].closest(".vtext") || els[0]);
+    const section = anchor.sectionId
+      ? REVELATION_SECTIONS.find((candidate) => candidate.id === anchor.sectionId) || null
+      : routingSectionFor(G.study, anchor.ref);
+    const sectionId = section?.id || anchor.sectionId || null;
     anchors.push({
       id: `${gid}:${ki}`,
-      fragments: mergeInkLines(rects).map((r) => ({ left: r.left, right: r.right, top: r.top + s.top, bottom: r.bottom - s.bottom })),
+      sourceRef: anchor.ref,
+      fragments: mergeInkLines(rects).map((r, fragmentIndex) => ({
+        left: r.left, right: r.right,
+        top: r.top + s.top, bottom: r.bottom - s.bottom,
+        id: `${gid}:${ki}:fragment:${fragmentIndex}`,
+        sourceLineId: `${anchor.ref}:line:${fragmentIndex}`,
+        ...(sectionId ? { sectionId } : {}),
+      })),
       documentOrder: ki,
+      ...(sectionId ? { sectionId } : {}),
     });
   });
   return { id: gid, anchors };
@@ -837,25 +1728,6 @@ function crossingsAt(plan, x) {
     }
   }
   return ys;
-}
-function computeHops(drawnPlans) {
-  for (const p of drawnPlans) { p.renderHops = []; p.renderPatches = []; }
-  for (const A of drawnPlans) {
-    for (const B of drawnPlans) {
-      if (A === B || !B.spine) continue;
-      for (const y of crossingsAt(A, B.spine.x)) {
-        if (y < B.spine.top + 2 || y > B.spine.bottom - 2) continue;
-        if (B.focused && !A.focused) {
-          if (!A.renderPatches.some((h) => Math.abs(h.y - y) < 3 && Math.abs(h.x - B.spine.x) < 1)) {
-            A.renderPatches.push({ x: B.spine.x, y });
-          }
-        } else {
-          if (B.ports.some((pt) => Math.abs(pt.y - y) < 2.6)) continue;
-          if (!B.renderHops.some((h) => Math.abs(h - y) < 3)) B.renderHops.push(y);
-        }
-      }
-    }
-  }
 }
 function splitSpine(spine, gapCenters) {
   if (!spine) return [];
@@ -928,8 +1800,20 @@ function explainShapesPlan(plan) {
       kink: "a terminal turn had no room to breathe — held as a tick",
       "obstacle-collision": "every legal path would touch ink — held as a tick",
       "no-anchors": "its phrases are not in this rendering",
+      "host-topology-invalid": "the plural route failed its host ownership check — held rather than drawn ambiguously",
+      "host-paint-invalid": "the canonical route parts did not survive native SVG validation — held rather than drawn partially",
     }[plan.reason] || `${plan.reason} — held as a tick`;
     return { label: "held", reason: why };
+  }
+  const handoffs = Array.isArray(plan.handoffs) ? plan.handoffs : [];
+  if (handoffs.length) {
+    const sideRuns = planSideRuns(plan);
+    const sequence = sideRuns.map((run) => run.side === "right" ? "right" : "left").join(" → ");
+    const sectionCount = new Set(sideRuns.flatMap((run) => run.sectionIds || [])).size;
+    return {
+      label: `section weave · ${sequence}`,
+      reason: `${sectionCount} declared sections use ${sideRuns.length} calm margin runs; ${handoffs.length === 1 ? "one measured gap carries the continuous S" : `${handoffs.length} measured gaps carry continuous S handoffs`}`,
+    };
   }
   const labels = {
     "same-line": plan.cradleVariant === "embrace" ? "direct hammock · embrace" : "direct hammock",
@@ -964,51 +1848,576 @@ function warmBlocks() {
   }
 }
 
-/* lab introspection for the browser console */
-globalThis.__LAB = { blockFor, annFor, measure: (sid) => measure(sid), planRoute, warmBlocks };
+function routeQaDiagnostics(sid) {
+  const plans = LAST_PLANS.get(sid) || new Map();
+  return [...plans.entries()].map(([gid, plan]) => ({
+    gid,
+    valid: Boolean(plan?.valid),
+    reason: plan?.reason || null,
+    mode: plan?.mode || null,
+    topology: plan?.topology || "legacy",
+    score: plan?.score ?? null,
+    scoreRaw: plan?.scoreRaw ?? null,
+    rawLength: plan?.rawLength ?? null,
+    topologySignature: plan?.topologySignature || null,
+    hostValidationErrors: (plan?.hostValidationErrors || []).slice(0, 8),
+    paintValidation: plan?.paintValidation ? {
+      ok: plan.paintValidation.ok,
+      errors: (plan.paintValidation.errors || []).slice(0, 8),
+      partCount: plan.paintValidation.partCount ?? null,
+      pathCount: plan.paintValidation.pathCount ?? null,
+      nativePathLength: plan.paintValidation.nativePathLength ?? null,
+      semanticPathLength: plan.paintValidation.semanticPathLength ?? null,
+      visiblePathLength: plan.paintValidation.visiblePathLength ?? null,
+      maskHoleCount: plan.paintValidation.maskHoleCount ?? null,
+      minVisibleRatio: plan.paintValidation.minVisibleRatio ?? null,
+      minSpineCoverage: plan.paintValidation.minSpineCoverage ?? null,
+    } : null,
+    finalPaintValidation: plan?.finalPaintValidation ? {
+      ok: plan.finalPaintValidation.ok,
+      errors: (plan.finalPaintValidation.errors || []).slice(0, 8),
+      partCount: plan.finalPaintValidation.partCount ?? null,
+      pathCount: plan.finalPaintValidation.pathCount ?? null,
+      nativePathLength: plan.finalPaintValidation.nativePathLength ?? null,
+      semanticPathLength: plan.finalPaintValidation.semanticPathLength ?? null,
+      visiblePathLength: plan.finalPaintValidation.visiblePathLength ?? null,
+      maskHoleCount: plan.finalPaintValidation.maskHoleCount ?? null,
+      minVisibleRatio: plan.finalPaintValidation.minVisibleRatio ?? null,
+      minSpineCoverage: plan.finalPaintValidation.minSpineCoverage ?? null,
+    } : null,
+    sideRuns: planSideRuns(plan).map((run) => ({
+      id: runIdOf(run), sectionIds: [...(run.sectionIds || [])], side: run.side,
+      strand: run.strand, railX: run.railX,
+    })),
+    handoffs: (plan?.handoffs || []).map((handoff) => ({
+      id: handoff.id, gapId: handoff.gapId,
+      fromSectionId: handoff.fromSectionId, toSectionId: handoff.toSectionId,
+      from: handoff.from, to: handoff.to,
+    })),
+    contacts: (plan?.contacts || []).slice(0, 12).map((contact) => ({
+      anchorId: contact.anchorId || null,
+      sectionId: contact.sectionId || null,
+      side: contact.side || contact.departureSide || null,
+      runId: contact.runId || null,
+      x: contact.x,
+      y: contact.y,
+    })),
+    sectionRouting: plan?.diagnostics?.sectionRouting || null,
+    dp: plan?.diagnostics?.dp || null,
+    stateFailureCount: plan?.diagnostics?.stateFailures?.length || 0,
+    sectionDeclines: (plan?.diagnostics?.declined || [])
+      .filter((entry) => entry.move === "section-routing").slice(0, 4),
+  }));
+}
 
-/* an engine plan, drawn in shapes' own voice: the tapered ribbon */
-function drawRouted(svg, g, plan, hue, focused) {
+/* lab introspection for the browser console */
+globalThis.__LAB = {
+  blockFor,
+  annFor,
+  measure: (sid) => measure(sid),
+  measuredSectionTopology,
+  revelationSections: REVELATION_SECTIONS.map((section) => ({ ...section })),
+  planSideRuns,
+  planSpines,
+  validateHostTopology,
+  routeQaDiagnostics,
+  planRoute,
+  warmBlocks,
+};
+
+function segmentSpineId(plan, segment) {
+  if (segment.role === "spine" && segment.spineId) return String(segment.spineId);
+  /* Exact C0.3 compatibility: old segments predate ownership metadata. */
+  const legacy = planSpines(plan).find((spine) =>
+    segment.type === "L" && Math.abs(segment.x1 - spine.x) < 0.01 && Math.abs(segment.x2 - spine.x) < 0.01 &&
+    Math.abs(segment.y2 - segment.y1) > 4);
+  return legacy ? spineIdOf(legacy, planSpines(plan).indexOf(legacy)) : null;
+}
+function routePartsForPaint(plan) {
+  if (isSectionTopology(plan)) return plan.routeParts || [];
+  return [{ id: "legacy:centerline", role: "connector", ownerId: "legacy", segments: plan.centerline || [] }];
+}
+
+/* An engine plan, drawn in Shapes' own voice. Canonical route segments keep
+ * their owner; every spine is painted independently, and the horizontal S
+ * remains one quiet handoff ribbon with no new decorative vocabulary. */
+function drawRouted(svg, g, plan, hue, focused, weaveState = null, { immediate = false } = {}) {
   const w = focused ? 1.5 : 1.25;
-  const nonSpine = plan.spine
-    ? plan.centerline.filter((s) =>
-        !(s.type === "L" && Math.abs(s.x1 - plan.spine.x) < 0.01 && Math.abs(s.x2 - plan.spine.x) < 0.01 &&
-          Math.abs(s.y2 - s.y1) > 4))
-    : plan.centerline;
   const runs = [];
-  let cur = [];
-  for (const s of nonSpine) {
-    const pts = segPtsFor(s);
-    if (cur.length && Math.hypot(pts[0].x - cur[cur.length - 1].x, pts[0].y - cur[cur.length - 1].y) > 1.5) {
-      runs.push(cur); cur = [];
+  const centerlineIndexes = new Map((plan.centerline || []).map((segment, index) => [segment.id || segment, index]));
+  for (const part of routePartsForPaint(plan)) {
+    if (part.role === "spine") continue;
+    let cur = null;
+    const flush = () => { if (cur?.points.length) runs.push(cur); cur = null; };
+    for (const segment of part.segments || []) {
+      if (!isSectionTopology(plan) && segmentSpineId(plan, segment)) continue;
+      const pts = segPtsFor(segment);
+      if (cur && Math.hypot(pts[0].x - cur.points[cur.points.length - 1].x,
+        pts[0].y - cur.points[cur.points.length - 1].y) > 1.5) flush();
+      if (!cur) cur = { part, points: [], segmentIndexes: [], segmentIds: [], roles: new Set() };
+      cur.points.push(...(cur.points.length ? pts.slice(1) : pts));
+      cur.segmentIndexes.push(centerlineIndexes.get(segment.id || segment));
+      if (segment.id) cur.segmentIds.push(segment.id);
+      cur.roles.add(segment.role || part.role || "connector");
     }
-    cur.push(...(cur.length ? pts.slice(1) : pts));
+    flush();
   }
-  if (cur.length) runs.push(cur);
-  runs.forEach((pts, i) => ribbonDraw(g, pts, hue, { w, delay: 40 + i * 26, dur: 340 }));
-  if (plan.spine) {
-    for (const [a, b] of splitSpine(plan.spine, plan.renderHops || [])) {
+  runs.forEach((run, i) => {
+    const path = ribbonDraw(g, run.points, hue, {
+      w, delay: 40 + i * 26, dur: 340, role: run.part.role || "connector", immediate,
+    });
+    path.__routeCenterline = run.points.map((point) => ({ x: point.x, y: point.y }));
+    path.dataset.partId = run.part.id;
+    path.dataset.ownerId = run.part.ownerId;
+    path.dataset.segmentIndexes = run.segmentIndexes.join(",");
+    path.dataset.segmentIds = run.segmentIds.join(" ");
+    path.dataset.segmentRoles = [...run.roles].join(",");
+    if (run.part.runId != null) path.dataset.runId = run.part.runId;
+    if (run.part.handoffId != null) path.dataset.handoffId = run.part.handoffId;
+  });
+  const declaredSpines = planSpines(plan);
+  const spineById = new Map(declaredSpines.map((spine, index) => [spineIdOf(spine, index), spine]));
+  const spinePaints = isSectionTopology(plan)
+    ? routePartsForPaint(plan).filter((part) => part.role === "spine").map((part) => {
+      const segment = part.segments[0];
+      const spineId = String(part.spineId);
+      return {
+        part,
+        spineId,
+        spine: spineById.get(spineId),
+        geometry: { x: segment.x1, top: Math.min(segment.y1, segment.y2), bottom: Math.max(segment.y1, segment.y2) },
+        segmentIds: segment.id ? [segment.id] : [],
+      };
+    })
+    : declaredSpines.map((spine, spineIndex) => {
+      const spineId = spineIdOf(spine, spineIndex);
+      return {
+        part: { id: `legacy:part:${spineId}`, ownerId: spineId, runId: spine.runId, spineId },
+        spineId,
+        spine,
+        geometry: spine,
+        segmentIds: [],
+      };
+    });
+  spinePaints.forEach(({ part, spineId, spine, geometry, segmentIds }) => {
+    const hops = weaveState?.hopsBySpine?.get(spineId) || [];
+    for (const [a, b] of splitSpine(geometry, hops)) {
       const n = Math.max(6, Math.round((b - a) / 2));
-      const pts = Array.from({ length: n + 1 }, (_, k) => ({ x: plan.spine.x, y: a + ((b - a) * k) / n }));
-      ribbonDraw(g, pts, hue, { w: w - 0.12, delay: 70, dur: 380 });
+      const pts = Array.from({ length: n + 1 }, (_, k) => ({ x: geometry.x, y: a + ((b - a) * k) / n }));
+      const path = ribbonDraw(g, pts, hue, { w: w - 0.12, delay: 70, dur: 380, role: "spine", immediate });
+      path.__routeCenterline = pts.map((point) => ({ x: point.x, y: point.y }));
+      path.dataset.partId = part.id;
+      path.dataset.ownerId = part.ownerId;
+      path.dataset.spineId = spineId;
+      path.dataset.segmentIds = segmentIds.join(" ");
+      if (part.runId != null) path.dataset.runId = part.runId;
+      if (spine?.side) path.dataset.side = spine.side;
+      if (Number.isInteger(spine?.strand)) path.dataset.strand = String(spine.strand);
     }
-  }
-  if (plan.renderPatches && plan.renderPatches.length) {
+  });
+  const renderPatches = weaveState?.patches || [];
+  if (renderPatches.length) {
     const W = +svg.getAttribute("width") + 40, H = +svg.getAttribute("height") + 40;
     let defs = svg.querySelector("defs");
     if (!defs) { defs = document.createElementNS("http://www.w3.org/2000/svg", "defs"); svg.insertBefore(defs, svg.firstChild); }
     const mask = S("mask", { id: `weave-${g.dataset.gid}`, maskUnits: "userSpaceOnUse", x: -20, y: -20, width: W, height: H }, defs);
     S("rect", { x: -20, y: -20, width: W, height: H, fill: "#fff" }, mask);
-    for (const pt of plan.renderPatches) S("circle", { cx: pt.x, cy: pt.y, r: 2.6, fill: "#000" }, mask);
+    for (const pt of renderPatches) S("circle", { cx: pt.x, cy: pt.y, r: 2.6, fill: "#000" }, mask);
     g.setAttribute("mask", `url(#weave-${g.dataset.gid})`);
   }
-  plan.contacts.forEach((c, i) => traceDot(g, c, hue, 60 + i * 22));
+  const anchorRouteByContact = new Map((plan.anchorRuns || [])
+    .filter((route) => route?.contactId)
+    .map((route) => [String(route.contactId), route]));
+  const sideRunById = new Map(planSideRuns(plan).map((run, index) => [runIdOf(run, index), run]));
+  plan.contacts.forEach((contact, i) => {
+    const anchorRoute = anchorRouteByContact.get(String(contact.id));
+    const sideRun = sideRunById.get(String(contact.runId));
+    /* Contact ownership remains untouched canonical engine output. The side
+     * glyph is resolved from its already-verified anchor/run relation. */
+    const side = contact.side || contact.departureSide || anchorRoute?.side || sideRun?.side;
+    traceDot(g, contact, hue, 60 + i * 22, TG.constants.TOUCH_RADIUS, 1, {
+      contactId: contact.id,
+      anchorId: contact.anchorId,
+      sectionId: contact.sectionId,
+      side,
+      runId: contact.runId,
+    });
+  });
 }
 
-function traceDot(g, point, hue, delay = 0, radius = TG.constants.TOUCH_RADIUS, opacity = 1) {
-  const dot = S("circle", {
+function segmentPaintBounds(segments) {
+  const points = segments.flatMap((segment) => segPtsFor(segment));
+  if (!points.length || points.some((point) => !Number.isFinite(point.x) || !Number.isFinite(point.y))) return null;
+  return {
+    left: Math.min(...points.map((point) => point.x)),
+    right: Math.max(...points.map((point) => point.x)),
+    top: Math.min(...points.map((point) => point.y)),
+    bottom: Math.max(...points.map((point) => point.y)),
+  };
+}
+function unionPaintBounds(bounds) {
+  if (!bounds.length) return null;
+  return {
+    left: Math.min(...bounds.map((box) => box.left)),
+    right: Math.max(...bounds.map((box) => box.right)),
+    top: Math.min(...bounds.map((box) => box.top)),
+    bottom: Math.max(...bounds.map((box) => box.bottom)),
+  };
+}
+function verticalPaintCoverage(bounds, top, bottom) {
+  if (!Number.isFinite(top) || !Number.isFinite(bottom) || bottom <= top) return 0;
+  const intervals = bounds.map((box) => [Math.max(top, box.top), Math.min(bottom, box.bottom)])
+    .filter(([start, end]) => end > start)
+    .sort((a, b) => a[0] - b[0]);
+  const merged = [];
+  for (const interval of intervals) {
+    const prior = merged[merged.length - 1];
+    if (prior && interval[0] <= prior[1]) prior[1] = Math.max(prior[1], interval[1]);
+    else merged.push([...interval]);
+  }
+  return merged.reduce((sum, [start, end]) => sum + end - start, 0) / (bottom - top);
+}
+function maskHolesForPaint(group) {
+  const ref = group.getAttribute("mask") || "";
+  const id = ref.match(/^url\(#(.+)\)$/)?.[1];
+  if (!id) return { holes: [], error: null };
+  const mask = [...group.ownerSVGElement.querySelectorAll("mask")].find((candidate) => candidate.id === id);
+  if (!mask) return { holes: [], error: `paint-mask-missing:${id}` };
+  const holes = [...mask.querySelectorAll('circle[fill="#000"]')].map((circle) => ({
+    x: Number(circle.getAttribute("cx")),
+    y: Number(circle.getAttribute("cy")),
+    r: Number(circle.getAttribute("r")),
+  }));
+  if (!holes.length || holes.some((hole) => !Number.isFinite(hole.x) || !Number.isFinite(hole.y) ||
+      !Number.isFinite(hole.r) || hole.r <= 0 || hole.r > 4)) {
+    return { holes, error: `paint-mask-holes:${id}` };
+  }
+  return { holes, error: null };
+}
+function semanticMaskCoverage(path, holes) {
+  const points = Array.isArray(path.__routeCenterline) ? path.__routeCenterline : [];
+  if (points.length < 2 || points.some((point) => !Number.isFinite(point.x) || !Number.isFinite(point.y))) return null;
+  let totalLength = 0, visibleLength = 0;
+  for (let index = 1; index < points.length; index++) {
+    const from = points[index - 1], to = points[index];
+    const length = Math.hypot(to.x - from.x, to.y - from.y);
+    if (!length) continue;
+    const samples = Math.max(1, Math.ceil(length / 0.4));
+    const sampleLength = length / samples;
+    totalLength += length;
+    for (let sample = 0; sample < samples; sample++) {
+      const t = (sample + 0.5) / samples;
+      const x = from.x + (to.x - from.x) * t;
+      const y = from.y + (to.y - from.y) * t;
+      if (holes.every((hole) => Math.hypot(x - hole.x, y - hole.y) > hole.r)) visibleLength += sampleLength;
+    }
+  }
+  return totalLength > 0 ? { totalLength, visibleLength, visibleRatio: visibleLength / totalLength } : null;
+}
+function validatePaintGroup(group, plan, { allowSpineSplits = false, expectedContinuations = [] } = {}) {
+  const errors = [];
+  try {
+    const paths = [...group.querySelectorAll("path[data-part-id]")];
+    const sectioned = isSectionTopology(plan);
+    const canonicalParts = sectioned ? (plan.routeParts || []) : [];
+    const expectedParts = canonicalParts.map((part) => part.id);
+    const partById = new Map(canonicalParts.map((part) => [part.id, part]));
+    const expectedPartSet = new Set(expectedParts);
+    const paintedParts = new Set(paths.map((path) => path.dataset.partId));
+    const { holes, error: maskError } = maskHolesForPaint(group);
+    const spineCoverageRatios = [];
+    if (maskError) errors.push(maskError);
+    const pathFacts = [];
+    for (const path of paths) {
+      const d = path.getAttribute("d") || "";
+      if (!d || /NaN|Infinity/.test(d)) { errors.push(`paint-path:${path.dataset.partId}`); continue; }
+      const length = path.getTotalLength();
+      if (!Number.isFinite(length) || length <= 0) { errors.push(`paint-length:${path.dataset.partId}`); continue; }
+      const semanticCoverage = semanticMaskCoverage(path, holes);
+      if (!semanticCoverage) { errors.push(`paint-centerline:${path.dataset.partId}`); continue; }
+      const { totalLength: semanticLength, visibleLength, visibleRatio } = semanticCoverage;
+      path.dataset.visibleRatio = visibleRatio.toFixed(4);
+      if (holes.length && visibleRatio < 0.82) {
+        errors.push(`paint-mask-path:${path.dataset.partId}:${visibleRatio.toFixed(3)}`);
+      }
+      const box = path.getBBox();
+      if (![box.x, box.y, box.width, box.height].every(Number.isFinite)) errors.push(`paint-bounds:${path.dataset.partId}`);
+      pathFacts.push({
+        path,
+        length,
+        semanticLength,
+        visibleLength,
+        ids: (path.dataset.segmentIds || "").split(/\s+/).filter(Boolean),
+        bounds: { left: box.x, right: box.x + box.width, top: box.y, bottom: box.y + box.height },
+      });
+    }
+    if (sectioned) {
+      expectedParts.forEach((partId) => { if (!paintedParts.has(partId)) errors.push(`paint-missing:${partId}`); });
+      paintedParts.forEach((partId) => { if (!expectedPartSet.has(partId)) errors.push(`paint-extra:${partId}`); });
+      for (const fact of pathFacts) {
+        const partId = fact.path.dataset.partId;
+        const part = partById.get(partId);
+        if (!part || fact.path.dataset.ownerId !== String(part.ownerId) || fact.path.dataset.role !== part.role) {
+          errors.push(`paint-owner:${partId}`);
+          continue;
+        }
+        if (!fact.ids.length || new Set(fact.ids).size !== fact.ids.length) errors.push(`paint-segments:${partId}`);
+        const canonicalIds = new Set(part.segments.map((segment) => segment.id));
+        for (const id of fact.ids) if (!canonicalIds.has(id)) errors.push(`paint-segment-owner:${partId}:${id}`);
+        const ownedBounds = segmentPaintBounds(fact.ids.map((id) =>
+          part.segments.find((segment) => segment.id === id)).filter(Boolean));
+        const epsilon = 2.75;
+        if (ownedBounds && (fact.bounds.left < ownedBounds.left - epsilon || fact.bounds.right > ownedBounds.right + epsilon ||
+            fact.bounds.top < ownedBounds.top - epsilon || fact.bounds.bottom > ownedBounds.bottom + epsilon)) {
+          errors.push(`paint-path-bounds:${partId}`);
+        }
+      }
+      for (const part of canonicalParts) {
+        const facts = pathFacts.filter((fact) => fact.path.dataset.partId === part.id);
+        const counts = new Map();
+        facts.forEach((fact) => fact.ids.forEach((id) => counts.set(id, (counts.get(id) || 0) + 1)));
+        for (const segment of part.segments) {
+          const count = counts.get(segment.id) || 0;
+          const splitSpine = allowSpineSplits && part.role === "spine";
+          if ((!splitSpine && count !== 1) || (splitSpine && count < 1)) {
+            errors.push(`paint-segment-count:${part.id}:${segment.id}:${count}`);
+          }
+        }
+        for (const id of counts.keys()) {
+          if (!part.segments.some((segment) => segment.id === id)) errors.push(`paint-segment-extra:${part.id}:${id}`);
+        }
+        const expectedBounds = segmentPaintBounds(part.segments);
+        const paintedBounds = unionPaintBounds(facts.map((fact) => fact.bounds));
+        const epsilon = 2.75;
+        if (!expectedBounds || !paintedBounds || paintedBounds.left > expectedBounds.left + epsilon ||
+            paintedBounds.right < expectedBounds.right - epsilon || paintedBounds.top > expectedBounds.top + epsilon ||
+            paintedBounds.bottom < expectedBounds.bottom - epsilon) {
+          errors.push(`paint-part-bounds:${part.id}`);
+        }
+        const totalLength = facts.reduce((sum, fact) => sum + fact.semanticLength, 0);
+        const visibleLength = facts.reduce((sum, fact) => sum + fact.visibleLength, 0);
+        if (holes.length && totalLength > 0) {
+          const ratio = visibleLength / totalLength;
+          const minimumRatio = part.role === "handoff" ? 0.94 : 0.9;
+          const lossBudget = part.role === "handoff" ? 12 : part.role === "spine" ? 8 : 6;
+          if (ratio < minimumRatio) errors.push(`paint-mask-part:${part.id}:${ratio.toFixed(3)}`);
+          if (totalLength - visibleLength > lossBudget) {
+            errors.push(`paint-mask-budget:${part.id}:${(totalLength - visibleLength).toFixed(2)}`);
+          }
+        }
+        if (part.role === "spine" && expectedBounds) {
+          const coverage = verticalPaintCoverage(facts.map((fact) => fact.bounds), expectedBounds.top, expectedBounds.bottom);
+          spineCoverageRatios.push(coverage);
+          /* Woven spine gaps are a small over/under breath, never a license to
+           * leave endpoint slivers that merely preserve the union extrema. */
+          if (allowSpineSplits && coverage < 0.72) {
+            errors.push(`paint-spine-coverage:${part.id}:${coverage.toFixed(3)}`);
+          }
+        }
+      }
+    }
+    if (sectioned) {
+      const allContacts = [...group.querySelectorAll('circle[data-role="contact"]')];
+      const contacts = allContacts.filter((contact) => contact.dataset.continuation !== "true");
+      const continuations = allContacts.filter((contact) => contact.dataset.continuation === "true");
+      const expectedContacts = new Map((plan.contacts || []).map((contact) => [String(contact.id), contact]));
+      const expectedContactSides = new Map((plan.anchorRuns || []).map((route) => [String(route.contactId), route.side]));
+      const paintedContactIds = contacts.map((contact) => contact.dataset.contactId).filter(Boolean);
+      if (contacts.length !== plan.contacts.length || expectedContacts.size !== plan.contacts.length ||
+          paintedContactIds.length !== contacts.length || new Set(paintedContactIds).size !== contacts.length ||
+          contacts.some((contact) => {
+            const expected = expectedContacts.get(String(contact.dataset.contactId));
+            return !expected || contact.dataset.anchorId !== String(expected.anchorId) ||
+              contact.dataset.sectionId !== String(expected.sectionId) ||
+              contact.dataset.runId !== String(expected.runId) ||
+              contact.dataset.side !== String(expectedContactSides.get(String(expected.id))) ||
+              !sameFiniteNumber(Number(contact.getAttribute("cx")), expected.x) ||
+              !sameFiniteNumber(Number(contact.getAttribute("cy")), expected.y);
+          })) errors.push("paint-contact-ownership");
+      const expectedByKey = new Map(expectedContinuations.map((contact) => [contact.key, contact]));
+      const continuationKeys = continuations.map((contact) => contact.dataset.continuationKey).filter(Boolean);
+      if (continuations.length !== expectedContinuations.length || continuationKeys.length !== continuations.length ||
+          new Set(continuationKeys).size !== continuationKeys.length || expectedByKey.size !== expectedContinuations.length ||
+          continuations.some((contact) => {
+            const expected = expectedByKey.get(contact.dataset.continuationKey);
+            return !expected || contact.dataset.anchorId !== expected.anchorId ||
+              contact.dataset.sectionId !== expected.sectionId || contact.dataset.side !== expected.side ||
+              contact.dataset.runId !== expected.runId ||
+              !sameFiniteNumber(Number(contact.getAttribute("cx")), expected.x) ||
+              !sameFiniteNumber(Number(contact.getAttribute("cy")), expected.y);
+          })) errors.push("paint-continuation-ownership");
+      if (holes.length && allContacts.some((contact) => {
+        const x = Number(contact.getAttribute("cx"));
+        const y = Number(contact.getAttribute("cy"));
+        const radius = Number(contact.getAttribute("r")) || 0;
+        return holes.some((hole) => Math.hypot(x - hole.x, y - hole.y) <= hole.r + radius);
+      })) errors.push("paint-mask-contact");
+    }
+    const nativePathLength = pathFacts.reduce((sum, fact) => sum + fact.length, 0);
+    const semanticPathLength = pathFacts.reduce((sum, fact) => sum + fact.semanticLength, 0);
+    const visiblePathLength = pathFacts.reduce((sum, fact) => sum + fact.visibleLength, 0);
+    return {
+      ok: errors.length === 0,
+      errors,
+      partCount: expectedParts.length,
+      pathCount: paths.length,
+      nativePathLength,
+      semanticPathLength,
+      visiblePathLength,
+      maskHoleCount: holes.length,
+      minVisibleRatio: pathFacts.length
+        ? Math.min(...pathFacts.map((fact) => fact.visibleLength / fact.semanticLength))
+        : null,
+      minSpineCoverage: spineCoverageRatios.length ? Math.min(...spineCoverageRatios) : null,
+    };
+  } catch (error) {
+    return { ok: false, errors: [`paint-exception:${error instanceof Error ? error.message : String(error)}`] };
+  }
+}
+
+function continuationContactsForPlan(plan, ann) {
+  const sideRuns = planSideRuns(plan);
+  const contacts = [];
+  for (const [anchorIndex, anchor] of ann.anchors.entries()) for (const fragment of anchor.fragments.slice(1)) {
+    const route = routeForAnchor(plan, anchor, anchorIndex);
+    if (!route && isSectionTopology(plan) && sideRuns.length > 1) continue;
+    const side = route?.side || (plan.side === "right" ? "right" : "left");
+    contacts.push({
+      key: `${anchor.id}|${fragment.id}`,
+      anchorId: anchor.id,
+      sectionId: anchor.sectionId || "",
+      side,
+      runId: String(route?.runId ?? route?.id ?? ""),
+      x: side === "right" ? fragment.right - 0.5 : fragment.left + 0.5,
+      y: fragment.bottom + 2,
+    });
+  }
+  return contacts;
+}
+
+function drawContinuationContacts(group, contacts, hue) {
+  for (const contact of contacts) {
+    traceDot(group, contact, hue, 120, 1.35, 0.72, {
+      anchorId: contact.anchorId,
+      sectionId: contact.sectionId,
+      side: contact.side,
+      runId: contact.runId,
+      continuation: "true",
+      continuationKey: contact.key,
+    });
+  }
+}
+
+function stagePlanPaint(svg, plan, hue, focused, weaveState, expectedContinuations) {
+  const stage = S("g", {
+    class: "route-paint-stage", visibility: "hidden", "aria-hidden": "true",
+    "data-gid": `paint-stage:${plan.topologySignature || plan.mode}`,
+  }, svg);
+  try {
+    drawRouted(svg, stage, plan, hue, focused, weaveState, { immediate: true });
+    drawContinuationContacts(stage, expectedContinuations, hue);
+    return validatePaintGroup(stage, plan, { allowSpineSplits: true, expectedContinuations });
+  } finally {
+    const maskId = stage.getAttribute("mask")?.match(/^url\(#(.+)\)$/)?.[1];
+    if (maskId) [...svg.querySelectorAll("mask")].find((mask) => mask.id === maskId)?.remove();
+    stage.remove();
+  }
+}
+
+/* Paint candidates in priority order.  A later companion always weaves under
+ * every already-validated route, so an accepted route never needs to be
+ * mutated after its claims are committed. */
+function candidateWeaveState(plan, paintedPlans) {
+  const state = { hopsBySpine: new Map(), patches: [] };
+  const ownPorts = plan.ports || [];
+  for (const painted of paintedPlans) {
+    for (const [spineIndex, spine] of planSpines(plan).entries()) {
+      const spineId = spineIdOf(spine, spineIndex);
+      const hops = state.hopsBySpine.get(spineId) || [];
+      for (const y of crossingsAt(painted, spine.x)) {
+        if (y < spine.top + 2 || y > spine.bottom - 2) continue;
+        if (ownPorts.some((port) => port.spineId === spineId && Math.abs(port.y - y) < 2.6)) continue;
+        if (!hops.some((existing) => Math.abs(existing - y) < 3)) hops.push(y);
+      }
+      state.hopsBySpine.set(spineId, hops);
+    }
+    for (const spine of planSpines(painted)) {
+      for (const y of crossingsAt(plan, spine.x)) {
+        if (y < spine.top + 2 || y > spine.bottom - 2) continue;
+        if (!state.patches.some((patch) => Math.abs(patch.x - spine.x) < 1 && Math.abs(patch.y - y) < 3)) {
+          state.patches.push({ x: spine.x, y, againstSpineId: spine.id || null });
+        }
+      }
+    }
+  }
+  return state;
+}
+
+function paintDrawnPlan(svg, gid, plan, localFocus, weaveState, expectedContinuations) {
+  const G = GIDS[gid];
+  const sideRuns = planSideRuns(plan);
+  const sides = [...new Set(sideRuns.map((run) => run.side))];
+  const displaySide = sides.length > 1 ? "mixed" : sides[0] || "direct";
+  const handoffCount = Array.isArray(plan?.handoffs) ? plan.handoffs.length : 0;
+  const g = S("g", {
+    class: `margin-annotation ${gid === localFocus ? "is-focus" : "is-held"}${handoffCount ? " has-handoff" : ""}`,
+    "data-gid": gid,
+    "data-side": displaySide,
+    "data-strand": sideRuns.length === 1 ? sideRuns[0].strand : "",
+    "data-side-runs": sideRuns.length,
+    "data-spines": planSpines(plan).length,
+    "data-handoffs": handoffCount,
+  }, svg);
+  g.dataset.kind = G.kind;
+  const signature = topologySignatureText(plan);
+  if (signature) g.dataset.topologySignature = signature;
+  if (Number.isFinite(plan?.score)) g.dataset.score = String(plan.score);
+  if (Number.isFinite(plan?.scoreRaw)) g.dataset.scoreRaw = String(plan.scoreRaw);
+  if (plan?.paintValidation) {
+    g.dataset.paintParts = String(plan.paintValidation.partCount || 0);
+    g.dataset.paintPaths = String(plan.paintValidation.pathCount || 0);
+    g.dataset.nativePathLength = String(plan.paintValidation.nativePathLength || 0);
+  }
+  if (G.qaKind) g.dataset.qaKind = G.qaKind;
+  if (G.qaDistance) g.dataset.qaDistance = G.qaDistance;
+  if (G.qaPlacement) g.dataset.qaPlacement = G.qaPlacement;
+  if (!plan?.valid) {
+    g.dataset.route = plan ? plan.reason : "none";
+    if (plan?.hostValidationErrors) g.dataset.hostTopologyErrors = plan.hostValidationErrors.join(",");
+    return { plan, group: g };
+  }
+
+  g.dataset.route = plan.mode + (plan.cradleVariant ? ":" + plan.cradleVariant : "");
+  g.dataset.hostTopology = "valid";
+  /* The hidden proof used this exact final weave state. The visible artifact
+   * now gets Shapes' normal ribbon animation; it does not synchronously paint
+   * and validate the same geometry a second time. */
+  drawRouted(svg, g, plan, G.hue, gid === localFocus, weaveState);
+  drawContinuationContacts(g, expectedContinuations, G.hue);
+  const finalPaintValidation = plan.finalPaintValidation;
+  g.dataset.finalPaintPaths = String(finalPaintValidation.pathCount || 0);
+  g.dataset.finalNativePathLength = String(finalPaintValidation.nativePathLength || 0);
+  g.dataset.finalSemanticPathLength = String(finalPaintValidation.semanticPathLength || 0);
+  g.dataset.finalVisiblePathLength = String(finalPaintValidation.visiblePathLength || 0);
+  g.dataset.maskHoleCount = String(finalPaintValidation.maskHoleCount || 0);
+  if (Number.isFinite(finalPaintValidation.minVisibleRatio)) {
+    g.dataset.minVisibleRatio = String(finalPaintValidation.minVisibleRatio);
+  }
+  if (Number.isFinite(finalPaintValidation.minSpineCoverage)) {
+    g.dataset.minSpineCoverage = String(finalPaintValidation.minSpineCoverage);
+  }
+  return { plan, group: g };
+}
+
+function traceDot(g, point, hue, delay = 0, radius = TG.constants.TOUCH_RADIUS, opacity = 1, meta = {}) {
+  const attrs = {
     cx: point.x, cy: point.y, r: radius, fill: hue, opacity, "data-role": "contact",
-  }, g);
+  };
+  for (const [key, value] of Object.entries(meta)) {
+    if (value == null || value === "") continue;
+    attrs[`data-${key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`] = value;
+  }
+  const dot = S("circle", attrs, g);
   animFade(dot, 200, delay);
   return dot;
 }
@@ -1089,7 +2498,13 @@ function drawOverlay(sid, gids) {
   const live = svg.querySelector("g.live");
   svg.innerHTML = "";
   if (live) svg.appendChild(live);
-  if (!gids.length) return;
+  delete svg.dataset.tickOwnershipErrors;
+  if (!gids.length) {
+    LAST_PLANS.delete(sid);
+    LAST_INKED.delete(sid);
+    delete svg.dataset.handoffPlanCount;
+    return;
+  }
   const M = measure(sid);
   const lineHeight = parseFloat(getComputedStyle(M.sheet.querySelector(".vtext")).lineHeight) || 26;
   const preview = [...hovered].filter((gid) => GIDS[gid]?.study === sid).at(-1);
@@ -1110,6 +2525,9 @@ function drawOverlay(sid, gids) {
      * drawn becomes a held tick on the rail. */
     const fontSize = parseFloat(getComputedStyle(M.sheet.querySelector(".vtext")).fontSize) || 17;
     const block = blockFor(sid, M);
+    svg.dataset.sectionCount = String(block.sections?.length || 0);
+    svg.dataset.sectionGapCount = String(block.sectionGaps?.length || 0);
+    svg.dataset.sectionIds = (block.sections || []).map((section) => section.id).join(" ");
     const expandLoom = Math.max(2.5, fontSize * 0.12) + 2.5;
     const datumRects = block.wordRuns.length ? block.wordRuns : block.renderedLines;
     let minLeft = Infinity, maxRight = -Infinity;
@@ -1131,39 +2549,85 @@ function drawOverlay(sid, gids) {
       return i.top > fiv.bottom ? i.top - fiv.bottom : fiv.top > i.bottom ? fiv.top - i.bottom : 0;
     };
     const prevInked = LAST_INKED.get(sid) || new Set();
-    const companions = rankCompanions(intervals, localFocus)
+    const companionPriority = rankCompanions(intervals, localFocus)
       .sort((a, b) => (distTo(a) - (prevInked.has(a) ? 35 : 0)) - (distTo(b) - (prevInked.has(b) ? 35 : 0)))
       .slice(0, MAX_MARGIN_TRACES - 1);
-    LAST_INKED.set(sid, new Set(companions));
-    const drawnOrder = [...companions.reverse(), localFocus].filter(Boolean);
+    LAST_INKED.set(sid, new Set(companionPriority));
+    /* DOM draw order is back-to-front, but planning/claims retain the engine's
+     * nearest-first ranking so a lower-priority companion can only weave under
+     * routes that already earned their place. */
+    const drawnOrder = [...companionPriority].reverse().concat(localFocus).filter(Boolean);
 
-    const claims = [], spineClaims = [], strandClaims = [];
+    /* Candidates paint in priority order.  These occupancy arrays receive a
+     * route only after its final woven DOM paths pass native validation. */
+    const claims = [], spineClaims = [], strandClaims = [], handoffClaims = [];
     const plans = new Map();
-    const ordered = [localFocus, ...drawnOrder.filter((gid) => gid !== localFocus)].filter(Boolean);
+    const paintedPlans = [];
+    const routeGroups = new Map();
+    const ordered = [localFocus, ...companionPriority].filter(Boolean);
     const planOne = (gid, focused) => {
       const ann = anns.get(gid);
       if (!ann.anchors.length) return { valid: false, reason: "no-anchors" };
+      const previousTopology = LAST_TOPOLOGIES.get(`${sid}|${gid}`) || null;
+      const sectionReady = Boolean(block.sections?.length && block.sectionGaps?.length &&
+        ann.anchors.every((anchor) => anchor.sectionId));
       try {
-        return planRoute(block, ann, {
-          fontSize, corridorClaims: claims, spineClaims, strandClaims,
+        return hostValidatedPlan(planRoute(block, ann, {
+          fontSize, corridorClaims: claims, spineClaims, strandClaims, handoffClaims,
           loomX: leftLoomInner, leftLoomX: leftLoomInner, rightLoomX: rightLoomInner,
-          sides: ["left", "right"], previousSide: LAST_SIDES.get(`${sid}|${gid}`),
+          sides: ["left", "right"], previousSide: previousTopology?.side || undefined,
+          previousTopology: previousTopology || undefined,
+          previousSectionSides: previousTopology?.sectionSides || undefined,
+          ...(sectionReady ? {
+            sectionRouting: { enabled: true, previousSides: previousTopology?.sectionSides || [] },
+          } : {}),
           focused, allowMiddle: focused, claimPad: 0.25,
-        });
+        }), ann, block);
       } catch (e) {
         return { valid: false, reason: "engine-error" };
       }
     };
     for (const gid of ordered) {
-      const plan = planOne(gid, gid === localFocus);
-      plans.set(gid, plan);
+      let plan = planOne(gid, gid === localFocus);
+      let weaveState = null;
+      let expectedContinuations = [];
       if (plan.valid) {
         plan.focused = gid === localFocus;
-        claims.push(...plan.claimsOut);
-        if (plan.spineClaimOut) spineClaims.push(plan.spineClaimOut);
-        if (plan.strandClaimOut) strandClaims.push(plan.strandClaimOut);
-        if (isMarginPlan(plan)) LAST_SIDES.set(`${sid}|${gid}`, plan.side);
+        weaveState = candidateWeaveState(plan, paintedPlans);
+        expectedContinuations = continuationContactsForPlan(plan, anns.get(gid));
+        const paintValidation = stagePlanPaint(
+          svg, plan, GIDS[gid].hue, gid === localFocus, weaveState, expectedContinuations,
+        );
+        if (!paintValidation.ok) {
+          plan = {
+            ...plan, valid: false, reason: "host-paint-invalid",
+            hostValidationErrors: paintValidation.errors, paintValidation, finalPaintValidation: paintValidation,
+          };
+        } else {
+          plan.paintValidation = paintValidation;
+          plan.finalPaintValidation = paintValidation;
+        }
       }
+      const painted = paintDrawnPlan(svg, gid, plan, localFocus, weaveState, expectedContinuations);
+      plan = painted.plan;
+      routeGroups.set(gid, painted.group);
+      plans.set(gid, plan);
+      if (plan.valid && plan.paintValidation?.ok && plan.finalPaintValidation?.ok) {
+        claims.push(...planCorridorClaims(plan));
+        spineClaims.push(...planSpineClaims(plan));
+        strandClaims.push(...planStrandClaims(plan));
+        handoffClaims.push(...(plan.handoffClaimsOut || []));
+        const topologyMemory = topologyMemoryForPlan(plan);
+        if (topologyMemory) LAST_TOPOLOGIES.set(`${sid}|${gid}`, topologyMemory);
+        paintedPlans.push(plan);
+      }
+    }
+    /* Planning is front-to-back priority; SVG siblings are then restored to
+     * visual back-to-front order so the focus remains the topmost ink without
+     * changing any accepted route, claim, or weave decision. */
+    for (const gid of drawnOrder) {
+      const group = routeGroups.get(gid);
+      if (group?.parentNode === svg) svg.appendChild(group);
     }
     /* Every held trace gets a side-effect-free shadow plan so its tick can
      * live on the side where that trace would actually bloom. Shadows see
@@ -1171,37 +2635,21 @@ function drawOverlay(sid, gids) {
     for (const gid of gids) {
       if (!plans.has(gid)) plans.set(gid, planOne(gid, false));
     }
+
     LAST_PLANS.set(sid, plans);
-    computeHops(drawnOrder.map((gid) => plans.get(gid)).filter((p) => p && p.valid));
-    for (const gid of drawnOrder) {
-      const G = GIDS[gid];
-      const plan = plans.get(gid);
-      const g = S("g", {
-        class: `margin-annotation ${gid === localFocus ? "is-focus" : "is-held"}`,
-        "data-gid": gid,
-        "data-side": plan && isMarginPlan(plan) ? plan.side : "direct",
-        "data-strand": plan && Number.isInteger(plan.strand) ? plan.strand : "",
-      }, svg);
-      g.dataset.kind = G.kind;
-      if (G.qaKind) g.dataset.qaKind = G.qaKind;
-      if (G.qaDistance) g.dataset.qaDistance = G.qaDistance;
-      if (G.qaPlacement) g.dataset.qaPlacement = G.qaPlacement;
-      if (plan && plan.valid) {
-        g.dataset.route = plan.mode + (plan.cradleVariant ? ":" + plan.cradleVariant : "");
-        drawRouted(svg, g, plan, G.hue, gid === localFocus);
-        /* continuation dots on wrapped fragments */
-        const ann = anns.get(gid);
-        for (const a of ann.anchors) for (const f of a.fragments.slice(1)) {
-          traceDot(g, {
-            x: plan.side === "right" ? f.right - 0.5 : f.left + 0.5,
-            y: f.bottom + 2,
-          }, G.hue, 120, 1.35, 0.72);
-        }
-      } else {
-        /* honest failure: the phrase keys still glow; a tick marks it */
-        g.dataset.route = plan ? plan.reason : "none";
-      }
-    }
+    const qaPlans = routeQaDiagnostics(sid);
+    const qaMetadata = S("metadata", {
+      class: "route-qa-metadata", "data-route-qa": sid, "data-version": "c04",
+    }, svg);
+    qaMetadata.textContent = JSON.stringify({
+      sid,
+      sections: (block.sections || []).map(({ id, documentOrder, top, bottom }) => ({ id, documentOrder, top, bottom })),
+      sectionGaps: (block.sectionGaps || []).map(({ id, fromSectionId, toSectionId, left, right, top, bottom, hardClear }) => ({
+        id, fromSectionId, toSectionId, left, right, top, bottom, hardClear, height: bottom - top,
+      })),
+      plans: qaPlans,
+    });
+    svg.dataset.handoffPlanCount = String(qaPlans.filter((candidate) => candidate.valid && candidate.handoffs.length).length);
 
     /* held ticks: everything active-but-not-drawn gets one quiet tick per
      * anchor line on the held rail — hover previews, click holds */
@@ -1222,8 +2670,11 @@ function drawOverlay(sid, gids) {
     let outerLeftRail = leftLoomInner, outerRightRail = rightLoomInner;
     for (const plan of plans.values()) {
       if (!isMarginPlan(plan)) continue;
-      if (plan.side === "right") outerRightRail = Math.max(outerRightRail, plan.marginRailX);
-      else outerLeftRail = Math.min(outerLeftRail, plan.marginRailX);
+      for (const run of planSideRuns(plan)) {
+        if (!Number.isFinite(run.railX)) continue;
+        if (run.side === "right") outerRightRail = Math.max(outerRightRail, run.railX);
+        else outerLeftRail = Math.min(outerLeftRail, run.railX);
+      }
     }
     const beginTickPreview = (gid) => {
       let changed = false;
@@ -1242,52 +2693,78 @@ function drawOverlay(sid, gids) {
       if (!ann || !ann.anchors.length) continue;
       const p = plans.get(gid);
       const visible = !(drawnOrder.includes(gid) && p && p.valid);
-      const lineYs = [];
-      for (const a of ann.anchors) {
-        const f = [...a.fragments].sort((p2, q) => p2.top - q.top)[0];
-        const y = (f.top + f.bottom) / 2;
-        if (!lineYs.some((v) => Math.abs(v - y) < 3)) lineYs.push(y);
+      const lineMarks = [];
+      for (const [anchorIndex, a] of ann.anchors.entries()) {
+        for (const f of [...a.fragments].sort((p2, q) => p2.top - q.top || p2.left - q.left)) {
+          const y = (f.top + f.bottom) / 2;
+          const sourceLineId = f.sourceLineId || f.id;
+          const markKey = `${a.sectionId || "whole"}|${a.id}|${sourceLineId}`;
+          if (!lineMarks.some((mark) => mark.markKey === markKey)) {
+            lineMarks.push({ y, anchor: a, anchorIndex, sectionId: a.sectionId || "", sourceLineId, markKey });
+          }
+        }
       }
       const layoutKey = `${sid}|${gid}`;
+      /* A rejected topology owns nothing. Keep held annotations explicit by
+       * falling back only through the last successfully painted memory, then
+       * the stable left default; never borrow a side from the rejected plan. */
+      const rememberedTopology = LAST_TOPOLOGIES.get(layoutKey) || null;
       const savedLayout = !visible && TICK_PREVIEW_GID === gid
         ? LAST_TICK_LAYOUTS.get(layoutKey)
         : null;
       const frozen = savedLayout && Math.abs(savedLayout.width - svgWidth) < 0.5 &&
         Math.abs(savedLayout.height - svgHeight) < 0.5
-        ? savedLayout.ticks
+        ? new Map(savedLayout.ticks.map((tick) => [tick.markKey, tick]))
         : null;
       const layouts = [];
-      for (let lineIndex = 0; lineIndex < lineYs.length; lineIndex++) {
-        const lineY = lineYs[lineIndex];
-        const priorSide = LAST_SIDES.get(`${sid}|${gid}`);
-        const plannedSide = isMarginPlan(p)
-          ? p.side
-          : priorSide || "left";
+      for (let lineIndex = 0; lineIndex < lineMarks.length; lineIndex++) {
+        const mark = lineMarks[lineIndex];
+        const lineY = mark.y;
+        const anchorRoute = routeForAnchor(p, mark.anchor, mark.anchorIndex);
+        const sectionRuns = planSideRuns(p).filter((run) => run.sectionIds?.includes(mark.sectionId));
+        const rememberedSection = rememberedTopology?.sectionSides?.find((entry) =>
+          entry.sectionId === mark.sectionId && (entry.side === "left" || entry.side === "right"));
+        const rememberedWhole = rememberedTopology?.side === "left" || rememberedTopology?.side === "right"
+          ? rememberedTopology.side : null;
+        const plannedSide = anchorRoute?.side || (sectionRuns.length === 1 ? sectionRuns[0].side : null) ||
+          rememberedSection?.side || rememberedWhole || "left";
+        const tickSideSource = anchorRoute ? "anchor-run" : sectionRuns.length === 1 ? "section-run" :
+          rememberedSection ? "committed-section" : rememberedWhole ? "committed-whole" : "default-left";
         const plannedOutward = plannedSide === "right" ? 1 : -1;
         const heldRailX = (plannedSide === "right" ? outerRightRail : outerLeftRail) + plannedOutward * 4;
-        const tick = frozen && frozen[lineIndex]
-          ? { ...frozen[lineIndex] }
+        const tick = frozen?.get(mark.markKey)
+          ? { ...frozen.get(mark.markKey) }
           : placeHeldTick(plannedSide, heldRailX, lineY, used, svgWidth, svgHeight);
         const { x, y, stacked } = tick;
         const side = tick.side;
         const outward = side === "right" ? 1 : -1;
         used.push(tick);
+        tick.sectionId = mark.sectionId;
+        tick.anchorId = mark.anchor.id;
+        tick.sourceLineId = mark.sourceLineId;
+        tick.markKey = mark.markKey;
         layouts.push(tick);
         if (visible) S("path", {
           d: `M ${x.toFixed(2)} ${y.toFixed(2)} h ${(outward * 5.5).toFixed(1)}`, stroke: "var(--text-tertiary)",
           "stroke-width": 1.2, fill: "none", "stroke-linecap": "round", opacity: 0.55, class: "tick",
           "data-tick-side": side, "data-tick-gid": gid,
+          "data-tick-side-source": tickSideSource,
+          "data-section-id": mark.sectionId, "data-anchor-id": mark.anchor.id,
+          "data-source-line-id": mark.sourceLineId, "data-mark-key": mark.markKey,
         }, gTicks);
         const hitWidth = stacked ? 7 : 17;
         const rawHitX = side === "right"
           ? (stacked ? x - 0.75 : x - 5)
           : (stacked ? x - 6.25 : x - 11);
         const hitX = Math.max(0, Math.min(svgWidth - hitWidth, rawHitX));
-        const tickKey = `${gid}:${lineIndex}`;
+        const tickKey = `${gid}:${mark.markKey}`;
         const hit = S("a", {
           href: "#", class: "tick-hit", role: "button", tabindex: -1,
           "data-tick-key": tickKey, "data-tick-gid": gid, "data-tick-side": side,
-          "aria-label": `${GIDS[gid].label || gid} · held on ${side} margin`,
+          "data-tick-side-source": tickSideSource,
+          "data-section-id": mark.sectionId, "data-anchor-id": mark.anchor.id,
+          "data-source-line-id": mark.sourceLineId, "data-mark-key": mark.markKey,
+          "aria-label": `${GIDS[gid].label || gid} · held on ${side} margin${mark.sectionId ? ` in ${mark.sectionId.split(":").at(-1)}` : ""}`,
         }, gTicks);
         S("rect", {
           x: hitX.toFixed(2), y: (y - 6).toFixed(2), width: hitWidth, height: 12,
@@ -1312,14 +2789,23 @@ function drawOverlay(sid, gids) {
           if (key === "arrowdown" || key === "arrowup") {
             e.preventDefault();
             const next = tickNodes[(index + (key === "arrowdown" ? 1 : tickNodes.length - 1)) % tickNodes.length];
+            const nextGid = next.getAttribute("data-tick-gid");
             TICK_FOCUS_KEYS.set(sid, next.getAttribute("data-tick-key"));
-            beginTickPreview(next.getAttribute("data-tick-gid"));
+            if (TICK_PREVIEW_GID === nextGid && hovered.has(nextGid)) {
+              /* Same-thread navigation needs no redraw: move focus on the
+               * live tick set and consume the otherwise-stale restore key. */
+              TICK_FOCUS_KEYS.delete(sid);
+              next.focus({ preventScroll: true });
+            } else beginTickPreview(nextGid);
           } else if (key === "enter" || key === "return" || key === " " || key === "spacebar" ||
               e.code === "Enter" || e.code === "NumpadEnter" || e.code === "Space") {
             e.preventDefault();
             commitTick();
           } else if (key === "escape" || e.code === "Escape") {
             e.preventDefault();
+            e.stopPropagation();
+            TICK_FOCUS_KEYS.delete(sid);
+            hit.blur();
             endTickPreview(gid);
           }
         });
@@ -1338,58 +2824,6 @@ function drawOverlay(sid, gids) {
       if (restoreTickFocus && focusTarget) focusTarget.focus({ preventScroll: true });
     }
 
-    /* The overlay survives active-state redraws even when a hovered tick's
-     * child link is replaced. Capture pointer activation at that stable
-     * boundary and re-hit-test the fresh link under the pointer. */
-    if (svg.dataset.tickPointerDelegate !== "true") {
-      svg.dataset.tickPointerDelegate = "true";
-      let pendingTickPointer = null;
-      let suppressTickClick = null;
-      const tickAtPointer = (event) => {
-        const direct = event.target && event.target.closest && event.target.closest(".tick-hit");
-        if (direct && svg.contains(direct)) return direct;
-        return [...svg.querySelectorAll(".tick-hit")].find((candidate) => {
-          const r = candidate.getBoundingClientRect();
-          return event.clientX >= r.left && event.clientX <= r.right &&
-            event.clientY >= r.top && event.clientY <= r.bottom;
-        }) || null;
-      };
-      svg.addEventListener("pointerdown", (event) => {
-        if (event.button !== 0 || event.isPrimary === false) return;
-        const hit = tickAtPointer(event);
-        if (!hit) return;
-        pendingTickPointer = {
-          pointerId: event.pointerId,
-          key: hit.getAttribute("data-tick-key"),
-          x: event.clientX,
-          y: event.clientY,
-        };
-      }, true);
-      const activationScope = svg.closest(".study") || svg;
-      activationScope.addEventListener("pointerup", (event) => {
-        const pending = pendingTickPointer;
-        pendingTickPointer = null;
-        if (!pending || pending.pointerId !== event.pointerId) return;
-        /* A tick-origin gesture owns its one follow-up click even when movement
-         * or a bloom rerender makes the completed gesture ineligible to commit. */
-        suppressTickClick = { x: event.clientX, y: event.clientY, until: performance.now() + 250 };
-        if (Math.hypot(event.clientX - pending.x, event.clientY - pending.y) > 8) return;
-        const hit = tickAtPointer(event);
-        if (!hit || hit.getAttribute("data-tick-key") !== pending.key) return;
-        event.preventDefault();
-        event.stopPropagation();
-        commitHeldShape(hit.getAttribute("data-tick-gid"));
-      }, true);
-      activationScope.addEventListener("pointercancel", () => { pendingTickPointer = null; }, true);
-      activationScope.addEventListener("click", (event) => {
-        const suppression = suppressTickClick;
-        suppressTickClick = null;
-        if (!suppression || performance.now() > suppression.until ||
-            Math.hypot(event.clientX - suppression.x, event.clientY - suppression.y) > 8) return;
-        event.preventDefault();
-        event.stopImmediatePropagation();
-      }, true);
-    }
     TICK_FOCUS_KEYS.delete(sid);
     return;
   }
@@ -1651,6 +3085,9 @@ function updateTraceStages() {
       track.className = `trace-track is-${traceKindClass(G.kind)}${isHeld ? " is-held" : ""}${isActive ? " is-active" : ""}`;
       track.style.setProperty("--trace-hue", G.hue);
       track.dataset.gid = G.gid;
+      const trackPlan = LAST_PLANS.get(sid)?.get(G.gid);
+      if (Number.isFinite(trackPlan?.score)) track.dataset.score = String(trackPlan.score);
+      if (Number.isFinite(trackPlan?.scoreRaw)) track.dataset.scoreRaw = String(trackPlan.scoreRaw);
       if (G.qaKind) track.dataset.qaKind = G.qaKind;
       if (G.qaDistance) track.dataset.qaDistance = G.qaDistance;
       if (G.qaPlacement) track.dataset.qaPlacement = G.qaPlacement;
@@ -2259,9 +3696,75 @@ function gidsOf(el) { return el.dataset.gids.split(" "); }
 /* hover intent — the page only awakens for a deliberate pause, and
  * survives the cursor crossing small gaps without flickering asleep */
 let hoverTimer = 0, sleepTimer = 0;
+let responsiveRedrawFrame = 0;
+let sheetResizeObserver = null;
+
+function scheduleResponsiveRedraw() {
+  if (responsiveRedrawFrame) return;
+  responsiveRedrawFrame = requestAnimationFrame(() => {
+    responsiveRedrawFrame = 0;
+    /* Responsive reflow changes every track's offset. Force the active row to
+     * reclaim the visible score position instead of restoring stale scrollTop. */
+    for (const stage of Object.values(TRACE_STAGES)) stage.dataset.active = "";
+    redrawActive();
+  });
+}
+
+function bindHeldTickPointerDelegate(scope) {
+  if (scope.dataset.tickPointerDelegate === "true") return;
+  scope.dataset.tickPointerDelegate = "true";
+  let pendingTickPointer = null;
+  let suppressTickClick = null;
+  const tickAtPointer = (event) => {
+    const svg = scope.querySelector("svg.overlay");
+    if (!svg) return null;
+    const direct = event.target && event.target.closest && event.target.closest(".tick-hit");
+    if (direct && svg.contains(direct)) return direct;
+    return [...svg.querySelectorAll(".tick-hit")].find((candidate) => {
+      const rect = candidate.getBoundingClientRect();
+      return event.clientX >= rect.left && event.clientX <= rect.right &&
+        event.clientY >= rect.top && event.clientY <= rect.bottom;
+    }) || null;
+  };
+  scope.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0 || event.isPrimary === false) return;
+    const hit = tickAtPointer(event);
+    if (!hit) return;
+    pendingTickPointer = {
+      pointerId: event.pointerId,
+      key: hit.getAttribute("data-tick-key"),
+      x: event.clientX,
+      y: event.clientY,
+    };
+  }, true);
+  scope.addEventListener("pointerup", (event) => {
+    const pending = pendingTickPointer;
+    pendingTickPointer = null;
+    if (!pending || pending.pointerId !== event.pointerId) return;
+    /* A tick-origin gesture owns its one follow-up click even when bloom
+     * replaced the child link between pointerdown and pointerup. */
+    suppressTickClick = { x: event.clientX, y: event.clientY, until: performance.now() + 250 };
+    if (Math.hypot(event.clientX - pending.x, event.clientY - pending.y) > 8) return;
+    const hit = tickAtPointer(event);
+    if (!hit || hit.getAttribute("data-tick-key") !== pending.key) return;
+    event.preventDefault();
+    event.stopPropagation();
+    commitHeldShape(hit.getAttribute("data-tick-gid"));
+  }, true);
+  scope.addEventListener("pointercancel", () => { pendingTickPointer = null; }, true);
+  scope.addEventListener("click", (event) => {
+    const suppression = suppressTickClick;
+    suppressTickClick = null;
+    if (!suppression || performance.now() > suppression.until ||
+        Math.hypot(event.clientX - suppression.x, event.clientY - suppression.y) > 8) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }, true);
+}
 
 function wire() {
   document.querySelectorAll(".study").forEach((scope) => {
+    bindHeldTickPointerDelegate(scope);
     scope.addEventListener("mouseover", (e) => {
       const t = e.target.closest("[data-gids]");
       if (!t || !scope.contains(t)) return;
@@ -2386,12 +3889,11 @@ function wire() {
     document.body.className = `theme-${b.dataset.theme}` + (document.body.classList.contains("reveal") ? " reveal" : "");
     requestAnimationFrame(redrawActive);
   });
-  addEventListener("resize", () => {
-    /* Responsive reflow changes every track's offset. Force the active row to
-     * reclaim the visible score position instead of restoring stale scrollTop. */
-    for (const stage of Object.values(TRACE_STAGES)) stage.dataset.active = "";
-    requestAnimationFrame(redrawActive);
-  });
+  addEventListener("resize", scheduleResponsiveRedraw);
+  if (globalThis.ResizeObserver && !sheetResizeObserver) {
+    sheetResizeObserver = new ResizeObserver(scheduleResponsiveRedraw);
+    document.querySelectorAll(".sheet").forEach((sheet) => sheetResizeObserver.observe(sheet));
+  }
 }
 function redrawActive() {
   document.querySelectorAll("svg.overlay").forEach((s) => { s.dataset.key = "~"; });

@@ -106,6 +106,39 @@ floor under the GAP:                    floor under the PAIR:
 - **Prettier:** right-biased phrases stop making full-width left round trips, while the scorer and hysteresis keep the page calm instead of visibly flipping rails on small reflows.
 - **Accept:** exact mirrored engine fixture; finite right tag/comb/corridor/multipoint families; side-local strands; 12-unit hysteresis boundaries; right C0.2 sharing; legacy-left identity; all 15 focus states × every integer 460–760 twice in the rendered query gate; Dense Psalm/Long Revelation mixed margins, side-correct ticks, four atmospheres, 1280/640, native SVG/bounds/focus/overflow/log checks.
 
+### C0.4. Section-aware plural spines and legal S handoffs — *adapt* — ✅ LANDED
+
+- **Build:** hosts opt in with explicit stable section IDs, rendered-line
+  provenance, finite ordered section bounds, and measured gaps between declared
+  adjacent sections. Missing or invalid topology declines structurally to the
+  isolated C0.3 whole-route planner. A side change is legal only when one
+  monotone stretched cubic S, including its vertical tangents, remains inside
+  the declared gap and clears every expanded ink obstacle and committed claim.
+  Crossing prose remains illegal.
+- **Solver:** each section has six geometric `(side, strand)` state cells. Each
+  cell retains up to `N` labels keyed by handoff count so the complete-route
+  calm tie is not unsafely applied to a prefix. Finite raw costs accumulate in
+  forward document order; only the finished route is rounded for the
+  tenth-pixel/fewer-handoffs/requested-order lexicographic comparator. This
+  gives deterministic polynomial `O(N² × 36)` work without complete route
+  enumeration or a second fixed-point arithmetic system.
+- **Contract and host:** canonical plans expose plural `sideRuns[]`, `spines[]`,
+  `handoffs[]`, route/anchor runs, ownership, topology signatures, and finite
+  corridor/spine/strand/handoff claims. Route Lab and Shapes iterate that
+  topology fail-closed for paint, mask bites, native SVG validation, contact
+  ownership, memory, claims, and section-side held ticks. A mixed topology has
+  no misleading singular alias. Route Lab validates a whole provisional weave
+  before committing occupancy or topology memory. Shapes proves that final
+  weave once offscreen, then paints it with the normal animation; rejected
+  routes still retain a held tick from committed memory or the left default.
+- **Accept:** focused engine/host suites 43/43; full suite 488 total / 478 pass /
+  10 expected better-sqlite3 ABI skips / 0 fail; lint, syntax, and diff checks
+  clean. The rendered gate passed 5,719 states / 11,438 renders with three S
+  fixtures, nine right winners, clean logs, and an isolated 4,515-state C0.3
+  oracle digest. Long Revelation's real “Sardis nearly loses; Philadelphia
+  keeps” trace holds one stable right→left S at 1280 and 640 in all four
+  atmospheres without score intrusion, overflow, or held-tick drift.
+
 ## Deliberately rejected
 
 - **Interior threading between words at a soft penalty** (`interiorLineCrossings*15`) — crossings are illegal, not expensive; the penalty is the reference confessing it looks wrong.
@@ -124,12 +157,14 @@ floor under the GAP:                    floor under the PAIR:
 
 ## Later
 
-- **Section-aware plural spines / S-through-section handoffs** — next geometry gate. Hosts must supply declared semantic section ids and measured section gaps; a side switch is legal only through a full-width hard-clear gap. The plan must grow `sideRuns[]`, `spines[]`, `handoffs[]`, and per-run claims before the strict TypeScript/app port freezes the interface.
-- **Claim x-extents** — ✅ LANDED in C0.2. Claims now carry finite normalized
-  `xMin/xMax`; only padded Y-and-X overlap conflicts, while legacy/malformed
-  claims remain corridor-wide. Level exits and local drips participate in the
-  same committed-claim contract.
+- **Strict TypeScript pure-engine + app-host port** — the next bounded gate.
+  Freeze the landed plural topology behind strict platform-agnostic interfaces,
+  preserve the isolated C0.3 fallback oracle, and integrate an app renderer
+  without importing DOM, Node, or Electron into core.
+- **Durable translation-safe anchors and events** — after the app host proves
+  the pure port. Store Backbone coordinates rather than translation tokens;
+  route explicit user mutations through the existing broker/RevisionStore and
+  append-only event contracts.
 - **Word-run cradle depth** (ignore-own-line) — hammocks tracking the local gap instead of the line's deepest descender; recorded so it isn't reinvented as a new line type.
-- **Level exits** (landed): connectors continue straight from the underline when the run is clear — see PROMPT-loom.md.
 - **A-wraps-from-previous-line cradle** (exit-end facing pins) — pure facing grammar, currently misses to margin.
 - **exportCard miniature reflecting real route classes** — currently schematic by decision.

@@ -51,6 +51,31 @@ body { margin: 0; background: var(--bg-primary); color: var(--text-primary); fon
   line-height: 2.1;
   color: var(--text-primary);
 }
+.qa-demo-head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  margin: 24px 0 9px; padding-top: 12px; border-top: 1px solid var(--border-subtle);
+  font: 600 0.8rem var(--font-ui); color: var(--text-secondary);
+}
+.qa-demo-head small {
+  font: 500 0.58rem var(--font-mono); letter-spacing: 0.02em; color: var(--text-tertiary);
+}
+.qa-section { position: relative; padding: 4px 0 6px; }
+.qa-section-label {
+  margin-bottom: 2px; font: 500 0.56rem var(--font-mono);
+  letter-spacing: 0.045em; text-transform: uppercase; color: var(--text-tertiary);
+}
+.qa-route-row .vnum { color: color-mix(in srgb, var(--gold) 72%, var(--verse-number)); }
+.qa-vtext { display: flex; align-items: baseline; justify-content: space-between; gap: 22px; min-width: 0; }
+.qa-edge { display: inline-block; white-space: nowrap; }
+.qa-edge-right { text-align: right; }
+/* The element itself is the measured whitespace contract. Negative inline
+ * margins make its DOMRect cover both loom airs as well as the text column;
+ * the planner never extrapolates a text-width gap out to either spine. */
+.route-section-gap {
+  position: relative; height: 52px; margin-left: -128px; margin-right: -40px;
+  pointer-events: none;
+}
+.route-section-gap.narrow { height: 9px; }
 .anchor { border-radius: 3px; }
 .sheet.dimmed .vtext { color: color-mix(in srgb, var(--text-primary) 76%, transparent); }
 .sheet.dimmed .vnum { opacity: 0.55; }

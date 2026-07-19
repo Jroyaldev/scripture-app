@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Loom lab · marginalia threading</title>
+<title>Loom lab · section-aware marginalia threading</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="route.css">
@@ -11,7 +11,7 @@
 <body>
 
 <header class="topbar">
-  <div class="brand">Loom lab <span class="sub">· one thread, woven marginalia · engine-first</span></div>
+  <div class="brand">Loom lab <span class="sub">· one thread, section-owned spines · engine-first</span></div>
   <div class="controls" style="display:flex; align-items:center; gap:18px;">
     <label class="weavectl"><input id="weave-toggle" type="checkbox" checked> weave</label>
     <label class="weavectl"><input id="cradle-toggle" type="checkbox" checked> cradle</label>
@@ -31,6 +31,7 @@
       <div class="grammar">
         <b>the grammar</b><br>
         pin → turn → shoulder → swoop → spine<br>
+        spine → tangent S through declared gap → spine<br>
         one line type · kind speaks as hue on focus · ≤2 woven in ink<br>
         held annotations live as ticks — hover to bloom
       </div>
@@ -39,6 +40,6 @@
 </main>
 
 <script src="verses.js"></script>
-<script type="module" src="route-lab.js"></script>
+<script type="module" src="route-lab.js?v=c04-section-handoffs-isolated-c03-v2"></script>
 </body>
 </html>
