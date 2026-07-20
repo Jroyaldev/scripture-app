@@ -8,6 +8,33 @@
 > deviations fast (see `lab/PROMPT-loom.md` final section + the memory note
 > "loom-bracket-grammar-aesthetic").
 
+## Audit 2026-07-20 — controlling truth (uncommitted spike in the worktree)
+
+A large dirty/untracked worktree carries a partial port. Verdict: a
+**functional spike, not an approved port**. This file is the controlling
+checklist; close P0 before any further polish. HEAD remains `92aff89`.
+
+**Approved contract amendments (preserve, do not revert):**
+- Four selectable marking systems (Palette / Pen Rail / Radial / Dock)
+  replace the single unified menu.
+- The connection card lives in-flow in Living Margin.
+
+**Per-gate truth:**
+
+| Gate | State |
+|---|---|
+| P0 engine | Strict TS exists (`src/core/annotations/route-engine.ts`) and is behavior-faithful — all 36 goldens pass when suites are redirected. BUT committed tests still import `lab/route-engine.js`; repoint them permanently. |
+| P0 overlay | Measures from a **synthetic rectangle**, not its own painted frame — this is precisely the 1px-drop failure mode (`27743d4`). Rebase measurement on the overlay's own rect. |
+| P0 alignment | The 0.0px underline gate has **never been run** in the app. Run it at ≥3 widths; the lab's pixel-fidelity proof is currently lost. |
+| P1 anchors | Connections are append-only and highlights reuse the existing system ✓. But phrase exactness is only an optional package-specific offset/quote (`src/core/annotations/types.ts:26`); other translations and multi-verse selections degrade to whole-verse anchors. Backbone-coordinate exactness required. |
+| P1 durability | Durable note/timestamps, a literal broker boundary, and atomic RevisionStore handling are missing. |
+| P2 card | Adaptation, not the approved 1:1 port: missing observation field and multi-held ("· N more held") state; uses red destructive styling; title shows a mouse-visible gold focus. Fix to the `.ccard` contract (P2 item 7). |
+| P2 emphasis | Still one underline per fragment — the merged painted emphasis (`0345781`) has not been ported; the chopped-phrase defect the user rejected will reproduce in-app. |
+| P3 | Landed: resize/fonts-ready lifecycle, explicit held ticks, crash/memory fixes (keep — valuable and separable). Open: incremental repaint, SVG-export decision, permanent digest enforcement, all-theme 640–1280 QA, the three-width alignment measurement. |
+
+`STATUS.md` ("Production marking surfaces" row) must describe this as a
+functional spike until the gates above close.
+
 ## P0 — foundations
 
 1. **Strict TS engine port → `src/core/patterns/route-engine.ts`.**
@@ -74,7 +101,12 @@
    actions. No left-edge accent bars, no colored hovers, gold focus ring
    keyboard-only. Lab tokens ARE app tokens (`design-tokens.json`).
 
-8. **Unified authoring menu.** Port the selection bar (kinds row / divider /
+8. **Authoring surfaces.** AMENDED (see audit above): the four selectable
+   systems (Palette/Rail/Radial/Dock) supersede the single unified menu —
+   do not collapse them back. Still port from the lab bar: the exact
+   two-vocabulary content contract (kinds / divider / 5 washes / caption)
+   inside whichever system is active. Original item kept for the content
+   spec: Port the selection bar (kinds row / divider /
    5 highlight swatches, caption "connect the words — or lay a wash").
    Decide fate of the external palette-host seam (`window.LAB_AUTHOR` /
    `LAB_PALETTE` hooks in lab/lab.js ~3460+; `lab/palette.html`+`.css` are
