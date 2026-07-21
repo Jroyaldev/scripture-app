@@ -40,7 +40,7 @@ test("capture, highlight, and cross-reference overlays state trust and source cl
 
   assert.match(note, /Passage note/);
   assert.match(note, /Plain Markdown · saved locally only when you choose/);
-  assert.match(note, /Quote included ·/);
+  assert.match(note, /draft\.bodyPrefill \? "Excerpt and source included" : "Quote included"/);
   assert.match(note, /window\.api\.library\.createNote/);
 
   assert.match(highlight, /role="group" aria-label="Highlight color"/);

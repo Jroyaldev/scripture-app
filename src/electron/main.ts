@@ -1982,6 +1982,42 @@ function registerIpcHandlers(): void {
     return { ok: true, noteId: id };
   });
 
+  registerRuntimeIpc("update-note", async (_event, opts: { id: string; title: string; body: string }) => {
+    if (!engine || !revisionStore) return { ok: false, error: "Not initialized" };
+    const notePath = engine.updateNote(opts.id, opts.title, opts.body);
+    if (!notePath) return { ok: false, error: "Note not found" };
+    const relPath = notePath.replace(engine.rootPath + "/", "");
+    const txn = await revisionStore.beginTransaction(`Update note: ${opts.title}`);
+    txn.files.push(relPath);
+    await revisionStore.commit(txn);
+    engine.buildSqlite();
+    return { ok: true };
+  });
+
+  registerRuntimeIpc("delete-note", async (_event, opts: { id: string }) => {
+    if (!engine || !revisionStore) return { ok: false, error: "Not initialized" };
+    const removed = engine.deleteNote(opts.id);
+    if (!removed) return { ok: false, error: "Note not found" };
+    const relPath = `notes/${removed.filename}`;
+    const txn = await revisionStore.beginTransaction("Delete note");
+    txn.files.push(relPath);
+    await revisionStore.commit(txn);
+    engine.buildSqlite();
+    return { ok: true, ...removed };
+  });
+
+  registerRuntimeIpc("restore-note", async (_event, opts: { filename: string; content: string }) => {
+    if (!engine || !revisionStore) return { ok: false, error: "Not initialized" };
+    const notePath = engine.restoreNote(opts.filename, opts.content);
+    if (!notePath) return { ok: false, error: "The note could not be restored" };
+    const relPath = notePath.replace(engine.rootPath + "/", "");
+    const txn = await revisionStore.beginTransaction("Restore note");
+    txn.files.push(relPath);
+    await revisionStore.commit(txn);
+    engine.buildSqlite();
+    return { ok: true };
+  });
+
   ipcMain.handle("get-all-notes", () => {
     if (!engine) return [];
     const dbPath = join(engine.rootPath, ".system/library.sqlite");

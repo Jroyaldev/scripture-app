@@ -37,6 +37,22 @@ type LoadState =
   | { status: "error"; error: string }
   | { status: "first-run"; defaultPath: string };
 
+const WRITING_DRAFT_STORAGE_KEY = "scripture.writing-draft";
+
+function recoverWritingDraft(): WritingDraft {
+  try {
+    const raw = localStorage.getItem(WRITING_DRAFT_STORAGE_KEY);
+    if (!raw) return { title: "", body: "" };
+    const value = JSON.parse(raw) as { title?: unknown; body?: unknown };
+    if (typeof value.title !== "string" || typeof value.body !== "string") {
+      return { title: "", body: "" };
+    }
+    return { title: value.title, body: value.body };
+  } catch {
+    return { title: "", body: "" };
+  }
+}
+
 function PanelToggleIcon(): React.JSX.Element {
   return (
     <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -138,7 +154,7 @@ export function App(): React.JSX.Element {
     verse?: number;
     endVerse?: number;
   } | null>(null);
-  const [writingDraft, setWritingDraft] = useState<WritingDraft>({ title: "", body: "" });
+  const [writingDraft, setWritingDraft] = useState<WritingDraft>(recoverWritingDraft);
   const [commandOpen, setCommandOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [readingContext, setReadingContext] = useState<CommandReadingContext>({
@@ -244,6 +260,21 @@ export function App(): React.JSX.Element {
   useEffect(() => {
     void loadData();
   }, [loadData]);
+
+  // The full Write surface is intentionally recoverable across renderer or
+  // app restarts. This is a local draft only; it never writes Substrate until
+  // the user explicitly saves through WritingSheet (INV-1).
+  useEffect(() => {
+    try {
+      if (writingDraft.title.trim() || writingDraft.body.trim()) {
+        localStorage.setItem(WRITING_DRAFT_STORAGE_KEY, JSON.stringify(writingDraft));
+      } else {
+        localStorage.removeItem(WRITING_DRAFT_STORAGE_KEY);
+      }
+    } catch {
+      // A locked-down profile may deny storage. Keep the live draft usable.
+    }
+  }, [writingDraft]);
 
   // Initialize sidebarCollapsed / marginVisible / theme from
   // persisted settings. Fall back to the existing localStorage-based

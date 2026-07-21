@@ -54,7 +54,7 @@ export function parseFrontmatter(content: string): {
   return {
     frontmatter: {
       id: String(fm["id"] ?? ""),
-      title: String(fm["title"] ?? "").replace(/^"|"$/g, ""),
+      title: String(fm["title"] ?? ""),
       created: String(fm["created"] ?? ""),
       modified: String(fm["modified"] ?? ""),
       type: fm["type"] ? String(fm["type"]) : undefined,
@@ -71,11 +71,12 @@ function parseSimpleYaml(yaml: string): Record<string, string | undefined> {
     if (colonIdx === -1) continue;
     const key = line.slice(0, colonIdx).trim();
     let value = line.slice(colonIdx + 1).trim();
-    // Strip surrounding quotes
-    if (
-      (value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))
-    ) {
+    // Strip surrounding quotes. Double-quoted values are emitted by the host
+    // note writer and unescape quotes/backslashes symmetrically so repeated
+    // edit/save cycles cannot corrupt authored titles.
+    if (value.startsWith('"') && value.endsWith('"') && value.length >= 2) {
+      value = value.slice(1, -1).replace(/\\(["\\])/g, "$1");
+    } else if (value.startsWith("'") && value.endsWith("'") && value.length >= 2) {
       value = value.slice(1, -1);
     }
     result[key] = value;

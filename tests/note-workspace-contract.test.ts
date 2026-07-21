@@ -23,16 +23,28 @@ test("Write is an explicit, recoverable local-note workspace", () => {
   assert.match(app, /useState<WritingDraft>/);
   assert.match(app, /draft=\{writingDraft\}/);
   assert.match(app, /onDraftChange=\{setWritingDraft\}/);
+  assert.match(app, /WRITING_DRAFT_STORAGE_KEY = "scripture\.writing-draft"/);
+  assert.match(app, /useState<WritingDraft>\(recoverWritingDraft\)/);
+  assert.match(app, /localStorage\.setItem\(WRITING_DRAFT_STORAGE_KEY/);
+  assert.match(app, /localStorage\.removeItem\(WRITING_DRAFT_STORAGE_KEY\)/);
   assert.doesNotMatch(app, /editNoteBody/);
 });
 
-test("Notes and Search share a readable detail surface and complete keyboard path", () => {
+test("My notes and Search share a readable, editable detail surface", () => {
   const workspace = read("src/renderer/components/SearchView.tsx");
 
   assert.doesNotMatch(workspace, /style=\{\{/);
   assert.match(workspace, /type WorkspaceMode = "notes" \| "search"/);
-  assert.match(workspace, /aria-label=\{mode === "notes" \? "Note library" : "Search results"\}/);
+  assert.match(workspace, /aria-label=\{mode === "notes" \? "My notes list" : "Search results"\}/);
+  assert.match(workspace, /mode === "notes" \? "My notes" : "Search"/);
+  assert.doesNotMatch(workspace, /Local notebook|Note library|Your notebook is ready|your local library/);
   assert.match(workspace, /className="note-detail"/);
+  assert.match(workspace, /window\.api\.library\.updateNote/);
+  assert.match(workspace, /window\.api\.library\.deleteNote/);
+  assert.match(workspace, /window\.api\.library\.restoreNote/);
+  assert.match(workspace, /Discard your changes to this note/);
+  assert.match(workspace, /Delete permanently/);
+  assert.match(workspace, /showToast\("Note deleted\.", "Undo"/);
   assert.match(workspace, /Scripture in this note/);
   assert.match(workspace, /window\.api\.ref\.parseBref\(reference\.bref\)/);
   assert.match(workspace, /event\.key === "ArrowDown"/);

@@ -33,6 +33,9 @@ declare global {
         getSummary(): Promise<LibrarySummary | null>;
         readAllNotes(): Promise<ParsedNoteData[]>;
         createNote(title: string, body: string, opts?: { type?: string; tags?: string[] }): Promise<{ ok: boolean; noteId?: string; id?: string; path?: string; error?: string }>;
+        updateNote(id: string, title: string, body: string): Promise<{ ok: boolean; error?: string }>;
+        deleteNote(id: string): Promise<{ ok: boolean; filename?: string; content?: string; error?: string }>;
+        restoreNote(filename: string, content: string): Promise<{ ok: boolean; error?: string }>;
         queryVerse(book: string, chapter: number, verse: number): Promise<QueryResult>;
         queryRange(startBook: string, startCh: number, startV: number, endBook: string, endCh: number, endV: number): Promise<QueryResult>;
         createHighlight(book: string, chapter: number, verseStart: number, verseEnd: number, color: string, packageId: string, charStart?: number | null, charEnd?: number | null): Promise<{ ok: boolean; highlightId?: string; changeId?: string; error?: string }>;

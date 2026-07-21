@@ -196,6 +196,14 @@ export function SearchView({
   const [searchState, setSearchState] = useState<SearchState>({ status: "idle" });
   const [searchNonce, setSearchNonce] = useState(0);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editBody, setEditBody] = useState("");
+  const [editBusy, setEditBusy] = useState(false);
+  const [editDiscard, setEditDiscard] = useState<null | { kind: "close" } | { kind: "select"; id: string }>(null);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [deleteArmed, setDeleteArmed] = useState(false);
+  const [deleteBusy, setDeleteBusy] = useState(false);
   const requestSeq = useRef(0);
   const rowRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -288,6 +296,105 @@ export function SearchView({
 
   const rows = mode === "notes" ? noteRows : searchRows;
   const selectedNote = selectedId ? rows.find((note) => note.id === selectedId) : undefined;
+  const editDirty = editing && selectedNote != null
+    && (editTitle !== selectedNote.title || editBody !== selectedNote.body);
+
+  useEffect(() => {
+    setEditing(false);
+    setEditError(null);
+    setDeleteArmed(false);
+    setEditDiscard(null);
+  }, [selectedId]);
+
+  const requestSelect = (id: string): void => {
+    if (id !== selectedId && editDirty) {
+      setEditDiscard({ kind: "select", id });
+      return;
+    }
+    setSelectedId(id);
+  };
+
+  const startEdit = useCallback(() => {
+    if (!selectedNote) return;
+    setEditTitle(selectedNote.title);
+    setEditBody(selectedNote.body);
+    setEditError(null);
+    setDeleteArmed(false);
+    setEditing(true);
+  }, [selectedNote]);
+
+  const cancelEdit = useCallback(() => {
+    if (editBusy) return;
+    if (editDirty) {
+      if (editDiscard) {
+        setEditDiscard(null);
+        return;
+      }
+      setEditDiscard({ kind: "close" });
+      return;
+    }
+    setEditing(false);
+    setEditError(null);
+  }, [editBusy, editDirty, editDiscard]);
+
+  const confirmDiscardEdit = useCallback(() => {
+    const target = editDiscard;
+    setEditDiscard(null);
+    setEditing(false);
+    setEditError(null);
+    if (target?.kind === "select") setSelectedId(target.id);
+  }, [editDiscard]);
+
+  const saveEdit = useCallback(async () => {
+    if (!selectedNote || editBusy) return;
+    const title = editTitle.trim();
+    if (!title) {
+      setEditError("Give the note a title before saving.");
+      return;
+    }
+    setEditBusy(true);
+    setEditError(null);
+    const result = await safeCall(() => window.api.library.updateNote(selectedNote.id, title, editBody));
+    setEditBusy(false);
+    if (!result.ok || !result.value.ok) {
+      setEditError(result.ok ? (result.value.error ?? "The note could not be saved.") : result.error);
+      return;
+    }
+    setEditing(false);
+    setEditDiscard(null);
+    setLoadNonce((value) => value + 1);
+    showToast("Note saved.");
+  }, [editBody, editBusy, editTitle, selectedNote, showToast]);
+
+  const deleteNote = useCallback(async () => {
+    if (!selectedNote || deleteBusy) return;
+    setDeleteBusy(true);
+    const result = await safeCall(() => window.api.library.deleteNote(selectedNote.id));
+    setDeleteBusy(false);
+    setDeleteArmed(false);
+    if (!result.ok || !result.value.ok) {
+      showToast(
+        result.ok ? (result.value.error ?? "The note could not be deleted.") : result.error,
+        undefined,
+        undefined,
+        { tone: "error" },
+      );
+      return;
+    }
+    const { filename, content } = result.value;
+    setLoadNonce((value) => value + 1);
+    if (filename && content != null) {
+      showToast("Note deleted.", "Undo", () => {
+        void safeCall(() => window.api.library.restoreNote(filename, content)).then((restore) => {
+          if (restore.ok && restore.value.ok) {
+            setLoadNonce((value) => value + 1);
+          } else {
+            showToast("The note could not be restored.", undefined, undefined, { tone: "error" });
+          }
+        });
+      });
+    }
+  }, [deleteBusy, selectedNote, showToast]);
 
   useEffect(() => {
     if (mode !== "notes" || loadStatus !== "ready") return;
@@ -329,7 +436,8 @@ export function SearchView({
     event.preventDefault();
     const next = rows[target];
     if (!next) return;
-    setSelectedId(next.id);
+    requestSelect(next.id);
+    if (editDirty) return;
     rowRefs.current[target]?.focus();
   };
 
@@ -349,15 +457,15 @@ export function SearchView({
     <section className={`note-workspace note-workspace--${mode}`} aria-labelledby={`${mode}-workspace-title`}>
       <header className="note-workspace-hero">
         <div>
-          <span className="workspace-kicker">{mode === "notes" ? "Local notebook" : "Full-text retrieval"}</span>
+          <span className="workspace-kicker">{mode === "notes" ? "Your own work" : "Search your notes"}</span>
           <h1 id={`${mode}-workspace-title`}>{mode === "notes" ? "My notes" : "Search"}</h1>
           <p>
             {mode === "notes"
               ? "Read the thinking you have already done, then return to its Scripture context."
-              : "Find a phrase, question, or theme across the complete text of your notes."}
+              : "Find a phrase, question, or theme across your notes."}
           </p>
         </div>
-        <Button variant="secondary" onClick={onWrite}>New note</Button>
+        <Button variant="secondary" onClick={onWrite} disabled={editing}>New note</Button>
       </header>
 
       <div className="note-workspace-search">
@@ -368,6 +476,7 @@ export function SearchView({
           aria-label={mode === "notes" ? "Filter notes" : "Search note content"}
           placeholder={mode === "notes" ? "Filter titles, text, or tags" : "Search every note"}
           value={query}
+          disabled={editing}
           onChange={(event) => setQuery(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === "Escape" && query) {
@@ -384,9 +493,9 @@ export function SearchView({
       </div>
 
       <div className="note-workspace-grid">
-        <aside className="note-workspace-list" aria-label={mode === "notes" ? "Note library" : "Search results"}>
+        <aside className="note-workspace-list" aria-label={mode === "notes" ? "My notes list" : "Search results"}>
           <div className="note-list-heading">
-            <span>{mode === "search" && searchState.status === "idle" ? "Recently modified" : mode === "search" ? "Matches" : "Library"}</span>
+            <span>{mode === "search" && searchState.status === "idle" ? "Recently modified" : mode === "search" ? "Matches" : "My notes"}</span>
             <span>{rows.length}</span>
           </div>
 
@@ -419,13 +528,13 @@ export function SearchView({
           {showSearchEmpty && (
             <EmptyState
               title="No matching notes"
-              body={`Nothing in your local library matches “${query.trim()}”.`}
+              body={`Nothing in your notes matches “${query.trim()}”.`}
               action={<Button size="sm" variant="ghost" onClick={clearQuery}>Clear search</Button>}
             />
           )}
           {showNotesEmpty && (
             <EmptyState
-              title={notes.length === 0 ? "Your notebook is ready" : "No notes match this filter"}
+              title={notes.length === 0 ? "Ready for your first note" : "No notes match this filter"}
               body={notes.length === 0
                 ? "Begin with an observation, question, or passage you want to remember."
                 : "Try a different title, phrase, or tag."}
@@ -447,7 +556,7 @@ export function SearchView({
                     className={`note-row${selected ? " selected" : ""}`}
                     data-note-id={note.id}
                     aria-current={selected ? "true" : undefined}
-                    onClick={() => setSelectedId(note.id)}
+                    onClick={() => requestSelect(note.id)}
                     onKeyDown={(event) => moveRowFocus(event, index)}
                   >
                     <span className="note-row-topline">
@@ -468,11 +577,102 @@ export function SearchView({
 
         <article className="note-detail" aria-live="polite">
           {selectedNote ? (
+            editing ? (
+              <div
+                className="note-edit"
+                onKeyDown={(event) => {
+                  if ((event.metaKey || event.ctrlKey) && event.key.toLocaleLowerCase() === "s") {
+                    event.preventDefault();
+                    void saveEdit();
+                  } else if (event.key === "Escape" && !editBusy) {
+                    event.preventDefault();
+                    cancelEdit();
+                  }
+                }}
+              >
+                <header className="note-detail-header">
+                  <div className="note-detail-eyebrow">
+                    <span>Editing note</span>
+                    <time dateTime={selectedNote.modified}>Updated {formatDate(selectedNote.modified)}</time>
+                  </div>
+                  <label className="note-edit-field">
+                    <span className="note-edit-label">Title</span>
+                    <input
+                      className="note-title-input control-input"
+                      value={editTitle}
+                      onChange={(event) => setEditTitle(event.target.value)}
+                      disabled={editBusy}
+                      autoFocus
+                      spellCheck
+                    />
+                  </label>
+                  <label className="note-edit-field note-edit-field--body">
+                    <span className="note-edit-label">Note</span>
+                    <textarea
+                      className="note-body-editor control-input"
+                      value={editBody}
+                      onChange={(event) => setEditBody(event.target.value)}
+                      disabled={editBusy}
+                      rows={14}
+                      spellCheck
+                    />
+                  </label>
+                </header>
+                {editError && <p className="note-edit-error" role="alert">{editError}</p>}
+                {editDiscard && (
+                  <div className="note-edit-discard" role="alert">
+                    <span>Discard your changes to this note? What you edited will be lost.</span>
+                    <span className="note-edit-buttons">
+                      <Button variant="ghost" size="sm" onClick={() => setEditDiscard(null)}>Keep editing</Button>
+                      <Button size="sm" onClick={confirmDiscardEdit}>Discard changes</Button>
+                    </span>
+                  </div>
+                )}
+                <footer className="note-detail-footer note-edit-actions">
+                  <span className="note-edit-hint">Plain Markdown · saved to this library</span>
+                  <span className="note-edit-buttons">
+                    <Button variant="ghost" size="sm" onClick={cancelEdit} disabled={editBusy}>Cancel</Button>
+                    <Button size="sm" busy={editBusy} onClick={() => void saveEdit()}>Save changes</Button>
+                  </span>
+                </footer>
+              </div>
+            ) : (
             <>
               <header className="note-detail-header">
                 <div className="note-detail-eyebrow">
                   <span>Note</span>
                   <time dateTime={selectedNote.modified}>Updated {formatDate(selectedNote.modified)}</time>
+                  <span className="note-detail-actions">
+                    <button type="button" className="note-detail-action" onClick={startEdit}>Edit</button>
+                    {deleteArmed ? (
+                      <>
+                        <button
+                          type="button"
+                          className="note-detail-action note-detail-action--danger"
+                          onClick={() => void deleteNote()}
+                          disabled={deleteBusy}
+                        >
+                          {deleteBusy ? "Deleting…" : "Delete permanently"}
+                        </button>
+                        <button
+                          type="button"
+                          className="note-detail-action"
+                          onClick={() => setDeleteArmed(false)}
+                          disabled={deleteBusy}
+                        >
+                          Keep note
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        className="note-detail-action note-detail-action--danger"
+                        onClick={() => setDeleteArmed(true)}
+                      >
+                        Delete…
+                      </button>
+                    )}
+                  </span>
                 </div>
                 <h2><HighlightText text={selectedNote.title} query={query} /></h2>
                 {selectedNote.tags.length > 0 && (
@@ -508,12 +708,13 @@ export function SearchView({
                 <span>Stored in this library</span>
               </footer>
             </>
+            )
           ) : (
             <EmptyState
               title={mode === "search" && query.trim().length < 2 ? "Search your own thinking" : "Choose a note"}
               body={mode === "search" && query.trim().length < 2
                 ? "Enter a phrase above, or open one of your recently modified notes."
-                : "Select a note from the library to read it here."}
+                : "Select a note from the list to read it here."}
             />
           )}
         </article>

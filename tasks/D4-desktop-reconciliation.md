@@ -1,6 +1,6 @@
 # TASK D4: Reconcile the settled desktop checkpoint with Smart Shapes
 
-STATUS: IN PROGRESS — Step 1 complete; Steps 2–5 pending.
+STATUS: IN PROGRESS — Steps 1–2 complete; Steps 3–5 pending.
 
 ## Objective
 
@@ -26,10 +26,21 @@ The old `489c478` checkpoint is requirements evidence only.
   silent language-study lock, canvas-versus-tab keyboard separation,
   panel descent/return, F6 pane movement, a modal shortcuts reference, and
   visible-text/focus-restoration accessibility fixes.
+- Step 2: in-place note edit, guarded delete with byte-exact non-overwriting
+  Undo, Git-backed tracked deletion, quoted-title round trips, recoverable
+  full-Write drafts, and explicit-save Living Margin capture for related
+  verses, note-derived references, passage insight, entity research, and word
+  study. Captured excerpts retain visible source and frozen study provenance;
+  public-data surfaces consolidate attribution under keyboard-accessible
+  Sources/Cite disclosures.
 
 Step 1 verification: focused contract 4/4; full suite 703 total, 674 pass,
 29 expected Electron-ABI skips; lint, renderer/Electron builds, and diff
 integrity clean.
+
+Step 2 verification: focused note/Git/capture/workspace contracts 15/15; full
+suite 715 total, 686 pass, 29 expected Electron-ABI skips; lint,
+renderer/Electron builds, and diff integrity clean.
 
 ## Guardrails
 

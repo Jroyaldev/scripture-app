@@ -33,6 +33,11 @@ const api = {
     readAllNotes: () => ipcRenderer.invoke("read-all-notes"),
     createNote: (title: string, body: string, opts?: { type?: string; tags?: string[] }) =>
       ipcRenderer.invoke("create-note", { title, body, tags: opts?.tags }),
+    updateNote: (id: string, title: string, body: string) =>
+      ipcRenderer.invoke("update-note", { id, title, body }),
+    deleteNote: (id: string) => ipcRenderer.invoke("delete-note", { id }),
+    restoreNote: (filename: string, content: string) =>
+      ipcRenderer.invoke("restore-note", { filename, content }),
     queryVerse: (book: string, chapter: number, verse: number) =>
       ipcRenderer.invoke("query-verse", book, chapter, verse),
     queryRange: (

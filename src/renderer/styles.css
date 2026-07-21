@@ -175,6 +175,197 @@
   --role-det: #B0B0B0;
 }
 
+/* Pericope desktop reconciliation: explicit capture/provenance and note
+   lifecycle controls, expressed only through the current semantic tokens. */
+.crossref-row,
+.note-crossref-row {
+  cursor: default;
+}
+
+.crossref-row-open {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.crossref-row:focus-within,
+.note-crossref-row:focus-within {
+  outline: 2px solid var(--study-gold-focus);
+  outline-offset: 1px;
+}
+
+.crossref-row-open:focus-visible { outline: none; }
+
+.margin-capture-action {
+  flex: 0 0 auto;
+  padding: 3px 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  font-size: 0.625rem;
+  font-weight: var(--fw-medium);
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  opacity: 0.45;
+  transition: opacity var(--transition-fast), color var(--transition-fast);
+}
+
+.crossref-row:hover .margin-capture-action,
+.crossref-row:focus-within .margin-capture-action,
+.note-crossref-row:hover .margin-capture-action,
+.note-crossref-row:focus-within .margin-capture-action,
+.margin-capture-action:hover,
+.margin-capture-action:focus-visible {
+  opacity: 1;
+  color: var(--text-primary);
+}
+
+.margin-capture-action:focus-visible {
+  outline: 2px solid var(--study-gold-focus);
+  outline-offset: 2px;
+}
+
+.margin-sources {
+  margin-top: 13px;
+  border-top: 1px solid var(--border-subtle);
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+}
+
+.margin-sources summary {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-tertiary);
+  font-size: 0.625rem;
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  list-style: none;
+}
+
+.margin-sources summary::-webkit-details-marker { display: none; }
+.margin-sources summary::after {
+  content: "+";
+  margin-left: auto;
+  color: var(--text-tertiary);
+  font: 500 0.75rem/1 var(--font-mono);
+}
+.margin-sources[open] summary::after { content: "−"; }
+.margin-sources summary:hover { color: var(--text-primary); }
+.margin-sources summary:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 2px; }
+
+.margin-source-list { display: grid; padding: 0 0 8px; }
+.margin-source-row {
+  min-height: 31px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 0.59375rem;
+  line-height: 1.35;
+}
+.margin-source-row:last-child { border-bottom: 0; }
+.margin-source-copy { min-width: 0; display: grid; gap: 1px; }
+.margin-source-copy > span:first-child { color: var(--text-secondary); }
+.margin-source-detail { color: var(--text-tertiary); font-size: 0.53125rem; }
+.margin-source-cite {
+  flex: 0 0 auto;
+  min-height: 24px;
+  padding: 2px 6px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-tertiary);
+  font: 500 0.5625rem/1 var(--font-ui);
+  cursor: pointer;
+}
+.margin-source-cite:hover { background: var(--study-hover-surface); color: var(--text-primary); }
+.margin-source-cite:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 1px; }
+
+.entity-research-title-row,
+.lang-detail-heading,
+.ai-insight-actions {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.entity-research-title-row h2,
+.lang-detail-heading .lang-detail-form { min-width: 0; flex: 1; }
+.lang-capture-action,
+.ai-insight-actions .margin-capture-action { opacity: 0.68; }
+.lang-sources { margin-top: 12px; }
+
+.note-detail-eyebrow { justify-content: flex-start; }
+.note-detail-actions { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.note-detail-action {
+  padding: 3px 7px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.note-detail-action:hover { background: var(--study-hover-surface); color: var(--text-primary); }
+.note-detail-action--danger:hover { color: var(--error); }
+.note-detail-action:disabled { cursor: default; opacity: 0.6; }
+.note-detail-action:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 1px; }
+
+.note-edit { display: flex; flex-direction: column; min-height: 100%; }
+.note-edit-field { display: block; width: 100%; max-width: 720px; margin-inline: auto; }
+.note-edit-field--body { display: flex; flex: 1; flex-direction: column; margin-top: 18px; }
+.note-edit-field--body .note-body-editor { min-height: 260px; }
+.note-edit-label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.note-edit-error { width: 100%; max-width: 720px; margin: 14px auto 0; color: var(--error); font-size: var(--fs-sm); }
+.note-edit-discard,
+.note-capture-discard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 9px 12px;
+  border: 1px solid color-mix(in srgb, var(--error) 32%, transparent);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--error) 7%, var(--bg-surface));
+  color: var(--text-secondary);
+  font-size: 12.5px;
+}
+.note-edit-discard { width: 100%; max-width: 720px; margin: 14px auto 0; }
+.note-capture-discard { margin: 0 0 10px; }
+.note-edit-actions { align-items: center; justify-content: space-between; }
+.note-edit-actions.note-detail-footer span + span::before { content: none; }
+.note-edit-buttons,
+.note-capture-discard-actions { display: flex; align-items: center; gap: 8px; }
+
 /*
  * Ink overrides. The top-level .app-shell applies these variables to both
  * the main workspace and every portal-carried floating layer.

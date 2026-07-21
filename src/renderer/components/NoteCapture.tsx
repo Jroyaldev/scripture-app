@@ -15,6 +15,10 @@ export interface NoteCaptureDraft {
   passageRef: string;
   /** Quoted verse text for the blockquote. */
   quote: string;
+  /** Editable Markdown seeded into the note body for research capture. */
+  bodyPrefill?: string;
+  /** Quiet description of the surface that opened capture. */
+  originLabel?: string;
   book: string;
   chapter: number;
   verseStart: number;
@@ -45,6 +49,21 @@ function QuoteMark(): React.JSX.Element {
   );
 }
 
+/** Compose the exact readable Markdown saved by the explicit capture action. */
+export function buildNoteCaptureMarkdown(quote: string, body: string): string {
+  const quoteBlock = quote.trim()
+    ? quote
+        .trim()
+        .split(/\n+/)
+        .map((line) => `> ${line}`)
+        .join("\n")
+    : "";
+  const user = body.trim();
+  if (quoteBlock && user) return `${quoteBlock}\n\n${user}\n`;
+  if (quoteBlock) return `${quoteBlock}\n`;
+  return user ? `${user}\n` : "";
+}
+
 /**
  * Slide-over note capture: stays on Read, seeds title + quote from selection,
  * leaves the body free for the user's own words. Save is explicit (⌘S / button).
@@ -52,13 +71,30 @@ function QuoteMark(): React.JSX.Element {
  */
 export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Element {
   const [title, setTitle] = useState(draft.title);
-  const [body, setBody] = useState("");
+  const initialBody = draft.bodyPrefill ?? "";
+  const [body, setBody] = useState(initialBody);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [discardArmed, setDiscardArmed] = useState(false);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
   const savingRef = useRef(false);
+  const isDirty = body !== initialBody || title !== draft.title;
+
+  const requestClose = useCallback(() => {
+    if (savingRef.current) return;
+    if (isDirty) {
+      if (discardArmed) {
+        setDiscardArmed(false);
+        bodyRef.current?.focus();
+        return;
+      }
+      setDiscardArmed(true);
+      return;
+    }
+    onClose();
+  }, [discardArmed, isDirty, onClose]);
 
   useEffect(() => {
     const active = document.activeElement;
@@ -92,7 +128,7 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
       if (e.key === "Escape" && !savingRef.current) {
         e.preventDefault();
         e.stopPropagation();
-        onClose();
+        requestClose();
         return;
       }
       if (e.key !== "Tab" || !panelRef.current) return;
@@ -114,21 +150,12 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
     };
     window.addEventListener("keydown", onKey, true);
     return () => window.removeEventListener("keydown", onKey, true);
-  }, [onClose, saving]);
+  }, [requestClose, saving]);
 
-  const buildMarkdown = useCallback(() => {
-    const quoteBlock = draft.quote.trim()
-      ? draft.quote
-          .trim()
-          .split(/\n+/)
-          .map((line) => `> ${line}`)
-          .join("\n")
-      : "";
-    const user = body.trim();
-    if (quoteBlock && user) return `${quoteBlock}\n\n${user}\n`;
-    if (quoteBlock) return `${quoteBlock}\n`;
-    return user ? `${user}\n` : "";
-  }, [draft.quote, body]);
+  const buildMarkdown = useCallback(
+    () => buildNoteCaptureMarkdown(draft.quote, body),
+    [draft.quote, body],
+  );
 
   const handleSave = useCallback(async () => {
     if (savingRef.current) return;
@@ -144,7 +171,7 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
     const result = await safeCall(() =>
       window.api.library.createNote(t, md, {
         type: "note",
-        tags: ["from-selection"],
+        tags: draft.bodyPrefill ? [] : ["from-selection"],
       }),
     );
     savingRef.current = false;
@@ -159,7 +186,7 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
     if (noteId) {
       void safeCall(() => window.api.ai.enrichNote(noteId));
     }
-  }, [title, draft.passageRef, buildMarkdown, onSaved]);
+  }, [title, draft.passageRef, draft.bodyPrefill, buildMarkdown, onSaved]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -188,14 +215,14 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
         type="button"
         className="floating-dialog-scrim note-capture-scrim"
         aria-label="Dismiss note capture"
-        onClick={() => !saving && onClose()}
+        onClick={requestClose}
       />
       <div className="floating-dialog-surface note-capture-panel" ref={panelRef} tabIndex={-1}>
         <header className="note-capture-header">
           <div className="note-capture-header-text">
-            <span className="note-capture-kicker">Passage note</span>
+            <span className="note-capture-kicker">{draft.originLabel ?? "Passage note"}</span>
             <h2 id="note-capture-title" className="note-capture-heading">
-              {draft.passageRef}
+              New note
             </h2>
             <p className="note-capture-trust">Plain Markdown · saved locally only when you choose</p>
           </div>
@@ -204,7 +231,7 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
               variant="ghost"
               size="icon"
               className="note-capture-close"
-              onClick={() => !saving && onClose()}
+              onClick={requestClose}
               aria-label="Close"
               disabled={saving}
             >
@@ -249,16 +276,41 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
 
         <footer className="note-capture-footer">
           {error && <p className="note-capture-error" role="status">{error}</p>}
+          {discardArmed && (
+            <div className="note-capture-discard" role="alert">
+              <span>Discard this draft? What you wrote will be lost.</span>
+              <span className="note-capture-discard-actions">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setDiscardArmed(false);
+                    bodyRef.current?.focus();
+                  }}
+                >
+                  Keep writing
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="note-capture-discard-confirm"
+                  onClick={onClose}
+                >
+                  Discard
+                </Button>
+              </span>
+            </div>
+          )}
           <div className="note-capture-footer-row">
             <span id="note-capture-description" className="note-capture-hint">
-              Quote included · {isMac ? "⌘S" : "Ctrl+S"} to save
+              {draft.bodyPrefill ? "Excerpt and source included" : "Quote included"} · {isMac ? "⌘S" : "Ctrl+S"} to save
             </span>
             <div className="note-capture-actions">
               <Button
                 variant="secondary"
                 size="sm"
                 className="note-capture-cancel"
-                onClick={() => !saving && onClose()}
+                onClick={requestClose}
                 disabled={saving}
               >
                 Cancel

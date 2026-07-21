@@ -13,7 +13,7 @@ import type {
   SemanticMarginResult,
   VerseNumberMode,
 } from "../api.js";
-import { LivingMargin } from "./LivingMargin.js";
+import { LivingMargin, type LivingMarginCaptureRequest } from "./LivingMargin.js";
 import { useToast } from "./Toast.js";
 import { safeCall } from "../utils/safeCall.js";
 import { parsePassage } from "../utils/parsePassage.js";
@@ -76,6 +76,35 @@ import {
   resolveReadingPointerIntent,
 } from "../utils/readingInteraction.js";
 import { parseConnectionTickMemberIds } from "../utils/connectionRowLayout.js";
+
+export interface MarginCaptureContext {
+  book: string;
+  chapter: number;
+  verseStart: number;
+  verseEnd: number;
+  packageId: string;
+}
+
+/** Build an editable draft whose source and study origin remain visible. */
+export function buildMarginCaptureDraft(
+  capture: LivingMarginCaptureRequest,
+  context: MarginCaptureContext,
+): NoteCaptureDraft {
+  const excerpt = capture.excerpt.trim();
+  const quoteBlock = excerpt
+    ? excerpt.split(/\n+/).map((line) => `> ${line}`).join("\n")
+    : "";
+  const attribution = `— Source: ${capture.sourceAttribution} · ${capture.reference} · captured while studying ${capture.frozenOrigin}`;
+  const studyReference = capture.frozenOrigin.replace(/:\d+(?:[–-]\d+)?$/, "");
+  return {
+    title: `${capture.reference} — from ${studyReference} study`,
+    passageRef: capture.reference,
+    quote: "",
+    bodyPrefill: quoteBlock ? `${quoteBlock}\n\n${attribution}` : attribution,
+    originLabel: capture.originLabel,
+    ...context,
+  };
+}
 
 export interface PinnedRange {
   start: number;
@@ -2045,6 +2074,21 @@ export function ScripturePage({
     setShowHighlightPalette(false);
   };
 
+  const handleMarginCapture = useCallback((capture: LivingMarginCaptureRequest): void => {
+    const verseStart = pinnedRange?.start ?? nearVerse ?? 1;
+    const verseEnd = pinnedRange?.end
+      ?? nearVerse
+      ?? chapterData?.verses.at(-1)?.verse
+      ?? verseStart;
+    setNoteDraft(buildMarginCaptureDraft(capture, {
+      book,
+      chapter,
+      verseStart,
+      verseEnd,
+      packageId,
+    }));
+  }, [book, chapter, chapterData, nearVerse, packageId, pinnedRange]);
+
   const handleNoteCaptureSaved = useCallback(
     ({ title }: { noteId: string; title: string }) => {
       setNoteDraft(null);
@@ -3622,6 +3666,7 @@ export function ScripturePage({
             return result.ok && result.value.ok;
           }}
           onCreateNote={handleNoteFromSelection}
+          onCapture={handleMarginCapture}
           onRemoveHighlights={(entityIds) => void handleDeleteHighlights(entityIds)}
           onStudyVerse={handleStudyVerse}
           onMarginActiveChange={handleMarginActiveChange}

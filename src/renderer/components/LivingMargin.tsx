@@ -20,10 +20,67 @@ import {
 } from "../../core/integrations/shepherdly-resource-node.js";
 import { safeCall } from "../utils/safeCall.js";
 import { LanguageWordsSection } from "./LanguageWordsSection.js";
+import { useToast } from "./Toast.js";
 
 export interface PinnedRange {
   start: number;
   end: number;
+}
+
+export interface LivingMarginCaptureRequest {
+  excerpt: string;
+  sourceAttribution: string;
+  reference: string;
+  frozenOrigin: string;
+  originLabel: "Related verse" | "Passage insight" | "Entity research" | "Word study";
+}
+
+export interface MarginCitationSource {
+  name: string;
+  license: string;
+  detail?: string;
+  citation?: string;
+}
+
+export function formatMarginSourceCitation(source: MarginCitationSource): string {
+  return source.citation?.trim()
+    || [source.name, source.license, source.detail].filter(Boolean).join(" · ");
+}
+
+function MarginSourcesDisclosure({ sources }: { sources: MarginCitationSource[] }): React.JSX.Element | null {
+  const { showToast } = useToast();
+  if (sources.length === 0) return null;
+  const copyCitation = async (source: MarginCitationSource): Promise<void> => {
+    try {
+      await navigator.clipboard.writeText(formatMarginSourceCitation(source));
+      showToast("Citation copied.", undefined, undefined, { tone: "success" });
+    } catch {
+      showToast("The citation could not be copied.", undefined, undefined, { tone: "error" });
+    }
+  };
+  return (
+    <details className="margin-sources">
+      <summary>Sources</summary>
+      <div className="margin-source-list">
+        {sources.map((source) => (
+          <div className="margin-source-row" key={`${source.name}-${source.license}-${source.detail ?? ""}`}>
+            <span className="margin-source-copy">
+              <span>{source.name} <span aria-hidden="true">·</span> {source.license}</span>
+              {source.detail && <span className="margin-source-detail">{source.detail}</span>}
+            </span>
+            <button
+              type="button"
+              className="margin-source-cite"
+              aria-label={`Copy citation for ${source.name}`}
+              onClick={() => void copyCitation(source)}
+            >
+              Cite
+            </button>
+          </div>
+        ))}
+      </div>
+    </details>
+  );
 }
 
 type MarginTab = "overview" | "connections" | "passage" | "notes";
@@ -72,6 +129,8 @@ interface Props {
   onRemoveHighlights?: (entityIds: string[]) => void;
   /** Create a note from the pinned range (same path as the mini toolbar). */
   onCreateNote?: () => void;
+  /** Open explicit-save capture with visible source and study provenance. */
+  onCapture?: (capture: LivingMarginCaptureRequest) => void;
   /** Navigate to a cross-reference's target passage (e.g. "Matthew 3:11"). */
   onNavigateToRef?: (ref: string) => void;
   /** Keep original-language study aligned with its explicit verse. */
@@ -230,6 +289,73 @@ function formatResearchRef(value: string, bookNames: BookNameData): string {
   const match = /^([1-3A-Z]{3})\.(\d+)\.(\d+)$/.exec(value);
   if (!match) return value;
   return `${bookNames[match[1]!]?.[0] ?? match[1]} ${Number(match[2])}:${Number(match[3])}`;
+}
+
+export function formatEntityResearchOrigin(
+  origin: NonNullable<Props["entityIntent"]>["origin"],
+  bookNames: BookNameData,
+): string {
+  const bookLabel = bookNames[origin.book]?.[0] ?? origin.book;
+  if (origin.verseStart == null) return `${bookLabel} ${origin.chapter}`;
+  const verseRange = origin.verseEnd != null && origin.verseEnd !== origin.verseStart
+    ? `${origin.verseStart}–${origin.verseEnd}`
+    : `${origin.verseStart}`;
+  return `${bookLabel} ${origin.chapter}:${verseRange}`;
+}
+
+function entityCaptureSources(data: EntityResearchData): MarginCitationSource[] {
+  return [
+    { name: "STEPBible TIPNR", license: "CC BY 4.0", detail: "Identity" },
+    ...(data.place ? [{
+      name: "OpenBible Bible Geocoding",
+      license: "CC BY 4.0",
+      detail: "Geography",
+      citation: `OpenBible Bible Geocoding · CC BY 4.0 · ${data.place.openBibleUrl}`,
+    }] : []),
+    ...(data.pleiades ? [{
+      name: "Pleiades 4.1",
+      license: "CC BY 3.0",
+      detail: "Ancient gazetteer",
+      citation: `Pleiades 4.1 · CC BY 3.0 · ${data.pleiades.place.sourceUrl}`,
+    }] : []),
+  ];
+}
+
+export function buildEntityResearchCapture(
+  data: EntityResearchData,
+  origin: NonNullable<Props["entityIntent"]>["origin"],
+  bookNames: BookNameData,
+): LivingMarginCaptureRequest {
+  return {
+    excerpt: `${data.entity.displayName} — ${data.entity.brief}`,
+    sourceAttribution: entityCaptureSources(data)
+      .map((source) => `${source.name} (${source.license})`)
+      .join("; "),
+    reference: data.entity.displayName,
+    frozenOrigin: formatEntityResearchOrigin(origin, bookNames),
+    originLabel: "Entity research",
+  };
+}
+
+function entityResearchSources(data: EntityResearchData): MarginCitationSource[] {
+  const sources = entityCaptureSources(data);
+  if (data.place?.linkedData.wikidataId) {
+    sources.push({
+      name: `Wikidata ${data.place.linkedData.wikidataId}`,
+      license: "CC0",
+      detail: "Linked identity",
+    });
+  }
+  if (data.place) sources.push({ name: "Natural Earth", license: "Public domain", detail: "Map" });
+  if (data.place?.image) {
+    sources.push({
+      name: data.place.image.credit,
+      license: data.place.image.license,
+      detail: "Image",
+      citation: `${data.place.image.credit} · ${data.place.image.license} · ${data.place.image.sourceUrl}`,
+    });
+  }
+  return sources;
 }
 
 function coordinatesLabel(latitude: number, longitude: number): string {
@@ -656,6 +782,7 @@ function EntityResearchView({
   bookNames,
   onNavigate,
   onOpenEntity,
+  onCapture,
 }: {
   data: EntityResearchData;
   origin: NonNullable<Props["entityIntent"]>["origin"];
@@ -665,6 +792,7 @@ function EntityResearchView({
   bookNames: BookNameData;
   onNavigate?: (ref: string) => void;
   onOpenEntity?: (entityId: string) => void;
+  onCapture?: (capture: LivingMarginCaptureRequest) => void;
 }): React.JSX.Element {
   const [showAllRefs, setShowAllRefs] = useState(false);
   const [mediaLinkError, setMediaLinkError] = useState<string | null>(null);
@@ -753,7 +881,19 @@ function EntityResearchView({
           <span>{data.entity.kind}</span>
           {place && <><span aria-hidden="true">·</span><span>{place.type}</span></>}
         </div>
-        <h2>{data.entity.displayName}</h2>
+        <div className="entity-research-title-row">
+          <h2>{data.entity.displayName}</h2>
+          {onCapture && (
+            <button
+              type="button"
+              className="margin-capture-action entity-research-capture"
+              aria-label={`Add ${data.entity.displayName} research to a note`}
+              onClick={() => onCapture(buildEntityResearchCapture(data, origin, bookNames))}
+            >
+              Add to note…
+            </button>
+          )}
+        </div>
         {person && (
           <div className="entity-person-facts" aria-label="Person identity">
             <strong>{person.role}</strong>
@@ -918,14 +1058,7 @@ function EntityResearchView({
         </details>
       )}
 
-      <footer className="entity-research-sources">
-        <span>Identity: STEPBible TIPNR · CC BY 4.0</span>
-        {place && <span>Geography: OpenBible · CC BY 4.0</span>}
-        {data.pleiades && <span>Ancient gazetteer: Pleiades 4.1 · CC BY 3.0</span>}
-        {place?.linkedData.wikidataId && <span>Linked identity: Wikidata {place.linkedData.wikidataId}</span>}
-        {place && <span>Map: Natural Earth · Public domain</span>}
-        {place?.image && <span>Image: {place.image.credit} · {place.image.license}</span>}
-      </footer>
+      <MarginSourcesDisclosure sources={entityResearchSources(data)} />
     </article>
   );
 }
@@ -933,47 +1066,82 @@ function EntityResearchView({
 function CrossReferenceRow({
   item,
   onNavigate,
+  onCapture,
+  sourceAttribution,
+  frozenOrigin,
 }: {
   item: CrossReferenceMatchData;
   onNavigate?: (ref: string) => void;
+  onCapture?: (capture: LivingMarginCaptureRequest) => void;
+  sourceAttribution: string;
+  frozenOrigin: string;
 }): React.JSX.Element {
+  const openReference = (): void => onNavigate?.(item.targetBref);
   return (
-    <button
-      type="button"
+    <div
       className="crossref-row"
-      onClick={() => onNavigate?.(item.targetBref)}
-      aria-label={item.preview ? `Open ${item.targetDisplay}. ${item.preview}` : `Open ${item.targetDisplay}`}
-      title={item.preview ? `${item.targetDisplay} — ${item.preview}` : `Open ${item.targetDisplay}`}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) openReference();
+      }}
     >
-      <span className="crossref-row-copy">
-        <span className="crossref-reference">{item.targetDisplay}</span>
-        {item.preview && <span className="crossref-preview">{item.preview}</span>}
-        {item.supportingSourceCount > 1 && (
-          <span className="crossref-support">
-            Linked from {item.supportingSourceCount} verses in this passage
-          </span>
-        )}
-        {item.relationshipKinds.length > 0 && (
-          <span className="crossref-kinds">
-            {item.relationshipKinds.map((kind) => <span key={kind}>{kind}</span>)}
-          </span>
-        )}
-      </span>
-      <span className="crossref-open-affordance">
-        <span>Open</span>
-        <CrossReferenceArrow />
-      </span>
-    </button>
+      <button
+        type="button"
+        className="crossref-row-open"
+        onClick={openReference}
+        aria-label={item.preview ? `Open ${item.targetDisplay}. ${item.preview}` : `Open ${item.targetDisplay}`}
+        title={item.preview ? `${item.targetDisplay} — ${item.preview}` : `Open ${item.targetDisplay}`}
+      >
+        <span className="crossref-row-copy">
+          <span className="crossref-reference">{item.targetDisplay}</span>
+          {item.preview && <span className="crossref-preview">{item.preview}</span>}
+          {item.supportingSourceCount > 1 && (
+            <span className="crossref-support">
+              Linked from {item.supportingSourceCount} verses in this passage
+            </span>
+          )}
+          {item.relationshipKinds.length > 0 && (
+            <span className="crossref-kinds">
+              {item.relationshipKinds.map((kind) => <span key={kind}>{kind}</span>)}
+            </span>
+          )}
+        </span>
+        <span className="crossref-open-affordance">
+          <span>Open</span>
+          <CrossReferenceArrow />
+        </span>
+      </button>
+      {onCapture && (
+        <button
+          type="button"
+          className="margin-capture-action"
+          aria-label={`Add ${item.targetDisplay} to a note`}
+          onClick={() => onCapture({
+            excerpt: item.preview?.trim() || item.targetDisplay,
+            sourceAttribution,
+            reference: item.targetDisplay,
+            frozenOrigin,
+            originLabel: "Related verse",
+          })}
+        >
+          Add to note…
+        </button>
+      )}
+    </div>
   );
 }
 
 function CrossRefsBlock({
   result,
   onNavigate,
+  onCapture,
+  frozenOrigin,
 }: {
   result: CrossReferenceResultData;
   onNavigate?: (ref: string) => void;
+  onCapture?: (capture: LivingMarginCaptureRequest) => void;
+  frozenOrigin: string;
 }): React.JSX.Element {
+  const sourceAttribution = `${result.attribution.name} (${result.attribution.license})`;
   return (
     <section className="margin-section crossref-section" aria-label="Related verses">
       <div className="crossref-heading">
@@ -993,18 +1161,21 @@ function CrossRefsBlock({
 
       <div className="crossref-list">
         {result.items.map((item) => (
-          <CrossReferenceRow key={item.targetBref} item={item} onNavigate={onNavigate} />
+          <CrossReferenceRow
+            key={item.targetBref}
+            item={item}
+            onNavigate={onNavigate}
+            onCapture={onCapture}
+            sourceAttribution={sourceAttribution}
+            frozenOrigin={frozenOrigin}
+          />
         ))}
       </div>
-
-      <div
-        className="crossref-attribution"
-        title={`${result.attribution.attribution} · ${result.attribution.license} · ${result.attribution.sourceUrl}`}
-      >
-        <span>{result.attribution.name}</span>
-        <span aria-hidden="true">·</span>
-        <span>{result.attribution.license}</span>
-      </div>
+      <MarginSourcesDisclosure sources={[{
+        name: result.attribution.name,
+        license: result.attribution.license,
+        citation: `${result.attribution.attribution} · ${result.attribution.license} · ${result.attribution.sourceUrl}`,
+      }]} />
     </section>
   );
 }
@@ -1012,9 +1183,13 @@ function CrossRefsBlock({
 function NoteCrossRefsBlock({
   items,
   onNavigate,
+  onCapture,
+  frozenOrigin,
 }: {
   items: SuggestedCrossRefData[];
   onNavigate?: (ref: string) => void;
+  onCapture?: (capture: LivingMarginCaptureRequest) => void;
+  frozenOrigin: string;
 }): React.JSX.Element {
   return (
     <section className="margin-section note-crossref-section" aria-label="Cross references from notes">
@@ -1027,22 +1202,39 @@ function NoteCrossRefsBlock({
       </div>
       <div className="crossref-list">
         {items.map((item) => (
-          <button
-            key={item.targetBref}
-            type="button"
-            className="note-crossref-row"
-            onClick={() => onNavigate?.(item.targetBref)}
-            aria-label={`Open ${item.targetDisplay} from notes`}
-          >
-            <span className="crossref-row-copy">
-              <span className="crossref-reference">{item.targetDisplay}</span>
-              <span className="note-crossref-reason">{item.reason}</span>
-            </span>
-            <span className="crossref-open-affordance">
-              <span>Open</span>
-              <CrossReferenceArrow />
-            </span>
-          </button>
+          <div className="note-crossref-row" key={item.targetBref}>
+            <button
+              type="button"
+              className="crossref-row-open"
+              onClick={() => onNavigate?.(item.targetBref)}
+              aria-label={`Open ${item.targetDisplay} from notes`}
+            >
+              <span className="crossref-row-copy">
+                <span className="crossref-reference">{item.targetDisplay}</span>
+                <span className="note-crossref-reason">{item.reason}</span>
+              </span>
+              <span className="crossref-open-affordance">
+                <span>Open</span>
+                <CrossReferenceArrow />
+              </span>
+            </button>
+            {onCapture && (
+              <button
+                type="button"
+                className="margin-capture-action"
+                aria-label={`Add ${item.targetDisplay} to a note`}
+                onClick={() => onCapture({
+                  excerpt: item.reason,
+                  sourceAttribution: "From your notes",
+                  reference: item.targetDisplay,
+                  frozenOrigin,
+                  originLabel: "Related verse",
+                })}
+              >
+                Add to note…
+              </button>
+            )}
+          </div>
         ))}
       </div>
     </section>
@@ -1075,6 +1267,17 @@ function IntentOverview({
   const entities = entityResult.entities.slice(0, 4);
   const hasLibraryLead = directNote != null || relatedNote != null || thread != null || claim != null;
   const hasContent = scripture.length > 0 || hasLibraryLead || entities.length > 0;
+  const sources: MarginCitationSource[] = [
+    ...(scripture.length > 0 && crossRefs ? [{
+      name: crossRefs.attribution.name,
+      license: crossRefs.attribution.license,
+      citation: `${crossRefs.attribution.attribution} · ${crossRefs.attribution.license} · ${crossRefs.attribution.sourceUrl}`,
+    }] : []),
+    ...(entities.length > 0 ? [{
+      name: entityResult.attribution.name,
+      license: entityResult.attribution.license,
+    }] : []),
+  ];
 
   return (
     <div className="intent-overview" aria-label="Most relevant study leads">
@@ -1101,11 +1304,6 @@ function IntentOverview({
               </button>
             ))}
           </div>
-          {crossRefs && (
-            <div className="intent-attribution">
-              {crossRefs.attribution.name} <span aria-hidden="true">·</span> {crossRefs.attribution.license}
-            </div>
-          )}
         </section>
       )}
 
@@ -1178,9 +1376,6 @@ function IntentOverview({
               {entityResult.entities.length - entities.length} more appear in this scope as you continue reading.
             </p>
           )}
-          <div className="intent-attribution">
-            {entityResult.attribution.name} <span aria-hidden="true">·</span> {entityResult.attribution.license}
-          </div>
         </section>
       )}
 
@@ -1197,6 +1392,7 @@ function IntentOverview({
           detail="The deeper passage, reference, and note views remain available without filling this overview with weak guesses."
         />
       )}
+      <MarginSourcesDisclosure sources={sources} />
     </div>
   );
 }
@@ -1218,6 +1414,7 @@ export function LivingMargin({
   onPinClaim,
   onRemoveHighlights,
   onCreateNote,
+  onCapture,
   onNavigateToRef,
   onStudyVerse,
   onMarginActiveChange,
@@ -1735,6 +1932,7 @@ export function LivingMargin({
               bookNames={bookNames}
               onNavigate={onNavigateToRef}
               onOpenEntity={openRelatedEntity}
+              onCapture={onCapture}
             />
           </div>
         )}
@@ -1897,7 +2095,12 @@ export function LivingMargin({
             hidden={activeTab !== "connections"}
           >
             {crossRefs && crossRefs.items.length > 0 ? (
-              <CrossRefsBlock result={crossRefs} onNavigate={onNavigateToRef} />
+              <CrossRefsBlock
+                result={crossRefs}
+                onNavigate={onNavigateToRef}
+                onCapture={onCapture}
+                frozenOrigin={contextReference}
+              />
             ) : (
               <MarginEmptyView
                 title="No chapter connections"
@@ -1986,10 +2189,12 @@ export function LivingMargin({
             {nearVerse != null && (
               <LanguageWordsSection
                 book={book}
+                bookDisplayName={displayBook}
                 chapter={chapter}
                 verse={nearVerse}
                 readingPackageId={packageId}
                 onStudyEngage={onStudyVerse}
+                onCapture={onCapture}
               />
             )}
           </section>
@@ -2002,7 +2207,12 @@ export function LivingMargin({
             hidden={activeTab !== "connections"}
           >
             {crossRefs && crossRefs.items.length > 0 ? (
-              <CrossRefsBlock result={crossRefs} onNavigate={onNavigateToRef} />
+              <CrossRefsBlock
+                result={crossRefs}
+                onNavigate={onNavigateToRef}
+                onCapture={onCapture}
+                frozenOrigin={contextReference}
+              />
             ) : (
               <MarginEmptyView
                 title="No connections here"
@@ -2126,10 +2336,12 @@ export function LivingMargin({
           )}
           <LanguageWordsSection
             book={book}
+            bookDisplayName={displayBook}
             chapter={chapter}
             verse={wordsVerse}
             readingPackageId={packageId}
             onStudyEngage={onStudyVerse}
+            onCapture={onCapture}
           />
 
           </section>
@@ -2142,12 +2354,19 @@ export function LivingMargin({
             hidden={activeTab !== "connections"}
           >
             {(crossRefs?.items.length ?? 0) > 0 && crossRefs && (
-              <CrossRefsBlock result={crossRefs} onNavigate={onNavigateToRef} />
+              <CrossRefsBlock
+                result={crossRefs}
+                onNavigate={onNavigateToRef}
+                onCapture={onCapture}
+                frozenOrigin={contextReference}
+              />
             )}
             {pinnedSemantic && pinnedSemantic.suggestedCrossRefs.length > 0 && (
               <NoteCrossRefsBlock
                 items={pinnedSemantic.suggestedCrossRefs.slice(0, 6)}
                 onNavigate={onNavigateToRef}
+                onCapture={onCapture}
+                frozenOrigin={contextReference}
               />
             )}
             {connectionCount === 0 && (
@@ -2200,7 +2419,25 @@ export function LivingMargin({
             <section className="margin-section ai-insight-block" aria-label="Passage insight from your notes">
               <div className="ai-insight-head">
                 <span className="ai-insight-title"><AiSparkIcon /> Passage insight</span>
-                <span className="ai-insight-source">From your notes</span>
+                <span className="ai-insight-actions">
+                  <span className="ai-insight-source">From your notes</span>
+                  {onCapture && (
+                    <button
+                      type="button"
+                      className="margin-capture-action"
+                      aria-label={`Add ${pinnedRef} passage insight to a note`}
+                      onClick={() => onCapture({
+                        excerpt: pinnedInsight,
+                        sourceAttribution: `Grounded in your notes (${pinnedLibraryItemCount})`,
+                        reference: pinnedRef,
+                        frozenOrigin: contextReference,
+                        originLabel: "Passage insight",
+                      })}
+                    >
+                      Add to note…
+                    </button>
+                  )}
+                </span>
               </div>
               <p className="ai-insight-text">{pinnedInsight}</p>
             </section>

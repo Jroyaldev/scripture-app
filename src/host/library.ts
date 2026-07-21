@@ -22,6 +22,11 @@ import {
 import { basename, join } from "node:path";
 import { ulid } from "ulid";
 
+/** Quote a scalar for the small double-quoted YAML subset written below. */
+function yamlQuote(value: string): string {
+  return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+}
+
 /**
  * Generate a deterministic anchor ID from source data.
  * Anchors are Derived (part of the materialized view), so their IDs
@@ -395,7 +400,7 @@ export class LibraryEngine {
       .slice(0, 40);
     const filename = `${id}--${slug}.md`;
 
-    let frontmatter = `---\nid: ${id}\ntitle: "${title}"\ncreated: ${now}\nmodified: ${now}\n`;
+    let frontmatter = `---\nid: ${id}\ntitle: ${yamlQuote(title)}\ncreated: ${now}\nmodified: ${now}\n`;
     if (opts?.type) frontmatter += `type: ${opts.type}\n`;
     if (opts?.tags && opts.tags.length > 0) frontmatter += `tags: [${opts.tags.join(", ")}]\n`;
     frontmatter += "---\n";
@@ -403,6 +408,50 @@ export class LibraryEngine {
     const content = frontmatter + body;
     const notePath = join(this.rootPath, "notes", filename);
     writeFileSync(notePath, content);
+    return notePath;
+  }
+
+  private findNotePath(id: string): string | null {
+    const notesPath = join(this.rootPath, "notes");
+    if (!existsSync(notesPath)) return null;
+    const filename = readdirSync(notesPath).find(
+      (entry) => entry.startsWith(`${id}--`) && entry.endsWith(".md"),
+    );
+    return filename ? join(notesPath, filename) : null;
+  }
+
+  /** Update a note in place while preserving its durable identity and type. */
+  updateNote(id: string, title: string, body: string, opts?: { tags?: string[] }): string | null {
+    const notePath = this.findNotePath(id);
+    if (!notePath) return null;
+    const existing = parseNote(readFileSync(notePath, "utf-8"), this.bookNames, this.backbone);
+    const now = new Date().toISOString();
+    const tags = opts?.tags ?? existing.frontmatter.tags;
+
+    let frontmatter = `---\nid: ${id}\ntitle: ${yamlQuote(title)}\ncreated: ${existing.frontmatter.created || now}\nmodified: ${now}\n`;
+    if (existing.frontmatter.type) frontmatter += `type: ${existing.frontmatter.type}\n`;
+    if (tags && tags.length > 0) frontmatter += `tags: [${tags.join(", ")}]\n`;
+    frontmatter += "---\n";
+
+    writeFileSync(notePath, frontmatter + body);
+    return notePath;
+  }
+
+  /** Remove a note and return its exact bytes for the explicit Undo path. */
+  deleteNote(id: string): { filename: string; content: string } | null {
+    const notePath = this.findNotePath(id);
+    if (!notePath) return null;
+    const content = readFileSync(notePath, "utf-8");
+    rmSync(notePath);
+    return { filename: basename(notePath), content };
+  }
+
+  /** Restore an explicitly deleted note without overwriting another note. */
+  restoreNote(filename: string, content: string): string | null {
+    if (!/^[A-Za-z0-9]+--[^/\\]+\.md$/.test(filename)) return null;
+    const notePath = join(this.rootPath, "notes", filename);
+    if (existsSync(notePath)) return null;
+    writeFileSync(notePath, content, { flag: "wx" });
     return notePath;
   }
 

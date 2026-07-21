@@ -30,6 +30,7 @@ import {
   senseOutlineModel,
 } from "./RenderingOrbit.js";
 import { StructureModal } from "./StructureModal.js";
+import { useToast } from "./Toast.js";
 
 /** Closed row shows at most this many grammar chips (+ optional Strong's id). */
 const MORPH_CHIP_MAX = 5;
@@ -47,6 +48,7 @@ const NT = new Set([
 
 interface Props {
   book: string;
+  bookDisplayName?: string;
   chapter: number;
   verse: number;
   /**
@@ -59,6 +61,21 @@ interface Props {
    * Parent should pin this verse so ambient scroll cannot steal the panel.
    */
   onStudyEngage?: (verse: number) => void;
+  onCapture?: (capture: LanguageWordCaptureRequest) => void;
+}
+
+export interface LanguageWordCaptureRequest {
+  excerpt: string;
+  sourceAttribution: string;
+  reference: string;
+  frozenOrigin: string;
+  originLabel: "Word study";
+}
+
+interface LanguageCitationSource {
+  name: string;
+  license: string;
+  detail?: string;
 }
 
 type ChipToken = LanguageToken & {
@@ -124,6 +141,144 @@ function engOf(t: ChipToken): string | null {
     return first.length > 40 ? `${first.slice(0, 37)}…` : first || null;
   }
   return null;
+}
+
+function languagePackageLicense(packageId: string): string {
+  if (packageId === "macula-greek-nestle1904" || packageId === "oshb-wlc") return "CC BY 4.0";
+  return "See installed package license";
+}
+
+function languageSourceLicense(sourceName: string): string {
+  if (/^STEPBible TE[GH]MC$/.test(sourceName) || sourceName === "STEPBible TIPNR") return "CC BY 4.0";
+  if (sourceName === "MACULA / MARBLE") return "CC BY 4.0";
+  if (sourceName === "Strong's" || sourceName === "Thayer" || sourceName === "BDB") return "Public domain";
+  return "See source license";
+}
+
+function dedupeLanguageSources(sources: LanguageCitationSource[]): LanguageCitationSource[] {
+  const seen = new Set<string>();
+  return sources.filter((source) => {
+    const key = `${source.name}|${source.license}|${source.detail ?? ""}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function languageCardSources(
+  card: LanguageTokenCard,
+  packageId: string,
+  packageName: string,
+  strongPeek: NonNullable<LanguageTokenCard["definition"]> | null,
+): LanguageCitationSource[] {
+  const sources: LanguageCitationSource[] = [
+    { name: packageName, license: languagePackageLicense(packageId), detail: "Word and gloss" },
+  ];
+  if (card.definition) {
+    sources.push({
+      name: card.definition.source,
+      license: languageSourceLicense(card.definition.source),
+      detail: card.definition.id,
+    });
+    if (card.definition.deeper) {
+      sources.push({
+        name: card.definition.deeper.source,
+        license: languageSourceLicense(card.definition.deeper.source),
+        detail: card.definition.deeper.id,
+      });
+    }
+  }
+  if (card.stepMorph?.source) {
+    sources.push({
+      name: card.stepMorph.source,
+      license: languageSourceLicense(card.stepMorph.source),
+      detail: "Morphology",
+    });
+  }
+  if (card.nameEntity) sources.push({ name: "STEPBible TIPNR", license: "CC BY 4.0", detail: "Name data" });
+  if (card.semanticSenses) sources.push({ name: "MACULA / MARBLE", license: "CC BY 4.0", detail: "Context senses" });
+  if (strongPeek) {
+    sources.push({
+      name: strongPeek.source,
+      license: languageSourceLicense(strongPeek.source),
+      detail: strongPeek.id,
+    });
+    if (strongPeek.deeper) {
+      sources.push({
+        name: strongPeek.deeper.source,
+        license: languageSourceLicense(strongPeek.deeper.source),
+        detail: strongPeek.deeper.id,
+      });
+    }
+  }
+  return dedupeLanguageSources(sources);
+}
+
+export function formatLanguageSourceCitation(source: LanguageCitationSource): string {
+  return [source.name, source.license, source.detail].filter(Boolean).join(" · ");
+}
+
+function LanguageSourcesDisclosure({ sources }: { sources: LanguageCitationSource[] }): React.JSX.Element {
+  const { showToast } = useToast();
+  const copyCitation = async (source: LanguageCitationSource): Promise<void> => {
+    try {
+      await navigator.clipboard.writeText(formatLanguageSourceCitation(source));
+      showToast("Citation copied.", undefined, undefined, { tone: "success" });
+    } catch {
+      showToast("The citation could not be copied.", undefined, undefined, { tone: "error" });
+    }
+  };
+  return (
+    <details className="margin-sources lang-sources">
+      <summary>Sources</summary>
+      <div className="margin-source-list">
+        {sources.map((source) => (
+          <div className="margin-source-row" key={`${source.name}-${source.license}-${source.detail ?? ""}`}>
+            <span className="margin-source-copy">
+              <span>{source.name} <span aria-hidden="true">·</span> {source.license}</span>
+              {source.detail && <span className="margin-source-detail">{source.detail}</span>}
+            </span>
+            <button type="button" className="margin-source-cite" onClick={() => void copyCitation(source)}>
+              Cite
+            </button>
+          </div>
+        ))}
+      </div>
+    </details>
+  );
+}
+
+export function buildLanguageWordCapture({
+  card,
+  packageId,
+  packageName,
+  reference,
+}: {
+  card: LanguageTokenCard;
+  packageId: string;
+  packageName: string;
+  reference: string;
+}): LanguageWordCaptureRequest {
+  const surface = surfaceOf(card.token, card.displaySurface);
+  const transliteration = card.definition?.xlit?.trim() || card.definition?.deeper?.xlit?.trim();
+  const gloss = (card.gloss ?? card.token.gloss)?.trim();
+  const descriptors = [...new Set([transliteration, gloss].filter((value): value is string => Boolean(value)))];
+  const wordLine = descriptors.length > 0 ? `${surface} · ${descriptors.join(" · ")}` : surface;
+  const definitionLine = card.definition?.firstSense.trim();
+  const sourceEntries = dedupeLanguageSources([
+    { name: packageName, license: languagePackageLicense(packageId) },
+    ...(card.definition ? [{
+      name: card.definition.source,
+      license: languageSourceLicense(card.definition.source),
+    }] : []),
+  ]);
+  return {
+    excerpt: definitionLine ? `${wordLine}\nDefinition: ${definitionLine}` : wordLine,
+    sourceAttribution: sourceEntries.map((source) => `${source.name} (${source.license})`).join("; "),
+    reference,
+    frozenOrigin: reference,
+    originLabel: "Word study",
+  };
 }
 
 /**
@@ -208,7 +363,6 @@ function MorphFormBlock({
                   {stepMorph.example.trim()}
                 </p>
               ) : null}
-              <p className="lang-step-attr">{stepMorph.source} · CC BY</p>
             </div>
           ) : null}
 
@@ -306,11 +460,6 @@ function DefinitionBlock({
             </p>
           )}
           <p className="lang-def-full">{definition.full}</p>
-          <p className="lang-def-attr">
-            {definition.source}
-            <span className="lang-dot">·</span>
-            {definition.id}
-          </p>
 
           {/* Deeper lexicon (Thayer Greek / BDB Hebrew) — same expander, second block */}
           {deeper && (
@@ -332,11 +481,6 @@ function DefinitionBlock({
               ) : (
                 <p className="lang-def-full lang-def-deeper-full">{deeper.full}</p>
               )}
-              <p className="lang-def-attr">
-                {deeper.source}
-                <span className="lang-dot">·</span>
-                {deeper.id}
-              </p>
             </div>
           )}
         </div>
@@ -575,17 +719,6 @@ function StrongPeekCard({
       ) : definition.deeper?.full ? (
         <p className="lang-def-full lang-def-deeper-full">{definition.deeper.full}</p>
       ) : null}
-      <p className="lang-def-attr">
-        {definition.source}
-        <span className="lang-dot">·</span>
-        {definition.id}
-        {definition.deeper ? (
-          <>
-            <span className="lang-dot">·</span>
-            {definition.deeper.source}
-          </>
-        ) : null}
-      </p>
     </div>
   );
 }
@@ -685,17 +818,18 @@ function NameEntityCard({ hit }: { hit: LanguageNameEntityHit }): React.JSX.Elem
           </div>
         </div>
       )}
-      <p className="lang-name-attr">TIPNR · STEPBible · CC BY</p>
     </div>
   );
 }
 
 export function LanguageWordsSection({
   book,
+  bookDisplayName,
   chapter,
   verse,
   readingPackageId,
   onStudyEngage,
+  onCapture,
 }: Props): React.JSX.Element | null {
   const [load, setLoad] = useState<LoadState>({ kind: "idle" });
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -949,6 +1083,10 @@ export function LanguageWordsSection({
           ? "Greek"
           : "Language"
       : "Language";
+  const reference = `${bookDisplayName ?? book} ${chapter}:${verse}`;
+  const cardSources = card && load.kind === "ready"
+    ? languageCardSources(card, load.packageId, load.packageName, strongPeek)
+    : [];
 
   return (
     <div className="margin-section lang">
@@ -1006,12 +1144,29 @@ export function LanguageWordsSection({
           {!cardLoading && card && (
             <div className="lang-detail">
               {/* Primary: form + English */}
-              <div
-                className="lang-detail-form"
-                dir={dirAttr}
-                lang={langAttr}
-              >
-                {surfaceOf(card.token, card.displaySurface)}
+              <div className="lang-detail-heading">
+                <div
+                  className="lang-detail-form"
+                  dir={dirAttr}
+                  lang={langAttr}
+                >
+                  {surfaceOf(card.token, card.displaySurface)}
+                </div>
+                {onCapture && load.kind === "ready" && (
+                  <button
+                    type="button"
+                    className="margin-capture-action lang-capture-action"
+                    aria-label={`Add ${surfaceOf(card.token, card.displaySurface)} word study to a note`}
+                    onClick={() => onCapture(buildLanguageWordCapture({
+                      card,
+                      packageId: load.packageId,
+                      packageName: load.packageName,
+                      reference,
+                    }))}
+                  >
+                    Add to note…
+                  </button>
+                )}
               </div>
 
               {(card.gloss || card.token.gloss) && (
@@ -1136,6 +1291,7 @@ export function LanguageWordsSection({
                   )}
                 </ul>
               )}
+              <LanguageSourcesDisclosure sources={cardSources} />
             </div>
           )}
         </>
