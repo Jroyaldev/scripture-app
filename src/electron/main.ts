@@ -236,6 +236,18 @@ interface AppSettingsSchema {
     };
     trail: Array<{ id: string; displayName: string }>;
   } | null;
+  researchWorkspace: {
+    tabs: Array<{
+      id: string;
+      entityId: string;
+      origin: NonNullable<AppSettingsSchema["researchSession"]>["origin"];
+      trail: Array<{ id: string; displayName: string }>;
+      nonce: number;
+    }>;
+    activeTabId: string;
+    lastResearchTabId: string | null;
+    activationOrder: string[];
+  } | null;
   keptContext: {
     book: string;
     chapter: number;
@@ -367,6 +379,53 @@ function normalizeResearchSession(value: unknown): AppSettingsSchema["researchSe
   };
 }
 
+function normalizeResearchWorkspace(value: unknown): AppSettingsSchema["researchWorkspace"] {
+  if (value === null) return null;
+  if (!value || typeof value !== "object") return null;
+  const candidate = value as Record<string, unknown>;
+  if (!Array.isArray(candidate["tabs"])) return null;
+  const tabs: NonNullable<AppSettingsSchema["researchWorkspace"]>["tabs"] = [];
+  const ids = new Set<string>();
+  for (const item of candidate["tabs"].slice(0, 64)) {
+    if (!item || typeof item !== "object") return null;
+    const tab = item as Record<string, unknown>;
+    if (
+      typeof tab["id"] !== "string"
+      || tab["id"].length < 1
+      || tab["id"].length > 160
+      || ids.has(tab["id"])
+      || typeof tab["entityId"] !== "string"
+      || tab["entityId"].length < 1
+      || tab["entityId"].length > 256
+      || !Number.isSafeInteger(tab["nonce"])
+      || (tab["nonce"] as number) < 0
+    ) return null;
+    const session = normalizeResearchSession({ origin: tab["origin"], trail: tab["trail"] });
+    if (!session) return null;
+    ids.add(tab["id"]);
+    tabs.push({
+      id: tab["id"],
+      entityId: tab["entityId"],
+      origin: session.origin,
+      trail: session.trail,
+      nonce: tab["nonce"] as number,
+    });
+  }
+  const validIds = new Set(["scripture", ...ids]);
+  const activeTabId = typeof candidate["activeTabId"] === "string" && validIds.has(candidate["activeTabId"])
+    ? candidate["activeTabId"]
+    : "scripture";
+  const lastResearchTabId = typeof candidate["lastResearchTabId"] === "string" && ids.has(candidate["lastResearchTabId"])
+    ? candidate["lastResearchTabId"]
+    : tabs.at(-1)?.id ?? null;
+  const activationOrder = Array.isArray(candidate["activationOrder"])
+    ? [...new Set(candidate["activationOrder"].filter((id): id is string => typeof id === "string" && validIds.has(id)))]
+    : [];
+  if (!activationOrder.includes("scripture")) activationOrder.unshift("scripture");
+  if (!activationOrder.includes(activeTabId)) activationOrder.push(activeTabId);
+  return { tabs, activeTabId, lastResearchTabId, activationOrder };
+}
+
 function normalizeKeptContext(value: unknown): AppSettingsSchema["keptContext"] {
   if (value === null) return null;
   if (!value || typeof value !== "object") return null;
@@ -410,6 +469,7 @@ const store = new Store<AppSettingsSchema>({
     recentPassages: [],
     lastRead: null,
     researchSession: null,
+    researchWorkspace: null,
     keptContext: null,
     windowBounds: null,
     libraryPath: null,
@@ -3052,12 +3112,14 @@ function registerIpcHandlers(): void {
     markingSurface: normalizeMarkingSurface(store.store.markingSurface),
     lastRead: normalizeLastRead(store.store.lastRead),
     researchSession: normalizeResearchSession(store.store.researchSession),
+    researchWorkspace: normalizeResearchWorkspace(store.store.researchWorkspace),
     keptContext: normalizeKeptContext(store.store.keptContext),
   }));
 
   ipcMain.handle("settings:set", (_event, partial: Partial<AppSettingsSchema>) => {
     const hasLastRead = Object.prototype.hasOwnProperty.call(partial, "lastRead");
     const hasResearchSession = Object.prototype.hasOwnProperty.call(partial, "researchSession");
+    const hasResearchWorkspace = Object.prototype.hasOwnProperty.call(partial, "researchWorkspace");
     const hasKeptContext = Object.prototype.hasOwnProperty.call(partial, "keptContext");
     store.set({
       ...store.store,
@@ -3067,6 +3129,9 @@ function registerIpcHandlers(): void {
       lastRead: normalizeLastRead(hasLastRead ? partial.lastRead : store.store.lastRead),
       researchSession: normalizeResearchSession(
         hasResearchSession ? partial.researchSession : store.store.researchSession,
+      ),
+      researchWorkspace: normalizeResearchWorkspace(
+        hasResearchWorkspace ? partial.researchWorkspace : store.store.researchWorkspace,
       ),
       keptContext: normalizeKeptContext(hasKeptContext ? partial.keptContext : store.store.keptContext),
     });

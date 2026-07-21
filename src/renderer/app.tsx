@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import type {
   AppSettings,
   BackboneData,
@@ -26,6 +26,7 @@ import { Tooltip } from "./components/Tooltip.js";
 import {
   CommandPalette,
   type CommandPaletteAction,
+  type CommandPaletteTab,
   type CommandReadingContext,
 } from "./components/CommandPalette.js";
 import { isDarkTheme, type AppTheme } from "./theme.js";
@@ -35,6 +36,18 @@ import {
   type NavigationHistoryEntry,
   type NavigationHistoryState,
 } from "./utils/navigationHistory.js";
+import {
+  closeResearchWorkspaceGroup as closeResearchGroupState,
+  closeResearchWorkspaceTab as closeResearchTabState,
+  createResearchWorkspaceState,
+  navigateActiveResearchWorkspaceTab,
+  openResearchWorkspaceTab,
+  retainedResearchWorkspaceTab,
+  SCRIPTURE_WORKSPACE_ID,
+  selectResearchWorkspaceTab,
+  updateResearchWorkspaceTrail,
+  type ResearchWorkspaceState,
+} from "./utils/researchWorkspace.js";
 import "./styles.css";
 
 type View = "scripture" | "write" | "search" | "notes" | "settings";
@@ -46,17 +59,6 @@ type LoadState =
   | { status: "first-run"; defaultPath: string };
 
 const WRITING_DRAFT_STORAGE_KEY = "scripture.writing-draft";
-
-function entityResearchOriginKey(origin: CommandReadingContext): string {
-  return [
-    origin.book,
-    origin.chapter,
-    origin.chapterEndVerse ?? "",
-    origin.packageId,
-    origin.verseStart ?? "",
-    origin.verseEnd ?? "",
-  ].join(":");
-}
 
 function recoverWritingDraft(): WritingDraft {
   try {
@@ -179,6 +181,7 @@ export function App(): React.JSX.Element {
   const [canvasSessionEntry, setCanvasSessionEntry] = useState<NavigationHistoryEntry | null>(null);
   const [writingDraft, setWritingDraft] = useState<WritingDraft>(recoverWritingDraft);
   const [commandOpen, setCommandOpen] = useState(false);
+  const [commandInitialTab, setCommandInitialTab] = useState<CommandPaletteTab>("intelligence");
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [readingContext, setReadingContext] = useState<CommandReadingContext>({
     book: "ACT",
@@ -190,15 +193,17 @@ export function App(): React.JSX.Element {
     chapter: 19,
     packageId: "bsb",
   });
-  const [entityIntent, setEntityIntent] = useState<{
-    id: string;
-    nonce: number;
-    origin: CommandReadingContext;
-  } | null>(null);
-  const [entityResearchSession, setEntityResearchSession] = useState<{
-    origin: CommandReadingContext | null;
-    trail: EntityResearchTrailEntry[];
-  }>({ origin: null, trail: [] });
+  const [researchWorkspace, setResearchWorkspace] = useState<ResearchWorkspaceState>(
+    createResearchWorkspaceState,
+  );
+  const retainedResearchTab = retainedResearchWorkspaceTab(researchWorkspace);
+  const retainedResearchTabIdRef = useRef<string | null>(retainedResearchTab?.id ?? null);
+  retainedResearchTabIdRef.current = retainedResearchTab?.id ?? null;
+  const entityIntent = useMemo(() => retainedResearchTab ? {
+    id: retainedResearchTab.entityId,
+    nonce: retainedResearchTab.nonce,
+    origin: retainedResearchTab.origin,
+  } : null, [retainedResearchTab?.entityId, retainedResearchTab?.nonce, retainedResearchTab?.origin]);
   const [keptContext, setKeptContext] = useState<NonNullable<AppSettings["keptContext"]> | null>(null);
   const [workspaceIntent, setWorkspaceIntent] = useState<{
     query?: string;
@@ -339,8 +344,19 @@ export function App(): React.JSX.Element {
         if (res.value.readingSize) setReadingSize(res.value.readingSize);
         if (res.value.readingWidth) setReadingWidth(res.value.readingWidth);
         if (res.value.verseNumbers) setVerseNumbers(res.value.verseNumbers);
-        if (res.value.researchSession) {
-          setEntityResearchSession(res.value.researchSession);
+        if (res.value.researchWorkspace) {
+          setResearchWorkspace(res.value.researchWorkspace);
+        } else if (res.value.researchSession?.trail.at(-1)) {
+          const legacy = res.value.researchSession;
+          const current = legacy.trail.at(-1)!;
+          const restored = openResearchWorkspaceTab(createResearchWorkspaceState(), {
+            id: `research-${crypto.randomUUID()}`,
+            entityId: current.id,
+            origin: legacy.origin,
+            nonce: Date.now(),
+          });
+          restored.tabs[0] = { ...restored.tabs[0]!, trail: legacy.trail };
+          setResearchWorkspace(selectResearchWorkspaceTab(restored, SCRIPTURE_WORKSPACE_ID));
         }
         if (!keptContextDirtyRef.current) setKeptContext(res.value.keptContext ?? null);
       }
@@ -382,12 +398,14 @@ export function App(): React.JSX.Element {
 
   useEffect(() => {
     if (!settingsLoaded.current) return;
+    const retained = retainedResearchWorkspaceTab(researchWorkspace);
     void safeCall(() => window.api.settings.set({
-      researchSession: entityResearchSession.origin
-        ? { origin: entityResearchSession.origin, trail: entityResearchSession.trail }
+      researchWorkspace: researchWorkspace.tabs.length > 0 ? researchWorkspace : null,
+      researchSession: retained
+        ? { origin: retained.origin, trail: retained.trail }
         : null,
     }));
-  }, [entityResearchSession, settingsReady]);
+  }, [researchWorkspace, settingsReady]);
 
   useEffect(() => {
     if (!settingsLoaded.current) return;
@@ -477,12 +495,22 @@ export function App(): React.JSX.Element {
 
   const openCommandPalette = useCallback(() => {
     setCommandContext(readingContext);
+    setCommandInitialTab("intelligence");
+    setCommandOpen(true);
+  }, [readingContext]);
+  const openResearchCommandPalette = useCallback(() => {
+    setCommandContext(readingContext);
+    setCommandInitialTab("names");
     setCommandOpen(true);
   }, [readingContext]);
   const closeCommandPalette = useCallback(() => setCommandOpen(false), []);
   const closeShortcutsOverlay = useCallback(() => setShortcutsOpen(false), []);
 
-  const openEntityResearchAt = useCallback((entityId: string, origin: CommandReadingContext) => {
+  const openEntityResearchAt = useCallback((
+    entityId: string,
+    origin: CommandReadingContext,
+    mode: "tab" | "navigate" = "tab",
+  ) => {
     if (authoredMutationStateRef.current !== "idle") return;
     if (!entityIntent) {
       const active = document.activeElement;
@@ -490,38 +518,77 @@ export function App(): React.JSX.Element {
         ? active
         : null;
     }
-    const resumesSession = entityResearchSession.origin != null
-      && entityResearchOriginKey(entityResearchSession.origin) === entityResearchOriginKey(origin);
-    const frozenOrigin = resumesSession ? entityResearchSession.origin! : origin;
-    if (!resumesSession) setEntityResearchSession({ origin, trail: [] });
-    setEntityIntent({ id: entityId, nonce: Date.now(), origin: frozenOrigin });
+    const nonce = Date.now();
+    setResearchWorkspace((current) => (
+      mode === "navigate" && current.activeTabId !== SCRIPTURE_WORKSPACE_ID
+        ? navigateActiveResearchWorkspaceTab(current, entityId, nonce)
+        : openResearchWorkspaceTab(current, {
+            id: `research-${crypto.randomUUID()}`,
+            entityId,
+            origin,
+            nonce,
+          })
+    ));
     changeView("scripture");
     setFocusMode(false);
     userDirtySettings.current.marginVisible = true;
     setMarginVisible(true);
-  }, [changeView, entityIntent, entityResearchSession]);
-  const openEntityResearch = useCallback((entityId: string, origin?: CommandReadingContext) => {
-    openEntityResearchAt(entityId, origin ?? readingContext);
+  }, [changeView, entityIntent]);
+  const openEntityResearch = useCallback((
+    entityId: string,
+    origin?: CommandReadingContext,
+    mode: "tab" | "navigate" = "tab",
+  ) => {
+    openEntityResearchAt(entityId, origin ?? readingContext, mode);
   }, [openEntityResearchAt, readingContext]);
   const openCommandEntityResearch = useCallback((entityId: string) => {
     openEntityResearchAt(entityId, commandContext);
   }, [commandContext, openEntityResearchAt]);
-  const closeEntityResearch = useCallback(() => {
+  const selectResearchWorkspace = useCallback((tabId: string) => {
+    setResearchWorkspace((current) => selectResearchWorkspaceTab(current, tabId));
+    changeView("scripture");
+    if (tabId !== SCRIPTURE_WORKSPACE_ID) {
+      setFocusMode(false);
+      userDirtySettings.current.marginVisible = true;
+      setMarginVisible(true);
+    }
+  }, [changeView]);
+  const closeResearchTab = useCallback((tabId: string) => {
     const target = entityReturnFocusRef.current;
-    setEntityIntent(null);
+    let focusId = "scripture-workspace-tab";
+    let hasResearchAfterClose = false;
+    setResearchWorkspace((current) => {
+      const next = closeResearchTabState(current, tabId);
+      hasResearchAfterClose = next.tabs.length > 0;
+      focusId = next.activeTabId === SCRIPTURE_WORKSPACE_ID
+        ? "scripture-workspace-tab"
+        : `research-workspace-tab-${next.activeTabId}`;
+      return next;
+    });
     window.setTimeout(() => {
-      if (target?.isConnected) target.focus();
-      else document.querySelector<HTMLElement>("#living-margin-title")?.focus();
-      entityReturnFocusRef.current = null;
+      const workspaceTab = document.getElementById(focusId);
+      if (workspaceTab instanceof HTMLElement) workspaceTab.focus({ preventScroll: true });
+      else if (!hasResearchAfterClose && target?.isConnected) target.focus();
+      if (!hasResearchAfterClose) entityReturnFocusRef.current = null;
     }, 0);
+  }, []);
+  const closeEntityResearch = useCallback(() => {
+    if (researchWorkspace.activeTabId === SCRIPTURE_WORKSPACE_ID) return;
+    closeResearchTab(researchWorkspace.activeTabId);
+  }, [closeResearchTab, researchWorkspace.activeTabId]);
+  const closeResearchGroup = useCallback((groupKey: string) => {
+    setResearchWorkspace((current) => closeResearchGroupState(current, groupKey));
   }, []);
   const updateEntityResearchTrail = useCallback((
     update: (current: readonly EntityResearchTrailEntry[]) => EntityResearchTrailEntry[],
   ): void => {
-    setEntityResearchSession((current) => ({
-      origin: current.origin,
-      trail: update(current.trail),
-    }));
+    const tabId = retainedResearchTabIdRef.current;
+    if (!tabId) return;
+    setResearchWorkspace((current) => updateResearchWorkspaceTrail(
+      current,
+      tabId,
+      update,
+    ));
   }, []);
 
   const toggleSidebarCollapsed = () => {
@@ -994,6 +1061,7 @@ export function App(): React.JSX.Element {
                 sessionEntry={canvasSessionEntry}
                 onSessionEntryChange={setCanvasSessionEntry}
                 onOpenCommandPalette={openCommandPalette}
+                onOpenResearchPalette={openResearchCommandPalette}
                 onReadingContextChange={handleReadingContextChange}
                 onCreateNote={handleCreateNoteFromPassage}
                 marginVisible={marginVisible && !focusMode}
@@ -1013,10 +1081,15 @@ export function App(): React.JSX.Element {
                 onConnectionDraftExitControllerChange={(controller) => {
                   connectionDraftExitControllerRef.current = controller;
                 }}
+                researchTabs={researchWorkspace.tabs}
+                activeWorkspaceTabId={researchWorkspace.activeTabId}
+                onWorkspaceTabSelect={selectResearchWorkspace}
+                onResearchTabClose={closeResearchTab}
+                onResearchGroupClose={closeResearchGroup}
                 entityIntent={entityIntent}
                 onOpenEntity={openEntityResearch}
                 onCloseEntity={closeEntityResearch}
-                entityTrail={entityResearchSession.trail}
+                entityTrail={retainedResearchTab?.trail ?? []}
                 onEntityTrailChange={updateEntityResearchTrail}
                 keptContext={keptContext}
                 onKeptContextChange={changeKeptContext}
@@ -1073,6 +1146,7 @@ export function App(): React.JSX.Element {
           )}
           <CommandPalette
             open={commandOpen}
+            initialTab={commandInitialTab}
             onClose={closeCommandPalette}
             theme={theme}
             backbone={backbone}

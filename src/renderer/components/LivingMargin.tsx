@@ -144,7 +144,7 @@ interface Props {
   activeTab?: MarginTab;
   onActiveTabChange?: (tab: MarginTab) => void;
   workspace?: MarginWorkspace;
-  onWorkspaceChange?: (workspace: MarginWorkspace) => void;
+  workspaceTabId?: string;
   entityIntent?: {
     id: string;
     nonce: number;
@@ -166,62 +166,6 @@ interface Props {
   /** Incremented for explicit inspector-entry requests. Reading-canvas pointer
    * activation deliberately leaves this unchanged so Scripture keeps focus. */
   connectionInspectorFocusRequest?: number;
-}
-
-function MarginWorkspaceTabs({
-  active,
-  hasResearch,
-  onChange,
-}: {
-  active: MarginWorkspace;
-  hasResearch: boolean;
-  onChange: (workspace: MarginWorkspace) => void;
-}): React.JSX.Element {
-  const refs = useRef<Array<HTMLButtonElement | null>>([]);
-  const workspaces: readonly MarginWorkspace[] = ["study", "research"];
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number): void => {
-    let nextIndex: number | null = null;
-    if (event.key === "ArrowRight") nextIndex = (index + 1) % workspaces.length;
-    else if (event.key === "ArrowLeft") nextIndex = (index - 1 + workspaces.length) % workspaces.length;
-    else if (event.key === "Home") nextIndex = 0;
-    else if (event.key === "End") nextIndex = workspaces.length - 1;
-    if (nextIndex == null) return;
-    event.preventDefault();
-    const workspace = workspaces[nextIndex]!;
-    if (workspace === "research" && !hasResearch) {
-      refs.current[0]?.focus({ preventScroll: true });
-      onChange("study");
-      return;
-    }
-    onChange(workspace);
-    refs.current[nextIndex]?.focus({ preventScroll: true });
-  };
-  return (
-    <div className="margin-workspace-tabs" role="tablist" aria-label="Study workspaces">
-      {workspaces.map((workspace, index) => {
-        const selected = active === workspace;
-        const unavailable = workspace === "research" && !hasResearch;
-        const label = workspace === "study" ? "Study" : "Research";
-        return (
-          <button
-            key={workspace}
-            ref={(node) => { refs.current[index] = node; }}
-            type="button"
-            id={`margin-workspace-${workspace}-tab`}
-            role="tab"
-            aria-selected={selected}
-            aria-controls={`margin-${workspace}-workspace`}
-            aria-disabled={unavailable || undefined}
-            tabIndex={selected ? 0 : -1}
-            onClick={() => { if (!unavailable) onChange(workspace); }}
-            onKeyDown={(event) => handleKeyDown(event, index)}
-          >
-            {label}
-          </button>
-        );
-      })}
-    </div>
-  );
 }
 
 function AiSparkIcon(): React.JSX.Element {
@@ -1585,7 +1529,7 @@ export function LivingMargin({
   activeTab: controlledActiveTab,
   onActiveTabChange,
   workspace,
-  onWorkspaceChange,
+  workspaceTabId,
   entityIntent,
   onOpenEntity,
   onCloseEntity,
@@ -1625,10 +1569,10 @@ export function LivingMargin({
   const researchTitleRef = useRef<HTMLHeadingElement>(null);
   const marginRef = useRef<HTMLElement>(null);
   const activeWorkspace: MarginWorkspace = workspace ?? (entityIntent ? "research" : "study");
-  const workspaceScrollPositionsRef = useRef<Record<MarginWorkspace, number>>({
-    study: 0,
-    research: 0,
-  });
+  const activeWorkspaceKey = activeWorkspace === "study"
+    ? "study"
+    : `research:${workspaceTabId ?? entityIntent?.id ?? "active"}`;
+  const workspaceScrollPositionsRef = useRef<Map<string, number>>(new Map([["study", 0]]));
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const tabScrollPositionsRef = useRef<Record<MarginTab, number>>({
     overview: 0,
@@ -1639,12 +1583,12 @@ export function LivingMargin({
 
   useLayoutEffect(() => {
     if (!marginRef.current) return;
-    marginRef.current.scrollTop = workspaceScrollPositionsRef.current[activeWorkspace];
-  }, [activeWorkspace]);
+    marginRef.current.scrollTop = workspaceScrollPositionsRef.current.get(activeWorkspaceKey) ?? 0;
+  }, [activeWorkspaceKey]);
 
   const rememberWorkspaceScroll = (): void => {
     if (!marginRef.current) return;
-    workspaceScrollPositionsRef.current[activeWorkspace] = marginRef.current.scrollTop;
+    workspaceScrollPositionsRef.current.set(activeWorkspaceKey, marginRef.current.scrollTop);
   };
 
   // Session-only cache of AI insight results for the pinned range, keyed by
@@ -2162,16 +2106,9 @@ export function LivingMargin({
         onPointerEnter={() => onMarginActiveChange?.(true)}
         onPointerLeave={() => onMarginActiveChange?.(false)}
       >
-        <MarginWorkspaceTabs
-          active={activeWorkspace}
-          hasResearch
-          onChange={(next) => onWorkspaceChange?.(next)}
-        />
         <div
           id="margin-research-workspace"
           className="margin-workspace-panel"
-          role="tabpanel"
-          aria-labelledby="margin-workspace-research-tab"
         >
         <header className="entity-research-frame">
           <div className="entity-research-nav">
@@ -2188,7 +2125,7 @@ export function LivingMargin({
               type="button"
               className="entity-research-close"
               onClick={onCloseEntity}
-              aria-label="Close research and return to Study"
+              aria-label="Close research tab"
             >
               Close
             </button>
@@ -2276,16 +2213,9 @@ export function LivingMargin({
       onPointerEnter={() => onMarginActiveChange?.(true)}
       onPointerLeave={() => onMarginActiveChange?.(false)}
     >
-      <MarginWorkspaceTabs
-        active="study"
-        hasResearch={Boolean(entityIntent)}
-        onChange={(next) => onWorkspaceChange?.(next)}
-      />
       <div
         id="margin-study-workspace"
         className="margin-workspace-panel"
-        role="tabpanel"
-        aria-labelledby="margin-workspace-study-tab"
       >
       <span className="sr-only" aria-live="polite">{scopeAnnouncement}</span>
       <header className="margin-frame-header">

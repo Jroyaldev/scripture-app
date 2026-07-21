@@ -237,6 +237,26 @@ export interface AppSettings {
     };
     trail: Array<{ id: string; displayName: string }>;
   } | null;
+  /** Desktop workspace tabs. The legacy single session remains readable for migration. */
+  researchWorkspace?: {
+    tabs: Array<{
+      id: string;
+      entityId: string;
+      origin: {
+        book: string;
+        chapter: number;
+        packageId: string;
+        chapterEndVerse?: number;
+        verseStart?: number;
+        verseEnd?: number;
+      };
+      trail: Array<{ id: string; displayName: string }>;
+      nonce: number;
+    }>;
+    activeTabId: string;
+    lastResearchTabId: string | null;
+    activationOrder: string[];
+  } | null;
   /** At most one deliberately kept comparison subject. */
   keptContext?: {
     book: string;

@@ -41,15 +41,17 @@ test("breadcrumbs render frozen origin, prior return targets, and inert current 
   assert.match(css, /\.entity-research-breadcrumb-tail\s*\{[\s\S]{0,180}?overflow: hidden;/);
 });
 
-test("validated settings persist the bounded session while Close preserves it", () => {
+test("validated settings persist grouped workspace tabs while legacy session stays migratable", () => {
   assert.match(main, /function normalizeResearchSession/);
   assert.match(main, /trail\.slice\(-12\)/);
-  assert.match(main, /researchSession: normalizeResearchSession\([\s\S]{0,100}?partial\.researchSession/);
-  assert.match(app, /setEntityResearchSession\(res\.value\.researchSession\)/);
-  assert.match(app, /window\.api\.settings\.set\(\{[\s\S]{0,180}?researchSession:/);
-  const close = app.slice(app.indexOf("const closeEntityResearch"), app.indexOf("const updateEntityResearchTrail"));
-  assert.match(close, /setEntityIntent\(null\)/);
-  assert.doesNotMatch(close, /setEntityResearchSession/);
+  assert.match(main, /function normalizeResearchWorkspace/);
+  assert.match(main, /candidate\["tabs"\]\.slice\(0, 64\)/);
+  assert.match(main, /researchWorkspace: normalizeResearchWorkspace\([\s\S]{0,120}?partial\.researchWorkspace/);
+  assert.match(app, /setResearchWorkspace\(res\.value\.researchWorkspace\)/);
+  assert.match(app, /window\.api\.settings\.set\(\{[\s\S]{0,220}?researchWorkspace:/);
+  const close = app.slice(app.indexOf("const closeResearchTab"), app.indexOf("const updateEntityResearchTrail"));
+  assert.match(close, /closeResearchTabState\(current, tabId\)/);
+  assert.doesNotMatch(close, /setResearchWorkspace\(createResearchWorkspaceState/);
 });
 
 test("Close exits directly while Back and Escape remain stepwise and named", () => {

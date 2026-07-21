@@ -9,7 +9,16 @@ import {
 } from "../src/core/annotations/connection-order.js";
 import { selectionProjectionRoundTrips } from "../src/core/annotations/occurrence-alignment.js";
 import { connectionDraftExitActions } from "../src/renderer/utils/connectionDraftLifecycle.js";
-import { reduceMarginWorkspace } from "../src/renderer/utils/marginWorkspace.js";
+import {
+  closeResearchWorkspaceGroup,
+  closeResearchWorkspaceTab,
+  createResearchWorkspaceState,
+  MAX_RESEARCH_WORKSPACE_TABS,
+  openResearchWorkspaceTab,
+  researchOriginGroupKey,
+  SCRIPTURE_WORKSPACE_ID,
+  selectResearchWorkspaceTab,
+} from "../src/renderer/utils/researchWorkspace.js";
 
 const repoRoot = process.cwd();
 
@@ -90,29 +99,45 @@ test("draft exits never invent save or timer behavior", () => {
   assert.deepEqual(connectionDraftExitActions(4), ["save", "discard", "keep-editing"]);
 });
 
-test("Study and Research are persistent bounded workspaces", () => {
-  assert.equal(reduceMarginWorkspace("study", { type: "open-research" }), "research");
-  assert.equal(reduceMarginWorkspace("research", {
-    type: "select",
-    workspace: "study",
-    hasResearch: true,
-  }), "study");
-  assert.equal(reduceMarginWorkspace("study", {
-    type: "select",
-    workspace: "research",
-    hasResearch: true,
-  }), "research");
-  assert.equal(reduceMarginWorkspace("research", { type: "close-research" }), "study");
-  assert.equal(reduceMarginWorkspace("study", {
-    type: "select",
-    workspace: "research",
-    hasResearch: false,
-  }), "study");
+test("Scripture and grouped Research tabs preserve sessions and recent return order", () => {
+  const acts = { book: "ACT", chapter: 19, packageId: "bsb" };
+  const john = { book: "JHN", chapter: 3, packageId: "bsb" };
+  let state = createResearchWorkspaceState();
+  state = openResearchWorkspaceTab(state, { id: "paul", entityId: "paul", origin: acts, nonce: 1 });
+  state = openResearchWorkspaceTab(state, { id: "ephesus", entityId: "ephesus", origin: acts, nonce: 2 });
+  state = openResearchWorkspaceTab(state, { id: "nicodemus", entityId: "nicodemus", origin: john, nonce: 3 });
+  assert.equal(state.activeTabId, "nicodemus");
+  assert.equal(new Set(state.tabs.map((tab) => researchOriginGroupKey(tab.origin))).size, 2);
+  state = selectResearchWorkspaceTab(state, "paul");
+  state = selectResearchWorkspaceTab(state, SCRIPTURE_WORKSPACE_ID);
+  assert.equal(state.lastResearchTabId, "paul");
+  state = selectResearchWorkspaceTab(state, "ephesus");
+  state = closeResearchWorkspaceTab(state, "ephesus");
+  assert.equal(state.activeTabId, SCRIPTURE_WORKSPACE_ID);
+  state = closeResearchWorkspaceGroup(state, researchOriginGroupKey(acts));
+  assert.deepEqual(state.tabs.map((tab) => tab.id), ["nicodemus"]);
+});
+
+test("Research tabs evict the least-recent session at the validated desktop bound", () => {
+  const origin = { book: "ACT", chapter: 19, packageId: "bsb" };
+  let state = createResearchWorkspaceState();
+  for (let index = 0; index <= MAX_RESEARCH_WORKSPACE_TABS; index += 1) {
+    state = openResearchWorkspaceTab(state, {
+      id: `tab-${index}`,
+      entityId: `entity-${index}`,
+      origin,
+      nonce: index,
+    });
+  }
+  assert.equal(state.tabs.length, MAX_RESEARCH_WORKSPACE_TABS);
+  assert.equal(state.tabs.some((tab) => tab.id === "tab-0"), false);
+  assert.equal(state.activeTabId, `tab-${MAX_RESEARCH_WORKSPACE_TABS}`);
 });
 
 test("desktop integration owns one draft rail, exit controller, attention scroll, and APG tabs", () => {
   const marking = readFileSync(join(repoRoot, "src/renderer/components/MarkingSurface.tsx"), "utf8");
   const scripture = readFileSync(join(repoRoot, "src/renderer/components/ScripturePage.tsx"), "utf8");
+  const workspaceTabs = readFileSync(join(repoRoot, "src/renderer/components/ScriptureWorkspaceTabs.tsx"), "utf8");
   const margin = readFileSync(join(repoRoot, "src/renderer/components/LivingMargin.tsx"), "utf8");
   const app = readFileSync(join(repoRoot, "src/renderer/app.tsx"), "utf8");
   const main = readFileSync(join(repoRoot, "src/electron/main.ts"), "utf8");
@@ -129,7 +154,11 @@ test("desktop integration owns one draft rail, exit controller, attention scroll
   assert.match(app, /appWindow\.resolveCloseRequest\(proceed\)/);
   assert.match(main, /win\.on\("close", \(event\) => \{[\s\S]*event\.preventDefault\(\)[\s\S]*app-window-close-requested/);
   assert.doesNotMatch(marking, /beforeunload/);
-  assert.match(margin, /role="tablist" aria-label="Study workspaces"/);
-  assert.match(margin, /aria-controls=\{`margin-\$\{workspace\}-workspace`\}/);
+  assert.match(scripture, /<ScriptureWorkspaceTabs/);
+  assert.match(workspaceTabs, /role="tablist" aria-label="Open workspaces"/);
+  assert.match(workspaceTabs, /scripture-workspace-group-toggle/);
+  assert.match(workspaceTabs, /Show all \$\{tabs\.length\} research tabs/);
+  assert.match(workspaceTabs, /event\.key === "Delete"/);
+  assert.doesNotMatch(margin, /margin-workspace-tabs/);
   assert.match(margin, /workspaceScrollPositionsRef/);
 });

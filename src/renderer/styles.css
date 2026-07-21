@@ -975,6 +975,221 @@ html, body, #root {
   box-shadow: var(--shadow-topbar);
 }
 
+/* Desktop research is a first-class workspace directly beneath Scripture's
+   toolbar. The strip stays materially quiet: neutral selection, one-pixel
+   structure, and labels that yield to scroll/overflow before truncating into
+   a row of indistinguishable chips. */
+.scripture-workspace-bar {
+  position: relative;
+  z-index: 7;
+  min-height: 39px;
+  flex: 0 0 39px;
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  padding: 0 10px 0 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--bg-topbar) 96%, var(--bg-canvas));
+}
+
+.scripture-workspace-viewport {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: none;
+}
+
+.scripture-workspace-viewport::-webkit-scrollbar { display: none; }
+
+.scripture-workspace-tab,
+.scripture-workspace-group-toggle,
+.scripture-workspace-tab-close,
+.scripture-workspace-new,
+.scripture-workspace-overflow,
+.scripture-workspace-overflow-popover button {
+  appearance: none;
+  border: 0;
+  font-family: var(--font-ui);
+}
+
+.scripture-workspace-tab {
+  position: relative;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  min-width: 104px;
+  max-width: 176px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font-size: 10.5px;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.002em;
+  transition: color var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.scripture-workspace-tab.is-scripture {
+  min-width: 98px;
+  padding-inline: 10px 12px;
+}
+
+.scripture-workspace-tab.is-scripture svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.35;
+  stroke-linejoin: round;
+}
+
+.scripture-workspace-tab:hover,
+.scripture-workspace-tab-wrap:hover .scripture-workspace-tab {
+  background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+  color: var(--text-secondary);
+}
+
+.scripture-workspace-tab[aria-selected="true"] {
+  background: color-mix(in srgb, var(--bg-surface) 82%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border-subtle) 76%, transparent), 0 1px 2px color-mix(in srgb, var(--text-primary) 5%, transparent);
+  color: var(--text-primary);
+}
+
+.scripture-workspace-tab:focus-visible,
+.scripture-workspace-group-toggle:focus-visible,
+.scripture-workspace-new:focus-visible,
+.scripture-workspace-overflow:focus-visible,
+.scripture-workspace-tab-close:focus-visible {
+  outline: 2px solid var(--study-gold-focus);
+  outline-offset: -2px;
+}
+
+.scripture-workspace-group {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  padding-left: 3px;
+  border-left: 1px solid color-mix(in srgb, var(--border-subtle) 80%, transparent);
+}
+
+.scripture-workspace-group-toggle {
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  padding: 0 6px 0 4px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font: 500 8.5px/1 var(--font-mono);
+  letter-spacing: 0.025em;
+}
+
+.scripture-workspace-group-toggle:hover { background: color-mix(in srgb, var(--text-primary) 4%, transparent); color: var(--text-secondary); }
+.scripture-workspace-group-caret { font: 500 13px/1 var(--font-ui); transform: rotate(90deg); transition: transform var(--transition-fast); }
+.scripture-workspace-group.is-collapsed .scripture-workspace-group-caret { transform: rotate(0deg); }
+.scripture-workspace-group-count { min-width: 12px; color: var(--text-tertiary); font-variant-numeric: tabular-nums; text-align: center; }
+
+.scripture-workspace-tab-wrap {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+}
+
+.scripture-workspace-tab-wrap .scripture-workspace-tab { padding: 0 29px 0 10px; }
+.scripture-workspace-tab-mark { width: 4px; height: 4px; flex: 0 0 auto; border-radius: 50%; background: currentColor; opacity: 0.38; }
+.scripture-workspace-tab-wrap.is-selected .scripture-workspace-tab-mark { opacity: 0.72; }
+.scripture-workspace-tab-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.scripture-workspace-tab-close {
+  position: absolute;
+  z-index: 1;
+  right: 5px;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  padding: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  opacity: 0;
+  place-items: center;
+  transition: opacity var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.scripture-workspace-tab-close svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; }
+.scripture-workspace-tab-wrap:hover .scripture-workspace-tab-close,
+.scripture-workspace-tab-wrap.is-selected .scripture-workspace-tab-close { opacity: 0.68; }
+.scripture-workspace-tab-close:hover { background: color-mix(in srgb, var(--text-primary) 7%, transparent); color: var(--text-primary); opacity: 1; }
+
+.scripture-workspace-actions {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-left: 7px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--bg-topbar) 98%, var(--bg-canvas)) 12px);
+}
+
+.scripture-workspace-new,
+.scripture-workspace-overflow {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  place-items: center;
+}
+
+.scripture-workspace-new { font: 400 18px/1 var(--font-ui); }
+.scripture-workspace-overflow { font: 600 9px/1 var(--font-ui); letter-spacing: 1px; }
+.scripture-workspace-new:hover,
+.scripture-workspace-overflow:hover { background: color-mix(in srgb, var(--text-primary) 5%, transparent); color: var(--text-primary); }
+
+.scripture-workspace-overflow-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 3px 3px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.scripture-workspace-overflow-head strong { color: var(--text-primary); font-size: 11px; font-weight: var(--fw-semibold); }
+.scripture-workspace-overflow-head span { color: var(--text-tertiary); font: 500 9px/1 var(--font-mono); }
+.scripture-workspace-overflow-list { display: grid; gap: 11px; padding-top: 10px; }
+.scripture-workspace-overflow-group { display: grid; gap: 3px; }
+.scripture-workspace-overflow-group > header { display: flex; align-items: center; justify-content: space-between; min-height: 22px; padding: 0 3px; }
+.scripture-workspace-overflow-group > header > span { color: var(--text-tertiary); font: 500 9px/1 var(--font-mono); letter-spacing: 0.03em; }
+.scripture-workspace-overflow-group > header button { padding: 3px 5px; border-radius: 5px; background: transparent; color: var(--text-tertiary); cursor: pointer; font-size: 9px; }
+.scripture-workspace-overflow-group > header button:hover { background: var(--study-hover-surface); color: var(--text-primary); }
+.scripture-workspace-overflow-row { display: grid; grid-template-columns: minmax(0, 1fr) 28px; align-items: center; gap: 2px; }
+.scripture-workspace-overflow-row > button { min-height: 30px; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 8px; border-radius: var(--radius-sm); background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 10.5px; text-align: left; }
+.scripture-workspace-overflow-row > button:first-child:hover,
+.scripture-workspace-overflow-row > button:first-child.is-active { background: color-mix(in srgb, var(--text-primary) 5%, transparent); color: var(--text-primary); }
+.scripture-workspace-overflow-row > button span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.scripture-workspace-overflow-row > button small { color: var(--text-tertiary); font: 500 8px/1 var(--font-mono); }
+.scripture-workspace-overflow-row > button:last-child { display: grid; padding: 0; color: var(--text-tertiary); place-items: center; }
+.scripture-workspace-overflow-row > button:last-child:hover { background: color-mix(in srgb, var(--text-primary) 6%, transparent); color: var(--text-primary); }
+.scripture-workspace-overflow-row svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; }
+
 .topbar-navigation,
 .topbar-tools {
   display: flex;
@@ -2645,7 +2860,7 @@ html, body, #root {
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 0 var(--sp-xl) var(--sp-3xl);
-  scroll-padding-top: 116px;
+  scroll-padding-top: 78px;
 }
 
 .margin-connection-inspector {
@@ -2704,7 +2919,7 @@ html, body, #root {
     display: inline-flex;
   }
 
-  .margin-workspace-tabs { display: none; }
+  .scripture-workspace-bar { display: none; }
 
   .scripture-body > .living-margin .margin-frame-header,
   .scripture-body > .living-margin .entity-research-frame { top: 0; }
@@ -5345,48 +5560,11 @@ html, body, #root {
 
 /* --- Living Margin additions --- */
 
-.margin-workspace-tabs {
-  position: sticky;
-  z-index: 10;
-  top: 0;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 3px;
-  min-height: 38px;
-  margin: 0 calc(var(--sp-xl) * -1);
-  padding: 5px var(--sp-xl);
-  border-bottom: 1px solid var(--border-subtle);
-  background: color-mix(in srgb, var(--bg-canvas) 96%, transparent);
-  backdrop-filter: blur(18px) saturate(1.08);
-}
-
-.margin-workspace-tabs button {
-  min-height: 27px;
-  padding: 4px 8px;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  font: 500 0.6875rem/1 var(--font-ui);
-}
-
-.margin-workspace-tabs button[aria-selected="true"] {
-  background: color-mix(in srgb, var(--text-primary) 7%, transparent);
-  color: var(--text-primary);
-}
-
-.margin-workspace-tabs button[aria-disabled="true"] { cursor: default; opacity: 0.42; }
-.margin-workspace-tabs button:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 1px; }
 .margin-workspace-panel { min-width: 0; }
-
-@media (max-width: 760px) {
-  .margin-workspace-tabs { display: none; }
-}
 
 .margin-frame-header {
   position: sticky;
-  top: 38px;
+  top: 0;
   z-index: 8;
   display: flex;
   align-items: center;
@@ -5900,7 +6078,7 @@ html, body, #root {
 
 .entity-research-frame {
   position: sticky;
-  top: 38px;
+  top: 0;
   z-index: 8;
   min-height: 52px;
   display: flex;

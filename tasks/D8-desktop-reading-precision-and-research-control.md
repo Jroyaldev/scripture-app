@@ -13,12 +13,16 @@ STATUS: LANDED — all four desktop contracts implemented and accepted on 2026-0
 - All four marking surfaces share the top draft rail and one guarded lifecycle.
   Chapter, translation, view, library, Escape, and the real Electron window
   close use the same Save/Discard/Keep decision; no timer exists.
-- Living Margin now has persistent desktop Study/Research tabs with APG keys,
-  independent scroll positions, retained lens/entity state, and no new compact
-  control or mobile acceptance matrix.
+- Scripture now has a persistent desktop workspace strip directly below its
+  toolbar: one pinned Scripture tab plus passage-grouped Research tabs. Tabs
+  retain their own entity trail and scroll, groups collapse or close together,
+  and horizontal scroll plus a grouped overflow menu keeps large tab sets
+  controlled without adding compact/mobile UI.
 - Focused contracts pass; `npm run qa:desktop-reading-control` passes at one
-  1180px desktop width; lint, Electron/renderer builds, and the full unit suite
-  are green at 756 total / 727 pass / 29 expected ABI skips.
+  1180px desktop width with six concurrent Research tabs, group collapse,
+  overflow, individual close, and group close; lint, Electron/renderer builds,
+  and the full unit suite are green at 757 total / 728 pass / 29 expected ABI
+  skips.
 
 ## Product decision
 
@@ -87,10 +91,12 @@ geometry, visual themes, or the four marking-system designs:
 - Entity research separately owns a Back button, Close action, and breadcrumb
   trail, but opening research replaces the Study margin until research is
   closed.
-- The smallest coherent improvement is a fixed two-workspace switcher:
-  `Study | Research`. Research retains its selected entity and breadcrumb trail
-  while the reader temporarily returns to Study. Do not create an unbounded
-  entity-tab strip in this task.
+- The initially landed fixed `Study | Research` margin switcher retained one
+  entity session, but it did not provide the desktop research control the human
+  wanted. On 2026-07-21 the human explicitly amended this contract: Research is
+  a first-class top-level workspace beside Scripture, with the strip directly
+  below the Scripture toolbar and with clean handling for many tabs and tab
+  groups. Mobile remains deferred.
 
 ## Goal 1 — Exact phrase round-trip
 
@@ -196,32 +202,41 @@ If refusal rates are materially high, choose separately between:
 - Save appends one command; repeated Save during settlement cannot duplicate
   it; Discard appends zero bytes.
 
-## Goal 4 — Persistent Study and Research workspaces
+## Goal 4 — Persistent Scripture and grouped Research workspaces
 
 ### Contract
 
-- Add a desktop-only workspace tablist at the top of Living Margin with two
-  stable tabs: `Study` and `Research`.
-- `Study` preserves its current subject, active lens, and scroll position.
-- `Research` preserves its entity, breadcrumb trail, and scroll position.
-- Opening an entity selects Research. Selecting Study does not destroy the
-  research session. `Close research` clears the Research workspace and returns
-  to Study.
-- The current entity breadcrumb remains navigation inside Research; it is not
-  replaced by more entity tabs.
-- Panels are local and already loaded, so tabs may activate on arrow-key focus.
-  Follow the WAI-ARIA Tabs pattern: one tab stop, Left/Right wrapping,
-  Home/End, correct `aria-selected`, `aria-controls`, and labelled tab panels.
+- Add a desktop-only workspace tablist directly below the Scripture toolbar,
+  spanning the reading surface rather than living inside the margin.
+- Keep one pinned `Scripture` tab. Its Study subject, lens, and scroll remain
+  intact while Research is active.
+- Each explicitly opened entity gets a Research tab with its own retained
+  entity trail and margin scroll. Related-entity traversal updates the current
+  tab's breadcrumb trail; it does not create a tab for every breadcrumb step.
+- Group Research tabs by their opening passage/package origin. Groups expose a
+  quiet count, collapse/expand control, and `Close group`; closing the active
+  group returns to Scripture.
+- Many tabs remain usable through horizontal scrolling and a grouped overflow
+  menu. Persist at most 64 validated Research tabs so corrupt or runaway saved
+  state cannot make startup unbounded.
+- `+` opens the existing Names search rather than introducing a second search
+  surface. Opening a result creates and selects its Research tab.
+- Follow the WAI-ARIA Tabs pattern for the actual tabs: one tab stop,
+  Left/Right wrapping, Home/End, correct `aria-selected`, `aria-controls`, and
+  one labelled dynamic tab panel. Delete/Backspace closes a focused Research
+  tab; Scripture cannot close.
 - Reading-history Back/Forward remains passage history and is not overloaded
   with research-workspace switching.
 
 ### Acceptance
 
-- Open research, switch to Study, change a Study lens, and switch back: both
-  workspaces retain identity, trail, and scroll independently.
-- Close research: Research clears, Study remains unchanged, and focus returns
-  to the workspace tab or prior valid origin.
-- Keyboard tab semantics match the APG pattern with no duplicate Tab stops.
+- Open multiple Research tabs, switch to Scripture, change a Study lens, and
+  switch back: Scripture and every Research tab retain identity, trail, and
+  scroll independently.
+- Six Research tabs at 1180px remain reachable by direct tab or grouped
+  overflow; group collapse/expand and individual/group close preserve a valid
+  active workspace.
+- Keyboard tab semantics match the APG pattern with no duplicate tab stops.
 - This task adds no mobile-specific controls, breakpoints, or mobile matrix.
 
 ## Lean verification plan
@@ -232,14 +247,14 @@ Do not repeat the previous theme × surface × viewport exhaustion.
    - phrase round-trip/refusal;
    - canonical connection comparator;
    - draft exit-state reducer;
-   - Study/Research workspace-state reducer.
+   - grouped Scripture/Research workspace-state reducer.
 2. One contract test for the shared draft rail and workspace tab semantics.
 3. One isolated desktop Electron scenario at a representative reading width:
    - exact Acts 19 phrase pair;
    - reverse-created connection ordering;
    - list-to-canvas attention;
    - add a third phrase, Save/Discard/Keep-editing exits;
-   - Study ↔ Research state restoration.
+   - Scripture ↔ multiple Research restoration, group collapse, and overflow.
 4. Run lint, renderer/Electron builds, and the full unit suite once when the
    complete task lands.
 5. Do not rerun route digests, all four marking-surface matrices, every theme,

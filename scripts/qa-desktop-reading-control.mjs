@@ -5,9 +5,9 @@
  */
 
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { spawn } from "node:child_process";
 import electronPath from "electron";
 
@@ -129,6 +129,24 @@ async function clickButtonByText(driver, selector, text) {
     return true;
   })()`);
   assert.equal(clicked, true, `Missing ${text} control`);
+}
+
+async function openResearchByName(driver, name) {
+  await driver.evaluate(`document.querySelector(".scripture-workspace-new")?.click()`);
+  await driver.waitFor(`document.querySelector('#command-tab-names')?.getAttribute("aria-selected") === "true"`);
+  await driver.evaluate(`(() => {
+    const input = document.querySelector('.command-palette-input-row input');
+    if (!(input instanceof HTMLInputElement)) return false;
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+    setter?.call(input, ${JSON.stringify(name)});
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    return true;
+  })()`);
+  await driver.waitFor(`[...document.querySelectorAll(".command-palette-result")]
+    .some((button) => button.querySelector("strong")?.textContent?.trim() === ${JSON.stringify(name)})`);
+  await driver.evaluate(`[...document.querySelectorAll(".command-palette-result")]
+    .find((button) => button.querySelector("strong")?.textContent?.trim() === ${JSON.stringify(name)})?.click()`);
+  await driver.waitFor(`!document.querySelector(".command-palette-root")`);
 }
 
 const qaRoot = mkdtempSync(join(tmpdir(), "pericope-d8-qa-"));
@@ -287,17 +305,40 @@ try {
 
   await driver.waitFor(`Boolean(document.querySelector(".intent-entity-card"))`, 20_000);
   await driver.evaluate(`document.querySelector(".intent-entity-card")?.click()`);
-  await driver.waitFor(`document.querySelector('#margin-workspace-research-tab')?.getAttribute("aria-selected") === "true"
+  await driver.waitFor(`document.querySelectorAll('[id^="research-workspace-tab-"]').length === 1
+    && document.querySelector('[id^="research-workspace-tab-"]')?.getAttribute("aria-selected") === "true"
     && Boolean(document.querySelector("#entity-research-title"))`, 20_000);
-  const researchScroll = await driver.evaluate(`(() => {
+  const firstResearchTabId = await driver.evaluate(`document.querySelector('[id^="research-workspace-tab-"]')?.id ?? ""`);
+  const firstResearchScroll = await driver.evaluate(`(() => {
     const margin = document.querySelector(".living-margin");
     if (!margin) return -1;
     margin.scrollTop = Math.max(1, Math.min(220, margin.scrollHeight - margin.clientHeight));
     margin.dispatchEvent(new Event("scroll"));
     return margin.scrollTop;
   })()`);
-  await driver.evaluate(`document.querySelector("#margin-workspace-study-tab")?.click()`);
-  await driver.waitFor(`document.querySelector('#margin-workspace-study-tab')?.getAttribute("aria-selected") === "true"`);
+  await driver.evaluate(`document.querySelector("#scripture-workspace-tab")?.click()`);
+  await driver.waitFor(`document.querySelector('#scripture-workspace-tab')?.getAttribute("aria-selected") === "true"`);
+  await openResearchByName(driver, "Paul");
+  await driver.waitFor(`document.querySelectorAll('[id^="research-workspace-tab-"]').length === 2
+    && document.querySelectorAll('.scripture-workspace-group').length === 1
+    && document.querySelector('.scripture-workspace-group-count')?.textContent?.trim() === "2"`, 20_000);
+  const secondResearchTabId = await driver.evaluate(`document.querySelector('[id^="research-workspace-tab-"][aria-selected="true"]')?.id ?? ""`);
+  assert.notEqual(secondResearchTabId, firstResearchTabId);
+  const secondResearchScroll = await driver.evaluate(`(() => {
+    const margin = document.querySelector(".living-margin");
+    if (!margin) return -1;
+    margin.scrollTop = Math.max(1, Math.min(90, margin.scrollHeight - margin.clientHeight));
+    margin.dispatchEvent(new Event("scroll"));
+    return margin.scrollTop;
+  })()`);
+  await driver.evaluate(`document.getElementById(${JSON.stringify(firstResearchTabId)})?.click()`);
+  await driver.waitFor(`document.getElementById(${JSON.stringify(firstResearchTabId)})?.getAttribute("aria-selected") === "true"`);
+  assert.ok(Math.abs(await driver.evaluate(`document.querySelector(".living-margin")?.scrollTop ?? -1`) - firstResearchScroll) <= 2);
+  await driver.evaluate(`document.getElementById(${JSON.stringify(secondResearchTabId)})?.click()`);
+  await driver.waitFor(`document.getElementById(${JSON.stringify(secondResearchTabId)})?.getAttribute("aria-selected") === "true"`);
+  assert.ok(Math.abs(await driver.evaluate(`document.querySelector(".living-margin")?.scrollTop ?? -1`) - secondResearchScroll) <= 2);
+  await driver.evaluate(`document.querySelector("#scripture-workspace-tab")?.click()`);
+  await driver.waitFor(`document.querySelector('#scripture-workspace-tab')?.getAttribute("aria-selected") === "true"`);
   await driver.evaluate(`document.querySelector("#margin-notes-tab")?.click()`);
   const studyScroll = await driver.evaluate(`(() => {
     const margin = document.querySelector(".living-margin");
@@ -306,18 +347,43 @@ try {
     margin.dispatchEvent(new Event("scroll"));
     return margin.scrollTop;
   })()`);
-  await driver.evaluate(`document.querySelector("#margin-workspace-research-tab")?.click()`);
-  await driver.waitFor(`document.querySelector('#margin-workspace-research-tab')?.getAttribute("aria-selected") === "true"`);
-  assert.ok(Math.abs(await driver.evaluate(`document.querySelector(".living-margin")?.scrollTop ?? -1`) - researchScroll) <= 2);
-  await driver.evaluate(`document.querySelector("#margin-workspace-study-tab")?.click()`);
-  await driver.waitFor(`document.querySelector('#margin-workspace-study-tab')?.getAttribute("aria-selected") === "true"`);
+  await driver.evaluate(`document.getElementById(${JSON.stringify(secondResearchTabId)})?.click()`);
+  await driver.waitFor(`document.getElementById(${JSON.stringify(secondResearchTabId)})?.getAttribute("aria-selected") === "true"`);
+  await driver.evaluate(`document.querySelector(".scripture-workspace-tab-wrap.is-selected .scripture-workspace-tab-close")?.click()`);
+  await driver.waitFor(`document.querySelectorAll('[id^="research-workspace-tab-"]').length === 1
+    && document.querySelector('#scripture-workspace-tab')?.getAttribute("aria-selected") === "true"`);
   assert.ok(Math.abs(await driver.evaluate(`document.querySelector(".living-margin")?.scrollTop ?? -1`) - studyScroll) <= 2);
   assert.equal(await driver.evaluate(`document.querySelector("#margin-notes-tab")?.getAttribute("aria-selected")`), "true");
-  await driver.evaluate(`document.querySelector("#margin-workspace-research-tab")?.click()`);
-  await driver.waitFor(`document.querySelector('#margin-workspace-research-tab')?.getAttribute("aria-selected") === "true"`);
-  await driver.evaluate(`document.querySelector(".entity-research-close")?.click()`);
-  await driver.waitFor(`document.querySelector("#margin-workspace-research-tab")?.getAttribute("aria-selected") === "false"
-    && !document.querySelector("#entity-research-title")`);
+  for (const name of ["Peter", "Jerusalem", "Moses", "Rome", "Timothy"]) {
+    await openResearchByName(driver, name);
+  }
+  await driver.waitFor(`document.querySelectorAll('[id^="research-workspace-tab-"]').length === 6
+    && Boolean(document.querySelector(".scripture-workspace-overflow"))`, 20_000);
+  await driver.evaluate(`document.querySelector(".scripture-workspace-group-toggle")?.click()`);
+  await driver.waitFor(`document.querySelector(".scripture-workspace-group")?.classList.contains("is-collapsed")
+    && document.querySelector('#scripture-workspace-tab')?.getAttribute("aria-selected") === "true"`);
+  await driver.evaluate(`document.querySelector(".scripture-workspace-group-toggle")?.click()`);
+  await driver.waitFor(`!document.querySelector(".scripture-workspace-group")?.classList.contains("is-collapsed")`);
+  await driver.evaluate(`document.querySelector('[id^="research-workspace-tab-"]')?.click()`);
+  await driver.waitFor(`document.querySelector('[id^="research-workspace-tab-"]')?.getAttribute("aria-selected") === "true"`);
+  await driver.evaluate(`document.querySelector(".scripture-workspace-overflow")?.click()`);
+  await driver.waitFor(`document.querySelectorAll(".scripture-workspace-overflow-row").length === 6`);
+  const screenshotPath = process.env["D8_QA_SCREENSHOT"];
+  if (screenshotPath) {
+    await cdp.send("Page.bringToFront");
+    await sleep(500);
+    const screenshot = await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
+    const absoluteScreenshotPath = resolve(screenshotPath);
+    mkdirSync(dirname(absoluteScreenshotPath), { recursive: true });
+    writeFileSync(absoluteScreenshotPath, Buffer.from(screenshot.result.data, "base64"));
+    console.log(`saved ${absoluteScreenshotPath}`);
+  }
+  await driver.evaluate(`document.querySelector(".scripture-workspace-overflow-group > header button")?.click()`);
+  await driver.waitFor(`document.querySelectorAll('[id^="research-workspace-tab-"]').length === 0
+    && document.querySelector('#scripture-workspace-tab')?.getAttribute("aria-selected") === "true"
+    && !document.querySelector("#entity-research-title")
+    && !document.querySelector(".scripture-workspace-overflow-popover")`);
+  assert.ok(Math.abs(await driver.evaluate(`document.querySelector(".living-margin")?.scrollTop ?? -1`) - studyScroll) <= 2);
 
   await selectPhrase(driver, fixture.widening, "refused");
   await driver.evaluate(`document.querySelector('[data-marking-surface="palette"] [data-relationship-kind="series"]')?.click()`);
@@ -370,7 +436,7 @@ try {
   const afterDiscard = await driver.evaluate(`window.api.library.queryRange("ACT", 19, 1, "ACT", 19, 28)`);
   assert.equal(afterDiscard.connections.length, 3);
 
-  console.log("PASS desktop D8: exact phrase guard, canonical order + attention, explicit draft exits, persistent Study/Research");
+  console.log("PASS desktop D8: exact phrase guard, canonical order + attention, explicit draft exits, grouped Scripture/Research tabs");
 } catch (error) {
   throw new Error(`${error instanceof Error ? error.stack ?? error.message : String(error)}\nElectron log:\n${childLog}`);
 } finally {

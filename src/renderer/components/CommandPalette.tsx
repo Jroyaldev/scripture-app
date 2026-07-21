@@ -34,6 +34,7 @@ export interface CommandPaletteAction {
 
 interface Props {
   open: boolean;
+  initialTab?: CommandPaletteTab;
   onClose: () => void;
   theme: AppTheme;
   backbone: BackboneData;
@@ -141,6 +142,7 @@ function matchesAction(action: CommandPaletteAction, query: string): boolean {
 
 export function CommandPalette({
   open,
+  initialTab = "intelligence",
   onClose,
   theme,
   backbone,
@@ -179,7 +181,7 @@ export function CommandPalette({
     if (!open) return;
     returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     setQuery("");
-    setActiveTab("intelligence");
+    setActiveTab(initialTab);
     setStatus("idle");
     setFocusedResult(-1);
     void safeCall(() => window.api.settings.get()).then((result) => {
@@ -191,7 +193,7 @@ export function CommandPalette({
       const target = returnFocusRef.current;
       window.setTimeout(() => target?.isConnected && target.focus(), 0);
     };
-  }, [open]);
+  }, [initialTab, open]);
 
   useEffect(() => {
     if (!open) return;

@@ -18,10 +18,11 @@ import {
   type EntityResearchTrailEntry,
   type LivingMarginCaptureRequest,
 } from "./LivingMargin.js";
+import type { MarginWorkspace } from "../utils/marginWorkspace.js";
 import {
-  reduceMarginWorkspace,
-  type MarginWorkspace,
-} from "../utils/marginWorkspace.js";
+  SCRIPTURE_WORKSPACE_ID,
+  type ResearchWorkspaceTab,
+} from "../utils/researchWorkspace.js";
 import type {
   ConnectionDraftExitController,
   ConnectionDraftExitReason,
@@ -33,6 +34,7 @@ import { rangeToVerseCharOffsets } from "../utils/rangeToCharOffsets.js";
 import { nextVerseSelection } from "../utils/verseSelection.js";
 import { scopeHighlightsToPackage } from "../utils/highlightPackageScope.js";
 import { Popover } from "./Popover.js";
+import { ScriptureWorkspaceTabs } from "./ScriptureWorkspaceTabs.js";
 import { HighlightUnderlay, FADE_MS, SWEEP_MS } from "./HighlightUnderlay.js";
 import {
   MarkingSurface,
@@ -263,6 +265,7 @@ interface Props {
   sessionEntry: NavigationHistoryEntry | null;
   onSessionEntryChange: (entry: NavigationHistoryEntry) => void;
   onOpenCommandPalette?: () => void;
+  onOpenResearchPalette?: () => void;
   onReadingContextChange?: (context: {
     book: string;
     chapter: number;
@@ -292,6 +295,11 @@ interface Props {
   onToggleFocus?: () => void;
   onAuthoredMutationStateChange?: (state: "idle" | "in-flight" | "recovery") => void;
   onConnectionDraftExitControllerChange?: (controller: ConnectionDraftExitController | null) => void;
+  researchTabs?: readonly ResearchWorkspaceTab[];
+  activeWorkspaceTabId?: string;
+  onWorkspaceTabSelect?: (tabId: string) => void;
+  onResearchTabClose?: (tabId: string) => void;
+  onResearchGroupClose?: (groupKey: string) => void;
   entityIntent?: {
     id: string;
     nonce: number;
@@ -304,7 +312,7 @@ interface Props {
     packageId: string;
     verseStart?: number;
     verseEnd?: number;
-  }) => void;
+  }, mode?: "tab" | "navigate") => void;
   onCloseEntity?: () => void;
   entityTrail?: readonly EntityResearchTrailEntry[];
   onEntityTrailChange?: (
@@ -463,6 +471,7 @@ export function ScripturePage({
   sessionEntry,
   onSessionEntryChange,
   onOpenCommandPalette,
+  onOpenResearchPalette,
   onReadingContextChange,
   onCreateNote: _onCreateNote,
   marginVisible,
@@ -481,6 +490,11 @@ export function ScripturePage({
   onToggleFocus,
   onAuthoredMutationStateChange,
   onConnectionDraftExitControllerChange,
+  researchTabs = [],
+  activeWorkspaceTabId = SCRIPTURE_WORKSPACE_ID,
+  onWorkspaceTabSelect,
+  onResearchTabClose,
+  onResearchGroupClose,
   entityIntent,
   onOpenEntity,
   onCloseEntity,
@@ -508,9 +522,9 @@ export function ScripturePage({
   const [marginTab, setMarginTab] = useState<NavigationMarginTab>(
     sessionEntry?.margin.activeTab ?? "overview",
   );
-  const [marginWorkspace, setMarginWorkspace] = useState<MarginWorkspace>(
-    entityIntent ? "research" : "study",
-  );
+  const marginWorkspace: MarginWorkspace = activeWorkspaceTabId === SCRIPTURE_WORKSPACE_ID
+    ? "study"
+    : "research";
   const [marginData, setMarginData] = useState<QueryResult>(EMPTY_MARGIN_DATA);
   const [marginDataChapterKey, setMarginDataChapterKey] = useState<string | null>(null);
   const marginRequestSequenceRef = useRef(0);
@@ -524,11 +538,6 @@ export function ScripturePage({
   const [semanticData, setSemanticData] = useState<SemanticMarginResult | null>(null);
   const [semanticLoading, setSemanticLoading] = useState(false);
 
-  useEffect(() => {
-    setMarginWorkspace((current) => reduceMarginWorkspace(current, {
-      type: entityIntent ? "open-research" : "close-research",
-    }));
-  }, [entityIntent]);
   const [showHighlightPalette, setShowHighlightPalette] = useState(false);
   const [selectionNonce, setSelectionNonce] = useState(0);
   const selectionGenerationRef = useRef(0);
@@ -2631,8 +2640,8 @@ export function ScripturePage({
       packageId,
       verseStart: marginSubject.verse,
       verseEnd: marginSubject.endVerse,
-    });
-  }, [backbone, marginSubject, onOpenEntity, packageId]);
+    }, marginWorkspace === "research" ? "navigate" : "tab");
+  }, [backbone, marginSubject, marginWorkspace, onOpenEntity, packageId]);
 
   const handleNoteCaptureSaved = useCallback(
     ({ title }: { noteId: string; title: string }) => {
@@ -3134,11 +3143,7 @@ export function ScripturePage({
       if (focusInspector) {
         setConnectionInspectorFocusRequest((request) => request + 1);
       }
-      setMarginWorkspace((current) => reduceMarginWorkspace(current, {
-        type: "select",
-        workspace: "study",
-        hasResearch: Boolean(entityIntent),
-      }));
+      onWorkspaceTabSelect?.(SCRIPTURE_WORKSPACE_ID);
       onEnsureMarginVisible?.();
     } else if (selectedConnectionId) {
       releaseHeldConnection(selectedConnectionId);
@@ -3147,7 +3152,7 @@ export function ScripturePage({
     setPhraseSelection(null);
     verseSelectionAnchorRef.current = null;
     setShowHighlightPalette(false);
-  }, [advanceSelectionGeneration, entityIntent, onEnsureMarginVisible, releaseHeldConnection, replaceHeldConnectionIds, requireSafeConnectionNavigation, selectedConnectionId]);
+  }, [advanceSelectionGeneration, onEnsureMarginVisible, onWorkspaceTabSelect, releaseHeldConnection, replaceHeldConnectionIds, requireSafeConnectionNavigation, selectedConnectionId]);
 
   const handleSelectAuthoredConnection = useCallback((
     connection: ConnectionRecord,
@@ -4064,7 +4069,26 @@ export function ScripturePage({
         </div>
       </header>
 
-      <div className="scripture-body">
+      {!focusMode && (
+        <ScriptureWorkspaceTabs
+          tabs={researchTabs}
+          activeTabId={activeWorkspaceTabId}
+          bookNames={bookNames}
+          onSelect={(tabId) => onWorkspaceTabSelect?.(tabId)}
+          onClose={(tabId) => onResearchTabClose?.(tabId)}
+          onCloseGroup={(groupKey) => onResearchGroupClose?.(groupKey)}
+          onNewResearch={() => (onOpenResearchPalette ?? onOpenCommandPalette)?.()}
+        />
+      )}
+
+      <div
+        id="scripture-workspace-panel"
+        className="scripture-body"
+        role="tabpanel"
+        aria-labelledby={activeWorkspaceTabId === SCRIPTURE_WORKSPACE_ID
+          ? "scripture-workspace-tab"
+          : `research-workspace-tab-${activeWorkspaceTabId}`}
+      >
       <div className="scripture-reading-stage" ref={stageRef}>
       <div className="scripture-content" ref={contentRef}>
         <article className="scripture-inner" aria-labelledby="reading-chapter-title">
@@ -4312,13 +4336,7 @@ export function ScripturePage({
           activeTab={marginTab}
           onActiveTabChange={setMarginTab}
           workspace={marginWorkspace}
-          onWorkspaceChange={(workspace) => setMarginWorkspace((current) => (
-            reduceMarginWorkspace(current, {
-              type: "select",
-              workspace,
-              hasResearch: Boolean(entityIntent),
-            })
-          ))}
+          workspaceTabId={activeWorkspaceTabId}
           entityIntent={entityIntent}
           onOpenEntity={handleOpenMarginEntity}
           onCloseEntity={onCloseEntity}
