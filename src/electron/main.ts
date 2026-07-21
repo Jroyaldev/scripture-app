@@ -204,7 +204,14 @@ interface AppSettingsSchema {
   }>;
   /** Where the reader last was — restored on launch. Unlike recentPassages
    * (which only records deliberate jumps), this follows every chapter turn. */
-  lastRead: { book: string; chapter: number; packageId: string } | null;
+  lastRead: {
+    book: string;
+    chapter: number;
+    packageId: string;
+    /** Backward-compatible exact eye-line fields; absent means chapter top. */
+    verse?: number;
+    verseOffset?: number;
+  } | null;
   windowBounds: WindowBounds | null;
   /** The library location the user last confirmed (Welcome screen or Switch
    * Library), if any. null means no choice has ever been confirmed — the
@@ -257,6 +264,30 @@ function normalizeMarkingSurface(value: unknown): AppSettingsSchema["markingSurf
     && MARKING_SURFACE_IDS.has(value as AppSettingsSchema["markingSurface"])
     ? value as AppSettingsSchema["markingSurface"]
     : "palette";
+}
+
+function normalizeLastRead(value: unknown): AppSettingsSchema["lastRead"] {
+  if (value === null) return null;
+  if (!value || typeof value !== "object") return null;
+  const candidate = value as Record<string, unknown>;
+  if (
+    typeof candidate["book"] !== "string"
+    || !Number.isInteger(candidate["chapter"])
+    || (candidate["chapter"] as number) < 1
+    || typeof candidate["packageId"] !== "string"
+  ) return null;
+  const verse = candidate["verse"];
+  const verseOffset = candidate["verseOffset"];
+  const hasEyeLine = Number.isInteger(verse)
+    && (verse as number) >= 1
+    && typeof verseOffset === "number"
+    && Number.isFinite(verseOffset);
+  return {
+    book: candidate["book"],
+    chapter: candidate["chapter"] as number,
+    packageId: candidate["packageId"],
+    ...(hasEyeLine ? { verse: verse as number, verseOffset } : {}),
+  };
 }
 
 const legacySettingsAdoption = readLegacySettingsForAdoption();
@@ -2800,6 +2831,7 @@ function registerIpcHandlers(): void {
     ...store.store,
     theme: normalizeTheme(store.store.theme),
     markingSurface: normalizeMarkingSurface(store.store.markingSurface),
+    lastRead: normalizeLastRead(store.store.lastRead),
   }));
 
   ipcMain.handle("settings:set", (_event, partial: Partial<AppSettingsSchema>) => {
@@ -2808,6 +2840,7 @@ function registerIpcHandlers(): void {
       ...partial,
       theme: normalizeTheme(partial.theme ?? store.store.theme),
       markingSurface: normalizeMarkingSurface(partial.markingSurface ?? store.store.markingSurface),
+      lastRead: normalizeLastRead(partial.lastRead ?? store.store.lastRead),
     });
     return store.store;
   });

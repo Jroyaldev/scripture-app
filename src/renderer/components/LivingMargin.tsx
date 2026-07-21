@@ -139,6 +139,9 @@ interface Props {
   onMarginActiveChange?: (active: boolean) => void;
   /** Leave the explicit selected-passage state and return to the reading eye-line. */
   onClearSelection?: () => void;
+  /** Renderer-session tab state used by reversible canvas travel. */
+  activeTab?: MarginTab;
+  onActiveTabChange?: (tab: MarginTab) => void;
   entityIntent?: {
     id: string;
     nonce: number;
@@ -1419,6 +1422,8 @@ export function LivingMargin({
   onStudyVerse,
   onMarginActiveChange,
   onClearSelection,
+  activeTab: controlledActiveTab,
+  onActiveTabChange,
   entityIntent,
   onOpenEntity,
   onCloseEntity,
@@ -1432,7 +1437,12 @@ export function LivingMargin({
   const [pinnedClaims, setPinnedClaims] = useState<Set<string>>(new Set());
   const [pendingClaimId, setPendingClaimId] = useState<string | null>(null);
   const [claimPinError, setClaimPinError] = useState<{ id: string; message: string } | null>(null);
-  const [activeTab, setActiveTab] = useState<MarginTab>("overview");
+  const [internalActiveTab, setInternalActiveTab] = useState<MarginTab>(controlledActiveTab ?? "overview");
+  const activeTab = controlledActiveTab ?? internalActiveTab;
+  const setActiveTab = (tab: MarginTab): void => {
+    setInternalActiveTab(tab);
+    onActiveTabChange?.(tab);
+  };
   const [wordsVerse, setWordsVerse] = useState(pinnedRange?.start ?? 1);
   const [entityResult, setEntityResult] = useState<LanguageEntityRangeResult>({
     entities: [],
@@ -1713,6 +1723,9 @@ export function LivingMargin({
     onOpenEntity(next.id);
   };
 
+  const researchBackDestination = entityBackTrail.at(-1)?.displayName
+    ?? (entityIntent ? formatEntityResearchOrigin(entityIntent.origin, bookNames) : "Study");
+
   useEffect(() => {
     if (!entityIntent || entityResearch?.entity.id !== entityIntent.id) return;
     const frame = window.requestAnimationFrame(() => researchTitleRef.current?.focus());
@@ -1891,9 +1904,14 @@ export function LivingMargin({
       >
         <header className="entity-research-frame">
           <div className="entity-research-nav">
-            <button type="button" className="entity-research-back" onClick={openPreviousEntity}>
+            <button
+              type="button"
+              className="entity-research-back"
+              onClick={openPreviousEntity}
+              aria-label={`Back to ${researchBackDestination}`}
+            >
               <span aria-hidden="true">←</span>
-              <span>{entityBackTrail.at(-1)?.displayName ?? "Study"}</span>
+              <span>{`Back to ${researchBackDestination}`}</span>
             </button>
             {entityForwardTrail.length > 0 && (
               <button

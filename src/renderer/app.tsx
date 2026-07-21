@@ -27,6 +27,11 @@ import {
 } from "./components/CommandPalette.js";
 import { isDarkTheme, type AppTheme } from "./theme.js";
 import { safeCall } from "./utils/safeCall.js";
+import {
+  createNavigationHistory,
+  type NavigationHistoryEntry,
+  type NavigationHistoryState,
+} from "./utils/navigationHistory.js";
 import "./styles.css";
 
 type View = "scripture" | "write" | "search" | "notes" | "settings";
@@ -154,6 +159,10 @@ export function App(): React.JSX.Element {
     verse?: number;
     endVerse?: number;
   } | null>(null);
+  const [navigationHistory, setNavigationHistory] = useState<NavigationHistoryState>(
+    createNavigationHistory,
+  );
+  const [canvasSessionEntry, setCanvasSessionEntry] = useState<NavigationHistoryEntry | null>(null);
   const [writingDraft, setWritingDraft] = useState<WritingDraft>(recoverWritingDraft);
   const [commandOpen, setCommandOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
@@ -385,6 +394,7 @@ export function App(): React.JSX.Element {
     setNavigateRef({ book, chapter, verse, endVerse });
     changeView("scripture");
   }, [changeView]);
+  const consumeNavigateRef = useCallback(() => setNavigateRef(null), []);
 
   const handleReadingContextChange = useCallback((next: CommandReadingContext) => {
     setReadingContext((current) => (
@@ -897,6 +907,11 @@ export function App(): React.JSX.Element {
                 backbone={backbone}
                 bookNames={bookNames}
                 navigateRef={navigateRef}
+                onNavigateRefConsumed={consumeNavigateRef}
+                navigationHistory={navigationHistory}
+                onNavigationHistoryChange={setNavigationHistory}
+                sessionEntry={canvasSessionEntry}
+                onSessionEntryChange={setCanvasSessionEntry}
                 onOpenCommandPalette={openCommandPalette}
                 onReadingContextChange={handleReadingContextChange}
                 onCreateNote={handleCreateNoteFromPassage}

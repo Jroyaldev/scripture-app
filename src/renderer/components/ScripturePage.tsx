@@ -76,6 +76,15 @@ import {
   resolveReadingPointerIntent,
 } from "../utils/readingInteraction.js";
 import { parseConnectionTickMemberIds } from "../utils/connectionRowLayout.js";
+import {
+  backNavigationHistory,
+  forwardNavigationHistory,
+  pushNavigationHistory,
+  type NavigationHistoryEntry,
+  type NavigationHistoryState,
+  type NavigationMarginScope,
+  type NavigationMarginTab,
+} from "../utils/navigationHistory.js";
 
 export interface MarginCaptureContext {
   book: string;
@@ -118,6 +127,26 @@ interface TranslationViewport {
   scrollTop: number;
 }
 
+interface CapturedViewport {
+  verse: number | null;
+  verseOffset: number;
+  scrollTop: number;
+}
+
+interface SavedViewportTarget extends CapturedViewport {
+  book: string;
+  chapter: number;
+  packageId: string;
+  requestId: number;
+}
+
+interface GoToOptions {
+  recordRecent?: boolean;
+  rangeEnd?: number;
+  historyMode?: "push" | "traverse";
+  restoreEntry?: NavigationHistoryEntry;
+}
+
 interface ReferenceViewportTarget {
   book: string;
   chapter: number;
@@ -158,6 +187,11 @@ interface Props {
   backbone: BackboneData;
   bookNames: BookNameData;
   navigateRef: { book: string; chapter: number; verse?: number; endVerse?: number } | null;
+  onNavigateRefConsumed?: () => void;
+  navigationHistory: NavigationHistoryState;
+  onNavigationHistoryChange: (history: NavigationHistoryState) => void;
+  sessionEntry: NavigationHistoryEntry | null;
+  onSessionEntryChange: (entry: NavigationHistoryEntry) => void;
   onOpenCommandPalette?: () => void;
   onReadingContextChange?: (context: {
     book: string;
@@ -338,6 +372,11 @@ export function ScripturePage({
   backbone,
   bookNames,
   navigateRef,
+  onNavigateRefConsumed,
+  navigationHistory,
+  onNavigationHistoryChange,
+  sessionEntry,
+  onSessionEntryChange,
   onOpenCommandPalette,
   onReadingContextChange,
   onCreateNote: _onCreateNote,
@@ -363,12 +402,22 @@ export function ScripturePage({
   // Selection notes use the in-place NoteCapture slide-over (stay on Read).
   // Parent still supplies onCreateNote for a future “open full Write” path.
   void _onCreateNote;
-  const [book, setBook] = useState("ACT");
-  const [chapter, setChapter] = useState(19);
-  const [packageId, setPackageId] = useState("bsb");
+  const [book, setBook] = useState(sessionEntry?.book ?? "ACT");
+  const [chapter, setChapter] = useState(sessionEntry?.chapter ?? 19);
+  const [packageId, setPackageId] = useState(sessionEntry?.packageId ?? "bsb");
   const [chapterData, setChapterData] = useState<ChapterData | null>(null);
   const [chapterError, setChapterError] = useState<string | null>(null);
-  const [selectedVerses, setSelectedVerses] = useState<Set<number>>(new Set());
+  const [selectedVerses, setSelectedVerses] = useState<Set<number>>(() => {
+    const scope = sessionEntry?.margin.scope;
+    if (scope?.kind !== "selection") return new Set();
+    return new Set(Array.from(
+      { length: Math.max(1, scope.end - scope.start + 1) },
+      (_, index) => scope.start + index,
+    ));
+  });
+  const [marginTab, setMarginTab] = useState<NavigationMarginTab>(
+    sessionEntry?.margin.activeTab ?? "overview",
+  );
   const [marginData, setMarginData] = useState<QueryResult>(EMPTY_MARGIN_DATA);
   const [marginDataChapterKey, setMarginDataChapterKey] = useState<string | null>(null);
   const marginRequestSequenceRef = useRef(0);
@@ -546,8 +595,33 @@ export function ScripturePage({
   const stageRef = useRef<HTMLDivElement>(null);
   const [stageBounds, setStageBounds] = useState({ left: 0, top: 58, width: 900, height: 700, bottom: 758 });
   const pendingTranslationViewportRef = useRef<TranslationViewport | null>(null);
+  const savedViewportRequestRef = useRef(
+    sessionEntry?.verse != null && sessionEntry.verseOffset != null ? 1 : 0,
+  );
+  const [savedViewportTarget, setSavedViewportTarget] = useState<SavedViewportTarget | null>(() => (
+    sessionEntry?.verse != null && sessionEntry.verseOffset != null
+      ? {
+          book: sessionEntry.book,
+          chapter: sessionEntry.chapter,
+          packageId: sessionEntry.packageId,
+          verse: sessionEntry.verse,
+          verseOffset: sessionEntry.verseOffset,
+          scrollTop: sessionEntry.scrollTop ?? 0,
+          requestId: 1,
+        }
+      : null
+  ));
   const [referenceViewportTarget, setReferenceViewportTarget] = useState<ReferenceViewportTarget | null>(null);
   const referenceViewportRequestRef = useRef(0);
+  const navigationHistoryRef = useRef(navigationHistory);
+  const sessionEntryRef = useRef(sessionEntry);
+  const mountedWithSessionEntryRef = useRef(sessionEntry != null);
+  useEffect(() => {
+    navigationHistoryRef.current = navigationHistory;
+  }, [navigationHistory]);
+  useEffect(() => {
+    sessionEntryRef.current = sessionEntry;
+  }, [sessionEntry]);
   const loadedChapterKeyRef = useRef<string | null>(null);
   const lastLoadedChapterVerseTextRef = useRef<{
     book: string;
@@ -611,6 +685,41 @@ export function ScripturePage({
   // a verse (so side-panel clicks never "click out" to a different scroll position).
   const [nearVerse, setNearVerse] = useState<number | null>(null);
   const verseRowRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  // Translation switches, relaunch restore, and canvas history all share one
+  // exact eye-line model: nearest verse plus its pixel offset in the viewport.
+  const captureReadingViewport = useCallback((): CapturedViewport | null => {
+    const root = contentRef.current;
+    if (!root) return null;
+    const rootRect = root.getBoundingClientRect();
+    const eyeY = rootRect.top + rootRect.height * 0.32;
+    let anchorVerse: number | null = null;
+    let anchorOffset = 0;
+    let bestDistance = Infinity;
+    for (const [verse, row] of verseRowRefs.current) {
+      const rect = row.getBoundingClientRect();
+      if (rect.bottom < rootRect.top || rect.top > rootRect.bottom) continue;
+      const distance = Math.abs((rect.top + rect.bottom) / 2 - eyeY);
+      if (distance >= bestDistance) continue;
+      bestDistance = distance;
+      anchorVerse = verse;
+      anchorOffset = rect.top - rootRect.top;
+    }
+    return { verse: anchorVerse, verseOffset: anchorOffset, scrollTop: root.scrollTop };
+  }, []);
+
+  const restoreReadingViewport = useCallback((viewport: CapturedViewport): void => {
+    const root = contentRef.current;
+    if (!root) return;
+    root.scrollTop = viewport.scrollTop;
+    if (viewport.verse != null) {
+      const row = verseRowRefs.current.get(viewport.verse);
+      if (row) {
+        const currentOffset = row.getBoundingClientRect().top - root.getBoundingClientRect().top;
+        root.scrollTop = Math.max(0, root.scrollTop + currentOffset - viewport.verseOffset);
+      }
+    }
+    setScrolled(root.scrollTop > 0);
+  }, []);
   const marginActiveRef = useRef(false);
   const readingFocusContextRef = useRef({
     book,
@@ -866,18 +975,20 @@ export function ScripturePage({
     const pending = pendingTranslationViewportRef.current;
     const root = contentRef.current;
     if (!pending || pending.packageId !== packageId || !chapterData || !root) return;
-
-    root.scrollTop = pending.scrollTop;
-    if (pending.verse != null) {
-      const row = verseRowRefs.current.get(pending.verse);
-      if (row) {
-        const currentOffset = row.getBoundingClientRect().top - root.getBoundingClientRect().top;
-        root.scrollTop = Math.max(0, root.scrollTop + currentOffset - pending.verseOffset);
-      }
-    }
+    restoreReadingViewport(pending);
     pendingTranslationViewportRef.current = null;
-    setScrolled(root.scrollTop > 0);
-  }, [chapterData, packageId]);
+  }, [chapterData, packageId, restoreReadingViewport]);
+
+  useLayoutEffect(() => {
+    const target = savedViewportTarget;
+    if (!target || !chapterData || !contentRef.current) return;
+    if (target.book !== book || target.chapter !== chapter || target.packageId !== packageId) return;
+    if (loadedChapterKeyRef.current !== `${packageId}:${book}:${chapter}`) return;
+    restoreReadingViewport(target);
+    setSavedViewportTarget((current) => (
+      current?.requestId === target.requestId ? null : current
+    ));
+  }, [book, chapter, chapterData, packageId, restoreReadingViewport, savedViewportTarget]);
 
   // A verse reference is both a canonical selection and a reading-location
   // request. Selection can be committed before a new chapter's text exists,
@@ -1011,6 +1122,7 @@ export function ScripturePage({
       const last = res.value.lastRead;
       if (
         last &&
+        !mountedWithSessionEntryRef.current &&
         !userNavigatedRef.current &&
         markingMutationStateRef.current === "idle" &&
         cardMutationStateRef.current === "idle" &&
@@ -1022,6 +1134,17 @@ export function ScripturePage({
         setBook(last.book);
         setChapter(last.chapter);
         if (last.packageId) setPackageId(last.packageId);
+        if (last.verse != null && last.verseOffset != null) {
+          setSavedViewportTarget({
+            book: last.book,
+            chapter: last.chapter,
+            packageId: last.packageId,
+            verse: last.verse,
+            verseOffset: last.verseOffset,
+            scrollTop: 0,
+            requestId: ++savedViewportRequestRef.current,
+          });
+        }
       }
       lastReadLoaded.current = true;
     });
@@ -1029,15 +1152,6 @@ export function ScripturePage({
       cancelled = true;
     };
   }, [backbone, connectionCardRecovery]);
-
-  // Persist last-read on every passage change (after the initial restore, so
-  // the boot default never overwrites a stored position).
-  useEffect(() => {
-    if (!lastReadLoaded.current) return;
-    void safeCall(() =>
-      window.api.settings.set({ lastRead: { book, chapter, packageId } }),
-    );
-  }, [book, chapter, packageId]);
 
   // Persist recents after the initial load (never write empty defaults over disk).
   useEffect(() => {
@@ -1060,6 +1174,34 @@ export function ScripturePage({
     [packageId],
   );
 
+  const captureMarginScope = useCallback((): NavigationMarginScope => {
+    const selected = [...selectedVerses].sort((left, right) => left - right);
+    return selected.length > 0
+      ? { kind: "selection", start: selected[0]!, end: selected.at(-1)! }
+      : null;
+  }, [selectedVerses]);
+
+  const captureNavigationEntry = useCallback((): NavigationHistoryEntry => {
+    const loadedKey = `${packageId}:${book}:${chapter}`;
+    if (loadedChapterKeyRef.current !== loadedKey && sessionEntryRef.current) {
+      return sessionEntryRef.current;
+    }
+    const viewport = captureReadingViewport();
+    return {
+      book,
+      chapter,
+      packageId,
+      ...(viewport?.verse != null ? { verse: viewport.verse, verseOffset: viewport.verseOffset } : {}),
+      ...(viewport ? { scrollTop: viewport.scrollTop } : {}),
+      margin: { activeTab: marginTab, scope: captureMarginScope() },
+    };
+  }, [book, captureMarginScope, captureReadingViewport, chapter, marginTab, packageId]);
+
+  const commitNavigationHistory = useCallback((next: NavigationHistoryState): void => {
+    navigationHistoryRef.current = next;
+    onNavigationHistoryChange(next);
+  }, [onNavigationHistoryChange]);
+
   // Atomic navigation: set book+chapter together in one render so only a
   // single getChapterText fetch happens (avoids the intermediate chapter-1 load).
   // An optional verse is remembered in a ref (not state) so the chapter-change
@@ -1074,11 +1216,39 @@ export function ScripturePage({
   const pendingVerseSelectRef = useRef<number | null>(null);
   const pendingVerseEndRef = useRef<number | null>(null);
   const goTo = useCallback(
-    (b: string, c: number, verse?: number, opts?: { recordRecent?: boolean; rangeEnd?: number }) => {
+    (b: string, c: number, verse?: number, opts?: GoToOptions) => {
       if (!requireSafeConnectionNavigation()) return;
+      if (opts?.historyMode !== "traverse") {
+        commitNavigationHistory(pushNavigationHistory(
+          navigationHistoryRef.current,
+          captureNavigationEntry(),
+        ));
+      }
       userNavigatedRef.current = true;
-      pendingVerseSelectRef.current = verse ?? null;
-      pendingVerseEndRef.current = opts?.rangeEnd ?? null;
+      const restoredScope = opts?.restoreEntry?.margin.scope;
+      const restoredVerse = restoredScope?.kind === "selection" ? restoredScope.start : verse;
+      const restoredVerseEnd = restoredScope?.kind === "selection" ? restoredScope.end : opts?.rangeEnd;
+      pendingVerseSelectRef.current = restoredVerse ?? null;
+      pendingVerseEndRef.current = restoredVerseEnd ?? null;
+      if (opts?.restoreEntry) {
+        setMarginTab(opts.restoreEntry.margin.activeTab);
+        if (opts.restoreEntry.packageId !== packageId) {
+          setChapterData(null);
+          setChapterError(null);
+          setPackageId(opts.restoreEntry.packageId);
+        }
+        if (opts.restoreEntry.verse != null && opts.restoreEntry.verseOffset != null) {
+          setSavedViewportTarget({
+            book: opts.restoreEntry.book,
+            chapter: opts.restoreEntry.chapter,
+            packageId: opts.restoreEntry.packageId,
+            verse: opts.restoreEntry.verse,
+            verseOffset: opts.restoreEntry.verseOffset,
+            scrollTop: opts.restoreEntry.scrollTop ?? 0,
+            requestId: ++savedViewportRequestRef.current,
+          });
+        }
+      }
       setReferenceViewportTarget(verse == null
         ? null
         : {
@@ -1092,11 +1262,11 @@ export function ScripturePage({
       if (b === book && c === chapter) {
         pendingVerseSelectRef.current = null;
         pendingVerseEndRef.current = null;
-        verseSelectionAnchorRef.current = verse ?? null;
-        setSelectedVerses(verse
+        verseSelectionAnchorRef.current = restoredVerse ?? null;
+        setSelectedVerses(restoredVerse
           ? new Set(Array.from(
-              { length: Math.max(1, (opts?.rangeEnd ?? verse) - verse + 1) },
-              (_, index) => verse + index,
+              { length: Math.max(1, (restoredVerseEnd ?? restoredVerse) - restoredVerse + 1) },
+              (_, index) => restoredVerse + index,
             ))
           : new Set());
         setPhraseSelection(null);
@@ -1106,19 +1276,79 @@ export function ScripturePage({
         recordRecent(b, c, verse);
       }
     },
-    [book, chapter, recordRecent, requireSafeConnectionNavigation],
+    [book, captureNavigationEntry, chapter, commitNavigationHistory, packageId, recordRecent, requireSafeConnectionNavigation],
   );
+
+  const navigateBack = useCallback((): void => {
+    const move = backNavigationHistory(navigationHistoryRef.current, captureNavigationEntry());
+    if (!move.target) return;
+    commitNavigationHistory(move.history);
+    goTo(move.target.book, move.target.chapter, undefined, {
+      historyMode: "traverse",
+      recordRecent: false,
+      restoreEntry: move.target,
+    });
+  }, [captureNavigationEntry, commitNavigationHistory, goTo]);
+
+  const navigateForward = useCallback((): void => {
+    const move = forwardNavigationHistory(navigationHistoryRef.current, captureNavigationEntry());
+    if (!move.target) return;
+    commitNavigationHistory(move.history);
+    goTo(move.target.book, move.target.chapter, undefined, {
+      historyMode: "traverse",
+      recordRecent: false,
+      restoreEntry: move.target,
+    });
+  }, [captureNavigationEntry, commitNavigationHistory, goTo]);
 
   useEffect(() => {
     if (!navigateRef) return;
     goTo(navigateRef.book, navigateRef.chapter, navigateRef.verse, {
       rangeEnd: navigateRef.endVerse,
     });
+    onNavigateRefConsumed?.();
     // A navigation request is an edge-triggered object from App. Depending on
     // goTo here would replay that old request after an internal chapter turn,
     // because goTo intentionally changes with the current book/chapter.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigateRef]);
+
+  const publishSessionEntry = useCallback((): NavigationHistoryEntry | null => {
+    if (!chapterData || loadedChapterKeyRef.current !== `${packageId}:${book}:${chapter}`) return null;
+    const entry = captureNavigationEntry();
+    sessionEntryRef.current = entry;
+    onSessionEntryChange(entry);
+    return entry;
+  }, [book, captureNavigationEntry, chapter, chapterData, onSessionEntryChange, packageId]);
+
+  const persistCurrentReadingPosition = useCallback((): void => {
+    const entry = publishSessionEntry();
+    if (!entry || !lastReadLoaded.current) return;
+    void safeCall(() => window.api.settings.set({
+      lastRead: {
+        book: entry.book,
+        chapter: entry.chapter,
+        packageId: entry.packageId,
+        ...(entry.verse != null && entry.verseOffset != null
+          ? { verse: entry.verse, verseOffset: entry.verseOffset }
+          : {}),
+      },
+    }));
+  }, [publishSessionEntry]);
+  const persistCurrentReadingPositionRef = useRef(persistCurrentReadingPosition);
+  useEffect(() => {
+    persistCurrentReadingPositionRef.current = persistCurrentReadingPosition;
+  }, [persistCurrentReadingPosition]);
+
+  useEffect(() => {
+    if (!chapterData || savedViewportTarget || referenceViewportTarget) return;
+    const timer = window.setTimeout(persistCurrentReadingPosition, 0);
+    return () => window.clearTimeout(timer);
+  }, [chapterData, persistCurrentReadingPosition, referenceViewportTarget, savedViewportTarget]);
+
+  useEffect(() => {
+    publishSessionEntry();
+  }, [marginTab, publishSessionEntry, selectedVerses]);
 
   useEffect(() => {
     if (!onReadingContextChange) return;
@@ -1162,10 +1392,21 @@ export function ScripturePage({
   useEffect(() => {
     const el = contentRef.current;
     if (!el) return;
-    const handler = () => setScrolled(el.scrollTop > 0);
-    handler();
+    let settleTimer = 0;
+    const handler = () => {
+      setScrolled(el.scrollTop > 0);
+      if (settleTimer) window.clearTimeout(settleTimer);
+      settleTimer = window.setTimeout(() => {
+        settleTimer = 0;
+        persistCurrentReadingPositionRef.current();
+      }, 220);
+    };
+    setScrolled(el.scrollTop > 0);
     el.addEventListener("scroll", handler);
-    return () => el.removeEventListener("scroll", handler);
+    return () => {
+      el.removeEventListener("scroll", handler);
+      if (settleTimer) window.clearTimeout(settleTimer);
+    };
   }, []);
 
   // A chapter is a new reading surface, not the continuation of the previous
@@ -1173,11 +1414,16 @@ export function ScripturePage({
   // restore the current reading anchor in the layout effect above.
   useEffect(() => {
     pendingTranslationViewportRef.current = null;
-    if (contentRef.current) contentRef.current.scrollTop = 0;
-    setScrolled(false);
+    if (!savedViewportTarget && contentRef.current) {
+      contentRef.current.scrollTop = 0;
+      setScrolled(false);
+    }
     if (!shouldFocusChapterHeading.current) return;
     shouldFocusChapterHeading.current = false;
     chapterHeadingRef.current?.focus();
+  // savedViewportTarget is intentionally read only for the chapter transition
+  // that scheduled it; clearing the one-shot target must not reset scroll.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [book, chapter]);
 
   // Keep the passage-picker's book-browsing view in sync with the current book.
@@ -1241,31 +1487,10 @@ export function ScripturePage({
   };
 
   const captureTranslationViewport = useCallback((nextPackageId: string): void => {
-    const root = contentRef.current;
-    if (!root) return;
-    const rootRect = root.getBoundingClientRect();
-    const eyeY = rootRect.top + rootRect.height * 0.32;
-    let anchorVerse: number | null = null;
-    let anchorOffset = 0;
-    let bestDistance = Infinity;
-
-    for (const [verse, row] of verseRowRefs.current) {
-      const rect = row.getBoundingClientRect();
-      if (rect.bottom < rootRect.top || rect.top > rootRect.bottom) continue;
-      const distance = Math.abs((rect.top + rect.bottom) / 2 - eyeY);
-      if (distance >= bestDistance) continue;
-      bestDistance = distance;
-      anchorVerse = verse;
-      anchorOffset = rect.top - rootRect.top;
-    }
-
-    pendingTranslationViewportRef.current = {
-      packageId: nextPackageId,
-      verse: anchorVerse,
-      verseOffset: anchorOffset,
-      scrollTop: root.scrollTop,
-    };
-  }, []);
+    const viewport = captureReadingViewport();
+    if (!viewport) return;
+    pendingTranslationViewportRef.current = { packageId: nextPackageId, ...viewport };
+  }, [captureReadingViewport]);
 
   // Book search: full names, aliases, codes (ACT), compact abbreviations (1co, rev).
   const matchesQuery = (code: string) => {
@@ -1428,6 +1653,29 @@ export function ScripturePage({
     return () => window.removeEventListener("keydown", handler);
   }, [showHighlightPalette]);
 
+  // Browser-style canvas history yields to editors and modal dialogs.
+  useEffect(() => {
+    const handleHistoryShortcut = (event: KeyboardEvent): void => {
+      if (
+        event.defaultPrevented
+        || !event.altKey
+        || event.metaKey
+        || event.ctrlKey
+        || event.shiftKey
+        || (event.key !== "ArrowLeft" && event.key !== "ArrowRight")
+      ) return;
+      const target = event.target instanceof HTMLElement ? event.target : null;
+      if (target?.matches("input, textarea, select") || target?.isContentEditable) return;
+      if (document.querySelector('[data-floating-layer="dialog"]')) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.key === "ArrowLeft") navigateBack();
+      else navigateForward();
+    };
+    window.addEventListener("keydown", handleHistoryShortcut, true);
+    return () => window.removeEventListener("keydown", handleHistoryShortcut, true);
+  }, [navigateBack, navigateForward]);
+
   // Keyboard navigation: prev/next chapter
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -1443,21 +1691,19 @@ export function ScripturePage({
         e.preventDefault();
         if (!requireSafeConnectionNavigation()) return;
         if (chapter > 1) {
-          userNavigatedRef.current = true;
-          setChapter(chapter - 1);
+          goTo(book, chapter - 1, undefined, { recordRecent: false });
         }
       } else if ((plainReadingArrow || appArrow) && e.key === "ArrowRight") {
         e.preventDefault();
         if (!requireSafeConnectionNavigation()) return;
         if (chapter < chapterCount) {
-          userNavigatedRef.current = true;
-          setChapter(chapter + 1);
+          goTo(book, chapter + 1, undefined, { recordRecent: false });
         }
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [chapter, chapterCount, requireSafeConnectionNavigation]);
+  }, [book, chapter, chapterCount, goTo, requireSafeConnectionNavigation]);
 
   // The marking surfaces are sized against the actual reading stage, not the
   // window. Sidebar collapse, Living Margin, reading measure, and focus mode
@@ -3114,6 +3360,32 @@ export function ScripturePage({
     <div className="scripture-page">
       <header className={`scripture-topbar${scrolled ? " scrolled" : ""}`} role="toolbar" aria-label="Reading toolbar">
         <div className="topbar-navigation">
+        <div className="canvas-history-arrows" role="group" aria-label="Reading history">
+          <Tooltip label="Back" shortcut="Alt+←">
+            <button
+              type="button"
+              className="nav-arrow history-nav-arrow"
+              onClick={navigateBack}
+              disabled={navigationHistory.back.length === 0 || connectionNavigationLocked}
+              aria-label="Back"
+              aria-keyshortcuts="Alt+ArrowLeft"
+            >
+              <ChapterArrowIcon direction="previous" />
+            </button>
+          </Tooltip>
+          <Tooltip label="Forward" shortcut="Alt+→">
+            <button
+              type="button"
+              className="nav-arrow history-nav-arrow"
+              onClick={navigateForward}
+              disabled={navigationHistory.forward.length === 0 || connectionNavigationLocked}
+              aria-label="Forward"
+              aria-keyshortcuts="Alt+ArrowRight"
+            >
+              <ChapterArrowIcon direction="next" />
+            </button>
+          </Tooltip>
+        </div>
         <div className="passage-picker-group" aria-label="Chapter navigation">
           <button
             ref={passageBtnRef}
@@ -3138,8 +3410,7 @@ export function ScripturePage({
                 onClick={() => {
                   if (!requireSafeConnectionNavigation()) return;
                   if (chapter > 1) {
-                    userNavigatedRef.current = true;
-                    setChapter(chapter - 1);
+                    goTo(book, chapter - 1, undefined, { recordRecent: false });
                   }
                 }}
                 disabled={chapter <= 1 || connectionNavigationLocked}
@@ -3155,8 +3426,7 @@ export function ScripturePage({
                 onClick={() => {
                   if (!requireSafeConnectionNavigation()) return;
                   if (chapter < chapterCount) {
-                    userNavigatedRef.current = true;
-                    setChapter(chapter + 1);
+                    goTo(book, chapter + 1, undefined, { recordRecent: false });
                   }
                 }}
                 disabled={chapter >= chapterCount || connectionNavigationLocked}
@@ -3559,8 +3829,7 @@ export function ScripturePage({
                   onClick={() => {
                     if (!requireSafeConnectionNavigation()) return;
                     shouldFocusChapterHeading.current = true;
-                    userNavigatedRef.current = true;
-                    setChapter((current) => current + 1);
+                    goTo(book, chapter + 1, undefined, { recordRecent: false });
                   }}
                   aria-label={`Continue to ${displayBookName} ${chapter + 1}`}
                   disabled={connectionNavigationLocked}
@@ -3671,6 +3940,8 @@ export function ScripturePage({
           onStudyVerse={handleStudyVerse}
           onMarginActiveChange={handleMarginActiveChange}
           onClearSelection={handleClearMarginSelection}
+          activeTab={marginTab}
+          onActiveTabChange={setMarginTab}
           entityIntent={entityIntent}
           onOpenEntity={onOpenEntity}
           onCloseEntity={onCloseEntity}

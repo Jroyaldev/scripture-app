@@ -35,7 +35,8 @@ test("authored connection inspection is a contextual margin view, not a replacem
 test("Overview is the quiet default, with stable keyboard deep-dive tabs over the current scope", () => {
   assert.match(margin, /type MarginTab = "overview" \| "connections" \| "passage" \| "notes"/);
   assert.match(margin, /const MARGIN_TABS[\s\S]*\{ id: "overview", label: "Overview"[\s\S]*\{ id: "connections", label: "Related"/);
-  assert.match(margin, /useState<MarginTab>\("overview"\)/);
+  assert.match(margin, /useState<MarginTab>\(controlledActiveTab \?\? "overview"\)/);
+  assert.match(margin, /const activeTab = controlledActiveTab \?\? internalActiveTab/);
   assert.match(margin, /role="tablist" aria-label="Study views" aria-orientation="horizontal"/);
   assert.match(margin, /aria-selected=\{selected\}/);
   assert.match(margin, /aria-controls=\{`margin-\$\{tab\.id\}-panel`\}/);
@@ -72,7 +73,9 @@ test("translation changes preserve canonical verse selection and the reading anc
   assert.match(page, /lastLoadedChapterVerseTextRef\.current/);
   assert.match(page, /displayChapterVerseText=\{displayChapterVerseText\}/);
   assert.match(page, /chapterTextLoading=\{!chapterData && !chapterError\}/);
-  assert.match(page, /root\.scrollTop = Math\.max\(0, root\.scrollTop \+ currentOffset - pending\.verseOffset\)/);
+  assert.match(page, /const restoreReadingViewport = useCallback/);
+  assert.match(page, /currentOffset - viewport\.verseOffset/);
+  assert.match(page, /restoreReadingViewport\(pending\)/);
   assert.match(page, /Translation changes are deliberately excluded/);
   assert.match(page, /\}, \[book, chapter\]\);/);
 

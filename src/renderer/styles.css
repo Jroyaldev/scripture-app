@@ -5381,6 +5381,18 @@ html, body, #root {
 
 /* --- Chapter navigation --- */
 
+.canvas-history-arrows {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0;
+}
+
+.history-nav-arrow {
+  width: 28px;
+  height: 28px;
+}
+
 .chapter-nav-arrows {
   display: flex;
   align-items: center;

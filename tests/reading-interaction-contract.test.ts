@@ -363,9 +363,9 @@ test("plain reading arrows traverse chapters while Tab and Shift-Tab cycle Livin
 
   assert.match(chapterKeys, /const plainReadingArrow = [\s\S]{0,240}target\?\.closest\("\.verse-line"\)/);
   assert.match(chapterKeys, /\(plainReadingArrow \|\| appArrow\) && e\.key === "ArrowLeft"/);
-  assert.match(chapterKeys, /setChapter\(chapter - 1\)/);
+  assert.match(chapterKeys, /goTo\(book, chapter - 1, undefined, \{ recordRecent: false \}\)/);
   assert.match(chapterKeys, /\(plainReadingArrow \|\| appArrow\) && e\.key === "ArrowRight"/);
-  assert.match(chapterKeys, /setChapter\(chapter \+ 1\)/);
+  assert.match(chapterKeys, /goTo\(book, chapter \+ 1, undefined, \{ recordRecent: false \}\)/);
 
   assert.match(globalLensKeys, /if \(event\.key !== "Tab"\) return/);
   assert.match(globalLensKeys, /const reverse = event\.shiftKey/);

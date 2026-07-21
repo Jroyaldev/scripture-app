@@ -199,7 +199,14 @@ export interface AppSettings {
   verseNumbers: VerseNumberMode;
   recentPassages: RecentPassageSetting[];
   /** Where the reader last was — restored on launch. */
-  lastRead: { book: string; chapter: number; packageId: string } | null;
+  lastRead: {
+    book: string;
+    chapter: number;
+    packageId: string;
+    /** Backward-compatible exact eye-line fields; absent means chapter top. */
+    verse?: number;
+    verseOffset?: number;
+  } | null;
 }
 
 export interface LibrarySummary {

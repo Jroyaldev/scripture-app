@@ -1,6 +1,6 @@
 # TASK D4: Reconcile the settled desktop checkpoint with Smart Shapes
 
-STATUS: IN PROGRESS — Steps 1–2 complete; Steps 3–5 pending.
+STATUS: IN PROGRESS — Steps 1–3 complete; Steps 4–5 pending.
 
 ## Objective
 
@@ -33,6 +33,12 @@ The old `489c478` checkpoint is requirements evidence only.
   study. Captured excerpts retain visible source and frozen study provenance;
   public-data surfaces consolidate attribution under keyboard-accessible
   Sources/Cite disclosures.
+- Step 3: renderer-session browser history with bounded Back/Forward stacks,
+  one deliberate `goTo()` path for picker, recents, references, and chapter
+  travel, topbar and Alt-arrow traversal, controlled margin-tab/selection
+  restoration, and exact verse-plus-pixel eye-line persistence through the
+  existing translation viewport model. Research Back names its destination
+  while remaining separate from canvas history.
 
 Step 1 verification: focused contract 4/4; full suite 703 total, 674 pass,
 29 expected Electron-ABI skips; lint, renderer/Electron builds, and diff
@@ -40,6 +46,10 @@ integrity clean.
 
 Step 2 verification: focused note/Git/capture/workspace contracts 15/15; full
 suite 715 total, 686 pass, 29 expected Electron-ABI skips; lint,
+renderer/Electron builds, and diff integrity clean.
+
+Step 3 verification: focused history/return/topbar/keyboard contracts 15/15;
+full suite 722 total, 693 pass, 29 expected Electron-ABI skips; lint,
 renderer/Electron builds, and diff integrity clean.
 
 ## Guardrails
