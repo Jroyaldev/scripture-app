@@ -45,8 +45,8 @@ async function connect(url) {
 }
 
 const pages = await (await fetch(CDP_HTTP)).json();
-const app = pages.find((page) => page.title === "Scripture Library");
-if (!app) throw new Error("Scripture Library is not available on :9222");
+const app = pages.find((page) => page.title === "Pericope");
+if (!app) throw new Error("Pericope is not available on :9222");
 const cdp = await connect(app.webSocketDebuggerUrl);
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 

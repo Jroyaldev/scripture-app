@@ -18,6 +18,10 @@ import ElectronStore from "electron-store";
 const Store = ((ElectronStore as unknown as { default?: unknown }).default ??
   ElectronStore) as typeof ElectronStore;
 
+// In development Electron otherwise shares a generic profile with unrelated
+// bare-Electron apps. This must precede every app.getPath() and Store call.
+app.setName("Pericope");
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 import { ulid } from "ulid";
 import type { BackboneData, BookCode, BookNameMap, CanonicalRef } from "../core/reference/types.js";
@@ -81,6 +85,7 @@ import {
 } from "../core/annotations/occurrence-alignment.js";
 import { checkMigration } from "../core/migration/index.js";
 import { OccurrenceAlignmentStore } from "../host/occurrence-alignment-store.js";
+import { sanitizeLegacySettings, type AdoptableLegacySettings } from "./legacy-settings.js";
 import {
   UserMutationBroker,
   type ExplicitUserMutationIntent,
@@ -136,7 +141,7 @@ function logLifecycle(
 
 try {
   crashReporter.start({
-    productName: "Scripture Library",
+    productName: "Pericope",
     uploadToServer: false,
     ignoreSystemCrashHandler: false,
     globalExtra: {
@@ -207,6 +212,25 @@ interface AppSettingsSchema {
   libraryPath: string | null;
 }
 
+type LegacySettingsAdoption =
+  | { status: "dedicated-exists" | "legacy-missing" | "legacy-refused" | "legacy-read-failed" }
+  | { status: "adopt"; settings: AdoptableLegacySettings };
+
+function readLegacySettingsForAdoption(): LegacySettingsAdoption {
+  const userDataDirectory = app.getPath("userData");
+  const dedicatedConfig = join(userDataDirectory, "config.json");
+  if (existsSync(dedicatedConfig)) return { status: "dedicated-exists" };
+
+  const legacyConfig = resolve(userDataDirectory, "..", "Electron", "config.json");
+  if (!existsSync(legacyConfig)) return { status: "legacy-missing" };
+  try {
+    const settings = sanitizeLegacySettings(JSON.parse(readFileSync(legacyConfig, "utf8")));
+    return settings ? { status: "adopt", settings } : { status: "legacy-refused" };
+  } catch {
+    return { status: "legacy-read-failed" };
+  }
+}
+
 const MARKING_SURFACE_IDS = new Set<AppSettingsSchema["markingSurface"]>([
   "palette",
   "rail",
@@ -221,6 +245,7 @@ function normalizeMarkingSurface(value: unknown): AppSettingsSchema["markingSurf
     : "palette";
 }
 
+const legacySettingsAdoption = readLegacySettingsForAdoption();
 const store = new Store<AppSettingsSchema>({
   defaults: {
     theme: nativeTheme.shouldUseDarkColors ? "dark" : "light",
@@ -235,6 +260,16 @@ const store = new Store<AppSettingsSchema>({
     windowBounds: null,
     libraryPath: null,
   },
+});
+
+if (legacySettingsAdoption.status === "adopt") {
+  store.store = { ...store.store, ...legacySettingsAdoption.settings };
+}
+logLifecycle("legacy-settings-adoption", {
+  status: legacySettingsAdoption.status,
+  adoptedKeys: legacySettingsAdoption.status === "adopt"
+    ? Object.keys(legacySettingsAdoption.settings).sort()
+    : [],
 });
 
 let mainWindow: BrowserWindow | null = null;
@@ -1219,14 +1254,14 @@ function createWindow(): void {
         nodeIntegration: false,
       },
       titleBarStyle: "hiddenInset",
-      title: "Scripture Library",
+      title: "Pericope",
     });
   } catch (error) {
     // Keep the visible-window slot empty so a later activation can retry.
     mainWindow = null;
     logLifecycle("main-window-construction-failed", { error: diagnosticError(error) }, "error");
     dialog.showErrorBox(
-      "Could not open Scripture Library",
+      "Could not open Pericope",
       `The reading window could not be created.\n\n${diagnosticError(error).message}`,
     );
     // macOS can retry from a later Dock activation. Other platforms have no
@@ -3204,7 +3239,7 @@ if (!hasSingleInstanceLock) {
   }).catch((error) => {
     logLifecycle("startup-failed", { error: diagnosticError(error) }, "error");
     dialog.showErrorBox(
-      "Failed to start Scripture Library",
+      "Failed to start Pericope",
       `The desktop shell could not finish starting.\n\n${diagnosticError(error).message}`,
     );
     app.quit();

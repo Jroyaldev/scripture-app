@@ -329,7 +329,7 @@ switch (command) {
   }
 
   default: {
-    console.log(`Scripture-Native Knowledge Library CLI
+    console.log(`Pericope CLI — scripture-native knowledge library
 
 Usage: library <command> [options]
 

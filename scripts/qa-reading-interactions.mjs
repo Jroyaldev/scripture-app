@@ -114,14 +114,14 @@ async function waitForTarget(endpoint, childState, timeout = 25_000) {
     }
     try {
       const pages = await (await fetch(endpoint)).json();
-      const page = pages.find((candidate) => candidate.title === "Scripture Library");
+      const page = pages.find((candidate) => candidate.title === "Pericope");
       if (page) return page;
     } catch (error) {
       lastFetchError = String(error);
     }
     await sleep(120);
   }
-  const error = new Error(`Electron stayed alive but did not expose the Scripture Library CDP target at ${endpoint}`);
+  const error = new Error(`Electron stayed alive but did not expose the Pericope CDP target at ${endpoint}`);
   error.code = "QA_GUI_LAUNCH_TIMEOUT";
   error.launchState = { ...childState, endpoint, lastFetchError };
   throw error;

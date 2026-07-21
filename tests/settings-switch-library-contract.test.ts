@@ -35,6 +35,6 @@ test("SettingsPage wires Switch Library and Reveal in Finder actions", () => {
   );
   assert.match(source, /Show in Finder/);
 
-  assert.match(source, /Open another Scripture Library folder/);
+  assert.match(source, /Open another library folder/);
   assert.match(source, /Authored files are not changed/);
 });

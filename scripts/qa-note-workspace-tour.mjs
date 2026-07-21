@@ -91,8 +91,8 @@ function createDriver(cdp) {
 }
 
 const pages = await (await fetch(CDP_ENDPOINT)).json();
-const page = pages.find((candidate) => candidate.title === "Scripture Library");
-assert.ok(page, "Scripture Library Electron target was not found on port 9222");
+const page = pages.find((candidate) => candidate.title === "Pericope");
+assert.ok(page, "Pericope Electron target was not found on port 9222");
 const cdp = await connect(page.webSocketDebuggerUrl);
 const driver = createDriver(cdp);
 

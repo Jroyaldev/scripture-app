@@ -146,7 +146,7 @@ async function waitForTarget(endpoint, childState, timeout = 20_000) {
     try {
       const pages = await (await fetch(endpoint)).json();
       observedTitles = pages.map((candidate) => candidate.title ?? "");
-      const page = pages.find((candidate) => candidate.title === "Scripture Library");
+      const page = pages.find((candidate) => candidate.title === "Pericope");
       if (page) return page;
     } catch {
       // The isolated Electron process may still be opening its debug socket.
@@ -154,7 +154,7 @@ async function waitForTarget(endpoint, childState, timeout = 20_000) {
     await sleep(120);
   }
   if (observedTitles.length > 0) {
-    const error = new Error(`Renderer debug target appeared without Scripture Library: ${observedTitles.join(", ")}`);
+    const error = new Error(`Renderer debug target appeared without Pericope: ${observedTitles.join(", ")}`);
     error.code = "ELECTRON_RENDERER_BOOTSTRAP_FAILED";
     error.launchState = { ...childState, observedTitles };
     throw error;

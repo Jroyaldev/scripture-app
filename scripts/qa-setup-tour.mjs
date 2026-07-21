@@ -51,7 +51,7 @@ async function connect(url) {
 
 async function appTarget(endpoint) {
   const pages = await (await fetch(endpoint)).json();
-  return pages.find((page) => page.title === "Scripture Library");
+  return pages.find((page) => page.title === "Pericope");
 }
 
 async function waitForTarget(endpoint, timeout = 20_000) {
@@ -65,7 +65,7 @@ async function waitForTarget(endpoint, timeout = 20_000) {
     }
     await sleep(140);
   }
-  throw new Error(`Timed out waiting for Scripture Library at ${endpoint}`);
+  throw new Error(`Timed out waiting for Pericope at ${endpoint}`);
 }
 
 function createDriver(cdp) {

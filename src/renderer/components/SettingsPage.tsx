@@ -196,7 +196,7 @@ export function SettingsPage({
   const [switching, setSwitching] = useState(false);
   const [rebuilding, setRebuilding] = useState(false);
 
-  const libraryName = libraryPath.split(/[\\/]/).filter(Boolean).pop() ?? "Scripture Library";
+  const libraryName = libraryPath.split(/[\\/]/).filter(Boolean).pop() ?? "Pericope";
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -431,7 +431,7 @@ export function SettingsPage({
               <div className="settings-action-row">
                 <div>
                   <h3>Switch library</h3>
-                  <p>Open another Scripture Library folder. The app reloads into that library after you choose it.</p>
+                  <p>Open another library folder. The app reloads into that library after you choose it.</p>
                 </div>
                 <Button onClick={() => void switchLibrary()} busy={switching}>Choose folder…</Button>
               </div>
@@ -631,7 +631,8 @@ export function SettingsPage({
               description="Format versions keep this library understandable, portable, and safe to rebuild."
             />
             <dl className="settings-about-list">
-              <div><dt>Scripture Library</dt><dd>0.1.0</dd></div>
+              <div><dt>Pericope</dt><dd>0.1.0</dd></div>
+              <div><dt>A Shepherdly product</dt><dd>marktheword.com</dd></div>
               <div><dt>Reference coordinates</dt><dd><code>bref:v1</code></dd></div>
               <div><dt>Library schema</dt><dd><code>1</code></dd></div>
               <div><dt>Scripture package format</dt><dd><code>1</code></dd></div>

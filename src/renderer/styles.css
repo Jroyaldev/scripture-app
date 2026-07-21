@@ -4071,6 +4071,19 @@ html, body, #root {
   text-align: center;
 }
 
+.loading-brand-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto var(--sp-lg);
+  border-radius: var(--radius-lg);
+  background: var(--accent-current);
+  color: var(--text-on-accent);
+  box-shadow: var(--shadow-medium);
+}
+
 .loading-title {
   font-family: var(--font-reading);
   font-size: var(--fs-3xl);

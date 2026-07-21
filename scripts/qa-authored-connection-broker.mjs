@@ -75,7 +75,7 @@ async function waitForTarget(endpoint, childState, timeout = 20_000) {
     }
     try {
       const pages = await (await fetch(endpoint, { signal: AbortSignal.timeout(1_000) })).json();
-      const page = pages.find((candidate) => candidate.title === "Scripture Library");
+      const page = pages.find((candidate) => candidate.title === "Pericope");
       if (page) return page;
     } catch {
       // Electron may still be opening its isolated debug socket.

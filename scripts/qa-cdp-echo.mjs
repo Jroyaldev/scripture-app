@@ -37,7 +37,7 @@ const check = (label, ok, detail = "") => {
 };
 
 const pages = await (await fetch(CDP_HTTP)).json();
-const app = pages.find((p) => p.title === "Scripture Library");
+const app = pages.find((p) => p.title === "Pericope");
 if (!app) { console.error("QA FAIL: app not found"); process.exit(1); }
 const cdp = await connect(app.webSocketDebuggerUrl);
 

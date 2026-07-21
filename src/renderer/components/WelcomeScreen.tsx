@@ -2,20 +2,12 @@ import type React from "react";
 import { useState } from "react";
 import { safeCall } from "../utils/safeCall.js";
 import { Button } from "./Controls.js";
+import { PericopeMark } from "./PericopeMark.js";
 
 interface Props {
   defaultPath: string;
   onConfirm: (path: string) => Promise<{ ok: boolean; error?: string }>;
   shellClass: string;
-}
-
-function WelcomeBookIcon(): React.JSX.Element {
-  return (
-    <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 5c2-.8 3.6-.8 6 .2v9c-2.4-1-4-1-6-.2z" />
-      <path d="M16 5c-2-.8-3.6-.8-6 .2v9c2.4-1 4-1 6-.2z" />
-    </svg>
-  );
 }
 
 function TrustMark({ kind }: { kind: "files" | "local" | "move" }): React.JSX.Element {
@@ -78,11 +70,11 @@ export function WelcomeScreen({ defaultPath, onConfirm, shellClass }: Props): Re
     <div className={`${shellClass} welcome-screen`}>
       <main className="welcome-content">
         <header className="welcome-header">
-          <div className="welcome-brand-mark"><WelcomeBookIcon /></div>
-          <p className="welcome-kicker">Scripture Library</p>
+          <div className="welcome-brand-mark"><PericopeMark size={17} /></div>
+          <p className="welcome-kicker">Pericope · by Shepherdly</p>
           <h1 className="welcome-title">Your study library stays yours.</h1>
           <p className="welcome-description">
-            Scripture keeps your notes, highlights, and study history in a plain local folder. Choose where that folder should live to begin.
+            Pericope keeps your notes, highlights, and study history in a plain local folder. Choose where that folder should live to begin.
           </p>
         </header>
 

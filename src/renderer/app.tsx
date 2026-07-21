@@ -16,6 +16,7 @@ import { ErrorBoundary } from "./components/ErrorBoundary.js";
 import { ToastProvider } from "./components/Toast.js";
 import { Popover } from "./components/Popover.js";
 import { WelcomeScreen } from "./components/WelcomeScreen.js";
+import { PericopeMark } from "./components/PericopeMark.js";
 import type { ReadingPrefs } from "./components/ReadingComfort.js";
 import { Tooltip } from "./components/Tooltip.js";
 import {
@@ -40,15 +41,6 @@ function PanelToggleIcon(): React.JSX.Element {
     <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="4" width="14" height="12" rx="2.5" />
       <path d="M7.5 4v12" />
-    </svg>
-  );
-}
-
-function BookMarkIcon(): React.JSX.Element {
-  return (
-    <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 5c2-.8 3.6-.8 6 .2v9c-2.4-1-4-1-6-.2z" />
-      <path d="M16 5c-2-.8-3.6-.8-6 .2v9c2.4-1 4-1 6-.2z" />
     </svg>
   );
 }
@@ -197,6 +189,7 @@ export function App(): React.JSX.Element {
 
   const loadData = useCallback(async () => {
     setLoadState({ status: "loading" });
+    const splashHold = new Promise<void>((resolve) => setTimeout(resolve, 2400));
 
     const [backboneRes, bookNamesRes, pathRes, infoRes] = await Promise.all([
       safeCall(() => window.api.scripture.getBackbone()),
@@ -215,11 +208,13 @@ export function App(): React.JSX.Element {
     }
 
     if (infoRes.ok && infoRes.value && infoRes.value.hasLibrary === false) {
+      await splashHold;
       setLoadState({ status: "first-run", defaultPath: infoRes.value.path });
       return;
     }
 
     const libraryPath = pathRes.ok ? pathRes.value : "Unknown";
+    await splashHold;
     setLoadState({
       status: "loaded",
       backbone: backboneRes.value,
@@ -577,7 +572,8 @@ export function App(): React.JSX.Element {
     return (
       <div className={`${shellClass} loading-screen`}>
         <div className="loading-content">
-          <h1 className="loading-title">Scripture Library</h1>
+          <div className="loading-brand-mark"><PericopeMark size={34} /></div>
+          <h1 className="loading-title">Pericope</h1>
           <div className="loading-spinner" />
           <p className="loading-text">Loading library...</p>
         </div>
@@ -741,11 +737,11 @@ export function App(): React.JSX.Element {
               aria-label="Primary navigation"
             >
               <div className="sidebar-header">
-                <div className="brand-row" aria-label="Scripture">
+                <div className="brand-row" aria-label="Pericope">
                   <div className="brand-mark">
-                    <BookMarkIcon />
+                    <PericopeMark size={16} />
                   </div>
-                  <div className="brand-word">Scripture</div>
+                  <div className="brand-word">Pericope</div>
                 </div>
                 <Tooltip label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}>
                   <button

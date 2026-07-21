@@ -1,7 +1,8 @@
 {
   "name": "scripture-app",
   "version": "0.1.0",
-  "description": "A local-first, open-source knowledge tool where canonical Scripture is the structured organizing spine.",
+  "productName": "Pericope",
+  "description": "Pericope — a local-first, open-source knowledge tool where canonical Scripture is the structured organizing spine. A Shepherdly product (marktheword.com).",
   "license": "Apache-2.0",
   "type": "module",
   "engines": {

@@ -44,9 +44,9 @@ async function connect(url) {
 }
 
 const pages = await (await fetch(CDP_HTTP)).json();
-const app = pages.find((p) => p.title === "Scripture Library");
+const app = pages.find((p) => p.title === "Pericope");
 if (!app) {
-  console.error("FAIL: Scripture Library not on :9222 (launch with --remote-debugging-port=9222)");
+  console.error("FAIL: Pericope not on :9222 (launch with --remote-debugging-port=9222)");
   process.exit(1);
 }
 const cdp = await connect(app.webSocketDebuggerUrl);
