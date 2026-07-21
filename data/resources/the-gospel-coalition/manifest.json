@@ -1,0 +1,34 @@
+{
+  "schema": "pericope.trusted-resource-manifest",
+  "version": 1,
+  "source": {
+    "id": "the-gospel-coalition",
+    "name": "The Gospel Coalition",
+    "homepageUrl": "https://www.thegospelcoalition.org/",
+    "officialHosts": ["www.thegospelcoalition.org"]
+  },
+  "provenance": {
+    "publisher": "The Gospel Coalition",
+    "reviewedAt": "2026-07-20",
+    "coverage": "reviewed-sample",
+    "permissions": "outbound-link-only",
+    "note": "Small reviewed sample; not a complete catalog."
+  },
+  "capabilities": ["outbound-link"],
+  "records": [
+    {
+      "id": "the-gospel-coalition:article:you-do-not-groan-alone",
+      "sourceId": "the-gospel-coalition",
+      "kind": "article",
+      "title": "You Do Not Groan Alone",
+      "officialUrl": "https://www.thegospelcoalition.org/article/you-do-not-groan-alone/",
+      "brefs": ["bref:v1/ROM.8.22-ROM.8.27"],
+      "matchBasis": "publisher-scripture-tag",
+      "metadata": {
+        "author": "Courtney Reissig",
+        "publishedAt": "2014-07-16",
+        "language": "en"
+      }
+    }
+  ]
+}

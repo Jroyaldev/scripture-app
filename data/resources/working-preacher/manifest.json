@@ -1,0 +1,34 @@
+{
+  "schema": "pericope.trusted-resource-manifest",
+  "version": 1,
+  "source": {
+    "id": "working-preacher",
+    "name": "Working Preacher",
+    "homepageUrl": "https://www.workingpreacher.org/",
+    "officialHosts": ["www.workingpreacher.org"]
+  },
+  "provenance": {
+    "publisher": "Working Preacher from Luther Seminary",
+    "reviewedAt": "2026-07-20",
+    "coverage": "reviewed-sample",
+    "permissions": "outbound-link-only",
+    "note": "Small reviewed sample; not a complete catalog."
+  },
+  "capabilities": ["outbound-link"],
+  "records": [
+    {
+      "id": "working-preacher:commentary:61109",
+      "sourceId": "working-preacher",
+      "kind": "commentary",
+      "title": "Commentary on Romans 8:1-11",
+      "officialUrl": "https://www.workingpreacher.org/commentaries/revised-common-lectionary/ordinary-15/commentary-on-romans-81-11-7",
+      "brefs": ["bref:v1/ROM.8.1-ROM.8.11"],
+      "matchBasis": "publisher-title",
+      "metadata": {
+        "author": "Carolyn B. Helsel",
+        "publishedAt": "2026-05-06",
+        "language": "en"
+      }
+    }
+  ]
+}

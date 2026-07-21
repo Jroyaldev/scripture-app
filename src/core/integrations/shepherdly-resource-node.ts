@@ -8,9 +8,11 @@
 
 import type { TipnrEntity } from "../language/tipnr.js";
 import { parseBref, type ParseResult } from "../reference/parser.js";
+import type { RankedTrustedResource } from "../resources/trusted-resources.js";
 
 export const SHEPHERDLY_RESOURCE_NODE_SCHEMA = "shepherdly.resource-node" as const;
 export const SHEPHERDLY_RESOURCE_NODE_VERSION = 1 as const;
+export const SHEPHERDLY_EXTERNAL_RESOURCE_NODE_VERSION = 2 as const;
 
 export type ShepherdlyProjectKind = "sermon" | "class" | "project";
 export type EntityOpeningRelationship = "direct-mention" | "research-context";
@@ -76,6 +78,48 @@ export type ShepherdlyResourceNodeV1 = {
   };
   provenance: ShepherdlyResourceProvenance[];
 };
+
+/** Prepared contract only. No sender is exposed until Shepherdly has receipts and target selection. */
+export type ShepherdlyExternalResourceNodeV2 = {
+  schema: typeof SHEPHERDLY_RESOURCE_NODE_SCHEMA;
+  version: typeof SHEPHERDLY_EXTERNAL_RESOURCE_NODE_VERSION;
+  intent: "attach-resource";
+  delivery: {
+    surface: "project-resources";
+    projectKinds: ShepherdlyProjectKind[];
+    editorInsertion: "explicit-only";
+  };
+  resource: {
+    kind: "external.trusted-resource";
+    sourceId: string;
+    resourceId: string;
+    title: string;
+    resourceKind: "article" | "commentary" | "guide" | "podcast" | "video";
+    officialUrl: string;
+    canonicalAnchors: string[];
+  };
+  context: {
+    originBref: string;
+    matchedBref: string;
+    match: "exact-passage" | "overlap" | "same-chapter";
+  };
+  locator: {
+    app: "scripture-library";
+    view: "trusted-resource";
+    sourceId: string;
+    resourceId: string;
+    officialUrl: string;
+  };
+  provenance: {
+    sourceName: string;
+    manifestSchema: "pericope.trusted-resource-manifest";
+    manifestVersion: 1;
+    matchBasis: "publisher-catalog" | "publisher-scripture-tag" | "publisher-title";
+    reviewedAt: string;
+  };
+};
+
+export type ShepherdlyResourceNode = ShepherdlyResourceNodeV1 | ShepherdlyExternalResourceNodeV2;
 
 export type BuildEntityResourceNodeInput = {
   entity: Pick<TipnrEntity, "id" | "kind" | "displayName" | "brief" | "firstRef" | "refs">;
@@ -219,7 +263,45 @@ export function buildShepherdlyEntityResourceNode(
     },
     provenance: [{ ...TIPNR_PROVENANCE }],
   };
-  return validateShepherdlyResourceNode(node);
+  return validateShepherdlyResourceNodeV1(node);
+}
+
+export function buildShepherdlyExternalResourceNode(
+  ranked: RankedTrustedResource,
+  originBref: string,
+  matchedBref: string,
+): ParseResult<ShepherdlyExternalResourceNodeV2> {
+  const node: ShepherdlyExternalResourceNodeV2 = {
+    schema: SHEPHERDLY_RESOURCE_NODE_SCHEMA,
+    version: SHEPHERDLY_EXTERNAL_RESOURCE_NODE_VERSION,
+    intent: "attach-resource",
+    delivery: { surface: "project-resources", projectKinds: ["sermon", "class", "project"], editorInsertion: "explicit-only" },
+    resource: {
+      kind: "external.trusted-resource",
+      sourceId: ranked.source.id,
+      resourceId: ranked.record.id,
+      title: ranked.record.title,
+      resourceKind: ranked.record.kind,
+      officialUrl: ranked.record.officialUrl,
+      canonicalAnchors: [...ranked.record.brefs],
+    },
+    context: { originBref, matchedBref, match: ranked.match },
+    locator: {
+      app: "scripture-library",
+      view: "trusted-resource",
+      sourceId: ranked.source.id,
+      resourceId: ranked.record.id,
+      officialUrl: ranked.record.officialUrl,
+    },
+    provenance: {
+      sourceName: ranked.source.name,
+      manifestSchema: "pericope.trusted-resource-manifest",
+      manifestVersion: 1,
+      matchBasis: ranked.record.matchBasis,
+      reviewedAt: ranked.provenance.reviewedAt,
+    },
+  };
+  return validateShepherdlyExternalResourceNodeV2(node);
 }
 
 /**
@@ -227,7 +309,14 @@ export function buildShepherdlyEntityResourceNode(
  * Unknown keys are refused so prose/body fields cannot quietly become an
  * unofficial editor-insertion channel.
  */
-export function validateShepherdlyResourceNode(input: unknown): ParseResult<ShepherdlyResourceNodeV1> {
+export function validateShepherdlyResourceNode(input: unknown): ParseResult<ShepherdlyResourceNode> {
+  if (isRecord(input) && input["schema"] === SHEPHERDLY_RESOURCE_NODE_SCHEMA && input["version"] === SHEPHERDLY_EXTERNAL_RESOURCE_NODE_VERSION) {
+    return validateShepherdlyExternalResourceNodeV2(input);
+  }
+  return validateShepherdlyResourceNodeV1(input);
+}
+
+function validateShepherdlyResourceNodeV1(input: unknown): ParseResult<ShepherdlyResourceNodeV1> {
   if (!isRecord(input) || !hasOnlyKeys(input, ["schema", "version", "intent", "delivery", "resource", "context", "locator", "provenance"])) {
     return { ok: false, error: "Resource node has unknown or missing top-level fields" };
   }
@@ -346,6 +435,47 @@ export function validateShepherdlyResourceNode(input: unknown): ParseResult<Shep
   };
 }
 
+function validateShepherdlyExternalResourceNodeV2(input: unknown): ParseResult<ShepherdlyExternalResourceNodeV2> {
+  if (!isRecord(input) || !hasOnlyKeys(input, ["schema", "version", "intent", "delivery", "resource", "context", "locator", "provenance"])) return { ok: false, error: "Resource node has unknown or missing top-level fields" };
+  if (input["schema"] !== SHEPHERDLY_RESOURCE_NODE_SCHEMA || input["version"] !== SHEPHERDLY_EXTERNAL_RESOURCE_NODE_VERSION) return { ok: false, error: "Unsupported Shepherdly resource-node schema or version" };
+  if (input["intent"] !== "attach-resource") return { ok: false, error: "Resource node intent must be attach-resource" };
+  const delivery = input["delivery"];
+  if (!isRecord(delivery) || !hasOnlyKeys(delivery, ["surface", "projectKinds", "editorInsertion"]) || delivery["surface"] !== "project-resources" || delivery["editorInsertion"] !== "explicit-only") return { ok: false, error: "Resource nodes may only attach to project resources with explicit editor insertion" };
+  const projectKinds = readProjectKinds(delivery["projectKinds"]); if (!projectKinds.ok) return projectKinds;
+  const resource = input["resource"];
+  if (!isRecord(resource) || !hasOnlyKeys(resource, ["kind", "sourceId", "resourceId", "title", "resourceKind", "officialUrl", "canonicalAnchors"]) || resource["kind"] !== "external.trusted-resource") return { ok: false, error: "Invalid external resource" };
+  const sourceId = readNonEmptyString(resource["sourceId"], "resource.sourceId"); if (!sourceId.ok) return sourceId;
+  const resourceId = readNonEmptyString(resource["resourceId"], "resource.resourceId"); if (!resourceId.ok) return resourceId;
+  const title = readNonEmptyString(resource["title"], "resource.title"); if (!title.ok) return title;
+  const resourceKind = resource["resourceKind"];
+  if (!["article", "commentary", "guide", "podcast", "video"].includes(String(resourceKind))) return { ok: false, error: "Unsupported external resource kind" };
+  const officialUrl = readHttpsUrl(resource["officialUrl"], "resource.officialUrl"); if (!officialUrl.ok) return officialUrl;
+  const canonicalAnchors = readBrefs(resource["canonicalAnchors"], "resource.canonicalAnchors"); if (!canonicalAnchors.ok || canonicalAnchors.value.length === 0) return canonicalAnchors.ok ? { ok: false, error: "External resource requires canonical anchors" } : canonicalAnchors;
+  const context = input["context"];
+  if (!isRecord(context) || !hasOnlyKeys(context, ["originBref", "matchedBref", "match"])) return { ok: false, error: "Invalid external resource context" };
+  const originBref = readBref(context["originBref"], "context.originBref"); if (!originBref.ok) return originBref;
+  const matchedBref = readBref(context["matchedBref"], "context.matchedBref"); if (!matchedBref.ok) return matchedBref;
+  if (!canonicalAnchors.value.includes(matchedBref.value)) return { ok: false, error: "Matched bref must be one of the resource anchors" };
+  const match = context["match"];
+  if (match !== "exact-passage" && match !== "overlap" && match !== "same-chapter") return { ok: false, error: "Invalid external resource match" };
+  const locator = input["locator"];
+  if (!isRecord(locator) || !hasOnlyKeys(locator, ["app", "view", "sourceId", "resourceId", "officialUrl"]) || locator["app"] !== "scripture-library" || locator["view"] !== "trusted-resource" || locator["sourceId"] !== sourceId.value || locator["resourceId"] !== resourceId.value || locator["officialUrl"] !== officialUrl.value) return { ok: false, error: "Invalid external resource locator" };
+  const provenance = input["provenance"];
+  if (!isRecord(provenance) || !hasOnlyKeys(provenance, ["sourceName", "manifestSchema", "manifestVersion", "matchBasis", "reviewedAt"])) return { ok: false, error: "Invalid external resource provenance" };
+  const sourceName = readNonEmptyString(provenance["sourceName"], "provenance.sourceName"); if (!sourceName.ok) return sourceName;
+  const reviewedAt = readNonEmptyString(provenance["reviewedAt"], "provenance.reviewedAt"); if (!reviewedAt.ok) return reviewedAt;
+  const matchBasis = provenance["matchBasis"];
+  if (provenance["manifestSchema"] !== "pericope.trusted-resource-manifest" || provenance["manifestVersion"] !== 1 || !["publisher-catalog", "publisher-scripture-tag", "publisher-title"].includes(String(matchBasis))) return { ok: false, error: "Invalid trusted manifest provenance" };
+  return { ok: true, value: {
+    schema: SHEPHERDLY_RESOURCE_NODE_SCHEMA, version: SHEPHERDLY_EXTERNAL_RESOURCE_NODE_VERSION, intent: "attach-resource",
+    delivery: { surface: "project-resources", projectKinds: projectKinds.value, editorInsertion: "explicit-only" },
+    resource: { kind: "external.trusted-resource", sourceId: sourceId.value, resourceId: resourceId.value, title: title.value, resourceKind: resourceKind as ShepherdlyExternalResourceNodeV2["resource"]["resourceKind"], officialUrl: officialUrl.value, canonicalAnchors: canonicalAnchors.value },
+    context: { originBref: originBref.value, matchedBref: matchedBref.value, match },
+    locator: { app: "scripture-library", view: "trusted-resource", sourceId: sourceId.value, resourceId: resourceId.value, officialUrl: officialUrl.value },
+    provenance: { sourceName: sourceName.value, manifestSchema: "pericope.trusted-resource-manifest", manifestVersion: 1, matchBasis: matchBasis as ShepherdlyExternalResourceNodeV2["provenance"]["matchBasis"], reviewedAt: reviewedAt.value },
+  } };
+}
+
 type ParsedEntityRef = { key: string; book: string; chapter: number; verse: number };
 
 function parseEntityRef(value: string): ParsedEntityRef | null {
@@ -398,6 +528,18 @@ function readEntityKind(value: unknown): ParseResult<"person" | "place" | "other
 function readNonEmptyString(value: unknown, field: string): ParseResult<string> {
   if (typeof value !== "string" || value.trim() === "") return { ok: false, error: `${field} must be a non-empty string` };
   return { ok: true, value: value.trim() };
+}
+
+function readHttpsUrl(value: unknown, field: string): ParseResult<string> {
+  const text = readNonEmptyString(value, field);
+  if (!text.ok) return text;
+  try {
+    const url = new URL(text.value);
+    if (url.protocol !== "https:") return { ok: false, error: `${field} must use HTTPS` };
+    return text;
+  } catch {
+    return { ok: false, error: `${field} must be a valid URL` };
+  }
 }
 
 function readBref(value: unknown, field: string): ParseResult<string> {

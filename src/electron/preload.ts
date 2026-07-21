@@ -9,6 +9,7 @@ import type { ParseResult } from "../core/reference/parser.js";
 import type { ConnectionAnchorV2, ConnectionKind } from "../core/annotations/types.js";
 import type { OccurrenceSelectionPiece } from "../core/annotations/occurrence-alignment.js";
 import type { ConnectionPaintProjectionRequest } from "../renderer/utils/connectionPaint.js";
+import type { TrustedResourceQuery } from "../core/resources/trusted-resources.js";
 
 async function toRendererRefResult(result: ParseResult<CanonicalRef>): Promise<{ ok: boolean; bref?: string; display?: string; error?: string }> {
   if (!result.ok) return result;
@@ -135,6 +136,11 @@ const api = {
     ) => ipcRenderer.invoke("get-cross-refs-for-passage", {
       book, chapter, startVerse, endVerse, packageId,
     }),
+  },
+  trustedResources: {
+    query: (query: TrustedResourceQuery) => ipcRenderer.invoke("trusted-resources-query", query),
+    openOfficial: (sourceId: string, resourceId: string, url: string) =>
+      ipcRenderer.invoke("trusted-resource-open", { sourceId, resourceId, url }),
   },
   language: {
     listPackages: () => ipcRenderer.invoke("language-list-packages"),

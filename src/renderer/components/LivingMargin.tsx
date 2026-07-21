@@ -11,6 +11,7 @@ import type {
   NoteRecord,
   ParsedNoteData,
   QueryResult,
+  RankedTrustedResource,
   SemanticMarginResult,
   SuggestedCrossRefData,
 } from "../api.js";
@@ -253,6 +254,67 @@ function MarginEmptyView({
       <h3>{title}</h3>
       <p>{detail}</p>
     </div>
+  );
+}
+
+function TrustedResourcesBlock({
+  resources,
+  loading,
+  refusal,
+}: {
+  resources: readonly RankedTrustedResource[];
+  loading: boolean;
+  refusal: string | null;
+}): React.JSX.Element {
+  const { showToast } = useToast();
+  const openResource = async (resource: RankedTrustedResource): Promise<void> => {
+    const result = await safeCall(() => window.api.trustedResources.openOfficial(
+      resource.source.id,
+      resource.record.id,
+      resource.record.officialUrl,
+    ));
+    if (!result.ok) showToast("That official resource link could not be opened.", undefined, undefined, { tone: "error" });
+  };
+  if (!loading && !refusal && resources.length === 0) return <></>;
+  return (
+    <section className="trusted-resources" aria-labelledby="trusted-resources-title">
+      <header className="trusted-resources-masthead">
+        <span className="trusted-resources-kicker">Local reviewed index</span>
+        <h3 id="trusted-resources-title">Trusted resources</h3>
+      </header>
+      {loading && <p className="trusted-resources-status" role="status">Checking local resource manifests…</p>}
+      {refusal && <p className="trusted-resources-status is-refusal" role="status">Trusted resources unavailable: {refusal}</p>}
+      {!loading && !refusal && resources.length > 0 && (
+        <div className="trusted-resource-list">
+          {resources.slice(0, 3).map((resource, index) => {
+            const metadata = resource.record.metadata;
+            const details = [
+              resource.record.kind,
+              metadata?.author,
+              metadata?.publishedAt,
+              metadata?.durationMinutes ? `${metadata.durationMinutes} min` : undefined,
+            ].filter(Boolean).join(" · ");
+            return (
+              <article
+                className={`trusted-resource-card${index === 0 ? " is-featured" : " is-compact"}`}
+                data-source={resource.source.id}
+                key={`${resource.source.id}:${resource.record.id}`}
+              >
+                <div className="trusted-resource-source">{resource.source.name}</div>
+                <div className="trusted-resource-copy">
+                  <h4>{resource.record.title}</h4>
+                  {details && <p>{details}</p>}
+                  {index === 0 && <small>{resource.match.replaceAll("-", " ")} · reviewed sample</small>}
+                </div>
+                <button type="button" onClick={() => void openResource(resource)} aria-label={`Open ${resource.record.title} on ${resource.source.name}`}>
+                  Open <span aria-hidden="true">↗</span>
+                </button>
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -1545,6 +1607,9 @@ export function LivingMargin({
   const [entityResearchError, setEntityResearchError] = useState<string | null>(null);
   const [deepNotesById, setDeepNotesById] = useState<Record<string, ParsedNoteData> | null>(null);
   const [deepNotesLoading, setDeepNotesLoading] = useState(false);
+  const [trustedResources, setTrustedResources] = useState<RankedTrustedResource[]>([]);
+  const [trustedResourcesLoading, setTrustedResourcesLoading] = useState(false);
+  const [trustedResourcesRefusal, setTrustedResourcesRefusal] = useState<string | null>(null);
   const frameTitleRef = useRef<HTMLHeadingElement>(null);
   const researchTitleRef = useRef<HTMLHeadingElement>(null);
   const marginRef = useRef<HTMLElement>(null);
@@ -1691,6 +1756,35 @@ export function LivingMargin({
   const nearQuote = nearVerse != null ? quoteVerseText?.get(nearVerse) ?? "" : "";
   const nearRef = nearVerse != null ? `${displayBook} ${chapter}:${nearVerse}` : "";
   const contextReference = isPinned ? pinnedRef : isNear ? nearRef : `${displayBook} ${chapter}`;
+  const chapterEndVerse = Math.max(1, ...Array.from(chapterVerseText?.keys() ?? []));
+  const trustedResourceBref = pinnedRange
+    ? `bref:v1/${book}.${chapter}.${pinnedRange.start}${pinnedRange.end === pinnedRange.start ? "" : `-${book}.${chapter}.${pinnedRange.end}`}`
+    : nearVerse != null
+      ? `bref:v1/${book}.${chapter}.${nearVerse}`
+      : `bref:v1/${book}.${chapter}.1-${book}.${chapter}.${chapterEndVerse}`;
+
+  useEffect(() => {
+    let cancelled = false;
+    setTrustedResourcesLoading(true);
+    setTrustedResourcesRefusal(null);
+    safeCall(() => window.api.trustedResources.query({ bref: trustedResourceBref, limit: 3 }))
+      .then((result) => {
+        if (cancelled) return;
+        setTrustedResourcesLoading(false);
+        if (!result.ok) {
+          setTrustedResources([]);
+          setTrustedResourcesRefusal(result.error);
+          return;
+        }
+        if (!result.value.ok) {
+          setTrustedResources([]);
+          setTrustedResourcesRefusal(result.value.refusal.message);
+          return;
+        }
+        setTrustedResources(result.value.resources);
+      });
+    return () => { cancelled = true; };
+  }, [trustedResourceBref]);
   const marginMode = connectionInspectorOpen
     ? "Connection"
     : isPinned
@@ -2194,6 +2288,7 @@ export function LivingMargin({
               onOpenEntity={onOpenEntity}
               packageId={packageId}
             />
+            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} />
           </section>
 
           <section
@@ -2324,6 +2419,7 @@ export function LivingMargin({
               onOpenEntity={onOpenEntity}
               packageId={packageId}
             />
+            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} />
           </section>
 
           <section
@@ -2426,6 +2522,7 @@ export function LivingMargin({
               onOpenEntity={onOpenEntity}
               packageId={packageId}
             />
+            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} />
           </section>
 
           <section

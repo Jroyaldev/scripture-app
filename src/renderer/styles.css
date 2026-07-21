@@ -16785,3 +16785,114 @@ button.lang-phrase-diagram-node:focus-visible,
 
   .verse-peek-keep:focus-visible { outline-color: Highlight; }
 }
+
+/* Link-only trusted resources use the Masthead · Bold geometry: a compact
+   editorial header, one dominant card, and no thumbnail/logo dependency. */
+.trusted-resources {
+  margin-top: 18px;
+  border-top: 1px solid var(--border-medium);
+  color: var(--text-primary);
+}
+
+.trusted-resources-masthead {
+  display: grid;
+  gap: 2px;
+  padding: 11px 0 9px;
+  border-bottom: 3px solid var(--text-primary);
+}
+
+.trusted-resources-kicker {
+  color: var(--text-tertiary);
+  font: var(--fw-semibold) 0.5625rem/1.2 var(--font-ui);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.trusted-resources-masthead h3 {
+  margin: 0;
+  font: var(--fw-bold) 1rem/1.1 var(--font-ui);
+  letter-spacing: -0.025em;
+}
+
+.trusted-resources-status {
+  margin: 0;
+  padding: 11px 0;
+  color: var(--text-tertiary);
+  font: 0.6875rem/1.45 var(--font-ui);
+}
+
+.trusted-resources-status.is-refusal { color: var(--error); }
+
+.trusted-resource-list { display: grid; }
+
+.trusted-resource-card {
+  --resource-source: var(--study-gold);
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 12px;
+  padding: 11px 0 11px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.trusted-resource-card::before {
+  position: absolute;
+  inset: 10px auto 10px 0;
+  width: 3px;
+  background: var(--resource-source);
+  content: "";
+}
+
+.trusted-resource-card[data-source="working-preacher"] { --resource-source: #a95d36; }
+.trusted-resource-card[data-source="bibleproject"] { --resource-source: #d29a24; }
+.trusted-resource-card[data-source="the-gospel-coalition"] { --resource-source: #547694; }
+
+.trusted-resource-source {
+  grid-column: 1 / -1;
+  color: var(--resource-source);
+  font: var(--fw-bold) 0.5625rem/1.2 var(--font-ui);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.trusted-resource-copy { min-width: 0; }
+
+.trusted-resource-copy h4 {
+  margin: 0;
+  color: var(--text-primary);
+  font: var(--fw-semibold) 0.8125rem/1.3 var(--font-reading);
+}
+
+.trusted-resource-card.is-featured .trusted-resource-copy h4 { font-size: 0.9375rem; }
+
+.trusted-resource-copy p,
+.trusted-resource-copy small {
+  display: block;
+  margin: 4px 0 0;
+  color: var(--text-tertiary);
+  font: 0.625rem/1.35 var(--font-ui);
+  text-transform: capitalize;
+}
+
+.trusted-resource-card button {
+  align-self: end;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font: var(--fw-semibold) 0.625rem/1 var(--font-ui);
+  cursor: pointer;
+}
+
+.trusted-resource-card button:hover { color: var(--study-gold); }
+.trusted-resource-card button:focus-visible {
+  outline: 2px solid var(--study-gold-focus);
+  outline-offset: 3px;
+}
+
+@media (forced-colors: active) {
+  .trusted-resources-masthead { border-color: CanvasText; }
+  .trusted-resource-card::before { background: CanvasText; }
+  .trusted-resource-source { color: CanvasText; }
+  .trusted-resource-card button:focus-visible { outline-color: Highlight; }
+}

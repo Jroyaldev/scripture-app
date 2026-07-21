@@ -2,10 +2,12 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   buildShepherdlyEntityResourceNode,
+  buildShepherdlyExternalResourceNode,
   deriveEntityOpeningContext,
   validateShepherdlyResourceNode,
   type ShepherdlyResourceNodeV1,
 } from "../src/core/integrations/shepherdly-resource-node.js";
+import type { RankedTrustedResource } from "../src/core/resources/trusted-resources.js";
 
 const corinth = {
   id: "Corinth@Act.18.1-2Ti=G2882",
@@ -174,4 +176,30 @@ test("opening context refuses malformed or impossible ranges as typed failures",
     ok: false,
     error: "Opening verse range is outside the chapter",
   });
+});
+
+test("external resource V2 is a versioned link attachment without a dead delivery surface", () => {
+  const ranked: RankedTrustedResource = {
+    source: { id: "working-preacher", name: "Working Preacher", homepageUrl: "https://www.workingpreacher.org/", officialHosts: ["www.workingpreacher.org"] },
+    provenance: { publisher: "Working Preacher from Luther Seminary", reviewedAt: "2026-07-20", coverage: "reviewed-sample", permissions: "outbound-link-only" },
+    record: { id: "working-preacher:commentary:61109", sourceId: "working-preacher", kind: "commentary", title: "Commentary on Romans 8:1-11", officialUrl: "https://www.workingpreacher.org/commentaries/example", brefs: ["bref:v1/ROM.8.1-ROM.8.11"], matchBasis: "publisher-title" },
+    match: "exact-passage",
+    score: 300,
+    matchedBref: "bref:v1/ROM.8.1-ROM.8.11",
+  };
+  const built = buildShepherdlyExternalResourceNode(ranked, "bref:v1/ROM.8.1-ROM.8.11", ranked.matchedBref);
+  assert.equal(built.ok, true);
+  if (!built.ok) return;
+  assert.equal(built.value.version, 2);
+  assert.equal(built.value.resource.kind, "external.trusted-resource");
+  assert.equal(built.value.delivery.editorInsertion, "explicit-only");
+  assert.equal("body" in built.value.resource, false);
+  assert.equal("description" in built.value.resource, false);
+  assert.equal("transport" in built.value, false);
+  assert.deepEqual(validateShepherdlyResourceNode(built.value), built);
+
+  const body = { ...built.value, body: "Insert this" };
+  assert.equal(validateShepherdlyResourceNode(body).ok, false);
+  const unsupported = { ...built.value, version: 3 };
+  assert.equal(validateShepherdlyResourceNode(unsupported).ok, false);
 });

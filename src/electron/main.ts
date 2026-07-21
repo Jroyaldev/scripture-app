@@ -91,9 +91,15 @@ import {
   type ExplicitUserMutationIntent,
   type UserConnectionMutationAction,
 } from "../host/user-mutation-broker.js";
+import {
+  rankTrustedResources,
+  validateTrustedResourceQuery,
+} from "../core/resources/trusted-resources.js";
+import { loadTrustedResourceManifests } from "../host/trusted-resource-loader.js";
 
 const DATA_DIR = resolve(__dirname, "../../data/scripture");
 const CROSS_REF_DIR = resolve(__dirname, "../../data/cross-references");
+const TRUSTED_RESOURCE_DIR = resolve(__dirname, "../../data/resources");
 const APP_SESSION_ID = ulid();
 const APP_LOG_PATH = join(
   app.getPath("logs"),
@@ -178,6 +184,12 @@ const ALLOWED_RESEARCH_LINK_HOSTS = new Set([
   "www.nationalarchives.gov.uk",
   "artlibre.org",
   "pleiades.stoa.org",
+]);
+
+const ALLOWED_TRUSTED_RESOURCE_HOSTS = new Set([
+  "www.workingpreacher.org",
+  "bibleproject.com",
+  "www.thegospelcoalition.org",
 ]);
 
 interface WindowBounds {
@@ -1535,6 +1547,37 @@ function validatedResearchUrl(value: unknown): string {
   return parsed.toString();
 }
 
+function loadCurrentTrustedResourceManifests(): ReturnType<typeof loadTrustedResourceManifests> {
+  if (!backbone) {
+    return { ok: false, refusal: { code: "read-failed", message: "Scripture backbone is not initialized" } };
+  }
+  return loadTrustedResourceManifests({
+    ...(engine ? { installedRoot: join(engine.rootPath, ".artifacts/resources") } : {}),
+    bundledRoot: TRUSTED_RESOURCE_DIR,
+    backbone,
+  });
+}
+
+function validateTrustedResourceOpenRequest(value: unknown): string {
+  if (!isRuntimeRecord(value)) throw new Error("Trusted resource link request is invalid");
+  const sourceId = value["sourceId"];
+  const resourceId = value["resourceId"];
+  const requestedUrl = value["url"];
+  if (typeof sourceId !== "string" || typeof resourceId !== "string" || typeof requestedUrl !== "string") {
+    throw new Error("Trusted resource link request is invalid");
+  }
+  const loaded = loadCurrentTrustedResourceManifests();
+  if (!loaded.ok) throw new Error(loaded.refusal.message);
+  const manifest = loaded.manifests.find((entry) => entry.manifest.source.id === sourceId)?.manifest;
+  const record = manifest?.records.find((entry) => entry.id === resourceId && entry.officialUrl === requestedUrl);
+  if (!manifest || !record) throw new Error("Trusted resource link is not present in a validated local manifest");
+  const parsed = new URL(record.officialUrl);
+  if (parsed.protocol !== "https:" || !manifest.source.officialHosts.includes(parsed.hostname) || !ALLOWED_TRUSTED_RESOURCE_HOSTS.has(parsed.hostname)) {
+    throw new Error("Trusted resource link is not on the approved official-host list");
+  }
+  return parsed.toString();
+}
+
 function languagePackageRoots(libraryPath: string): string[] {
   return [
     join(libraryPath, ".artifacts/scripture/packages"),
@@ -2023,6 +2066,23 @@ function registerIpcHandlers(): void {
     } finally {
       db.close();
     }
+  });
+
+  registerRuntimeReadIpc("trusted-resources-query", (_event, input: unknown) => {
+    if (!backbone) return { ok: false, refusal: { code: "read-failed", message: "Scripture backbone is not initialized" } };
+    const query = validateTrustedResourceQuery(input, backbone);
+    if (!query.ok) return { ok: false, refusal: { code: "invalid-query", message: query.error } };
+    const loaded = loadCurrentTrustedResourceManifests();
+    if (!loaded.ok) return loaded;
+    return {
+      ok: true,
+      resources: rankTrustedResources(loaded.manifests.map((entry) => entry.manifest), query.value),
+    };
+  });
+
+  registerRuntimeReadIpc("trusted-resource-open", async (_event, input: unknown) => {
+    await shell.openExternal(validateTrustedResourceOpenRequest(input));
+    return { ok: true as const };
   });
 
   ipcMain.handle("query-verse", (_event, book: string, chapter: number, verse: number) => {

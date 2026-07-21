@@ -1,0 +1,33 @@
+{
+  "schema": "pericope.trusted-resource-manifest",
+  "version": 1,
+  "source": {
+    "id": "bibleproject",
+    "name": "BibleProject",
+    "homepageUrl": "https://bibleproject.com/",
+    "officialHosts": ["bibleproject.com"]
+  },
+  "provenance": {
+    "publisher": "BibleProject",
+    "reviewedAt": "2026-07-20",
+    "coverage": "reviewed-sample",
+    "permissions": "outbound-link-only",
+    "note": "Small reviewed sample; not a complete catalog."
+  },
+  "capabilities": ["outbound-link"],
+  "records": [
+    {
+      "id": "bibleproject:guide:romans",
+      "sourceId": "bibleproject",
+      "kind": "guide",
+      "title": "Guide to the Book of Romans",
+      "officialUrl": "https://bibleproject.com/guides/book-of-romans/",
+      "brefs": ["bref:v1/ROM.1.1-ROM.16.27"],
+      "matchBasis": "publisher-catalog",
+      "metadata": {
+        "language": "en",
+        "series": "Book Guides"
+      }
+    }
+  ]
+}

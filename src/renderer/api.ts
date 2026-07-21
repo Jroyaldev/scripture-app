@@ -13,6 +13,12 @@ import type {
   ConnectionPaintProjectionRequest,
   ConnectionPaintProjectionResponse,
 } from "./utils/connectionPaint.js";
+import type {
+  RankedTrustedResource,
+  TrustedResourceQuery,
+  TrustedResourceRefusal,
+} from "../core/resources/trusted-resources.js";
+export type { RankedTrustedResource } from "../core/resources/trusted-resources.js";
 export type { EntityResearchData } from "../core/entities/place-research.js";
 export type { ConnectionAnchor, ConnectionKind, ConnectionRecord } from "../core/annotations/types.js";
 
@@ -81,6 +87,13 @@ declare global {
           endVerse: number,
           packageId: string,
         ): Promise<CrossReferenceResultData>;
+      };
+      trustedResources: {
+        query(query: TrustedResourceQuery): Promise<
+          | { ok: true; resources: RankedTrustedResource[] }
+          | { ok: false; refusal: TrustedResourceRefusal }
+        >;
+        openOfficial(sourceId: string, resourceId: string, url: string): Promise<{ ok: true }>;
       };
       language: {
         listPackages(): Promise<LanguagePackageSummary[]>;
