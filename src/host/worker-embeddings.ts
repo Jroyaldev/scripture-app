@@ -59,6 +59,7 @@ export class WorkerEmbeddingProvider implements EmbeddingProvider {
       const entry = this.pending.get(msg.id);
       if (!entry) return;
       this.pending.delete(msg.id);
+      if (this.pending.size === 0) worker.unref();
       if (msg.ok) {
         entry.resolve(msg.vectors.map((buf) => new Float32Array(buf)));
       } else {
@@ -68,6 +69,7 @@ export class WorkerEmbeddingProvider implements EmbeddingProvider {
     const fail = (err: Error) => {
       for (const entry of this.pending.values()) entry.reject(err);
       this.pending.clear();
+      worker.unref();
       this.worker = null;
     };
     worker.on("error", (err) => fail(err instanceof Error ? err : new Error(String(err))));
@@ -87,6 +89,9 @@ export class WorkerEmbeddingProvider implements EmbeddingProvider {
     const id = this.nextId++;
     return new Promise<Float32Array[]>((resolve, reject) => {
       this.pending.set(id, { resolve, reject });
+      // Keep Node alive only while a caller is awaiting an in-flight request.
+      // The message/failure paths release the worker again once the lane is idle.
+      worker.ref();
       worker.postMessage({ id, texts, kind } satisfies EmbedWorkerRequest);
     });
   }

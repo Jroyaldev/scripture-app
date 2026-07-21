@@ -15,8 +15,8 @@ test("shift selection is contiguous from the stable anchor in either direction",
   assert.deepEqual([...backward.selection], [3, 4, 5]);
 });
 
-test("clicking the sole selected verse clears the selection", () => {
+test("clicking the sole selected verse keeps a stable research scope", () => {
   const result = nextVerseSelection(new Set([5]), 5, 5, false);
-  assert.equal(result.selection.size, 0);
-  assert.equal(result.anchor, null);
+  assert.deepEqual([...result.selection], [5]);
+  assert.equal(result.anchor, 5);
 });

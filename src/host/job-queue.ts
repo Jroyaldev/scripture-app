@@ -16,7 +16,10 @@ export class JobQueue {
   private budget: BudgetManager;
   private store: EmbeddingsStore;
   private queue: Array<{ id: string; kind: string; fn: JobFn }> = [];
-  private running = false;
+  private runPromise: Promise<void> | null = null;
+  private accepting = true;
+  private paused = false;
+  private stopped = false;
 
   constructor(budget: BudgetManager, store: EmbeddingsStore) {
     this.budget = budget;
@@ -24,6 +27,9 @@ export class JobQueue {
   }
 
   enqueue(kind: JobKind, fn: JobFn): string {
+    if (!this.accepting) {
+      throw new Error(this.stopped ? "Job queue is shutting down" : "Job queue is paused");
+    }
     const id = ulid();
     this.queue.push({ id, kind, fn });
     this.store.insertJob({
@@ -35,15 +41,81 @@ export class JobQueue {
       tokensUsed: 0,
       error: null,
     });
-    void this.process();
+    this.ensureProcessing();
     return id;
   }
 
-  private async process(): Promise<void> {
-    if (this.running) return;
-    this.running = true;
+  /**
+   * Reversibly stop accepting new work and wait for the job that already owns
+   * the store to finish. Queued jobs remain queued so an aborted library
+   * switch can resume the exact same queue without losing work.
+   */
+  async pauseAndWait(): Promise<void> {
+    if (this.stopped) {
+      await this.runPromise;
+      return;
+    }
+    this.accepting = false;
+    this.paused = true;
+    await this.runPromise;
+  }
 
-    while (this.queue.length > 0) {
+  /** Reopen a queue after a reversible switch pause. */
+  resume(): void {
+    if (this.stopped) throw new Error("Job queue is shutting down");
+    this.paused = false;
+    this.accepting = true;
+    if (this.queue.length > 0) this.ensureProcessing();
+  }
+
+  /**
+   * Stop accepting work, mark work that has not started as failed, and wait
+   * for the currently running job to finish its final store write. Callers
+   * may safely close the EmbeddingsStore only after this promise resolves.
+   */
+  async shutdown(): Promise<void> {
+    let cancellationError: unknown;
+    if (!this.stopped) {
+      this.stopped = true;
+      this.accepting = false;
+      this.paused = true;
+      const canceled = this.queue.splice(0);
+      for (const job of canceled) {
+        try {
+          this.store.insertJob({
+            id: job.id,
+            kind: job.kind,
+            status: "failed",
+            created: new Date().toISOString(),
+            finished: new Date().toISOString(),
+            tokensUsed: 0,
+            error: "Job canceled because the semantic runtime is shutting down",
+          });
+        } catch (error) {
+          cancellationError ??= error;
+        }
+      }
+    }
+    await this.runPromise;
+    if (cancellationError) throw cancellationError;
+  }
+
+  private ensureProcessing(): void {
+    if (this.runPromise) return;
+    this.runPromise = this.process().finally(() => {
+      this.runPromise = null;
+      // A job can be enqueued in the narrow interval after process() observes
+      // an empty queue and before this finalizer runs.
+      if (this.accepting && !this.paused && this.queue.length > 0) this.ensureProcessing();
+    });
+    // The queue reports job failures in its persistent job record. Keep a
+    // rejected runner from becoming a process-level unhandled rejection; a
+    // shutdown caller still observes the same promise via runPromise.
+    void this.runPromise.catch(() => undefined);
+  }
+
+  private async process(): Promise<void> {
+    while (!this.paused && this.queue.length > 0) {
       const job = this.queue.shift()!;
       this.store.insertJob({
         id: job.id,
@@ -80,7 +152,5 @@ export class JobQueue {
         });
       }
     }
-
-    this.running = false;
   }
 }

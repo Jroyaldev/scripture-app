@@ -67,9 +67,43 @@ export type RevisionReceipt = {
   entityId?: string;
 };
 
+/**
+ * Authoritative identity returned by a compare-and-append commit.
+ *
+ * A competing process may already have committed the same command with a
+ * different locally-planned event/entity id. Callers must project this
+ * receipt's event, never assume their provisional event won the append.
+ */
+export type RevisionAppendReceipt = RevisionReceipt & {
+  path: string;
+  alreadyApplied: boolean;
+  eventId: string;
+  commandId: string;
+  commandFingerprint: string;
+};
+
+/**
+ * One compare-and-append Substrate write owned by RevisionStore.
+ *
+ * `expectedByteLength` is the optimistic concurrency boundary. A retry with
+ * the same idempotency key/content is a no-op; any other size mismatch is a
+ * conflict rather than an unsafe append (INV-7, INV-12).
+ */
+export type RevisionAppend = {
+  kind: "append-jsonl";
+  path: string;
+  content: string;
+  expectedByteLength: number;
+  /** Stable explicit-user command identity, preserved in the event envelope. */
+  commandId: string;
+  /** Canonical SHA-256 of the command action and semantic payload. */
+  commandFingerprint: string;
+};
+
 export interface RevisionStore {
   beginTransaction(label: string): Promise<RevisionTxn>;
   commit(txn: RevisionTxn): Promise<RevisionReceipt>;
+  commitAppend(txn: RevisionTxn, append: RevisionAppend): Promise<RevisionAppendReceipt>;
   history(entityId?: string): Promise<RevisionReceipt[]>;
   restore(receiptId: string): Promise<void>;
 }

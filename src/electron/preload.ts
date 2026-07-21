@@ -6,6 +6,9 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { CanonicalRef } from "../core/reference/types.js";
 import type { ParseResult } from "../core/reference/parser.js";
+import type { ConnectionAnchorV2, ConnectionKind } from "../core/annotations/types.js";
+import type { OccurrenceSelectionPiece } from "../core/annotations/occurrence-alignment.js";
+import type { ConnectionPaintProjectionRequest } from "../renderer/utils/connectionPaint.js";
 
 async function toRendererRefResult(result: ParseResult<CanonicalRef>): Promise<{ ok: boolean; bref?: string; display?: string; error?: string }> {
   if (!result.ok) return result;
@@ -53,6 +56,23 @@ const api = {
       book, chapter, verseStart, verseEnd, color, package: packageId,
       charStart: charStart ?? null, charEnd: charEnd ?? null,
     }),
+    createConnection: (kind: ConnectionKind, label: string, observation: string, anchors: ConnectionAnchorV2[], commandId: string) =>
+      ipcRenderer.invoke("create-connection", { kind, label, observation, anchors, commandId }),
+    updateConnection: (connectionId: string, kind: ConnectionKind, label: string, observation: string, anchors: ConnectionAnchorV2[], commandId: string, expectedBaseEventId: string) =>
+      ipcRenderer.invoke("update-connection", {
+        connectionId,
+        input: { kind, label, observation, anchors },
+        commandId,
+        expectedBaseEventId,
+      }),
+    deleteConnection: (connectionId: string, commandId: string, expectedBaseEventId: string) =>
+      ipcRenderer.invoke("delete-connection", { connectionId, commandId, expectedBaseEventId }),
+    captureConnectionSelection: (
+      packageId: string,
+      selections: readonly OccurrenceSelectionPiece[],
+    ) => ipcRenderer.invoke("capture-connection-selection", { packageId, selections }),
+    projectConnections: (packageId: string, connections: readonly ConnectionPaintProjectionRequest[]) =>
+      ipcRenderer.invoke("project-connections", { packageId, connections }),
     eraseHighlightRange: (
       book: string,
       chapter: number,

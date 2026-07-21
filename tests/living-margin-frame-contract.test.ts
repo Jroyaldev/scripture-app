@@ -10,12 +10,24 @@ const css = readFileSync(join(repoRoot, "src", "renderer", "styles.css"), "utf-8
 
 test("Living Margin is one labelled frame with truthful chapter, reading, and selected modes", () => {
   assert.match(margin, /aria-labelledby="living-margin-title"/);
-  assert.match(margin, /const marginMode = isPinned \? "Selected" : isNear \? "In view" : "Chapter"/);
+  assert.match(margin, /const marginMode = connectionInspectorOpen \? "Connection" : isPinned \? "Selected" : isNear \? "In view" : "Chapter"/);
   assert.match(margin, /data-margin-mode=\{marginMode\.toLowerCase\(\)\.replace\(" ", "-"\)\}/);
   assert.match(margin, /data-margin-view="chapter"/);
   assert.match(margin, /data-margin-view="reading"/);
   assert.match(margin, /data-margin-view="selected"/);
   assert.match(css, /\.margin-frame-header\s*\{[\s\S]*position: sticky/);
+});
+
+test("authored connection inspection is a contextual margin view, not a replacement for Refs", () => {
+  assert.match(margin, /connectionInspector\?: React\.ReactNode/);
+  assert.match(margin, /className="margin-connection-inspector" data-margin-view="connection"/);
+  assert.match(margin, /margin-study-content\$\{connectionInspectorOpen \? " has-connection-inspector" : ""\}/);
+  assert.doesNotMatch(margin, /margin-study-content" hidden=\{connectionInspectorOpen\}/);
+  assert.match(margin, /const connectionCount = \(crossRefs\?\.items\.length \?\? 0\) \+ noteConnectionCount/);
+  assert.match(margin, /\{ id: "connections", label: "Refs", accessibleLabel: "Cross references" \}/);
+  assert.doesNotMatch(margin, /connectionCount[\s\S]{0,100}marginData\.connections/);
+  assert.match(css, /\.margin-study-content\.has-connection-inspector[\s\S]*padding-top: var\(--sp-xl\)/);
+  assert.doesNotMatch(css, /\.margin-study-content\[hidden\]/);
 });
 
 test("Overview is the quiet default, with stable keyboard deep-dive tabs over the current scope", () => {
@@ -36,7 +48,13 @@ test("Overview is the quiet default, with stable keyboard deep-dive tabs over th
   assert.match(margin, /hidden=\{activeTab !== "connections"\}/);
   assert.match(margin, /hidden=\{activeTab !== "notes"\}/);
   assert.match(margin, /tabScrollPositionsRef/);
-  assert.match(margin, /const isLensKey = event\.key === "Tab" \|\| event\.key === "ArrowLeft" \|\| event\.key === "ArrowRight"/);
+  assert.match(margin, /if \(event\.key !== "Tab"\) return/);
+  const globalLensHandler = margin.slice(
+    margin.indexOf("const cycleStudyLens"),
+    margin.indexOf('window.addEventListener("keydown", cycleStudyLens'),
+  );
+  assert.doesNotMatch(globalLensHandler, /ArrowLeft|ArrowRight/);
+  assert.match(globalLensHandler, /const reverse = event\.shiftKey/);
   assert.match(margin, /target\?\.closest\("\.verse-line, \.margin-tab"\)/);
   assert.match(margin, /activateTab\(MARGIN_TABS\[nextIndex\]\?\.id \?\? "overview", focusTab\)/);
   assert.match(css, /\.margin-tabs\s*\{[\s\S]*position: sticky/);
@@ -142,6 +160,6 @@ test("long passage quotes disclose progressively while Notes exposes complete de
 test("Done clears selection and restores focus to the persistent Study heading", () => {
   assert.match(margin, /window\.setTimeout\(\(\) => frameTitleRef\.current\?\.focus\(\), 0\)/);
   assert.match(margin, /ref=\{frameTitleRef\}[\s\S]*tabIndex=\{-1\}/);
-  assert.match(page, /const handleClearMarginSelection = useCallback\(\(\) => \{[\s\S]*setSelectedVerses\(new Set\(\)\)/);
+  assert.match(page, /const handleClearMarginSelection = useCallback\(\(expectedNonce\?: number\) => \{[\s\S]*setSelectedVerses\(new Set\(\)\)/);
   assert.match(page, /onClearSelection=\{handleClearMarginSelection\}/);
 });

@@ -23,6 +23,12 @@ const THEME_NAMES = {
   glass: "glass",
   "dark-glass": "candlelight",
 };
+const MARKING_SELECTION_CHROME_SELECTOR = [
+  '[data-floating-layer="toolbar"]',
+  ".marking-radial-scrim",
+  ".marking-rail-tray",
+  ".marking-dock-selection",
+].join(", ");
 const leaveThemeArg = process.argv.find((arg) => arg.startsWith("--leave="))?.slice("--leave=".length);
 const leaveTheme = leaveThemeArg && THEMES.includes(leaveThemeArg) ? leaveThemeArg : null;
 const leavePackage = process.argv.find((arg) => arg.startsWith("--leave-package="))?.slice("--leave-package=".length) ?? null;
@@ -101,10 +107,6 @@ async function screenshot(name, selector = null) {
   const path = `${OUT_DIR}/${name}.png`;
   writeFileSync(path, Buffer.from(response.result.data, "base64"));
   console.log("saved", path);
-}
-
-async function pressEscape() {
-  await pressKey("Escape", "Escape");
 }
 
 async function pressKey(key, code = key, modifiers = 0) {
@@ -367,7 +369,7 @@ await evaluate(`document.querySelector('.verse-line[data-verse="1"]')?.click()`)
 await waitFor(`document.querySelectorAll('.verse-line[aria-pressed="true"]').length === 1`);
 await evaluate(`document.querySelector('.verse-line[data-verse="7"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true, shiftKey: true }))`);
 await waitFor(`document.querySelectorAll('.verse-line[aria-pressed="true"]').length === 7`);
-await pressEscape();
+await waitFor(`!document.querySelector(${JSON.stringify(MARKING_SELECTION_CHROME_SELECTOR)})`);
 await waitFor(`document.querySelector(".living-margin")?.dataset.marginMode === "selected"`);
 await waitFor(`Boolean(document.querySelector(".margin-quote-toggle"))`);
 const selectedState = await evaluate(`(() => ({
@@ -393,23 +395,41 @@ assert.deepEqual(selectedState, {
 console.log("selected", selectedState);
 await screenshot("paper-selected-context");
 
-// The reading canvas owns one spatial keyboard model: Up/Down stays with
-// verses, while Tab/Shift-Tab and Left/Right cycle the four live study lenses
-// without moving focus away from the selected verse.
+// The reading canvas owns two non-overlapping keyboard paths: Tab/Shift-Tab
+// cycles study lenses without moving focus, while plain Left/Right traverses
+// chapters. Arrow keys inside the tablist keep their conventional local role.
 await selectMarginTab("overview");
 await evaluate(`document.querySelector('.verse-line[data-verse="1"]')?.focus()`);
 await pressKey("Tab", "Tab");
 await waitFor(`document.querySelector("#margin-connections-tab")?.getAttribute("aria-selected") === "true"`);
 assert.equal(await evaluate(`document.activeElement?.getAttribute("data-verse")`), "1");
-await pressKey("ArrowRight", "ArrowRight");
-await waitFor(`document.querySelector("#margin-passage-tab")?.getAttribute("aria-selected") === "true"`);
-assert.equal(await evaluate(`document.activeElement?.getAttribute("data-verse")`), "1");
-await pressKey("ArrowLeft", "ArrowLeft");
-await waitFor(`document.querySelector("#margin-connections-tab")?.getAttribute("aria-selected") === "true"`);
 await pressKey("Tab", "Tab", 8);
 await waitFor(`document.querySelector("#margin-overview-tab")?.getAttribute("aria-selected") === "true"`);
 assert.equal(await evaluate(`document.activeElement?.getAttribute("data-verse")`), "1");
-console.log("reading lens keyboard path ok");
+
+await pressKey("ArrowRight", "ArrowRight");
+await waitFor(`(() => {
+  const title = document.querySelector(".chapter-title");
+  return [title?.querySelector(".book-name")?.textContent, title?.querySelector(".chapter-number")?.textContent]
+    .filter(Boolean).join(" ") === "Acts 20";
+})()`);
+await waitFor(`document.querySelectorAll(".verse-line").length > 0`);
+await evaluate(`document.querySelector('.verse-line[data-verse="1"]')?.focus()`);
+await pressKey("ArrowLeft", "ArrowLeft");
+await waitFor(`(() => {
+  const title = document.querySelector(".chapter-title");
+  return [title?.querySelector(".book-name")?.textContent, title?.querySelector(".chapter-number")?.textContent]
+    .filter(Boolean).join(" ") === "Acts 19";
+})()`);
+await waitFor(`document.querySelectorAll(".verse-line").length > 0`);
+console.log("reading lens and chapter keyboard paths ok");
+
+// Chapter traversal intentionally clears chapter-scoped study state. Restore
+// the range with the same click/Shift-click contract before continuity checks.
+await evaluate(`document.querySelector('.verse-line[data-verse="1"]')?.click()`);
+await evaluate(`document.querySelector('.verse-line[data-verse="7"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true, shiftKey: true }))`);
+await waitFor(`document.querySelectorAll('.verse-line[aria-pressed="true"]').length === 7`);
+await waitFor(`!document.querySelector(${JSON.stringify(MARKING_SELECTION_CHROME_SELECTOR)})`);
 
 // A translation is another rendering of the same canonical passage. Preserve
 // both its selected range and the eye-line anchor through text reflow.
@@ -431,12 +451,9 @@ const translationAnchor = await evaluate(`(() => {
 assert.ok(translationAnchor && translationAnchor.scrollTop > 0);
 const quoteBeforeTranslation = await evaluate(`document.querySelector(".margin-focus-quote")?.textContent?.trim() ?? ""`);
 assert.ok(quoteBeforeTranslation.length > 0);
-// Reopen the selection toolbar so the document-level click-away listener is
-// active. A real pointer press on the version trigger must hide only that
-// toolbar, never clear the canonical selected range.
-await evaluate(`document.querySelector('.verse-line[data-verse="7"]')?.focus()`);
-await pressKey("Enter", "Enter", 8);
-await waitFor(`Boolean(document.querySelector('[data-floating-layer="toolbar"]'))`);
+// Translation controls are outside the reading canvas. Their real pointer
+// path must retain the canonical Study range without synthesizing marking UI.
+assert.equal(await evaluate(`Boolean(document.querySelector(${JSON.stringify(MARKING_SELECTION_CHROME_SELECTOR)}))`), false);
 await evaluate(`(() => {
   window.__marginQuoteHadGap = false;
   const margin = document.querySelector(".living-margin");

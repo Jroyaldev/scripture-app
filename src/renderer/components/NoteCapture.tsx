@@ -58,9 +58,15 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
+  const savingRef = useRef(false);
 
   useEffect(() => {
-    returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const active = document.activeElement;
+    returnFocusRef.current = active instanceof HTMLElement
+      && active !== document.body
+      && active !== document.documentElement
+      ? active
+      : null;
     return () => {
       const target = returnFocusRef.current;
       window.setTimeout(() => {
@@ -83,7 +89,7 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
   // Esc closes (unless saving).
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !saving) {
+      if (e.key === "Escape" && !savingRef.current) {
         e.preventDefault();
         e.stopPropagation();
         onClose();
@@ -125,11 +131,13 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
   }, [draft.quote, body]);
 
   const handleSave = useCallback(async () => {
-    const t = title.trim() || draft.passageRef;
+    if (savingRef.current) return;
+    const t = title.trim();
     if (!t) {
       setError("Add a title to save.");
       return;
     }
+    savingRef.current = true;
     setSaving(true);
     setError(null);
     const md = buildMarkdown();
@@ -139,6 +147,7 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
         tags: ["from-selection"],
       }),
     );
+    savingRef.current = false;
     setSaving(false);
     if (!result.ok || !result.value.ok) {
       setError(result.ok ? result.value.error ?? "Could not save note" : result.error);

@@ -4,7 +4,21 @@
  */
 
 import { createHash } from "node:crypto";
-import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync, rmSync } from "node:fs";
+import {
+  closeSync,
+  copyFileSync,
+  existsSync,
+  fsyncSync,
+  mkdirSync,
+  openSync,
+  readFileSync,
+  readdirSync,
+  readSync,
+  renameSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { basename, join } from "node:path";
 import { ulid } from "ulid";
 
@@ -25,9 +39,45 @@ function deterministicAnchorId(
   const input = `anchor:${srcKind}:${srcId}:${book}.${startCh}.${startV}-${endCh}.${endV}`;
   return "anc_" + createHash("sha256").update(input).digest("hex").slice(0, 24);
 }
+function deterministicConnectionAnchorId(
+  connectionId: string,
+  ordinal: number,
+  formatVersion: number,
+  canonicalIdentity: string,
+): string {
+  const input = `anchor:annotation:${connectionId}:v${formatVersion}:${ordinal}:${canonicalIdentity}`;
+  return "anc_" + createHash("sha256").update(input).digest("hex").slice(0, 24);
+}
 import type { BackboneData, BookNameMap } from "../core/reference/types.js";
 import type { LibraryEvent } from "../core/events/types.js";
-import type { LibraryManifest } from "../core/interfaces.js";
+import type {
+  ConnectionAnchor,
+  ConnectionAnchorV1,
+  ConnectionContent,
+  ConnectionContentV2,
+  ConnectionEventPayload,
+  ConnectionEventPayloadV2,
+  ConnectionRecord,
+  ConnectionRecordV2,
+  CreateConnectionInput,
+} from "../core/annotations/types.js";
+import {
+  CONNECTION_FORMAT_VERSION_V1,
+  CONNECTION_FORMAT_VERSION_V2,
+  validateConnectionRecord,
+  validateNewConnectionRecord,
+} from "../core/annotations/index.js";
+import {
+  backboneTokenAnchorKey,
+} from "../core/annotations/backbone-token-anchor.js";
+import type {
+  BackboneTokenCatalog,
+} from "../core/annotations/backbone-token-anchor.js";
+import type {
+  LibraryManifest,
+  RevisionAppend,
+  RevisionAppendReceipt,
+} from "../core/interfaces.js";
 import type { ParsedNote } from "../core/notes/types.js";
 import type {
   AnchorRecord,
@@ -46,7 +96,12 @@ import { foldEvents } from "../core/events/fold.js";
 import { canonicalize } from "../core/indexer/hash.js";
 import type { LogicalState } from "../core/indexer/hash.js";
 import { SQLiteMaterializer } from "./sqlite.js";
-import { CURRENT_APP_SCHEMA_VERSION, CURRENT_EVENT_SCHEMA_VERSION } from "../core/migration/index.js";
+import {
+  checkMigration,
+  CURRENT_APP_SCHEMA_VERSION,
+  CURRENT_EVENT_SCHEMA_VERSION,
+} from "../core/migration/index.js";
+import type { MigrationResult } from "../core/migration/index.js";
 import type {
   ImportedSource,
   SourceChunk,
@@ -56,17 +111,90 @@ import type {
 } from "../core/sources/types.js";
 import { extractPdfChunks } from "./pdf-source.js";
 
+const CONNECTION_LOG_RELATIVE_PATH = "annotations/connections.jsonl";
+const CONNECTION_PROJECTION_META_KEY = "connections_projection_v2";
+const CONNECTION_PROJECTION_SCHEMA_META_KEY = "connections_projection_schema";
+const CONNECTION_PROJECTION_SCHEMA_VERSION = 2;
+const LIBRARY_MANIFEST_RELATIVE_PATH = "config/library-manifest.json";
+
+export type ConnectionCommandIdentity = {
+  commandId: string;
+  commandFingerprint: string;
+};
+
+/** A new authored command was based on a connection version that is no longer active. */
+export class ConnectionVersionConflictError extends Error {
+  readonly code = "connection-version-conflict" as const;
+
+  constructor(
+    readonly connectionId: string,
+    readonly expectedBaseEventId: string,
+    readonly activeEventId: string | null,
+  ) {
+    super(
+      activeEventId
+        ? `Connection ${connectionId} changed elsewhere. Reload it before saving this change.`
+        : `Connection ${connectionId} was removed elsewhere. Reload before continuing.`,
+    );
+    this.name = "ConnectionVersionConflictError";
+  }
+}
+
+type ActiveConnectionState = {
+  activeEventId: string;
+  payload: unknown;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type ConnectionEventCache = {
+  byteLength: number;
+  modifiedMs: number;
+  events: LibraryEvent[];
+  eventsById: Map<string, LibraryEvent>;
+  eventIds: Set<string>;
+  commandIndex: Map<string, LibraryEvent>;
+  activeByEntity: Map<string, ActiveConnectionState>;
+};
+
+export type PlannedConnectionMutation =
+  | {
+      action: "upsert";
+      connection: ConnectionRecord;
+      /** The replayed command event may predate the returned current head. */
+      event: LibraryEvent;
+      append: RevisionAppend;
+      replayed: boolean;
+    }
+  | {
+      action: "delete";
+      connectionId: string;
+      /** The replayed command event may predate the current tombstone. */
+      event: LibraryEvent;
+      append: RevisionAppend;
+      replayed: boolean;
+    };
+
 export class LibraryEngine {
   readonly rootPath: string;
   private backbone: BackboneData;
   private bookNames: BookNameMap;
+  private tokenCatalog: BackboneTokenCatalog | null;
   private deviceId: string;
   private seqCounter: number;
+  private connectionEventCache: ConnectionEventCache | null = null;
+  private pendingInitializationManifest: LibraryManifest | null = null;
 
-  constructor(rootPath: string, backbone: BackboneData, bookNames: BookNameMap) {
+  constructor(
+    rootPath: string,
+    backbone: BackboneData,
+    bookNames: BookNameMap,
+    tokenCatalog?: BackboneTokenCatalog | null,
+  ) {
     this.rootPath = rootPath;
     this.backbone = backbone;
     this.bookNames = bookNames;
+    this.tokenCatalog = tokenCatalog ?? null;
     this.deviceId = "dev-" + ulid();
     this.seqCounter = 0;
   }
@@ -74,7 +202,7 @@ export class LibraryEngine {
   /**
    * Initialize a new Library folder with the §4.3 layout.
    */
-  initLibrary(): void {
+  initLibrary(commitManifest = true): void {
     const dirs = [
       "notes",
       "annotations",
@@ -95,20 +223,6 @@ export class LibraryEngine {
       mkdirSync(join(this.rootPath, dir), { recursive: true });
     }
 
-    // Write library-manifest.json
-    const manifest: LibraryManifest = {
-      libraryId: ulid(),
-      createdAt: new Date().toISOString(),
-      appSchemaVersion: CURRENT_APP_SCHEMA_VERSION,
-      eventSchemaVersion: CURRENT_EVENT_SCHEMA_VERSION,
-      referenceFormatVersion: "bref:v1",
-      pluginApiVersion: "1",
-    };
-    writeFileSync(
-      join(this.rootPath, "config/library-manifest.json"),
-      JSON.stringify(manifest, null, 2),
-    );
-
     // Write default library.json
     writeFileSync(
       join(this.rootPath, "config/library.json"),
@@ -122,7 +236,7 @@ export class LibraryEngine {
     );
 
     // Write empty annotation files
-    for (const file of ["highlights.jsonl", "pinned-facts.jsonl", "threads.jsonl", "note-change-log.jsonl"]) {
+    for (const file of ["highlights.jsonl", "connections.jsonl", "pinned-facts.jsonl", "threads.jsonl", "note-change-log.jsonl"]) {
       writeFileSync(join(this.rootPath, "annotations", file), "");
     }
 
@@ -137,15 +251,110 @@ export class LibraryEngine {
       join(this.rootPath, ".gitignore"),
       ".system/\n.artifacts/\nsources/**/original.*\n",
     );
+
+    this.pendingInitializationManifest ??= this.createLibraryManifest();
+    if (commitManifest) this.commitLibraryManifest();
+  }
+
+  /**
+   * Atomically publish the manifest as the final initialization commit marker.
+   * A crash before rename leaves no valid-looking partial Library (INV-17).
+   */
+  commitLibraryManifest(): void {
+    const manifest = this.pendingInitializationManifest ?? this.createLibraryManifest();
+    this.publishLibraryManifest(manifest);
+    this.pendingInitializationManifest = null;
+  }
+
+  private createLibraryManifest(): LibraryManifest {
+    return {
+      libraryId: ulid(),
+      createdAt: new Date().toISOString(),
+      appSchemaVersion: CURRENT_APP_SCHEMA_VERSION,
+      eventSchemaVersion: CURRENT_EVENT_SCHEMA_VERSION,
+      referenceFormatVersion: "bref:v1",
+      pluginApiVersion: "1",
+    };
+  }
+
+  /**
+   * Explicitly migrate and atomically publish only the versioned manifest.
+   * Authored event logs are outside this write boundary and remain byte-for-byte
+   * untouched. The caller still owns registering the published path with its
+   * RevisionStore (INV-12).
+   */
+  migrateLibraryManifest(): MigrationResult {
+    const manifestPath = join(this.rootPath, LIBRARY_MANIFEST_RELATIVE_PATH);
+    if (!existsSync(manifestPath)) {
+      return {
+        status: "error",
+        message: "No library-manifest.json found. Initialize the library before migrating it.",
+      };
+    }
+
+    const sourceBytes = readFileSync(manifestPath);
+    const sourceManifest = JSON.parse(sourceBytes.toString("utf8")) as LibraryManifest;
+    const result = checkMigration(sourceManifest, false);
+    if (result.status !== "migrated") return result;
+
+    const migratedManifest = result.manifest;
+    if (
+      migratedManifest.libraryId !== sourceManifest.libraryId
+      || migratedManifest.createdAt !== sourceManifest.createdAt
+      || migratedManifest.eventSchemaVersion !== sourceManifest.eventSchemaVersion
+      || migratedManifest.referenceFormatVersion !== sourceManifest.referenceFormatVersion
+      || migratedManifest.pluginApiVersion !== sourceManifest.pluginApiVersion
+    ) {
+      throw new Error("Manifest migration attempted to alter library identity or an unrelated durable format.");
+    }
+
+    this.publishLibraryManifest(migratedManifest, sourceBytes);
+    return result;
   }
 
   /**
    * Read the library manifest.
    */
   readManifest(): LibraryManifest | null {
-    const manifestPath = join(this.rootPath, "config/library-manifest.json");
+    const manifestPath = join(this.rootPath, LIBRARY_MANIFEST_RELATIVE_PATH);
     if (!existsSync(manifestPath)) return null;
     return JSON.parse(readFileSync(manifestPath, "utf-8")) as LibraryManifest;
+  }
+
+  private publishLibraryManifest(manifest: LibraryManifest, expectedSource?: Buffer): void {
+    const configPath = join(this.rootPath, "config");
+    const manifestPath = join(this.rootPath, LIBRARY_MANIFEST_RELATIVE_PATH);
+    const temporaryPath = join(
+      configPath,
+      `.library-manifest.${process.pid}.${ulid()}.tmp`,
+    );
+    mkdirSync(configPath, { recursive: true });
+
+    try {
+      writeFileSync(temporaryPath, JSON.stringify(manifest, null, 2), {
+        encoding: "utf8",
+        flag: "wx",
+        mode: 0o600,
+      });
+      const temporaryFd = openSync(temporaryPath, "r");
+      try {
+        fsyncSync(temporaryFd);
+      } finally {
+        closeSync(temporaryFd);
+      }
+
+      if (expectedSource !== undefined) {
+        const currentSource = existsSync(manifestPath) ? readFileSync(manifestPath) : null;
+        if (!currentSource?.equals(expectedSource)) {
+          throw new Error("Library manifest changed while its migration was being prepared.");
+        }
+      }
+
+      renameSync(temporaryPath, manifestPath);
+      fsyncDirectory(configPath);
+    } finally {
+      if (existsSync(temporaryPath)) rmSync(temporaryPath, { force: true });
+    }
   }
 
   /**
@@ -203,11 +412,15 @@ export class LibraryEngine {
   appendEvent(event: LibraryEvent): void {
     const fileMap: Record<string, string> = {
       highlight: "highlights.jsonl",
+      annotation: "connections.jsonl",
       fact: "pinned-facts.jsonl",
       thread: "threads.jsonl",
       noteMeta: "note-change-log.jsonl",
     };
-    const filename = fileMap[event.entityType] ?? "highlights.jsonl";
+    const filename = fileMap[event.entityType];
+    if (!filename) {
+      throw new Error(`No annotation log is configured for entity type ${event.entityType}.`);
+    }
     const logPath = join(this.rootPath, "annotations", filename);
     const line = JSON.stringify(event) + "\n";
     writeFileSync(logPath, line, { flag: "a" });
@@ -244,12 +457,14 @@ export class LibraryEngine {
    */
   readAllEvents(): {
     highlights: LibraryEvent[];
+    connections: LibraryEvent[];
     pinnedFacts: LibraryEvent[];
     threads: LibraryEvent[];
     noteChangeLogs: LibraryEvent[];
   } {
     return {
       highlights: this.readJsonlEvents("highlights.jsonl"),
+      connections: [...this.readConnectionEvents()],
       pinnedFacts: this.readJsonlEvents("pinned-facts.jsonl"),
       threads: this.readJsonlEvents("threads.jsonl"),
       noteChangeLogs: this.readJsonlEvents("note-change-log.jsonl"),
@@ -264,6 +479,151 @@ export class LibraryEngine {
       .split("\n")
       .filter((line) => line.trim())
       .map((line) => JSON.parse(line) as LibraryEvent);
+  }
+
+  /**
+   * Connection commands are planned on the Electron main thread. Cache their
+   * append-only parse by file signature so repeated mutations do not rescan
+   * every annotation log or retain a fresh second copy per command.
+   */
+  private readConnectionEvents(): LibraryEvent[] {
+    const filePath = join(this.rootPath, CONNECTION_LOG_RELATIVE_PATH);
+    const stat = existsSync(filePath) ? statSync(filePath) : null;
+    if (
+      this.connectionEventCache
+      && this.connectionEventCache.byteLength === (stat?.size ?? 0)
+      && this.connectionEventCache.modifiedMs === (stat?.mtimeMs ?? 0)
+    ) {
+      return this.connectionEventCache.events;
+    }
+    const events = stat
+      ? readFileSync(filePath, "utf8")
+        .split("\n")
+        .filter((line) => line.trim())
+        .map((line) => JSON.parse(line) as LibraryEvent)
+      : [];
+    this.connectionEventCache = this.buildConnectionEventCache(
+      events,
+      stat?.size ?? 0,
+      stat?.mtimeMs ?? 0,
+    );
+    return events;
+  }
+
+  private buildConnectionEventCache(
+    events: LibraryEvent[],
+    byteLength: number,
+    modifiedMs: number,
+  ): ConnectionEventCache {
+    const commandIndex = new Map<string, LibraryEvent>();
+    const eventsById = new Map<string, LibraryEvent>();
+    for (const event of events) {
+      assertConnectionEventEnvelope(event);
+      // INV-17 applies to the complete append-only history, not only the
+      // currently folded head. A tombstoned or superseded future payload must
+      // never hide behind folding and become readable after a later merge.
+      if (event.op !== "delete") {
+        this.requireConnectionContent(event.entityId, event.payload);
+      }
+      const duplicateEvent = eventsById.get(event.eventId);
+      if (duplicateEvent && JSON.stringify(duplicateEvent) !== JSON.stringify(event)) {
+        throw new Error(`Connection event ${event.eventId} appears with conflicting bytes.`);
+      }
+      eventsById.set(event.eventId, event);
+      if (!event.commandId) continue;
+      const existing = commandIndex.get(event.commandId);
+      if (existing && existing.eventId !== event.eventId) {
+        throw new Error(`Authored command ${event.commandId} appears more than once in connections.jsonl.`);
+      }
+      commandIndex.set(event.commandId, event);
+    }
+    const activeByEntity = new Map<string, ActiveConnectionState>();
+    for (const entity of foldEvents(events).entities) {
+      if (entity.entityType !== "annotation") continue;
+      const timestamps = connectionRecordTimestamps(
+        entity.entityId,
+        entity.activeEventId,
+        eventsById,
+      );
+      activeByEntity.set(entity.entityId, {
+        activeEventId: entity.activeEventId,
+        payload: entity.payload,
+        createdAt: timestamps.createdAt,
+        updatedAt: timestamps.updatedAt,
+      });
+    }
+    return {
+      byteLength,
+      modifiedMs,
+      events,
+      eventsById,
+      eventIds: new Set(events.map((event) => event.eventId)),
+      commandIndex,
+      activeByEntity,
+    };
+  }
+
+  /** Advance the hot append-only cache without reparsing the full log. */
+  private acceptCommittedConnectionEvent(event: LibraryEvent): void {
+    assertConnectionEventEnvelope(event);
+    const filePath = join(this.rootPath, CONNECTION_LOG_RELATIVE_PATH);
+    const stat = statSync(filePath);
+    const cache = this.connectionEventCache;
+    if (!cache) {
+      this.readConnectionEvents();
+      return;
+    }
+    if (cache.eventIds.has(event.eventId)) {
+      if (cache.byteLength !== stat.size || cache.modifiedMs !== stat.mtimeMs) {
+        // The command was already cached, but the file advanced elsewhere.
+        // Never bless the new size without parsing those intervening bytes.
+        this.connectionEventCache = null;
+        this.readConnectionEvents();
+      }
+      return;
+    }
+    const appendedLine = Buffer.from(`${JSON.stringify(event)}\n`, "utf8");
+    const appendedBytes = appendedLine.byteLength;
+    const active = cache.activeByEntity.get(event.entityId);
+    const linear = event.op === "create"
+      ? active === undefined
+      : active?.activeEventId === event.baseEventId;
+    if (
+      stat.size !== cache.byteLength + appendedBytes
+      || !linear
+      || !fileSliceEquals(filePath, cache.byteLength, appendedLine)
+    ) {
+      // External/sync writes or a contested causal branch require one honest
+      // full fold; normal serialized local commands stay O(1).
+      this.connectionEventCache = null;
+      this.readConnectionEvents();
+      return;
+    }
+    cache.events.push(event);
+    cache.eventsById.set(event.eventId, event);
+    cache.eventIds.add(event.eventId);
+    if (event.commandId) cache.commandIndex.set(event.commandId, event);
+    if (event.op === "delete") {
+      cache.activeByEntity.delete(event.entityId);
+    } else {
+      const createdAt = event.op === "create"
+        ? requireIsoTimestamp(event.createdAt, `Connection ${event.entityId} create event`)
+        : active?.createdAt;
+      if (!createdAt) {
+        throw new Error(`Connection ${event.entityId} has no causal create event.`);
+      }
+      cache.activeByEntity.set(event.entityId, {
+        activeEventId: event.eventId,
+        payload: event.payload,
+        createdAt,
+        updatedAt: requireIsoTimestamp(
+          event.createdAt,
+          `Connection ${event.entityId} active event`,
+        ),
+      });
+    }
+    cache.byteLength = stat.size;
+    cache.modifiedMs = stat.mtimeMs;
   }
 
   /**
@@ -284,18 +644,21 @@ export class LibraryEngine {
    * Returns the rebuild_hash.
    */
   buildSqlite(): string {
+    // A new candidate runtime builds Derived state before the manifest's
+    // atomic final rename. Only the engine that staged initLibrary(false)
+    // owns this in-memory manifest; ordinary reads still require publication.
+    const manifest = this.requireReadableManifest(true);
     const systemDir = join(this.rootPath, ".system");
     mkdirSync(systemDir, { recursive: true });
     const dbPath = join(systemDir, "library.sqlite");
 
-    // If exists, remove and rebuild (INV-9: safe to delete and rebuild at any moment)
-    if (existsSync(dbPath)) {
-      rmSync(dbPath);
-    }
-
-    const materializer = new SQLiteMaterializer(dbPath);
-
-    try {
+    const opened = openMaterializerForRebuild(dbPath, systemDir);
+    const materializer = opened.materializer;
+    const rebuild = (): string => {
+      // Clear and repopulate the existing WAL database under one immediate
+      // transaction. Existing readers keep the old snapshot until the exact
+      // folded state and its projection marker commit together.
+      materializer.clear();
       // 1. Read and index notes
       const notes = this.readAllNotes();
       const noteRecords: NoteRecord[] = [];
@@ -362,8 +725,15 @@ export class LibraryEngine {
 
       // 2. Fold events and materialize highlights/facts
       const events = this.readAllEvents();
+      this.assertConnectionEventsMatchManifest(manifest, events.connections);
+      const builtConnectionProjectionSignature = connectionProjectionSignatureFor(
+        this.connectionEventCache?.byteLength ?? 0,
+        events.connections.length,
+        events.connections.at(-1)?.eventId,
+      );
       const allEvents = [
         ...events.highlights,
+        ...events.connections,
         ...events.pinnedFacts,
         ...events.threads,
         ...events.noteChangeLogs,
@@ -428,6 +798,25 @@ export class LibraryEngine {
           allFacts.push(fact);
           materializer.insertFact(fact);
         }
+
+        if (entity.entityType === "annotation") {
+          const active = this.connectionEventCache?.activeByEntity.get(entity.entityId);
+          if (!active || active.activeEventId !== entity.activeEventId) {
+            throw new Error(
+              `Connection ${entity.entityId} active event metadata could not be derived from Substrate.`,
+            );
+          }
+          const connection = this.requireConnectionRecord(
+            entity.entityId,
+            entity.payload,
+            entity.activeEventId,
+            active.createdAt,
+            active.updatedAt,
+          );
+          const derivedAnchors = this.deriveConnectionAnchors(connection);
+          allAnchors.push(...derivedAnchors);
+          materializer.upsertConnectionWithAnchors(connection, derivedAnchors);
+        }
       }
 
       // 3. Record applied events
@@ -451,14 +840,54 @@ export class LibraryEngine {
       // 5. Store metadata
       materializer.setMeta("schema_version", String(CURRENT_APP_SCHEMA_VERSION));
       materializer.setMeta("rebuild_hash", hash);
+      materializer.setMeta(
+        CONNECTION_PROJECTION_SCHEMA_META_KEY,
+        String(CONNECTION_PROJECTION_SCHEMA_VERSION),
+      );
+      // Bind the marker to the exact event snapshot folded above. If another
+      // process appends during a rebuild, startup reconciliation will see the
+      // older marker and rebuild again instead of blessing unseen bytes.
+      materializer.setMeta(CONNECTION_PROJECTION_META_KEY, builtConnectionProjectionSignature);
       materializer.setMeta("built_at", new Date().toISOString());
       materializer.setMeta("app_version", "0.1.0");
 
-      materializer.close();
       return hash;
-    } catch (err) {
+    };
+    try {
+      const hash = materializer.runImmediateTransaction(rebuild);
+      if (opened.replacedCorruptDerived) fsyncDirectory(systemDir);
+      return hash;
+    } finally {
       materializer.close();
-      throw err;
+    }
+  }
+
+  /**
+   * Cheap startup reconciliation for the authored connection log.
+   * A crash after event fsync but before incremental projection leaves this
+   * marker behind, forcing a deterministic Derived rebuild on next launch.
+   */
+  isConnectionProjectionCurrent(): boolean {
+    const dbPath = join(this.rootPath, ".system/library.sqlite");
+    if (!existsSync(dbPath)) return false;
+    let materializer: SQLiteMaterializer | null = null;
+    try {
+      const manifest = this.requireReadableManifest(true);
+      const events = this.readConnectionEvents();
+      this.assertConnectionEventsMatchManifest(manifest, events);
+      this.assertActiveConnectionRecordsReadable();
+      const signature = this.connectionProjectionSignature();
+      materializer = new SQLiteMaterializer(dbPath);
+      if (
+        materializer.getMeta(CONNECTION_PROJECTION_SCHEMA_META_KEY)
+        !== String(CONNECTION_PROJECTION_SCHEMA_VERSION)
+      ) return false;
+      if (materializer.getMeta(CONNECTION_PROJECTION_META_KEY) !== signature) return false;
+      return this.connectionProjectionSignature() === signature;
+    } catch {
+      return false;
+    } finally {
+      materializer?.close();
     }
   }
 
@@ -468,14 +897,20 @@ export class LibraryEngine {
   queryVerse(book: string, chapter: number, verse: number): {
     anchors: AnchorRecord[];
     highlights: HighlightRecord[];
+    connections: ConnectionRecord[];
     notes: NoteRecord[];
   } {
+    const manifest = this.requireReadableManifest();
     const dbPath = join(this.rootPath, ".system/library.sqlite");
     const materializer = new SQLiteMaterializer(dbPath);
 
     try {
       const anchors = materializer.queryAnchorsForVerse(book, chapter, verse);
       const highlights = materializer.queryHighlightsForVerse(book, chapter, verse);
+      const connections = materializer
+        .queryConnectionsForVerse(book, chapter, verse)
+        .map((connection) => this.requireProjectedConnectionRecord(connection));
+      this.assertProjectedConnectionsMatchManifest(manifest, connections);
 
       // Resolve note IDs from anchors
       const noteIds = new Set<string>();
@@ -492,7 +927,7 @@ export class LibraryEngine {
       }
 
       materializer.close();
-      return { anchors, highlights, notes };
+      return { anchors, highlights, connections, notes };
     } catch (err) {
       materializer.close();
       throw err;
@@ -859,6 +1294,678 @@ export class LibraryEngine {
     }
   }
 
+  // --- User-authored relationship annotations ---
+
+  /**
+   * Validate and plan a relationship create without touching Substrate or
+   * Derived state. Only UserMutationBroker may commit this append (INV-12).
+   */
+  planConnectionCreate(
+    input: CreateConnectionInput,
+    command: ConnectionCommandIdentity,
+  ): PlannedConnectionMutation {
+    const replay = this.replayConnectionCommand(command, "create");
+    if (replay) {
+      if (replay.action !== "upsert" || replay.connection.format_version !== CONNECTION_FORMAT_VERSION_V2) {
+        throw new Error("A new connection command cannot replay a legacy v1 payload.");
+      }
+      this.ensureConnectionV2ManifestBoundary();
+      return replay;
+    }
+    const connectionId = "conn_" + ulid();
+    const content = this.requireNewConnectionContent(connectionId, {
+      format_version: CONNECTION_FORMAT_VERSION_V2,
+      kind: input.kind,
+      label: input.label,
+      observation: input.observation,
+      anchors: input.anchors,
+    });
+    // The manifest rename is one atomic publication, ordered before the
+    // append-only event. These two files cannot share a filesystem transaction:
+    // interruption may therefore leave a safe schema-v2 manifest with the old
+    // authored log, never a v2 event under a schema-v1 manifest. Retry resumes
+    // at the idempotent JSONL append boundary.
+    this.ensureConnectionV2ManifestBoundary();
+    const payload: ConnectionEventPayloadV2 = {
+      format_version: CONNECTION_FORMAT_VERSION_V2,
+      kind: content.kind,
+      label: content.label,
+      observation: content.observation,
+      anchors: content.anchors,
+    };
+    const event: LibraryEvent<ConnectionEventPayloadV2> = {
+      ...this.createEvent("annotation", content.id, "create", payload),
+      ...command,
+    };
+    const createdAt = requireIsoTimestamp(event.createdAt, `Connection ${content.id} create event`);
+    const connection: ConnectionRecordV2 = {
+      ...content,
+      activeEventId: event.eventId,
+      createdAt,
+      updatedAt: createdAt,
+    };
+    return {
+      action: "upsert",
+      connection,
+      event,
+      append: this.planConnectionAppend(event),
+      replayed: false,
+    };
+  }
+
+  /**
+   * Plan a causally based replacement. The active base is read while the
+   * broker owns its serialization lane, so concurrent commands cannot plan
+   * two sibling updates from the same event.
+   */
+  planConnectionUpdate(
+    connectionId: string,
+    input: CreateConnectionInput,
+    command: ConnectionCommandIdentity,
+    expectedBaseEventId: string,
+  ): PlannedConnectionMutation {
+    const replay = this.replayConnectionCommand(command, "update");
+    if (replay) {
+      if (replay.action !== "upsert" || replay.connection.format_version !== CONNECTION_FORMAT_VERSION_V2) {
+        throw new Error("A current connection update cannot replay a legacy v1 payload.");
+      }
+      this.ensureConnectionV2ManifestBoundary();
+      return replay;
+    }
+    const events = this.readConnectionEvents();
+    const active = this.connectionEventCache?.activeByEntity.get(connectionId);
+    if (!active) {
+      if (events.some((event) => event.entityId === connectionId)) {
+        throw new ConnectionVersionConflictError(connectionId, expectedBaseEventId, null);
+      }
+      throw new Error(`Connection ${connectionId} was not found.`);
+    }
+    if (active.activeEventId !== expectedBaseEventId) {
+      throw new ConnectionVersionConflictError(
+        connectionId,
+        expectedBaseEventId,
+        active.activeEventId,
+      );
+    }
+
+    const content = this.requireNewConnectionContent(connectionId, {
+      format_version: CONNECTION_FORMAT_VERSION_V2,
+      kind: input.kind,
+      label: input.label,
+      observation: input.observation,
+      anchors: input.anchors,
+    });
+    this.ensureConnectionV2ManifestBoundary();
+    const payload: ConnectionEventPayloadV2 = {
+      format_version: CONNECTION_FORMAT_VERSION_V2,
+      kind: content.kind,
+      label: content.label,
+      observation: content.observation,
+      anchors: content.anchors,
+    };
+    const event: LibraryEvent<ConnectionEventPayloadV2> = {
+      ...this.createEvent(
+        "annotation",
+        content.id,
+        "update",
+        payload,
+        active.activeEventId,
+      ),
+      ...command,
+    };
+    const connection: ConnectionRecordV2 = {
+      ...content,
+      activeEventId: event.eventId,
+      createdAt: active.createdAt,
+      updatedAt: requireIsoTimestamp(
+        event.createdAt,
+        `Connection ${connectionId} active event`,
+      ),
+    };
+    return {
+      action: "upsert",
+      connection,
+      event,
+      append: this.planConnectionAppend(event),
+      replayed: false,
+    };
+  }
+
+  /** Plan a causally based tombstone without writing it. */
+  planConnectionDelete(
+    connectionId: string,
+    command: ConnectionCommandIdentity,
+    expectedBaseEventId: string,
+  ): PlannedConnectionMutation {
+    const replay = this.replayConnectionCommand(command, "delete");
+    if (replay) return replay;
+    const events = this.readConnectionEvents();
+    const active = this.connectionEventCache?.activeByEntity.get(connectionId);
+    if (!active) {
+      if (events.some((event) => event.entityId === connectionId)) {
+        throw new ConnectionVersionConflictError(connectionId, expectedBaseEventId, null);
+      }
+      throw new Error(`Connection ${connectionId} was not found.`);
+    }
+    if (active.activeEventId !== expectedBaseEventId) {
+      throw new ConnectionVersionConflictError(
+        connectionId,
+        expectedBaseEventId,
+        active.activeEventId,
+      );
+    }
+    const event: LibraryEvent<Record<string, never>> = {
+      ...this.createEvent(
+        "annotation",
+        connectionId,
+        "delete",
+        {} as Record<string, never>,
+        active.activeEventId,
+      ),
+      ...command,
+    };
+    return {
+      action: "delete",
+      connectionId,
+      event,
+      append: this.planConnectionAppend(event),
+      replayed: false,
+    };
+  }
+
+  /**
+   * Resolve the event that actually won RevisionStore's compare-and-append.
+   * Independent planners can mint different provisional ids for the same
+   * command; only the receipt/disk event is safe to return or project.
+   */
+  resolveCommittedConnectionMutation(
+    provisional: PlannedConnectionMutation,
+    receipt: RevisionAppendReceipt,
+  ): PlannedConnectionMutation {
+    const commandId = provisional.event.commandId;
+    const commandFingerprint = provisional.event.commandFingerprint;
+    if (
+      !commandId
+      || !commandFingerprint
+      || receipt.commandId !== commandId
+      || receipt.commandFingerprint !== commandFingerprint
+    ) {
+      throw new Error("RevisionStore returned a mismatched authored-command receipt.");
+    }
+
+    if (!receipt.alreadyApplied && receipt.eventId === provisional.event.eventId) {
+      this.acceptCommittedConnectionEvent(provisional.event);
+    } else {
+      // A different planner won, or this is a restart retry. Force one disk
+      // parse rather than letting provisional state enter the hot cache.
+      this.connectionEventCache = null;
+      this.readConnectionEvents();
+    }
+
+    const event = this.connectionEventCache?.commandIndex.get(commandId);
+    if (!event || event.eventId !== receipt.eventId) {
+      throw new Error(`Committed connection event ${receipt.eventId} could not be resolved from Substrate.`);
+    }
+    if (event.commandFingerprint !== commandFingerprint) {
+      throw new Error(`Committed command ${commandId} has a conflicting fingerprint.`);
+    }
+    if (event.entityType !== "annotation" || event.op !== provisional.event.op) {
+      throw new Error(`Committed command ${commandId} resolved to a different action.`);
+    }
+
+    const current = this.connectionEventCache?.activeByEntity.get(event.entityId);
+    if (!current) {
+      return {
+        action: "delete",
+        connectionId: event.entityId,
+        event,
+        append: this.planConnectionAppend(event),
+        replayed: receipt.alreadyApplied,
+      };
+    }
+    // A retried historical command is still a success, but its response must
+    // describe the current folded head. Returning the old payload here could
+    // resurrect a later tombstone when the renderer's post-write query fails.
+    const connection = this.requireConnectionRecord(
+      event.entityId,
+      current.payload,
+      current.activeEventId,
+      current.createdAt,
+      current.updatedAt,
+    );
+    return {
+      action: "upsert",
+      connection,
+      event,
+      append: this.planConnectionAppend(event),
+      replayed: receipt.alreadyApplied,
+    };
+  }
+
+  /**
+   * Refresh only disposable Derived state after RevisionStore confirms the
+   * authoritative append. Projection failure is recoverable by rebuild and
+   * must never invite a second authored append (INV-2, INV-9).
+   */
+  projectCommittedConnectionMutation(plan: PlannedConnectionMutation): void {
+    this.acceptCommittedConnectionEvent(plan.event);
+    this.readConnectionEvents();
+    const committed = this.connectionEventCache?.eventIds.has(plan.event.eventId) ?? false;
+    if (!committed) {
+      throw new Error(`Connection event ${plan.event.eventId} is not committed.`);
+    }
+    const dbPath = join(this.rootPath, ".system/library.sqlite");
+    if (!existsSync(dbPath)) {
+      throw new Error("Derived connection index is missing and must be rebuilt.");
+    }
+    const materializer = new SQLiteMaterializer(dbPath);
+    try {
+      materializer.runImmediateTransaction(() => {
+        if (plan.replayed) {
+          throw new Error("A replayed authored command requires a full Derived reconciliation.");
+        }
+        const events = this.connectionEventCache?.events ?? [];
+        const lastEvent = events.at(-1);
+        if (lastEvent?.eventId !== plan.event.eventId) {
+          throw new Error("Intervening authored events require a full Derived reconciliation.");
+        }
+        const foldedActive = this.connectionEventCache?.activeByEntity.get(plan.event.entityId);
+        const eventMatchesFoldedState = plan.action === "upsert"
+          ? foldedActive?.activeEventId === plan.event.eventId
+          : foldedActive === undefined;
+        if (!eventMatchesFoldedState) {
+          throw new Error(
+            "The physically last connection event is not the folded active state and requires a full Derived reconciliation.",
+          );
+        }
+        const previousSignature = connectionProjectionSignatureFor(
+          (this.connectionEventCache?.byteLength ?? 0)
+            - Buffer.byteLength(`${JSON.stringify(plan.event)}\n`, "utf8"),
+          Math.max(0, events.length - 1),
+          events.at(-2)?.eventId,
+        );
+        if (materializer.getMeta(CONNECTION_PROJECTION_META_KEY) !== previousSignature) {
+          throw new Error("Derived connection index does not match the pre-append Substrate state.");
+        }
+        if (
+          materializer.getMeta(CONNECTION_PROJECTION_SCHEMA_META_KEY)
+          !== String(CONNECTION_PROJECTION_SCHEMA_VERSION)
+        ) {
+          throw new Error("Derived connection index uses an older projection schema and must be rebuilt.");
+        }
+        const committedSignature = connectionProjectionSignatureFor(
+          this.connectionEventCache?.byteLength ?? 0,
+          events.length,
+          plan.event.eventId,
+        );
+        if (plan.action === "upsert") {
+          materializer.upsertConnectionWithAnchors(
+            plan.connection,
+            this.deriveConnectionAnchors(plan.connection),
+          );
+        } else {
+          materializer.deleteConnection(plan.connectionId);
+        }
+        materializer.setMeta(CONNECTION_PROJECTION_META_KEY, committedSignature);
+      });
+    } finally {
+      materializer.close();
+    }
+  }
+
+  queryConnectionById(connectionId: string): ConnectionRecord | undefined {
+    const manifest = this.requireReadableManifest();
+    const dbPath = join(this.rootPath, ".system/library.sqlite");
+    const materializer = new SQLiteMaterializer(dbPath);
+    try {
+      const connection = materializer.queryConnectionById(connectionId);
+      if (!connection) return undefined;
+      const validated = this.requireProjectedConnectionRecord(connection);
+      this.assertProjectedConnectionsMatchManifest(manifest, [validated]);
+      return validated;
+    } finally {
+      materializer.close();
+    }
+  }
+
+  /**
+   * Batch-read authoritative folded Substrate heads. Package projection uses
+   * this path so a lagging SQLite materialization can never lend stale word
+   * geometry to a newer visible event version.
+   */
+  queryAuthoredConnectionHeads(connectionIds: readonly string[]): ConnectionRecord[] {
+    const manifest = this.requireReadableManifest();
+    const events = this.readConnectionEvents();
+    this.assertConnectionEventsMatchManifest(manifest, events);
+    const active = this.connectionEventCache?.activeByEntity;
+    if (!active) return [];
+    const records: ConnectionRecord[] = [];
+    for (const connectionId of connectionIds) {
+      const head = active.get(connectionId);
+      if (!head) continue;
+      records.push(this.requireConnectionRecord(
+        connectionId,
+        head.payload,
+        head.activeEventId,
+        head.createdAt,
+        head.updatedAt,
+      ));
+    }
+    this.assertProjectedConnectionsMatchManifest(manifest, records);
+    return records;
+  }
+
+  getAllConnections(): ConnectionRecord[] {
+    const manifest = this.requireReadableManifest();
+    const dbPath = join(this.rootPath, ".system/library.sqlite");
+    const materializer = new SQLiteMaterializer(dbPath);
+    try {
+      const connections = materializer
+        .getAllConnections()
+        .map((connection) => this.requireProjectedConnectionRecord(connection));
+      this.assertProjectedConnectionsMatchManifest(manifest, connections);
+      return connections;
+    } finally {
+      materializer.close();
+    }
+  }
+
+  queryConnectionsForVerse(book: string, chapter: number, verse: number): ConnectionRecord[] {
+    return this.queryConnectionsForRange(book, chapter, verse, verse);
+  }
+
+  queryConnectionsForRange(
+    book: string,
+    chapter: number,
+    verseStart: number,
+    verseEnd: number,
+  ): ConnectionRecord[] {
+    const manifest = this.requireReadableManifest();
+    const dbPath = join(this.rootPath, ".system/library.sqlite");
+    const materializer = new SQLiteMaterializer(dbPath);
+    try {
+      const connections = materializer
+        .queryConnectionsForRange(book, chapter, verseStart, verseEnd)
+        .map((connection) => this.requireProjectedConnectionRecord(connection));
+      this.assertProjectedConnectionsMatchManifest(manifest, connections);
+      return connections;
+    } finally {
+      materializer.close();
+    }
+  }
+
+  /**
+   * Validate the durable library-version boundary without mutating it. Schema
+   * v1 remains readable for legacy v1 events; a future manifest is refused.
+   */
+  private requireReadableManifest(allowPendingInitialization = false): LibraryManifest {
+    const manifest = this.readManifest()
+      ?? (allowPendingInitialization ? this.pendingInitializationManifest : null);
+    if (!manifest) {
+      throw new Error("Library manifest is missing; initialize the library before reading authored connections.");
+    }
+    const migration = checkMigration(manifest, true);
+    if (migration.status === "refused" || migration.status === "error") {
+      throw new Error(migration.message);
+    }
+    return manifest;
+  }
+
+  /**
+   * A v2 append is legal only after the atomically-published schema-v2
+   * manifest exists. This is called solely from explicit v2 mutation plans;
+   * startup, rebuild, query, and legacy delete paths never migrate a library.
+   */
+  private ensureConnectionV2ManifestBoundary(): void {
+    if (!this.tokenCatalog) {
+      throw new Error("Canonical token catalog backbone-token:v1 is required for v2 connections.");
+    }
+    const manifest = this.requireReadableManifest();
+    if (manifest.appSchemaVersion === CURRENT_APP_SCHEMA_VERSION) return;
+    const result = this.migrateLibraryManifest();
+    if (result.status !== "migrated" && result.status !== "current") {
+      throw new Error(result.message);
+    }
+    const published = this.readManifest();
+    if (!published || published.appSchemaVersion !== CURRENT_APP_SCHEMA_VERSION) {
+      throw new Error("Schema-v2 manifest publication did not complete; no v2 connection event may be appended.");
+    }
+  }
+
+  private assertConnectionEventsMatchManifest(
+    manifest: LibraryManifest,
+    events: LibraryEvent[],
+  ): void {
+    if (manifest.appSchemaVersion >= 2) return;
+    const v2Event = events.find((event) => {
+      if (event.op === "delete") return false;
+      if (!isRecord(event.payload)) return false;
+      return event.payload["format_version"] === CONNECTION_FORMAT_VERSION_V2;
+    });
+    if (v2Event) {
+      throw new Error(
+        `Connection event ${v2Event.eventId} uses format_version 2 under a schema-v${manifest.appSchemaVersion} manifest; explicitly migrate before reading it.`,
+      );
+    }
+  }
+
+  private assertProjectedConnectionsMatchManifest(
+    manifest: LibraryManifest,
+    connections: readonly ConnectionRecord[],
+  ): void {
+    if (
+      manifest.appSchemaVersion < 2
+      && connections.some((connection) => (
+        connection.format_version === CONNECTION_FORMAT_VERSION_V2
+      ))
+    ) {
+      throw new Error(
+        `A schema-v${manifest.appSchemaVersion} library cannot expose format_version 2 connection projections.`,
+      );
+    }
+  }
+
+  private assertActiveConnectionRecordsReadable(): void {
+    for (const [connectionId, active] of this.connectionEventCache?.activeByEntity ?? []) {
+      this.requireConnectionRecord(
+        connectionId,
+        active.payload,
+        active.activeEventId,
+        active.createdAt,
+        active.updatedAt,
+      );
+    }
+  }
+
+  private requireConnectionContent(connectionId: string, payload: unknown): ConnectionContent {
+    const recordPayload = typeof payload === "object" && payload !== null && !Array.isArray(payload)
+      ? payload as Record<string, unknown>
+      : {};
+    const validated = validateConnectionRecord(
+      { ...recordPayload, id: connectionId },
+      this.backbone,
+      this.tokenCatalog,
+    );
+    if (!validated.ok) {
+      const error = new Error(validated.error.message);
+      error.name = `ConnectionValidationError:${validated.error.code}`;
+      throw error;
+    }
+    return validated.value;
+  }
+
+  private requireNewConnectionContent(connectionId: string, payload: unknown): ConnectionContentV2 {
+    const recordPayload = typeof payload === "object" && payload !== null && !Array.isArray(payload)
+      ? payload as Record<string, unknown>
+      : {};
+    const validated = validateNewConnectionRecord(
+      { ...recordPayload, id: connectionId },
+      this.backbone,
+      this.tokenCatalog,
+    );
+    if (!validated.ok) {
+      const error = new Error(validated.error.message);
+      error.name = `ConnectionValidationError:${validated.error.code}`;
+      throw error;
+    }
+    return validated.value;
+  }
+
+  private requireConnectionRecord(
+    connectionId: string,
+    payload: unknown,
+    activeEventId: string,
+    createdAt: string,
+    updatedAt: string,
+  ): ConnectionRecord {
+    if (
+      typeof activeEventId !== "string"
+      || activeEventId.length === 0
+      || activeEventId.length > 128
+    ) {
+      throw new Error(`Connection ${connectionId} has an invalid active event version.`);
+    }
+    return {
+      ...this.requireConnectionContent(connectionId, payload),
+      activeEventId,
+      createdAt: requireIsoTimestamp(createdAt, `Connection ${connectionId} create event`),
+      updatedAt: requireIsoTimestamp(updatedAt, `Connection ${connectionId} active event`),
+    };
+  }
+
+  private requireProjectedConnectionRecord(connection: ConnectionRecord): ConnectionRecord {
+    return this.requireConnectionRecord(
+      connection.id,
+      connectionPayloadFromRecord(connection),
+      connection.activeEventId,
+      connection.createdAt,
+      connection.updatedAt,
+    );
+  }
+
+  private planConnectionAppend(event: LibraryEvent): RevisionAppend {
+    const path = join(this.rootPath, CONNECTION_LOG_RELATIVE_PATH);
+    if (!event.commandId || !event.commandFingerprint) {
+      throw new Error("Authored connection events require durable command identity.");
+    }
+    const expectedByteLength = existsSync(path) ? statSync(path).size : 0;
+    return {
+      kind: "append-jsonl",
+      path: CONNECTION_LOG_RELATIVE_PATH,
+      content: `${JSON.stringify(event)}\n`,
+      expectedByteLength,
+      commandId: event.commandId,
+      commandFingerprint: event.commandFingerprint,
+    };
+  }
+
+  private connectionProjectionSignature(): string {
+    const events = this.readConnectionEvents();
+    return connectionProjectionSignatureFor(
+      this.connectionEventCache?.byteLength ?? 0,
+      events.length,
+      events.at(-1)?.eventId,
+    );
+  }
+
+  private replayConnectionCommand(
+    command: ConnectionCommandIdentity,
+    expectedOp: "create" | "update" | "delete",
+  ): PlannedConnectionMutation | null {
+    this.readConnectionEvents();
+    const event = this.connectionEventCache?.commandIndex.get(command.commandId);
+    if (!event) return null;
+    if (event.commandFingerprint !== command.commandFingerprint) {
+      throw new Error(`User mutation command ${command.commandId} was reused for different content.`);
+    }
+    if (event.entityType !== "annotation" || event.op !== expectedOp) {
+      throw new Error(`User mutation command ${command.commandId} was reused for a different action.`);
+    }
+    if (expectedOp === "delete") {
+      const deleteEvent = event as LibraryEvent<Record<string, never>>;
+      return {
+        action: "delete",
+        connectionId: event.entityId,
+        event: deleteEvent,
+        append: this.planConnectionAppend(deleteEvent),
+        replayed: true,
+      };
+    }
+    const timestamps = connectionRecordTimestamps(
+      event.entityId,
+      event.eventId,
+      this.connectionEventCache?.eventsById ?? new Map([[event.eventId, event]]),
+    );
+    const connection = this.requireConnectionRecord(
+      event.entityId,
+      event.payload,
+      event.eventId,
+      timestamps.createdAt,
+      timestamps.updatedAt,
+    );
+    const upsertEvent = event as LibraryEvent<ConnectionEventPayload>;
+    return {
+      action: "upsert",
+      connection,
+      event: upsertEvent,
+      append: this.planConnectionAppend(upsertEvent),
+      replayed: true,
+    };
+  }
+
+  private deriveConnectionAnchors(connection: ConnectionRecord): AnchorRecord[] {
+    if (connection.format_version === CONNECTION_FORMAT_VERSION_V2) {
+      return connection.anchors.map((anchor, ordinal) => this.deriveConnectionAnchor(
+        connection.id,
+        CONNECTION_FORMAT_VERSION_V2,
+        anchor,
+        ordinal,
+        backboneTokenAnchorKey(anchor),
+      ));
+    }
+    return connection.anchors.map((anchor, ordinal) => this.deriveConnectionAnchor(
+      connection.id,
+      CONNECTION_FORMAT_VERSION_V1,
+      anchor,
+      ordinal,
+      canonicalLegacyConnectionAnchorIdentity(anchor),
+    ));
+  }
+
+  private deriveConnectionAnchor(
+    connectionId: string,
+    formatVersion: typeof CONNECTION_FORMAT_VERSION_V1 | typeof CONNECTION_FORMAT_VERSION_V2,
+    anchor: ConnectionAnchor,
+    ordinal: number,
+    canonicalIdentity: string,
+  ): AnchorRecord {
+      const identityDigest = createHash("sha256")
+        .update(canonicalIdentity)
+        .digest("hex");
+      return {
+        id: deterministicConnectionAnchorId(
+          connectionId,
+          ordinal,
+          formatVersion,
+          canonicalIdentity,
+        ),
+        src_kind: "annotation",
+        src_id: connectionId,
+        corpus: "protestant",
+        book: anchor.book,
+        start_ch: anchor.chapter,
+        start_v: anchor.verse_start,
+        end_ch: anchor.chapter,
+        end_v: anchor.verse_end,
+        provenance: [
+          "user",
+          `connection-v${formatVersion}`,
+          `ordinal-${ordinal}`,
+          `identity-sha256-${identityDigest}`,
+        ].join(":"),
+      };
+  }
+
   // --- M4: Source ingestion ---
 
   async importPdfSource(pdfPath: string, opts: {
@@ -982,6 +2089,240 @@ export class LibraryEngine {
   }
 }
 
+type OpenedRebuildMaterializer = {
+  materializer: SQLiteMaterializer;
+  replacedCorruptDerived: boolean;
+};
+
+/**
+ * A malformed SQLite file is disposable Derived state (INV-2, INV-9), but it
+ * is still quarantined rather than deleted. Healthy databases never take this
+ * path and continue to rebuild in-place so existing WAL readers remain valid.
+ */
+function openMaterializerForRebuild(
+  dbPath: string,
+  systemDir: string,
+): OpenedRebuildMaterializer {
+  try {
+    return {
+      materializer: new SQLiteMaterializer(dbPath),
+      replacedCorruptDerived: false,
+    };
+  } catch (error) {
+    if (!existsSync(dbPath) || !isCorruptDerivedDatabaseError(error)) throw error;
+
+    const quarantineBase = uniqueDerivedQuarantineBase(dbPath);
+    for (const [candidate, destination] of [
+      [dbPath, quarantineBase],
+      [`${dbPath}-wal`, `${quarantineBase}-wal`],
+      [`${dbPath}-shm`, `${quarantineBase}-shm`],
+      [`${dbPath}-journal`, `${quarantineBase}-journal`],
+    ] as const) {
+      if (existsSync(candidate)) renameSync(candidate, destination);
+    }
+    // Persist the quarantine rename before a fresh Derived inode is created.
+    fsyncDirectory(systemDir);
+    const materializer = new SQLiteMaterializer(dbPath);
+    try {
+      // Persist the replacement directory entry as well; the transaction below
+      // separately owns the schema rows and exact projection marker.
+      fsyncDirectory(systemDir);
+    } catch (error) {
+      materializer.close();
+      throw error;
+    }
+    return { materializer, replacedCorruptDerived: true };
+  }
+}
+
+function uniqueDerivedQuarantineBase(dbPath: string): string {
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const candidate = `${dbPath}.corrupt-${ulid()}`;
+    if ([candidate, `${candidate}-wal`, `${candidate}-shm`, `${candidate}-journal`]
+      .every((path) => !existsSync(path))) {
+      return candidate;
+    }
+  }
+  throw new Error("Could not reserve a unique quarantine name for corrupt Derived SQLite state.");
+}
+
+function isCorruptDerivedDatabaseError(error: unknown): boolean {
+  if (!isRecord(error)) return false;
+  const code = error["code"];
+  if (code === "SQLITE_CORRUPT" || code === "SQLITE_NOTADB") return true;
+  const message = error["message"];
+  return typeof message === "string" && (
+    /file is not a database/i.test(message)
+    || /database disk image is malformed/i.test(message)
+    || /malformed database schema/i.test(message)
+  );
+}
+
+function fsyncDirectory(directoryPath: string): void {
+  const fd = openSync(directoryPath, "r");
+  try {
+    fsyncSync(fd);
+  } finally {
+    closeSync(fd);
+  }
+}
+
+function connectionProjectionSignatureFor(
+  byteLength: number,
+  eventCount: number,
+  lastEventId: string | undefined,
+): string {
+  return `v2:${byteLength}:${eventCount}:${lastEventId ?? "-"}`;
+}
+
+function assertConnectionEventEnvelope(event: LibraryEvent): void {
+  if (!isRecord(event)) {
+    throw new Error("Connection event must be an object.");
+  }
+  if (
+    typeof event.eventId !== "string"
+    || event.eventId.length === 0
+    || typeof event.entityId !== "string"
+    || event.entityId.length === 0
+  ) {
+    throw new Error("Connection event requires non-empty event and entity ids.");
+  }
+  if (event.schemaVersion !== CURRENT_EVENT_SCHEMA_VERSION) {
+    throw new Error(
+      `Connection event ${event.eventId} uses unsupported event schema version ${String(event.schemaVersion)}.`,
+    );
+  }
+  if (event.entityType !== "annotation") {
+    throw new Error(`Connection event ${event.eventId} has entity type ${String(event.entityType)}.`);
+  }
+  if (!["create", "update", "delete"].includes(event.op)) {
+    throw new Error(`Connection event ${event.eventId} uses unsupported operation ${String(event.op)}.`);
+  }
+  if (event.op === "create" && event.baseEventId !== undefined) {
+    throw new Error(`Connection create event ${event.eventId} must not have a causal base.`);
+  }
+  if (
+    (event.op === "update" || event.op === "delete")
+    && (typeof event.baseEventId !== "string" || event.baseEventId.length === 0)
+  ) {
+    throw new Error(`Connection ${event.op} event ${event.eventId} requires a causal base.`);
+  }
+  requireIsoTimestamp(event.createdAt, `Connection event ${event.eventId}`);
+}
+
+function connectionRecordTimestamps(
+  connectionId: string,
+  activeEventId: string,
+  eventsById: ReadonlyMap<string, LibraryEvent>,
+): { createdAt: string; updatedAt: string } {
+  const active = eventsById.get(activeEventId);
+  if (!active || active.entityId !== connectionId) {
+    throw new Error(`Connection ${connectionId} is missing active event ${activeEventId}.`);
+  }
+  const updatedAt = requireIsoTimestamp(
+    active.createdAt,
+    `Connection ${connectionId} active event ${active.eventId}`,
+  );
+  let cursor: LibraryEvent | undefined = active;
+  const visited = new Set<string>();
+  while (cursor) {
+    if (visited.has(cursor.eventId)) {
+      throw new Error(`Connection ${connectionId} has a causal event cycle at ${cursor.eventId}.`);
+    }
+    visited.add(cursor.eventId);
+    if (cursor.entityId !== connectionId) {
+      throw new Error(`Connection ${connectionId} causal chain crosses entity ${cursor.entityId}.`);
+    }
+    if (cursor.op === "create") {
+      return {
+        createdAt: requireIsoTimestamp(
+          cursor.createdAt,
+          `Connection ${connectionId} create event ${cursor.eventId}`,
+        ),
+        updatedAt,
+      };
+    }
+    if (!cursor.baseEventId) break;
+    cursor = eventsById.get(cursor.baseEventId);
+  }
+  throw new Error(`Connection ${connectionId} active event ${activeEventId} has no causal create event.`);
+}
+
+function requireIsoTimestamp(value: unknown, context: string): string {
+  if (typeof value !== "string") {
+    throw new Error(`${context} timestamp must be an ISO-8601 string.`);
+  }
+  const parsed = new Date(value);
+  if (!Number.isFinite(parsed.getTime()) || parsed.toISOString() !== value) {
+    throw new Error(`${context} timestamp ${value} is not a canonical ISO-8601 instant.`);
+  }
+  return value;
+}
+
+function connectionPayloadFromRecord(connection: ConnectionRecord): ConnectionEventPayload {
+  if (connection.format_version === CONNECTION_FORMAT_VERSION_V2) {
+    return {
+      format_version: CONNECTION_FORMAT_VERSION_V2,
+      kind: connection.kind,
+      label: connection.label,
+      observation: connection.observation,
+      anchors: connection.anchors,
+    };
+  }
+  return {
+    format_version: CONNECTION_FORMAT_VERSION_V1,
+    kind: connection.kind,
+    label: connection.label,
+    anchors: connection.anchors,
+  };
+}
+
+function canonicalLegacyConnectionAnchorIdentity(anchor: ConnectionAnchorV1): string {
+  return JSON.stringify({
+    book: anchor.book,
+    chapter: anchor.chapter,
+    verse_start: anchor.verse_start,
+    verse_end: anchor.verse_end,
+    ...(anchor.render_locator
+      ? {
+          render_locator: {
+            package: anchor.render_locator.package,
+            char_start: anchor.render_locator.char_start,
+            char_end: anchor.render_locator.char_end,
+            quote: anchor.render_locator.quote,
+          },
+        }
+      : {}),
+  });
+}
+
+function fileSliceEquals(path: string, offset: number, expected: Buffer): boolean {
+  let fd: number | null = null;
+  try {
+    fd = openSync(path, "r");
+    const actual = Buffer.allocUnsafe(expected.byteLength);
+    let bytesRead = 0;
+    while (bytesRead < actual.byteLength) {
+      const count = readSync(
+        fd,
+        actual,
+        bytesRead,
+        actual.byteLength - bytesRead,
+        offset + bytesRead,
+      );
+      if (count <= 0) return false;
+      bytesRead += count;
+    }
+    return actual.equals(expected);
+  } catch {
+    return false;
+  } finally {
+    if (fd !== null) {
+      try { closeSync(fd); } catch { /* comparison already has its answer */ }
+    }
+  }
+}
+
 function sourceRecordFromMetadata(metadata: SourceMetadata): SourceRecord {
   return {
     id: metadata.id,
@@ -1029,7 +2370,7 @@ function parsePdfLocator(json: string): PdfLocator | null {
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function toFiniteNumber(value: unknown): number | null {

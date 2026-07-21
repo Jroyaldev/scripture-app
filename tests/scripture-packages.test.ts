@@ -157,7 +157,7 @@ test("KJV package manifest has required license flags and formatVersion", () => 
 test("Doctor refuses a newer package format version", () => {
   const report = runDoctor({
     notes: [],
-    events: { highlights: [], pinnedFacts: [], threads: [], noteChangeLogs: [] },
+    events: { highlights: [], connections: [], pinnedFacts: [], threads: [], noteChangeLogs: [] },
     manifest: null,
     backbone,
     rebuildHash: null,
@@ -178,7 +178,7 @@ test("Doctor refuses a newer package format version", () => {
 test("Doctor flags missing package content", () => {
   const report = runDoctor({
     notes: [],
-    events: { highlights: [], pinnedFacts: [], threads: [], noteChangeLogs: [] },
+    events: { highlights: [], connections: [], pinnedFacts: [], threads: [], noteChangeLogs: [] },
     manifest: null,
     backbone,
     rebuildHash: null,
@@ -212,7 +212,7 @@ test("Doctor reports no errors on complete WEB/KJV packages", () => {
 
   const report = runDoctor({
     notes: [],
-    events: { highlights: [], pinnedFacts: [], threads: [], noteChangeLogs: [] },
+    events: { highlights: [], connections: [], pinnedFacts: [], threads: [], noteChangeLogs: [] },
     manifest: { libraryId: "test", createdAt: "2024-01-01T00:00:00Z", appSchemaVersion: 1, eventSchemaVersion: 1, referenceFormatVersion: "bref:v1", pluginApiVersion: "1" },
     backbone,
     rebuildHash: null,

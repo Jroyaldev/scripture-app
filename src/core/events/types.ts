@@ -5,6 +5,7 @@
 
 export type EntityType =
   | "highlight"
+  | "annotation"
   | "fact"
   | "thread"
   | "source"
@@ -38,6 +39,12 @@ export type LibraryEvent<TPayload = unknown> = {
   seq: number;
   createdAt: string;
   baseEventId?: string;
+  /**
+   * Stable identity for one explicit first-party user command. Optional for
+   * legacy events; new authored-connection events always carry both fields.
+   */
+  commandId?: string;
+  commandFingerprint?: string;
   payload: TPayload;
 };
 

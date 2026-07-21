@@ -4,6 +4,7 @@ import type {
   AIJobData,
   BudgetEnvelopeData,
   LibrarySummary,
+  MarkingSurface,
   ReadingSize,
   ReadingWidth,
   VerseNumberMode,
@@ -27,6 +28,8 @@ interface Props {
   }) => void;
   theme: AppTheme;
   onThemeChange: (theme: AppTheme) => void;
+  markingSurface: MarkingSurface;
+  onMarkingSurfaceChange: (surface: MarkingSurface) => void;
 }
 
 type SettingsSectionId = "library" | "reading" | "intelligence" | "import" | "about";
@@ -46,6 +49,80 @@ const READING_PACKAGES = [
   { code: "YLT", name: "Young’s Literal Translation (1898)", license: "Public Domain", source: "Robert Young" },
   { code: "AKJV", name: "American King James + Strong’s", license: "Public Domain", source: "Stone Engelbrite" },
 ] as const;
+
+const MARKING_SURFACES: ReadonlyArray<{
+  id: MarkingSurface;
+  label: string;
+  description: string;
+}> = [
+  { id: "palette", label: "Palette", description: "Appears beside the words you select." },
+  { id: "rail", label: "Pen Rail", description: "Keeps a compact tool strip beside the page." },
+  { id: "radial", label: "Radial", description: "Surrounds a selection with a focused marking wheel." },
+  { id: "dock", label: "Dock", description: "Keeps modes and context along the reading edge." },
+];
+
+function MarkingSurfacePreview({ surface }: { surface: MarkingSurface }): React.JSX.Element {
+  return (
+    <span className={`marking-setting-preview preview-${surface}`} aria-hidden="true">
+      <i className="marking-preview-page" />
+      <i className="marking-preview-line line-one" />
+      <i className="marking-preview-line line-two" />
+      <i className="marking-preview-line line-three" />
+      <i className="marking-preview-tool tool-one" />
+      <i className="marking-preview-tool tool-two" />
+      <i className="marking-preview-tool tool-three" />
+    </span>
+  );
+}
+
+function MarkingSurfaceChoiceGrid({
+  value,
+  onChange,
+}: {
+  value: MarkingSurface;
+  onChange: (surface: MarkingSurface) => void;
+}): React.JSX.Element {
+  const refs = useRef<Array<HTMLButtonElement | null>>([]);
+  const move = (index: number): void => {
+    const next = (index + MARKING_SURFACES.length) % MARKING_SURFACES.length;
+    const option = MARKING_SURFACES[next];
+    if (!option) return;
+    onChange(option.id);
+    window.setTimeout(() => refs.current[next]?.focus(), 0);
+  };
+  return (
+    <div className="marking-surface-choice-grid" role="radiogroup" aria-label="Marking surface">
+      {MARKING_SURFACES.map((option, index) => {
+        const selected = value === option.id;
+        return (
+          <button
+            key={option.id}
+            ref={(node) => { refs.current[index] = node; }}
+            type="button"
+            className={`marking-surface-choice${selected ? " active" : ""}`}
+            role="radio"
+            aria-checked={selected}
+            tabIndex={selected ? 0 : -1}
+            onClick={() => onChange(option.id)}
+            onKeyDown={(event) => {
+              if (event.key === "ArrowRight" || event.key === "ArrowDown") { event.preventDefault(); move(index + 1); }
+              if (event.key === "ArrowLeft" || event.key === "ArrowUp") { event.preventDefault(); move(index - 1); }
+              if (event.key === "Home") { event.preventDefault(); move(0); }
+              if (event.key === "End") { event.preventDefault(); move(MARKING_SURFACES.length - 1); }
+            }}
+          >
+            <MarkingSurfacePreview surface={option.id} />
+            <span className="marking-surface-choice-copy">
+              <strong>{option.label}</strong>
+              <small>{option.description}</small>
+            </span>
+            <span className="marking-surface-choice-check" aria-hidden="true">✓</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 function SettingsGlyph({ section }: { section: SettingsSectionId }): React.JSX.Element {
   if (section === "library") {
@@ -101,6 +178,8 @@ export function SettingsPage({
   onReadingPrefsChange,
   theme,
   onThemeChange,
+  markingSurface,
+  onMarkingSurfaceChange,
 }: Props): React.JSX.Element {
   const { showToast } = useToast();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -378,6 +457,13 @@ export function SettingsPage({
                 <p>Material changes. Meaning does not.</p>
               </div>
               <ThemeChoiceGrid theme={theme} onChange={onThemeChange} />
+            </div>
+            <div className="settings-field">
+              <div className="settings-field-heading">
+                <label>Marking surface</label>
+                <p>Choose how highlight and connection tools meet the reading page.</p>
+              </div>
+              <MarkingSurfaceChoiceGrid value={markingSurface} onChange={onMarkingSurfaceChange} />
             </div>
             <div className="settings-control-rows">
               <div className="settings-control-row">

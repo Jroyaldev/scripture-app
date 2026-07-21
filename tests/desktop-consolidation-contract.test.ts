@@ -60,9 +60,12 @@ test("desktop components keep only data-driven inline styles and no native dialo
   assert.doesNotMatch(sources, /style=\{\{\s*(?:display|position|cursor)\s*:/);
   assert.doesNotMatch(sources, /stroke="#[0-9A-Fa-f]{3,8}"/);
   assert.doesNotMatch(sources, /\balert\(|window\.confirm\(|\bconfirm\(/);
-  assert.match(sources, /style=\{\{ top: position\.top, left: position\.left, width \}\}/);
+  assert.match(sources, /style=\{\{\s*top: position\.top,\s*left: position\.left,\s*width: position\.width,\s*maxHeight: position\.maxHeight/);
   assert.match(sources, /style=\{\{ "--sense-color": vizColor\(index\) \}/);
-  assert.match(sources, /style=\{\{ top: palettePos\.y, left: palettePos\.x \}\}/);
+  assert.match(sources, /top:\s*placement\?\.top \?\? effectiveStageBounds\.top \+ 8/);
+  assert.match(sources, /left:\s*placement\?\.left \?\? effectiveStageBounds\.left \+ 8/);
+  assert.match(sources, /visibility:\s*placement \? "visible" : "hidden"/);
+  assert.doesNotMatch(sources, /top:\s*selection\.position\.y,\s*left:\s*selection\.position\.x/);
 });
 
 test("library and claim writes expose busy, failure, and confirmed-success states", () => {

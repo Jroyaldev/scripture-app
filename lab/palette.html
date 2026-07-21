@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marking surfaces · lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="lab.css">
+<link rel="stylesheet" href="palette.css">
+</head>
+<body class="theme-light pz-page" data-variant="palette">
+
+<header class="lab-topbar">
+  <div class="lab-brand">
+    <span class="lab-brand-title">Marking surfaces</span>
+    <span class="lab-sub">Worktree interaction lab</span>
+  </div>
+  <div class="lab-controls">
+    <div class="lab-control-group lab-surface-control">
+      <span class="lab-control-label">Surface</span>
+      <div class="seg" id="pz-seg" role="radiogroup" aria-label="Marking surface">
+        <button role="radio" aria-checked="true"  data-variant="palette">Palette</button>
+        <button role="radio" aria-checked="false" data-variant="rail">Pen Rail</button>
+        <button role="radio" aria-checked="false" data-variant="radial">Radial</button>
+        <button role="radio" aria-checked="false" data-variant="dock">Dock</button>
+      </div>
+    </div>
+    <div class="lab-control-group">
+      <span class="lab-control-label">View</span>
+      <div class="seg" id="route-seg" role="radiogroup" aria-label="Study view">
+        <button role="radio" aria-checked="false" data-route="reading">Reading</button>
+        <button role="radio" aria-checked="true"  data-route="traces">Traces</button>
+      </div>
+    </div>
+    <div class="lab-control-group lab-fixture-control">
+      <span class="lab-control-label">Stress</span>
+      <div class="lab-button-row">
+        <button class="ghost-btn density-btn pz-fixture" id="density-btn" aria-pressed="false">Dense Psalm</button>
+        <button class="ghost-btn long-btn pz-fixture" id="long-btn" aria-pressed="false">Long text</button>
+        <button class="ghost-btn angles-btn pz-fixture" id="angles-btn" aria-pressed="false">Angle proof</button>
+        <button class="ghost-btn" id="reveal-btn" aria-pressed="false">Reveal all</button>
+      </div>
+    </div>
+    <div class="lab-control-group">
+      <span class="lab-control-label">Atmosphere</span>
+      <div class="seg" id="atm-seg" role="radiogroup" aria-label="Atmosphere">
+        <button role="radio" aria-checked="true"  data-theme="light">Paper</button>
+        <button role="radio" aria-checked="false" data-theme="dark">Ink</button>
+        <button role="radio" aria-checked="false" data-theme="glass">Glass</button>
+        <button role="radio" aria-checked="false" data-theme="dark-glass">Candlelight</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<p class="pz-caption" id="pz-caption"></p>
+
+<main class="lab-main">
+
+  <section class="study" id="study-psa">
+    <header class="study-head">
+      <h2>Psalm 1 <span class="kind-tags"><i class="dot k-contrast"></i>contrast <i class="dot k-echo"></i>echo <i class="dot k-parallel"></i>hinge</span></h2>
+      <p class="study-note">Every variant marks the same text through the same engine. Select words and the active surface answers · Esc steps back.</p>
+    </header>
+    <div class="study-body with-panel">
+      <div class="sheet" data-sheet="psa"></div>
+      <aside class="rail" data-rail="psa"></aside>
+    </div>
+    <details class="payload"><summary>pattern records · shape-marks.jsonl prototype</summary><pre data-payload="psa"></pre></details>
+  </section>
+
+  <section class="study" id="study-gen">
+    <header class="study-head">
+      <h2>Genesis 1:3 – 2:3 <span class="kind-tags"><i class="dot k-mirror"></i>mirror <i class="dot k-series"></i>series</span></h2>
+      <p class="study-note">Each forming day answers its filling day. Hold several traces to compare the week without losing the words.</p>
+    </header>
+    <div class="study-body with-panel">
+      <div class="sheet" data-sheet="gen"></div>
+      <aside class="rail" data-rail="gen"></aside>
+    </div>
+    <details class="payload"><summary>pattern records · shape-marks.jsonl prototype</summary><pre data-payload="gen"></pre></details>
+  </section>
+
+  <section class="study" id="study-rev">
+    <header class="study-head">
+      <h2>Revelation 2–3 <span class="kind-tags"><i class="dot k-series"></i>series</span></h2>
+      <p class="study-note">Seven letters, fifty-one verses. Long text adds eighteen overlapping annotations to pressure-test the routed margin and its held ticks.</p>
+    </header>
+    <div class="study-body with-panel">
+      <div class="sheet sheet-compact" data-sheet="rev"></div>
+      <aside class="rail" data-rail="rev">
+        <div class="panel" data-panel="rev"></div>
+      </aside>
+    </div>
+    <details class="payload"><summary>pattern records · shape-marks.jsonl prototype</summary><pre data-payload="rev"></pre></details>
+  </section>
+
+  <section class="study geometry-study" id="study-qa" hidden>
+    <header class="study-head">
+      <h2>Line-angle proof <span class="kind-tags"><i class="dot k-parallel"></i>six kinds <i class="dot k-series"></i>three distances <i class="dot k-echo"></i>middle → right</span></h2>
+      <p class="study-note">Eighteen isolated traces test the route itself inside one synthetic text row: a middle phrase to a right-end phrase on the same rendered line, exactly one rendered line apart, and many rendered lines apart. These are lab-only geometry records, not Scripture anchors.</p>
+    </header>
+    <div class="study-body with-panel">
+      <div class="sheet sheet-geometry" data-sheet="qa"></div>
+      <aside class="rail" data-rail="qa"></aside>
+    </div>
+    <details class="payload"><summary>geometry proof records · reversible lab fixture</summary><pre data-payload="qa"></pre></details>
+  </section>
+
+</main>
+
+<script src="verses.js"></script>
+<script src="patterns.js"></script>
+<script src="trace-geometry.js"></script>
+<script type="module" src="lab.js"></script>
+<script type="module" src="palette.js"></script>
+</body>
+</html>

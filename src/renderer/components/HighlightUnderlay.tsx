@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import type { HighlightRecord } from "../api.js";
 import { buildHighlightPath, mergeHighlightLineRects, type LineRect } from "../utils/highlightPath.js";
+import { useUnderlayMeasurementLifecycle } from "../utils/useUnderlayMeasurementLifecycle.js";
 import { buildSegments, buildRuns, isAdjacent, type HighlightRun } from "../../core/events/highlightAdjacency.js";
 
 /*
@@ -24,9 +25,9 @@ import { buildSegments, buildRuns, isAdjacent, type HighlightRun } from "../../c
  * color-per-verse projection: that projection is exactly what let N separate
  * records render as one indivisible-looking blob (the original bug).
  *
- * Re-measurement is triggered on: highlight data change, resize (ResizeObserver
- * on the container), and theme change (colors are read from computed CSS vars
- * each pass, so dark mode is free).
+ * Re-measurement is triggered on: highlight data change, container reflow,
+ * window resize, font settlement, and theme change (colors are read
+ * from computed CSS vars each pass, so dark mode is free).
  */
 
 export interface BlobData {
@@ -109,11 +110,6 @@ export function HighlightUnderlay({
   const [size, setSize] = useState({ w: 0, h: 0 });
   /** Per-color resolved gradient stops, read from computed CSS vars. */
   const colorsRef = useRef<Record<string, { a: string; mid: string; b: string }>>({});
-  const rafRef = useRef<number | null>(null);
-  /** Always holds the latest measure function, so the ResizeObserver effect
-   * below can stay mounted once instead of tearing down/recreating on every
-   * highlight edit. */
-  const measureRef = useRef<() => void>(() => {});
 
   const doMeasure = useCallback(() => {
     const container = containerRef.current;
@@ -286,34 +282,15 @@ export function HighlightUnderlay({
     setSize({ w: cRect.width, h: cRect.height });
   }, [containerRef, verseRowRefs, highlights, book, chapter, animateIds, fadingIds, pinRange]);
 
-  const measure = useCallback(() => {
-    if (rafRef.current !== null) return;
-    rafRef.current = requestAnimationFrame(() => {
-      rafRef.current = null;
-      doMeasure();
-    });
-  }, [doMeasure]);
-
-  // Keep the ref current every render so the ResizeObserver effect (which
-  // intentionally does NOT depend on `measure`) always calls the latest one.
-  measureRef.current = measure;
+  const measure = useUnderlayMeasurementLifecycle({
+    containerRef,
+    measure: doMeasure,
+  });
 
   // Re-measure when highlight data, chapter, animation sets, pin, or theme change.
   useEffect(() => {
     measure();
   }, [highlights, book, chapter, animateIds, fadingIds, themeToken, pinRange, measure]);
-
-  // ResizeObserver — re-measure on container reflow (window resize, font load,
-  // margin toggle that changes the reading column width). Depends only on
-  // containerRef so it isn't torn down and recreated on ordinary highlight
-  // edits (measureRef.current gets the latest measure fn).
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    const ro = new ResizeObserver(() => measureRef.current());
-    ro.observe(container);
-    return () => ro.disconnect();
-  }, [containerRef]);
 
   // Clear the sweep flag after the animation finishes so a re-measure (e.g.
   // on resize) doesn't replay it.

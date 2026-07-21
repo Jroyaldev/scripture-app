@@ -193,6 +193,12 @@ if (FIXTURES.some((fixture) => !LEGACY_C03_FIXTURE_SET.has(fixture.id) &&
  * same 4,515 states re-walked with zero browser errors under the new
  * grammar — route choice unchanged, silhouettes intentionally re-formed. */
 const LEGACY_C03_PROJECTION_SHA256 = "8b2dcd67ecc6cdbee5ebabf05810ae4f55ba2e321d7000719fc1f9012b1ca1cb";
+/* Frozen from the landed C0.4 section sweep after the approved C0.5 bracket
+ * grammar amendment. Unlike the compatibility projection above, this digest
+ * includes the complete rendered SVG paint contract for all 20 fixtures at
+ * every integer width 460–760. A mismatch is a failed gate; this file never
+ * derives or rewrites either baseline. */
+const FROZEN_ROUTE_SWEEP_SHA256 = "3b01cd13a8db1c6b360e956622be1610de416a63ab745bde4aecf3967c5f6b7f";
 
 /* ── build the text block ──────────────────────────────────── */
 const sheet = document.getElementById("sheet");
@@ -2043,6 +2049,9 @@ async function runRenderedSweep(gate = "c04") {
   if (legacyDigest !== LEGACY_C03_PROJECTION_SHA256) {
     recordFailure({ legacyProjection: "regressed", expected: LEGACY_C03_PROJECTION_SHA256, actual: legacyDigest });
   }
+  if (gate === "c04" && digest !== FROZEN_ROUTE_SWEEP_SHA256) {
+    recordFailure({ renderedSweep: "regressed", expected: FROZEN_ROUTE_SWEEP_SHA256, actual: digest });
+  }
   if (!rightWinners.size) recordFailure({ rightWinner: "missing" });
   if (!observedMargins.has("left") || !observedMargins.has("right")) {
     recordFailure({ observedMargins: [...observedMargins] });
@@ -2053,12 +2062,18 @@ async function runRenderedSweep(gate = "c04") {
   output.dataset[datasetKey] = status;
   output.dataset.status = status;
   output.dataset.legacyProjectionSha256 = legacyDigest;
+  output.dataset.sha256 = digest;
+  if (gate === "c04") output.dataset.expectedSha256 = FROZEN_ROUTE_SWEEP_SHA256;
   document.documentElement.dataset[datasetKey] = status;
   if (failureCount) {
     output.textContent = `${label} sweep FAIL · ${failureCount} failures · ${states} states · ${renders} renders · ${JSON.stringify(failures.slice(0, 5))}`;
   } else {
     output.textContent = `${label} sweep PASS · ${states} unique states · ${renders} deterministic renders · section S fixtures ${observedSectionTopologies.size} · right winners ${rightWinners.size} · legacy C0.3 ${legacyDigest} · SHA-256 ${digest}`;
   }
+  return {
+    ok: status === "pass", digest, legacyDigest, states, renders,
+    failures: failures.slice(), browserErrors: browserErrors.slice(), fatalError,
+  };
 }
 
 /* Section provenance is a closed planner input, not a decoration on a

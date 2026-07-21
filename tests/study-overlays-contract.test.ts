@@ -36,7 +36,7 @@ test("capture, highlight, and cross-reference overlays state trust and source cl
   const note = read("src/renderer/components/NoteCapture.tsx");
   const highlight = read("src/renderer/components/HighlightToolbar.tsx");
   const margin = read("src/renderer/components/LivingMargin.tsx");
-  const scripture = read("src/renderer/components/ScripturePage.tsx");
+  const marking = read("src/renderer/components/MarkingSurface.tsx");
 
   assert.match(note, /Passage note/);
   assert.match(note, /Plain Markdown · saved locally only when you choose/);
@@ -46,9 +46,9 @@ test("capture, highlight, and cross-reference overlays state trust and source cl
   assert.match(highlight, /role="group" aria-label="Highlight color"/);
   assert.match(highlight, /Add note/);
   assert.match(highlight, /aria-pressed=\{activeColor === color\}/);
-  assert.match(scripture, /return createPortal\(/);
-  assert.match(scripture, /data-floating-layer="toolbar"/);
-  assert.match(scripture, /`theme-\$\{theme\}`/);
+  assert.match(marking, /return createPortal\(/);
+  assert.match(marking, /data-floating-layer="toolbar"/);
+  assert.match(marking, /theme-\$\{theme\}/);
 
   assert.match(margin, /aria-label="OpenBible cross references"/);
   assert.match(margin, />OpenBible<\/h3>/);

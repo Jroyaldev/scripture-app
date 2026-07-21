@@ -3095,6 +3095,9 @@ function hideWhisper() {
 const pillUp = document.createElement("button");
 const pillDown = document.createElement("button");
 pillUp.className = "pill pill-up"; pillDown.className = "pill pill-down";
+pillUp.type = "button"; pillDown.type = "button";
+pillUp.setAttribute("aria-label", "Scroll to earlier off-screen marks");
+pillDown.setAttribute("aria-label", "Scroll to later off-screen marks");
 document.body.append(pillUp, pillDown);
 let pillTargets = { up: null, down: null };
 pillUp.addEventListener("click", () => pillTargets.up && pillTargets.up.scrollIntoView({ behavior: "smooth", block: "center" }));
@@ -3933,7 +3936,8 @@ function wire() {
   document.getElementById("atm-seg").addEventListener("click", (e) => {
     const b = e.target.closest("button"); if (!b) return;
     syncRadioGroup(e.currentTarget, b);
-    document.body.className = `theme-${b.dataset.theme}` + (document.body.classList.contains("reveal") ? " reveal" : "");
+    document.body.classList.remove("theme-light", "theme-dark", "theme-glass", "theme-dark-glass");
+    document.body.classList.add(`theme-${b.dataset.theme}`);
     requestAnimationFrame(redrawActive);
   });
   addEventListener("resize", scheduleResponsiveRedraw);

@@ -11,8 +11,10 @@ import type { BackboneData, BookNameMap, ScripturePackage } from "../core/refere
 import { parseBref, toBref, toDisplayString, parseHumanRef } from "../core/reference/parser.js";
 import { validateBackboneData } from "../core/reference/backbone.js";
 import { checkMigration } from "../core/migration/index.js";
+import type { MigrationResult } from "../core/migration/index.js";
 import { runDoctor } from "../core/doctor/index.js";
 import type { LibraryManifest } from "../core/interfaces.js";
+import { GitRevisionStore } from "../host/git-revision-store.js";
 import { LibraryEngine } from "../host/library.js";
 
 const DATA_DIR = resolve(import.meta.dirname ?? ".", "../../data/scripture");
@@ -226,7 +228,21 @@ switch (command) {
     }
 
     const manifest = JSON.parse(readFileSync(manifestPath, "utf-8")) as LibraryManifest;
-    const result = checkMigration(manifest, dryRun);
+    let result: MigrationResult;
+    if (dryRun) {
+      result = checkMigration(manifest, true);
+    } else {
+      const engine = new LibraryEngine(libraryPath, loadBackbone(), loadBookNames());
+      result = engine.migrateLibraryManifest();
+      if (result.status === "migrated") {
+        const label = `Migrate library manifest to schema v${result.toVersion}`;
+        const revisionStore = new GitRevisionStore(libraryPath);
+        const txn = await revisionStore.beginTransaction(label);
+        txn.files.push("config/library-manifest.json");
+        await revisionStore.commit(txn);
+        await revisionStore.flush(label);
+      }
+    }
 
     console.log(`\n=== Library Migration ${dryRun ? "(dry run)" : ""} ===\n`);
     console.log(`Status: ${result.status}`);

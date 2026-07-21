@@ -9,15 +9,44 @@
 import type { LibraryManifest } from "../interfaces.js";
 
 /** The current schema version the app understands. */
-export const CURRENT_APP_SCHEMA_VERSION = 1;
+export const CURRENT_APP_SCHEMA_VERSION = 2;
 export const CURRENT_EVENT_SCHEMA_VERSION = 1;
 
 /** The current scripture package format version the app understands (INV-17). */
 export const CURRENT_PACKAGE_FORMAT_VERSION = 1;
 
+export type MigrationStep = {
+  fromVersion: number;
+  toVersion: number;
+  description: string;
+};
+
+export type MigrationPlan = {
+  fromVersion: number;
+  toVersion: number;
+  steps: MigrationStep[];
+  /** The deterministic post-migration value. The input manifest is never mutated. */
+  manifest: LibraryManifest;
+};
+
 export type MigrationResult =
-  | { status: "current"; message: string }
-  | { status: "migrated"; message: string; fromVersion: number; toVersion: number }
+  | { status: "current"; message: string; manifest: LibraryManifest }
+  | {
+      status: "planned";
+      message: string;
+      fromVersion: number;
+      toVersion: number;
+      manifest: LibraryManifest;
+      plan: MigrationPlan;
+    }
+  | {
+      status: "migrated";
+      message: string;
+      fromVersion: number;
+      toVersion: number;
+      manifest: LibraryManifest;
+      plan: MigrationPlan;
+    }
   | { status: "refused"; message: string }
   | { status: "error"; message: string };
 
@@ -28,13 +57,16 @@ export type Migration = {
   migrate: (manifest: LibraryManifest) => LibraryManifest;
 };
 
-/** The migration registry. Phase 0 ships with a no-op v1 migration. */
+/** Manifest-only migrations. Authored event logs are never rewritten here. */
 const migrations: Migration[] = [
   {
     fromVersion: 1,
-    toVersion: 1,
-    description: "No-op v1 identity migration (proves the registry works)",
-    migrate: (manifest) => manifest,
+    toVersion: 2,
+    description: "Establish the schema-v2 compatibility boundary without rewriting authored v1 data",
+    migrate: (manifest) => ({
+      ...manifest,
+      appSchemaVersion: 2,
+    }),
   },
 ];
 
@@ -66,6 +98,7 @@ export function checkMigration(
     return {
       status: "current",
       message: "Library is at the current schema version. No migration required.",
+      manifest: { ...manifest },
     };
   }
 
@@ -82,27 +115,42 @@ export function checkMigration(
     };
   }
 
+  let migratedManifest = { ...manifest };
+  for (const migration of path) {
+    migratedManifest = migration.migrate(migratedManifest);
+  }
+  const plan: MigrationPlan = {
+    fromVersion: manifest.appSchemaVersion,
+    toVersion: CURRENT_APP_SCHEMA_VERSION,
+    steps: path.map(({ fromVersion, toVersion, description }) => ({
+      fromVersion,
+      toVersion,
+      description,
+    })),
+    manifest: migratedManifest,
+  };
+
   if (dryRun) {
-    const steps = path
-      .map((m) => `  v${m.fromVersion} → v${m.toVersion}: ${m.description}`)
+    const steps = plan.steps
+      .map((step) => `  v${step.fromVersion} → v${step.toVersion}: ${step.description}`)
       .join("\n");
     return {
-      status: "current",
+      status: "planned",
       message: `Dry run: would apply ${path.length} migration(s):\n${steps}`,
+      fromVersion: plan.fromVersion,
+      toVersion: plan.toVersion,
+      manifest: plan.manifest,
+      plan,
     };
-  }
-
-  // Apply migrations
-  let current = manifest;
-  for (const migration of path) {
-    current = migration.migrate(current);
   }
 
   return {
     status: "migrated",
     message: `Migrated from v${manifest.appSchemaVersion} to v${CURRENT_APP_SCHEMA_VERSION}.`,
-    fromVersion: manifest.appSchemaVersion,
-    toVersion: CURRENT_APP_SCHEMA_VERSION,
+    fromVersion: plan.fromVersion,
+    toVersion: plan.toVersion,
+    manifest: plan.manifest,
+    plan,
   };
 }
 
@@ -114,11 +162,15 @@ function findMigrationPath(from: number, to: number): Migration[] {
   let current = from;
 
   while (current < to) {
-    const migration = migrations.find((m) => m.fromVersion === current);
+    const migration = migrations.find((candidate) => (
+      candidate.fromVersion === current
+      && candidate.toVersion > current
+      && candidate.toVersion <= to
+    ));
     if (!migration) return [];
     path.push(migration);
     current = migration.toVersion;
   }
 
-  return path;
+  return current === to ? path : [];
 }

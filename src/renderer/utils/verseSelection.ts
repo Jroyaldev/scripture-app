@@ -5,7 +5,7 @@ export interface VerseSelectionResult {
 
 /** Whole-verse selection is always one contiguous reading range. */
 export function nextVerseSelection(
-  current: ReadonlySet<number>,
+  _current: ReadonlySet<number>,
   anchor: number | null,
   verse: number,
   extend: boolean,
@@ -18,8 +18,7 @@ export function nextVerseSelection(
     return { selection, anchor };
   }
 
-  if (current.size === 1 && current.has(verse)) {
-    return { selection: new Set(), anchor: null };
-  }
+  // A research click is a stable scope choice, not a toggle. The persistent
+  // Living Margin Done action is the explicit way to clear that scope.
   return { selection: new Set([verse]), anchor: verse };
 }

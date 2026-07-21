@@ -3,11 +3,13 @@
  * No core logic here; only window management and IPC bridge.
  */
 
-import { app, BrowserWindow, dialog, ipcMain, nativeTheme, shell } from "electron";
+import { app, BrowserWindow, crashReporter, dialog, ipcMain, nativeTheme, shell } from "electron";
+import type { IpcMainInvokeEvent } from "electron";
 import { join, resolve, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, unlinkSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
+import { createHash } from "node:crypto";
 import ElectronStore from "electron-store";
 
 // electron-store v11 is pure ESM. Under Electron 35 (Node 22 require(esm))
@@ -18,10 +20,10 @@ const Store = ((ElectronStore as unknown as { default?: unknown }).default ??
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 import { ulid } from "ulid";
-import type { BackboneData, BookNameMap, CanonicalRef } from "../core/reference/types.js";
+import type { BackboneData, BookCode, BookNameMap, CanonicalRef } from "../core/reference/types.js";
 import { parseBref, toBref, toDisplayString, parseHumanRef } from "../core/reference/parser.js";
-import { validateBackboneData } from "../core/reference/backbone.js";
-import { LibraryEngine } from "../host/library.js";
+import { isValidBookCode, validateBackboneData, validateVerse } from "../core/reference/backbone.js";
+import { ConnectionVersionConflictError, LibraryEngine } from "../host/library.js";
 import { GitRevisionStore } from "../host/git-revision-store.js";
 import { SQLiteMaterializer } from "../host/sqlite.js";
 import { EmbeddingsStore } from "../host/embeddings-store.js";
@@ -67,9 +69,104 @@ import {
 } from "../core/search/scripture-search.js";
 import { toFts5PlainQuery } from "../core/search/note-search-query.js";
 import { PlaceResearchLoader } from "../host/place-research-loader.js";
+import type {
+  ConnectionRecord,
+  CreateConnectionInput,
+} from "../core/annotations/types.js";
+import {
+  captureOccurrenceAlignedSelection,
+  projectBackboneTokenAnchor,
+  type OccurrenceAlignmentVerseEvidence,
+  type OccurrenceSelectionPiece,
+} from "../core/annotations/occurrence-alignment.js";
+import { checkMigration } from "../core/migration/index.js";
+import { OccurrenceAlignmentStore } from "../host/occurrence-alignment-store.js";
+import {
+  UserMutationBroker,
+  type ExplicitUserMutationIntent,
+  type UserConnectionMutationAction,
+} from "../host/user-mutation-broker.js";
 
 const DATA_DIR = resolve(__dirname, "../../data/scripture");
 const CROSS_REF_DIR = resolve(__dirname, "../../data/cross-references");
+const APP_SESSION_ID = ulid();
+const APP_LOG_PATH = join(
+  app.getPath("logs"),
+  `scripture-main-${new Date().toISOString().slice(0, 10)}.jsonl`,
+);
+let appLogUnavailable = false;
+
+type DiagnosticLevel = "info" | "warn" | "error";
+
+function diagnosticError(error: unknown): { name: string; message: string; stack?: string } {
+  if (!(error instanceof Error)) {
+    return { name: "Error", message: String(error).slice(0, 2_000) };
+  }
+  return {
+    name: error.name,
+    message: error.message.slice(0, 2_000),
+    ...(error.stack ? { stack: error.stack.slice(0, 8_000) } : {}),
+  };
+}
+
+/** App-private lifecycle evidence only; never write diagnostics into Library. */
+function logLifecycle(
+  event: string,
+  details: Record<string, unknown> = {},
+  level: DiagnosticLevel = "info",
+): void {
+  const record = {
+    timestamp: new Date().toISOString(),
+    sessionId: APP_SESSION_ID,
+    pid: process.pid,
+    event,
+    ...details,
+  };
+  const consoleMethod = level === "error" ? console.error : level === "warn" ? console.warn : console.log;
+  consoleMethod(`[electron:${event}]`, details);
+  if (appLogUnavailable) return;
+  try {
+    mkdirSync(dirname(APP_LOG_PATH), { recursive: true });
+    appendFileSync(APP_LOG_PATH, `${JSON.stringify(record)}\n`, { encoding: "utf8" });
+  } catch (error) {
+    appLogUnavailable = true;
+    console.warn("Electron lifecycle log is unavailable:", diagnosticError(error).message);
+  }
+}
+
+try {
+  crashReporter.start({
+    productName: "Scripture Library",
+    uploadToServer: false,
+    ignoreSystemCrashHandler: false,
+    globalExtra: {
+      sessionId: APP_SESSION_ID,
+      appVersion: app.getVersion(),
+    },
+  });
+  logLifecycle("session-start", {
+    appVersion: app.getVersion(),
+    electronVersion: process.versions.electron,
+    crashDumpsPath: app.getPath("crashDumps"),
+  });
+} catch (error) {
+  logLifecycle("crash-reporter-start-failed", { error: diagnosticError(error) }, "warn");
+}
+
+process.on("uncaughtExceptionMonitor", (error, origin) => {
+  logLifecycle("uncaught-exception", { origin, error: diagnosticError(error) }, "error");
+});
+
+app.on("child-process-gone", (_event, details) => {
+  logLifecycle("child-process-gone", {
+    type: details.type,
+    reason: details.reason,
+    exitCode: details.exitCode,
+    ...(details.name ? { name: details.name } : {}),
+    ...(details.serviceName ? { serviceName: details.serviceName } : {}),
+  }, details.reason === "clean-exit" ? "info" : "error");
+});
+
 const ALLOWED_RESEARCH_LINK_HOSTS = new Set([
   "commons.wikimedia.org",
   "creativecommons.org",
@@ -87,6 +184,7 @@ interface WindowBounds {
 
 interface AppSettingsSchema {
   theme: "light" | "dark" | "glass" | "dark-glass";
+  markingSurface: "palette" | "rail" | "radial" | "dock";
   sidebarCollapsed: boolean;
   marginVisible: boolean;
   readingSize: "s" | "m" | "l";
@@ -109,9 +207,24 @@ interface AppSettingsSchema {
   libraryPath: string | null;
 }
 
+const MARKING_SURFACE_IDS = new Set<AppSettingsSchema["markingSurface"]>([
+  "palette",
+  "rail",
+  "radial",
+  "dock",
+]);
+
+function normalizeMarkingSurface(value: unknown): AppSettingsSchema["markingSurface"] {
+  return typeof value === "string"
+    && MARKING_SURFACE_IDS.has(value as AppSettingsSchema["markingSurface"])
+    ? value as AppSettingsSchema["markingSurface"]
+    : "palette";
+}
+
 const store = new Store<AppSettingsSchema>({
   defaults: {
     theme: nativeTheme.shouldUseDarkColors ? "dark" : "light",
+    markingSurface: "palette",
     sidebarCollapsed: false,
     marginVisible: true,
     readingSize: "m",
@@ -127,6 +240,8 @@ const store = new Store<AppSettingsSchema>({
 let mainWindow: BrowserWindow | null = null;
 let engine: LibraryEngine | null = null;
 let revisionStore: GitRevisionStore | null = null;
+let userMutationBroker: UserMutationBroker | null = null;
+let occurrenceAlignmentStore: OccurrenceAlignmentStore | null = null;
 let backbone: BackboneData | null = null;
 let bookNames: BookNameMap | null = null;
 let crossRefData: CrossRefData | null = null;
@@ -137,6 +252,16 @@ let codexProvider: CodexExecAIProvider | null = null;
 let themes: ThemeEntry[] = [];
 let embeddingProvider: EmbeddingProvider | null = null;
 let jobQueue: JobQueue | null = null;
+let runtimeAccepting = false;
+let runtimeOperationCount = 0;
+let runtimeIdleWaiters: Array<() => void> = [];
+let authoredOperationCount = 0;
+let authoredIdleWaiters: Array<() => void> = [];
+let semanticAccepting = false;
+let semanticOperationCount = 0;
+let semanticIdleWaiters: Array<() => void> = [];
+let engineLifecycleTail: Promise<void> = Promise.resolve();
+let isAppQuitting = false;
 /** Original-language packages (MACULA Greek, later OSHB Hebrew). */
 let tokenPackages: TokenPackageLoader | null = null;
 let reverseIndexes: ReverseIndexLoader | null = null;
@@ -144,6 +269,338 @@ let reverseIndexes: ReverseIndexLoader | null = null;
 let syntaxTrees: SyntaxTreeLoader | null = null;
 /** OpenBible/TIPNR biblical-place research and Natural Earth minimaps. */
 let placeResearch: PlaceResearchLoader | null = null;
+
+interface EngineRuntime {
+  engine: LibraryEngine;
+  revisionStore: GitRevisionStore;
+  userMutationBroker: UserMutationBroker;
+  occurrenceAlignmentStore: OccurrenceAlignmentStore;
+  backbone: BackboneData;
+  bookNames: BookNameMap;
+  crossRefData: CrossRefData | null;
+  embeddingsStore: EmbeddingsStore | null;
+  budgetManager: BudgetManager | null;
+  aiProvider: AIProvider | null;
+  codexProvider: CodexExecAIProvider | null;
+  themes: ThemeEntry[];
+  embeddingProvider: EmbeddingProvider | null;
+  jobQueue: JobQueue | null;
+  tokenPackages: TokenPackageLoader;
+  reverseIndexes: ReverseIndexLoader;
+  syntaxTrees: SyntaxTreeLoader;
+  placeResearch: PlaceResearchLoader;
+}
+
+const SWITCH_DRAIN_TIMEOUT_MS = 30_000;
+const QUIT_DRAIN_TIMEOUT_MS = 8_000;
+
+function beginRuntimeOperation(): (() => void) | null {
+  if (!runtimeAccepting) return null;
+  runtimeOperationCount++;
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    runtimeOperationCount--;
+    if (runtimeOperationCount !== 0) return;
+    const waiters = runtimeIdleWaiters;
+    runtimeIdleWaiters = [];
+    for (const resolveIdle of waiters) resolveIdle();
+  };
+}
+
+function waitForRuntimeIdle(): Promise<void> {
+  if (runtimeOperationCount === 0) return Promise.resolve();
+  return new Promise((resolveIdle) => runtimeIdleWaiters.push(resolveIdle));
+}
+
+function beginAuthoredOperation(): () => void {
+  authoredOperationCount++;
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    authoredOperationCount--;
+    if (authoredOperationCount !== 0) return;
+    const waiters = authoredIdleWaiters;
+    authoredIdleWaiters = [];
+    for (const resolveIdle of waiters) resolveIdle();
+  };
+}
+
+function waitForAuthoredIdle(): Promise<void> {
+  if (authoredOperationCount === 0) return Promise.resolve();
+  return new Promise((resolveIdle) => authoredIdleWaiters.push(resolveIdle));
+}
+
+function beginSemanticOperation(): (() => void) | null {
+  if (!semanticAccepting) return null;
+  semanticOperationCount++;
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    semanticOperationCount--;
+    if (semanticOperationCount !== 0) return;
+    const waiters = semanticIdleWaiters;
+    semanticIdleWaiters = [];
+    for (const resolveIdle of waiters) resolveIdle();
+  };
+}
+
+function waitForSemanticIdle(): Promise<void> {
+  if (semanticOperationCount === 0) return Promise.resolve();
+  return new Promise((resolveIdle) => semanticIdleWaiters.push(resolveIdle));
+}
+
+async function withSemanticOperation<T>(
+  unavailable: T,
+  operation: () => Promise<T>,
+): Promise<T> {
+  const releaseRuntime = beginRuntimeOperation();
+  if (!releaseRuntime) return unavailable;
+  const releaseSemantic = beginSemanticOperation();
+  if (!releaseSemantic) {
+    releaseRuntime();
+    return unavailable;
+  }
+  try {
+    return await operation();
+  } finally {
+    releaseSemantic();
+    releaseRuntime();
+  }
+}
+
+function registerRuntimeIpc(
+  channel: string,
+  listener: Parameters<typeof ipcMain.handle>[1],
+): void {
+  ipcMain.handle(channel, (event, ...args) => {
+    if (!isTrustedMainRenderer(event)) {
+      logLifecycle("untrusted-runtime-ipc-blocked", {
+        channel,
+        senderId: event.sender.id,
+        senderUrl: event.senderFrame?.url ?? "detached",
+      }, "warn");
+      return { ok: false, error: "Untrusted renderer request was refused" };
+    }
+    const release = beginRuntimeOperation();
+    if (!release) return { ok: false, error: "Library runtime is switching" };
+    const releaseAuthored = beginAuthoredOperation();
+    try {
+      return Promise.resolve(listener(event, ...args)).finally(() => {
+        releaseAuthored();
+        release();
+      });
+    } catch (error) {
+      releaseAuthored();
+      release();
+      throw error;
+    }
+  });
+}
+
+/** Read-only runtime lease. Exact capture and package projection inspect
+ * immutable artifacts/Derived rows but never enter the authored-write drain. */
+function registerRuntimeReadIpc(
+  channel: string,
+  listener: Parameters<typeof ipcMain.handle>[1],
+  unavailable?: (message: string, args: readonly unknown[]) => unknown,
+): void {
+  ipcMain.handle(channel, (event, ...args) => {
+    if (!isTrustedMainRenderer(event)) {
+      logLifecycle("untrusted-runtime-ipc-blocked", {
+        channel,
+        senderId: event.sender.id,
+        senderUrl: event.senderFrame?.url ?? "detached",
+      }, "warn");
+      const message = "Untrusted renderer request was refused";
+      return unavailable?.(message, args) ?? { ok: false, error: message };
+    }
+    const release = beginRuntimeOperation();
+    if (!release) {
+      const message = "Library runtime is switching";
+      return unavailable?.(message, args) ?? { ok: false, error: message };
+    }
+    try {
+      return Promise.resolve(listener(event, ...args)).finally(release);
+    } catch (error) {
+      release();
+      throw error;
+    }
+  });
+}
+
+function isTrustedMainRenderer(event: IpcMainInvokeEvent): boolean {
+  const win = mainWindow;
+  const frame = event.senderFrame;
+  if (!win || win.isDestroyed() || !frame || event.sender.id !== win.webContents.id) return false;
+  const mainFrame = win.webContents.mainFrame;
+  if (frame.processId !== mainFrame.processId || frame.routingId !== mainFrame.routingId) return false;
+  return isTrustedRendererUrl(frame.url);
+}
+
+function isTrustedRendererUrl(value: string): boolean {
+  try {
+    const candidate = new URL(value);
+    const expected = trustedDevelopmentRendererUrl()
+      ?? pathToFileURL(join(__dirname, "../renderer/index.html"));
+    candidate.hash = "";
+    candidate.search = "";
+    expected.hash = "";
+    expected.search = "";
+    if (expected.protocol === "file:") {
+      return candidate.protocol === "file:" && fileURLToPath(candidate) === fileURLToPath(expected);
+    }
+    return candidate.origin === expected.origin && candidate.pathname === expected.pathname;
+  } catch {
+    return false;
+  }
+}
+
+function trustedDevelopmentRendererUrl(): URL | null {
+  const configured = process.env["ELECTRON_DEV_URL"];
+  if (!configured || app.isPackaged) return null;
+  try {
+    const candidate = new URL(configured);
+    const loopback = candidate.hostname === "localhost"
+      || candidate.hostname === "127.0.0.1"
+      || candidate.hostname === "[::1]"
+      || candidate.hostname === "::1";
+    if (
+      !loopback
+      || (candidate.protocol !== "http:" && candidate.protocol !== "https:")
+      || candidate.username
+      || candidate.password
+    ) return null;
+    return candidate;
+  } catch {
+    return null;
+  }
+}
+
+function currentRuntime(): EngineRuntime | null {
+  if (!engine || !revisionStore || !userMutationBroker || !occurrenceAlignmentStore || !backbone || !bookNames
+    || !tokenPackages || !reverseIndexes || !syntaxTrees || !placeResearch) {
+    return null;
+  }
+  return {
+    engine,
+    revisionStore,
+    userMutationBroker,
+    occurrenceAlignmentStore,
+    backbone,
+    bookNames,
+    crossRefData,
+    embeddingsStore,
+    budgetManager,
+    aiProvider,
+    codexProvider,
+    themes,
+    embeddingProvider,
+    jobQueue,
+    tokenPackages,
+    reverseIndexes,
+    syntaxTrees,
+    placeResearch,
+  };
+}
+
+function publishRuntime(runtime: EngineRuntime): void {
+  engine = runtime.engine;
+  revisionStore = runtime.revisionStore;
+  userMutationBroker = runtime.userMutationBroker;
+  occurrenceAlignmentStore = runtime.occurrenceAlignmentStore;
+  backbone = runtime.backbone;
+  bookNames = runtime.bookNames;
+  crossRefData = runtime.crossRefData;
+  embeddingsStore = runtime.embeddingsStore;
+  budgetManager = runtime.budgetManager;
+  aiProvider = runtime.aiProvider;
+  codexProvider = runtime.codexProvider;
+  themes = runtime.themes;
+  embeddingProvider = runtime.embeddingProvider;
+  jobQueue = runtime.jobQueue;
+  tokenPackages = runtime.tokenPackages;
+  reverseIndexes = runtime.reverseIndexes;
+  syntaxTrees = runtime.syntaxTrees;
+  placeResearch = runtime.placeResearch;
+  runtimeAccepting = true;
+  semanticAccepting = runtime.embeddingsStore !== null && runtime.embeddingProvider !== null;
+  highlightChanges.clear();
+  scriptureChapterCache.clear();
+  scriptureSearchCorpusCache.clear();
+}
+
+function freezeRuntimeOperations(): void {
+  runtimeAccepting = false;
+  semanticAccepting = false;
+}
+
+function unfreezeRuntimeOperations(runtime: EngineRuntime): void {
+  runtimeAccepting = true;
+  semanticAccepting = runtime.embeddingsStore !== null && runtime.embeddingProvider !== null;
+}
+
+async function settleWithin(
+  waits: Promise<void>[],
+  timeoutMs: number,
+): Promise<{ completed: boolean; failures: unknown[] }> {
+  const settled = Promise.allSettled(waits);
+  let timeout: NodeJS.Timeout | null = null;
+  const timedOut = new Promise<null>((resolveTimeout) => {
+    timeout = setTimeout(() => resolveTimeout(null), timeoutMs);
+  });
+  const result = await Promise.race([settled, timedOut]);
+  if (timeout) clearTimeout(timeout);
+  if (result === null) {
+    // allSettled remains observed after the deadline, so late failures never
+    // become unhandled rejections while the old store deliberately stays open.
+    void settled.then(() => undefined);
+    return { completed: false, failures: [] };
+  }
+  return {
+    completed: true,
+    failures: result
+      .filter((entry): entry is PromiseRejectedResult => entry.status === "rejected")
+      .map((entry) => entry.reason),
+  };
+}
+
+function disposeSemanticRuntime(runtime: EngineRuntime, reason: string, closeStore: boolean): void {
+  if (runtime.embeddingProvider instanceof RendererEmbeddingProvider) {
+    runtime.embeddingProvider.dispose(`Semantic runtime stopped: ${reason}`);
+  }
+  if (closeStore && runtime.embeddingsStore) {
+    try {
+      runtime.embeddingsStore.close();
+    } catch (error) {
+      logLifecycle("semantic-store-close-failed", {
+        reason,
+        error: diagnosticError(error),
+      }, "error");
+    }
+  }
+  if (closeStore) {
+    runtime.occurrenceAlignmentStore.close();
+  }
+  logLifecycle("semantic-runtime-stopped", { reason });
+}
+
+async function retireRuntime(runtime: EngineRuntime, reason: string): Promise<void> {
+  // This is called only after foreground leases are idle. A switch pause also
+  // guarantees no background job still owns the old SQLite handle.
+  let shutdownError: unknown;
+  try {
+    if (runtime.jobQueue) await runtime.jobQueue.shutdown();
+  } catch (error) {
+    shutdownError = error;
+  } finally {
+    disposeSemanticRuntime(runtime, reason, true);
+  }
+  if (shutdownError) throw shutdownError;
+}
 
 type ScriptureChapterFile = {
   verses: Array<{ verse: number; text: string }>;
@@ -241,6 +698,67 @@ function applyHighlightRecordUpdate(target: LibraryEngine, record: HighlightReco
   });
 }
 
+function explicitUserMutationIntent(
+  action: UserConnectionMutationAction,
+  commandId: string,
+): ExplicitUserMutationIntent {
+  return {
+    source: "first-party-ui",
+    action,
+    commandId,
+  };
+}
+
+const qaDroppedConnectionResponses = new Set<string>();
+
+function maybeDropQaConnectionResponse(
+  action: "create" | "update" | "delete",
+  commandId: string,
+): void {
+  if (app.isPackaged || !/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(commandId)) return;
+  const requested = new Set(
+    (process.env["SCRIPTURE_QA_DROP_CONNECTION_RESPONSES"] ?? "")
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean),
+  );
+  if (!requested.has(action)) return;
+  const key = `${action}:${commandId}`;
+  if (qaDroppedConnectionResponses.has(key)) return;
+  qaDroppedConnectionResponses.add(key);
+  throw new Error("QA simulated a lost renderer response after the authored event was committed.");
+}
+
+function isRuntimeRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+type ConnectionMutationOperation = "create" | "update" | "delete";
+
+function connectionCommandDiagnosticId(value: unknown): string | null {
+  return typeof value === "string" ? value.slice(0, 128) : null;
+}
+
+function connectionProjectionWarning(
+  operation: ConnectionMutationOperation,
+  commandId: unknown,
+  projection: "current" | "rebuilt" | "pending",
+  projectionError?: string,
+): { warning?: string } {
+  if (projectionError) {
+    logLifecycle("connection-projection-recovery", {
+      operation,
+      commandId: connectionCommandDiagnosticId(commandId),
+      projection,
+      error: diagnosticError(projectionError),
+    }, projection === "pending" ? "warn" : "info");
+  }
+  if (projection !== "pending") return {};
+  return {
+    warning: "Connection is safely recorded, but its reading index still needs recovery.",
+  };
+}
+
 function loadBackbone(): BackboneData {
   const backbonePath = join(DATA_DIR, "backbone.json");
   const data = JSON.parse(readFileSync(backbonePath, "utf-8")) as BackboneData;
@@ -265,7 +783,12 @@ function loadCrossRefs(): CrossRefData | null {
 function readScriptureChapter(packageId: string, book: string, chapter: number): ScriptureChapterFile | null {
   const libraryRoot = engine?.rootPath ?? "data";
   const cacheKey = `${libraryRoot}:${packageId}:${book}:${chapter}`;
-  if (scriptureChapterCache.has(cacheKey)) return scriptureChapterCache.get(cacheKey) ?? null;
+  if (scriptureChapterCache.has(cacheKey)) {
+    const cached = scriptureChapterCache.get(cacheKey) ?? null;
+    scriptureChapterCache.delete(cacheKey);
+    scriptureChapterCache.set(cacheKey, cached);
+    return cached;
+  }
 
   const libraryPath = engine
     ? join(engine.rootPath, ".artifacts/scripture/packages", packageId, "text", book, `${chapter}.json`)
@@ -276,7 +799,339 @@ function readScriptureChapter(packageId: string, book: string, chapter: number):
     ? JSON.parse(readFileSync(path, "utf-8")) as ScriptureChapterFile
     : null;
   scriptureChapterCache.set(cacheKey, value);
+  while (scriptureChapterCache.size > MAX_SCRIPTURE_CHAPTER_CACHE_ENTRIES) {
+    const oldest = scriptureChapterCache.keys().next().value as string | undefined;
+    if (oldest === undefined) break;
+    scriptureChapterCache.delete(oldest);
+  }
   return value;
+}
+
+const CONNECTION_SELECTION_KEYS = [
+  "book",
+  "chapter",
+  "verse",
+  "char_start",
+  "char_end",
+  "quote",
+] as const;
+const MAX_CONNECTION_SELECTION_PIECES = 256;
+const MAX_CONNECTION_SELECTION_QUOTE = 8_192;
+const MAX_CONNECTION_CAPTURE_BYTES = 384 * 1_024;
+const MAX_CONNECTION_PROJECTION_IDS = 512;
+const MAX_CONNECTION_ID_LENGTH = 128;
+const MAX_SCRIPTURE_CHAPTER_CACHE_ENTRIES = 96;
+
+type HostConnectionPaintFragment = {
+  verse: number;
+  char_start: number;
+  char_end: number;
+  quote: string;
+};
+
+type HostConnectionPaintAnchor = {
+  book: BookCode;
+  chapter: number;
+  verse_start: number;
+  verse_end: number;
+  fragments: readonly HostConnectionPaintFragment[];
+};
+
+type HostConnectionPaintProjection = {
+  connectionId: string;
+  sourceActiveEventId: string | null;
+  packageId: string;
+  status: "exact" | "legacy-exact" | "unavailable";
+  anchors: readonly HostConnectionPaintAnchor[];
+  error?: { code: string; message: string };
+};
+
+type OccurrenceEvidenceEntry =
+  | { ok: true; value: OccurrenceAlignmentVerseEvidence }
+  | { ok: false; error: { code: string; message: string } };
+
+type OccurrenceEvidenceCache = Map<string, OccurrenceEvidenceEntry>;
+
+function sha256Text(value: string): string {
+  return createHash("sha256").update(value, "utf8").digest("hex");
+}
+
+function scriptureVerseText(
+  packageId: string,
+  book: BookCode,
+  chapter: number,
+  verse: number,
+): string | undefined {
+  return readScriptureChapter(packageId, book, chapter)?.verses
+    .find((candidate) => candidate.verse === verse)?.text;
+}
+
+function normalizeOccurrenceSelections(
+  raw: unknown,
+): { ok: true; value: OccurrenceSelectionPiece[] } | { ok: false; error: string } {
+  if (!Array.isArray(raw) || raw.length === 0 || raw.length > MAX_CONNECTION_SELECTION_PIECES) {
+    return {
+      ok: false,
+      error: `Exact capture requires 1 to ${MAX_CONNECTION_SELECTION_PIECES} selection pieces.`,
+    };
+  }
+  if (!backbone) return { ok: false, error: "Backbone reference data is unavailable." };
+  const normalized: OccurrenceSelectionPiece[] = [];
+  for (let index = 0; index < raw.length; index += 1) {
+    const candidate = raw[index];
+    if (!isRuntimeRecord(candidate)) {
+      return { ok: false, error: `Selection piece ${index} is invalid.` };
+    }
+    const keys = Object.keys(candidate);
+    if (
+      keys.length !== CONNECTION_SELECTION_KEYS.length
+      || keys.some((key) => !(CONNECTION_SELECTION_KEYS as readonly string[]).includes(key))
+    ) {
+      return { ok: false, error: `Selection piece ${index} contains unknown or missing fields.` };
+    }
+    const book = candidate["book"];
+    const chapter = candidate["chapter"];
+    const verse = candidate["verse"];
+    const charStart = candidate["char_start"];
+    const charEnd = candidate["char_end"];
+    const quote = candidate["quote"];
+    if (
+      typeof book !== "string"
+      || !isValidBookCode(book)
+      || !Number.isSafeInteger(chapter)
+      || (chapter as number) <= 0
+      || !Number.isSafeInteger(verse)
+      || (verse as number) <= 0
+      || !Number.isSafeInteger(charStart)
+      || (charStart as number) < 0
+      || !Number.isSafeInteger(charEnd)
+      || (charEnd as number) <= (charStart as number)
+      || typeof quote !== "string"
+      || quote.length > MAX_CONNECTION_SELECTION_QUOTE
+    ) {
+      return { ok: false, error: `Selection piece ${index} is malformed.` };
+    }
+    const verseValidation = validateVerse(backbone, {
+      book,
+      chapter: chapter as number,
+      verse: verse as number,
+    });
+    if (!verseValidation.ok) {
+      return { ok: false, error: `Selection piece ${index}: ${verseValidation.error}` };
+    }
+    normalized.push({
+      book,
+      chapter: chapter as number,
+      verse: verse as number,
+      char_start: charStart as number,
+      char_end: charEnd as number,
+      quote,
+    });
+  }
+  return { ok: true, value: normalized };
+}
+
+function occurrenceEvidence(
+  packageId: string,
+  book: BookCode,
+  chapter: number,
+  verses: readonly number[],
+  cache?: OccurrenceEvidenceCache,
+):
+  | { ok: true; value: OccurrenceAlignmentVerseEvidence[] }
+  | { ok: false; error: { code: string; message: string } } {
+  const store = occurrenceAlignmentStore;
+  if (!store || packageId !== "bsb") {
+    return {
+      ok: false,
+      error: {
+        code: "artifact-missing",
+        message: `Exact word projection is not installed for package ${packageId}.`,
+      },
+    };
+  }
+  const evidence: OccurrenceAlignmentVerseEvidence[] = [];
+  for (const verse of [...new Set(verses)].sort((left, right) => left - right)) {
+    const cacheKey = `${packageId}:${book}:${chapter}:${verse}`;
+    const cached = cache?.get(cacheKey);
+    if (cached) {
+      if (!cached.ok) return cached;
+      evidence.push(cached.value);
+      continue;
+    }
+    const text = scriptureVerseText(packageId, book, chapter, verse);
+    if (text === undefined) {
+      const failure = {
+        ok: false,
+        error: {
+          code: "target-text-missing",
+          message: `Package ${packageId} has no target text for ${book} ${chapter}:${verse}.`,
+        },
+      } as const;
+      cache?.set(cacheKey, failure);
+      return failure;
+    }
+    const alignment = store.readAlignmentVerse(book, chapter, verse, text);
+    if (!alignment.ok) {
+      const failure = {
+        ok: false,
+        error: { code: alignment.error.code, message: alignment.error.message },
+      } as const;
+      cache?.set(cacheKey, failure);
+      return failure;
+    }
+    const value: OccurrenceAlignmentVerseEvidence = {
+      book,
+      chapter,
+      verse,
+      text,
+      alignment: alignment.value,
+    };
+    cache?.set(cacheKey, { ok: true, value });
+    evidence.push(value);
+  }
+  return { ok: true, value: evidence };
+}
+
+function unavailableConnectionProjection(
+  connectionId: string,
+  sourceActiveEventId: string | null,
+  packageId: string,
+  code: string,
+  message: string,
+): HostConnectionPaintProjection {
+  return {
+    connectionId,
+    sourceActiveEventId,
+    packageId,
+    status: "unavailable",
+    anchors: [],
+    error: { code, message },
+  };
+}
+
+function projectLegacyConnection(
+  connection: Extract<ConnectionRecord, { format_version: 1 }>,
+  packageId: string,
+): HostConnectionPaintProjection {
+  const anchors: HostConnectionPaintAnchor[] = [];
+  for (const anchor of connection.anchors) {
+    const locator = anchor.render_locator;
+    if (
+      !locator
+      || locator.package !== packageId
+      || anchor.verse_start !== anchor.verse_end
+    ) {
+      return unavailableConnectionProjection(
+        connection.id,
+        connection.activeEventId,
+        packageId,
+        "legacy-exact-unavailable",
+        "This legacy connection has no exact wording for the selected translation.",
+      );
+    }
+    const text = scriptureVerseText(packageId, anchor.book, anchor.chapter, anchor.verse_start);
+    if (
+      text === undefined
+      || locator.char_start < 0
+      || locator.char_end <= locator.char_start
+      || locator.char_end > text.length
+      || text.slice(locator.char_start, locator.char_end) !== locator.quote
+    ) {
+      return unavailableConnectionProjection(
+        connection.id,
+        connection.activeEventId,
+        packageId,
+        "legacy-locator-stale",
+        "This legacy connection's saved wording no longer matches the selected translation.",
+      );
+    }
+    anchors.push({
+      book: anchor.book,
+      chapter: anchor.chapter,
+      verse_start: anchor.verse_start,
+      verse_end: anchor.verse_end,
+      fragments: [{
+        verse: anchor.verse_start,
+        char_start: locator.char_start,
+        char_end: locator.char_end,
+        quote: locator.quote,
+      }],
+    });
+  }
+  return {
+    connectionId: connection.id,
+    sourceActiveEventId: connection.activeEventId,
+    packageId,
+    status: "legacy-exact",
+    anchors,
+  };
+}
+
+function projectCurrentConnection(
+  connection: Extract<ConnectionRecord, { format_version: 2 }>,
+  packageId: string,
+  evidenceCache?: OccurrenceEvidenceCache,
+): HostConnectionPaintProjection {
+  const anchors: HostConnectionPaintAnchor[] = [];
+  for (const anchor of connection.anchors) {
+    const verses = anchor.exact.occurrences.map((occurrence) => occurrence.verse);
+    const evidence = occurrenceEvidence(
+      packageId,
+      anchor.book,
+      anchor.chapter,
+      verses,
+      evidenceCache,
+    );
+    if (!evidence.ok) {
+      return unavailableConnectionProjection(
+        connection.id,
+        connection.activeEventId,
+        packageId,
+        evidence.error.code,
+        evidence.error.message,
+      );
+    }
+    const projection = projectBackboneTokenAnchor({
+      anchor,
+      target_package_id: packageId,
+      verses: evidence.value,
+      sha256: sha256Text,
+    });
+    if (!projection.ok) {
+      return unavailableConnectionProjection(
+        connection.id,
+        connection.activeEventId,
+        packageId,
+        projection.error.code,
+        projection.error.message,
+      );
+    }
+    anchors.push({
+      book: anchor.book,
+      chapter: anchor.chapter,
+      verse_start: anchor.verse_start,
+      verse_end: anchor.verse_end,
+      fragments: projection.fragments.map((fragment) => ({ ...fragment })),
+    });
+  }
+  return {
+    connectionId: connection.id,
+    sourceActiveEventId: connection.activeEventId,
+    packageId,
+    status: "exact",
+    anchors,
+  };
+}
+
+function projectConnectionRecord(
+  connection: ConnectionRecord,
+  packageId: string,
+  evidenceCache?: OccurrenceEvidenceCache,
+): HostConnectionPaintProjection {
+  return connection.format_version === 1
+    ? projectLegacyConnection(connection, packageId)
+    : projectCurrentConnection(connection, packageId, evidenceCache);
 }
 
 function getScriptureSearchCorpus(packageId: string): ScriptureSearchDocument[] {
@@ -338,55 +1193,160 @@ function getLibraryPath(libraryPath?: string): string {
 }
 
 function createWindow(): void {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
+    return;
+  }
+  mainWindow = null;
   const savedBounds = store.get("windowBounds");
   const hasSaneBounds =
     savedBounds != null && savedBounds.width > 0 && savedBounds.height > 0;
 
-  mainWindow = new BrowserWindow({
-    width: hasSaneBounds ? savedBounds.width : 1400,
-    height: hasSaneBounds ? savedBounds.height : 900,
-    ...(hasSaneBounds && savedBounds.x != null && savedBounds.y != null
-      ? { x: savedBounds.x, y: savedBounds.y }
-      : {}),
-    minWidth: 900,
-    minHeight: 600,
-    webPreferences: {
-      preload: join(__dirname, "preload.cjs"),
-      contextIsolation: true,
-      nodeIntegration: false,
-    },
-    titleBarStyle: "hiddenInset",
-    title: "Scripture Library",
+  let win: BrowserWindow;
+  try {
+    win = new BrowserWindow({
+      width: hasSaneBounds ? savedBounds.width : 1400,
+      height: hasSaneBounds ? savedBounds.height : 900,
+      ...(hasSaneBounds && savedBounds.x != null && savedBounds.y != null
+        ? { x: savedBounds.x, y: savedBounds.y }
+        : {}),
+      minWidth: 900,
+      minHeight: 600,
+      webPreferences: {
+        preload: join(__dirname, "preload.cjs"),
+        contextIsolation: true,
+        nodeIntegration: false,
+      },
+      titleBarStyle: "hiddenInset",
+      title: "Scripture Library",
+    });
+  } catch (error) {
+    // Keep the visible-window slot empty so a later activation can retry.
+    mainWindow = null;
+    logLifecycle("main-window-construction-failed", { error: diagnosticError(error) }, "error");
+    dialog.showErrorBox(
+      "Could not open Scripture Library",
+      `The reading window could not be created.\n\n${diagnosticError(error).message}`,
+    );
+    // macOS can retry from a later Dock activation. Other platforms have no
+    // activation path once their only visible window failed to construct.
+    if (process.platform !== "darwin") app.quit();
+    return;
+  }
+  mainWindow = win;
+
+  win.webContents.on("will-frame-navigate", (details) => {
+    if (details.isMainFrame && isTrustedRendererUrl(details.url)) return;
+    details.preventDefault();
+    logLifecycle("renderer-navigation-blocked", {
+      target: details.url,
+      isMainFrame: details.isMainFrame,
+    }, "warn");
+  });
+  win.webContents.on("will-redirect", (details) => {
+    if (details.isMainFrame && isTrustedRendererUrl(details.url)) return;
+    details.preventDefault();
+    logLifecycle("renderer-redirect-blocked", {
+      target: details.url,
+      isMainFrame: details.isMainFrame,
+    }, "warn");
+  });
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    logLifecycle("renderer-window-open-blocked", { target: url }, "warn");
+    return { action: "deny" };
   });
 
-  if (process.env["ELECTRON_DEV_URL"]) {
-    void mainWindow.loadURL(process.env["ELECTRON_DEV_URL"]);
-  } else {
-    void mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
-  }
+  let rendererRecoveryPromptOpen = false;
+  win.webContents.on("render-process-gone", (_event, details) => {
+    const expected = isAppQuitting || details.reason === "clean-exit";
+    logLifecycle("main-render-process-gone", {
+      reason: details.reason,
+      exitCode: details.exitCode,
+      expected,
+    }, expected ? "info" : "error");
+    if (expected || rendererRecoveryPromptOpen || win.isDestroyed()) return;
+
+    rendererRecoveryPromptOpen = true;
+    void dialog.showMessageBox(win, {
+      type: "error",
+      buttons: ["Reload Window", "Quit"],
+      defaultId: 0,
+      cancelId: 1,
+      noLink: true,
+      message: "The reading window stopped unexpectedly.",
+      detail: `Reason: ${details.reason} (exit ${details.exitCode}). Reloading restores the window; unsaved in-memory edits may be lost.`,
+    }).then(({ response }) => {
+      if (response === 0 && !win.isDestroyed() && !isAppQuitting) {
+        // Recovery is explicitly user-directed. Never automatically reload a
+        // repeatedly crashing renderer.
+        win.reload();
+      } else if (!isAppQuitting) {
+        app.quit();
+      }
+    }).catch((error) => {
+      logLifecycle("renderer-recovery-dialog-failed", {
+        error: diagnosticError(error),
+      }, "error");
+    }).finally(() => {
+      rendererRecoveryPromptOpen = false;
+    });
+  });
+  win.webContents.on("did-fail-load", (
+    _event,
+    errorCode,
+    errorDescription,
+    validatedURL,
+    isMainFrame,
+  ) => {
+    if (!isMainFrame) return;
+    logLifecycle("main-did-fail-load", {
+      errorCode,
+      errorDescription,
+      target: validatedURL.startsWith("file:") ? "packaged-renderer" : "development-renderer",
+    }, errorCode === -3 ? "warn" : "error");
+  });
+  win.webContents.on("preload-error", (_event, _preloadPath, error) => {
+    logLifecycle("main-preload-error", { error: diagnosticError(error) }, "error");
+  });
+  win.on("unresponsive", () => {
+    logLifecycle("main-window-unresponsive", {}, "warn");
+  });
+  win.on("responsive", () => {
+    logLifecycle("main-window-responsive");
+  });
+
+  const developmentUrl = trustedDevelopmentRendererUrl();
+  const loadPromise = developmentUrl
+    ? win.loadURL(developmentUrl.href)
+    : win.loadFile(join(__dirname, "../renderer/index.html"));
+  void loadPromise.catch((error) => {
+    logLifecycle("main-window-load-rejected", { error: diagnosticError(error) }, "error");
+  });
 
   // Open DevTools in development or when debugging
   if (process.env["SCRIPTURE_DEBUG"] === "1") {
-    mainWindow.webContents.openDevTools();
+    win.webContents.openDevTools();
   }
 
   let boundsSaveTimer: NodeJS.Timeout | null = null;
   const saveBounds = () => {
     if (boundsSaveTimer) clearTimeout(boundsSaveTimer);
     boundsSaveTimer = setTimeout(() => {
-      if (mainWindow) {
-        store.set("windowBounds", mainWindow.getBounds());
+      if (!win.isDestroyed()) {
+        store.set("windowBounds", win.getBounds());
       }
     }, 500);
   };
-  mainWindow.on("resize", saveBounds);
-  mainWindow.on("move", saveBounds);
+  win.on("resize", saveBounds);
+  win.on("move", saveBounds);
 
-  mainWindow.on("close", () => {
-    // Flush pending git commits on close
-    if (revisionStore) {
-      void revisionStore.flush("Session close");
-    }
+  win.on("closed", () => {
+    if (boundsSaveTimer) clearTimeout(boundsSaveTimer);
+    if (mainWindow === win) mainWindow = null;
+    // Hidden embedding BrowserWindows must not keep a non-macOS application
+    // alive after its only user-visible window closes.
+    if (process.platform !== "darwin" && !isAppQuitting) app.quit();
   });
 }
 
@@ -481,16 +1441,26 @@ function loadHebrewOrbitIndexOnce(): void {
   }
 }
 
-function initializeEngine(libraryPathArg?: string, autoCreateIfMissing: boolean = true): void {
-  highlightChanges.clear();
-  scriptureChapterCache.clear();
-  backbone = loadBackbone();
-  bookNames = loadBookNames();
-  crossRefData = loadCrossRefs();
-
+function buildEngineRuntime(
+  libraryPathArg?: string,
+  autoCreateIfMissing: boolean = true,
+): EngineRuntime {
+  const nextBackbone = loadBackbone();
+  const nextBookNames = loadBookNames();
+  const nextCrossRefData = loadCrossRefs();
   const libraryPath = getLibraryPath(libraryPathArg);
-  engine = new LibraryEngine(libraryPath, backbone, bookNames);
-  revisionStore = new GitRevisionStore(libraryPath);
+  const nextOccurrenceAlignmentStore = new OccurrenceAlignmentStore({
+    scriptureRoot: DATA_DIR,
+    packageId: "bsb",
+  });
+  const nextEngine = new LibraryEngine(
+    libraryPath,
+    nextBackbone,
+    nextBookNames,
+    nextOccurrenceAlignmentStore,
+  );
+  const nextRevisionStore = new GitRevisionStore(libraryPath);
+  const nextUserMutationBroker = new UserMutationBroker(nextEngine, nextRevisionStore);
   const hebrewGlossPath = join(DATA_DIR, "lexicons/strongs-hebrew-gloss.json");
   const hebrewGlossJson = existsSync(hebrewGlossPath)
     ? readFileSync(hebrewGlossPath, "utf8")
@@ -512,10 +1482,10 @@ function initializeEngine(libraryPathArg?: string, autoCreateIfMissing: boolean 
   loadStepMorphTablesOnce();
   loadTipnrIndexOnce();
   loadHebrewOrbitIndexOnce();
-  if (!placeResearch) placeResearch = new PlaceResearchLoader();
-  if (!placeResearch.loaded) {
+  const nextPlaceResearch = new PlaceResearchLoader();
+  if (!nextPlaceResearch.loaded) {
     try {
-      const count = placeResearch.load(join(DATA_DIR, "places"));
+      const count = nextPlaceResearch.load(join(DATA_DIR, "places"));
       if (count > 0) console.log(`OpenBible place research: ${count} TIPNR identities`);
       else console.warn("OpenBible place research artifact is missing");
     } catch (err) {
@@ -524,85 +1494,281 @@ function initializeEngine(libraryPathArg?: string, autoCreateIfMissing: boolean 
   }
 
   const pkgRoots = languagePackageRoots(libraryPath);
-  if (!reverseIndexes) {
-    reverseIndexes = new ReverseIndexLoader(pkgRoots);
-  } else {
-    reverseIndexes.setRoots(pkgRoots);
-  }
+  const nextReverseIndexes = new ReverseIndexLoader(pkgRoots);
+  const nextTokenPackages = new TokenPackageLoader(pkgRoots, {
+    hebrewGlossJson,
+    strongDefinitionsJson,
+    thayerDefinitionsJson,
+    bdbDefinitionsJson,
+    ensureStepMorph: loadStepMorphTablesOnce,
+    reverseIndex: nextReverseIndexes,
+  });
+  const nextSyntaxTrees = new SyntaxTreeLoader([join(DATA_DIR, "syntax")]);
 
-  if (!tokenPackages) {
-    tokenPackages = new TokenPackageLoader(pkgRoots, {
-      hebrewGlossJson,
-      strongDefinitionsJson,
-      thayerDefinitionsJson,
-      bdbDefinitionsJson,
-      ensureStepMorph: loadStepMorphTablesOnce,
-      reverseIndex: reverseIndexes,
-    });
-  } else {
-    tokenPackages.setRoots(pkgRoots);
-    tokenPackages.setReverseIndexLoader(reverseIndexes);
-    if (hebrewGlossJson) tokenPackages.loadHebrewGlossJson(hebrewGlossJson);
-    if (strongDefinitionsJson) tokenPackages.loadStrongDefinitionsJson(strongDefinitionsJson);
-    if (thayerDefinitionsJson) tokenPackages.loadThayerDefinitionsJson(thayerDefinitionsJson);
-    if (bdbDefinitionsJson) tokenPackages.loadBdbDefinitionsJson(bdbDefinitionsJson);
-  }
+  let nextEmbeddingsStore: EmbeddingsStore | null = null;
+  let nextBudgetManager: BudgetManager | null = null;
+  let nextAiProvider: AIProvider | null = null;
+  let nextCodexProvider: CodexExecAIProvider | null = null;
+  let nextThemes: ThemeEntry[] = [];
+  let nextEmbeddingProvider: EmbeddingProvider | null = null;
+  let nextJobQueue: JobQueue | null = null;
 
-  const syntaxRoots = [join(DATA_DIR, "syntax")];
-  if (!syntaxTrees) {
-    syntaxTrees = new SyntaxTreeLoader(syntaxRoots);
-  } else {
-    syntaxTrees.setRoots(syntaxRoots);
-  }
+  try {
+    // Ensure library is initialized.
+    const manifestPath = join(libraryPath, "config/library-manifest.json");
+    const initializationMarker = join(libraryPath, ".scripture-library-initializing");
+    const manifestExists = existsSync(manifestPath);
+    if (manifestExists) {
+      const manifest = nextEngine.readManifest();
+      if (!manifest) throw new Error("Library manifest could not be read");
+      const migration = checkMigration(manifest, true);
+      if (migration.status === "refused" || migration.status === "error") {
+        throw new Error(migration.message);
+      }
+    }
+    if (autoCreateIfMissing || manifestExists) {
+      if (!manifestExists) {
+        mkdirSync(libraryPath, { recursive: true });
+        const unexplainedEntries = readdirSync(libraryPath)
+          .filter((entry) => entry !== ".DS_Store" && entry !== ".scripture-library-initializing");
+        if (unexplainedEntries.length > 0 && !existsSync(initializationMarker)) {
+          throw new Error(
+            "The selected folder is not empty and is not an unfinished Scripture Library. Choose an empty folder to protect its existing files.",
+          );
+        }
+        if (!existsSync(initializationMarker)) {
+          writeFileSync(initializationMarker, JSON.stringify({ version: 1, createdAt: new Date().toISOString() }));
+        }
+        // The manifest is the atomic commit marker and is published only after
+        // every candidate resource below has initialized successfully.
+        nextEngine.initLibrary(false);
+        nextEngine.installBackboneData(
+          join(DATA_DIR, "backbone.json"),
+          join(DATA_DIR, "versification"),
+        );
+        nextRevisionStore.init();
+      }
 
-  // Ensure library is initialized
-  const manifestExists = existsSync(join(libraryPath, "config/library-manifest.json"));
-  if (autoCreateIfMissing || manifestExists) {
-    if (!existsSync(join(libraryPath, "config/library-manifest.json"))) {
-      engine.initLibrary();
-      engine.installBackboneData(
-        join(DATA_DIR, "backbone.json"),
-        join(DATA_DIR, "versification"),
+      const dbPath = join(libraryPath, ".system/library.sqlite");
+      if (!existsSync(dbPath) || !nextEngine.isConnectionProjectionCurrent()) {
+        nextEngine.buildSqlite();
+        // One bounded attempt only. If another process appends while the
+        // candidate rebuilds, fail closed instead of publishing stale Derived
+        // state or entering an unbounded rebuild race.
+        if (!nextEngine.isConnectionProjectionCurrent()) {
+          throw new Error(
+            "Connection Substrate changed during startup rebuild; refusing to publish a stale runtime.",
+          );
+        }
+      }
+
+      // Construct every semantic member locally. Nothing becomes visible to
+      // IPC until the complete candidate runtime succeeds.
+      nextEmbeddingsStore = new EmbeddingsStore(join(libraryPath, ".system/embeddings.sqlite"));
+      nextBudgetManager = new BudgetManager(join(libraryPath, "config"));
+      loadEnvFile(resolve(__dirname, "../../.env"));
+      nextAiProvider = createDeepSeekProvider(process.env) ?? new MockAIProvider();
+      nextCodexProvider = createCodexProvider(process.env);
+      nextThemes = loadThemes();
+      nextEmbeddingProvider =
+        process.env["EMBEDDING_MODEL"] === "mock"
+          ? new MockEmbeddingProvider()
+          : new RendererEmbeddingProvider({
+              htmlPath: join(__dirname, "../embedding-host/index.html"),
+              preloadPath: join(__dirname, "embed-preload.cjs"),
+              onDiagnostic: (event, details) => {
+                const level: DiagnosticLevel = event.includes("gone") || event.includes("fail")
+                  ? "error"
+                  : "warn";
+                logLifecycle(event, details, level);
+              },
+            });
+      nextJobQueue = new JobQueue(nextBudgetManager, nextEmbeddingsStore);
+      if (!manifestExists) {
+        nextEngine.commitLibraryManifest();
+        try {
+          unlinkSync(initializationMarker);
+        } catch (error) {
+          logLifecycle("library-initialization-marker-cleanup-failed", {
+            error: diagnosticError(error),
+          }, "warn");
+        }
+      }
+    }
+
+    return {
+      engine: nextEngine,
+      revisionStore: nextRevisionStore,
+      userMutationBroker: nextUserMutationBroker,
+      occurrenceAlignmentStore: nextOccurrenceAlignmentStore,
+      backbone: nextBackbone,
+      bookNames: nextBookNames,
+      crossRefData: nextCrossRefData,
+      embeddingsStore: nextEmbeddingsStore,
+      budgetManager: nextBudgetManager,
+      aiProvider: nextAiProvider,
+      codexProvider: nextCodexProvider,
+      themes: nextThemes,
+      embeddingProvider: nextEmbeddingProvider,
+      jobQueue: nextJobQueue,
+      tokenPackages: nextTokenPackages,
+      reverseIndexes: nextReverseIndexes,
+      syntaxTrees: nextSyntaxTrees,
+      placeResearch: nextPlaceResearch,
+    };
+  } catch (error) {
+    nextOccurrenceAlignmentStore.close();
+    if (nextEmbeddingProvider instanceof RendererEmbeddingProvider) {
+      nextEmbeddingProvider.dispose("Semantic runtime initialization failed");
+    }
+    if (nextEmbeddingsStore) {
+      try {
+        nextEmbeddingsStore.close();
+      } catch (closeError) {
+        logLifecycle("semantic-store-close-failed", {
+          reason: "initialization failed",
+          error: diagnosticError(closeError),
+        }, "error");
+      }
+    }
+    throw error;
+  }
+}
+
+function initializeEngine(
+  libraryPathArg?: string,
+  autoCreateIfMissing: boolean = true,
+): Promise<void> {
+  const run = engineLifecycleTail.then(async () => {
+    // Candidate construction is completely off-global. A failure leaves the
+    // visible library and every loader/runtime reference untouched.
+    const candidate = buildEngineRuntime(libraryPathArg, autoCreateIfMissing);
+    const previous = currentRuntime();
+    if (!previous) {
+      if (libraryPathArg) store.set("libraryPath", libraryPathArg);
+      publishRuntime(candidate);
+      return;
+    }
+
+    const deadline = Date.now() + SWITCH_DRAIN_TIMEOUT_MS;
+    freezeRuntimeOperations();
+    try {
+      const drain = await settleWithin([
+        waitForRuntimeIdle(),
+        waitForSemanticIdle(),
+        ...(previous.jobQueue ? [previous.jobQueue.pauseAndWait()] : []),
+      ], Math.max(1, deadline - Date.now()));
+      if (!drain.completed || drain.failures.length > 0) {
+        throw new Error("Could not switch libraries because active work did not stop safely");
+      }
+
+      // Revision receipts belong to the old library. Flush them before its
+      // RevisionStore is replaced so no pending authored change is orphaned.
+      const flushBudgetMs = Math.max(100, deadline - Date.now());
+      const flush = await settleWithin(
+        [previous.revisionStore.flush("Switch library", Math.floor(flushBudgetMs / 10))],
+        flushBudgetMs,
       );
-      revisionStore.init();
+      if (!flush.completed || flush.failures.length > 0) {
+        throw flush.failures[0] ?? new Error("Timed out while saving the current library");
+      }
+
+      // Persisting the selected path is part of the commit. It happens while
+      // the old runtime is still recoverable and before the no-await publish.
+      if (libraryPathArg) store.set("libraryPath", libraryPathArg);
+    } catch (error) {
+      previous.jobQueue?.resume();
+      unfreezeRuntimeOperations(previous);
+      disposeSemanticRuntime(candidate, "candidate switch aborted", true);
+      throw error;
     }
 
-    // Build SQLite if not present
-    const dbPath = join(libraryPath, ".system/library.sqlite");
-    if (!existsSync(dbPath)) {
-      engine.buildSqlite();
-    }
+    // One synchronous turn publishes every candidate member; handlers cannot
+    // observe a half-old/half-new runtime.
+    publishRuntime(candidate);
+    void retireRuntime(previous, "library reinitialize").catch((error) => {
+      logLifecycle("runtime-retirement-failed", {
+        reason: "library reinitialize",
+        error: diagnosticError(error),
+      }, "error");
+    });
+  });
+  // Keep later retries possible after a failed initialization while returning
+  // the original rejection to the caller that requested this run.
+  engineLifecycleTail = run.then(() => undefined, () => undefined);
+  return run;
+}
 
-    // M3: Initialize semantic layer. Deliberately inside this gate — these
-    // eagerly open sqlite files under libraryPath/.system/, which this block
-    // is what creates in the first place (via initLibrary/buildSqlite above).
-    // Constructing them when the library doesn't exist yet (first-run, before
-    // the user has confirmed a location) would throw SQLITE_CANTOPEN.
-    const embDbPath = join(libraryPath, ".system/embeddings.sqlite");
-    embeddingsStore = new EmbeddingsStore(embDbPath);
-    budgetManager = new BudgetManager(join(libraryPath, "config"));
-    // B3 Gate 1: real LLM provider when a key is configured (.env at the repo
-    // root in dev, or the process environment), deterministic mock otherwise.
-    loadEnvFile(resolve(__dirname, "../../.env"));
-    aiProvider = createDeepSeekProvider(process.env) ?? new MockAIProvider();
-    // B3.6: enrichment tier stack — Codex subscription (DEEP) leads when the
-    // user has codex installed + signed in; DeepSeek (FAST) is the fallback.
-    codexProvider = createCodexProvider(process.env);
-    themes = loadThemes();
-    // B3 Gate 2: local on-device embeddings (EmbeddingGemma) in a hidden
-    // renderer running onnxruntime-web/WASM. Every Node-side option (main
-    // thread, worker_threads, utilityProcess, run-as-node) either livelocks
-    // the UI or SIGTRAPs under Electron's V8 memory cage — see
-    // renderer-embeddings.ts. Lazy: constructing this spawns nothing.
-    // EMBEDDING_MODEL env can override; "mock" forces the test provider.
-    embeddingProvider =
-      process.env["EMBEDDING_MODEL"] === "mock"
-        ? new MockEmbeddingProvider()
-        : new RendererEmbeddingProvider({
-            htmlPath: join(__dirname, "../embedding-host/index.html"),
-            preloadPath: join(__dirname, "embed-preload.cjs"),
-          });
-    jobQueue = new JobQueue(budgetManager, embeddingsStore);
+async function shutdownRuntimeForQuit(): Promise<void> {
+  const runtime = currentRuntime();
+  if (!runtime) return;
+  const deadline = Date.now() + QUIT_DRAIN_TIMEOUT_MS;
+  freezeRuntimeOperations();
+  if (runtime.embeddingProvider instanceof RendererEmbeddingProvider) {
+    runtime.embeddingProvider.recycle("Embedding runtime stopping: app quit");
+  }
+  const queueShutdown = runtime.jobQueue?.shutdown();
+  void queueShutdown?.catch(() => undefined);
+  const runtimeWaits = [
+    waitForRuntimeIdle(),
+    waitForSemanticIdle(),
+    ...(queueShutdown ? [queueShutdown] : []),
+  ];
+
+  // Authored mutations have their own lease. A wedged cloud/embedding call
+  // must not prevent already-finished user writes from receiving a revision.
+  const authoredDrain = await settleWithin(
+    [waitForAuthoredIdle()],
+    Math.max(1, deadline - Date.now()),
+  );
+  if (authoredDrain.completed && authoredDrain.failures.length === 0) {
+    const flushBudgetMs = Math.max(100, deadline - Date.now());
+    const flush = await settleWithin(
+      [runtime.revisionStore.flush("Session close", Math.floor(flushBudgetMs / 10))],
+      flushBudgetMs,
+    );
+    if (!flush.completed || flush.failures.length > 0) {
+      logLifecycle("revision-flush-failed", {
+        reason: "app quit",
+        error: diagnosticError(flush.failures[0] ?? new Error("flush deadline exceeded")),
+      }, "error");
+    }
+  } else {
+    logLifecycle("authored-runtime-drain-timeout", {
+      reason: "app quit",
+      activeOperations: authoredOperationCount,
+    }, "error");
+  }
+
+  const drain = await settleWithin(runtimeWaits, Math.max(1, deadline - Date.now()));
+  const drained = drain.completed && drain.failures.length === 0;
+  if (!drained) {
+    logLifecycle("runtime-drain-timeout", {
+      reason: "app quit",
+      activeOperations: runtimeOperationCount,
+    }, "warn");
+  }
+  // If a non-cooperative cloud operation exceeded the deadline, keep its
+  // SQLite handle open until process exit rather than closing beneath it.
+  disposeSemanticRuntime(runtime, "app quit", drained);
+  if (!drained && runtime.embeddingsStore) {
+    logLifecycle("semantic-store-close-skipped", {
+      reason: "app quit drain timeout",
+    }, "warn");
+  }
+}
+
+async function shutdownForQuitDeadline(): Promise<void> {
+  const teardown = engineLifecycleTail.then(() => shutdownRuntimeForQuit());
+  const bounded = await settleWithin([teardown], QUIT_DRAIN_TIMEOUT_MS);
+  if (!bounded.completed) {
+    logLifecycle("quit-hard-deadline", {
+      timeoutMs: QUIT_DRAIN_TIMEOUT_MS,
+      activeOperations: runtimeOperationCount,
+    }, "error");
+  }
+  for (const failure of bounded.failures) {
+    logLifecycle("quit-teardown-failed", { error: diagnosticError(failure) }, "error");
   }
 }
 
@@ -637,14 +1803,14 @@ function registerIpcHandlers(): void {
     return engine.readAllNotes();
   });
 
-  ipcMain.handle("init-library", (_event, libraryPath: string) => {
-    if (!libraryPath.trim()) return { ok: false, error: "Library path is required" };
+  ipcMain.handle("init-library", async (event, libraryPath: unknown) => {
+    if (!isTrustedMainRenderer(event)) return { ok: false, error: "Untrusted renderer request was refused" };
+    if (typeof libraryPath !== "string" || !libraryPath.trim()) {
+      return { ok: false, error: "Library path is required" };
+    }
+    if (isAppQuitting) return { ok: false, error: "App is quitting" };
     try {
-      initializeEngine(libraryPath);
-      // Remember this as the confirmed library location so the next launch
-      // resolves back to it (via getLibraryPath) instead of reverting to the
-      // hardcoded default and re-showing the Welcome screen.
-      store.set("libraryPath", libraryPath);
+      await initializeEngine(libraryPath);
       return { ok: true };
     } catch (e) {
       return { ok: false, error: (e as Error).message };
@@ -684,7 +1850,7 @@ function registerIpcHandlers(): void {
   });
 
   ipcMain.handle("query-verse", (_event, book: string, chapter: number, verse: number) => {
-    if (!engine) return { anchors: [], highlights: [], notes: [] };
+    if (!engine) return { anchors: [], highlights: [], connections: [], notes: [] };
     return engine.queryVerse(book, chapter, verse);
   });
 
@@ -697,14 +1863,30 @@ function registerIpcHandlers(): void {
     endCh: number,
     endV: number,
   ) => {
-    if (!engine || startBook !== endBook) return { anchors: [], highlights: [], notes: [] };
+    if (!engine || startBook !== endBook) return { anchors: [], highlights: [], connections: [], notes: [] };
     const dbPath = join(engine.rootPath, ".system/library.sqlite");
-    if (!existsSync(dbPath)) return { anchors: [], highlights: [], notes: [] };
+    if (!existsSync(dbPath)) return { anchors: [], highlights: [], connections: [], notes: [] };
 
     const db = new SQLiteMaterializer(dbPath);
     try {
       const anchors = db.queryAnchorsForRange(startBook, startCh, startV, endCh, endV);
       const highlights = db.queryHighlightsForRange(startBook, startCh, startV, endCh, endV);
+      const connectionMap = new Map<string, ConnectionRecord>();
+      for (let queryChapter = startCh; queryChapter <= endCh; queryChapter += 1) {
+        const verseCount = backbone?.books[startBook]?.chapters[queryChapter - 1] ?? 0;
+        const rangeStart = queryChapter === startCh ? startV : 1;
+        const rangeEnd = queryChapter === endCh ? endV : verseCount;
+        if (rangeEnd < rangeStart) continue;
+        for (const connection of engine.queryConnectionsForRange(
+          startBook,
+          queryChapter,
+          rangeStart,
+          rangeEnd,
+        )) {
+          connectionMap.set(connection.id, connection);
+        }
+      }
+      const connections = [...connectionMap.values()];
       const noteIds = new Set<string>();
       for (const anchor of anchors) {
         if (anchor.src_kind === "note") noteIds.add(anchor.src_id);
@@ -713,7 +1895,7 @@ function registerIpcHandlers(): void {
         .map((noteId) => db.queryNoteById(noteId))
         .filter((note) => note != null);
 
-      return { anchors, highlights, notes };
+      return { anchors, highlights, connections, notes };
     } finally {
       db.close();
     }
@@ -731,7 +1913,7 @@ function registerIpcHandlers(): void {
     }
   });
 
-  ipcMain.handle("create-note", async (_event, opts: { title: string; body: string; anchorRef?: CanonicalRef; tags?: string[] }) => {
+  registerRuntimeIpc("create-note", async (_event, opts: { title: string; body: string; anchorRef?: CanonicalRef; tags?: string[] }) => {
     if (!engine || !revisionStore) return { ok: false, error: "Not initialized" };
     const id = ulid();
     const notePath = engine.createNote(id, opts.title, opts.body, {
@@ -783,7 +1965,7 @@ function registerIpcHandlers(): void {
     return bookNames;
   });
 
-  ipcMain.handle("import-obsidian-vault", async (_event, vaultPath: string) => {
+  registerRuntimeIpc("import-obsidian-vault", async (_event, vaultPath: string) => {
     if (!engine || !revisionStore) return { ok: false, error: "Not initialized" };
     if (!existsSync(vaultPath)) return { ok: false, error: "Vault path does not exist" };
 
@@ -1008,7 +2190,292 @@ function registerIpcHandlers(): void {
     );
   });
 
-  ipcMain.handle("create-highlight", async (_event, opts: {
+  registerRuntimeReadIpc("capture-connection-selection", (_event, rawRequest: unknown) => {
+    if (!occurrenceAlignmentStore || !backbone) {
+      return {
+        ok: false,
+        status: "refused",
+        error: { code: "artifact-missing", message: "Exact-word capture is not initialized." },
+      };
+    }
+    if (
+      !isRuntimeRecord(rawRequest)
+      || Object.keys(rawRequest).length !== 2
+      || !("packageId" in rawRequest)
+      || !("selections" in rawRequest)
+      || typeof rawRequest["packageId"] !== "string"
+      || !/^[a-z0-9][a-z0-9._-]{0,127}$/u.test(rawRequest["packageId"])
+    ) {
+      return {
+        ok: false,
+        status: "refused",
+        error: { code: "invalid-selection", message: "Exact-word capture request is invalid." },
+      };
+    }
+    const packageId = rawRequest["packageId"];
+    const normalized = normalizeOccurrenceSelections(rawRequest["selections"]);
+    if (!normalized.ok) {
+      return {
+        ok: false,
+        status: "refused",
+        error: { code: "invalid-selection", message: normalized.error },
+      };
+    }
+    const captureBytes = Buffer.byteLength(JSON.stringify({
+      packageId,
+      selections: normalized.value,
+    }), "utf8");
+    if (captureBytes > MAX_CONNECTION_CAPTURE_BYTES) {
+      return {
+        ok: false,
+        status: "refused",
+        error: {
+          code: "invalid-selection",
+          message: `Exact-word capture exceeds the ${MAX_CONNECTION_CAPTURE_BYTES}-byte boundary.`,
+        },
+      };
+    }
+    const first = normalized.value[0]!;
+    if (normalized.value.some((selection) => (
+      selection.book !== first.book || selection.chapter !== first.chapter
+    ))) {
+      return {
+        ok: false,
+        status: "refused",
+        error: {
+          code: "mixed-selection-passage",
+          message: "One exact connection phrase cannot cross books or chapters.",
+        },
+      };
+    }
+    const evidence = occurrenceEvidence(
+      packageId,
+      first.book,
+      first.chapter,
+      normalized.value.map((selection) => selection.verse),
+    );
+    if (!evidence.ok) {
+      return {
+        ok: false,
+        status: "refused",
+        error: { code: evidence.error.code, message: evidence.error.message },
+      };
+    }
+    return captureOccurrenceAlignedSelection({
+      package_id: packageId,
+      selections: normalized.value,
+      verses: evidence.value,
+      sha256: sha256Text,
+    });
+  }, (message) => ({
+    ok: false,
+    status: "refused",
+    error: { code: "artifact-missing", message },
+  }));
+
+  registerRuntimeReadIpc("project-connections", (_event, rawRequest: unknown) => {
+    const packageId = isRuntimeRecord(rawRequest) ? rawRequest["packageId"] : undefined;
+    const rawConnections = isRuntimeRecord(rawRequest) ? rawRequest["connections"] : undefined;
+    if (
+      !engine
+      || !isRuntimeRecord(rawRequest)
+      || Object.keys(rawRequest).length !== 2
+      || typeof packageId !== "string"
+      || !/^[a-z0-9][a-z0-9._-]{0,127}$/u.test(packageId)
+      || !Array.isArray(rawConnections)
+      || rawConnections.length > MAX_CONNECTION_PROJECTION_IDS
+      || rawConnections.some((request) => (
+        !isRuntimeRecord(request)
+        || Object.keys(request).length !== 2
+        || typeof request["connectionId"] !== "string"
+        || request["connectionId"].length === 0
+        || request["connectionId"].length > MAX_CONNECTION_ID_LENGTH
+        || typeof request["expectedActiveEventId"] !== "string"
+        || request["expectedActiveEventId"].length === 0
+        || request["expectedActiveEventId"].length > MAX_CONNECTION_ID_LENGTH
+      ))
+    ) {
+      return {
+        ok: false,
+        packageId: typeof packageId === "string" ? packageId : "",
+        projections: [],
+        error: {
+          code: "invalid-projection-request",
+          message: "Connection projection request is invalid.",
+        },
+      };
+    }
+    const requests = rawConnections.map((request) => ({
+      connectionId: (request as Record<string, unknown>)["connectionId"] as string,
+      expectedActiveEventId: (request as Record<string, unknown>)["expectedActiveEventId"] as string,
+    }));
+    if (new Set(requests.map((request) => request.connectionId)).size !== requests.length) {
+      return {
+        ok: false,
+        packageId,
+        projections: [],
+        error: {
+          code: "duplicate-connection-id",
+          message: "Connection projection request contains duplicate ids.",
+        },
+      };
+    }
+    try {
+      const authoredHeads = new Map(
+        engine.queryAuthoredConnectionHeads(requests.map((request) => request.connectionId))
+          .map((connection) => [connection.id, connection] as const),
+      );
+      const evidenceCache: OccurrenceEvidenceCache = new Map();
+      const projections = requests.map((request): HostConnectionPaintProjection => {
+        const connection = authoredHeads.get(request.connectionId);
+        if (!connection) {
+          return unavailableConnectionProjection(
+            request.connectionId,
+            null,
+            packageId,
+            "connection-missing",
+            "The requested connection is no longer active.",
+          );
+        }
+        if (connection.activeEventId !== request.expectedActiveEventId) {
+          return unavailableConnectionProjection(
+            request.connectionId,
+            connection.activeEventId,
+            packageId,
+            "connection-version-mismatch",
+            "The connection changed while its wording was being resolved.",
+          );
+        }
+        return projectConnectionRecord(connection, packageId, evidenceCache);
+      });
+      return { ok: true, packageId, projections };
+    } catch (error) {
+      return {
+        ok: false,
+        packageId,
+        projections: [],
+        error: {
+          code: "authored-projection-refused",
+          message: diagnosticError(error).message,
+        },
+      };
+    }
+  }, (message, args) => {
+    const rawRequest = args[0];
+    const packageId = isRuntimeRecord(rawRequest) && typeof rawRequest["packageId"] === "string"
+      ? rawRequest["packageId"]
+      : "";
+    return {
+      ok: false,
+      packageId,
+      projections: [],
+      error: { code: "runtime-unavailable", message },
+    };
+  });
+
+  registerRuntimeIpc("create-connection", async (_event, rawCommand: unknown) => {
+    if (!userMutationBroker) return { ok: false, error: "Not initialized" };
+    const commandId = isRuntimeRecord(rawCommand) ? rawCommand["commandId"] : undefined;
+    try {
+      if (!isRuntimeRecord(rawCommand)) throw new Error("Connection create command is invalid.");
+      const input = {
+        kind: rawCommand["kind"],
+        label: rawCommand["label"],
+        observation: rawCommand["observation"],
+        anchors: rawCommand["anchors"],
+      } as CreateConnectionInput;
+      const committed = await userMutationBroker.createConnection(
+        explicitUserMutationIntent("connection:create", commandId as string),
+        input,
+      );
+      maybeDropQaConnectionResponse("create", commandId as string);
+      return {
+        ok: true,
+        connection: committed.connection,
+        ...connectionProjectionWarning("create", commandId, committed.projection, committed.projectionError),
+      };
+    } catch (error) {
+      logLifecycle("connection-mutation-failed", {
+        operation: "create",
+        commandId: connectionCommandDiagnosticId(commandId),
+        error: diagnosticError(error),
+      }, "error");
+      return { ok: false, error: "Connection save could not be confirmed." };
+    }
+  });
+
+  registerRuntimeIpc("update-connection", async (_event, rawOptions: unknown) => {
+    if (!userMutationBroker) return { ok: false, error: "Not initialized" };
+    const commandId = isRuntimeRecord(rawOptions) ? rawOptions["commandId"] : undefined;
+    try {
+      if (!isRuntimeRecord(rawOptions)) throw new Error("Connection update command is invalid.");
+      const connectionId = rawOptions["connectionId"];
+      const input = rawOptions["input"] as CreateConnectionInput;
+      const expectedBaseEventId = rawOptions["expectedBaseEventId"];
+      const committed = await userMutationBroker.updateConnection(
+        explicitUserMutationIntent("connection:update", commandId as string),
+        connectionId as string,
+        input,
+        expectedBaseEventId as string,
+      );
+      maybeDropQaConnectionResponse("update", commandId as string);
+      return {
+        ok: true,
+        connection: committed.connection,
+        ...connectionProjectionWarning("update", commandId, committed.projection, committed.projectionError),
+      };
+    } catch (error) {
+      const conflict = error instanceof ConnectionVersionConflictError;
+      logLifecycle(conflict ? "connection-mutation-conflict" : "connection-mutation-failed", {
+        operation: "update",
+        commandId: connectionCommandDiagnosticId(commandId),
+        error: diagnosticError(error),
+      }, conflict ? "warn" : "error");
+      return {
+        ok: false,
+        ...(conflict ? { conflict: true } : {}),
+        error: conflict
+          ? "This connection changed elsewhere."
+          : "Connection change could not be confirmed.",
+      };
+    }
+  });
+
+  registerRuntimeIpc("delete-connection", async (_event, rawOptions: unknown) => {
+    if (!userMutationBroker) return { ok: false, error: "Not initialized" };
+    const commandId = isRuntimeRecord(rawOptions) ? rawOptions["commandId"] : undefined;
+    try {
+      if (!isRuntimeRecord(rawOptions)) throw new Error("Connection delete command is invalid.");
+      const connectionId = rawOptions["connectionId"];
+      const expectedBaseEventId = rawOptions["expectedBaseEventId"];
+      const committed = await userMutationBroker.deleteConnection(
+        explicitUserMutationIntent("connection:delete", commandId as string),
+        connectionId as string,
+        expectedBaseEventId as string,
+      );
+      maybeDropQaConnectionResponse("delete", commandId as string);
+      return {
+        ok: true,
+        ...connectionProjectionWarning("delete", commandId, committed.projection, committed.projectionError),
+      };
+    } catch (error) {
+      const conflict = error instanceof ConnectionVersionConflictError;
+      logLifecycle(conflict ? "connection-mutation-conflict" : "connection-mutation-failed", {
+        operation: "delete",
+        commandId: connectionCommandDiagnosticId(commandId),
+        error: diagnosticError(error),
+      }, conflict ? "warn" : "error");
+      return {
+        ok: false,
+        ...(conflict ? { conflict: true } : {}),
+        error: conflict
+          ? "This connection changed elsewhere."
+          : "Connection deletion could not be confirmed.",
+      };
+    }
+  });
+
+  registerRuntimeIpc("create-highlight", async (_event, opts: {
     book: string;
     chapter: number;
     verseStart: number;
@@ -1089,7 +2556,7 @@ function registerIpcHandlers(): void {
     return { ok: true, highlightId: entityId, changeId };
   });
 
-  ipcMain.handle("erase-highlight-range", async (_event, opts: {
+  registerRuntimeIpc("erase-highlight-range", async (_event, opts: {
     book: string;
     chapter: number;
     verseStart: number;
@@ -1144,7 +2611,7 @@ function registerIpcHandlers(): void {
     return { ok: true, changeId };
   });
 
-  ipcMain.handle("recolor-highlights", async (_event, opts: {
+  registerRuntimeIpc("recolor-highlights", async (_event, opts: {
     book: string;
     chapter: number;
     package: string;
@@ -1166,7 +2633,7 @@ function registerIpcHandlers(): void {
     return { ok: true, changeId };
   });
 
-  ipcMain.handle("delete-highlights", async (_event, opts: {
+  registerRuntimeIpc("delete-highlights", async (_event, opts: {
     book: string;
     chapter: number;
     package: string;
@@ -1185,7 +2652,7 @@ function registerIpcHandlers(): void {
     return { ok: true, changeId };
   });
 
-  ipcMain.handle("undo-highlight-change", async (_event, changeId: string) => {
+  registerRuntimeIpc("undo-highlight-change", async (_event, changeId: string) => {
     if (!engine || !revisionStore) return { ok: false, error: "Not initialized" };
     const change = highlightChanges.get(changeId);
     if (!change) return { ok: false, error: "This highlight change can no longer be undone" };
@@ -1227,7 +2694,7 @@ function registerIpcHandlers(): void {
     return { ok: true };
   });
 
-  ipcMain.handle("delete-highlight", async (_event, opts: { entityId: string; baseEventId: string }) => {
+  registerRuntimeIpc("delete-highlight", async (_event, opts: { entityId: string; baseEventId: string }) => {
     if (!engine || !revisionStore) return { ok: false, error: "Not initialized" };
 
     engine.applyHighlightDelete(opts.entityId, opts.baseEventId);
@@ -1244,10 +2711,17 @@ function registerIpcHandlers(): void {
     return engine.buildSqlite();
   });
 
-  ipcMain.handle("settings:get", () => store.store);
+  ipcMain.handle("settings:get", () => ({
+    ...store.store,
+    markingSurface: normalizeMarkingSurface(store.store.markingSurface),
+  }));
 
   ipcMain.handle("settings:set", (_event, partial: Partial<AppSettingsSchema>) => {
-    store.set({ ...store.store, ...partial });
+    store.set({
+      ...store.store,
+      ...partial,
+      markingSurface: normalizeMarkingSurface(partial.markingSurface ?? store.store.markingSurface),
+    });
     return store.store;
   });
 
@@ -1266,17 +2740,28 @@ function registerIpcHandlers(): void {
   // --- M3: Semantic Intelligence ---
 
   ipcMain.handle("embed-notes", async () => {
-    if (!engine || !embeddingsStore || !embeddingProvider) return { ok: false, error: "Not initialized" };
-    const dbPath = join(engine.rootPath, ".system/library.sqlite");
-    const db = new SQLiteMaterializer(dbPath);
-    try {
-      const result = await embedAllNotes(db, embeddingsStore, embeddingProvider, themes);
-      return { ok: true, ...result };
-    } catch (err) {
-      return { ok: false, error: err instanceof Error ? err.message : String(err) };
-    } finally {
-      db.close();
-    }
+    return withSemanticOperation(
+      { ok: false, error: "Semantic runtime is restarting" },
+      async () => {
+        const currentEngine = engine;
+        const currentStore = embeddingsStore;
+        const currentProvider = embeddingProvider;
+        const currentThemes = themes;
+        if (!currentEngine || !currentStore || !currentProvider) {
+          return { ok: false, error: "Not initialized" };
+        }
+        const dbPath = join(currentEngine.rootPath, ".system/library.sqlite");
+        const db = new SQLiteMaterializer(dbPath);
+        try {
+          const result = await embedAllNotes(db, currentStore, currentProvider, currentThemes);
+          return { ok: true, ...result };
+        } catch (err) {
+          return { ok: false, error: err instanceof Error ? err.message : String(err) };
+        } finally {
+          db.close();
+        }
+      },
+    );
   });
 
   // --- B3.6: capture-time note enrichment ---
@@ -1293,51 +2778,72 @@ function registerIpcHandlers(): void {
   }
 
   ipcMain.handle("enrich-note", async (_event, opts: { noteId: string }) => {
-    if (!engine || !embeddingsStore || !backbone || !bookNames || !embeddingProvider) {
-      return { ok: false, error: "Not initialized" };
-    }
-    const tiers = enrichmentTiers();
-    if (tiers.length === 0) {
-      return { ok: false, error: "background AI is off (budget envelope) or no provider configured" };
-    }
-    const dbPath = join(engine.rootPath, ".system/library.sqlite");
-    const db = new SQLiteMaterializer(dbPath);
-    try {
-      const note = db.queryNoteById(opts.noteId);
-      if (!note) return { ok: false, error: "note not found" };
-      await enrichAllNotes({
-        notes: [{ id: note.id, title: note.title, body_text: note.body_text }],
-        store: embeddingsStore,
-        backbone,
-        themes,
-        tiers,
-      });
-      // Re-embed so the expansion chunk participates in retrieval immediately.
-      await embedAllNotes(db, embeddingsStore, embeddingProvider, themes);
-      return { ok: true, ...getEnrichmentSuggestions(opts.noteId) };
-    } catch (err) {
-      return { ok: false, error: err instanceof Error ? err.message : String(err) };
-    } finally {
-      db.close();
-    }
+    return withSemanticOperation(
+      { ok: false, error: "Semantic runtime is restarting" },
+      async () => {
+        const currentEngine = engine;
+        const currentStore = embeddingsStore;
+        const currentBackbone = backbone;
+        const currentBookNames = bookNames;
+        const currentProvider = embeddingProvider;
+        const currentThemes = themes;
+        if (!currentEngine || !currentStore || !currentBackbone || !currentBookNames || !currentProvider) {
+          return { ok: false, error: "Not initialized" };
+        }
+        const tiers = enrichmentTiers();
+        if (tiers.length === 0) {
+          return { ok: false, error: "background AI is off (budget envelope) or no provider configured" };
+        }
+        const dbPath = join(currentEngine.rootPath, ".system/library.sqlite");
+        const db = new SQLiteMaterializer(dbPath);
+        try {
+          const note = db.queryNoteById(opts.noteId);
+          if (!note) return { ok: false, error: "note not found" };
+          await enrichAllNotes({
+            notes: [{ id: note.id, title: note.title, body_text: note.body_text }],
+            store: currentStore,
+            backbone: currentBackbone,
+            themes: currentThemes,
+            tiers,
+          });
+          // Re-embed so the expansion chunk participates in retrieval immediately.
+          await embedAllNotes(db, currentStore, currentProvider, currentThemes);
+          return {
+            ok: true,
+            ...getEnrichmentSuggestions(opts.noteId, currentStore, currentBookNames),
+          };
+        } catch (err) {
+          return { ok: false, error: err instanceof Error ? err.message : String(err) };
+        } finally {
+          db.close();
+        }
+      },
+    );
   });
 
   /** Suggestions = inferred refs minus feedback, healed by prior confirms, display-ready. */
-  function getEnrichmentSuggestions(noteId: string): {
+  function getEnrichmentSuggestions(
+    noteId: string,
+    storeOverride: EmbeddingsStore | null = embeddingsStore,
+    bookNamesOverride: BookNameMap | null = bookNames,
+  ): {
     enriched: boolean;
     noScriptureIntent: boolean;
     suggestions: { refKey: string; display: string; bref: string; healed: boolean }[];
   } {
-    const enrichment = embeddingsStore?.getEnrichment(noteId);
-    if (!enrichment || !bookNames) return { enriched: false, noScriptureIntent: false, suggestions: [] };
-    const feedback = new Set(embeddingsStore!.getEnrichmentFeedback(noteId).map((f) => f.refKey));
+    if (!storeOverride || !bookNamesOverride) {
+      return { enriched: false, noScriptureIntent: false, suggestions: [] };
+    }
+    const enrichment = storeOverride.getEnrichment(noteId);
+    if (!enrichment) return { enriched: false, noScriptureIntent: false, suggestions: [] };
+    const feedback = new Set(storeOverride.getEnrichmentFeedback(noteId).map((f) => f.refKey));
 
     // E5 healing: passages the user confirmed on theme-sharing notes lead.
-    const allEnrichments = embeddingsStore!.getAllEnrichments();
+    const allEnrichments = storeOverride.getAllEnrichments();
     const { suggestions: ordered, healedKeys } = healSuggestionOrder({
       noteThemes: enrichment.themes,
       suggestions: enrichment.inferredRefs.filter((r) => !feedback.has(inferredRefKey(r))),
-      confirmations: embeddingsStore!
+      confirmations: storeOverride
         .getAllEnrichmentFeedback()
         .filter((f) => f.action === "confirmed" && f.noteId !== noteId)
         .map((f) => ({ noteId: f.noteId, refKey: f.refKey })),
@@ -1345,7 +2851,7 @@ function registerIpcHandlers(): void {
     });
 
     const suggestions = ordered.map((r) => {
-      const name = bookNames![r.book]?.[0] ?? r.book;
+      const name = bookNamesOverride[r.book]?.[0] ?? r.book;
       const display =
         r.verseStart !== undefined
           ? `${name} ${r.chapter}:${r.verseStart}${r.verseEnd && r.verseEnd !== r.verseStart ? `–${r.verseEnd}` : ""}`
@@ -1364,64 +2870,84 @@ function registerIpcHandlers(): void {
     return getEnrichmentSuggestions(opts.noteId);
   });
 
-  ipcMain.handle(
+  registerRuntimeIpc(
     "enrichment-feedback",
     async (_event, opts: { noteId: string; refKey: string; action: "confirmed" | "dismissed"; refDisplay?: string }) => {
-      if (!engine || !embeddingsStore || !revisionStore) return { ok: false, error: "Not initialized" };
-      embeddingsStore.setEnrichmentFeedback({
-        noteId: opts.noteId,
-        refKey: opts.refKey,
-        action: opts.action,
-        created: new Date().toISOString(),
-      });
-      if (opts.action === "confirmed" && opts.refDisplay) {
-        // Confirmation is a USER action: the ref is appended to the note
-        // body (the file is authoritative, INV-11) and becomes a real,
-        // full-strength anchor on the next index pass. INV-1 satisfied:
-        // the write happens only on this explicit user action.
-        const parsed = engine.readAllNotes().find((n) => n.frontmatter.id === opts.noteId);
-        if (!parsed) return { ok: false, error: "note not found" };
-        const newBody = `${parsed.body.trimEnd()}\n\nRelated: ${opts.refDisplay}\n`;
-        const notePath = engine.createNote(opts.noteId, parsed.frontmatter.title, newBody, {
-          type: parsed.frontmatter.type ?? "user",
-          tags: parsed.frontmatter.tags,
-        });
-        const relPath = notePath.replace(engine.rootPath + "/", "");
-        const txn = await revisionStore.beginTransaction(`Anchor note to ${opts.refDisplay}`);
-        txn.files.push(relPath);
-        await revisionStore.commit(txn);
-        engine.buildSqlite();
-      }
-      return { ok: true };
+      return withSemanticOperation(
+        { ok: false, error: "Semantic runtime is restarting" },
+        async () => {
+          const currentEngine = engine;
+          const currentStore = embeddingsStore;
+          const currentRevisionStore = revisionStore;
+          if (!currentEngine || !currentStore || !currentRevisionStore) {
+            return { ok: false, error: "Not initialized" };
+          }
+          currentStore.setEnrichmentFeedback({
+            noteId: opts.noteId,
+            refKey: opts.refKey,
+            action: opts.action,
+            created: new Date().toISOString(),
+          });
+          if (opts.action === "confirmed" && opts.refDisplay) {
+            // Confirmation is a USER action: the ref is appended to the note
+            // body (the file is authoritative, INV-11) and becomes a real,
+            // full-strength anchor on the next index pass. INV-1 satisfied:
+            // the write happens only on this explicit user action.
+            const parsed = currentEngine.readAllNotes().find((n) => n.frontmatter.id === opts.noteId);
+            if (!parsed) return { ok: false, error: "note not found" };
+            const newBody = `${parsed.body.trimEnd()}\n\nRelated: ${opts.refDisplay}\n`;
+            const notePath = currentEngine.createNote(opts.noteId, parsed.frontmatter.title, newBody, {
+              type: parsed.frontmatter.type ?? "user",
+              tags: parsed.frontmatter.tags,
+            });
+            const relPath = notePath.replace(currentEngine.rootPath + "/", "");
+            const txn = await currentRevisionStore.beginTransaction(`Anchor note to ${opts.refDisplay}`);
+            txn.files.push(relPath);
+            await currentRevisionStore.commit(txn);
+            currentEngine.buildSqlite();
+          }
+          return { ok: true };
+        },
+      );
     },
   );
 
   // A-5: unanchor is one tap, symmetrical with anchor. Removes the appended
   // "Related: <ref>" line and clears the feedback record (the suggestion may
   // return; the user changed their mind, they didn't dismiss the idea).
-  ipcMain.handle(
+  registerRuntimeIpc(
     "unanchor-note-ref",
     async (_event, opts: { noteId: string; refKey: string; refDisplay: string }) => {
-      if (!engine || !embeddingsStore || !revisionStore) return { ok: false, error: "Not initialized" };
-      const parsed = engine.readAllNotes().find((n) => n.frontmatter.id === opts.noteId);
-      if (!parsed) return { ok: false, error: "note not found" };
-      const line = `Related: ${opts.refDisplay}`;
-      const newBody = parsed.body
-        .split("\n")
-        .filter((l) => l.trim() !== line)
-        .join("\n")
-        .replace(/\n{3,}/g, "\n\n");
-      const notePath = engine.createNote(opts.noteId, parsed.frontmatter.title, newBody, {
-        type: parsed.frontmatter.type ?? "user",
-        tags: parsed.frontmatter.tags,
-      });
-      const relPath = notePath.replace(engine.rootPath + "/", "");
-      const txn = await revisionStore.beginTransaction(`Unanchor note from ${opts.refDisplay}`);
-      txn.files.push(relPath);
-      await revisionStore.commit(txn);
-      engine.buildSqlite();
-      embeddingsStore.deleteEnrichmentFeedback(opts.noteId, opts.refKey);
-      return { ok: true };
+      return withSemanticOperation(
+        { ok: false, error: "Semantic runtime is restarting" },
+        async () => {
+          const currentEngine = engine;
+          const currentStore = embeddingsStore;
+          const currentRevisionStore = revisionStore;
+          if (!currentEngine || !currentStore || !currentRevisionStore) {
+            return { ok: false, error: "Not initialized" };
+          }
+          const parsed = currentEngine.readAllNotes().find((n) => n.frontmatter.id === opts.noteId);
+          if (!parsed) return { ok: false, error: "note not found" };
+          const line = `Related: ${opts.refDisplay}`;
+          const newBody = parsed.body
+            .split("\n")
+            .filter((l) => l.trim() !== line)
+            .join("\n")
+            .replace(/\n{3,}/g, "\n\n");
+          const notePath = currentEngine.createNote(opts.noteId, parsed.frontmatter.title, newBody, {
+            type: parsed.frontmatter.type ?? "user",
+            tags: parsed.frontmatter.tags,
+          });
+          const relPath = notePath.replace(currentEngine.rootPath + "/", "");
+          const txn = await currentRevisionStore.beginTransaction(`Unanchor note from ${opts.refDisplay}`);
+          txn.files.push(relPath);
+          await currentRevisionStore.commit(txn);
+          currentEngine.buildSqlite();
+          currentStore.deleteEnrichmentFeedback(opts.noteId, opts.refKey);
+          return { ok: true };
+        },
+      );
     },
   );
 
@@ -1433,28 +2959,36 @@ function registerIpcHandlers(): void {
     endVerse: number;
     passageText: string;
   }) => {
-    if (!engine || !embeddingsStore || !bookNames || !embeddingProvider) return null;
-    const dbPath = join(engine.rootPath, ".system/library.sqlite");
-    const db = new SQLiteMaterializer(dbPath);
-    try {
-      // B3.5: one shared code path (host runner) for the IPC handler, the
-      // eval harness, and smoke scripts — hybrid retrieval with the
-      // calibrated quality bar lives in core, wiring lives in the runner.
-      return await runSemanticMargin({
-        db,
-        embeddingsStore,
-        provider: embeddingProvider,
-        crossRefData,
-        bookNames,
-        themes,
-        request: opts,
-      });
-    } finally {
-      db.close();
-    }
+    return withSemanticOperation(null, async () => {
+      const currentEngine = engine;
+      const currentStore = embeddingsStore;
+      const currentProvider = embeddingProvider;
+      const currentBookNames = bookNames;
+      const currentCrossRefData = crossRefData;
+      const currentThemes = themes;
+      if (!currentEngine || !currentStore || !currentBookNames || !currentProvider) return null;
+      const dbPath = join(currentEngine.rootPath, ".system/library.sqlite");
+      const db = new SQLiteMaterializer(dbPath);
+      try {
+        // B3.5: one shared code path (host runner) for the IPC handler, the
+        // eval harness, and smoke scripts — hybrid retrieval with the
+        // calibrated quality bar lives in core, wiring lives in the runner.
+        return await runSemanticMargin({
+          db,
+          embeddingsStore: currentStore,
+          provider: currentProvider,
+          crossRefData: currentCrossRefData,
+          bookNames: currentBookNames,
+          themes: currentThemes,
+          request: opts,
+        });
+      } finally {
+        db.close();
+      }
+    });
   });
 
-  ipcMain.handle("pin-claim", async (_event, opts: { claimId: string; assertion: string; userNote?: string }) => {
+  registerRuntimeIpc("pin-claim", async (_event, opts: { claimId: string; assertion: string; userNote?: string }) => {
     if (!engine || !revisionStore) return { ok: false, error: "Not initialized" };
     const factId = engine.pinClaim(opts.claimId, opts.assertion, opts.userNote);
     const txn = await revisionStore.beginTransaction("Pin claim → FactCard");
@@ -1464,7 +2998,7 @@ function registerIpcHandlers(): void {
     return { ok: true, factId };
   });
 
-  ipcMain.handle("promote-overlay", async (_event, opts: {
+  registerRuntimeIpc("promote-overlay", async (_event, opts: {
     overlayId: string;
     book: string;
     chapter: number;
@@ -1552,11 +3086,20 @@ function registerIpcHandlers(): void {
   });
 
   ipcMain.handle("ai-invoke", async (_event, opts: { prompt: string; context?: string }) => {
-    if (!aiProvider || !budgetManager) return { ok: false, error: "AI not initialized" };
-    if (!budgetManager.canSpend(1000)) return { ok: false, error: "Budget exceeded" };
-    const resp = await aiProvider.invoke({ prompt: opts.prompt, context: opts.context });
-    budgetManager.recordSpend(resp.tokensUsed);
-    return { ok: true, text: resp.text, tokensUsed: resp.tokensUsed };
+    return withSemanticOperation(
+      { ok: false, error: "Semantic runtime is restarting" },
+      async () => {
+        const currentAiProvider = aiProvider;
+        const currentBudgetManager = budgetManager;
+        if (!currentAiProvider || !currentBudgetManager) {
+          return { ok: false, error: "AI not initialized" };
+        }
+        if (!currentBudgetManager.canSpend(1000)) return { ok: false, error: "Budget exceeded" };
+        const resp = await currentAiProvider.invoke({ prompt: opts.prompt, context: opts.context });
+        currentBudgetManager.recordSpend(resp.tokensUsed);
+        return { ok: true, text: resp.text, tokensUsed: resp.tokensUsed };
+      },
+    );
   });
 
   ipcMain.handle("get-ai-status", () => {
@@ -1574,11 +3117,17 @@ function registerIpcHandlers(): void {
 
   ipcMain.handle("enqueue-ai-job", (_event, opts: { kind: string }) => {
     if (!jobQueue || !aiProvider) return { ok: false, error: "Not initialized" };
-    const jobId = jobQueue.enqueue(opts.kind as "embed-notes" | "semantic-resurface" | "extract-claims" | "suggest-xrefs" | "generate-thread", async () => {
-      const resp = await aiProvider!.invoke({ prompt: `Job: ${opts.kind}` });
-      return { tokensUsed: resp.tokensUsed, error: null };
-    });
-    return { ok: true, jobId };
+    const currentQueue = jobQueue;
+    const currentAiProvider = aiProvider;
+    try {
+      const jobId = currentQueue.enqueue(opts.kind as "embed-notes" | "semantic-resurface" | "extract-claims" | "suggest-xrefs" | "generate-thread", async () => {
+        const resp = await currentAiProvider.invoke({ prompt: `Job: ${opts.kind}` });
+        return { tokensUsed: resp.tokensUsed, error: null };
+      });
+      return { ok: true, jobId };
+    } catch (error) {
+      return { ok: false, error: error instanceof Error ? error.message : String(error) };
+    }
   });
 }
 
@@ -1616,37 +3165,85 @@ async function probeNativeModule(): Promise<boolean> {
   }
 }
 
-app.whenReady().then(async () => {
-  if (!(await probeNativeModule())) return;
-  try {
-    // Only skip auto-create (and let the renderer show the Welcome screen)
-    // on a genuinely first-ever launch — once the user has confirmed ANY
-    // location (default or custom), store.get("libraryPath") is set and we
-    // treat that as "already onboarded", auto-creating there if its files
-    // were somehow removed rather than reverting to first-run.
-    initializeEngine(undefined, store.get("libraryPath") != null);
-  } catch (err) {
-    const detail = String((err as Error)?.message ?? err);
+const hasSingleInstanceLock = app.requestSingleInstanceLock();
+if (!hasSingleInstanceLock) {
+  logLifecycle("second-instance-refused");
+  app.quit();
+} else {
+  app.on("second-instance", () => {
+    if (!mainWindow || mainWindow.isDestroyed()) {
+      if (app.isReady()) createWindow();
+      return;
+    }
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.show();
+    mainWindow.focus();
+  });
+
+  void app.whenReady().then(async () => {
+    if (!(await probeNativeModule())) return;
+    try {
+      // Only skip auto-create (and let the renderer show the Welcome screen)
+      // on a genuinely first-ever launch — once the user has confirmed ANY
+      // location (default or custom), store.get("libraryPath") is set and we
+      // treat that as "already onboarded", auto-creating there if its files
+      // were somehow removed rather than reverting to first-run.
+      await initializeEngine(undefined, store.get("libraryPath") != null);
+    } catch (err) {
+      const detail = String((err as Error)?.message ?? err);
+      dialog.showErrorBox(
+        "Failed to initialize library",
+        "The library engine could not start.\n\n" +
+          "Underlying error:\n" + detail,
+      );
+      app.quit();
+      return;
+    }
+    registerIpcHandlers();
+    createWindow();
+  }).catch((error) => {
+    logLifecycle("startup-failed", { error: diagnosticError(error) }, "error");
     dialog.showErrorBox(
-      "Failed to initialize library",
-      "The library engine could not start.\n\n" +
-        "Underlying error:\n" + detail,
+      "Failed to start Scripture Library",
+      `The desktop shell could not finish starting.\n\n${diagnosticError(error).message}`,
     );
     app.quit();
-    return;
-  }
-  registerIpcHandlers();
-  createWindow();
+  });
+}
+
+let quitTeardownStarted = false;
+let quitTeardownComplete = false;
+app.on("before-quit", (event) => {
+  isAppQuitting = true;
+  if (quitTeardownComplete) return;
+  event.preventDefault();
+  if (quitTeardownStarted) return;
+  quitTeardownStarted = true;
+
+  void shutdownForQuitDeadline()
+    .catch((error) => {
+      logLifecycle("quit-teardown-failed", { error: diagnosticError(error) }, "error");
+    })
+    .finally(() => {
+      quitTeardownComplete = true;
+      logLifecycle("session-end");
+      // A second app.quit() issued from an asynchronously prevented
+      // before-quit cycle is ignored by Electron on macOS. Cleanup is now
+      // complete, so exit without re-entering that lifecycle event.
+      app.exit(0);
+    });
 });
 
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
+  // This is only a fallback: the hidden embedding host may keep this event
+  // from firing, so the visible window's `closed` handler owns non-mac quit.
+  if (process.platform !== "darwin" && !mainWindow) {
     app.quit();
   }
 });
 
 app.on("activate", () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
+  if (!isAppQuitting && (!mainWindow || mainWindow.isDestroyed())) {
     createWindow();
   }
 });

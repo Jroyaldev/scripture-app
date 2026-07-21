@@ -37,17 +37,37 @@ test("anchored popovers are lightweight, named, focusable, and modal only by req
 
   assert.match(popover, /ariaLabel: string/);
   assert.match(popover, /modal = false/);
-  assert.match(popover, /\(first \?\? panel\)\.focus\(\)/);
-  assert.match(popover, /if \(!modal \|\| e\.key !== "Tab"/);
+  assert.match(popover, /initialFocusRef\?: React\.RefObject<HTMLElement \| null>/);
+  assert.match(popover, /preferred && panel\.contains\(preferred\) \? preferred : first \?\? panel/);
+  assert.match(popover, /target\.focus\(\{ preventScroll: true \}\)/);
+  assert.match(popover, /if \(!modal \|\| e\.key !== "Tab" \|\| !panelRef\.current \|\| !ownsKeyboard\) return/);
   assert.match(popover, /aria-modal=\{modal \|\| undefined\}/);
   assert.match(popover, /data-floating-layer="popover"/);
   assert.match(popover, /data-placement=\{position\.placement\}/);
+  assert.match(popover, /boundaryRect\?: PopoverBoundaryRect/);
+  assert.match(popover, /resolveBoundary\(boundaryRect\)/);
+  assert.match(popover, /width: position\.width/);
+  assert.match(popover, /maxHeight: position\.maxHeight/);
+  assert.match(popover, /requestedMaxHeight != null \|\| boundaryRect != null/);
+  assert.match(popover, /data-position-boundary=\{boundaryRect \? "custom" : "viewport"\}/);
   assert.match(popover, /window\.addEventListener\("resize", onClose\)/);
+  assert.match(popover, /\[data-floating-layer="dialog"\], \[data-floating-layer="popover"\]/);
+  assert.match(popover, /const ownsKeyboard = escapeLayers\.at\(-1\) === panelRef\.current/);
+  assert.doesNotMatch(popover, /querySelectorAll<HTMLElement>\("\[data-floating-layer\]"\)/);
+  assert.match(popover, /e\.stopImmediatePropagation\(\)/);
+  assert.match(popover, /onPointerDown=\{\(event\) => \{[\s\S]{0,180}event\.preventDefault\(\);[\s\S]{0,100}event\.stopPropagation\(\);/);
+  assert.match(popover, /onClick=\{\(event\) => \{[\s\S]{0,180}event\.stopPropagation\(\);[\s\S]{0,100}onClose\(\);/);
+  assert.doesNotMatch(popover, /onPointerDown=\{onClose\}/);
 
   assert.match(css, /\.popover-scrim\s*\{[\s\S]*background: transparent/);
   assert.match(css, /\.popover-scrim\.is-soft/);
   assert.doesNotMatch(css, /\/\* Soft scrim behind popovers/);
   assert.match(css, /\.popover-panel\s*\{[\s\S]*border-radius: var\(--radius-md\)/);
+  assert.match(css, /\.popover-panel\s*\{\s*--popover-enter-y: -3px;[\s\S]*animation: popover-in 180ms/);
+  assert.match(css, /\.popover-panel\[data-placement="top"\]\s*\{\s*--popover-enter-y: 3px;\s*transform-origin: bottom left;\s*\}/);
+  assert.match(css, /@keyframes popover-in\s*\{\s*from \{ opacity: 0; transform: translateY\(var\(--popover-enter-y\)\) scale\(0\.985\); \}/);
+  assert.doesNotMatch(css, /\.popover-panel\[data-placement="top"\][^{]*\{[^}]*animation-name:/);
+  assert.doesNotMatch(css, /@keyframes popover-in-top/);
 });
 
 test("tooltips replace native title-only hints for compact reading actions", () => {
@@ -70,12 +90,15 @@ test("tooltips replace native title-only hints for compact reading actions", () 
 test("toasts are typed, announced, timed, dismissible, and clean up timers", () => {
   const toast = read("src/renderer/components/Toast.tsx");
   const page = read("src/renderer/components/ScripturePage.tsx");
+  const css = read("src/renderer/styles.css");
 
   assert.match(toast, /"neutral" \| "success" \| "warning" \| "error"/);
   assert.match(toast, /aria-live="polite"/);
   assert.match(toast, /role=\{toast\.tone === "error" \? "alert" : "status"\}/);
   assert.match(toast, /aria-label="Dismiss notification"/);
   assert.match(toast, /className="toast-progress"/);
+  assert.match(css, /\.toast-progress \{[^}]*height:\s*1px;[^}]*var\(--text-primary\) 16%/);
+  assert.doesNotMatch(css, /\.toast-progress \{[^}]*var\(--toast-tone\)/);
   assert.match(toast, /for \(const timer of autoTimers\.current\.values\(\)\) window\.clearTimeout\(timer\)/);
   assert.match(page, /Failed to create highlight", undefined, undefined, \{ tone: "error" \}/);
   assert.match(page, /Saved “\$\{title\}”`, undefined, undefined, \{ tone: "success" \}/);

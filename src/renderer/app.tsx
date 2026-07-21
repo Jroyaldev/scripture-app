@@ -28,6 +28,7 @@ import { safeCall } from "./utils/safeCall.js";
 import "./styles.css";
 
 type View = "scripture" | "write" | "search" | "notes" | "settings";
+type AuthoredMutationState = "idle" | "in-flight" | "recovery";
 type LoadState =
   | { status: "loading" }
   | { status: "loaded"; backbone: BackboneData; bookNames: BookNameData; libraryPath: string }
@@ -109,18 +110,20 @@ function SettingsIcon(): React.JSX.Element {
 interface NavItemProps {
   active: boolean;
   onClick: () => void;
+  disabled?: boolean;
   label: string;
   icon: React.JSX.Element;
   /** Keyboard digit shown in tooltip, e.g. "1" → "Read (1)" */
   shortcut?: string;
 }
 
-function NavItem({ active, onClick, label, icon, shortcut }: NavItemProps): React.JSX.Element {
+function NavItem({ active, onClick, disabled = false, label, icon, shortcut }: NavItemProps): React.JSX.Element {
   const tip = shortcut ? `${label} (${shortcut})` : label;
   return (
     <button
       className={`nav-item${active ? " active" : ""}`}
       onClick={onClick}
+      disabled={disabled}
       title={tip}
       aria-label={tip}
       aria-keyshortcuts={shortcut}
@@ -169,10 +172,13 @@ export function App(): React.JSX.Element {
   });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [theme, setTheme] = useState<AppSettings["theme"]>("light");
+  const [markingSurface, setMarkingSurface] = useState<AppSettings["markingSurface"]>("palette");
   const [readingSize, setReadingSize] = useState<ReadingSize>("m");
   const [readingWidth, setReadingWidth] = useState<ReadingWidth>("medium");
   const [verseNumbers, setVerseNumbers] = useState<VerseNumberMode>("always");
   const [focusMode, setFocusMode] = useState(false);
+  const [authoredMutationState, setAuthoredMutationState] = useState<AuthoredMutationState>("idle");
+  const authoredMutationStateRef = useRef<AuthoredMutationState>("idle");
   /** Margin visibility before focus mode — restored on exit. */
   const preFocusMargin = useRef(true);
   const [aiBusy, setAiBusy] = useState(false);
@@ -182,11 +188,12 @@ export function App(): React.JSX.Element {
   const libraryTriggerRef = useRef<HTMLButtonElement>(null);
   const [libraryAnchorRect, setLibraryAnchorRect] = useState<DOMRect | null>(null);
   const settingsLoaded = useRef(false);
+  const [settingsReady, setSettingsReady] = useState(false);
   // Tracks which persisted settings the user has already changed via the UI
   // before the initial settings.get() resolved. The load effect must not
   // clobber a setting the user has touched in the interim (see the
   // settings-load effect below for the race this guards against).
-  const userDirtySettings = useRef({ sidebarCollapsed: false, marginVisible: false, theme: false });
+  const userDirtySettings = useRef({ sidebarCollapsed: false, marginVisible: false, theme: false, markingSurface: false });
 
   const loadData = useCallback(async () => {
     setLoadState({ status: "loading" });
@@ -267,10 +274,17 @@ export function App(): React.JSX.Element {
         if (!userDirtySettings.current.theme) {
           setTheme(res.value.theme);
         }
+        if (!userDirtySettings.current.markingSurface) {
+          setMarkingSurface(res.value.markingSurface ?? "palette");
+        }
         if (res.value.readingSize) setReadingSize(res.value.readingSize);
         if (res.value.readingWidth) setReadingWidth(res.value.readingWidth);
         if (res.value.verseNumbers) setVerseNumbers(res.value.verseNumbers);
       }
+      // A setting changed while the IPC read was in flight has already run
+      // its persist effect once and returned early. This state transition
+      // deliberately re-runs every persist effect with the live UI values.
+      setSettingsReady(true);
     });
     return () => {
       cancelled = true;
@@ -281,22 +295,44 @@ export function App(): React.JSX.Element {
   useEffect(() => {
     if (!settingsLoaded.current) return;
     void safeCall(() => window.api.settings.set({ sidebarCollapsed }));
-  }, [sidebarCollapsed]);
+  }, [settingsReady, sidebarCollapsed]);
 
   useEffect(() => {
     if (!settingsLoaded.current) return;
     void safeCall(() => window.api.settings.set({ marginVisible }));
-  }, [marginVisible]);
+  }, [settingsReady, marginVisible]);
 
   useEffect(() => {
     if (!settingsLoaded.current) return;
     void safeCall(() => window.api.settings.set({ theme }));
-  }, [theme]);
+  }, [settingsReady, theme]);
+
+  useEffect(() => {
+    if (!settingsLoaded.current) return;
+    void safeCall(() => window.api.settings.set({ markingSurface }));
+  }, [settingsReady, markingSurface]);
 
   useEffect(() => {
     if (!settingsLoaded.current) return;
     void safeCall(() => window.api.settings.set({ readingSize, readingWidth, verseNumbers }));
-  }, [readingSize, readingWidth, verseNumbers]);
+  }, [settingsReady, readingSize, readingWidth, verseNumbers]);
+
+  const handleAuthoredMutationStateChange = useCallback((state: AuthoredMutationState): void => {
+    authoredMutationStateRef.current = state;
+    if (state !== "idle") {
+      userDirtySettings.current.marginVisible = true;
+      preFocusMargin.current = true;
+      setFocusMode(false);
+      setMarginVisible(true);
+    }
+    setAuthoredMutationState(state);
+  }, []);
+
+  const changeView = useCallback((next: View): boolean => {
+    if (next !== "scripture" && authoredMutationStateRef.current !== "idle") return false;
+    setView(next);
+    return true;
+  }, []);
 
   const handleCreateNoteFromPassage = (prefillBody?: string) => {
     if (prefillBody) {
@@ -307,7 +343,7 @@ export function App(): React.JSX.Element {
           : prefillBody,
       }));
     }
-    setView("write");
+    changeView("write");
   };
 
   const handleNavigateToRef = useCallback((
@@ -316,9 +352,10 @@ export function App(): React.JSX.Element {
     verse?: number,
     endVerse?: number,
   ) => {
+    if (authoredMutationStateRef.current !== "idle") return;
     setNavigateRef({ book, chapter, verse, endVerse });
-    setView("scripture");
-  }, []);
+    changeView("scripture");
+  }, [changeView]);
 
   const handleReadingContextChange = useCallback((next: CommandReadingContext) => {
     setReadingContext((current) => (
@@ -340,12 +377,13 @@ export function App(): React.JSX.Element {
   const closeCommandPalette = useCallback(() => setCommandOpen(false), []);
 
   const openEntityResearchAt = useCallback((entityId: string, origin: CommandReadingContext) => {
+    if (authoredMutationStateRef.current !== "idle") return;
     setEntityIntent({ id: entityId, nonce: Date.now(), origin });
-    setView("scripture");
+    changeView("scripture");
     setFocusMode(false);
     userDirtySettings.current.marginVisible = true;
     setMarginVisible(true);
-  }, []);
+  }, [changeView]);
   const openEntityResearch = useCallback((entityId: string) => {
     openEntityResearchAt(entityId, readingContext);
   }, [openEntityResearchAt, readingContext]);
@@ -372,7 +410,7 @@ export function App(): React.JSX.Element {
 
   const handleManageInSettings = () => {
     setLibraryPopoverOpen(false);
-    setView("settings");
+    changeView("settings");
   };
 
   const revealLibrary = async (): Promise<void> => {
@@ -390,6 +428,10 @@ export function App(): React.JSX.Element {
   };
 
   const switchLibrary = async (): Promise<void> => {
+    if (authoredMutationStateRef.current !== "idle") {
+      setLibraryActionError("Finish or recover the current authored change before switching libraries.");
+      return;
+    }
     setLibraryAction("switch");
     setLibraryActionError(null);
     const picked = await safeCall(() => window.api.dialog.openDirectory());
@@ -415,13 +457,29 @@ export function App(): React.JSX.Element {
   };
 
   const toggleMargin = () => {
+    if (marginVisible && authoredMutationStateRef.current !== "idle") return;
     userDirtySettings.current.marginVisible = true;
     setMarginVisible((prev) => !prev);
   };
 
+  // Opening an authored connection is an explicit request for its inspector.
+  // Keep this idempotent (unlike the toolbar toggle), and leave Focus mode so
+  // the Living Margin cannot remain suppressed behind a selected route.
+  const ensureMarginVisible = useCallback(() => {
+    userDirtySettings.current.marginVisible = true;
+    preFocusMargin.current = true;
+    setFocusMode(false);
+    setMarginVisible(true);
+  }, []);
+
   const toggleTheme = (nextTheme: AppTheme) => {
     userDirtySettings.current.theme = true;
     setTheme(() => nextTheme);
+  };
+
+  const changeMarkingSurface = (nextSurface: AppSettings["markingSurface"]): void => {
+    userDirtySettings.current.markingSurface = true;
+    setMarkingSurface(nextSurface);
   };
 
   const handleReadingPrefsChange = useCallback((partial: Partial<ReadingPrefs>) => {
@@ -431,6 +489,7 @@ export function App(): React.JSX.Element {
   }, []);
 
   const toggleFocusMode = useCallback(() => {
+    if (!focusMode && authoredMutationStateRef.current !== "idle") return;
     setFocusMode((prev) => {
       if (!prev) {
         preFocusMargin.current = marginVisible;
@@ -442,7 +501,7 @@ export function App(): React.JSX.Element {
       setMarginVisible(preFocusMargin.current);
       return false;
     });
-  }, [marginVisible]);
+  }, [focusMode, marginVisible]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent): void => {
@@ -457,6 +516,7 @@ export function App(): React.JSX.Element {
   // Global keyboard: view digits 1–4, F = focus mode, Esc exits focus.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (e.defaultPrevented) return;
       const t = e.target as HTMLElement | null;
       const tag = t?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA" || t?.isContentEditable) return;
@@ -468,6 +528,11 @@ export function App(): React.JSX.Element {
         return;
       }
       if (e.key === "Escape" && focusMode) {
+        // Escape belongs to the topmost dialog/popover first. In particular,
+        // closing an exact-word chooser must not also exit Focus mode.
+        if (document.querySelector(
+          '[data-floating-layer="dialog"], [data-floating-layer="popover"], .command-palette-root, .connection-card',
+        )) return;
         e.preventDefault();
         toggleFocusMode();
         return;
@@ -483,13 +548,14 @@ export function App(): React.JSX.Element {
       const next = map[e.key];
       if (next) {
         e.preventDefault();
+        if (next !== "scripture" && authoredMutationStateRef.current !== "idle") return;
         if (focusMode) toggleFocusMode();
-        setView(next);
+        changeView(next);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [focusMode, toggleFocusMode]);
+  }, [changeView, focusMode, toggleFocusMode]);
 
   const shellClass = [
     "app-shell",
@@ -595,7 +661,7 @@ export function App(): React.JSX.Element {
       setWritingDraft((current) => current.title.trim() || current.body.trim()
         ? current
         : { title: contextLabel, body: "" });
-      setView("write");
+      changeView("write");
     } else if (id === "toggle-study") {
       if (focusMode) toggleFocusMode();
       if (!marginVisible) toggleMargin();
@@ -604,12 +670,12 @@ export function App(): React.JSX.Element {
       toggleFocusMode();
     } else if (id === "open-notes") {
       setWorkspaceIntent({ nonce: Date.now() });
-      setView("notes");
+      changeView("notes");
     } else if (id === "search-notes") {
       setWorkspaceIntent({ query: "", nonce: Date.now() });
-      setView("search");
+      changeView("search");
     } else if (id === "open-settings") {
-      setView("settings");
+      changeView("settings");
     }
   };
 
@@ -694,12 +760,12 @@ export function App(): React.JSX.Element {
                 </Tooltip>
               </div>
               <div className="sidebar-nav">
-                <NavItem active={view === "scripture"} onClick={() => setView("scripture")} label="Read" icon={<ReadIcon />} shortcut="1" />
-                <NavItem active={view === "write"} onClick={() => setView("write")} label="Write" icon={<WriteIcon />} shortcut="2" />
-                <NavItem active={view === "notes"} onClick={() => setView("notes")} label="Notes" icon={<NotesIcon />} shortcut="3" />
-                <NavItem active={view === "search"} onClick={() => setView("search")} label="Search" icon={<SearchIcon />} shortcut="4" />
+                <NavItem active={view === "scripture"} onClick={() => { changeView("scripture"); }} label="Read" icon={<ReadIcon />} shortcut="1" />
+                <NavItem active={view === "write"} onClick={() => { changeView("write"); }} disabled={authoredMutationState !== "idle"} label="Write" icon={<WriteIcon />} shortcut="2" />
+                <NavItem active={view === "notes"} onClick={() => { changeView("notes"); }} disabled={authoredMutationState !== "idle"} label="Notes" icon={<NotesIcon />} shortcut="3" />
+                <NavItem active={view === "search"} onClick={() => { changeView("search"); }} disabled={authoredMutationState !== "idle"} label="Search" icon={<SearchIcon />} shortcut="4" />
                 <div className="nav-divider" />
-                <NavItem active={view === "settings"} onClick={() => setView("settings")} label="Settings" icon={<SettingsIcon />} shortcut="5" />
+                <NavItem active={view === "settings"} onClick={() => { changeView("settings"); }} disabled={authoredMutationState !== "idle"} label="Settings" icon={<SettingsIcon />} shortcut="5" />
               </div>
               <div className="sidebar-spacer" />
               <div className="sidebar-footer">
@@ -744,13 +810,16 @@ export function App(): React.JSX.Element {
                 onAiBusyChange={setAiBusy}
                 theme={theme}
                 onThemeChange={toggleTheme}
+                markingSurface={markingSurface}
                 onToggleMargin={toggleMargin}
+                onEnsureMarginVisible={ensureMarginVisible}
                 readingSize={readingSize}
                 readingWidth={readingWidth}
                 verseNumbers={verseNumbers}
                 onReadingPrefsChange={handleReadingPrefsChange}
                 focusMode={focusMode}
                 onToggleFocus={toggleFocusMode}
+                onAuthoredMutationStateChange={handleAuthoredMutationStateChange}
                 entityIntent={entityIntent}
                 onOpenEntity={openEntityResearch}
                 onCloseEntity={() => setEntityIntent(null)}
@@ -767,7 +836,7 @@ export function App(): React.JSX.Element {
               <SearchView
                 mode="search"
                 onNavigate={handleNavigateToRef}
-                onWrite={() => setView("write")}
+                onWrite={() => { changeView("write"); }}
                 initialQuery={workspaceIntent.query}
                 intentNonce={workspaceIntent.nonce}
               />
@@ -776,7 +845,7 @@ export function App(): React.JSX.Element {
               <SearchView
                 mode="notes"
                 onNavigate={handleNavigateToRef}
-                onWrite={() => setView("write")}
+                onWrite={() => { changeView("write"); }}
                 initialNoteId={workspaceIntent.noteId}
                 intentNonce={workspaceIntent.nonce}
               />
@@ -790,6 +859,8 @@ export function App(): React.JSX.Element {
                 onReadingPrefsChange={handleReadingPrefsChange}
                 theme={theme}
                 onThemeChange={toggleTheme}
+                markingSurface={markingSurface}
+                onMarkingSurfaceChange={changeMarkingSurface}
               />
             )}
           </div>
@@ -814,12 +885,12 @@ export function App(): React.JSX.Element {
             onNavigate={handleNavigateToRef}
             onOpenNote={(noteId) => {
               setWorkspaceIntent({ noteId, nonce: Date.now() });
-              setView("notes");
+              changeView("notes");
             }}
             onOpenEntity={openCommandEntityResearch}
             onSearchNotes={(query) => {
               setWorkspaceIntent({ query, nonce: Date.now() });
-              setView("search");
+              changeView("search");
             }}
             onRunAction={runCommandAction}
           />

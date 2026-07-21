@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import test from "node:test";
 
-import { _internals, planRoute } from "../lab/route-engine.js";
+import { _internals, planRoute } from "../src/core/annotations/route-engine.js";
 
 type Rect = { left: number; right: number; top: number; bottom: number };
 

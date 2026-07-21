@@ -5,6 +5,7 @@ import type {
   BookNameData,
   CrossReferenceMatchData,
   CrossReferenceResultData,
+  ConnectionRecord,
   EntityResearchData,
   LanguageEntityRangeResult,
   NoteRecord,
@@ -80,6 +81,16 @@ interface Props {
   } | null;
   onOpenEntity?: (entityId: string) => void;
   onCloseEntity?: () => void;
+  /** A selected user-authored connection, composed by ScripturePage. */
+  connectionInspector?: React.ReactNode;
+  /** Durable authored relationships remain reachable even when this package
+   * has no exact word projection and therefore no reading-canvas tick. */
+  authoredConnections?: readonly ConnectionRecord[];
+  selectedAuthoredConnectionId?: string | null;
+  onSelectAuthoredConnection?: (connection: ConnectionRecord, focusInspector?: boolean) => void;
+  /** Incremented for explicit inspector-entry requests. Reading-canvas pointer
+   * activation deliberately leaves this unchanged so Scripture keeps focus. */
+  connectionInspectorFocusRequest?: number;
 }
 
 function AiSparkIcon(): React.JSX.Element {
@@ -1211,6 +1222,11 @@ export function LivingMargin({
   entityIntent,
   onOpenEntity,
   onCloseEntity,
+  connectionInspector,
+  authoredConnections = [],
+  selectedAuthoredConnectionId = null,
+  onSelectAuthoredConnection,
+  connectionInspectorFocusRequest = 0,
 }: Props): React.JSX.Element {
   const displayBook = bookNames[book]?.[0] ?? book;
   const [pinnedClaims, setPinnedClaims] = useState<Set<string>>(new Set());
@@ -1274,6 +1290,7 @@ export function LivingMargin({
 
   const isPinned = !!pinnedRange;
   const isNear = !isPinned && nearVerse != null;
+  const connectionInspectorOpen = connectionInspector != null;
 
   // The same canonical passage can contain materially different wording in
   // WEB and KJV. Cache passage-text analysis independently so switching
@@ -1367,7 +1384,7 @@ export function LivingMargin({
   const nearNote = nearVerse != null ? findNoteForRange(marginData, chapter, nearVerse, nearVerse) : null;
   const nearQuote = nearVerse != null ? quoteVerseText?.get(nearVerse) ?? "" : "";
   const nearRef = nearVerse != null ? `${displayBook} ${chapter}:${nearVerse}` : "";
-  const marginMode = isPinned ? "Selected" : isNear ? "In view" : "Chapter";
+  const marginMode = connectionInspectorOpen ? "Connection" : isPinned ? "Selected" : isNear ? "In view" : "Chapter";
   const contextReference = isPinned ? pinnedRef : isNear ? nearRef : `${displayBook} ${chapter}`;
   const contextQuote = isPinned ? pinnedQuote : isNear ? nearQuote : "";
   const contextKey = isPinned
@@ -1524,6 +1541,32 @@ export function LivingMargin({
     marginRef.current?.scrollTo({ top: 0 });
   }, [contextKey]);
 
+  const connectionInspectorWasOpenRef = useRef(false);
+  const connectionInspectorReturnScrollRef = useRef(0);
+  useEffect(() => {
+    const margin = marginRef.current;
+    if (!margin || connectionInspectorWasOpenRef.current === connectionInspectorOpen) return;
+    if (connectionInspectorOpen) {
+      connectionInspectorReturnScrollRef.current = margin.scrollTop;
+      margin.scrollTo({ top: 0 });
+    } else {
+      margin.scrollTo({ top: connectionInspectorReturnScrollRef.current });
+    }
+    connectionInspectorWasOpenRef.current = connectionInspectorOpen;
+  }, [connectionInspectorOpen]);
+
+  const lastConnectionInspectorFocusRequestRef = useRef(connectionInspectorFocusRequest);
+  useEffect(() => {
+    if (lastConnectionInspectorFocusRequestRef.current === connectionInspectorFocusRequest) return;
+    lastConnectionInspectorFocusRequestRef.current = connectionInspectorFocusRequest;
+    if (!connectionInspectorOpen) return;
+    // An authored row is replaced by the inspector as soon as it is activated,
+    // so both pointer and keyboard activation from that list need this stable
+    // entry point. Reading-canvas pointer activation does not issue a request
+    // and therefore keeps focus on Scripture.
+    frameTitleRef.current?.focus({ preventScroll: true });
+  }, [connectionInspectorFocusRequest, connectionInspectorOpen]);
+
   const activateTab = (tab: MarginTab, focus = false): void => {
     if (tab === activeTab) return;
     if (marginRef.current) tabScrollPositionsRef.current[activeTab] = marginRef.current.scrollTop;
@@ -1537,16 +1580,16 @@ export function LivingMargin({
     }
   };
 
-  // While the reading canvas (or the tab row itself) owns focus, these keys
-  // act as study-lens switches rather than moving focus around the chrome.
-  // Up/Down remain exclusively available to the verse/result navigation
-  // paths. Floating dialogs and controls keep their normal keyboard contract.
+  // While the reading canvas (or the tab row itself) owns focus, Tab and
+  // Shift-Tab cycle study lenses rather than moving focus around the chrome.
+  // Arrow keys remain available to reading-canvas chapter navigation; the
+  // local tablist handler below keeps its conventional arrow-key contract.
+  // Floating dialogs and controls keep their normal keyboard contract.
   useEffect(() => {
     if (entityIntent) return;
     const cycleStudyLens = (event: KeyboardEvent): void => {
       if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
-      const isLensKey = event.key === "Tab" || event.key === "ArrowLeft" || event.key === "ArrowRight";
-      if (!isLensKey) return;
+      if (event.key !== "Tab") return;
       if (document.querySelector('[data-floating-layer="dialog"], [data-floating-layer="popover"]')) return;
 
       const target = event.target instanceof Element ? event.target : null;
@@ -1558,7 +1601,7 @@ export function LivingMargin({
       event.preventDefault();
       event.stopPropagation();
       const currentIndex = Math.max(0, MARGIN_TABS.findIndex((tab) => tab.id === activeTab));
-      const reverse = event.key === "ArrowLeft" || (event.key === "Tab" && event.shiftKey);
+      const reverse = event.shiftKey;
       const nextIndex = (currentIndex + (reverse ? -1 : 1) + MARGIN_TABS.length) % MARGIN_TABS.length;
       const focusTab = Boolean(target?.closest(".margin-tab"));
       activateTab(MARGIN_TABS[nextIndex]?.id ?? "overview", focusTab);
@@ -1672,13 +1715,14 @@ export function LivingMargin({
           ref={frameTitleRef}
           id="living-margin-title"
           className="margin-frame-title"
+          aria-describedby="living-margin-mode"
           tabIndex={-1}
         >
           Study
         </h2>
         <div className="margin-frame-state">
-          <span className="margin-frame-mode" aria-live="polite">{marginMode}</span>
-          {isPinned && onClearSelection && (
+          <span id="living-margin-mode" className="margin-frame-mode" aria-live="polite">{marginMode}</span>
+          {!connectionInspectorOpen && isPinned && onClearSelection && (
             <button type="button" className="margin-frame-action" onClick={clearSelection}>
               Done
             </button>
@@ -1686,6 +1730,35 @@ export function LivingMargin({
         </div>
       </header>
 
+      {connectionInspectorOpen && (
+        <div className="margin-connection-inspector" data-margin-view="connection">
+          {connectionInspector}
+        </div>
+      )}
+
+      {!connectionInspectorOpen && authoredConnections.length > 0 && (
+        <nav className="margin-authored-connections" aria-label="Your authored connections in this passage">
+          <div className="margin-authored-connections-head">
+            <span>Your connections</span>
+            <small>{authoredConnections.length}</small>
+          </div>
+          <div className="margin-authored-connections-list">
+            {authoredConnections.map((connection) => (
+              <button
+                key={connection.id}
+                type="button"
+                aria-pressed={selectedAuthoredConnectionId === connection.id}
+                onClick={() => onSelectAuthoredConnection?.(connection, true)}
+              >
+                <span>{connection.label}</span>
+                <small>{connection.anchors.length} {connection.anchors.length === 1 ? "moment" : "moments"}</small>
+              </button>
+            ))}
+          </div>
+        </nav>
+      )}
+
+      <div className={`margin-study-content${connectionInspectorOpen ? " has-connection-inspector" : ""}`}>
       <div className="margin-context" aria-label={`Study scope: ${contextReference}`}>
         <h3 className="margin-header-ref">{contextReference}</h3>
         {contextQuote && <PassageQuote text={contextQuote} contextKey={contextKey} />}
@@ -2176,6 +2249,7 @@ export function LivingMargin({
           </section>
         </div>
       )}
+      </div>
     </aside>
   );
 }

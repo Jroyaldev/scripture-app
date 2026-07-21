@@ -34,6 +34,7 @@ export type DoctorInput = {
   notes: ParsedNote[];
   events: {
     highlights: LibraryEvent[];
+    connections: LibraryEvent[];
     pinnedFacts: LibraryEvent[];
     threads: LibraryEvent[];
     noteChangeLogs: LibraryEvent[];
@@ -216,6 +217,7 @@ function checkEvents(
 ): void {
   const allEvents: LibraryEvent[] = [
     ...events.highlights,
+    ...events.connections,
     ...events.pinnedFacts,
     ...events.threads,
     ...events.noteChangeLogs,

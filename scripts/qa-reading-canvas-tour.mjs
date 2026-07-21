@@ -19,6 +19,12 @@ const THEME_CAPTURE_NAMES = {
   glass: "glass-reading",
   "dark-glass": "candlelight-reading",
 };
+const MARKING_SELECTION_CHROME_SELECTOR = [
+  '[data-floating-layer="toolbar"]',
+  ".marking-radial-scrim",
+  ".marking-rail-tray",
+  ".marking-dock-selection",
+].join(", ");
 const leaveThemeArg = process.argv.find((arg) => arg.startsWith("--leave="))?.slice("--leave=".length);
 const leaveTheme = leaveThemeArg && THEMES.includes(leaveThemeArg) ? leaveThemeArg : null;
 const leavePackageArg = process.argv.find((arg) => arg.startsWith("--leave-package="))?.slice("--leave-package=".length);
@@ -116,6 +122,62 @@ async function moveTo(selector) {
   if (!point) throw new Error(`Cannot hover missing element: ${selector}`);
   await cdp.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: point.x, y: point.y });
   await sleep(180);
+}
+
+async function dragText(selector, startOffset = 1, endOffset = 24) {
+  const points = await evaluate(`(() => {
+    const element = document.querySelector(${JSON.stringify(selector)});
+    if (!element) return null;
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    let length = 0;
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (!node.textContent?.length) continue;
+      nodes.push({ node, start: length, end: length + node.textContent.length });
+      length += node.textContent.length;
+    }
+    if (length < 2) return null;
+    const locate = (rawOffset) => {
+      const offset = Math.max(0, Math.min(length - 1, rawOffset));
+      const entry = nodes.find((candidate) => offset < candidate.end) ?? nodes.at(-1);
+      return entry ? { node: entry.node, offset: offset - entry.start } : null;
+    };
+    const pointAt = (rawOffset, edge) => {
+      const position = locate(rawOffset);
+      if (!position) return null;
+      const range = document.createRange();
+      range.setStart(position.node, position.offset);
+      range.setEnd(position.node, Math.min(position.node.textContent.length, position.offset + 1));
+      const rect = [...range.getClientRects()].find((candidate) => candidate.width > 0 && candidate.height > 0);
+      if (!rect) return null;
+      return {
+        x: edge === "end" ? rect.right - Math.min(1, rect.width / 3) : rect.left + Math.min(1, rect.width / 3),
+        y: rect.top + rect.height / 2,
+      };
+    };
+    const start = pointAt(${JSON.stringify(startOffset)}, "start");
+    const end = pointAt(Math.max(${JSON.stringify(startOffset + 1)}, Math.min(length - 1, ${JSON.stringify(endOffset)})), "end");
+    return start && end ? { start, end } : null;
+  })()`);
+  if (!points) throw new Error(`Cannot drag missing or empty text: ${selector}`);
+  await cdp.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: points.start.x, y: points.start.y });
+  await cdp.send("Input.dispatchMouseEvent", {
+    type: "mousePressed", x: points.start.x, y: points.start.y, button: "left", buttons: 1, clickCount: 1,
+  });
+  for (let step = 1; step <= 6; step++) {
+    const progress = step / 6;
+    await cdp.send("Input.dispatchMouseEvent", {
+      type: "mouseMoved",
+      x: points.start.x + (points.end.x - points.start.x) * progress,
+      y: points.start.y + (points.end.y - points.start.y) * progress,
+      button: "left",
+      buttons: 1,
+    });
+  }
+  await cdp.send("Input.dispatchMouseEvent", {
+    type: "mouseReleased", x: points.end.x, y: points.end.y, button: "left", buttons: 0, clickCount: 1,
+  });
+  await sleep(220);
 }
 
 async function parkPointer() {
@@ -335,18 +397,28 @@ await evaluate(`(() => {
   end?.dispatchEvent(new MouseEvent("click", { bubbles: true, shiftKey: true }));
 })()`);
 await waitFor(`document.querySelectorAll('.verse-line[aria-pressed="true"]').length === 3`);
-await waitFor(`Boolean(document.querySelector(".hl-toolbar-floating"))`);
+await waitFor(`!document.querySelector(${JSON.stringify(MARKING_SELECTION_CHROME_SELECTOR)})`);
 assert.deepEqual(
   await evaluate(`[...document.querySelectorAll('.verse-line[aria-pressed="true"]')].map((row) => row.getAttribute("data-verse"))`),
   ["2", "3", "4"],
 );
 await screenshot("paper-range-selection");
-await pressEscape();
-await waitFor(`!document.querySelector(".hl-toolbar-floating")`, 2_000);
 await evaluate(`document.querySelector('.verse-line[data-verse="2"]')?.click()`);
 await waitFor(`document.querySelectorAll('.verse-line[aria-pressed="true"]').length === 1`);
 await evaluate(`document.querySelector('.verse-line[data-verse="2"]')?.click()`);
-await waitFor(`document.querySelectorAll('.verse-line[aria-pressed="true"]').length === 0`);
+await waitFor(`document.querySelectorAll('.verse-line[aria-pressed="true"]').length === 1`);
+assert.equal(await evaluate(`Boolean(document.querySelector(${JSON.stringify(MARKING_SELECTION_CHROME_SELECTOR)}))`), false);
+
+// Native text dragging, not a verse click, owns marking intent. Exercise the
+// real CDP pointer path so a programmatic Selection cannot mask regressions in
+// mouseup/click arbitration.
+await dragText('.verse-line[data-verse="2"] .verse-text-span');
+await waitFor(`Boolean(document.querySelector(${JSON.stringify(MARKING_SELECTION_CHROME_SELECTOR)}))`);
+assert.equal(await evaluate(`window.getSelection()?.isCollapsed`), false);
+assert.equal(await evaluate(`document.querySelectorAll('.verse-line[aria-pressed="true"]').length`), 0);
+await screenshot("paper-drag-marking");
+await pressEscape();
+await waitFor(`!document.querySelector(${JSON.stringify(MARKING_SELECTION_CHROME_SELECTOR)})`, 2_000);
 
 for (const theme of THEMES) {
   await setTheme(theme);

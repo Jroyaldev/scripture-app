@@ -1,6 +1,20 @@
 import type { AppTheme } from "./theme.js";
 import type { EntityResearchData } from "../core/entities/place-research.js";
+import type {
+  ConnectionAnchorV2,
+  ConnectionKind,
+  ConnectionRecord,
+} from "../core/annotations/types.js";
+import type {
+  CaptureOccurrenceSelectionResult,
+  OccurrenceSelectionPiece,
+} from "../core/annotations/occurrence-alignment.js";
+import type {
+  ConnectionPaintProjectionRequest,
+  ConnectionPaintProjectionResponse,
+} from "./utils/connectionPaint.js";
 export type { EntityResearchData } from "../core/entities/place-research.js";
+export type { ConnectionAnchor, ConnectionKind, ConnectionRecord } from "../core/annotations/types.js";
 
 /**
  * Type-safe wrapper for the contextBridge API exposed by preload.
@@ -22,6 +36,17 @@ declare global {
         queryVerse(book: string, chapter: number, verse: number): Promise<QueryResult>;
         queryRange(startBook: string, startCh: number, startV: number, endBook: string, endCh: number, endV: number): Promise<QueryResult>;
         createHighlight(book: string, chapter: number, verseStart: number, verseEnd: number, color: string, packageId: string, charStart?: number | null, charEnd?: number | null): Promise<{ ok: boolean; highlightId?: string; changeId?: string; error?: string }>;
+        createConnection(kind: ConnectionKind, label: string, observation: string, anchors: ConnectionAnchorV2[], commandId: string): Promise<{ ok: boolean; connection?: ConnectionRecord; projection?: "current" | "rebuilt" | "pending"; error?: string; warning?: string }>;
+        updateConnection(connectionId: string, kind: ConnectionKind, label: string, observation: string, anchors: ConnectionAnchorV2[], commandId: string, expectedBaseEventId: string): Promise<{ ok: boolean; connection?: ConnectionRecord; projection?: "current" | "rebuilt" | "pending"; conflict?: boolean; error?: string; warning?: string }>;
+        deleteConnection(connectionId: string, commandId: string, expectedBaseEventId: string): Promise<{ ok: boolean; projection?: "current" | "rebuilt" | "pending"; conflict?: boolean; error?: string; warning?: string }>;
+        captureConnectionSelection(
+          packageId: string,
+          selections: readonly OccurrenceSelectionPiece[],
+        ): Promise<CaptureOccurrenceSelectionResult>;
+        projectConnections(
+          packageId: string,
+          connections: readonly ConnectionPaintProjectionRequest[],
+        ): Promise<ConnectionPaintProjectionResponse>;
         eraseHighlightRange(book: string, chapter: number, verseStart: number, verseEnd: number, packageId: string, charStart?: number | null, charEnd?: number | null): Promise<{ ok: boolean; changeId?: string; error?: string }>;
         recolorHighlights(book: string, chapter: number, packageId: string, entityIds: string[], color: string): Promise<{ ok: boolean; changeId?: string; error?: string }>;
         deleteHighlights(book: string, chapter: number, packageId: string, entityIds: string[]): Promise<{ ok: boolean; changeId?: string; error?: string }>;
@@ -150,6 +175,7 @@ declare global {
 export type ReadingSize = "s" | "m" | "l";
 export type ReadingWidth = "narrow" | "medium" | "wide";
 export type VerseNumberMode = "always" | "faint" | "hover";
+export type MarkingSurface = "palette" | "rail" | "radial" | "dock";
 
 /** One stop in the passage-picker recents list. */
 export interface RecentPassageSetting {
@@ -162,6 +188,7 @@ export interface RecentPassageSetting {
 
 export interface AppSettings {
   theme: AppTheme;
+  markingSurface: MarkingSurface;
   sidebarCollapsed: boolean;
   marginVisible: boolean;
   readingSize: ReadingSize;
@@ -237,6 +264,7 @@ export interface NoteRecord {
 export interface QueryResult {
   anchors: AnchorRecord[];
   highlights: HighlightRecord[];
+  connections: ConnectionRecord[];
   notes: NoteRecord[];
 }
 

@@ -1,12 +1,12 @@
 import type React from "react";
 import { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from "react";
-import { createPortal } from "react-dom";
 import type {
   BackboneData,
   BookNameData,
   ChapterData,
   CrossReferenceResultData,
   HighlightRecord,
+  MarkingSurface as MarkingSurfaceId,
   QueryResult,
   ReadingSize,
   ReadingWidth,
@@ -22,7 +22,19 @@ import { nextVerseSelection } from "../utils/verseSelection.js";
 import { scopeHighlightsToPackage } from "../utils/highlightPackageScope.js";
 import { Popover } from "./Popover.js";
 import { HighlightUnderlay, FADE_MS, SWEEP_MS } from "./HighlightUnderlay.js";
-import { HighlightToolbar } from "./HighlightToolbar.js";
+import {
+  MarkingSurface,
+  type ConnectionExtensionRequest,
+  type ConnectionDraftModel,
+  type MarkingSelectionCapture,
+  type MarkingSelectionModel,
+} from "./MarkingSurface.js";
+import {
+  ConnectionUnderlay,
+  type ConnectionWordHit,
+  type ConnectionWordHitTest,
+} from "./ConnectionUnderlay.js";
+import { ConnectionCard, type ConnectionCardRecovery } from "./ConnectionCard.js";
 import { ReadingComfort, type ReadingPrefs } from "./ReadingComfort.js";
 import { ThemePicker } from "./ThemePicker.js";
 import { Tooltip } from "./Tooltip.js";
@@ -37,6 +49,33 @@ import {
 } from "../utils/recentPassages.js";
 import { isHighlightOverlap, type HighlightRange } from "../../core/events/highlightOverlap.js";
 import { resolveBlobExtent, buildSegments, isAdjacent } from "../../core/events/highlightAdjacency.js";
+import type {
+  ConnectionAnchor,
+  ConnectionAnchorV2,
+  ConnectionKind,
+  ConnectionRecord,
+  ConnectionRecordV2,
+} from "../../core/annotations/types.js";
+import type { OccurrenceSelectionPiece } from "../../core/annotations/occurrence-alignment.js";
+import type {
+  ConnectionPaintAnchor,
+  ConnectionPaintProjection,
+} from "../utils/connectionPaint.js";
+import {
+  connectionRecordVersion,
+  isConnectionProjectionPending,
+  needsLocalConnectionReconciliation,
+  reconcileCreatedConnection,
+  reconcileDeletedConnection,
+  reconcileUpdatedConnection,
+  type ConnectionMutationUiOutcome,
+  type MarginReloadStatus,
+} from "../utils/connectionMutationReconciliation.js";
+import {
+  orderConnectionWordHits,
+  resolveReadingPointerIntent,
+} from "../utils/readingInteraction.js";
+import { parseConnectionTickMemberIds } from "../utils/connectionRowLayout.js";
 
 export interface PinnedRange {
   start: number;
@@ -57,6 +96,35 @@ interface ReferenceViewportTarget {
   requestId: number;
 }
 
+interface MarkingSelectionSnapshot {
+  contextKey: string;
+  generation: number;
+  phrase: HighlightRange | null;
+  verses: Set<number>;
+  verseAnchor: number | null;
+}
+
+interface ConnectionWordChooserState {
+  anchorRect: DOMRect;
+  hits: readonly ConnectionWordHit[];
+  /** Present only when a grouped margin tick owns this chooser. */
+  aggregateMemberIds?: readonly string[];
+}
+
+function findConnectionTickControl(connectionId: string): HTMLButtonElement | null {
+  const direct = document.querySelector<HTMLButtonElement>(
+    `[data-connection-tick="${CSS.escape(connectionId)}"]`,
+  );
+  if (direct) return direct;
+  return [...document.querySelectorAll<HTMLButtonElement>("[data-connection-tick-members]")]
+    .find((button) => parseConnectionTickMemberIds(button.dataset.connectionTickMembers)
+      .includes(connectionId)) ?? null;
+}
+
+type MarginReloadOutcome =
+  | { status: "applied"; value: QueryResult }
+  | { status: Exclude<MarginReloadStatus, "applied"> };
+
 interface Props {
   backbone: BackboneData;
   bookNames: BookNameData;
@@ -76,8 +144,11 @@ interface Props {
   /** Lifted to App, consistent with marginVisible; ScripturePage never owns theme state itself. */
   theme?: AppTheme;
   onThemeChange?: (theme: AppTheme) => void;
+  markingSurface?: MarkingSurfaceId;
   /** Lifted to App, same pattern as onThemeChange; ScripturePage never owns marginVisible itself. */
   onToggleMargin?: () => void;
+  /** Idempotently reveal Living Margin, leaving Focus mode when necessary. */
+  onEnsureMarginVisible?: () => void;
   /** Fired whenever the pinned (selected) verse range changes; null when nothing is selected. */
   onPinnedRangeChange?: (range: PinnedRange | null) => void;
   readingSize?: ReadingSize;
@@ -86,6 +157,7 @@ interface Props {
   onReadingPrefsChange?: (partial: Partial<ReadingPrefs>) => void;
   focusMode?: boolean;
   onToggleFocus?: () => void;
+  onAuthoredMutationStateChange?: (state: "idle" | "in-flight" | "recovery") => void;
   entityIntent?: {
     id: string;
     nonce: number;
@@ -114,6 +186,14 @@ const TRANSLATIONS = [
   { code: "ylt", name: "Young's Literal Translation (1898)" },
   { code: "akjv-strongs", name: "AKJV + Strong's" },
 ];
+
+const EMPTY_CONNECTION_PAINT_PROJECTIONS: ReadonlyMap<string, ConnectionPaintProjection> = new Map();
+const EMPTY_MARGIN_DATA: QueryResult = {
+  anchors: [],
+  highlights: [],
+  connections: [],
+  notes: [],
+};
 
 function MarginToggleIcon(): React.JSX.Element {
   // Mirror of the sidebar's PanelToggleIcon: divider sits on the RIGHT
@@ -225,54 +305,6 @@ function SearchIconSmall(): React.JSX.Element {
   );
 }
 
-/**
- * Keeps its children mounted ~120ms after `show` flips false so the floating
- * highlight toolbar can play a short exit fade instead of vanishing in one
- * frame (the enter side already animates via hlPaletteIn). While leaving it
- * renders a snapshot of the last shown children — the live selection state is
- * usually already cleared by then — and disables pointer events via CSS.
- */
-function PaletteExit({
-  show,
-  children,
-  theme,
-}: {
-  show: boolean;
-  children: React.ReactNode;
-  theme: AppTheme;
-}): React.JSX.Element | null {
-  const [render, setRender] = useState(show);
-  const lastChildren = useRef<React.ReactNode>(null);
-  if (show) lastChildren.current = children;
-  useEffect(() => {
-    if (show) {
-      setRender(true);
-      return;
-    }
-    const t = setTimeout(() => setRender(false), 120);
-    return () => clearTimeout(t);
-  }, [show]);
-  if (!render) return null;
-  const materialClasses = [
-    theme === "dark" || theme === "dark-glass" ? "dark" : "",
-    `theme-${theme}`,
-    show ? "" : "hl-palette-leaving",
-  ].filter(Boolean).join(" ");
-  // A fixed child of a backdrop-filter layer is flattened/clipped by
-  // Chromium in Glass/Candlelight. Portal above the reading canvas and carry
-  // its material classes so geometry and hit-testing stay identical in every
-  // atmosphere.
-  return createPortal(
-    <div
-      className={`floating-material-host ${materialClasses}`}
-      data-floating-layer="toolbar"
-    >
-      {show ? children : lastChildren.current}
-    </div>,
-    document.body,
-  );
-}
-
 export function ScripturePage({
   backbone,
   bookNames,
@@ -284,7 +316,9 @@ export function ScripturePage({
   onAiBusyChange,
   theme = "light",
   onThemeChange,
+  markingSurface = "palette",
   onToggleMargin,
+  onEnsureMarginVisible,
   onPinnedRangeChange,
   readingSize = "m",
   readingWidth = "medium",
@@ -292,6 +326,7 @@ export function ScripturePage({
   onReadingPrefsChange,
   focusMode = false,
   onToggleFocus,
+  onAuthoredMutationStateChange,
   entityIntent,
   onOpenEntity,
   onCloseEntity,
@@ -305,16 +340,59 @@ export function ScripturePage({
   const [chapterData, setChapterData] = useState<ChapterData | null>(null);
   const [chapterError, setChapterError] = useState<string | null>(null);
   const [selectedVerses, setSelectedVerses] = useState<Set<number>>(new Set());
-  const [marginData, setMarginData] = useState<QueryResult>({ anchors: [], highlights: [], notes: [] });
+  const [marginData, setMarginData] = useState<QueryResult>(EMPTY_MARGIN_DATA);
+  const [marginDataChapterKey, setMarginDataChapterKey] = useState<string | null>(null);
+  const marginRequestSequenceRef = useRef(0);
   const [crossRefs, setCrossRefs] = useState<CrossReferenceResultData | null>(null);
   const [semanticData, setSemanticData] = useState<SemanticMarginResult | null>(null);
   const [semanticLoading, setSemanticLoading] = useState(false);
   const [showHighlightPalette, setShowHighlightPalette] = useState(false);
+  const [selectionNonce, setSelectionNonce] = useState(0);
+  const selectionGenerationRef = useRef(0);
+  const [selectionCapture, setSelectionCapture] = useState<{
+    nonce: number;
+    contextKey: string;
+    capture: MarkingSelectionCapture;
+  } | null>(null);
+  const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
+  const [connectionCardRecovery, setConnectionCardRecovery] = useState<ConnectionCardRecovery | null>(null);
+  const [connectionWordChooser, setConnectionWordChooser] = useState<ConnectionWordChooserState | null>(null);
+  const [connectionInspectorFocusRequest, setConnectionInspectorFocusRequest] = useState(0);
+  const connectionWordHitTestRef = useRef<ConnectionWordHitTest | null>(null);
+  const connectionWordChooserOriginRef = useRef<HTMLElement | null>(null);
+  const connectionWordChooserFirstChoiceRef = useRef<HTMLButtonElement | null>(null);
+  const connectionWordChooserFocusFrameRef = useRef<number | null>(null);
+  const visibleConnectionByIdRef = useRef<ReadonlyMap<string, ConnectionRecord>>(new Map());
+  // User-held relationships are ordered independently from the one focused
+  // relationship. Do not conflate this with ConnectionUnderlay's `.held`
+  // planner state, which means a route needs more physical space.
+  const [heldConnectionIds, setHeldConnectionIds] = useState<string[]>([]);
+  const heldConnectionIdsRef = useRef<string[]>([]);
+  const [connectionExtension, setConnectionExtension] = useState<ConnectionExtensionRequest | null>(null);
+  const [connectionDraft, setConnectionDraft] = useState<ConnectionDraftModel | null>(null);
+  const [markingMutationState, setMarkingMutationState] = useState<"idle" | "in-flight" | "recovery">("idle");
+  const [cardMutationState, setCardMutationState] = useState<"idle" | "in-flight" | "recovery">("idle");
+  const markingMutationStateRef = useRef(markingMutationState);
+  const cardMutationStateRef = useRef(cardMutationState);
+  const [connectionPaintState, setConnectionPaintState] = useState<{
+    requestKey: string;
+    projections: ReadonlyMap<string, ConnectionPaintProjection>;
+  } | null>(null);
+  const connectionPaintRequestRef = useRef(0);
+  const connectionExtensionNonce = useRef(0);
+  const readingFocusFrameRef = useRef<number | null>(null);
   // x is the palette's horizontal CENTER (it's centered over the selection
   // via a CSS transform, not left-aligned); y is the anchor edge — the
   // selection's top when opening above (the common case) or its bottom when
   // flipped below for lack of room.
-  const [palettePos, setPalettePos] = useState({ x: 0, y: 0, flipped: false });
+  const [palettePos, setPalettePos] = useState({
+    x: 0,
+    y: 0,
+    flipped: false,
+    anchorBox: { top: 0, bottom: 0, left: 0, right: 0 },
+    focusBox: { top: 0, bottom: 0, left: 0, right: 0 },
+    proseBox: { top: 0, bottom: 0, left: 0, right: 0 },
+  });
   // Record ids of a just-created highlight — drives the left-to-right sweep-in
   // animation on the new blob. Keyed by highlight id (not verse number) so a
   // sweep can never leak onto a neighboring untouched highlight that happens
@@ -339,12 +417,74 @@ export function ScripturePage({
   // click handler that fires immediately after, so drag-residue clicks don't
   // collapse the phrase selection back to a whole-verse one.
   const suppressNextClickRef = useRef(false);
+  const suppressNextClickTimerRef = useRef<number | null>(null);
+  // A native selection may begin over Scripture and end in the gutter. The
+  // completed gesture still belongs to the reading surface even when mouseup
+  // no longer bubbles through `.verse-text`.
+  const textSelectionGestureRef = useRef(false);
   // Whole-verse range selections are always contiguous. Shift extends from
   // this stable anchor; Command/Control-click intentionally behaves like a
   // normal click until discontiguous groups have an honest persistence model.
   const verseSelectionAnchorRef = useRef<number | null>(null);
   const [retryToken, setRetryToken] = useState(0);
   const [scrolled, setScrolled] = useState(false);
+
+  const suppressTrailingDragClick = useCallback((): void => {
+    suppressNextClickRef.current = true;
+    if (suppressNextClickTimerRef.current != null) {
+      window.clearTimeout(suppressNextClickTimerRef.current);
+    }
+    // Native click dispatch follows mouseup before zero-delay timers. This
+    // consumes only that gesture's residue; an outside release cannot poison
+    // the user's next deliberate Scripture click.
+    suppressNextClickTimerRef.current = window.setTimeout(() => {
+      suppressNextClickTimerRef.current = null;
+      suppressNextClickRef.current = false;
+    }, 0);
+  }, []);
+
+  useEffect(() => () => {
+    if (suppressNextClickTimerRef.current != null) {
+      window.clearTimeout(suppressNextClickTimerRef.current);
+      suppressNextClickTimerRef.current = null;
+    }
+  }, []);
+
+  const advanceSelectionGeneration = useCallback((): void => {
+    // A newly explicit selection supersedes any deferred focus return owned by
+    // the selection that just closed. Without cancelling this frame, a resize
+    // or side-Rail placement pass can let the stale callback run after the new
+    // tray opens and steal focus back from its first command.
+    if (readingFocusFrameRef.current != null) {
+      window.cancelAnimationFrame(readingFocusFrameRef.current);
+      readingFocusFrameRef.current = null;
+    }
+    const next = selectionGenerationRef.current + 1;
+    selectionGenerationRef.current = next;
+    setSelectionNonce(next);
+  }, []);
+
+  const closeConnectionWordChooser = useCallback((restoreFocus = false): void => {
+    if (connectionWordChooserFocusFrameRef.current != null) {
+      window.cancelAnimationFrame(connectionWordChooserFocusFrameRef.current);
+      connectionWordChooserFocusFrameRef.current = null;
+    }
+    const origin = connectionWordChooserOriginRef.current;
+    connectionWordChooserOriginRef.current = null;
+    setConnectionWordChooser(null);
+    if (!restoreFocus || !origin) return;
+    connectionWordChooserFocusFrameRef.current = window.requestAnimationFrame(() => {
+      connectionWordChooserFocusFrameRef.current = null;
+      if (origin.isConnected) origin.focus({ preventScroll: true });
+    });
+  }, []);
+
+  useEffect(() => () => {
+    if (connectionWordChooserFocusFrameRef.current != null) {
+      window.cancelAnimationFrame(connectionWordChooserFocusFrameRef.current);
+      connectionWordChooserFocusFrameRef.current = null;
+    }
+  }, []);
 
   // Passage picker popover state
   const [passageOpen, setPassageOpen] = useState(false);
@@ -374,6 +514,8 @@ export function ScripturePage({
   const [versionAnchor, setVersionAnchor] = useState<DOMRect | null>(null);
 
   const contentRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const [stageBounds, setStageBounds] = useState({ left: 0, top: 58, width: 900, height: 700, bottom: 758 });
   const pendingTranslationViewportRef = useRef<TranslationViewport | null>(null);
   const [referenceViewportTarget, setReferenceViewportTarget] = useState<ReferenceViewportTarget | null>(null);
   const referenceViewportRequestRef = useRef(0);
@@ -386,12 +528,54 @@ export function ScripturePage({
   } | null>(null);
   const chapterHeadingRef = useRef<HTMLHeadingElement>(null);
   const shouldFocusChapterHeading = useRef(false);
-  const paletteRef = useRef<HTMLDivElement>(null);
   // The .verse-text container — the SVG highlight underlay is positioned
   // absolutely inside it (behind the verse rows). Measured each pass so the
   // blobs track reflow on resize, font load, and margin toggle.
   const verseTextRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
+  const handleMarkingMutationStateChange = useCallback((state: "idle" | "in-flight" | "recovery"): void => {
+    markingMutationStateRef.current = state;
+    if (state !== "idle") {
+      userNavigatedRef.current = true;
+      onAuthoredMutationStateChange?.(state);
+    }
+    setMarkingMutationState(state);
+  }, [onAuthoredMutationStateChange]);
+  const handleCardMutationStateChange = useCallback((state: "idle" | "in-flight" | "recovery"): void => {
+    cardMutationStateRef.current = state;
+    if (state !== "idle") {
+      userNavigatedRef.current = true;
+      onAuthoredMutationStateChange?.(state);
+    }
+    setCardMutationState(state);
+  }, [onAuthoredMutationStateChange]);
+  const connectionNavigationLocked = markingMutationState !== "idle"
+    || cardMutationState !== "idle"
+    || connectionCardRecovery != null;
+  useEffect(() => {
+    const state = connectionCardRecovery != null
+      || markingMutationState === "recovery"
+      || cardMutationState === "recovery"
+      ? "recovery"
+      : markingMutationState === "in-flight" || cardMutationState === "in-flight"
+        ? "in-flight"
+        : "idle";
+    onAuthoredMutationStateChange?.(state);
+  }, [cardMutationState, connectionCardRecovery, markingMutationState, onAuthoredMutationStateChange]);
+  const requireSafeConnectionNavigation = useCallback((): boolean => {
+    const markingState = markingMutationStateRef.current;
+    const cardState = cardMutationStateRef.current;
+    if (markingState === "idle" && cardState === "idle" && connectionCardRecovery == null) return true;
+    showToast(
+      markingState === "in-flight" || cardState === "in-flight"
+        ? "Finishing the current authored change · navigation will be available when it settles."
+        : "Recovery required · retry the exact connection command before leaving this text.",
+      undefined,
+      undefined,
+      { tone: "warning", durationMs: 7_000 },
+    );
+    return false;
+  }, [connectionCardRecovery, showToast]);
 
   // Verse nearest the reading eye-line — ambient Living Margin only.
   // Frozen while the pointer is over the margin or language study has locked
@@ -400,6 +584,18 @@ export function ScripturePage({
   const verseRowRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const marginActiveRef = useRef(false);
   const studyLockVerseRef = useRef<number | null>(null);
+  const readingFocusContextRef = useRef({
+    book,
+    chapter,
+    nearVerse: null as number | null,
+    firstVerse: null as number | null,
+  });
+  readingFocusContextRef.current = {
+    book,
+    chapter,
+    nearVerse,
+    firstVerse: chapterData?.verses[0]?.verse ?? null,
+  };
 
   // Full verse text for the current chapter, keyed by verse number — passed
   // down to the Living Margin for pinned-passage quotes and the passage-
@@ -435,14 +631,26 @@ export function ScripturePage({
     return chapterVerseText;
   }, [book, chapter, packageId, chapterError, chapterVerseText]);
 
+  // Results are chapter-scoped. Suppress the previous chapter immediately
+  // when navigation changes context; an interrupted or failed query must
+  // never leave old authored connections clickable in Living Margin.
+  const visibleMarginData = marginDataChapterKey === `${book}:${chapter}`
+    ? marginData
+    : EMPTY_MARGIN_DATA;
+  const visibleConnectionById = useMemo<ReadonlyMap<string, ConnectionRecord>>(
+    () => new Map(visibleMarginData.connections.map((connection) => [connection.id, connection])),
+    [visibleMarginData.connections],
+  );
+  visibleConnectionByIdRef.current = visibleConnectionById;
+
   // Highlight character offsets are translation-specific. queryRange returns
   // every package for the canonical verse range, but all rendering, selection,
   // recolor, removal, and ambient-annotation logic must operate on only the
   // active text package. Whole-verse records stay package-scoped too so a
   // later phrase edit cannot accidentally merge cross-translation entities.
   const packageHighlights = useMemo(
-    () => scopeHighlightsToPackage(marginData.highlights, packageId),
-    [marginData.highlights, packageId],
+    () => scopeHighlightsToPackage(visibleMarginData.highlights, packageId),
+    [packageId, visibleMarginData.highlights],
   );
 
   // Highlight records, with char_start/char_end normalized to `null` (the
@@ -477,9 +685,90 @@ export function ScripturePage({
   // Passing this scoped view to Living Margin keeps its counts, swatches, and
   // remove/recolor actions aligned with the layer visible on the page.
   const packageMarginData = useMemo<QueryResult>(() => ({
-    ...marginData,
+    ...visibleMarginData,
     highlights: normalizedHighlights,
-  }), [marginData, normalizedHighlights]);
+  }), [normalizedHighlights, visibleMarginData]);
+
+  const selectedConnection = useMemo(() => {
+    if (connectionCardRecovery) {
+      const commandConnection = connectionCardRecovery.kind === "update"
+        ? connectionCardRecovery.command.next
+        : connectionCardRecovery.command.connection;
+      const visible = visibleMarginData.connections.find((connection) => connection.id === commandConnection.id);
+      if (!visible) return connectionCardRecovery.visibleConnection;
+      if (connectionCardRecovery.kind === "delete") return visible;
+      const visibleVersion = connectionRecordVersion(visible);
+      // Keep an unconfirmed draft visible while the read model still exposes
+      // its exact base. A genuinely newer query version always wins.
+      return visibleVersion === connectionCardRecovery.command.expectedBaseEventId
+        ? connectionCardRecovery.command.next
+        : visible;
+    }
+    return visibleMarginData.connections.find((connection) => connection.id === selectedConnectionId) ?? null;
+  }, [connectionCardRecovery, selectedConnectionId, visibleMarginData.connections]);
+  const visibleHeldConnectionIds = useMemo(() => {
+    const available = new Set(visibleMarginData.connections.map((connection) => connection.id));
+    return heldConnectionIds.filter((connectionId) => available.has(connectionId));
+  }, [heldConnectionIds, visibleMarginData.connections]);
+
+  const connectionPaintRequestKey = useMemo(() => JSON.stringify([
+    book,
+    chapter,
+    packageId,
+    ...visibleMarginData.connections.map((connection) => [connection.id, connection.activeEventId]),
+  ]), [book, chapter, packageId, visibleMarginData.connections]);
+  const currentConnectionPaintProjections = connectionPaintState?.requestKey === connectionPaintRequestKey
+    ? connectionPaintState.projections
+    : EMPTY_CONNECTION_PAINT_PROJECTIONS;
+
+  useEffect(() => {
+    const requestKey = connectionPaintRequestKey;
+    const connectionRequests = visibleMarginData.connections.map((connection) => ({
+      connectionId: connection.id,
+      expectedActiveEventId: connection.activeEventId,
+    }));
+    const expectedVersions = new Map(
+      connectionRequests.map((request) => [request.connectionId, request.expectedActiveEventId]),
+    );
+    const request = ++connectionPaintRequestRef.current;
+    if (connectionRequests.length === 0) {
+      setConnectionPaintState({ requestKey, projections: EMPTY_CONNECTION_PAINT_PROJECTIONS });
+      return;
+    }
+    let cancelled = false;
+    void safeCall(() => window.api.library.projectConnections(packageId, connectionRequests)).then((result) => {
+      if (
+        cancelled
+        || request !== connectionPaintRequestRef.current
+      ) return;
+      if (!result.ok || !result.value.ok || result.value.packageId !== packageId) {
+        setConnectionPaintState({ requestKey, projections: EMPTY_CONNECTION_PAINT_PROJECTIONS });
+        return;
+      }
+      const projections = new Map<string, ConnectionPaintProjection>();
+      for (const projection of result.value.projections) {
+        const expectedVersion = expectedVersions.get(projection.connectionId);
+        if (!expectedVersion) continue;
+        if (projection.status !== "unavailable" && projection.sourceActiveEventId !== expectedVersion) {
+          projections.set(projection.connectionId, {
+            ...projection,
+            status: "unavailable",
+            anchors: [],
+            error: {
+              code: "connection-version-mismatch",
+              message: "The connection changed while its wording was being resolved.",
+            },
+          });
+          continue;
+        }
+        projections.set(projection.connectionId, projection);
+      }
+      setConnectionPaintState({ requestKey, projections });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [connectionPaintRequestKey, packageId, visibleMarginData.connections]);
 
   // Verse numbers whose highlight coverage reaches both sides of a verse
   // boundary — backs the "cont-below"/"cont-above" row classes
@@ -516,6 +805,8 @@ export function ScripturePage({
   // loaded data for whatever chapter is actually showing with old data for
   // wherever the user used to be.
   const currentChapterKeyRef = useRef(`${book}:${chapter}`);
+  const currentMarkingContextKeyRef = useRef(`${book}:${chapter}:${packageId}`);
+  currentMarkingContextKeyRef.current = `${book}:${chapter}:${packageId}`;
   useEffect(() => {
     currentChapterKeyRef.current = `${book}:${chapter}`;
   }, [book, chapter]);
@@ -588,9 +879,12 @@ export function ScripturePage({
   // Phase 1: Load deterministic margin data (fast)
   useEffect(() => {
     let cancelled = false;
+    const requestSequence = ++marginRequestSequenceRef.current;
+    const requestChapterKey = `${book}:${chapter}`;
     const verseCount = backbone.books[book]?.chapters[chapter - 1] ?? 0;
     if (verseCount === 0) {
-      setMarginData({ anchors: [], highlights: [], notes: [] });
+      setMarginData(EMPTY_MARGIN_DATA);
+      setMarginDataChapterKey(requestChapterKey);
       setCrossRefs(null);
       return () => {
         cancelled = true;
@@ -599,7 +893,14 @@ export function ScripturePage({
 
     // Keep verse highlight classes current even when the Living Margin is hidden.
     safeCall(() => window.api.library.queryRange(book, chapter, 1, book, chapter, verseCount)).then((res) => {
-      if (!cancelled && res.ok) setMarginData(res.value);
+      if (
+        !cancelled
+        && requestSequence === marginRequestSequenceRef.current
+        && res.ok
+      ) {
+        setMarginData(res.value);
+        setMarginDataChapterKey(requestChapterKey);
+      }
     });
 
     if (!marginVisible) {
@@ -683,6 +984,9 @@ export function ScripturePage({
       if (
         last &&
         !userNavigatedRef.current &&
+        markingMutationStateRef.current === "idle" &&
+        cardMutationStateRef.current === "idle" &&
+        connectionCardRecovery == null &&
         backbone.books[last.book] &&
         last.chapter >= 1 &&
         last.chapter <= (backbone.books[last.book]?.chapters.length ?? 0)
@@ -696,7 +1000,7 @@ export function ScripturePage({
     return () => {
       cancelled = true;
     };
-  }, [backbone]);
+  }, [backbone, connectionCardRecovery]);
 
   // Persist last-read on every passage change (after the initial restore, so
   // the boot default never overwrites a stored position).
@@ -743,6 +1047,7 @@ export function ScripturePage({
   const pendingVerseEndRef = useRef<number | null>(null);
   const goTo = useCallback(
     (b: string, c: number, verse?: number, opts?: { recordRecent?: boolean; rangeEnd?: number }) => {
+      if (!requireSafeConnectionNavigation()) return;
       userNavigatedRef.current = true;
       pendingVerseSelectRef.current = verse ?? null;
       pendingVerseEndRef.current = opts?.rangeEnd ?? null;
@@ -773,7 +1078,7 @@ export function ScripturePage({
         recordRecent(b, c, verse);
       }
     },
-    [book, chapter, recordRecent],
+    [book, chapter, recordRecent, requireSafeConnectionNavigation],
   );
 
   useEffect(() => {
@@ -1004,22 +1309,37 @@ export function ScripturePage({
   }, [backbone, book, chapter, marginVisible, nearVerse, packageId, pinnedRange]);
 
   // Reload margin data after highlight changes
-  const reloadMarginHighlights = useCallback(async () => {
+  const reloadMarginHighlights = useCallback(async (options?: {
+    preserveConnection?: ConnectionRecord;
+  }): Promise<MarginReloadOutcome> => {
+    const requestSequence = ++marginRequestSequenceRef.current;
     const requestBook = book;
     const requestChapter = chapter;
     const verseCount = backbone.books[requestBook]?.chapters[requestChapter - 1] ?? 0;
-    if (verseCount === 0) return;
+    if (verseCount === 0) return { status: "failed" };
     const res = await safeCall(() =>
       window.api.library.queryRange(requestBook, requestChapter, 1, requestBook, requestChapter, verseCount),
     );
-    if (!res.ok) return;
     // The user may have navigated to a different chapter while this fetch
     // was in flight (this function is called from highlight create/delete/
     // undo handlers, including from a 320ms-delayed timeout for the delete
     // fade-out and from undo toasts that can be clicked long after
     // navigating away) — bail rather than clobber the current chapter's
     // already-correct data with a stale response for the one we left.
-    if (currentChapterKeyRef.current !== `${requestBook}:${requestChapter}`) return;
+    if (
+      currentChapterKeyRef.current !== `${requestBook}:${requestChapter}`
+      || requestSequence !== marginRequestSequenceRef.current
+    ) return { status: "superseded" };
+    if (!res.ok) return { status: "failed" };
+    const nextValue = options?.preserveConnection
+      ? {
+          ...res.value,
+          connections: reconcileCreatedConnection(
+            res.value.connections,
+            options.preserveConnection,
+          ),
+        }
+      : res.value;
     setMarginData((prev) => {
       // Skip the update — and the fresh-object identity churn it would
       // otherwise cause on every consumer keyed on marginData.highlights,
@@ -1027,9 +1347,11 @@ export function ScripturePage({
       // data is identical to what's already showing. This fires on every
       // highlight create/delete/undo, often when nothing about this
       // chapter's OTHER highlights actually changed.
-      if (JSON.stringify(prev) === JSON.stringify(res.value)) return prev;
-      return res.value;
+      if (JSON.stringify(prev) === JSON.stringify(nextValue)) return prev;
+      return nextValue;
     });
+    setMarginDataChapterKey(`${requestBook}:${requestChapter}`);
+    return { status: "applied", value: nextValue };
   }, [book, chapter, backbone]);
 
   // Click-outside to dismiss palette.
@@ -1042,9 +1364,8 @@ export function ScripturePage({
     const handler = (e: MouseEvent) => {
       const target = e.target as Node | null;
       if (!target) return;
-      if (paletteRef.current?.contains(target)) return;
-
       const el = target instanceof Element ? target : target.parentElement;
+      if (el?.closest(".marking-floating-host, .marking-rail-host, .marking-dock-host")) return;
       // The version picker changes how this same canonical selection is
       // rendered; opening or choosing from it must not behave like clicking
       // away from the selection. Its panel is portaled to document.body, so
@@ -1068,9 +1389,13 @@ export function ScripturePage({
   useEffect(() => {
     if (!showHighlightPalette) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setShowHighlightPalette(false);
-      }
+      if (e.key !== "Escape" || e.defaultPrevented) return;
+      // Child marking/connection layers own the topmost Escape action. Keep
+      // this legacy fallback only for palette state with no mounted surface.
+      if (document.querySelector(".connection-card, .marking-floating-host, .marking-rail-host, .marking-dock-host")) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      setShowHighlightPalette(false);
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
@@ -1080,14 +1405,23 @@ export function ScripturePage({
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
-      if ((e.metaKey || e.ctrlKey) && e.key === "ArrowLeft") {
+      const target = e.target instanceof Element ? e.target : null;
+      const plainReadingArrow = !e.metaKey
+        && !e.ctrlKey
+        && !e.altKey
+        && !e.shiftKey
+        && Boolean(target?.closest(".verse-line"));
+      const appArrow = e.metaKey || e.ctrlKey;
+      if ((plainReadingArrow || appArrow) && e.key === "ArrowLeft") {
         e.preventDefault();
+        if (!requireSafeConnectionNavigation()) return;
         if (chapter > 1) {
           userNavigatedRef.current = true;
           setChapter(chapter - 1);
         }
-      } else if ((e.metaKey || e.ctrlKey) && e.key === "ArrowRight") {
+      } else if ((plainReadingArrow || appArrow) && e.key === "ArrowRight") {
         e.preventDefault();
+        if (!requireSafeConnectionNavigation()) return;
         if (chapter < chapterCount) {
           userNavigatedRef.current = true;
           setChapter(chapter + 1);
@@ -1096,7 +1430,31 @@ export function ScripturePage({
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [chapter, chapterCount]);
+  }, [chapter, chapterCount, requireSafeConnectionNavigation]);
+
+  // The marking surfaces are sized against the actual reading stage, not the
+  // window. Sidebar collapse, Living Margin, reading measure, and focus mode
+  // can all change this rectangle without a viewport resize.
+  useLayoutEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const measure = (): void => {
+      const rect = stage.getBoundingClientRect();
+      setStageBounds((current) => {
+        const next = { left: rect.left, top: rect.top, width: rect.width, height: rect.height, bottom: rect.bottom };
+        return current.left === next.left && current.top === next.top && current.width === next.width
+          && current.height === next.height && current.bottom === next.bottom ? current : next;
+      });
+    };
+    const observer = new ResizeObserver(measure);
+    observer.observe(stage);
+    window.addEventListener("resize", measure);
+    measure();
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, []);
 
   // Positions the floating highlight palette over the actual selection —
   // not a single clicked row's far edge, which is what this used to key off
@@ -1109,22 +1467,41 @@ export function ScripturePage({
   // palette should point at (a set of verse rows, or a phrase selection's
   // rects), center over it, clamp to the viewport, and flip below when there
   // isn't room above.
-  const positionPaletteForBox = useCallback((box: { top: number; bottom: number; left: number; right: number }) => {
+  const positionPaletteForBox = useCallback((
+    box: { top: number; bottom: number; left: number; right: number },
+    focusBox = box,
+  ) => {
     const centerX = (box.left + box.right) / 2;
-    // The palette's actual width varies slightly (the remove button only
-    // shows when the selection already has a highlight), but not enough to
-    // warrant a measure-then-reposition pass — clamping against a generous
-    // estimate keeps it clear of the window edges either way.
-    const HALF_WIDTH_ESTIMATE = 155;
-    const EDGE_GAP = 12;
-    const x = Math.min(
-      Math.max(centerX, HALF_WIDTH_ESTIMATE + EDGE_GAP),
-      window.innerWidth - HALF_WIDTH_ESTIMATE - EDGE_GAP,
-    );
-    const GAP = 10;
-    const PALETTE_HEIGHT_ESTIMATE = 44;
-    const flipped = box.top - PALETTE_HEIGHT_ESTIMATE - GAP < 0;
-    setPalettePos({ x, y: flipped ? box.bottom + GAP : box.top - GAP, flipped });
+    const proseRect = verseTextRef.current?.getBoundingClientRect();
+    const proseBox = proseRect && proseRect.width > 0 && proseRect.height > 0
+      ? { top: proseRect.top, bottom: proseRect.bottom, left: proseRect.left, right: proseRect.right }
+      : { ...box };
+    // Each presentation receives source geometry only. Palette and Radial
+    // measure their own rendered footprint against the reading stage instead
+    // of relying on a second set of synthetic size estimates here.
+    const next = {
+      x: centerX,
+      y: box.top - 10,
+      flipped: false,
+      anchorBox: { ...box },
+      focusBox: { ...focusBox },
+      proseBox,
+    };
+    setPalettePos((current) => {
+      const close = (a: number, b: number): boolean => Math.abs(a - b) < 0.1;
+      const sameBox = (
+        a: { top: number; bottom: number; left: number; right: number },
+        b: { top: number; bottom: number; left: number; right: number },
+      ): boolean => close(a.top, b.top) && close(a.bottom, b.bottom) && close(a.left, b.left) && close(a.right, b.right);
+      return close(current.x, next.x)
+        && close(current.y, next.y)
+        && current.flipped === next.flipped
+        && sameBox(current.anchorBox, next.anchorBox)
+        && sameBox(current.focusBox, next.focusBox)
+        && sameBox(current.proseBox, next.proseBox)
+        ? current
+        : next;
+    });
   }, []);
 
   // Positions the floating highlight palette over the actual selection —
@@ -1139,12 +1516,13 @@ export function ScripturePage({
       .filter((el): el is HTMLDivElement => !!el)
       .map((el) => el.getBoundingClientRect());
     if (rects.length === 0) return;
+    const focusRect = rects[rects.length - 1];
     positionPaletteForBox({
       top: Math.min(...rects.map((r) => r.top)),
       bottom: Math.max(...rects.map((r) => r.bottom)),
       left: Math.min(...rects.map((r) => r.left)),
       right: Math.max(...rects.map((r) => r.right)),
-    });
+    }, focusRect ? { top: focusRect.top, bottom: focusRect.bottom, left: focusRect.left, right: focusRect.right } : undefined);
   }, [positionPaletteForBox]);
 
   // Locate the DOM node + offset for a character offset into a verse span,
@@ -1181,12 +1559,13 @@ export function ScripturePage({
   const positionPaletteForRange = useCallback((range: Range) => {
     const rects = Array.from(range.getClientRects());
     if (rects.length === 0) return;
+    const focusRect = rects[rects.length - 1];
     positionPaletteForBox({
       top: Math.min(...rects.map((r) => r.top)),
       bottom: Math.max(...rects.map((r) => r.bottom)),
       left: Math.min(...rects.map((r) => r.left)),
       right: Math.max(...rects.map((r) => r.right)),
-    });
+    }, focusRect ? { top: focusRect.top, bottom: focusRect.bottom, left: focusRect.left, right: focusRect.right } : undefined);
   }, [positionPaletteForBox]);
 
   const verseSpanForNode = useCallback((node: Node, container: HTMLElement): HTMLElement | null => {
@@ -1242,86 +1621,57 @@ export function ScripturePage({
       charEnd = lastOffsets.end;
     }
 
-    suppressNextClickRef.current = true;
+    // A completed drag owns this gesture. It may replace an idle connection
+    // focus, but it must never strand an authored command that is settling or
+    // waiting for explicit recovery.
+    if (!requireSafeConnectionNavigation()) {
+      suppressTrailingDragClick();
+      sel.removeAllRanges();
+      return;
+    }
+
+    suppressTrailingDragClick();
+    closeConnectionWordChooser(false);
+    setSelectedConnectionId(null);
     verseSelectionAnchorRef.current = null;
     setSelectedVerses(new Set());
     setPhraseSelection({ verseStart, verseEnd, charStart, charEnd });
+    advanceSelectionGeneration();
     positionPaletteForRange(range);
     setShowHighlightPalette(true);
-  }, [positionPaletteForRange, verseNumberForSpan, verseSpanForNode]);
+  }, [advanceSelectionGeneration, closeConnectionWordChooser, positionPaletteForRange, requireSafeConnectionNavigation, suppressTrailingDragClick, verseNumberForSpan, verseSpanForNode]);
 
-  // NOTE on why these compute `next` from `selectedVerses` directly instead
-  // of via a setSelectedVerses(prev => ...) functional updater: this used to
-  // be a functional updater, with the computed set captured into a local
-  // variable read immediately after for palette positioning. That's unsound
-  // — React does not guarantee an updater callback runs synchronously before
-  // the next line of the handler executes (it sometimes computes state
-  // eagerly at the call site as an optimization, sometimes defers it to the
-  // render phase depending on what else is pending), so the "immediately
-  // after" read was sometimes stale (still the pre-click empty set),
-  // silently skipping the palette. Reading `selectedVerses` from the render
-  // closure and listing it as a dependency is both synchronously readable
-  // and correct, since the callback is recreated whenever it changes.
-  const handleVerseClick = useCallback((verse: number, event: React.MouseEvent) => {
-    // A drag-selection's trailing click is residue — the mouseup handler
-    // already turned it into a phrase selection. Consume the flag and no-op.
-    if (suppressNextClickRef.current) {
-      suppressNextClickRef.current = false;
-      return;
-    }
-    // Explicit verse pick takes over from ambient study-lock.
-    studyLockVerseRef.current = null;
-    // A whole-verse click always supersedes any active phrase selection.
-    setPhraseSelection(null);
-    const result = nextVerseSelection(selectedVerses, verseSelectionAnchorRef.current, verse, event.shiftKey);
-    const next = result.selection;
-    verseSelectionAnchorRef.current = result.anchor;
-    setSelectedVerses(next);
-
-    if (next.size > 0) {
-      positionPalette(next);
-      setShowHighlightPalette(true);
-    } else {
-      setShowHighlightPalette(false);
-    }
-  }, [selectedVerses, positionPalette]);
-
-  // Keyboard equivalent of handleVerseClick for keyboard users: Enter/Space
-  // toggles selection and opens the highlight palette on the focused verse.
-  // Shift+Enter extends the range (matching shift-click), matching the
-  // existing pointer interaction model. Reuses the same positioning logic so
-  // the palette appears in the same spot a click would put it.
-  const handleVerseKeyDown = useCallback((verse: number, event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (!event.metaKey && !event.ctrlKey && !event.altKey) {
-      const verses = chapterData?.verses ?? [];
-      const index = verses.findIndex((item) => item.verse === verse);
-      let targetVerse: number | null = null;
-      if (event.key === "ArrowUp" && index > 0) targetVerse = verses[index - 1]!.verse;
-      if (event.key === "ArrowDown" && index >= 0 && index < verses.length - 1) targetVerse = verses[index + 1]!.verse;
-      if (event.key === "Home" && verses.length > 0) targetVerse = verses[0]!.verse;
-      if (event.key === "End" && verses.length > 0) targetVerse = verses[verses.length - 1]!.verse;
-      if (targetVerse != null) {
-        event.preventDefault();
-        verseRowRefs.current.get(targetVerse)?.focus();
-        return;
-      }
-    }
-    if (event.key !== "Enter" && event.key !== " ") return;
-    event.preventDefault();
-    studyLockVerseRef.current = null;
-    setPhraseSelection(null);
-    const result = nextVerseSelection(selectedVerses, verseSelectionAnchorRef.current, verse, event.shiftKey);
-    const next = result.selection;
-    verseSelectionAnchorRef.current = result.anchor;
-    setSelectedVerses(next);
-
-    if (next.size > 0) {
-      positionPalette(next);
-      setShowHighlightPalette(true);
-    } else {
-      setShowHighlightPalette(false);
-    }
-  }, [chapterData, selectedVerses, positionPalette]);
+  // Commit by gesture origin, not release target. This keeps a real drag that
+  // ends in loom air or the page gutter from silently degrading into nothing.
+  useEffect(() => {
+    const handleDocumentMouseDown = (event: MouseEvent): void => {
+      const target = event.target instanceof Element
+        ? event.target
+        : event.target instanceof Node ? event.target.parentElement : null;
+      textSelectionGestureRef.current = event.button === 0
+        && target?.closest(".verse-text-span") != null
+        && verseTextRef.current?.contains(target) === true;
+      if (textSelectionGestureRef.current) suppressNextClickRef.current = false;
+    };
+    const handleDocumentMouseUp = (event: MouseEvent): void => {
+      if (event.button !== 0 || !textSelectionGestureRef.current) return;
+      textSelectionGestureRef.current = false;
+      handleTextMouseUp();
+    };
+    const cancelTextSelectionGesture = (): void => {
+      textSelectionGestureRef.current = false;
+    };
+    document.addEventListener("mousedown", handleDocumentMouseDown, true);
+    document.addEventListener("mouseup", handleDocumentMouseUp);
+    document.addEventListener("pointercancel", cancelTextSelectionGesture);
+    window.addEventListener("blur", cancelTextSelectionGesture);
+    return () => {
+      document.removeEventListener("mousedown", handleDocumentMouseDown, true);
+      document.removeEventListener("mouseup", handleDocumentMouseUp);
+      document.removeEventListener("pointercancel", cancelTextSelectionGesture);
+      window.removeEventListener("blur", cancelTextSelectionGesture);
+    };
+  }, [handleTextMouseUp]);
 
   // Re-anchor the palette on window resize AND on scroll — its position is
   // computed from viewport-relative rects at the moment it opens, which go
@@ -1332,8 +1682,10 @@ export function ScripturePage({
   // Handles both a whole-verse selection and a phrase selection (rebuilding
   // the phrase's range from its stored offsets).
   useEffect(() => {
+    if (markingSurface === "dock") return;
     if (!showHighlightPalette) return;
     if (selectedVerses.size === 0 && !phraseSelection) return;
+    let frame = 0;
     const handler = () => {
       if (phraseSelection) {
         const range = buildPhraseRange(phraseSelection);
@@ -1342,13 +1694,41 @@ export function ScripturePage({
         positionPalette(selectedVerses);
       }
     };
-    window.addEventListener("resize", handler);
-    window.addEventListener("scroll", handler, true);
-    return () => {
-      window.removeEventListener("resize", handler);
-      window.removeEventListener("scroll", handler, true);
+    const schedule = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        handler();
+      });
     };
-  }, [showHighlightPalette, selectedVerses, phraseSelection, positionPalette, positionPaletteForRange, buildPhraseRange]);
+    handler();
+    window.addEventListener("resize", schedule);
+    window.addEventListener("scroll", schedule, true);
+    let cancelled = false;
+    void document.fonts?.ready.then(() => {
+      if (!cancelled) schedule();
+    });
+    document.fonts?.addEventListener("loadingdone", schedule);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("resize", schedule);
+      window.removeEventListener("scroll", schedule, true);
+      document.fonts?.removeEventListener("loadingdone", schedule);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, [
+    buildPhraseRange,
+    phraseSelection,
+    markingSurface,
+    positionPalette,
+    positionPaletteForRange,
+    selectedVerses,
+    showHighlightPalette,
+    stageBounds.height,
+    stageBounds.left,
+    stageBounds.top,
+    stageBounds.width,
+  ]);
 
   const undoHighlightChange = (changeId: string) => {
     void safeCall(() => window.api.library.undoHighlightChange(changeId)).then(async (result) => {
@@ -1359,21 +1739,51 @@ export function ScripturePage({
     });
   };
 
-  const handleHighlight = async (color: string) => {
+  const captureMarkingSelection = (): MarkingSelectionSnapshot => ({
+    contextKey: currentMarkingContextKeyRef.current,
+    generation: selectionGenerationRef.current,
+    phrase: phraseSelection ? { ...phraseSelection } : null,
+    verses: new Set(selectedVerses),
+    verseAnchor: verseSelectionAnchorRef.current,
+  });
+
+  const restoreMarkingSelection = (snapshot: MarkingSelectionSnapshot): void => {
+    // Never restore package-specific character offsets into a chapter or
+    // translation the user navigated to while persistence was in flight.
+    if (
+      currentMarkingContextKeyRef.current !== snapshot.contextKey
+      || selectionGenerationRef.current !== snapshot.generation
+    ) return;
+    // A failed async marking write returns ownership to the restored surface.
+    // Cancel the reading-focus frame requested while the selection was hidden,
+    // otherwise a throttled rAF can land after the Radial has restored its
+    // first command and steal focus back to the verse.
+    if (readingFocusFrameRef.current != null) {
+      window.cancelAnimationFrame(readingFocusFrameRef.current);
+      readingFocusFrameRef.current = null;
+    }
+    setPhraseSelection(snapshot.phrase ? { ...snapshot.phrase } : null);
+    setSelectedVerses(new Set(snapshot.verses));
+    verseSelectionAnchorRef.current = snapshot.verseAnchor;
+    setShowHighlightPalette(true);
+  };
+
+  const handleHighlight = async (color: string): Promise<boolean> => {
     // A phrase drag is a PRECISE gesture — it applies the color to exactly its
     // character range and trims whatever it overlaps (standard highlighter
     // behavior). A whole-verse click is a COARSE gesture — it operates on the
     // whole visual blob (recolor/remove the passage as one unit). This is the
     // clean split: honor the granularity the user selected at.
-    const isPhrase = phraseSelection != null;
-    const target: HighlightRange | null = phraseSelection
-      ? phraseSelection
+    const selectionSnapshot = captureMarkingSelection();
+    const isPhrase = selectionSnapshot.phrase != null;
+    const target: HighlightRange | null = selectionSnapshot.phrase
+      ? selectionSnapshot.phrase
       : (() => {
           const sorted = [...selectedVerses].sort((a, b) => a - b);
           if (sorted.length === 0) return null;
           return { verseStart: sorted[0]!, verseEnd: sorted[sorted.length - 1]!, charStart: null as number | null, charEnd: null as number | null };
         })();
-    if (!target) return;
+    if (!target) return false;
 
     const activeHere = normalizedHighlights.filter(
       (h) => h.deleted === 0 && h.book === book && h.chapter === chapter,
@@ -1404,7 +1814,7 @@ export function ScripturePage({
       const blobIds = new Set<string>();
       for (const t of touched) for (const id of resolveBlobExtent(activeHere, t.id)) blobIds.add(id);
       const blobRecords = activeHere.filter((h) => blobIds.has(h.id));
-      if (blobRecords.every((h) => h.color === color)) return; // already this color
+      if (blobRecords.every((h) => h.color === color)) return true; // already this color
 
       const recolor = await safeCall(() => window.api.library.recolorHighlights(
         book, chapter, packageId, [...blobIds], color,
@@ -1415,7 +1825,9 @@ export function ScripturePage({
         showToast(recolor.ok ? recolor.value.error ?? "Failed to recolor highlight" : recolor.error, undefined, undefined, { tone: "error" });
       }
       await reloadMarginHighlights();
-      return;
+      const ok = recolor.ok && recolor.value.ok;
+      if (!ok) restoreMarkingSelection(selectionSnapshot);
+      return ok;
     }
 
     // CREATE path: a fresh highlight, a phrase applied over existing text, or
@@ -1466,14 +1878,17 @@ export function ScripturePage({
           return next;
         });
       }, SWEEP_MS);
+      return true;
     } else {
       showToast("Failed to create highlight", undefined, undefined, { tone: "error" });
       setAnimateIds(new Set());
       await reloadMarginHighlights(); // Revert optimistic update
+      restoreMarkingSelection(selectionSnapshot);
+      return false;
     }
   };
 
-  const handleDeleteHighlights = async (entityIds: string[]) => {
+  const handleDeleteHighlights = async (entityIds: string[]): Promise<boolean> => {
     const requestKey = `${book}:${chapter}`;
     const activeHere = normalizedHighlights.filter(
       (h) => h.deleted === 0 && h.book === book && h.chapter === chapter,
@@ -1486,7 +1901,7 @@ export function ScripturePage({
     }
     const blobIds = [...blobIdSet];
     const targets = activeHere.filter((h) => blobIds.includes(h.id));
-    if (targets.length === 0) return;
+    if (targets.length === 0) return false;
 
     // Fade every record in the blob at once. marginData still holds them, so
     // the underlay keeps rendering their blob (now fading) instead of it
@@ -1522,14 +1937,17 @@ export function ScripturePage({
           if (currentChapterKeyRef.current === requestKey) clearFading();
         })();
       }, FADE_MS);
+      return true;
     } else {
       showToast(result.ok ? result.value.error ?? "Failed to remove highlight" : result.error, undefined, undefined, { tone: "error" });
       clearFading();
+      return false;
     }
   };
 
-  const handleRemoveSelection = async () => {
-    const phrase = phraseSelection;
+  const handleRemoveSelection = async (): Promise<boolean> => {
+    const selectionSnapshot = captureMarkingSelection();
+    const phrase = selectionSnapshot.phrase;
     const touched = touchedHighlights();
     setShowHighlightPalette(false);
     setSelectedVerses(new Set());
@@ -1552,10 +1970,14 @@ export function ScripturePage({
         showToast(result.ok ? result.value.error ?? "Failed to remove selection" : result.error, undefined, undefined, { tone: "error" });
       }
       await reloadMarginHighlights();
-      return;
+      const ok = result.ok && result.value.ok;
+      if (!ok) restoreMarkingSelection(selectionSnapshot);
+      return ok;
     }
 
-    await handleDeleteHighlights(touched.map((highlight) => highlight.id));
+    const ok = await handleDeleteHighlights(touched.map((highlight) => highlight.id));
+    if (!ok) restoreMarkingSelection(selectionSnapshot);
+    return ok;
   };
 
   const handleNoteFromSelection = () => {
@@ -1566,15 +1988,28 @@ export function ScripturePage({
     if (phraseSelection) {
       verseStart = phraseSelection.verseStart;
       verseEnd = phraseSelection.verseEnd;
-      // Prefer the actual selected span when it lives in a single verse.
-      if (
-        phraseSelection.verseStart === phraseSelection.verseEnd &&
-        phraseSelection.charStart != null &&
-        phraseSelection.charEnd != null
-      ) {
-        const full = chapterVerseText.get(phraseSelection.verseStart) ?? "";
-        phraseQuote = full.slice(phraseSelection.charStart, phraseSelection.charEnd);
-      }
+      // Preserve the exact selected phrase across verse boundaries. The first
+      // and last offsets belong to their respective endpoint verses; interior
+      // verses remain complete.
+      phraseQuote = [...chapterVerseText.entries()]
+        .filter(([verse]) => verse >= verseStart && verse <= verseEnd)
+        .sort((a, b) => a[0] - b[0])
+        .map(([verse, text]) => {
+          let fragment = text;
+          if (verse === verseStart && phraseSelection.charStart != null) {
+            fragment = fragment.slice(phraseSelection.charStart);
+          }
+          if (verse === verseEnd && phraseSelection.charEnd != null) {
+            const end = verse === verseStart && phraseSelection.charStart != null
+              ? phraseSelection.charEnd - phraseSelection.charStart
+              : phraseSelection.charEnd;
+            fragment = fragment.slice(0, Math.max(0, end));
+          }
+          return fragment;
+        })
+        .join(" ")
+        .replace(/\s+/g, " ")
+        .trim();
     } else if (selectedVerses.size > 0) {
       const sorted = [...selectedVerses].sort((a, b) => a - b);
       verseStart = sorted[0]!;
@@ -1675,6 +2110,197 @@ export function ScripturePage({
     return `${displayBookName} ${chapter}:${sorted[0]}–${sorted[sorted.length - 1]}`;
   }, [phraseSelection, selectedVerses, displayBookName, chapter]);
 
+  // Keep the renderer-only exact fragments stable while the floating surface
+  // repositions. Palette geometry changes on scroll/resize, but the selected
+  // words do not; rebuilding these anchors would unnecessarily invalidate the
+  // underlay's transient selection record and its measured paint.
+  const markingSelectionPaintAnchors = useMemo<readonly ConnectionPaintAnchor[]>(() => {
+    // selectedVerses is also the Living Margin's Study scope. Only an
+    // explicit marking session (a real drag, or the keyboard M command) may
+    // enter exact-capture/auto-apply paths.
+    if (!showHighlightPalette) return [];
+    let verseStart: number;
+    let verseEnd: number;
+    let charStart: number | null = null;
+    let charEnd: number | null = null;
+    if (phraseSelection) {
+      verseStart = phraseSelection.verseStart;
+      verseEnd = phraseSelection.verseEnd;
+      charStart = phraseSelection.charStart;
+      charEnd = phraseSelection.charEnd;
+    } else if (selectedVerses.size > 0) {
+      const sorted = [...selectedVerses].sort((a, b) => a - b);
+      verseStart = sorted[0]!;
+      verseEnd = sorted[sorted.length - 1]!;
+    } else {
+      return [];
+    }
+
+    const paintAnchors: ConnectionPaintAnchor[] = [];
+    for (let verse = verseStart; verse <= verseEnd; verse += 1) {
+      const text = chapterVerseText.get(verse);
+      if (text == null) continue;
+      const fragmentStart = phraseSelection && verse === verseStart ? charStart ?? 0 : 0;
+      const fragmentEnd = phraseSelection && verse === verseEnd ? charEnd ?? text.length : text.length;
+      if (fragmentEnd <= fragmentStart) continue;
+      paintAnchors.push({
+        book: book as ConnectionPaintAnchor["book"],
+        chapter,
+        verse_start: verse,
+        verse_end: verse,
+        fragments: [{
+          verse,
+          char_start: fragmentStart,
+          char_end: fragmentEnd,
+          quote: text.slice(fragmentStart, fragmentEnd),
+        }],
+      });
+    }
+    return paintAnchors;
+  }, [book, chapter, chapterVerseText, packageId, phraseSelection, selectedVerses, showHighlightPalette]);
+
+  const markingSelectionPieces = useMemo<readonly OccurrenceSelectionPiece[]>(() => (
+    markingSelectionPaintAnchors.flatMap((anchor) => anchor.fragments.map((fragment) => ({
+      book: anchor.book,
+      chapter: anchor.chapter,
+      verse: fragment.verse,
+      char_start: fragment.char_start,
+      char_end: fragment.char_end,
+      quote: fragment.quote,
+    })))
+  ), [markingSelectionPaintAnchors]);
+
+  useEffect(() => {
+    const contextKey = `${book}:${chapter}:${packageId}`;
+    const nonce = selectionNonce;
+    if (markingSelectionPieces.length === 0) {
+      setSelectionCapture(null);
+      return;
+    }
+    let cancelled = false;
+    setSelectionCapture({ nonce, contextKey, capture: { status: "pending" } });
+    void safeCall(() => window.api.library.captureConnectionSelection(
+      packageId,
+      markingSelectionPieces,
+    )).then((result) => {
+      if (
+        cancelled
+        || selectionGenerationRef.current !== nonce
+        || currentMarkingContextKeyRef.current !== contextKey
+      ) return;
+      if (!result.ok) {
+        setSelectionCapture({
+          nonce,
+          contextKey,
+          capture: {
+            status: "refused",
+            message: "Exact connection capture is unavailable. Highlights and notes still work for these words.",
+          },
+        });
+        return;
+      }
+      if (!result.value.ok) {
+        setSelectionCapture({
+          nonce,
+          contextKey,
+          capture: {
+            status: "refused",
+            message: `${result.value.error.message} Highlights and notes still remain available.`,
+          },
+        });
+        return;
+      }
+      setSelectionCapture({
+        nonce,
+        contextKey,
+        capture: { status: "exact", anchor: result.value.anchor },
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [book, chapter, markingSelectionPieces, packageId, selectionNonce]);
+
+  const markingSelection = useMemo<MarkingSelectionModel | null>(() => {
+    if (!showHighlightPalette) return null;
+    let verseStart: number;
+    let verseEnd: number;
+    let charStart: number | null = null;
+    let charEnd: number | null = null;
+    if (phraseSelection) {
+      verseStart = phraseSelection.verseStart;
+      verseEnd = phraseSelection.verseEnd;
+      charStart = phraseSelection.charStart;
+      charEnd = phraseSelection.charEnd;
+    } else if (selectedVerses.size > 0) {
+      const sorted = [...selectedVerses].sort((a, b) => a - b);
+      verseStart = sorted[0]!;
+      verseEnd = sorted[sorted.length - 1]!;
+    } else {
+      return null;
+    }
+
+    const quote = [...chapterVerseText.entries()]
+      .filter(([verse]) => verse >= verseStart && verse <= verseEnd)
+      .sort((a, b) => a[0] - b[0])
+      .map(([verse, text]) => {
+        let fragment = text;
+        if (phraseSelection && verse === verseStart && charStart != null) fragment = fragment.slice(charStart);
+        if (phraseSelection && verse === verseEnd && charEnd != null) {
+          const end = verse === verseStart && charStart != null ? charEnd - charStart : charEnd;
+          fragment = fragment.slice(0, Math.max(0, end));
+        }
+        return fragment;
+      })
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    const contextKey = `${book}:${chapter}:${packageId}`;
+    const capture = selectionCapture?.nonce === selectionNonce
+      && selectionCapture.contextKey === contextKey
+      ? selectionCapture.capture
+      : { status: "pending" as const };
+    return {
+      nonce: selectionNonce,
+      rangeLabel: selectionRangeLabel,
+      quote,
+      activeColor: selectedHighlightColor,
+      mixedColors: mixedSelectionColors,
+      hasExistingHighlight,
+      phraseMode: phraseSelection != null,
+      position: palettePos,
+      capture,
+      paintAnchors: markingSelectionPaintAnchors,
+    };
+  }, [
+    book,
+    chapter,
+    chapterVerseText,
+    hasExistingHighlight,
+    markingSelectionPaintAnchors,
+    mixedSelectionColors,
+    packageId,
+    palettePos,
+    phraseSelection,
+    selectedHighlightColor,
+    selectedVerses,
+    selectionCapture,
+    selectionNonce,
+    selectionRangeLabel,
+    showHighlightPalette,
+  ]);
+
+  const hasMarkingSelection = markingSelection != null;
+  const markingSelectionEmphasis = useMemo(() => (
+    showHighlightPalette && hasMarkingSelection
+      ? {
+          nonce: selectionNonce,
+          anchors: markingSelectionPaintAnchors,
+        }
+      : null
+  ), [hasMarkingSelection, markingSelectionPaintAnchors, selectionNonce, showHighlightPalette]);
+
   // Ambient margin follows the verse nearest the reading eye-line — but never
   // while the pastor is working in the margin (pointer) or has locked a study
   // verse. Otherwise a click on Greek chips feels like "click out" and the
@@ -1764,13 +2390,646 @@ export function ScripturePage({
     setNearVerse(v);
   }, []);
 
-  const handleClearMarginSelection = useCallback(() => {
+  const handleClearMarginSelection = useCallback((expectedNonce?: number) => {
+    if (expectedNonce != null && selectionGenerationRef.current !== expectedNonce) return;
+    window.getSelection()?.removeAllRanges();
     setSelectedVerses(new Set());
     setPhraseSelection(null);
     verseSelectionAnchorRef.current = null;
     studyLockVerseRef.current = null;
     setShowHighlightPalette(false);
   }, []);
+
+  const scheduleVerseFocus = useCallback((targetVerse: number, expectedNonce?: number): void => {
+    if (readingFocusFrameRef.current != null) {
+      window.cancelAnimationFrame(readingFocusFrameRef.current);
+    }
+    const ownerContextKey = currentMarkingContextKeyRef.current;
+    readingFocusFrameRef.current = window.requestAnimationFrame(() => {
+      readingFocusFrameRef.current = null;
+      if (currentMarkingContextKeyRef.current !== ownerContextKey) return;
+      if (expectedNonce != null && selectionGenerationRef.current !== expectedNonce) return;
+      verseRowRefs.current.get(targetVerse)?.focus({ preventScroll: true });
+    });
+  }, []);
+
+  useEffect(() => () => {
+    if (readingFocusFrameRef.current != null) {
+      window.cancelAnimationFrame(readingFocusFrameRef.current);
+      readingFocusFrameRef.current = null;
+    }
+  }, []);
+
+  const handleRequestReadingFocus = useCallback((
+    anchors: readonly (ConnectionAnchor | ConnectionPaintAnchor)[] = [],
+    expectedNonce?: number,
+  ): void => {
+    const context = readingFocusContextRef.current;
+    const localAnchor = anchors.find((anchor) =>
+      anchor.book === context.book && anchor.chapter === context.chapter);
+    const targetVerse = localAnchor?.verse_start ?? context.nearVerse ?? context.firstVerse;
+    if (targetVerse == null) return;
+    scheduleVerseFocus(targetVerse, expectedNonce);
+  }, [scheduleVerseFocus]);
+
+  const handleDismissMarkingSurface = useCallback(() => {
+    const targetVerse = phraseSelection?.verseStart
+      ?? [...selectedVerses].sort((left, right) => left - right)[0]
+      ?? null;
+    setShowHighlightPalette(false);
+    if (targetVerse == null) return;
+    scheduleVerseFocus(targetVerse, selectionGenerationRef.current);
+  }, [phraseSelection, scheduleVerseFocus, selectedVerses]);
+
+  const replaceHeldConnectionIds = useCallback((next: string[]): void => {
+    heldConnectionIdsRef.current = next;
+    setHeldConnectionIds(next);
+  }, []);
+
+  const handleConnectionCardRecoveryChange = useCallback((
+    ownerConnectionId: string,
+    nextRecovery: ConnectionCardRecovery | null,
+  ): void => {
+    setConnectionCardRecovery((current) => {
+      if (nextRecovery) {
+        const nextOwner = nextRecovery.kind === "update"
+          ? nextRecovery.command.next.id
+          : nextRecovery.command.connection.id;
+        return nextOwner === ownerConnectionId ? nextRecovery : current;
+      }
+      if (!current) return null;
+      const currentOwner = current.kind === "update"
+        ? current.command.next.id
+        : current.command.connection.id;
+      return currentOwner === ownerConnectionId ? null : current;
+    });
+    if (!nextRecovery) return;
+    if (!heldConnectionIdsRef.current.includes(ownerConnectionId)) {
+      replaceHeldConnectionIds([...heldConnectionIdsRef.current, ownerConnectionId]);
+    }
+    setSelectedConnectionId(ownerConnectionId);
+    onEnsureMarginVisible?.();
+  }, [onEnsureMarginVisible, replaceHeldConnectionIds]);
+
+  // queryRange is authoritative for which relationships are available on the
+  // current reading surface. Reconcile the durable result back into both the
+  // ordered state and its event-handler ref so a delete/reload can never leave
+  // a ghost pressed tick or an inspector focused on a missing relationship.
+  useEffect(() => {
+    const available = new Set(visibleMarginData.connections.map((connection) => connection.id));
+    const next = heldConnectionIdsRef.current.filter((connectionId) => available.has(connectionId));
+    heldConnectionIdsRef.current = next;
+    setHeldConnectionIds((current) => (
+      current.length === next.length && current.every((connectionId, index) => connectionId === next[index])
+        ? current
+        : next
+    ));
+    setSelectedConnectionId((current) => (
+      current == null
+        ? null
+        : next.includes(current) ? current : (next.at(-1) ?? null)
+    ));
+  }, [visibleMarginData.connections]);
+
+  // The chooser is a transient projection of the current query, never an
+  // authority that can resurrect a relationship removed by a later fold.
+  // Refresh surviving rows to the latest record and close when none remain.
+  useEffect(() => {
+    if (!connectionWordChooser) return;
+    const hits = connectionWordChooser.hits.flatMap((hit) => {
+      const connection = visibleConnectionById.get(hit.connection.id);
+      return connection ? [{ ...hit, connection }] : [];
+    });
+    if (hits.length === 0) {
+      closeConnectionWordChooser(false);
+      return;
+    }
+    const unchanged = hits.length === connectionWordChooser.hits.length
+      && hits.every((hit, index) => hit.connection === connectionWordChooser.hits[index]?.connection);
+    if (!unchanged) {
+      setConnectionWordChooser({ ...connectionWordChooser, hits });
+    }
+  }, [closeConnectionWordChooser, connectionWordChooser, visibleConnectionById]);
+
+  const releaseHeldConnection = useCallback((connectionId: string, restoreFocus = false): void => {
+    const next = heldConnectionIdsRef.current.filter((candidate) => candidate !== connectionId);
+    replaceHeldConnectionIds(next);
+    // A delete/update can resolve after the reader has focused a newer held
+    // relationship. Only choose a fallback when the released id still owns
+    // focus; releasing a nonfocused companion must not steal the newer card.
+    setSelectedConnectionId((current) => (
+      current === connectionId ? (next.at(-1) ?? null) : current
+    ));
+    if (!restoreFocus) return;
+    window.requestAnimationFrame(() => {
+      findConnectionTickControl(connectionId)?.focus({ preventScroll: true });
+    });
+  }, [replaceHeldConnectionIds]);
+
+  const handleSelectConnection = useCallback((
+    connection: ConnectionRecord | null,
+    focusInspector = false,
+  ): void => {
+    const visibleConnection = connection == null
+      ? null
+      : visibleConnectionByIdRef.current.get(connection.id) ?? null;
+    if (connection != null && visibleConnection == null) {
+      setConnectionWordChooser(null);
+      return;
+    }
+    if (!requireSafeConnectionNavigation()) {
+      onEnsureMarginVisible?.();
+      return;
+    }
+    // Opening or closing the relationship inspector is a newer focus transfer.
+    // A late failed highlight write must not resurrect an older palette over it.
+    advanceSelectionGeneration();
+    setConnectionWordChooser(null);
+    if (visibleConnection) {
+      if (!heldConnectionIdsRef.current.includes(visibleConnection.id)) {
+        replaceHeldConnectionIds([...heldConnectionIdsRef.current, visibleConnection.id]);
+      }
+      setSelectedConnectionId(visibleConnection.id);
+      if (focusInspector) {
+        setConnectionInspectorFocusRequest((request) => request + 1);
+      }
+      // Entity research owns the whole margin while active, so release it
+      // before revealing the authored-connection inspector.
+      onCloseEntity?.();
+      onEnsureMarginVisible?.();
+    } else if (selectedConnectionId) {
+      releaseHeldConnection(selectedConnectionId);
+    }
+    setSelectedVerses(new Set());
+    setPhraseSelection(null);
+    verseSelectionAnchorRef.current = null;
+    setShowHighlightPalette(false);
+  }, [advanceSelectionGeneration, onCloseEntity, onEnsureMarginVisible, releaseHeldConnection, replaceHeldConnectionIds, requireSafeConnectionNavigation, selectedConnectionId]);
+
+  const handleChooseConnections = useCallback((
+    connections: readonly ConnectionRecord[],
+    anchorRect: DOMRect,
+    origin: HTMLButtonElement,
+  ): void => {
+    if (!requireSafeConnectionNavigation()) {
+      onEnsureMarginVisible?.();
+      return;
+    }
+    const hits = orderConnectionWordHits(
+      connections.flatMap((connection) => {
+        const current = visibleConnectionByIdRef.current.get(connection.id);
+        return current
+          ? [{ id: current.id, value: { connection: current, area: 0 }, area: 0 }]
+          : [];
+      }),
+      selectedConnectionId,
+      heldConnectionIdsRef.current,
+    ).map((candidate) => candidate.value);
+    if (hits.length === 0) return;
+    connectionWordChooserOriginRef.current = origin;
+    setConnectionWordChooser({
+      anchorRect,
+      hits,
+      aggregateMemberIds: connections.map((connection) => connection.id),
+    });
+  }, [onEnsureMarginVisible, requireSafeConnectionNavigation, selectedConnectionId]);
+
+  /**
+   * Hide the visible relationship shape without mutating durable data or the
+   * ordered held comparison set. This is intentionally distinct from the
+   * card/tick Release action, which removes one held id and may focus the
+   * previous companion.
+   */
+  const handleDismissConnectionFocus = useCallback((restoreFocus = false): boolean => {
+    const connectionId = selectedConnectionId;
+    closeConnectionWordChooser(false);
+    if (!connectionId) return true;
+    if (!requireSafeConnectionNavigation()) {
+      onEnsureMarginVisible?.();
+      return false;
+    }
+    advanceSelectionGeneration();
+    setSelectedConnectionId(null);
+    if (restoreFocus) {
+      window.requestAnimationFrame(() => {
+        findConnectionTickControl(connectionId)?.focus({ preventScroll: true });
+      });
+    }
+    return true;
+  }, [advanceSelectionGeneration, closeConnectionWordChooser, onEnsureMarginVisible, requireSafeConnectionNavigation, selectedConnectionId]);
+
+  // The card normally owns a local Escape ladder for dirty fields and delete
+  // confirmation. Focus mode intentionally unmounts that card while leaving
+  // the selected reading shape visible, so ScripturePage owns the hidden-card
+  // fallback before App can interpret the same Escape as "exit Focus mode."
+  useEffect(() => {
+    if (!selectedConnectionId) return;
+    const handleSelectedConnectionEscape = (event: KeyboardEvent): void => {
+      if (event.key !== "Escape" || event.defaultPrevented) return;
+      if (document.querySelector(
+        '[data-floating-layer="dialog"], [data-floating-layer="popover"], .command-palette-root',
+      )) return;
+      if (document.querySelector(".connection-card")) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      handleDismissConnectionFocus(true);
+    };
+    window.addEventListener("keydown", handleSelectedConnectionEscape, true);
+    return () => window.removeEventListener("keydown", handleSelectedConnectionEscape, true);
+  }, [handleDismissConnectionFocus, selectedConnectionId]);
+
+  const handleConnectionWordChooserKeyDown = useCallback((event: React.KeyboardEvent<HTMLDivElement>): void => {
+    if (event.metaKey || event.ctrlKey || event.altKey) return;
+    const choices = [...event.currentTarget.querySelectorAll<HTMLButtonElement>(".connection-word-choice")];
+    if (choices.length === 0) return;
+    const activeIndex = choices.findIndex((choice) => choice === document.activeElement);
+    let targetIndex: number | null = null;
+    if (event.key === "ArrowDown") targetIndex = activeIndex < 0 ? 0 : (activeIndex + 1) % choices.length;
+    if (event.key === "ArrowUp") targetIndex = activeIndex <= 0 ? choices.length - 1 : activeIndex - 1;
+    if (event.key === "Home") targetIndex = 0;
+    if (event.key === "End") targetIndex = choices.length - 1;
+    if (targetIndex != null) {
+      event.preventDefault();
+      event.stopPropagation();
+      const target = choices[targetIndex];
+      target?.focus({ preventScroll: true });
+      target?.scrollIntoView({ block: "nearest", inline: "nearest" });
+      return;
+    }
+    if (event.key !== "Enter" && event.key !== " ") return;
+    const activeChoice = document.activeElement instanceof HTMLButtonElement
+      && document.activeElement.classList.contains("connection-word-choice")
+      ? document.activeElement
+      : null;
+    if (!activeChoice) return;
+    event.preventDefault();
+    event.stopPropagation();
+    activeChoice.click();
+  }, []);
+
+  const selectStudyScope = useCallback((verse: number, extend: boolean): void => {
+    if (!handleDismissConnectionFocus()) return;
+    studyLockVerseRef.current = null;
+    setPhraseSelection(null);
+    setShowHighlightPalette(false);
+    window.getSelection()?.removeAllRanges();
+    const result = nextVerseSelection(
+      selectedVerses,
+      verseSelectionAnchorRef.current,
+      verse,
+      extend,
+    );
+    verseSelectionAnchorRef.current = result.anchor;
+    setSelectedVerses(result.selection);
+    advanceSelectionGeneration();
+    // A verse click is a Study request: return the Living Margin from any
+    // entity takeover and reveal it if Focus mode or compact chrome hid it.
+    onCloseEntity?.();
+    onEnsureMarginVisible?.();
+  }, [advanceSelectionGeneration, handleDismissConnectionFocus, onCloseEntity, onEnsureMarginVisible, selectedVerses]);
+
+  const handleVerseClick = useCallback((verse: number, event: React.MouseEvent<HTMLDivElement>): void => {
+    // A drag-selection's trailing click is residue — mouseup already created
+    // the exact marking selection. Consuming it also prevents a connected
+    // phrase beneath the drag endpoint from stealing the gesture.
+    if (suppressNextClickRef.current) {
+      suppressNextClickRef.current = false;
+      return;
+    }
+
+    const nativeSelection = window.getSelection();
+    const nativeSelectionCollapsed = nativeSelection?.isCollapsed ?? true;
+    const unmodified = !event.shiftKey && !event.metaKey && !event.ctrlKey && !event.altKey;
+    const hits = nativeSelectionCollapsed && unmodified
+      ? (connectionWordHitTestRef.current?.(event.clientX, event.clientY) ?? [])
+      : [];
+    const intent = resolveReadingPointerIntent({
+      nativeSelectionCollapsed,
+      connectionHitCount: hits.length,
+      insideVerse: true,
+    });
+
+    if (intent === "marking-selection") return;
+    if (intent === "connection") {
+      event.stopPropagation();
+      const ordered = orderConnectionWordHits(
+        hits.map((hit) => ({ id: hit.connection.id, value: hit, area: hit.area })),
+        selectedConnectionId,
+        heldConnectionIdsRef.current,
+      ).map((candidate) => candidate.value);
+      if (ordered.length === 1) {
+        handleSelectConnection(ordered[0]!.connection);
+        return;
+      }
+      if (!requireSafeConnectionNavigation()) {
+        onEnsureMarginVisible?.();
+        return;
+      }
+      connectionWordChooserOriginRef.current = event.currentTarget;
+      setConnectionWordChooser({
+        anchorRect: new DOMRect(event.clientX, event.clientY, 1, 1),
+        hits: ordered,
+      });
+      return;
+    }
+
+    selectStudyScope(verse, event.shiftKey);
+  }, [handleSelectConnection, onEnsureMarginVisible, requireSafeConnectionNavigation, selectStudyScope, selectedConnectionId]);
+
+  const handleVerseKeyDown = useCallback((verse: number, event: React.KeyboardEvent<HTMLDivElement>): void => {
+    if (!event.metaKey && !event.ctrlKey && !event.altKey) {
+      const verses = chapterData?.verses ?? [];
+      const index = verses.findIndex((item) => item.verse === verse);
+      let targetVerse: number | null = null;
+      if (event.key === "ArrowUp" && index > 0) targetVerse = verses[index - 1]!.verse;
+      if (event.key === "ArrowDown" && index >= 0 && index < verses.length - 1) targetVerse = verses[index + 1]!.verse;
+      if (event.key === "Home" && verses.length > 0) targetVerse = verses[0]!.verse;
+      if (event.key === "End" && verses.length > 0) targetVerse = verses[verses.length - 1]!.verse;
+      if (targetVerse != null) {
+        event.preventDefault();
+        verseRowRefs.current.get(targetVerse)?.focus();
+        return;
+      }
+    }
+
+    // M is the deliberate keyboard equivalent of dragging a whole verse.
+    // Enter/Space remain the ordinary Study action and can never trigger a
+    // carried Rail/Dock authoring tool.
+    if (!event.metaKey && !event.ctrlKey && !event.altKey && event.key.toLowerCase() === "m") {
+      event.preventDefault();
+      if (!handleDismissConnectionFocus()) return;
+      const next = new Set([verse]);
+      studyLockVerseRef.current = null;
+      closeConnectionWordChooser(false);
+      setPhraseSelection(null);
+      verseSelectionAnchorRef.current = verse;
+      setSelectedVerses(next);
+      advanceSelectionGeneration();
+      positionPalette(next);
+      setShowHighlightPalette(true);
+      onCloseEntity?.();
+      return;
+    }
+
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    selectStudyScope(verse, event.shiftKey);
+  }, [advanceSelectionGeneration, chapterData, closeConnectionWordChooser, handleDismissConnectionFocus, onCloseEntity, positionPalette, selectStudyScope]);
+
+  // Connection focus is a temporary reading lens. A completed primary click
+  // outside its own controls hides the bracket/card while preserving the
+  // ordered held comparisons. Verse rows resolve this themselves so one click
+  // can dismiss and select Study without a fallback-route flash.
+  useEffect(() => {
+    if (!selectedConnectionId) return;
+    const handleOutsideClick = (event: MouseEvent): void => {
+      if (event.defaultPrevented || event.button !== 0) return;
+      const target = event.target instanceof Element
+        ? event.target
+        : event.target instanceof Node ? event.target.parentElement : null;
+      if (!target) return;
+      if (target.closest([
+        ".verse-line",
+        ".connection-card",
+        ".connection-route-hit",
+        "[data-connection-tick]",
+        ".connection-word-chooser",
+        ".marking-floating-host",
+        ".marking-rail-host",
+        ".marking-dock-host",
+        "[data-floating-layer]",
+        ".popover-scrim",
+      ].join(", "))) return;
+      // A higher layer owns its own click-away sequence. Do not let the click
+      // that closes it leak through and dismiss the relationship beneath it.
+      if (document.querySelector('[data-floating-layer="dialog"], [data-floating-layer="popover"]')) return;
+      handleDismissConnectionFocus();
+    };
+    document.addEventListener("click", handleOutsideClick);
+    return () => document.removeEventListener("click", handleOutsideClick);
+  }, [handleDismissConnectionFocus, selectedConnectionId]);
+
+  const handleCreateConnection = useCallback(async (
+    kind: ConnectionKind,
+    anchors: ConnectionAnchorV2[],
+    label: string,
+    observation: string,
+    commandId: string,
+    isRecovery = false,
+  ): Promise<ConnectionMutationUiOutcome> => {
+    const result = await safeCall(() => window.api.library.createConnection(
+      kind,
+      label,
+      observation,
+      anchors,
+      commandId,
+    ));
+    if (!result.ok || !result.value.ok) {
+      // The authoring surface owns this recoverable state and the exact Retry
+      // command. A second transient message would outlive that state and could
+      // contradict the eventual idempotent success.
+      return "failed";
+    }
+    const reload = await reloadMarginHighlights({ preserveConnection: result.value.connection });
+    if (
+      needsLocalConnectionReconciliation(reload.status, result.value)
+      && !isRecovery
+      && result.value.connection
+      && currentChapterKeyRef.current === `${book}:${chapter}`
+    ) {
+      setMarginData((current) => ({
+        ...current,
+        connections: reconcileCreatedConnection(current.connections, result.value.connection!),
+      }));
+    }
+    if (isConnectionProjectionPending(result.value)) {
+      return "committed-pending";
+    }
+    showToast(`${label} saved`, undefined, undefined, { tone: "success" });
+    return "complete";
+  }, [book, chapter, reloadMarginHighlights, showToast]);
+
+  const handleUpdateConnection = useCallback(async (
+    connectionId: string,
+    kind: ConnectionKind,
+    anchors: ConnectionAnchorV2[],
+    label: string,
+    observation: string,
+    commandId: string,
+    expectedBaseEventId: string,
+  ): Promise<ConnectionMutationUiOutcome> => {
+    const result = await safeCall(() => window.api.library.updateConnection(
+      connectionId,
+      kind,
+      label,
+      observation,
+      anchors,
+      commandId,
+      expectedBaseEventId,
+    ));
+    if (!result.ok || !result.value.ok) {
+      if (result.ok && result.value.conflict) {
+        const conflictReload = await reloadMarginHighlights({
+          preserveConnection: visibleMarginData.connections.find((connection) => connection.id === connectionId),
+        });
+        showToast(
+          conflictReload.status === "applied"
+            ? "This connection changed elsewhere. Its current authored version was reloaded; review it before editing again."
+            : conflictReload.status === "superseded"
+              ? "This connection changed elsewhere. A newer reading request now owns the view; no edit was applied."
+              : "This connection changed elsewhere. No edit was applied, but its current version could not be reloaded yet.",
+          undefined,
+          undefined,
+          { tone: "warning", durationMs: 8_000 },
+        );
+        return "conflict";
+      }
+      return "failed";
+    }
+    const reload = await reloadMarginHighlights({ preserveConnection: result.value.connection });
+    if (
+      reload.status !== "superseded"
+      && result.value.connection
+      && currentChapterKeyRef.current === `${book}:${chapter}`
+    ) {
+      setMarginData((current) => ({
+        ...current,
+        connections: reconcileUpdatedConnection(
+          current.connections,
+          result.value.connection!,
+          expectedBaseEventId,
+        ),
+      }));
+    }
+    if (isConnectionProjectionPending(result.value)) {
+      return "committed-pending";
+    }
+    showToast("Connection updated", undefined, undefined, { tone: "success" });
+    return "complete";
+  }, [book, chapter, reloadMarginHighlights, showToast, visibleMarginData.connections]);
+
+  const focusLivingMarginHeading = useCallback((): void => {
+    window.requestAnimationFrame(() => {
+      document.querySelector<HTMLElement>("#living-margin-title")?.focus({ preventScroll: true });
+    });
+  }, []);
+
+  const handleDeleteConnection = useCallback(async (
+    connection: ConnectionRecord,
+    commandId: string,
+    expectedBaseEventId = connection.activeEventId,
+  ): Promise<ConnectionMutationUiOutcome> => {
+    const result = await safeCall(() => window.api.library.deleteConnection(
+      connection.id,
+      commandId,
+      expectedBaseEventId,
+    ));
+    if (!result.ok || !result.value.ok) {
+      if (result.ok && result.value.conflict) {
+        const conflictReload = await reloadMarginHighlights({ preserveConnection: connection });
+        showToast(
+          conflictReload.status === "applied"
+            ? "This connection changed elsewhere. Its current authored version was reloaded; review it before deleting."
+            : conflictReload.status === "superseded"
+              ? "This connection changed elsewhere. A newer reading request now owns the view; nothing was deleted."
+              : "This connection changed elsewhere. Nothing was deleted, but its current version could not be reloaded yet.",
+          undefined,
+          undefined,
+          { tone: "warning", durationMs: 8_000 },
+        );
+        return "conflict";
+      }
+      return "failed";
+    }
+    const projectionPending = isConnectionProjectionPending(result.value);
+    const reload = await reloadMarginHighlights(
+      projectionPending ? { preserveConnection: connection } : undefined,
+    );
+    // Keep the card and its exact command mounted while Derived recovery is
+    // pending. Removing it here would discard the only safe Retry identity.
+    if (
+      !projectionPending
+      && reload.status !== "superseded"
+      && currentChapterKeyRef.current === `${book}:${chapter}`
+    ) {
+      setMarginData((current) => ({
+        ...current,
+        connections: reconcileDeletedConnection(
+          current.connections,
+          connection.id,
+          expectedBaseEventId,
+        ),
+      }));
+    }
+    if (projectionPending) {
+      return "committed-pending";
+    }
+    releaseHeldConnection(connection.id);
+    focusLivingMarginHeading();
+    showToast("Connection deleted", undefined, undefined, { tone: "success" });
+    return "complete";
+  }, [book, chapter, focusLivingMarginHeading, releaseHeldConnection, reloadMarginHighlights, showToast]);
+
+  const handleCloseConnection = useCallback((restoreFocus = false): void => {
+    const connectionId = selectedConnectionId;
+    if (!connectionId) return;
+    releaseHeldConnection(connectionId, restoreFocus);
+  }, [releaseHeldConnection, selectedConnectionId]);
+
+  const handleExtendConnection = useCallback((connection: ConnectionRecordV2): void => {
+    const paintAnchors = currentConnectionPaintProjections.get(connection.id)?.anchors ?? [];
+    setConnectionExtension({
+      nonce: ++connectionExtensionNonce.current,
+      contextKey: currentMarkingContextKeyRef.current,
+      connection,
+      paintAnchors,
+    });
+    releaseHeldConnection(connection.id);
+    showToast("Select words to add, then finish the connection.");
+  }, [currentConnectionPaintProjections, releaseHeldConnection, showToast]);
+
+  const handleNoteFromConnection = useCallback((connection: ConnectionRecord): void => {
+    const localAnchors = connection.anchors.filter((anchor) => anchor.book === book && anchor.chapter === chapter);
+    const first = localAnchors[0] ?? connection.anchors[0];
+    if (!first) return;
+    const last = localAnchors.at(-1) ?? first;
+    const passageRef = connection.anchors.map((anchor) => {
+      const bookName = bookNames[anchor.book]?.[0] ?? anchor.book;
+      const verse = anchor.verse_start === anchor.verse_end
+        ? `${anchor.verse_start}`
+        : `${anchor.verse_start}–${anchor.verse_end}`;
+      return `${bookName} ${anchor.chapter}:${verse}`;
+    }).join(" · ");
+    const paintAnchors = currentConnectionPaintProjections.get(connection.id)?.anchors ?? [];
+    const quote = connection.anchors.map((anchor, index) => {
+      const ref = `${anchor.book} ${anchor.chapter}:${anchor.verse_start}${anchor.verse_end === anchor.verse_start ? "" : `–${anchor.verse_end}`}`;
+      const projectedQuote = paintAnchors[index]?.fragments
+        .map((fragment) => fragment.quote)
+        .join(" ")
+        .trim();
+      const locatorQuote = anchor.render_locator?.package === packageId
+        ? anchor.render_locator.quote
+        : null;
+      return `${ref} — ${projectedQuote || locatorQuote || "Exact wording unavailable in this translation"}`;
+    }).join("\n");
+    setNoteDraft({
+      title: connection.label,
+      passageRef,
+      quote,
+      book: first.book,
+      chapter: first.chapter,
+      verseStart: first.verse_start,
+      verseEnd: last.book === first.book && last.chapter === first.chapter ? last.verse_end : first.verse_end,
+      packageId,
+    });
+  }, [book, bookNames, chapter, currentConnectionPaintProjections, packageId]);
+
+  const handleJumpToConnectionAnchor = useCallback((anchor: ConnectionAnchor): void => {
+    const end = anchor.verse_end === anchor.verse_start
+      ? ""
+      : `-${anchor.book}.${anchor.chapter}.${anchor.verse_end}`;
+    handleNavigateToRef(`bref:v1/${anchor.book}.${anchor.chapter}.${anchor.verse_start}${end}`);
+  }, [handleNavigateToRef]);
 
   // Reset nearVerse immediately on chapter/book change so a stale
   // "currently reading" preview from the previous text never flashes. Also clear any
@@ -1781,6 +3040,7 @@ export function ScripturePage({
   // pendingVerseSelectRef carries the verse that should end up selected —
   // honor that instead of clearing it right back out.
   useEffect(() => {
+    advanceSelectionGeneration();
     setNearVerse(null);
     studyLockVerseRef.current = null;
     marginActiveRef.current = false;
@@ -1788,6 +3048,11 @@ export function ScripturePage({
     setAnimateIds(new Set());
     setFadingIds(new Set());
     setPhraseSelection(null);
+    heldConnectionIdsRef.current = [];
+    setHeldConnectionIds([]);
+    setSelectedConnectionId(null);
+    closeConnectionWordChooser(false);
+    setConnectionExtension(null);
     const verse = pendingVerseSelectRef.current;
     const verseEnd = pendingVerseEndRef.current;
     pendingVerseSelectRef.current = null;
@@ -1799,12 +3064,13 @@ export function ScripturePage({
           (_, index) => verse + index,
         ))
       : new Set());
-  }, [book, chapter]);
+  }, [advanceSelectionGeneration, book, chapter, closeConnectionWordChooser]);
 
   // Phrase offsets and highlight animations belong to one translation's text
   // shape, so they cannot survive a package change. Whole-verse selection and
   // its canonical anchor do survive: those coordinates are translation-free.
   useEffect(() => {
+    advanceSelectionGeneration();
     setNearVerse(null);
     studyLockVerseRef.current = null;
     marginActiveRef.current = false;
@@ -1813,7 +3079,9 @@ export function ScripturePage({
     setAnimateIds(new Set());
     setFadingIds(new Set());
     setPhraseSelection(null);
-  }, [packageId]);
+    closeConnectionWordChooser(false);
+    setConnectionExtension(null);
+  }, [advanceSelectionGeneration, closeConnectionWordChooser, packageId]);
 
   // Clear study lock when the user fully clears the selection (click away).
   useEffect(() => {
@@ -1836,6 +3104,7 @@ export function ScripturePage({
             aria-label={`Choose passage. Current passage: ${displayBookName} ${chapter}`}
             aria-haspopup="dialog"
             aria-expanded={passageOpen}
+            disabled={connectionNavigationLocked}
           >
             <span className="passage-picker-book">{displayBookName}</span>{" "}
             <span className="passage-picker-chapter">{chapter}</span>
@@ -1847,12 +3116,13 @@ export function ScripturePage({
                 type="button"
                 className="nav-arrow"
                 onClick={() => {
+                  if (!requireSafeConnectionNavigation()) return;
                   if (chapter > 1) {
                     userNavigatedRef.current = true;
                     setChapter(chapter - 1);
                   }
                 }}
-                disabled={chapter <= 1}
+                disabled={chapter <= 1 || connectionNavigationLocked}
                 aria-label="Previous chapter"
               >
                 <ChapterArrowIcon direction="previous" />
@@ -1863,12 +3133,13 @@ export function ScripturePage({
                 type="button"
                 className="nav-arrow"
                 onClick={() => {
+                  if (!requireSafeConnectionNavigation()) return;
                   if (chapter < chapterCount) {
                     userNavigatedRef.current = true;
                     setChapter(chapter + 1);
                   }
                 }}
-                disabled={chapter >= chapterCount}
+                disabled={chapter >= chapterCount || connectionNavigationLocked}
                 aria-label="Next chapter"
               >
                 <ChapterArrowIcon direction="next" />
@@ -1901,6 +3172,7 @@ export function ScripturePage({
                                 type="button"
                                 className={`picker-recent-chip${isHere ? " active" : ""}`}
                                 onClick={() => {
+                                  if (!requireSafeConnectionNavigation()) return;
                                   if (r.packageId && r.packageId !== packageId) {
                                     // Same commit hygiene as the version picker:
                                     // clear old text before package id flips.
@@ -2046,6 +3318,7 @@ export function ScripturePage({
             aria-label={`Choose Bible translation. Current translation: ${packageId.toUpperCase()}`}
             aria-haspopup="dialog"
             aria-expanded={versionOpen}
+            disabled={connectionNavigationLocked}
           >
             {packageId.toUpperCase()}
             <ChevronIcon />
@@ -2068,6 +3341,7 @@ export function ScripturePage({
                   type="button"
                   className={`control-menu-item version-picker-item${t.code === packageId ? " active" : ""}`}
                   onClick={() => {
+                    if (!requireSafeConnectionNavigation()) return;
                     if (t.code !== packageId) {
                       captureTranslationViewport(t.code);
                       // Clear the old translation's DOM in the same commit as
@@ -2113,7 +3387,9 @@ export function ScripturePage({
             prefs={{ readingSize, readingWidth, verseNumbers }}
             onChange={onReadingPrefsChange}
             focusMode={focusMode}
-            onToggleFocus={onToggleFocus}
+            onToggleFocus={() => {
+              if (requireSafeConnectionNavigation()) onToggleFocus();
+            }}
           />
         )}
 
@@ -2123,7 +3399,10 @@ export function ScripturePage({
               <button
                 type="button"
                 className={`margin-toggle-btn${marginVisible ? " active" : ""}`}
-                onClick={onToggleMargin}
+                onClick={() => {
+                  if (requireSafeConnectionNavigation()) onToggleMargin();
+                }}
+                disabled={connectionNavigationLocked}
                 aria-label={marginVisible ? "Hide Living Margin" : "Show Living Margin"}
                 aria-pressed={marginVisible}
               >
@@ -2137,6 +3416,7 @@ export function ScripturePage({
       </header>
 
       <div className="scripture-body">
+      <div className="scripture-reading-stage" ref={stageRef}>
       <div className="scripture-content" ref={contentRef}>
         <article className="scripture-inner" aria-labelledby="reading-chapter-title">
           <div className="chapter-header">
@@ -2155,8 +3435,6 @@ export function ScripturePage({
             ].filter(Boolean).join(" ")}
             ref={verseTextRef}
             aria-busy={!chapterData && !chapterError}
-            onMouseUp={handleTextMouseUp}
-            onMouseDown={() => { suppressNextClickRef.current = false; }}
           >
             <HighlightUnderlay
               containerRef={verseTextRef}
@@ -2168,6 +3446,25 @@ export function ScripturePage({
               fadingIds={fadingIds}
               themeToken={theme}
               pinRange={pinnedRange}
+            />
+            <ConnectionUnderlay
+              containerRef={verseTextRef}
+              verseRowRefs={verseRowRefs}
+              connections={visibleMarginData.connections}
+              paintProjections={currentConnectionPaintProjections}
+              draftConnection={connectionDraft?.contextKey === `${book}:${chapter}:${packageId}` ? connectionDraft : null}
+              selectionEmphasis={markingSelectionEmphasis}
+              book={book}
+              chapter={chapter}
+              packageId={packageId}
+              contentRevision={chapterData}
+              themeToken={theme}
+              selectedConnectionId={selectedConnectionId}
+              heldConnectionIds={visibleHeldConnectionIds}
+              openTickGroupMemberIds={connectionWordChooser?.aggregateMemberIds ?? null}
+              onSelectConnection={handleSelectConnection}
+              onChooseConnections={handleChooseConnections}
+              wordHitTestRef={connectionWordHitTestRef}
             />
             {chapterData?.verses.map((v, idx) => {
               const prevV = chapterData.verses[idx - 1];
@@ -2197,6 +3494,7 @@ export function ScripturePage({
                   tabIndex={0}
                   aria-label={`${displayBookName} ${chapter}:${v.verse}`}
                   aria-pressed={isSelected}
+                  aria-keyshortcuts="Enter Space M"
                   onClick={(e) => handleVerseClick(v.verse, e)}
                   onKeyDown={(e) => handleVerseKeyDown(v.verse, e)}
                   ref={(el) => {
@@ -2229,29 +3527,6 @@ export function ScripturePage({
               />
             )}
 
-            {/* Mini toolbar always when a selection is active — unified chrome
-                whether the Living Margin is open or closed. */}
-            <PaletteExit
-              show={showHighlightPalette && (phraseSelection != null || selectedVerses.size > 0)}
-              theme={theme}
-            >
-              {showHighlightPalette && (phraseSelection != null || selectedVerses.size > 0) && (
-                <HighlightToolbar
-                  variant="floating"
-                  flipped={palettePos.flipped}
-                  paletteRef={paletteRef}
-                  style={{ top: palettePos.y, left: palettePos.x }}
-                  rangeLabel={selectionRangeLabel}
-                  activeColor={selectedHighlightColor}
-                  mixedColors={mixedSelectionColors}
-                  hasExistingHighlight={hasExistingHighlight}
-                  phraseMode={phraseSelection != null}
-                  onSetColor={(color) => void handleHighlight(color)}
-                  onNote={handleNoteFromSelection}
-                  onRemove={() => void handleRemoveSelection()}
-                />
-              )}
-            </PaletteExit>
           </div>
 
           {chapterData && chapterData.verses.length > 0 && (
@@ -2262,11 +3537,13 @@ export function ScripturePage({
                   type="button"
                   className="chapter-continue"
                   onClick={() => {
+                    if (!requireSafeConnectionNavigation()) return;
                     shouldFocusChapterHeading.current = true;
                     userNavigatedRef.current = true;
                     setChapter((current) => current + 1);
                   }}
                   aria-label={`Continue to ${displayBookName} ${chapter + 1}`}
+                  disabled={connectionNavigationLocked}
                 >
                   <span>Continue to {displayBookName} {chapter + 1}</span>
                   <ChapterArrowIcon direction="next" />
@@ -2275,6 +3552,77 @@ export function ScripturePage({
             </footer>
           )}
         </article>
+      </div>
+
+      <MarkingSurface
+        surface={markingSurface}
+        theme={theme}
+        contextKey={`${book}:${chapter}:${packageId}`}
+        stageBounds={stageBounds}
+        selection={showHighlightPalette ? markingSelection : null}
+        extensionRequest={connectionExtension}
+        onSetColor={handleHighlight}
+        onNote={handleNoteFromSelection}
+        onRemove={handleRemoveSelection}
+        onDismissSelection={handleDismissMarkingSurface}
+        onClearSelection={handleClearMarginSelection}
+        onRequestReadingFocus={handleRequestReadingFocus}
+        onConnectionDraftChange={setConnectionDraft}
+        onMutationStateChange={handleMarkingMutationStateChange}
+        onCreateConnection={handleCreateConnection}
+        onUpdateConnection={handleUpdateConnection}
+      />
+      {connectionWordChooser && (
+        <Popover
+          id="connection-word-chooser"
+          anchorRect={connectionWordChooser.anchorRect}
+          onClose={() => closeConnectionWordChooser(true)}
+          width={300}
+          maxHeight={520}
+          boundaryRect={stageBounds}
+          className="connection-word-chooser"
+          ariaLabel="Connections at these words"
+          modal
+          initialFocusRef={connectionWordChooserFirstChoiceRef}
+        >
+          <header className="connection-word-chooser-head">
+            <div>
+              <span>Connected words</span>
+              <strong>{connectionWordChooser.hits.length} relationships</strong>
+            </div>
+            <button
+              type="button"
+              onClick={() => closeConnectionWordChooser(true)}
+              aria-label="Close connection chooser"
+            >Close</button>
+          </header>
+          <div className="connection-word-choices" role="list" onKeyDown={handleConnectionWordChooserKeyDown}>
+            {connectionWordChooser.hits.map((hit, index) => {
+              const rawKind = hit.connection.kind.replace("link:", "");
+              const kindLabel = `${rawKind.charAt(0).toUpperCase()}${rawKind.slice(1)}`;
+              return (
+                <div key={hit.connection.id} role="listitem">
+                  <button
+                    ref={index === 0 ? connectionWordChooserFirstChoiceRef : undefined}
+                    type="button"
+                    className="connection-word-choice"
+                    data-connection-id={hit.connection.id}
+                    aria-pressed={selectedConnectionId === hit.connection.id}
+                    onClick={(event) => {
+                      const focusInspector = event.detail === 0;
+                      closeConnectionWordChooser(!focusInspector);
+                      handleSelectConnection(hit.connection, focusInspector);
+                    }}
+                  >
+                    <span>{hit.connection.label.trim() || kindLabel}</span>
+                    <small>{kindLabel} · {hit.connection.anchors.length} {hit.connection.anchors.length === 1 ? "moment" : "moments"}</small>
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </Popover>
+      )}
       </div>
 
       {marginVisible && !focusMode && (
@@ -2306,6 +3654,43 @@ export function ScripturePage({
           entityIntent={entityIntent}
           onOpenEntity={onOpenEntity}
           onCloseEntity={onCloseEntity}
+          authoredConnections={visibleMarginData.connections}
+          selectedAuthoredConnectionId={selectedConnectionId}
+          onSelectAuthoredConnection={(connection, focusInspector) => handleSelectConnection(connection, focusInspector)}
+          connectionInspectorFocusRequest={connectionInspectorFocusRequest}
+          connectionInspector={selectedConnection ? (
+            <ConnectionCard
+              key={selectedConnection.id}
+              connection={selectedConnection}
+              paintAnchors={currentConnectionPaintProjections.get(selectedConnection.id)?.anchors ?? []}
+              bookNames={bookNames}
+              book={book}
+              chapter={chapter}
+              packageId={packageId}
+              otherHeldCount={Math.max(0, visibleHeldConnectionIds.length - 1)}
+              onClose={handleCloseConnection}
+              onDismiss={handleDismissConnectionFocus}
+              onJump={handleJumpToConnectionAnchor}
+              onNote={handleNoteFromConnection}
+              onExtend={handleExtendConnection}
+              onUpdate={(connection, commandId, expectedBaseEventId) => handleUpdateConnection(
+                connection.id,
+                connection.kind,
+                connection.anchors,
+                connection.label,
+                connection.observation,
+                commandId,
+                expectedBaseEventId,
+              )}
+              onDelete={handleDeleteConnection}
+              onRefresh={() => { void reloadMarginHighlights(); }}
+              recovery={connectionCardRecovery}
+              onRecoveryChange={(recovery) => {
+                handleConnectionCardRecoveryChange(selectedConnection.id, recovery);
+              }}
+              onMutationStateChange={handleCardMutationStateChange}
+            />
+          ) : null}
         />
       )}
       </div>
