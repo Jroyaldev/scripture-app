@@ -3,6 +3,7 @@ export const NAVIGATION_HISTORY_LIMIT = 50;
 export type NavigationMarginTab = "overview" | "connections" | "passage" | "notes";
 
 export type NavigationMarginScope =
+  | { kind: "kept"; book: string; chapter: number; verse: number; endVerse?: number; label?: string }
   | { kind: "selection"; start: number; end: number }
   | null;
 

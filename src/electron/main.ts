@@ -223,6 +223,13 @@ interface AppSettingsSchema {
     };
     trail: Array<{ id: string; displayName: string }>;
   } | null;
+  keptContext: {
+    book: string;
+    chapter: number;
+    verse: number;
+    endVerse?: number;
+    label?: string;
+  } | null;
   windowBounds: WindowBounds | null;
   /** The library location the user last confirmed (Welcome screen or Switch
    * Library), if any. null means no choice has ever been confirmed — the
@@ -347,6 +354,36 @@ function normalizeResearchSession(value: unknown): AppSettingsSchema["researchSe
   };
 }
 
+function normalizeKeptContext(value: unknown): AppSettingsSchema["keptContext"] {
+  if (value === null) return null;
+  if (!value || typeof value !== "object") return null;
+  const candidate = value as Record<string, unknown>;
+  if (
+    typeof candidate["book"] !== "string"
+    || !/^[1-3A-Z]{3}$/.test(candidate["book"])
+    || !Number.isInteger(candidate["chapter"])
+    || (candidate["chapter"] as number) < 1
+    || !Number.isInteger(candidate["verse"])
+    || (candidate["verse"] as number) < 1
+  ) return null;
+  const endVerse = Number.isInteger(candidate["endVerse"])
+    && (candidate["endVerse"] as number) >= (candidate["verse"] as number)
+    ? candidate["endVerse"] as number
+    : undefined;
+  const label = typeof candidate["label"] === "string"
+    && candidate["label"].length > 0
+    && candidate["label"].length <= 120
+    ? candidate["label"]
+    : undefined;
+  return {
+    book: candidate["book"],
+    chapter: candidate["chapter"] as number,
+    verse: candidate["verse"] as number,
+    ...(endVerse != null ? { endVerse } : {}),
+    ...(label ? { label } : {}),
+  };
+}
+
 const legacySettingsAdoption = readLegacySettingsForAdoption();
 const store = new Store<AppSettingsSchema>({
   defaults: {
@@ -360,6 +397,7 @@ const store = new Store<AppSettingsSchema>({
     recentPassages: [],
     lastRead: null,
     researchSession: null,
+    keptContext: null,
     windowBounds: null,
     libraryPath: null,
   },
@@ -2891,11 +2929,13 @@ function registerIpcHandlers(): void {
     markingSurface: normalizeMarkingSurface(store.store.markingSurface),
     lastRead: normalizeLastRead(store.store.lastRead),
     researchSession: normalizeResearchSession(store.store.researchSession),
+    keptContext: normalizeKeptContext(store.store.keptContext),
   }));
 
   ipcMain.handle("settings:set", (_event, partial: Partial<AppSettingsSchema>) => {
     const hasLastRead = Object.prototype.hasOwnProperty.call(partial, "lastRead");
     const hasResearchSession = Object.prototype.hasOwnProperty.call(partial, "researchSession");
+    const hasKeptContext = Object.prototype.hasOwnProperty.call(partial, "keptContext");
     store.set({
       ...store.store,
       ...partial,
@@ -2905,6 +2945,7 @@ function registerIpcHandlers(): void {
       researchSession: normalizeResearchSession(
         hasResearchSession ? partial.researchSession : store.store.researchSession,
       ),
+      keptContext: normalizeKeptContext(hasKeptContext ? partial.keptContext : store.store.keptContext),
     });
     return store.store;
   });

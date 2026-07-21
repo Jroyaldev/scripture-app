@@ -44,6 +44,7 @@ import { ThemePicker } from "./ThemePicker.js";
 import { Tooltip } from "./Tooltip.js";
 import type { AppTheme } from "../theme.js";
 import { NoteCapture, type NoteCaptureDraft } from "./NoteCapture.js";
+import type { PeekTarget } from "./VersePeek.js";
 import {
   formatRecentLabel,
   normalizeRecents,
@@ -122,6 +123,60 @@ export function buildMarginCaptureDraft(
 export interface PinnedRange {
   start: number;
   end: number;
+}
+
+export interface KeptMarginReference {
+  book: string;
+  chapter: number;
+  verse: number;
+  endVerse?: number;
+  label?: string;
+}
+
+export type MarginSubject = {
+  kind: "selection" | "kept" | "following";
+  book: string;
+  chapter: number;
+  verse: number;
+  endVerse: number;
+};
+
+export function resolveMarginSubject(input: {
+  canvasBook: string;
+  canvasChapter: number;
+  canvasChapterEndVerse: number;
+  nearVerse: number | null;
+  selection: PinnedRange | null;
+  kept: KeptMarginReference | null;
+}): MarginSubject {
+  if (input.selection) {
+    return { kind: "selection", book: input.canvasBook, chapter: input.canvasChapter, verse: input.selection.start, endVerse: input.selection.end };
+  }
+  if (input.kept) {
+    return {
+      kind: "kept",
+      book: input.kept.book,
+      chapter: input.kept.chapter,
+      verse: input.kept.verse,
+      endVerse: input.kept.endVerse ?? input.kept.verse,
+    };
+  }
+  const verse = input.nearVerse ?? 1;
+  return {
+    kind: "following",
+    book: input.canvasBook,
+    chapter: input.canvasChapter,
+    verse,
+    endVerse: input.nearVerse == null ? input.canvasChapterEndVerse : verse,
+  };
+}
+
+export function supersedeKeptReference(
+  kept: KeptMarginReference | null,
+  selectionBook: string,
+  selectionChapter: number,
+): KeptMarginReference | null {
+  return kept?.book === selectionBook && kept.chapter === selectionChapter ? null : kept;
 }
 
 interface TranslationViewport {
@@ -230,12 +285,21 @@ interface Props {
     nonce: number;
     origin: { book: string; chapter: number; chapterEndVerse?: number; packageId: string; verseStart?: number; verseEnd?: number };
   } | null;
-  onOpenEntity?: (entityId: string) => void;
+  onOpenEntity?: (entityId: string, origin?: {
+    book: string;
+    chapter: number;
+    chapterEndVerse?: number;
+    packageId: string;
+    verseStart?: number;
+    verseEnd?: number;
+  }) => void;
   onCloseEntity?: () => void;
   entityTrail?: readonly EntityResearchTrailEntry[];
   onEntityTrailChange?: (
     update: (current: readonly EntityResearchTrailEntry[]) => EntityResearchTrailEntry[],
   ) => void;
+  keptContext?: KeptMarginReference | null;
+  onKeptContextChange?: (kept: KeptMarginReference | null) => void;
 }
 
 const OT_BOOKS = [
@@ -265,6 +329,7 @@ const EMPTY_MARGIN_DATA: QueryResult = {
   connections: [],
   notes: [],
 };
+const EMPTY_CHAPTER_VERSE_TEXT = new Map<number, string>();
 
 function MarginToggleIcon(): React.JSX.Element {
   // Mirror of the sidebar's PanelToggleIcon: divider sits on the RIGHT
@@ -408,6 +473,8 @@ export function ScripturePage({
   onCloseEntity,
   entityTrail,
   onEntityTrailChange,
+  keptContext = null,
+  onKeptContextChange,
 }: Props): React.JSX.Element {
   // Selection notes use the in-place NoteCapture slide-over (stay on Read).
   // Parent still supplies onCreateNote for a future “open full Write” path.
@@ -432,6 +499,12 @@ export function ScripturePage({
   const [marginDataChapterKey, setMarginDataChapterKey] = useState<string | null>(null);
   const marginRequestSequenceRef = useRef(0);
   const [crossRefs, setCrossRefs] = useState<CrossReferenceResultData | null>(null);
+  const [keptSubjectState, setKeptSubjectState] = useState<{
+    key: string;
+    marginData: QueryResult;
+    crossRefs: CrossReferenceResultData | null;
+    chapterVerseText: Map<number, string>;
+  } | null>(null);
   const [semanticData, setSemanticData] = useState<SemanticMarginResult | null>(null);
   const [semanticLoading, setSemanticLoading] = useState(false);
   const [showHighlightPalette, setShowHighlightPalette] = useState(false);
@@ -1186,10 +1259,9 @@ export function ScripturePage({
 
   const captureMarginScope = useCallback((): NavigationMarginScope => {
     const selected = [...selectedVerses].sort((left, right) => left - right);
-    return selected.length > 0
-      ? { kind: "selection", start: selected[0]!, end: selected.at(-1)! }
-      : null;
-  }, [selectedVerses]);
+    if (selected.length > 0) return { kind: "selection", start: selected[0]!, end: selected.at(-1)! };
+    return keptContext ? { kind: "kept", ...keptContext } : null;
+  }, [keptContext, selectedVerses]);
 
   const captureNavigationEntry = useCallback((): NavigationHistoryEntry => {
     const loadedKey = `${packageId}:${book}:${chapter}`;
@@ -1242,6 +1314,13 @@ export function ScripturePage({
       pendingVerseEndRef.current = restoredVerseEnd ?? null;
       if (opts?.restoreEntry) {
         setMarginTab(opts.restoreEntry.margin.activeTab);
+        onKeptContextChange?.(restoredScope?.kind === "kept" ? {
+          book: restoredScope.book,
+          chapter: restoredScope.chapter,
+          verse: restoredScope.verse,
+          ...(restoredScope.endVerse != null ? { endVerse: restoredScope.endVerse } : {}),
+          ...(restoredScope.label ? { label: restoredScope.label } : {}),
+        } : null);
         if (opts.restoreEntry.packageId !== packageId) {
           setChapterData(null);
           setChapterError(null);
@@ -1286,7 +1365,7 @@ export function ScripturePage({
         recordRecent(b, c, verse);
       }
     },
-    [book, captureNavigationEntry, chapter, commitNavigationHistory, packageId, recordRecent, requireSafeConnectionNavigation],
+    [book, captureNavigationEntry, chapter, commitNavigationHistory, onKeptContextChange, packageId, recordRecent, requireSafeConnectionNavigation],
   );
 
   const navigateBack = useCallback((): void => {
@@ -1539,6 +1618,73 @@ export function ScripturePage({
   useEffect(() => {
     onPinnedRangeChange?.(pinnedRange);
   }, [pinnedRange, onPinnedRangeChange]);
+
+  useEffect(() => {
+    if (!pinnedRange || !keptContext || !onKeptContextChange) return;
+    const next = supersedeKeptReference(keptContext, book, chapter);
+    if (next !== keptContext) onKeptContextChange(next);
+  }, [book, chapter, keptContext, onKeptContextChange, pinnedRange]);
+
+  const canvasChapterEndVerse = backbone.books[book]?.chapters[chapter - 1] ?? 1;
+  const marginSubject = useMemo(() => resolveMarginSubject({
+    canvasBook: book,
+    canvasChapter: chapter,
+    canvasChapterEndVerse,
+    nearVerse,
+    selection: pinnedRange,
+    kept: keptContext,
+  }), [book, canvasChapterEndVerse, chapter, keptContext, nearVerse, pinnedRange]);
+  const keptSubjectKey = marginSubject.kind === "kept"
+    ? `${packageId}:${marginSubject.book}:${marginSubject.chapter}:${marginSubject.verse}-${marginSubject.endVerse}`
+    : null;
+
+  useEffect(() => {
+    if (!marginVisible || !keptSubjectKey || marginSubject.kind !== "kept") {
+      setKeptSubjectState(null);
+      return;
+    }
+    let cancelled = false;
+    setKeptSubjectState(null);
+    const { book: subjectBook, chapter: subjectChapter, verse, endVerse } = marginSubject;
+    void Promise.all([
+      safeCall(() => window.api.library.queryRange(
+        subjectBook, subjectChapter, verse, subjectBook, subjectChapter, endVerse,
+      )),
+      safeCall(() => window.api.scripture.getCrossRefsForPassage(
+        subjectBook, subjectChapter, verse, endVerse, packageId,
+      )),
+      safeCall(() => window.api.scripture.getChapterText(packageId, subjectBook, subjectChapter)),
+    ]).then(([marginResult, crossRefResult, textResult]) => {
+      if (cancelled) return;
+      const textMap = new Map<number, string>();
+      if (textResult.ok && textResult.value) {
+        for (const item of textResult.value.verses) textMap.set(item.verse, item.text);
+      }
+      setKeptSubjectState({
+        key: keptSubjectKey,
+        marginData: marginResult.ok
+          ? {
+              ...marginResult.value,
+              highlights: scopeHighlightsToPackage(marginResult.value.highlights, packageId),
+            }
+          : EMPTY_MARGIN_DATA,
+        crossRefs: crossRefResult.ok ? crossRefResult.value : null,
+        chapterVerseText: textMap,
+      });
+    });
+    return () => { cancelled = true; };
+  }, [keptSubjectKey, marginSubject, marginVisible, packageId]);
+
+  const resolvedKeptState = keptSubjectState?.key === keptSubjectKey ? keptSubjectState : null;
+  const subjectMarginData = marginSubject.kind === "kept"
+    ? resolvedKeptState?.marginData ?? EMPTY_MARGIN_DATA
+    : packageMarginData;
+  const subjectCrossRefs = marginSubject.kind === "kept"
+    ? resolvedKeptState?.crossRefs ?? null
+    : crossRefs;
+  const subjectChapterVerseText = marginSubject.kind === "kept"
+    ? resolvedKeptState?.chapterVerseText ?? EMPTY_CHAPTER_VERSE_TEXT
+    : chapterVerseText;
 
   // Cross-references follow the actual reading scope: exact verse when the
   // eye-line is ambient, selected range when pinned, full chapter only for the
@@ -2331,19 +2477,51 @@ export function ScripturePage({
   };
 
   const handleMarginCapture = useCallback((capture: LivingMarginCaptureRequest): void => {
-    const verseStart = pinnedRange?.start ?? nearVerse ?? 1;
-    const verseEnd = pinnedRange?.end
-      ?? nearVerse
-      ?? chapterData?.verses.at(-1)?.verse
-      ?? verseStart;
     setNoteDraft(buildMarginCaptureDraft(capture, {
-      book,
-      chapter,
-      verseStart,
-      verseEnd,
+      book: marginSubject.book,
+      chapter: marginSubject.chapter,
+      verseStart: marginSubject.verse,
+      verseEnd: marginSubject.endVerse,
       packageId,
     }));
-  }, [book, chapter, chapterData, nearVerse, packageId, pinnedRange]);
+  }, [marginSubject, packageId]);
+
+  const handleAmbientKeptChange = useCallback((keep: boolean): void => {
+    if (!onKeptContextChange) return;
+    if (!keep) {
+      onKeptContextChange(null);
+      return;
+    }
+    if (nearVerse == null) return;
+    const bookLabel = bookNames[book]?.[0] ?? book;
+    onKeptContextChange({
+      book,
+      chapter,
+      verse: nearVerse,
+      label: `${bookLabel} ${chapter}:${nearVerse}`,
+    });
+  }, [book, bookNames, chapter, nearVerse, onKeptContextChange]);
+
+  const handleKeepPeekReference = useCallback((reference: PeekTarget): void => {
+    onKeptContextChange?.({
+      book: reference.book,
+      chapter: reference.chapter,
+      verse: reference.verse,
+      ...(reference.endVerse != null ? { endVerse: reference.endVerse } : {}),
+      label: reference.label,
+    });
+  }, [onKeptContextChange]);
+
+  const handleOpenMarginEntity = useCallback((entityId: string): void => {
+    onOpenEntity?.(entityId, {
+      book: marginSubject.book,
+      chapter: marginSubject.chapter,
+      chapterEndVerse: backbone.books[marginSubject.book]?.chapters[marginSubject.chapter - 1],
+      packageId,
+      verseStart: marginSubject.verse,
+      verseEnd: marginSubject.endVerse,
+    });
+  }, [backbone, marginSubject, onOpenEntity, packageId]);
 
   const handleNoteCaptureSaved = useCallback(
     ({ title }: { noteId: string; title: string }) => {
@@ -3926,20 +4104,25 @@ export function ScripturePage({
 
       {marginVisible && !focusMode && (
         <LivingMargin
-          book={book}
-          chapter={chapter}
+          book={marginSubject.book}
+          chapter={marginSubject.chapter}
           packageId={packageId}
-          marginData={packageMarginData}
-          crossRefs={crossRefs}
+          marginData={subjectMarginData}
+          crossRefs={subjectCrossRefs}
           bookNames={bookNames}
-          semanticData={semanticData}
-          semanticLoading={semanticLoading}
-          chapterVerseText={chapterVerseText}
-          displayChapterVerseText={displayChapterVerseText}
-          chapterTextLoading={!chapterData && !chapterError}
-          pinnedRange={pinnedRange}
-          nearVerse={pinnedRange ? null : nearVerse}
+          semanticData={marginSubject.kind === "kept" ? null : semanticData}
+          semanticLoading={marginSubject.kind === "kept" ? false : semanticLoading}
+          chapterVerseText={subjectChapterVerseText}
+          displayChapterVerseText={marginSubject.kind === "kept" ? subjectChapterVerseText : displayChapterVerseText}
+          chapterTextLoading={marginSubject.kind === "kept" ? resolvedKeptState == null : !chapterData && !chapterError}
+          pinnedRange={marginSubject.kind === "selection" ? pinnedRange : null}
+          nearVerse={marginSubject.kind === "selection"
+            ? null
+            : marginSubject.kind === "kept"
+              ? marginSubject.verse
+              : nearVerse}
           onNavigateToRef={handleNavigateToRef}
+          onKeepReference={handleKeepPeekReference}
           onPinClaim={async (claimId, assertion) => {
             const result = await safeCall(() => window.api.ai.pinClaim(claimId, assertion));
             return result.ok && result.value.ok;
@@ -3947,13 +4130,15 @@ export function ScripturePage({
           onCreateNote={handleNoteFromSelection}
           onCapture={handleMarginCapture}
           onRemoveHighlights={(entityIds) => void handleDeleteHighlights(entityIds)}
-          onStudyVerse={handleStudyVerse}
+          onStudyVerse={marginSubject.kind === "kept" ? undefined : handleStudyVerse}
           onMarginActiveChange={handleMarginActiveChange}
+          ambientKept={marginSubject.kind === "kept"}
+          onAmbientKeptChange={handleAmbientKeptChange}
           onClearSelection={handleClearMarginSelection}
           activeTab={marginTab}
           onActiveTabChange={setMarginTab}
           entityIntent={entityIntent}
-          onOpenEntity={onOpenEntity}
+          onOpenEntity={handleOpenMarginEntity}
           onCloseEntity={onCloseEntity}
           entityTrail={entityTrail}
           onEntityTrailChange={onEntityTrailChange}

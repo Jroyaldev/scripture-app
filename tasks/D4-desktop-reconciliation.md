@@ -1,6 +1,6 @@
 # TASK D4: Reconcile the settled desktop checkpoint with Smart Shapes
 
-STATUS: IN PROGRESS — Steps 1–4 complete; Step 5 pending.
+STATUS: COMPLETE — all five settled desktop slices are reconciled with Smart Shapes.
 
 ## Objective
 
@@ -44,6 +44,13 @@ The old `489c478` checkpoint is requirements evidence only.
   stepwise Back, direct Close, preserved opener focus, and one compact More
   disclosure for deep relationships, geography, bibliography, and Scripture
   footprint data.
+- Step 5: one validated settings-persisted kept comparison subject with
+  Selection > Kept > Following precedence, browser-history restoration,
+  cross-chapter deterministic margin data, and truthful frozen entity/capture
+  origins. VersePeek previews canonical references on hover and focus, caps
+  long ranges, and exposes one explicit Keep-in-margin action without moving
+  the reading canvas. Smart Shapes selection, authored connections, chapter
+  navigation, and all four marking surfaces remain canvas-owned.
 
 Step 1 verification: focused contract 4/4; full suite 703 total, 674 pass,
 29 expected Electron-ABI skips; lint, renderer/Electron builds, and diff
@@ -59,6 +66,10 @@ renderer/Electron builds, and diff integrity clean.
 
 Step 4 verification: focused research/settings/return contracts 21/21; full
 suite 727 total, 698 pass, 29 expected Electron-ABI skips; lint,
+renderer/Electron builds, and diff integrity clean.
+
+Step 5 verification: focused held-context/settings/history contracts 11/11;
+full suite 733 total, 704 pass, 29 expected Electron-ABI skips; lint,
 renderer/Electron builds, and diff integrity clean.
 
 ## Guardrails

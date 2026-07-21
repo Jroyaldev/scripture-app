@@ -219,6 +219,14 @@ export interface AppSettings {
     };
     trail: Array<{ id: string; displayName: string }>;
   } | null;
+  /** At most one deliberately kept comparison subject. */
+  keptContext?: {
+    book: string;
+    chapter: number;
+    verse: number;
+    endVerse?: number;
+    label?: string;
+  } | null;
 }
 
 export interface LibrarySummary {

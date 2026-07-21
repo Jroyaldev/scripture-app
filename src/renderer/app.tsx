@@ -197,6 +197,7 @@ export function App(): React.JSX.Element {
     origin: CommandReadingContext | null;
     trail: EntityResearchTrailEntry[];
   }>({ origin: null, trail: [] });
+  const [keptContext, setKeptContext] = useState<NonNullable<AppSettings["keptContext"]> | null>(null);
   const [workspaceIntent, setWorkspaceIntent] = useState<{
     query?: string;
     noteId?: string;
@@ -223,6 +224,7 @@ export function App(): React.JSX.Element {
   const libraryTriggerRef = useRef<HTMLButtonElement>(null);
   const [libraryAnchorRect, setLibraryAnchorRect] = useState<DOMRect | null>(null);
   const settingsLoaded = useRef(false);
+  const keptContextDirtyRef = useRef(false);
   const entityReturnFocusRef = useRef<HTMLElement | null>(null);
   const [settingsReady, setSettingsReady] = useState(false);
   // Tracks which persisted settings the user has already changed via the UI
@@ -337,6 +339,7 @@ export function App(): React.JSX.Element {
         if (res.value.researchSession) {
           setEntityResearchSession(res.value.researchSession);
         }
+        if (!keptContextDirtyRef.current) setKeptContext(res.value.keptContext ?? null);
       }
       // A setting changed while the IPC read was in flight has already run
       // its persist effect once and returned early. This state transition
@@ -382,6 +385,16 @@ export function App(): React.JSX.Element {
         : null,
     }));
   }, [entityResearchSession, settingsReady]);
+
+  useEffect(() => {
+    if (!settingsLoaded.current) return;
+    void safeCall(() => window.api.settings.set({ keptContext }));
+  }, [keptContext, settingsReady]);
+
+  const changeKeptContext = useCallback((next: NonNullable<AppSettings["keptContext"]> | null): void => {
+    keptContextDirtyRef.current = true;
+    setKeptContext(next);
+  }, []);
 
   const handleAuthoredMutationStateChange = useCallback((state: AuthoredMutationState): void => {
     authoredMutationStateRef.current = state;
@@ -462,8 +475,8 @@ export function App(): React.JSX.Element {
     userDirtySettings.current.marginVisible = true;
     setMarginVisible(true);
   }, [changeView, entityIntent, entityResearchSession]);
-  const openEntityResearch = useCallback((entityId: string) => {
-    openEntityResearchAt(entityId, readingContext);
+  const openEntityResearch = useCallback((entityId: string, origin?: CommandReadingContext) => {
+    openEntityResearchAt(entityId, origin ?? readingContext);
   }, [openEntityResearchAt, readingContext]);
   const openCommandEntityResearch = useCallback((entityId: string) => {
     openEntityResearchAt(entityId, commandContext);
@@ -974,6 +987,8 @@ export function App(): React.JSX.Element {
                 onCloseEntity={closeEntityResearch}
                 entityTrail={entityResearchSession.trail}
                 onEntityTrailChange={updateEntityResearchTrail}
+                keptContext={keptContext}
+                onKeptContextChange={changeKeptContext}
               />
             )}
             {view === "write" && (

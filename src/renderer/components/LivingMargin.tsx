@@ -21,6 +21,7 @@ import {
 import { safeCall } from "../utils/safeCall.js";
 import { LanguageWordsSection } from "./LanguageWordsSection.js";
 import { useToast } from "./Toast.js";
+import { parsePeekRef, useVersePeek, type PeekTarget } from "./VersePeek.js";
 
 export interface PinnedRange {
   start: number;
@@ -161,10 +162,15 @@ interface Props {
   onCapture?: (capture: LivingMarginCaptureRequest) => void;
   /** Navigate to a cross-reference's target passage (e.g. "Matthew 3:11"). */
   onNavigateToRef?: (ref: string) => void;
+  /** Replace the single kept comparison subject without navigating the canvas. */
+  onKeepReference?: (reference: PeekTarget) => void;
   /** Keep original-language study aligned with its explicit verse. */
   onStudyVerse?: (verse: number) => void;
   /** Pointer entered/left the margin (freeze ambient eye-line while true). */
   onMarginActiveChange?: (active: boolean) => void;
+  /** Explicit kept state for the ambient verse. */
+  ambientKept?: boolean;
+  onAmbientKeptChange?: (kept: boolean) => void;
   /** Leave the explicit selected-passage state and return to the reading eye-line. */
   onClearSelection?: () => void;
   /** Renderer-session tab state used by reversible canvas travel. */
@@ -816,8 +822,10 @@ function EntityResearchView({
   chapterVerseText,
   bookNames,
   onNavigate,
+  onKeepReference,
   onOpenEntity,
   onCapture,
+  packageId,
 }: {
   data: EntityResearchData;
   origin: NonNullable<Props["entityIntent"]>["origin"];
@@ -826,11 +834,14 @@ function EntityResearchView({
   chapterVerseText: Map<number, string>;
   bookNames: BookNameData;
   onNavigate?: (ref: string) => void;
+  onKeepReference?: (reference: PeekTarget) => void;
   onOpenEntity?: (entityId: string) => void;
   onCapture?: (capture: LivingMarginCaptureRequest) => void;
+  packageId: string;
 }): React.JSX.Element {
   const [showAllRefs, setShowAllRefs] = useState(false);
   const [mediaLinkError, setMediaLinkError] = useState<string | null>(null);
+  const { triggerProps: peekTriggerProps, peekElement } = useVersePeek(packageId, onKeepReference);
   const orderedRefs = [...data.entity.refs].sort((left, right) => {
     const leftCurrent = left.startsWith(`${currentBook}.`) ? 0 : 1;
     const rightCurrent = right.startsWith(`${currentBook}.`) ? 0 : 1;
@@ -1048,17 +1059,22 @@ function EntityResearchView({
                 <span>{group.refs.length < group.total ? `${group.refs.length} of ${group.total}` : group.total}</span>
               </div>
               <div className="entity-reference-grid">
-                {group.refs.map((ref) => (
+                {group.refs.map((ref) => {
+                  const label = formatResearchRef(ref, bookNames);
+                  const target = parsePeekRef(ref, label);
+                  return (
                   <button
                     key={ref}
                     type="button"
                     onClick={() => onNavigate?.(`bref:v1/${ref}`)}
-                    aria-label={`Open ${formatResearchRef(ref, bookNames)}`}
+                    aria-label={`Open ${label}`}
+                    {...(target ? peekTriggerProps(target) : {})}
                   >
-                    <span>{formatResearchRef(ref, bookNames)}</span>
+                    <span>{label}</span>
                     <CrossReferenceArrow />
                   </button>
-                ))}
+                  );
+                })}
               </div>
             </section>
           ))}
@@ -1100,6 +1116,7 @@ function EntityResearchView({
       </details>
 
       <MarginSourcesDisclosure sources={entityResearchSources(data)} />
+      {peekElement}
     </article>
   );
 }
@@ -1110,13 +1127,16 @@ function CrossReferenceRow({
   onCapture,
   sourceAttribution,
   frozenOrigin,
+  peekProps,
 }: {
   item: CrossReferenceMatchData;
   onNavigate?: (ref: string) => void;
   onCapture?: (capture: LivingMarginCaptureRequest) => void;
   sourceAttribution: string;
   frozenOrigin: string;
+  peekProps?: (target: PeekTarget) => Partial<React.HTMLAttributes<HTMLElement>>;
 }): React.JSX.Element {
+  const target = parsePeekRef(item.targetBref, item.targetDisplay);
   const openReference = (): void => onNavigate?.(item.targetBref);
   return (
     <div
@@ -1131,6 +1151,7 @@ function CrossReferenceRow({
         onClick={openReference}
         aria-label={item.preview ? `Open ${item.targetDisplay}. ${item.preview}` : `Open ${item.targetDisplay}`}
         title={item.preview ? `${item.targetDisplay} — ${item.preview}` : `Open ${item.targetDisplay}`}
+        {...(target && peekProps ? peekProps(target) : {})}
       >
         <span className="crossref-row-copy">
           <span className="crossref-reference">{item.targetDisplay}</span>
@@ -1174,14 +1195,19 @@ function CrossReferenceRow({
 function CrossRefsBlock({
   result,
   onNavigate,
+  onKeepReference,
   onCapture,
   frozenOrigin,
+  packageId,
 }: {
   result: CrossReferenceResultData;
   onNavigate?: (ref: string) => void;
+  onKeepReference?: (reference: PeekTarget) => void;
   onCapture?: (capture: LivingMarginCaptureRequest) => void;
   frozenOrigin: string;
+  packageId: string;
 }): React.JSX.Element {
+  const { triggerProps, peekElement } = useVersePeek(packageId, onKeepReference);
   const sourceAttribution = `${result.attribution.name} (${result.attribution.license})`;
   return (
     <section className="margin-section crossref-section" aria-label="Related verses">
@@ -1209,6 +1235,7 @@ function CrossRefsBlock({
             onCapture={onCapture}
             sourceAttribution={sourceAttribution}
             frozenOrigin={frozenOrigin}
+            peekProps={triggerProps}
           />
         ))}
       </div>
@@ -1217,6 +1244,7 @@ function CrossRefsBlock({
         license: result.attribution.license,
         citation: `${result.attribution.attribution} · ${result.attribution.license} · ${result.attribution.sourceUrl}`,
       }]} />
+      {peekElement}
     </section>
   );
 }
@@ -1224,14 +1252,19 @@ function CrossRefsBlock({
 function NoteCrossRefsBlock({
   items,
   onNavigate,
+  onKeepReference,
   onCapture,
   frozenOrigin,
+  packageId,
 }: {
   items: SuggestedCrossRefData[];
   onNavigate?: (ref: string) => void;
+  onKeepReference?: (reference: PeekTarget) => void;
   onCapture?: (capture: LivingMarginCaptureRequest) => void;
   frozenOrigin: string;
+  packageId: string;
 }): React.JSX.Element {
+  const { triggerProps, peekElement } = useVersePeek(packageId, onKeepReference);
   return (
     <section className="margin-section note-crossref-section" aria-label="Cross references from notes">
       <div className="crossref-heading">
@@ -1242,13 +1275,16 @@ function NoteCrossRefsBlock({
         <span className="crossref-total"><strong>{items.length}</strong></span>
       </div>
       <div className="crossref-list">
-        {items.map((item) => (
+        {items.map((item) => {
+          const target = parsePeekRef(item.targetBref, item.targetDisplay);
+          return (
           <div className="note-crossref-row" key={item.targetBref}>
             <button
               type="button"
               className="crossref-row-open"
               onClick={() => onNavigate?.(item.targetBref)}
               aria-label={`Open ${item.targetDisplay} from notes`}
+              {...(target ? triggerProps(target) : {})}
             >
               <span className="crossref-row-copy">
                 <span className="crossref-reference">{item.targetDisplay}</span>
@@ -1276,8 +1312,10 @@ function NoteCrossRefsBlock({
               </button>
             )}
           </div>
-        ))}
+          );
+        })}
       </div>
+      {peekElement}
     </section>
   );
 }
@@ -1289,8 +1327,10 @@ function IntentOverview({
   entityResult,
   loading,
   onNavigate,
+  onKeepReference,
   onOpenTab,
   onOpenEntity,
+  packageId,
 }: {
   crossRefs: CrossReferenceResultData | null;
   directNote: NoteRecord | null;
@@ -1298,9 +1338,12 @@ function IntentOverview({
   entityResult: LanguageEntityRangeResult;
   loading: boolean;
   onNavigate?: (ref: string) => void;
+  onKeepReference?: (reference: PeekTarget) => void;
   onOpenTab: (tab: MarginTab) => void;
   onOpenEntity?: (entityId: string) => void;
+  packageId: string;
 }): React.JSX.Element {
+  const { triggerProps, peekElement } = useVersePeek(packageId, onKeepReference);
   const scripture = crossRefs?.items.slice(0, 2) ?? [];
   const relatedNote = semantic?.semanticNotes[0] ?? null;
   const thread = semantic?.threads[0] ?? null;
@@ -1329,13 +1372,16 @@ function IntentOverview({
             <button type="button" onClick={() => onOpenTab("connections")}>All refs</button>
           </div>
           <div className="intent-ref-list">
-            {scripture.map((item) => (
+            {scripture.map((item) => {
+              const target = parsePeekRef(item.targetBref, item.targetDisplay);
+              return (
               <button
                 key={item.targetBref}
                 type="button"
                 className="intent-ref-row"
                 onClick={() => onNavigate?.(item.targetBref)}
                 aria-label={`Open ${item.targetDisplay}`}
+                {...(target ? triggerProps(target) : {})}
               >
                 <span className="intent-ref-copy">
                   <span className="intent-ref-title">{item.targetDisplay}</span>
@@ -1343,7 +1389,8 @@ function IntentOverview({
                 </span>
                 <CrossReferenceArrow />
               </button>
-            ))}
+              );
+            })}
           </div>
         </section>
       )}
@@ -1434,6 +1481,7 @@ function IntentOverview({
         />
       )}
       <MarginSourcesDisclosure sources={sources} />
+      {peekElement}
     </div>
   );
 }
@@ -1457,8 +1505,11 @@ export function LivingMargin({
   onCreateNote,
   onCapture,
   onNavigateToRef,
+  onKeepReference,
   onStudyVerse,
   onMarginActiveChange,
+  ambientKept = false,
+  onAmbientKeptChange,
   onClearSelection,
   activeTab: controlledActiveTab,
   onActiveTabChange,
@@ -1640,11 +1691,19 @@ export function LivingMargin({
   const nearQuote = nearVerse != null ? quoteVerseText?.get(nearVerse) ?? "" : "";
   const nearRef = nearVerse != null ? `${displayBook} ${chapter}:${nearVerse}` : "";
   const contextReference = isPinned ? pinnedRef : isNear ? nearRef : `${displayBook} ${chapter}`;
-  const marginMode = connectionInspectorOpen ? "Connection" : isPinned ? "selection" : "following";
+  const marginMode = connectionInspectorOpen
+    ? "Connection"
+    : isPinned
+      ? "selection"
+      : isNear && ambientKept
+        ? "kept"
+        : "following";
   const scopeCopy = connectionInspectorOpen
     ? `Connection · ${contextReference}`
     : isPinned
       ? `Selection · ${contextReference}`
+      : isNear && ambientKept
+        ? `Kept on ${contextReference}`
       : `Following your reading · ${contextReference}`;
   const contextQuote = isPinned ? pinnedQuote : isNear ? nearQuote : "";
   const contextKey = isPinned
@@ -1998,8 +2057,10 @@ export function LivingMargin({
               chapterVerseText={displayChapterVerseText ?? chapterVerseText ?? new Map<number, string>()}
               bookNames={bookNames}
               onNavigate={onNavigateToRef}
+              onKeepReference={onKeepReference}
               onOpenEntity={openRelatedEntity}
               onCapture={onCapture}
+              packageId={packageId}
             />
           </div>
         )}
@@ -2028,6 +2089,19 @@ export function LivingMargin({
         </h2>
         <div className="margin-frame-state">
           <span id="living-margin-mode" className="margin-frame-mode" aria-live="polite">{scopeCopy}</span>
+          {!connectionInspectorOpen && isNear && onAmbientKeptChange && (
+            <>
+              <span className="margin-frame-separator" aria-hidden="true">·</span>
+              <button
+                type="button"
+                className="margin-frame-action margin-keep-toggle"
+                onClick={() => onAmbientKeptChange(!ambientKept)}
+                title={ambientKept ? "Release this passage and follow your reading" : "Keep this passage while you work"}
+              >
+                {ambientKept ? "Follow reading" : "Keep here"}
+              </button>
+            </>
+          )}
           {!connectionInspectorOpen && isPinned && onClearSelection && (
             <button type="button" className="margin-frame-action" onClick={clearSelection}>
               Clear
@@ -2115,8 +2189,10 @@ export function LivingMargin({
               entityResult={entityResult}
               loading={entityLoading || Boolean(semanticLoading)}
               onNavigate={onNavigateToRef}
+              onKeepReference={onKeepReference}
               onOpenTab={activateTab}
               onOpenEntity={onOpenEntity}
+              packageId={packageId}
             />
           </section>
 
@@ -2165,8 +2241,10 @@ export function LivingMargin({
               <CrossRefsBlock
                 result={crossRefs}
                 onNavigate={onNavigateToRef}
+                onKeepReference={onKeepReference}
                 onCapture={onCapture}
                 frozenOrigin={contextReference}
+                packageId={packageId}
               />
             ) : (
               <MarginEmptyView
@@ -2241,8 +2319,10 @@ export function LivingMargin({
               entityResult={entityResult}
               loading={entityLoading || Boolean(semanticLoading)}
               onNavigate={onNavigateToRef}
+              onKeepReference={onKeepReference}
               onOpenTab={activateTab}
               onOpenEntity={onOpenEntity}
+              packageId={packageId}
             />
           </section>
 
@@ -2277,8 +2357,10 @@ export function LivingMargin({
               <CrossRefsBlock
                 result={crossRefs}
                 onNavigate={onNavigateToRef}
+                onKeepReference={onKeepReference}
                 onCapture={onCapture}
                 frozenOrigin={contextReference}
+                packageId={packageId}
               />
             ) : (
               <MarginEmptyView
@@ -2339,8 +2421,10 @@ export function LivingMargin({
               entityResult={entityResult}
               loading={entityLoading || pinnedAiLoading}
               onNavigate={onNavigateToRef}
+              onKeepReference={onKeepReference}
               onOpenTab={activateTab}
               onOpenEntity={onOpenEntity}
+              packageId={packageId}
             />
           </section>
 
@@ -2424,16 +2508,20 @@ export function LivingMargin({
               <CrossRefsBlock
                 result={crossRefs}
                 onNavigate={onNavigateToRef}
+                onKeepReference={onKeepReference}
                 onCapture={onCapture}
                 frozenOrigin={contextReference}
+                packageId={packageId}
               />
             )}
             {pinnedSemantic && pinnedSemantic.suggestedCrossRefs.length > 0 && (
               <NoteCrossRefsBlock
                 items={pinnedSemantic.suggestedCrossRefs.slice(0, 6)}
                 onNavigate={onNavigateToRef}
+                onKeepReference={onKeepReference}
                 onCapture={onCapture}
                 frozenOrigin={contextReference}
+                packageId={packageId}
               />
             )}
             {connectionCount === 0 && (

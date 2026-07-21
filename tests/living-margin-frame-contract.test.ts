@@ -10,9 +10,10 @@ const css = readFileSync(join(repoRoot, "src", "renderer", "styles.css"), "utf-8
 
 test("Living Margin is one labelled frame with truthful chapter, reading, and selected modes", () => {
   assert.match(margin, /aria-labelledby="living-margin-title"/);
-  assert.match(margin, /const marginMode = connectionInspectorOpen \? "Connection" : isPinned \? "selection" : "following"/);
+  assert.match(margin, /const marginMode = connectionInspectorOpen[\s\S]{0,220}?isNear && ambientKept[\s\S]{0,100}?"kept"[\s\S]{0,100}?"following"/);
   assert.match(margin, /Following your reading ·/);
   assert.match(margin, /Selection ·/);
+  assert.match(margin, /Kept on/);
   assert.match(margin, /data-margin-mode=\{marginMode\.toLowerCase\(\)\.replace\(" ", "-"\)\}/);
   assert.match(margin, /data-margin-view="chapter"/);
   assert.match(margin, /data-margin-view="reading"/);
@@ -71,8 +72,8 @@ test("translation changes preserve canonical verse selection and the reading anc
   assert.match(page, /captureTranslationViewport\(t\.code\)/);
   assert.match(page, /pendingTranslationViewportRef\.current/);
   assert.match(page, /lastLoadedChapterVerseTextRef\.current/);
-  assert.match(page, /displayChapterVerseText=\{displayChapterVerseText\}/);
-  assert.match(page, /chapterTextLoading=\{!chapterData && !chapterError\}/);
+  assert.match(page, /displayChapterVerseText=\{marginSubject\.kind === "kept" \? subjectChapterVerseText : displayChapterVerseText\}/);
+  assert.match(page, /chapterTextLoading=\{marginSubject\.kind === "kept" \? resolvedKeptState == null : !chapterData && !chapterError\}/);
   assert.match(page, /const restoreReadingViewport = useCallback/);
   assert.match(page, /currentOffset - viewport\.verseOffset/);
   assert.match(page, /restoreReadingViewport\(pending\)/);
@@ -142,7 +143,7 @@ test("chapter top remains an overview before the margin follows the reading eye-
   assert.match(page, /const marginHasPointer = document\.querySelector\("\.living-margin"\)\?\.matches\(":hover"\) \?\? false/);
   assert.doesNotMatch(page, /studyLockVerseRef/);
   assert.match(page, /const eyeY = rootRect\.top \+ rootRect\.height \* 0\.32/);
-  assert.match(page, /nearVerse=\{pinnedRange \? null : nearVerse\}/);
+  assert.match(page, /nearVerse=\{marginSubject\.kind === "selection"[\s\S]{0,180}?marginSubject\.kind === "kept"[\s\S]{0,120}?marginSubject\.verse[\s\S]{0,80}?: nearVerse\}/);
 });
 
 test("selected-passage note evidence never falls back to chapter-wide semantic data", () => {
