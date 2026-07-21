@@ -583,7 +583,6 @@ export function ScripturePage({
   const [nearVerse, setNearVerse] = useState<number | null>(null);
   const verseRowRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const marginActiveRef = useRef(false);
-  const studyLockVerseRef = useRef<number | null>(null);
   const readingFocusContextRef = useRef({
     book,
     chapter,
@@ -1379,7 +1378,6 @@ export function ScripturePage({
       setSelectedVerses(new Set());
       setPhraseSelection(null);
       verseSelectionAnchorRef.current = null;
-      studyLockVerseRef.current = null;
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -2321,11 +2319,6 @@ export function ScripturePage({
       const marginHasPointer = document.querySelector(".living-margin")?.matches(":hover") ?? false;
       if (marginActiveRef.current && marginHasPointer) return;
       marginActiveRef.current = false;
-      // A language click freezes the ambient verse while the pastor works in
-      // the margin. Scrolling the reading canvas is an equally explicit move
-      // to new context, so it releases that study lock instead of leaving the
-      // margin pinned to an old verse for the rest of the chapter.
-      if (studyLockVerseRef.current != null) studyLockVerseRef.current = null;
       // The top of a chapter is its deliberate overview state. Once the
       // reader moves into the text, the margin follows the eye-line; returning
       // to the top restores chapter context instead of pretending the first
@@ -2380,13 +2373,8 @@ export function ScripturePage({
     marginActiveRef.current = active;
   }, []);
 
-  /**
-   * Pastor started studying language for a verse.
-   * Freeze ambient eye-line on that verse (do NOT auto-pin — pinning would
-   * remount the language panel and close form/STEP notes mid-click).
-   */
+  /** Keep the currently engaged word card aligned with the visible scope. */
   const handleStudyVerse = useCallback((v: number) => {
-    studyLockVerseRef.current = v;
     setNearVerse(v);
   }, []);
 
@@ -2396,7 +2384,6 @@ export function ScripturePage({
     setSelectedVerses(new Set());
     setPhraseSelection(null);
     verseSelectionAnchorRef.current = null;
-    studyLockVerseRef.current = null;
     setShowHighlightPalette(false);
   }, []);
 
@@ -2669,7 +2656,6 @@ export function ScripturePage({
 
   const selectStudyScope = useCallback((verse: number, extend: boolean): void => {
     if (!handleDismissConnectionFocus()) return;
-    studyLockVerseRef.current = null;
     setPhraseSelection(null);
     setShowHighlightPalette(false);
     window.getSelection()?.removeAllRanges();
@@ -2759,7 +2745,6 @@ export function ScripturePage({
       event.preventDefault();
       if (!handleDismissConnectionFocus()) return;
       const next = new Set([verse]);
-      studyLockVerseRef.current = null;
       closeConnectionWordChooser(false);
       setPhraseSelection(null);
       verseSelectionAnchorRef.current = verse;
@@ -3042,7 +3027,6 @@ export function ScripturePage({
   useEffect(() => {
     advanceSelectionGeneration();
     setNearVerse(null);
-    studyLockVerseRef.current = null;
     marginActiveRef.current = false;
     setShowHighlightPalette(false);
     setAnimateIds(new Set());
@@ -3072,7 +3056,6 @@ export function ScripturePage({
   useEffect(() => {
     advanceSelectionGeneration();
     setNearVerse(null);
-    studyLockVerseRef.current = null;
     marginActiveRef.current = false;
     suppressNextClickRef.current = false;
     setShowHighlightPalette(false);
@@ -3082,13 +3065,6 @@ export function ScripturePage({
     closeConnectionWordChooser(false);
     setConnectionExtension(null);
   }, [advanceSelectionGeneration, closeConnectionWordChooser, packageId]);
-
-  // Clear study lock when the user fully clears the selection (click away).
-  useEffect(() => {
-    if (selectedVerses.size === 0 && phraseSelection == null) {
-      studyLockVerseRef.current = null;
-    }
-  }, [selectedVerses, phraseSelection]);
 
   return (
     <div className="scripture-page">
@@ -3492,7 +3468,7 @@ export function ScripturePage({
                   className={rowClasses}
                   role="button"
                   tabIndex={0}
-                  aria-label={`${displayBookName} ${chapter}:${v.verse}`}
+                  aria-label={`${displayBookName} ${chapter}:${v.verse}. ${v.text}${isSelected ? ". Selected" : ""}`}
                   aria-pressed={isSelected}
                   aria-keyshortcuts="Enter Space M"
                   onClick={(e) => handleVerseClick(v.verse, e)}
@@ -3645,7 +3621,6 @@ export function ScripturePage({
             const result = await safeCall(() => window.api.ai.pinClaim(claimId, assertion));
             return result.ok && result.value.ok;
           }}
-          onSetHighlightColor={(color) => void handleHighlight(color)}
           onCreateNote={handleNoteFromSelection}
           onRemoveHighlights={(entityIds) => void handleDeleteHighlights(entityIds)}
           onStudyVerse={handleStudyVerse}

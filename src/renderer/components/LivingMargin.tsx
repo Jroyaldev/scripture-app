@@ -30,10 +30,21 @@ type MarginTab = "overview" | "connections" | "passage" | "notes";
 
 const MARGIN_TABS: Array<{ id: MarginTab; label: string; accessibleLabel: string }> = [
   { id: "overview", label: "Overview", accessibleLabel: "Overview" },
-  { id: "connections", label: "Refs", accessibleLabel: "Cross references" },
-  { id: "passage", label: "Passage", accessibleLabel: "Passage study" },
-  { id: "notes", label: "Notes", accessibleLabel: "Notes" },
+  { id: "connections", label: "Related", accessibleLabel: "Related verses" },
+  { id: "passage", label: "Words", accessibleLabel: "Words & structure" },
+  { id: "notes", label: "My notes", accessibleLabel: "My notes" },
 ];
+
+const PANEL_FOCUSABLE_SELECTOR = [
+  "button:not([disabled])",
+  "a[href]",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  "summary",
+  '[contenteditable="true"]',
+  '[tabindex]:not([tabindex="-1"])',
+].join(", ");
 
 interface Props {
   book: string;
@@ -57,18 +68,13 @@ interface Props {
   /** The verse nearest the reading eye-line, when nothing is pinned. */
   nearVerse?: number | null;
   onPinClaim?: (claimId: string, assertion: string) => Promise<boolean> | boolean;
-  /** Assign a highlight color to the pinned range. */
-  onSetHighlightColor?: (color: string) => void;
   /** Remove every complete visual highlight touched by the pinned range. */
   onRemoveHighlights?: (entityIds: string[]) => void;
   /** Create a note from the pinned range (same path as the mini toolbar). */
   onCreateNote?: () => void;
   /** Navigate to a cross-reference's target passage (e.g. "Matthew 3:11"). */
   onNavigateToRef?: (ref: string) => void;
-  /**
-   * Pastor engaged language study for this verse — parent should pin it so
-   * ambient scroll cannot steal the panel.
-   */
+  /** Keep original-language study aligned with its explicit verse. */
   onStudyVerse?: (verse: number) => void;
   /** Pointer entered/left the margin (freeze ambient eye-line while true). */
   onMarginActiveChange?: (active: boolean) => void;
@@ -936,7 +942,7 @@ function CrossReferenceRow({
       type="button"
       className="crossref-row"
       onClick={() => onNavigate?.(item.targetBref)}
-      aria-label={`Open ${item.targetDisplay}`}
+      aria-label={item.preview ? `Open ${item.targetDisplay}. ${item.preview}` : `Open ${item.targetDisplay}`}
       title={item.preview ? `${item.targetDisplay} — ${item.preview}` : `Open ${item.targetDisplay}`}
     >
       <span className="crossref-row-copy">
@@ -969,13 +975,11 @@ function CrossRefsBlock({
   onNavigate?: (ref: string) => void;
 }): React.JSX.Element {
   return (
-    <section className="margin-section crossref-section" aria-label="OpenBible cross references">
+    <section className="margin-section crossref-section" aria-label="Related verses">
       <div className="crossref-heading">
         <div>
-          <h3 className="margin-section-header crossref-title">OpenBible</h3>
+          <h3 className="margin-section-header crossref-title">Related verses</h3>
           <div className="crossref-context">
-            <span>Cross References</span>
-            <span aria-hidden="true">·</span>
             <span>{result.scope === "verse" ? "For this verse" : "Across this passage"}</span>
           </div>
         </div>
@@ -1212,7 +1216,6 @@ export function LivingMargin({
   pinnedRange,
   nearVerse,
   onPinClaim,
-  onSetHighlightColor,
   onRemoveHighlights,
   onCreateNote,
   onNavigateToRef,
@@ -1233,6 +1236,7 @@ export function LivingMargin({
   const [pendingClaimId, setPendingClaimId] = useState<string | null>(null);
   const [claimPinError, setClaimPinError] = useState<{ id: string; message: string } | null>(null);
   const [activeTab, setActiveTab] = useState<MarginTab>("overview");
+  const [wordsVerse, setWordsVerse] = useState(pinnedRange?.start ?? 1);
   const [entityResult, setEntityResult] = useState<LanguageEntityRangeResult>({
     entities: [],
     attribution: { name: "STEPBible TIPNR", license: "CC BY 4.0" },
@@ -1291,6 +1295,13 @@ export function LivingMargin({
   const isPinned = !!pinnedRange;
   const isNear = !isPinned && nearVerse != null;
   const connectionInspectorOpen = connectionInspector != null;
+
+  useEffect(() => {
+    if (!pinnedRange) return;
+    setWordsVerse((current) => (
+      current >= pinnedRange.start && current <= pinnedRange.end ? current : pinnedRange.start
+    ));
+  }, [pinnedRange?.start, pinnedRange?.end]);
 
   // The same canonical passage can contain materially different wording in
   // WEB and KJV. Cache passage-text analysis independently so switching
@@ -1384,8 +1395,13 @@ export function LivingMargin({
   const nearNote = nearVerse != null ? findNoteForRange(marginData, chapter, nearVerse, nearVerse) : null;
   const nearQuote = nearVerse != null ? quoteVerseText?.get(nearVerse) ?? "" : "";
   const nearRef = nearVerse != null ? `${displayBook} ${chapter}:${nearVerse}` : "";
-  const marginMode = connectionInspectorOpen ? "Connection" : isPinned ? "Selected" : isNear ? "In view" : "Chapter";
   const contextReference = isPinned ? pinnedRef : isNear ? nearRef : `${displayBook} ${chapter}`;
+  const marginMode = connectionInspectorOpen ? "Connection" : isPinned ? "selection" : "following";
+  const scopeCopy = connectionInspectorOpen
+    ? `Connection · ${contextReference}`
+    : isPinned
+      ? `Selection · ${contextReference}`
+      : `Following your reading · ${contextReference}`;
   const contextQuote = isPinned ? pinnedQuote : isNear ? nearQuote : "";
   const contextKey = isPinned
     ? `selected:${book}:${chapter}:${pinnedRange.start}-${pinnedRange.end}`
@@ -1580,8 +1596,8 @@ export function LivingMargin({
     }
   };
 
-  // While the reading canvas (or the tab row itself) owns focus, Tab and
-  // Shift-Tab cycle study lenses rather than moving focus around the chrome.
+  // While the reading canvas owns focus, Tab and Shift-Tab cycle study lenses
+  // without moving focus. The tab row remains its own keyboard domain.
   // Arrow keys remain available to reading-canvas chapter navigation; the
   // local tablist handler below keeps its conventional arrow-key contract.
   // Floating dialogs and controls keep their normal keyboard contract.
@@ -1595,7 +1611,7 @@ export function LivingMargin({
       const target = event.target instanceof Element ? event.target : null;
       const readingTarget = target === document.body
         || target === document.documentElement
-        || Boolean(target?.closest(".verse-line, .margin-tab"));
+        || Boolean(target?.closest(".verse-line"));
       if (!readingTarget) return;
 
       event.preventDefault();
@@ -1603,8 +1619,7 @@ export function LivingMargin({
       const currentIndex = Math.max(0, MARGIN_TABS.findIndex((tab) => tab.id === activeTab));
       const reverse = event.shiftKey;
       const nextIndex = (currentIndex + (reverse ? -1 : 1) + MARGIN_TABS.length) % MARGIN_TABS.length;
-      const focusTab = Boolean(target?.closest(".margin-tab"));
-      activateTab(MARGIN_TABS[nextIndex]?.id ?? "overview", focusTab);
+      activateTab(MARGIN_TABS[nextIndex]?.id ?? "overview");
     };
 
     window.addEventListener("keydown", cycleStudyLens, true);
@@ -1612,10 +1627,21 @@ export function LivingMargin({
   }, [activeTab, entityIntent]);
 
   const handleTabKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number): void => {
+    if ((event.key === "Enter" || event.key === "ArrowDown") && activeTab === MARGIN_TABS[index]?.id) {
+      event.preventDefault();
+      const panelId = event.currentTarget.getAttribute("aria-controls");
+      const panel = panelId ? document.getElementById(panelId) : null;
+      const target = panel?.querySelector<HTMLElement>(PANEL_FOCUSABLE_SELECTOR) ?? panel;
+      if (target instanceof HTMLElement) {
+        if (target === panel) target.tabIndex = -1;
+        target.focus({ preventScroll: true });
+      }
+      return;
+    }
     let nextIndex: number | null = null;
-    if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+    if (event.key === "ArrowRight") {
       nextIndex = (index + 1) % MARGIN_TABS.length;
-    } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+    } else if (event.key === "ArrowLeft") {
       nextIndex = (index - 1 + MARGIN_TABS.length) % MARGIN_TABS.length;
     } else if (event.key === "Home") {
       nextIndex = 0;
@@ -1626,6 +1652,21 @@ export function LivingMargin({
     event.preventDefault();
     activateTab(MARGIN_TABS[nextIndex]!.id, true);
   };
+
+  useEffect(() => {
+    const returnToActiveTab = (event: KeyboardEvent): void => {
+      if (event.key !== "Escape" || event.defaultPrevented) return;
+      const target = event.target instanceof Element ? event.target : null;
+      if (!target?.closest(".margin-tab-panel")) return;
+      if (document.querySelector('[data-floating-layer="dialog"], [data-floating-layer="popover"]')) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const index = MARGIN_TABS.findIndex((tab) => tab.id === activeTab);
+      tabRefs.current[index]?.focus({ preventScroll: true });
+    };
+    window.addEventListener("keydown", returnToActiveTab, true);
+    return () => window.removeEventListener("keydown", returnToActiveTab, true);
+  }, [activeTab]);
 
   const tabCount = (tab: MarginTab): number | null => {
     if (tab === "connections") return connectionCount;
@@ -1721,10 +1762,10 @@ export function LivingMargin({
           Study
         </h2>
         <div className="margin-frame-state">
-          <span id="living-margin-mode" className="margin-frame-mode" aria-live="polite">{marginMode}</span>
+          <span id="living-margin-mode" className="margin-frame-mode" aria-live="polite">{scopeCopy}</span>
           {!connectionInspectorOpen && isPinned && onClearSelection && (
             <button type="button" className="margin-frame-action" onClick={clearSelection}>
-              Done
+              Clear
             </button>
           )}
         </div>
@@ -1824,22 +1865,8 @@ export function LivingMargin({
             {(hasDeterministicData || hasSemanticData) && (
               <>
                 <div className="margin-view-heading">
-                  <h3>Chapter overview</h3>
+                  <h3>Words &amp; structure</h3>
                   <p>Your marks and study activity remain secondary to the text.</p>
-                </div>
-                <div className="margin-stats" aria-label="Chapter study activity">
-                  <div className="margin-stat">
-                    <span className="margin-stat-num">{activeHighlights.length}</span>
-                    <span className="margin-stat-label">Highlights</span>
-                  </div>
-                  <div className="margin-stat">
-                    <span className="margin-stat-num">{marginData.notes.length}</span>
-                    <span className="margin-stat-label">Notes</span>
-                  </div>
-                  <div className="margin-stat">
-                    <span className="margin-stat-num">{crossRefs?.totalCount ?? 0}</span>
-                    <span className="margin-stat-label">Cross refs</span>
-                  </div>
                 </div>
                 <p className="margin-invite">
                   Select a verse to study its language, add a highlight, or narrow each view to that passage.
@@ -1888,7 +1915,7 @@ export function LivingMargin({
           >
             <div className="margin-view-heading">
               <h3>In this chapter</h3>
-              <p>Material from your local library for this chapter.</p>
+              <p>Material from My notes for this chapter.</p>
             </div>
             {semanticData && semanticData.threads.length > 0 && (
               <div className="margin-overview-themes">
@@ -1993,7 +2020,7 @@ export function LivingMargin({
           >
             <div className="margin-view-heading">
               <h3>At this verse</h3>
-              <p>Your local library at this verse.</p>
+              <p>Material from My notes at this verse.</p>
             </div>
             {nearNote ? (
               <DeepNoteCard
@@ -2070,29 +2097,37 @@ export function LivingMargin({
               )}
             </div>
 
-            {/* Quick color row — same swatch chrome as the mini toolbar */}
-            {onSetHighlightColor && (
-              <div className="margin-hl-palette" role="group" aria-label="Highlight color">
-                {(["yellow", "green", "blue", "pink", "purple"] as const).map((color) => (
-                  <button
-                    key={color}
-                    type="button"
-                    className={`margin-hl-swatch ${color}${pinnedHighlightColor === color ? " active" : ""}${pinnedColors.length > 1 ? " mixed-context" : ""}`}
-                    title={`${color.charAt(0).toUpperCase() + color.slice(1)} highlight`}
-                    aria-label={`Apply ${color} highlight`}
-                    aria-pressed={pinnedHighlightColor === color}
-                    onClick={() => onSetHighlightColor(color)}
-                  />
-                ))}
-              </div>
-            )}
           </div>
 
           {/* Primary study surface */}
+          {pinnedRange.end > pinnedRange.start && (
+            <div className="words-verse-chooser" role="radiogroup" aria-label="Words for verse">
+              <span className="words-verse-chooser-label">Words for verse</span>
+              <span className="words-verse-chips">
+                {Array.from(
+                  { length: pinnedRange.end - pinnedRange.start + 1 },
+                  (_, index) => pinnedRange.start + index,
+                ).map((verse) => (
+                  <button
+                    key={verse}
+                    type="button"
+                    className="words-verse-chip"
+                    role="radio"
+                    aria-label={`Verse ${verse}`}
+                    aria-checked={wordsVerse === verse}
+                    tabIndex={wordsVerse === verse ? 0 : -1}
+                    onClick={() => setWordsVerse(verse)}
+                  >
+                    {verse}
+                  </button>
+                ))}
+              </span>
+            </div>
+          )}
           <LanguageWordsSection
             book={book}
             chapter={chapter}
-            verse={pinnedRange.start}
+            verse={wordsVerse}
             readingPackageId={packageId}
             onStudyEngage={onStudyVerse}
           />

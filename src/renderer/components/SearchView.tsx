@@ -350,7 +350,7 @@ export function SearchView({
       <header className="note-workspace-hero">
         <div>
           <span className="workspace-kicker">{mode === "notes" ? "Local notebook" : "Full-text retrieval"}</span>
-          <h1 id={`${mode}-workspace-title`}>{mode === "notes" ? "Notes" : "Search"}</h1>
+          <h1 id={`${mode}-workspace-title`}>{mode === "notes" ? "My notes" : "Search"}</h1>
           <p>
             {mode === "notes"
               ? "Read the thinking you have already done, then return to its Scripture context."

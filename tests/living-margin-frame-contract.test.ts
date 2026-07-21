@@ -10,7 +10,9 @@ const css = readFileSync(join(repoRoot, "src", "renderer", "styles.css"), "utf-8
 
 test("Living Margin is one labelled frame with truthful chapter, reading, and selected modes", () => {
   assert.match(margin, /aria-labelledby="living-margin-title"/);
-  assert.match(margin, /const marginMode = connectionInspectorOpen \? "Connection" : isPinned \? "Selected" : isNear \? "In view" : "Chapter"/);
+  assert.match(margin, /const marginMode = connectionInspectorOpen \? "Connection" : isPinned \? "selection" : "following"/);
+  assert.match(margin, /Following your reading ·/);
+  assert.match(margin, /Selection ·/);
   assert.match(margin, /data-margin-mode=\{marginMode\.toLowerCase\(\)\.replace\(" ", "-"\)\}/);
   assert.match(margin, /data-margin-view="chapter"/);
   assert.match(margin, /data-margin-view="reading"/);
@@ -18,13 +20,13 @@ test("Living Margin is one labelled frame with truthful chapter, reading, and se
   assert.match(css, /\.margin-frame-header\s*\{[\s\S]*position: sticky/);
 });
 
-test("authored connection inspection is a contextual margin view, not a replacement for Refs", () => {
+test("authored connection inspection is a contextual margin view, not a replacement for Related", () => {
   assert.match(margin, /connectionInspector\?: React\.ReactNode/);
   assert.match(margin, /className="margin-connection-inspector" data-margin-view="connection"/);
   assert.match(margin, /margin-study-content\$\{connectionInspectorOpen \? " has-connection-inspector" : ""\}/);
   assert.doesNotMatch(margin, /margin-study-content" hidden=\{connectionInspectorOpen\}/);
   assert.match(margin, /const connectionCount = \(crossRefs\?\.items\.length \?\? 0\) \+ noteConnectionCount/);
-  assert.match(margin, /\{ id: "connections", label: "Refs", accessibleLabel: "Cross references" \}/);
+  assert.match(margin, /\{ id: "connections", label: "Related", accessibleLabel: "Related verses" \}/);
   assert.doesNotMatch(margin, /connectionCount[\s\S]{0,100}marginData\.connections/);
   assert.match(css, /\.margin-study-content\.has-connection-inspector[\s\S]*padding-top: var\(--sp-xl\)/);
   assert.doesNotMatch(css, /\.margin-study-content\[hidden\]/);
@@ -32,14 +34,15 @@ test("authored connection inspection is a contextual margin view, not a replacem
 
 test("Overview is the quiet default, with stable keyboard deep-dive tabs over the current scope", () => {
   assert.match(margin, /type MarginTab = "overview" \| "connections" \| "passage" \| "notes"/);
-  assert.match(margin, /const MARGIN_TABS[\s\S]*\{ id: "overview", label: "Overview"[\s\S]*\{ id: "connections", label: "Refs"/);
+  assert.match(margin, /const MARGIN_TABS[\s\S]*\{ id: "overview", label: "Overview"[\s\S]*\{ id: "connections", label: "Related"/);
   assert.match(margin, /useState<MarginTab>\("overview"\)/);
   assert.match(margin, /role="tablist" aria-label="Study views" aria-orientation="horizontal"/);
   assert.match(margin, /aria-selected=\{selected\}/);
   assert.match(margin, /aria-controls=\{`margin-\$\{tab\.id\}-panel`\}/);
   assert.match(margin, /tabIndex=\{selected \? 0 : -1\}/);
-  assert.match(margin, /event\.key === "ArrowRight" \|\| event\.key === "ArrowDown"/);
-  assert.match(margin, /event\.key === "ArrowLeft" \|\| event\.key === "ArrowUp"/);
+  assert.match(margin, /event\.key === "Enter" \|\| event\.key === "ArrowDown"/);
+  assert.match(margin, /event\.key === "ArrowRight"/);
+  assert.match(margin, /event\.key === "ArrowLeft"/);
   assert.match(margin, /event\.key === "Home"/);
   assert.match(margin, /event\.key === "End"/);
   assert.match(margin, /role="tabpanel"/);
@@ -55,8 +58,9 @@ test("Overview is the quiet default, with stable keyboard deep-dive tabs over th
   );
   assert.doesNotMatch(globalLensHandler, /ArrowLeft|ArrowRight/);
   assert.match(globalLensHandler, /const reverse = event\.shiftKey/);
-  assert.match(margin, /target\?\.closest\("\.verse-line, \.margin-tab"\)/);
-  assert.match(margin, /activateTab\(MARGIN_TABS\[nextIndex\]\?\.id \?\? "overview", focusTab\)/);
+  assert.match(margin, /target\?\.closest\("\.verse-line"\)/);
+  assert.doesNotMatch(globalLensHandler, /\.margin-tab/);
+  assert.match(margin, /activateTab\(MARGIN_TABS\[nextIndex\]\?\.id \?\? "overview"\)/);
   assert.match(css, /\.margin-tabs\s*\{[\s\S]*position: sticky/);
   assert.match(css, /\.margin-tab\.is-active::after/);
 });
@@ -122,7 +126,7 @@ test("tab content preserves public and personal trust boundaries", () => {
   assert.match(passagePanel, /LanguageWordsSection/);
   assert.match(connectionsPanel, /CrossRefsBlock/);
   assert.match(connectionsPanel, /NoteCrossRefsBlock/);
-  assert.match(margin, /Cross References/);
+  assert.match(margin, /Related verses/);
   assert.match(margin, /Connections in your library/);
   assert.match(notesPanel, /Passage insight/);
   assert.match(notesPanel, /notes-deep-dive/);
@@ -133,7 +137,7 @@ test("tab content preserves public and personal trust boundaries", () => {
 test("chapter top remains an overview before the margin follows the reading eye-line", () => {
   assert.match(page, /if \(root\.scrollTop < 72\) \{[\s\S]*setNearVerse/);
   assert.match(page, /const marginHasPointer = document\.querySelector\("\.living-margin"\)\?\.matches\(":hover"\) \?\? false/);
-  assert.match(page, /if \(studyLockVerseRef\.current != null\) studyLockVerseRef\.current = null/);
+  assert.doesNotMatch(page, /studyLockVerseRef/);
   assert.match(page, /const eyeY = rootRect\.top \+ rootRect\.height \* 0\.32/);
   assert.match(page, /nearVerse=\{pinnedRange \? null : nearVerse\}/);
 });

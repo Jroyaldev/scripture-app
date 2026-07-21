@@ -295,7 +295,7 @@ test("translation changes close point-anchored chooser state before prose reflow
   const packageReset = sourceBetween(
     page,
     "// Phrase offsets and highlight animations belong to one translation's text",
-    "  // Clear study lock when the user fully clears the selection",
+    '  return (\n    <div className="scripture-page">',
   );
   assert.match(packageReset, /closeConnectionWordChooser\(false\)/);
   assert.match(packageReset, /\[advanceSelectionGeneration, closeConnectionWordChooser, packageId\]/);

@@ -17,6 +17,7 @@ import { ToastProvider } from "./components/Toast.js";
 import { Popover } from "./components/Popover.js";
 import { WelcomeScreen } from "./components/WelcomeScreen.js";
 import { PericopeMark } from "./components/PericopeMark.js";
+import { ShortcutsOverlay } from "./components/ShortcutsOverlay.js";
 import type { ReadingPrefs } from "./components/ReadingComfort.js";
 import { Tooltip } from "./components/Tooltip.js";
 import {
@@ -139,6 +140,7 @@ export function App(): React.JSX.Element {
   } | null>(null);
   const [writingDraft, setWritingDraft] = useState<WritingDraft>({ title: "", body: "" });
   const [commandOpen, setCommandOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [readingContext, setReadingContext] = useState<CommandReadingContext>({
     book: "ACT",
     chapter: 19,
@@ -180,6 +182,7 @@ export function App(): React.JSX.Element {
   const libraryTriggerRef = useRef<HTMLButtonElement>(null);
   const [libraryAnchorRect, setLibraryAnchorRect] = useState<DOMRect | null>(null);
   const settingsLoaded = useRef(false);
+  const entityReturnFocusRef = useRef<HTMLElement | null>(null);
   const [settingsReady, setSettingsReady] = useState(false);
   // Tracks which persisted settings the user has already changed via the UI
   // before the initial settings.get() resolved. The load effect must not
@@ -370,21 +373,37 @@ export function App(): React.JSX.Element {
     setCommandOpen(true);
   }, [readingContext]);
   const closeCommandPalette = useCallback(() => setCommandOpen(false), []);
+  const closeShortcutsOverlay = useCallback(() => setShortcutsOpen(false), []);
 
   const openEntityResearchAt = useCallback((entityId: string, origin: CommandReadingContext) => {
     if (authoredMutationStateRef.current !== "idle") return;
+    if (!entityIntent) {
+      const active = document.activeElement;
+      entityReturnFocusRef.current = active instanceof HTMLElement && active !== document.body
+        ? active
+        : null;
+    }
     setEntityIntent({ id: entityId, nonce: Date.now(), origin });
     changeView("scripture");
     setFocusMode(false);
     userDirtySettings.current.marginVisible = true;
     setMarginVisible(true);
-  }, [changeView]);
+  }, [changeView, entityIntent]);
   const openEntityResearch = useCallback((entityId: string) => {
     openEntityResearchAt(entityId, readingContext);
   }, [openEntityResearchAt, readingContext]);
   const openCommandEntityResearch = useCallback((entityId: string) => {
     openEntityResearchAt(entityId, commandContext);
   }, [commandContext, openEntityResearchAt]);
+  const closeEntityResearch = useCallback(() => {
+    const target = entityReturnFocusRef.current;
+    setEntityIntent(null);
+    window.setTimeout(() => {
+      if (target?.isConnected) target.focus();
+      else document.querySelector<HTMLElement>("#living-margin-title")?.focus();
+      entityReturnFocusRef.current = null;
+    }, 0);
+  }, []);
 
   const toggleSidebarCollapsed = () => {
     userDirtySettings.current.sidebarCollapsed = true;
@@ -507,6 +526,54 @@ export function App(): React.JSX.Element {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [openCommandPalette]);
+
+  useEffect(() => {
+    const openShortcutsOverlay = (event: KeyboardEvent): void => {
+      const shortcutKey = event.key === "?" || (event.key === "/" && event.shiftKey);
+      if (!shortcutKey || event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
+      const target = event.target instanceof HTMLElement ? event.target : null;
+      if (target?.matches("input, textarea, select") || target?.isContentEditable) return;
+      if (document.querySelector('[data-floating-layer="dialog"]')) return;
+      event.preventDefault();
+      event.stopPropagation();
+      setShortcutsOpen(true);
+    };
+    window.addEventListener("keydown", openShortcutsOverlay, true);
+    return () => window.removeEventListener("keydown", openShortcutsOverlay, true);
+  }, []);
+
+  useEffect(() => {
+    const cyclePanes = (event: KeyboardEvent): void => {
+      if (event.key !== "F6" || event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
+      if (document.querySelector('[data-floating-layer="dialog"], [data-floating-layer="popover"], .command-palette-root')) return;
+
+      const panes: Array<{ root: HTMLElement; target: HTMLElement }> = [];
+      const addPane = (root: HTMLElement | null, target: HTMLElement | null): void => {
+        if (root && target) panes.push({ root, target });
+      };
+      const sidebar = document.querySelector<HTMLElement>(".sidebar");
+      addPane(sidebar, sidebar?.querySelector<HTMLElement>('.nav-item[aria-current="page"], .nav-item:not([disabled])') ?? null);
+      const topbar = document.querySelector<HTMLElement>(".scripture-topbar");
+      addPane(topbar, topbar?.querySelector<HTMLElement>('button:not([disabled]), [tabindex="0"]') ?? null);
+      const canvas = document.querySelector<HTMLElement>(".scripture-content");
+      addPane(canvas, canvas?.querySelector<HTMLElement>('.verse-line[aria-pressed="true"], .verse-line') ?? null);
+      const margin = document.querySelector<HTMLElement>(".living-margin");
+      addPane(margin, margin?.querySelector<HTMLElement>('.margin-tab[aria-selected="true"], #living-margin-title, #entity-research-title') ?? null);
+      if (panes.length === 0) return;
+
+      const active = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      const currentIndex = active == null ? -1 : panes.findIndex((pane) => pane.root.contains(active));
+      const delta = event.shiftKey ? -1 : 1;
+      const nextIndex = currentIndex < 0
+        ? (event.shiftKey ? panes.length - 1 : 0)
+        : (currentIndex + delta + panes.length) % panes.length;
+      event.preventDefault();
+      event.stopPropagation();
+      panes[nextIndex]?.target.focus({ preventScroll: true });
+    };
+    window.addEventListener("keydown", cyclePanes, true);
+    return () => window.removeEventListener("keydown", cyclePanes, true);
+  }, []);
 
   // Global keyboard: view digits 1–4, F = focus mode, Esc exits focus.
   useEffect(() => {
@@ -634,8 +701,8 @@ export function App(): React.JSX.Element {
     },
     {
       id: "open-notes",
-      title: "Open Notes",
-      detail: "Browse your local notebook",
+      title: "Open My notes",
+      detail: "Browse My notes",
       keywords: ["library", "notebook"],
     },
     {
@@ -758,7 +825,7 @@ export function App(): React.JSX.Element {
               <div className="sidebar-nav">
                 <NavItem active={view === "scripture"} onClick={() => { changeView("scripture"); }} label="Read" icon={<ReadIcon />} shortcut="1" />
                 <NavItem active={view === "write"} onClick={() => { changeView("write"); }} disabled={authoredMutationState !== "idle"} label="Write" icon={<WriteIcon />} shortcut="2" />
-                <NavItem active={view === "notes"} onClick={() => { changeView("notes"); }} disabled={authoredMutationState !== "idle"} label="Notes" icon={<NotesIcon />} shortcut="3" />
+                <NavItem active={view === "notes"} onClick={() => { changeView("notes"); }} disabled={authoredMutationState !== "idle"} label="My notes" icon={<NotesIcon />} shortcut="3" />
                 <NavItem active={view === "search"} onClick={() => { changeView("search"); }} disabled={authoredMutationState !== "idle"} label="Search" icon={<SearchIcon />} shortcut="4" />
                 <div className="nav-divider" />
                 <NavItem active={view === "settings"} onClick={() => { changeView("settings"); }} disabled={authoredMutationState !== "idle"} label="Settings" icon={<SettingsIcon />} shortcut="5" />
@@ -818,7 +885,7 @@ export function App(): React.JSX.Element {
                 onAuthoredMutationStateChange={handleAuthoredMutationStateChange}
                 entityIntent={entityIntent}
                 onOpenEntity={openEntityResearch}
-                onCloseEntity={() => setEntityIntent(null)}
+                onCloseEntity={closeEntityResearch}
               />
             )}
             {view === "write" && (
@@ -890,6 +957,7 @@ export function App(): React.JSX.Element {
             }}
             onRunAction={runCommandAction}
           />
+          {shortcutsOpen && <ShortcutsOverlay onClose={closeShortcutsOverlay} />}
         </div>
       </ToastProvider>
     </ErrorBoundary>

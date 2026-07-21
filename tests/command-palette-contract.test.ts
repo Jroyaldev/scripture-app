@@ -7,7 +7,7 @@ const repoRoot = resolve(import.meta.dirname, "..");
 
 test("command palette has four truthful high-traffic lenses", () => {
   const source = readFileSync(join(repoRoot, "src", "renderer", "components", "CommandPalette.tsx"), "utf8");
-  for (const label of ["Intelligence", "Scripture", "Notes", "Names"]) {
+  for (const label of ["Intelligence", "Scripture", "My notes", "Names"]) {
     assert.match(source, new RegExp(`label: "${label}"`));
   }
   assert.match(source, /role="tablist"/);
@@ -38,7 +38,7 @@ test("palette keeps public Scripture, local notes, and TIPNR names as separate i
   assert.match(source, /window\.api\.scripture\.search/);
   assert.match(source, /window\.api\.library\.search/);
   assert.match(source, /window\.api\.language\.searchEntities/);
-  assert.match(source, /Your library/);
+  assert.match(source, /My notes/);
   assert.match(source, /Name matches rank before definition matches/);
 });
 

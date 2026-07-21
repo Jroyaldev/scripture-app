@@ -65,7 +65,7 @@ type SearchData = {
 const TABS: Array<{ id: CommandPaletteTab; label: string }> = [
   { id: "intelligence", label: "Intelligence" },
   { id: "scripture", label: "Scripture" },
-  { id: "notes", label: "Notes" },
+  { id: "notes", label: "My notes" },
   { id: "names", label: "Names" },
 ];
 
@@ -302,7 +302,7 @@ export function CommandPalette({
     kind: "note",
     title: note.title || "Untitled note",
     detail: cleanExcerpt(note.body_text) || "No note text yet.",
-    meta: "Your library",
+    meta: "My notes",
     activate: () => closeAnd(() => onOpenNote(note.id)),
   })), [closeAnd, data.notes, onOpenNote]);
 
