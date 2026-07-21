@@ -85,6 +85,34 @@ function MarginSourcesDisclosure({ sources }: { sources: MarginCitationSource[] 
 
 type MarginTab = "overview" | "connections" | "passage" | "notes";
 
+export interface EntityResearchTrailEntry {
+  id: string;
+  displayName: string;
+}
+
+export const ENTITY_RESEARCH_TRAIL_LIMIT = 12;
+
+export function appendEntityResearchTrail(
+  trail: readonly EntityResearchTrailEntry[],
+  entry: EntityResearchTrailEntry,
+): EntityResearchTrailEntry[] {
+  const current = trail.at(-1);
+  if (current?.id === entry.id) {
+    return current.displayName === entry.displayName
+      ? [...trail]
+      : [...trail.slice(0, -1), entry];
+  }
+  return [...trail, entry].slice(-ENTITY_RESEARCH_TRAIL_LIMIT);
+}
+
+export function truncateEntityResearchTrail(
+  trail: readonly EntityResearchTrailEntry[],
+  index: number,
+): EntityResearchTrailEntry[] {
+  if (index < 0 || index >= trail.length) return [...trail];
+  return trail.slice(0, index + 1);
+}
+
 const MARGIN_TABS: Array<{ id: MarginTab; label: string; accessibleLabel: string }> = [
   { id: "overview", label: "Overview", accessibleLabel: "Overview" },
   { id: "connections", label: "Related", accessibleLabel: "Related verses" },
@@ -149,6 +177,10 @@ interface Props {
   } | null;
   onOpenEntity?: (entityId: string) => void;
   onCloseEntity?: () => void;
+  entityTrail?: readonly EntityResearchTrailEntry[];
+  onEntityTrailChange?: (
+    update: (current: readonly EntityResearchTrailEntry[]) => EntityResearchTrailEntry[],
+  ) => void;
   /** A selected user-authored connection, composed by ScripturePage. */
   connectionInspector?: React.ReactNode;
   /** Durable authored relationships remain reachable even when this package
@@ -840,45 +872,37 @@ function EntityResearchView({
     });
   };
 
+  const photo = data.imageDataUrl && place?.image ? (
+    <figure className="entity-photo">
+      <img src={data.imageDataUrl} alt={place.image.alt} />
+      <figcaption>
+        <div className="entity-photo-caption">
+          <span>{placeImageKindLabel(place.image.kind)}</span>
+          <strong>{place.image.alt}</strong>
+        </div>
+        <div className="entity-photo-provenance">
+          <div className="entity-photo-provenance-head">
+            <span>Image details</span>
+            <span>{place.image.credit} · {place.image.license}</span>
+          </div>
+          <dl>
+            <dt>Depicts</dt>
+            <dd>{place.image.depictedLocation}</dd>
+            <dt>Credit</dt>
+            <dd>{place.image.credit}</dd>
+            <dt>Source</dt>
+            <dd><button type="button" onClick={() => openMediaLink(place.image!.sourceUrl)}>Wikimedia Commons <span aria-hidden="true">↗</span></button></dd>
+            <dt>License</dt>
+            <dd><button type="button" onClick={() => openMediaLink(place.image!.licenseUrl)}>{place.image.license} <span aria-hidden="true">↗</span></button></dd>
+          </dl>
+          {mediaLinkError && <p className="entity-photo-link-error" role="alert">{mediaLinkError}</p>}
+        </div>
+      </figcaption>
+    </figure>
+  ) : null;
+
   return (
     <article className={`entity-research-view is-${data.entity.kind}`}>
-      {data.imageDataUrl && place?.image ? (
-        <figure className="entity-photo">
-          <img src={data.imageDataUrl} alt={place.image.alt} />
-          <figcaption>
-            <div className="entity-photo-caption">
-              <span>{placeImageKindLabel(place.image.kind)}</span>
-              <strong>{place.image.alt}</strong>
-            </div>
-            <details className="entity-photo-provenance">
-              <summary>
-                <span>Image details</span>
-                <span>{place.image.credit} · {place.image.license}</span>
-              </summary>
-              <dl>
-                <dt>Depicts</dt>
-                <dd>{place.image.depictedLocation}</dd>
-                <dt>Credit</dt>
-                <dd>{place.image.credit}</dd>
-                <dt>Source</dt>
-                <dd>
-                  <button type="button" onClick={() => openMediaLink(place.image!.sourceUrl)}>
-                    Wikimedia Commons <span aria-hidden="true">↗</span>
-                  </button>
-                </dd>
-                <dt>License</dt>
-                <dd>
-                  <button type="button" onClick={() => openMediaLink(place.image!.licenseUrl)}>
-                    {place.image.license} <span aria-hidden="true">↗</span>
-                  </button>
-                </dd>
-              </dl>
-              {mediaLinkError && <p className="entity-photo-link-error" role="alert">{mediaLinkError}</p>}
-            </details>
-          </figcaption>
-        </figure>
-      ) : null}
-
       <header className="entity-research-identity">
         <div className="entity-research-kicker">
           <span>{data.entity.kind}</span>
@@ -905,9 +929,6 @@ function EntityResearchView({
           </div>
         )}
         <p>{data.entity.brief}</p>
-        {data.entity.short && data.entity.short !== data.entity.brief && (
-          <p className="entity-research-expanded">{data.entity.short}</p>
-        )}
       </header>
 
       <EntityOpeningContextSection
@@ -919,8 +940,6 @@ function EntityResearchView({
         bookNames={bookNames}
         onNavigate={onNavigate}
       />
-
-      <PersonRelationships data={data} onOpenEntity={onOpenEntity} />
 
       {place && (
         <section className="entity-research-section" aria-labelledby="entity-location-title">
@@ -935,21 +954,6 @@ function EntityResearchView({
               <span>{place.alternatives.length + 1} proposed locations</span>
             )}
           </div>
-          {data.pleiades?.coordinateComparison && (
-            <p className={`entity-coordinate-comparison ${isBroadPlaceType(place.type) ? "is-broad" : `is-${data.pleiades.coordinateComparison.relation}`}`}>
-              {coordinateComparisonCopy(data.pleiades, place.type)}
-            </p>
-          )}
-          {place.alternatives.length > 0 && (
-            <div className="entity-location-alternatives" aria-label="Alternative proposed locations">
-              {place.alternatives.map((location, index) => (
-                <div key={location.modernId}>
-                  <span><i aria-hidden="true">{index + 1}</i>{location.name}</span>
-                  <span>{confidenceLabel(location.confidence)}</span>
-                </div>
-              ))}
-            </div>
-          )}
         </section>
       )}
 
@@ -965,6 +969,38 @@ function EntityResearchView({
           </p>
         </section>
       )}
+
+      <details className="entity-research-more" key={data.entity.id}>
+        <summary>More</summary>
+        <div className="entity-research-more-content">
+          {photo}
+          {data.entity.short && data.entity.short !== data.entity.brief && (
+            <p className="entity-research-expanded">{data.entity.short}</p>
+          )}
+          <PersonRelationships data={data} onOpenEntity={onOpenEntity} />
+          {place && (data.pleiades?.coordinateComparison || place.alternatives.length > 0) && (
+            <section className="entity-research-section entity-location-details" aria-labelledby="entity-location-details-title">
+              <div className="entity-research-section-head">
+                <h3 id="entity-location-details-title">Location detail</h3>
+                <span>{place.alternatives.length > 0 ? `${place.alternatives.length + 1} proposals` : "Source comparison"}</span>
+              </div>
+              {data.pleiades?.coordinateComparison && (
+                <p className={`entity-coordinate-comparison ${isBroadPlaceType(place.type) ? "is-broad" : `is-${data.pleiades.coordinateComparison.relation}`}`}>
+                  {coordinateComparisonCopy(data.pleiades, place.type)}
+                </p>
+              )}
+              {place.alternatives.length > 0 && (
+                <div className="entity-location-alternatives" aria-label="Alternative proposed locations">
+                  {place.alternatives.map((location, index) => (
+                    <div key={location.modernId}>
+                      <span><i aria-hidden="true">{index + 1}</i>{location.name}</span>
+                      <span>{confidenceLabel(location.confidence)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
 
       {data.pleiades && <PleiadesResearchSection data={data.pleiades} openResearchLink={openMediaLink} />}
 
@@ -1060,6 +1096,8 @@ function EntityResearchView({
           </div>
         </details>
       )}
+        </div>
+      </details>
 
       <MarginSourcesDisclosure sources={entityResearchSources(data)} />
     </article>
@@ -1427,6 +1465,8 @@ export function LivingMargin({
   entityIntent,
   onOpenEntity,
   onCloseEntity,
+  entityTrail = [],
+  onEntityTrailChange,
   connectionInspector,
   authoredConnections = [],
   selectedAuthoredConnectionId = null,
@@ -1452,9 +1492,6 @@ export function LivingMargin({
   const [entityResearch, setEntityResearch] = useState<EntityResearchData | null>(null);
   const [entityResearchLoading, setEntityResearchLoading] = useState(false);
   const [entityResearchError, setEntityResearchError] = useState<string | null>(null);
-  const [entityBackTrail, setEntityBackTrail] = useState<Array<{ id: string; displayName: string }>>([]);
-  const [entityForwardTrail, setEntityForwardTrail] = useState<Array<{ id: string; displayName: string }>>([]);
-  const internalEntityNavigationRef = useRef<string | null>(null);
   const [deepNotesById, setDeepNotesById] = useState<Record<string, ParsedNoteData> | null>(null);
   const [deepNotesLoading, setDeepNotesLoading] = useState(false);
   const frameTitleRef = useRef<HTMLHeadingElement>(null);
@@ -1654,16 +1691,7 @@ export function LivingMargin({
     if (!entityIntent) {
       setEntityResearch(null);
       setEntityResearchError(null);
-      setEntityBackTrail([]);
-      setEntityForwardTrail([]);
-      internalEntityNavigationRef.current = null;
       return;
-    }
-    if (internalEntityNavigationRef.current === entityIntent.id) {
-      internalEntityNavigationRef.current = null;
-    } else {
-      setEntityBackTrail([]);
-      setEntityForwardTrail([]);
     }
     let cancelled = false;
     setEntityResearchLoading(true);
@@ -1672,6 +1700,10 @@ export function LivingMargin({
       if (cancelled) return;
       if (result.ok && result.value) {
         setEntityResearch(result.value);
+        onEntityTrailChange?.((current) => appendEntityResearchTrail(current, {
+          id: result.value!.entity.id,
+          displayName: result.value!.entity.displayName,
+        }));
       } else {
         setEntityResearch(null);
         setEntityResearchError(result.ok ? "This entity is no longer in the installed index." : result.error);
@@ -1679,51 +1711,34 @@ export function LivingMargin({
       setEntityResearchLoading(false);
     });
     return () => { cancelled = true; };
-  }, [entityIntent]);
+  }, [entityIntent, onEntityTrailChange]);
 
   const openRelatedEntity = (entityId: string): void => {
     if (!onOpenEntity || !entityResearch || entityResearch.entity.id === entityId) return;
-    setEntityBackTrail((current) => [
-      ...current,
-      { id: entityResearch.entity.id, displayName: entityResearch.entity.displayName },
-    ].slice(-12));
-    setEntityForwardTrail([]);
-    internalEntityNavigationRef.current = entityId;
     onOpenEntity(entityId);
   };
 
+  const openTrailEntity = (index: number): void => {
+    const target = entityTrail[index];
+    if (!target || !onOpenEntity || index === entityTrail.length - 1) return;
+    onEntityTrailChange?.((current) => truncateEntityResearchTrail(current, index));
+    onOpenEntity(target.id);
+  };
+
   const openPreviousEntity = (): void => {
-    const previous = entityBackTrail.at(-1);
+    const currentIsRecorded = entityTrail.at(-1)?.id === entityIntent?.id;
+    const previousIndex = entityTrail.length - (currentIsRecorded ? 2 : 1);
+    const previous = entityTrail[previousIndex];
     if (!previous || !onOpenEntity) {
       onCloseEntity?.();
       return;
     }
-    if (entityResearch) {
-      setEntityForwardTrail((current) => [
-        { id: entityResearch.entity.id, displayName: entityResearch.entity.displayName },
-        ...current,
-      ].slice(0, 12));
-    }
-    setEntityBackTrail((current) => current.slice(0, -1));
-    internalEntityNavigationRef.current = previous.id;
+    onEntityTrailChange?.((current) => truncateEntityResearchTrail(current, previousIndex));
     onOpenEntity(previous.id);
   };
 
-  const openNextEntity = (): void => {
-    const next = entityForwardTrail[0];
-    if (!next || !onOpenEntity) return;
-    if (entityResearch) {
-      setEntityBackTrail((current) => [
-        ...current,
-        { id: entityResearch.entity.id, displayName: entityResearch.entity.displayName },
-      ].slice(-12));
-    }
-    setEntityForwardTrail((current) => current.slice(1));
-    internalEntityNavigationRef.current = next.id;
-    onOpenEntity(next.id);
-  };
-
-  const researchBackDestination = entityBackTrail.at(-1)?.displayName
+  const currentResearchIsRecorded = entityTrail.at(-1)?.id === entityIntent?.id;
+  const researchBackDestination = entityTrail.at(currentResearchIsRecorded ? -2 : -1)?.displayName
     ?? (entityIntent ? formatEntityResearchOrigin(entityIntent.origin, bookNames) : "Study");
 
   useEffect(() => {
@@ -1742,7 +1757,7 @@ export function LivingMargin({
     };
     window.addEventListener("keydown", closeResearch, true);
     return () => window.removeEventListener("keydown", closeResearch, true);
-  }, [entityIntent, entityBackTrail, entityResearch, onCloseEntity, onOpenEntity]);
+  }, [entityIntent, entityTrail, entityResearch, onCloseEntity, onOpenEntity]);
 
   useEffect(() => {
     if (activeTab !== "notes") return;
@@ -1893,6 +1908,7 @@ export function LivingMargin({
   };
 
   if (entityIntent) {
+    const originLabel = formatEntityResearchOrigin(entityIntent.origin, bookNames);
     return (
       <aside
         ref={marginRef}
@@ -1913,20 +1929,53 @@ export function LivingMargin({
               <span aria-hidden="true">←</span>
               <span>{`Back to ${researchBackDestination}`}</span>
             </button>
-            {entityForwardTrail.length > 0 && (
-              <button
-                type="button"
-                className="entity-research-forward"
-                onClick={openNextEntity}
-                aria-label={`Forward to ${entityForwardTrail[0]!.displayName}`}
-                title={`Forward to ${entityForwardTrail[0]!.displayName}`}
-              >
-                →
-              </button>
-            )}
+            <button
+              type="button"
+              className="entity-research-close"
+              onClick={onCloseEntity}
+              aria-label="Close research and return to Study"
+            >
+              Close
+            </button>
           </div>
-          <span className="entity-research-mode">Entity research</span>
+          <span className="entity-research-mode">Research</span>
         </header>
+        <nav className="entity-research-breadcrumbs" aria-label="Research trail">
+          <button
+            type="button"
+            className="entity-research-breadcrumb is-origin"
+            onClick={onCloseEntity}
+            aria-label={`Return to Study at ${originLabel}`}
+          >
+            {originLabel}
+          </button>
+          {entityTrail.length > 0 && (
+            <div className="entity-research-breadcrumb-tail">
+              {entityTrail.map((entry, index) => {
+                const isCurrent = index === entityTrail.length - 1 && entry.id === entityIntent.id;
+                return (
+                  <span className="entity-research-breadcrumb-step" key={`${entry.id}-${index}`}>
+                    <span className="entity-research-breadcrumb-separator" aria-hidden="true">›</span>
+                    {isCurrent ? (
+                      <span className="entity-research-breadcrumb is-current" aria-current="page">
+                        {entry.displayName}
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        className="entity-research-breadcrumb"
+                        onClick={() => openTrailEntity(index)}
+                        aria-label={`Return to ${entry.displayName} research`}
+                      >
+                        {entry.displayName}
+                      </button>
+                    )}
+                  </span>
+                );
+              })}
+            </div>
+          )}
+        </nav>
         {entityResearchLoading && (
           <div className="entity-research-loading" role="status">
             <span className="ai-insight-spinner" aria-hidden="true" />

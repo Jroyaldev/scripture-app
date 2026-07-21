@@ -52,7 +52,7 @@ test("renderer session retains history and research Back names its destination",
   assert.match(app, /useState<NavigationHistoryState>[\s\S]{0,100}?createNavigationHistory/);
   assert.match(app, /const \[canvasSessionEntry, setCanvasSessionEntry\]/);
   assert.match(page, /onNavigateRefConsumed\?\.\(\)/);
-  assert.match(margin, /const researchBackDestination = entityBackTrail\.at\(-1\)\?\.displayName/);
+  assert.match(margin, /const researchBackDestination = entityTrail\.at\(currentResearchIsRecorded \? -2 : -1\)\?\.displayName/);
   assert.match(margin, /aria-label=\{`Back to \$\{researchBackDestination\}`\}/);
   assert.doesNotMatch(margin, /entity-research-back[\s\S]{0,180}?navigateBack/);
 });

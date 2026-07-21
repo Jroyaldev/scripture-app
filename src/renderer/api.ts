@@ -207,6 +207,18 @@ export interface AppSettings {
     verse?: number;
     verseOffset?: number;
   } | null;
+  /** Bounded causal research path. Missing legacy values normalize to null. */
+  researchSession?: {
+    origin: {
+      book: string;
+      chapter: number;
+      packageId: string;
+      chapterEndVerse?: number;
+      verseStart?: number;
+      verseEnd?: number;
+    };
+    trail: Array<{ id: string; displayName: string }>;
+  } | null;
 }
 
 export interface LibrarySummary {

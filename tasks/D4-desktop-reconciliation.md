@@ -1,6 +1,6 @@
 # TASK D4: Reconcile the settled desktop checkpoint with Smart Shapes
 
-STATUS: IN PROGRESS — Steps 1–3 complete; Steps 4–5 pending.
+STATUS: IN PROGRESS — Steps 1–4 complete; Step 5 pending.
 
 ## Objective
 
@@ -39,6 +39,11 @@ The old `489c478` checkpoint is requirements evidence only.
   restoration, and exact verse-plus-pixel eye-line persistence through the
   existing translation viewport model. Research Back names its destination
   while remaining separate from canvas history.
+- Step 4: a validated, settings-persisted entity research session with a
+  12-step causal trail, frozen-origin and prior-entity breadcrumbs, named
+  stepwise Back, direct Close, preserved opener focus, and one compact More
+  disclosure for deep relationships, geography, bibliography, and Scripture
+  footprint data.
 
 Step 1 verification: focused contract 4/4; full suite 703 total, 674 pass,
 29 expected Electron-ABI skips; lint, renderer/Electron builds, and diff
@@ -50,6 +55,10 @@ renderer/Electron builds, and diff integrity clean.
 
 Step 3 verification: focused history/return/topbar/keyboard contracts 15/15;
 full suite 722 total, 693 pass, 29 expected Electron-ABI skips; lint,
+renderer/Electron builds, and diff integrity clean.
+
+Step 4 verification: focused research/settings/return contracts 21/21; full
+suite 727 total, 698 pass, 29 expected Electron-ABI skips; lint,
 renderer/Electron builds, and diff integrity clean.
 
 ## Guardrails

@@ -212,6 +212,17 @@ interface AppSettingsSchema {
     verse?: number;
     verseOffset?: number;
   } | null;
+  researchSession: {
+    origin: {
+      book: string;
+      chapter: number;
+      packageId: string;
+      chapterEndVerse?: number;
+      verseStart?: number;
+      verseEnd?: number;
+    };
+    trail: Array<{ id: string; displayName: string }>;
+  } | null;
   windowBounds: WindowBounds | null;
   /** The library location the user last confirmed (Welcome screen or Switch
    * Library), if any. null means no choice has ever been confirmed — the
@@ -290,6 +301,52 @@ function normalizeLastRead(value: unknown): AppSettingsSchema["lastRead"] {
   };
 }
 
+function normalizeResearchSession(value: unknown): AppSettingsSchema["researchSession"] {
+  if (!value || typeof value !== "object") return null;
+  const candidate = value as Record<string, unknown>;
+  const origin = candidate["origin"];
+  const trail = candidate["trail"];
+  if (!origin || typeof origin !== "object" || !Array.isArray(trail)) return null;
+  const source = origin as Record<string, unknown>;
+  if (
+    typeof source["book"] !== "string"
+    || !/^[1-3A-Z]{3}$/.test(source["book"])
+    || !Number.isInteger(source["chapter"])
+    || (source["chapter"] as number) < 1
+    || typeof source["packageId"] !== "string"
+    || source["packageId"].length < 1
+  ) return null;
+  const optionalPositive = (key: string): number | undefined => {
+    const field = source[key];
+    return Number.isInteger(field) && (field as number) > 0 ? field as number : undefined;
+  };
+  const normalizedTrail: Array<{ id: string; displayName: string }> = [];
+  for (const item of trail.slice(-12)) {
+    if (!item || typeof item !== "object") return null;
+    const record = item as Record<string, unknown>;
+    if (
+      typeof record["id"] !== "string"
+      || record["id"].length < 1
+      || record["id"].length > 256
+      || typeof record["displayName"] !== "string"
+      || record["displayName"].length < 1
+      || record["displayName"].length > 256
+    ) return null;
+    normalizedTrail.push({ id: record["id"], displayName: record["displayName"] });
+  }
+  return {
+    origin: {
+      book: source["book"],
+      chapter: source["chapter"] as number,
+      packageId: source["packageId"],
+      ...(optionalPositive("chapterEndVerse") != null ? { chapterEndVerse: optionalPositive("chapterEndVerse") } : {}),
+      ...(optionalPositive("verseStart") != null ? { verseStart: optionalPositive("verseStart") } : {}),
+      ...(optionalPositive("verseEnd") != null ? { verseEnd: optionalPositive("verseEnd") } : {}),
+    },
+    trail: normalizedTrail,
+  };
+}
+
 const legacySettingsAdoption = readLegacySettingsForAdoption();
 const store = new Store<AppSettingsSchema>({
   defaults: {
@@ -302,6 +359,7 @@ const store = new Store<AppSettingsSchema>({
     verseNumbers: "always",
     recentPassages: [],
     lastRead: null,
+    researchSession: null,
     windowBounds: null,
     libraryPath: null,
   },
@@ -2832,15 +2890,21 @@ function registerIpcHandlers(): void {
     theme: normalizeTheme(store.store.theme),
     markingSurface: normalizeMarkingSurface(store.store.markingSurface),
     lastRead: normalizeLastRead(store.store.lastRead),
+    researchSession: normalizeResearchSession(store.store.researchSession),
   }));
 
   ipcMain.handle("settings:set", (_event, partial: Partial<AppSettingsSchema>) => {
+    const hasLastRead = Object.prototype.hasOwnProperty.call(partial, "lastRead");
+    const hasResearchSession = Object.prototype.hasOwnProperty.call(partial, "researchSession");
     store.set({
       ...store.store,
       ...partial,
       theme: normalizeTheme(partial.theme ?? store.store.theme),
       markingSurface: normalizeMarkingSurface(partial.markingSurface ?? store.store.markingSurface),
-      lastRead: normalizeLastRead(partial.lastRead ?? store.store.lastRead),
+      lastRead: normalizeLastRead(hasLastRead ? partial.lastRead : store.store.lastRead),
+      researchSession: normalizeResearchSession(
+        hasResearchSession ? partial.researchSession : store.store.researchSession,
+      ),
     });
     return store.store;
   });

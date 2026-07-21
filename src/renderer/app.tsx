@@ -9,6 +9,7 @@ import type {
   VerseNumberMode,
 } from "./api.js";
 import { ScripturePage } from "./components/ScripturePage.js";
+import type { EntityResearchTrailEntry } from "./components/LivingMargin.js";
 import { WritingSheet, type WritingDraft } from "./components/WritingSheet.js";
 import { SearchView } from "./components/SearchView.js";
 import { SettingsPage } from "./components/SettingsPage.js";
@@ -43,6 +44,17 @@ type LoadState =
   | { status: "first-run"; defaultPath: string };
 
 const WRITING_DRAFT_STORAGE_KEY = "scripture.writing-draft";
+
+function entityResearchOriginKey(origin: CommandReadingContext): string {
+  return [
+    origin.book,
+    origin.chapter,
+    origin.chapterEndVerse ?? "",
+    origin.packageId,
+    origin.verseStart ?? "",
+    origin.verseEnd ?? "",
+  ].join(":");
+}
 
 function recoverWritingDraft(): WritingDraft {
   try {
@@ -181,6 +193,10 @@ export function App(): React.JSX.Element {
     nonce: number;
     origin: CommandReadingContext;
   } | null>(null);
+  const [entityResearchSession, setEntityResearchSession] = useState<{
+    origin: CommandReadingContext | null;
+    trail: EntityResearchTrailEntry[];
+  }>({ origin: null, trail: [] });
   const [workspaceIntent, setWorkspaceIntent] = useState<{
     query?: string;
     noteId?: string;
@@ -318,6 +334,9 @@ export function App(): React.JSX.Element {
         if (res.value.readingSize) setReadingSize(res.value.readingSize);
         if (res.value.readingWidth) setReadingWidth(res.value.readingWidth);
         if (res.value.verseNumbers) setVerseNumbers(res.value.verseNumbers);
+        if (res.value.researchSession) {
+          setEntityResearchSession(res.value.researchSession);
+        }
       }
       // A setting changed while the IPC read was in flight has already run
       // its persist effect once and returned early. This state transition
@@ -354,6 +373,15 @@ export function App(): React.JSX.Element {
     if (!settingsLoaded.current) return;
     void safeCall(() => window.api.settings.set({ readingSize, readingWidth, verseNumbers }));
   }, [settingsReady, readingSize, readingWidth, verseNumbers]);
+
+  useEffect(() => {
+    if (!settingsLoaded.current) return;
+    void safeCall(() => window.api.settings.set({
+      researchSession: entityResearchSession.origin
+        ? { origin: entityResearchSession.origin, trail: entityResearchSession.trail }
+        : null,
+    }));
+  }, [entityResearchSession, settingsReady]);
 
   const handleAuthoredMutationStateChange = useCallback((state: AuthoredMutationState): void => {
     authoredMutationStateRef.current = state;
@@ -424,12 +452,16 @@ export function App(): React.JSX.Element {
         ? active
         : null;
     }
-    setEntityIntent({ id: entityId, nonce: Date.now(), origin });
+    const resumesSession = entityResearchSession.origin != null
+      && entityResearchOriginKey(entityResearchSession.origin) === entityResearchOriginKey(origin);
+    const frozenOrigin = resumesSession ? entityResearchSession.origin! : origin;
+    if (!resumesSession) setEntityResearchSession({ origin, trail: [] });
+    setEntityIntent({ id: entityId, nonce: Date.now(), origin: frozenOrigin });
     changeView("scripture");
     setFocusMode(false);
     userDirtySettings.current.marginVisible = true;
     setMarginVisible(true);
-  }, [changeView, entityIntent]);
+  }, [changeView, entityIntent, entityResearchSession]);
   const openEntityResearch = useCallback((entityId: string) => {
     openEntityResearchAt(entityId, readingContext);
   }, [openEntityResearchAt, readingContext]);
@@ -444,6 +476,14 @@ export function App(): React.JSX.Element {
       else document.querySelector<HTMLElement>("#living-margin-title")?.focus();
       entityReturnFocusRef.current = null;
     }, 0);
+  }, []);
+  const updateEntityResearchTrail = useCallback((
+    update: (current: readonly EntityResearchTrailEntry[]) => EntityResearchTrailEntry[],
+  ): void => {
+    setEntityResearchSession((current) => ({
+      origin: current.origin,
+      trail: update(current.trail),
+    }));
   }, []);
 
   const toggleSidebarCollapsed = () => {
@@ -932,6 +972,8 @@ export function App(): React.JSX.Element {
                 entityIntent={entityIntent}
                 onOpenEntity={openEntityResearch}
                 onCloseEntity={closeEntityResearch}
+                entityTrail={entityResearchSession.trail}
+                onEntityTrailChange={updateEntityResearchTrail}
               />
             )}
             {view === "write" && (

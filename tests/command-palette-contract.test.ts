@@ -48,7 +48,7 @@ test("name results open reversible Living Margin research instead of guessing a 
   const margin = readFileSync(join(repoRoot, "src", "renderer", "components", "LivingMargin.tsx"), "utf8");
   assert.match(command, /activate: \(\) => closeAnd\(\(\) => onOpenEntity\(entity\.id\)\)/);
   assert.doesNotMatch(command, /bestEntityRef|parseEntityRef/);
-  assert.match(app, /setEntityIntent\(\{ id: entityId, nonce: Date\.now\(\), origin \}\)/);
+  assert.match(app, /setEntityIntent\(\{ id: entityId, nonce: Date\.now\(\), origin: frozenOrigin \}\)/);
   assert.match(app, /setMarginVisible\(true\)/);
   assert.match(margin, /window\.api\.language\.getEntityResearch\(entityIntent\.id\)/);
   assert.match(margin, /data-margin-mode="research"/);

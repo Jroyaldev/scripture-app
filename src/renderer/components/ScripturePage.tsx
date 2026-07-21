@@ -13,7 +13,11 @@ import type {
   SemanticMarginResult,
   VerseNumberMode,
 } from "../api.js";
-import { LivingMargin, type LivingMarginCaptureRequest } from "./LivingMargin.js";
+import {
+  LivingMargin,
+  type EntityResearchTrailEntry,
+  type LivingMarginCaptureRequest,
+} from "./LivingMargin.js";
 import { useToast } from "./Toast.js";
 import { safeCall } from "../utils/safeCall.js";
 import { parsePassage } from "../utils/parsePassage.js";
@@ -228,6 +232,10 @@ interface Props {
   } | null;
   onOpenEntity?: (entityId: string) => void;
   onCloseEntity?: () => void;
+  entityTrail?: readonly EntityResearchTrailEntry[];
+  onEntityTrailChange?: (
+    update: (current: readonly EntityResearchTrailEntry[]) => EntityResearchTrailEntry[],
+  ) => void;
 }
 
 const OT_BOOKS = [
@@ -398,6 +406,8 @@ export function ScripturePage({
   entityIntent,
   onOpenEntity,
   onCloseEntity,
+  entityTrail,
+  onEntityTrailChange,
 }: Props): React.JSX.Element {
   // Selection notes use the in-place NoteCapture slide-over (stay on Read).
   // Parent still supplies onCreateNote for a future “open full Write” path.
@@ -3945,6 +3955,8 @@ export function ScripturePage({
           entityIntent={entityIntent}
           onOpenEntity={onOpenEntity}
           onCloseEntity={onCloseEntity}
+          entityTrail={entityTrail}
+          onEntityTrailChange={onEntityTrailChange}
           authoredConnections={visibleMarginData.connections}
           selectedAuthoredConnectionId={selectedConnectionId}
           onSelectAuthoredConnection={(connection, focusInspector) => handleSelectConnection(connection, focusInspector)}
