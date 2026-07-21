@@ -2704,6 +2704,11 @@ html, body, #root {
     display: inline-flex;
   }
 
+  .margin-workspace-tabs { display: none; }
+
+  .scripture-body > .living-margin .margin-frame-header,
+  .scripture-body > .living-margin .entity-research-frame { top: 0; }
+
   .scripture-body > .living-margin .margin-frame-header {
     margin: 0 -12px 12px;
     padding: 10px 12px 9px;
@@ -5340,9 +5345,48 @@ html, body, #root {
 
 /* --- Living Margin additions --- */
 
+.margin-workspace-tabs {
+  position: sticky;
+  z-index: 10;
+  top: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3px;
+  min-height: 38px;
+  margin: 0 calc(var(--sp-xl) * -1);
+  padding: 5px var(--sp-xl);
+  border-bottom: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--bg-canvas) 96%, transparent);
+  backdrop-filter: blur(18px) saturate(1.08);
+}
+
+.margin-workspace-tabs button {
+  min-height: 27px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font: 500 0.6875rem/1 var(--font-ui);
+}
+
+.margin-workspace-tabs button[aria-selected="true"] {
+  background: color-mix(in srgb, var(--text-primary) 7%, transparent);
+  color: var(--text-primary);
+}
+
+.margin-workspace-tabs button[aria-disabled="true"] { cursor: default; opacity: 0.42; }
+.margin-workspace-tabs button:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 1px; }
+.margin-workspace-panel { min-width: 0; }
+
+@media (max-width: 760px) {
+  .margin-workspace-tabs { display: none; }
+}
+
 .margin-frame-header {
   position: sticky;
-  top: 0;
+  top: 38px;
   z-index: 8;
   display: flex;
   align-items: center;
@@ -5856,7 +5900,7 @@ html, body, #root {
 
 .entity-research-frame {
   position: sticky;
-  top: 0;
+  top: 38px;
   z-index: 8;
   min-height: 52px;
   display: flex;
@@ -13863,7 +13907,9 @@ button.lang-phrase-diagram-node:focus-visible,
  */
 
 .scripture-page,
-.marking-floating-host {
+.marking-floating-host,
+.marking-session-portal,
+.connection-draft-exit-scrim {
   --mark-e1: 0 1px 2px color-mix(in srgb, #2f261d 10%, transparent), 0 7px 18px color-mix(in srgb, #2f261d 7%, transparent);
   --mark-e2: 0 2px 5px color-mix(in srgb, #2f261d 12%, transparent), 0 14px 34px color-mix(in srgb, #2f261d 10%, transparent);
   --mark-e3: 0 4px 10px color-mix(in srgb, #2f261d 14%, transparent), 0 22px 52px color-mix(in srgb, #2f261d 12%, transparent);
@@ -13881,6 +13927,8 @@ button.lang-phrase-diagram-node:focus-visible,
 }
 
 .dark.marking-floating-host,
+.dark.marking-session-portal,
+.dark.connection-draft-exit-scrim,
 .dark .scripture-page {
   --mark-e1: 0 1px 2px rgb(0 0 0 / 24%), 0 7px 18px rgb(0 0 0 / 22%);
   --mark-e2: 0 2px 5px rgb(0 0 0 / 28%), 0 14px 34px rgb(0 0 0 / 27%);
@@ -14598,20 +14646,22 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .marking-session {
   position: fixed;
-  left: calc(var(--mark-stage-left) + var(--mark-stage-width) / 2);
-  bottom: calc(100vh - var(--mark-stage-bottom) + 22px);
-  max-width: calc(var(--mark-stage-width) - 24px);
-  min-height: 42px;
+  z-index: 126;
+  top: calc(var(--mark-session-top) + 8px);
+  left: calc(var(--mark-session-left) + 12px);
+  width: calc(var(--mark-session-width) - 24px);
+  min-height: 46px;
   display: flex;
   align-items: center;
   gap: 9px;
-  padding: 7px 9px;
+  padding: 8px 10px;
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--bg-surface) 96%, transparent);
   box-shadow: var(--mark-e1), var(--mark-rim);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
   pointer-events: auto;
-  transform: translateX(-50%);
   animation: marking-rise-in var(--mark-dur-fast) var(--mark-spring-soft);
 }
 
@@ -14626,6 +14676,7 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .marking-session-kind svg { width: 16px; height: 16px; }
 .marking-session-copy { color: var(--text-tertiary); font-size: 10px; }
+.marking-session-copy { min-width: 0; flex: 1; }
 .marking-session-recovery {
   color: var(--text-tertiary);
   font: 500 9px/1.2 var(--font-ui);
@@ -14634,8 +14685,57 @@ button.lang-phrase-diagram-node:focus-visible,
 .marking-session-action.primary { border: 1px solid var(--border-medium); color: var(--text-primary); }
 
 @keyframes marking-rise-in {
-  from { opacity: 0; transform: translate(-50%, 5px); }
+  from { opacity: 0; transform: translateY(-5px); }
 }
+
+.connection-draft-exit-scrim {
+  position: fixed;
+  z-index: 1350;
+  inset: 0;
+  display: grid;
+  padding: 24px;
+  background: color-mix(in srgb, var(--bg-primary) 52%, transparent);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  place-items: center;
+  backdrop-filter: blur(4px);
+}
+
+.connection-draft-exit-dialog {
+  width: min(440px, 100%);
+  display: grid;
+  gap: 10px;
+  padding: 22px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+  box-shadow: var(--mark-e3);
+}
+
+.connection-draft-exit-eyebrow {
+  color: var(--text-tertiary);
+  font: 600 0.625rem/1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.connection-draft-exit-dialog h2 { margin: 0; font: 600 1.15rem/1.25 var(--font-reading); }
+.connection-draft-exit-dialog p { margin: 0; color: var(--text-secondary); font-size: 0.75rem; line-height: 1.5; }
+.connection-draft-exit-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 7px; margin-top: 6px; }
+.connection-draft-exit-actions button {
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font: 500 0.6875rem/1 var(--font-ui);
+}
+.connection-draft-exit-actions button:hover { background: var(--study-hover-surface); color: var(--text-primary); }
+.connection-draft-exit-actions button.primary { border-color: var(--border-medium); background: var(--text-primary); color: var(--bg-surface); }
+.connection-draft-exit-actions button.danger { margin-left: auto; color: var(--danger, #9f4d45); }
+.connection-draft-exit-actions button:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 2px; }
 
 /* Radial — the approved lab silhouette, with production measurement/state. */
 .marking-radial-scrim {

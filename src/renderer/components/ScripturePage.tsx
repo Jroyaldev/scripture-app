@@ -18,6 +18,14 @@ import {
   type EntityResearchTrailEntry,
   type LivingMarginCaptureRequest,
 } from "./LivingMargin.js";
+import {
+  reduceMarginWorkspace,
+  type MarginWorkspace,
+} from "../utils/marginWorkspace.js";
+import type {
+  ConnectionDraftExitController,
+  ConnectionDraftExitReason,
+} from "../utils/connectionDraftLifecycle.js";
 import { useToast } from "./Toast.js";
 import { safeCall } from "../utils/safeCall.js";
 import { parsePassage } from "../utils/parsePassage.js";
@@ -64,6 +72,7 @@ import type {
   ConnectionRecordV2,
 } from "../../core/annotations/types.js";
 import type { OccurrenceSelectionPiece } from "../../core/annotations/occurrence-alignment.js";
+import { canonicalConnectionAnchors } from "../../core/annotations/connection-order.js";
 import type {
   ConnectionPaintAnchor,
   ConnectionPaintProjection,
@@ -282,6 +291,7 @@ interface Props {
   focusMode?: boolean;
   onToggleFocus?: () => void;
   onAuthoredMutationStateChange?: (state: "idle" | "in-flight" | "recovery") => void;
+  onConnectionDraftExitControllerChange?: (controller: ConnectionDraftExitController | null) => void;
   entityIntent?: {
     id: string;
     nonce: number;
@@ -470,6 +480,7 @@ export function ScripturePage({
   focusMode = false,
   onToggleFocus,
   onAuthoredMutationStateChange,
+  onConnectionDraftExitControllerChange,
   entityIntent,
   onOpenEntity,
   onCloseEntity,
@@ -497,6 +508,9 @@ export function ScripturePage({
   const [marginTab, setMarginTab] = useState<NavigationMarginTab>(
     sessionEntry?.margin.activeTab ?? "overview",
   );
+  const [marginWorkspace, setMarginWorkspace] = useState<MarginWorkspace>(
+    entityIntent ? "research" : "study",
+  );
   const [marginData, setMarginData] = useState<QueryResult>(EMPTY_MARGIN_DATA);
   const [marginDataChapterKey, setMarginDataChapterKey] = useState<string | null>(null);
   const marginRequestSequenceRef = useRef(0);
@@ -509,6 +523,12 @@ export function ScripturePage({
   } | null>(null);
   const [semanticData, setSemanticData] = useState<SemanticMarginResult | null>(null);
   const [semanticLoading, setSemanticLoading] = useState(false);
+
+  useEffect(() => {
+    setMarginWorkspace((current) => reduceMarginWorkspace(current, {
+      type: entityIntent ? "open-research" : "close-research",
+    }));
+  }, [entityIntent]);
   const [showHighlightPalette, setShowHighlightPalette] = useState(false);
   const [selectionNonce, setSelectionNonce] = useState(0);
   const selectionGenerationRef = useRef(0);
@@ -545,6 +565,7 @@ export function ScripturePage({
   const heldConnectionIdsRef = useRef<string[]>([]);
   const [connectionExtension, setConnectionExtension] = useState<ConnectionExtensionRequest | null>(null);
   const [connectionDraft, setConnectionDraft] = useState<ConnectionDraftModel | null>(null);
+  const connectionDraftExitControllerRef = useRef<ConnectionDraftExitController | null>(null);
   const [markingMutationState, setMarkingMutationState] = useState<"idle" | "in-flight" | "recovery">("idle");
   const [cardMutationState, setCardMutationState] = useState<"idle" | "in-flight" | "recovery">("idle");
   const markingMutationStateRef = useRef(markingMutationState);
@@ -603,6 +624,27 @@ export function ScripturePage({
   const verseSelectionAnchorRef = useRef<number | null>(null);
   const [retryToken, setRetryToken] = useState(0);
   const [scrolled, setScrolled] = useState(false);
+
+  const handleConnectionDraftExitControllerChange = useCallback((
+    controller: ConnectionDraftExitController | null,
+  ): void => {
+    connectionDraftExitControllerRef.current = controller;
+    onConnectionDraftExitControllerChange?.(controller);
+  }, [onConnectionDraftExitControllerChange]);
+
+  const continueAfterDraftExit = useCallback((
+    reason: ConnectionDraftExitReason,
+    continuation: () => void,
+  ): void => {
+    const controller = connectionDraftExitControllerRef.current;
+    if (!controller) {
+      continuation();
+      return;
+    }
+    void controller.requestExit(reason).then((proceed) => {
+      if (proceed) continuation();
+    });
+  }, []);
 
   const suppressTrailingDragClick = useCallback((): void => {
     suppressNextClickRef.current = true;
@@ -1236,6 +1278,7 @@ export function ScripturePage({
         last &&
         !mountedWithSessionEntryRef.current &&
         !userNavigatedRef.current &&
+        connectionDraftExitControllerRef.current == null &&
         markingMutationStateRef.current === "idle" &&
         cardMutationStateRef.current === "idle" &&
         connectionCardRecovery == null &&
@@ -1329,6 +1372,7 @@ export function ScripturePage({
   const goTo = useCallback(
     (b: string, c: number, verse?: number, opts?: GoToOptions) => {
       if (!requireSafeConnectionNavigation()) return;
+      const performNavigation = (): void => {
       if (opts?.historyMode !== "traverse") {
         commitNavigationHistory(pushNavigationHistory(
           navigationHistoryRef.current,
@@ -1393,31 +1437,61 @@ export function ScripturePage({
       if (opts?.recordRecent !== false) {
         recordRecent(b, c, verse);
       }
+      };
+      const changesTranslation = opts?.restoreEntry?.packageId != null
+        && opts.restoreEntry.packageId !== packageId;
+      const changesChapter = b !== book || c !== chapter;
+      if (changesTranslation || changesChapter) {
+        continueAfterDraftExit(
+          changesTranslation ? "translation-change" : "chapter-change",
+          performNavigation,
+        );
+        return;
+      }
+      performNavigation();
     },
-    [book, captureNavigationEntry, chapter, commitNavigationHistory, onKeptContextChange, packageId, recordRecent, requireSafeConnectionNavigation],
+    [book, captureNavigationEntry, chapter, commitNavigationHistory, continueAfterDraftExit, onKeptContextChange, packageId, recordRecent, requireSafeConnectionNavigation],
   );
 
   const navigateBack = useCallback((): void => {
     const move = backNavigationHistory(navigationHistoryRef.current, captureNavigationEntry());
     if (!move.target) return;
-    commitNavigationHistory(move.history);
-    goTo(move.target.book, move.target.chapter, undefined, {
-      historyMode: "traverse",
-      recordRecent: false,
-      restoreEntry: move.target,
-    });
-  }, [captureNavigationEntry, commitNavigationHistory, goTo]);
+    const navigate = (): void => {
+      commitNavigationHistory(move.history);
+      goTo(move.target!.book, move.target!.chapter, undefined, {
+        historyMode: "traverse",
+        recordRecent: false,
+        restoreEntry: move.target!,
+      });
+    };
+    if (move.target.packageId !== packageId) {
+      continueAfterDraftExit("translation-change", navigate);
+    } else if (move.target.book !== book || move.target.chapter !== chapter) {
+      continueAfterDraftExit("chapter-change", navigate);
+    } else {
+      navigate();
+    }
+  }, [book, captureNavigationEntry, chapter, commitNavigationHistory, continueAfterDraftExit, goTo, packageId]);
 
   const navigateForward = useCallback((): void => {
     const move = forwardNavigationHistory(navigationHistoryRef.current, captureNavigationEntry());
     if (!move.target) return;
-    commitNavigationHistory(move.history);
-    goTo(move.target.book, move.target.chapter, undefined, {
-      historyMode: "traverse",
-      recordRecent: false,
-      restoreEntry: move.target,
-    });
-  }, [captureNavigationEntry, commitNavigationHistory, goTo]);
+    const navigate = (): void => {
+      commitNavigationHistory(move.history);
+      goTo(move.target!.book, move.target!.chapter, undefined, {
+        historyMode: "traverse",
+        recordRecent: false,
+        restoreEntry: move.target!,
+      });
+    };
+    if (move.target.packageId !== packageId) {
+      continueAfterDraftExit("translation-change", navigate);
+    } else if (move.target.book !== book || move.target.chapter !== chapter) {
+      continueAfterDraftExit("chapter-change", navigate);
+    } else {
+      navigate();
+    }
+  }, [book, captureNavigationEntry, chapter, commitNavigationHistory, continueAfterDraftExit, goTo, packageId]);
 
   useEffect(() => {
     if (!navigateRef) return;
@@ -3060,9 +3134,11 @@ export function ScripturePage({
       if (focusInspector) {
         setConnectionInspectorFocusRequest((request) => request + 1);
       }
-      // Entity research owns the whole margin while active, so release it
-      // before revealing the authored-connection inspector.
-      onCloseEntity?.();
+      setMarginWorkspace((current) => reduceMarginWorkspace(current, {
+        type: "select",
+        workspace: "study",
+        hasResearch: Boolean(entityIntent),
+      }));
       onEnsureMarginVisible?.();
     } else if (selectedConnectionId) {
       releaseHeldConnection(selectedConnectionId);
@@ -3071,7 +3147,42 @@ export function ScripturePage({
     setPhraseSelection(null);
     verseSelectionAnchorRef.current = null;
     setShowHighlightPalette(false);
-  }, [advanceSelectionGeneration, onCloseEntity, onEnsureMarginVisible, releaseHeldConnection, replaceHeldConnectionIds, requireSafeConnectionNavigation, selectedConnectionId]);
+  }, [advanceSelectionGeneration, entityIntent, onEnsureMarginVisible, releaseHeldConnection, replaceHeldConnectionIds, requireSafeConnectionNavigation, selectedConnectionId]);
+
+  const handleSelectAuthoredConnection = useCallback((
+    connection: ConnectionRecord,
+    focusInspector = false,
+  ): void => {
+    handleSelectConnection(connection, focusInspector);
+    const localAnchors = canonicalConnectionAnchors(connection).filter((anchor) => (
+      anchor.book === book && anchor.chapter === chapter
+    ));
+    const eyeLine = settledNearVerse ?? 1;
+    const attentionAnchor = [...localAnchors].sort((left, right) => {
+      const leftVerse = connection.format_version === 2
+        ? connection.anchors.find((anchor) => anchor === left)?.exact.occurrences[0]?.verse ?? left.verse_start
+        : left.verse_start;
+      const rightVerse = connection.format_version === 2
+        ? connection.anchors.find((anchor) => anchor === right)?.exact.occurrences[0]?.verse ?? right.verse_start
+        : right.verse_start;
+      return Math.abs(leftVerse - eyeLine) - Math.abs(rightVerse - eyeLine);
+    })[0];
+    if (!attentionAnchor) return;
+    const targetVerse = connection.format_version === 2
+      ? connection.anchors.find((anchor) => anchor === attentionAnchor)?.exact.occurrences[0]?.verse
+        ?? attentionAnchor.verse_start
+      : attentionAnchor.verse_start;
+    window.requestAnimationFrame(() => {
+      const row = verseRowRefs.current.get(targetVerse);
+      if (!row) return;
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      row.scrollIntoView({
+        block: "center",
+        inline: "nearest",
+        behavior: reducedMotion ? "auto" : "smooth",
+      });
+    });
+  }, [book, chapter, handleSelectConnection, settledNearVerse]);
 
   const handleChooseConnections = useCallback((
     connections: readonly ConnectionRecord[],
@@ -3695,18 +3806,27 @@ export function ScripturePage({
                                 className={`picker-recent-chip${isHere ? " active" : ""}`}
                                 onClick={() => {
                                   if (!requireSafeConnectionNavigation()) return;
+                                  const navigate = (): void => {
+                                    if (r.packageId && r.packageId !== packageId) {
+                                      // Same commit hygiene as the version picker:
+                                      // clear old text before package id flips.
+                                      setChapterData(null);
+                                      setChapterError(null);
+                                      setShowHighlightPalette(false);
+                                      setSelectedVerses(new Set());
+                                      setPhraseSelection(null);
+                                      setPackageId(r.packageId);
+                                    }
+                                    goTo(r.book, r.chapter, r.verse);
+                                    closePassagePopover();
+                                  };
                                   if (r.packageId && r.packageId !== packageId) {
-                                    // Same commit hygiene as the version picker:
-                                    // clear old text before package id flips.
-                                    setChapterData(null);
-                                    setChapterError(null);
-                                    setShowHighlightPalette(false);
-                                    setSelectedVerses(new Set());
-                                    setPhraseSelection(null);
-                                    setPackageId(r.packageId);
+                                    continueAfterDraftExit("translation-change", navigate);
+                                  } else if (r.book !== book || r.chapter !== chapter) {
+                                    continueAfterDraftExit("chapter-change", navigate);
+                                  } else {
+                                    navigate();
                                   }
-                                  goTo(r.book, r.chapter, r.verse);
-                                  closePassagePopover();
                                 }}
                                 title={label}
                                 aria-current={isHere ? "page" : undefined}
@@ -3864,18 +3984,25 @@ export function ScripturePage({
                   className={`control-menu-item version-picker-item${t.code === packageId ? " active" : ""}`}
                   onClick={() => {
                     if (!requireSafeConnectionNavigation()) return;
+                    const changeTranslation = (): void => {
+                      if (t.code !== packageId) {
+                        captureTranslationViewport(t.code);
+                        // Clear the old translation's DOM in the same commit as
+                        // the package switch so package-specific highlight
+                        // offsets can never paint over the previous text.
+                        setChapterData(null);
+                        setChapterError(null);
+                        setShowHighlightPalette(false);
+                        setPhraseSelection(null);
+                        setPackageId(t.code);
+                      }
+                      closeVersionPopover();
+                    };
                     if (t.code !== packageId) {
-                      captureTranslationViewport(t.code);
-                      // Clear the old translation's DOM in the same commit as
-                      // the package switch so package-specific highlight
-                      // offsets can never paint over the previous text.
-                      setChapterData(null);
-                      setChapterError(null);
-                      setShowHighlightPalette(false);
-                      setPhraseSelection(null);
-                      setPackageId(t.code);
+                      continueAfterDraftExit("translation-change", changeTranslation);
+                    } else {
+                      changeTranslation();
                     }
-                    closeVersionPopover();
                   }}
                   aria-pressed={t.code === packageId}
                 >
@@ -4092,6 +4219,7 @@ export function ScripturePage({
         onClearSelection={handleClearMarginSelection}
         onRequestReadingFocus={handleRequestReadingFocus}
         onConnectionDraftChange={setConnectionDraft}
+        onDraftExitControllerChange={handleConnectionDraftExitControllerChange}
         onMutationStateChange={handleMarkingMutationStateChange}
         onCreateConnection={handleCreateConnection}
         onUpdateConnection={handleUpdateConnection}
@@ -4183,6 +4311,14 @@ export function ScripturePage({
           onClearSelection={handleClearMarginSelection}
           activeTab={marginTab}
           onActiveTabChange={setMarginTab}
+          workspace={marginWorkspace}
+          onWorkspaceChange={(workspace) => setMarginWorkspace((current) => (
+            reduceMarginWorkspace(current, {
+              type: "select",
+              workspace,
+              hasResearch: Boolean(entityIntent),
+            })
+          ))}
           entityIntent={entityIntent}
           onOpenEntity={handleOpenMarginEntity}
           onCloseEntity={onCloseEntity}
@@ -4190,7 +4326,7 @@ export function ScripturePage({
           onEntityTrailChange={onEntityTrailChange}
           authoredConnections={subjectMarginData.connections}
           selectedAuthoredConnectionId={selectedConnectionId}
-          onSelectAuthoredConnection={(connection, focusInspector) => handleSelectConnection(connection, focusInspector)}
+          onSelectAuthoredConnection={handleSelectAuthoredConnection}
           connectionInspectorFocusRequest={connectionInspectorFocusRequest}
           connectionInspector={selectedConnection ? (
             <ConnectionCard

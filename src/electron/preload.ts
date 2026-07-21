@@ -227,6 +227,18 @@ const api = {
   system: {
     openExternalResearchUrl: (url: string) => ipcRenderer.invoke("open-external-research-url", url),
   },
+  appWindow: {
+    onCloseRequested: (listener: () => void) => {
+      const handler = () => listener();
+      ipcRenderer.on("app-window-close-requested", handler);
+      ipcRenderer.send("app-window-close-guard-ready");
+      return () => ipcRenderer.removeListener("app-window-close-requested", handler);
+    },
+    requestClose: () => ipcRenderer.send("app-window-request-close"),
+    resolveCloseRequest: (proceed: boolean) => {
+      ipcRenderer.send("app-window-close-response", proceed);
+    },
+  },
   settings: {
     get: () => ipcRenderer.invoke("settings:get"),
     set: (partial: Record<string, unknown>) => ipcRenderer.invoke("settings:set", partial),

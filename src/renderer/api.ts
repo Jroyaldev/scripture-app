@@ -180,6 +180,11 @@ declare global {
       system: {
         openExternalResearchUrl(url: string): Promise<{ ok: true }>;
       };
+      appWindow: {
+        onCloseRequested(listener: () => void): () => void;
+        requestClose(): void;
+        resolveCloseRequest(proceed: boolean): void;
+      };
       settings: {
         get(): Promise<AppSettings>;
         set(partial: Partial<AppSettings>): Promise<AppSettings>;

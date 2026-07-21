@@ -1,5 +1,5 @@
 import type React from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type {
   AnchorRecord,
   BookNameData,
@@ -19,6 +19,7 @@ import {
   deriveEntityOpeningContext,
   type EntityOpeningOrigin,
 } from "../../core/integrations/shepherdly-resource-node.js";
+import { compareConnectionsCanonical } from "../../core/annotations/connection-order.js";
 import { safeCall } from "../utils/safeCall.js";
 import { isTopLayer, layerStackIsEmpty, useLayer } from "../layerStack.js";
 import { phraseCount } from "../utils/relationshipVocabulary.js";
@@ -27,6 +28,7 @@ import { LanguageWordsSection } from "./LanguageWordsSection.js";
 import { SourcesDisclosure, formatSourceCitation, type CitationSource } from "./SourcesDisclosure.js";
 import { useToast } from "./Toast.js";
 import { parsePeekRef, useVersePeek, type PeekTarget, type VersePeekTriggerProps } from "./VersePeek.js";
+import type { MarginWorkspace } from "../utils/marginWorkspace.js";
 
 export interface PinnedRange {
   start: number;
@@ -141,6 +143,8 @@ interface Props {
   /** Renderer-session tab state used by reversible canvas travel. */
   activeTab?: MarginTab;
   onActiveTabChange?: (tab: MarginTab) => void;
+  workspace?: MarginWorkspace;
+  onWorkspaceChange?: (workspace: MarginWorkspace) => void;
   entityIntent?: {
     id: string;
     nonce: number;
@@ -162,6 +166,62 @@ interface Props {
   /** Incremented for explicit inspector-entry requests. Reading-canvas pointer
    * activation deliberately leaves this unchanged so Scripture keeps focus. */
   connectionInspectorFocusRequest?: number;
+}
+
+function MarginWorkspaceTabs({
+  active,
+  hasResearch,
+  onChange,
+}: {
+  active: MarginWorkspace;
+  hasResearch: boolean;
+  onChange: (workspace: MarginWorkspace) => void;
+}): React.JSX.Element {
+  const refs = useRef<Array<HTMLButtonElement | null>>([]);
+  const workspaces: readonly MarginWorkspace[] = ["study", "research"];
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number): void => {
+    let nextIndex: number | null = null;
+    if (event.key === "ArrowRight") nextIndex = (index + 1) % workspaces.length;
+    else if (event.key === "ArrowLeft") nextIndex = (index - 1 + workspaces.length) % workspaces.length;
+    else if (event.key === "Home") nextIndex = 0;
+    else if (event.key === "End") nextIndex = workspaces.length - 1;
+    if (nextIndex == null) return;
+    event.preventDefault();
+    const workspace = workspaces[nextIndex]!;
+    if (workspace === "research" && !hasResearch) {
+      refs.current[0]?.focus({ preventScroll: true });
+      onChange("study");
+      return;
+    }
+    onChange(workspace);
+    refs.current[nextIndex]?.focus({ preventScroll: true });
+  };
+  return (
+    <div className="margin-workspace-tabs" role="tablist" aria-label="Study workspaces">
+      {workspaces.map((workspace, index) => {
+        const selected = active === workspace;
+        const unavailable = workspace === "research" && !hasResearch;
+        const label = workspace === "study" ? "Study" : "Research";
+        return (
+          <button
+            key={workspace}
+            ref={(node) => { refs.current[index] = node; }}
+            type="button"
+            id={`margin-workspace-${workspace}-tab`}
+            role="tab"
+            aria-selected={selected}
+            aria-controls={`margin-${workspace}-workspace`}
+            aria-disabled={unavailable || undefined}
+            tabIndex={selected ? 0 : -1}
+            onClick={() => { if (!unavailable) onChange(workspace); }}
+            onKeyDown={(event) => handleKeyDown(event, index)}
+          >
+            {label}
+          </button>
+        );
+      })}
+    </div>
+  );
 }
 
 function AiSparkIcon(): React.JSX.Element {
@@ -1524,6 +1584,8 @@ export function LivingMargin({
   onClearSelection,
   activeTab: controlledActiveTab,
   onActiveTabChange,
+  workspace,
+  onWorkspaceChange,
   entityIntent,
   onOpenEntity,
   onCloseEntity,
@@ -1562,6 +1624,11 @@ export function LivingMargin({
   const frameTitleRef = useRef<HTMLHeadingElement>(null);
   const researchTitleRef = useRef<HTMLHeadingElement>(null);
   const marginRef = useRef<HTMLElement>(null);
+  const activeWorkspace: MarginWorkspace = workspace ?? (entityIntent ? "research" : "study");
+  const workspaceScrollPositionsRef = useRef<Record<MarginWorkspace, number>>({
+    study: 0,
+    research: 0,
+  });
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const tabScrollPositionsRef = useRef<Record<MarginTab, number>>({
     overview: 0,
@@ -1569,6 +1636,16 @@ export function LivingMargin({
     connections: 0,
     notes: 0,
   });
+
+  useLayoutEffect(() => {
+    if (!marginRef.current) return;
+    marginRef.current.scrollTop = workspaceScrollPositionsRef.current[activeWorkspace];
+  }, [activeWorkspace]);
+
+  const rememberWorkspaceScroll = (): void => {
+    if (!marginRef.current) return;
+    workspaceScrollPositionsRef.current[activeWorkspace] = marginRef.current.scrollTop;
+  };
 
   // Session-only cache of AI insight results for the pinned range, keyed by
   // translation + canonical range. Avoids re-triggering the call when
@@ -1603,12 +1680,22 @@ export function LivingMargin({
 
   const isPinned = !!pinnedRange;
   const isNear = !isPinned && nearVerse != null;
+  const subjectVerseStart = pinnedRange?.start ?? nearVerse ?? 1;
+  const subjectVerseEnd = pinnedRange?.end ?? nearVerse ?? Number.MAX_SAFE_INTEGER;
   const connectionInspectorOpen = connectionInspector != null;
   // The connections strip belongs to the margin's subject: in kept mode the
   // panel studies a different passage than the canvas, and only relationships
   // anchored to that subject belong under its header.
-  const subjectConnections = authoredConnections.filter((connection) =>
-    connection.anchors.some((anchor) => anchor.book === book && anchor.chapter === chapter));
+  const subjectConnections = authoredConnections
+    .filter((connection) => connection.anchors.some((anchor) => (
+      anchor.book === book && anchor.chapter === chapter
+    )))
+    .sort((left, right) => compareConnectionsCanonical(left, right, {
+      book,
+      chapter,
+      verseStart: subjectVerseStart,
+      verseEnd: subjectVerseEnd,
+    }));
   // One shared verse-peek controller for the whole panel: a single preview
   // can be open at a time, lens switches dismiss it, and its chapter text is
   // cached for the session.
@@ -1869,16 +1956,18 @@ export function LivingMargin({
   const researchBackDestination = entityTrail.at(currentResearchIsRecorded ? -2 : -1)?.displayName
     ?? (entityIntent ? formatEntityResearchOrigin(entityIntent.origin, bookNames) : "Study");
 
-  const researchLayerRef = useLayer(entityIntent && onCloseEntity ? "research" : null);
+  const researchLayerRef = useLayer(
+    activeWorkspace === "research" && entityIntent && onCloseEntity ? "research" : null,
+  );
 
   useEffect(() => {
-    if (!entityIntent || entityResearch?.entity.id !== entityIntent.id) return;
+    if (activeWorkspace !== "research" || !entityIntent || entityResearch?.entity.id !== entityIntent.id) return;
     const frame = window.requestAnimationFrame(() => researchTitleRef.current?.focus());
     return () => window.cancelAnimationFrame(frame);
-  }, [entityIntent, entityResearch]);
+  }, [activeWorkspace, entityIntent, entityResearch]);
 
   useEffect(() => {
-    if (!entityIntent || !onCloseEntity) return;
+    if (activeWorkspace !== "research" || !entityIntent || !onCloseEntity) return;
     const closeResearch = (event: KeyboardEvent): void => {
       if (event.key !== "Escape" || event.defaultPrevented) return;
       // Research is the lowest-ranking layer; every dialog, chooser, card,
@@ -1889,7 +1978,7 @@ export function LivingMargin({
     };
     window.addEventListener("keydown", closeResearch, true);
     return () => window.removeEventListener("keydown", closeResearch, true);
-  }, [entityIntent, entityTrail, entityResearch, onCloseEntity, onOpenEntity, researchLayerRef]);
+  }, [activeWorkspace, entityIntent, entityTrail, entityResearch, onCloseEntity, onOpenEntity, researchLayerRef]);
 
   useEffect(() => {
     // Complete-note bodies are only rendered in the pinned deep dive; the
@@ -2061,7 +2150,7 @@ export function LivingMargin({
     window.setTimeout(() => frameTitleRef.current?.focus(), 0);
   };
 
-  if (entityIntent) {
+  if (entityIntent && activeWorkspace === "research") {
     const originLabel = formatEntityResearchOrigin(entityIntent.origin, bookNames);
     return (
       <aside
@@ -2069,9 +2158,21 @@ export function LivingMargin({
         className="living-margin entity-research-margin"
         aria-label="Entity research"
         data-margin-mode="research"
+        onScroll={rememberWorkspaceScroll}
         onPointerEnter={() => onMarginActiveChange?.(true)}
         onPointerLeave={() => onMarginActiveChange?.(false)}
       >
+        <MarginWorkspaceTabs
+          active={activeWorkspace}
+          hasResearch
+          onChange={(next) => onWorkspaceChange?.(next)}
+        />
+        <div
+          id="margin-research-workspace"
+          className="margin-workspace-panel"
+          role="tabpanel"
+          aria-labelledby="margin-workspace-research-tab"
+        >
         <header className="entity-research-frame">
           <div className="entity-research-nav">
             <button
@@ -2159,6 +2260,7 @@ export function LivingMargin({
           </div>
         )}
         {versePeek.peekElement}
+        </div>
       </aside>
     );
   }
@@ -2170,9 +2272,21 @@ export function LivingMargin({
       aria-labelledby="living-margin-title"
       data-margin-mode={marginMode}
       data-compact-expanded={compactExpanded || undefined}
+      onScroll={rememberWorkspaceScroll}
       onPointerEnter={() => onMarginActiveChange?.(true)}
       onPointerLeave={() => onMarginActiveChange?.(false)}
     >
+      <MarginWorkspaceTabs
+        active="study"
+        hasResearch={Boolean(entityIntent)}
+        onChange={(next) => onWorkspaceChange?.(next)}
+      />
+      <div
+        id="margin-study-workspace"
+        className="margin-workspace-panel"
+        role="tabpanel"
+        aria-labelledby="margin-workspace-study-tab"
+      >
       <span className="sr-only" aria-live="polite">{scopeAnnouncement}</span>
       <header className="margin-frame-header">
         <h2
@@ -2808,6 +2922,7 @@ export function LivingMargin({
       )}
       </div>
       {versePeek.peekElement}
+      </div>
     </aside>
   );
 }

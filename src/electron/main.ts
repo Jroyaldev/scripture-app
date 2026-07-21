@@ -4,7 +4,7 @@
  */
 
 import { app, BrowserWindow, crashReporter, dialog, ipcMain, nativeTheme, shell } from "electron";
-import type { IpcMainInvokeEvent } from "electron";
+import type { IpcMainEvent, IpcMainInvokeEvent } from "electron";
 import { join, resolve, dirname } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, unlinkSync, writeFileSync } from "node:fs";
@@ -80,6 +80,7 @@ import type {
 import {
   captureOccurrenceAlignedSelection,
   projectBackboneTokenAnchor,
+  selectionProjectionRoundTrips,
   type OccurrenceAlignmentVerseEvidence,
   type OccurrenceSelectionPiece,
 } from "../core/annotations/occurrence-alignment.js";
@@ -1504,6 +1505,40 @@ function createWindow(): void {
     logLifecycle("main-window-responsive");
   });
 
+  // Browser beforeunload cannot await a custom renderer decision. Keep the
+  // native close pending here, then let the renderer resolve the same draft
+  // guard used by chapter, view, translation, and library exits.
+  let closeGuardReady = false;
+  let closeRequestPending = false;
+  let closeApproved = false;
+  const markCloseGuardReady = (event: IpcMainEvent): void => {
+    if (event.sender === win.webContents) closeGuardReady = true;
+  };
+  const requestWindowClose = (event: IpcMainEvent): void => {
+    if (event.sender === win.webContents && !win.isDestroyed()) win.close();
+  };
+  const resolveCloseRequest = (event: IpcMainEvent, proceed: unknown): void => {
+    if (event.sender !== win.webContents || typeof proceed !== "boolean") return;
+    closeRequestPending = false;
+    if (!proceed || win.isDestroyed()) return;
+    closeApproved = true;
+    win.close();
+  };
+  ipcMain.on("app-window-close-guard-ready", markCloseGuardReady);
+  ipcMain.on("app-window-request-close", requestWindowClose);
+  ipcMain.on("app-window-close-response", resolveCloseRequest);
+  win.webContents.on("did-start-loading", () => {
+    closeGuardReady = false;
+    closeRequestPending = false;
+  });
+  win.on("close", (event) => {
+    if (isAppQuitting || closeApproved || !closeGuardReady || win.webContents.isDestroyed()) return;
+    event.preventDefault();
+    if (closeRequestPending) return;
+    closeRequestPending = true;
+    win.webContents.send("app-window-close-requested");
+  });
+
   const developmentUrl = trustedDevelopmentRendererUrl();
   const loadPromise = developmentUrl
     ? win.loadURL(developmentUrl.href)
@@ -1530,6 +1565,9 @@ function createWindow(): void {
   win.on("move", saveBounds);
 
   win.on("closed", () => {
+    ipcMain.removeListener("app-window-close-guard-ready", markCloseGuardReady);
+    ipcMain.removeListener("app-window-request-close", requestWindowClose);
+    ipcMain.removeListener("app-window-close-response", resolveCloseRequest);
     if (boundsSaveTimer) clearTimeout(boundsSaveTimer);
     if (mainWindow === win) mainWindow = null;
     // Hidden embedding BrowserWindows must not keep a non-macOS application
@@ -2533,12 +2571,37 @@ function registerIpcHandlers(): void {
         error: { code: evidence.error.code, message: evidence.error.message },
       };
     }
-    return captureOccurrenceAlignedSelection({
+    const capture = captureOccurrenceAlignedSelection({
       package_id: packageId,
       selections: normalized.value,
       verses: evidence.value,
       sha256: sha256Text,
     });
+    if (!capture.ok) return capture;
+    const projection = projectBackboneTokenAnchor({
+      anchor: capture.anchor,
+      target_package_id: packageId,
+      verses: evidence.value,
+      sha256: sha256Text,
+    });
+    if (!projection.ok) {
+      return {
+        ok: false,
+        status: "refused",
+        error: { code: projection.error.code, message: projection.error.message },
+      };
+    }
+    if (!selectionProjectionRoundTrips(normalized.value, projection.fragments)) {
+      return {
+        ok: false,
+        status: "refused",
+        error: {
+          code: "selection-round-trip-mismatch",
+          message: "This translation cannot preserve those exact words yet. Adjust the selection or use a note or wash.",
+        },
+      };
+    }
+    return capture;
   }, (message) => ({
     ok: false,
     status: "refused",

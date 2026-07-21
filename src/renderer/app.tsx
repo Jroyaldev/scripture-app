@@ -21,6 +21,7 @@ import { WelcomeScreen } from "./components/WelcomeScreen.js";
 import { PericopeMark } from "./components/PericopeMark.js";
 import { ShortcutsOverlay } from "./components/ShortcutsOverlay.js";
 import type { ReadingPrefs } from "./components/ReadingComfort.js";
+import type { ConnectionDraftExitController } from "./utils/connectionDraftLifecycle.js";
 import { Tooltip } from "./components/Tooltip.js";
 import {
   CommandPalette,
@@ -216,6 +217,7 @@ export function App(): React.JSX.Element {
   const [focusMode, setFocusMode] = useState(false);
   const [authoredMutationState, setAuthoredMutationState] = useState<AuthoredMutationState>("idle");
   const authoredMutationStateRef = useRef<AuthoredMutationState>("idle");
+  const connectionDraftExitControllerRef = useRef<ConnectionDraftExitController | null>(null);
   /** Margin visibility before focus mode — restored on exit. */
   const preFocusMargin = useRef(true);
   const [aiBusy, setAiBusy] = useState(false);
@@ -408,22 +410,44 @@ export function App(): React.JSX.Element {
     setAuthoredMutationState(state);
   }, []);
 
-  const changeView = useCallback((next: View): boolean => {
+  const changeView = useCallback((next: View, onProceed?: () => void): boolean => {
     if (next !== "scripture" && authoredMutationStateRef.current !== "idle") return false;
+    if (next !== "scripture" && connectionDraftExitControllerRef.current) {
+      void connectionDraftExitControllerRef.current.requestExit("view-change").then((proceed) => {
+        if (!proceed) return;
+        onProceed?.();
+        setFocusMode(false);
+        setView(next);
+      });
+      return false;
+    }
+    onProceed?.();
     setView(next);
     return true;
   }, []);
 
+  useEffect(() => window.api.appWindow.onCloseRequested(() => {
+    const controller = connectionDraftExitControllerRef.current;
+    if (!controller) {
+      window.api.appWindow.resolveCloseRequest(true);
+      return;
+    }
+    void controller.requestExit("window-close").then(
+      (proceed) => window.api.appWindow.resolveCloseRequest(proceed),
+      () => window.api.appWindow.resolveCloseRequest(false),
+    );
+  }), []);
+
   const handleCreateNoteFromPassage = (prefillBody?: string) => {
-    if (prefillBody) {
+    changeView("write", () => {
+      if (!prefillBody) return;
       setWritingDraft((current) => ({
         ...current,
         body: current.body.trim()
           ? `${current.body.trimEnd()}\n\n${prefillBody}`
           : prefillBody,
       }));
-    }
-    changeView("write");
+    });
   };
 
   const handleNavigateToRef = useCallback((
@@ -551,6 +575,11 @@ export function App(): React.JSX.Element {
     }
     const chosen = picked.value;
     if (!chosen || chosen === libraryPath) {
+      setLibraryAction(null);
+      return;
+    }
+    const controller = connectionDraftExitControllerRef.current;
+    if (controller && !await controller.requestExit("library-change")) {
       setLibraryAction(null);
       return;
     }
@@ -705,8 +734,8 @@ export function App(): React.JSX.Element {
       if (next) {
         e.preventDefault();
         if (next !== "scripture" && authoredMutationStateRef.current !== "idle") return;
-        if (focusMode) toggleFocusMode();
-        changeView(next);
+        const changed = changeView(next);
+        if (changed && focusMode) toggleFocusMode();
       }
     };
     window.addEventListener("keydown", onKey);
@@ -815,10 +844,11 @@ export function App(): React.JSX.Element {
 
   const runCommandAction = (id: string): void => {
     if (id === "new-note") {
-      setWritingDraft((current) => current.title.trim() || current.body.trim()
-        ? current
-        : { title: contextLabel, body: "" });
-      changeView("write");
+      changeView("write", () => {
+        setWritingDraft((current) => current.title.trim() || current.body.trim()
+          ? current
+          : { title: contextLabel, body: "" });
+      });
     } else if (id === "toggle-study") {
       if (focusMode) toggleFocusMode();
       if (!marginVisible) toggleMargin();
@@ -826,11 +856,9 @@ export function App(): React.JSX.Element {
     } else if (id === "toggle-focus") {
       toggleFocusMode();
     } else if (id === "open-notes") {
-      setWorkspaceIntent({ nonce: Date.now() });
-      changeView("notes");
+      changeView("notes", () => setWorkspaceIntent({ nonce: Date.now() }));
     } else if (id === "search-notes") {
-      setWorkspaceIntent({ query: "", nonce: Date.now() });
-      changeView("search");
+      changeView("search", () => setWorkspaceIntent({ query: "", nonce: Date.now() }));
     } else if (id === "open-settings") {
       changeView("settings");
     }
@@ -982,6 +1010,9 @@ export function App(): React.JSX.Element {
                 focusMode={focusMode}
                 onToggleFocus={toggleFocusMode}
                 onAuthoredMutationStateChange={handleAuthoredMutationStateChange}
+                onConnectionDraftExitControllerChange={(controller) => {
+                  connectionDraftExitControllerRef.current = controller;
+                }}
                 entityIntent={entityIntent}
                 onOpenEntity={openEntityResearch}
                 onCloseEntity={closeEntityResearch}
@@ -1050,13 +1081,11 @@ export function App(): React.JSX.Element {
             actions={commandActions}
             onNavigate={handleNavigateToRef}
             onOpenNote={(noteId) => {
-              setWorkspaceIntent({ noteId, nonce: Date.now() });
-              changeView("notes");
+              changeView("notes", () => setWorkspaceIntent({ noteId, nonce: Date.now() }));
             }}
             onOpenEntity={openCommandEntityResearch}
             onSearchNotes={(query) => {
-              setWorkspaceIntent({ query, nonce: Date.now() });
-              changeView("search");
+              changeView("search", () => setWorkspaceIntent({ query, nonce: Date.now() }));
             }}
             onRunAction={runCommandAction}
           />

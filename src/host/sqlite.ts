@@ -37,6 +37,7 @@ import {
   MAX_BACKBONE_TOKEN_OCCURRENCES_PER_ANCHOR,
 } from "../core/annotations/backbone-token-anchor.js";
 import { isValidBookCode } from "../core/reference/backbone.js";
+import { compareConnectionsCanonical } from "../core/annotations/connection-order.js";
 
 type ConnectionRow = {
   id: string;
@@ -407,7 +408,7 @@ export class SQLiteMaterializer {
          FROM connections ORDER BY id`,
       )
       .all() as ConnectionRow[];
-    return rows.map((row) => this.hydrateConnection(row));
+    return rows.map((row) => this.hydrateConnection(row)).sort(compareConnectionsCanonical);
   }
 
   queryConnectionsForVerse(book: string, chapter: number, verse: number): ConnectionRecord[] {
@@ -431,7 +432,9 @@ export class SQLiteMaterializer {
          ORDER BY c.id`,
       )
       .all(book, chapter, verseEnd, verseStart) as ConnectionRow[];
-    return rows.map((row) => this.hydrateConnection(row));
+    return rows.map((row) => this.hydrateConnection(row)).sort((left, right) => (
+      compareConnectionsCanonical(left, right, { book, chapter, verseStart, verseEnd })
+    ));
   }
 
   private hydrateConnection(row: ConnectionRow): ConnectionRecord {

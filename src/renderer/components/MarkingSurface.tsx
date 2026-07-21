@@ -13,6 +13,12 @@ import type { ConnectionMutationUiOutcome } from "../utils/connectionMutationRec
 import type { ConnectionPaintAnchor } from "../utils/connectionPaint.js";
 import { lastInputModality } from "../utils/inputModality.js";
 import { RELATIONSHIPS, relationshipLabel } from "../utils/relationshipVocabulary.js";
+import {
+  connectionDraftExitActions,
+  connectionDraftExitTitle,
+  type ConnectionDraftExitController,
+  type ConnectionDraftExitReason,
+} from "../utils/connectionDraftLifecycle.js";
 
 type ConnectionPassageAnchor = Pick<
   ConnectionAnchorV2,
@@ -82,6 +88,7 @@ interface Props {
   onClearSelection: (expectedNonce?: number) => void;
   onRequestReadingFocus: (anchors?: readonly ConnectionPassageAnchor[], expectedNonce?: number) => void;
   onConnectionDraftChange: (draft: ConnectionDraftModel | null) => void;
+  onDraftExitControllerChange?: (controller: ConnectionDraftExitController | null) => void;
   onMutationStateChange?: (state: "idle" | "in-flight" | "recovery") => void;
   onCreateConnection: (
     kind: ConnectionKind,
@@ -593,18 +600,33 @@ function PaletteVocabulary({
 function SessionStatus({
   session,
   busy,
+  stageBounds,
   onDone,
   onCancel,
 }: {
   session: ConnectionSession;
   busy: boolean;
+  stageBounds: { left: number; top: number; width: number };
   onDone: () => void;
   onCancel: () => void;
 }): React.JSX.Element {
   const binary = BINARY_KINDS.has(session.kind);
+  const phraseLabel = `${session.anchors.length} phrase${session.anchors.length === 1 ? "" : "s"}`;
   return (
-    <div className="marking-session" aria-busy={busy}>
-      <span className="marking-session-kind"><RelationshipGlyph kind={session.kind} />{relationshipLabel(session.kind)}</span>
+    <div
+      className="marking-session"
+      aria-busy={busy}
+      data-floating-layer="marking-session"
+      style={{
+        "--mark-session-left": `${stageBounds.left}px`,
+        "--mark-session-top": `${stageBounds.top}px`,
+        "--mark-session-width": `${stageBounds.width}px`,
+      } as React.CSSProperties}
+    >
+      <span className="marking-session-kind">
+        <RelationshipGlyph kind={session.kind} />
+        {relationshipLabel(session.kind)} · {phraseLabel}
+      </span>
       <span
         className="marking-session-copy"
         role={session.recoveryState === "unconfirmed" ? "alert" : "status"}
@@ -616,12 +638,14 @@ function SessionStatus({
           : session.feedback
             ?? session.notice
             ?? (binary
-              ? `${session.anchors.length}/2 · select the counterpart`
-              : `${session.anchors.length} marked · select another phrase${session.anchors.length >= 2 ? ", or finish" : ""}`)}
+              ? "Select the counterpart."
+              : session.anchors.length === 1
+                ? "Select another phrase to connect."
+                : "Select more text to keep adding.")}
       </span>
       {session.anchors.length >= 2 && (!binary || Boolean(session.feedback)) && (
         <button type="button" className="marking-session-action primary" disabled={busy} onClick={onDone}>
-          {session.feedback || binary ? "Retry" : "Done"}
+          {session.feedback || binary ? "Retry" : "Save connection"}
         </button>
       )}
       {session.recoveryState ? (
@@ -632,7 +656,7 @@ function SessionStatus({
           className="marking-session-action"
           disabled={busy}
           onClick={onCancel}
-        >Cancel</button>
+        >Cancel draft</button>
       )}
     </div>
   );
@@ -653,6 +677,7 @@ export function MarkingSurface({
   onClearSelection,
   onRequestReadingFocus,
   onConnectionDraftChange,
+  onDraftExitControllerChange,
   onMutationStateChange,
   onCreateConnection,
   onUpdateConnection,
@@ -674,6 +699,12 @@ export function MarkingSurface({
   const [dockEntranceComplete, setDockEntranceComplete] = useState(false);
   const [railTrayPlacement, setRailTrayPlacement] = useState<RailTrayPlacement | null>(null);
   const [focusRingMode, setFocusRingMode] = useState<"pointer" | "keyboard">("pointer");
+  const [exitGuardReason, setExitGuardReason] = useState<ConnectionDraftExitReason | null>(null);
+  const sessionRef = useRef<ConnectionSession | null>(session);
+  sessionRef.current = session;
+  const exitGuardPromiseRef = useRef<Promise<boolean> | null>(null);
+  const exitGuardResolveRef = useRef<((proceed: boolean) => void) | null>(null);
+  const exitGuardOriginRef = useRef<HTMLElement | null>(null);
   const processedSelection = useRef<number | null>(null);
   const processedExtensionNonce = useRef<number | null>(null);
   const operationSequence = useRef(0);
@@ -697,6 +728,7 @@ export function MarkingSurface({
   const activeSelectionNonceRef = useRef<number | null>(null);
   const dockRef = useRef<HTMLDivElement>(null);
   const dockModesRef = useRef<HTMLDivElement>(null);
+  const exitGuardRef = useRef<HTMLDivElement>(null);
   const railRoving = useRovingFocus<HTMLButtonElement>(4);
   const dockModeRoving = useRovingFocus<HTMLButtonElement>(DOCK_MODES.length);
   const dockIntentRoving = useRovingFocus<HTMLButtonElement>(2);
@@ -754,6 +786,7 @@ export function MarkingSurface({
           ? "marking-selection"
           : null;
   const layerRef = useLayer(layerKind);
+  const exitGuardLayerRef = useLayer(exitGuardReason ? "dialog" : null);
   const stageClass = effectiveStageBounds.width < 480 ? "narrow" : effectiveStageBounds.width < 760 || effectiveStageBounds.height < 480 ? "compact" : "wide";
   const paletteLayoutHint = effectiveStageBounds.width < 480 || effectiveStageBounds.height < 360 ? "sheet" : "floating";
   const radialLayoutHint = effectiveStageBounds.width <= 640 || effectiveStageBounds.height <= 420 ? "sheet" : "wheel";
@@ -770,6 +803,9 @@ export function MarkingSurface({
   const currentWash = tool?.type === "wash" ? tool.color : null;
   const selectedWash = PIGMENTS.find((option) => option.id === selection?.activeColor)?.id ?? null;
   const currentKind = tool?.type === "connect" ? tool.kind : session?.kind ?? null;
+  const captureFeedback = selection?.capture.status === "refused"
+    ? selection.capture.message
+    : null;
   const activeSelectionNonce = selection?.nonce ?? null;
   activeSelectionNonceRef.current = activeSelectionNonce;
   const dockMode: DockModeId = session
@@ -796,7 +832,7 @@ export function MarkingSurface({
       label: `${relationshipLabel(session.kind)} · connection in progress`,
     };
   }, [contextKey, session]);
-  const suppressPaletteForAutoApply = Boolean(selection && (
+  const suppressPaletteForAutoApply = Boolean(selection && selection.capture.status !== "refused" && (
     consumingSelectionNonce === selection.nonce
     || (tool && !busy && processedSelection.current !== selection.nonce)
   ));
@@ -1424,14 +1460,14 @@ export function MarkingSurface({
     activeOperation.current = null;
   }, []);
 
-  const finishConnection = useCallback(async (target: ConnectionSession): Promise<void> => {
+  const finishConnection = useCallback(async (target: ConnectionSession): Promise<boolean> => {
     if (
       target.anchors.length < 2
       || (!target.recoveryState && target.contextKey !== contextKey)
       || busy
-    ) return;
+    ) return false;
     const operation = beginOperation();
-    if (!operation) return;
+    if (!operation) return false;
     const label = target.label
       ?? `${relationshipLabel(target.kind)} · ${target.labels.slice(0, 2).join(" / ")}${target.labels.length > 2 ? ` +${target.labels.length - 2}` : ""}`;
     let outcome: ConnectionMutationUiOutcome = "failed";
@@ -1457,13 +1493,13 @@ export function MarkingSurface({
     } catch {
       outcome = "failed";
     }
-    if (!releaseOperation(operation)) return;
+    if (!releaseOperation(operation)) return false;
     if (outcome === "conflict") {
       setSession((current) => current === target ? null : current);
       setStatus("Connection changed elsewhere · this extension was not applied. Review the authored connection before adding words again.");
       if (!persistentSurface) setTool(null);
       onRequestReadingFocus(target.anchors);
-      return;
+      return false;
     }
     if (outcome !== "complete") {
       const feedback = outcome === "committed-pending"
@@ -1476,13 +1512,76 @@ export function MarkingSurface({
         recoveryState: outcome === "committed-pending" ? "committed-pending" : "unconfirmed",
       } : current);
       setStatus(feedback);
-      return;
+      return false;
     }
     setStatus(`${relationshipLabel(target.kind)} ${target.connectionId ? "updated" : "saved"} · ${target.anchors.length} phrases connected.`);
+    sessionRef.current = null;
     setSession((current) => current === target ? null : current);
     if (!persistentSurface && !keepActive) setTool(null);
     onRequestReadingFocus(target.anchors);
+    return true;
   }, [beginOperation, busy, contextKey, keepActive, onCreateConnection, onRequestReadingFocus, onUpdateConnection, persistentSurface, releaseOperation]);
+
+  const settleExitGuard = useCallback((proceed: boolean): void => {
+    const resolve = exitGuardResolveRef.current;
+    const origin = exitGuardOriginRef.current;
+    exitGuardResolveRef.current = null;
+    exitGuardPromiseRef.current = null;
+    exitGuardOriginRef.current = null;
+    setExitGuardReason(null);
+    resolve?.(proceed);
+    if (!proceed) {
+      window.setTimeout(() => {
+        if (origin?.isConnected) origin.focus({ preventScroll: true });
+        else onRequestReadingFocus(sessionRef.current?.anchors);
+      }, 0);
+    }
+  }, [onRequestReadingFocus]);
+
+  const discardConnectionDraft = useCallback((): void => {
+    const anchors = sessionRef.current?.anchors ?? [];
+    sessionRef.current = null;
+    setSession(null);
+    setTray(null);
+    if (!persistentSurface) setTool(null);
+    setStatus("Connection draft discarded.");
+    onRequestReadingFocus(anchors);
+  }, [onRequestReadingFocus, persistentSurface]);
+
+  const requestDraftExit = useCallback((reason: ConnectionDraftExitReason): Promise<boolean> => {
+    const current = sessionRef.current;
+    if (!current) return Promise.resolve(true);
+    if (busy || activeOperation.current != null || current.recoveryState) {
+      setStatus(current.recoveryState
+        ? "Recovery required · Retry the exact connection command before leaving it."
+        : "Finishing the current change · your selected words remain held.");
+      return Promise.resolve(false);
+    }
+    if (exitGuardPromiseRef.current) return exitGuardPromiseRef.current;
+    const active = document.activeElement;
+    exitGuardOriginRef.current = active instanceof HTMLElement ? active : null;
+    setExitGuardReason(reason);
+    const promise = new Promise<boolean>((resolve) => {
+      exitGuardResolveRef.current = resolve;
+    });
+    exitGuardPromiseRef.current = promise;
+    return promise;
+  }, [busy]);
+
+  const exitController = useMemo<ConnectionDraftExitController | null>(() => (
+    session ? { requestExit: requestDraftExit } : null
+  ), [requestDraftExit, session]);
+
+  useLayoutEffect(() => {
+    onDraftExitControllerChange?.(exitController);
+    return () => onDraftExitControllerChange?.(null);
+  }, [exitController, onDraftExitControllerChange]);
+
+  useEffect(() => () => {
+    exitGuardResolveRef.current?.(false);
+    exitGuardResolveRef.current = null;
+    exitGuardPromiseRef.current = null;
+  }, []);
 
   const captureConnection = useCallback((kind: ConnectionKind, current: MarkingSelectionModel): boolean => {
     if (busy || session?.recoveryState) return false;
@@ -1527,7 +1626,9 @@ export function MarkingSurface({
     setTool({ type: "connect", kind });
     setStatus(BINARY_KINDS.has(kind)
       ? "Select the counterpart."
-      : `${next.anchors.length} marked · select another phrase${next.anchors.length >= 2 ? ", or finish" : ""}.`);
+      : next.anchors.length === 1
+        ? `${relationshipLabel(kind)} · 1 phrase · Select another phrase to connect.`
+        : `${relationshipLabel(kind)} · ${next.anchors.length} phrases · Select more text to keep adding.`);
     onClearSelection(current.nonce);
     onRequestReadingFocus([current.capture.anchor], current.nonce);
     if (BINARY_KINDS.has(kind) && next.anchors.length === 2) void finishConnection(next);
@@ -1891,11 +1992,7 @@ export function MarkingSurface({
         event.preventDefault();
         event.stopImmediatePropagation();
         clearPendingFocusRestore();
-        setSession(null);
-        setTray(null);
-        setStatus("Connection cancelled.");
-        if (!persistentSurface) setTool(null);
-        onRequestReadingFocus(session.anchors);
+        void requestDraftExit("escape");
         return;
       }
       if (persistentSurface && (tray === "connect" || tray === "wash")) {
@@ -1932,7 +2029,7 @@ export function MarkingSurface({
     };
     window.addEventListener("keydown", onKeyDown, true);
     return () => window.removeEventListener("keydown", onKeyDown, true);
-  }, [activeSelectionNonce, busy, clearPendingFocusRestore, closeTray, focusMode, layerKind, onDismissSelection, onRequestReadingFocus, persistentSurface, selection, session, surface, tool, tray]);
+  }, [activeSelectionNonce, busy, clearPendingFocusRestore, closeTray, focusMode, layerKind, onDismissSelection, onRequestReadingFocus, persistentSurface, requestDraftExit, selection, session, surface, tool, tray]);
 
   const chooseNote = (): void => {
     if (busy || activeOperation.current != null || session?.recoveryState) {
@@ -2006,15 +2103,26 @@ export function MarkingSurface({
       setStatus("Recovery required · Retry the exact connection command before changing tools.");
       return;
     }
+    if (session) {
+      void requestDraftExit("escape").then((proceed) => {
+        if (!proceed) return;
+        clearPendingFocusRestore();
+        setTool(null);
+        setSelectionFailure(null);
+        setTray(null);
+        setKeepActive(false);
+        setStatus(REST_GUIDANCE);
+        if (requestReadingFocus) onRequestReadingFocus(session.anchors);
+      });
+      return;
+    }
     clearPendingFocusRestore();
-    const anchors = session?.anchors;
     setTool(null);
-    setSession(null);
     setSelectionFailure(null);
     setTray(null);
     setKeepActive(false);
     setStatus(REST_GUIDANCE);
-    if (requestReadingFocus) onRequestReadingFocus(anchors);
+    if (requestReadingFocus) onRequestReadingFocus();
   };
 
   const dismissPalette = (): void => {
@@ -2048,23 +2156,87 @@ export function MarkingSurface({
     chooseConnection(relationship.id);
   };
 
-  const sessionNode = session ? (
-    <SessionStatus
-      session={session}
-      busy={busy}
-      onDone={() => void finishConnection(session)}
-      onCancel={() => {
-        if (session.recoveryState) {
-          setStatus("Recovery required · Retry the exact connection command before leaving it.");
+  const portalThemeClass = `${isDarkTheme(theme) ? "dark " : ""}theme-${theme}`;
+  const sessionNode = session ? createPortal(
+    <div className={`marking-session-portal ${portalThemeClass}`}>
+      <SessionStatus
+        session={session}
+        busy={busy}
+        stageBounds={effectiveStageBounds}
+        onDone={() => void finishConnection(session)}
+        onCancel={() => { void requestDraftExit("escape"); }}
+      />
+    </div>,
+    document.body,
+  ) : null;
+
+  const exitGuardNode = exitGuardReason && session ? createPortal(
+    <div
+      className={`connection-draft-exit-scrim ${portalThemeClass}`}
+      data-floating-layer="dialog"
+      onKeyDown={(event) => {
+        if (!isTopLayer(exitGuardLayerRef.current)) return;
+        if (event.key === "Escape") {
+          event.preventDefault();
+          event.stopPropagation();
+          settleExitGuard(false);
           return;
         }
-        const anchors = session.anchors;
-        setSession(null);
-        setStatus("Connection cancelled.");
-        if (!persistentSurface) setTool(null);
-        onRequestReadingFocus(anchors);
+        if (event.key !== "Tab") return;
+        const controls = [...(exitGuardRef.current?.querySelectorAll<HTMLButtonElement>(
+          "button:not(:disabled)",
+        ) ?? [])];
+        if (controls.length === 0) return;
+        const activeIndex = controls.indexOf(document.activeElement as HTMLButtonElement);
+        const nextIndex = event.shiftKey
+          ? (activeIndex <= 0 ? controls.length - 1 : activeIndex - 1)
+          : (activeIndex < 0 || activeIndex === controls.length - 1 ? 0 : activeIndex + 1);
+        event.preventDefault();
+        controls[nextIndex]?.focus();
       }}
-    />
+    >
+      <div
+        ref={exitGuardRef}
+        className="connection-draft-exit-dialog"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="connection-draft-exit-title"
+        aria-describedby="connection-draft-exit-copy"
+      >
+        <span className="connection-draft-exit-eyebrow">Connection draft</span>
+        <h2 id="connection-draft-exit-title">{connectionDraftExitTitle(exitGuardReason)}</h2>
+        <p id="connection-draft-exit-copy">
+          {session.anchors.length >= 2
+            ? `${session.anchors.length} phrases are ready to save.`
+            : "A connection needs at least two phrases."}
+        </p>
+        <div className="connection-draft-exit-actions">
+          {connectionDraftExitActions(session.anchors.length).includes("save") && (
+            <button
+              type="button"
+              className="primary"
+              disabled={busy}
+              onClick={() => {
+                const target = sessionRef.current;
+                if (!target) { settleExitGuard(true); return; }
+                void finishConnection(target).then((saved) => settleExitGuard(saved));
+              }}
+            >Save connection</button>
+          )}
+          <button
+            type="button"
+            className="danger"
+            disabled={busy}
+            onClick={() => {
+              discardConnectionDraft();
+              settleExitGuard(true);
+            }}
+          >Discard draft</button>
+          <button type="button" autoFocus onClick={() => settleExitGuard(false)}>Keep editing</button>
+        </div>
+      </div>
+    </div>,
+    document.body,
   ) : null;
 
   const choicePanel = tray === "connect" ? (
@@ -2074,7 +2246,8 @@ export function MarkingSurface({
         <small
           id={surface === "dock" ? "marking-dock-choice-help" : undefined}
           title={surface === "dock" && dockHelp ? dockHelp.description : undefined}
-        >{surface === "dock" && dockHelp ? dockHelp.description : "How do these words relate?"}</small>
+          aria-live={surface === "dock" ? "polite" : undefined}
+        >{captureFeedback ?? (surface === "dock" && dockHelp ? dockHelp.description : "How do these words relate?")}</small>
       </div>
       <RelationshipChoices
         selected={currentKind}
@@ -2134,6 +2307,7 @@ export function MarkingSurface({
         data-focus-ring={focusRingMode}
         data-stage-size={stageClass}
         data-palette-layout={paletteLayout}
+        data-selection-capture={selection?.capture.status ?? "none"}
         data-tool-armed={armedKey ?? "false"}
         data-floating-layer="toolbar"
         style={floatingStageStyle}
@@ -2190,16 +2364,17 @@ export function MarkingSurface({
                 <span id="marking-palette-help" className="marking-palette-help" aria-live="polite">
                   {keepActive
                     ? "The tool you choose will remain in your hand."
-                    : paletteHelp ? paletteHelp.description
+                    : captureFeedback ?? (paletteHelp ? paletteHelp.description
                       : selection.mixedColors ? "Mixed washes selected — choose one to unify them."
-                        : "Connect the words — or lay a wash."}
+                        : "Connect the words — or lay a wash.")}
                 </span>
                 <span className="marking-palette-shortcuts" aria-hidden="true"><kbd>1–6</kbd> connect <i>·</i> <kbd>⇧1–5</kbd> wash</span>
               </footer>
             </div>
           </div>
         )}
-        {!selection && sessionNode}
+        {sessionNode}
+        {exitGuardNode}
         {!selection && !session && armedTool && (
           <div className="marking-armed-status" role="status" aria-live="polite" data-tool-armed={armedKey}>
             <span className="marking-armed-tag">{armedLabel}</span>
@@ -2231,9 +2406,10 @@ export function MarkingSurface({
       : radialCenterY;
     const radialArmedTool = keepActive ? tool : null;
     const { key: radialArmedKey, label: radialArmedLabel, guidance: radialArmedGuidance } = describeArmedTool(radialArmedTool);
-    const radialFeedback = status.includes("could not") || status.includes("Finishing") || status.includes("restored")
-      ? status
-      : null;
+    const radialFeedback = captureFeedback
+      ?? (status.includes("could not") || status.includes("Finishing") || status.includes("restored")
+        ? status
+        : null);
     const radialHelpCopy = radialFeedback
       ?? (keepActive
         ? "The next wash or connection you choose will remain in hand."
@@ -2276,6 +2452,7 @@ export function MarkingSurface({
         data-focus-ring={focusRingMode}
         data-stage-size={stageClass}
         data-radial-layout={radialLayout}
+        data-selection-capture={selection?.capture.status ?? "none"}
         data-radial-compact={effectiveStageBounds.width < 352 ? "true" : "false"}
         data-radial-ultra-compact={effectiveStageBounds.width < 240 ? "true" : "false"}
         data-tool-armed={radialArmedKey ?? "false"}
@@ -2439,7 +2616,8 @@ export function MarkingSurface({
             </div>
           </div>
         )}
-        {!selection && sessionNode}
+        {sessionNode}
+        {exitGuardNode}
         {!visibleSelection && !session && radialArmedTool && (
           <div className="marking-armed-status" role="status" aria-live="polite" data-tool-armed={radialArmedKey}>
             <span className="marking-armed-tag">{radialArmedLabel}</span>
@@ -2460,7 +2638,7 @@ export function MarkingSurface({
 
   if (surface === "rail") {
     const railTrayOpen = railTrayShouldRender;
-    const railStatusVisible = !railTrayOpen && Boolean(session || tool);
+    const railStatusVisible = !railTrayOpen && Boolean(tool) && !session;
     // Keep the full selected quotation in the document. CSS may ellipsize the
     // single-line preview, but the accessible text and title must never lose
     // words from the user's exact selection.
@@ -2501,7 +2679,9 @@ export function MarkingSurface({
       onDismissSelection();
     };
     return (
-      <div className="marking-rail-host" data-marking-surface="rail" data-focus-ring={focusRingMode} data-rail-layout={railLayout} data-tool-armed={railArmedKey}>
+      <div className="marking-rail-host" data-marking-surface="rail" data-focus-ring={focusRingMode} data-rail-layout={railLayout} data-selection-capture={selection?.capture.status ?? "none"} data-tool-armed={railArmedKey}>
+        {sessionNode}
+        {exitGuardNode}
         <div ref={railRef} className="marking-rail" role="toolbar" aria-label="Pen Rail" aria-orientation={railLayout === "side" ? "vertical" : "horizontal"}>
           <button
             ref={(node) => { railRoving.refs.current[0] = node; }}
@@ -2616,17 +2796,17 @@ export function MarkingSurface({
               )}
             </div>
             <footer id="marking-rail-help" className="marking-rail-tray-help" aria-live="polite">
-              {railHelp?.description ?? railRetryFeedback ?? railDefaultHelp}
+              {captureFeedback ?? railHelp?.description ?? railRetryFeedback ?? railDefaultHelp}
             </footer>
           </div>
         )}
         {railStatusVisible && (
           <div className="marking-rail-status" role="status" aria-live="polite">
-            {sessionNode ?? <>
+            <>
               <span className="marking-rail-status-tag">{railToolLabel}</span>
               <span className="marking-rail-status-copy">{status || railToolGuidance}</span>
               <button type="button" className="marking-rail-put-down" onClick={() => putDownTool()}>Put down</button>
-            </>}
+            </>
           </div>
         )}
       </div>
@@ -2794,10 +2974,12 @@ export function MarkingSurface({
       data-marking-surface="dock"
       data-focus-ring={focusRingMode}
       data-dock-layout={dockLayout}
+      data-selection-capture={selection?.capture.status ?? "none"}
       data-dock-mode={dockMode}
       data-dock-state={dockState}
       data-tool-armed={dockArmedKey}
     >
+      {exitGuardNode}
       <div
         ref={dockRef}
         className={`marking-dock${dockEntranceComplete ? " is-entered" : ""}`}

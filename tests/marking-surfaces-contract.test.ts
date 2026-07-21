@@ -594,7 +594,7 @@ test("production marking surfaces retain distinct grammar at the supported deskt
   assert.match(styles, /\[data-marking-surface="rail"\]\[data-focus-ring="keyboard"\] \.marking-rail-intents \.marking-intent:focus-visible/);
   assert.match(styles, /\[data-marking-surface="dock"\]\[data-focus-ring="keyboard"\] \.marking-dock-context \.marking-relationship:focus-visible/);
   assert.doesNotMatch(styles, /\.marking-(?:palette|rail-tray|dock-context)[^\n]*:is\(:hover, :focus-visible, \.active\)/);
-  assert.match(source, /: paletteHelp \? paletteHelp\.description/);
+  assert.match(source, /captureFeedback \?\? \(paletteHelp \? paletteHelp\.description/);
   assert.doesNotMatch(source, /paletteHelp \? `\$\{paletteHelp\.label\} · \$\{paletteHelp\.description\}`/);
   assert.match(source, /data-tool-armed=\{radialArmedKey \?\? "false"\}/);
   assert.match(source, /const radialPetalRadius = 124/);
@@ -603,11 +603,13 @@ test("production marking surfaces retain distinct grammar at the supported deskt
   assert.match(source, /observer\.observe\(wheel\);[\s\S]*observer\.observe\(helpCard\)/);
   // The radial is a non-modal surface: its scrim covers only the stage and
   // the rest of the desk stays interactive, so it must not claim modality.
-  assert.doesNotMatch(source, /aria-modal="true"/);
+  const radialStart = source.indexOf('if (surface === "radial") {\n    if (!selection');
+  const radialSource = source.slice(radialStart, source.indexOf('if (surface === "rail")', radialStart));
+  assert.doesNotMatch(radialSource, /aria-modal="true"/);
   assert.match(source, /event\.key === "Escape"[\s\S]*onDismissSelection\(\)/);
   assert.match(source, /event\.key !== "Tab"[\s\S]*querySelectorAll<HTMLButtonElement>\("button:not\(\[disabled\]\)"\)/);
   assert.match(source, /className=\{`marking-radial-keep[\s\S]*onMouseDown=\{\(event\) => event\.preventDefault\(\)\}/);
-  assert.match(source, /session\.anchors\.length >= 2 && \(!binary \|\| Boolean\(session\.feedback\)\)[\s\S]*\{session\.feedback \|\| binary \? "Retry" : "Done"\}/);
+  assert.match(source, /session\.anchors\.length >= 2 && \(!binary \|\| Boolean\(session\.feedback\)\)[\s\S]*\{session\.feedback \|\| binary \? "Retry" : "Save connection"\}/);
   assert.match(source, /const captureConnection[\s\S]*if \(busy \|\| session\?\.recoveryState\) return false;/,
     "an unconfirmed command must block new phrase capture until exact Retry");
   assert.doesNotMatch(source, /Use Retry or Cancel/,
@@ -646,7 +648,8 @@ test("production marking surfaces retain distinct grammar at the supported deskt
   assert.match(source, /!intersects\(box, avoidBox\) && !intersects\(box, railBox\)/);
   assert.match(source, /data-rail-tray-placement=\{railTrayPlacement\?\.placement\}/);
   assert.match(rail, /const railTrayOpen = railTrayShouldRender/);
-  assert.match(rail, /const railStatusVisible = !railTrayOpen && Boolean\(session \|\| tool\)/);
+  assert.match(rail, /const railStatusVisible = !railTrayOpen && Boolean\(tool\) && !session/);
+  assert.match(rail, /\{sessionNode\}[\s\S]*\{exitGuardNode\}/);
   assert.match(rail, /data-rail-layout=\{railLayout\}/);
   assert.equal([...rail.matchAll(/data-rail-tool=/g)].length, 4);
   assert.doesNotMatch(rail, /ToolGlyph tool="read"/);
@@ -945,9 +948,10 @@ test("marking surface guidance stays contextual and quiet", () => {
   assert.doesNotMatch(source, /Read tool active\./);
   assert.equal(
     [...source.matchAll(/>\{surface === "dock" && dockHelp \? dockHelp\.description :/g)].length,
-    2,
-    "Dock trays should show the contextual description once instead of repeating its label",
+    1,
+    "the wash tray should show the contextual description once instead of repeating its label",
   );
+  assert.match(source, /captureFeedback \?\? \(surface === "dock" && dockHelp \? dockHelp\.description/);
   assert.equal(source.includes("${dockHelp.label} · ${dockHelp.description}"), false);
   assert.match(
     source,
@@ -1006,7 +1010,7 @@ test("Pen Rail keeps async outcomes truthful and returns keyboard focus to Scrip
     "Escape must retain exact Retry before ordinary session cancellation");
   assert.match(read("src", "renderer", "components", "ScripturePage.tsx"), /setConnectionExtension\(\{[\s\S]*contextKey: currentMarkingContextKeyRef\.current/);
   assert.match(source, /busy[\s\S]*\? "Saving connection…"[\s\S]*: session\.feedback/);
-  assert.match(source, /className="marking-session" aria-busy=\{busy\}/);
+  assert.match(source, /className="marking-session"[\s\S]{0,180}aria-busy=\{busy\}/);
   assert.ok(escape.indexOf("if (busy || activeOperation.current != null)") < escape.indexOf("if (session)"));
   assert.match(escape, /if \(busy \|\| activeOperation\.current != null\) \{[\s\S]*event\.stopImmediatePropagation\(\);[\s\S]*return;/);
   assert.match(source, /const activeSelectionNonce = selection\?\.nonce \?\? null/);

@@ -98,6 +98,7 @@ export type OccurrenceAlignmentIssueCode =
   | "invalid-selection"
   | "mixed-selection-passage"
   | "selection-quote-mismatch"
+  | "selection-round-trip-mismatch"
   | "selection-splits-unicode"
   | "overlapping-selection"
   | "partial-word-selection"
@@ -461,6 +462,38 @@ export type OccurrenceProjectionFragment = {
   readonly char_end: number;
   readonly quote: string;
 };
+
+/**
+ * Compare active-package capture and reprojection at the lexical-word level.
+ * Character offsets, punctuation, whitespace, and display grouping are render
+ * evidence; added or removed words are not. Keeping this in core makes the
+ * authoring admission rule deterministic without storing package evidence on
+ * a durable anchor (INV-5).
+ */
+export function lexicalWordsForRoundTrip(text: string): readonly string[] {
+  return text
+    .normalize("NFKC")
+    .toLowerCase()
+    .match(/[\p{L}\p{M}\p{N}]+(?:[’'][\p{L}\p{M}\p{N}]+)*/gu) ?? [];
+}
+
+export function selectionProjectionRoundTrips(
+  selections: readonly Pick<OccurrenceSelectionPiece, "verse" | "char_start" | "quote">[],
+  projection: readonly Pick<OccurrenceProjectionFragment, "verse" | "char_start" | "quote">[],
+): boolean {
+  const comparePiece = (
+    left: { verse: number; char_start: number },
+    right: { verse: number; char_start: number },
+  ): number => left.verse - right.verse || left.char_start - right.char_start;
+  const selectedWords = [...selections]
+    .sort(comparePiece)
+    .flatMap((piece) => lexicalWordsForRoundTrip(piece.quote));
+  const projectedWords = [...projection]
+    .sort(comparePiece)
+    .flatMap((piece) => lexicalWordsForRoundTrip(piece.quote));
+  return selectedWords.length === projectedWords.length
+    && selectedWords.every((word, index) => word === projectedWords[index]);
+}
 
 export type ProjectBackboneTokenAnchorRequest = {
   readonly anchor: BackboneTokenAnchor;

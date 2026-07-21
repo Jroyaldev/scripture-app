@@ -37,6 +37,9 @@ test("LivingMargin removes highlights by the persisted highlight id from the pin
     useEffect(): void {
       // Pinned-range AI-insight effect intentionally not run in this render-only test.
     },
+    useLayoutEffect(): void {
+      // Workspace scroll restoration intentionally not run in this render-only test.
+    },
     useMemo<T>(factory: () => T): T {
       return factory();
     },
