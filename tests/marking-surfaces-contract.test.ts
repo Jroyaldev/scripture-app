@@ -421,7 +421,8 @@ test("congested connection traces prioritize selected and ordered held routes wi
     "spatial tick ordering must not mutate the painted input",
   );
 
-  assert.match(source, /const visualFocusId = selectedConnectionId \?\? previewConnectionId/);
+  assert.match(source, /const visualFocusId = selectedConnectionId \?\? \(focusMode \? null : previewConnectionId\)/,
+    "normal reading may preview a Shape, but hidden Focus-mode previews cannot own interaction");
   assert.match(source, /const active = orderActiveConnections\(paintRecords, book, chapter, visualFocusId, heldConnectionIds\)/);
   assert.match(source, /const focused = selectedConnectionId === connection\.id/);
   assert.match(source, /if \(!focused\) \{[\s\S]*routePath: ""[\s\S]*continue;/);

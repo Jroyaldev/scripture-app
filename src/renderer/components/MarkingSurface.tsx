@@ -67,6 +67,7 @@ export interface ConnectionDraftModel {
 interface Props {
   surface: MarkingSurfaceId;
   theme: AppTheme;
+  focusMode: boolean;
   contextKey: string;
   stageBounds: { left: number; top: number; width: number; height: number; bottom: number };
   selection: MarkingSelectionModel | null;
@@ -589,6 +590,7 @@ function SessionStatus({
 export function MarkingSurface({
   surface,
   theme,
+  focusMode,
   contextKey,
   stageBounds,
   selection,
@@ -1792,6 +1794,10 @@ export function MarkingSurface({
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
       if (event.key !== "Escape" || event.defaultPrevented) return;
+      // Focus mode hides every marking surface. Retained tool or selection
+      // state is therefore not a visible Escape owner; App must receive the
+      // next Escape so it can restore the full reading desk.
+      if (focusMode) return;
       // This listener runs in capture so the active marking layer owns Escape
       // before App's older window listener can interpret it as "exit Focus".
       // Explicitly yield when a later/topmost floating layer is present; its
@@ -1857,7 +1863,7 @@ export function MarkingSurface({
     };
     window.addEventListener("keydown", onKeyDown, true);
     return () => window.removeEventListener("keydown", onKeyDown, true);
-  }, [activeSelectionNonce, busy, clearPendingFocusRestore, closeTray, onDismissSelection, onRequestReadingFocus, persistentSurface, selection, session, surface, tool, tray]);
+  }, [activeSelectionNonce, busy, clearPendingFocusRestore, closeTray, focusMode, onDismissSelection, onRequestReadingFocus, persistentSurface, selection, session, surface, tool, tray]);
 
   const chooseNote = (): void => {
     if (busy || activeOperation.current != null || session?.recoveryState) {

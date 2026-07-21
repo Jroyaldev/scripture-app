@@ -65,6 +65,7 @@
     "qa:connection-card-mutations": "npm run build && npm run build:renderer && node scripts/qa-connection-card.mjs --mutations-only",
     "qa:connection-paint": "node scripts/qa-connection-paint.mjs",
     "qa:reading-interactions": "npm run build && npm run build:renderer && node scripts/qa-reading-interactions.mjs",
+    "qa:pericope-integration": "npm run build && npm run build:renderer && node scripts/qa-pericope-integration.mjs",
     "qa:marking-palette": "node scripts/qa-marking-palette.mjs",
     "qa:marking-rail": "npm run build && npm run build:renderer && node scripts/qa-marking-rail.mjs",
     "qa:marking-rail-connection-retry": "npm run build && npm run build:renderer && node scripts/qa-marking-rail.mjs --connection-retry-only",

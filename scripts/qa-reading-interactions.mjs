@@ -152,6 +152,23 @@ function createDriver(cdp) {
   return { evaluate, waitFor };
 }
 
+async function installEscapeDiagnostics(driver) {
+  await driver.evaluate(`(() => {
+    window["__qaEscapeInterceptions"] = [];
+    if (window["__qaEscapeInstrumentationInstalled"]) return;
+    window["__qaEscapeInstrumentationInstalled"] = true;
+    for (const method of ["preventDefault", "stopPropagation", "stopImmediatePropagation"]) {
+      const original = Event.prototype[method];
+      Event.prototype[method] = function (...args) {
+        if (this instanceof KeyboardEvent && this.type === "keydown" && this.key === "Escape") {
+          window["__qaEscapeInterceptions"].push({ method, stack: new Error(method).stack });
+        }
+        return original.apply(this, args);
+      };
+    }
+  })()`);
+}
+
 async function settle(driver, milliseconds = 120) {
   await driver.evaluate(`(async () => {
     await document.fonts.ready;
@@ -626,6 +643,7 @@ async function ensureCellReady(driver, cdp, surface, width, fixture) {
   await driver.waitFor(`document.querySelector(".book-name")?.textContent?.trim() === "Acts"
     && document.querySelector(".chapter-number")?.textContent?.trim() === "19"
     && document.querySelectorAll(".verse-line").length > 20`, 20_000);
+  await installEscapeDiagnostics(driver);
   await driver.waitFor(`(() => {
     const represented = [...document.querySelectorAll("[data-connection-tick-side]")].flatMap((tick) => {
       if (tick.hasAttribute("data-connection-tick-aggregate")) {
@@ -1285,6 +1303,14 @@ async function writeFailureArtifacts(error, context, childState, childLog, drive
         markingSurface: document.querySelector("[data-marking-surface]")?.getAttribute("data-marking-surface") ?? null,
         card: document.querySelector(".connection-card")?.outerHTML?.slice(0, 12_000) ?? null,
         chooser: document.querySelector(".connection-word-chooser")?.outerHTML?.slice(0, 8_000) ?? null,
+        floatingLayers: [...document.querySelectorAll('[data-floating-layer], .command-palette-root')].map((layer) => ({
+          kind: layer.getAttribute("data-floating-layer") ?? "command-palette",
+          className: layer.className,
+          hidden: layer.hidden,
+          ariaHidden: layer.getAttribute("aria-hidden"),
+          text: layer.textContent?.trim().slice(0, 240) ?? "",
+        })),
+        escapeInterceptions: window["__qaEscapeInterceptions"] ?? [],
       }))()`);
     } catch (stateError) {
       renderer = { stateError: String(stateError) };
@@ -1364,6 +1390,9 @@ try {
   await driver.waitFor(`Boolean(document.querySelector(".welcome-screen"))`, 15_000);
   await driver.evaluate(`document.querySelector('.welcome-location-choice [data-variant="primary"]')?.click()`);
   await driver.waitFor(`Boolean(document.querySelector(".sidebar") && document.querySelector(".scripture-content"))`, 20_000);
+  // Library initialization reloads the renderer, so install event ownership
+  // diagnostics only after the production reading shell is present.
+  await installEscapeDiagnostics(driver);
   await setViewport(cdp, 860);
 
   failureContext = { phase: "exact-fixture-seed" };
@@ -1578,10 +1607,12 @@ try {
   } else {
     console.error(`Reading-interaction cleanup preserved active QA data at ${qaRoot}`);
   }
-  if (gatePassed && existsSync(FAILURE_STATE_PATH)) {
-    // A green run does not delete old diagnostic artifacts automatically;
-    // retaining them avoids a destructive side effect in a shared worktree.
-    console.log(`NOTE stale failure artifact remains at ${FAILURE_STATE_PATH}`);
+  if (gatePassed) {
+    // These exact files are generated solely by this isolated gate. A green
+    // rerun retires stale red-run evidence without touching any other audit
+    // artifacts that may belong to the worktree owner.
+    rmSync(FAILURE_STATE_PATH, { force: true });
+    rmSync(FAILURE_SCREENSHOT_PATH, { force: true });
   }
   if (terminationError) {
     if (runError instanceof Error) {

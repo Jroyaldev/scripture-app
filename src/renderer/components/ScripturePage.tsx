@@ -516,6 +516,12 @@ export function ScripturePage({
     capture: MarkingSelectionCapture;
   } | null>(null);
   const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
+  // Escape can arrive after the selected-shape DOM has disappeared but before
+  // React has cleaned up the capture listener from the prior render. Keep the
+  // listener's ownership check synchronous so that next Escape can reach App
+  // and exit Focus mode instead of being swallowed by a stale closure.
+  const selectedConnectionIdRef = useRef<string | null>(selectedConnectionId);
+  selectedConnectionIdRef.current = selectedConnectionId;
   const [connectionCardRecovery, setConnectionCardRecovery] = useState<ConnectionCardRecovery | null>(null);
   const [connectionWordChooser, setConnectionWordChooser] = useState<ConnectionWordChooserState | null>(null);
   const [connectionInspectorFocusRequest, setConnectionInspectorFocusRequest] = useState(0);
@@ -1798,6 +1804,10 @@ export function ScripturePage({
     if (!showHighlightPalette) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key !== "Escape" || e.defaultPrevented) return;
+      // Focus mode has already unmounted this palette chrome. Its retained
+      // state is not an active Escape owner; after a selected Shape is
+      // dismissed, the next Escape belongs to App's Focus-mode exit.
+      if (focusMode) return;
       // Child marking/connection layers own the topmost Escape action. Keep
       // this legacy fallback only for palette state with no mounted surface.
       if (document.querySelector(".connection-card, .marking-floating-host, .marking-rail-host, .marking-dock-host")) return;
@@ -1807,7 +1817,7 @@ export function ScripturePage({
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [showHighlightPalette]);
+  }, [focusMode, showHighlightPalette]);
 
   // Browser-style canvas history yields to editors and modal dialogs.
   useEffect(() => {
@@ -2902,6 +2912,11 @@ export function ScripturePage({
       ?? [...selectedVerses].sort((left, right) => left - right)[0]
       ?? null;
     setShowHighlightPalette(false);
+    // Keep the internal Study/phrase scope, but release the browser-native
+    // Range. Otherwise the next deliberate click on connected words can be
+    // misread as another completed drag and reopen marking instead of opening
+    // the relationship it hit.
+    window.getSelection()?.removeAllRanges();
     if (targetVerse == null) return;
     scheduleVerseFocus(targetVerse, selectionGenerationRef.current);
   }, [phraseSelection, scheduleVerseFocus, selectedVerses]);
@@ -3066,7 +3081,7 @@ export function ScripturePage({
    * previous companion.
    */
   const handleDismissConnectionFocus = useCallback((restoreFocus = false): boolean => {
-    const connectionId = selectedConnectionId;
+    const connectionId = selectedConnectionIdRef.current;
     closeConnectionWordChooser(false);
     if (!connectionId) return true;
     if (!requireSafeConnectionNavigation()) {
@@ -3074,6 +3089,7 @@ export function ScripturePage({
       return false;
     }
     advanceSelectionGeneration();
+    selectedConnectionIdRef.current = null;
     setSelectedConnectionId(null);
     if (restoreFocus) {
       window.requestAnimationFrame(() => {
@@ -3081,7 +3097,7 @@ export function ScripturePage({
       });
     }
     return true;
-  }, [advanceSelectionGeneration, closeConnectionWordChooser, onEnsureMarginVisible, requireSafeConnectionNavigation, selectedConnectionId]);
+  }, [advanceSelectionGeneration, closeConnectionWordChooser, onEnsureMarginVisible, requireSafeConnectionNavigation]);
 
   // The card normally owns a local Escape ladder for dirty fields and delete
   // confirmation. Focus mode intentionally unmounts that card while leaving
@@ -3091,6 +3107,7 @@ export function ScripturePage({
     if (!selectedConnectionId) return;
     const handleSelectedConnectionEscape = (event: KeyboardEvent): void => {
       if (event.key !== "Escape" || event.defaultPrevented) return;
+      if (!selectedConnectionIdRef.current) return;
       if (document.querySelector(
         '[data-floating-layer="dialog"], [data-floating-layer="popover"], .command-palette-root',
       )) return;
@@ -3937,6 +3954,7 @@ export function ScripturePage({
               packageId={packageId}
               contentRevision={chapterData}
               themeToken={theme}
+              focusMode={focusMode}
               selectedConnectionId={selectedConnectionId}
               heldConnectionIds={visibleHeldConnectionIds}
               openTickGroupMemberIds={connectionWordChooser?.aggregateMemberIds ?? null}
@@ -4034,6 +4052,7 @@ export function ScripturePage({
       <MarkingSurface
         surface={markingSurface}
         theme={theme}
+        focusMode={focusMode}
         contextKey={`${book}:${chapter}:${packageId}`}
         stageBounds={stageBounds}
         selection={showHighlightPalette ? markingSelection : null}

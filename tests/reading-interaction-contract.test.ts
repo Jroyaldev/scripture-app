@@ -10,6 +10,7 @@ const readRendererSource = (name: string): string => readFileSync(
 );
 
 const page = readRendererSource("ScripturePage.tsx");
+const markingSurface = readRendererSource("MarkingSurface.tsx");
 const underlay = readRendererSource("ConnectionUnderlay.tsx");
 const card = readRendererSource("ConnectionCard.tsx");
 const margin = readRendererSource("LivingMargin.tsx");
@@ -330,8 +331,25 @@ test("Escape is owned by the topmost floating layer before Focus mode", () => {
   assert.match(app, /if \(e\.key === "Escape" && focusMode\) \{[\s\S]{0,300}\[data-floating-layer="dialog"\], \[data-floating-layer="popover"\][\s\S]{0,160}return/);
   assert.match(hiddenCardFallback, /\[data-floating-layer="dialog"\], \[data-floating-layer="popover"\], \.command-palette-root/);
   assert.match(hiddenCardFallback, /document\.querySelector\("\.connection-card"\)/);
+  assert.match(hiddenCardFallback, /if \(!selectedConnectionIdRef\.current\) return/);
+  assert.match(page, /selectedConnectionIdRef\.current = null;\s*setSelectedConnectionId\(null\)/,
+    "shape dismissal must synchronously yield the next Escape before React effect cleanup");
   assert.match(hiddenCardFallback, /event\.preventDefault\(\);[\s\S]{0,120}event\.stopImmediatePropagation\(\);[\s\S]{0,120}handleDismissConnectionFocus\(true\)/);
   assert.match(hiddenCardFallback, /window\.addEventListener\("keydown", handleSelectedConnectionEscape, true\)/);
+  const legacyPaletteFallback = sourceBetween(page, "// Escape dismisses palette chrome", "// Browser-style canvas history");
+  assert.match(legacyPaletteFallback, /if \(focusMode\) return/,
+    "unmounted palette state must yield the second Escape to Focus mode");
+  assert.match(markingSurface, /if \(focusMode\) return/,
+    "hidden Smart Shapes chrome must yield Escape to Focus mode");
+  assert.match(page, /<MarkingSurface[\s\S]{0,220}focusMode=\{focusMode\}/,
+    "Scripture must tell the marking controller when its chrome is hidden");
+  assert.match(underlay, /if \(focusMode \|\| previewConnectionId == null \|\| selectedConnectionId != null\) return undefined/,
+    "an underlay hover preview cannot take Focus mode's second Escape");
+  assert.match(page, /<ConnectionUnderlay[\s\S]{0,900}focusMode=\{focusMode\}/,
+    "Scripture must tell its connection underlay when Focus mode owns Escape");
+  const markingDismiss = sourceBetween(page, "const handleDismissMarkingSurface", "  const replaceHeldConnectionIds");
+  assert.match(markingDismiss, /setShowHighlightPalette\(false\);[\s\S]{0,300}window\.getSelection\(\)\?\.removeAllRanges\(\)/,
+    "dismissing marking must release the native Range before the next connected-word click");
 });
 
 test("Enter and Space select Study while M deliberately opens whole-verse marking", () => {

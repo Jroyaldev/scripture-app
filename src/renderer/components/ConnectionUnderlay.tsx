@@ -123,6 +123,7 @@ interface Props {
   /** Identity of the rendered prose payload; equal-size text replacements must remeasure. */
   contentRevision: unknown;
   themeToken: unknown;
+  focusMode: boolean;
   selectedConnectionId: string | null;
   heldConnectionIds: readonly string[];
   /** Exact aggregate tick membership whose chooser is currently mounted. */
@@ -751,6 +752,7 @@ export function ConnectionUnderlay({
   packageId,
   contentRevision,
   themeToken,
+  focusMode,
   selectedConnectionId,
   heldConnectionIds,
   openTickGroupMemberIds,
@@ -781,7 +783,7 @@ export function ConnectionUnderlay({
   // Preview is an invitation, not a selection: it may wake the exact words
   // and tick, but only an explicitly selected id is allowed to bloom route
   // ink, contacts, a hit target, or the focus veil.
-  const visualFocusId = selectedConnectionId ?? previewConnectionId;
+  const visualFocusId = selectedConnectionId ?? (focusMode ? null : previewConnectionId);
   const durablePaintRecords = useMemo<ConnectionPaintRecord[]>(() => connections.flatMap((connection) => {
     const projection = paintProjections.get(connection.id);
     if (!projection || projection.status === "unavailable" || projection.anchors.length === 0) return [];
@@ -1217,28 +1219,32 @@ export function ConnectionUnderlay({
   }, [cancelPreviewTimer]);
 
   const previewPointerIntent = useCallback((connectionId: string): void => {
-    if (selectedConnectionId != null) return;
+    if (focusMode || selectedConnectionId != null) return;
     cancelPreviewTimer(previewLeaveTimerRef);
     cancelPreviewTimer(previewEnterTimerRef);
     previewEnterTimerRef.current = window.setTimeout(() => {
       previewEnterTimerRef.current = null;
       setPreviewConnectionId(connectionId);
     }, PREVIEW_ENTER_MS);
-  }, [cancelPreviewTimer, selectedConnectionId]);
+  }, [cancelPreviewTimer, focusMode, selectedConnectionId]);
 
   const previewKeyboardFocus = useCallback((connectionId: string): void => {
-    if (selectedConnectionId != null) return;
+    if (focusMode || selectedConnectionId != null) return;
     cancelPreviewTimer(previewEnterTimerRef);
     cancelPreviewTimer(previewLeaveTimerRef);
     setPreviewConnectionId(connectionId);
-  }, [cancelPreviewTimer, selectedConnectionId]);
+  }, [cancelPreviewTimer, focusMode, selectedConnectionId]);
 
   useEffect(() => {
     if (selectedConnectionId != null) clearPreview(false);
   }, [clearPreview, selectedConnectionId]);
 
   useEffect(() => {
-    if (previewConnectionId == null || selectedConnectionId != null) return undefined;
+    if (focusMode) clearPreview(false);
+  }, [clearPreview, focusMode]);
+
+  useEffect(() => {
+    if (focusMode || previewConnectionId == null || selectedConnectionId != null) return undefined;
     const handleEscape = (event: KeyboardEvent): void => {
       if (event.key !== "Escape" || event.defaultPrevented) return;
       if (document.querySelector(
@@ -1249,7 +1255,7 @@ export function ConnectionUnderlay({
     };
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
-  }, [clearPreview, previewConnectionId, selectedConnectionId]);
+  }, [clearPreview, focusMode, previewConnectionId, selectedConnectionId]);
 
   useEffect(() => {
     if (focusFrameRef.current != null) window.cancelAnimationFrame(focusFrameRef.current);
@@ -1370,7 +1376,7 @@ export function ConnectionUnderlay({
         </defs>}
         {visiblePainted.map((item) => {
           const focused = item.connection.id === selectedConnectionId;
-          const previewed = selectedConnectionId == null && item.connection.id === previewConnectionId;
+          const previewed = !focusMode && selectedConnectionId == null && item.connection.id === previewConnectionId;
           const userHeld = heldConnectionIds.includes(item.connection.id);
           const companion = userHeld && !focused;
           const authoring = item.connection.source === "authoring";
