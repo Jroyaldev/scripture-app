@@ -7,7 +7,7 @@ import type {
   ConnectionRecordV2,
 } from "../../core/annotations/types.js";
 import type { MarkingSurface as MarkingSurfaceId } from "../api.js";
-import type { AppTheme } from "../theme.js";
+import { isDarkTheme, type AppTheme } from "../theme.js";
 import type { ConnectionMutationUiOutcome } from "../utils/connectionMutationReconciliation.js";
 import type { ConnectionPaintAnchor } from "../utils/connectionPaint.js";
 
@@ -2043,7 +2043,7 @@ export function MarkingSurface({
   if (surface === "palette") {
     const armedTool = keepActive ? tool : null;
     if (!selection && !session && !armedTool) return null;
-    const materialClass = `${theme === "dark" || theme === "dark-glass" ? "dark " : ""}theme-${theme}`;
+    const materialClass = `${isDarkTheme(theme) ? "dark " : ""}theme-${theme}`;
     const placement = selection && palettePlacement?.nonce === selection.nonce ? palettePlacement : null;
     const paletteLayout = placement?.layout ?? paletteLayoutHint;
     const paletteQuote = selection
@@ -2148,7 +2148,7 @@ export function MarkingSurface({
 
   if (surface === "radial") {
     if (!selection && !session && !tool && !busy) return null;
-    const materialClass = `${theme === "dark" || theme === "dark-glass" ? "dark " : ""}theme-${theme}`;
+    const materialClass = `${isDarkTheme(theme) ? "dark " : ""}theme-${theme}`;
     const visibleSelection = selection && !suppressPaletteForAutoApply ? selection : null;
     const placement = visibleSelection && radialPlacement?.nonce === visibleSelection.nonce ? radialPlacement : null;
     const radialCenterX = placement?.centerX ?? effectiveStageBounds.left + effectiveStageBounds.width / 2;

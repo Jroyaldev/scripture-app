@@ -93,6 +93,8 @@
   "atmospheres": {
     "light": { "name": "Paper", "mode": "solid", "asset": null },
     "dark": { "name": "Ink", "mode": "solid", "asset": null },
+    "porcelain": { "name": "Porcelain", "mode": "solid", "asset": null },
+    "onyx": { "name": "Onyx", "mode": "solid", "asset": null },
     "glass": { "name": "Glass", "mode": "glass", "asset": "assets/glass-light.png" },
     "dark-glass": { "name": "Candlelight", "mode": "glass", "asset": "assets/glass-dark.png" }
   },

@@ -188,7 +188,7 @@ interface WindowBounds {
 }
 
 interface AppSettingsSchema {
-  theme: "light" | "dark" | "glass" | "dark-glass";
+  theme: "light" | "dark" | "glass" | "dark-glass" | "porcelain" | "onyx";
   markingSurface: "palette" | "rail" | "radial" | "dock";
   sidebarCollapsed: boolean;
   marginVisible: boolean;
@@ -237,6 +237,20 @@ const MARKING_SURFACE_IDS = new Set<AppSettingsSchema["markingSurface"]>([
   "radial",
   "dock",
 ]);
+const THEME_IDS = new Set<AppSettingsSchema["theme"]>([
+  "light",
+  "dark",
+  "glass",
+  "dark-glass",
+  "porcelain",
+  "onyx",
+]);
+
+function normalizeTheme(value: unknown): AppSettingsSchema["theme"] {
+  return typeof value === "string" && THEME_IDS.has(value as AppSettingsSchema["theme"])
+    ? value as AppSettingsSchema["theme"]
+    : "light";
+}
 
 function normalizeMarkingSurface(value: unknown): AppSettingsSchema["markingSurface"] {
   return typeof value === "string"
@@ -2748,6 +2762,7 @@ function registerIpcHandlers(): void {
 
   ipcMain.handle("settings:get", () => ({
     ...store.store,
+    theme: normalizeTheme(store.store.theme),
     markingSurface: normalizeMarkingSurface(store.store.markingSurface),
   }));
 
@@ -2755,6 +2770,7 @@ function registerIpcHandlers(): void {
     store.set({
       ...store.store,
       ...partial,
+      theme: normalizeTheme(partial.theme ?? store.store.theme),
       markingSurface: normalizeMarkingSurface(partial.markingSurface ?? store.store.markingSurface),
     });
     return store.store;

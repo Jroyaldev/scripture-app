@@ -1,5 +1,5 @@
 /**
- * Desktop-only visual QA for the four reading atmospheres.
+ * Desktop-only visual QA for the six reading atmospheres.
  *
  * Requires Electron on --remote-debugging-port=9222. Captures each complete
  * shell plus the atmosphere picker, verifies the selected theme reached the
@@ -10,7 +10,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 
 const CDP_HTTP = "http://localhost:9222/json/list";
 const OUT_DIR = "docs/ui-audit/theme";
-const THEMES = ["light", "dark", "glass", "dark-glass"];
+const THEMES = ["porcelain", "light", "dark", "onyx", "glass", "dark-glass"];
 
 async function connect(url) {
   const ws = new WebSocket(url);

@@ -28,6 +28,8 @@ test("the durable token artifact matches the rendered desktop system", () => {
     [
       ["light", "Paper"],
       ["dark", "Ink"],
+      ["porcelain", "Porcelain"],
+      ["onyx", "Onyx"],
       ["glass", "Glass"],
       ["dark-glass", "Candlelight"],
     ],

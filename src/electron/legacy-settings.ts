@@ -1,4 +1,4 @@
-export type LegacyTheme = "light" | "dark" | "glass" | "dark-glass";
+export type LegacyTheme = "light" | "dark" | "glass" | "dark-glass" | "porcelain" | "onyx";
 export type LegacyMarkingSurface = "palette" | "rail" | "radial" | "dock";
 
 export interface AdoptableLegacySettings {
@@ -21,7 +21,7 @@ export interface AdoptableLegacySettings {
   libraryPath?: string | null;
 }
 
-const THEMES = new Set<LegacyTheme>(["light", "dark", "glass", "dark-glass"]);
+const THEMES = new Set<LegacyTheme>(["light", "dark", "glass", "dark-glass", "porcelain", "onyx"]);
 const MARKING_SURFACES = new Set<LegacyMarkingSurface>(["palette", "rail", "radial", "dock"]);
 const READING_SIZES = new Set(["s", "m", "l"] as const);
 const READING_WIDTHS = new Set(["narrow", "medium", "wide"] as const);
