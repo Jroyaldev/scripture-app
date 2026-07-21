@@ -36,7 +36,7 @@ test("tick activation only opens or reaffirms; the labelled card action owns Rel
   const activation = sourceBetween(
     underlay,
     "onClick={(event) => {",
-    "            >\n              <span aria-hidden=\"true\" />",
+    "            >\n              <span className=\"connection-tick-dash\" aria-hidden=\"true\" />",
   );
   assert.match(activation, /onSelectConnection\(item\.connection\.durableRecord, event\.detail === 0\)/);
   assert.match(activation, /remains selected\. Connection details are open in Study/);
@@ -46,8 +46,8 @@ test("tick activation only opens or reaffirms; the labelled card action owns Rel
 });
 
 test("Focus mode yields Escape while the connection card owns its local ladder", () => {
-  assert.match(
-    app,
-    /data-floating-layer="dialog"[\s\S]{0,140}data-floating-layer="popover"[\s\S]{0,140}\.command-palette-root, \.connection-card/,
-  );
+  // The shared layer registry decides Escape ownership everywhere; the app
+  // exits Focus mode only when no layer is registered.
+  assert.match(app, /layerStackIsEmpty\(\)/);
+  assert.match(read("src/renderer/components/ConnectionCard.tsx"), /isTopLayer\(layerRef\.current\)/);
 });

@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import type { HighlightRecord } from "../api.js";
 import { buildHighlightPath, mergeHighlightLineRects, type LineRect } from "../utils/highlightPath.js";
 import { useUnderlayMeasurementLifecycle } from "../utils/useUnderlayMeasurementLifecycle.js";
+import { locateTextOffset } from "../utils/textOffsets.js";
 import { buildSegments, buildRuns, isAdjacent, type HighlightRun } from "../../core/events/highlightAdjacency.js";
 
 /*
@@ -80,21 +81,6 @@ export const SWEEP_MS = 450;
 // disappears out from under it.
 export const FADE_MS = 320;
 
-/** DOM node + node-relative offset for a character offset into a span's text,
- * walking all text nodes (robust to future markup splitting the span). */
-function locateOffset(root: HTMLElement, charOffset: number): { node: Node; offset: number } | null {
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  let acc = 0;
-  let node = walker.nextNode();
-  while (node) {
-    const len = node.textContent?.length ?? 0;
-    if (acc + len >= charOffset) return { node, offset: charOffset - acc };
-    acc += len;
-    node = walker.nextNode();
-  }
-  return null;
-}
-
 export function HighlightUnderlay({
   containerRef,
   verseRowRefs,
@@ -163,8 +149,8 @@ export function HighlightUnderlay({
           range.selectNodeContents(span);
         } else {
           const total = span.textContent?.length ?? 0;
-          const start = locateOffset(span, seg.charStart ?? 0);
-          const end = locateOffset(span, seg.charEnd ?? total);
+          const start = locateTextOffset(span, seg.charStart ?? 0);
+          const end = locateTextOffset(span, seg.charEnd ?? total);
           if (!start || !end) range.selectNodeContents(span);
           else {
             range.setStart(start.node, start.offset);

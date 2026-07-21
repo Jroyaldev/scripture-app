@@ -658,7 +658,7 @@ async function ensureCellReady(driver, cdp, surface, width, fixture) {
     });
     return represented.length === ${fixture.connectionCount}
       && new Set(represented).size === ${fixture.connectionCount};
-  })()`);
+  })()`, 30_000);
   await driver.evaluate(`(() => {
     if (!document.querySelector(".sidebar")?.classList.contains("collapsed")) {
       document.querySelector(".sidebar-collapse-btn")?.click();
@@ -1301,8 +1301,22 @@ async function writeFailureArtifacts(error, context, childState, childLog, drive
         activeElement: document.activeElement?.outerHTML?.slice(0, 2_000) ?? null,
         selectedVerses: [...document.querySelectorAll('.verse-line[aria-pressed="true"]')].map((row) => row.getAttribute("data-verse")),
         markingSurface: document.querySelector("[data-marking-surface]")?.getAttribute("data-marking-surface") ?? null,
+        layerStack: typeof window.__pericopeLayerStack === "function" ? window.__pericopeLayerStack() : null,
         card: document.querySelector(".connection-card")?.outerHTML?.slice(0, 12_000) ?? null,
         chooser: document.querySelector(".connection-word-chooser")?.outerHTML?.slice(0, 8_000) ?? null,
+        ticks: [...document.querySelectorAll("[data-connection-tick-side]")].map((tick) => ({
+          id: tick.getAttribute("data-connection-tick"),
+          members: tick.getAttribute("data-connection-tick-members"),
+          aggregate: tick.hasAttribute("data-connection-tick-aggregate"),
+          side: tick.getAttribute("data-connection-tick-side"),
+          top: tick.style.top,
+        })),
+        paintPlanes: {
+          route: Boolean(document.querySelector("[data-connection-overlay]")),
+          emphasis: Boolean(document.querySelector("[data-connection-emphasis-overlay]")),
+          tickLayer: Boolean(document.querySelector(".connection-tick-layer")),
+          routeCount: document.querySelectorAll("[data-route-connection-id]").length,
+        },
         floatingLayers: [...document.querySelectorAll('[data-floating-layer], .command-palette-root')].map((layer) => ({
           kind: layer.getAttribute("data-floating-layer") ?? "command-palette",
           className: layer.className,

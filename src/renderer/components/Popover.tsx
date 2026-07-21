@@ -1,6 +1,7 @@
 import type React from "react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { isTopLayer, useLayer } from "../layerStack.js";
 
 export interface PopoverBoundaryRect {
   left: number;
@@ -113,6 +114,7 @@ export function Popover({
 }: Props): React.JSX.Element | null {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const [position, setPosition] = useState<PanelPosition | null>(null);
+  const layerRef = useLayer(anchorRect ? "popover" : null);
 
   useLayoutEffect(() => {
     if (!anchorRect) {
@@ -163,10 +165,9 @@ export function Popover({
   useEffect(() => {
     if (!anchorRect) return;
     function handleKeyDown(e: KeyboardEvent): void {
-      const escapeLayers = [...document.querySelectorAll<HTMLElement>(
-        '[data-floating-layer="dialog"], [data-floating-layer="popover"]',
-      )];
-      const ownsKeyboard = escapeLayers.at(-1) === panelRef.current;
+      // Ownership comes from the shared layer registry: the topmost layer
+      // consumes Escape, regardless of portal document order.
+      const ownsKeyboard = isTopLayer(layerRef.current);
       if (e.key === "Escape") {
         if (e.defaultPrevented) return;
         if (!ownsKeyboard) return;
@@ -200,8 +201,17 @@ export function Popover({
 
   useEffect(() => {
     if (!anchorRect) return;
-    window.addEventListener("resize", onClose);
-    return () => window.removeEventListener("resize", onClose);
+    // Only a real width change signals a layout the anchor cannot survive.
+    // Mobile browser chrome showing/hiding during scroll fires height-only
+    // resizes; closing the panel on those strands the user mid-decision.
+    let lastWidth = window.innerWidth;
+    const handleResize = (): void => {
+      if (window.innerWidth === lastWidth) return;
+      lastWidth = window.innerWidth;
+      onClose();
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [anchorRect, onClose]);
 
   if (!anchorRect || !position) return null;

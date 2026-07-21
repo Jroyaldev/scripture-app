@@ -9,6 +9,7 @@ import type {
   ScriptureSearchHitData,
 } from "../api.js";
 import { isDarkTheme, type AppTheme } from "../theme.js";
+import { isTopLayer, useLayer } from "../layerStack.js";
 import { parsePassage } from "../utils/parsePassage.js";
 import { formatRecentLabel, normalizeRecents, type RecentPassage } from "../utils/recentPassages.js";
 import { safeCall } from "../utils/safeCall.js";
@@ -163,6 +164,7 @@ export function CommandPalette({
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const resultRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const returnFocusRef = useRef<HTMLElement | null>(null);
+  const layerRef = useLayer(open ? "dialog" : null);
 
   const closeAnd = useCallback((work: () => void) => {
     // Activating a result transfers focus ownership to its destination
@@ -195,8 +197,9 @@ export function CommandPalette({
     if (!open) return;
     const onKeyDown = (event: KeyboardEvent): void => {
       if (event.key === "Escape" || ((event.metaKey || event.ctrlKey) && event.key.toLocaleLowerCase() === "k")) {
+        if (!isTopLayer(layerRef.current)) return;
         event.preventDefault();
-        event.stopPropagation();
+        event.stopImmediatePropagation();
         onClose();
         return;
       }

@@ -14,6 +14,10 @@ const markingSurface = readRendererSource("MarkingSurface.tsx");
 const underlay = readRendererSource("ConnectionUnderlay.tsx");
 const card = readRendererSource("ConnectionCard.tsx");
 const margin = readRendererSource("LivingMargin.tsx");
+const commandPalette = readRendererSource("CommandPalette.tsx");
+const noteCapture = readRendererSource("NoteCapture.tsx");
+const shortcuts = readRendererSource("ShortcutsOverlay.tsx");
+const structure = readRendererSource("StructureModal.tsx");
 const app = readFileSync(join(repoRoot, "src", "renderer", "app.tsx"), "utf-8");
 const css = readFileSync(join(repoRoot, "src", "renderer", "styles.css"), "utf-8");
 const readingQa = readFileSync(join(repoRoot, "scripts", "qa-reading-interactions.mjs"), "utf-8");
@@ -50,14 +54,14 @@ test("connected-word hit testing reuses exact durable paint in the underlay's ow
   assert.match(css, /\.connection-emphasis-wash\s*\{[\s\S]{0,180}pointer-events: none/);
 });
 
-test("coarse and hybrid pointers receive nonoverlapping 24x44 tick lanes with explicit overflow groups", () => {
+test("coarse and hybrid pointers receive nonoverlapping 38x44 tick targets with explicit overflow groups", () => {
   assert.match(underlay, /window\.matchMedia\("\(any-pointer: coarse\)"\)/);
   assert.match(underlay, /media\.addEventListener\("change", syncPointerMode\)/);
   assert.match(underlay, /media\.removeEventListener\("change", syncPointerMode\)/);
   assert.match(underlay, /planConnectionTickLanes\([\s\S]{0,420}coarsePointer \? 45 : 25,[\s\S]{0,80}coarsePointer \? 10 : 2/);
   assert.match(underlay, /data-connection-tick-aggregate=\{aggregate \? "" : undefined\}/);
   assert.match(underlay, /aria-haspopup=\{aggregate \? "dialog" : undefined\}/);
-  assert.match(css, /@media \(any-pointer: coarse\) \{\s*\.connection-tick::before \{\s*position: absolute;\s*inset: -10px 0;/);
+  assert.match(css, /@media \(any-pointer: coarse\) \{\s*\.connection-tick::before \{\s*position: absolute;\s*inset: -10px -7px;/);
 });
 
 test("a verse click consumes drag residue, resolves exact connection hits, then falls back to Study with marking closed", () => {
@@ -156,7 +160,7 @@ test("dismissing connection focus preserves held comparisons and refresh preserv
     "held comparisons may retain quiet word presence, but no line artifact may render without a selected connection");
 });
 
-test("the selected route reaffirms its durable connection instead of releasing it", () => {
+test("the selected route toggles focus off without releasing the hold", () => {
   const routeHit = sourceBetween(
     underlay,
     "className=\"connection-route-hit\"",
@@ -164,8 +168,9 @@ test("the selected route reaffirms its durable connection instead of releasing i
   );
 
   assert.match(routeHit, /if \(!isDurablePaintRecord\(item\.connection\)\) return/);
-  assert.match(routeHit, /onSelectConnection\(item\.connection\.durableRecord\)/);
+  assert.match(routeHit, /onDismissFocus\(\)/);
   assert.doesNotMatch(routeHit, /onSelectConnection\(null\)/);
+  assert.doesNotMatch(routeHit, /releaseHeldConnection|onRelease/);
 });
 
 test("ConnectionCard Escape dismisses focus while the explicit Release action removes the hold", () => {
@@ -321,6 +326,21 @@ test("connection-card query refreshes preserve dirty fields and blank titles res
   assert.match(card, /onBlur=\{\(\) => \{ if \(labelChanged\) void saveLabel\(\); \}\}/);
 });
 
+test("dirty connection-card deletion saves one combined authored version before arming", () => {
+  const deletion = sourceBetween(card, "const confirmDelete", "  const retryPendingMutation");
+  assert.match(deletion, /const next = \{ \.\.\.connection, label, observation: draftObservation \}/);
+  assert.match(deletion, /armDeleteAfterFingerprintRef\.current = fingerprint/);
+  assert.match(deletion, /await runUpdate\(pendingCommand\)/);
+  assert.doesNotMatch(deletion, /await saveLabel\(\)|await saveObservation\(\)/);
+});
+
+test("every dialog Escape handler consults the shared top-layer owner", () => {
+  for (const source of [commandPalette, noteCapture, shortcuts, structure]) {
+    assert.match(source, /isTopLayer\(layerRef\.current\)/);
+  }
+  assert.match(margin, /if \(!layerStackIsEmpty\(\)\) return/);
+});
+
 test("Escape is owned by the topmost floating layer before Focus mode", () => {
   const hiddenCardFallback = sourceBetween(
     page,
@@ -328,9 +348,9 @@ test("Escape is owned by the topmost floating layer before Focus mode", () => {
     "  const handleConnectionWordChooserKeyDown",
   );
   assert.match(app, /if \(e\.defaultPrevented\) return/);
-  assert.match(app, /if \(e\.key === "Escape" && focusMode\) \{[\s\S]{0,300}\[data-floating-layer="dialog"\], \[data-floating-layer="popover"\][\s\S]{0,160}return/);
-  assert.match(hiddenCardFallback, /\[data-floating-layer="dialog"\], \[data-floating-layer="popover"\], \.command-palette-root/);
-  assert.match(hiddenCardFallback, /document\.querySelector\("\.connection-card"\)/);
+  // One shared layer registry owns every dismiss gesture; DOM heuristics are gone.
+  assert.match(app, /if \(e\.key === "Escape" && focusMode\) \{[\s\S]{0,300}layerStackIsEmpty\(\)[\s\S]{0,160}return/);
+  assert.match(hiddenCardFallback, /isTopLayer\(connectionFocusFallbackLayerRef\.current\)/);
   assert.match(hiddenCardFallback, /if \(!selectedConnectionIdRef\.current\) return/);
   assert.match(page, /selectedConnectionIdRef\.current = null;\s*setSelectedConnectionId\(null\)/,
     "shape dismissal must synchronously yield the next Escape before React effect cleanup");
@@ -339,8 +359,12 @@ test("Escape is owned by the topmost floating layer before Focus mode", () => {
   const legacyPaletteFallback = sourceBetween(page, "// Escape dismisses palette chrome", "// Browser-style canvas history");
   assert.match(legacyPaletteFallback, /if \(focusMode\) return/,
     "unmounted palette state must yield the second Escape to Focus mode");
+  assert.match(legacyPaletteFallback, /layerStackIsEmpty\(\)/,
+    "legacy palette fallback owns Escape only when no layer is registered");
   assert.match(markingSurface, /if \(focusMode\) return/,
     "hidden Smart Shapes chrome must yield Escape to Focus mode");
+  assert.match(markingSurface, /isTopLayer\(layerRef\.current\)/,
+    "marking surfaces defer to the shared layer registry");
   assert.match(page, /<MarkingSurface[\s\S]{0,220}focusMode=\{focusMode\}/,
     "Scripture must tell the marking controller when its chrome is hidden");
   assert.match(underlay, /if \(focusMode \|\| previewConnectionId == null \|\| selectedConnectionId != null\) return undefined/,

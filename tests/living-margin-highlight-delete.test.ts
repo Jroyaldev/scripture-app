@@ -37,6 +37,12 @@ test("LivingMargin removes highlights by the persisted highlight id from the pin
     useEffect(): void {
       // Pinned-range AI-insight effect intentionally not run in this render-only test.
     },
+    useMemo<T>(factory: () => T): T {
+      return factory();
+    },
+    useCallback<T extends (...args: never[]) => unknown>(fn: T): T {
+      return fn;
+    },
   };
 
   const marginData = {

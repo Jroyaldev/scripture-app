@@ -89,8 +89,8 @@ test("kept context survives ordinary canvas travel and has an explicit release",
   const toggleEnd = page.indexOf("const handleKeepPeekReference", toggleStart);
   const toggle = page.slice(toggleStart, toggleEnd);
   assert.match(toggle, /if \(!keep\)[\s\S]{0,100}?onKeptContextChange\(null\)/);
-  assert.match(toggle, /book,[\s\S]{0,80}?chapter,[\s\S]{0,80}?verse: nearVerse/);
-  assert.match(margin, /\{ambientKept \? "Follow reading" : "Keep here"\}/);
+  assert.match(toggle, /book,[\s\S]{0,80}?chapter,[\s\S]{0,80}?verse: settledNearVerse/);
+  assert.match(margin, /\{ambientKept \? "Follow reading" : "Keep"\}/);
 });
 
 test("all four Living Margin lenses receive one resolved cross-chapter subject", () => {
@@ -100,7 +100,7 @@ test("all four Living Margin lenses receive one resolved cross-chapter subject",
   assert.match(page, /crossRefs=\{subjectCrossRefs\}/);
   assert.match(page, /semanticData=\{marginSubject\.kind === "kept" \? null : semanticData\}/);
   assert.match(page, /chapterVerseText=\{subjectChapterVerseText\}/);
-  assert.match(page, /authoredConnections=\{visibleMarginData\.connections\}/);
+  assert.match(page, /authoredConnections=\{subjectMarginData\.connections\}/);
   assert.match(margin, /<IntentOverview[\s\S]{0,420}?crossRefs=\{crossRefs\}[\s\S]{0,420}?semantic=\{semanticData\}/);
   assert.match(margin, /<LanguageWordsSection[\s\S]{0,220}?book=\{book\}[\s\S]{0,220}?chapter=\{chapter\}/);
 });

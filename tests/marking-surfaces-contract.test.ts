@@ -44,8 +44,10 @@ test("all four production marking surfaces share one explicit mutation controlle
   assert.match(page, /const scheduleVerseFocus = useCallback\(\(targetVerse: number, expectedNonce\?: number\)[\s\S]*selectionGenerationRef\.current !== expectedNonce/);
   assert.match(page, /const restoreMarkingSelection = \(snapshot: MarkingSelectionSnapshot\)[\s\S]*window\.cancelAnimationFrame\(readingFocusFrameRef\.current\);[\s\S]*setPhraseSelection/);
 
+  const vocabulary = read("src", "renderer", "utils", "relationshipVocabulary.ts");
+  assert.match(source, /RELATIONSHIPS/);
   for (const kind of ["link:parallel", "link:contrast", "link:echo", "mirror", "series", "hinge"] as const) {
-    assert.ok(source.includes(`id: "${kind}"`), `missing relationship kind ${kind}`);
+    assert.ok(vocabulary.includes(`id: "${kind}"`), `missing relationship kind ${kind}`);
   }
 });
 
@@ -185,7 +187,7 @@ test("held authored connections use the quiet typeset Living Margin card", () =>
   assert.match(card, /data-dirty=\{observationChanged\}[\s\S]*placeholder="Why do these words belong together\?"[\s\S]*rows=\{1\}[\s\S]*Unsaved · blur or ⌘↵ to save/,
     "the durable observation editor must rest as one quiet line and reveal save state only while editing");
   assert.match(card, /connection\.format_version !== 2[\s\S]*deliberate exact-anchor replacement before editing/);
-  assert.match(card, /document\.querySelector\('\[data-floating-layer="dialog"\], \[data-floating-layer="popover"\]'\)/);
+  assert.match(card, /isTopLayer\(layerRef\.current\)/);
   assert.match(
     card,
     /if \(deleteArmed\)[\s\S]*setDeleteArmed\(false\)[\s\S]*onDismiss\(true\)/,
@@ -599,7 +601,9 @@ test("production marking surfaces retain distinct grammar at the supported deskt
   assert.match(source, /const radialRef = useRef<HTMLDivElement>\(null\)/);
   assert.match(source, /const radialHelpCardRef = useRef<HTMLElement>\(null\)/);
   assert.match(source, /observer\.observe\(wheel\);[\s\S]*observer\.observe\(helpCard\)/);
-  assert.match(source, /aria-modal="true"/);
+  // The radial is a non-modal surface: its scrim covers only the stage and
+  // the rest of the desk stays interactive, so it must not claim modality.
+  assert.doesNotMatch(source, /aria-modal="true"/);
   assert.match(source, /event\.key === "Escape"[\s\S]*onDismissSelection\(\)/);
   assert.match(source, /event\.key !== "Tab"[\s\S]*querySelectorAll<HTMLButtonElement>\("button:not\(\[disabled\]\)"\)/);
   assert.match(source, /className=\{`marking-radial-keep[\s\S]*onMouseDown=\{\(event\) => event\.preventDefault\(\)\}/);
@@ -608,7 +612,7 @@ test("production marking surfaces retain distinct grammar at the supported deskt
     "an unconfirmed command must block new phrase capture until exact Retry");
   assert.doesNotMatch(source, /Use Retry or Cancel/,
     "recovery cannot offer cancellation after the commit boundary is ambiguous");
-  assert.match(source, /className="marking-armed-status"[\s\S]*>Put tool down<\/button>/);
+  assert.match(source, /className="marking-armed-status"[\s\S]*>Put down<\/button>/);
   assert.match(source, /id="marking-radial-help" className=\{`marking-radial-help/);
   assert.doesNotMatch(source, /className="marking-radial-help" aria-live=/);
   assert.match(source, /onMouseEnter=\{\(\) => setRadialHelp\(option\)\}/);
@@ -648,7 +652,7 @@ test("production marking surfaces retain distinct grammar at the supported deskt
   assert.doesNotMatch(rail, /ToolGlyph tool="read"/);
   assert.match(rail, /aria-controls="marking-rail-tray"/);
   assert.match(rail, /id="marking-rail-tray"[\s\S]*ref=\{railTrayRef\}[\s\S]*<q title=\{selection\.quote\}>/);
-  assert.match(rail, /marking-rail-intents[\s\S]*<strong>Highlight<\/strong>[\s\S]*<strong>Connect<\/strong>/);
+  assert.match(rail, /marking-rail-intents[\s\S]*<strong>Wash<\/strong>[\s\S]*<strong>Connect<\/strong>/);
   assert.match(rail, /id="marking-rail-help"[\s\S]*railHelp\?\.description \?\?/);
   assert.match(
     source,
@@ -656,7 +660,7 @@ test("production marking surfaces retain distinct grammar at the supported deskt
     "a fresh selection must restore Highlight as the Rail's single roving toolbar stop",
   );
   assert.match(rail, /\{railTrayOpen && \([\s\S]*marking-rail-tray[\s\S]*\{railStatusVisible && \([\s\S]*marking-rail-status/);
-  assert.match(rail, />Put tool down<\/button>/);
+  assert.match(rail, />Put down<\/button>/);
   assert.match(styles, /\.scripture-reading-stage:has\(\.marking-rail-host\[data-rail-layout="side"\]\) \.scripture-content \{[\s\S]*padding-left:/);
   assert.match(styles, /\.marking-rail-host\[data-rail-layout="bottom"\] \.marking-rail \{[\s\S]*bottom:\s*10px;/);
   assert.match(styles, /\.marking-rail-tray \{[\s\S]*animation:\s*marking-rail-in var\(--mark-dur-enter\)/);
@@ -794,10 +798,11 @@ test("marking Escape owns Focus-mode ordering while yielding to higher layers", 
   const escapeHandler = source.slice(handlerStart, listenerStart);
 
   assert.ok(handlerStart >= 0 && listenerStart > handlerStart, "the marking Escape handler must register in capture");
-  assert.match(escapeHandler, /const higherEscapeLayers = \[\.\.\.document\.querySelectorAll<HTMLElement>\([\s\S]*data-floating-layer="dialog"[\s\S]*data-floating-layer="popover"[\s\S]*command-palette-root[\s\S]*connection-card[\s\S]*higherEscapeLayers\.at\(-1\)[\s\S]*return/);
+  assert.match(escapeHandler, /if \(!layerKind\) return/);
+  assert.match(escapeHandler, /if \(!isTopLayer\(layerRef\.current\)\) return/);
   assert.ok(
-    escapeHandler.indexOf("higherEscapeLayers.at(-1)") < escapeHandler.indexOf("if (busy || activeOperation.current != null)"),
-    "higher modal/popover/card layers must retain the first Escape",
+    escapeHandler.indexOf("isTopLayer(layerRef.current)") < escapeHandler.indexOf("if (busy || activeOperation.current != null)"),
+    "higher registry layers must retain the first Escape",
   );
   assert.match(escapeHandler, /if \(persistentSurface && \(tray === "connect" \|\| tray === "wash"\)\)[\s\S]*event\.preventDefault\(\)[\s\S]*event\.stopImmediatePropagation\(\)[\s\S]*closeTray\(true\)/);
   assert.match(escapeHandler, /if \(activeSelectionNonce != null\)[\s\S]*event\.preventDefault\(\)[\s\S]*event\.stopImmediatePropagation\(\)[\s\S]*onDismissSelection\(\)/);

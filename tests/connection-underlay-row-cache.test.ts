@@ -174,7 +174,7 @@ test("aggregate ticks stay neutral, open the bounded chooser, and remain focus-r
   assert.match(scripture, /onChooseConnections=\{handleChooseConnections\}/);
   assert.match(scripture, /setConnectionWordChooser\(\{[\s\S]{0,120}anchorRect,[\s\S]{0,80}hits,[\s\S]{0,120}aggregateMemberIds:/);
   assert.match(scripture, /className="connection-word-choice"[\s\S]{0,100}data-connection-id=\{hit\.connection\.id\}/);
-  assert.match(styles, /\.connection-tick-aggregate > span \{[\s\S]{0,160}grid-area: 1 \/ 1;[\s\S]{0,100}width: 13px;/);
+  assert.match(styles, /\.connection-tick-aggregate \.connection-tick-dash \{[\s\S]{0,160}width: 13px;/);
 });
 
 interface MockRow {

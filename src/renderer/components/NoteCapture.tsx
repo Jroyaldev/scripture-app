@@ -1,5 +1,6 @@
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { isTopLayer, useLayer } from "../layerStack.js";
 import { safeCall } from "../utils/safeCall.js";
 import { Button, ControlInput, ControlTextarea } from "./Controls.js";
 import { Tooltip } from "./Tooltip.js";
@@ -81,6 +82,7 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
   const returnFocusRef = useRef<HTMLElement | null>(null);
   const savingRef = useRef(false);
   const isDirty = body !== initialBody || title !== draft.title;
+  const layerRef = useLayer("dialog");
 
   const requestClose = useCallback(() => {
     if (savingRef.current) return;
@@ -126,8 +128,9 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape" && !savingRef.current) {
+        if (!isTopLayer(layerRef.current)) return;
         e.preventDefault();
-        e.stopPropagation();
+        e.stopImmediatePropagation();
         requestClose();
         return;
       }

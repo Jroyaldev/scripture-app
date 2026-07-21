@@ -8,11 +8,13 @@ import type {
 } from "../../core/annotations/types.js";
 import { BOOK_CODES } from "../../core/reference/types.js";
 import type { BookNameData } from "../api.js";
+import { isTopLayer, useLayer } from "../layerStack.js";
 import {
   connectionRecordFingerprint,
   type ConnectionMutationUiOutcome,
 } from "../utils/connectionMutationReconciliation.js";
 import type { ConnectionPaintAnchor } from "../utils/connectionPaint.js";
+import { phraseCount, RELATIONSHIP_LABELS } from "../utils/relationshipVocabulary.js";
 
 interface Props {
   connection: ConnectionRecord;
@@ -50,14 +52,7 @@ interface MomentView {
   current: boolean;
 }
 
-const KIND_LABELS: Record<ConnectionRecord["kind"], string> = {
-  "link:parallel": "Parallelism",
-  "link:contrast": "Contrast",
-  "link:echo": "Echo",
-  mirror: "Mirror",
-  series: "Series",
-  hinge: "Hinge",
-};
+const KIND_LABELS: Record<ConnectionRecord["kind"], string> = RELATIONSHIP_LABELS;
 
 const CANONICAL_BOOK_RANK = new Map<string, number>(
   BOOK_CODES.map((bookCode, index) => [bookCode, index]),
@@ -295,6 +290,10 @@ export function ConnectionCard({
   const [queuedEditPending, setQueuedEditPending] = useState(false);
   const [conflictReview, setConflictReview] = useState<"update" | "delete" | null>(null);
   const requestInFlightRef = useRef(false);
+  // The card is the visible face of the selected relationship shape. It
+  // registers as that shape's Escape owner; an active marking session or an
+  // open chooser outranks it in the shared layer registry.
+  const layerRef = useLayer("connection-focus");
   const mutationStateRef = useRef<"idle" | "in-flight" | "recovery">(
     recovery ? "recovery" : "idle",
   );
@@ -315,6 +314,10 @@ export function ConnectionCard({
   const deleteCommandRef = useRef<PendingDeleteCommand | null>(
     recovery?.kind === "delete" ? recovery.command : null,
   );
+  // Delete pressed over a dirty card first saves one combined draft. Arm the
+  // destructive confirmation only after that exact authored version is
+  // visible, never against the stale base event the editor started from.
+  const armDeleteAfterFingerprintRef = useRef<string | null>(null);
   const queuedCardEditRef = useRef<QueuedCardEdit | null>(null);
   const connectionVersion = connectionMutationFingerprint(connection);
   const views = useMomentViews(connection.anchors, book, chapter, packageId);
@@ -365,6 +368,7 @@ export function ConnectionCard({
       || conflictReview != null
       || queuedCardEditRef.current != null
       || recovery != null;
+    const armDeleteForCurrentVersion = armDeleteAfterFingerprintRef.current === connectionVersion;
     if (!updateOwnsCurrentVersion && !deleteOwnsCurrentVersion && !commandMustRemainReachable) {
       const nextTitle = displayTitle(connection);
       const nextObservation = connection.format_version === 2 ? connection.observation : "";
@@ -376,7 +380,8 @@ export function ConnectionCard({
       if (!observationIsDirty) setDraftObservation(nextObservation);
       adoptedTitleRef.current = nextTitle;
       adoptedObservationRef.current = nextObservation;
-      setDeleteArmed(false);
+      setDeleteArmed(armDeleteForCurrentVersion);
+      if (armDeleteForCurrentVersion) armDeleteAfterFingerprintRef.current = null;
       setError(null);
       setAmbiguousMutation(null);
       onRecoveryChangeRef.current(null);
@@ -398,10 +403,9 @@ export function ConnectionCard({
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent): void => {
       if (event.key !== "Escape" || event.defaultPrevented) return;
-      // A note or exact-word overlap chooser is the topmost layer. Let that
-      // dialog/popover consume Escape without also dismissing the relationship
-      // behind it.
-      if (document.querySelector('[data-floating-layer="dialog"], [data-floating-layer="popover"]')) return;
+      // The shared layer registry decides ownership: an open chooser, dialog,
+      // or active marking session outranks the card and consumes Escape first.
+      if (!isTopLayer(layerRef.current)) return;
       if (
         requestInFlightRef.current
         || queuedCardEditRef.current != null
@@ -685,9 +689,48 @@ export function ConnectionCard({
       || queuedCardEditRef.current != null
       || updateCommandRef.current
     ) return;
-    if (hasDirtyDraft) {
-      setError("Finish or discard the current wording edit before deleting this connection.");
-      return;
+    if (hasDirtyDraft && connection.format_version === 2) {
+      // Save label and observation together. Two sequential saves would both
+      // spread the same stale connection closure, allowing the second write
+      // to silently revert the first.
+      const visibleLabel = draftLabel.trim();
+      if (!visibleLabel) setDraftLabel(originalTitle);
+      const label = visibleLabel
+        ? connection.label.startsWith(titlePrefix)
+          ? `${titlePrefix}${visibleLabel}`
+          : visibleLabel
+        : connection.label;
+      const next = { ...connection, label, observation: draftObservation };
+      const fingerprint = connectionMutationFingerprint(next);
+      if (fingerprint !== connectionVersion) {
+        const pendingCommand: PendingUpdateCommand = {
+          fingerprint,
+          commandId: crypto.randomUUID(),
+          expectedBaseEventId: next.activeEventId,
+          next: {
+            ...next,
+            anchors: next.anchors.map((anchor) => ({
+              ...anchor,
+              exact: {
+                ...anchor.exact,
+                occurrences: anchor.exact.occurrences.map((occurrence) => ({ ...occurrence })),
+              },
+            })),
+          },
+        };
+        updateCommandRef.current = pendingCommand;
+        armDeleteAfterFingerprintRef.current = fingerprint;
+        const complete = await runUpdate(pendingCommand);
+        if (!complete) {
+          armDeleteAfterFingerprintRef.current = null;
+        } else if (connectionMutationFingerprint(latestConnectionRef.current) === fingerprint) {
+          // The parent may have published the authoritative row before the
+          // update promise resumed; do not wait for another prop change.
+          armDeleteAfterFingerprintRef.current = null;
+          setDeleteArmed(true);
+        }
+        return;
+      }
     }
     if (!deleteArmed) {
       setDeleteArmed(true);
@@ -754,7 +797,7 @@ export function ConnectionCard({
 
   const labelChanged = draftLabel !== originalTitle;
   const observationChanged = draftObservation !== currentObservation;
-  const moments = `${connection.anchors.length} ${connection.anchors.length === 1 ? "moment" : "moments"}`;
+  const phrases = phraseCount(connection.anchors.length);
   return (
     <section
       id="connection-card-inspector"
@@ -775,7 +818,6 @@ export function ConnectionCard({
           autoComplete="off"
           spellCheck={false}
           disabled={mutationLocked || connection.format_version !== 2}
-          aria-readonly={connection.format_version !== 2}
           onChange={(event) => { if (!mutationLocked) setDraftLabel(event.currentTarget.value); }}
           onBlur={() => { if (labelChanged) void saveLabel(); }}
           onKeyDown={(event) => {
@@ -788,7 +830,7 @@ export function ConnectionCard({
       </header>
 
       <p className="connection-card-kind">
-        {kindLabel} · {moments}{otherHeldCount > 0 ? ` · ${otherHeldCount}\u00a0more\u00a0held` : ""}
+        {kindLabel} · {phrases}{otherHeldCount > 0 ? ` · ${otherHeldCount}\u00a0more\u00a0held` : ""}
       </p>
 
       {connection.format_version === 2 ? (
@@ -824,7 +866,7 @@ export function ConnectionCard({
         </p>
       )}
 
-      <ol className="connection-card-anchors" aria-label={`${displayTitle(connection)} source moments`}>
+      <ol className="connection-card-anchors" aria-label={`${displayTitle(connection)} source phrases`}>
         {connection.anchors.map((anchor, index) => {
           const reference = anchorReference(anchor, bookNames);
           const compactReference = compactAnchorReference(anchor, book);
@@ -870,68 +912,77 @@ export function ConnectionCard({
       )}
 
       <footer className="connection-card-actions">
-        {conflictReview === "update" && (
-          <>
-            <button
-              type="button"
-              className="connection-card-retry"
-              disabled={busy}
-              onClick={() => void applyConflictDraft()}
-            >Reapply preserved draft</button>
-            <button
-              type="button"
-              disabled={busy}
-              onClick={discardConflictDraft}
-            >Discard draft</button>
-          </>
+        {(conflictReview != null || ambiguousMutation) && (
+          <div className="connection-card-actions-recovery">
+            {conflictReview === "update" && (
+              <>
+                <button
+                  type="button"
+                  className="connection-card-retry"
+                  disabled={busy}
+                  onClick={() => void applyConflictDraft()}
+                >Reapply preserved draft</button>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={discardConflictDraft}
+                >Discard draft</button>
+              </>
+            )}
+            {conflictReview === "delete" && (
+              <button
+                type="button"
+                className="connection-card-retry"
+                disabled={busy}
+                onClick={discardConflictDraft}
+              >Continue with current version</button>
+            )}
+            {ambiguousMutation && (
+              <button
+                type="button"
+                className="connection-card-retry"
+                disabled={busy}
+                onClick={() => void retryPendingMutation()}
+              >{busy
+                  ? "Retrying…"
+                  : ambiguousMutation.kind === "delete" ? "Retry deletion" : "Retry exact change"}</button>
+            )}
+          </div>
         )}
-        {conflictReview === "delete" && (
+        <div className="connection-card-actions-main">
           <button
             type="button"
-            className="connection-card-retry"
-            disabled={busy}
-            onClick={discardConflictDraft}
-          >Continue with current version</button>
-        )}
-        {ambiguousMutation && (
-          <button
-            type="button"
-            className="connection-card-retry"
-            disabled={busy}
-            onClick={() => void retryPendingMutation()}
-          >{busy
-              ? "Retrying…"
-              : ambiguousMutation.kind === "delete" ? "Retry deletion" : "Retry exact change"}</button>
-        )}
-        <button
-          type="button"
-          disabled={mutationLocked}
-          onClick={() => { if (!mutationLocked) onNote(connection); }}
-        >Add note</button>
-        {connection.format_version === 2 && !isBinaryConnectionKind(connection.kind) && (
+            className="connection-card-primary"
+            disabled={mutationLocked}
+            onClick={() => { if (!mutationLocked) onClose(true); }}
+          >Release</button>
           <button
             type="button"
             disabled={mutationLocked}
-            onClick={() => { if (!mutationLocked) onExtend(connection); }}
-          >Add words</button>
-        )}
-        <button
-          type="button"
-          disabled={mutationLocked}
-          onClick={() => { if (!mutationLocked) onClose(true); }}
-        >Release</button>
-        {deleteArmed && (
+            onClick={() => { if (!mutationLocked) onNote(connection); }}
+          >Add note</button>
+          {connection.format_version === 2 && !isBinaryConnectionKind(connection.kind) && (
+            <button
+              type="button"
+              disabled={mutationLocked}
+              onClick={() => { if (!mutationLocked) onExtend(connection); }}
+            >Add phrase</button>
+          )}
+          <span className="connection-card-actions-gap" aria-hidden="true" />
+          {deleteArmed && (
+            <button
+              type="button"
+              disabled={mutationLocked}
+              onClick={() => { if (!mutationLocked) setDeleteArmed(false); }}
+            >Keep</button>
+          )}
           <button
             type="button"
+            className={`connection-card-delete${deleteArmed ? " is-armed" : ""}`}
             disabled={mutationLocked}
-            onClick={() => { if (!mutationLocked) setDeleteArmed(false); }}
-          >Keep</button>
-        )}
-        <button
-          type="button"
-          disabled={mutationLocked}
-          onClick={() => void confirmDelete()}
-        >{busy && deleteArmed ? "Deleting…" : deleteArmed ? "Confirm delete" : "Delete"}</button>
+            onClick={() => void confirmDelete()}
+          >{busy && deleteArmed ? "Deleting…" : deleteArmed ? "Confirm delete" : "Delete"}</button>
+        </div>
       </footer>
       <p className="connection-card-timestamp">
         <time dateTime={connection.updatedAt}>Updated {formatConnectionTimestamp(connection.updatedAt)}</time>

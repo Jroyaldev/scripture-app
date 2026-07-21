@@ -34,7 +34,6 @@ test("Structure keeps the reading material through its body portal", () => {
 
 test("capture, highlight, and cross-reference overlays state trust and source clearly", () => {
   const note = read("src/renderer/components/NoteCapture.tsx");
-  const highlight = read("src/renderer/components/HighlightToolbar.tsx");
   const margin = read("src/renderer/components/LivingMargin.tsx");
   const marking = read("src/renderer/components/MarkingSurface.tsx");
 
@@ -43,9 +42,6 @@ test("capture, highlight, and cross-reference overlays state trust and source cl
   assert.match(note, /draft\.bodyPrefill \? "Excerpt and source included" : "Quote included"/);
   assert.match(note, /window\.api\.library\.createNote/);
 
-  assert.match(highlight, /role="group" aria-label="Highlight color"/);
-  assert.match(highlight, /Add note/);
-  assert.match(highlight, /aria-pressed=\{activeColor === color\}/);
   assert.match(marking, /return createPortal\(/);
   assert.match(marking, /data-floating-layer="toolbar"/);
   assert.match(marking, /theme-\$\{theme\}/);
@@ -64,7 +60,9 @@ test("study surfaces share restrained material styling without malformed blur ex
   assert.match(css, /\.theme-dark-glass \.lang-sense-outline/);
   assert.match(css, /\.theme-dark-glass \.margin-frame-header/);
   assert.match(css, /\.crossref-row:hover,[\s\S]*background: var\(--study-hover-surface\)/);
-  assert.match(css, /\.hl-toolbar \{[\s\S]*border-radius: var\(--radius-md\)/);
   assert.match(css, /\.note-capture-panel \{[\s\S]*backdrop-filter: blur\(var\(--material-blur\)\)/);
   assert.doesNotMatch(css, /calc\(var\(--material-blur\) \*/);
+  // Retired HighlightToolbar vocabulary must not creep back into the stylesheet.
+  assert.doesNotMatch(css, /\.hl-toolbar\b/);
+  assert.doesNotMatch(css, /\.highlight-palette\b/);
 });

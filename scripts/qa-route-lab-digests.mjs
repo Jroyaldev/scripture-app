@@ -286,7 +286,10 @@ try {
   await driver.waitFor(`location.href === ${JSON.stringify(sweepUrl)} && document.readyState === "complete"`, 60_000);
   await driver.waitFor(`Boolean(document.querySelector("#c04-sweep-result"))`, 60_000);
   await assertRouteFonts(driver);
-  const sweep = await waitForResult(driver, "#c04-sweep-result");
+  // The sweep renders 5,719 states twice; on a loaded or thermally throttled
+  // machine 12 minutes is not enough. The gate's purpose is hash equality,
+  // not speed, so the wait budget is generous.
+  const sweep = await waitForResult(driver, "#c04-sweep-result", 25 * 60_000);
   assert.equal(sweep.status, "pass", sweep.text);
   assert.equal(sweep.sha256, EXPECTED.c04Sweep, "C0.4/C0.5 rendered sweep digest changed.");
   assert.equal(sweep.expectedSha256, EXPECTED.c04Sweep, "Rendered-sweep browser baseline drifted from the immutable QA command.");

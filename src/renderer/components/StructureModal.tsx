@@ -7,6 +7,7 @@ import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { LanguageSyntaxHit } from "../api.js";
+import { isTopLayer, useLayer } from "../layerStack.js";
 import { SyntaxArtView } from "./SyntaxArt.js";
 
 type Props = {
@@ -41,6 +42,7 @@ export function StructureModal({
   });
   const panelRef = useRef<HTMLDivElement | null>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
+  const layerRef = useLayer(rendered ? "dialog" : null);
 
   useEffect(() => {
     if (open) {
@@ -76,7 +78,10 @@ export function StructureModal({
     panelRef.current?.querySelector<HTMLElement>("button")?.focus();
 
     function onKey(e: KeyboardEvent): void {
+      if (!isTopLayer(layerRef.current)) return;
       if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopImmediatePropagation();
         onClose();
         return;
       }

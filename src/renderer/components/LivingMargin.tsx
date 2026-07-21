@@ -1,5 +1,5 @@
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type {
   AnchorRecord,
   BookNameData,
@@ -20,9 +20,13 @@ import {
   type EntityOpeningOrigin,
 } from "../../core/integrations/shepherdly-resource-node.js";
 import { safeCall } from "../utils/safeCall.js";
+import { isTopLayer, layerStackIsEmpty, useLayer } from "../layerStack.js";
+import { phraseCount } from "../utils/relationshipVocabulary.js";
+import { formatCanonicalRef } from "../utils/formatRef.js";
 import { LanguageWordsSection } from "./LanguageWordsSection.js";
+import { SourcesDisclosure, formatSourceCitation, type CitationSource } from "./SourcesDisclosure.js";
 import { useToast } from "./Toast.js";
-import { parsePeekRef, useVersePeek, type PeekTarget } from "./VersePeek.js";
+import { parsePeekRef, useVersePeek, type PeekTarget, type VersePeekTriggerProps } from "./VersePeek.js";
 
 export interface PinnedRange {
   start: number;
@@ -37,53 +41,13 @@ export interface LivingMarginCaptureRequest {
   originLabel: "Related verse" | "Passage insight" | "Entity research" | "Word study";
 }
 
-export interface MarginCitationSource {
-  name: string;
-  license: string;
-  detail?: string;
-  citation?: string;
-}
+export type MarginCitationSource = CitationSource;
 
 export function formatMarginSourceCitation(source: MarginCitationSource): string {
-  return source.citation?.trim()
-    || [source.name, source.license, source.detail].filter(Boolean).join(" · ");
+  return formatSourceCitation(source);
 }
 
-function MarginSourcesDisclosure({ sources }: { sources: MarginCitationSource[] }): React.JSX.Element | null {
-  const { showToast } = useToast();
-  if (sources.length === 0) return null;
-  const copyCitation = async (source: MarginCitationSource): Promise<void> => {
-    try {
-      await navigator.clipboard.writeText(formatMarginSourceCitation(source));
-      showToast("Citation copied.", undefined, undefined, { tone: "success" });
-    } catch {
-      showToast("The citation could not be copied.", undefined, undefined, { tone: "error" });
-    }
-  };
-  return (
-    <details className="margin-sources">
-      <summary>Sources</summary>
-      <div className="margin-source-list">
-        {sources.map((source) => (
-          <div className="margin-source-row" key={`${source.name}-${source.license}-${source.detail ?? ""}`}>
-            <span className="margin-source-copy">
-              <span>{source.name} <span aria-hidden="true">·</span> {source.license}</span>
-              {source.detail && <span className="margin-source-detail">{source.detail}</span>}
-            </span>
-            <button
-              type="button"
-              className="margin-source-cite"
-              aria-label={`Copy citation for ${source.name}`}
-              onClick={() => void copyCitation(source)}
-            >
-              Cite
-            </button>
-          </div>
-        ))}
-      </div>
-    </details>
-  );
-}
+const MarginSourcesDisclosure = SourcesDisclosure;
 
 type MarginTab = "overview" | "connections" | "passage" | "notes";
 
@@ -389,9 +353,7 @@ function EntityGlyph({ kind }: { kind: "person" | "place" | "other" }): React.JS
 }
 
 function formatResearchRef(value: string, bookNames: BookNameData): string {
-  const match = /^([1-3A-Z]{3})\.(\d+)\.(\d+)$/.exec(value);
-  if (!match) return value;
-  return `${bookNames[match[1]!]?.[0] ?? match[1]} ${Number(match[2])}:${Number(match[3])}`;
+  return formatCanonicalRef(value, bookNames);
 }
 
 export function formatEntityResearchOrigin(
@@ -884,10 +846,9 @@ function EntityResearchView({
   chapterVerseText,
   bookNames,
   onNavigate,
-  onKeepReference,
+  peekTriggerProps,
   onOpenEntity,
   onCapture,
-  packageId,
 }: {
   data: EntityResearchData;
   origin: NonNullable<Props["entityIntent"]>["origin"];
@@ -896,14 +857,12 @@ function EntityResearchView({
   chapterVerseText: Map<number, string>;
   bookNames: BookNameData;
   onNavigate?: (ref: string) => void;
-  onKeepReference?: (reference: PeekTarget) => void;
+  peekTriggerProps: (target: PeekTarget) => VersePeekTriggerProps;
   onOpenEntity?: (entityId: string) => void;
   onCapture?: (capture: LivingMarginCaptureRequest) => void;
-  packageId: string;
 }): React.JSX.Element {
   const [showAllRefs, setShowAllRefs] = useState(false);
   const [mediaLinkError, setMediaLinkError] = useState<string | null>(null);
-  const { triggerProps: peekTriggerProps, peekElement } = useVersePeek(packageId, onKeepReference);
   const orderedRefs = [...data.entity.refs].sort((left, right) => {
     const leftCurrent = left.startsWith(`${currentBook}.`) ? 0 : 1;
     const rightCurrent = right.startsWith(`${currentBook}.`) ? 0 : 1;
@@ -1178,7 +1137,6 @@ function EntityResearchView({
       </details>
 
       <MarginSourcesDisclosure sources={entityResearchSources(data)} />
-      {peekElement}
     </article>
   );
 }
@@ -1201,12 +1159,7 @@ function CrossReferenceRow({
   const target = parsePeekRef(item.targetBref, item.targetDisplay);
   const openReference = (): void => onNavigate?.(item.targetBref);
   return (
-    <div
-      className="crossref-row"
-      onClick={(event) => {
-        if (event.target === event.currentTarget) openReference();
-      }}
-    >
+    <div className="crossref-row">
       <button
         type="button"
         className="crossref-row-open"
@@ -1257,19 +1210,16 @@ function CrossReferenceRow({
 function CrossRefsBlock({
   result,
   onNavigate,
-  onKeepReference,
+  peekTriggerProps,
   onCapture,
   frozenOrigin,
-  packageId,
 }: {
   result: CrossReferenceResultData;
   onNavigate?: (ref: string) => void;
-  onKeepReference?: (reference: PeekTarget) => void;
+  peekTriggerProps: (target: PeekTarget) => VersePeekTriggerProps;
   onCapture?: (capture: LivingMarginCaptureRequest) => void;
   frozenOrigin: string;
-  packageId: string;
 }): React.JSX.Element {
-  const { triggerProps, peekElement } = useVersePeek(packageId, onKeepReference);
   const sourceAttribution = `${result.attribution.name} (${result.attribution.license})`;
   return (
     <section className="margin-section crossref-section" aria-label="Related verses">
@@ -1297,7 +1247,7 @@ function CrossRefsBlock({
             onCapture={onCapture}
             sourceAttribution={sourceAttribution}
             frozenOrigin={frozenOrigin}
-            peekProps={triggerProps}
+            peekProps={peekTriggerProps}
           />
         ))}
       </div>
@@ -1306,7 +1256,6 @@ function CrossRefsBlock({
         license: result.attribution.license,
         citation: `${result.attribution.attribution} · ${result.attribution.license} · ${result.attribution.sourceUrl}`,
       }]} />
-      {peekElement}
     </section>
   );
 }
@@ -1314,19 +1263,16 @@ function CrossRefsBlock({
 function NoteCrossRefsBlock({
   items,
   onNavigate,
-  onKeepReference,
+  peekTriggerProps,
   onCapture,
   frozenOrigin,
-  packageId,
 }: {
   items: SuggestedCrossRefData[];
   onNavigate?: (ref: string) => void;
-  onKeepReference?: (reference: PeekTarget) => void;
+  peekTriggerProps: (target: PeekTarget) => VersePeekTriggerProps;
   onCapture?: (capture: LivingMarginCaptureRequest) => void;
   frozenOrigin: string;
-  packageId: string;
 }): React.JSX.Element {
-  const { triggerProps, peekElement } = useVersePeek(packageId, onKeepReference);
   return (
     <section className="margin-section note-crossref-section" aria-label="Cross references from notes">
       <div className="crossref-heading">
@@ -1346,7 +1292,7 @@ function NoteCrossRefsBlock({
               className="crossref-row-open"
               onClick={() => onNavigate?.(item.targetBref)}
               aria-label={`Open ${item.targetDisplay} from notes`}
-              {...(target ? triggerProps(target) : {})}
+              {...(target ? peekTriggerProps(target) : {})}
             >
               <span className="crossref-row-copy">
                 <span className="crossref-reference">{item.targetDisplay}</span>
@@ -1377,7 +1323,6 @@ function NoteCrossRefsBlock({
           );
         })}
       </div>
-      {peekElement}
     </section>
   );
 }
@@ -1389,10 +1334,9 @@ function IntentOverview({
   entityResult,
   loading,
   onNavigate,
-  onKeepReference,
+  peekTriggerProps,
   onOpenTab,
   onOpenEntity,
-  packageId,
 }: {
   crossRefs: CrossReferenceResultData | null;
   directNote: NoteRecord | null;
@@ -1400,17 +1344,16 @@ function IntentOverview({
   entityResult: LanguageEntityRangeResult;
   loading: boolean;
   onNavigate?: (ref: string) => void;
-  onKeepReference?: (reference: PeekTarget) => void;
+  peekTriggerProps: (target: PeekTarget) => VersePeekTriggerProps;
   onOpenTab: (tab: MarginTab) => void;
   onOpenEntity?: (entityId: string) => void;
-  packageId: string;
 }): React.JSX.Element {
-  const { triggerProps, peekElement } = useVersePeek(packageId, onKeepReference);
   const scripture = crossRefs?.items.slice(0, 2) ?? [];
   const relatedNote = semantic?.semanticNotes[0] ?? null;
   const thread = semantic?.threads[0] ?? null;
   const claim = semantic?.claims.find((item) => item.status === "active") ?? null;
-  const entities = entityResult.entities.slice(0, 4);
+  const [showAllEntities, setShowAllEntities] = useState(false);
+  const entities = showAllEntities ? entityResult.entities : entityResult.entities.slice(0, 4);
   const hasLibraryLead = directNote != null || relatedNote != null || thread != null || claim != null;
   const hasContent = scripture.length > 0 || hasLibraryLead || entities.length > 0;
   const sources: MarginCitationSource[] = [
@@ -1443,7 +1386,7 @@ function IntentOverview({
                 className="intent-ref-row"
                 onClick={() => onNavigate?.(item.targetBref)}
                 aria-label={`Open ${item.targetDisplay}`}
-                {...(target ? triggerProps(target) : {})}
+                {...(target ? peekTriggerProps(target) : {})}
               >
                 <span className="intent-ref-copy">
                   <span className="intent-ref-title">{item.targetDisplay}</span>
@@ -1521,10 +1464,17 @@ function IntentOverview({
               </button>
             ))}
           </div>
-          {entityResult.entities.length > entities.length && (
-            <p className="intent-more-count">
-              {entityResult.entities.length - entities.length} more appear in this scope as you continue reading.
-            </p>
+          {entityResult.entities.length > 4 && (
+            <button
+              type="button"
+              className="intent-more-toggle"
+              aria-expanded={showAllEntities}
+              onClick={() => setShowAllEntities((current) => !current)}
+            >
+              {showAllEntities
+                ? "Fewer people & places"
+                : `All ${entityResult.entities.length} people & places in this scope`}
+            </button>
           )}
         </section>
       )}
@@ -1532,7 +1482,7 @@ function IntentOverview({
       {loading && (
         <div className="intent-loading" role="status">
           <span className="ai-insight-spinner" aria-hidden="true" />
-          <span>Checking this passage against your library…</span>
+          <span>Reading your library…</span>
         </div>
       )}
 
@@ -1543,7 +1493,6 @@ function IntentOverview({
         />
       )}
       <MarginSourcesDisclosure sources={sources} />
-      {peekElement}
     </div>
   );
 }
@@ -1655,6 +1604,17 @@ export function LivingMargin({
   const isPinned = !!pinnedRange;
   const isNear = !isPinned && nearVerse != null;
   const connectionInspectorOpen = connectionInspector != null;
+  // The connections strip belongs to the margin's subject: in kept mode the
+  // panel studies a different passage than the canvas, and only relationships
+  // anchored to that subject belong under its header.
+  const subjectConnections = authoredConnections.filter((connection) =>
+    connection.anchors.some((anchor) => anchor.book === book && anchor.chapter === chapter));
+  // One shared verse-peek controller for the whole panel: a single preview
+  // can be open at a time, lens switches dismiss it, and its chapter text is
+  // cached for the session.
+  const versePeek = useVersePeek(packageId, onKeepReference);
+  // Compact (≤760px) layouts can give the Study pane a second, roomier size.
+  const [compactExpanded, setCompactExpanded] = useState(false);
 
   useEffect(() => {
     if (!pinnedRange) return;
@@ -1713,12 +1673,17 @@ export function LivingMargin({
     };
   }, [pinKey, pinnedRange, chapterVerseText, chapterTextLoading, book, chapter]);
 
-  const pinnedAiResult = pinKey ? aiCacheRef.current.get(pinKey) : undefined;
+  // The AI result cache lives in a ref (it is written from async callbacks);
+  // aiCacheVersion is its published revision, so derived values recompute
+  // exactly when the cache changes — no bare void-reference hack.
+  const pinnedAiResult = useMemo(
+    () => (pinKey ? aiCacheRef.current.get(pinKey) : undefined),
+    [pinKey, aiCacheVersion],
+  );
   // Loading whenever this pinned range has no cached result yet — covers both
   // the brief window before the fetch-triggering effect runs and the time
   // the actual IPC call is in flight.
-  const pinnedAiLoading = pinKey != null && !aiCacheRef.current.has(pinKey);
-  void aiCacheVersion; // referenced only to force re-render on cache updates
+  const pinnedAiLoading = pinKey != null && pinnedAiResult === undefined && !aiCacheRef.current.has(pinKey);
 
   const pinnedNote = pinnedRange ? findNoteForRange(marginData, chapter, pinnedRange.start, pinnedRange.end) : null;
   const pinnedHighlights = pinnedRange
@@ -1786,7 +1751,7 @@ export function LivingMargin({
     return () => { cancelled = true; };
   }, [trustedResourceBref]);
   const marginMode = connectionInspectorOpen
-    ? "Connection"
+    ? "connection"
     : isPinned
       ? "selection"
       : isNear && ambientKept
@@ -1799,6 +1764,16 @@ export function LivingMargin({
       : isNear && ambientKept
         ? `Kept on ${contextReference}`
       : `Following your reading · ${contextReference}`;
+  // Announce scope-kind transitions only. The visible scope line carries the
+  // verse reference, which changes on every reading eye-line move; putting it
+  // in a live region reads the entire chapter aloud while scrolling.
+  const scopeAnnouncement = connectionInspectorOpen
+    ? "Connection open in Study"
+    : isPinned
+      ? "Selection kept in Study"
+      : isNear && ambientKept
+        ? "Passage kept in Study"
+        : "Following your reading";
   const contextQuote = isPinned ? pinnedQuote : isNear ? nearQuote : "";
   const contextKey = isPinned
     ? `selected:${book}:${chapter}:${pinnedRange.start}-${pinnedRange.end}`
@@ -1894,6 +1869,8 @@ export function LivingMargin({
   const researchBackDestination = entityTrail.at(currentResearchIsRecorded ? -2 : -1)?.displayName
     ?? (entityIntent ? formatEntityResearchOrigin(entityIntent.origin, bookNames) : "Study");
 
+  const researchLayerRef = useLayer(entityIntent && onCloseEntity ? "research" : null);
+
   useEffect(() => {
     if (!entityIntent || entityResearch?.entity.id !== entityIntent.id) return;
     const frame = window.requestAnimationFrame(() => researchTitleRef.current?.focus());
@@ -1904,16 +1881,21 @@ export function LivingMargin({
     if (!entityIntent || !onCloseEntity) return;
     const closeResearch = (event: KeyboardEvent): void => {
       if (event.key !== "Escape" || event.defaultPrevented) return;
-      if (document.querySelector('[data-floating-layer="dialog"], [data-floating-layer="popover"], .command-palette-panel')) return;
+      // Research is the lowest-ranking layer; every dialog, chooser, card,
+      // and marking surface outranks it in the shared registry.
+      if (!isTopLayer(researchLayerRef.current)) return;
       event.preventDefault();
       openPreviousEntity();
     };
     window.addEventListener("keydown", closeResearch, true);
     return () => window.removeEventListener("keydown", closeResearch, true);
-  }, [entityIntent, entityTrail, entityResearch, onCloseEntity, onOpenEntity]);
+  }, [entityIntent, entityTrail, entityResearch, onCloseEntity, onOpenEntity, researchLayerRef]);
 
   useEffect(() => {
-    if (activeTab !== "notes") return;
+    // Complete-note bodies are only rendered in the pinned deep dive; the
+    // ambient and chapter Notes tabs never consume deepNotesById, so do not
+    // pay a full-library read for them.
+    if (activeTab !== "notes" || !isPinned) return;
     let cancelled = false;
     setDeepNotesLoading(true);
     void safeCall(() => window.api.library.readAllNotes()).then((result) => {
@@ -1928,12 +1910,22 @@ export function LivingMargin({
     return () => {
       cancelled = true;
     };
-  }, [activeTab, marginData.notes.length]);
+  }, [activeTab, isPinned, marginData.notes.length]);
 
+  // Reset scroll only when the panel's subject actually changes: a different
+  // book/chapter, a deliberate pin, or a scope-kind transition. Verse-to-verse
+  // drift inside one chapter keeps the reader's place in long lists.
+  const scopeResetKey = connectionInspectorOpen
+    ? `connection:${book}:${chapter}`
+    : isPinned
+      ? `pinned:${book}:${chapter}:${pinnedRange.start}-${pinnedRange.end}`
+      : isNear
+        ? `near:${book}:${chapter}`
+        : `chapter:${book}:${chapter}`;
   useEffect(() => {
     tabScrollPositionsRef.current = { overview: 0, passage: 0, connections: 0, notes: 0 };
     marginRef.current?.scrollTo({ top: 0 });
-  }, [contextKey]);
+  }, [scopeResetKey]);
 
   const connectionInspectorWasOpenRef = useRef(false);
   const connectionInspectorReturnScrollRef = useRef(0);
@@ -1963,6 +1955,7 @@ export function LivingMargin({
 
   const activateTab = (tab: MarginTab, focus = false): void => {
     if (tab === activeTab) return;
+    versePeek.close();
     if (marginRef.current) tabScrollPositionsRef.current[activeTab] = marginRef.current.scrollTop;
     setActiveTab(tab);
     window.requestAnimationFrame(() => {
@@ -2034,9 +2027,17 @@ export function LivingMargin({
   useEffect(() => {
     const returnToActiveTab = (event: KeyboardEvent): void => {
       if (event.key !== "Escape" || event.defaultPrevented) return;
+      // While the connection inspector is open, Escape belongs to the
+      // shape/card dismissal ladder — including when its focus entry point
+      // (the frame title) is the event target.
+      if (connectionInspectorOpen) return;
       const target = event.target instanceof Element ? event.target : null;
-      if (!target?.closest(".margin-tab-panel")) return;
-      if (document.querySelector('[data-floating-layer="dialog"], [data-floating-layer="popover"]')) return;
+      // Panels and the margin chrome (frame header, Keep/Clear actions) both
+      // return focus to the active tab; canvas and topbar keep their own
+      // Escape meaning.
+      if (!target?.closest(".margin-tab-panel, .margin-frame-header")) return;
+      // VersePeek and every other registered layer get the first Escape.
+      if (!layerStackIsEmpty()) return;
       event.preventDefault();
       event.stopPropagation();
       const index = MARGIN_TABS.findIndex((tab) => tab.id === activeTab);
@@ -2044,7 +2045,7 @@ export function LivingMargin({
     };
     window.addEventListener("keydown", returnToActiveTab, true);
     return () => window.removeEventListener("keydown", returnToActiveTab, true);
-  }, [activeTab]);
+  }, [activeTab, connectionInspectorOpen]);
 
   const tabCount = (tab: MarginTab): number | null => {
     if (tab === "connections") return connectionCount;
@@ -2151,13 +2152,13 @@ export function LivingMargin({
               chapterVerseText={displayChapterVerseText ?? chapterVerseText ?? new Map<number, string>()}
               bookNames={bookNames}
               onNavigate={onNavigateToRef}
-              onKeepReference={onKeepReference}
+              peekTriggerProps={versePeek.triggerProps}
               onOpenEntity={openRelatedEntity}
               onCapture={onCapture}
-              packageId={packageId}
             />
           </div>
         )}
+        {versePeek.peekElement}
       </aside>
     );
   }
@@ -2167,10 +2168,12 @@ export function LivingMargin({
       ref={marginRef}
       className="living-margin"
       aria-labelledby="living-margin-title"
-      data-margin-mode={marginMode.toLowerCase().replace(" ", "-")}
+      data-margin-mode={marginMode}
+      data-compact-expanded={compactExpanded || undefined}
       onPointerEnter={() => onMarginActiveChange?.(true)}
       onPointerLeave={() => onMarginActiveChange?.(false)}
     >
+      <span className="sr-only" aria-live="polite">{scopeAnnouncement}</span>
       <header className="margin-frame-header">
         <h2
           ref={frameTitleRef}
@@ -2182,7 +2185,7 @@ export function LivingMargin({
           Study
         </h2>
         <div className="margin-frame-state">
-          <span id="living-margin-mode" className="margin-frame-mode" aria-live="polite">{scopeCopy}</span>
+          <span id="living-margin-mode" className="margin-frame-mode">{scopeCopy}</span>
           {!connectionInspectorOpen && isNear && onAmbientKeptChange && (
             <>
               <span className="margin-frame-separator" aria-hidden="true">·</span>
@@ -2192,7 +2195,7 @@ export function LivingMargin({
                 onClick={() => onAmbientKeptChange(!ambientKept)}
                 title={ambientKept ? "Release this passage and follow your reading" : "Keep this passage while you work"}
               >
-                {ambientKept ? "Follow reading" : "Keep here"}
+                {ambientKept ? "Follow reading" : "Keep"}
               </button>
             </>
           )}
@@ -2201,6 +2204,16 @@ export function LivingMargin({
               Clear
             </button>
           )}
+          <button
+            type="button"
+            className="margin-frame-action margin-compact-size-toggle"
+            aria-expanded={compactExpanded}
+            aria-label={compactExpanded ? "Shrink the Study panel" : "Give the Study panel more room"}
+            title={compactExpanded ? "Shrink Study" : "Enlarge Study"}
+            onClick={() => setCompactExpanded((current) => !current)}
+          >
+            {compactExpanded ? "Less room" : "More room"}
+          </button>
         </div>
       </header>
 
@@ -2210,22 +2223,22 @@ export function LivingMargin({
         </div>
       )}
 
-      {!connectionInspectorOpen && authoredConnections.length > 0 && (
+      {!connectionInspectorOpen && subjectConnections.length > 0 && (
         <nav className="margin-authored-connections" aria-label="Your authored connections in this passage">
           <div className="margin-authored-connections-head">
             <span>Your connections</span>
-            <small>{authoredConnections.length}</small>
+            <small>{subjectConnections.length}</small>
           </div>
           <div className="margin-authored-connections-list">
-            {authoredConnections.map((connection) => (
+            {subjectConnections.map((connection) => (
               <button
                 key={connection.id}
                 type="button"
-                aria-pressed={selectedAuthoredConnectionId === connection.id}
+                aria-current={selectedAuthoredConnectionId === connection.id || undefined}
                 onClick={() => onSelectAuthoredConnection?.(connection, true)}
               >
                 <span>{connection.label}</span>
-                <small>{connection.anchors.length} {connection.anchors.length === 1 ? "moment" : "moments"}</small>
+                <small>{phraseCount(connection.anchors.length)}</small>
               </button>
             ))}
           </div>
@@ -2242,6 +2255,7 @@ export function LivingMargin({
         {MARGIN_TABS.map((tab, index) => {
           const selected = activeTab === tab.id;
           const count = tabCount(tab.id);
+          const hasCount = count != null && count > 0;
           return (
             <button
               key={tab.id}
@@ -2250,7 +2264,7 @@ export function LivingMargin({
               id={`margin-${tab.id}-tab`}
               className={`margin-tab${selected ? " is-active" : ""}`}
               role="tab"
-              aria-label={tab.accessibleLabel}
+              aria-label={hasCount ? `${tab.accessibleLabel}, ${count}` : tab.accessibleLabel}
               aria-selected={selected}
               aria-controls={`margin-${tab.id}-panel`}
               tabIndex={selected ? 0 : -1}
@@ -2258,8 +2272,8 @@ export function LivingMargin({
               onKeyDown={(event) => handleTabKeyDown(event, index)}
             >
               <span>{tab.label}</span>
-              {count != null && count > 0 && (
-                <span className="margin-tab-count" aria-label={`${count} items`}>{count}</span>
+              {hasCount && (
+                <span className="margin-tab-count" aria-hidden="true">{count}</span>
               )}
             </button>
           );
@@ -2283,10 +2297,9 @@ export function LivingMargin({
               entityResult={entityResult}
               loading={entityLoading || Boolean(semanticLoading)}
               onNavigate={onNavigateToRef}
-              onKeepReference={onKeepReference}
+              peekTriggerProps={versePeek.triggerProps}
               onOpenTab={activateTab}
               onOpenEntity={onOpenEntity}
-              packageId={packageId}
             />
             <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} />
           </section>
@@ -2336,10 +2349,9 @@ export function LivingMargin({
               <CrossRefsBlock
                 result={crossRefs}
                 onNavigate={onNavigateToRef}
-                onKeepReference={onKeepReference}
+                peekTriggerProps={versePeek.triggerProps}
                 onCapture={onCapture}
                 frozenOrigin={contextReference}
-                packageId={packageId}
               />
             ) : (
               <MarginEmptyView
@@ -2414,10 +2426,9 @@ export function LivingMargin({
               entityResult={entityResult}
               loading={entityLoading || Boolean(semanticLoading)}
               onNavigate={onNavigateToRef}
-              onKeepReference={onKeepReference}
+              peekTriggerProps={versePeek.triggerProps}
               onOpenTab={activateTab}
               onOpenEntity={onOpenEntity}
-              packageId={packageId}
             />
             <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} />
           </section>
@@ -2433,9 +2444,11 @@ export function LivingMargin({
               <LanguageWordsSection
                 book={book}
                 bookDisplayName={displayBook}
+                bookNames={bookNames}
                 chapter={chapter}
                 verse={nearVerse}
                 readingPackageId={packageId}
+                freezeOnEngage
                 onStudyEngage={onStudyVerse}
                 onCapture={onCapture}
               />
@@ -2453,10 +2466,9 @@ export function LivingMargin({
               <CrossRefsBlock
                 result={crossRefs}
                 onNavigate={onNavigateToRef}
-                onKeepReference={onKeepReference}
+                peekTriggerProps={versePeek.triggerProps}
                 onCapture={onCapture}
                 frozenOrigin={contextReference}
-                packageId={packageId}
               />
             ) : (
               <MarginEmptyView
@@ -2517,10 +2529,9 @@ export function LivingMargin({
               entityResult={entityResult}
               loading={entityLoading || pinnedAiLoading}
               onNavigate={onNavigateToRef}
-              onKeepReference={onKeepReference}
+              peekTriggerProps={versePeek.triggerProps}
               onOpenTab={activateTab}
               onOpenEntity={onOpenEntity}
-              packageId={packageId}
             />
             <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} />
           </section>
@@ -2561,7 +2572,29 @@ export function LivingMargin({
           {pinnedRange.end > pinnedRange.start && (
             <div className="words-verse-chooser" role="radiogroup" aria-label="Words for verse">
               <span className="words-verse-chooser-label">Words for verse</span>
-              <span className="words-verse-chips">
+              <span
+                className="words-verse-chips"
+                onKeyDown={(event) => {
+                  // APG radio behavior: arrows move between verses and select.
+                  const verseCount = pinnedRange.end - pinnedRange.start + 1;
+                  const group = event.currentTarget;
+                  let next: number | null = null;
+                  if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+                    next = wordsVerse === pinnedRange.end ? pinnedRange.start : wordsVerse + 1;
+                  }
+                  if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+                    next = wordsVerse === pinnedRange.start ? pinnedRange.end : wordsVerse - 1;
+                  }
+                  if (event.key === "Home") next = pinnedRange.start;
+                  if (event.key === "End") next = pinnedRange.end;
+                  if (next == null || next === wordsVerse || verseCount <= 1) return;
+                  event.preventDefault();
+                  setWordsVerse(next);
+                  window.setTimeout(() => {
+                    group.querySelector<HTMLButtonElement>(`[data-words-verse="${next}"]`)?.focus();
+                  }, 0);
+                }}
+              >
                 {Array.from(
                   { length: pinnedRange.end - pinnedRange.start + 1 },
                   (_, index) => pinnedRange.start + index,
@@ -2573,6 +2606,7 @@ export function LivingMargin({
                     role="radio"
                     aria-label={`Verse ${verse}`}
                     aria-checked={wordsVerse === verse}
+                    data-words-verse={verse}
                     tabIndex={wordsVerse === verse ? 0 : -1}
                     onClick={() => setWordsVerse(verse)}
                   >
@@ -2585,6 +2619,7 @@ export function LivingMargin({
           <LanguageWordsSection
             book={book}
             bookDisplayName={displayBook}
+            bookNames={bookNames}
             chapter={chapter}
             verse={wordsVerse}
             readingPackageId={packageId}
@@ -2605,20 +2640,18 @@ export function LivingMargin({
               <CrossRefsBlock
                 result={crossRefs}
                 onNavigate={onNavigateToRef}
-                onKeepReference={onKeepReference}
+                peekTriggerProps={versePeek.triggerProps}
                 onCapture={onCapture}
                 frozenOrigin={contextReference}
-                packageId={packageId}
               />
             )}
             {pinnedSemantic && pinnedSemantic.suggestedCrossRefs.length > 0 && (
               <NoteCrossRefsBlock
                 items={pinnedSemantic.suggestedCrossRefs.slice(0, 6)}
                 onNavigate={onNavigateToRef}
-                onKeepReference={onKeepReference}
+                peekTriggerProps={versePeek.triggerProps}
                 onCapture={onCapture}
                 frozenOrigin={contextReference}
-                packageId={packageId}
               />
             )}
             {connectionCount === 0 && (
@@ -2663,7 +2696,7 @@ export function LivingMargin({
           {pinnedAiLoading && (
             <div className="ai-insight-loading" role="status">
               <span className="ai-insight-spinner" aria-hidden="true" />
-              <span className="ai-insight-label">Looking through your notes…</span>
+              <span className="ai-insight-label">Reading your library…</span>
             </div>
           )}
 
@@ -2695,10 +2728,10 @@ export function LivingMargin({
             </section>
           )}
 
-          {deepNotesLoading && pinnedSemantic && pinnedSemantic.semanticNotes.length > 0 && (
+          {!pinnedAiLoading && deepNotesLoading && pinnedSemantic && pinnedSemantic.semanticNotes.length > 0 && (
             <div className="deep-notes-loading" role="status">
               <span className="ai-insight-spinner" aria-hidden="true" />
-              <span>Opening complete notes…</span>
+              <span>Reading your library…</span>
             </div>
           )}
 
@@ -2774,6 +2807,7 @@ export function LivingMargin({
         </div>
       )}
       </div>
+      {versePeek.peekElement}
     </aside>
   );
 }

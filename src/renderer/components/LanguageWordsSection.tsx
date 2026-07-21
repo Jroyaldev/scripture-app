@@ -12,6 +12,7 @@
 import type React from "react";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import type {
+  BookNameData,
   LanguageMorphPart,
   LanguageNameEntityHit,
   LanguagePackageSummary,
@@ -20,6 +21,7 @@ import type {
   LanguageToken,
   LanguageTokenCard,
 } from "../api.js";
+import { formatCanonicalRef } from "../utils/formatRef.js";
 import { safeCall } from "../utils/safeCall.js";
 import {
   RenderingOrbitView,
@@ -30,7 +32,7 @@ import {
   senseOutlineModel,
 } from "./RenderingOrbit.js";
 import { StructureModal } from "./StructureModal.js";
-import { useToast } from "./Toast.js";
+import { SourcesDisclosure, formatSourceCitation, type CitationSource } from "./SourcesDisclosure.js";
 
 /** Closed row shows at most this many grammar chips (+ optional Strong's id). */
 const MORPH_CHIP_MAX = 5;
@@ -49,6 +51,7 @@ const NT = new Set([
 interface Props {
   book: string;
   bookDisplayName?: string;
+  bookNames?: BookNameData;
   chapter: number;
   verse: number;
   /**
@@ -61,6 +64,12 @@ interface Props {
    * Parent should pin this verse so ambient scroll cannot steal the panel.
    */
   onStudyEngage?: (verse: number) => void;
+  /**
+   * Ambient (reading-eye-line) usage only: once the pastor engages with any
+   * study control, hold that verse's card steady instead of collapsing it on
+   * the next scroll, until they resume following or the chapter changes.
+   */
+  freezeOnEngage?: boolean;
   onCapture?: (capture: LanguageWordCaptureRequest) => void;
 }
 
@@ -72,11 +81,7 @@ export interface LanguageWordCaptureRequest {
   originLabel: "Word study";
 }
 
-interface LanguageCitationSource {
-  name: string;
-  license: string;
-  detail?: string;
-}
+type LanguageCitationSource = CitationSource;
 
 type ChipToken = LanguageToken & {
   displayGloss?: string | null;
@@ -215,37 +220,7 @@ function languageCardSources(
 }
 
 export function formatLanguageSourceCitation(source: LanguageCitationSource): string {
-  return [source.name, source.license, source.detail].filter(Boolean).join(" · ");
-}
-
-function LanguageSourcesDisclosure({ sources }: { sources: LanguageCitationSource[] }): React.JSX.Element {
-  const { showToast } = useToast();
-  const copyCitation = async (source: LanguageCitationSource): Promise<void> => {
-    try {
-      await navigator.clipboard.writeText(formatLanguageSourceCitation(source));
-      showToast("Citation copied.", undefined, undefined, { tone: "success" });
-    } catch {
-      showToast("The citation could not be copied.", undefined, undefined, { tone: "error" });
-    }
-  };
-  return (
-    <details className="margin-sources lang-sources">
-      <summary>Sources</summary>
-      <div className="margin-source-list">
-        {sources.map((source) => (
-          <div className="margin-source-row" key={`${source.name}-${source.license}-${source.detail ?? ""}`}>
-            <span className="margin-source-copy">
-              <span>{source.name} <span aria-hidden="true">·</span> {source.license}</span>
-              {source.detail && <span className="margin-source-detail">{source.detail}</span>}
-            </span>
-            <button type="button" className="margin-source-cite" onClick={() => void copyCitation(source)}>
-              Cite
-            </button>
-          </div>
-        ))}
-      </div>
-    </details>
-  );
+  return formatSourceCitation(source);
 }
 
 export function buildLanguageWordCapture({
@@ -723,11 +698,9 @@ function StrongPeekCard({
   );
 }
 
-/** Format APP.ch.v → display “Mat 3:1” style for the margin. */
-function formatAppRef(key: string): string {
-  const m = key.match(/^([A-Z0-9]+)\.(\d+)\.(\d+)$/);
-  if (!m) return key;
-  return `${m[1]} ${m[2]}:${m[3]}`;
+/** Format APP.ch.v → display "Mat 3:1" style for the margin. */
+function formatAppRef(key: string, bookNames?: BookNameData): string {
+  return formatCanonicalRef(key, bookNames);
 }
 
 /** Soften leftover TIPNR machine ids (Olives_Mount) if an older index is loaded. */
@@ -749,7 +722,7 @@ function prettyName(name: string): string {
  * TIPNR individual card — person/place, not “all same Strong’s”.
  * Progressive: brief always; other refs on demand.
  */
-function NameEntityCard({ hit }: { hit: LanguageNameEntityHit }): React.JSX.Element {
+function NameEntityCard({ hit, bookNames }: { hit: LanguageNameEntityHit; bookNames?: BookNameData }): React.JSX.Element {
   const [openRefs, setOpenRefs] = useState(false);
   const e = hit.entity;
   const title = prettyName(e.displayName);
@@ -797,7 +770,7 @@ function NameEntityCard({ hit }: { hit: LanguageNameEntityHit }): React.JSX.Elem
           {openRefs && (
             <ul className="lang-name-ref-list">
               {otherRefs.map((r) => (
-                <li key={r}>{formatAppRef(r)}</li>
+                <li key={r}>{formatAppRef(r, bookNames)}</li>
               ))}
               {e.refCount > otherRefs.length + 1 && (
                 <li className="lang-name-ref-more">+{e.refCount - otherRefs.length - 1} more</li>
@@ -825,12 +798,20 @@ function NameEntityCard({ hit }: { hit: LanguageNameEntityHit }): React.JSX.Elem
 export function LanguageWordsSection({
   book,
   bookDisplayName,
+  bookNames,
   chapter,
-  verse,
+  verse: followedVerse,
   readingPackageId,
   onStudyEngage,
+  freezeOnEngage = false,
   onCapture,
 }: Props): React.JSX.Element | null {
+  // Ambient freeze: the first study engagement (word pick, grammar, uses…)
+  // holds the verse steady so ordinary scrolling cannot collapse open study
+  // state. Cleared on chapter change or an explicit "Follow reading" resume.
+  const [engagedVerse, setEngagedVerse] = useState<number | null>(null);
+  const verse = freezeOnEngage ? engagedVerse ?? followedVerse : followedVerse;
+  const frozenOnOtherVerse = freezeOnEngage && engagedVerse != null && engagedVerse !== followedVerse;
   const [load, setLoad] = useState<LoadState>({ kind: "idle" });
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [card, setCard] = useState<LanguageTokenCard | null>(null);
@@ -857,11 +838,13 @@ export function LanguageWordsSection({
   onStudyEngageRef.current = onStudyEngage;
 
   const engageStudy = useCallback(() => {
+    if (freezeOnEngage) setEngagedVerse(verseRef.current);
     onStudyEngageRef.current?.(verseRef.current);
-  }, []);
+  }, [freezeOnEngage]);
 
   // Book/chapter change always clears local expand state.
   useEffect(() => {
+    setEngagedVerse(null);
     setGrammarOpen(false);
     setDefinitionOpen(false);
     setUsesOpen(false);
@@ -1090,7 +1073,19 @@ export function LanguageWordsSection({
 
   return (
     <div className="margin-section lang">
-      <div className="margin-section-header">{header}</div>
+      <div className="margin-section-header lang-section-header">
+        <span>{header}</span>
+        {frozenOnOtherVerse && (
+          <button
+            type="button"
+            className="margin-frame-action"
+            onClick={() => setEngagedVerse(null)}
+            title="Release this study verse and follow your reading"
+          >
+            Follow reading
+          </button>
+        )}
+      </div>
 
       {load.kind === "loading" && <div className="lang-muted">…</div>}
 
@@ -1184,7 +1179,7 @@ export function LanguageWordsSection({
               )}
 
               {card.nameEntity && (
-                <NameEntityCard hit={card.nameEntity} />
+                <NameEntityCard hit={card.nameEntity} bookNames={bookNames} />
               )}
 
               {/* One orbit + mode pills (In English · Behind this word · Senses) */}
@@ -1269,7 +1264,7 @@ export function LanguageWordsSection({
               </div>
 
               <p className="lang-study-verse" aria-live="polite">
-                {book} {chapter}:{verse}
+                {bookDisplayName ?? book} {chapter}:{verse}
               </p>
 
               {usesOpen && card.occurrencesInBook.length > 1 && (
@@ -1291,7 +1286,7 @@ export function LanguageWordsSection({
                   )}
                 </ul>
               )}
-              <LanguageSourcesDisclosure sources={cardSources} />
+              <SourcesDisclosure sources={cardSources} className="lang-sources" />
             </div>
           )}
         </>

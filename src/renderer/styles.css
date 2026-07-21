@@ -1812,8 +1812,8 @@ html, body, #root {
 
 .connection-shared-mask { mask-type: luminance; }
 .connection-emphasis-shared {
-  fill: var(--study-gold);
-  fill-opacity: .14;
+  fill: var(--text-secondary);
+  fill-opacity: .12;
   pointer-events: none;
   transition: fill-opacity 220ms ease;
 }
@@ -1825,10 +1825,12 @@ html, body, #root {
   fill-opacity: .045;
 }
 
+/* When one relationship is awake the others recede to a faint presence —
+   they stay findable instead of vanishing from the chapter. */
 .connection-emphasis-underlay.is-awake
   .connection-emphasis-mark[data-paint-state="dormant"]
-  .connection-emphasis-wash { fill-opacity: 0; }
-.connection-emphasis-mark[data-paint-state="companion"] .connection-emphasis-wash { fill-opacity: .05; }
+  .connection-emphasis-wash { fill-opacity: .03; }
+.connection-emphasis-mark[data-paint-state="companion"] .connection-emphasis-wash { fill-opacity: .07; }
 .connection-emphasis-mark[data-paint-state="preview"] .connection-emphasis-wash { fill-opacity: .12; }
 .connection-emphasis-mark[data-paint-state="selected"] .connection-emphasis-wash,
 .connection-emphasis-mark[data-paint-state="needs-space"] .connection-emphasis-wash { fill-opacity: .16; }
@@ -1961,7 +1963,8 @@ html, body, #root {
 
 .connection-tick:not(.focused) { color: var(--text-tertiary); }
 
-.connection-tick > span {
+.connection-tick-dash {
+  grid-area: 1 / 1;
   width: 11px;
   height: 1px;
   border-radius: 1px;
@@ -1973,25 +1976,47 @@ html, body, #root {
 
 .connection-tick:hover,
 .connection-tick.focused { background: transparent; }
-.connection-tick.user-held:not(.selected) > span { width: 13px; opacity: .86; }
-.connection-tick:hover > span,
-.connection-tick.focused > span { width: 15px; opacity: 1; }
-.connection-tick.held > span { background: transparent; border-top: 1px dashed currentColor; }
+.connection-tick.user-held:not(.selected) .connection-tick-dash { width: 13px; opacity: .86; }
+.connection-tick:hover .connection-tick-dash,
+.connection-tick.focused .connection-tick-dash { width: 15px; opacity: 1; }
+.connection-tick.needs-space .connection-tick-dash { background: transparent; border-top: 1px dashed currentColor; }
 .connection-tick:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 1px; }
+
+/* A selected connection whose route cannot fit still says why, in one quiet
+   line beside its tick, instead of failing silently. */
+.connection-tick-note {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: max-content;
+  max-width: 148px;
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--bg-reading) 92%, transparent);
+  box-shadow: 0 0 0 1px var(--border-subtle);
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 0.625rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  pointer-events: none;
+}
+.connection-tick[data-connection-tick-side="left"] .connection-tick-note { left: calc(100% + 7px); }
+.connection-tick[data-connection-tick-side="right"] .connection-tick-note { right: calc(100% + 7px); }
 
 /* Overflow stays one neutral vocabulary mark: two quiet rules indicate a
    grouped lane without borrowing any relationship kind's hue or silhouette. */
-.connection-tick-aggregate > span {
-  grid-area: 1 / 1;
+.connection-tick-aggregate .connection-tick-dash {
   width: 13px;
 }
-.connection-tick-aggregate > span:first-child { transform: translateY(-2px); }
-.connection-tick-aggregate > span:last-child { transform: translateY(2px); }
+.connection-tick-aggregate .connection-tick-dash:first-of-type { transform: translateY(-2px); }
+.connection-tick-aggregate .connection-tick-dash:nth-of-type(2) { transform: translateY(2px); }
 
 @media (any-pointer: coarse) {
   .connection-tick::before {
     position: absolute;
-    inset: -10px 0;
+    inset: -10px -7px;
     content: "";
   }
 }
@@ -1999,7 +2024,7 @@ html, body, #root {
 .margin-authored-connections {
   display: grid;
   gap: 5px;
-  margin: 0 14px;
+  margin: 0;
   padding: 9px 0;
   border-block: 1px solid var(--border-subtle);
 }
@@ -2051,7 +2076,7 @@ html, body, #root {
 }
 
 .margin-authored-connections-list button:hover,
-.margin-authored-connections-list button[aria-pressed="true"] {
+.margin-authored-connections-list button[aria-current="true"] {
   color: var(--text-primary);
 }
 
@@ -2110,7 +2135,7 @@ html, body, #root {
   overflow: hidden;
   padding: 0;
   border: 0;
-  border-bottom: 1px solid transparent;
+  border-bottom: 1px dashed var(--border-subtle);
   border-radius: 0;
   background: transparent;
   color: var(--text-primary);
@@ -2122,10 +2147,12 @@ html, body, #root {
 .connection-card-title:hover,
 .connection-card-title:focus {
   border-bottom-color: var(--border-medium);
+  border-bottom-style: solid;
   outline: none;
 }
 .connection-card-title:disabled {
   opacity: .78;
+  border-bottom-color: transparent;
   -webkit-text-fill-color: var(--text-primary);
 }
 
@@ -2289,14 +2316,22 @@ html, body, #root {
 }
 
 .connection-card-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
+  display: grid;
+  gap: 8px;
   margin-top: 8px;
   padding-top: 8px;
   border-top: 1px solid var(--border-subtle);
 }
+
+.connection-card-actions-recovery,
+.connection-card-actions-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.connection-card-actions-gap { flex: 1; }
 
 .connection-card-actions button {
   min-height: 0;
@@ -2307,6 +2342,22 @@ html, body, #root {
   letter-spacing: 0.03em;
 }
 .connection-card-actions button:hover { color: var(--text-primary); }
+
+/* One deliberate action leads the row; destructive work sits apart at the
+   trailing edge and its armed state reads as unmistakable quiet emphasis —
+   the card's calm palette stays hue-neutral even here. */
+.connection-card-actions .connection-card-primary {
+  color: var(--text-primary);
+  font-weight: var(--fw-semibold);
+}
+
+.connection-card-actions .connection-card-delete.is-armed {
+  color: var(--text-primary);
+  font-weight: var(--fw-semibold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
+}
 
 .connection-card-timestamp {
   margin: 7px 0 0;
@@ -2592,8 +2643,9 @@ html, body, #root {
   background: var(--bg-canvas);
   border-left: 1px solid var(--border-subtle);
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 0 var(--sp-xl) var(--sp-3xl);
-  scroll-padding-top: 58px;
+  scroll-padding-top: 116px;
 }
 
 .margin-connection-inspector {
@@ -2637,11 +2689,19 @@ html, body, #root {
     box-shadow: 0 -1px 0 color-mix(in srgb, var(--bg-reading) 76%, transparent);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
+    overscroll-behavior: contain;
     animation: compact-margin-inspector-in var(--mark-dur-enter) var(--mark-spring-soft);
   }
 
-  .scripture-body > .living-margin[data-margin-mode="connection"] {
-    overscroll-behavior: contain;
+  /* The compact pane offers two calm sizes instead of one cramped strip:
+     the reader can give Study most of the screen without losing the text. */
+  .scripture-body > .living-margin[data-compact-expanded="true"] {
+    flex-basis: clamp(280px, 72vh, 640px);
+    max-height: clamp(280px, 72vh, 640px);
+  }
+
+  .margin-compact-size-toggle {
+    display: inline-flex;
   }
 
   .scripture-body > .living-margin .margin-frame-header {
@@ -2688,6 +2748,19 @@ html, body, #root {
   letter-spacing: 0.075em;
   line-height: 1.25;
   margin: 0 0 9px;
+}
+
+.lang-section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lang-section-header .margin-frame-action {
+  flex-shrink: 0;
+  text-transform: none;
+  letter-spacing: normal;
 }
 
 .margin-section-toggle {
@@ -3949,173 +4022,6 @@ html, body, #root {
     margin-top: 3px;
   }
 }
-
-/* --- Highlight palette (floating) ---
- *
- * Anchored to the actual selection (computed in ScripturePage's
- * positionPalette, not a single row's edge) via palettePos.x/y: x is the
- * horizontal CENTER to align to, y is the top edge to sit above by default
- * (translate(-50%, -100%)) or, when .flipped (not enough room above), the
- * bottom edge to sit below (translate(-50%, 0)). A small arrow points back
- * at the selection so the popup reads as attached to something specific
- * instead of floating at an arbitrary point on the page.
- */
-
-.highlight-palette {
-  position: fixed;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-medium);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-elevated);
-  z-index: 100;
-  transform: translate(-50%, -100%);
-  transform-origin: bottom center;
-  animation: hlPaletteIn 130ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.highlight-palette.flipped {
-  transform: translate(-50%, 0);
-  transform-origin: top center;
-  animation-name: hlPaletteInFlipped;
-}
-
-@keyframes hlPaletteIn {
-  from { opacity: 0; transform: translate(-50%, -100%) scale(0.92); }
-  to   { opacity: 1; transform: translate(-50%, -100%) scale(1); }
-}
-@keyframes hlPaletteInFlipped {
-  from { opacity: 0; transform: translate(-50%, 0) scale(0.92); }
-  to   { opacity: 1; transform: translate(-50%, 0) scale(1); }
-}
-
-/* Exit fade — applied by PaletteExit (ScripturePage) for ~120ms while the
-   toolbar unmounts, so dismissal mirrors the entrance instead of popping. */
-.hl-palette-leaving .hl-toolbar-floating {
-  animation: hlPaletteOut 110ms ease forwards;
-  pointer-events: none;
-}
-.hl-palette-leaving .hl-toolbar-floating.flipped {
-  animation-name: hlPaletteOutFlipped;
-}
-@keyframes hlPaletteOut {
-  to { opacity: 0; transform: translate(-50%, -100%) scale(0.95); }
-}
-@keyframes hlPaletteOutFlipped {
-  to { opacity: 0; transform: translate(-50%, 0) scale(0.95); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .hl-palette-leaving .hl-toolbar-floating {
-    animation-duration: 1ms;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .highlight-palette, .highlight-palette.flipped {
-    animation: none;
-  }
-}
-
-/* Pointer arrow — a border-colored triangle 1px larger than a fill-colored
-   one directly in front of it, the standard tooltip-arrow trick, so the
-   arrow gets the same hairline border as the popup body. */
-.highlight-palette::before,
-.highlight-palette::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 0;
-  border-left: 7px solid transparent;
-  border-right: 7px solid transparent;
-}
-.highlight-palette::after {
-  border-left-width: 6px;
-  border-right-width: 6px;
-}
-.highlight-palette:not(.flipped)::before {
-  top: 100%;
-  border-top: 7px solid var(--border-medium);
-}
-.highlight-palette:not(.flipped)::after {
-  top: 100%;
-  margin-top: -1px;
-  border-top: 6px solid var(--bg-surface);
-}
-.highlight-palette.flipped::before {
-  bottom: 100%;
-  border-bottom: 7px solid var(--border-medium);
-}
-.highlight-palette.flipped::after {
-  bottom: 100%;
-  margin-bottom: -1px;
-  border-bottom: 6px solid var(--bg-surface);
-}
-
-.hl-swatch-group {
-  display: flex;
-  gap: 4px;
-}
-
-.hl-action-group {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-
-/* A hairline divider between the color swatches and the note/remove actions
-   — these are different kinds of actions (pick a color vs. do a thing) and
-   used to just run together in one undifferentiated row. */
-.hl-palette-divider {
-  width: 1px;
-  align-self: stretch;
-  background: var(--border-subtle);
-}
-
-.highlight-palette button {
-  border: 2px solid transparent;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: border-color var(--transition-fast), transform var(--transition-fast);
-}
-
-/* Sizing is scoped to the swatch group specifically, not shared via
-   `.highlight-palette button` — that used to also match .hl-btn-note/
-   .hl-btn-delete (any button under .highlight-palette, regardless of
-   nesting), and "one class + one element" beats "one class" alone in
-   specificity, so the swatch 24x24 fixed size was silently overriding
-   .hl-btn-note's own `width: auto`, squashing its text into a fixed box. */
-.hl-swatch-group button {
-  width: 24px;
-  height: 24px;
-}
-
-.hl-swatch-group button:hover {
-  border-color: var(--text-secondary);
-  transform: scale(1.08);
-}
-
-.hl-swatch-group button.active {
-  border-color: var(--text-primary);
-  box-shadow: inset 0 0 0 1px var(--bg-surface);
-}
-
-.hl-action-group button:hover {
-  border-color: var(--text-secondary);
-}
-
-/* Swatch chips show the SAME gradient the applied highlight paints, so the
-   chip is an honest miniature of what you'll get — not a saturated lie. The
-   2px transparent border + :hover border gives chip definition without
-   altering the displayed color. */
-.hl-btn-yellow { background: linear-gradient(100deg, var(--hl-yellow-a), var(--hl-yellow-mid), var(--hl-yellow-b)); }
-.hl-btn-green  { background: linear-gradient(100deg, var(--hl-green-a), var(--hl-green-mid), var(--hl-green-b)); }
-.hl-btn-blue   { background: linear-gradient(100deg, var(--hl-blue-a), var(--hl-blue-mid), var(--hl-blue-b)); }
-.hl-btn-pink   { background: linear-gradient(100deg, var(--hl-pink-a), var(--hl-pink-mid), var(--hl-pink-b)); }
-.hl-btn-purple { background: linear-gradient(100deg, var(--hl-purple-a), var(--hl-purple-mid), var(--hl-purple-b)); }
 
 /* --- Toolbar / action bar --- */
 
@@ -5432,70 +5338,6 @@ html, body, #root {
   outline-offset: 1px;
 }
 
-/* --- Highlight palette additions --- */
-
-.hl-btn-delete {
-  width: auto;
-  height: 24px;
-  border: 2px solid transparent;
-  border-radius: 4px;
-  cursor: pointer;
-  background: transparent;
-  color: var(--text-tertiary);
-  font-size: 11px;
-  font-family: var(--font-ui);
-  font-weight: var(--fw-medium);
-  gap: 4px;
-  padding: 0 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-}
-
-.hl-btn-delete:hover {
-  border-color: var(--error);
-  color: var(--error);
-}
-
-.hl-btn-delete > span[aria-hidden="true"] {
-  font-size: 15px;
-  line-height: 1;
-  transform: translateY(-0.5px);
-}
-
-.hl-btn-note {
-  font-size: var(--fs-xs);
-  width: auto;
-  padding: 0 6px;
-  border: 2px solid transparent;
-  border-radius: 4px;
-  cursor: pointer;
-  background: transparent;
-  color: var(--text-secondary);
-  font-family: var(--font-ui);
-  transition: all var(--transition-fast);
-}
-
-.hl-btn-note:hover {
-  color: var(--text-primary);
-}
-
-.hl-loading {
-  width: 16px;
-  height: 16px;
-  border: 2px solid var(--border-subtle);
-  border-top-color: var(--accent-user);
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-  margin-left: 4px;
-}
-
-.highlight-palette button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 /* --- Living Margin additions --- */
 
 .margin-frame-header {
@@ -5545,7 +5387,8 @@ html, body, #root {
   text-transform: uppercase;
 }
 
-.living-margin[data-margin-mode="selected"] .margin-frame-mode {
+.living-margin[data-margin-mode="selection"] .margin-frame-mode,
+.living-margin[data-margin-mode="kept"] .margin-frame-mode {
   color: var(--study-gold);
 }
 
@@ -5567,6 +5410,9 @@ html, body, #root {
   background: color-mix(in srgb, var(--study-hover-surface) 62%, transparent);
   color: var(--text-primary);
 }
+
+/* The compact size toggle only exists in the stacked ≤760px layout. */
+.margin-compact-size-toggle { display: none; }
 
 .margin-context {
   padding: 0 0 2px;
@@ -7280,6 +7126,22 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   font-size: 0.5625rem;
   line-height: 1.4;
 }
+
+.intent-more-toggle {
+  margin: 9px 0 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  font-size: 0.625rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.intent-more-toggle:hover { color: var(--text-primary); }
 
 .intent-attribution {
   display: flex;
@@ -12566,107 +12428,6 @@ textarea:focus-visible,
   }
 }
 
-/* --- Unified mini highlight toolbar --- */
-
-.hl-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-medium);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-elevated);
-  z-index: 100;
-}
-.hl-toolbar-floating {
-  position: fixed;
-  transform: translate(-50%, -100%);
-  transform-origin: bottom center;
-  animation: hlPaletteIn 130ms cubic-bezier(0.22, 1, 0.36, 1);
-  margin-top: -10px;
-}
-.hl-toolbar-floating.flipped {
-  transform: translate(-50%, 0);
-  transform-origin: top center;
-  animation-name: hlPaletteInFlipped;
-  margin-top: 10px;
-}
-.hl-toolbar-docked {
-  position: relative;
-  margin-bottom: var(--sp-md);
-  width: 100%;
-  box-shadow: var(--shadow-subtle);
-}
-.hl-toolbar.is-mixed {
-  border-color: var(--border-strong);
-  box-shadow: var(--shadow-elevated), 0 0 0 1px color-mix(in srgb, var(--text-secondary) 18%, transparent);
-}
-.hl-toolbar-range {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  max-width: 120px;
-  font-family: var(--font-ui);
-  font-size: 11.5px;
-  font-weight: var(--fw-medium);
-  color: var(--text-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding: 0 2px 0 4px;
-  user-select: none;
-}
-.hl-toolbar-mixed-badge {
-  flex-shrink: 0;
-  font-size: 10px;
-  font-weight: var(--fw-semibold);
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-medium);
-  border-radius: 999px;
-  padding: 1px 6px;
-}
-.hl-toolbar-divider {
-  width: 1px;
-  align-self: stretch;
-  background: var(--border-subtle);
-  min-height: 18px;
-}
-.hl-toolbar .hl-swatch-group {
-  display: flex;
-  gap: 4px;
-}
-.hl-toolbar .hl-swatch-group button {
-  width: 22px;
-  height: 22px;
-  border: 2px solid transparent;
-  border-radius: 50%;
-  cursor: pointer;
-  padding: 0;
-  transition: border-color var(--transition-fast), transform var(--transition-fast);
-}
-.hl-toolbar .hl-swatch-group button:hover {
-  transform: scale(1.1);
-  border-color: var(--text-secondary);
-}
-.hl-toolbar .hl-swatch-group button.active {
-  border-color: var(--text-primary);
-  box-shadow: inset 0 0 0 1px var(--bg-surface);
-}
-.hl-toolbar .hl-action-group {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-
-/* Back-compat: keep old palette class hooks working if any remain */
-.highlight-palette {
-  /* Superseded by .hl-toolbar-floating — keep minimal so no orphan styles break */
-}
-
 /* Multi-select / mixed selection chrome on verse rows */
 .verse-line.selected.multi-select::before {
   height: 24px;
@@ -12829,10 +12590,6 @@ textarea:focus-visible,
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hl-toolbar-floating,
-  .hl-toolbar-floating.flipped {
-    animation: none;
-  }
   .hl-blob.hl-dimmed {
     transition: none;
   }
@@ -13709,38 +13466,6 @@ button.lang-phrase-diagram-node:focus-visible,
   font-size: 8.5px;
 }
 
-/* The selection palette floats like a precise tool, not a detached card. */
-.hl-toolbar {
-  gap: 7px;
-  padding: 5px 7px;
-  border-color: var(--border-medium);
-  border-radius: var(--radius-md);
-  background: var(--bg-surface);
-  box-shadow: var(--shadow-medium);
-  backdrop-filter: blur(14px) saturate(var(--material-saturate));
-  -webkit-backdrop-filter: blur(14px) saturate(var(--material-saturate));
-}
-
-.hl-toolbar.is-mixed {
-  box-shadow: var(--shadow-medium);
-}
-
-.hl-toolbar-range {
-  max-width: 108px;
-  font-size: 10.5px;
-}
-
-.hl-toolbar .hl-swatch-group button {
-  width: 20px;
-  height: 20px;
-}
-
-.hl-action-group .hl-btn-note,
-.hl-action-group .hl-btn-delete {
-  min-height: 26px;
-  border-radius: var(--radius-sm);
-}
-
 /* Passage capture now reads as the compact sibling of the full writing desk. */
 .note-capture-panel {
   width: min(440px, 100vw);
@@ -14408,6 +14133,36 @@ button.lang-phrase-diagram-node:focus-visible,
   box-shadow: var(--mark-e2), var(--mark-rim);
 }
 
+/* First-run hint for the palette surface: one calm line at the foot of the
+   reading stage, purely informational, gone forever after the first mark. */
+.marking-rest-hint {
+  position: fixed;
+  margin: 0;
+  padding: 6px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg-surface) 94%, transparent);
+  box-shadow: 0 1px 3px color-mix(in srgb, #2f261d 8%, transparent);
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.015em;
+  transform: translateX(-50%);
+  pointer-events: none;
+  animation: marking-rest-hint-in 480ms ease-out 900ms backwards;
+  z-index: 60;
+}
+
+@keyframes marking-rest-hint-in {
+  from { opacity: 0; transform: translate(-50%, 6px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marking-rest-hint { animation: none; }
+}
+
 .marking-palette.is-placed {
   --mark-palette-enter-y: 4px;
   --mark-palette-enter-scale: .955;
@@ -14990,7 +14745,22 @@ button.lang-phrase-diagram-node:focus-visible,
 .marking-radial-petal.active:not(:hover):not(:focus-visible) { scale: 1; }
 
 .marking-radial-petal:disabled { cursor: wait; opacity: .58; }
+/* Petal glyphs stay quiet for precise pointers, where the help card and
+   tooltips name them; touch users get no hover, so the petals name
+   themselves. */
 .marking-radial-petal-label { display: none; }
+@media (any-pointer: coarse) {
+  .marking-radial-petal-label {
+    display: block;
+    font-family: var(--font-ui);
+    font-size: 0.5625rem;
+    font-weight: var(--fw-medium);
+    letter-spacing: 0.02em;
+    color: var(--text-secondary);
+    text-align: center;
+    line-height: 1.1;
+  }
+}
 .marking-radial-wash .marking-pigment { width: 23px; height: 16px; box-shadow: none; }
 .marking-radial .marking-pigment-yellow { background: color-mix(in srgb, var(--hl-yellow-mid) 76%, var(--bg-surface)); }
 .marking-radial .marking-pigment-green { background: color-mix(in srgb, var(--hl-green-mid) 76%, var(--bg-surface)); }
@@ -16315,7 +16085,7 @@ button.lang-phrase-diagram-node:focus-visible,
   .marking-rail-status { border-color: CanvasText; background: Canvas; box-shadow: none; }
   .marking-rail button::after { display: none; }
   .marking-pigment { background: Canvas !important; border-color: ButtonText; }
-  .marking-pigment::after { color: ButtonText; content: attr(data-forced-code); font: 700 9px/1 var(--font-ui); }
+  .marking-pigment::after { color: ButtonText; content: attr(data-forced-code); font: 600 6.5px/1 var(--font-ui); letter-spacing: 0.02em; }
   .marking-radial-disc { display: none; }
   .marking-radial,
   .marking-radial-petal,
@@ -16637,8 +16407,10 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .words-verse-chips {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 4px;
+  max-width: 100%;
 }
 
 .words-verse-chip {

@@ -1,5 +1,6 @@
 import type React from "react";
 import { useEffect, useRef } from "react";
+import { isTopLayer, useLayer } from "../layerStack.js";
 
 interface Props {
   onClose: () => void;
@@ -12,7 +13,9 @@ const SHORTCUTS: Array<{ keys: string[]; description: string }> = [
   { keys: ["↑", "↓"], description: "Move to the previous or next verse" },
   { keys: ["Enter"], description: "Select the focused verse for Study" },
   { keys: ["⇧ Enter"], description: "Extend the verse selection" },
-  { keys: ["M"], description: "Open the active marking surface" },
+  { keys: ["M"], description: "Mark the focused verse with the active marking surface" },
+  { keys: ["1–6"], description: "With the marking palette open: choose a relationship" },
+  { keys: ["⇧ 1–5"], description: "With the marking palette open: choose a wash" },
   { keys: ["Tab", "⇧ Tab"], description: "Cycle Study lenses while the verse keeps focus" },
   { keys: ["Enter", "↓"], description: "From the active Study tab, enter its panel" },
   { keys: ["Esc"], description: "From a Study panel, return to its active tab" },
@@ -25,6 +28,7 @@ export function ShortcutsOverlay({ onClose }: Props): React.JSX.Element {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
+  const layerRef = useLayer("dialog");
 
   useEffect(() => {
     returnFocusRef.current = document.activeElement instanceof HTMLElement
@@ -35,8 +39,9 @@ export function ShortcutsOverlay({ onClose }: Props): React.JSX.Element {
     const onKeyDown = (event: KeyboardEvent): void => {
       const shortcutKey = event.key === "?" || (event.key === "/" && event.shiftKey);
       if (event.key === "Escape" || shortcutKey) {
+        if (!isTopLayer(layerRef.current)) return;
         event.preventDefault();
-        event.stopPropagation();
+        event.stopImmediatePropagation();
         onClose();
         return;
       }

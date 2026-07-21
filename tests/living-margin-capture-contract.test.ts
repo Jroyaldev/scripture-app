@@ -17,6 +17,7 @@ const margin = read("src/renderer/components/LivingMargin.tsx");
 const page = read("src/renderer/components/ScripturePage.tsx");
 const capture = read("src/renderer/components/NoteCapture.tsx");
 const language = read("src/renderer/components/LanguageWordsSection.tsx");
+const disclosure = read("src/renderer/components/SourcesDisclosure.tsx");
 const css = read("src/renderer/styles.css");
 
 test("Living Margin capture produces readable Markdown with frozen provenance", () => {
@@ -101,10 +102,12 @@ test("word capture uses visible form, gloss, definition, package, and verse", ()
 });
 
 test("public-data surfaces consolidate provenance under Sources with Cite", () => {
-  assert.match(margin, /<summary>Sources<\/summary>/);
-  assert.match(language, /<summary>Sources<\/summary>/);
-  assert.match(margin, /navigator\.clipboard\.writeText\(formatMarginSourceCitation\(source\)\)/);
-  assert.match(language, /navigator\.clipboard\.writeText\(formatLanguageSourceCitation\(source\)\)/);
+  assert.match(disclosure, /<summary>Sources<\/summary>/);
+  assert.match(disclosure, /navigator\.clipboard\.writeText\(formatSourceCitation\(source\)\)/);
+  assert.match(margin, /formatSourceCitation\(source\)/);
+  assert.match(language, /formatSourceCitation\(source\)/);
+  assert.match(margin, /SourcesDisclosure/);
+  assert.match(language, /SourcesDisclosure/);
   assert.doesNotMatch(margin, /className="crossref-attribution"|className="intent-attribution"|<footer className="entity-research-sources">/);
   assert.doesNotMatch(language, /lang-step-attr|lang-name-attr|lang-def-attr/);
   assert.equal(formatMarginSourceCitation({ name: "Pleiades 4.1", license: "CC BY 3.0", detail: "Ancient gazetteer" }), "Pleiades 4.1 · CC BY 3.0 · Ancient gazetteer");

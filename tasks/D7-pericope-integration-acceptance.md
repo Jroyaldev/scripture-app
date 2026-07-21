@@ -24,17 +24,24 @@ ownership, and real local trusted-resource rendering.
 - Released the browser-native text Range when marking chrome is dismissed while
   preserving the internal passage scope, so the next connected-word click is
   not misclassified as another completed drag.
+- Review hardening made the layer registry authoritative for stacked dialogs
+  and VersePeek, kept the margin's connection strip and Keep action on the
+  settled subject, made Words radio arrows wrap without retaining a synthetic
+  event, and saved one combined dirty card draft before deletion can arm.
+- The live interaction gate now records exact tick/paint-plane failure state
+  and gives asynchronous tick layout a bounded 30-second readiness window
+  without weakening the 14-unique-tick assertion.
 
 ## Verification
 
 - `qa:reading-interactions`: 8/8 Palette/Rail/Radial/Dock x 390/860 cells;
   exact overlap, dense chooser, Focus Escape ladder, coarse tick overflow, and
   authored JSONL byte integrity all pass.
-- `qa:pericope-integration`: first-run splash 2711 ms, successful-load splash
-  2831 ms, six themes, three real trusted-resource cards, zero publisher
+- `qa:pericope-integration`: first-run splash 2709 ms, successful-load splash
+  2881 ms, six themes, three real trusted-resource cards, zero publisher
   runtime requests.
-- Focused reading-interaction contracts: 20/20.
-- Full suite: 746 total, 717 passed, 29 expected Electron-ABI skips, 0 failed.
+- Focused reading-interaction and layer-registry contracts: 27/27.
+- Full suite: 751 total, 722 passed, 29 expected Electron-ABI skips, 0 failed.
 - `npm run lint`, Electron build, renderer build, and `git diff --check`: pass.
 
 ## Guardrails

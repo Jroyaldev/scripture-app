@@ -39,6 +39,8 @@ import {
   type ConnectionWordHitTest,
 } from "./ConnectionUnderlay.js";
 import { ConnectionCard, type ConnectionCardRecovery } from "./ConnectionCard.js";
+import { isTopLayer, layerStackIsEmpty, useLayer } from "../layerStack.js";
+import { phraseCount, relationshipLabel } from "../utils/relationshipVocabulary.js";
 import { ReadingComfort, type ReadingPrefs } from "./ReadingComfort.js";
 import { ThemePicker } from "./ThemePicker.js";
 import { Tooltip } from "./Tooltip.js";
@@ -522,6 +524,12 @@ export function ScripturePage({
   // and exit Focus mode instead of being swallowed by a stale closure.
   const selectedConnectionIdRef = useRef<string | null>(selectedConnectionId);
   selectedConnectionIdRef.current = selectedConnectionId;
+  // When Focus mode unmounts the margin (and with it the inspector card),
+  // this page takes over the selected shape's "connection-focus" layer so the
+  // first Escape still dismisses the shape before App exits Focus mode.
+  const connectionFocusFallbackLayerRef = useLayer(
+    selectedConnectionId != null && focusMode ? "connection-focus" : null,
+  );
   const [connectionCardRecovery, setConnectionCardRecovery] = useState<ConnectionCardRecovery | null>(null);
   const [connectionWordChooser, setConnectionWordChooser] = useState<ConnectionWordChooserState | null>(null);
   const [connectionInspectorFocusRequest, setConnectionInspectorFocusRequest] = useState(0);
@@ -773,6 +781,21 @@ export function ScripturePage({
   // Frozen while the pointer is over the margin or language study has locked
   // a verse (so side-panel clicks never "click out" to a different scroll position).
   const [nearVerse, setNearVerse] = useState<number | null>(null);
+  // The Living Margin follows a settled eye-line, not the raw scroll
+  // position. Verse-to-verse drift inside one chapter re-scopes the panel at
+  // most once per pause; a book/chapter move drops back to chapter scope in
+  // the same render, so no stale cross-chapter pairing can ever fetch.
+  const scopeKey = `${book}:${chapter}`;
+  const [settledScope, setSettledScope] = useState<{ key: string; verse: number | null }>({ key: scopeKey, verse: null });
+  if (settledScope.key !== scopeKey) {
+    setSettledScope({ key: scopeKey, verse: null });
+  }
+  const settledNearVerse = settledScope.key === scopeKey ? settledScope.verse : null;
+  useEffect(() => {
+    if (nearVerse === settledNearVerse) return undefined;
+    const timer = window.setTimeout(() => setSettledScope({ key: scopeKey, verse: nearVerse }), 240);
+    return () => window.clearTimeout(timer);
+  }, [nearVerse, settledNearVerse, scopeKey]);
   const verseRowRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   // Translation switches, relaunch restore, and canvas history all share one
   // exact eye-line model: nearest verse plus its pixel offset in the viewport.
@@ -1636,10 +1659,10 @@ export function ScripturePage({
     canvasBook: book,
     canvasChapter: chapter,
     canvasChapterEndVerse,
-    nearVerse,
+    nearVerse: settledNearVerse,
     selection: pinnedRange,
     kept: keptContext,
-  }), [book, canvasChapterEndVerse, chapter, keptContext, nearVerse, pinnedRange]);
+  }), [book, canvasChapterEndVerse, chapter, keptContext, settledNearVerse, pinnedRange]);
   const keptSubjectKey = marginSubject.kind === "kept"
     ? `${packageId}:${marginSubject.book}:${marginSubject.chapter}:${marginSubject.verse}-${marginSubject.endVerse}`
     : null;
@@ -1695,6 +1718,11 @@ export function ScripturePage({
   // Cross-references follow the actual reading scope: exact verse when the
   // eye-line is ambient, selected range when pinned, full chapter only for the
   // overview. Passage aggregation and top-N ranking happen in pure core code.
+  // Stale-while-revalidate: the previous result stays on screen while the
+  // next scope resolves, so reading never flashes a false empty state.
+  useEffect(() => {
+    setCrossRefs(null);
+  }, [book, chapter, packageId]);
   useEffect(() => {
     if (!marginVisible) {
       setCrossRefs(null);
@@ -1705,10 +1733,9 @@ export function ScripturePage({
       setCrossRefs(null);
       return;
     }
-    const startVerse = pinnedRange?.start ?? nearVerse ?? 1;
-    const endVerse = pinnedRange?.end ?? nearVerse ?? verseCount;
+    const startVerse = pinnedRange?.start ?? settledNearVerse ?? 1;
+    const endVerse = pinnedRange?.end ?? settledNearVerse ?? verseCount;
     let cancelled = false;
-    setCrossRefs(null);
     safeCall(() => window.api.scripture.getCrossRefsForPassage(
       book,
       chapter,
@@ -1721,7 +1748,7 @@ export function ScripturePage({
     return () => {
       cancelled = true;
     };
-  }, [backbone, book, chapter, marginVisible, nearVerse, packageId, pinnedRange]);
+  }, [backbone, book, chapter, marginVisible, settledNearVerse, packageId, pinnedRange]);
 
   // Reload margin data after highlight changes
   const reloadMarginHighlights = useCallback(async (options?: {
@@ -1808,9 +1835,9 @@ export function ScripturePage({
       // state is not an active Escape owner; after a selected Shape is
       // dismissed, the next Escape belongs to App's Focus-mode exit.
       if (focusMode) return;
-      // Child marking/connection layers own the topmost Escape action. Keep
-      // this legacy fallback only for palette state with no mounted surface.
-      if (document.querySelector(".connection-card, .marking-floating-host, .marking-rail-host, .marking-dock-host")) return;
+      // Every mounted layer outranks this legacy fallback; it owns Escape
+      // only when the shared registry is completely empty.
+      if (!layerStackIsEmpty()) return;
       e.preventDefault();
       e.stopImmediatePropagation();
       setShowHighlightPalette(false);
@@ -2502,15 +2529,15 @@ export function ScripturePage({
       onKeptContextChange(null);
       return;
     }
-    if (nearVerse == null) return;
+    if (settledNearVerse == null) return;
     const bookLabel = bookNames[book]?.[0] ?? book;
     onKeptContextChange({
       book,
       chapter,
-      verse: nearVerse,
-      label: `${bookLabel} ${chapter}:${nearVerse}`,
+      verse: settledNearVerse,
+      label: `${bookLabel} ${chapter}:${settledNearVerse}`,
     });
-  }, [book, bookNames, chapter, nearVerse, onKeptContextChange]);
+  }, [book, bookNames, chapter, onKeptContextChange, settledNearVerse]);
 
   const handleKeepPeekReference = useCallback((reference: PeekTarget): void => {
     onKeptContextChange?.({
@@ -3103,15 +3130,15 @@ export function ScripturePage({
   // confirmation. Focus mode intentionally unmounts that card while leaving
   // the selected reading shape visible, so ScripturePage owns the hidden-card
   // fallback before App can interpret the same Escape as "exit Focus mode."
+  // Ownership comes from the shared layer registry: this fallback registers
+  // the same "connection-focus" rank the visible card would, and fires only
+  // when nothing above it (chooser, dialog, marking session) is open.
   useEffect(() => {
     if (!selectedConnectionId) return;
     const handleSelectedConnectionEscape = (event: KeyboardEvent): void => {
       if (event.key !== "Escape" || event.defaultPrevented) return;
       if (!selectedConnectionIdRef.current) return;
-      if (document.querySelector(
-        '[data-floating-layer="dialog"], [data-floating-layer="popover"], .command-palette-root',
-      )) return;
-      if (document.querySelector(".connection-card")) return;
+      if (!isTopLayer(connectionFocusFallbackLayerRef.current)) return;
       event.preventDefault();
       event.stopImmediatePropagation();
       handleDismissConnectionFocus(true);
@@ -3898,7 +3925,7 @@ export function ScripturePage({
                   if (requireSafeConnectionNavigation()) onToggleMargin();
                 }}
                 disabled={connectionNavigationLocked}
-                aria-label={marginVisible ? "Hide Living Margin" : "Show Living Margin"}
+                aria-label={marginVisible ? "Hide Study" : "Show Study"}
                 aria-pressed={marginVisible}
               >
                 <MarginToggleIcon />
@@ -3959,6 +3986,7 @@ export function ScripturePage({
               heldConnectionIds={visibleHeldConnectionIds}
               openTickGroupMemberIds={connectionWordChooser?.aggregateMemberIds ?? null}
               onSelectConnection={handleSelectConnection}
+              onDismissFocus={() => { handleDismissConnectionFocus(false); }}
               onChooseConnections={handleChooseConnections}
               wordHitTestRef={connectionWordHitTestRef}
             />
@@ -4083,7 +4111,7 @@ export function ScripturePage({
         >
           <header className="connection-word-chooser-head">
             <div>
-              <span>Connected words</span>
+              <span>Shared phrases</span>
               <strong>{connectionWordChooser.hits.length} relationships</strong>
             </div>
             <button
@@ -4094,8 +4122,7 @@ export function ScripturePage({
           </header>
           <div className="connection-word-choices" role="list" onKeyDown={handleConnectionWordChooserKeyDown}>
             {connectionWordChooser.hits.map((hit, index) => {
-              const rawKind = hit.connection.kind.replace("link:", "");
-              const kindLabel = `${rawKind.charAt(0).toUpperCase()}${rawKind.slice(1)}`;
+              const kindLabel = relationshipLabel(hit.connection.kind);
               return (
                 <div key={hit.connection.id} role="listitem">
                   <button
@@ -4103,7 +4130,7 @@ export function ScripturePage({
                     type="button"
                     className="connection-word-choice"
                     data-connection-id={hit.connection.id}
-                    aria-pressed={selectedConnectionId === hit.connection.id}
+                    aria-current={selectedConnectionId === hit.connection.id || undefined}
                     onClick={(event) => {
                       const focusInspector = event.detail === 0;
                       closeConnectionWordChooser(!focusInspector);
@@ -4111,7 +4138,7 @@ export function ScripturePage({
                     }}
                   >
                     <span>{hit.connection.label.trim() || kindLabel}</span>
-                    <small>{kindLabel} · {hit.connection.anchors.length} {hit.connection.anchors.length === 1 ? "moment" : "moments"}</small>
+                    <small>{kindLabel} · {phraseCount(hit.connection.anchors.length)}</small>
                   </button>
                 </div>
               );
@@ -4139,7 +4166,7 @@ export function ScripturePage({
             ? null
             : marginSubject.kind === "kept"
               ? marginSubject.verse
-              : nearVerse}
+              : settledNearVerse}
           onNavigateToRef={handleNavigateToRef}
           onKeepReference={handleKeepPeekReference}
           onPinClaim={async (claimId, assertion) => {
@@ -4161,7 +4188,7 @@ export function ScripturePage({
           onCloseEntity={onCloseEntity}
           entityTrail={entityTrail}
           onEntityTrailChange={onEntityTrailChange}
-          authoredConnections={visibleMarginData.connections}
+          authoredConnections={subjectMarginData.connections}
           selectedAuthoredConnectionId={selectedConnectionId}
           onSelectAuthoredConnection={(connection, focusInspector) => handleSelectConnection(connection, focusInspector)}
           connectionInspectorFocusRequest={connectionInspectorFocusRequest}

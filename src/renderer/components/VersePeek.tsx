@@ -1,6 +1,7 @@
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { isTopLayer, useLayer } from "../layerStack.js";
 import { safeCall } from "../utils/safeCall.js";
 
 export interface PeekTarget {
@@ -12,7 +13,7 @@ export interface PeekTarget {
 }
 
 const OPEN_DELAY_MS = 420;
-const CLOSE_DELAY_MS = 180;
+const CLOSE_DELAY_MS = 240;
 const MAX_PEEK_VERSES = 8;
 const PEEK_WIDTH = 320;
 const VIEWPORT_MARGIN = 8;
@@ -42,13 +43,42 @@ interface PeekState {
   anchorRect: DOMRect;
   status: "loading" | "ready" | "error";
   text: string;
+  origin: "pointer" | "keyboard";
+  trigger: HTMLElement;
 }
 
-interface VersePeekTriggerProps {
+interface PeekChapterText {
+  verses: Array<{ verse: number; text: string }>;
+}
+
+/** Session cache: hovering across a dense reference list must not spawn one
+ *  IPC round-trip per row for chapters the reader already previewed. */
+const chapterTextCache = new Map<string, PeekChapterText>();
+const CHAPTER_TEXT_CACHE_LIMIT = 12;
+
+function cacheChapterText(key: string, value: PeekChapterText): void {
+  if (chapterTextCache.has(key)) chapterTextCache.delete(key);
+  chapterTextCache.set(key, value);
+  if (chapterTextCache.size > CHAPTER_TEXT_CACHE_LIMIT) {
+    const oldest = chapterTextCache.keys().next().value;
+    if (oldest != null) chapterTextCache.delete(oldest);
+  }
+}
+
+function samePeekTarget(left: PeekTarget, right: PeekTarget): boolean {
+  return left.book === right.book
+    && left.chapter === right.chapter
+    && left.verse === right.verse
+    && left.endVerse === right.endVerse;
+}
+
+export interface VersePeekTriggerProps {
   onMouseEnter: (event: React.MouseEvent<HTMLElement>) => void;
   onMouseLeave: () => void;
   onFocus: (event: React.FocusEvent<HTMLElement>) => void;
   onBlur: () => void;
+  "aria-haspopup"?: "dialog";
+  "aria-expanded"?: boolean;
 }
 
 function PeekPanel({
@@ -86,6 +116,13 @@ function PeekPanel({
           left,
         });
       }
+      // A keyboard-opened preview would otherwise be unreachable: focus moves
+      // into the panel so its action is a real Tab stop, and Escape returns
+      // to the trigger.
+      if (peek.origin === "keyboard") {
+        const action = panel.querySelector<HTMLElement>(".verse-peek-keep");
+        (action ?? panel).focus({ preventScroll: true });
+      }
     });
     return () => window.cancelAnimationFrame(frame);
   }, [peek]);
@@ -102,6 +139,7 @@ function PeekPanel({
       style={{ top: position?.top ?? -9999, left: position?.left ?? -9999, width: PEEK_WIDTH }}
       role={onKeepReference ? "dialog" : "tooltip"}
       aria-label={`Preview of ${peek.target.label}`}
+      tabIndex={-1}
       onMouseEnter={onKeepOpen}
       onMouseLeave={onLeave}
       onFocus={onKeepOpen}
@@ -129,7 +167,7 @@ function PeekPanel({
               onClose();
             }}
           >
-            Keep in margin
+            Keep in Study
           </button>
         </div>
       )}
@@ -144,24 +182,32 @@ export function useVersePeek(
 ): {
   triggerProps: (target: PeekTarget) => VersePeekTriggerProps;
   peekElement: React.ReactNode;
+  close: () => void;
 } {
   const [peek, setPeek] = useState<PeekState | null>(null);
+  const peekRef = useRef<PeekState | null>(null);
+  peekRef.current = peek;
   const openTimer = useRef(0);
   const closeTimer = useRef(0);
   const requestSeq = useRef(0);
+  const layerRef = useLayer(peek ? "peek" : null);
 
   const cancelClose = useCallback((): void => {
     window.clearTimeout(closeTimer.current);
     closeTimer.current = 0;
   }, []);
 
-  const closeNow = useCallback((): void => {
+  const closeNow = useCallback((restoreFocus = false): void => {
     window.clearTimeout(openTimer.current);
     openTimer.current = 0;
     window.clearTimeout(closeTimer.current);
     closeTimer.current = 0;
     requestSeq.current += 1;
+    const current = peekRef.current;
     setPeek(null);
+    if (restoreFocus && current?.trigger.isConnected) {
+      current.trigger.focus({ preventScroll: true });
+    }
   }, []);
 
   const scheduleClose = useCallback((): void => {
@@ -171,54 +217,86 @@ export function useVersePeek(
     closeTimer.current = window.setTimeout(() => setPeek(null), CLOSE_DELAY_MS);
   }, []);
 
-  const openFor = useCallback((target: PeekTarget, element: HTMLElement): void => {
+  const applyChapterText = useCallback((chapterText: PeekChapterText, target: PeekTarget, seq: number): void => {
+    if (requestSeq.current !== seq) return;
+    const rangeEnd = Math.min(target.endVerse ?? target.verse, target.verse + MAX_PEEK_VERSES - 1);
+    const single = rangeEnd === target.verse;
+    const lines = chapterText.verses
+      .filter((item) => item.verse >= target.verse && item.verse <= rangeEnd)
+      .map((item) => single ? item.text : `${item.verse} ${item.text}`);
+    setPeek((current) => current ? {
+      ...current,
+      status: "ready",
+      text: lines.join("\n") || "Verse text unavailable.",
+    } : current);
+  }, []);
+
+  const openFor = useCallback((target: PeekTarget, element: HTMLElement, origin: "pointer" | "keyboard"): void => {
     window.clearTimeout(openTimer.current);
     window.clearTimeout(closeTimer.current);
     openTimer.current = window.setTimeout(() => {
       const anchorRect = element.getBoundingClientRect();
       const seq = ++requestSeq.current;
-      setPeek({ target, anchorRect, status: "loading", text: "" });
+      setPeek({ target, anchorRect, status: "loading", text: "", origin, trigger: element });
+      const cacheKey = `${packageId}:${target.book}:${target.chapter}`;
+      const cached = chapterTextCache.get(cacheKey);
+      if (cached) {
+        applyChapterText(cached, target, seq);
+        return;
+      }
       void safeCall(() => window.api.scripture.getChapterText(packageId, target.book, target.chapter)).then((result) => {
         if (requestSeq.current !== seq) return;
         if (!result.ok || !result.value) {
           setPeek((current) => current ? { ...current, status: "error" } : current);
           return;
         }
-        const rangeEnd = Math.min(target.endVerse ?? target.verse, target.verse + MAX_PEEK_VERSES - 1);
-        const single = rangeEnd === target.verse;
-        const lines = result.value.verses
-          .filter((item) => item.verse >= target.verse && item.verse <= rangeEnd)
-          .map((item) => single ? item.text : `${item.verse} ${item.text}`);
-        setPeek((current) => current ? {
-          ...current,
-          status: "ready",
-          text: lines.join("\n") || "Verse text unavailable.",
-        } : current);
+        cacheChapterText(cacheKey, result.value);
+        applyChapterText(result.value, target, seq);
       });
     }, OPEN_DELAY_MS);
-  }, [packageId]);
+  }, [applyChapterText, packageId]);
 
   const triggerProps = useCallback((target: PeekTarget): VersePeekTriggerProps => ({
-    onMouseEnter: (event) => openFor(target, event.currentTarget),
+    onMouseEnter: (event) => openFor(target, event.currentTarget, "pointer"),
     onMouseLeave: scheduleClose,
-    onFocus: (event) => openFor(target, event.currentTarget),
+    onFocus: (event) => openFor(target, event.currentTarget, "keyboard"),
     onBlur: scheduleClose,
-  }), [openFor, scheduleClose]);
+    "aria-haspopup": onKeepReference ? "dialog" : undefined,
+    "aria-expanded": onKeepReference
+      ? Boolean(peek && samePeekTarget(peek.target, target))
+      : undefined,
+  }), [onKeepReference, openFor, peek, scheduleClose]);
 
   useEffect(() => {
     if (!peek) return;
     const onKeyDown = (event: KeyboardEvent): void => {
-      if (event.key !== "Escape") return;
+      if (event.key !== "Escape" || event.defaultPrevented) return;
+      // The registry decides: a dialog or chooser above the peek owns Escape.
+      if (!isTopLayer(layerRef.current)) return;
       event.preventDefault();
+      event.stopImmediatePropagation();
+      closeNow(peekRef.current?.origin === "keyboard");
+    };
+    // Scrolling moves the anchor out from under the panel. Close, then let
+    // the next pointer move over the same trigger re-open the preview —
+    // previously the panel was gone until the pointer fully left and
+    // returned, an invisible dead zone.
+    const onScroll = (): void => {
+      const current = peekRef.current;
+      if (!current) return;
       closeNow();
+      const { target, trigger } = current;
+      if (trigger.isConnected) {
+        trigger.addEventListener("pointermove", () => openFor(target, trigger, "pointer"), { once: true });
+      }
     };
     window.addEventListener("keydown", onKeyDown);
-    window.addEventListener("scroll", closeNow, true);
+    window.addEventListener("scroll", onScroll, true);
     return () => {
       window.removeEventListener("keydown", onKeyDown);
-      window.removeEventListener("scroll", closeNow, true);
+      window.removeEventListener("scroll", onScroll, true);
     };
-  }, [closeNow, peek]);
+  }, [closeNow, layerRef, openFor, peek]);
 
   useEffect(() => () => {
     window.clearTimeout(openTimer.current);
@@ -227,6 +305,7 @@ export function useVersePeek(
 
   return {
     triggerProps,
+    close: closeNow,
     peekElement: peek ? (
       <PeekPanel
         peek={peek}
@@ -234,7 +313,7 @@ export function useVersePeek(
         onKeepOpen={cancelClose}
         onLeave={scheduleClose}
         onKeepReference={onKeepReference}
-        onClose={closeNow}
+        onClose={() => closeNow(peek.origin === "keyboard")}
       />
     ) : null,
   };

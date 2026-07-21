@@ -9,6 +9,7 @@ import type {
   VerseNumberMode,
 } from "./api.js";
 import { ScripturePage } from "./components/ScripturePage.js";
+import { layerStackIsEmpty } from "./layerStack.js";
 import type { EntityResearchTrailEntry } from "./components/LivingMargin.js";
 import { WritingSheet, type WritingDraft } from "./components/WritingSheet.js";
 import { SearchView } from "./components/SearchView.js";
@@ -684,11 +685,10 @@ export function App(): React.JSX.Element {
         return;
       }
       if (e.key === "Escape" && focusMode) {
-        // Escape belongs to the topmost dialog/popover first. In particular,
-        // closing an exact-word chooser must not also exit Focus mode.
-        if (document.querySelector(
-          '[data-floating-layer="dialog"], [data-floating-layer="popover"], .command-palette-root, .connection-card',
-        )) return;
+        // Escape belongs to the topmost registered layer first — a chooser,
+        // a retained selected shape, or any other floating surface consumes
+        // it before Focus mode may exit.
+        if (!layerStackIsEmpty()) return;
         e.preventDefault();
         toggleFocusMode();
         return;
@@ -784,7 +784,7 @@ export function App(): React.JSX.Element {
     {
       id: "toggle-study",
       title: marginVisible && !focusMode ? "Hide Study" : "Show Study",
-      detail: "Toggle the Living Margin",
+      detail: "Toggle the Study panel",
       keywords: ["margin", "panel", "references", "language"],
     },
     {

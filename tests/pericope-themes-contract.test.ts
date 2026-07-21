@@ -29,7 +29,7 @@ test("Onyx reaches portals and all four marking surfaces through isDarkTheme", (
   const surface = read("src/renderer/components/MarkingSurface.tsx");
   const main = read("src/electron/main.ts");
   const qa = read("scripts/qa-theme-tour.mjs");
-  assert.equal((surface.match(/isDarkTheme\(theme\)/g) ?? []).length, 2);
+  assert.equal((surface.match(/isDarkTheme\(theme\)/g) ?? []).length, 3);
   assert.doesNotMatch(surface, /theme === "dark" \|\| theme === "dark-glass"/);
   assert.match(main, /function normalizeTheme/);
   assert.match(main, /theme:\s*normalizeTheme\(partial\.theme \?\? store\.store\.theme\)/);

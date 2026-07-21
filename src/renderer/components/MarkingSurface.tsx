@@ -7,9 +7,12 @@ import type {
   ConnectionRecordV2,
 } from "../../core/annotations/types.js";
 import type { MarkingSurface as MarkingSurfaceId } from "../api.js";
+import { isTopLayer, useLayer, type LayerKind } from "../layerStack.js";
 import { isDarkTheme, type AppTheme } from "../theme.js";
 import type { ConnectionMutationUiOutcome } from "../utils/connectionMutationReconciliation.js";
 import type { ConnectionPaintAnchor } from "../utils/connectionPaint.js";
+import { lastInputModality } from "../utils/inputModality.js";
+import { RELATIONSHIPS, relationshipLabel } from "../utils/relationshipVocabulary.js";
 
 type ConnectionPassageAnchor = Pick<
   ConnectionAnchorV2,
@@ -134,26 +137,11 @@ interface ConnectionSession {
   recoveryState?: "committed-pending" | "unconfirmed";
 }
 
-interface RelationshipOption {
-  id: ConnectionKind;
-  label: string;
-  description: string;
-}
-
 interface PigmentOption {
   id: PigmentId;
   label: string;
   description: string;
 }
-
-const RELATIONSHIPS: readonly RelationshipOption[] = [
-  { id: "link:parallel", label: "Parallelism", description: "The same thought, said again in other words." },
-  { id: "link:contrast", label: "Contrast", description: "Two things set against each other." },
-  { id: "link:echo", label: "Echo", description: "A word or phrase that returns from earlier." },
-  { id: "mirror", label: "Mirror", description: "Paired halves that answer each other in order." },
-  { id: "series", label: "Series", description: "A phrase or idea recurring as a refrain." },
-  { id: "hinge", label: "Hinge", description: "One line that turns or weighs both sides." },
-] as const;
 
 const PIGMENTS: readonly PigmentOption[] = [
   { id: "yellow", label: "Amber", description: "A warm amber wash." },
@@ -169,7 +157,7 @@ const RADIAL_PIGMENT_DELAYS = [40, 24, 8, 24, 40] as const;
 
 const DOCK_MODES = [
   { id: "read", label: "Read" },
-  { id: "wash", label: "Highlight" },
+  { id: "wash", label: "Wash" },
   { id: "connect", label: "Connect" },
   { id: "note", label: "Note" },
   { id: "erase", label: "Erase" },
@@ -177,14 +165,76 @@ const DOCK_MODES = [
 
 const REST_GUIDANCE = "Select words, or choose a tool to keep in hand.";
 
-type DockModeId = typeof DOCK_MODES[number]["id"];
+const REST_HINT_SEEN_KEY = "pericope.marking-rest-hint-seen";
 
-function relationshipLabel(kind: ConnectionKind): string {
-  return RELATIONSHIPS.find((option) => option.id === kind)?.label ?? kind;
+/**
+ * First-run discoverability for the quietest surface: the palette summons
+ * itself on selection, but a brand-new reader cannot know that. One calm
+ * hint, shown until the first marking is made, then never again.
+ */
+function MarkingRestHint({
+  stageBounds,
+  theme,
+}: {
+  stageBounds: { left: number; bottom: number; width: number };
+  theme: AppTheme;
+}): React.JSX.Element | null {
+  const [seen, setSeen] = useState(() => {
+    try {
+      return window.localStorage.getItem(REST_HINT_SEEN_KEY) === "1";
+    } catch {
+      return true;
+    }
+  });
+  useEffect(() => {
+    if (seen) return undefined;
+    const timer = window.setTimeout(() => setSeen(true), 12_000);
+    return () => window.clearTimeout(timer);
+  }, [seen]);
+  if (seen) return null;
+  const materialClass = `${isDarkTheme(theme) ? "dark " : ""}theme-${theme}`;
+  return createPortal(
+    <p
+      className={`marking-rest-hint ${materialClass}`}
+      style={{
+        left: stageBounds.left + stageBounds.width / 2,
+        bottom: Math.max(window.innerHeight - stageBounds.bottom + 14, 14),
+      }}
+    >
+      Drag across words to mark them — washes and relationships.
+    </p>,
+    document.body,
+  );
 }
+
+/** The hint retires for good once the reader has made their first selection. */
+function markRestHintSeen(): void {
+  try {
+    window.localStorage.setItem(REST_HINT_SEEN_KEY, "1");
+  } catch { /* storage may be unavailable; the hint simply stays session-scoped */ }
+}
+
+type DockModeId = typeof DOCK_MODES[number]["id"];
 
 function pigmentLabel(color: PigmentId): string {
   return PIGMENTS.find((option) => option.id === color)?.label ?? color;
+}
+
+/** One armed-tool description for every surface: same words, same order. */
+function describeArmedTool(armedTool: ToolMode | null): { key: string | null; label: string; guidance: string } {
+  const key = armedTool?.type === "wash" ? `wash:${armedTool.color}`
+    : armedTool?.type === "connect" ? `connect:${armedTool.kind}`
+      : armedTool?.type ?? null;
+  const label = armedTool?.type === "wash" ? `${pigmentLabel(armedTool.color)} wash`
+    : armedTool?.type === "connect" ? relationshipLabel(armedTool.kind)
+      : armedTool?.type === "note" ? "Note"
+        : armedTool?.type === "erase" ? "Erase" : "";
+  const guidance = armedTool?.type === "connect"
+    ? "Select words to add the next relationship phrase."
+    : armedTool?.type === "wash"
+      ? "Select more words to lay this wash again."
+      : "Select words to use this tool again.";
+  return { key, label, guidance };
 }
 
 function anchorKey(anchor: ConnectionAnchorV2): string {
@@ -227,7 +277,8 @@ function ToolGlyph({ tool }: { tool: "read" | "wash" | "connect" | "note" | "era
 }
 
 function PigmentSwatch({ color }: { color: PigmentId }): React.JSX.Element {
-  const forcedCodes: Record<PigmentId, string> = { yellow: "A", green: "G", blue: "S", pink: "R", purple: "V" };
+  // Forced-colors mode cannot show the wash, so the swatch names it instead.
+  const forcedCodes: Record<PigmentId, string> = { yellow: "Amber", green: "Sage", blue: "Sky", pink: "Rose", purple: "Violet" };
   return <span className={`marking-pigment marking-pigment-${color}`} aria-hidden="true" data-forced-code={forcedCodes[color]} />;
 }
 
@@ -355,7 +406,7 @@ function PigmentChoices({
           data-pigment={option.id}
           aria-checked={activateOnMove ? selected === option.id : undefined}
           aria-pressed={activateOnMove ? undefined : selected === option.id}
-          aria-label={`${option.label} highlight. ${option.description}`}
+          aria-label={`${option.label} wash. ${option.description}`}
           aria-describedby={helpId}
           title={option.description}
           tabIndex={roving.activeIndex === index ? 0 : -1}
@@ -502,7 +553,7 @@ function PaletteVocabulary({
       </section>
       <section className="marking-palette-vocabulary" role="group" aria-labelledby="marking-palette-highlight-label">
         <div className="marking-palette-section-heading">
-          <span id="marking-palette-highlight-label">Highlight</span>
+          <span id="marking-palette-highlight-label">Wash</span>
           <small>Choose a quiet wash.</small>
         </div>
         <div className="marking-choice-grid marking-pigment-grid">
@@ -515,7 +566,7 @@ function PaletteVocabulary({
                 type="button"
                 className={`marking-choice marking-wash${selectedWash === option.id ? " active" : ""}`}
                 data-pigment={option.id}
-                aria-label={`Shift+${pigmentIndex + 1}. ${option.label} highlight. ${option.description}`}
+                aria-label={`Shift+${pigmentIndex + 1}. ${option.label} wash. ${option.description}`}
                 aria-keyshortcuts={`Shift+${pigmentIndex + 1}`}
                 aria-pressed={selectedWash === option.id}
                 aria-describedby={helpId}
@@ -689,6 +740,20 @@ export function MarkingSurface({
 
   const effectiveStageBounds = stageBounds;
   const persistentSurface = surface === "rail" || surface === "dock";
+  // Escape ownership rank in the shared layer registry. An open tray or an
+  // in-progress session is deliberate work and cancels before a passive
+  // connection card; a plain text selection yields to it. Focus mode hides
+  // every marking surface, so nothing registers there.
+  const layerKind: LayerKind | null = focusMode
+    ? null
+    : tray != null
+      ? "toolbar"
+      : session != null || tool != null
+        ? "marking-session"
+        : selection != null
+          ? "marking-selection"
+          : null;
+  const layerRef = useLayer(layerKind);
   const stageClass = effectiveStageBounds.width < 480 ? "narrow" : effectiveStageBounds.width < 760 || effectiveStageBounds.height < 480 ? "compact" : "wide";
   const paletteLayoutHint = effectiveStageBounds.width < 480 || effectiveStageBounds.height < 360 ? "sheet" : "floating";
   const radialLayoutHint = effectiveStageBounds.width <= 640 || effectiveStageBounds.height <= 420 ? "sheet" : "wheel";
@@ -1345,7 +1410,7 @@ export function MarkingSurface({
       const fallback = surface === "dock"
         ? toolbar?.querySelector<HTMLButtonElement>('button[role="radio"][aria-checked="true"]')
         : [...(toolbar?.querySelectorAll<HTMLButtonElement>("button") ?? [])]
-          .find((button) => button.getAttribute("aria-label")?.startsWith(openerMode === "wash" ? "Highlight" : "Connect"));
+          .find((button) => button.getAttribute("aria-label")?.startsWith(openerMode === "wash" ? "Wash" : "Connect"));
       fallback?.focus({ preventScroll: true });
     }, 0);
   }, [activeSelectionNonce, clearPendingFocusRestore, surface, tool]);
@@ -1504,8 +1569,8 @@ export function MarkingSurface({
       }
       if (!releaseOperation(operation)) return false;
       const message = ok
-        ? `${pigmentLabel(nextTool.color)} highlight applied.`
-        : "The highlight could not be saved. Selection restored for retry.";
+        ? `${pigmentLabel(nextTool.color)} wash applied.`
+        : "The wash could not be saved. Selection restored for retry.";
       setStatus(message);
       if (!ok && surface === "dock") {
         setSelectionFailure({ nonce: current.nonce, tool: nextTool, message, oneShot: Boolean(options.oneShot) });
@@ -1537,8 +1602,8 @@ export function MarkingSurface({
     }
     if (!releaseOperation(operation)) return false;
     const message = ok
-      ? "Selected highlight removed."
-      : "The highlight could not be removed. Selection restored for retry.";
+      ? "Selected wash removed."
+      : "The wash could not be removed. Selection restored for retry.";
     setStatus(message);
     if (!ok && surface === "dock") {
       setSelectionFailure({ nonce: current.nonce, tool: nextTool, message, oneShot: Boolean(options.oneShot) });
@@ -1662,7 +1727,7 @@ export function MarkingSurface({
         if (tool?.type === "wash") setStatus("Select words to lay this wash.");
         else if (tool?.type === "connect") setStatus("Select words to add the next relationship phrase.");
         else if (tool?.type === "note") setStatus("Select a passage to open a note.");
-        else if (tool?.type === "erase") setStatus("Select a highlighted passage to remove its mark.");
+        else if (tool?.type === "erase") setStatus("Select a passage with a wash to remove its mark.");
         else setStatus(REST_GUIDANCE);
       }, 0);
       return () => window.clearTimeout(timer);
@@ -1725,9 +1790,8 @@ export function MarkingSurface({
   }, [busy, contextKey, extensionRequest, onClearSelection, onRequestReadingFocus]);
 
   useEffect(() => {
-    if (!selection || persistentSurface || tool) return;
-    setTray("intent");
-  }, [persistentSurface, selection, tool]);
+    if (selection != null) markRestHintSeen();
+  }, [selection]);
 
   useEffect(() => {
     if (activeSelectionNonce == null || persistentSurface || tool) return;
@@ -1737,13 +1801,18 @@ export function MarkingSurface({
         radialRoving.setActiveIndex(0);
         setRadialHelp(RELATIONSHIPS[0] ?? null);
       }
-      firstChoiceRef.current?.focus({ preventScroll: true });
+      // Focus transfers into the toolbar only for keyboard users; for pointer
+      // and screen-reader users the jump would yank them out of the text.
+      if (lastInputModality() === "keyboard") {
+        firstChoiceRef.current?.focus({ preventScroll: true });
+      }
     }, 0);
     return () => window.clearTimeout(timer);
   }, [activeSelectionNonce, palettePlacement?.nonce, persistentSurface, surface, tool]);
 
   useEffect(() => {
     if (surface !== "rail" || activeSelectionNonce == null || tool || tray != null || !railIntentFocusReady) return;
+    if (lastInputModality() !== "keyboard") return;
     const timer = window.setTimeout(() => firstChoiceRef.current?.focus({ preventScroll: true }), 0);
     return () => window.clearTimeout(timer);
   }, [activeSelectionNonce, railIntentFocusReady, surface, tool, tray]);
@@ -1752,6 +1821,7 @@ export function MarkingSurface({
     if (surface !== "dock" || activeSelectionNonce == null) return;
     if (lastDockAutofocusedSelectionRef.current === activeSelectionNonce) return;
     if (tool || tray != null || session || busy || selectionFailure?.nonce === activeSelectionNonce) return;
+    if (lastInputModality() !== "keyboard") return;
     const timer = window.setTimeout(() => {
       const target = firstChoiceRef.current;
       if (!target) return;
@@ -1800,12 +1870,11 @@ export function MarkingSurface({
       if (focusMode) return;
       // This listener runs in capture so the active marking layer owns Escape
       // before App's older window listener can interpret it as "exit Focus".
-      // Explicitly yield when a later/topmost floating layer is present; its
-      // own handler must still receive the event and close only that layer.
-      const higherEscapeLayers = [...document.querySelectorAll<HTMLElement>(
-        '[data-floating-layer="dialog"], [data-floating-layer="popover"], .command-palette-root, .connection-card',
-      )];
-      if (higherEscapeLayers.at(-1)) return;
+      // Ownership is decided by the shared layer registry: an open marking
+      // session or tray outranks a passive connection card, while a plain
+      // text selection yields to it — the deliberate work cancels first.
+      if (!layerKind) return;
+      if (!isTopLayer(layerRef.current)) return;
       if (busy || activeOperation.current != null) {
         event.preventDefault();
         event.stopImmediatePropagation();
@@ -1843,7 +1912,7 @@ export function MarkingSurface({
         if (tool?.type === "wash") setStatus("Select words to lay this wash.");
         else if (tool?.type === "connect") setStatus("Select words to add the next relationship phrase.");
         else if (tool?.type === "note") setStatus("Select a passage to open a note.");
-        else if (tool?.type === "erase") setStatus("Select a highlighted passage to remove its mark.");
+        else if (tool?.type === "erase") setStatus("Select a passage with a wash to remove its mark.");
         else setStatus(REST_GUIDANCE);
         if (surface === "palette" && !tool) setKeepActive(false);
         onDismissSelection();
@@ -1863,7 +1932,7 @@ export function MarkingSurface({
     };
     window.addEventListener("keydown", onKeyDown, true);
     return () => window.removeEventListener("keydown", onKeyDown, true);
-  }, [activeSelectionNonce, busy, clearPendingFocusRestore, closeTray, focusMode, onDismissSelection, onRequestReadingFocus, persistentSurface, selection, session, surface, tool, tray]);
+  }, [activeSelectionNonce, busy, clearPendingFocusRestore, closeTray, focusMode, layerKind, onDismissSelection, onRequestReadingFocus, persistentSurface, selection, session, surface, tool, tray]);
 
   const chooseNote = (): void => {
     if (busy || activeOperation.current != null || session?.recoveryState) {
@@ -1903,7 +1972,7 @@ export function MarkingSurface({
     if (surface === "palette") setKeepActive(false);
     setTool(next);
     setTray(null);
-    setStatus("Select a highlighted passage to remove its mark.");
+    setStatus("Select a passage with a wash to remove its mark.");
     if (!selection) {
       onRequestReadingFocus();
       return;
@@ -2024,7 +2093,7 @@ export function MarkingSurface({
   ) : tray === "wash" ? (
     <div key="wash" ref={trayPanelRef} className="marking-choice-panel">
       <div className="marking-panel-heading">
-        <span>Highlight</span>
+        <span>Wash</span>
         <small
           id={surface === "dock" ? "marking-dock-choice-help" : undefined}
           title={surface === "dock" && dockHelp ? dockHelp.description : undefined}
@@ -2048,25 +2117,16 @@ export function MarkingSurface({
 
   if (surface === "palette") {
     const armedTool = keepActive ? tool : null;
-    if (!selection && !session && !armedTool) return null;
+    if (!selection && !session && !armedTool) {
+      return <MarkingRestHint stageBounds={effectiveStageBounds} theme={theme} />;
+    }
     const materialClass = `${isDarkTheme(theme) ? "dark " : ""}theme-${theme}`;
     const placement = selection && palettePlacement?.nonce === selection.nonce ? palettePlacement : null;
     const paletteLayout = placement?.layout ?? paletteLayoutHint;
     const paletteQuote = selection
       ? selection.quote.length > 42 ? `${selection.quote.slice(0, 41)}…` : selection.quote
       : "";
-    const armedKey = armedTool?.type === "wash" ? `wash:${armedTool.color}`
-      : armedTool?.type === "connect" ? `connect:${armedTool.kind}`
-        : armedTool?.type ?? null;
-    const armedLabel = armedTool?.type === "wash" ? `${pigmentLabel(armedTool.color)} highlight`
-      : armedTool?.type === "connect" ? relationshipLabel(armedTool.kind)
-        : armedTool?.type === "note" ? "Note"
-          : armedTool?.type === "erase" ? "Erase" : "";
-    const armedGuidance = armedTool?.type === "connect"
-      ? "Select words to add the next relationship phrase."
-      : armedTool?.type === "wash"
-        ? "Select more words to lay this wash again."
-        : "Select words to use this tool again.";
+    const { key: armedKey, label: armedLabel, guidance: armedGuidance } = describeArmedTool(armedTool);
     const content = (
       <div
         className={`marking-floating-host ${materialClass}`}
@@ -2103,7 +2163,7 @@ export function MarkingSurface({
                 <div className="marking-palette-header-actions">
                   <button type="button" className="marking-palette-action" aria-label="Add note" title="Add note" onMouseDown={(event) => event.preventDefault()} onClick={chooseNote}><PaletteHeaderGlyph icon="note" /></button>
                   {selection.hasExistingHighlight && (
-                    <button type="button" className="marking-palette-action" aria-label={selection.phraseMode ? "Remove selected text from highlight" : "Remove highlight"} title="Remove highlight" onMouseDown={(event) => event.preventDefault()} onClick={chooseErase}><PaletteHeaderGlyph icon="erase" /></button>
+                    <button type="button" className="marking-palette-action" aria-label={selection.phraseMode ? "Remove selected text from wash" : "Remove wash"} title="Remove wash" onMouseDown={(event) => event.preventDefault()} onClick={chooseErase}><PaletteHeaderGlyph icon="erase" /></button>
                   )}
                   <button
                     type="button"
@@ -2134,7 +2194,7 @@ export function MarkingSurface({
                       : selection.mixedColors ? "Mixed washes selected — choose one to unify them."
                         : "Connect the words — or lay a wash."}
                 </span>
-                <span className="marking-palette-shortcuts" aria-hidden="true"><kbd>1–6</kbd> connect <i>·</i> <kbd>⇧1–5</kbd> highlight</span>
+                <span className="marking-palette-shortcuts" aria-hidden="true"><kbd>1–6</kbd> connect <i>·</i> <kbd>⇧1–5</kbd> wash</span>
               </footer>
             </div>
           </div>
@@ -2144,7 +2204,7 @@ export function MarkingSurface({
           <div className="marking-armed-status" role="status" aria-live="polite" data-tool-armed={armedKey}>
             <span className="marking-armed-tag">{armedLabel}</span>
             <span className="marking-armed-copy">{armedGuidance}</span>
-            <button type="button" onClick={() => putDownTool()}>Put tool down</button>
+            <button type="button" onClick={() => putDownTool()}>Put down</button>
           </div>
         )}
       </div>
@@ -2170,24 +2230,13 @@ export function MarkingSurface({
       ? (radialFocusBox.top + radialFocusBox.bottom) / 2
       : radialCenterY;
     const radialArmedTool = keepActive ? tool : null;
-    const radialArmedKey = radialArmedTool?.type === "wash" ? `wash:${radialArmedTool.color}`
-      : radialArmedTool?.type === "connect" ? `connect:${radialArmedTool.kind}`
-        : radialArmedTool?.type ?? null;
-    const radialArmedLabel = radialArmedTool?.type === "wash" ? `${pigmentLabel(radialArmedTool.color)} highlight`
-      : radialArmedTool?.type === "connect" ? relationshipLabel(radialArmedTool.kind)
-        : radialArmedTool?.type === "note" ? "Note"
-          : radialArmedTool?.type === "erase" ? "Erase" : "";
-    const radialArmedGuidance = radialArmedTool?.type === "connect"
-      ? "Select words to add the next relationship phrase."
-      : radialArmedTool?.type === "wash"
-        ? "Select more words to lay this wash again."
-        : "Select words to use this tool again.";
+    const { key: radialArmedKey, label: radialArmedLabel, guidance: radialArmedGuidance } = describeArmedTool(radialArmedTool);
     const radialFeedback = status.includes("could not") || status.includes("Finishing") || status.includes("restored")
       ? status
       : null;
     const radialHelpCopy = radialFeedback
       ?? (keepActive
-        ? "The next highlight or connection you choose will remain in hand."
+        ? "The next wash or connection you choose will remain in hand."
         : radialHelp?.description
           ?? (visibleSelection?.mixedColors
             ? "Mixed washes selected — choose one to unify them."
@@ -2261,7 +2310,6 @@ export function MarkingSurface({
               ref={radialRef}
               className={`marking-radial${placement ? " is-placed" : " is-measuring"}`}
               role="dialog"
-              aria-modal="true"
               aria-busy={busy}
               aria-label="Radial marking menu"
               data-panel-side={placement?.panelSide ?? "right"}
@@ -2336,7 +2384,7 @@ export function MarkingSurface({
                       className={`marking-radial-petal marking-radial-wash${active ? " active" : ""}`}
                       style={style}
                       data-pigment={option.id}
-                      aria-label={`${option.label} highlight`}
+                      aria-label={`${option.label} wash`}
                       aria-describedby="marking-radial-help"
                       aria-pressed={active}
                       title={option.description}
@@ -2365,8 +2413,8 @@ export function MarkingSurface({
                 <button
                   type="button"
                   className={`marking-radial-keep${keepActive ? " active" : ""}`}
-                  aria-label={keepActive ? "Tool will stay active" : "Keep next highlight or connection active"}
-                  title={keepActive ? "Tool will stay active" : "Keep next highlight or connection active"}
+                  aria-label={keepActive ? "Tool will stay active" : "Keep next wash or connection active"}
+                  title={keepActive ? "Tool will stay active" : "Keep next wash or connection active"}
                   aria-pressed={keepActive}
                   disabled={busy}
                   onMouseDown={(event) => event.preventDefault()}
@@ -2384,7 +2432,7 @@ export function MarkingSurface({
                 </span>
                 <div className="marking-radial-card-actions">
                   <button type="button" aria-label="Add note" title="Add note" disabled={busy} onMouseDown={(event) => event.preventDefault()} onClick={chooseNote}><PaletteHeaderGlyph icon="note" /></button>
-                  {visibleSelection.hasExistingHighlight && <button type="button" aria-label={visibleSelection.phraseMode ? "Remove selected text from highlight" : "Remove highlight"} title="Remove highlight" disabled={busy} onMouseDown={(event) => event.preventDefault()} onClick={chooseErase}><PaletteHeaderGlyph icon="erase" /></button>}
+                  {visibleSelection.hasExistingHighlight && <button type="button" aria-label={visibleSelection.phraseMode ? "Remove selected text from wash" : "Remove wash"} title="Remove wash" disabled={busy} onMouseDown={(event) => event.preventDefault()} onClick={chooseErase}><PaletteHeaderGlyph icon="erase" /></button>}
                   <button type="button" className="marking-radial-close" aria-label="Close radial menu" title="Close" disabled={busy} onMouseDown={(event) => event.preventDefault()} onClick={onDismissSelection}><PaletteHeaderGlyph icon="close" /></button>
                 </div>
               </aside>
@@ -2396,7 +2444,7 @@ export function MarkingSurface({
           <div className="marking-armed-status" role="status" aria-live="polite" data-tool-armed={radialArmedKey}>
             <span className="marking-armed-tag">{radialArmedLabel}</span>
             <span className="marking-armed-copy">{radialArmedGuidance}</span>
-            <button type="button" onClick={() => putDownTool()}>Put tool down</button>
+            <button type="button" onClick={() => putDownTool()}>Put down</button>
           </div>
         )}
         {!visibleSelection && !session && !radialArmedTool && busy && (
@@ -2417,7 +2465,7 @@ export function MarkingSurface({
     // single-line preview, but the accessible text and title must never lose
     // words from the user's exact selection.
     const railQuote = selection?.quote ?? "";
-    const railTrayTitle = tray === "wash" ? "Highlight" : tray === "connect" ? "Connect" : "Mark selection";
+    const railTrayTitle = tray === "wash" ? "Wash" : tray === "connect" ? "Connect" : "Mark selection";
     const railTraySubtitle = selection
       ? railQuote
       : tray === "wash" || tray === "connect" ? "Choose the tool to carry" : "";
@@ -2434,14 +2482,14 @@ export function MarkingSurface({
       transform: "none",
       visibility: railTrayPlacement ? "visible" : "hidden",
     } as React.CSSProperties;
-    const railToolLabel = tool?.type === "wash" ? `${pigmentLabel(tool.color)} highlight`
+    const railToolLabel = tool?.type === "wash" ? `${pigmentLabel(tool.color)} wash`
       : tool?.type === "connect" ? relationshipLabel(tool.kind)
         : tool?.type === "note" ? "Note" : tool?.type === "erase" ? "Erase" : "";
     const railToolGuidance = tool?.type === "connect"
       ? "Select words to add the next relationship phrase."
       : tool?.type === "wash" ? "Select words to lay this wash."
         : tool?.type === "note" ? "Select a passage to open a note."
-          : "Select a highlighted passage to remove its mark.";
+          : "Select a passage with a wash to remove its mark.";
     const railArmedKey = tool?.type === "wash" ? `wash:${tool.color}`
       : tool?.type === "connect" ? `connect:${tool.kind}`
         : tool?.type ?? "false";
@@ -2460,7 +2508,7 @@ export function MarkingSurface({
             type="button"
             disabled={busy || !!session}
             className={tool?.type === "wash" ? "active" : ""}
-            aria-label={currentWash ? `Highlight: ${pigmentLabel(currentWash)}` : "Highlight"}
+            aria-label={currentWash ? `Wash: ${pigmentLabel(currentWash)}` : "Wash"}
             aria-pressed={tool?.type === "wash"}
             aria-haspopup="dialog"
             aria-expanded={tray === "wash"}
@@ -2525,7 +2573,7 @@ export function MarkingSurface({
             ref={railTrayRef}
             className={`marking-rail-tray${railTrayPlacement ? " is-placed" : ""}`}
             role="dialog"
-            aria-label={tray === "wash" ? "Choose a highlight" : tray === "connect" ? "Choose a connection" : "Mark selected text"}
+            aria-label={tray === "wash" ? "Choose a wash" : tray === "connect" ? "Choose a connection" : "Mark selected text"}
             data-rail-tray-mode={tray ?? "intent"}
             data-rail-tray-placement={railTrayPlacement?.placement}
             style={railTrayStyle}
@@ -2559,7 +2607,7 @@ export function MarkingSurface({
               ) : (
                 <div className="marking-rail-intents">
                   <button ref={firstChoiceRef} type="button" className="marking-intent" onMouseDown={(event) => event.preventDefault()} onClick={(event) => openTray("wash", event.currentTarget)}>
-                    <ToolGlyph tool="wash" /><span><strong>Highlight</strong><small>Lay a quiet wash</small></span>
+                    <ToolGlyph tool="wash" /><span><strong>Wash</strong><small>Lay a quiet wash</small></span>
                   </button>
                   <button type="button" className="marking-intent" onMouseDown={(event) => event.preventDefault()} onClick={(event) => openTray("connect", event.currentTarget)}>
                     <ToolGlyph tool="connect" /><span><strong>Connect</strong><small>Relate these words</small></span>
@@ -2577,7 +2625,7 @@ export function MarkingSurface({
             {sessionNode ?? <>
               <span className="marking-rail-status-tag">{railToolLabel}</span>
               <span className="marking-rail-status-copy">{status || railToolGuidance}</span>
-              <button type="button" className="marking-rail-put-down" onClick={() => putDownTool()}>Put tool down</button>
+              <button type="button" className="marking-rail-put-down" onClick={() => putDownTool()}>Put down</button>
             </>}
           </div>
         )}
@@ -2609,7 +2657,7 @@ export function MarkingSurface({
       setTray(null);
       setStatus(id === "note"
         ? "Note tool ready · select a passage to open a note."
-        : "Erase tool ready · select a highlighted passage to remove its mark.");
+        : "Erase tool ready · select a passage with a wash to remove its mark.");
       return;
     }
     if (id === "note") { chooseNote(); return; }
@@ -2668,12 +2716,12 @@ export function MarkingSurface({
   const dockBusyCopy = session
     ? "Saving connection…"
     : dockMode === "erase"
-      ? "Removing highlight…"
+      ? "Removing wash…"
       : dockMode === "wash"
-        ? "Saving highlight…"
+        ? "Saving wash…"
         : "Finishing change…";
   const dockToolLabel = tool?.type === "wash"
-    ? `${pigmentLabel(tool.color)} highlight`
+    ? `${pigmentLabel(tool.color)} wash`
     : tool?.type === "connect"
       ? relationshipLabel(tool.kind)
       : tool?.type === "note"
@@ -2715,7 +2763,7 @@ export function MarkingSurface({
           onFocus={() => dockIntentRoving.setActiveIndex(0)}
           onKeyDown={(event) => { dockIntentRoving.onKeyDown(event, 0); }}
           onClick={(event) => openTray("wash", event.currentTarget)}
-        ><ToolGlyph tool="wash" /><span>Highlight</span></button>
+        ><ToolGlyph tool="wash" /><span>Wash</span></button>
         <button
           ref={(node) => { dockIntentRoving.refs.current[1] = node; }}
           type="button"
@@ -2808,7 +2856,7 @@ export function MarkingSurface({
         <div id="marking-dock-context" className="marking-dock-context" data-dock-context={dockContextKind}>
           {dockContext}
         </div>
-        <div className="marking-dock-actions" aria-label="Selected highlight actions">
+        <div className="marking-dock-actions" aria-label="Selected wash actions">
           {selection?.hasExistingHighlight && (
             <span className="marking-dock-hit" data-highlight-color={selectedWash ?? (selection.mixedColors ? "mixed" : "unknown")}>
               {selectedWash && <PigmentSwatch color={selectedWash} />}
@@ -2830,8 +2878,8 @@ export function MarkingSurface({
             <button
               type="button"
               data-dock-action="erase"
-              data-tooltip={selection.phraseMode ? "Remove selected words" : "Remove highlight"}
-              aria-label={selection.phraseMode ? "Remove selected text from highlight" : "Remove selected highlight"}
+              data-tooltip={selection.phraseMode ? "Remove selected words" : "Remove wash"}
+              aria-label={selection.phraseMode ? "Remove selected text from wash" : "Remove selected highlight"}
               disabled={busy}
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => applyDockSelectionAction("erase")}

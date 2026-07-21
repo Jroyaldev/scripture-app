@@ -43,6 +43,9 @@ import {
   type ConnectionRowLayoutInput,
   type ConnectionRowLayoutMeasurement,
 } from "../utils/connectionRowLayout.js";
+import { isTopLayer, useLayer } from "../layerStack.js";
+import { locateTextOffset } from "../utils/textOffsets.js";
+import { phraseCount } from "../utils/relationshipVocabulary.js";
 import { useUnderlayMeasurementLifecycle } from "../utils/useUnderlayMeasurementLifecycle.js";
 
 interface PaintedUnderline {
@@ -129,6 +132,8 @@ interface Props {
   /** Exact aggregate tick membership whose chooser is currently mounted. */
   openTickGroupMemberIds: readonly string[] | null;
   onSelectConnection: (connection: ConnectionRecord | null, focusInspector?: boolean) => void;
+  /** Dismiss the focused relationship shape without releasing its hold. */
+  onDismissFocus: () => void;
   onChooseConnections: (
     connections: readonly ConnectionRecord[],
     anchorRect: DOMRect,
@@ -207,7 +212,7 @@ const EMPHASIS_PAD_X = 1;
 const EMPHASIS_PAD_Y = 0.35;
 const EMPHASIS_RADIUS = 2.5;
 const PREVIEW_ENTER_MS = 140;
-const PREVIEW_LEAVE_MS = 90;
+const PREVIEW_LEAVE_MS = 140;
 const CONNECTION_AUTHORING_DRAFT_ID = "__connection-authoring-draft__";
 const MARKING_SELECTION_EMPHASIS_PREFIX = "__marking-selection-emphasis__:";
 
@@ -375,19 +380,6 @@ export function orderConnectionTicks<T extends { connection: { id: string }; foc
 ): T[] {
   return [...items].sort((left, right) =>
     left.focusY - right.focusY || left.connection.id.localeCompare(right.connection.id));
-}
-
-function locateOffset(root: HTMLElement, charOffset: number): { node: Node; offset: number } | null {
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  let consumed = 0;
-  let node = walker.nextNode();
-  while (node) {
-    const length = node.textContent?.length ?? 0;
-    if (consumed + length >= charOffset) return { node, offset: charOffset - consumed };
-    consumed += length;
-    node = walker.nextNode();
-  }
-  return null;
 }
 
 function mergeRenderedLines(wordRuns: RouteRect[]): RouteRect[] {
@@ -677,8 +669,8 @@ function rangeRectsForAnchor(
       && text.slice(paintFragment.char_start, paintFragment.char_end) === paintFragment.quote;
     if (!packageExact) continue;
     const range = document.createRange();
-    const start = locateOffset(span, paintFragment.char_start);
-    const end = locateOffset(span, paintFragment.char_end);
+    const start = locateTextOffset(span, paintFragment.char_start);
+    const end = locateTextOffset(span, paintFragment.char_end);
     if (!start || !end) continue;
     range.setStart(start.node, start.offset);
     range.setEnd(end.node, end.offset);
@@ -757,12 +749,19 @@ export function ConnectionUnderlay({
   heldConnectionIds,
   openTickGroupMemberIds,
   onSelectConnection,
+  onDismissFocus,
   onChooseConnections,
   wordHitTestRef,
 }: Props): React.JSX.Element | null {
   const [painted, setPainted] = useState<PaintedConnection[]>([]);
   const [size, setSize] = useState<UnderlaySize>(EMPTY_UNDERLAY_SIZE);
   const [previewConnectionId, setPreviewConnectionId] = useState<string | null>(null);
+  // A woken hover preview is a transient layer: dialogs, choosers, and all
+  // marking chrome outrank it in the shared registry, and a selected shape
+  // suppresses preview entirely.
+  const previewLayerRef = useLayer(
+    !focusMode && previewConnectionId != null && selectedConnectionId == null ? "preview" : null,
+  );
   const [readyRouteId, setReadyRouteId] = useState<string | null>(null);
   const [veilReady, setVeilReady] = useState(false);
   const [rovingTickId, setRovingTickId] = useState<string | null>(null);
@@ -1247,15 +1246,15 @@ export function ConnectionUnderlay({
     if (focusMode || previewConnectionId == null || selectedConnectionId != null) return undefined;
     const handleEscape = (event: KeyboardEvent): void => {
       if (event.key !== "Escape" || event.defaultPrevented) return;
-      if (document.querySelector(
-        '[data-floating-layer="dialog"], [data-floating-layer="popover"], .command-palette-root, .marking-radial-scrim',
-      )) return;
+      // The registry already ranks every dialog, chooser, and marking chrome
+      // (including the radial) above a hover preview.
+      if (!isTopLayer(previewLayerRef.current)) return;
       event.preventDefault();
       clearPreview(false);
     };
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
-  }, [clearPreview, focusMode, previewConnectionId, selectedConnectionId]);
+  }, [clearPreview, focusMode, previewConnectionId, previewLayerRef, selectedConnectionId]);
 
   useEffect(() => {
     if (focusFrameRef.current != null) window.cancelAnimationFrame(focusFrameRef.current);
@@ -1315,7 +1314,7 @@ export function ConnectionUnderlay({
     visiblePainted.filter((item) => isDurablePaintRecord(item.connection)),
   );
   const tickPaintedById = new Map(tickPainted.map((item) => [item.connection.id, item]));
-  // Coarse input uses one uncompressed 24x44 lane per physical control. When
+  // Coarse input uses one uncompressed 38x44 hit target per physical control. When
   // that cannot fit, the lane planner returns a neutral aggregate whose
   // members remain individually available through the existing chooser.
   const tickLanes = planConnectionTickLanes(
@@ -1518,8 +1517,12 @@ export function ConnectionUnderlay({
                   event.stopPropagation();
                   clearPreview(false);
                   if (!isDurablePaintRecord(item.connection)) return;
-                  onSelectConnection(item.connection.durableRecord);
-                  setAnnouncement(`${item.connection.label} remains selected. Connection details are open in Study.`);
+                  // The trace is the one canvas element that clearly belongs
+                  // to the focused relationship: clicking it toggles that
+                  // focus back off. The held comparison set is untouched —
+                  // Release stays a deliberate card action.
+                  onDismissFocus();
+                  setAnnouncement(`${item.connection.label} focus dismissed. It remains held for comparison.`);
                 }}
               />}
               {focused && item.valid && item.contacts.map((point, index) => <circle
@@ -1576,7 +1579,7 @@ export function ConnectionUnderlay({
                 if (node) tickRefs.current.set(lane.key, node);
                 else tickRefs.current.delete(lane.key);
               }}
-              className={`connection-tick${kindClass}${focused ? " focused" : ""}${selected ? " selected" : ""}${userHeld ? " user-held" : ""}${needsSpace ? " held" : ""}`}
+              className={`connection-tick${kindClass}${focused ? " focused" : ""}${selected ? " selected" : ""}${userHeld ? " user-held" : ""}${needsSpace ? " needs-space" : ""}`}
               style={{ top: vertical, ...sideStyle }}
               data-connection-tick={aggregate ? "" : item.connection.id}
               data-connection-tick-members={aggregate ? encodeConnectionTickMemberIds(lane.memberIds) : undefined}
@@ -1587,7 +1590,7 @@ export function ConnectionUnderlay({
               tabIndex={effectiveRovingTickId === lane.key ? 0 : -1}
               aria-label={aggregate
                 ? `${aggregateLabel}${selected && focusedItem ? ` ${focusedItem.connection.label} is selected.` : ""}`
-                : `${item.connection.label}. ${item.connection.anchors.length} connected passages${needsSpace ? ". Line unavailable at this width" : ""}`}
+                : `${item.connection.label}. ${phraseCount(item.connection.anchors.length)}${userHeld && !selected ? ". Held" : ""}${needsSpace ? ". Line unavailable at this width" : ""}`}
               aria-pressed={userHeld}
               aria-expanded={aggregate ? aggregateExpanded : selected}
               aria-controls={aggregate
@@ -1597,6 +1600,11 @@ export function ConnectionUnderlay({
               onPointerEnter={() => {
                 if (aggregate) clearPreview(false);
                 else previewPointerIntent(item.connection.id);
+              }}
+              onPointerMove={() => {
+                // An Escape-cleared preview must not leave a dead zone under
+                // a resting pointer: any fresh movement re-arms hover intent.
+                if (!aggregate && previewConnectionId == null) previewPointerIntent(item.connection.id);
               }}
               onPointerLeave={() => clearPreview(true)}
               onFocus={() => {
@@ -1636,11 +1644,14 @@ export function ConnectionUnderlay({
                 onSelectConnection(item.connection.durableRecord, event.detail === 0);
                 setAnnouncement(selected
                   ? `${item.connection.label} remains selected. Connection details are open in Study.`
-                  : `${item.connection.label} selected. ${item.connection.anchors.length} moments. Connection details opened in Study.`);
+                  : `${item.connection.label} selected. ${phraseCount(item.connection.anchors.length)}. Connection details opened in Study.`);
               }}
             >
-              <span aria-hidden="true" />
-              {aggregate && <span aria-hidden="true" />}
+              <span className="connection-tick-dash" aria-hidden="true" />
+              {aggregate && <span className="connection-tick-dash" aria-hidden="true" />}
+              {needsSpace && selected && (
+                <span className="connection-tick-note" aria-hidden="true">Line hidden at this width</span>
+              )}
             </button>
           );
         })}

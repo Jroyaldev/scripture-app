@@ -14,7 +14,11 @@ test("Living Margin is one labelled frame with truthful chapter, reading, and se
   assert.match(margin, /Following your reading ·/);
   assert.match(margin, /Selection ·/);
   assert.match(margin, /Kept on/);
-  assert.match(margin, /data-margin-mode=\{marginMode\.toLowerCase\(\)\.replace\(" ", "-"\)\}/);
+  assert.match(margin, /data-margin-mode=\{marginMode\}/);
+  // The emitted mode tokens must match the stylesheet's accent selectors
+  // exactly — a "selection"/"selected" drift once hid the pinned accent.
+  assert.match(css, /\[data-margin-mode="selection"\] \.margin-frame-mode/);
+  assert.match(css, /\[data-margin-mode="kept"\] \.margin-frame-mode/);
   assert.match(margin, /data-margin-view="chapter"/);
   assert.match(margin, /data-margin-view="reading"/);
   assert.match(margin, /data-margin-view="selected"/);
@@ -143,7 +147,7 @@ test("chapter top remains an overview before the margin follows the reading eye-
   assert.match(page, /const marginHasPointer = document\.querySelector\("\.living-margin"\)\?\.matches\(":hover"\) \?\? false/);
   assert.doesNotMatch(page, /studyLockVerseRef/);
   assert.match(page, /const eyeY = rootRect\.top \+ rootRect\.height \* 0\.32/);
-  assert.match(page, /nearVerse=\{marginSubject\.kind === "selection"[\s\S]{0,180}?marginSubject\.kind === "kept"[\s\S]{0,120}?marginSubject\.verse[\s\S]{0,80}?: nearVerse\}/);
+  assert.match(page, /nearVerse=\{marginSubject\.kind === "selection"[\s\S]{0,180}?marginSubject\.kind === "kept"[\s\S]{0,120}?marginSubject\.verse[\s\S]{0,80}?: settledNearVerse\}/);
 });
 
 test("selected-passage note evidence never falls back to chapter-wide semantic data", () => {
@@ -170,4 +174,12 @@ test("Done clears selection and restores focus to the persistent Study heading",
   assert.match(margin, /ref=\{frameTitleRef\}[\s\S]*tabIndex=\{-1\}/);
   assert.match(page, /const handleClearMarginSelection = useCallback\(\(expectedNonce\?: number\) => \{[\s\S]*setSelectedVerses\(new Set\(\)\)/);
   assert.match(page, /onClearSelection=\{handleClearMarginSelection\}/);
+});
+
+test("the multi-verse Words chooser wraps APG arrows and keeps a stable focus owner", () => {
+  assert.match(margin, /const group = event\.currentTarget/);
+  assert.match(margin, /wordsVerse === pinnedRange\.end \? pinnedRange\.start : wordsVerse \+ 1/);
+  assert.match(margin, /wordsVerse === pinnedRange\.start \? pinnedRange\.end : wordsVerse - 1/);
+  assert.match(margin, /group\.querySelector<HTMLButtonElement>/);
+  assert.doesNotMatch(margin, /window\.setTimeout\(\(\) => \{\s*\(event\.currentTarget\.querySelector/);
 });

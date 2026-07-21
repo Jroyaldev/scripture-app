@@ -50,9 +50,12 @@ test("anchored popovers are lightweight, named, focusable, and modal only by req
   assert.match(popover, /maxHeight: position\.maxHeight/);
   assert.match(popover, /requestedMaxHeight != null \|\| boundaryRect != null/);
   assert.match(popover, /data-position-boundary=\{boundaryRect \? "custom" : "viewport"\}/);
-  assert.match(popover, /window\.addEventListener\("resize", onClose\)/);
-  assert.match(popover, /\[data-floating-layer="dialog"\], \[data-floating-layer="popover"\]/);
-  assert.match(popover, /const ownsKeyboard = escapeLayers\.at\(-1\) === panelRef\.current/);
+  // Resize closes only on a real width change; height-only resizes (mobile
+  // browser chrome showing/hiding during scroll) must not strand the user.
+  assert.match(popover, /window\.addEventListener\("resize", handleResize\)/);
+  assert.match(popover, /if \(window\.innerWidth === lastWidth\) return/);
+  // Escape ownership comes from the shared layer registry, not DOM order.
+  assert.match(popover, /const ownsKeyboard = isTopLayer\(layerRef\.current\)/);
   assert.doesNotMatch(popover, /querySelectorAll<HTMLElement>\("\[data-floating-layer\]"\)/);
   assert.match(popover, /e\.stopImmediatePropagation\(\)/);
   assert.match(popover, /onPointerDown=\{\(event\) => \{[\s\S]{0,180}event\.preventDefault\(\);[\s\S]{0,100}event\.stopPropagation\(\);/);

@@ -25,7 +25,7 @@ test("canvas and Study retain separate keyboard domains", () => {
   assert.match(margin, /target\?\.closest\("\.verse-line"\)/);
   assert.doesNotMatch(margin, /closest\("\.verse-line, \.margin-tab"\)/);
   assert.match(margin, /event\.key === "Enter" \|\| event\.key === "ArrowDown"/);
-  assert.match(margin, /target\?\.closest\("\.margin-tab-panel"\)/);
+  assert.match(margin, /target\?\.closest\("\.margin-tab-panel, \.margin-frame-header"\)/);
   assert.match(app, /event\.key !== "F6"/);
   assert.match(app, /event\.shiftKey \? -1 : 1/);
   assert.match(app, /setShortcutsOpen\(true\)/);
