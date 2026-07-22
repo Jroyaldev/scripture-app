@@ -70,6 +70,35 @@ export interface EntityResearchOpenOptions {
   trailIndex?: number;
 }
 
+/** A stable, human-readable identity is carried with every workspace action so
+ * an unavailable catalog record never degrades into an opaque internal id. */
+export interface EntityResearchTarget {
+  id: string;
+  displayName: string;
+  kind: "person" | "place" | "other";
+}
+
+interface EntityBranchGesture {
+  button: number;
+  metaKey: boolean;
+  ctrlKey: boolean;
+  shiftKey: boolean;
+}
+
+/** Mirrors familiar desktop link gestures without making an ordinary click
+ * proliferate tabs. The adjacent named action remains the discoverable path. */
+export function isExplicitEntityBranchGesture(event: EntityBranchGesture): boolean {
+  return event.button === 1 || event.metaKey || event.ctrlKey || event.shiftKey;
+}
+
+function entityResearchTarget(entity: EntityResearchTarget): EntityResearchTarget {
+  return {
+    id: entity.id,
+    displayName: entity.displayName,
+    kind: entity.kind,
+  };
+}
+
 const MARGIN_SCROLL_PUBLISH_DELAY_MS = 220;
 
 export type MarginScrollScope =
@@ -210,6 +239,8 @@ interface Props {
   onCapture?: (capture: LivingMarginCaptureRequest) => void;
   /** Navigate to a cross-reference's target passage (e.g. "Matthew 3:11"). */
   onNavigateToRef?: (ref: string) => void;
+  /** Deliberately branch a reference into a durable passage tab. */
+  onOpenPassageTab?: (target: PeekTarget) => Promise<boolean> | boolean;
   /** Replace the single kept comparison subject without navigating the canvas. */
   onKeepReference?: (reference: PeekTarget) => void;
   /** Keep original-language study aligned with its explicit verse. */
@@ -243,10 +274,20 @@ interface Props {
   onEntityResearchFocusRequestHandled?: (ownerTabId: string, requestId: number) => void;
   entityIntent?: {
     id: string;
+    displayName: string;
+    kind: "person" | "place" | "other";
     nonce: number;
     origin: { book: string; chapter: number; chapterEndVerse?: number; packageId: string; verseStart?: number; verseEnd?: number };
   } | null;
-  onOpenEntity?: (entityId: string, options?: EntityResearchOpenOptions) => Promise<boolean>;
+  /** Study content opens a new Research tab. */
+  onOpenEntity?: (target: EntityResearchTarget) => Promise<boolean>;
+  /** Research content follows a related identity in the active Research tab. */
+  onDrillEntity?: (target: EntityResearchTarget, options?: EntityResearchOpenOptions) => Promise<boolean>;
+  /** Explicitly branch a related identity into a second Research tab. */
+  onBranchEntity?: (target: EntityResearchTarget) => Promise<boolean>;
+  /** Activate or restore the immutable passage origin without deleting Research. */
+  onReturnEntityOrigin?: () => Promise<boolean>;
+  /** The only Research action that removes the active tab. */
   onCloseEntity?: () => Promise<boolean>;
   entityTrail?: readonly EntityResearchTrailEntry[];
   onEntityTrailChange?: (
@@ -623,6 +664,7 @@ function EntityOpeningContextSection({
   chapterVerseText,
   bookNames,
   onNavigate,
+  onOpenPassageTab,
 }: {
   data: EntityResearchData;
   origin: NonNullable<Props["entityIntent"]>["origin"];
@@ -631,6 +673,7 @@ function EntityOpeningContextSection({
   chapterVerseText: Map<number, string>;
   bookNames: BookNameData;
   onNavigate?: (ref: string) => void;
+  onOpenPassageTab?: (target: PeekTarget) => Promise<boolean> | boolean;
 }): React.JSX.Element | null {
   const visibleChapterEnd = currentBook === origin.book && currentChapter === origin.chapter
     ? Math.max(1, ...chapterVerseText.keys())
@@ -686,12 +729,34 @@ function EntityOpeningContextSection({
             </blockquote>
           )}
           <div className="entity-opening-context-refs" aria-label={`Direct references in ${rangeLabel}`}>
-            {context.mentionRefs.slice(0, 4).map((ref) => (
-              <button key={ref} type="button" onClick={() => onNavigate?.(`bref:v1/${ref}`)}>
-                <span>{formatResearchRef(ref, bookNames)}</span>
-                <CrossReferenceArrow />
-              </button>
-            ))}
+            {context.mentionRefs.slice(0, 4).map((ref) => {
+              const label = formatResearchRef(ref, bookNames);
+              const target = parsePeekRef(ref, label);
+              return (
+                <span className="entity-reference-actions is-opening" key={ref}>
+                  <button
+                    type="button"
+                    onClick={() => onNavigate?.(`bref:v1/${ref}`)}
+                    aria-label={`View ${label} in this research tab`}
+                    title="Follow in this Research tab"
+                  >
+                    <span>{label}</span>
+                    <CrossReferenceArrow />
+                  </button>
+                  {target && onOpenPassageTab && (
+                    <button
+                      type="button"
+                      className="entity-reference-open-tab"
+                      onClick={() => void onOpenPassageTab(target)}
+                      aria-label={`Open ${label} as a passage tab`}
+                      title="Open as passage tab"
+                    >
+                      Passage tab
+                    </button>
+                  )}
+                </span>
+              );
+            })}
             {context.mentionRefs.length > 4 && <span>+{context.mentionRefs.length - 4} more</span>}
           </div>
         </>
@@ -714,10 +779,12 @@ const RELATIONSHIP_GROUPS = [
 
 function PersonRelationships({
   data,
-  onOpenEntity,
+  onDrillEntity,
+  onBranchEntity,
 }: {
   data: EntityResearchData;
-  onOpenEntity?: (entityId: string) => void;
+  onDrillEntity?: (target: EntityResearchTarget) => void;
+  onBranchEntity?: (target: EntityResearchTarget) => void;
 }): React.JSX.Element | null {
   const relationships = data.entity.person?.relationships ?? [];
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
@@ -741,19 +808,51 @@ function PersonRelationships({
             <div key={group.kind} className="entity-relationship-row">
               <span className="entity-relationship-label">{group.label}</span>
               <div className="entity-relationship-links">
-                {visibleItems.map((relationship) => (
-                  <button
-                    key={`${relationship.kind}-${relationship.targetId}`}
-                    type="button"
-                    onClick={() => onOpenEntity?.(relationship.targetId)}
-                    aria-label={`Research ${relationship.displayName}${relationship.uncertain ? ", uncertain identification" : ""}`}
-                    title={relationship.uncertain ? "TIPNR marks this identification as uncertain" : undefined}
-                  >
-                    <span>{relationship.displayName}</span>
-                    {relationship.uncertain && <span className="entity-relationship-uncertain" aria-hidden="true">?</span>}
-                    <CrossReferenceArrow />
-                  </button>
-                ))}
+                {visibleItems.map((relationship) => {
+                  const target: EntityResearchTarget = {
+                    id: relationship.targetId,
+                    displayName: relationship.displayName,
+                    kind: "person",
+                  };
+                  const activateRelated = (event: React.MouseEvent<HTMLButtonElement>): void => {
+                    if (isExplicitEntityBranchGesture(event) && onBranchEntity) {
+                      event.preventDefault();
+                      void onBranchEntity(target);
+                      return;
+                    }
+                    void onDrillEntity?.(target);
+                  };
+                  return (
+                    <span className="entity-relationship-target-actions" key={`${relationship.kind}-${relationship.targetId}`}>
+                      <button
+                        type="button"
+                        onClick={activateRelated}
+                        onAuxClick={(event) => {
+                          if (!isExplicitEntityBranchGesture(event) || !onBranchEntity) return;
+                          event.preventDefault();
+                          void onBranchEntity(target);
+                        }}
+                        aria-label={`View ${relationship.displayName} in this research tab${relationship.uncertain ? ", uncertain identification" : ""}`}
+                        title={relationship.uncertain ? "TIPNR marks this identification as uncertain" : "Follow in this Research tab"}
+                      >
+                        <span>{relationship.displayName}</span>
+                        {relationship.uncertain && <span className="entity-relationship-uncertain" aria-hidden="true">?</span>}
+                        <CrossReferenceArrow />
+                      </button>
+                      {onBranchEntity && (
+                        <button
+                          type="button"
+                          className="entity-relationship-branch"
+                          onClick={() => void onBranchEntity(target)}
+                          aria-label={`Open ${relationship.displayName} in a new research tab${relationship.uncertain ? ", uncertain identification" : ""}`}
+                          title="Open in a new Research tab"
+                        >
+                          New tab
+                        </button>
+                      )}
+                    </span>
+                  );
+                })}
                 {items.length > visibleItems.length && (
                   <button
                     type="button"
@@ -948,7 +1047,9 @@ function EntityResearchView({
   bookNames,
   onNavigate,
   peekTriggerProps,
-  onOpenEntity,
+  onDrillEntity,
+  onBranchEntity,
+  onOpenPassageTab,
   onCapture,
 }: {
   data: EntityResearchData;
@@ -959,7 +1060,9 @@ function EntityResearchView({
   bookNames: BookNameData;
   onNavigate?: (ref: string) => void;
   peekTriggerProps: (target: PeekTarget) => VersePeekTriggerProps;
-  onOpenEntity?: (entityId: string) => void;
+  onDrillEntity?: (target: EntityResearchTarget) => void;
+  onBranchEntity?: (target: EntityResearchTarget) => void;
+  onOpenPassageTab?: (target: PeekTarget) => Promise<boolean> | boolean;
   onCapture?: (capture: LivingMarginCaptureRequest) => void;
 }): React.JSX.Element {
   const [showAllRefs, setShowAllRefs] = useState(false);
@@ -1072,6 +1175,7 @@ function EntityResearchView({
         chapterVerseText={chapterVerseText}
         bookNames={bookNames}
         onNavigate={onNavigate}
+        onOpenPassageTab={onOpenPassageTab}
       />
 
       {place && (
@@ -1110,7 +1214,11 @@ function EntityResearchView({
           {data.entity.short && data.entity.short !== data.entity.brief && (
             <p className="entity-research-expanded">{data.entity.short}</p>
           )}
-          <PersonRelationships data={data} onOpenEntity={onOpenEntity} />
+          <PersonRelationships
+            data={data}
+            onDrillEntity={onDrillEntity}
+            onBranchEntity={onBranchEntity}
+          />
           {place && (data.pleiades?.coordinateComparison || place.alternatives.length > 0) && (
             <section className="entity-research-section entity-location-details" aria-labelledby="entity-location-details-title">
               <div className="entity-research-section-head">
@@ -1185,16 +1293,29 @@ function EntityResearchView({
                   const label = formatResearchRef(ref, bookNames);
                   const target = parsePeekRef(ref, label);
                   return (
-                  <button
-                    key={ref}
-                    type="button"
-                    onClick={() => onNavigate?.(`bref:v1/${ref}`)}
-                    aria-label={`Open ${label}`}
-                    {...(target ? peekTriggerProps(target) : {})}
-                  >
-                    <span>{label}</span>
-                    <CrossReferenceArrow />
-                  </button>
+                    <span className="entity-reference-actions" key={ref}>
+                      <button
+                        type="button"
+                        onClick={() => onNavigate?.(`bref:v1/${ref}`)}
+                        aria-label={`View ${label} in this research tab`}
+                        title="Follow in this Research tab"
+                        {...(target ? peekTriggerProps(target) : {})}
+                      >
+                        <span>{label}</span>
+                        <CrossReferenceArrow />
+                      </button>
+                      {target && onOpenPassageTab && (
+                        <button
+                          type="button"
+                          className="entity-reference-open-tab"
+                          onClick={() => void onOpenPassageTab(target)}
+                          aria-label={`Open ${label} as a passage tab`}
+                          title="Open as passage tab"
+                        >
+                          Passage tab
+                        </button>
+                      )}
+                    </span>
                   );
                 })}
               </div>
@@ -1447,7 +1568,7 @@ function IntentOverview({
   onNavigate?: (ref: string) => void;
   peekTriggerProps: (target: PeekTarget) => VersePeekTriggerProps;
   onOpenTab: (tab: MarginTab) => void;
-  onOpenEntity?: (entityId: string) => void;
+  onOpenEntity?: (target: EntityResearchTarget) => void;
 }): React.JSX.Element {
   const scripture = crossRefs?.items.slice(0, 2) ?? [];
   const relatedNote = semantic?.semanticNotes[0] ?? null;
@@ -1550,8 +1671,8 @@ function IntentOverview({
                 key={entity.id}
                 type="button"
                 className="intent-entity-card"
-                onClick={() => onOpenEntity?.(entity.id)}
-                aria-label={`Research ${entity.displayName}`}
+                onClick={() => onOpenEntity?.(entityResearchTarget(entity))}
+                aria-label={`Open research tab for ${entity.displayName}`}
               >
                 <span className={`intent-entity-glyph is-${entity.kind}`}><EntityGlyph kind={entity.kind} /></span>
                   <span className="intent-entity-copy">
@@ -1561,7 +1682,7 @@ function IntentOverview({
                     </span>
                     <span className="intent-entity-brief">{entity.brief}</span>
                   </span>
-                <span className="intent-entity-open" aria-hidden="true">open&nbsp;→</span>
+                <span className="intent-entity-open" aria-hidden="true">Open research tab&nbsp;→</span>
               </button>
             ))}
           </div>
@@ -1617,6 +1738,7 @@ export function LivingMargin({
   onCreateNote,
   onCapture,
   onNavigateToRef,
+  onOpenPassageTab,
   onKeepReference,
   onStudyVerse,
   onMarginActiveChange,
@@ -1635,6 +1757,9 @@ export function LivingMargin({
   onEntityResearchFocusRequestHandled,
   entityIntent,
   onOpenEntity,
+  onDrillEntity,
+  onBranchEntity,
+  onReturnEntityOrigin,
   onCloseEntity,
   entityTrail = [],
   onEntityTrailChange,
@@ -1916,7 +2041,7 @@ export function LivingMargin({
   // One shared verse-peek controller for the whole panel: a single preview
   // can be open at a time, lens switches dismiss it, and its chapter text is
   // cached for the session.
-  const versePeek = useVersePeek(packageId, onKeepReference);
+  const versePeek = useVersePeek(packageId, onKeepReference, onOpenPassageTab);
   // Compact (≤760px) layouts can give the Study pane a second, roomier size.
   const [compactExpanded, setCompactExpanded] = useState(false);
 
@@ -2139,39 +2264,42 @@ export function LivingMargin({
     return () => { cancelled = true; };
   }, [entityIntent, onEntityTrailChange, sessionOwnerTabId]);
 
-  const openRelatedEntity = (entityId: string): void => {
-    if (!onOpenEntity || !entityResearch || entityResearch.entity.id === entityId) return;
-    void onOpenEntity(entityId);
+  const openRelatedEntity = (target: EntityResearchTarget): void => {
+    if (!onDrillEntity || !entityResearch || entityResearch.entity.id === target.id) return;
+    void onDrillEntity(target);
   };
 
   const openTrailEntity = (index: number): void => {
     const target = entityTrail[index];
-    if (!target || !onOpenEntity || index === entityTrail.length - 1) return;
-    void onOpenEntity(target.id, { trailIndex: index });
-  };
-
-  const openPreviousEntity = (): void => {
-    const currentIsRecorded = entityTrail.at(-1)?.id === entityIntent?.id;
-    const previousIndex = entityTrail.length - (currentIsRecorded ? 2 : 1);
-    const previous = entityTrail[previousIndex];
-    if (!previous || !onOpenEntity) {
-      void onCloseEntity?.();
-      return;
-    }
-    void onOpenEntity(previous.id, { trailIndex: previousIndex });
+    if (!target || !onDrillEntity || index === entityTrail.length - 1) return;
+    void onDrillEntity({
+      id: target.id,
+      displayName: target.displayName,
+      kind: target.kind ?? "other",
+    }, { trailIndex: index });
   };
 
   const currentResearchIsRecorded = entityTrail.at(-1)?.id === entityIntent?.id;
-  const researchBackDestination = entityTrail.at(currentResearchIsRecorded ? -2 : -1)?.displayName
-    ?? (entityIntent ? formatEntityResearchOrigin(entityIntent.origin, bookNames) : "Study");
+  const previousEntity = entityTrail.at(currentResearchIsRecorded ? -2 : -1);
+  const previousIndex = entityTrail.length - (currentResearchIsRecorded ? 2 : 1);
+  const openPreviousEntity = (): void => {
+    if (!previousEntity || !onDrillEntity) return;
+    const previous: EntityResearchTarget = {
+      id: previousEntity.id,
+      displayName: previousEntity.displayName,
+      kind: previousEntity.kind ?? "other",
+    };
+    void onDrillEntity(previous, { trailIndex: previousIndex });
+  };
 
   const researchLayerRef = useLayer(
-    activeWorkspace === "research" && entityIntent && onCloseEntity ? "research" : null,
+    activeWorkspace === "research" && entityIntent && (onDrillEntity || onReturnEntityOrigin) ? "research" : null,
   );
 
   useEffect(() => {
     if (entityResearchFocusRequest == null) return;
-    if (activeWorkspace !== "research" || !entityIntent || entityResearch?.entity.id !== entityIntent.id) return;
+    if (activeWorkspace !== "research" || !entityIntent) return;
+    if (!entityResearchError && entityResearch?.entity.id !== entityIntent.id) return;
     const frame = window.requestAnimationFrame(() => {
       researchTitleRef.current?.focus({ preventScroll: true });
       onEntityResearchFocusRequestHandled?.(sessionOwnerTabId, entityResearchFocusRequest);
@@ -2181,24 +2309,26 @@ export function LivingMargin({
     activeWorkspace,
     entityIntent,
     entityResearch,
+    entityResearchError,
     entityResearchFocusRequest,
     onEntityResearchFocusRequestHandled,
     sessionOwnerTabId,
   ]);
 
   useEffect(() => {
-    if (activeWorkspace !== "research" || !entityIntent || !onCloseEntity) return;
+    if (activeWorkspace !== "research" || !entityIntent || (!onDrillEntity && !onReturnEntityOrigin)) return;
     const closeResearch = (event: KeyboardEvent): void => {
       if (event.key !== "Escape" || event.defaultPrevented) return;
       // Research is the lowest-ranking layer; every dialog, chooser, card,
       // and marking surface outranks it in the shared registry.
       if (!isTopLayer(researchLayerRef.current)) return;
       event.preventDefault();
-      openPreviousEntity();
+      if (previousEntity && onDrillEntity) openPreviousEntity();
+      else void onReturnEntityOrigin?.();
     };
     window.addEventListener("keydown", closeResearch, true);
     return () => window.removeEventListener("keydown", closeResearch, true);
-  }, [activeWorkspace, entityIntent, entityTrail, entityResearch, onCloseEntity, onOpenEntity, researchLayerRef]);
+  }, [activeWorkspace, entityIntent, onDrillEntity, onReturnEntityOrigin, previousEntity, previousIndex, researchLayerRef]);
 
   useEffect(() => {
     // Complete-note bodies are only rendered in the pinned deep dive; the
@@ -2340,6 +2470,12 @@ export function LivingMargin({
 
   if (entityIntent && activeWorkspace === "research") {
     const originLabel = formatEntityResearchOrigin(entityIntent.origin, bookNames);
+    const currentCanvasLabel = `${displayBook} ${chapter}${
+      packageId !== entityIntent.origin.packageId ? ` · ${packageId.toUpperCase()}` : ""
+    }`;
+    const currentCanvasDiffersFromOrigin = book !== entityIntent.origin.book
+      || chapter !== entityIntent.origin.chapter
+      || packageId !== entityIntent.origin.packageId;
     return (
       <aside
         ref={marginRef}
@@ -2357,32 +2493,52 @@ export function LivingMargin({
         >
         <header className="entity-research-frame">
           <div className="entity-research-nav">
-            <button
-              type="button"
-              className="entity-research-back"
-              onClick={openPreviousEntity}
-              aria-label={`Back to ${researchBackDestination}`}
-            >
-              <span aria-hidden="true">←</span>
-              <span>{`Back to ${researchBackDestination}`}</span>
-            </button>
-            <button
-              type="button"
-              className="entity-research-close"
-              onClick={onCloseEntity}
-              aria-label="Close research tab"
-            >
-              Close
-            </button>
+            {previousEntity && onDrillEntity && (
+              <button
+                type="button"
+                className="entity-research-back"
+                onClick={openPreviousEntity}
+                aria-label={`Back to ${previousEntity.displayName}`}
+              >
+                <span aria-hidden="true">←</span>
+                <span>{`Back to ${previousEntity.displayName}`}</span>
+              </button>
+            )}
+            {onReturnEntityOrigin && (
+              <button
+                type="button"
+                className="entity-research-return"
+                onClick={onReturnEntityOrigin}
+                aria-label={`Return to ${originLabel}`}
+              >
+                Return
+              </button>
+            )}
+            {onCloseEntity && (
+              <button
+                type="button"
+                className="entity-research-close"
+                onClick={onCloseEntity}
+                aria-label="Close research tab"
+              >
+                Close
+              </button>
+            )}
           </div>
-          <span className="entity-research-mode">Research</span>
+          <div className="entity-research-provenance">
+            <span className="entity-research-mode">Research</span>
+            <span>Opened from <strong>{originLabel}</strong></span>
+            {currentCanvasDiffersFromOrigin && (
+              <span>Viewing <strong>{currentCanvasLabel}</strong></span>
+            )}
+          </div>
         </header>
         <nav className="entity-research-breadcrumbs" aria-label="Research trail">
           <button
             type="button"
             className="entity-research-breadcrumb is-origin"
-            onClick={onCloseEntity}
-            aria-label={`Return to Study at ${originLabel}`}
+            onClick={onReturnEntityOrigin}
+            aria-label={`Return to ${originLabel}`}
           >
             {originLabel}
           </button>
@@ -2419,14 +2575,16 @@ export function LivingMargin({
             <span>Opening entity…</span>
           </div>
         )}
+        <h1 ref={researchTitleRef} id="entity-research-title" className="sr-only" tabIndex={-1}>
+          Research {entityResearch?.entity.displayName ?? entityIntent.displayName}
+        </h1>
         {entityResearchError && !entityResearchLoading && (
-          <MarginEmptyView title="Entity unavailable" detail={entityResearchError} />
+          <div data-study-entity-unavailable={entityIntent.id}>
+            <MarginEmptyView title={`${entityIntent.displayName} unavailable`} detail={entityResearchError} />
+          </div>
         )}
         {entityResearch && !entityResearchLoading && (
           <div>
-            <h1 ref={researchTitleRef} id="entity-research-title" className="sr-only" tabIndex={-1}>
-              Research {entityResearch.entity.displayName}
-            </h1>
             <EntityResearchView
               data={entityResearch}
               origin={entityIntent.origin}
@@ -2436,7 +2594,9 @@ export function LivingMargin({
               bookNames={bookNames}
               onNavigate={onNavigateToRef}
               peekTriggerProps={versePeek.triggerProps}
-              onOpenEntity={openRelatedEntity}
+              onDrillEntity={openRelatedEntity}
+              onBranchEntity={onBranchEntity}
+              onOpenPassageTab={onOpenPassageTab}
               onCapture={onCapture}
             />
           </div>

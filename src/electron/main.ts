@@ -112,6 +112,20 @@ const APP_LOG_PATH = join(
 );
 let appLogUnavailable = false;
 
+const studyWorkspaceQaTraceEnabled =
+  process.env["SCRIPTURE_QA_STUDY_WORKSPACE_TRACE"] === "1";
+
+function traceStudyWorkspaceQa(
+  event: "chapter" | "entity",
+  detail: Record<string, unknown>,
+): void {
+  if (!studyWorkspaceQaTraceEnabled) return;
+  const traceEvent = event === "chapter"
+    ? "study-workspace-qa:chapter"
+    : "study-workspace-qa:entity";
+  console.log(`${traceEvent} ${JSON.stringify(detail)}`);
+}
+
 type DiagnosticLevel = "info" | "warn" | "error";
 
 function diagnosticError(error: unknown): { name: string; message: string; stack?: string } {
@@ -2519,6 +2533,11 @@ function registerIpcHandlers(): void {
   });
 
   ipcMain.handle("read-scripture-text", (_event, opts: { book: string; chapter: number; package: string }) => {
+    traceStudyWorkspaceQa("chapter", {
+      packageId: opts.package,
+      book: opts.book,
+      chapter: opts.chapter,
+    });
     if (!engine) return null;
     return readScriptureChapter(opts.package, opts.book, opts.chapter);
   });
@@ -2624,6 +2643,7 @@ function registerIpcHandlers(): void {
   ipcMain.handle(
     "language-entity-research",
     (_event, entityId: string) => {
+      traceStudyWorkspaceQa("entity", { entityId });
       const entity = getSharedTipnrIndex().get(entityId);
       if (!entity) return null;
       return placeResearch?.research(entity) ?? {

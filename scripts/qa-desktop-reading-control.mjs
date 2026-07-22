@@ -5,13 +5,39 @@
  */
 
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { spawn } from "node:child_process";
 import electronPath from "electron";
 
 const sleep = (milliseconds) => new Promise((resolvePromise) => setTimeout(resolvePromise, milliseconds));
+const STUDY_WORKSPACE_TAB_LIMIT = 64;
+const STUDY_SELECTORS = Object.freeze({
+  bar: "[data-study-workspace-bar]",
+  group: "[data-study-group-id]",
+  tab: "[data-study-tab-id]",
+  tabKind: "[data-study-tab-kind]",
+  collapsedProxy: "[data-study-collapsed-proxy]",
+  allTabs: "[data-study-all-tabs]",
+  allTabsSearch: "[data-study-all-tabs-search]",
+  allTabsRow: "[data-study-all-tabs-row]",
+  renameGroup: "[data-study-group-rename]",
+  moveTab: "[data-study-tab-move]",
+  collapseGroup: "[data-study-group-collapse]",
+  reopenRecent: "[data-study-reopen-recent]",
+  passageFallback: "[data-study-passage-fallback]",
+  entityUnavailable: "[data-study-entity-unavailable]",
+  persistence: "[data-study-persistence-status]",
+  dirty: '[data-dirty="true"]',
+});
+
+function parseStudyWorkspaceTrace(log) {
+  return log.split(/\r?\n/).filter((line) => (
+    line.includes("study-workspace-qa:chapter")
+    || line.includes("study-workspace-qa:entity")
+  ));
+}
 
 async function connect(url) {
   const socket = new WebSocket(url);
@@ -131,22 +157,32 @@ async function clickButtonByText(driver, selector, text) {
   assert.equal(clicked, true, `Missing ${text} control`);
 }
 
-async function openResearchByName(driver, name) {
-  await driver.evaluate(`document.querySelector(".scripture-workspace-new")?.click()`);
-  await driver.waitFor(`document.querySelector('#command-tab-names')?.getAttribute("aria-selected") === "true"`);
-  await driver.evaluate(`(() => {
-    const input = document.querySelector('.command-palette-input-row input');
-    if (!(input instanceof HTMLInputElement)) return false;
-    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
-    setter?.call(input, ${JSON.stringify(name)});
-    input.dispatchEvent(new Event("input", { bubbles: true }));
+async function setNativeControlValue(driver, selector, value) {
+  const changed = await driver.evaluate(`(() => {
+    const control = document.querySelector(${JSON.stringify(selector)});
+    if (!(control instanceof HTMLInputElement
+      || control instanceof HTMLTextAreaElement
+      || control instanceof HTMLSelectElement)) return false;
+    const prototype = control instanceof HTMLTextAreaElement
+      ? HTMLTextAreaElement.prototype
+      : control instanceof HTMLSelectElement
+        ? HTMLSelectElement.prototype
+        : HTMLInputElement.prototype;
+    Object.getOwnPropertyDescriptor(prototype, "value")?.set?.call(control, ${JSON.stringify(value)});
+    control.dispatchEvent(new Event(control instanceof HTMLSelectElement ? "change" : "input", { bubbles: true }));
     return true;
   })()`);
-  await driver.waitFor(`[...document.querySelectorAll(".command-palette-result")]
-    .some((button) => button.querySelector("strong")?.textContent?.trim() === ${JSON.stringify(name)})`);
-  await driver.evaluate(`[...document.querySelectorAll(".command-palette-result")]
-    .find((button) => button.querySelector("strong")?.textContent?.trim() === ${JSON.stringify(name)})?.click()`);
-  await driver.waitFor(`!document.querySelector(".command-palette-root")`);
+  assert.equal(changed, true, `Missing native control ${selector}`);
+}
+
+async function clickStudyControl(driver, selector) {
+  const clicked = await driver.evaluate(`(() => {
+    const control = document.querySelector(${JSON.stringify(selector)});
+    if (!(control instanceof HTMLElement)) return false;
+    control.click();
+    return true;
+  })()`);
+  assert.equal(clicked, true, `Missing study control ${selector}`);
 }
 
 const qaRoot = mkdtempSync(join(tmpdir(), "pericope-d8-qa-"));
@@ -154,7 +190,12 @@ const userData = join(qaRoot, "user-data");
 const libraryPath = join(qaRoot, "Library");
 const port = 12_300 + Math.floor(Math.random() * 300);
 const endpoint = `http://127.0.0.1:${port}/json/list`;
-const env = { ...process.env, LIBRARY_PATH: libraryPath };
+const env = {
+  ...process.env,
+  LIBRARY_PATH: libraryPath,
+  SCRIPTURE_QA_STUDY_WORKSPACE_TRACE: "1",
+  SCRIPTURE_QA_DROP_CONNECTION_RESPONSES: "update",
+};
 delete env.ELECTRON_RUN_AS_NODE;
 
 const childState = { exited: false, code: null };
@@ -275,6 +316,8 @@ try {
     };
   })()`);
   assert.deepEqual(fixture.orderedIds, [fixture.earlierId, fixture.laterId]);
+  const connectionEventLogPath = join(libraryPath, "annotations", "connections.jsonl");
+  let connectionEventLogBytes = readFileSync(connectionEventLogPath);
 
   await cdp.send("Page.reload", { ignoreCache: true });
   await driver.waitFor(`document.querySelector(".book-name")?.textContent?.trim() === "Acts"
@@ -303,80 +346,283 @@ try {
   await driver.evaluate(`document.querySelector(".connection-card-primary")?.click()`);
   await driver.waitFor(`!document.querySelector("#connection-card-inspector")`);
 
-  await driver.waitFor(`Boolean(document.querySelector(".intent-entity-card"))`, 20_000);
-  await driver.evaluate(`document.querySelector(".intent-entity-card")?.click()`);
-  await driver.waitFor(`document.querySelectorAll('[id^="research-workspace-tab-"]').length === 1
-    && document.querySelector('[id^="research-workspace-tab-"]')?.getAttribute("aria-selected") === "true"
-    && Boolean(document.querySelector("#entity-research-title"))`, 20_000);
-  const firstResearchTabId = await driver.evaluate(`document.querySelector('[id^="research-workspace-tab-"]')?.id ?? ""`);
-  const firstResearchScroll = await driver.evaluate(`(() => {
-    const margin = document.querySelector(".living-margin");
-    if (!margin) return -1;
-    margin.scrollTop = Math.max(1, Math.min(220, margin.scrollHeight - margin.clientHeight));
-    margin.dispatchEvent(new Event("scroll"));
-    return margin.scrollTop;
+  // One bounded V2 pastoral workflow: three real passages keep distinct view
+  // state, Apollos and Ephesus use real catalog identities, and every group or
+  // tab mutation goes through the visible controls rather than settings.
+  const pastoral = await driver.evaluate(`(async () => {
+    const resolveEntity = async (displayName, expectedKind) => {
+      const result = await window.api.language.searchEntities(displayName, 24);
+      const matches = (result.entities ?? []).map((entry) => entry.entity ?? entry);
+      const entity = matches.find((candidate) => (
+        candidate.displayName === displayName && candidate.kind === expectedKind
+      ));
+      if (!entity) throw new Error("Missing real entity fixture: " + displayName);
+      return { id: entity.id, displayName: entity.displayName, kind: entity.kind };
+    };
+    const [apollos, aquila, ephesus, priscilla] = await Promise.all([
+      resolveEntity("Apollos", "person"),
+      resolveEntity("Aquila", "person"),
+      resolveEntity("Ephesus", "place"),
+      resolveEntity("Priscilla", "person"),
+    ]);
+    const view = (book, chapter, packageId, seed) => ({
+      book,
+      chapter,
+      packageId,
+      verse: seed.verse,
+      verseOffset: seed.verseOffset,
+      scrollTop: seed.scrollTop,
+      margin: {
+        activeTab: seed.activeTab,
+        scope: null,
+        scrollTopByTab: seed.scrollTopByTab,
+        wordsVerse: seed.wordsVerse,
+        wordsFollowingReading: seed.wordsFollowingReading,
+      },
+    });
+    const session = (current, back = [], forward = []) => ({
+      current,
+      history: { back, forward },
+    });
+    const actsBase = view("ACT", 19, "bsb", {
+      verse: 20,
+      verseOffset: 14,
+      scrollTop: 420,
+      activeTab: "connections",
+      scrollTopByTab: { overview: 9, connections: 37, passage: 0, notes: 11 },
+      wordsVerse: 20,
+      wordsFollowingReading: false,
+    });
+    const actsSelectionVerse = ${fixture.baptism.verse};
+    const acts = {
+      ...actsBase,
+      margin: {
+        ...actsBase.margin,
+        scope: { kind: "selection", start: actsSelectionVerse, end: actsSelectionVerse },
+      },
+    };
+    const john = view("JHN", 3, "kjv", {
+      verse: 16,
+      verseOffset: 7,
+      scrollTop: 240,
+      activeTab: "passage",
+      scrollTopByTab: { overview: 2, connections: 0, passage: 66, notes: 0 },
+      wordsVerse: 16,
+      wordsFollowingReading: true,
+    });
+    const romans = view("ROM", 6, "bsb", {
+      verse: 4,
+      verseOffset: 5,
+      scrollTop: 135,
+      activeTab: "notes",
+      scrollTopByTab: { overview: 0, connections: 18, passage: 0, notes: 53 },
+      wordsVerse: 4,
+      wordsFollowingReading: false,
+    });
+    const workspace = {
+      version: 2,
+      groups: [
+        {
+          id: "pastoral-acts-study",
+          homePassageTabId: "acts-19-bsb",
+          tabIds: ["acts-19-bsb", "john-3-kjv", "apollos-entity", "aquila-entity"],
+          lastActiveTabId: "aquila-entity",
+          collapsed: false,
+          label: { kind: "automatic", frozenReference: { book: "ACT", chapter: 19 } },
+        },
+        {
+          id: "pastoral-romans-study",
+          homePassageTabId: "romans-6-bsb",
+          tabIds: ["romans-6-bsb", "ephesus-entity"],
+          lastActiveTabId: "romans-6-bsb",
+          collapsed: false,
+          label: { kind: "automatic", frozenReference: { book: "ROM", chapter: 6 } },
+        },
+      ],
+      tabsById: {
+        "acts-19-bsb": {
+          kind: "passage", id: "acts-19-bsb", groupId: "pastoral-acts-study", session: session(acts),
+        },
+        "john-3-kjv": {
+          kind: "passage", id: "john-3-kjv", groupId: "pastoral-acts-study", session: session(john),
+        },
+        "romans-6-bsb": {
+          kind: "passage", id: "romans-6-bsb", groupId: "pastoral-romans-study", session: session(romans),
+        },
+        "apollos-entity": {
+          kind: "entity",
+          id: "apollos-entity",
+          groupId: "pastoral-acts-study",
+          entityId: apollos.id,
+          entityKind: apollos.kind,
+          origin: acts,
+          originRange: { start: 1, end: 10 },
+          canvas: session(acts),
+          returnPassageTabId: "acts-19-bsb",
+          trail: [apollos],
+          scrollTop: 31,
+          nonce: 101,
+        },
+        "aquila-entity": {
+          kind: "entity",
+          id: "aquila-entity",
+          groupId: "pastoral-acts-study",
+          entityId: aquila.id,
+          entityKind: aquila.kind,
+          origin: acts,
+          originRange: { start: 1, end: 10 },
+          canvas: session(acts),
+          returnPassageTabId: "acts-19-bsb",
+          trail: [aquila],
+          scrollTop: 24,
+          nonce: 103,
+        },
+        "ephesus-entity": {
+          kind: "entity",
+          id: "ephesus-entity",
+          groupId: "pastoral-romans-study",
+          entityId: ephesus.id,
+          entityKind: ephesus.kind,
+          origin: romans,
+          originRange: { start: 1, end: 14 },
+          canvas: session(romans),
+          returnPassageTabId: "romans-6-bsb",
+          trail: [ephesus],
+          scrollTop: 17,
+          nonce: 102,
+        },
+      },
+      activeTabId: "aquila-entity",
+      activationOrder: ["john-3-kjv", "ephesus-entity", "romans-6-bsb", "acts-19-bsb", "apollos-entity", "aquila-entity"],
+      recentlyClosed: [],
+    };
+    const saved = await window.api.settings.set({
+      studyWorkspace: workspace,
+      lastRead: { book: "ACT", chapter: 19, packageId: "bsb" },
+      marginVisible: true,
+    });
+    if (saved.studyWorkspaceRefusal || saved.studyWorkspace?.version !== 2) {
+      throw new Error("V2 pastoral fixture was not acknowledged");
+    }
+    return { apollos, aquila, ephesus, priscilla, workspace };
   })()`);
-  await driver.evaluate(`document.querySelector("#scripture-workspace-tab")?.click()`);
-  await driver.waitFor(`document.querySelector('#scripture-workspace-tab')?.getAttribute("aria-selected") === "true"`);
-  await openResearchByName(driver, "Paul");
-  await driver.waitFor(`document.querySelectorAll('[id^="research-workspace-tab-"]').length === 2
-    && document.querySelectorAll('.scripture-workspace-group').length === 1
-    && document.querySelector('.scripture-workspace-group-count')?.textContent?.trim() === "2"`, 20_000);
-  const secondResearchTabId = await driver.evaluate(`document.querySelector('[id^="research-workspace-tab-"][aria-selected="true"]')?.id ?? ""`);
-  assert.notEqual(secondResearchTabId, firstResearchTabId);
-  const secondResearchScroll = await driver.evaluate(`(() => {
-    const margin = document.querySelector(".living-margin");
-    if (!margin) return -1;
-    margin.scrollTop = Math.max(1, Math.min(90, margin.scrollHeight - margin.clientHeight));
-    margin.dispatchEvent(new Event("scroll"));
-    return margin.scrollTop;
-  })()`);
-  await driver.evaluate(`document.getElementById(${JSON.stringify(firstResearchTabId)})?.click()`);
-  await driver.waitFor(`document.getElementById(${JSON.stringify(firstResearchTabId)})?.getAttribute("aria-selected") === "true"`);
-  assert.ok(Math.abs(await driver.evaluate(`document.querySelector(".living-margin")?.scrollTop ?? -1`) - firstResearchScroll) <= 2);
-  await driver.evaluate(`document.getElementById(${JSON.stringify(secondResearchTabId)})?.click()`);
-  await driver.waitFor(`document.getElementById(${JSON.stringify(secondResearchTabId)})?.getAttribute("aria-selected") === "true"`);
-  assert.ok(Math.abs(await driver.evaluate(`document.querySelector(".living-margin")?.scrollTop ?? -1`) - secondResearchScroll) <= 2);
-  await driver.evaluate(`document.querySelector("#scripture-workspace-tab")?.click()`);
-  await driver.waitFor(`document.querySelector('#scripture-workspace-tab')?.getAttribute("aria-selected") === "true"`);
-  await driver.evaluate(`document.querySelector("#margin-notes-tab")?.click()`);
-  const studyScroll = await driver.evaluate(`(() => {
-    const margin = document.querySelector(".living-margin");
-    if (!margin) return -1;
-    margin.scrollTop = Math.max(1, Math.min(140, margin.scrollHeight - margin.clientHeight));
-    margin.dispatchEvent(new Event("scroll"));
-    return margin.scrollTop;
-  })()`);
-  await driver.evaluate(`document.getElementById(${JSON.stringify(secondResearchTabId)})?.click()`);
-  await driver.waitFor(`document.getElementById(${JSON.stringify(secondResearchTabId)})?.getAttribute("aria-selected") === "true"`);
-  await driver.evaluate(`document.querySelector(".scripture-workspace-tab-wrap.is-selected .scripture-workspace-tab-close")?.click()`);
-  await driver.waitFor(`document.querySelectorAll('[id^="research-workspace-tab-"]').length === 1
-    && document.querySelector('#scripture-workspace-tab')?.getAttribute("aria-selected") === "true"`);
-  assert.ok(Math.abs(await driver.evaluate(`document.querySelector(".living-margin")?.scrollTop ?? -1`) - studyScroll) <= 2);
-  assert.equal(await driver.evaluate(`document.querySelector("#margin-notes-tab")?.getAttribute("aria-selected")`), "true");
-  for (const name of ["Peter", "Jerusalem", "Moses", "Rome", "Timothy"]) {
-    await openResearchByName(driver, name);
-  }
-  await driver.waitFor(`document.querySelectorAll('[id^="research-workspace-tab-"]').length === 6
-    && Boolean(document.querySelector(".scripture-workspace-overflow"))`, 20_000);
-  await driver.evaluate(`document.querySelector(".scripture-workspace-group-toggle")?.click()`);
-  await driver.waitFor(`document.querySelector(".scripture-workspace-group")?.classList.contains("is-collapsed")
-    && document.querySelector('#scripture-workspace-tab')?.getAttribute("aria-selected") === "true"`);
-  await driver.evaluate(`document.querySelector(".scripture-workspace-group-toggle")?.click()`);
-  await driver.waitFor(`!document.querySelector(".scripture-workspace-group")?.classList.contains("is-collapsed")`);
-  await driver.evaluate(`document.querySelector('[id^="research-workspace-tab-"]')?.click()`);
-  await driver.waitFor(`document.querySelector('[id^="research-workspace-tab-"]')?.getAttribute("aria-selected") === "true"`);
-  await driver.evaluate(`document.querySelector(".scripture-workspace-overflow")?.click()`);
-  await driver.waitFor(`document.querySelectorAll(".scripture-workspace-overflow-row").length === 6`);
-  // A live reload must return the same six grouped tabs with their kind marks —
-  // the workspace is a durable study bench, not scratch memory.
+
   await cdp.send("Page.reload", { ignoreCache: true });
-  await driver.waitFor(`document.querySelectorAll('[id^="research-workspace-tab-"]').length === 6
-    && document.querySelectorAll(".scripture-workspace-group").length === 1
-    && document.querySelectorAll(".scripture-workspace-tab-mark.is-person").length >= 1
-    && document.querySelectorAll(".scripture-workspace-tab-mark.is-place").length >= 1`, 20_000);
-  await driver.evaluate(`document.querySelector(".scripture-workspace-overflow")?.click()`);
-  await driver.waitFor(`document.querySelectorAll(".scripture-workspace-overflow-row").length === 6`, 20_000);
+  await driver.waitFor(`Boolean(document.querySelector("[data-study-workspace-bar]"))
+    && document.querySelector('[data-study-tab-id="aquila-entity"]')?.getAttribute("aria-selected") === "true"
+    && document.querySelector("#entity-research-title")?.textContent?.includes("Aquila")`, 20_000);
+  assert.deepEqual(readFileSync(connectionEventLogPath), connectionEventLogBytes);
+
+  await clickStudyControl(driver, ".entity-research-more > summary");
+  await driver.waitFor(`[...document.querySelectorAll('.entity-relationship-target-actions button')]
+    .some((button) => button.getAttribute("aria-label")?.startsWith("View Priscilla in this research tab"))`);
+  await driver.evaluate(`[...document.querySelectorAll('.entity-relationship-target-actions button')]
+    .find((button) => button.getAttribute("aria-label")?.startsWith("View Priscilla in this research tab"))?.click()`);
+  await driver.waitFor(`document.querySelector("#entity-research-title")?.textContent?.includes("Priscilla")`, 20_000);
+  assert.equal(
+    await driver.evaluate(`document.querySelector('[data-study-tab-id="apollos-entity"]')?.getAttribute("data-study-tab-kind")`),
+    "person",
+  );
+  await clickStudyControl(driver, '.entity-research-back[aria-label^="Back to Aquila"]');
+  await driver.waitFor(`document.querySelector("#entity-research-title")?.textContent?.includes("Aquila")`);
+  await driver.evaluate(`[...document.querySelectorAll('.entity-relationship-branch')]
+    .find((button) => button.getAttribute("aria-label")?.startsWith("Open Priscilla in a new research tab"))?.click()`);
+  await driver.waitFor(`document.querySelectorAll('[data-study-tab-kind="person"]').length >= 2
+    && document.querySelector('[data-study-tab-id][aria-selected="true"]')?.getAttribute("data-study-tab-id") !== "aquila-entity"
+    && document.querySelector("#entity-research-title")?.textContent?.includes("Priscilla")`, 20_000);
+  const priscillaTabId = await driver.evaluate(`document.querySelector('[data-study-tab-id][aria-selected="true"]')?.getAttribute("data-study-tab-id") ?? ""`);
+  assert.ok(priscillaTabId.startsWith("research-"));
+
+  const entityCanvasOrigin = await driver.evaluate(`({
+    book: document.querySelector(".book-name")?.textContent?.trim(),
+    chapter: document.querySelector(".chapter-number")?.textContent?.trim(),
+  })`);
+  await clickStudyControl(driver, ".entity-reference-actions > button:not(.entity-reference-open-tab)");
+  await driver.waitFor(`document.querySelector('button[aria-label="Back"]')?.disabled === false`);
+  assert.notDeepEqual(await driver.evaluate(`({
+    book: document.querySelector(".book-name")?.textContent?.trim(),
+    chapter: document.querySelector(".chapter-number")?.textContent?.trim(),
+  })`), entityCanvasOrigin);
+  await clickStudyControl(driver, 'button[aria-label="Back"]');
+  await driver.waitFor(`document.querySelector(".book-name")?.textContent?.trim() === ${JSON.stringify(entityCanvasOrigin.book)}
+    && document.querySelector(".chapter-number")?.textContent?.trim() === ${JSON.stringify(entityCanvasOrigin.chapter)}`);
+  await clickStudyControl(driver, ".entity-research-return");
+  await driver.waitFor(`document.querySelector('[data-study-tab-id="acts-19-bsb"]')?.getAttribute("aria-selected") === "true"
+    && document.querySelector("#scripture-workspace-panel")?.getAttribute("data-study-canvas-owner") === "acts-19-bsb"
+    && document.querySelector(".book-name")?.textContent?.trim() === "Acts"
+    && document.querySelector(".chapter-number")?.textContent?.trim() === "19"
+    && document.querySelectorAll(".verse-line").length > 20`, 20_000);
+
+  await clickStudyControl(driver, '[data-study-tab-id="romans-6-bsb"]');
+  await driver.waitFor(`document.querySelector('[data-study-tab-id="romans-6-bsb"]')?.getAttribute("aria-selected") === "true"`);
+  await clickStudyControl(driver, "[data-study-active-group-manage]");
+  await driver.waitFor(`Boolean(document.querySelector("[data-study-group-rename] input"))`);
+  await setNativeControlValue(driver, "[data-study-group-rename] input", "Baptism and New Life");
+  await clickStudyControl(driver, '[data-study-group-rename] button[type="submit"]');
+  await driver.waitFor(`document.querySelector('[data-study-group-id="pastoral-romans-study"][data-study-group-label]')
+    ?.getAttribute("data-study-group-label") === "Baptism and New Life"`);
+
+  await clickStudyControl(driver, "[data-study-all-tabs]");
+  await driver.waitFor(`Boolean(document.querySelector("[data-study-all-tabs-search]"))`);
+  await setNativeControlValue(
+    driver,
+    '[data-study-all-tabs-row][data-study-tab-id="john-3-kjv"] [data-study-tab-move]',
+    "pastoral-romans-study",
+  );
+  await driver.waitFor(`Boolean(document.querySelector(
+    '[data-study-group-id="pastoral-romans-study"] [data-study-all-tabs-row][data-study-tab-id="john-3-kjv"]'
+  ))`);
+  await driver.evaluate(`window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))`);
+  await driver.waitFor(`!document.querySelector("[data-study-all-tabs-search]")`);
+
+  await clickStudyControl(driver, "[data-study-active-group-manage]");
+  await clickStudyControl(driver, "[data-study-group-collapse]");
+  await driver.waitFor(`Boolean(document.querySelector(
+    '[data-study-group-id="pastoral-romans-study"] [data-study-collapsed-proxy="true"]'
+  ))`);
+  await clickStudyControl(driver, "[data-study-active-group-manage]");
+  await clickStudyControl(driver, "[data-study-group-collapse]");
+  await driver.waitFor(`!document.querySelector('[data-study-group-id="pastoral-romans-study"] [data-study-collapsed-proxy="true"]')`);
+
+  await clickStudyControl(driver, "[data-study-all-tabs]");
+  await setNativeControlValue(driver, "[data-study-all-tabs-search]", "Priscilla");
+  await driver.waitFor(`document.querySelectorAll("[data-study-all-tabs-row]").length === 1
+    && document.querySelector("[data-study-all-tabs-row]")?.textContent?.includes("Priscilla")`);
+  await setNativeControlValue(driver, "[data-study-all-tabs-search]", "");
+  await driver.evaluate(`(() => {
+    const row = document.querySelector('[data-study-all-tabs-row][data-study-tab-id="ephesus-entity"]');
+    const button = row ? [...row.querySelectorAll("button")].find((candidate) => candidate.getAttribute("aria-label")?.startsWith("Close Ephesus")) : null;
+    button?.click();
+    return Boolean(button);
+  })()`);
+  await driver.waitFor(`!document.querySelector('[data-study-tab-id="ephesus-entity"]')
+    && Boolean(document.querySelector("[data-study-reopen-recent]"))`);
+  await clickStudyControl(driver, "[data-study-reopen-recent]");
+  await driver.waitFor(`Boolean(document.querySelector('[data-study-tab-id="ephesus-entity"]'))`);
+  await clickStudyControl(driver, "[data-study-all-tabs]");
+  await clickStudyControl(
+    driver,
+    'section[data-study-group-id="pastoral-romans-study"] [data-study-group-close]',
+  );
+  await driver.waitFor(`document.querySelector('[data-study-decision="close-study"]')
+    && Boolean(document.querySelector('[data-study-decision-action="close-study"]'))`);
+  await clickStudyControl(driver, '[data-study-decision-action="close-study"]');
+  await driver.waitFor(`!document.querySelector('[data-study-group-id="pastoral-romans-study"]')
+    && Boolean(document.querySelector("[data-study-reopen-recent]"))`);
+  await clickStudyControl(driver, "[data-study-reopen-recent]");
+  await driver.waitFor(`Boolean(document.querySelector('[data-study-group-id="pastoral-romans-study"]'))
+    && Boolean(document.querySelector('[data-study-tab-id="ephesus-entity"]'))`);
+  await driver.waitFor(`document.querySelector("[data-study-persistence-status]")?.getAttribute("data-study-persistence-status") === "idle"`);
+
+  const pastoralPersistedBeforeReload = await driver.evaluate(`(async () => (await window.api.settings.get()).studyWorkspace)()`);
+  await cdp.send("Page.reload", { ignoreCache: true });
+  await driver.waitFor(`Boolean(document.querySelector("[data-study-workspace-bar]"))
+    && document.querySelectorAll("[data-study-tab-id]").length === ${Object.keys(pastoral.workspace.tabsById).length + 1}
+    && document.querySelector("[data-study-persistence-status]")?.getAttribute("data-study-persistence-status") === "idle"`, 20_000);
+  const pastoralPersistedAfterReload = await driver.evaluate(`(async () => (await window.api.settings.get()).studyWorkspace)()`);
+  assert.deepEqual(pastoralPersistedAfterReload, pastoralPersistedBeforeReload);
+  assert.deepEqual(readFileSync(connectionEventLogPath), connectionEventLogBytes);
+
   const screenshotPath = process.env["D8_QA_SCREENSHOT"];
   if (screenshotPath) {
     await cdp.send("Page.bringToFront");
@@ -387,12 +633,122 @@ try {
     writeFileSync(absoluteScreenshotPath, Buffer.from(screenshot.result.data, "base64"));
     console.log(`saved ${absoluteScreenshotPath}`);
   }
-  await driver.evaluate(`document.querySelector(".scripture-workspace-overflow-group > header button")?.click()`);
-  await driver.waitFor(`document.querySelectorAll('[id^="research-workspace-tab-"]').length === 0
-    && document.querySelector('#scripture-workspace-tab')?.getAttribute("aria-selected") === "true"
-    && !document.querySelector("#entity-research-title")
-    && !document.querySelector(".scripture-workspace-overflow-popover")`);
-  assert.ok(Math.abs(await driver.evaluate(`document.querySelector(".living-margin")?.scrollTop ?? -1`) - studyScroll) <= 2);
+
+  // Dirty NoteCapture owns a real BrowserWindow close and a tab switch until
+  // the human explicitly keeps writing or discards. No authored bytes move.
+  await clickStudyControl(driver, '[data-study-tab-id="acts-19-bsb"]');
+  await driver.waitFor(`document.querySelector('[data-study-tab-id="acts-19-bsb"]')?.getAttribute("aria-selected") === "true"
+    && Boolean(document.querySelector("#margin-notes-tab"))`);
+  await driver.waitFor(`document.querySelector('.verse-line[data-verse="${fixture.baptism.verse}"]')?.getAttribute("aria-pressed") === "true"
+    && document.querySelector(".living-margin")?.getAttribute("data-margin-mode") === "selection"`);
+  await clickStudyControl(driver, "#margin-notes-tab");
+  await driver.waitFor(`document.querySelector("#margin-notes-tab")?.getAttribute("aria-selected") === "true"`);
+  await driver.waitFor(`[...document.querySelectorAll(".margin-view-action")]
+    .some((button) => button.textContent?.trim() === "Add note")`);
+  await clickButtonByText(driver, ".margin-view-action", "Add note");
+  await driver.waitFor(`Boolean(document.querySelector(".note-capture-root"))`);
+  await setNativeControlValue(driver, ".note-capture-title-input", "Pastoral observation");
+  await setNativeControlValue(driver, ".note-capture-textarea", "The Spirit forms a patient teaching community.");
+  await driver.waitFor(`document.querySelector('.note-capture-root')?.getAttribute("data-dirty") === "true"`);
+  await driver.evaluate(`window.api.appWindow.requestClose()`);
+  await driver.waitFor(`Boolean(document.querySelector(".note-capture-discard"))`);
+  await clickButtonByText(driver, ".note-capture-discard-actions button", "Keep writing");
+  assert.equal(childState.exited, false);
+  assert.equal(await driver.evaluate(`document.activeElement?.classList.contains("note-capture-textarea")`), true);
+  await clickStudyControl(driver, '[data-study-tab-id="john-3-kjv"]');
+  await driver.waitFor(`Boolean(document.querySelector(".note-capture-discard"))`);
+  await clickButtonByText(driver, ".note-capture-discard-actions button", "Keep writing");
+  assert.equal(await driver.evaluate(`document.querySelector('[data-study-tab-id="acts-19-bsb"]')?.getAttribute("aria-selected")`), "true");
+  await clickButtonByText(driver, ".note-capture-actions button", "Cancel");
+  await driver.waitFor(`Boolean(document.querySelector(".note-capture-discard"))`);
+  await clickButtonByText(driver, ".note-capture-discard-actions button", "Discard");
+  await driver.waitFor(`!document.querySelector(".note-capture-root")`);
+  assert.deepEqual(readFileSync(connectionEventLogPath), connectionEventLogBytes);
+
+  // A dirty ConnectionCard blocks tab switch, close, move, and collapse. The
+  // final Discard approves exactly the requested move without writing JSONL.
+  await clickButtonByText(driver, ".margin-authored-connections-list button", "Later Acts phrase");
+  await driver.waitFor(`Boolean(document.querySelector("#connection-card-inspector"))`);
+  await setNativeControlValue(driver, ".connection-card-observation textarea", "Uncommitted pastoral wording");
+  await driver.waitFor(`document.querySelector('.connection-card')?.getAttribute("data-dirty") === "true"`);
+  await clickStudyControl(driver, '[data-study-tab-id="john-3-kjv"]');
+  await driver.waitFor(`Boolean(document.querySelector(".connection-draft-exit-dialog"))`);
+  await clickButtonByText(driver, ".connection-draft-exit-actions button", "Keep editing");
+  await clickStudyControl(driver, "[data-study-active-group-manage]");
+  await clickStudyControl(driver, "[data-study-group-collapse]");
+  await driver.waitFor(`Boolean(document.querySelector(".connection-draft-exit-dialog"))`);
+  await clickButtonByText(driver, ".connection-draft-exit-actions button", "Keep editing");
+  await driver.evaluate(`window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))`);
+  await clickStudyControl(driver, "[data-study-all-tabs]");
+  await driver.evaluate(`(() => {
+    const row = document.querySelector('[data-study-all-tabs-row][data-study-tab-id="john-3-kjv"]');
+    const button = row ? [...row.querySelectorAll("button")].find((candidate) => candidate.getAttribute("aria-label")?.startsWith("Close John 3")) : null;
+    button?.click();
+    return Boolean(button);
+  })()`);
+  await driver.waitFor(`Boolean(document.querySelector(".connection-draft-exit-dialog"))`);
+  await clickButtonByText(driver, ".connection-draft-exit-actions button", "Keep editing");
+  await driver.evaluate(`window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))`);
+  await clickStudyControl(driver, "[data-study-all-tabs]");
+  await setNativeControlValue(
+    driver,
+    '[data-study-all-tabs-row][data-study-tab-id="john-3-kjv"] [data-study-tab-move]',
+    "pastoral-acts-study",
+  );
+  await driver.waitFor(`Boolean(document.querySelector(".connection-draft-exit-dialog"))`);
+  await clickButtonByText(driver, ".connection-draft-exit-actions button", "Discard");
+  await driver.waitFor(`Boolean(document.querySelector(
+    '[data-study-group-id="pastoral-acts-study"] [data-study-all-tabs-row][data-study-tab-id="john-3-kjv"]'
+  ))`);
+  await driver.evaluate(`window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))`);
+  assert.deepEqual(readFileSync(connectionEventLogPath), connectionEventLogBytes);
+
+  // A same-turn tab switch races a real update request, and the opt-in main
+  // fixture drops its first response. In-flight and recovery ownership both
+  // keep every workspace transition and BrowserWindow close fail-closed.
+  await setNativeControlValue(driver, ".connection-card-observation textarea", "Committed once despite response loss");
+  await driver.waitFor(`document.querySelector('.connection-card')?.getAttribute("data-dirty") === "true"
+    && document.querySelector('.connection-card-observation textarea')?.value === "Committed once despite response loss"`);
+  assert.equal(await driver.evaluate(`(() => {
+    const editor = document.querySelector(".connection-card-observation textarea");
+    if (!(editor instanceof HTMLTextAreaElement)) return false;
+    editor.focus();
+    return document.activeElement === editor;
+  })()`), true);
+  await cdp.send("Input.dispatchKeyEvent", {
+    type: "rawKeyDown",
+    key: "Enter",
+    code: "Enter",
+    modifiers: 2,
+    windowsVirtualKeyCode: 13,
+    nativeVirtualKeyCode: 13,
+  });
+  await cdp.send("Input.dispatchKeyEvent", {
+    type: "keyUp",
+    key: "Enter",
+    code: "Enter",
+    modifiers: 2,
+    windowsVirtualKeyCode: 13,
+    nativeVirtualKeyCode: 13,
+  });
+  await clickStudyControl(driver, '[data-study-tab-id="john-3-kjv"]');
+  await driver.waitFor(`document.querySelector('.connection-card')?.getAttribute("data-pending-mutation") === "update"
+    && document.querySelector('.connection-card')?.getAttribute("aria-busy") === "false"`, 20_000);
+  assert.equal(await driver.evaluate(`document.querySelector('[data-study-tab-id="acts-19-bsb"]')?.getAttribute("aria-selected")`), "true");
+  const recoveryConnectionEventLogBytes = readFileSync(connectionEventLogPath);
+  assert.notDeepEqual(recoveryConnectionEventLogBytes, connectionEventLogBytes);
+  connectionEventLogBytes = recoveryConnectionEventLogBytes;
+  await driver.evaluate(`window.api.appWindow.requestClose()`);
+  await sleep(250);
+  assert.equal(childState.exited, false);
+  assert.equal(await driver.evaluate(`document.querySelector('.connection-card')?.getAttribute("data-pending-mutation")`), "update");
+  await clickStudyControl(driver, '[data-study-tab-id="john-3-kjv"]');
+  await sleep(250);
+  assert.equal(await driver.evaluate(`document.querySelector('[data-study-tab-id="acts-19-bsb"]')?.getAttribute("aria-selected")`), "true");
+  await driver.waitFor(`document.querySelector(".connection-card-retry")?.textContent?.includes("Retry")`);
+  await clickStudyControl(driver, ".connection-card-retry");
+  await driver.waitFor(`!document.querySelector('.connection-card')?.getAttribute("data-pending-mutation")`);
+  assert.deepEqual(readFileSync(connectionEventLogPath), connectionEventLogBytes);
 
   await selectPhrase(driver, fixture.widening, "refused");
   await driver.evaluate(`document.querySelector('[data-marking-surface="palette"] [data-relationship-kind="series"]')?.click()`);
@@ -403,6 +759,7 @@ try {
   await driver.waitFor(`document.body.textContent?.includes("This translation cannot preserve those exact words yet")`);
   assert.equal(await driver.evaluate(`Boolean(document.querySelector(".marking-session"))`), false);
   assert.equal(await driver.evaluate(`getSelection()?.toString()`), "Holy Spirit");
+  assert.deepEqual(readFileSync(connectionEventLogPath), connectionEventLogBytes);
   assert.equal(await driver.evaluate(selectPhraseExpression(fixture.baptism)), fixture.baptism.quote);
   await driver.waitFor(`document.querySelector(".marking-session-kind")?.textContent?.includes("1 phrase")
     && !document.querySelector(".marking-session-action.primary")`);
@@ -425,6 +782,9 @@ try {
   const saved = await driver.evaluate(`window.api.library.queryRange("ACT", 19, 1, "ACT", 19, 28)`);
   assert.equal(saved.connections.length, 3);
   assert.equal(saved.connections.some((connection) => connection.anchors.length === 3), true);
+  const savedConnectionEventLogBytes = readFileSync(connectionEventLogPath);
+  assert.notDeepEqual(savedConnectionEventLogBytes, connectionEventLogBytes);
+  connectionEventLogBytes = savedConnectionEventLogBytes;
 
   await driver.evaluate(`document.querySelector('[aria-label="Previous chapter"]')?.click()`);
   await driver.waitFor(`document.querySelector(".chapter-number")?.textContent?.trim() === "19"`);
@@ -444,8 +804,138 @@ try {
   await driver.waitFor(`document.querySelector(".chapter-number")?.textContent?.trim() === "20"`);
   const afterDiscard = await driver.evaluate(`window.api.library.queryRange("ACT", 19, 1, "ACT", 19, 28)`);
   assert.equal(afterDiscard.connections.length, 3);
+  assert.deepEqual(readFileSync(connectionEventLogPath), connectionEventLogBytes);
 
-  console.log("PASS desktop D8: exact phrase guard, canonical order + attention, explicit draft exits, grouped Scripture/Research tabs");
+  // Separate startup fixture: persist exactly the STUDY_WORKSPACE_TAB_LIMIT
+  // with one active passage, one inactive invalid passage, and one inactive
+  // missing entity. Only the active chapter may hydrate during reload.
+  const activeOnlyStartupFixture = await driver.evaluate(`(async () => {
+    const view = (book, chapter, packageId, verse, seed) => ({
+      book,
+      chapter,
+      packageId,
+      verse,
+      verseOffset: seed,
+      scrollTop: seed * 3,
+      margin: {
+        activeTab: seed % 2 === 0 ? "overview" : "passage",
+        scope: null,
+        scrollTopByTab: { overview: seed, connections: 0, passage: seed * 2, notes: 0 },
+        wordsVerse: verse,
+        wordsFollowingReading: seed % 2 === 0,
+      },
+    });
+    const session = (current) => ({ current, history: { back: [], forward: [] } });
+    const activeView = view("ACT", 19, "bsb", 20, 1);
+    const tabsById = {
+      "startup-active": {
+        kind: "passage", id: "startup-active", groupId: "startup-study", session: session(activeView),
+      },
+    };
+    const tabIds = ["startup-active"];
+    for (let index = 0; index < 61; index += 1) {
+      const id = "startup-inactive-" + String(index).padStart(2, "0");
+      const book = index % 2 === 0 ? "JHN" : "ROM";
+      const chapter = index % 2 === 0 ? 3 : 6;
+      const packageId = index % 3 === 0 ? "kjv" : "bsb";
+      tabsById[id] = {
+        kind: "passage",
+        id,
+        groupId: "startup-study",
+        session: session(view(book, chapter, packageId, index % 2 === 0 ? 16 : 4, index + 2)),
+      };
+      tabIds.push(id);
+    }
+    const invalidView = view("ACT", 999, "bsb", 1, 70);
+    tabsById["invalid-passage"] = {
+      kind: "passage",
+      id: "invalid-passage",
+      groupId: "startup-study",
+      session: session(invalidView),
+    };
+    tabIds.push("invalid-passage");
+    tabsById["missing-entity"] = {
+      kind: "entity",
+      id: "missing-entity",
+      groupId: "startup-study",
+      entityId: "qa-missing-entity",
+      entityKind: "person",
+      origin: activeView,
+      canvas: session(activeView),
+      returnPassageTabId: "startup-active",
+      trail: [{ id: "qa-missing-entity", displayName: "Catalog Missing Shepherd", kind: "person" }],
+      scrollTop: 0,
+      nonce: 9001,
+    };
+    tabIds.push("missing-entity");
+    const studyWorkspace = {
+      version: 2,
+      groups: [{
+        id: "startup-study",
+        homePassageTabId: "startup-active",
+        tabIds,
+        lastActiveTabId: "startup-active",
+        collapsed: false,
+        label: { kind: "custom", value: "active-only startup" },
+      }],
+      tabsById,
+      activeTabId: "startup-active",
+      activationOrder: [...tabIds.slice(1), "startup-active"],
+      recentlyClosed: [],
+    };
+    const savedSettings = await window.api.settings.set({
+      studyWorkspace,
+      lastRead: { book: "ACT", chapter: 19, packageId: "bsb" },
+    });
+    return {
+      tabCount: Object.keys(savedSettings.studyWorkspace?.tabsById ?? {}).length,
+      activeTabId: savedSettings.studyWorkspace?.activeTabId,
+    };
+  })()`);
+  assert.deepEqual(activeOnlyStartupFixture, {
+    tabCount: STUDY_WORKSPACE_TAB_LIMIT,
+    activeTabId: "startup-active",
+  });
+
+  const startupTraceOffset = parseStudyWorkspaceTrace(childLog).length;
+  await cdp.send("Page.reload", { ignoreCache: true });
+  await driver.waitFor(`document.querySelector('[data-study-tab-id="startup-active"]')?.getAttribute("aria-selected") === "true"
+    && document.querySelectorAll("[data-study-tab-id]").length === ${STUDY_WORKSPACE_TAB_LIMIT}
+    && document.querySelector(".book-name")?.textContent?.trim() === "Acts"
+    && document.querySelector(".chapter-number")?.textContent?.trim() === "19"`, 20_000);
+  await sleep(300);
+  const activeOnlyTrace = parseStudyWorkspaceTrace(childLog).slice(startupTraceOffset);
+  assert.equal(activeOnlyTrace.filter((line) => line.includes("study-workspace-qa:chapter")).length, 1);
+  assert.equal(activeOnlyTrace.filter((line) => line.includes("study-workspace-qa:entity")).length, 0);
+
+  await clickStudyControl(driver, '[data-study-tab-id="invalid-passage"]');
+  await driver.waitFor(`document.querySelector('[data-study-tab-id="invalid-passage"]')?.getAttribute("aria-selected") === "true"
+    && document.querySelector("#scripture-workspace-panel")?.getAttribute("data-study-canvas-owner") === "invalid-passage"
+    && Boolean(document.querySelector("[data-study-passage-fallback]"))`, 20_000);
+  const invalidPassageState = await driver.evaluate(`(async () => {
+    const persisted = (await window.api.settings.get()).studyWorkspace;
+    const record = persisted?.tabsById?.["invalid-passage"];
+    return {
+      selected: document.querySelector('[data-study-tab-id="invalid-passage"]')?.getAttribute("aria-selected"),
+      fallback: Boolean(document.querySelector("[data-study-passage-fallback]")),
+      preserved: record?.kind === "passage"
+        && record.session.current.book === "ACT"
+        && record.session.current.chapter === 999,
+    };
+  })()`);
+  assert.deepEqual(
+    { selected: invalidPassageState.selected, preserved: invalidPassageState.preserved },
+    { selected: "true", preserved: true },
+  );
+
+  await clickStudyControl(driver, '[data-study-tab-id="missing-entity"]');
+  await driver.waitFor(`Boolean(document.querySelector('[data-study-entity-unavailable="qa-missing-entity"]'))
+    && document.querySelector('[data-study-entity-unavailable="qa-missing-entity"]')?.textContent?.includes("Catalog Missing Shepherd unavailable")`, 20_000);
+  await clickStudyControl(driver, '.entity-research-close[aria-label="Close research tab"]');
+  await driver.waitFor(`!document.querySelector('[data-study-tab-id="missing-entity"]')`);
+  assert.deepEqual(readFileSync(connectionEventLogPath), connectionEventLogBytes);
+
+  console.log("PASS desktop D8 + V2: exact phrase guard, canonical order + attention, explicit draft exits, pastoral study workflow, active-only hydration");
 } catch (error) {
   throw new Error(`${error instanceof Error ? error.stack ?? error.message : String(error)}\nElectron log:\n${childLog}`);
 } finally {

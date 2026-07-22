@@ -1,98 +1,4 @@
 import type { StudyWorkspaceStateV2 } from "./studyWorkspace.js";
-import type { ResearchWorkspaceState } from "./researchWorkspace.js";
-
-export interface StudyWorkspaceCompatibilityProjection {
-  researchWorkspace: ResearchWorkspaceState;
-  keptContext: {
-    book: string;
-    chapter: number;
-    verse: number;
-    endVerse?: number;
-    label?: string;
-  } | null;
-}
-
-/**
- * Read-only bridge for the pre-V2 tab strip and kept-subject props. Task 5 can
- * remove this projection when those components consume StudyWorkspaceStateV2
- * directly; persisted authority remains V2 throughout the transition.
- */
-export function projectStudyWorkspaceCompatibility(
-  workspace: StudyWorkspaceStateV2 | null,
-): StudyWorkspaceCompatibilityProjection {
-  if (!workspace) {
-    return {
-      researchWorkspace: {
-        tabs: [],
-        activeTabId: "scripture",
-        lastResearchTabId: null,
-        activationOrder: ["scripture"],
-      },
-      keptContext: null,
-    };
-  }
-  const tabs = workspace.groups.flatMap((group) => group.tabIds.flatMap((tabId) => {
-    const tab = workspace.tabsById[tabId];
-    if (tab?.kind !== "entity") return [];
-    return [{
-      id: tab.id,
-      entityId: tab.entityId,
-      origin: {
-        book: tab.origin.book,
-        chapter: tab.origin.chapter,
-        packageId: tab.origin.packageId,
-        ...(tab.originRange
-          ? { verseStart: tab.originRange.start, verseEnd: tab.originRange.end }
-          : {}),
-      },
-      trail: tab.trail.map((entry) => ({ ...entry })),
-      nonce: tab.nonce,
-    }];
-  }));
-  const entityIds = new Set(tabs.map((tab) => tab.id));
-  const activeTabId = entityIds.has(workspace.activeTabId)
-    ? workspace.activeTabId
-    : "scripture";
-  const activationOrder: string[] = [];
-  const activated = new Set<string>();
-  for (const tabId of workspace.activationOrder) {
-    const compatibilityId = entityIds.has(tabId) ? tabId : "scripture";
-    if (activated.has(compatibilityId)) continue;
-    activated.add(compatibilityId);
-    activationOrder.push(compatibilityId);
-  }
-  if (!activated.has("scripture")) activationOrder.unshift("scripture");
-  const normalizedActivationOrder = [
-    ...activationOrder.filter((tabId) => tabId !== activeTabId),
-    activeTabId,
-  ];
-  const lastResearchTabId = [...normalizedActivationOrder].reverse().find(
-    (tabId) => entityIds.has(tabId),
-  ) ?? null;
-  const activeTab = workspace.tabsById[workspace.activeTabId];
-  const activeScope = activeTab?.kind === "passage"
-    ? activeTab.session.current.margin.scope
-    : activeTab?.canvas.current.margin.scope;
-  const keptContext: StudyWorkspaceCompatibilityProjection["keptContext"] =
-    activeScope?.kind === "kept"
-      ? {
-          book: activeScope.book,
-          chapter: activeScope.chapter,
-          verse: activeScope.verse,
-          ...(activeScope.endVerse !== undefined ? { endVerse: activeScope.endVerse } : {}),
-          ...(activeScope.label !== undefined ? { label: activeScope.label } : {}),
-        }
-      : null;
-  return {
-    researchWorkspace: {
-      tabs,
-      activeTabId,
-      lastResearchTabId,
-      activationOrder: normalizedActivationOrder,
-    },
-    keptContext,
-  };
-}
 
 export interface WorkspacePersistenceStatus {
   phase: "idle" | "saving" | "failed";
@@ -146,6 +52,7 @@ export interface WorkspacePersistenceController {
   flush(state: StudyWorkspaceStateV2): Promise<boolean>;
   retry(): Promise<boolean>;
   status(): WorkspacePersistenceStatus;
+  subscribe(listener: (status: WorkspacePersistenceStatus) => void): () => void;
   dispose(): void;
 }
 
@@ -175,6 +82,7 @@ export function createWorkspacePersistenceController(options: {
   let debounceTimer: ReturnType<typeof globalThis.setTimeout> | null = null;
   let debounced: WorkspaceSnapshot | null = null;
   const waiters: RevisionWaiter[] = [];
+  const listeners = new Set<(status: WorkspacePersistenceStatus) => void>();
 
   const clone = (state: StudyWorkspaceStateV2): StudyWorkspaceStateV2 => structuredClone(state);
 
@@ -185,6 +93,18 @@ export function createWorkspacePersistenceController(options: {
       failed?.revision ?? 0,
       debounced?.revision ?? 0,
     ) || null;
+  };
+
+  const currentStatus = (): WorkspacePersistenceStatus => ({
+    phase,
+    acknowledgedRevision,
+    pendingRevision: newestPendingRevision(),
+    ...(error !== undefined ? { error } : {}),
+  });
+
+  const publishStatus = (): void => {
+    const next = currentStatus();
+    for (const listener of listeners) listener(next);
   };
 
   const settleAcknowledgedWaiters = (revisionToAcknowledge: number): void => {
@@ -230,6 +150,7 @@ export function createWorkspacePersistenceController(options: {
       phase = "failed";
       error = reason instanceof Error ? reason.message : String(reason);
       settleFailedWaiters();
+      publishStatus();
     };
     let pending: Promise<unknown>;
     try {
@@ -245,9 +166,11 @@ export function createWorkspacePersistenceController(options: {
         acknowledgedRevision = Math.max(acknowledgedRevision, snapshot.revision);
         settleAcknowledgedWaiters(snapshot.revision);
         if (queue.length > 0) {
+          publishStatus();
           runNext();
         } else {
           phase = "idle";
+          publishStatus();
         }
       })
       .catch(handleFailure);
@@ -268,10 +191,12 @@ export function createWorkspacePersistenceController(options: {
     queue = queue.filter((candidate) => candidate.kind === "required");
     if (failed) {
       failed = snapshot;
+      publishStatus();
       return { snapshot, completion };
     }
     queue.push(snapshot);
     runNext();
+    publishStatus();
     return { snapshot, completion };
   };
 
@@ -285,6 +210,7 @@ export function createWorkspacePersistenceController(options: {
         debounced = null;
         if (debounceTimer !== null) globalThis.clearTimeout(debounceTimer);
         debounceTimer = null;
+        publishStatus();
         return;
       }
       if (debounceTimer !== null) globalThis.clearTimeout(debounceTimer);
@@ -300,7 +226,9 @@ export function createWorkspacePersistenceController(options: {
         queue = queue.filter((candidate) => candidate.kind === "required");
         queue.push(snapshot);
         runNext();
+        publishStatus();
       }, Math.max(0, options.debounceMs));
+      publishStatus();
     },
     persistStructure(state) {
       if (disposed) return Promise.resolve(false);
@@ -317,14 +245,21 @@ export function createWorkspacePersistenceController(options: {
       const completion = waitForRevision(snapshot.revision);
       queue.push(snapshot);
       runNext();
+      publishStatus();
       return completion;
     },
     status() {
-      return {
-        phase,
-        acknowledgedRevision,
-        pendingRevision: newestPendingRevision(),
-        ...(error !== undefined ? { error } : {}),
+      return currentStatus();
+    },
+    subscribe(listener) {
+      if (disposed) {
+        listener(currentStatus());
+        return () => undefined;
+      }
+      listeners.add(listener);
+      listener(currentStatus());
+      return () => {
+        listeners.delete(listener);
       };
     },
     dispose() {
@@ -339,6 +274,8 @@ export function createWorkspacePersistenceController(options: {
       phase = "idle";
       error = undefined;
       for (const waiter of waiters.splice(0)) waiter.resolve(false);
+      publishStatus();
+      listeners.clear();
     },
   };
 }

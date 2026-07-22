@@ -46,7 +46,8 @@ test("multi-verse Words chooses an explicit verse without changing canvas select
   const margin = read("src/renderer/components/LivingMargin.tsx");
   assert.match(margin, /role="radiogroup" aria-label="Words for verse"/);
   assert.match(margin, /verse=\{wordsVerse\}/);
-  assert.match(margin, /onClick=\{\(\) => setWordsVerse\(verse\)\}/);
+  assert.match(margin, /onMarginSessionChange\(sessionOwnerTabId, \(current\) => \(\{ \.\.\.current, \.\.\.update \}\)\)/);
+  assert.match(margin, /onClick=\{\(\) => setWordsState\(\{ wordsVerse: verse, wordsFollowingReading: false \}\)\}/);
 });
 
 function appSource(): string {

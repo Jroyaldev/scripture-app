@@ -556,7 +556,7 @@ test("connection authoring holds exact phrases without creating a route or durab
   assert.match(marking, /paintAnchors: \[\.\.\.base\.paintAnchors, \.\.\.current\.paintAnchors\]/);
   assert.match(marking, /onConnectionDraftChange\(connectionDraft\)/);
   assert.match(page, /const \[connectionDraft, setConnectionDraft\] = useState<ConnectionDraftModel \| null>\(null\)/);
-  assert.match(page, /draftConnection=\{connectionDraft\?\.contextKey === `\$\{book\}:\$\{chapter\}:\$\{packageId\}` \? connectionDraft : null\}/);
+  assert.match(page, /draftConnection=\{connectionDraft\?\.contextKey === `\$\{sessionOwnerTabId\}:\$\{book\}:\$\{chapter\}:\$\{packageId\}` \? connectionDraft : null\}/);
   assert.match(page, /onConnectionDraftChange=\{setConnectionDraft\}/);
   const selectionPaintMemo = page.slice(
     page.indexOf("const markingSelectionPaintAnchors"),

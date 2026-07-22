@@ -12,53 +12,32 @@ function section(source: string, start: string, end: string): string {
   return source.slice(startIndex, source.indexOf(end, startIndex));
 }
 
-test("research close remains async across the margin and Scripture boundary", () => {
+test("entity close remains an explicit async margin action", () => {
   assert.match(margin, /onCloseEntity\?: \(\) => Promise<boolean>;/);
   assert.match(scripture, /onCloseEntity\?: \(\) => Promise<boolean>;/);
-
-  const preflight = section(
-    scripture,
-    "const requestCanvasResearchExit",
-    "const selectStudyScope",
-  );
-  assert.match(preflight, /activeWorkspaceKind !== "entity"/);
-  assert.match(preflight, /if \(!onCloseEntity\) return false;/);
-  assert.match(preflight, /return await onCloseEntity\(\);/);
-  assert.match(preflight, /catch \{/);
+  assert.doesNotMatch(scripture, /requestCanvasResearchExit/);
 });
 
-test("Study selection waits for research close before every local mutation", () => {
+test("Study selection mutates the active canvas without deleting an entity tab", () => {
   const study = section(
     scripture,
     "const selectStudyScope",
     "const handleVerseClick",
   );
-  const approval = study.indexOf("if (!await requestCanvasResearchExit()) return false;");
-  assert.ok(approval >= 0);
-  for (const mutation of [
-    "handleDismissConnectionFocus()",
-    "setPhraseSelection(null)",
-    "setShowHighlightPalette(false)",
-    "removeAllRanges()",
-    "verseSelectionAnchorRef.current = result.anchor",
-    "setSelectedVerses(result.selection)",
-    "advanceSelectionGeneration()",
-    "onEnsureMarginVisible?.()",
-  ]) {
-    assert.ok(study.indexOf(mutation) > approval, `${mutation} ran before research close approval`);
-  }
-  assert.doesNotMatch(study, /onCloseEntity\?\./);
+  assert.match(study, /const result = nextVerseSelection/);
+  assert.match(study, /setSelectedVerses\(result\.selection\)/);
+  assert.match(study, /onEnsureMarginVisible\?\.\(\)/);
+  assert.doesNotMatch(study, /onCloseEntity|onWorkspaceTabClose/);
 });
 
-test("M marking waits for research close before chooser, selection, or palette changes", () => {
+test("M marking stays in the active canvas", () => {
   const keyHandler = section(
     scripture,
     "const handleVerseKeyDown",
     "// Connection focus is a temporary reading lens",
   );
   const markingStart = keyHandler.indexOf('event.key.toLowerCase() === "m"');
-  const approval = keyHandler.indexOf("if (!await requestCanvasResearchExit()) return;", markingStart);
-  assert.ok(markingStart >= 0 && approval > markingStart);
+  assert.ok(markingStart >= 0);
   for (const mutation of [
     "handleDismissConnectionFocus()",
     "closeConnectionWordChooser(false)",
@@ -69,12 +48,12 @@ test("M marking waits for research close before chooser, selection, or palette c
     "positionPalette(next)",
     "setShowHighlightPalette(true)",
   ]) {
-    assert.ok(keyHandler.indexOf(mutation, markingStart) > approval, `${mutation} ran before research close approval`);
+    assert.ok(keyHandler.indexOf(mutation, markingStart) > markingStart, `${mutation} is missing from marking`);
   }
-  assert.doesNotMatch(keyHandler.slice(markingStart), /onCloseEntity\?\./);
+  assert.doesNotMatch(keyHandler.slice(markingStart), /onCloseEntity|onWorkspaceTabClose/);
 });
 
-test("drag marking snapshots its native range and waits for research close before local marking changes", () => {
+test("drag marking snapshots its native range and commits in the active canvas", () => {
   const drag = section(
     scripture,
     "const handleTextMouseUp",
@@ -86,10 +65,7 @@ test("drag marking snapshots its native range and waits for research close befor
   assert.match(drag, /const paletteFocusBox = focusRect/);
 
   const suppression = drag.indexOf("suppressTrailingDragClick();");
-  const approval = drag.indexOf("if (!await requestCanvasResearchExit()) return;");
-  assert.ok(drag.indexOf("const phraseSelection =") < approval, "native offsets must be captured before awaiting exit");
-  assert.ok(drag.indexOf("const paletteBox =") < approval, "native geometry must be captured before awaiting exit");
-  assert.ok(suppression >= 0 && approval > suppression, "the trailing native click must be suppressed while exit approval settles");
+  assert.ok(suppression >= 0, "the trailing native click must be suppressed");
   for (const mutation of [
     "removeAllRanges()",
     "closeConnectionWordChooser(false)",
@@ -101,9 +77,9 @@ test("drag marking snapshots its native range and waits for research close befor
     "positionPaletteForBox(paletteBox, paletteFocusBox)",
     "setShowHighlightPalette(true)",
   ]) {
-    assert.ok(drag.indexOf(mutation) > approval, `${mutation} ran before research close approval`);
+    assert.ok(drag.indexOf(mutation) > suppression, `${mutation} ran before drag suppression`);
   }
-  assert.doesNotMatch(drag, /positionPaletteForRange\(range\)/, "a live Range cannot be trusted after the async exit boundary");
+  assert.doesNotMatch(drag, /onCloseEntity|onWorkspaceTabClose/);
 });
 
 test("document mouseup safely starts the asynchronous drag commit", () => {
@@ -115,59 +91,24 @@ test("document mouseup safely starts the asynchronous drag commit", () => {
   assert.match(pointerLifecycle, /textSelectionGestureRef\.current = false;\s*void handleTextMouseUp\(\);/);
 });
 
-test("Research pointer Study defers native row focus until close approval", () => {
-  const mouseDown = section(
-    scripture,
-    "const handleVerseMouseDown",
-    "const handleVerseClick",
-  );
-  assert.match(mouseDown, /activeWorkspaceKind !== "entity"/);
-  assert.match(mouseDown, /event\.button !== 0/);
-  assert.match(mouseDown, /row\.removeAttribute\("tabindex"\)/);
-  assert.match(mouseDown, /if \(row\.isConnected\) row\.tabIndex = 0;/);
-  assert.doesNotMatch(mouseDown, /preventDefault\(\)/, "native text drag must remain available");
-  assert.match(scripture, /onMouseDown=\{handleVerseMouseDown\}/);
-
+test("entity-canvas pointer Study keeps ordinary native row focus", () => {
   const click = section(
     scripture,
     "const handleVerseClick",
     "const handleVerseKeyDown",
   );
-  const approval = click.indexOf("await selectStudyScope(verse, event.shiftKey)");
-  const focus = click.indexOf("verseRowRefs.current.get(verse)?.focus({ preventScroll: true })");
-  assert.match(click, /focusVerseAfterApproval = activeWorkspaceKind === "entity"/);
-  assert.ok(approval >= 0 && focus > approval);
-  assert.doesNotMatch(click.slice(0, approval), /verseRowRefs\.current\.get\(verse\)\?\.focus/);
+  assert.match(click, /await selectStudyScope\(verse, event\.shiftKey\)/);
+  assert.doesNotMatch(scripture, /DeferredVersePointerFocus|handleVerseMouseDown|deferredVersePointerFocusRef/);
+  assert.doesNotMatch(click, /focusVerseAfterApproval|restoreDeferredVersePointerFocus/);
 });
 
-test("every rejected pointer intent restores the exact prior Research control", () => {
-  const mouseDown = section(
-    scripture,
-    "const handleVerseMouseDown",
-    "const handleVerseClick",
-  );
-  assert.match(mouseDown, /document\.activeElement/);
-  assert.match(mouseDown, /const activeElement = document\.activeElement instanceof HTMLElement\s*\? document\.activeElement\s*:\s*null;/);
-  assert.doesNotMatch(mouseDown, /activeElement.*closest|closest.*activeElement/);
-  assert.match(mouseDown, /deferredVersePointerFocusRef\.current = \{ verse, activeElement \};/);
-
+test("rejected pointer intents leave the active tab intact", () => {
   const click = section(
     scripture,
     "const handleVerseClick",
     "const handleVerseKeyDown",
   );
-  assert.match(click, /const deferredFocus = takeDeferredVersePointerFocus\(verse\);/);
-  assert.match(click, /handleSelectConnection\(ordered\[0\]!\.connection\)\.then\(\(proceed\) => \{[\s\S]{0,140}if \(!proceed\) restoreDeferredVersePointerFocus\(deferredFocus\)/);
-  assert.match(click, /if \(!requireSafeConnectionNavigation\(\)\) \{\s*restoreDeferredVersePointerFocus\(deferredFocus\);\s*return;/);
-  assert.match(click, /requestScriptureWorkspaceAttention\(\)\.then\(\(proceed\) => \{\s*if \(currentMarkingContextKeyRef\.current !== ownerContextKey\) return;\s*if \(!proceed\) \{\s*restoreDeferredVersePointerFocus\(deferredFocus\)/,
-    "a stale owner must not focus or mutate the newly selected Research tab before rejection handling");
-  assert.match(click, /if \(!await selectStudyScope\(verse, event\.shiftKey\)\) \{\s*restoreDeferredVersePointerFocus\(deferredFocus\);\s*return;/);
-
-  const pointerLifecycle = section(
-    scripture,
-    "// Commit by gesture origin, not release target",
-    "// Re-anchor the palette",
-  );
-  assert.match(pointerLifecycle, /window\.setTimeout\(\(\) => \{\s*if \(deferredVersePointerFocusRef\.current === deferredFocus\) deferredVersePointerFocusRef\.current = null;/);
-  assert.match(pointerLifecycle, /deferredVersePointerFocusRef\.current = null;/);
+  assert.match(click, /if \(!requireSafeConnectionNavigation\(\)\) return;/);
+  assert.match(click, /if \(!await selectStudyScope\(verse, event\.shiftKey\)\) return;/);
+  assert.doesNotMatch(click, /onCloseEntity|onWorkspaceTabClose/);
 });

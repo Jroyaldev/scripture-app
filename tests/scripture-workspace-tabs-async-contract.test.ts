@@ -90,7 +90,7 @@ test("the APG tablist exposes only tabs while group management stays in the adja
     /<div className="scripture-workspace-actions" role="toolbar" aria-label="Study tab controls">/,
   );
   assert.match(source, /data-study-collapsed-proxy={collapsedProxy \|\| undefined\}/);
-  assert.match(source, /tabIndex={selected \? 0 : -1}/);
+  assert.match(source, /tabIndex={roving \? 0 : -1}/);
   assert.match(source, /visibleStudyWorkspaceTabIds\(workspace\)/);
 });
 
@@ -107,18 +107,24 @@ test("every group keeps keyboard-reachable collapse and close actions without re
   assert.match(groupManagement, /await handleCloseGroup\(group\.id\)/);
 });
 
-test("close affordances expose only direct actions until confirmation UI exists", () => {
-  assert.match(source, /studyWorkspaceTabCloseAvailability\(workspace, tab\.id\) === "direct"/);
-  assert.match(source, /studyWorkspaceGroupCloseAvailability\(workspace, group\.id\) === "direct"/);
+test("close affordances expose direct and decision actions but never unavailable actions", () => {
+  assert.match(source, /const canClose = closeAvailability !== "unavailable"/);
+  assert.match(source, /const canCloseGroup = groupCloseAvailability !== "unavailable"/);
+  assert.match(source, /const canClose = tabCloseAvailability !== "unavailable"/);
+  assert.match(source, /confirmation required/);
   assert.match(source, /aria-keyshortcuts={canClose \? "Delete" : undefined\}/);
   assert.match(source, /canClose && \([\s\S]{0,220}?data-workspace-tab-close/);
+  assert.match(source, /collapsedProxy[\s\S]{0,180}?handleCloseGroup\(group\.id\)/);
+  assert.match(source, /handleCloseTab\(tab\.id/);
 });
 
 test("dismissing All Tabs by Escape or scrim returns focus to its trigger", () => {
   const dismiss = section("const dismissOverflow", "const handleSelectTab");
   assert.match(dismiss, /setOverflowOpen\(false\)/);
   assert.match(dismiss, /overflowButtonRef\.current/);
-  assert.match(dismiss, /\.focus\(\{ preventScroll: true \}\)/);
+  assert.match(dismiss, /scheduleControlFocus\(overflowButtonRef\.current, overflowButtonRef\)/);
+  const focusHelper = section("const scheduleControlFocus", "const dismissOverflow");
+  assert.match(focusHelper, /\.focus\(\{ preventScroll: true \}\)/);
   assert.match(source, /onClose=\{dismissOverflow\}/);
 });
 

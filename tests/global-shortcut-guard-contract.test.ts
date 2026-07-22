@@ -37,13 +37,20 @@ test("one App guard protects global shortcuts from active authored and floating 
   );
 });
 
-test("command, help, pane-cycle, and view/focus shortcuts all consult the shared guard", () => {
+test("workspace, command, help, pane-cycle, and view/focus shortcuts all consult the shared guard", () => {
   const guardCalls = app.match(/if \(globalShortcutBlocked\((?:event|e)\)\) return;/g) ?? [];
-  assert.equal(guardCalls.length, 4);
+  assert.equal(guardCalls.length, 5);
+
+  const workspace = sourceBetween(
+    app,
+    "const handleStudyWorkspaceShortcut",
+    'window.addEventListener("keydown", handleStudyWorkspaceShortcut, true)',
+  );
+  assert.ok(workspace.indexOf("globalShortcutBlocked(event)") < workspace.indexOf("studyWorkspaceRef.current"));
 
   const command = sourceBetween(
     app,
-    "if (!(event.metaKey || event.ctrlKey)",
+    'event.key.toLocaleLowerCase() !== "k") return;',
     "}, [globalShortcutBlocked, openCommandPalette]",
   );
   assert.ok(command.indexOf("globalShortcutBlocked(event)") < command.indexOf("event.preventDefault()"));

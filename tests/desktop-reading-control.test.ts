@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import type { ConnectionRecordV2 } from "../src/core/annotations/types.js";
@@ -10,17 +10,33 @@ import {
 import { selectionProjectionRoundTrips } from "../src/core/annotations/occurrence-alignment.js";
 import { connectionDraftExitActions } from "../src/renderer/utils/connectionDraftLifecycle.js";
 import {
-  closeResearchWorkspaceGroup,
-  closeResearchWorkspaceTab,
-  createResearchWorkspaceState,
-  MAX_RESEARCH_WORKSPACE_TABS,
-  openResearchWorkspaceTab,
-  researchOriginGroupKey,
-  SCRIPTURE_WORKSPACE_ID,
-  selectResearchWorkspaceTab,
-} from "../src/renderer/utils/researchWorkspace.js";
+  closeStudyWorkspaceGroup,
+  closeStudyWorkspaceTab,
+  createStudyWorkspace,
+  createStudyWorkspaceGroup,
+  openEntityWorkspaceTab,
+  resolveStudyWorkspaceDecision,
+  selectStudyWorkspaceTab,
+  STUDY_WORKSPACE_TAB_LIMIT,
+  type PassageViewState,
+} from "../src/renderer/utils/studyWorkspace.js";
 
 const repoRoot = process.cwd();
+
+function passage(book: string, chapter: number, packageId = "bsb"): PassageViewState {
+  return {
+    book,
+    chapter,
+    packageId,
+    scrollTop: 0,
+    margin: {
+      activeTab: "overview",
+      scope: null,
+      scrollTopByTab: {},
+      wordsFollowingReading: true,
+    },
+  };
+}
 
 function connection(
   id: string,
@@ -99,39 +115,110 @@ test("draft exits never invent save or timer behavior", () => {
   assert.deepEqual(connectionDraftExitActions(4), ["save", "discard", "keep-editing"]);
 });
 
-test("Scripture and grouped Research tabs preserve sessions and recent return order", () => {
-  const acts = { book: "ACT", chapter: 19, packageId: "bsb" };
-  const john = { book: "JHN", chapter: 3, packageId: "bsb" };
-  let state = createResearchWorkspaceState();
-  state = openResearchWorkspaceTab(state, { id: "paul", entityId: "paul", origin: acts, nonce: 1 });
-  state = openResearchWorkspaceTab(state, { id: "ephesus", entityId: "ephesus", origin: acts, nonce: 2 });
-  state = openResearchWorkspaceTab(state, { id: "nicodemus", entityId: "nicodemus", origin: john, nonce: 3 });
+test("passage-first Study groups preserve Scripture and Research return order", () => {
+  const acts = passage("ACT", 19);
+  const john = passage("JHN", 3);
+  let state = createStudyWorkspace(acts, { groupId: "acts-study", passageTabId: "acts-19" });
+  state = openEntityWorkspaceTab(state, {
+    id: "paul",
+    sourceTabId: "acts-19",
+    entityId: "person:paul",
+    displayName: "Paul",
+    entityKind: "person",
+    nonce: 1,
+    origin: acts,
+    returnPassageTabId: "acts-19",
+  }).state;
+  state = openEntityWorkspaceTab(state, {
+    id: "ephesus",
+    sourceTabId: "acts-19",
+    entityId: "place:ephesus",
+    displayName: "Ephesus",
+    entityKind: "place",
+    nonce: 2,
+    origin: acts,
+    returnPassageTabId: "acts-19",
+  }).state;
+  state = createStudyWorkspaceGroup(state, {
+    id: "john-study",
+    passageTabId: "john-3",
+    view: john,
+  }).state;
+  state = openEntityWorkspaceTab(state, {
+    id: "nicodemus",
+    sourceTabId: "john-3",
+    entityId: "person:nicodemus",
+    displayName: "Nicodemus",
+    entityKind: "person",
+    nonce: 3,
+    origin: john,
+    returnPassageTabId: "john-3",
+  }).state;
+
   assert.equal(state.activeTabId, "nicodemus");
-  assert.equal(new Set(state.tabs.map((tab) => researchOriginGroupKey(tab.origin))).size, 2);
-  state = selectResearchWorkspaceTab(state, "paul");
-  state = selectResearchWorkspaceTab(state, SCRIPTURE_WORKSPACE_ID);
-  assert.equal(state.lastResearchTabId, "paul");
-  state = selectResearchWorkspaceTab(state, "ephesus");
-  state = closeResearchWorkspaceTab(state, "ephesus");
-  assert.equal(state.activeTabId, SCRIPTURE_WORKSPACE_ID);
-  state = closeResearchWorkspaceGroup(state, researchOriginGroupKey(acts));
-  assert.deepEqual(state.tabs.map((tab) => tab.id), ["nicodemus"]);
+  assert.deepEqual(state.groups.map((group) => group.tabIds), [
+    ["acts-19", "ephesus", "paul"],
+    ["john-3", "nicodemus"],
+  ]);
+  state = selectStudyWorkspaceTab(state, "paul");
+  state = selectStudyWorkspaceTab(state, "acts-19");
+  assert.deepEqual(state.activationOrder.slice(-2), ["paul", "acts-19"]);
+  state = selectStudyWorkspaceTab(state, "ephesus");
+  const closedEntity = closeStudyWorkspaceTab(state, "ephesus");
+  assert.equal(closedEntity.outcome, "applied");
+  assert.equal(closedEntity.state.activeTabId, "paul");
+
+  const closeStudy = closeStudyWorkspaceGroup(closedEntity.state, "acts-study");
+  assert.equal(closeStudy.outcome, "needs-confirmation");
+  if (closeStudy.outcome !== "needs-confirmation") return;
+  const resolved = resolveStudyWorkspaceDecision(
+    closedEntity.state,
+    closeStudy.confirmation,
+    "close-study",
+  );
+  assert.equal(resolved.outcome, "applied");
+  assert.deepEqual(resolved.state.groups.map((group) => group.id), ["john-study"]);
+  assert.deepEqual(resolved.state.groups[0]?.tabIds, ["john-3", "nicodemus"]);
 });
 
-test("Research tabs evict the least-recent session at the validated desktop bound", () => {
-  const origin = { book: "ACT", chapter: 19, packageId: "bsb" };
-  let state = createResearchWorkspaceState();
-  for (let index = 0; index <= MAX_RESEARCH_WORKSPACE_TABS; index += 1) {
-    state = openResearchWorkspaceTab(state, {
+test("the V2 tab bound refuses overflow without evicting the home passage", () => {
+  const origin = passage("ACT", 19);
+  let state = createStudyWorkspace(origin, { groupId: "acts-study", passageTabId: "acts-19" });
+  for (let index = 1; index < STUDY_WORKSPACE_TAB_LIMIT; index += 1) {
+    const opened = openEntityWorkspaceTab(state, {
       id: `tab-${index}`,
-      entityId: `entity-${index}`,
+      sourceTabId: "acts-19",
+      entityId: `person:entity-${index}`,
+      displayName: `Entity ${index}`,
+      entityKind: "person",
       origin,
       nonce: index,
+      returnPassageTabId: "acts-19",
     });
+    assert.equal(opened.outcome, "opened");
+    state = opened.state;
   }
-  assert.equal(state.tabs.length, MAX_RESEARCH_WORKSPACE_TABS);
-  assert.equal(state.tabs.some((tab) => tab.id === "tab-0"), false);
-  assert.equal(state.activeTabId, `tab-${MAX_RESEARCH_WORKSPACE_TABS}`);
+  const overflow = openEntityWorkspaceTab(state, {
+    id: "overflow",
+    sourceTabId: "acts-19",
+    entityId: "person:overflow",
+    displayName: "Overflow",
+    entityKind: "person",
+    origin,
+    nonce: STUDY_WORKSPACE_TAB_LIMIT,
+    returnPassageTabId: "acts-19",
+  });
+  assert.equal(Object.keys(state.tabsById).length, STUDY_WORKSPACE_TAB_LIMIT);
+  assert.equal(overflow.outcome, "tab-limit");
+  assert.equal(overflow.state, state);
+  assert.equal(state.tabsById["acts-19"]?.kind, "passage");
+});
+
+test("desktop renderer has no legacy Research workspace module or state path", () => {
+  const legacyPath = join(repoRoot, "src/renderer/utils/researchWorkspace.ts");
+  const persistence = readFileSync(join(repoRoot, "src/renderer/utils/workspacePersistence.ts"), "utf8");
+  assert.equal(existsSync(legacyPath), false);
+  assert.doesNotMatch(persistence, /researchWorkspace|SCRIPTURE_WORKSPACE_ID/);
 });
 
 test("desktop integration owns one draft rail, exit controller, attention scroll, and APG tabs", () => {

@@ -197,12 +197,26 @@ export interface OpenEntityWorkspaceInput {
   id: string;
   sourceTabId: string;
   entityId: string;
+  /** Human-readable catalog name retained even when later lookup is unavailable. */
+  displayName?: string;
   entityKind: EntityWorkspaceKind;
   nonce: number;
   origin: PassageViewState;
   originRange?: { start: number; end: number };
   returnPassageTabId: string | null;
   duplicate?: boolean;
+}
+
+export interface BranchEntityWorkspaceInput {
+  id: string;
+  sourceTabId: string;
+  entry: EntityResearchTrailEntry;
+  nonce: number;
+}
+
+export interface ReturnEntityWorkspaceToOriginInput {
+  entityTabId: string;
+  passageTabId?: string;
 }
 
 export interface StudyWorkspaceBookNames {
@@ -814,10 +828,13 @@ function localReturnPassageTabId(
   tabsById: Readonly<Record<string, StudyWorkspaceTab>>,
   group: StudyWorkspaceGroup,
   candidateId: string | null,
+  origin: PassageViewState,
 ): string | null {
   if (!candidateId || !group.tabIds.includes(candidateId)) return null;
   const candidate = tabsById[candidateId];
-  return candidate?.kind === "passage" && candidate.groupId === group.id
+  return candidate?.kind === "passage"
+    && candidate.groupId === group.id
+    && passageMatchesView(candidate, origin)
     ? candidate.id
     : null;
 }
@@ -826,14 +843,16 @@ function recoverableReturnPassageTabId(
   state: StudyWorkspaceStateV2,
   group: StudyWorkspaceGroup,
   candidateId: string | null,
+  origin: PassageViewState,
 ): string | null {
-  const local = localReturnPassageTabId(state.tabsById, group, candidateId);
+  const local = localReturnPassageTabId(state.tabsById, group, candidateId, origin);
   if (local || !candidateId || state.tabsById[candidateId]) return local;
   const pending = state.recentlyClosed.some((item) => (
     item.kind === "tab"
     && item.tab.kind === "passage"
     && item.tab.id === candidateId
     && item.tab.groupId === group.id
+    && passageMatchesView(item.tab, origin)
   ));
   return pending ? candidateId : null;
 }
@@ -1361,6 +1380,7 @@ export function reopenClosedStudyItem(
             state,
             group,
             normalizedTab.returnPassageTabId,
+            normalizedTab.origin,
           ),
         }
       : normalizedTab;
@@ -1409,6 +1429,7 @@ export function reopenClosedStudyItem(
             normalizedTabsById,
             item.group,
             tab.returnPassageTabId,
+            tab.origin,
           ),
         }
       : tab;
@@ -1485,8 +1506,13 @@ export function openEntityWorkspaceTab(
       state.tabsById,
       group,
       input.returnPassageTabId,
+      input.origin,
     ),
-    trail: [{ id: input.entityId, displayName: input.entityId, kind: input.entityKind }],
+    trail: [{
+      id: input.entityId,
+      displayName: input.displayName?.trim() || input.entityId,
+      kind: input.entityKind,
+    }],
     scrollTop: 0,
     nonce: input.nonce,
   };
@@ -1506,6 +1532,124 @@ export function openEntityWorkspaceTab(
     tabsById: { ...state.tabsById, [tab.id]: tab },
   };
   return { state: activateStudyWorkspaceTab(next, tab.id), outcome: "opened" };
+}
+
+export function branchEntityWorkspaceTab(
+  state: StudyWorkspaceStateV2,
+  input: BranchEntityWorkspaceInput,
+): WorkspaceMutationResult {
+  const source = state.tabsById[input.sourceTabId];
+  const group = source?.kind === "entity"
+    ? state.groups.find((candidate) => candidate.id === source.groupId
+      && candidate.tabIds.includes(source.id))
+    : undefined;
+  if (!source || source.kind !== "entity" || !group || state.tabsById[input.id]) {
+    return { state, outcome: "unchanged" };
+  }
+  if (Object.keys(state.tabsById).length >= STUDY_WORKSPACE_TAB_LIMIT) {
+    return { state, outcome: "tab-limit" };
+  }
+
+  const tab: EntityWorkspaceTab = {
+    kind: "entity",
+    id: input.id,
+    groupId: group.id,
+    entityId: input.entry.id,
+    entityKind: input.entry.kind ?? source.entityKind,
+    origin: clonePassageViewState(source.origin),
+    ...(source.originRange ? { originRange: { ...source.originRange } } : {}),
+    canvas: clonePassageWorkspaceSession(source.canvas),
+    returnPassageTabId: source.returnPassageTabId,
+    trail: appendEntityResearchTrail(source.trail, input.entry),
+    scrollTop: 0,
+    nonce: input.nonce,
+  };
+  const sourceIndex = group.tabIds.indexOf(source.id);
+  const next: StudyWorkspaceStateV2 = {
+    ...state,
+    groups: state.groups.map((candidate) => candidate.id === group.id
+      ? {
+          ...freezeAutomaticGroupLabel(state, candidate),
+          tabIds: [
+            ...candidate.tabIds.slice(0, sourceIndex + 1),
+            tab.id,
+            ...candidate.tabIds.slice(sourceIndex + 1),
+          ],
+        }
+      : candidate),
+    tabsById: { ...state.tabsById, [tab.id]: tab },
+  };
+  return { state: activateStudyWorkspaceTab(next, tab.id), outcome: "opened" };
+}
+
+export function returnEntityWorkspaceToOrigin(
+  state: StudyWorkspaceStateV2,
+  input: ReturnEntityWorkspaceToOriginInput,
+): WorkspaceMutationResult {
+  const entity = state.tabsById[input.entityTabId];
+  const group = entity?.kind === "entity"
+    ? state.groups.find((candidate) => candidate.id === entity.groupId
+      && candidate.tabIds.includes(entity.id))
+    : undefined;
+  if (!entity || entity.kind !== "entity" || !group) {
+    return { state, outcome: "unchanged" };
+  }
+
+  const canonicalReturnId = localReturnPassageTabId(
+    state.tabsById,
+    group,
+    entity.returnPassageTabId,
+    entity.origin,
+  );
+  const matchingPassageId = canonicalReturnId ?? group.tabIds.find((tabId) => {
+    const candidate = state.tabsById[tabId];
+    return candidate !== undefined && passageMatchesView(candidate, entity.origin);
+  });
+
+  let result: OpenPassageWorkspaceResult;
+  if (matchingPassageId) {
+    const repositioned = updateStudyCanvasSession(state, matchingPassageId, (session) => ({
+      current: clonePassageViewState(entity.origin),
+      history: pushNavigationHistory(
+        clonePassageWorkspaceSession(session).history,
+        clonePassageViewState(session.current),
+      ),
+    }));
+    result = {
+      state: activateStudyWorkspaceTab(repositioned, matchingPassageId),
+      outcome: "focused",
+    };
+  } else {
+    if (Object.keys(state.tabsById).length >= STUDY_WORKSPACE_TAB_LIMIT) {
+      return { state, outcome: "tab-limit" };
+    }
+    const preferredId = input.passageTabId?.trim();
+    const baseId = preferredId
+      || entity.returnPassageTabId
+      || `${entity.id}-origin`;
+    result = openPassageWorkspaceTab(state, {
+      id: availableDerivedTabId(state, baseId),
+      sourceTabId: entity.id,
+      view: entity.origin,
+      duplicate: true,
+    });
+  }
+
+  if (result.outcome !== "opened" && result.outcome !== "focused") return result;
+  const targetId = result.state.activeTabId;
+  const currentEntity = result.state.tabsById[entity.id];
+  if (currentEntity?.kind !== "entity") return { state, outcome: "unchanged" };
+  if (currentEntity.returnPassageTabId === targetId) return result;
+  return {
+    ...result,
+    state: {
+      ...result.state,
+      tabsById: {
+        ...result.state.tabsById,
+        [entity.id]: { ...currentEntity, returnPassageTabId: targetId },
+      },
+    },
+  };
 }
 
 export function navigateEntityWorkspaceTab(
@@ -1710,16 +1854,23 @@ export function orderedStudyWorkspaceTabs(
 }
 
 /**
- * Collapsed studies retain the active tab as their single APG proxy. This
- * guarantees that the selected tab remains the tablist's one roving tab stop.
+ * Every collapsed study retains one real tab as its APG proxy. The selected
+ * tab wins for its own group; inactive groups retain their last active tab so
+ * collapsing never makes an entire study unreachable from the strip.
  */
 export function visibleStudyWorkspaceTabIds(
   state: StudyWorkspaceStateV2,
 ): string[] {
-  return state.groups.flatMap((group) => group.tabIds.filter((tabId) => (
-    state.tabsById[tabId]
-    && (!group.collapsed || tabId === state.activeTabId)
-  )));
+  return state.groups.flatMap((group) => {
+    const validTabIds = group.tabIds.filter((tabId) => state.tabsById[tabId]?.groupId === group.id);
+    if (!group.collapsed) return validTabIds;
+    const selected = validTabIds.includes(state.activeTabId) ? state.activeTabId : null;
+    const retained = validTabIds.includes(group.lastActiveTabId) ? group.lastActiveTabId : null;
+    const proxy = selected ?? retained ?? (
+      validTabIds.includes(group.homePassageTabId) ? group.homePassageTabId : validTabIds[0]
+    );
+    return proxy ? [proxy] : [];
+  });
 }
 
 function referenceLabel(

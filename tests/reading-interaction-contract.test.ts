@@ -106,7 +106,14 @@ test("a Scripture drag commits on document mouseup when release leaves the text 
   assert.match(documentRelease, /document\.addEventListener\("pointercancel", cancelTextSelectionGesture\)/);
   assert.match(documentRelease, /window\.addEventListener\("blur", cancelTextSelectionGesture\)/);
   assert.match(page, /const suppressTrailingDragClick = useCallback[\s\S]{0,700}window\.setTimeout\(\(\) => \{[\s\S]{0,180}suppressNextClickRef\.current = false;[\s\S]{0,60}\}, 0\)/);
-  assert.match(page, /suppressTrailingDragClick\(\);[\s\S]{0,120}if \(!await requestCanvasResearchExit\(\)\) return;/);
+  const dragCommit = sourceBetween(page, "const handleTextMouseUp", "// Commit by gesture origin");
+  assert.ok(
+    dragCommit.indexOf("if (!requireSafeConnectionNavigation())")
+      > dragCommit.indexOf("suppressTrailingDragClick();"),
+    "the authored-mutation guard must run after drag-click suppression",
+  );
+  assert.doesNotMatch(page, /requestCanvasResearchExit/,
+    "marking and Study selection belong to the active canvas, including an entity tab");
   assert.doesNotMatch(page, /onMouseDown=\{\(event\) => \{\s*suppressNextClickRef\.current = false/);
   assert.doesNotMatch(page, /onMouseUp=\{handleTextMouseUp\}/);
 });
@@ -234,6 +241,11 @@ test("outside clicks dismiss only connection focus and overlapping exact hits ha
   );
 
   assert.match(outsideClick, /event\.defaultPrevented \|\| event\.button !== 0/);
+  assert.match(
+    outsideClick,
+    /document\.querySelector\('\.connection-card\[data-dirty="true"\]'\)\) return;/,
+    "outside or structural clicks must never unmount a dirty card before its exit coordinator owns the decision",
+  );
   for (const protectedSelector of [
     ".verse-line",
     ".connection-card",
@@ -241,6 +253,7 @@ test("outside clicks dismiss only connection focus and overlapping exact hits ha
     "[data-connection-tick]",
     ".connection-word-chooser",
     ".marking-floating-host",
+    "[data-study-workspace-bar]",
     "[data-floating-layer]",
     ".popover-scrim",
   ]) {
@@ -410,6 +423,7 @@ test("plain reading arrows traverse chapters while Tab and Shift-Tab cycle Livin
   assert.match(chapterKeys, /goTo\(book, chapter - 1, undefined, \{ recordRecent: false \}\)/);
   assert.match(chapterKeys, /\(plainReadingArrow \|\| appArrow\) && e\.key === "ArrowRight"/);
   assert.match(chapterKeys, /goTo\(book, chapter \+ 1, undefined, \{ recordRecent: false \}\)/);
+  assert.doesNotMatch(chapterKeys, /onCloseEntity|onWorkspaceTabClose/);
 
   assert.match(globalLensKeys, /if \(event\.key !== "Tab"\) return/);
   assert.match(globalLensKeys, /const reverse = event\.shiftKey/);

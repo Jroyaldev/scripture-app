@@ -16,43 +16,55 @@ test("trail and Back requests do not mutate trail or focus before async approval
   const trailHandlers = section(
     margin,
     "const openTrailEntity",
-    "const currentResearchIsRecorded",
+    "const researchLayerRef",
   );
 
-  assert.match(trailHandlers, /void onOpenEntity\(target\.id, \{ trailIndex: index \}\);/);
-  assert.match(trailHandlers, /void onOpenEntity\(previous\.id, \{ trailIndex: previousIndex \}\);/);
+  assert.match(trailHandlers, /void onDrillEntity\(\{[\s\S]*?id: target\.id,[\s\S]*?displayName: target\.displayName,[\s\S]*?kind: target\.kind \?\? "other",[\s\S]*?\}, \{ trailIndex: index \}\);/);
+  assert.match(trailHandlers, /const previous: EntityResearchTarget = \{[\s\S]*?id: previousEntity\.id,[\s\S]*?displayName: previousEntity\.displayName,[\s\S]*?kind: previousEntity\.kind \?\? "other",[\s\S]*?\};/);
+  assert.match(trailHandlers, /void onDrillEntity\(previous, \{ trailIndex: previousIndex \}\);/);
   assert.doesNotMatch(trailHandlers, /onEntityTrailChange/);
   assert.doesNotMatch(trailHandlers, /\.focus\(|setEntityResearch|setActiveTab/);
 });
 
-test("ScripturePage preserves the async trail-navigation result", () => {
+test("ScripturePage keeps Study opens and Research drills on distinct async callbacks", () => {
   const wrapper = section(
     scripture,
     "const handleOpenMarginEntity",
     "const handleNoteCaptureSaved",
   );
+  const marginWiring = section(
+    scripture,
+    "<LivingMargin",
+    "authoredConnections=",
+  );
 
-  assert.match(wrapper, /options\?: EntityResearchOpenOptions/);
+  assert.match(wrapper, /target: EntityResearchTarget/);
   assert.match(wrapper, /\): Promise<boolean> => \{/);
   assert.match(wrapper, /if \(!onOpenEntity\) return Promise\.resolve\(false\);/);
-  assert.match(wrapper, /return onOpenEntity\([\s\S]*marginWorkspace === "research" \? "navigate" : "tab", options\);/);
+  assert.match(wrapper, /return onOpenEntity\(target\);/);
   assert.doesNotMatch(wrapper, /onOpenEntity\?\./);
+  assert.match(marginWiring, /onOpenEntity=\{handleOpenMarginEntity\}/);
+  assert.match(marginWiring, /onDrillEntity=\{onDrillEntity\}/);
+  assert.doesNotMatch(marginWiring, /onDrillEntity=\{handleOpenMarginEntity\}/);
 });
 
 test("App applies an approved trail target and entity change in one commit", () => {
   const intent = section(
     app,
     "const openEntityResearchAt",
-    "const openEntityResearch =",
+    "const openEntityResearch = useCallback",
   );
   const transition = intent.indexOf('runWorkspaceTransition("tab-change"');
   const commit = intent.indexOf("commitStudyWorkspace(");
-  const validateTarget = intent.indexOf(".id !== entityId");
+  const validateTarget = intent.indexOf("existingTarget.id !== target.id");
   const truncate = intent.indexOf("truncateEntityResearchTrail(");
   const navigate = intent.indexOf("navigateEntityWorkspaceTab(");
+  const approvedFocus = intent.indexOf("if (requestFocus");
 
   assert.ok(transition >= 0 && commit > transition);
   assert.ok(validateTarget > commit && truncate > validateTarget && navigate > truncate);
+  assert.ok(approvedFocus > navigate);
+  assert.match(intent.slice(approvedFocus), /proceed[\s\S]*openedOwnerTabId !== null[\s\S]*activeTabId === openedOwnerTabId/);
   assert.equal(intent.match(/commitStudyWorkspace\(/g)?.length, 1);
   assert.equal(intent.match(/navigateEntityWorkspaceTab\(/g)?.length, 1);
   assert.doesNotMatch(intent.slice(0, transition), /trailIndex|truncateEntityResearchTrail/);

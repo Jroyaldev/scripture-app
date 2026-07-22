@@ -5,6 +5,7 @@ import { test } from "node:test";
 import {
   appendEntityResearchTrail,
   ENTITY_RESEARCH_TRAIL_LIMIT,
+  isExplicitEntityBranchGesture,
   truncateEntityResearchTrail,
   type EntityResearchTrailEntry,
 } from "../src/renderer/components/LivingMargin.js";
@@ -36,7 +37,7 @@ test("research trail preserves causal order, truncates returns, and caps at 12",
 
 test("breadcrumbs render frozen origin, prior return targets, and inert current state", () => {
   assert.match(margin, /<nav className="entity-research-breadcrumbs" aria-label="Research trail">/);
-  assert.match(margin, /className="entity-research-breadcrumb is-origin"[\s\S]{0,120}?onClick=\{onCloseEntity\}/);
+  assert.match(margin, /className="entity-research-breadcrumb is-origin"[\s\S]{0,160}?onClick=\{onReturnEntityOrigin\}/);
   assert.match(margin, /onClick=\{\(\) => openTrailEntity\(index\)\}/);
   assert.match(margin, /className="entity-research-breadcrumb is-current" aria-current="page"/);
   assert.match(css, /\.entity-research-breadcrumb-tail\s*\{[\s\S]{0,180}?overflow: hidden;/);
@@ -55,8 +56,10 @@ test("validated V2 settings absorb legacy workspace inputs without renderer lega
     /window\.api\.settings\.set\(\{\s*(?:researchWorkspace|researchSession|keptContext)\b/,
   );
   const close = app.slice(app.indexOf("const closeResearchTab"), app.indexOf("const updateEntityResearchTrail"));
-  assert.match(close, /const result = closeStudyWorkspaceTab\(current, tabId\)/);
-  assert.match(close, /result\.outcome === "needs-confirmation"/);
+  assert.match(close, /runWorkspaceTransition\("tab-close"/);
+  assert.match(close, /const requested = closeStudyWorkspaceTab\(snapshot, tabId\)/);
+  assert.match(close, /requested\.outcome === "needs-confirmation"/);
+  assert.match(close, /result = resolveStudyWorkspaceDecision\(latest, requested\.confirmation, decision\)/);
   assert.match(app, /workspacePersistenceRef\.current\.persistStructure\(next\)/);
   assert.doesNotMatch(app, /setResearchWorkspace|createResearchWorkspaceState/);
 });
@@ -101,12 +104,60 @@ test("workspace-derived research and kept intents memoize by semantic scalars", 
   assert.doesNotMatch(keptMemo, /\[activeScope\]/);
 });
 
-test("Close exits directly while Back and Escape remain stepwise and named", () => {
+test("Close alone deletes while Back, Return, and Escape preserve the research tab", () => {
   assert.match(margin, /className="entity-research-close"[\s\S]{0,100}?onClick=\{onCloseEntity\}/);
-  assert.match(margin, /const previousIndex = entityTrail\.length - \(currentIsRecorded \? 2 : 1\)/);
-  assert.match(margin, /void onOpenEntity\(previous\.id, \{ trailIndex: previousIndex \}\)/);
-  assert.match(margin, /aria-label=\{`Back to \$\{researchBackDestination\}`\}/);
-  assert.match(margin, /event\.key !== "Escape"[\s\S]{0,340}?openPreviousEntity\(\)/);
+  assert.match(margin, /const previousIndex = entityTrail\.length - \(currentResearchIsRecorded \? 2 : 1\)/);
+  const backStart = margin.indexOf("const openPreviousEntity");
+  const backEnd = margin.indexOf("const researchLayerRef", backStart);
+  const back = margin.slice(backStart, backEnd);
+  assert.match(back, /void onDrillEntity\(previous, \{ trailIndex: previousIndex \}\)/);
+  assert.doesNotMatch(back, /onCloseEntity/);
+  assert.match(margin, /className="entity-research-return"[\s\S]{0,160}?onClick=\{onReturnEntityOrigin\}/);
+  assert.match(margin, /aria-label=\{`Return to \$\{originLabel\}`\}/);
+  assert.match(margin, /event\.key !== "Escape"[\s\S]{0,520}?previousEntity[\s\S]{0,220}?openPreviousEntity\(\)[\s\S]{0,180}?onReturnEntityOrigin\?\.\(\)/);
+  assert.doesNotMatch(margin.slice(margin.indexOf('const closeResearch ='), margin.indexOf('window.addEventListener("keydown", closeResearch')), /onCloseEntity/);
+});
+
+test("Study opens a named research tab while entity drill and branch remain distinct", () => {
+  assert.equal(isExplicitEntityBranchGesture({ button: 0, metaKey: false, ctrlKey: false, shiftKey: false }), false);
+  assert.equal(isExplicitEntityBranchGesture({ button: 0, metaKey: true, ctrlKey: false, shiftKey: false }), true);
+  assert.equal(isExplicitEntityBranchGesture({ button: 0, metaKey: false, ctrlKey: true, shiftKey: false }), true);
+  assert.equal(isExplicitEntityBranchGesture({ button: 0, metaKey: false, ctrlKey: false, shiftKey: true }), true);
+  assert.equal(isExplicitEntityBranchGesture({ button: 1, metaKey: false, ctrlKey: false, shiftKey: false }), true);
+
+  assert.match(margin, /export interface EntityResearchTarget \{[\s\S]{0,220}?displayName: string;[\s\S]{0,120}?kind: "person" \| "place" \| "other";/);
+  assert.match(margin, /aria-label=\{`Open research tab for \$\{entity\.displayName\}`\}/);
+  assert.match(margin, /<span className="intent-entity-open"[^>]*>Open research tab/);
+  assert.match(margin, /onOpenEntity\?\.\(entityResearchTarget\(entity\)\)/);
+
+  const relationshipsStart = margin.indexOf("function PersonRelationships");
+  const relationshipsEnd = margin.indexOf("function EntityMiniMap", relationshipsStart);
+  const relationships = margin.slice(relationshipsStart, relationshipsEnd);
+  assert.match(relationships, /onDrillEntity\?\.\(target\)/);
+  assert.match(relationships, /void onBranchEntity\(target\)/);
+  assert.match(relationships, /onAuxClick=/);
+  assert.match(relationships, /isExplicitEntityBranchGesture\(event\)/);
+  assert.match(relationships, /aria-label=\{`Open \$\{relationship\.displayName\} in a new research tab/);
+});
+
+test("entity references follow the current canvas and expose an explicit passage-tab branch", () => {
+  const viewStart = margin.indexOf("function EntityResearchView");
+  const viewEnd = margin.indexOf("function CrossReferenceRow", viewStart);
+  const view = margin.slice(viewStart, viewEnd);
+  assert.match(view, /onClick=\{\(\) => onNavigate\?\.\(`bref:v1\/\$\{ref\}`\)\}/);
+  assert.match(view, /void onOpenPassageTab\(target\)/);
+  assert.match(view, /aria-label=\{`Open \$\{label\} as a passage tab`\}/);
+  assert.match(margin, /useVersePeek\(packageId, onKeepReference, onOpenPassageTab\)/);
+});
+
+test("Research names immutable provenance, current canvas, and unavailable entities", () => {
+  assert.match(margin, /Opened from[\s\S]{0,120}?\{originLabel\}/);
+  assert.match(margin, /currentCanvasDiffersFromOrigin[\s\S]{0,220}?Viewing[\s\S]{0,120}?\{currentCanvasLabel\}/);
+  assert.match(margin, /entityIntent\?: \{[\s\S]{0,160}?displayName: string;[\s\S]{0,100}?kind: "person" \| "place" \| "other";/);
+  assert.match(margin, /data-study-entity-unavailable=\{entityIntent\.id\}/);
+  assert.match(margin, /title=\{`\$\{entityIntent\.displayName\} unavailable`\}/);
+  assert.match(css, /\.entity-research-return\s*\{[\s\S]{0,300}?appearance: none;[\s\S]{0,300}?background: transparent;/);
+  assert.match(css, /\.entity-research-provenance\s*\{[\s\S]{0,300}?align-items: flex-end;[\s\S]{0,300}?text-align: right;/);
 });
 
 test("principal research stays compact and deep datasets share one More disclosure", () => {

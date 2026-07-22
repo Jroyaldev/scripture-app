@@ -36,6 +36,8 @@ interface ToastContextValue {
   dismissToast: (id: number) => void;
 }
 
+export type ShowToast = ToastContextValue["showToast"];
+
 const ToastContext = createContext<ToastContextValue | null>(null);
 const DEFAULT_DURATION_MS = 5_000;
 const EXIT_DURATION_MS = 160;
@@ -57,9 +59,11 @@ function ToastMark({ tone }: { tone: ToastTone }): React.JSX.Element {
 export function ToastProvider({
   children,
   materialClassName = "",
+  onShowToastReady,
 }: {
   children: ReactNode;
   materialClassName?: string;
+  onShowToastReady?: (showToast: ShowToast | null) => void;
 }): React.JSX.Element {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [closingIds, setClosingIds] = useState<Set<number>>(new Set());
@@ -114,6 +118,11 @@ export function ToastProvider({
     [dismissToast],
   );
 
+  useEffect(() => {
+    onShowToastReady?.(showToast);
+    return () => onShowToastReady?.(null);
+  }, [onShowToastReady, showToast]);
+
   useEffect(() => () => {
     for (const timer of autoTimers.current.values()) window.clearTimeout(timer);
     for (const timer of exitTimers.current.values()) window.clearTimeout(timer);
@@ -124,14 +133,13 @@ export function ToastProvider({
       {children}
       <div
         className={`toast-container ${materialClassName}`.trim()}
-        aria-live="polite"
-        aria-relevant="additions text"
       >
         {toasts.map((toast) => (
           <div
             key={toast.id}
             className={`toast toast--${toast.tone}${closingIds.has(toast.id) ? " is-closing" : ""}`}
             role={toast.tone === "error" ? "alert" : "status"}
+            aria-live={toast.tone === "error" ? "assertive" : "polite"}
             data-floating-layer="toast"
             style={{ "--toast-duration": `${toast.durationMs}ms` } as React.CSSProperties}
           >

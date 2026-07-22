@@ -79,11 +79,21 @@ test("LivingMargin removes highlights by the persisted highlight id from the pin
       packageId: "bsb",
       marginData,
       crossRefs: null,
-      bookNames: { ACT: ["Acts"] },
-      pinnedRange: { start: 1, end: 1 },
-      onRemoveHighlights: (ids) => {
-        removedId = ids[0] ?? null;
-      },
+    bookNames: { ACT: ["Acts"] },
+    pinnedRange: { start: 1, end: 1 },
+    sessionOwnerTabId: "passage-acts-19",
+    sessionRestoreNonce: 1,
+    marginSession: {
+      activeTab: "passage",
+      scope: { kind: "selection", start: 1, end: 1 },
+      scrollTopByTab: {},
+      wordsVerse: 1,
+      wordsFollowingReading: false,
+    },
+    onMarginSessionChange: () => undefined,
+    onRemoveHighlights: (ids) => {
+      removedId = ids[0] ?? null;
+    },
     });
 
     let removeButton: React.ReactElement<{ onClick?: () => void }> | null = null;

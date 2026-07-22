@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import {
   createStudyWorkspace,
-  createStudyWorkspaceGroup,
   openEntityWorkspaceTab,
   type PassageViewState,
 } from "../src/renderer/utils/studyWorkspace.js";
@@ -10,7 +10,6 @@ import {
   createWorkspacePersistenceController,
   decideStudyWorkspaceClose,
   isStudyWorkspaceSnapshotAcknowledged,
-  projectStudyWorkspaceCompatibility,
 } from "../src/renderer/utils/workspacePersistence.js";
 
 interface Deferred<T> {
@@ -54,7 +53,7 @@ async function settle(): Promise<void> {
   await new Promise<void>((resolve) => setTimeout(resolve, 0));
 }
 
-test("V2 compatibility projection restores visible research tabs and kept context", () => {
+test("V2 snapshots carry entity tabs and kept canvas state without a compatibility projection", () => {
   const base = state(19);
   const passage = base.tabsById[base.activeTabId];
   assert.equal(passage?.kind, "passage");
@@ -76,52 +75,30 @@ test("V2 compatibility projection restores visible research tabs and kept contex
     returnPassageTabId: passage.id,
   });
   assert.equal(opened.outcome, "opened");
-  const projected = projectStudyWorkspaceCompatibility(opened.state);
-  assert.deepEqual(projected.researchWorkspace.tabs.map((tab) => [tab.id, tab.entityId]), [
-    ["entity-paul", "person:paul"],
-  ]);
-  assert.equal(projected.researchWorkspace.activeTabId, "entity-paul");
-  assert.deepEqual(projected.keptContext, {
+  assert.equal(opened.state.activeTabId, "entity-paul");
+  const entity = opened.state.tabsById[opened.state.activeTabId];
+  assert.equal(entity?.kind, "entity");
+  if (entity?.kind !== "entity") return;
+  assert.equal(entity.entityId, "person:paul");
+  assert.deepEqual(entity.canvas.current.margin.scope, {
     book: "GEN",
     chapter: 1,
+    kind: "kept",
     verse: 1,
   });
+  assert.equal(
+    isStudyWorkspaceSnapshotAcknowledged(opened.state, structuredClone(opened.state)),
+    true,
+  );
 });
 
-test("compatibility kept context comes from the active canvas instead of the first group", () => {
-  const first = state(1);
-  const firstPassage = first.tabsById[first.activeTabId];
-  assert.equal(firstPassage?.kind, "passage");
-  if (firstPassage?.kind !== "passage") return;
-  firstPassage.session.current.margin.scope = {
-    kind: "kept",
-    book: "GEN",
-    chapter: 1,
-    verse: 1,
-  };
-  const activeSeed = state(3);
-  const activeSeedPassage = activeSeed.tabsById[activeSeed.activeTabId];
-  assert.equal(activeSeedPassage?.kind, "passage");
-  if (activeSeedPassage?.kind !== "passage") return;
-  const activeView = structuredClone(activeSeedPassage.session.current);
-  activeView.book = "EXO";
-  activeView.margin.scope = {
-    kind: "kept",
-    book: "EXO",
-    chapter: 3,
-    verse: 14,
-  };
-  const second = createStudyWorkspaceGroup(first, {
-    id: "group-active",
-    passageTabId: "passage-active",
-    view: activeView,
-  });
-  assert.equal(second.outcome, "opened");
-  assert.deepEqual(projectStudyWorkspaceCompatibility(second.state).keptContext, {
-    book: "EXO",
-    chapter: 3,
-    verse: 14,
-  });
+test("renderer persistence exposes only the authoritative V2 workspace", () => {
+  const source = readFileSync(
+    new URL("../src/renderer/utils/workspacePersistence.ts", import.meta.url),
+    "utf8",
+  );
+  assert.doesNotMatch(source, /ResearchWorkspaceState|researchWorkspace/);
+  assert.doesNotMatch(source, /projectStudyWorkspaceCompatibility|StudyWorkspaceCompatibilityProjection/);
 });
 
 test("snapshot acknowledgement is canonical across key order and exact across values", () => {
@@ -529,5 +506,41 @@ test("a synchronous write failure resolves false and remains retryable", async (
   });
   assert.equal(await controller.retry(), true);
   assert.equal(attempts, 2);
+  controller.dispose();
+});
+
+test("persistence status subscriptions report saving, failure, retry, and idle settlement", async () => {
+  const attempts: Array<ReturnType<typeof deferred<void>>> = [];
+  const controller = createWorkspacePersistenceController({
+    debounceMs: 0,
+    write: async () => {
+      const attempt = deferred<void>();
+      attempts.push(attempt);
+      return attempt.promise;
+    },
+  });
+  const phases: string[] = [];
+  const unsubscribe = controller.subscribe((status) => {
+    phases.push(status.phase);
+  });
+
+  const first = controller.persistStructure(state(1));
+  assert.deepEqual(phases, ["idle", "saving"]);
+  attempts[0]?.reject(new Error("disk unavailable"));
+  assert.equal(await first, false);
+  assert.equal(phases.at(-1), "failed");
+
+  const retry = controller.retry();
+  assert.equal(phases.at(-1), "saving");
+  attempts[1]?.resolve();
+  assert.equal(await retry, true);
+  assert.equal(phases.at(-1), "idle");
+
+  unsubscribe();
+  const afterUnsubscribe = phases.length;
+  const second = controller.persistStructure(state(2));
+  attempts[2]?.resolve();
+  assert.equal(await second, true);
+  assert.equal(phases.length, afterUnsubscribe);
   controller.dispose();
 });

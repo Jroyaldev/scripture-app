@@ -15,6 +15,7 @@ import { formatRecentLabel, normalizeRecents, type RecentPassage } from "../util
 import { safeCall } from "../utils/safeCall.js";
 
 export type CommandPaletteTab = "intelligence" | "scripture" | "notes" | "names";
+export type CommandPaletteMode = "search" | "open-study-tab";
 
 export interface CommandReadingContext {
   book: string;
@@ -25,6 +26,12 @@ export interface CommandReadingContext {
   verseEnd?: number;
 }
 
+export interface CommandEntityTarget {
+  id: string;
+  displayName: string;
+  kind: "person" | "place" | "other";
+}
+
 export interface CommandPaletteAction {
   id: string;
   title: string;
@@ -32,9 +39,42 @@ export interface CommandPaletteAction {
   keywords: string[];
 }
 
+export interface StudyTabOpenChoice {
+  id: "open-passage" | "research-entity" | "duplicate-passage" | "start-study";
+  title: string;
+  detail: string;
+}
+
+export function studyTabOpenChoices(studyLabel: string): StudyTabOpenChoice[] {
+  return [
+    {
+      id: "open-passage",
+      title: "Open passage in this study",
+      detail: `Add another chapter or passage to ${studyLabel}.`,
+    },
+    {
+      id: "research-entity",
+      title: "Research a person or place",
+      detail: `Keep the research beside ${studyLabel}.`,
+    },
+    {
+      id: "duplicate-passage",
+      title: "Duplicate current passage",
+      detail: "Keep this reading state and continue in an independent tab.",
+    },
+    {
+      id: "start-study",
+      title: "Start and name a new study",
+      detail: "Create a separate sermon, question, or class study from this canvas.",
+    },
+  ];
+}
+
 interface Props {
   open: boolean;
   initialTab?: CommandPaletteTab;
+  mode?: "search" | "open-study-tab";
+  studyLabel?: string;
   onClose: () => void;
   theme: AppTheme;
   backbone: BackboneData;
@@ -42,8 +82,11 @@ interface Props {
   context: CommandReadingContext;
   actions: CommandPaletteAction[];
   onNavigate: (book: string, chapter: number, verse?: number, endVerse?: number) => Promise<boolean>;
+  onOpenPassage: (book: string, chapter: number, verse?: number, endVerse?: number) => Promise<boolean>;
+  onDuplicatePassage: () => Promise<boolean>;
+  onStartStudy: () => Promise<boolean>;
   onOpenNote: (noteId: string) => Promise<boolean>;
-  onOpenEntity: (entityId: string) => Promise<boolean>;
+  onOpenEntity: (target: CommandEntityTarget) => Promise<boolean>;
   onSearchNotes: (query: string) => Promise<boolean>;
   onRunAction: (id: string) => Promise<boolean>;
 }
@@ -64,12 +107,24 @@ type SearchData = {
   exact: PaletteResult | null;
 };
 
-const TABS: Array<{ id: CommandPaletteTab; label: string }> = [
+type CommandPaletteTabDefinition = { id: CommandPaletteTab; label: string };
+
+const TABS: ReadonlyArray<CommandPaletteTabDefinition> = [
   { id: "intelligence", label: "Intelligence" },
   { id: "scripture", label: "Scripture" },
   { id: "notes", label: "My notes" },
   { id: "names", label: "Names" },
 ];
+
+const STUDY_OPEN_TABS: ReadonlyArray<CommandPaletteTabDefinition> = [
+  { id: "intelligence", label: "Add" },
+  { id: "scripture", label: "Passages" },
+  { id: "names", label: "People & places" },
+];
+
+export function commandPaletteTabs(mode: CommandPaletteMode): ReadonlyArray<CommandPaletteTabDefinition> {
+  return mode === "open-study-tab" ? STUDY_OPEN_TABS : TABS;
+}
 
 function SearchGlyph(): React.JSX.Element {
   return (
@@ -163,6 +218,8 @@ export async function runApprovedPaletteActivation(
 export function CommandPalette({
   open,
   initialTab = "intelligence",
+  mode = "search",
+  studyLabel = "this study",
   onClose,
   theme,
   backbone,
@@ -170,11 +227,15 @@ export function CommandPalette({
   context,
   actions,
   onNavigate,
+  onOpenPassage,
+  onDuplicatePassage,
+  onStartStudy,
   onOpenNote,
   onOpenEntity,
   onSearchNotes,
   onRunAction,
 }: Props): React.JSX.Element | null {
+  const visibleTabs = commandPaletteTabs(mode);
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState<CommandPaletteTab>("intelligence");
   const [status, setStatus] = useState<"idle" | "searching" | "ready" | "error">("idle");
@@ -216,6 +277,12 @@ export function CommandPalette({
     );
   }, [closeForDestination]);
 
+  const chooseStudyLens = useCallback((tab: "scripture" | "names"): void => {
+    setActiveTab(tab);
+    setFocusedResult(-1);
+    window.requestAnimationFrame(() => inputRef.current?.focus());
+  }, []);
+
   useLayoutEffect(() => {
     if (!open) return;
     const owner = paletteOwnerRef.current + 1;
@@ -229,7 +296,7 @@ export function CommandPalette({
     if (!open) return;
     returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     setQuery("");
-    setActiveTab(initialTab);
+    setActiveTab(visibleTabs.some((tab) => tab.id === initialTab) ? initialTab : "intelligence");
     setStatus("idle");
     setFocusedResult(-1);
     void safeCall(() => window.api.settings.get()).then((result) => {
@@ -245,7 +312,7 @@ export function CommandPalette({
         if (target?.isConnected) target.focus();
       }, 0);
     };
-  }, [initialTab, open]);
+  }, [initialTab, mode, open]);
 
   useEffect(() => {
     if (!open) return;
@@ -263,17 +330,17 @@ export function CommandPalette({
       event.preventDefault();
       event.stopPropagation();
       setActiveTab((current) => {
-        const currentIndex = Math.max(0, TABS.findIndex((tab) => tab.id === current));
+        const currentIndex = Math.max(0, visibleTabs.findIndex((tab) => tab.id === current));
         const reverse = event.key === "ArrowLeft" || (event.key === "Tab" && event.shiftKey);
-        const nextIndex = (currentIndex + (reverse ? -1 : 1) + TABS.length) % TABS.length;
-        return TABS[nextIndex]?.id ?? "intelligence";
+        const nextIndex = (currentIndex + (reverse ? -1 : 1) + visibleTabs.length) % visibleTabs.length;
+        return visibleTabs[nextIndex]?.id ?? "intelligence";
       });
       setFocusedResult(-1);
       inputRef.current?.focus();
     };
     window.addEventListener("keydown", onKeyDown, true);
     return () => window.removeEventListener("keydown", onKeyDown, true);
-  }, [dismissPalette, open]);
+  }, [dismissPalette, mode, open]);
 
   useEffect(() => {
     if (!open) return;
@@ -325,7 +392,11 @@ export function CommandPalette({
             title: refTitle,
             detail: cleanExcerpt(preview ?? ""),
             meta: "Exact reference",
-            activate: () => activateResult(() => onNavigate(book, chapter, verse, endVerse)),
+            activate: () => activateResult(() => (
+              mode === "open-study-tab"
+                ? onOpenPassage(book, chapter, verse, endVerse)
+                : onNavigate(book, chapter, verse, endVerse)
+            )),
           };
         }
 
@@ -341,7 +412,7 @@ export function CommandPalette({
       });
     }, 120);
     return () => window.clearTimeout(timer);
-  }, [activateResult, backbone, bookNames, context.book, context.chapter, context.packageId, onNavigate, open, query]);
+  }, [activateResult, backbone, bookNames, context.book, context.chapter, context.packageId, mode, onNavigate, onOpenPassage, open, query]);
 
   const scriptureResults = useMemo<PaletteResult[]>(() => data.scripture
     .filter((hit) => data.exact?.id !== `exact:${hit.book}:${hit.chapter}:${hit.verse}:0`)
@@ -351,8 +422,12 @@ export function CommandPalette({
       title: `${displayBook(bookNames, hit.book)} ${hit.chapter}:${hit.verse}`,
       detail: cleanExcerpt(hit.text),
       meta: hit.matchKind === "phrase" ? "Phrase" : context.packageId.toUpperCase(),
-      activate: () => activateResult(() => onNavigate(hit.book, hit.chapter, hit.verse)),
-    })), [activateResult, bookNames, context.packageId, data.exact?.id, data.scripture, onNavigate]);
+      activate: () => activateResult(() => (
+        mode === "open-study-tab"
+          ? onOpenPassage(hit.book, hit.chapter, hit.verse)
+          : onNavigate(hit.book, hit.chapter, hit.verse)
+      )),
+    })), [activateResult, bookNames, context.packageId, data.exact?.id, data.scripture, mode, onNavigate, onOpenPassage]);
 
   const noteResults = useMemo<PaletteResult[]>(() => data.notes.map((note) => ({
     id: `note:${note.id}`,
@@ -370,7 +445,11 @@ export function CommandPalette({
       title: displayEntityName(entity.displayName),
       detail: cleanExcerpt(entity.brief || entity.short || "Indexed biblical name"),
       meta: `${entity.kind === "place" ? "Place" : "Person"} · ${entity.refCount}`,
-      activate: () => activateResult(() => onOpenEntity(entity.id)),
+      activate: () => activateResult(() => onOpenEntity({
+        id: entity.id,
+        displayName: displayEntityName(entity.displayName),
+        kind: entity.kind,
+      })),
     } satisfies PaletteResult;
   }), [activateResult, data.entities, onOpenEntity]);
 
@@ -405,12 +484,32 @@ export function CommandPalette({
     title: formatRecentLabel(recent, bookNames),
     detail: `Recently opened in ${recent.packageId.toUpperCase()}`,
     meta: "Recent",
-    activate: () => activateResult(() => onNavigate(recent.book, recent.chapter, recent.verse)),
-  })), [activateResult, bookNames, onNavigate, recents]);
+    activate: () => activateResult(() => (
+      mode === "open-study-tab"
+        ? onOpenPassage(recent.book, recent.chapter, recent.verse)
+        : onNavigate(recent.book, recent.chapter, recent.verse)
+    )),
+  })), [activateResult, bookNames, mode, onNavigate, onOpenPassage, recents]);
+
+  const studyOpenResults = useMemo<PaletteResult[]>(() => studyTabOpenChoices(studyLabel).map((choice) => ({
+    id: `study-open:${choice.id}`,
+    kind: "action",
+    title: choice.title,
+    detail: choice.detail,
+    meta: choice.id === "start-study" ? "New study" : "Current study",
+    activate: choice.id === "open-passage"
+      ? () => chooseStudyLens("scripture")
+      : choice.id === "research-entity"
+        ? () => chooseStudyLens("names")
+        : choice.id === "duplicate-passage"
+          ? () => activateResult(onDuplicatePassage)
+          : () => activateResult(onStartStudy),
+  })), [activateResult, chooseStudyLens, onDuplicatePassage, onStartStudy, studyLabel]);
 
   const results = useMemo<PaletteResult[]>(() => {
     const hasQuery = query.trim().length >= 2;
     if (!hasQuery) {
+      if (mode === "open-study-tab" && activeTab === "intelligence") return studyOpenResults;
       if (activeTab === "intelligence") return [...recentResults, ...actionResults].slice(0, 7);
       return [];
     }
@@ -438,7 +537,7 @@ export function CommandPalette({
       ...entityResults.slice(0, 2),
       ...remainingActions.slice(0, 1),
     ].slice(0, 7);
-  }, [activateResult, activeTab, actionResults, data.exact, entityResults, noteResults, onSearchNotes, preferredActionResults, query, recentResults, scriptureResults]);
+  }, [activateResult, activeTab, actionResults, data.exact, entityResults, mode, noteResults, onSearchNotes, preferredActionResults, query, recentResults, scriptureResults, studyOpenResults]);
 
   const emptyCopy = activeTab === "scripture"
     ? "Enter a reference, phrase, or natural-language question."
@@ -456,13 +555,13 @@ export function CommandPalette({
 
   const handleTabKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number): void => {
     let nextIndex: number | null = null;
-    if (event.key === "ArrowRight") nextIndex = (index + 1) % TABS.length;
-    else if (event.key === "ArrowLeft") nextIndex = (index - 1 + TABS.length) % TABS.length;
+    if (event.key === "ArrowRight") nextIndex = (index + 1) % visibleTabs.length;
+    else if (event.key === "ArrowLeft") nextIndex = (index - 1 + visibleTabs.length) % visibleTabs.length;
     else if (event.key === "Home") nextIndex = 0;
-    else if (event.key === "End") nextIndex = TABS.length - 1;
+    else if (event.key === "End") nextIndex = visibleTabs.length - 1;
     if (nextIndex == null) return;
     event.preventDefault();
-    const next = TABS[nextIndex];
+    const next = visibleTabs[nextIndex];
     if (!next) return;
     setActiveTab(next.id);
     setFocusedResult(-1);
@@ -495,8 +594,11 @@ export function CommandPalette({
         className="command-palette-panel"
         role="dialog"
         aria-modal="true"
-        aria-label="Search and commands"
+        aria-label={mode === "open-study-tab" ? "Open study tab" : "Search and commands"}
       >
+        {mode === "open-study-tab" && (
+          <div className="command-palette-destination" aria-live="polite">Add to {studyLabel}</div>
+        )}
         <div className="command-palette-input-row">
           <span className="command-palette-search-icon"><SearchGlyph /></span>
           <input
@@ -510,16 +612,20 @@ export function CommandPalette({
               }
             }}
             type="search"
-            placeholder="Search Scripture, notes, people, or actions"
-            aria-label="Search Scripture, notes, people, places, and actions"
+            placeholder={mode === "open-study-tab" ? "Find a passage, person, or place" : "Search Scripture, notes, people, or actions"}
+            aria-label={mode === "open-study-tab" ? "Find a passage, person, or place to add" : "Search Scripture, notes, people, places, and actions"}
             autoComplete="off"
             spellCheck={false}
           />
           <kbd aria-label="Escape closes">esc</kbd>
         </div>
 
-        <div className="command-palette-tabs" role="tablist" aria-label="Search lens">
-          {TABS.map((tab, index) => (
+        <div
+          className="command-palette-tabs"
+          role="tablist"
+          aria-label={mode === "open-study-tab" ? "Study tab destination" : "Search lens"}
+        >
+          {visibleTabs.map((tab, index) => (
             <button
               key={tab.id}
               ref={(node) => { tabRefs.current[index] = node; }}

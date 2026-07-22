@@ -68,7 +68,8 @@ test("VersePeek parses canonical ranges and keeps without canvas navigation", ()
   assert.match(action, /onKeepReference\(peek\.target\)/);
   assert.match(action, /onClose\(\)/);
   assert.doesNotMatch(action, /navigate|onNavigate|goTo/);
-  assert.match(peek, /role=\{onKeepReference \? "dialog" : "tooltip"\}/);
+  assert.match(peek, /const hasActions = Boolean\(onKeepReference \|\| onOpenPassageTab\)/);
+  assert.match(peek, /role=\{hasActions \? "dialog" : "tooltip"\}/);
   assert.match(css, /\.verse-peek-keep[\s\S]{0,260}?color: var\(--text-tertiary\)/);
 
   const handlerStart = page.indexOf("const handleKeepPeekReference");

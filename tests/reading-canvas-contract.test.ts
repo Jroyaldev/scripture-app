@@ -22,6 +22,12 @@ test("reading canvas exposes deliberate loading, error, and empty states", () =>
   assert.match(page, /<summary>Technical details<\/summary>/);
   assert.match(page, /function ReadingCanvasEmpty/);
   assert.match(page, /chapterData && chapterData\.verses\.length === 0/);
+  assert.match(page, /if \(res\.ok && res\.value\)/);
+  assert.match(
+    page,
+    /setChapterError\(\s*res\.ok\s*\? "This installed Bible text does not include the requested chapter\."\s*: res\.error,?\s*\)/,
+    "a resolved null chapter must become a recoverable unavailable state instead of an endless skeleton",
+  );
   assert.match(css, /\.reading-skeleton-line/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.reading-skeleton-line/);
 });

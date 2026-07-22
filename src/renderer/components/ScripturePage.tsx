@@ -16,6 +16,7 @@ import type {
 import {
   LivingMargin,
   type EntityResearchOpenOptions,
+  type EntityResearchTarget,
   type EntityResearchTrailEntry,
   type LivingMarginCaptureRequest,
   type LivingMarginScrollController,
@@ -32,6 +33,7 @@ import type {
   WorkspaceExitController,
   WorkspaceTransitionReason,
 } from "../utils/workspaceTransition.js";
+import type { WorkspacePersistenceStatus } from "../utils/workspacePersistence.js";
 import { useToast } from "./Toast.js";
 import { safeCall } from "../utils/safeCall.js";
 import { parsePassage } from "../utils/parsePassage.js";
@@ -61,7 +63,7 @@ import { ThemePicker } from "./ThemePicker.js";
 import { Tooltip } from "./Tooltip.js";
 import type { AppTheme } from "../theme.js";
 import { NoteCapture, type NoteCaptureDraft } from "./NoteCapture.js";
-import type { PeekTarget } from "./VersePeek.js";
+import type { PeekTarget, VersePeekOpenOptions } from "./VersePeek.js";
 import {
   formatRecentLabel,
   normalizeRecents,
@@ -99,6 +101,7 @@ import {
   resolveReadingPointerIntent,
 } from "../utils/readingInteraction.js";
 import { parseConnectionTickMemberIds } from "../utils/connectionRowLayout.js";
+import { passageTabOpenIntent } from "../utils/passageTabIntent.js";
 import {
   backNavigationHistory,
   forwardNavigationHistory,
@@ -353,11 +356,6 @@ interface MarkingSelectionSnapshot {
   verseAnchor: number | null;
 }
 
-interface DeferredVersePointerFocus {
-  verse: number;
-  activeElement: HTMLElement | null;
-}
-
 interface ConnectionWordChooserState {
   anchorRect: DOMRect;
   hits: readonly ConnectionWordHit[];
@@ -392,7 +390,7 @@ export interface StudyCanvasController {
 interface Props {
   backbone: BackboneData;
   bookNames: BookNameData;
-  navigateRef: { book: string; chapter: number; verse?: number; endVerse?: number; preapproved: true } | null;
+  navigateRef: { ownerTabId: string; book: string; chapter: number; verse?: number; endVerse?: number; preapproved: true } | null;
   onNavigateRefConsumed?: () => void;
   sessionOwnerTabId: string;
   sessionEntry: PassageViewState;
@@ -404,6 +402,16 @@ interface Props {
   onSessionEntryChange: (ownerTabId: string, entry: PassageViewState) => void;
   onOpenCommandPalette?: () => void;
   onOpenResearchPalette?: () => void;
+  onOpenPassageTab?: (target: {
+    book: string;
+    chapter: number;
+    verse?: number;
+    endVerse?: number;
+    packageId: string;
+  }, options?: {
+    source?: "chapter-step" | "passage-picker" | "verse-peek";
+    focusDestination?: boolean;
+  }) => Promise<boolean>;
   onReadingContextChange?: (context: {
     book: string;
     chapter: number;
@@ -445,23 +453,34 @@ interface Props {
   onWorkspaceTabClose?: (tabId: string) => Promise<boolean>;
   onWorkspaceGroupClose?: (groupId: string) => Promise<boolean>;
   onWorkspaceGroupToggle?: (groupId: string, collapsing: boolean) => Promise<boolean>;
+  onWorkspaceGroupRename?: (groupId: string, label: string) => Promise<boolean>;
+  onWorkspaceTabMove?: (tabId: string, targetGroupId: string) => Promise<boolean>;
+  onWorkspaceTabReorder?: (
+    tabId: string,
+    position: "left" | "right" | "start" | "end",
+  ) => Promise<boolean>;
+  onWorkspaceGroupReorder?: (
+    groupId: string,
+    position: "left" | "right" | "start" | "end",
+  ) => Promise<boolean>;
+  onWorkspaceRecentReopen?: () => Promise<boolean>;
+  workspacePersistenceStatus: WorkspacePersistenceStatus;
+  onRetryWorkspacePersistence: () => Promise<boolean>;
   researchScrollTop?: number;
   onResearchScrollTopChange?: (ownerTabId: string, scrollTop: number) => void;
   entityResearchFocusRequest?: number | null;
   onEntityResearchFocusRequestHandled?: (ownerTabId: string, requestId: number) => void;
   entityIntent?: {
     id: string;
+    displayName: string;
+    kind: "person" | "place" | "other";
     nonce: number;
     origin: { book: string; chapter: number; chapterEndVerse?: number; packageId: string; verseStart?: number; verseEnd?: number };
   } | null;
-  onOpenEntity?: (entityId: string, origin?: {
-    book: string;
-    chapter: number;
-    chapterEndVerse?: number;
-    packageId: string;
-    verseStart?: number;
-    verseEnd?: number;
-  }, mode?: "tab" | "navigate", options?: EntityResearchOpenOptions) => Promise<boolean>;
+  onOpenEntity?: (target: EntityResearchTarget) => Promise<boolean>;
+  onDrillEntity?: (target: EntityResearchTarget, options?: EntityResearchOpenOptions) => Promise<boolean>;
+  onBranchEntity?: (target: EntityResearchTarget) => Promise<boolean>;
+  onReturnEntityOrigin?: () => Promise<boolean>;
   onCloseEntity?: () => Promise<boolean>;
   entityTrail?: readonly EntityResearchTrailEntry[];
   onEntityTrailChange?: (
@@ -578,7 +597,7 @@ function ReadingCanvasError({
   onRetry: () => void;
 }): React.JSX.Element {
   return (
-    <section className="reading-state reading-state-message" role="alert" aria-labelledby="chapter-error-title">
+    <section className="reading-state reading-state-message" role="alert" aria-labelledby="chapter-error-title" data-study-passage-fallback="">
       <span className="reading-state-kicker">Text unavailable</span>
       <h2 id="chapter-error-title">We couldn&apos;t open {passage}.</h2>
       <p>Try again, or choose another installed Bible text from the toolbar.</p>
@@ -593,7 +612,7 @@ function ReadingCanvasError({
 
 function ReadingCanvasEmpty({ passage, onRetry }: { passage: string; onRetry: () => void }): React.JSX.Element {
   return (
-    <section className="reading-state reading-state-message" role="status" aria-labelledby="chapter-empty-title">
+    <section className="reading-state reading-state-message" role="status" aria-labelledby="chapter-empty-title" data-study-passage-fallback="">
       <span className="reading-state-kicker">No verses in this text</span>
       <h2 id="chapter-empty-title">{passage} is empty here.</h2>
       <p>Choose another installed Bible text from the toolbar, or check this text again.</p>
@@ -623,6 +642,7 @@ export function ScripturePage({
   onSessionEntryChange,
   onOpenCommandPalette,
   onOpenResearchPalette,
+  onOpenPassageTab,
   onReadingContextChange,
   onCreateNote: _onCreateNote,
   marginVisible,
@@ -650,12 +670,22 @@ export function ScripturePage({
   onWorkspaceTabClose,
   onWorkspaceGroupClose,
   onWorkspaceGroupToggle,
+  onWorkspaceGroupRename,
+  onWorkspaceTabMove,
+  onWorkspaceTabReorder,
+  onWorkspaceGroupReorder,
+  onWorkspaceRecentReopen,
+  workspacePersistenceStatus,
+  onRetryWorkspacePersistence,
   researchScrollTop,
   onResearchScrollTopChange,
   entityResearchFocusRequest,
   onEntityResearchFocusRequestHandled,
   entityIntent,
   onOpenEntity,
+  onDrillEntity,
+  onBranchEntity,
+  onReturnEntityOrigin,
   onCloseEntity,
   entityTrail,
   onEntityTrailChange,
@@ -791,7 +821,6 @@ export function ScripturePage({
   // completed gesture still belongs to the reading surface even when mouseup
   // no longer bubbles through `.verse-text`.
   const textSelectionGestureRef = useRef(false);
-  const deferredVersePointerFocusRef = useRef<DeferredVersePointerFocus | null>(null);
   // Whole-verse range selections are always contiguous. Shift extends from
   // this stable anchor; Command/Control-click intentionally behaves like a
   // normal click until discontiguous groups have an honest persistence model.
@@ -947,6 +976,7 @@ export function ScripturePage({
     entry: sessionEntry,
   });
   const loadedChapterKeyRef = useRef<string | null>(null);
+  const failedChapterKeyRef = useRef<string | null>(null);
   const lastLoadedChapterVerseTextRef = useRef<{
     book: string;
     chapter: number;
@@ -1039,16 +1069,6 @@ export function ScripturePage({
     }
   }, [onRequestWorkspaceTransition]);
 
-  const requestCanvasResearchExit = useCallback(async (): Promise<boolean> => {
-    if (activeWorkspaceKind !== "entity") return true;
-    if (!onCloseEntity) return false;
-    try {
-      return await onCloseEntity();
-    } catch {
-      return false;
-    }
-  }, [activeWorkspaceKind, onCloseEntity]);
-
   // Verse nearest the reading eye-line — ambient Living Margin only.
   // Frozen while the pointer is over the margin or language study has locked
   // a verse (so side-panel clicks never "click out" to a different scroll position).
@@ -1137,7 +1157,6 @@ export function ScripturePage({
     }
     suppressNextClickRef.current = false;
     textSelectionGestureRef.current = false;
-    deferredVersePointerFocusRef.current = null;
     setNearVerse(null);
     setSettledScope({
       key: `${sessionOwnerTabId}:${sessionEntry.book}:${sessionEntry.chapter}`,
@@ -1406,15 +1425,21 @@ export function ScripturePage({
     let cancelled = false;
     const loadKey = `${sessionOwnerTabId}:${packageId}:${book}:${chapter}`;
     loadedChapterKeyRef.current = null;
+    failedChapterKeyRef.current = null;
     setChapterData(null);
     setChapterError(null);
     safeCall(() => window.api.scripture.getChapterText(packageId, book, chapter)).then((res) => {
       if (cancelled) return;
-      if (res.ok) {
+      if (res.ok && res.value) {
         loadedChapterKeyRef.current = loadKey;
         setChapterData(res.value);
       } else {
-        setChapterError(res.error);
+        failedChapterKeyRef.current = loadKey;
+        setChapterError(
+          res.ok
+            ? "This installed Bible text does not include the requested chapter."
+            : res.error,
+        );
       }
     });
     return () => { cancelled = true; };
@@ -1660,11 +1685,15 @@ export function ScripturePage({
 
   const captureCurrentStudyCanvasRef = useRef<() => StudyCanvasCapture | null>(() => null);
   captureCurrentStudyCanvasRef.current = () => {
-    if (!chapterData || loadedChapterKeyRef.current !== `${sessionOwnerTabId}:${packageId}:${book}:${chapter}`) return null;
     if (restoredSessionOwnerTabId !== sessionOwnerTabId) return null;
     if (book !== sessionEntry.book || chapter !== sessionEntry.chapter || packageId !== sessionEntry.packageId) {
       return null;
     }
+    const chapterKey = `${sessionOwnerTabId}:${packageId}:${book}:${chapter}`;
+    if (chapterError && failedChapterKeyRef.current === chapterKey) {
+      return { ownerTabId: sessionOwnerTabId, entry: sessionEntryRef.current };
+    }
+    if (!chapterData || loadedChapterKeyRef.current !== chapterKey) return null;
     return { ownerTabId: sessionOwnerTabId, entry: captureNavigationEntry() };
   };
   const handleLivingMarginScrollControllerChange = useCallback((
@@ -1804,6 +1833,28 @@ export function ScripturePage({
     [applyPassageSelectionRestore, book, captureNavigationEntry, chapter, commitNavigationHistory, onKeptContextChange, onSessionEntryChange, packageId, recordRecent, requestWorkspaceTransition, requireSafeConnectionNavigation, sessionOwnerTabId],
   );
 
+  const openPassageTab = useCallback(async (
+    target: {
+      book: string;
+      chapter: number;
+      verse?: number;
+      endVerse?: number;
+      packageId?: string;
+    },
+    source: "chapter-step" | "passage-picker" | "verse-peek",
+    options?: VersePeekOpenOptions,
+  ): Promise<boolean> => {
+    if (!onOpenPassageTab) return false;
+    try {
+      return await onOpenPassageTab({
+        ...target,
+        packageId: target.packageId ?? packageId,
+      }, { source, focusDestination: options?.focusDestination });
+    } catch {
+      return false;
+    }
+  }, [onOpenPassageTab, packageId]);
+
   const navigateBack = useCallback((): void => {
     const move = backNavigationHistory(navigationHistoryRef.current, captureNavigationEntry());
     if (!move.target) return;
@@ -1828,6 +1879,10 @@ export function ScripturePage({
 
   useEffect(() => {
     if (!navigateRef) return;
+    if (navigateRef.ownerTabId !== sessionOwnerTabId) {
+      onNavigateRefConsumed?.();
+      return;
+    }
     void goTo(navigateRef.book, navigateRef.chapter, navigateRef.verse, {
       rangeEnd: navigateRef.endVerse,
       preapproved: navigateRef.preapproved,
@@ -1838,7 +1893,7 @@ export function ScripturePage({
     // goTo here would replay that old request after an internal chapter turn,
     // because goTo intentionally changes with the current book/chapter.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigateRef]);
+  }, [navigateRef, sessionOwnerTabId]);
 
   const publishSessionEntry = useCallback((): PassageViewState | null => {
     if (!chapterData || loadedChapterKeyRef.current !== `${sessionOwnerTabId}:${packageId}:${book}:${chapter}`) return null;
@@ -1983,6 +2038,65 @@ export function ScripturePage({
     setBookQuery("");
   }, []);
 
+  const openChapterStepInTab = useCallback((targetChapter: number): void => {
+    void openPassageTab({ book, chapter: targetChapter, packageId }, "chapter-step");
+  }, [book, openPassageTab, packageId]);
+
+  const handlePreviousChapterClick = useCallback((event: React.MouseEvent<HTMLButtonElement>): void => {
+    if (chapter <= 1) return;
+    if (passageTabOpenIntent(event)) {
+      event.preventDefault();
+      openChapterStepInTab(chapter - 1);
+      return;
+    }
+    void goTo(book, chapter - 1, undefined, { recordRecent: false });
+  }, [book, chapter, goTo, openChapterStepInTab]);
+
+  const handleNextChapterClick = useCallback((event: React.MouseEvent<HTMLButtonElement>): void => {
+    if (chapter >= chapterCount) return;
+    if (passageTabOpenIntent(event)) {
+      event.preventDefault();
+      openChapterStepInTab(chapter + 1);
+      return;
+    }
+    void goTo(book, chapter + 1, undefined, { recordRecent: false });
+  }, [book, chapter, chapterCount, goTo, openChapterStepInTab]);
+
+  const handlePreviousChapterAuxClick = useCallback((event: React.MouseEvent<HTMLButtonElement>): void => {
+    if (event.button !== 1 || chapter <= 1) return;
+    event.preventDefault();
+    openChapterStepInTab(chapter - 1);
+  }, [chapter, openChapterStepInTab]);
+
+  const handleNextChapterAuxClick = useCallback((event: React.MouseEvent<HTMLButtonElement>): void => {
+    if (event.button !== 1 || chapter >= chapterCount) return;
+    event.preventDefault();
+    openChapterStepInTab(chapter + 1);
+  }, [chapter, chapterCount, openChapterStepInTab]);
+
+  const activatePassagePickerTarget = useCallback((
+    target: {
+      book: string;
+      chapter: number;
+      verse?: number;
+      packageId?: string;
+    },
+    event: React.MouseEvent<HTMLButtonElement>,
+  ): void => {
+    if (passageTabOpenIntent(event)) {
+      event.preventDefault();
+      void openPassageTab(target, "passage-picker").then((opened) => {
+        if (opened) closePassagePopover();
+      });
+      return;
+    }
+    void goTo(target.book, target.chapter, target.verse, {
+      packageId: target.packageId,
+    }).then((proceed) => {
+      if (proceed) closePassagePopover();
+    });
+  }, [closePassagePopover, goTo, openPassageTab]);
+
   useEffect(() => {
     if (passageOpen || !passageShouldReturnFocus.current) return;
     passageShouldReturnFocus.current = false;
@@ -2088,8 +2202,10 @@ export function ScripturePage({
     canvasChapterEndVerse,
     nearVerse: settledNearVerse,
     selection: pinnedRange,
-    kept: keptContext,
-  }), [book, canvasChapterEndVerse, chapter, keptContext, settledNearVerse, pinnedRange]);
+    // A kept comparison is a Study subject. Entity Research always describes
+    // the entity tab's actual independent canvas and immutable provenance.
+    kept: activeWorkspaceKind === "entity" ? null : keptContext,
+  }), [activeWorkspaceKind, book, canvasChapterEndVerse, chapter, keptContext, settledNearVerse, pinnedRange]);
   const keptSubjectKey = marginSubject.kind === "kept"
     ? `${sessionOwnerTabId}:${packageId}:${marginSubject.book}:${marginSubject.chapter}:${marginSubject.verse}-${marginSubject.endVerse}`
     : null;
@@ -2528,9 +2644,7 @@ export function ScripturePage({
       charEnd = lastOffsets.end;
     }
 
-    // A Research exit can unmount or re-render the native selection before its
-    // async workspace decision settles. Preserve both the authored offsets and
-    // the toolbar anchor while the live Range is still trustworthy.
+    // Snapshot native geometry before any marking mutation changes selection.
     const rangeRects = Array.from(range.getClientRects());
     if (rangeRects.length === 0) return;
     const focusRect = rangeRects[rangeRects.length - 1];
@@ -2546,9 +2660,8 @@ export function ScripturePage({
       : undefined;
 
     // Suppression must be armed synchronously during mouseup: the native click
-    // follows before an async Research-exit decision can settle.
+    // follows immediately and belongs to this drag, not a whole-verse action.
     suppressTrailingDragClick();
-    if (!await requestCanvasResearchExit()) return;
     if (currentMarkingContextKeyRef.current !== ownerContextKey) return;
 
     // A completed drag owns this gesture. It may replace an idle connection
@@ -2567,7 +2680,7 @@ export function ScripturePage({
     advanceSelectionGeneration();
     positionPaletteForBox(paletteBox, paletteFocusBox);
     setShowHighlightPalette(true);
-  }, [advanceSelectionGeneration, closeConnectionWordChooser, positionPaletteForBox, requestCanvasResearchExit, requireSafeConnectionNavigation, suppressTrailingDragClick, verseNumberForSpan, verseSpanForNode]);
+  }, [advanceSelectionGeneration, closeConnectionWordChooser, positionPaletteForBox, requireSafeConnectionNavigation, suppressTrailingDragClick, verseNumberForSpan, verseSpanForNode]);
 
   // Commit by gesture origin, not release target. This keeps a real drag that
   // ends in loom air or the page gutter from silently degrading into nothing.
@@ -2583,17 +2696,12 @@ export function ScripturePage({
     };
     const handleDocumentMouseUp = (event: MouseEvent): void => {
       if (event.button !== 0) return;
-      const deferredFocus = deferredVersePointerFocusRef.current;
-      window.setTimeout(() => {
-        if (deferredVersePointerFocusRef.current === deferredFocus) deferredVersePointerFocusRef.current = null;
-      }, 0);
       if (!textSelectionGestureRef.current) return;
       textSelectionGestureRef.current = false;
       void handleTextMouseUp();
     };
     const cancelTextSelectionGesture = (): void => {
       textSelectionGestureRef.current = false;
-      deferredVersePointerFocusRef.current = null;
     };
     document.addEventListener("mousedown", handleDocumentMouseDown, true);
     document.addEventListener("mouseup", handleDocumentMouseUp);
@@ -3019,20 +3127,19 @@ export function ScripturePage({
     });
   }, [onKeptContextChange]);
 
+  const handleOpenPeekPassageTab = useCallback((
+    reference: PeekTarget,
+    options?: VersePeekOpenOptions,
+  ): Promise<boolean> => (
+    openPassageTab(reference, "verse-peek", options)
+  ), [openPassageTab]);
+
   const handleOpenMarginEntity = useCallback((
-    entityId: string,
-    options?: EntityResearchOpenOptions,
+    target: EntityResearchTarget,
   ): Promise<boolean> => {
     if (!onOpenEntity) return Promise.resolve(false);
-    return onOpenEntity(entityId, {
-      book: marginSubject.book,
-      chapter: marginSubject.chapter,
-      chapterEndVerse: backbone.books[marginSubject.book]?.chapters[marginSubject.chapter - 1],
-      packageId,
-      verseStart: marginSubject.verse,
-      verseEnd: marginSubject.endVerse,
-    }, marginWorkspace === "research" ? "navigate" : "tab", options);
-  }, [backbone, marginSubject, marginWorkspace, onOpenEntity, packageId]);
+    return onOpenEntity(target);
+  }, [onOpenEntity]);
 
   const handleNoteCaptureSaved = useCallback(
     ({ title }: { noteId: string; title: string }) => {
@@ -3711,7 +3818,6 @@ export function ScripturePage({
 
   const selectStudyScope = useCallback(async (verse: number, extend: boolean): Promise<boolean> => {
     const ownerContextKey = currentMarkingContextKeyRef.current;
-    if (!await requestCanvasResearchExit()) return false;
     if (currentMarkingContextKeyRef.current !== ownerContextKey) return false;
     if (!handleDismissConnectionFocus()) return false;
     setPhraseSelection(null);
@@ -3726,47 +3832,14 @@ export function ScripturePage({
     verseSelectionAnchorRef.current = result.anchor;
     setSelectedVerses(result.selection);
     advanceSelectionGeneration();
-    // A verse click is a Study request: return the Living Margin from any
-    // entity takeover and reveal it if Focus mode or compact chrome hid it.
+    // The active tab owns the reading canvas. In an entity tab this updates
+    // that tab's Study subject without silently closing the research return point.
     onEnsureMarginVisible?.();
     return true;
-  }, [advanceSelectionGeneration, handleDismissConnectionFocus, onEnsureMarginVisible, requestCanvasResearchExit, selectedVerses]);
-
-  const takeDeferredVersePointerFocus = useCallback((verse: number): DeferredVersePointerFocus | null => {
-    const deferredFocus = deferredVersePointerFocusRef.current;
-    deferredVersePointerFocusRef.current = null;
-    return deferredFocus?.verse === verse ? deferredFocus : null;
-  }, []);
-
-  const restoreDeferredVersePointerFocus = useCallback((
-    deferredFocus: DeferredVersePointerFocus | null,
-  ): void => {
-    if (deferredFocus?.activeElement?.isConnected) {
-      deferredFocus.activeElement.focus({ preventScroll: true });
-    }
-  }, []);
-
-  const handleVerseMouseDown = useCallback((event: React.MouseEvent<HTMLDivElement>): void => {
-    if (activeWorkspaceKind !== "entity" || event.button !== 0) return;
-    // Chromium focuses a tabindex=0 row as the mousedown default action. Remove
-    // only that focus target for this event; preventing the event itself would
-    // also break native phrase dragging and connected-word hit detection.
-    const row = event.currentTarget;
-    const verse = Number(row.dataset.verse);
-    if (!Number.isInteger(verse)) return;
-    const activeElement = document.activeElement instanceof HTMLElement
-      ? document.activeElement
-      : null;
-    deferredVersePointerFocusRef.current = { verse, activeElement };
-    row.removeAttribute("tabindex");
-    window.setTimeout(() => {
-      if (row.isConnected) row.tabIndex = 0;
-    }, 0);
-  }, [activeWorkspaceKind]);
+  }, [advanceSelectionGeneration, handleDismissConnectionFocus, onEnsureMarginVisible, selectedVerses]);
 
   const handleVerseClick = useCallback(async (verse: number, event: React.MouseEvent<HTMLDivElement>): Promise<void> => {
     const ownerContextKey = currentMarkingContextKeyRef.current;
-    const deferredFocus = takeDeferredVersePointerFocus(verse);
     // A drag-selection's trailing click is residue — mouseup already created
     // the exact marking selection. Consuming it also prevents a connected
     // phrase beneath the drag endpoint from stealing the gesture.
@@ -3774,8 +3847,6 @@ export function ScripturePage({
       suppressNextClickRef.current = false;
       return;
     }
-
-    const focusVerseAfterApproval = activeWorkspaceKind === "entity";
 
     const nativeSelection = window.getSelection();
     const nativeSelectionCollapsed = nativeSelection?.isCollapsed ?? true;
@@ -3798,46 +3869,24 @@ export function ScripturePage({
         heldConnectionIdsRef.current,
       ).map((candidate) => candidate.value);
       if (ordered.length === 1) {
-        void handleSelectConnection(ordered[0]!.connection).then((proceed) => {
-          if (!proceed) restoreDeferredVersePointerFocus(deferredFocus);
-        }, () => restoreDeferredVersePointerFocus(deferredFocus));
+        void handleSelectConnection(ordered[0]!.connection);
         return;
       }
-      if (ordered.length === 0) {
-        restoreDeferredVersePointerFocus(deferredFocus);
-        return;
-      }
-      if (!requireSafeConnectionNavigation()) {
-        restoreDeferredVersePointerFocus(deferredFocus);
-        return;
-      }
+      if (ordered.length === 0) return;
+      if (!requireSafeConnectionNavigation()) return;
       const origin = event.currentTarget;
       const anchorRect = new DOMRect(event.clientX, event.clientY, 1, 1);
       void requestScriptureWorkspaceAttention().then((proceed) => {
         if (currentMarkingContextKeyRef.current !== ownerContextKey) return;
-        if (!proceed) {
-          restoreDeferredVersePointerFocus(deferredFocus);
-          return;
-        }
+        if (!proceed) return;
         connectionWordChooserOriginRef.current = origin;
         setConnectionWordChooser({ anchorRect, hits: ordered });
-      }, () => restoreDeferredVersePointerFocus(deferredFocus));
+      });
       return;
     }
 
-    if (!await selectStudyScope(verse, event.shiftKey)) {
-      restoreDeferredVersePointerFocus(deferredFocus);
-      return;
-    }
-    if (focusVerseAfterApproval) {
-      // App's approved tab close restores workspace focus on a timer. Queue
-      // the reader's explicit pointer destination after that restoration.
-      window.setTimeout(() => {
-        if (currentMarkingContextKeyRef.current !== ownerContextKey) return;
-        verseRowRefs.current.get(verse)?.focus({ preventScroll: true });
-      }, 0);
-    }
-  }, [activeWorkspaceKind, handleSelectConnection, requestScriptureWorkspaceAttention, requireSafeConnectionNavigation, restoreDeferredVersePointerFocus, selectStudyScope, selectedConnectionId, takeDeferredVersePointerFocus]);
+    if (!await selectStudyScope(verse, event.shiftKey)) return;
+  }, [handleSelectConnection, requestScriptureWorkspaceAttention, requireSafeConnectionNavigation, selectStudyScope, selectedConnectionId]);
 
   const handleVerseKeyDown = useCallback(async (verse: number, event: React.KeyboardEvent<HTMLDivElement>): Promise<void> => {
     if (!event.metaKey && !event.ctrlKey && !event.altKey) {
@@ -3861,7 +3910,6 @@ export function ScripturePage({
     if (!event.metaKey && !event.ctrlKey && !event.altKey && event.key.toLowerCase() === "m") {
       event.preventDefault();
       const ownerContextKey = currentMarkingContextKeyRef.current;
-      if (!await requestCanvasResearchExit()) return;
       if (currentMarkingContextKeyRef.current !== ownerContextKey) return;
       if (!handleDismissConnectionFocus()) return;
       const next = new Set([verse]);
@@ -3878,7 +3926,7 @@ export function ScripturePage({
     if (event.key !== "Enter" && event.key !== " ") return;
     event.preventDefault();
     await selectStudyScope(verse, event.shiftKey);
-  }, [advanceSelectionGeneration, chapterData, closeConnectionWordChooser, handleDismissConnectionFocus, positionPalette, requestCanvasResearchExit, selectStudyScope]);
+  }, [advanceSelectionGeneration, chapterData, closeConnectionWordChooser, handleDismissConnectionFocus, positionPalette, selectStudyScope]);
 
   // Connection focus is a temporary reading lens. A completed primary click
   // outside its own controls hides the bracket/card while preserving the
@@ -3888,6 +3936,10 @@ export function ScripturePage({
     if (!selectedConnectionId) return;
     const handleOutsideClick = (event: MouseEvent): void => {
       if (event.defaultPrevented || event.button !== 0) return;
+      // A dirty card owns its exit decision. Unmounting it during the native
+      // click bubble would strand the async workspace coordinator before it
+      // can present Save, Discard, or Keep editing.
+      if (document.querySelector('.connection-card[data-dirty="true"]')) return;
       const target = event.target instanceof Element
         ? event.target
         : event.target instanceof Node ? event.target.parentElement : null;
@@ -3901,6 +3953,7 @@ export function ScripturePage({
         ".marking-floating-host",
         ".marking-rail-host",
         ".marking-dock-host",
+        "[data-study-workspace-bar]",
         "[data-floating-layer]",
         ".popover-scrim",
       ].join(", "))) return;
@@ -4239,13 +4292,12 @@ export function ScripturePage({
               <button
                 type="button"
                 className="nav-arrow"
-                onClick={() => {
-                  if (chapter > 1) {
-                    void goTo(book, chapter - 1, undefined, { recordRecent: false });
-                  }
-                }}
+                onClick={handlePreviousChapterClick}
+                onAuxClick={handlePreviousChapterAuxClick}
                 disabled={chapter <= 1 || connectionNavigationLocked}
                 aria-label="Previous chapter"
+                aria-description="Command- or Control-click, or middle-click, to open in a new tab"
+                data-open-passage-tab-on-modifier="previous"
               >
                 <ChapterArrowIcon direction="previous" />
               </button>
@@ -4254,13 +4306,12 @@ export function ScripturePage({
               <button
                 type="button"
                 className="nav-arrow"
-                onClick={() => {
-                  if (chapter < chapterCount) {
-                    void goTo(book, chapter + 1, undefined, { recordRecent: false });
-                  }
-                }}
+                onClick={handleNextChapterClick}
+                onAuxClick={handleNextChapterAuxClick}
                 disabled={chapter >= chapterCount || connectionNavigationLocked}
                 aria-label="Next chapter"
+                aria-description="Command- or Control-click, or middle-click, to open in a new tab"
+                data-open-passage-tab-on-modifier="next"
               >
                 <ChapterArrowIcon direction="next" />
               </button>
@@ -4291,14 +4342,23 @@ export function ScripturePage({
                               <button
                                 type="button"
                                 className={`picker-recent-chip${isHere ? " active" : ""}`}
-                                onClick={() => {
-                                  void goTo(r.book, r.chapter, r.verse, {
+                                onClick={(event) => activatePassagePickerTarget({
+                                  book: r.book,
+                                  chapter: r.chapter,
+                                  ...(r.verse != null ? { verse: r.verse } : {}),
+                                  packageId: r.packageId,
+                                }, event)}
+                                onAuxClick={(event) => {
+                                  if (event.button !== 1) return;
+                                  activatePassagePickerTarget({
+                                    book: r.book,
+                                    chapter: r.chapter,
+                                    ...(r.verse != null ? { verse: r.verse } : {}),
                                     packageId: r.packageId,
-                                  }).then((proceed) => {
-                                    if (proceed) closePassagePopover();
-                                  });
+                                  }, event);
                                 }}
                                 title={label}
+                                aria-description="Command- or Control-click, or middle-click, to open in a new tab"
                                 aria-current={isHere ? "page" : undefined}
                               >
                                 <span className="picker-recent-ref">{label}</span>
@@ -4341,12 +4401,13 @@ export function ScripturePage({
                         key={n}
                         type="button"
                         className={`chapter-grid-num${browseBook === book && chapter === n ? " active" : ""}`}
-                        onClick={() => {
-                          void goTo(browseBook, n).then((proceed) => {
-                            if (proceed) closePassagePopover();
-                          });
+                        onClick={(event) => activatePassagePickerTarget({ book: browseBook, chapter: n }, event)}
+                        onAuxClick={(event) => {
+                          if (event.button !== 1) return;
+                          activatePassagePickerTarget({ book: browseBook, chapter: n }, event);
                         }}
                         aria-label={`Go to ${browseBookName} ${n}`}
+                        aria-description="Command- or Control-click, or middle-click, to open in a new tab"
                         aria-current={browseBook === book && chapter === n ? "page" : undefined}
                       >
                         {n}
@@ -4542,7 +4603,22 @@ export function ScripturePage({
           onToggleGroup={(groupId, collapsing) => (
             onWorkspaceGroupToggle?.(groupId, collapsing) ?? Promise.resolve(false)
           )}
+          onRenameGroup={(groupId, label) => (
+            onWorkspaceGroupRename?.(groupId, label) ?? Promise.resolve(false)
+          )}
+          onMoveTab={(tabId, targetGroupId) => (
+            onWorkspaceTabMove?.(tabId, targetGroupId) ?? Promise.resolve(false)
+          )}
+          onReorderTab={(tabId, position) => (
+            onWorkspaceTabReorder?.(tabId, position) ?? Promise.resolve(false)
+          )}
+          onReorderGroup={(groupId, position) => (
+            onWorkspaceGroupReorder?.(groupId, position) ?? Promise.resolve(false)
+          )}
+          onReopenRecent={() => onWorkspaceRecentReopen?.() ?? Promise.resolve(false)}
           onNewResearch={() => (onOpenResearchPalette ?? onOpenCommandPalette)?.()}
+          persistenceStatus={workspacePersistenceStatus}
+          onRetryPersistence={onRetryWorkspacePersistence}
         />
       )}
 
@@ -4551,6 +4627,7 @@ export function ScripturePage({
         className="scripture-body"
         role="tabpanel"
         aria-labelledby={`study-workspace-tab-${studyWorkspace.activeTabId}`}
+        data-study-canvas-owner={restoredSessionOwnerTabId === sessionOwnerTabId ? sessionOwnerTabId : undefined}
       >
       <div className="scripture-reading-stage" ref={stageRef}>
       <div className="scripture-content" ref={contentRef}>
@@ -4633,7 +4710,6 @@ export function ScripturePage({
                   aria-label={`${displayBookName} ${chapter}:${v.verse}. ${v.text}${isSelected ? ". Selected" : ""}`}
                   aria-pressed={isSelected}
                   aria-keyshortcuts="Enter Space M"
-                  onMouseDown={handleVerseMouseDown}
                   onClick={(e) => { void handleVerseClick(v.verse, e); }}
                   onKeyDown={(e) => handleVerseKeyDown(v.verse, e)}
                   ref={(el) => {
@@ -4786,6 +4862,7 @@ export function ScripturePage({
               : settledNearVerse}
           onNavigateToRef={handleNavigateToRef}
           onKeepReference={handleKeepPeekReference}
+          onOpenPassageTab={handleOpenPeekPassageTab}
           onPinClaim={async (claimId, assertion) => {
             const result = await safeCall(() => window.api.ai.pinClaim(claimId, assertion));
             return result.ok && result.value.ok;
@@ -4810,6 +4887,9 @@ export function ScripturePage({
           onEntityResearchFocusRequestHandled={onEntityResearchFocusRequestHandled}
           entityIntent={entityIntent}
           onOpenEntity={handleOpenMarginEntity}
+          onDrillEntity={onDrillEntity}
+          onBranchEntity={onBranchEntity}
+          onReturnEntityOrigin={onReturnEntityOrigin}
           onCloseEntity={onCloseEntity}
           entityTrail={entityTrail}
           onEntityTrailChange={onEntityTrailChange}

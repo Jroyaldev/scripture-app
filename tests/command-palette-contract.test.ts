@@ -2,31 +2,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { test } from "node:test";
-import {
-  createStudyWorkspace,
-  openEntityWorkspaceTab,
-  type PassageViewState,
-  type StudyWorkspaceStateV2,
-} from "../src/renderer/utils/studyWorkspace.js";
 
 const repoRoot = resolve(import.meta.dirname, "..");
-
-function passageView(book: string, chapter: number, packageId: string): PassageViewState {
-  return {
-    book,
-    chapter,
-    packageId,
-    verse: 1,
-    verseOffset: 0,
-    scrollTop: 0,
-    margin: {
-      activeTab: "overview",
-      scope: null,
-      scrollTopByTab: {},
-      wordsFollowingReading: true,
-    },
-  };
-}
 
 type ApprovalGate = (
   inFlight: { current: boolean },
@@ -67,7 +44,7 @@ test("command palette traps focus, restores it, and exposes complete keyboard tr
   const source = readFileSync(join(repoRoot, "src", "renderer", "components", "CommandPalette.tsx"), "utf8");
   assert.match(source, /const isLensKey = event\.key === "Tab" \|\| event\.key === "ArrowLeft" \|\| event\.key === "ArrowRight"/);
   assert.match(source, /const reverse = event\.key === "ArrowLeft" \|\| \(event\.key === "Tab" && event\.shiftKey\)/);
-  assert.match(source, /% TABS\.length/);
+  assert.match(source, /% visibleTabs\.length/);
   assert.match(source, /setActiveTab\(\(current\) =>/);
   assert.match(source, /inputRef\.current\?\.focus\(\)/);
   assert.match(source, /returnFocusRef/);
@@ -92,13 +69,13 @@ test("name results open reversible Living Margin research instead of guessing a 
   const command = readFileSync(join(repoRoot, "src", "renderer", "components", "CommandPalette.tsx"), "utf8");
   const app = readFileSync(join(repoRoot, "src", "renderer", "app.tsx"), "utf8");
   const margin = readFileSync(join(repoRoot, "src", "renderer", "components", "LivingMargin.tsx"), "utf8");
-  assert.match(command, /onOpenEntity: \(entityId: string\) => Promise<boolean>/);
-  assert.match(command, /activate: \(\) => activateResult\(\(\) => onOpenEntity\(entity\.id\)\)/);
-  assert.doesNotMatch(command, /closeAnd\(\(\) => onOpenEntity\(entity\.id\)\)/);
-  assert.match(app, /const openCommandEntityResearch = useCallback\(\(entityId: string\): Promise<boolean> =>/);
+  assert.match(command, /onOpenEntity: \(target: CommandEntityTarget\) => Promise<boolean>/);
+  assert.match(command, /activate: \(\) => activateResult\(\(\) => onOpenEntity\(\{/);
+  assert.doesNotMatch(command, /closeAnd\(\(\) => onOpenEntity/);
+  assert.match(app, /const openCommandEntityResearch = useCallback\(\(target: CommandEntityTarget\): Promise<boolean> =>/);
   assert.doesNotMatch(command, /bestEntityRef|parseEntityRef/);
   assert.match(app, /openEntityWorkspaceTab\(workspace, \{/);
-  assert.match(app, /navigateEntityWorkspaceTab\(navigableWorkspace, activeTab\.id, target, nonce\)/);
+  assert.match(app, /navigateEntityWorkspaceTab\(navigableWorkspace, activeTab\.id, trailTarget, nonce\)/);
   assert.match(app, /setMarginVisible\(true\)/);
   assert.match(margin, /window\.api\.language\.getEntityResearch\(entityIntent\.id\)/);
   assert.match(margin, /data-margin-mode="research"/);
@@ -112,7 +89,10 @@ test("every palette destination shares one approval-first single-flight boundary
 
   assert.match(command, /onNavigate: \(book: string, chapter: number, verse\?: number, endVerse\?: number\) => Promise<boolean>/);
   assert.match(command, /onOpenNote: \(noteId: string\) => Promise<boolean>/);
-  assert.match(command, /onOpenEntity: \(entityId: string\) => Promise<boolean>/);
+  assert.match(command, /onOpenEntity: \(target: CommandEntityTarget\) => Promise<boolean>/);
+  assert.match(command, /onOpenPassage: \(book: string, chapter: number/);
+  assert.match(command, /onDuplicatePassage: \(\) => Promise<boolean>/);
+  assert.match(command, /onStartStudy: \(\) => Promise<boolean>/);
   assert.match(command, /onSearchNotes: \(query: string\) => Promise<boolean>/);
   assert.match(command, /onRunAction: \(id: string\) => Promise<boolean>/);
   assert.match(command, /const resultActivationInFlightRef = useRef\(false\)/);
@@ -144,10 +124,10 @@ test("palette Scripture navigation has one App approval and no later canvas veto
   );
   assert.match(handler, /\): Promise<boolean> => \{/);
   assert.match(handler, /return runWorkspaceTransition\(/);
-  assert.match(handler, /setNavigateRef\(\{ book, chapter, verse, endVerse, preapproved: true \}\)/);
+  assert.match(handler, /setNavigateRef\(\{ ownerTabId, book, chapter, verse, endVerse, preapproved: true \}\)/);
   assert.doesNotMatch(handler, /void changeView/);
 
-  assert.match(page, /navigateRef: \{ book: string; chapter: number; verse\?: number; endVerse\?: number; preapproved: true \} \| null/);
+  assert.match(page, /navigateRef: \{ ownerTabId: string; book: string; chapter: number; verse\?: number; endVerse\?: number; preapproved: true \} \| null/);
   const externalNavigation = page.slice(
     page.indexOf("if (!navigateRef) return;"),
     page.indexOf("const publishSessionEntry"),
@@ -165,12 +145,8 @@ test("palette Scripture navigation has one App approval and no later canvas veto
   assert.match(goTo, /!opts\?\.preapproved && !requireSafeConnectionNavigation\(\)/);
 });
 
-test("approved palette Scripture navigation activates the owning passage without closing Research", async () => {
+test("approved palette Scripture navigation preserves the active canvas owner and every open tab", () => {
   const app = readFileSync(join(repoRoot, "src", "renderer", "app.tsx"), "utf8");
-  const workspaceSource = readFileSync(
-    join(repoRoot, "src", "renderer", "utils", "studyWorkspace.ts"),
-    "utf8",
-  );
   const handler = app.slice(
     app.indexOf("const handleNavigateToRef"),
     app.indexOf("const consumeNavigateRef"),
@@ -182,53 +158,9 @@ test("approved palette Scripture navigation activates the owning passage without
   );
   assert.match(
     handler,
-    /runWorkspaceTransition\(reason, \(\) => \{[\s\S]*commitStudyWorkspace\(\(current\) => current[\s\S]*activateStudyCanvasOwnerPassageTab\(current\)[\s\S]*setNavigateRef\(\{ book, chapter, verse, endVerse, preapproved: true \}\)/,
+    /const ownerTabId = studyWorkspaceRef\.current\?\.activeTabId[\s\S]*runWorkspaceTransition\(reason, \(\) => \{[\s\S]*setNavigateRef\(\{ ownerTabId, book, chapter, verse, endVerse, preapproved: true \}\)/,
   );
-  assert.ok(
-    handler.indexOf("commitStudyWorkspace") < handler.indexOf("setNavigateRef"),
-    "the owning passage must become active before preapproved navigation is queued",
-  );
-  assert.match(
-    workspaceSource,
-    /export function activateStudyCanvasOwnerPassageTab\([\s\S]*studyCanvasOwnerPassageTabId\(state\)[\s\S]*selectStudyWorkspaceTab\(state, ownerTabId\)/,
-  );
-
-  const workspaceModule = await import("../src/renderer/utils/studyWorkspace.js") as Record<string, unknown>;
-  const activateOwner = workspaceModule.activateStudyCanvasOwnerPassageTab;
-  assert.equal(
-    typeof activateOwner,
-    "function",
-    "the App must use a real pure owner-activation policy that focused tests can exercise",
-  );
-  if (typeof activateOwner !== "function") return;
-
-  const passage = passageView("ACT", 19, "BSB");
-  const initial = createStudyWorkspace(passage, {
-    groupId: "acts-study",
-    passageTabId: "acts-19",
-  });
-  assert.equal(
-    (activateOwner as (state: StudyWorkspaceStateV2) => StudyWorkspaceStateV2)(initial),
-    initial,
-    "an already-active passage must not create a redundant structure write",
-  );
-  const research = openEntityWorkspaceTab(initial, {
-    id: "research-paul",
-    sourceTabId: "acts-19",
-    entityId: "person:paul",
-    entityKind: "person",
-    nonce: 9,
-    origin: passage,
-    returnPassageTabId: "acts-19",
-  }).state;
-  assert.equal(research.activeTabId, "research-paul");
-
-  const selected = (activateOwner as (
-    state: StudyWorkspaceStateV2,
-  ) => StudyWorkspaceStateV2)(research);
-  assert.equal(selected.activeTabId, "acts-19");
-  assert.equal(selected.tabsById["research-paul"], research.tabsById["research-paul"]);
-  assert.deepEqual(selected.groups[0]?.tabIds, ["acts-19", "research-paul"]);
+  assert.doesNotMatch(handler, /activateStudyCanvasOwnerPassageTab|closeStudyWorkspaceTab|commitStudyWorkspace/);
 });
 
 test("a refused or rejected destination leaves palette-owned state untouched", async () => {

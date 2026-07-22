@@ -91,9 +91,10 @@ test("App's settings-load effect does not clobber a setting the user already tog
   // invariant — don't write back defaults before real settings arrive —
   // must be preserved by the fix).
   const persistGuards = source.match(/if \(!settingsLoaded\.current\) return;/g) ?? [];
-  // sidebarCollapsed, marginVisible, theme, markingSurface, reading preferences,
-  // the bounded research session, and the single kept comparison subject.
-  assert.equal(persistGuards.length, 7, "expected all persist effects to still guard on settingsLoaded");
+  // sidebarCollapsed, marginVisible, theme, markingSurface, and reading
+  // preferences. Research and kept scope now persist inside the authoritative
+  // V2 workspace rather than through separate legacy settings effects.
+  assert.equal(persistGuards.length, 5, "expected all settings persist effects to still guard on settingsLoaded");
   assert.match(source, /const \[settingsReady, setSettingsReady\] = useState\(false\)/);
   assert.match(source, /settingsLoaded\.current = true;[\s\S]*setSettingsReady\(true\)/);
   for (const dependency of ["sidebarCollapsed", "marginVisible", "theme", "markingSurface"] as const) {

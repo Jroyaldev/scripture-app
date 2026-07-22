@@ -8,14 +8,30 @@ const app = readFileSync(resolve(import.meta.dirname, "../src/renderer/app.tsx")
 const lifecycle = readFileSync(resolve(import.meta.dirname, "../src/renderer/utils/connectionDraftLifecycle.ts"), "utf8");
 
 test("ScripturePage exposes one owner-correlated live canvas capture controller", () => {
+  const capture = page.slice(
+    page.indexOf("captureCurrentStudyCanvasRef.current = () =>"),
+    page.indexOf("const handleLivingMarginScrollControllerChange"),
+  );
   assert.match(page, /export interface StudyCanvasCapture \{\s*ownerTabId: string;\s*entry: PassageViewState;\s*\}/);
   assert.match(page, /export interface StudyCanvasController \{\s*flushPendingMarginScroll\(\): void;\s*captureCurrent\(\): StudyCanvasCapture \| null;/);
   assert.match(page, /sessionOwnerTabId: string;/);
-  assert.match(page, /loadedChapterKeyRef\.current !== `\$\{sessionOwnerTabId\}:\$\{packageId\}:\$\{book\}:\$\{chapter\}`\) return null;/);
+  assert.match(capture, /if \(!chapterData \|\| loadedChapterKeyRef\.current !== chapterKey\) return null;/);
+  assert.match(
+    capture,
+    /if \(chapterError && failedChapterKeyRef\.current === chapterKey\) \{\s*return \{ ownerTabId: sessionOwnerTabId, entry: sessionEntryRef\.current \};\s*\}/,
+  );
+  assert.ok(
+    capture.indexOf("restoredSessionOwnerTabId !== sessionOwnerTabId") < capture.indexOf("if (chapterError &&"),
+    "an unavailable canvas can reuse only the already-restored owner-correlated session",
+  );
   assert.match(page, /return \{ ownerTabId: sessionOwnerTabId, entry: captureNavigationEntry\(\) \};/);
   assert.match(page, /restoredSessionOwnerTabId !== sessionOwnerTabId/);
   assert.match(page, /onStudyCanvasControllerChange\?\.\(studyCanvasController\)[\s\S]*onStudyCanvasControllerChange\?\.\(null\)/);
   assert.match(page, /livingMarginScrollControllerRef\.current\?\.flushPendingScroll\(\)/);
+  assert.match(
+    page,
+    /data-study-canvas-owner=\{restoredSessionOwnerTabId === sessionOwnerTabId \? sessionOwnerTabId : undefined\}/,
+  );
 });
 
 test("App rejects stale canvas captures and updates the owner synchronously", () => {
@@ -73,7 +89,15 @@ test("canvas navigation delegates one structural commit to App", () => {
   assert.match(page, /const approved = await requestWorkspaceTransition\(\s*changesTranslation \? "translation-change" : "chapter-change",\s*performNavigation[\s\S]{0,80}return approved && navigationCommitted;/,
     "App owns the one transition commit and Scripture reports success only when that owner-correlated commit ran");
   assert.match(page, /historyMode: "traverse",\s*history: move\.history/);
-  assert.match(page, /goTo\(r\.book, r\.chapter, r\.verse, \{\s*packageId: r\.packageId,[\s\S]*if \(proceed\) closePassagePopover\(\)/);
+  const pickerActivation = page.slice(
+    page.indexOf("const activatePassagePickerTarget"),
+    page.indexOf("useEffect(() => {", page.indexOf("const activatePassagePickerTarget")),
+  );
+  assert.match(pickerActivation, /goTo\(target\.book, target\.chapter, target\.verse, \{\s*packageId: target\.packageId,[\s\S]*if \(proceed\) closePassagePopover\(\)/,
+    "an ordinary picker choice still delegates its one in-canvas transition through goTo");
+  assert.match(pickerActivation, /openPassageTab\(target, "passage-picker"\)[\s\S]*if \(opened\) closePassagePopover\(\)/,
+    "modifier and middle-click picker choices delegate their one new-tab commit to App");
+  assert.match(page, /activatePassagePickerTarget\(\{[\s\S]{0,220}book: r\.book,[\s\S]{0,120}chapter: r\.chapter/);
 });
 
 test("same-coordinate navigation refuses unsafe local requests but accepts App-preapproved requests", () => {

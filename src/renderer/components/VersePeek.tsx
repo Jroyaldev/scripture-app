@@ -12,6 +12,15 @@ export interface PeekTarget {
   label: string;
 }
 
+export interface VersePeekOpenOptions {
+  focusDestination?: boolean;
+}
+
+/** Keyboard-generated button clicks have no pointer click count. */
+export function versePeekShouldFocusDestination(clickDetail: number): boolean {
+  return clickDetail === 0;
+}
+
 const OPEN_DELAY_MS = 420;
 const CLOSE_DELAY_MS = 240;
 const MAX_PEEK_VERSES = 8;
@@ -87,6 +96,7 @@ function PeekPanel({
   onKeepOpen,
   onLeave,
   onKeepReference,
+  onOpenPassageTab,
   onClose,
 }: {
   peek: PeekState;
@@ -94,10 +104,16 @@ function PeekPanel({
   onKeepOpen: () => void;
   onLeave: () => void;
   onKeepReference?: (target: PeekTarget) => void;
+  onOpenPassageTab?: (
+    target: PeekTarget,
+    options?: VersePeekOpenOptions,
+  ) => Promise<boolean> | boolean;
   onClose: () => void;
 }): React.JSX.Element {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
+  const [openingPassage, setOpeningPassage] = useState(false);
+  const hasActions = Boolean(onKeepReference || onOpenPassageTab);
 
   useEffect(() => {
     const { anchorRect } = peek;
@@ -120,7 +136,7 @@ function PeekPanel({
       // into the panel so its action is a real Tab stop, and Escape returns
       // to the trigger.
       if (peek.origin === "keyboard") {
-        const action = panel.querySelector<HTMLElement>(".verse-peek-keep");
+        const action = panel.querySelector<HTMLElement>(".verse-peek-keep, .verse-peek-open");
         (action ?? panel).focus({ preventScroll: true });
       }
     });
@@ -137,7 +153,7 @@ function PeekPanel({
       ref={panelRef}
       className={`verse-peek-panel ${themeClasses}`}
       style={{ top: position?.top ?? -9999, left: position?.left ?? -9999, width: PEEK_WIDTH }}
-      role={onKeepReference ? "dialog" : "tooltip"}
+      role={hasActions ? "dialog" : "tooltip"}
       aria-label={`Preview of ${peek.target.label}`}
       tabIndex={-1}
       onMouseEnter={onKeepOpen}
@@ -157,18 +173,45 @@ function PeekPanel({
         <p className="verse-peek-status verse-peek-error">This verse could not be loaded.</p>
       )}
       {peek.status === "ready" && <p className="verse-peek-text">{peek.text}</p>}
-      {onKeepReference && (
+      {hasActions && (
         <div className="verse-peek-actions">
-          <button
-            type="button"
-            className="verse-peek-keep"
-            onClick={() => {
-              onKeepReference(peek.target);
-              onClose();
-            }}
-          >
-            Keep in Study
-          </button>
+          {onKeepReference && (
+            <button
+              type="button"
+              className="verse-peek-keep"
+              disabled={openingPassage}
+              onClick={() => {
+                onKeepReference(peek.target);
+                onClose();
+              }}
+            >
+              Keep in Study
+            </button>
+          )}
+          {onOpenPassageTab && (
+            <button
+              type="button"
+              className="verse-peek-open"
+              disabled={openingPassage}
+              onClick={(event) => {
+                if (openingPassage) return;
+                const focusDestination = versePeekShouldFocusDestination(event.detail);
+                setOpeningPassage(true);
+                void (async () => {
+                  try {
+                    if (await onOpenPassageTab(peek.target, { focusDestination })) onClose();
+                  } catch {
+                    // A veto or failed structural write leaves the preview open
+                    // so the reader can retry without losing the reference.
+                  } finally {
+                    setOpeningPassage(false);
+                  }
+                })();
+              }}
+            >
+              {openingPassage ? "Opening…" : "Open passage tab"}
+            </button>
+          )}
         </div>
       )}
     </div>,
@@ -179,6 +222,10 @@ function PeekPanel({
 export function useVersePeek(
   packageId: string,
   onKeepReference?: (target: PeekTarget) => void,
+  onOpenPassageTab?: (
+    target: PeekTarget,
+    options?: VersePeekOpenOptions,
+  ) => Promise<boolean> | boolean,
 ): {
   triggerProps: (target: PeekTarget) => VersePeekTriggerProps;
   peekElement: React.ReactNode;
@@ -191,6 +238,7 @@ export function useVersePeek(
   const closeTimer = useRef(0);
   const requestSeq = useRef(0);
   const layerRef = useLayer(peek ? "peek" : null);
+  const hasActions = Boolean(onKeepReference || onOpenPassageTab);
 
   const cancelClose = useCallback((): void => {
     window.clearTimeout(closeTimer.current);
@@ -261,11 +309,11 @@ export function useVersePeek(
     onMouseLeave: scheduleClose,
     onFocus: (event) => openFor(target, event.currentTarget, "keyboard"),
     onBlur: scheduleClose,
-    "aria-haspopup": onKeepReference ? "dialog" : undefined,
-    "aria-expanded": onKeepReference
+    "aria-haspopup": hasActions ? "dialog" : undefined,
+    "aria-expanded": hasActions
       ? Boolean(peek && samePeekTarget(peek.target, target))
       : undefined,
-  }), [onKeepReference, openFor, peek, scheduleClose]);
+  }), [hasActions, openFor, peek, scheduleClose]);
 
   useEffect(() => {
     if (!peek) return;
@@ -313,6 +361,7 @@ export function useVersePeek(
         onKeepOpen={cancelClose}
         onLeave={scheduleClose}
         onKeepReference={onKeepReference}
+        onOpenPassageTab={onOpenPassageTab}
         onClose={() => closeNow(peek.origin === "keyboard")}
       />
     ) : null,

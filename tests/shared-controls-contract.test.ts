@@ -101,7 +101,7 @@ test("toasts are typed, announced, timed, dismissible, and clean up timers", () 
   const css = read("src/renderer/styles.css");
 
   assert.match(toast, /"neutral" \| "success" \| "warning" \| "error"/);
-  assert.match(toast, /aria-live="polite"/);
+  assert.match(toast, /aria-live=\{toast\.tone === "error" \? "assertive" : "polite"\}/);
   assert.match(toast, /role=\{toast\.tone === "error" \? "alert" : "status"\}/);
   assert.match(toast, /aria-label="Dismiss notification"/);
   assert.match(toast, /className="toast-progress"/);

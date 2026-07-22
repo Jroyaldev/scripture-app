@@ -82,7 +82,7 @@ test("renderer invalidates stale capture and projection responses before paint",
   assert.match(page, /result\.value\.packageId !== packageId/);
   assert.match(page, /projection\.sourceActiveEventId !== expectedVersion/);
   assert.match(page, /projection\.status !== "unavailable" && projection\.sourceActiveEventId !== expectedVersion/);
-  assert.match(page, /marginDataChapterKey === `\$\{book\}:\$\{chapter\}`[\s\S]*EMPTY_MARGIN_DATA/);
+  assert.match(page, /marginDataChapterKey === `\$\{sessionOwnerTabId\}:\$\{book\}:\$\{chapter\}`[\s\S]*EMPTY_MARGIN_DATA/);
   assert.match(page, /paintProjections=\{currentConnectionPaintProjections\}/);
   assert.match(underlay, /projection\.status === "unavailable" \|\| projection\.anchors\.length === 0/);
   assert.match(underlay, /const focused = selectedConnectionId === connection\.id/);

@@ -118,6 +118,16 @@ test("Overview surfaces only grounded Scripture, library, and TIPNR entity leads
   assert.doesNotMatch(margin, /relationshipKinds\.push/);
 });
 
+test("People and place actions use explicit workspace language", () => {
+  assert.match(margin, /Open research tab for/);
+  assert.match(margin, />Open research tab&nbsp;→<\/span>/);
+  assert.match(margin, /Open .* in a new research tab/);
+  assert.match(margin, /Open .* as a passage tab/);
+  assert.match(margin, /Opened from/);
+  assert.match(margin, /Viewing/);
+  assert.match(margin, /Close research tab/);
+});
+
 test("tab content preserves public and personal trust boundaries", () => {
   const passageStart = margin.lastIndexOf('id="margin-passage-panel"');
   const connectionsStart = margin.lastIndexOf('id="margin-connections-panel"');

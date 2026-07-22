@@ -5,6 +5,7 @@ import {
   appendEntityResearchTrail,
   activeStudyWorkspaceSession,
   activeStudyWorkspaceTab,
+  branchEntityWorkspaceTab,
   closeStudyWorkspaceGroup,
   closeStudyWorkspaceTab,
   createStudyWorkspace,
@@ -20,6 +21,7 @@ import {
   reorderStudyWorkspaceGroup,
   reorderStudyWorkspaceTab,
   resolveStudyWorkspaceDecision,
+  returnEntityWorkspaceToOrigin,
   selectStudyWorkspaceTab,
   studyWorkspaceGroupLabel,
   studyWorkspaceGroupCloseAvailability,
@@ -294,6 +296,53 @@ test("entity trail publication preserves semantic no-op identity and canonically
   assert.equal(updateEntityWorkspaceTrail(upgraded, "paul", (trail) => [...trail]), upgraded);
 });
 
+test("a new entity retains its human name for unavailable-state recovery and reuse", () => {
+  const origin = view("ACT", 19, "BSB");
+  const initial = createStudyWorkspace(origin, {
+    groupId: "study-1",
+    passageTabId: "acts-19",
+  });
+  const opened = openEntityWorkspaceTab(initial, {
+    id: "apollos",
+    sourceTabId: "acts-19",
+    entityId: "person:tipnr:unavailable-apollos",
+    displayName: "Apollos",
+    entityKind: "person",
+    nonce: 1,
+    origin,
+    returnPassageTabId: "acts-19",
+  });
+  assert.equal(opened.outcome, "opened");
+  const entity = opened.state.tabsById["apollos"];
+  assert.equal(entity?.kind, "entity");
+  if (entity?.kind !== "entity") return;
+  assert.deepEqual(entity.trail, [{
+    id: "person:tipnr:unavailable-apollos",
+    displayName: "Apollos",
+    kind: "person",
+  }]);
+
+  const reused = openEntityWorkspaceTab(opened.state, {
+    id: "ignored-duplicate",
+    sourceTabId: "acts-19",
+    entityId: "person:tipnr:unavailable-apollos",
+    displayName: "Changed lookup label",
+    entityKind: "person",
+    nonce: 2,
+    origin,
+    returnPassageTabId: "acts-19",
+  });
+  assert.equal(reused.outcome, "focused");
+  assert.equal(reused.state.tabsById["ignored-duplicate"], undefined);
+  assert.equal(reused.state.tabsById["apollos"], entity);
+  assert.equal(
+    reused.state.tabsById["apollos"]?.kind === "entity"
+      ? reused.state.tabsById["apollos"].trail[0]?.displayName
+      : undefined,
+    "Apollos",
+  );
+});
+
 test("selecting a known tab updates only activation metadata", () => {
   const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
     groupId: "study-1",
@@ -352,6 +401,214 @@ test("an entity keeps its immutable opening origin while passage and entity canv
   const passage = related.tabsById["acts-19"];
   assert.equal(passage?.kind, "passage");
   if (passage?.kind === "passage") assert.equal(passage.session.current.book, "JHN");
+});
+
+test("an explicit entity branch copies provenance and canvas without mutating its parent", () => {
+  const origin = aliasProbeView("ACT", 19);
+  const initial = createStudyWorkspace(origin, {
+    groupId: "study-1",
+    passageTabId: "acts-19",
+  });
+  const researched = openEntityWorkspaceTab(initial, {
+    id: "paul",
+    sourceTabId: "acts-19",
+    entityId: "person:paul",
+    entityKind: "person",
+    nonce: 1,
+    origin,
+    originRange: { start: 2, end: 6 },
+    returnPassageTabId: "acts-19",
+  }).state;
+  const viewingRomans = updateStudyCanvasSession(researched, "paul", (session) => ({
+    current: { ...view("ROM", 6, "BSB"), scrollTop: 720 },
+    history: pushNavigationHistory(session.history, session.current),
+  }));
+  const parentBefore = viewingRomans.tabsById["paul"];
+  assert.equal(parentBefore?.kind, "entity");
+  if (parentBefore?.kind !== "entity") return;
+  const parentBytes = JSON.stringify(parentBefore);
+
+  const branched = branchEntityWorkspaceTab(viewingRomans, {
+    id: "barnabas",
+    sourceTabId: "paul",
+    entry: { id: "person:barnabas", displayName: "Barnabas", kind: "person" },
+    nonce: 2,
+  });
+
+  assert.equal(branched.outcome, "opened");
+  assert.equal(branched.state.tabsById["paul"], parentBefore);
+  assert.equal(JSON.stringify(branched.state.tabsById["paul"]), parentBytes);
+  assert.deepEqual(branched.state.groups[0]?.tabIds, ["acts-19", "paul", "barnabas"]);
+  const child = branched.state.tabsById["barnabas"];
+  assert.equal(child?.kind, "entity");
+  if (child?.kind !== "entity") return;
+  assert.equal(child.entityId, "person:barnabas");
+  assert.equal(child.entityKind, "person");
+  assert.deepEqual(child.origin, parentBefore.origin);
+  assert.notEqual(child.origin, parentBefore.origin);
+  assert.deepEqual(child.originRange, parentBefore.originRange);
+  assert.notEqual(child.originRange, parentBefore.originRange);
+  assert.equal(child.returnPassageTabId, "acts-19");
+  assert.deepEqual(child.canvas, parentBefore.canvas);
+  assert.notEqual(child.canvas, parentBefore.canvas);
+  assert.notEqual(child.canvas.current, parentBefore.canvas.current);
+  assert.deepEqual(child.trail.map((entry) => entry.id), ["person:paul", "person:barnabas"]);
+  assert.equal(branched.state.activeTabId, "barnabas");
+});
+
+test("Return recreates an immutable origin without overwriting a moved passage tab", () => {
+  const origin = { ...aliasProbeView("ACT", 19), verse: 6, scrollTop: 540 };
+  const initial = createStudyWorkspace(origin, {
+    groupId: "study-1",
+    passageTabId: "opening-passage",
+  });
+  const researched = openEntityWorkspaceTab(initial, {
+    id: "paul",
+    sourceTabId: "opening-passage",
+    entityId: "person:paul",
+    entityKind: "person",
+    nonce: 1,
+    origin,
+    originRange: { start: 2, end: 6 },
+    returnPassageTabId: "opening-passage",
+  }).state;
+  const moved = updateStudyCanvasSession(researched, "opening-passage", (session) => ({
+    current: view("JHN", 3, "BSB"),
+    history: pushNavigationHistory(session.history, session.current),
+  }));
+  const movedPassageBytes = JSON.stringify(moved.tabsById["opening-passage"]);
+
+  const returned = returnEntityWorkspaceToOrigin(moved, {
+    entityTabId: "paul",
+    passageTabId: "opening-passage",
+  });
+
+  assert.equal(returned.outcome, "opened");
+  assert.equal(JSON.stringify(returned.state.tabsById["opening-passage"]), movedPassageBytes);
+  assert.equal(returned.state.activeTabId, "opening-passage-2");
+  const recreated = returned.state.tabsById["opening-passage-2"];
+  assert.equal(recreated?.kind, "passage");
+  if (recreated?.kind !== "passage") return;
+  assert.deepEqual(recreated.session.current, origin);
+  assert.deepEqual(recreated.session.history, createNavigationHistory<PassageViewState>());
+  const entity = returned.state.tabsById["paul"];
+  assert.equal(entity?.kind === "entity" ? entity.returnPassageTabId : undefined, recreated.id);
+  assert.deepEqual(entity?.kind === "entity" ? entity.origin : undefined, origin);
+});
+
+test("Return reuses only a matching origin passage in the same study and preserves its Back history", () => {
+  const origin = { ...aliasProbeView("ACT", 19), verse: 6, scrollTop: 540 };
+  const initial = createStudyWorkspace(origin, {
+    groupId: "study-1",
+    passageTabId: "opening-passage",
+  });
+  const researched = openEntityWorkspaceTab(initial, {
+    id: "paul",
+    sourceTabId: "opening-passage",
+    entityId: "person:paul",
+    entityKind: "person",
+    nonce: 1,
+    origin,
+    returnPassageTabId: "opening-passage",
+  }).state;
+  const moved = updateStudyCanvasSession(researched, "opening-passage", (session) => ({
+    current: view("JHN", 3, "BSB"),
+    history: pushNavigationHistory(session.history, session.current),
+  }));
+  const matching = openPassageWorkspaceTab(moved, {
+    id: "other-acts",
+    sourceTabId: "paul",
+    view: { ...origin, verse: 12, scrollTop: 960 },
+  }).state;
+  const withOtherGroup = createStudyWorkspaceGroup(matching, {
+    id: "study-2",
+    passageTabId: "foreign-acts",
+    view: origin,
+  }).state;
+
+  const returned = returnEntityWorkspaceToOrigin(withOtherGroup, {
+    entityTabId: "paul",
+    passageTabId: "unused-origin",
+  });
+
+  assert.equal(returned.outcome, "focused");
+  assert.equal(returned.state.activeTabId, "other-acts");
+  assert.equal(returned.state.tabsById["unused-origin"], undefined);
+  const passage = returned.state.tabsById["other-acts"];
+  assert.equal(passage?.kind, "passage");
+  if (passage?.kind !== "passage") return;
+  assert.deepEqual(passage.session.current, origin);
+  assert.equal(passage.session.history.back.at(-1)?.verse, 12);
+  assert.equal(passage.session.history.back.at(-1)?.scrollTop, 960);
+  const foreign = returned.state.tabsById["foreign-acts"];
+  assert.equal(foreign?.kind === "passage" ? foreign.session.history.back.length : -1, 0);
+  const entity = returned.state.tabsById["paul"];
+  assert.equal(entity?.kind === "entity" ? entity.returnPassageTabId : undefined, "other-acts");
+});
+
+test("same-group return pointers are accepted only while the passage matches immutable origin", () => {
+  const origin = view("ACT", 19, "BSB");
+  const initial = createStudyWorkspace(origin, {
+    groupId: "study-1",
+    passageTabId: "opening-passage",
+  });
+  const moved = updateStudyCanvasSession(initial, "opening-passage", (session) => ({
+    current: view("JHN", 3, "BSB"),
+    history: pushNavigationHistory(session.history, session.current),
+  }));
+  const opened = openEntityWorkspaceTab(moved, {
+    id: "paul",
+    sourceTabId: "opening-passage",
+    entityId: "person:paul",
+    entityKind: "person",
+    nonce: 1,
+    origin,
+    returnPassageTabId: "opening-passage",
+  });
+
+  assert.equal(opened.outcome, "opened");
+  const entity = opened.state.tabsById["paul"];
+  assert.equal(entity?.kind === "entity" ? entity.returnPassageTabId : undefined, null);
+});
+
+test("Return refuses a missing immutable origin at the tab cap without mutating state", () => {
+  const origin = view("ACT", 19, "BSB");
+  const initial = createStudyWorkspace(origin, {
+    groupId: "study-1",
+    passageTabId: "opening-passage",
+  });
+  let full = openEntityWorkspaceTab(initial, {
+    id: "paul",
+    sourceTabId: "opening-passage",
+    entityId: "person:paul",
+    entityKind: "person",
+    nonce: 1,
+    origin,
+    returnPassageTabId: "opening-passage",
+  }).state;
+  for (let index = 0; index < 62; index += 1) {
+    full = openPassageWorkspaceTab(full, {
+      id: `filler-${index}`,
+      sourceTabId: "paul",
+      view: view("ROM", 8, "BSB"),
+      duplicate: true,
+    }).state;
+  }
+  full = updateStudyCanvasSession(full, "opening-passage", (session) => ({
+    current: view("JHN", 3, "BSB"),
+    history: pushNavigationHistory(session.history, session.current),
+  }));
+  assert.equal(Object.keys(full.tabsById).length, 64);
+  const beforeBytes = JSON.stringify(full);
+
+  const refused = returnEntityWorkspaceToOrigin(full, {
+    entityTabId: "paul",
+    passageTabId: "opening-passage",
+  });
+
+  assert.equal(refused.outcome, "tab-limit");
+  assert.equal(refused.state, full);
+  assert.equal(JSON.stringify(refused.state), beforeBytes);
 });
 
 test("entity reuse uses only group, entity, origin context, and range while explicit siblings bypass reuse", () => {
@@ -558,6 +815,38 @@ test("collapsing an active group preserves the active tab and its proxy identity
   const expanded = toggleStudyWorkspaceGroup(collapsed, "study-1");
   assert.equal(expanded.groups[0]?.collapsed, false);
   assert.equal(expanded.activeTabId, "paul");
+});
+
+test("every collapsed study retains its valid last-active tab as a selectable proxy", () => {
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
+    groupId: "study-1",
+    passageTabId: "acts-19",
+  });
+  const researched = openEntityWorkspaceTab(initial, {
+    id: "paul",
+    sourceTabId: "acts-19",
+    entityId: "person:paul",
+    displayName: "Paul",
+    entityKind: "person",
+    nonce: 1,
+    origin: view("ACT", 19, "BSB"),
+    returnPassageTabId: "acts-19",
+  }).state;
+  const twoStudies = createStudyWorkspaceGroup(researched, {
+    id: "study-2",
+    passageTabId: "john-3",
+    view: view("JHN", 3, "BSB"),
+  }).state;
+  const collapsed = toggleStudyWorkspaceGroup(twoStudies, "study-1");
+
+  assert.equal(collapsed.activeTabId, "john-3");
+  assert.equal(collapsed.groups[0]?.lastActiveTabId, "paul");
+  assert.deepEqual(visibleStudyWorkspaceTabIds(collapsed), ["paul", "john-3"]);
+
+  const selectedProxy = selectStudyWorkspaceTab(collapsed, "paul");
+  assert.equal(selectedProxy.activeTabId, "paul");
+  assert.equal(selectedProxy.groups[0]?.collapsed, true);
+  assert.deepEqual(visibleStudyWorkspaceTabIds(selectedProxy), ["paul", "john-3"]);
 });
 
 test("close availability distinguishes direct actions from decisions and impossible closes", () => {

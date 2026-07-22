@@ -13,16 +13,21 @@ STATUS: LANDED — all four desktop contracts implemented and accepted on 2026-0
 - All four marking surfaces share the top draft rail and one guarded lifecycle.
   Chapter, translation, view, library, Escape, and the real Electron window
   close use the same Save/Discard/Keep decision; no timer exists.
-- Scripture now has a persistent desktop workspace strip directly below its
-  toolbar: one pinned Scripture tab plus passage-grouped Research tabs. Tabs
-  retain their own entity trail and scroll, groups collapse or close together,
-  and horizontal scroll plus a grouped overflow menu keeps large tab sets
-  controlled without adding compact/mobile UI.
-- Focused contracts pass; `npm run qa:desktop-reading-control` passes at one
-  1180px desktop width with six concurrent Research tabs, group collapse,
-  overflow, individual close, and group close; lint, Electron/renderer builds,
-  and the full unit suite are green at 757 total / 728 pass / 29 expected ABI
-  skips.
+- Scripture now has a persistent 38px desktop Study strip directly below its
+  toolbar. Passage, person, and place tabs are first-class; each owns its own
+  canvas/history, Study state, selection, eye-line, and scroll. Ordinary
+  chapter navigation mutates the current tab, while explicit Open/Duplicate or
+  modifier gestures branch without producing a tab for every arrow press.
+- Named study groups model sermon, class, or question workstreams. Expanded
+  groups keep their label visible; collapsed groups retain one APG tab proxy;
+  All Tabs searches, scrolls, reorders, moves, closes, and reopens large tab
+  sets. The rail and management surfaces are opaque in all six themes and the
+  final tab remains reachable at 200% desktop zoom.
+- `qa:desktop-reading-control:run` and `qa:study-workspace-bar:run` pass in real
+  Electron. The latter reuses one eight-tab fixture across six themes plus a
+  590x450 fine-pointer zoom probe, forced colors, and reduced motion. Lint,
+  Electron/renderer builds, diff integrity, and the full suite are green at
+  993 total / 964 pass / 29 expected ABI skips.
 
 ## Product decision
 
@@ -202,63 +207,95 @@ If refusal rates are materially high, choose separately between:
 - Save appends one command; repeated Save during settlement cannot duplicate
   it; Discard appends zero bytes.
 
-## Goal 4 — Persistent Scripture and grouped Research workspaces
+## Goal 4 — Persistent pastoral Study workspaces
 
 ### Contract
 
-- Add a desktop-only workspace tablist directly below the Scripture toolbar,
+- Add one desktop-only workspace tablist directly below the Scripture toolbar,
   spanning the reading surface rather than living inside the margin.
-- Keep one pinned `Scripture` tab. Its Study subject, lens, and scroll remain
-  intact while Research is active.
-- Each explicitly opened entity gets a Research tab with its own retained
-  entity trail and margin scroll. Related-entity traversal updates the current
-  tab's breadcrumb trail; it does not create a tab for every breadcrumb step.
-- Group Research tabs by their opening passage/package origin. Groups expose a
-  quiet count, collapse/expand control, and `Close group`; closing the active
-  group returns to Scripture.
-- Many tabs remain usable through horizontal scrolling and a grouped overflow
-  menu. Persist at most 64 validated Research tabs so corrupt or runaway saved
-  state cannot make startup unbounded.
-- `+` opens the existing Names search rather than introducing a second search
-  surface. Opening a result creates and selects its Research tab.
-- Follow the WAI-ARIA Tabs pattern for the actual tabs: one tab stop,
-  Left/Right wrapping, Home/End, correct `aria-selected`, `aria-controls`, and
-  one labelled dynamic tab panel. Delete/Backspace closes a focused Research
-  tab; Scripture cannot close.
-- Reading-history Back/Forward remains passage history and is not overloaded
-  with research-workspace switching.
+- A study group is a pastor's workstream: a sermon, class, question, or focused
+  investigation. It owns a home passage and may contain additional passage,
+  person, and place tabs. `Start and name a new study` opens the existing group
+  manager with a `Study or question` field; every expanded group displays its
+  identity before its first tab.
+- Ordinary chapter arrows, chapter picking, and Back/Forward update only the
+  current tab's canvas and history. They never create tabs implicitly. A new
+  passage tab requires an explicit `Open passage`, `Duplicate current passage`,
+  modifier/middle-click branch, or `+ Open` palette choice.
+- Every passage tab retains package, navigation history, selection, eye-line,
+  canvas scroll, Study lens, per-lens scroll, and Words-following state. Tabs
+  may show the same chapter while retaining independent sessions.
+- Each explicitly opened person/place owns an entity tab with immutable opening
+  provenance, its own research trail, canvas history, and scroll. Ordinary
+  related-entity activation drills within that tab; the labelled `New tab`
+  action or a modifier gesture branches. Scripture references visibly separate
+  `View in this research tab` from `Passage tab`, and Return activates or
+  recreates the correct origin passage inside the same study.
+- Groups expose rename, reorder, collapse/expand, move, and close operations.
+  A collapsed group remains one reachable tab proxy. Dependency-sensitive tab,
+  passage, move, and study closes use explicit decisions; rejected/stale
+  decisions do not mutate state. Recently closed tabs and groups remain
+  recoverable.
+- Many tabs remain usable through horizontal scrolling plus an opaque, grouped,
+  searchable All Tabs surface with its own vertical scroll owner. Persist at
+  most 64 validated tabs, 16 groups, and 10 recent recoveries so corrupt or
+  runaway state cannot make startup unbounded; refusal leaves the prior state
+  intact and announces what must be closed.
+- Follow the WAI-ARIA Tabs pattern: one global tablist and roving tab stop,
+  Left/Right wrapping, Home/End, correct `aria-selected`/`aria-controls`, and one
+  labelled dynamic panel. Delete/Backspace closes a focused closable tab;
+  Ctrl+Tab cycles, and conventional close/reopen shortcuts share the authored
+  exit guard.
+- The 38px rail, active plate, labels, and tab-management surfaces use opaque
+  theme tokens with restrained hierarchy. Forced colors, reduced motion,
+  keyboard focus, minimum targets, and 200% fine-pointer desktop zoom remain
+  operable. No mobile-specific product surface is added.
 
 ### Acceptance
 
-- Open multiple Research tabs, switch to Scripture, change a Study lens, and
-  switch back: Scripture and every Research tab retain identity, trail, and
-  scroll independently.
-- Six Research tabs at 1180px remain reachable by direct tab or grouped
-  overflow; group collapse/expand and individual/group close preserve a valid
-  active workspace.
-- Keyboard tab semantics match the APG pattern with no duplicate tab stops.
-- This task adds no mobile-specific controls, breakpoints, or mobile matrix.
+- Repeated ordinary next/previous chapter actions change only the active tab;
+  explicit branch gestures create a passage sibling without changing existing
+  tab sessions.
+- Duplicate same-chapter passage tabs, person/place tabs, and two named studies
+  retain independent history, package, selection, lens, trail, and scroll
+  across switching and reload.
+- Entity drill, entity branch, same-tab Scripture view, passage-tab branch,
+  Return, Back, Close, and recently closed recovery remain distinct actions.
+- Eight tabs in two studies remain reachable at 1180x900 and at the 590x450
+  fine-pointer equivalent of 200% desktop zoom. Collapse, reorder, move,
+  individual/group close, and recovery preserve one valid active owner.
+- Keyboard semantics match the APG pattern with no duplicate tab stops; all six
+  themes retain opaque readable materials, forced-color focus, and reduced
+  motion.
+- This task adds no mobile-specific controls or mobile acceptance matrix.
 
 ## Lean verification plan
 
 Do not repeat the previous theme × surface × viewport exhaustion.
 
-1. Pure focused tests only:
+1. Pure focused tests:
    - phrase round-trip/refusal;
    - canonical connection comparator;
    - draft exit-state reducer;
-   - grouped Scripture/Research workspace-state reducer.
-2. One contract test for the shared draft rail and workspace tab semantics.
+   - passage/person/place workspace, persistence, recovery, and decision
+     reducers.
+2. Contract tests for the shared draft rail, one global APG tablist, explicit
+   navigation-versus-branch semantics, capacity feedback, opacity, and zoom
+   containment.
 3. One isolated desktop Electron scenario at a representative reading width:
    - exact Acts 19 phrase pair;
    - reverse-created connection ordering;
    - list-to-canvas attention;
    - add a third phrase, Save/Discard/Keep-editing exits;
-   - Scripture ↔ multiple Research restoration, group collapse, and overflow.
-4. Run lint, renderer/Electron builds, and the full unit suite once when the
+   - passage/entity restoration, two named groups, active-only startup,
+     unavailable-item recovery, dirty exits, collapse, and All Tabs.
+4. One lightweight visual/computed gate reuses the same fixture across six
+   themes, then probes 200% fine-pointer zoom, forced colors, and reduced
+   motion. It is not a surface x viewport matrix.
+5. Run lint, renderer/Electron builds, and the full unit suite once when the
    complete task lands.
-5. Do not rerun route digests, all four marking-surface matrices, every theme,
-   or mobile widths unless this task actually changes those contracts.
+6. Do not rerun route digests, the four marking-surface matrix, or mobile
+   widths; this task does not change those contracts.
 
 ## Research basis
 
