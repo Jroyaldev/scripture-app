@@ -2375,3 +2375,49 @@ test("group recovery snapshots isolate the closed and reopened group state", () 
     12,
   );
 });
+
+test("reopening a reordered dependent before its passage restores order and its return link", () => {
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
+    groupId: "g1",
+    passageTabId: "home",
+  });
+  const branched = openPassageWorkspaceTab(initial, {
+    id: "branch",
+    sourceTabId: "home",
+    view: view("JHN", 3, "BSB"),
+  }).state;
+  const researched = openEntityWorkspaceTab(branched, {
+    id: "entity",
+    sourceTabId: "branch",
+    entityId: "person:nicodemus",
+    entityKind: "person",
+    nonce: 1,
+    origin: view("JHN", 3, "BSB"),
+    returnPassageTabId: "branch",
+  }).state;
+  const reordered = reorderStudyWorkspaceTab(researched, {
+    tabId: "entity",
+    position: "left",
+  });
+  assert.deepEqual(reordered.groups[0]?.tabIds, ["home", "entity", "branch"]);
+  const requested = closeStudyWorkspaceTab(reordered, "branch");
+  assert.equal(requested.outcome, "needs-confirmation");
+  if (requested.outcome !== "needs-confirmation") return;
+  const closed = resolveStudyWorkspaceDecision(
+    reordered,
+    requested.confirmation,
+    "close-passage-and-research",
+  );
+  assert.equal(closed.outcome, "applied");
+
+  const entityReopened = reopenClosedStudyItem(closed.state);
+  assert.equal(entityReopened.outcome, "opened");
+  assert.equal(entityReopened.state.tabsById["branch"], undefined);
+  const passageReopened = reopenClosedStudyItem(entityReopened.state);
+  assert.equal(passageReopened.outcome, "opened");
+
+  assert.deepEqual(passageReopened.state.groups[0]?.tabIds, ["home", "entity", "branch"]);
+  const entity = passageReopened.state.tabsById["entity"];
+  assert.equal(entity?.kind === "entity" ? entity.returnPassageTabId : undefined, "branch");
+  assert.equal(passageReopened.state.recentlyClosed.length, 0);
+});

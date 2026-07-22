@@ -772,6 +772,22 @@ function localReturnPassageTabId(
     : null;
 }
 
+function recoverableReturnPassageTabId(
+  state: StudyWorkspaceStateV2,
+  group: StudyWorkspaceGroup,
+  candidateId: string | null,
+): string | null {
+  const local = localReturnPassageTabId(state.tabsById, group, candidateId);
+  if (local || !candidateId || state.tabsById[candidateId]) return local;
+  const pending = state.recentlyClosed.some((item) => (
+    item.kind === "tab"
+    && item.tab.kind === "passage"
+    && item.tab.id === candidateId
+    && item.tab.groupId === group.id
+  ));
+  return pending ? candidateId : null;
+}
+
 function entityNonceSnapshots(
   state: StudyWorkspaceStateV2,
   tabIds: readonly string[],
@@ -1256,8 +1272,8 @@ export function reopenClosedStudyItem(
     const restoredTab: StudyWorkspaceTab = normalizedTab.kind === "entity"
       ? {
           ...normalizedTab,
-          returnPassageTabId: localReturnPassageTabId(
-            state.tabsById,
+          returnPassageTabId: recoverableReturnPassageTabId(
+            state,
             group,
             normalizedTab.returnPassageTabId,
           ),
