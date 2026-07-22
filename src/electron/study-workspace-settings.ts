@@ -541,30 +541,43 @@ export function normalizeStudyWorkspace(value: unknown): StudyWorkspaceValidatio
     const rawGroup = normalizeRawGroup(rawGroupValue);
     if (!rawGroup) return { ok: false, reason: "invalid" };
     if (usedGroupIds.has(rawGroup.id)) continue;
-    const localTabs: PersistedStudyWorkspaceTab[] = [];
+    const remainingTabCapacity = TAB_LIMIT - usedTabIds.size;
+    const candidateTabs: Array<{ index: number; id: string; value: unknown }> = [];
     const localIds = new Set<string>();
-    let truncatedByTabLimit = false;
-    for (const tabId of rawGroup.tabIds) {
-      if (usedTabIds.size + localIds.size >= TAB_LIMIT) {
-        truncatedByTabLimit = true;
-        break;
-      }
+    let homePassage: { index: number; tab: PersistedPassageWorkspaceTab } | null = null;
+    let firstPassage: { index: number; tab: PersistedPassageWorkspaceTab } | null = null;
+    for (const [index, tabId] of rawGroup.tabIds.entries()) {
       if (usedTabIds.has(tabId) || localIds.has(tabId)) continue;
-      if (!Object.prototype.hasOwnProperty.call(rawTabs, tabId)) continue;
-      const tab = normalizeLiveTab(rawTabs[tabId], tabId, rawGroup.id);
-      if (!tab) return { ok: false, reason: "invalid" };
       localIds.add(tabId);
-      localTabs.push(tab);
+      if (!Object.prototype.hasOwnProperty.call(rawTabs, tabId)) continue;
+      if (candidateTabs.length < remainingTabCapacity) {
+        candidateTabs.push({ index, id: tabId, value: rawTabs[tabId] });
+      }
+      const passage: PersistedPassageWorkspaceTab | null = (
+        tabId === rawGroup.homePassageTabId || firstPassage === null
+          ? normalizePassageTab(rawTabs[tabId], tabId, rawGroup.id)
+          : null
+      );
+      if (passage && firstPassage === null) firstPassage = { index, tab: passage };
+      if (passage && tabId === rawGroup.homePassageTabId) {
+        homePassage = { index, tab: passage };
+      }
     }
+    const reservedPassage = homePassage ?? firstPassage;
+    if (!reservedPassage) return { ok: false, reason: "invalid" };
+    const selectedCandidates = candidateTabs
+      .filter(({ id }) => id !== reservedPassage.tab.id)
+      .slice(0, remainingTabCapacity - 1);
+    const selectedTabs: Array<{ index: number; tab: PersistedStudyWorkspaceTab }> = [];
+    for (const candidate of selectedCandidates) {
+      const tab = normalizeLiveTab(candidate.value, candidate.id, rawGroup.id);
+      if (!tab) return { ok: false, reason: "invalid" };
+      selectedTabs.push({ index: candidate.index, tab });
+    }
+    selectedTabs.push(reservedPassage);
+    selectedTabs.sort((left, right) => left.index - right.index);
+    const localTabs = selectedTabs.map(({ tab }) => tab);
     const passageIds = localTabs.flatMap((tab) => tab.kind === "passage" ? [tab.id] : []);
-    if (passageIds.length === 0) {
-      const passageWasCutOff = truncatedByTabLimit && rawGroup.tabIds.some((tabId) => {
-        if (usedTabIds.has(tabId) || localIds.has(tabId)) return false;
-        return normalizePassageTab(rawTabs[tabId], tabId, rawGroup.id) !== null;
-      });
-      if (passageWasCutOff) continue;
-      return { ok: false, reason: "invalid" };
-    }
     const canonicalTabs = localTabs.map((tab): PersistedStudyWorkspaceTab => (
       tab.kind === "entity"
         && tab.returnPassageTabId !== null

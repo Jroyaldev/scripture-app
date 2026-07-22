@@ -232,6 +232,14 @@ test("a group crossing the tab cap never invalidates earlier canonical groups", 
         collapsed: false,
         label: { kind: "automatic" },
       },
+      {
+        id: "group-3",
+        homePassageTabId: "group-3-home",
+        tabIds: ["group-3-home"],
+        lastActiveTabId: "group-3-home",
+        collapsed: false,
+        label: { kind: "automatic" },
+      },
     ],
     tabsById: {
       ...Object.fromEntries(firstGroupTabIds.map((tabId) => [
@@ -240,19 +248,69 @@ test("a group crossing the tab cap never invalidates earlier canonical groups", 
       ])),
       "group-2-entity": entityTab("group-2-entity", "group-2"),
       "group-2-home": passageTab("group-2-home", "group-2"),
+      "group-3-home": passageTab("group-3-home", "group-3"),
     },
-    activeTabId: "group-2-entity",
-    activationOrder: [...firstGroupTabIds, "group-2-home", "group-2-entity"],
+    activeTabId: "group-3-home",
+    activationOrder: [
+      ...firstGroupTabIds,
+      "group-2-entity",
+      "group-2-home",
+      "group-3-home",
+    ],
     recentlyClosed: [],
   };
 
   const result = normalizeStudyWorkspace(input);
   assert.equal(result.ok, true);
   if (!result.ok) return;
-  assert.ok(Object.keys(result.value.tabsById).length <= 64);
+  assert.equal(Object.keys(result.value.tabsById).length, 64);
+  assert.deepEqual(result.value.groups.map((group) => group.tabIds), [
+    firstGroupTabIds,
+    ["group-2-home"],
+  ]);
+  assert.deepEqual(result.value.groups.map((group) => group.id), ["group-1", "group-2"]);
+  assert.equal(result.value.groups[1]?.homePassageTabId, "group-2-home");
+  assert.equal(result.value.groups[1]?.lastActiveTabId, "group-2-home");
+  assert.equal(result.value.tabsById["group-2-entity"], undefined);
+  assert.equal(result.value.tabsById["group-3-home"], undefined);
+  assert.equal(result.value.activeTabId, "group-2-home");
   for (const group of result.value.groups) {
     assert.ok(group.tabIds.some((tabId) => result.value.tabsById[tabId]?.kind === "passage"));
   }
+});
+
+test("a single oversized group reserves one tab slot for its home passage", () => {
+  const entityTabIds = Array.from({ length: 64 }, (_, index) => `entity-${index + 1}`);
+  const input = {
+    version: 2,
+    groups: [{
+      id: "group-1",
+      homePassageTabId: "home",
+      tabIds: [...entityTabIds, "home"],
+      lastActiveTabId: entityTabIds.at(-1),
+      collapsed: false,
+      label: { kind: "automatic" },
+    }],
+    tabsById: {
+      ...Object.fromEntries(entityTabIds.map((tabId) => [
+        tabId,
+        entityTab(tabId),
+      ])),
+      home: passageTab(),
+    },
+    activeTabId: entityTabIds.at(-1),
+    activationOrder: [...entityTabIds, "home"],
+    recentlyClosed: [],
+  };
+
+  const result = normalizeStudyWorkspace(input);
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.deepEqual(result.value.groups[0]?.tabIds, [...entityTabIds.slice(0, 63), "home"]);
+  assert.equal(result.value.groups[0]?.homePassageTabId, "home");
+  assert.equal(Object.keys(result.value.tabsById).length, 64);
+  assert.equal(result.value.tabsById[entityTabIds[63]!], undefined);
+  assert.equal(result.value.activeTabId, "home");
 });
 
 test("history normalization keeps the nearest Forward entry over the farthest Back entry", () => {
