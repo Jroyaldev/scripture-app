@@ -848,7 +848,8 @@ export function resolveStudyWorkspaceDecision(
   if (confirmation.kind === "close-study") {
     if (decision !== "close-study") return { state, outcome: "unchanged" };
     const group = state.groups.find((candidate) => candidate.id === confirmation.groupId);
-    if (!group || group.tabIds.length !== confirmation.tabIds.length
+    if (!group || group.tabIds.length <= 1
+      || group.tabIds.length !== confirmation.tabIds.length
       || group.tabIds.some((id, index) => id !== confirmation.tabIds[index])) {
       return { state, outcome: "unchanged" };
     }
@@ -877,7 +878,8 @@ export function resolveStudyWorkspaceDecision(
       return { state, outcome: "unchanged" };
     }
     const dependents = dependentEntityTabIds(state, sourceGroup, tab.id);
-    if (dependents.length !== confirmation.dependentEntityIds.length
+    if (dependents.length === 0
+      || dependents.length !== confirmation.dependentEntityIds.length
       || dependents.some((id, index) => id !== confirmation.dependentEntityIds[index])) {
       return { state, outcome: "unchanged" };
     }
@@ -1060,7 +1062,8 @@ export function resolveStudyWorkspaceDecision(
     return { state, outcome: "unchanged" };
   }
   const dependents = dependentEntityTabIds(state, group, tab.id);
-  if (dependents.length !== confirmation.dependentEntityIds.length
+  if (dependents.length === 0
+    || dependents.length !== confirmation.dependentEntityIds.length
     || dependents.some((id, index) => id !== confirmation.dependentEntityIds[index])) {
     return { state, outcome: "unchanged" };
   }

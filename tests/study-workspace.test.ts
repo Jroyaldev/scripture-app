@@ -1569,6 +1569,87 @@ test("forged confirmation payloads cannot mutate the workspace", () => {
   assert.equal(forgedMove.state, grouped);
 });
 
+test("an exact one-tab close-study confirmation is rejected as unissued", () => {
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
+    groupId: "g1",
+    passageTabId: "home",
+  });
+  const grouped = createStudyWorkspaceGroup(initial, {
+    id: "g2",
+    passageTabId: "other-home",
+    view: view("JHN", 3, "BSB"),
+  }).state;
+
+  const forged = resolveStudyWorkspaceDecision(grouped, {
+    kind: "close-study",
+    groupId: "g1",
+    tabIds: ["home"],
+  }, "close-study");
+
+  assert.equal(forged.outcome, "unchanged");
+  assert.equal(forged.state, grouped);
+});
+
+test("an exact zero-dependent move-branch confirmation is rejected as unissued", () => {
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
+    groupId: "g1",
+    passageTabId: "home",
+  });
+  const branched = openPassageWorkspaceTab(initial, {
+    id: "branch",
+    sourceTabId: "home",
+    view: view("JHN", 3, "BSB"),
+  }).state;
+  const grouped = createStudyWorkspaceGroup(branched, {
+    id: "g2",
+    passageTabId: "other-home",
+    view: view("ROM", 8, "BSB"),
+  }).state;
+
+  const forged = resolveStudyWorkspaceDecision(grouped, {
+    kind: "move-branch",
+    tabId: "branch",
+    dependentEntityIds: [],
+    sourceGroupId: "g1",
+    sourceTabIds: ["home", "branch"],
+    targetGroupId: "g2",
+  }, "move-branch");
+
+  assert.equal(forged.outcome, "unchanged");
+  assert.equal(forged.state, grouped);
+});
+
+test("an exact zero-dependent passage-dependencies confirmation is rejected as unissued", () => {
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
+    groupId: "g1",
+    passageTabId: "home",
+  });
+  const branched = openPassageWorkspaceTab(initial, {
+    id: "branch",
+    sourceTabId: "home",
+    view: view("JHN", 3, "BSB"),
+  }).state;
+  const confirmation = {
+    kind: "passage-dependencies" as const,
+    tabId: "branch",
+    dependentEntityIds: [],
+    sourceGroupId: "g1",
+    sourceTabIds: ["home", "branch"],
+  };
+
+  const closed = resolveStudyWorkspaceDecision(
+    branched,
+    confirmation,
+    "close-passage-and-research",
+  );
+  const kept = resolveStudyWorkspaceDecision(branched, confirmation, "keep-research");
+
+  assert.equal(closed.outcome, "unchanged");
+  assert.equal(closed.state, branched);
+  assert.equal(kept.outcome, "unchanged");
+  assert.equal(kept.state, branched);
+});
+
 test("a decision reports unchanged when its guarded removal cannot produce a valid state", () => {
   const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
     groupId: "g1",
