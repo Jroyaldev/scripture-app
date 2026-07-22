@@ -1,5 +1,6 @@
 import {
   createNavigationHistory,
+  NAVIGATION_HISTORY_LIMIT,
   pushNavigationHistory,
   type NavigationHistoryEntry,
   type NavigationHistoryState,
@@ -104,7 +105,63 @@ export interface OpenPassageWorkspaceInput {
 
 export interface OpenPassageWorkspaceResult {
   state: StudyWorkspaceStateV2;
-  outcome: "opened" | "focused" | "unchanged";
+  outcome: "opened" | "focused" | "tab-limit" | "unchanged";
+}
+
+export type WorkspaceMutationOutcome =
+  | "opened"
+  | "focused"
+  | "applied"
+  | "tab-limit"
+  | "group-limit"
+  | "needs-confirmation"
+  | "unchanged";
+
+export type WorkspaceConfirmation =
+  | { kind: "passage-dependencies"; tabId: string; dependentEntityIds: string[] }
+  | { kind: "sole-group-passage"; groupId: string; tabId: string }
+  | { kind: "close-study"; groupId: string; tabIds: string[] }
+  | {
+      kind: "move-branch";
+      tabId: string;
+      dependentEntityIds: string[];
+      targetGroupId: string;
+    }
+  | { kind: "move-entity-context"; tabId: string; targetGroupId: string }
+  | { kind: "move-home-passage"; tabId: string; groupId: string; targetGroupId: string };
+
+export type WorkspaceDecision =
+  | "close-passage-and-research"
+  | "keep-research"
+  | "close-study"
+  | "keep-open"
+  | "move-branch"
+  | "copy-origin-passage"
+  | "move-study"
+  | "duplicate-home"
+  | "cancel";
+
+export type WorkspaceMutationResult =
+  | {
+      state: StudyWorkspaceStateV2;
+      outcome: Exclude<WorkspaceMutationOutcome, "needs-confirmation">;
+    }
+  | {
+      state: StudyWorkspaceStateV2;
+      outcome: "needs-confirmation";
+      confirmation: WorkspaceConfirmation;
+    };
+
+export interface OpenEntityWorkspaceInput {
+  id: string;
+  sourceTabId: string;
+  entityId: string;
+  entityKind: EntityWorkspaceKind;
+  nonce: number;
+  origin: PassageViewState;
+  originRange?: { start: number; end: number };
+  returnPassageTabId: string | null;
+  duplicate?: boolean;
 }
 
 export interface StudyWorkspaceBookNames {
@@ -112,6 +169,16 @@ export interface StudyWorkspaceBookNames {
 }
 
 export const ENTITY_RESEARCH_TRAIL_LIMIT = 12;
+export const STUDY_WORKSPACE_TAB_LIMIT = 64;
+export const STUDY_WORKSPACE_GROUP_LIMIT = 16;
+export const RECENTLY_CLOSED_STUDY_LIMIT = 10;
+
+function appendRecentlyClosedItems(
+  current: readonly ClosedStudyItem[],
+  additions: readonly ClosedStudyItem[],
+): ClosedStudyItem[] {
+  return [...current, ...additions].slice(-RECENTLY_CLOSED_STUDY_LIMIT);
+}
 
 export function appendEntityResearchTrail(
   trail: readonly EntityResearchTrailEntry[],
@@ -136,6 +203,58 @@ export function truncateEntityResearchTrail(
 ): EntityResearchTrailEntry[] {
   if (index < 0 || index >= trail.length) return [...trail];
   return trail.slice(0, index + 1);
+}
+
+function clonePassageViewState(view: PassageViewState): PassageViewState {
+  return {
+    ...view,
+    ...(view.selection
+      ? {
+          selection: {
+            packageId: view.selection.packageId,
+            pieces: view.selection.pieces.map((piece) => ({ ...piece })),
+          },
+        }
+      : {}),
+    margin: {
+      ...view.margin,
+      scope: view.margin.scope ? { ...view.margin.scope } : null,
+      scrollTopByTab: { ...view.margin.scrollTopByTab },
+    },
+  };
+}
+
+function normalizePassageWorkspaceSession(
+  session: PassageWorkspaceSession,
+): PassageWorkspaceSession {
+  const backLength = Math.min(session.history.back.length, NAVIGATION_HISTORY_LIMIT);
+  const forwardLength = Math.min(
+    session.history.forward.length,
+    NAVIGATION_HISTORY_LIMIT - backLength,
+  );
+  if (backLength === session.history.back.length
+    && forwardLength === session.history.forward.length) {
+    return session;
+  }
+  return {
+    ...session,
+    history: {
+      back: session.history.back.slice(-backLength),
+      forward: session.history.forward.slice(0, forwardLength),
+    },
+  };
+}
+
+function normalizeStudyWorkspaceTab(tab: StudyWorkspaceTab): StudyWorkspaceTab {
+  if (tab.kind === "passage") {
+    const session = normalizePassageWorkspaceSession(tab.session);
+    return session === tab.session ? tab : { ...tab, session };
+  }
+  const canvas = normalizePassageWorkspaceSession(tab.canvas);
+  const trail = tab.trail.length > ENTITY_RESEARCH_TRAIL_LIMIT
+    ? tab.trail.slice(-ENTITY_RESEARCH_TRAIL_LIMIT)
+    : tab.trail;
+  return canvas === tab.canvas && trail === tab.trail ? tab : { ...tab, canvas, trail };
 }
 
 export function createStudyWorkspace(
@@ -168,6 +287,48 @@ export function createStudyWorkspace(
   };
 }
 
+export function createStudyWorkspaceGroup(
+  state: StudyWorkspaceStateV2,
+  input: { id: string; passageTabId: string; view: PassageViewState },
+): WorkspaceMutationResult {
+  if (state.groups.some((group) => group.id === input.id) || state.tabsById[input.passageTabId]) {
+    return { state, outcome: "unchanged" };
+  }
+  if (state.groups.length >= STUDY_WORKSPACE_GROUP_LIMIT) {
+    return { state, outcome: "group-limit" };
+  }
+  if (Object.keys(state.tabsById).length >= STUDY_WORKSPACE_TAB_LIMIT) {
+    return { state, outcome: "tab-limit" };
+  }
+  const tab: PassageWorkspaceTab = {
+    kind: "passage",
+    id: input.passageTabId,
+    groupId: input.id,
+    session: {
+      current: input.view,
+      history: createNavigationHistory<PassageViewState>(),
+    },
+  };
+  const group: StudyWorkspaceGroup = {
+    id: input.id,
+    homePassageTabId: tab.id,
+    tabIds: [tab.id],
+    lastActiveTabId: tab.id,
+    collapsed: false,
+    label: { kind: "automatic" },
+  };
+  return {
+    state: {
+      ...state,
+      groups: [...state.groups, group],
+      tabsById: { ...state.tabsById, [tab.id]: tab },
+      activeTabId: tab.id,
+      activationOrder: [...state.activationOrder.filter((id) => id !== tab.id), tab.id],
+    },
+    outcome: "opened",
+  };
+}
+
 function activateStudyWorkspaceTab(
   state: StudyWorkspaceStateV2,
   tabId: string,
@@ -184,11 +345,856 @@ function activateStudyWorkspaceTab(
   };
 }
 
+function freezeAutomaticGroupLabel(
+  state: StudyWorkspaceStateV2,
+  group: StudyWorkspaceGroup,
+): StudyWorkspaceGroup {
+  if (group.label.kind !== "automatic" || group.label.frozenReference) return group;
+  const home = state.tabsById[group.homePassageTabId];
+  if (home?.kind !== "passage") return group;
+  return {
+    ...group,
+    label: {
+      kind: "automatic",
+      frozenReference: {
+        book: home.session.current.book,
+        chapter: home.session.current.chapter,
+      },
+    },
+  };
+}
+
 export function selectStudyWorkspaceTab(
   state: StudyWorkspaceStateV2,
   tabId: string,
 ): StudyWorkspaceStateV2 {
   return activateStudyWorkspaceTab(state, tabId);
+}
+
+export function renameStudyWorkspaceGroup(
+  state: StudyWorkspaceStateV2,
+  groupId: string,
+  value: string,
+): StudyWorkspaceStateV2 {
+  const group = state.groups.find((candidate) => candidate.id === groupId);
+  if (!group || (group.label.kind === "custom" && group.label.value === value)) return state;
+  return {
+    ...state,
+    groups: state.groups.map((candidate) => candidate.id === groupId
+      ? { ...candidate, label: { kind: "custom", value } }
+      : candidate),
+  };
+}
+
+type WorkspaceReorderPosition = "left" | "right" | "start" | "end";
+
+function reorderedIndex(
+  current: number,
+  length: number,
+  position: WorkspaceReorderPosition,
+): number {
+  if (position === "start") return 0;
+  if (position === "end") return length - 1;
+  if (position === "left") return Math.max(0, current - 1);
+  return Math.min(length - 1, current + 1);
+}
+
+export function reorderStudyWorkspaceTab(
+  state: StudyWorkspaceStateV2,
+  input: { tabId: string; position: WorkspaceReorderPosition },
+): StudyWorkspaceStateV2 {
+  const tab = state.tabsById[input.tabId];
+  const group = tab
+    ? state.groups.find((candidate) => candidate.id === tab.groupId
+      && candidate.tabIds.includes(tab.id))
+    : undefined;
+  if (!tab || !group) return state;
+  const current = group.tabIds.indexOf(tab.id);
+  const target = reorderedIndex(current, group.tabIds.length, input.position);
+  if (target === current) return state;
+  const tabIds = [...group.tabIds];
+  tabIds.splice(current, 1);
+  tabIds.splice(target, 0, tab.id);
+  return {
+    ...state,
+    groups: state.groups.map((candidate) => candidate.id === group.id
+      ? { ...candidate, tabIds }
+      : candidate),
+  };
+}
+
+export function reorderStudyWorkspaceGroup(
+  state: StudyWorkspaceStateV2,
+  input: { groupId: string; position: WorkspaceReorderPosition },
+): StudyWorkspaceStateV2 {
+  const current = state.groups.findIndex((group) => group.id === input.groupId);
+  if (current < 0) return state;
+  const target = reorderedIndex(current, state.groups.length, input.position);
+  if (target === current) return state;
+  const groups = [...state.groups];
+  const [group] = groups.splice(current, 1);
+  if (!group) return state;
+  groups.splice(target, 0, group);
+  return { ...state, groups };
+}
+
+export function toggleStudyWorkspaceGroup(
+  state: StudyWorkspaceStateV2,
+  groupId: string,
+): StudyWorkspaceStateV2 {
+  if (!state.groups.some((group) => group.id === groupId)) return state;
+  return {
+    ...state,
+    groups: state.groups.map((group) => group.id === groupId
+      ? { ...group, collapsed: !group.collapsed }
+      : group),
+  };
+}
+
+function moveTabRecords(
+  state: StudyWorkspaceStateV2,
+  tabIds: readonly string[],
+  sourceGroup: StudyWorkspaceGroup,
+  targetGroup: StudyWorkspaceGroup,
+): StudyWorkspaceStateV2 {
+  const moving = new Set(tabIds);
+  const sourceTabIds = sourceGroup.tabIds.filter((id) => !moving.has(id));
+  const targetTabIds = [
+    ...targetGroup.tabIds.filter((id) => !moving.has(id)),
+    ...tabIds,
+  ];
+  const tabsById = { ...state.tabsById };
+  for (const tabId of tabIds) {
+    const tab = tabsById[tabId];
+    if (tab) tabsById[tabId] = { ...tab, groupId: targetGroup.id };
+  }
+  return {
+    ...state,
+    groups: state.groups.map((group) => {
+      if (group.id === sourceGroup.id) {
+        return {
+          ...group,
+          tabIds: sourceTabIds,
+          lastActiveTabId: sourceTabIds.includes(group.lastActiveTabId)
+            ? group.lastActiveTabId
+            : group.homePassageTabId,
+        };
+      }
+      if (group.id === targetGroup.id) {
+        return {
+          ...group,
+          tabIds: targetTabIds,
+          lastActiveTabId: tabIds.includes(state.activeTabId)
+            ? state.activeTabId
+            : group.lastActiveTabId,
+        };
+      }
+      return group;
+    }),
+    tabsById,
+  };
+}
+
+export function moveStudyWorkspaceTab(
+  state: StudyWorkspaceStateV2,
+  input: { tabId: string; targetGroupId: string },
+): WorkspaceMutationResult {
+  const tab = state.tabsById[input.tabId];
+  const sourceGroup = tab
+    ? state.groups.find((group) => group.id === tab.groupId && group.tabIds.includes(tab.id))
+    : undefined;
+  const targetGroup = state.groups.find((group) => group.id === input.targetGroupId);
+  if (!tab || !sourceGroup || !targetGroup || sourceGroup.id === targetGroup.id) {
+    return { state, outcome: "unchanged" };
+  }
+  if (tab.kind === "entity") {
+    return {
+      state,
+      outcome: "needs-confirmation",
+      confirmation: {
+        kind: "move-entity-context",
+        tabId: tab.id,
+        targetGroupId: targetGroup.id,
+      },
+    };
+  }
+  if (sourceGroup.homePassageTabId === tab.id
+    || sourceGroup.tabIds.length === 1) {
+    return {
+      state,
+      outcome: "needs-confirmation",
+      confirmation: {
+        kind: "move-home-passage",
+        tabId: tab.id,
+        groupId: sourceGroup.id,
+        targetGroupId: targetGroup.id,
+      },
+    };
+  }
+  const dependentEntityIds = dependentEntityTabIds(state, sourceGroup, tab.id);
+  if (dependentEntityIds.length > 0) {
+    return {
+      state,
+      outcome: "needs-confirmation",
+      confirmation: {
+        kind: "move-branch",
+        tabId: tab.id,
+        dependentEntityIds,
+        targetGroupId: targetGroup.id,
+      },
+    };
+  }
+  return {
+    state: moveTabRecords(state, [tab.id], sourceGroup, targetGroup),
+    outcome: "applied",
+  };
+}
+
+function fallbackTabIdAfterRemoval(
+  state: StudyWorkspaceStateV2,
+  sourceGroup: StudyWorkspaceGroup,
+  removedIndex: number,
+  removed: ReadonlySet<string>,
+): string | null {
+  const remainingSource = sourceGroup.tabIds.filter((id) => !removed.has(id) && state.tabsById[id]);
+  const nearest = remainingSource[removedIndex] ?? remainingSource[removedIndex - 1];
+  if (nearest) return nearest;
+  if (!removed.has(sourceGroup.homePassageTabId) && state.tabsById[sourceGroup.homePassageTabId]) {
+    return sourceGroup.homePassageTabId;
+  }
+  const sourceGroupIndex = state.groups.findIndex((group) => group.id === sourceGroup.id);
+  for (let distance = 1; distance < state.groups.length; distance += 1) {
+    for (const groupIndex of [sourceGroupIndex + distance, sourceGroupIndex - distance]) {
+      const group = state.groups[groupIndex];
+      if (!group) continue;
+      const valid = new Set(group.tabIds.filter((id) => !removed.has(id) && state.tabsById[id]));
+      const recent = [...state.activationOrder].reverse().find((id) => valid.has(id));
+      if (recent) return recent;
+      if (valid.has(group.lastActiveTabId)) return group.lastActiveTabId;
+      if (valid.has(group.homePassageTabId)) return group.homePassageTabId;
+      const first = group.tabIds.find((id) => valid.has(id));
+      if (first) return first;
+    }
+  }
+  return null;
+}
+
+function removeSingleTab(
+  state: StudyWorkspaceStateV2,
+  tab: StudyWorkspaceTab,
+  group: StudyWorkspaceGroup,
+): StudyWorkspaceStateV2 {
+  const index = group.tabIds.indexOf(tab.id);
+  const removed = new Set([tab.id]);
+  const fallback = fallbackTabIdAfterRemoval(state, group, index, removed);
+  const tabsById = { ...state.tabsById };
+  delete tabsById[tab.id];
+  const tabIds = group.tabIds.filter((id) => id !== tab.id);
+  const next: StudyWorkspaceStateV2 = {
+    ...state,
+    groups: state.groups.map((candidate) => candidate.id === group.id
+      ? {
+          ...candidate,
+          tabIds,
+          lastActiveTabId: candidate.lastActiveTabId === tab.id
+            ? (fallback ?? candidate.homePassageTabId)
+            : candidate.lastActiveTabId,
+        }
+      : candidate),
+    tabsById,
+    activeTabId: state.activeTabId === tab.id ? (fallback ?? state.activeTabId) : state.activeTabId,
+    activationOrder: state.activationOrder.filter((id) => id !== tab.id),
+    recentlyClosed: appendRecentlyClosedItems(
+      state.recentlyClosed,
+      [{ kind: "tab", tab, index }],
+    ),
+  };
+  return state.activeTabId === tab.id && fallback
+    ? activateStudyWorkspaceTab(next, fallback)
+    : next;
+}
+
+function dependentEntityTabIds(
+  state: StudyWorkspaceStateV2,
+  group: StudyWorkspaceGroup,
+  passageTabId: string,
+): string[] {
+  return group.tabIds.filter((tabId) => {
+    const tab = state.tabsById[tabId];
+    return tab?.kind === "entity" && tab.returnPassageTabId === passageTabId;
+  });
+}
+
+function nearestRemainingPassageId(
+  state: StudyWorkspaceStateV2,
+  group: StudyWorkspaceGroup,
+  removed: ReadonlySet<string>,
+  fromIndex: number,
+): string | null {
+  for (let distance = 1; distance < group.tabIds.length; distance += 1) {
+    for (const index of [fromIndex + distance, fromIndex - distance]) {
+      const tabId = group.tabIds[index];
+      const tab = tabId ? state.tabsById[tabId] : undefined;
+      if (tab?.kind === "passage" && !removed.has(tab.id)) return tab.id;
+    }
+  }
+  return null;
+}
+
+function removeTabsFromGroup(
+  state: StudyWorkspaceStateV2,
+  group: StudyWorkspaceGroup,
+  tabIds: readonly string[],
+): StudyWorkspaceStateV2 {
+  const removed = new Set(tabIds);
+  const firstIndex = Math.min(...tabIds.map((tabId) => group.tabIds.indexOf(tabId)));
+  const fallback = fallbackTabIdAfterRemoval(state, group, firstIndex, removed);
+  const remainingTabIds = group.tabIds.filter((tabId) => !removed.has(tabId));
+  const tabsById = { ...state.tabsById };
+  const snapshots = tabIds.flatMap((tabId) => {
+    const tab = state.tabsById[tabId];
+    const index = group.tabIds.indexOf(tabId);
+    if (!tab || index < 0) return [];
+    delete tabsById[tabId];
+    return [{ kind: "tab" as const, tab, index }];
+  });
+  const homePassageTabId = removed.has(group.homePassageTabId)
+    ? nearestRemainingPassageId(
+        state,
+        group,
+        removed,
+        group.tabIds.indexOf(group.homePassageTabId),
+      )
+    : group.homePassageTabId;
+  if (!homePassageTabId) return state;
+  const localFallback = remainingTabIds[firstIndex]
+    ?? remainingTabIds[firstIndex - 1]
+    ?? homePassageTabId;
+  const entitySnapshots = snapshots.filter((item) => item.tab.kind === "entity");
+  const passageSnapshots = snapshots.filter((item) => item.tab.kind === "passage");
+  const next: StudyWorkspaceStateV2 = {
+    ...state,
+    groups: state.groups.map((candidate) => candidate.id === group.id
+      ? {
+          ...candidate,
+          homePassageTabId,
+          tabIds: remainingTabIds,
+          lastActiveTabId: removed.has(candidate.lastActiveTabId)
+            ? localFallback
+            : candidate.lastActiveTabId,
+        }
+      : candidate),
+    tabsById,
+    activeTabId: removed.has(state.activeTabId) ? (fallback ?? state.activeTabId) : state.activeTabId,
+    activationOrder: state.activationOrder.filter((tabId) => !removed.has(tabId)),
+    recentlyClosed: appendRecentlyClosedItems(
+      state.recentlyClosed,
+      [...entitySnapshots, ...passageSnapshots],
+    ),
+  };
+  return removed.has(state.activeTabId) && fallback
+    ? activateStudyWorkspaceTab(next, fallback)
+    : next;
+}
+
+export function closeStudyWorkspaceTab(
+  state: StudyWorkspaceStateV2,
+  tabId: string,
+): WorkspaceMutationResult {
+  const tab = state.tabsById[tabId];
+  const group = tab
+    ? state.groups.find((candidate) => candidate.id === tab.groupId
+      && candidate.tabIds.includes(tab.id))
+    : undefined;
+  if (!tab || !group) return { state, outcome: "unchanged" };
+  if (tab.kind === "passage") {
+    const globalPassageCount = Object.values(state.tabsById)
+      .filter((candidate) => candidate.kind === "passage").length;
+    if (globalPassageCount <= 1) return { state, outcome: "unchanged" };
+    const groupPassageCount = group.tabIds.filter((candidateId) => (
+      state.tabsById[candidateId]?.kind === "passage"
+    )).length;
+    if (groupPassageCount <= 1) {
+      return {
+        state,
+        outcome: "needs-confirmation",
+        confirmation: { kind: "sole-group-passage", groupId: group.id, tabId: tab.id },
+      };
+    }
+    const dependentEntityIds = dependentEntityTabIds(state, group, tab.id);
+    if (dependentEntityIds.length > 0) {
+      return {
+        state,
+        outcome: "needs-confirmation",
+        confirmation: { kind: "passage-dependencies", tabId: tab.id, dependentEntityIds },
+      };
+    }
+    return { state: removeTabsFromGroup(state, group, [tab.id]), outcome: "applied" };
+  }
+  return { state: removeSingleTab(state, tab, group), outcome: "applied" };
+}
+
+function removeStudyGroup(
+  state: StudyWorkspaceStateV2,
+  group: StudyWorkspaceGroup,
+): StudyWorkspaceStateV2 {
+  const index = state.groups.findIndex((candidate) => candidate.id === group.id);
+  const removed = new Set(group.tabIds);
+  const fallback = fallbackTabIdAfterRemoval(state, group, 0, removed);
+  const tabsById = { ...state.tabsById };
+  const snapshotTabsById: Record<string, StudyWorkspaceTab> = {};
+  for (const tabId of group.tabIds) {
+    const tab = state.tabsById[tabId];
+    if (tab) snapshotTabsById[tabId] = tab;
+    delete tabsById[tabId];
+  }
+  const next: StudyWorkspaceStateV2 = {
+    ...state,
+    groups: state.groups.filter((candidate) => candidate.id !== group.id),
+    tabsById,
+    activeTabId: removed.has(state.activeTabId) ? (fallback ?? state.activeTabId) : state.activeTabId,
+    activationOrder: state.activationOrder.filter((tabId) => !removed.has(tabId)),
+    recentlyClosed: appendRecentlyClosedItems(
+      state.recentlyClosed,
+      [{ kind: "group", group, tabsById: snapshotTabsById, index }],
+    ),
+  };
+  return removed.has(state.activeTabId) && fallback
+    ? activateStudyWorkspaceTab(next, fallback)
+    : next;
+}
+
+export function closeStudyWorkspaceGroup(
+  state: StudyWorkspaceStateV2,
+  groupId: string,
+): WorkspaceMutationResult {
+  const group = state.groups.find((candidate) => candidate.id === groupId);
+  if (!group || state.groups.length <= 1) return { state, outcome: "unchanged" };
+  const globalPassageCount = Object.values(state.tabsById)
+    .filter((tab) => tab.kind === "passage").length;
+  const groupPassageCount = group.tabIds
+    .filter((tabId) => state.tabsById[tabId]?.kind === "passage").length;
+  if (globalPassageCount - groupPassageCount < 1) return { state, outcome: "unchanged" };
+  if (group.tabIds.length > 1) {
+    return {
+      state,
+      outcome: "needs-confirmation",
+      confirmation: { kind: "close-study", groupId: group.id, tabIds: [...group.tabIds] },
+    };
+  }
+  return { state: removeStudyGroup(state, group), outcome: "applied" };
+}
+
+export function resolveStudyWorkspaceDecision(
+  state: StudyWorkspaceStateV2,
+  confirmation: WorkspaceConfirmation,
+  decision: WorkspaceDecision,
+): WorkspaceMutationResult {
+  if (decision === "cancel" || decision === "keep-open") {
+    return { state, outcome: "unchanged" };
+  }
+  if (confirmation.kind === "sole-group-passage") {
+    if (decision !== "close-study") return { state, outcome: "unchanged" };
+    const group = state.groups.find((candidate) => candidate.id === confirmation.groupId);
+    const tab = state.tabsById[confirmation.tabId];
+    const passages = group?.tabIds.filter((tabId) => state.tabsById[tabId]?.kind === "passage") ?? [];
+    const globalPassageCount = Object.values(state.tabsById)
+      .filter((candidate) => candidate.kind === "passage").length;
+    if (!group || tab?.kind !== "passage" || tab.groupId !== group.id
+      || passages.length !== 1 || passages[0] !== tab.id || globalPassageCount <= 1) {
+      return { state, outcome: "unchanged" };
+    }
+    return { state: removeStudyGroup(state, group), outcome: "applied" };
+  }
+  if (confirmation.kind === "close-study") {
+    if (decision !== "close-study") return { state, outcome: "unchanged" };
+    const group = state.groups.find((candidate) => candidate.id === confirmation.groupId);
+    if (!group || group.tabIds.length !== confirmation.tabIds.length
+      || group.tabIds.some((id, index) => id !== confirmation.tabIds[index])) {
+      return { state, outcome: "unchanged" };
+    }
+    const globalPassageCount = Object.values(state.tabsById)
+      .filter((candidate) => candidate.kind === "passage").length;
+    const groupPassageCount = group.tabIds
+      .filter((id) => state.tabsById[id]?.kind === "passage").length;
+    if (state.groups.length <= 1 || globalPassageCount - groupPassageCount < 1) {
+      return { state, outcome: "unchanged" };
+    }
+    return { state: removeStudyGroup(state, group), outcome: "applied" };
+  }
+  if (confirmation.kind === "move-branch") {
+    if (decision !== "move-branch") return { state, outcome: "unchanged" };
+    const tab = state.tabsById[confirmation.tabId];
+    const sourceGroup = tab?.kind === "passage"
+      ? state.groups.find((candidate) => candidate.id === tab.groupId
+        && candidate.tabIds.includes(tab.id))
+      : undefined;
+    const targetGroup = state.groups.find((candidate) => candidate.id === confirmation.targetGroupId);
+    if (!tab || !sourceGroup || !targetGroup || sourceGroup.id === targetGroup.id
+      || sourceGroup.homePassageTabId === tab.id) {
+      return { state, outcome: "unchanged" };
+    }
+    const dependents = dependentEntityTabIds(state, sourceGroup, tab.id);
+    if (dependents.length !== confirmation.dependentEntityIds.length
+      || dependents.some((id, index) => id !== confirmation.dependentEntityIds[index])) {
+      return { state, outcome: "unchanged" };
+    }
+    return {
+      state: moveTabRecords(state, [tab.id, ...dependents], sourceGroup, targetGroup),
+      outcome: "applied",
+    };
+  }
+  if (confirmation.kind === "move-entity-context") {
+    if (decision !== "copy-origin-passage") return { state, outcome: "unchanged" };
+    const tab = state.tabsById[confirmation.tabId];
+    if (tab?.kind !== "entity") return { state, outcome: "unchanged" };
+    const sourceGroup = state.groups.find((candidate) => candidate.id === tab.groupId
+      && candidate.tabIds.includes(tab.id));
+    const targetGroup = state.groups.find((candidate) => candidate.id === confirmation.targetGroupId);
+    if (!sourceGroup || !targetGroup || sourceGroup.id === targetGroup.id) {
+      return { state, outcome: "unchanged" };
+    }
+    let contextTabId = targetGroup.tabIds.find((id) => {
+      const candidate = state.tabsById[id];
+      return candidate?.kind === "passage"
+        && candidate.session.current.book === tab.origin.book
+        && candidate.session.current.chapter === tab.origin.chapter
+        && candidate.session.current.packageId === tab.origin.packageId;
+    });
+    let working = state;
+    let destination = targetGroup;
+    if (!contextTabId) {
+      if (Object.keys(state.tabsById).length >= STUDY_WORKSPACE_TAB_LIMIT) {
+        return { state, outcome: "tab-limit" };
+      }
+      let candidateId = `${tab.id}-origin`;
+      let suffix = 2;
+      while (working.tabsById[candidateId]) {
+        candidateId = `${tab.id}-origin-${suffix}`;
+        suffix += 1;
+      }
+      contextTabId = candidateId;
+      const contextTab: PassageWorkspaceTab = {
+        kind: "passage",
+        id: contextTabId,
+        groupId: targetGroup.id,
+        session: {
+          current: clonePassageViewState(tab.origin),
+          history: createNavigationHistory<PassageViewState>(),
+        },
+      };
+      destination = {
+        ...freezeAutomaticGroupLabel(state, targetGroup),
+        tabIds: [...targetGroup.tabIds, contextTab.id],
+      };
+      working = {
+        ...state,
+        groups: state.groups.map((candidate) => candidate.id === targetGroup.id
+          ? destination
+          : candidate),
+        tabsById: { ...state.tabsById, [contextTab.id]: contextTab },
+      };
+    }
+    const moved = moveTabRecords(working, [tab.id], sourceGroup, destination);
+    const movedEntity = moved.tabsById[tab.id];
+    if (movedEntity?.kind !== "entity") return { state, outcome: "unchanged" };
+    return {
+      state: {
+        ...moved,
+        tabsById: {
+          ...moved.tabsById,
+          [tab.id]: { ...movedEntity, returnPassageTabId: contextTabId },
+        },
+      },
+      outcome: "applied",
+    };
+  }
+  if (confirmation.kind === "move-home-passage") {
+    const tab = state.tabsById[confirmation.tabId];
+    const sourceGroup = state.groups.find((candidate) => candidate.id === confirmation.groupId);
+    const targetGroup = state.groups.find((candidate) => candidate.id === confirmation.targetGroupId);
+    if (tab?.kind !== "passage" || !sourceGroup || !targetGroup
+      || tab.groupId !== sourceGroup.id || sourceGroup.id === targetGroup.id
+      || sourceGroup.homePassageTabId !== tab.id) {
+      return { state, outcome: "unchanged" };
+    }
+    if (decision === "duplicate-home") {
+      if (Object.keys(state.tabsById).length >= STUDY_WORKSPACE_TAB_LIMIT) {
+        return { state, outcome: "tab-limit" };
+      }
+      let duplicateId = `${tab.id}-home`;
+      let suffix = 2;
+      while (state.tabsById[duplicateId]) {
+        duplicateId = `${tab.id}-home-${suffix}`;
+        suffix += 1;
+      }
+      const duplicate: PassageWorkspaceTab = {
+        ...tab,
+        id: duplicateId,
+        session: {
+          current: clonePassageViewState(tab.session.current),
+          history: {
+            back: tab.session.history.back.map(clonePassageViewState),
+            forward: tab.session.history.forward.map(clonePassageViewState),
+          },
+        },
+      };
+      const homeIndex = sourceGroup.tabIds.indexOf(tab.id);
+      const updatedSource: StudyWorkspaceGroup = {
+        ...freezeAutomaticGroupLabel(state, sourceGroup),
+        homePassageTabId: duplicate.id,
+        tabIds: [
+          ...sourceGroup.tabIds.slice(0, homeIndex),
+          duplicate.id,
+          ...sourceGroup.tabIds.slice(homeIndex),
+        ],
+      };
+      const working: StudyWorkspaceStateV2 = {
+        ...state,
+        groups: state.groups.map((candidate) => candidate.id === sourceGroup.id
+          ? updatedSource
+          : candidate),
+        tabsById: { ...state.tabsById, [duplicate.id]: duplicate },
+        activationOrder: [
+          ...state.activationOrder.filter((id) => id !== state.activeTabId),
+          duplicate.id,
+          state.activeTabId,
+        ],
+      };
+      const dependents = dependentEntityTabIds(state, sourceGroup, tab.id);
+      return {
+        state: moveTabRecords(
+          working,
+          [tab.id, ...dependents],
+          updatedSource,
+          targetGroup,
+        ),
+        outcome: "applied",
+      };
+    }
+    if (decision !== "move-study") return { state, outcome: "unchanged" };
+    const moving = new Set(sourceGroup.tabIds);
+    const destination: StudyWorkspaceGroup = {
+      ...freezeAutomaticGroupLabel(state, targetGroup),
+      tabIds: [...targetGroup.tabIds, ...sourceGroup.tabIds],
+      lastActiveTabId: moving.has(state.activeTabId)
+        ? state.activeTabId
+        : targetGroup.lastActiveTabId,
+    };
+    const tabsById = { ...state.tabsById };
+    for (const tabId of sourceGroup.tabIds) {
+      const movingTab = tabsById[tabId];
+      if (movingTab) tabsById[tabId] = { ...movingTab, groupId: targetGroup.id };
+    }
+    return {
+      state: {
+        ...state,
+        groups: state.groups.flatMap((candidate) => {
+          if (candidate.id === sourceGroup.id) return [];
+          return candidate.id === targetGroup.id ? [destination] : [candidate];
+        }),
+        tabsById,
+      },
+      outcome: "applied",
+    };
+  }
+  if (confirmation.kind !== "passage-dependencies"
+    || (decision !== "close-passage-and-research" && decision !== "keep-research")) {
+    return { state, outcome: "unchanged" };
+  }
+  const tab = state.tabsById[confirmation.tabId];
+  const group = tab?.kind === "passage"
+    ? state.groups.find((candidate) => candidate.id === tab.groupId
+      && candidate.tabIds.includes(tab.id))
+    : undefined;
+  if (!tab || !group) return { state, outcome: "unchanged" };
+  const dependents = dependentEntityTabIds(state, group, tab.id);
+  if (dependents.length !== confirmation.dependentEntityIds.length
+    || dependents.some((id, index) => id !== confirmation.dependentEntityIds[index])) {
+    return { state, outcome: "unchanged" };
+  }
+  if (decision === "keep-research") {
+    const detached: StudyWorkspaceStateV2 = {
+      ...state,
+      tabsById: {
+        ...state.tabsById,
+        ...Object.fromEntries(dependents.map((id) => {
+          const entity = state.tabsById[id];
+          return entity?.kind === "entity"
+            ? [id, { ...entity, returnPassageTabId: null } satisfies EntityWorkspaceTab]
+            : [id, entity];
+        })),
+      },
+    };
+    return {
+      state: removeTabsFromGroup(detached, group, [tab.id]),
+      outcome: "applied",
+    };
+  }
+  return {
+    state: removeTabsFromGroup(state, group, [tab.id, ...dependents]),
+    outcome: "applied",
+  };
+}
+
+export function reopenClosedStudyItem(
+  state: StudyWorkspaceStateV2,
+): WorkspaceMutationResult {
+  const item = state.recentlyClosed.at(-1);
+  if (!item) return { state, outcome: "unchanged" };
+  if (item.kind === "tab") {
+    if (state.tabsById[item.tab.id]) return { state, outcome: "unchanged" };
+    if (Object.keys(state.tabsById).length >= STUDY_WORKSPACE_TAB_LIMIT) {
+      return { state, outcome: "tab-limit" };
+    }
+    const group = state.groups.find((candidate) => candidate.id === item.tab.groupId);
+    if (!group) return { state, outcome: "unchanged" };
+    const restoredTab = normalizeStudyWorkspaceTab(item.tab);
+    const index = Math.max(0, Math.min(item.index, group.tabIds.length));
+    const next: StudyWorkspaceStateV2 = {
+      ...state,
+      groups: state.groups.map((candidate) => candidate.id === group.id
+        ? {
+            ...candidate,
+            tabIds: [
+              ...candidate.tabIds.slice(0, index),
+              item.tab.id,
+              ...candidate.tabIds.slice(index),
+            ],
+          }
+        : candidate),
+      tabsById: { ...state.tabsById, [restoredTab.id]: restoredTab },
+      recentlyClosed: state.recentlyClosed.slice(0, -1),
+    };
+    return {
+      state: activateStudyWorkspaceTab(next, item.tab.id),
+      outcome: "opened",
+    };
+  }
+  if (state.groups.some((group) => group.id === item.group.id)
+    || item.group.tabIds.some((tabId) => state.tabsById[tabId] || !item.tabsById[tabId])) {
+    return { state, outcome: "unchanged" };
+  }
+  if (state.groups.length >= STUDY_WORKSPACE_GROUP_LIMIT) {
+    return { state, outcome: "group-limit" };
+  }
+  if (Object.keys(state.tabsById).length + item.group.tabIds.length > STUDY_WORKSPACE_TAB_LIMIT) {
+    return { state, outcome: "tab-limit" };
+  }
+  const index = Math.max(0, Math.min(item.index, state.groups.length));
+  const restoredTabsById = Object.fromEntries(
+    Object.entries(item.tabsById).map(([tabId, tab]) => [tabId, normalizeStudyWorkspaceTab(tab)]),
+  );
+  const restoredActive = item.group.tabIds.includes(item.group.lastActiveTabId)
+    ? item.group.lastActiveTabId
+    : item.group.homePassageTabId;
+  const groups = [...state.groups];
+  groups.splice(index, 0, item.group);
+  const next: StudyWorkspaceStateV2 = {
+    ...state,
+    groups,
+    tabsById: { ...state.tabsById, ...restoredTabsById },
+    activationOrder: [
+      ...state.activationOrder,
+      ...item.group.tabIds.filter((tabId) => tabId !== restoredActive),
+    ],
+    recentlyClosed: state.recentlyClosed.slice(0, -1),
+  };
+  return {
+    state: activateStudyWorkspaceTab(next, restoredActive),
+    outcome: "opened",
+  };
+}
+
+export function openEntityWorkspaceTab(
+  state: StudyWorkspaceStateV2,
+  input: OpenEntityWorkspaceInput,
+): WorkspaceMutationResult {
+  const source = state.tabsById[input.sourceTabId];
+  const group = source
+    ? state.groups.find((candidate) => candidate.id === source.groupId
+      && candidate.tabIds.includes(source.id))
+    : undefined;
+  if (!source || !group) {
+    return { state, outcome: "unchanged" };
+  }
+  if (!input.duplicate) {
+    const existingId = group.tabIds.find((tabId) => {
+      const tab = state.tabsById[tabId];
+      return tab?.kind === "entity"
+        && tab.entityId === input.entityId
+        && tab.origin.book === input.origin.book
+        && tab.origin.chapter === input.origin.chapter
+        && tab.origin.packageId === input.origin.packageId
+        && tab.originRange?.start === input.originRange?.start
+        && tab.originRange?.end === input.originRange?.end;
+    });
+    if (existingId) {
+      return {
+        state: activateStudyWorkspaceTab(state, existingId),
+        outcome: "focused",
+      };
+    }
+  }
+  if (state.tabsById[input.id]) return { state, outcome: "unchanged" };
+  if (Object.keys(state.tabsById).length >= STUDY_WORKSPACE_TAB_LIMIT) {
+    return { state, outcome: "tab-limit" };
+  }
+  const origin = clonePassageViewState(input.origin);
+  const tab: EntityWorkspaceTab = {
+    kind: "entity",
+    id: input.id,
+    groupId: group.id,
+    entityId: input.entityId,
+    entityKind: input.entityKind,
+    origin,
+    ...(input.originRange ? { originRange: { ...input.originRange } } : {}),
+    canvas: {
+      current: clonePassageViewState(input.origin),
+      history: createNavigationHistory<PassageViewState>(),
+    },
+    returnPassageTabId: input.returnPassageTabId,
+    trail: [{ id: input.entityId, displayName: input.entityId, kind: input.entityKind }],
+    scrollTop: 0,
+    nonce: input.nonce,
+  };
+  const sourceIndex = group.tabIds.indexOf(source.id);
+  const next: StudyWorkspaceStateV2 = {
+    ...state,
+    groups: state.groups.map((candidate) => candidate.id === group.id
+      ? {
+          ...freezeAutomaticGroupLabel(state, candidate),
+          tabIds: [
+            ...candidate.tabIds.slice(0, sourceIndex + 1),
+            tab.id,
+            ...candidate.tabIds.slice(sourceIndex + 1),
+          ],
+        }
+      : candidate),
+    tabsById: { ...state.tabsById, [tab.id]: tab },
+  };
+  return { state: activateStudyWorkspaceTab(next, tab.id), outcome: "opened" };
+}
+
+export function navigateEntityWorkspaceTab(
+  state: StudyWorkspaceStateV2,
+  tabId: string,
+  entry: EntityResearchTrailEntry,
+  nonce: number,
+): StudyWorkspaceStateV2 {
+  const tab = state.tabsById[tabId];
+  if (tab?.kind !== "entity") return state;
+  const updated: EntityWorkspaceTab = {
+    ...tab,
+    entityId: entry.id,
+    entityKind: entry.kind ?? tab.entityKind,
+    trail: appendEntityResearchTrail(tab.trail, entry),
+    nonce,
+  };
+  return {
+    ...state,
+    tabsById: { ...state.tabsById, [tabId]: updated },
+  };
 }
 
 export function updateStudyCanvasSession(
@@ -199,7 +1205,7 @@ export function updateStudyCanvasSession(
   const tab = state.tabsById[tabId];
   if (!tab) return state;
   const current = tab.kind === "passage" ? tab.session : tab.canvas;
-  const next = update(current);
+  const next = normalizePassageWorkspaceSession(update(current));
   if (next === current) return state;
   const updated: StudyWorkspaceTab = tab.kind === "passage"
     ? { ...tab, session: next }
@@ -247,6 +1253,9 @@ export function openPassageWorkspaceTab(
   }
 
   if (state.tabsById[input.id]) return { state, outcome: "unchanged" };
+  if (Object.keys(state.tabsById).length >= STUDY_WORKSPACE_TAB_LIMIT) {
+    return { state, outcome: "tab-limit" };
+  }
   const sourceIndex = group.tabIds.indexOf(source.id);
   const tab: PassageWorkspaceTab = {
     kind: "passage",
@@ -261,7 +1270,7 @@ export function openPassageWorkspaceTab(
     ...state,
     groups: state.groups.map((candidate) => candidate.id === group.id
       ? {
-          ...candidate,
+          ...freezeAutomaticGroupLabel(state, candidate),
           tabIds: [
             ...candidate.tabIds.slice(0, sourceIndex + 1),
             tab.id,
