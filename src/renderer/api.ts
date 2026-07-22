@@ -226,49 +226,9 @@ export interface AppSettings {
     verse?: number;
     verseOffset?: number;
   } | null;
-  /** Revisioned desktop workspace. Legacy fields below are migration inputs only. */
+  /** Revisioned desktop workspace. Legacy settings remain Electron-only migration inputs. */
   studyWorkspace?: StudyWorkspaceStateV2 | null;
   studyWorkspaceRefusal?: "newer-version";
-  /** @deprecated Electron-only migration input; do not persist from renderer code. */
-  researchSession?: {
-    origin: {
-      book: string;
-      chapter: number;
-      packageId: string;
-      chapterEndVerse?: number;
-      verseStart?: number;
-      verseEnd?: number;
-    };
-    trail: Array<{ id: string; displayName: string; kind?: "person" | "place" | "other" }>;
-  } | null;
-  /** @deprecated Electron-only migration input; do not persist from renderer code. */
-  researchWorkspace?: {
-    tabs: Array<{
-      id: string;
-      entityId: string;
-      origin: {
-        book: string;
-        chapter: number;
-        packageId: string;
-        chapterEndVerse?: number;
-        verseStart?: number;
-        verseEnd?: number;
-      };
-      trail: Array<{ id: string; displayName: string; kind?: "person" | "place" | "other" }>;
-      nonce: number;
-    }>;
-    activeTabId: string;
-    lastResearchTabId: string | null;
-    activationOrder: string[];
-  } | null;
-  /** @deprecated Electron-only migration input; V2 stores this on the home passage. */
-  keptContext?: {
-    book: string;
-    chapter: number;
-    verse: number;
-    endVerse?: number;
-    label?: string;
-  } | null;
 }
 
 export interface LibrarySummary {

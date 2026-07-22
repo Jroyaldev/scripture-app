@@ -89,7 +89,7 @@ import { OccurrenceAlignmentStore } from "../host/occurrence-alignment-store.js"
 import { sanitizeLegacySettings, type AdoptableLegacySettings } from "./legacy-settings.js";
 import {
   bootstrapStudyWorkspaceSetting,
-  mergeStudyWorkspaceSetting,
+  mergeRawStudyWorkspaceSetting,
 } from "./study-workspace-settings.js";
 import {
   UserMutationBroker,
@@ -3154,9 +3154,20 @@ function registerIpcHandlers(): void {
     const hasResearchWorkspace = Object.prototype.hasOwnProperty.call(partial, "researchWorkspace");
     const hasKeptContext = Object.prototype.hasOwnProperty.call(partial, "keptContext");
     const hasStudyWorkspace = Object.prototype.hasOwnProperty.call(partial, "studyWorkspace");
+    const hasCurrentStudyWorkspace = Object.prototype.hasOwnProperty.call(
+      store.store,
+      "studyWorkspace",
+    );
+    const mergedStudyWorkspace = mergeRawStudyWorkspaceSetting(
+      store.store.studyWorkspace,
+      partial.studyWorkspace,
+      hasStudyWorkspace,
+    );
+    const sanitizedPartial = { ...partial };
+    delete sanitizedPartial.studyWorkspace;
     store.set({
       ...store.store,
-      ...partial,
+      ...sanitizedPartial,
       theme: normalizeTheme(partial.theme ?? store.store.theme),
       markingSurface: normalizeMarkingSurface(partial.markingSurface ?? store.store.markingSurface),
       lastRead: normalizeLastRead(hasLastRead ? partial.lastRead : store.store.lastRead),
@@ -3167,11 +3178,11 @@ function registerIpcHandlers(): void {
         hasResearchWorkspace ? partial.researchWorkspace : store.store.researchWorkspace,
       ),
       keptContext: normalizeKeptContext(hasKeptContext ? partial.keptContext : store.store.keptContext),
-      studyWorkspace: mergeStudyWorkspaceSetting(
-        store.store.studyWorkspace,
-        partial.studyWorkspace,
-        hasStudyWorkspace,
-      ),
+      ...(hasStudyWorkspace || hasCurrentStudyWorkspace
+        ? mergedStudyWorkspace === undefined
+          ? {}
+          : { studyWorkspace: mergedStudyWorkspace }
+        : {}),
     });
     return readSettings();
   });

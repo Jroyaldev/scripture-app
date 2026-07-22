@@ -1,4 +1,98 @@
 import type { StudyWorkspaceStateV2 } from "./studyWorkspace.js";
+import type { ResearchWorkspaceState } from "./researchWorkspace.js";
+
+export interface StudyWorkspaceCompatibilityProjection {
+  researchWorkspace: ResearchWorkspaceState;
+  keptContext: {
+    book: string;
+    chapter: number;
+    verse: number;
+    endVerse?: number;
+    label?: string;
+  } | null;
+}
+
+/**
+ * Read-only bridge for the pre-V2 tab strip and kept-subject props. Task 5 can
+ * remove this projection when those components consume StudyWorkspaceStateV2
+ * directly; persisted authority remains V2 throughout the transition.
+ */
+export function projectStudyWorkspaceCompatibility(
+  workspace: StudyWorkspaceStateV2 | null,
+): StudyWorkspaceCompatibilityProjection {
+  if (!workspace) {
+    return {
+      researchWorkspace: {
+        tabs: [],
+        activeTabId: "scripture",
+        lastResearchTabId: null,
+        activationOrder: ["scripture"],
+      },
+      keptContext: null,
+    };
+  }
+  const tabs = workspace.groups.flatMap((group) => group.tabIds.flatMap((tabId) => {
+    const tab = workspace.tabsById[tabId];
+    if (tab?.kind !== "entity") return [];
+    return [{
+      id: tab.id,
+      entityId: tab.entityId,
+      origin: {
+        book: tab.origin.book,
+        chapter: tab.origin.chapter,
+        packageId: tab.origin.packageId,
+        ...(tab.originRange
+          ? { verseStart: tab.originRange.start, verseEnd: tab.originRange.end }
+          : {}),
+      },
+      trail: tab.trail.map((entry) => ({ ...entry })),
+      nonce: tab.nonce,
+    }];
+  }));
+  const entityIds = new Set(tabs.map((tab) => tab.id));
+  const activeTabId = entityIds.has(workspace.activeTabId)
+    ? workspace.activeTabId
+    : "scripture";
+  const activationOrder: string[] = [];
+  const activated = new Set<string>();
+  for (const tabId of workspace.activationOrder) {
+    const compatibilityId = entityIds.has(tabId) ? tabId : "scripture";
+    if (activated.has(compatibilityId)) continue;
+    activated.add(compatibilityId);
+    activationOrder.push(compatibilityId);
+  }
+  if (!activated.has("scripture")) activationOrder.unshift("scripture");
+  const normalizedActivationOrder = [
+    ...activationOrder.filter((tabId) => tabId !== activeTabId),
+    activeTabId,
+  ];
+  const lastResearchTabId = [...normalizedActivationOrder].reverse().find(
+    (tabId) => entityIds.has(tabId),
+  ) ?? null;
+  const activeTab = workspace.tabsById[workspace.activeTabId];
+  const activeScope = activeTab?.kind === "passage"
+    ? activeTab.session.current.margin.scope
+    : activeTab?.canvas.current.margin.scope;
+  const keptContext: StudyWorkspaceCompatibilityProjection["keptContext"] =
+    activeScope?.kind === "kept"
+      ? {
+          book: activeScope.book,
+          chapter: activeScope.chapter,
+          verse: activeScope.verse,
+          ...(activeScope.endVerse !== undefined ? { endVerse: activeScope.endVerse } : {}),
+          ...(activeScope.label !== undefined ? { label: activeScope.label } : {}),
+        }
+      : null;
+  return {
+    researchWorkspace: {
+      tabs,
+      activeTabId,
+      lastResearchTabId,
+      activationOrder: normalizedActivationOrder,
+    },
+    keptContext,
+  };
+}
 
 export interface WorkspacePersistenceStatus {
   phase: "idle" | "saving" | "failed";
@@ -19,6 +113,7 @@ export interface WorkspacePersistenceController {
 interface WorkspaceSnapshot {
   revision: number;
   state: StudyWorkspaceStateV2;
+  kind: "view" | "required";
 }
 
 interface RevisionWaiter {
@@ -33,7 +128,7 @@ export function createWorkspacePersistenceController(options: {
   let revision = 0;
   let acknowledgedRevision = 0;
   let inFlight: WorkspaceSnapshot | null = null;
-  let queued: WorkspaceSnapshot | null = null;
+  let queue: WorkspaceSnapshot[] = [];
   let failed: WorkspaceSnapshot | null = null;
   let phase: WorkspacePersistenceStatus["phase"] = "idle";
   let error: string | undefined;
@@ -47,43 +142,36 @@ export function createWorkspacePersistenceController(options: {
   const newestPendingRevision = (): number | null => {
     return Math.max(
       inFlight?.revision ?? 0,
-      queued?.revision ?? 0,
+      ...queue.map((snapshot) => snapshot.revision),
       failed?.revision ?? 0,
       debounced?.revision ?? 0,
     ) || null;
   };
 
-  const settleAcknowledgedWaiters = (): void => {
+  const settleAcknowledgedWaiters = (revisionToAcknowledge: number): void => {
     for (let index = waiters.length - 1; index >= 0; index -= 1) {
       const waiter = waiters[index]!;
-      if (waiter.revision > acknowledgedRevision) continue;
+      if (waiter.revision !== revisionToAcknowledge) continue;
       waiters.splice(index, 1);
       waiter.resolve(true);
     }
   };
 
-  const settleFailedWaiters = (throughRevision: number): void => {
-    for (let index = waiters.length - 1; index >= 0; index -= 1) {
-      const waiter = waiters[index]!;
-      if (waiter.revision > throughRevision) continue;
-      waiters.splice(index, 1);
-      waiter.resolve(false);
-    }
+  const settleFailedWaiters = (): void => {
+    for (const waiter of waiters.splice(0)) waiter.resolve(false);
   };
 
   const waitForRevision = (targetRevision: number): Promise<boolean> => {
-    if (acknowledgedRevision >= targetRevision) return Promise.resolve(true);
-    if (failed && failed.revision >= targetRevision) return Promise.resolve(false);
     if (disposed) return Promise.resolve(false);
+    if (failed) return Promise.resolve(false);
     return new Promise<boolean>((resolve) => {
       waiters.push({ revision: targetRevision, resolve });
     });
   };
 
   const runNext = (): void => {
-    if (disposed || inFlight || !queued || failed) return;
-    const snapshot = queued;
-    queued = null;
+    if (disposed || inFlight || queue.length === 0 || failed) return;
+    const snapshot = queue.shift()!;
     inFlight = snapshot;
     phase = "saving";
     error = undefined;
@@ -91,16 +179,18 @@ export function createWorkspacePersistenceController(options: {
       if (inFlight?.revision === snapshot.revision) inFlight = null;
       if (disposed) return;
       let retryable = snapshot;
-      if (queued && queued.revision > retryable.revision) retryable = queued;
+      for (const queued of queue) {
+        if (queued.revision > retryable.revision) retryable = queued;
+      }
       if (debounced && debounced.revision > retryable.revision) retryable = debounced;
       if (debounceTimer !== null) globalThis.clearTimeout(debounceTimer);
       debounceTimer = null;
       debounced = null;
-      queued = null;
+      queue = [];
       failed = retryable;
       phase = "failed";
       error = reason instanceof Error ? reason.message : String(reason);
-      settleFailedWaiters(retryable.revision);
+      settleFailedWaiters();
     };
     let pending: Promise<unknown>;
     try {
@@ -111,11 +201,11 @@ export function createWorkspacePersistenceController(options: {
     }
     void Promise.resolve(pending)
       .then(() => {
-        if (inFlight?.revision === snapshot.revision) inFlight = null;
-        if (disposed) return;
+        if (disposed || inFlight?.revision !== snapshot.revision) return;
+        inFlight = null;
         acknowledgedRevision = Math.max(acknowledgedRevision, snapshot.revision);
-        settleAcknowledgedWaiters();
-        if (queued) {
+        settleAcknowledgedWaiters(snapshot.revision);
+        if (queue.length > 0) {
           runNext();
         } else {
           phase = "idle";
@@ -124,25 +214,33 @@ export function createWorkspacePersistenceController(options: {
       .catch(handleFailure);
   };
 
-  const immediatePublication = (state: StudyWorkspaceStateV2): WorkspaceSnapshot => {
+  const immediatePublication = (state: StudyWorkspaceStateV2): {
+    snapshot: WorkspaceSnapshot;
+    completion: Promise<boolean>;
+  } => {
     revision += 1;
-    const snapshot = { revision, state: clone(state) };
+    const snapshot: WorkspaceSnapshot = { revision, state: clone(state), kind: "required" };
+    const completion = waitForRevision(snapshot.revision);
     if (debounceTimer !== null) {
       globalThis.clearTimeout(debounceTimer);
       debounceTimer = null;
     }
     debounced = null;
-    failed = null;
-    queued = snapshot;
+    queue = queue.filter((candidate) => candidate.kind === "required");
+    if (failed) {
+      failed = snapshot;
+      return { snapshot, completion };
+    }
+    queue.push(snapshot);
     runNext();
-    return snapshot;
+    return { snapshot, completion };
   };
 
   return {
     publishView(state) {
       if (disposed) return;
       revision += 1;
-      debounced = { revision, state: clone(state) };
+      debounced = { revision, state: clone(state), kind: "view" };
       if (failed) {
         failed = debounced;
         debounced = null;
@@ -160,27 +258,27 @@ export function createWorkspacePersistenceController(options: {
           failed = snapshot;
           return;
         }
-        queued = snapshot;
+        queue = queue.filter((candidate) => candidate.kind === "required");
+        queue.push(snapshot);
         runNext();
       }, Math.max(0, options.debounceMs));
     },
     persistStructure(state) {
       if (disposed) return Promise.resolve(false);
-      const snapshot = immediatePublication(state);
-      return waitForRevision(snapshot.revision);
+      return immediatePublication(state).completion;
     },
     flush(state) {
       if (disposed) return Promise.resolve(false);
-      const snapshot = immediatePublication(state);
-      return waitForRevision(snapshot.revision);
+      return immediatePublication(state).completion;
     },
     retry() {
       if (disposed || !failed) return Promise.resolve(false);
-      const snapshot = failed;
+      const snapshot = { ...failed, kind: "required" as const };
       failed = null;
-      queued = snapshot;
+      const completion = waitForRevision(snapshot.revision);
+      queue.push(snapshot);
       runNext();
-      return waitForRevision(snapshot.revision);
+      return completion;
     },
     status() {
       return {
@@ -196,7 +294,8 @@ export function createWorkspacePersistenceController(options: {
       if (debounceTimer !== null) globalThis.clearTimeout(debounceTimer);
       debounceTimer = null;
       debounced = null;
-      queued = null;
+      inFlight = null;
+      queue = [];
       failed = null;
       phase = "idle";
       error = undefined;

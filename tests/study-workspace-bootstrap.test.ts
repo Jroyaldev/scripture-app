@@ -49,7 +49,8 @@ test("valid V2 is authoritative while a missing or invalid key migrates and clea
     lastRead: { book: "JHN", chapter: 3, packageId: "nrsv" },
     keptContext: null,
   });
-  assert.ok(current);
+  assert.equal(current.status, "migrated");
+  assert.ok(current.value);
   const legacy = {
     researchWorkspace: null,
     researchSession: {
@@ -61,12 +62,12 @@ test("valid V2 is authoritative while a missing or invalid key migrates and clea
   };
   const authoritative = bootstrapStudyWorkspaceSetting({
     hasStudyWorkspaceKey: true,
-    studyWorkspace: current,
+    studyWorkspace: current.value,
     ...legacy,
   });
-  assert.deepEqual(authoritative.studyWorkspace, current);
+  assert.deepEqual(authoritative.studyWorkspace, current.value);
   assert.deepEqual(authoritative.write, {
-    studyWorkspace: current,
+    studyWorkspace: current.value,
     researchWorkspace: null,
     researchSession: null,
     keptContext: null,
@@ -94,7 +95,7 @@ test("valid V2 is authoritative while a missing or invalid key migrates and clea
   assert.equal(retainedNull.write?.studyWorkspace, null);
 });
 
-test("App refuses a newer workspace before hydration and leaves every workspace write gate closed", () => {
+test("App establishes V2 authority only after refusal and projects it into transitional rendering", () => {
   const app = read("src/renderer/app.tsx");
   const api = read("src/renderer/api.ts");
   const hydration = app.slice(
@@ -104,15 +105,26 @@ test("App refuses a newer workspace before hydration and leaves every workspace 
   const refusal = hydration.indexOf('res.value.studyWorkspaceRefusal === "newer-version"');
   assert.ok(refusal >= 0);
   assert.ok(refusal < hydration.indexOf("settingsLoaded.current = true"));
-  assert.equal(hydration.indexOf("setResearchWorkspace"), -1);
+  assert.ok(refusal < hydration.indexOf("setStudyWorkspace"));
+  assert.ok(refusal < hydration.indexOf("createWorkspacePersistenceController"));
+  assert.equal(app.indexOf("useState<ResearchWorkspaceState>"), -1);
+  assert.equal(app.indexOf("setResearchWorkspace"), -1);
+  assert.doesNotMatch(app, /createResearchWorkspaceState/);
+  assert.match(app, /projectStudyWorkspaceCompatibility\(studyWorkspace\)/);
+  assert.match(app, /workspacePersistenceRef\.current\.persistStructure/);
+  assert.match(hydration, /const persisted = await window\.api\.settings\.set\(\{ studyWorkspace: workspace \}\)/);
+  assert.match(hydration, /if \(persisted\.studyWorkspaceRefusal\) throw new Error/);
   assert.match(hydration, /setStudyWorkspaceRefusal\("newer-version"\)/);
   assert.match(app, /role="alert"[\s\S]{0,500}?newer version of Pericope/);
   assert.match(app, /if \(studyWorkspaceRefusal === "newer-version"\)/);
   assert.match(api, /studyWorkspace\?: StudyWorkspaceStateV2 \| null/);
   assert.match(api, /studyWorkspaceRefusal\?: "newer-version"/);
+  assert.doesNotMatch(api, /\bresearchSession\?:/);
+  assert.doesNotMatch(api, /\bresearchWorkspace\?:/);
+  assert.doesNotMatch(api, /\bkeptContext\?:/);
   assert.doesNotMatch(
     app,
-    /settings\.set\(\{\s*(?:studyWorkspace|researchWorkspace|researchSession|keptContext)\b/,
+    /settings\.set\(\{\s*(?:researchWorkspace|researchSession|keptContext)\b/,
   );
   assert.doesNotMatch(app, /res\.value\.(?:researchWorkspace|researchSession|keptContext)/);
 });
@@ -120,7 +132,7 @@ test("App refuses a newer workspace before hydration and leaves every workspace 
 test("Electron settles V2 once, preserves V3, and merges workspace patches by key presence", () => {
   const main = read("src/electron/main.ts");
   assert.match(main, /bootstrapStudyWorkspaceSetting/);
-  assert.match(main, /mergeStudyWorkspaceSetting/);
+  assert.match(main, /mergeRawStudyWorkspaceSetting/);
   const getHandler = main.slice(
     main.indexOf("const readSettings = () =>"),
     main.indexOf('ipcMain.handle("settings:set"'),
@@ -134,6 +146,12 @@ test("Electron settles V2 once, preserves V3, and merges workspace patches by ke
     main.indexOf('ipcMain.handle("dialog-open-directory"'),
   );
   assert.match(setHandler, /hasStudyWorkspace/);
-  assert.match(setHandler, /studyWorkspace: mergeStudyWorkspaceSetting\(/);
+  assert.match(setHandler, /hasCurrentStudyWorkspace/);
+  assert.match(setHandler, /const sanitizedPartial = \{ \.\.\.partial \};[\s\S]{0,100}?delete sanitizedPartial\.studyWorkspace/);
+  assert.match(setHandler, /\.\.\.sanitizedPartial/);
+  assert.match(setHandler, /const mergedStudyWorkspace = mergeRawStudyWorkspaceSetting\(/);
+  assert.match(setHandler, /\.\.\.\(hasStudyWorkspace \|\| hasCurrentStudyWorkspace/);
+  assert.match(setHandler, /studyWorkspace: mergedStudyWorkspace/);
   assert.doesNotMatch(setHandler, /studyWorkspace:\s*normalizeStudyWorkspace/);
+  assert.doesNotMatch(setHandler, /^\s*studyWorkspace:\s*undefined/m);
 });

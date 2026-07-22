@@ -108,7 +108,7 @@ export interface PersistedStudyWorkspaceV2 {
 }
 
 export type StudyWorkspaceValidation =
-  | { ok: true; value: PersistedStudyWorkspaceV2 | null }
+  | { ok: true; value: PersistedStudyWorkspaceV2 }
   | { ok: false; reason: "invalid" | "newer-version" };
 
 function asRecord(value: unknown): Record<string, unknown> | null {
@@ -286,8 +286,15 @@ function normalizeSession(value: unknown): PersistedPassageWorkspaceSession | nu
   if (!current) return null;
   const rawBack = history["back"];
   const rawForward = history["forward"];
-  const backLength = Math.min(rawBack.length, HISTORY_LIMIT);
-  const forwardLength = Math.min(rawForward.length, HISTORY_LIMIT - backLength);
+  let backLength = 0;
+  let forwardLength = 0;
+  while (backLength + forwardLength < HISTORY_LIMIT
+    && (backLength < rawBack.length || forwardLength < rawForward.length)) {
+    if (backLength < rawBack.length) backLength += 1;
+    if (backLength + forwardLength < HISTORY_LIMIT && forwardLength < rawForward.length) {
+      forwardLength += 1;
+    }
+  }
   const back: PersistedPassageViewState[] = [];
   const forward: PersistedPassageViewState[] = [];
   for (const entry of rawBack.slice(-backLength)) {
@@ -475,15 +482,22 @@ function normalizeClosedItem(value: unknown): PersistedClosedStudyItem | null {
     }
     const passageIds = normalizedTabs.flatMap((tab) => tab.kind === "passage" ? [tab.id] : []);
     if (passageIds.length === 0) return null;
+    const canonicalTabs = normalizedTabs.map((tab): PersistedStudyWorkspaceTab => (
+      tab.kind === "entity"
+        && tab.returnPassageTabId !== null
+        && !passageIds.includes(tab.returnPassageTabId)
+        ? { ...tab, returnPassageTabId: null }
+        : tab
+    ));
     const homePassageTabId = passageIds.includes(group.homePassageTabId)
       ? group.homePassageTabId
       : passageIds[0]!;
-    const tabIds = normalizedTabs.map((tab) => tab.id);
+    const tabIds = canonicalTabs.map((tab) => tab.id);
     const lastActiveTabId = tabIds.includes(group.lastActiveTabId)
       ? group.lastActiveTabId
       : homePassageTabId;
     const tabsById: Record<string, PersistedStudyWorkspaceTab> = {};
-    for (const tab of normalizedTabs) tabsById[tab.id] = tab;
+    for (const tab of canonicalTabs) tabsById[tab.id] = tab;
     return {
       kind: "group",
       index,
@@ -502,7 +516,6 @@ function normalizeClosedItem(value: unknown): PersistedClosedStudyItem | null {
 }
 
 export function normalizeStudyWorkspace(value: unknown): StudyWorkspaceValidation {
-  if (value === null) return { ok: true, value: null };
   const source = asRecord(value);
   if (!source) return { ok: false, reason: "invalid" };
   const version = source["version"];
@@ -540,11 +553,18 @@ export function normalizeStudyWorkspace(value: unknown): StudyWorkspaceValidatio
       localTabs.push(tab);
     }
     const passageIds = localTabs.flatMap((tab) => tab.kind === "passage" ? [tab.id] : []);
-    if (passageIds.length === 0) continue;
+    if (passageIds.length === 0) return { ok: false, reason: "invalid" };
+    const canonicalTabs = localTabs.map((tab): PersistedStudyWorkspaceTab => (
+      tab.kind === "entity"
+        && tab.returnPassageTabId !== null
+        && !passageIds.includes(tab.returnPassageTabId)
+        ? { ...tab, returnPassageTabId: null }
+        : tab
+    ));
     const homePassageTabId = passageIds.includes(rawGroup.homePassageTabId)
       ? rawGroup.homePassageTabId
       : passageIds[0]!;
-    const tabIds = localTabs.map((tab) => tab.id);
+    const tabIds = canonicalTabs.map((tab) => tab.id);
     const lastActiveTabId = tabIds.includes(rawGroup.lastActiveTabId)
       ? rawGroup.lastActiveTabId
       : homePassageTabId;
@@ -557,7 +577,7 @@ export function normalizeStudyWorkspace(value: unknown): StudyWorkspaceValidatio
       label: rawGroup.label,
     });
     usedGroupIds.add(rawGroup.id);
-    for (const tab of localTabs) {
+    for (const tab of canonicalTabs) {
       usedTabIds.add(tab.id);
       tabsById[tab.id] = tab;
     }
@@ -599,11 +619,26 @@ export function normalizeStudyWorkspace(value: unknown): StudyWorkspaceValidatio
 }
 
 export function mergeStudyWorkspaceSetting(
+  current: PersistedStudyWorkspaceV2 | null,
+  incoming: unknown,
+  hasIncomingKey: boolean,
+): PersistedStudyWorkspaceV2 | null {
+  if (!hasIncomingKey) return current;
+  if (incoming === null) return null;
+  const normalized = normalizeStudyWorkspace(incoming);
+  return normalized.ok ? normalized.value : current;
+}
+
+/** Electron-store boundary for raw invalid/future values; renderer code never calls this. */
+export function mergeRawStudyWorkspaceSetting(
   current: unknown,
   incoming: unknown,
   hasIncomingKey: boolean,
 ): unknown {
+  const currentValidation = normalizeStudyWorkspace(current);
+  if (!currentValidation.ok && currentValidation.reason === "newer-version") return current;
   if (!hasIncomingKey) return current;
+  if (incoming === null) return null;
   const normalized = normalizeStudyWorkspace(incoming);
   return normalized.ok ? normalized.value : current;
 }
@@ -614,6 +649,10 @@ export interface LegacyStudyWorkspaceMigrationInput {
   lastRead: unknown;
   keptContext: unknown;
 }
+
+export type LegacyStudyWorkspaceMigrationResult =
+  | { status: "migrated"; value: PersistedStudyWorkspaceV2 }
+  | { status: "empty"; value: null };
 
 export interface StudyWorkspaceBootstrapInput extends LegacyStudyWorkspaceMigrationInput {
   hasStudyWorkspaceKey: boolean;
@@ -799,7 +838,7 @@ function legacyOriginKey(origin: LegacyPassageOrigin): string {
 
 export function migrateLegacyStudyWorkspace(
   input: LegacyStudyWorkspaceMigrationInput,
-): PersistedStudyWorkspaceV2 | null {
+): LegacyStudyWorkspaceMigrationResult {
   const legacyWorkspace = normalizeLegacyResearchWorkspace(input.researchWorkspace);
   const legacySession = legacyWorkspace ? null : normalizeLegacyResearchSession(input.researchSession);
   const sessionCurrent = legacySession?.trail.at(-1);
@@ -814,7 +853,8 @@ export function migrateLegacyStudyWorkspace(
     : null;
   const researchTabs = legacyWorkspace?.tabs ?? (sessionTab ? [sessionTab] : []);
   const firstOrigin = researchTabs[0]?.origin ?? legacySession?.origin;
-  const lastRead = normalizeLegacyLastRead(input.lastRead)
+  const explicitLastRead = normalizeLegacyLastRead(input.lastRead);
+  const lastRead = explicitLastRead
     ?? (firstOrigin
       ? {
           book: firstOrigin.book,
@@ -831,7 +871,9 @@ export function migrateLegacyStudyWorkspace(
           verse: 1,
           verseOffset: 0,
         });
-  const keptContext = normalizeLegacyKeptContext(input.keptContext);
+  const keptContext = explicitLastRead
+    ? normalizeLegacyKeptContext(input.keptContext)
+    : null;
   const reservedTabIds = new Set(researchTabs.map((tab) => tab.id));
   const allocatedTabIds = new Set<string>();
   let passageSequence = 0;
@@ -931,12 +973,15 @@ export function migrateLegacyStudyWorkspace(
     ) ?? group.homePassageTabId;
   }
   return {
-    version: WORKSPACE_VERSION,
-    groups,
-    tabsById,
-    activeTabId,
-    activationOrder: normalizedActivationOrder,
-    recentlyClosed: [],
+    status: "migrated",
+    value: {
+      version: WORKSPACE_VERSION,
+      groups,
+      tabsById,
+      activeTabId,
+      activationOrder: normalizedActivationOrder,
+      recentlyClosed: [],
+    },
   };
 }
 
@@ -944,6 +989,22 @@ export function bootstrapStudyWorkspaceSetting(
   input: StudyWorkspaceBootstrapInput,
 ): StudyWorkspaceBootstrapResult {
   if (input.hasStudyWorkspaceKey) {
+    if (input.studyWorkspace === null) {
+      const hasLegacy = input.researchWorkspace !== null && input.researchWorkspace !== undefined
+        || input.researchSession !== null && input.researchSession !== undefined
+        || input.keptContext !== null && input.keptContext !== undefined;
+      return {
+        studyWorkspace: null,
+        write: hasLegacy
+          ? {
+              studyWorkspace: null,
+              researchWorkspace: null,
+              researchSession: null,
+              keptContext: null,
+            }
+          : null,
+      };
+    }
     const normalized = normalizeStudyWorkspace(input.studyWorkspace);
     if (!normalized.ok && normalized.reason === "newer-version") {
       return {
@@ -971,7 +1032,8 @@ export function bootstrapStudyWorkspaceSetting(
     }
   }
 
-  const migrated = migrateLegacyStudyWorkspace(input);
+  const migration = migrateLegacyStudyWorkspace(input);
+  const migrated = migration.value;
   return {
     studyWorkspace: migrated,
     write: {

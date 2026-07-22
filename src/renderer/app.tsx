@@ -8,7 +8,7 @@ import type {
   ReadingWidth,
   VerseNumberMode,
 } from "./api.js";
-import { ScripturePage } from "./components/ScripturePage.js";
+import { ScripturePage, type KeptMarginReference } from "./components/ScripturePage.js";
 import { layerStackIsEmpty } from "./layerStack.js";
 import type { EntityResearchTrailEntry } from "./components/LivingMargin.js";
 import { WritingSheet, type WritingDraft } from "./components/WritingSheet.js";
@@ -37,17 +37,28 @@ import {
   type NavigationHistoryState,
 } from "./utils/navigationHistory.js";
 import {
-  closeResearchWorkspaceGroup as closeResearchGroupState,
-  closeResearchWorkspaceTab as closeResearchTabState,
-  createResearchWorkspaceState,
-  navigateActiveResearchWorkspaceTab,
-  openResearchWorkspaceTab,
+  researchOriginGroupKey,
   retainedResearchWorkspaceTab,
   SCRIPTURE_WORKSPACE_ID,
-  selectResearchWorkspaceTab,
-  updateResearchWorkspaceTrail,
-  type ResearchWorkspaceState,
 } from "./utils/researchWorkspace.js";
+import {
+  closeStudyWorkspaceTab,
+  createStudyWorkspace,
+  createStudyWorkspaceGroup,
+  ENTITY_RESEARCH_TRAIL_LIMIT,
+  navigateEntityWorkspaceTab,
+  openEntityWorkspaceTab,
+  selectStudyWorkspaceTab,
+  updateStudyCanvasSession,
+  type EntityWorkspaceKind,
+  type PassageViewState,
+  type StudyWorkspaceStateV2,
+} from "./utils/studyWorkspace.js";
+import {
+  createWorkspacePersistenceController,
+  projectStudyWorkspaceCompatibility,
+  type WorkspacePersistenceController,
+} from "./utils/workspacePersistence.js";
 import "./styles.css";
 
 type View = "scripture" | "write" | "search" | "notes" | "settings";
@@ -59,6 +70,51 @@ type LoadState =
   | { status: "first-run"; defaultPath: string };
 
 const WRITING_DRAFT_STORAGE_KEY = "scripture.writing-draft";
+
+function compatibilityPassageView(origin: CommandReadingContext): PassageViewState {
+  return {
+    book: origin.book,
+    chapter: origin.chapter,
+    packageId: origin.packageId,
+    ...(origin.verseStart !== undefined
+      ? { verse: origin.verseStart, verseOffset: 0 }
+      : {}),
+    scrollTop: 0,
+    margin: {
+      activeTab: "overview",
+      scope: null,
+      scrollTopByTab: {},
+      wordsFollowingReading: true,
+    },
+  };
+}
+
+function compatibilityEntityKind(entityId: string): EntityWorkspaceKind {
+  if (entityId.startsWith("person:")) return "person";
+  if (entityId.startsWith("place:")) return "place";
+  return "other";
+}
+
+function compatibilityPassageTabId(
+  workspace: StudyWorkspaceStateV2,
+  origin?: CommandReadingContext,
+): string | null {
+  if (origin) {
+    for (const group of workspace.groups) {
+      const match = group.tabIds.find((tabId) => {
+        const tab = workspace.tabsById[tabId];
+        return tab?.kind === "passage"
+          && tab.session.current.book === origin.book
+          && tab.session.current.chapter === origin.chapter
+          && tab.session.current.packageId === origin.packageId;
+      });
+      if (match) return match;
+    }
+  }
+  return [...workspace.activationOrder].reverse().find(
+    (tabId) => workspace.tabsById[tabId]?.kind === "passage",
+  ) ?? workspace.groups[0]?.homePassageTabId ?? null;
+}
 
 function recoverWritingDraft(): WritingDraft {
   try {
@@ -193,10 +249,22 @@ export function App(): React.JSX.Element {
     chapter: 19,
     packageId: "bsb",
   });
-  const [researchWorkspace, setResearchWorkspace] = useState<ResearchWorkspaceState>(
-    createResearchWorkspaceState,
+  // `undefined` means settings have not resolved yet. No default workspace is
+  // constructed until the newer-version refusal gate has been evaluated.
+  const [studyWorkspace, setStudyWorkspace] = useState<StudyWorkspaceStateV2 | null>();
+  const studyWorkspaceRef = useRef<StudyWorkspaceStateV2 | null | undefined>(undefined);
+  const workspacePersistenceRef = useRef<WorkspacePersistenceController | null>(null);
+  const workspaceCompatibility = useMemo(
+    () => studyWorkspace === undefined
+      ? null
+      : projectStudyWorkspaceCompatibility(studyWorkspace),
+    [studyWorkspace],
   );
-  const retainedResearchTab = retainedResearchWorkspaceTab(researchWorkspace);
+  const researchWorkspace = workspaceCompatibility?.researchWorkspace ?? null;
+  const keptContext = workspaceCompatibility?.keptContext ?? null;
+  const retainedResearchTab = researchWorkspace
+    ? retainedResearchWorkspaceTab(researchWorkspace)
+    : null;
   const retainedResearchTabIdRef = useRef<string | null>(retainedResearchTab?.id ?? null);
   retainedResearchTabIdRef.current = retainedResearchTab?.id ?? null;
   const entityIntent = useMemo(() => retainedResearchTab ? {
@@ -204,7 +272,6 @@ export function App(): React.JSX.Element {
     nonce: retainedResearchTab.nonce,
     origin: retainedResearchTab.origin,
   } : null, [retainedResearchTab?.entityId, retainedResearchTab?.nonce, retainedResearchTab?.origin]);
-  const [keptContext, setKeptContext] = useState<NonNullable<AppSettings["keptContext"]> | null>(null);
   const [workspaceIntent, setWorkspaceIntent] = useState<{
     query?: string;
     noteId?: string;
@@ -240,6 +307,20 @@ export function App(): React.JSX.Element {
   // clobber a setting the user has touched in the interim (see the
   // settings-load effect below for the race this guards against).
   const userDirtySettings = useRef({ sidebarCollapsed: false, marginVisible: false, theme: false, markingSurface: false });
+
+  const commitStudyWorkspace = useCallback((
+    update: (current: StudyWorkspaceStateV2 | null) => StudyWorkspaceStateV2 | null,
+  ): void => {
+    const current = studyWorkspaceRef.current;
+    if (current === undefined) return;
+    const next = update(current);
+    if (next === current) return;
+    studyWorkspaceRef.current = next;
+    setStudyWorkspace(next);
+    if (next && workspacePersistenceRef.current) {
+      void workspacePersistenceRef.current.persistStructure(next);
+    }
+  }, []);
 
   const loadData = useCallback(async () => {
     setLoadState({ status: "loading" });
@@ -333,6 +414,19 @@ export function App(): React.JSX.Element {
         setStudyWorkspaceRefusal("newer-version");
         return;
       }
+      const loadedWorkspace = res.ok ? res.value.studyWorkspace ?? null : null;
+      studyWorkspaceRef.current = loadedWorkspace;
+      setStudyWorkspace(loadedWorkspace);
+      if (res.ok) {
+        workspacePersistenceRef.current = createWorkspacePersistenceController({
+          debounceMs: 220,
+          async write(workspace) {
+            const persisted = await window.api.settings.set({ studyWorkspace: workspace });
+            if (persisted.studyWorkspaceRefusal) throw new Error("Workspace version refused");
+            if (persisted.studyWorkspace?.version !== 2) throw new Error("Workspace write not acknowledged");
+          },
+        });
+      }
       settingsLoaded.current = true;
       if (res.ok) {
         if (!userDirtySettings.current.sidebarCollapsed) {
@@ -358,6 +452,8 @@ export function App(): React.JSX.Element {
     });
     return () => {
       cancelled = true;
+      workspacePersistenceRef.current?.dispose();
+      workspacePersistenceRef.current = null;
     };
   }, []);
 
@@ -387,19 +483,32 @@ export function App(): React.JSX.Element {
     void safeCall(() => window.api.settings.set({ readingSize, readingWidth, verseNumbers }));
   }, [settingsReady, readingSize, readingWidth, verseNumbers]);
 
-  // Transitional legacy UI state remains live until the V2 canvas ownership
-  // lands, but Electron is now the only legacy migration boundary.
-  useEffect(() => {
-    if (!settingsLoaded.current) return;
-  }, [researchWorkspace, settingsReady]);
-
-  useEffect(() => {
-    if (!settingsLoaded.current) return;
-  }, [keptContext, settingsReady]);
-
-  const changeKeptContext = useCallback((next: NonNullable<AppSettings["keptContext"]> | null): void => {
-    setKeptContext(next);
-  }, []);
+  const changeKeptContext = useCallback((next: KeptMarginReference | null): void => {
+    commitStudyWorkspace((current) => {
+      let workspace = current;
+      if (!workspace) {
+        if (!next) return current;
+        workspace = createStudyWorkspace(compatibilityPassageView(readingContext), {
+          groupId: `study-group-${crypto.randomUUID()}`,
+          passageTabId: `study-passage-${crypto.randomUUID()}`,
+        });
+      }
+      const ownerId = workspace.tabsById[workspace.activeTabId]
+        ? workspace.activeTabId
+        : compatibilityPassageTabId(workspace);
+      if (!ownerId) return workspace;
+      return updateStudyCanvasSession(workspace, ownerId, (session) => ({
+        ...session,
+        current: {
+          ...session.current,
+          margin: {
+            ...session.current.margin,
+            scope: next ? { kind: "kept", ...next } : null,
+          },
+        },
+      }));
+    });
+  }, [commitStudyWorkspace, readingContext]);
 
   const handleAuthoredMutationStateChange = useCallback((state: AuthoredMutationState): void => {
     authoredMutationStateRef.current = state;
@@ -503,21 +612,55 @@ export function App(): React.JSX.Element {
         : null;
     }
     const nonce = Date.now();
-    setResearchWorkspace((current) => (
-      mode === "navigate" && current.activeTabId !== SCRIPTURE_WORKSPACE_ID
-        ? navigateActiveResearchWorkspaceTab(current, entityId, nonce)
-        : openResearchWorkspaceTab(current, {
-            id: `research-${crypto.randomUUID()}`,
-            entityId,
-            origin,
-            nonce,
-          })
-    ));
+    commitStudyWorkspace((current) => {
+      let workspace = current ?? createStudyWorkspace(compatibilityPassageView(origin), {
+        groupId: `study-group-${crypto.randomUUID()}`,
+        passageTabId: `study-passage-${crypto.randomUUID()}`,
+      });
+      if (mode === "navigate" && workspace.tabsById[workspace.activeTabId]?.kind === "entity") {
+        return navigateEntityWorkspaceTab(workspace, workspace.activeTabId, {
+          id: entityId,
+          displayName: entityId,
+          kind: compatibilityEntityKind(entityId),
+        }, nonce);
+      }
+      let sourceTabId = compatibilityPassageTabId(workspace, origin);
+      const source = sourceTabId ? workspace.tabsById[sourceTabId] : null;
+      const sourceMatches = source?.kind === "passage"
+        && source.session.current.book === origin.book
+        && source.session.current.chapter === origin.chapter
+        && source.session.current.packageId === origin.packageId;
+      if (!sourceMatches) {
+        const passageTabId = `study-passage-${crypto.randomUUID()}`;
+        const openedGroup = createStudyWorkspaceGroup(workspace, {
+          id: `study-group-${crypto.randomUUID()}`,
+          passageTabId,
+          view: compatibilityPassageView(origin),
+        });
+        workspace = openedGroup.state;
+        if (openedGroup.outcome !== "opened") return workspace;
+        sourceTabId = passageTabId;
+      }
+      sourceTabId ??= compatibilityPassageTabId(workspace);
+      if (!sourceTabId) return workspace;
+      return openEntityWorkspaceTab(workspace, {
+        id: `research-${crypto.randomUUID()}`,
+        sourceTabId,
+        entityId,
+        entityKind: compatibilityEntityKind(entityId),
+        nonce,
+        origin: compatibilityPassageView(origin),
+        ...(origin.verseStart !== undefined
+          ? { originRange: { start: origin.verseStart, end: origin.verseEnd ?? origin.verseStart } }
+          : {}),
+        returnPassageTabId: sourceTabId,
+      }).state;
+    });
     changeView("scripture");
     setFocusMode(false);
     userDirtySettings.current.marginVisible = true;
     setMarginVisible(true);
-  }, [changeView, entityIntent]);
+  }, [changeView, commitStudyWorkspace, entityIntent]);
   const openEntityResearch = useCallback((
     entityId: string,
     origin?: CommandReadingContext,
@@ -529,24 +672,32 @@ export function App(): React.JSX.Element {
     openEntityResearchAt(entityId, commandContext);
   }, [commandContext, openEntityResearchAt]);
   const selectResearchWorkspace = useCallback((tabId: string) => {
-    setResearchWorkspace((current) => selectResearchWorkspaceTab(current, tabId));
+    commitStudyWorkspace((current) => {
+      if (!current) return current;
+      const targetId = tabId === SCRIPTURE_WORKSPACE_ID
+        ? compatibilityPassageTabId(current)
+        : tabId;
+      return targetId ? selectStudyWorkspaceTab(current, targetId) : current;
+    });
     changeView("scripture");
     if (tabId !== SCRIPTURE_WORKSPACE_ID) {
       setFocusMode(false);
       userDirtySettings.current.marginVisible = true;
       setMarginVisible(true);
     }
-  }, [changeView]);
+  }, [changeView, commitStudyWorkspace]);
   const closeResearchTab = useCallback((tabId: string) => {
     const target = entityReturnFocusRef.current;
     let focusId = "scripture-workspace-tab";
     let hasResearchAfterClose = false;
-    setResearchWorkspace((current) => {
-      const next = closeResearchTabState(current, tabId);
-      hasResearchAfterClose = next.tabs.length > 0;
-      focusId = next.activeTabId === SCRIPTURE_WORKSPACE_ID
+    commitStudyWorkspace((current) => {
+      if (!current) return current;
+      const next = closeStudyWorkspaceTab(current, tabId).state;
+      const projection = projectStudyWorkspaceCompatibility(next).researchWorkspace;
+      hasResearchAfterClose = projection.tabs.length > 0;
+      focusId = projection.activeTabId === SCRIPTURE_WORKSPACE_ID
         ? "scripture-workspace-tab"
-        : `research-workspace-tab-${next.activeTabId}`;
+        : `research-workspace-tab-${projection.activeTabId}`;
       return next;
     });
     window.setTimeout(() => {
@@ -555,25 +706,44 @@ export function App(): React.JSX.Element {
       else if (!hasResearchAfterClose && target?.isConnected) target.focus();
       if (!hasResearchAfterClose) entityReturnFocusRef.current = null;
     }, 0);
-  }, []);
+  }, [commitStudyWorkspace]);
   const closeEntityResearch = useCallback(() => {
-    if (researchWorkspace.activeTabId === SCRIPTURE_WORKSPACE_ID) return;
+    if (!researchWorkspace || researchWorkspace.activeTabId === SCRIPTURE_WORKSPACE_ID) return;
     closeResearchTab(researchWorkspace.activeTabId);
-  }, [closeResearchTab, researchWorkspace.activeTabId]);
+  }, [closeResearchTab, researchWorkspace]);
   const closeResearchGroup = useCallback((groupKey: string) => {
-    setResearchWorkspace((current) => closeResearchGroupState(current, groupKey));
-  }, []);
+    commitStudyWorkspace((current) => {
+      if (!current) return current;
+      const projection = projectStudyWorkspaceCompatibility(current).researchWorkspace;
+      const removedIds = projection.tabs.filter(
+        (tab) => researchOriginGroupKey(tab.origin) === groupKey,
+      ).map((tab) => tab.id);
+      return removedIds.reduce(
+        (workspace, tabId) => closeStudyWorkspaceTab(workspace, tabId).state,
+        current,
+      );
+    });
+  }, [commitStudyWorkspace]);
   const updateEntityResearchTrail = useCallback((
     update: (current: readonly EntityResearchTrailEntry[]) => EntityResearchTrailEntry[],
   ): void => {
     const tabId = retainedResearchTabIdRef.current;
     if (!tabId) return;
-    setResearchWorkspace((current) => updateResearchWorkspaceTrail(
-      current,
-      tabId,
-      update,
-    ));
-  }, []);
+    commitStudyWorkspace((current) => {
+      if (!current) return current;
+      const tab = current.tabsById[tabId];
+      if (tab?.kind !== "entity") return current;
+      const trail = update(tab.trail).slice(-ENTITY_RESEARCH_TRAIL_LIMIT).map((entry) => ({
+        id: entry.id,
+        displayName: entry.displayName,
+        ...(entry.kind ? { kind: entry.kind } : {}),
+      }));
+      return {
+        ...current,
+        tabsById: { ...current.tabsById, [tabId]: { ...tab, trail } },
+      };
+    });
+  }, [commitStudyWorkspace]);
 
   const toggleSidebarCollapsed = () => {
     userDirtySettings.current.sidebarCollapsed = true;
@@ -823,7 +993,7 @@ export function App(): React.JSX.Element {
     );
   }
 
-  if (loadState.status === "loading") {
+  if (loadState.status === "loading" || !researchWorkspace) {
     return (
       <div className={`${shellClass} loading-screen`}>
         <div className="loading-content">

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  mergeRawStudyWorkspaceSetting,
   mergeStudyWorkspaceSetting,
   migrateLegacyStudyWorkspace,
   normalizeStudyWorkspace,
@@ -68,8 +69,8 @@ function workspace() {
   };
 }
 
-test("explicit null is a valid empty study workspace setting", () => {
-  assert.deepEqual(normalizeStudyWorkspace(null), { ok: true, value: null });
+test("null is handled by merge/bootstrap rather than V2 structural validation", () => {
+  assert.deepEqual(normalizeStudyWorkspace(null), { ok: false, reason: "invalid" });
 });
 
 test("a workspace from a newer format version is refused distinctly", () => {
@@ -203,11 +204,31 @@ test("workspace, navigation, trail, and recently-closed collections are bounded"
     "entity-10", "entity-11", "entity-12", "entity-13", "entity-14", "entity-15",
   ]);
   assert.deepEqual(normalizedEntity.canvas.history.back.map((entry) => entry.chapter),
-    Array.from({ length: 30 }, (_, index) => index + 1));
+    Array.from({ length: 25 }, (_, index) => index + 6));
   assert.deepEqual(normalizedEntity.canvas.history.forward.map((entry) => entry.chapter),
-    Array.from({ length: 20 }, (_, index) => index + 1));
+    Array.from({ length: 25 }, (_, index) => index + 1));
   assert.deepEqual(boundedResult.value.recentlyClosed.map((item) => item.index),
     Array.from({ length: 10 }, (_, index) => index + 2));
+});
+
+test("history normalization keeps the nearest Forward entry over the farthest Back entry", () => {
+  const input = workspace();
+  input.tabsById.home.session.history.back = Array.from(
+    { length: 50 },
+    (_, index) => view("ACT", index + 1),
+  );
+  input.tabsById.home.session.history.forward = [view("JHN", 1)];
+  const result = normalizeStudyWorkspace(input);
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  const home = result.value.tabsById.home;
+  assert.equal(home?.kind, "passage");
+  if (home?.kind !== "passage") return;
+  assert.equal(home.session.history.back.length, 49);
+  assert.equal(home.session.history.back[0]?.chapter, 2);
+  assert.deepEqual(home.session.history.forward.map((entry) => [entry.book, entry.chapter]), [
+    ["JHN", 1],
+  ]);
 });
 
 test("recently closed groups are reconstructed as bounded canonical snapshots", () => {
@@ -228,7 +249,7 @@ test("recently closed groups are reconstructed as bounded canonical snapshots", 
       "closed-home": passageTab("wrong-id", "wrong-group"),
       "closed-entity": {
         ...entityTab("wrong-id", "wrong-group"),
-        returnPassageTabId: "closed-home",
+        returnPassageTabId: "home",
       },
       orphan: passageTab("orphan", "closed-group"),
     },
@@ -251,7 +272,7 @@ test("recently closed groups are reconstructed as bounded canonical snapshots", 
       "closed-home": passageTab("closed-home", "closed-group"),
       "closed-entity": {
         ...entityTab("closed-entity", "closed-group"),
-        returnPassageTabId: "closed-home",
+        returnPassageTabId: null,
       },
     },
   }]);
@@ -280,6 +301,46 @@ test("malformed required V2 fields and ranges are rejected instead of guessed", 
   }
 });
 
+test("a within-cap group without a passage invalidates the workspace", () => {
+  const input = workspace();
+  input.groups.push({
+    id: "group-2",
+    homePassageTabId: "entity-only",
+    tabIds: ["entity-only"],
+    lastActiveTabId: "entity-only",
+    collapsed: false,
+    label: { kind: "automatic" },
+  });
+  input.tabsById["entity-only"] = entityTab("entity-only", "group-2") as typeof input.tabsById.home;
+  assert.deepEqual(normalizeStudyWorkspace(input), { ok: false, reason: "invalid" });
+});
+
+test("entity return targets are repaired to a passage in the same canonical group or null", () => {
+  const input = workspace();
+  input.groups[0]!.tabIds.push("paul");
+  input.groups[0]!.lastActiveTabId = "paul";
+  input.groups.push({
+    id: "group-2",
+    homePassageTabId: "home-2",
+    tabIds: ["home-2"],
+    lastActiveTabId: "home-2",
+    collapsed: false,
+    label: { kind: "automatic" },
+  });
+  input.tabsById.paul = {
+    ...entityTab("paul", "group-1"),
+    returnPassageTabId: "home-2",
+  } as typeof input.tabsById.home;
+  input.tabsById["home-2"] = passageTab("home-2", "group-2");
+  const result = normalizeStudyWorkspace(input);
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  const paul = result.value.tabsById.paul;
+  assert.equal(paul?.kind, "entity");
+  if (paul?.kind !== "entity") return;
+  assert.equal(paul.returnPassageTabId, null);
+});
+
 test("signed finite eye-line offsets survive while non-finite offsets are rejected", () => {
   const aboveViewport = workspace();
   aboveViewport.tabsById.home.session.current.verseOffset = -18.5;
@@ -304,6 +365,14 @@ test("settings merge distinguishes omission, explicit null, invalid input, and r
   assert.deepEqual(mergeStudyWorkspaceSetting(current, incoming, true), workspace());
 });
 
+test("the Electron raw merge cannot replace a current newer-version object", () => {
+  const future = { version: 3, futureField: { preserve: "byte-for-byte" } };
+  assert.equal(mergeRawStudyWorkspaceSetting(future, null, true), future);
+  assert.equal(mergeRawStudyWorkspaceSetting(future, workspace(), true), future);
+  assert.equal(mergeRawStudyWorkspaceSetting(future, { version: 2, groups: [] }, true), future);
+  assert.equal(mergeRawStudyWorkspaceSetting(future, undefined, false), future);
+});
+
 test("legacy migration creates one deterministic last-read home and scopes kept context to it", () => {
   const input = {
     researchWorkspace: null,
@@ -326,8 +395,9 @@ test("legacy migration creates one deterministic last-read home and scopes kept 
   const first = migrateLegacyStudyWorkspace(input);
   const second = migrateLegacyStudyWorkspace(input);
   assert.deepEqual(first, second);
-  assert.equal(first?.activeTabId, "study-passage-1");
-  assert.deepEqual(first?.groups, [{
+  assert.equal(first.status, "migrated");
+  assert.equal(first.value?.activeTabId, "study-passage-1");
+  assert.deepEqual(first.value?.groups, [{
     id: "study-group-1",
     homePassageTabId: "study-passage-1",
     tabIds: ["study-passage-1"],
@@ -335,7 +405,7 @@ test("legacy migration creates one deterministic last-read home and scopes kept 
     collapsed: false,
     label: { kind: "automatic" },
   }]);
-  assert.deepEqual(first?.tabsById["study-passage-1"], {
+  assert.deepEqual(first.value?.tabsById["study-passage-1"], {
     kind: "passage",
     id: "study-passage-1",
     groupId: "study-group-1",
@@ -371,8 +441,9 @@ test("legacy migration creates one deterministic last-read home and scopes kept 
     lastRead: null,
     keptContext: null,
   });
-  assert.deepEqual(fallback?.tabsById["study-passage-1"]?.kind === "passage"
-    ? fallback.tabsById["study-passage-1"].session.current
+  assert.equal(fallback.status, "migrated");
+  assert.deepEqual(fallback.value?.tabsById["study-passage-1"]?.kind === "passage"
+    ? fallback.value.tabsById["study-passage-1"].session.current
     : null, {
     book: "ACT",
     chapter: 19,
@@ -441,28 +512,29 @@ test("unversioned workspace migration keeps tab identity, grouping, kinds, trail
       ],
     },
   });
-  assert.ok(migrated);
-  assert.deepEqual(migrated.groups.map((group) => group.tabIds), [
+  assert.equal(migrated.status, "migrated");
+  assert.ok(migrated.value);
+  assert.deepEqual(migrated.value.groups.map((group) => group.tabIds), [
     ["study-passage-1", "legacy-john"],
     ["study-passage-2", "legacy-paul", "legacy-athens"],
   ]);
-  assert.equal(migrated.groups[0]?.lastActiveTabId, "legacy-john");
-  assert.equal(migrated.groups[1]?.lastActiveTabId, "legacy-paul");
-  assert.equal(migrated.activeTabId, "legacy-paul");
-  assert.deepEqual(migrated.activationOrder, [
+  assert.equal(migrated.value.groups[0]?.lastActiveTabId, "legacy-john");
+  assert.equal(migrated.value.groups[1]?.lastActiveTabId, "legacy-paul");
+  assert.equal(migrated.value.activeTabId, "legacy-paul");
+  assert.deepEqual(migrated.value.activationOrder, [
     "study-passage-1",
     "legacy-athens",
     "legacy-john",
     "legacy-paul",
   ]);
-  assert.deepEqual(Object.keys(migrated.tabsById), [
+  assert.deepEqual(Object.keys(migrated.value.tabsById), [
     "study-passage-1",
     "study-passage-2",
     "legacy-paul",
     "legacy-john",
     "legacy-athens",
   ]);
-  const paul = migrated.tabsById["legacy-paul"];
+  const paul = migrated.value.tabsById["legacy-paul"];
   assert.equal(paul?.kind, "entity");
   if (paul?.kind !== "entity") return;
   assert.equal(paul.entityKind, "person");
@@ -472,7 +544,7 @@ test("unversioned workspace migration keeps tab identity, grouping, kinds, trail
   assert.deepEqual(paul.trail.map((entry) => entry.id),
     Array.from({ length: 12 }, (_, index) => `paul-${index + 4}`));
   assert.equal(paul.origin.margin.scope, null);
-  const home = migrated.tabsById["study-passage-1"];
+  const home = migrated.value.tabsById["study-passage-1"];
   assert.equal(home?.kind, "passage");
   if (home?.kind !== "passage") return;
   assert.deepEqual(home.session.current.margin.scope, {
@@ -493,7 +565,8 @@ test("legacy single-session origin precedes the default passage even with no act
     lastRead: null,
     keptContext: null,
   });
-  const home = migrated?.tabsById[migrated.groups[0]!.homePassageTabId];
+  assert.equal(migrated.status, "migrated");
+  const home = migrated.value?.tabsById[migrated.value.groups[0]!.homePassageTabId];
   assert.equal(home?.kind, "passage");
   if (home?.kind !== "passage") return;
   assert.deepEqual(home.session.current, {
@@ -510,5 +583,24 @@ test("legacy single-session origin precedes the default passage even with no act
       wordsFollowingReading: true,
     },
   });
-  assert.deepEqual(migrated?.groups[0]?.tabIds, ["study-passage-1"]);
+  assert.deepEqual(migrated.value?.groups[0]?.tabIds, ["study-passage-1"]);
+});
+
+test("kept context is ignored when no valid explicit lastRead seeded the home", () => {
+  const migrated = migrateLegacyStudyWorkspace({
+    researchWorkspace: null,
+    researchSession: {
+      origin: { book: "PSA", chapter: 23, packageId: "bsb", verseStart: 1 },
+      trail: [{ id: "person:david", displayName: "David", kind: "person" }],
+    },
+    lastRead: { book: "invalid", chapter: 0, packageId: "" },
+    keptContext: { book: "GEN", chapter: 1, verse: 1 },
+  });
+  assert.equal(migrated.status, "migrated");
+  assert.ok(migrated.value);
+  const firstGroup = migrated.value.groups[0]!;
+  const home = migrated.value.tabsById[firstGroup.homePassageTabId];
+  assert.equal(home?.kind, "passage");
+  if (home?.kind !== "passage") return;
+  assert.equal(home.session.current.margin.scope, null);
 });

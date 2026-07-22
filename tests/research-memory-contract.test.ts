@@ -55,8 +55,9 @@ test("validated V2 settings absorb legacy workspace inputs without renderer lega
     /window\.api\.settings\.set\(\{\s*(?:researchWorkspace|researchSession|keptContext)\b/,
   );
   const close = app.slice(app.indexOf("const closeResearchTab"), app.indexOf("const updateEntityResearchTrail"));
-  assert.match(close, /closeResearchTabState\(current, tabId\)/);
-  assert.doesNotMatch(close, /setResearchWorkspace\(createResearchWorkspaceState/);
+  assert.match(close, /closeStudyWorkspaceTab\(current, tabId\)\.state/);
+  assert.match(app, /workspacePersistenceRef\.current\.persistStructure\(next\)/);
+  assert.doesNotMatch(app, /setResearchWorkspace|createResearchWorkspaceState/);
 });
 
 test("entity kind rides the research trail into tab marks and survives settings normalization", () => {
