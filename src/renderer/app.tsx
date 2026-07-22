@@ -232,9 +232,9 @@ export function App(): React.JSX.Element {
   const libraryTriggerRef = useRef<HTMLButtonElement>(null);
   const [libraryAnchorRect, setLibraryAnchorRect] = useState<DOMRect | null>(null);
   const settingsLoaded = useRef(false);
-  const keptContextDirtyRef = useRef(false);
   const entityReturnFocusRef = useRef<HTMLElement | null>(null);
   const [settingsReady, setSettingsReady] = useState(false);
+  const [studyWorkspaceRefusal, setStudyWorkspaceRefusal] = useState<"newer-version" | null>(null);
   // Tracks which persisted settings the user has already changed via the UI
   // before the initial settings.get() resolved. The load effect must not
   // clobber a setting the user has touched in the interim (see the
@@ -327,6 +327,12 @@ export function App(): React.JSX.Element {
     let cancelled = false;
     safeCall(() => window.api.settings.get()).then((res) => {
       if (cancelled) return;
+      if (res.ok && res.value.studyWorkspaceRefusal === "newer-version") {
+        // INV-17: do not construct, migrate, or persist any workspace state
+        // when the saved format is newer than this app understands.
+        setStudyWorkspaceRefusal("newer-version");
+        return;
+      }
       settingsLoaded.current = true;
       if (res.ok) {
         if (!userDirtySettings.current.sidebarCollapsed) {
@@ -344,21 +350,6 @@ export function App(): React.JSX.Element {
         if (res.value.readingSize) setReadingSize(res.value.readingSize);
         if (res.value.readingWidth) setReadingWidth(res.value.readingWidth);
         if (res.value.verseNumbers) setVerseNumbers(res.value.verseNumbers);
-        if (res.value.researchWorkspace) {
-          setResearchWorkspace(res.value.researchWorkspace);
-        } else if (res.value.researchSession?.trail.at(-1)) {
-          const legacy = res.value.researchSession;
-          const current = legacy.trail.at(-1)!;
-          const restored = openResearchWorkspaceTab(createResearchWorkspaceState(), {
-            id: `research-${crypto.randomUUID()}`,
-            entityId: current.id,
-            origin: legacy.origin,
-            nonce: Date.now(),
-          });
-          restored.tabs[0] = { ...restored.tabs[0]!, trail: legacy.trail };
-          setResearchWorkspace(selectResearchWorkspaceTab(restored, SCRIPTURE_WORKSPACE_ID));
-        }
-        if (!keptContextDirtyRef.current) setKeptContext(res.value.keptContext ?? null);
       }
       // A setting changed while the IPC read was in flight has already run
       // its persist effect once and returned early. This state transition
@@ -396,24 +387,17 @@ export function App(): React.JSX.Element {
     void safeCall(() => window.api.settings.set({ readingSize, readingWidth, verseNumbers }));
   }, [settingsReady, readingSize, readingWidth, verseNumbers]);
 
+  // Transitional legacy UI state remains live until the V2 canvas ownership
+  // lands, but Electron is now the only legacy migration boundary.
   useEffect(() => {
     if (!settingsLoaded.current) return;
-    const retained = retainedResearchWorkspaceTab(researchWorkspace);
-    void safeCall(() => window.api.settings.set({
-      researchWorkspace: researchWorkspace.tabs.length > 0 ? researchWorkspace : null,
-      researchSession: retained
-        ? { origin: retained.origin, trail: retained.trail }
-        : null,
-    }));
   }, [researchWorkspace, settingsReady]);
 
   useEffect(() => {
     if (!settingsLoaded.current) return;
-    void safeCall(() => window.api.settings.set({ keptContext }));
   }, [keptContext, settingsReady]);
 
   const changeKeptContext = useCallback((next: NonNullable<AppSettings["keptContext"]> | null): void => {
-    keptContextDirtyRef.current = true;
     setKeptContext(next);
   }, []);
 
@@ -824,6 +808,20 @@ export function App(): React.JSX.Element {
     `theme-${theme}`,
     isDarkTheme(theme) ? "dark" : "",
   ].filter(Boolean).join(" ");
+
+  if (studyWorkspaceRefusal === "newer-version") {
+    return (
+      <div className={`${shellClass} error-screen`} role="alert">
+        <div className="error-content">
+          <h1 className="error-title">Workspace update required</h1>
+          <p className="error-msg">
+            This library workspace was created by a newer version of Pericope.
+            Update Pericope to open it safely; your saved workspace has not been changed.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (loadState.status === "loading") {
     return (

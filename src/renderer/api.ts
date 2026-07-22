@@ -18,6 +18,7 @@ import type {
   TrustedResourceQuery,
   TrustedResourceRefusal,
 } from "../core/resources/trusted-resources.js";
+import type { StudyWorkspaceStateV2 } from "./utils/studyWorkspace.js";
 export type { RankedTrustedResource } from "../core/resources/trusted-resources.js";
 export type { EntityResearchData } from "../core/entities/place-research.js";
 export type { ConnectionAnchor, ConnectionKind, ConnectionRecord } from "../core/annotations/types.js";
@@ -225,7 +226,10 @@ export interface AppSettings {
     verse?: number;
     verseOffset?: number;
   } | null;
-  /** Bounded causal research path. Missing legacy values normalize to null. */
+  /** Revisioned desktop workspace. Legacy fields below are migration inputs only. */
+  studyWorkspace?: StudyWorkspaceStateV2 | null;
+  studyWorkspaceRefusal?: "newer-version";
+  /** @deprecated Electron-only migration input; do not persist from renderer code. */
   researchSession?: {
     origin: {
       book: string;
@@ -235,9 +239,9 @@ export interface AppSettings {
       verseStart?: number;
       verseEnd?: number;
     };
-    trail: Array<{ id: string; displayName: string }>;
+    trail: Array<{ id: string; displayName: string; kind?: "person" | "place" | "other" }>;
   } | null;
-  /** Desktop workspace tabs. The legacy single session remains readable for migration. */
+  /** @deprecated Electron-only migration input; do not persist from renderer code. */
   researchWorkspace?: {
     tabs: Array<{
       id: string;
@@ -250,14 +254,14 @@ export interface AppSettings {
         verseStart?: number;
         verseEnd?: number;
       };
-      trail: Array<{ id: string; displayName: string }>;
+      trail: Array<{ id: string; displayName: string; kind?: "person" | "place" | "other" }>;
       nonce: number;
     }>;
     activeTabId: string;
     lastResearchTabId: string | null;
     activationOrder: string[];
   } | null;
-  /** At most one deliberately kept comparison subject. */
+  /** @deprecated Electron-only migration input; V2 stores this on the home passage. */
   keptContext?: {
     book: string;
     chapter: number;

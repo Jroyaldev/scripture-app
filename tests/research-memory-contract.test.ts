@@ -14,6 +14,7 @@ const read = (path: string): string => readFileSync(join(root, path), "utf8");
 const app = read("src/renderer/app.tsx");
 const margin = read("src/renderer/components/LivingMargin.tsx");
 const main = read("src/electron/main.ts");
+const settingsBoundary = read("src/electron/study-workspace-settings.ts");
 const css = read("src/renderer/styles.css");
 
 function entry(index: number, displayName = `Entity ${index}`): EntityResearchTrailEntry {
@@ -41,14 +42,18 @@ test("breadcrumbs render frozen origin, prior return targets, and inert current 
   assert.match(css, /\.entity-research-breadcrumb-tail\s*\{[\s\S]{0,180}?overflow: hidden;/);
 });
 
-test("validated settings persist grouped workspace tabs while legacy session stays migratable", () => {
+test("validated V2 settings absorb legacy workspace inputs without renderer legacy writes", () => {
   assert.match(main, /function normalizeResearchSession/);
   assert.match(main, /trail\.slice\(-12\)/);
   assert.match(main, /function normalizeResearchWorkspace/);
   assert.match(main, /candidate\["tabs"\]\.slice\(0, 64\)/);
-  assert.match(main, /researchWorkspace: normalizeResearchWorkspace\([\s\S]{0,120}?partial\.researchWorkspace/);
-  assert.match(app, /setResearchWorkspace\(res\.value\.researchWorkspace\)/);
-  assert.match(app, /window\.api\.settings\.set\(\{[\s\S]{0,220}?researchWorkspace:/);
+  assert.match(main, /bootstrapStudyWorkspaceSetting/);
+  assert.match(settingsBoundary, /export function migrateLegacyStudyWorkspace/);
+  assert.match(settingsBoundary, /normalizeLegacyResearchWorkspace\(input\.researchWorkspace\)/);
+  assert.doesNotMatch(
+    app,
+    /window\.api\.settings\.set\(\{\s*(?:researchWorkspace|researchSession|keptContext)\b/,
+  );
   const close = app.slice(app.indexOf("const closeResearchTab"), app.indexOf("const updateEntityResearchTrail"));
   assert.match(close, /closeResearchTabState\(current, tabId\)/);
   assert.doesNotMatch(close, /setResearchWorkspace\(createResearchWorkspaceState/);

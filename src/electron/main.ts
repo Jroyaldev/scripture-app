@@ -88,6 +88,10 @@ import { checkMigration } from "../core/migration/index.js";
 import { OccurrenceAlignmentStore } from "../host/occurrence-alignment-store.js";
 import { sanitizeLegacySettings, type AdoptableLegacySettings } from "./legacy-settings.js";
 import {
+  bootstrapStudyWorkspaceSetting,
+  mergeStudyWorkspaceSetting,
+} from "./study-workspace-settings.js";
+import {
   UserMutationBroker,
   type ExplicitUserMutationIntent,
   type UserConnectionMutationAction,
@@ -225,6 +229,8 @@ interface AppSettingsSchema {
     verse?: number;
     verseOffset?: number;
   } | null;
+  /** Raw until validated so a future-version object can remain byte-for-byte untouched. */
+  studyWorkspace?: unknown;
   researchSession: {
     origin: {
       book: string;
@@ -3113,21 +3119,41 @@ function registerIpcHandlers(): void {
     return engine.buildSqlite();
   });
 
-  ipcMain.handle("settings:get", () => ({
-    ...store.store,
-    theme: normalizeTheme(store.store.theme),
-    markingSurface: normalizeMarkingSurface(store.store.markingSurface),
-    lastRead: normalizeLastRead(store.store.lastRead),
-    researchSession: normalizeResearchSession(store.store.researchSession),
-    researchWorkspace: normalizeResearchWorkspace(store.store.researchWorkspace),
-    keptContext: normalizeKeptContext(store.store.keptContext),
-  }));
+  const readSettings = () => {
+    const current = store.store;
+    const workspaceBootstrap = bootstrapStudyWorkspaceSetting({
+      hasStudyWorkspaceKey: Object.prototype.hasOwnProperty.call(current, "studyWorkspace"),
+      studyWorkspace: current.studyWorkspace,
+      researchWorkspace: current.researchWorkspace,
+      researchSession: current.researchSession,
+      lastRead: current.lastRead,
+      keptContext: current.keptContext,
+    });
+    if (workspaceBootstrap.write) store.set({ ...current, ...workspaceBootstrap.write });
+    const settled = store.store;
+    return {
+      ...settled,
+      theme: normalizeTheme(settled.theme),
+      markingSurface: normalizeMarkingSurface(settled.markingSurface),
+      lastRead: normalizeLastRead(settled.lastRead),
+      researchSession: normalizeResearchSession(settled.researchSession),
+      researchWorkspace: normalizeResearchWorkspace(settled.researchWorkspace),
+      keptContext: normalizeKeptContext(settled.keptContext),
+      studyWorkspace: workspaceBootstrap.studyWorkspace,
+      ...(workspaceBootstrap.studyWorkspaceRefusal
+        ? { studyWorkspaceRefusal: workspaceBootstrap.studyWorkspaceRefusal }
+        : {}),
+    };
+  };
+
+  ipcMain.handle("settings:get", readSettings);
 
   ipcMain.handle("settings:set", (_event, partial: Partial<AppSettingsSchema>) => {
     const hasLastRead = Object.prototype.hasOwnProperty.call(partial, "lastRead");
     const hasResearchSession = Object.prototype.hasOwnProperty.call(partial, "researchSession");
     const hasResearchWorkspace = Object.prototype.hasOwnProperty.call(partial, "researchWorkspace");
     const hasKeptContext = Object.prototype.hasOwnProperty.call(partial, "keptContext");
+    const hasStudyWorkspace = Object.prototype.hasOwnProperty.call(partial, "studyWorkspace");
     store.set({
       ...store.store,
       ...partial,
@@ -3141,8 +3167,13 @@ function registerIpcHandlers(): void {
         hasResearchWorkspace ? partial.researchWorkspace : store.store.researchWorkspace,
       ),
       keptContext: normalizeKeptContext(hasKeptContext ? partial.keptContext : store.store.keptContext),
+      studyWorkspace: mergeStudyWorkspaceSetting(
+        store.store.studyWorkspace,
+        partial.studyWorkspace,
+        hasStudyWorkspace,
+      ),
     });
-    return store.store;
+    return readSettings();
   });
 
   ipcMain.handle("dialog-open-directory", async () => {
