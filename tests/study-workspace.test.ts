@@ -49,6 +49,17 @@ function view(book: string, chapter: number, packageId: string): PassageViewStat
   };
 }
 
+function aliasProbeView(book: string, chapter: number): PassageViewState {
+  const state = view(book, chapter, "BSB");
+  state.selection = {
+    packageId: "BSB",
+    pieces: [{ verse: 1, charStart: 2, charEnd: 6 }],
+  };
+  state.margin.scope = { kind: "selection", start: 2, end: 6 };
+  state.margin.scrollTopByTab.overview = 12;
+  return state;
+}
+
 test("normal passage open reuses a matching tab but explicit duplicate branches", () => {
   const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
     groupId: "study-1",
@@ -663,6 +674,7 @@ test("closing a passage with dependent research requires an explicit branch deci
     kind: "passage-dependencies",
     tabId: "john-3",
     dependentEntityIds: ["nicodemus"],
+    entityNonces: [{ tabId: "nicodemus", nonce: 1 }],
     sourceGroupId: "study-1",
     sourceTabIds: ["home", "john-3", "nicodemus"],
   });
@@ -784,6 +796,7 @@ test("a sole group passage offers keep-open or close-study without invalidating 
     groupId: "g1",
     tabId: "a",
     tabIds: ["a"],
+    entityNonces: [],
   });
   const kept = resolveStudyWorkspaceDecision(selected, requested.confirmation, "keep-open");
   assert.equal(kept.state, selected);
@@ -855,6 +868,7 @@ test("closing a multi-tab study requires one close-study confirmation", () => {
     kind: "close-study",
     groupId: "g1",
     tabIds: ["a", "paul"],
+    entityNonces: [{ tabId: "paul", nonce: 1 }],
   });
   assert.equal(resolveStudyWorkspaceDecision(selected, requested.confirmation, "cancel").state, selected);
   const closed = resolveStudyWorkspaceDecision(selected, requested.confirmation, "close-study");
@@ -896,6 +910,7 @@ test("moving a passage branch requires and applies an atomic move-branch decisio
     kind: "move-branch",
     tabId: "b",
     dependentEntityIds: ["nicodemus"],
+    entityNonces: [{ tabId: "nicodemus", nonce: 1 }],
     sourceGroupId: "g1",
     sourceTabIds: ["a", "b", "nicodemus"],
     targetGroupId: "g2",
@@ -1179,6 +1194,7 @@ test("moving a home passage offers an explicit move-study decision that keeps th
     tabId: "acts",
     groupId: "g1",
     sourceTabIds: ["acts", "paul"],
+    entityNonces: [{ tabId: "paul", nonce: 1 }],
     targetGroupId: "g2",
   });
   const moved = resolveStudyWorkspaceDecision(selected, requested.confirmation, "move-study");
@@ -1555,6 +1571,7 @@ test("forged confirmation payloads cannot mutate the workspace", () => {
     kind: "close-study",
     groupId: "g1",
     tabIds: ["home"],
+    entityNonces: [{ tabId: "paul", nonce: 1 }],
   }, "close-study");
   assert.equal(forgedClose.outcome, "unchanged");
   assert.equal(forgedClose.state, grouped);
@@ -1584,6 +1601,7 @@ test("an exact one-tab close-study confirmation is rejected as unissued", () => 
     kind: "close-study",
     groupId: "g1",
     tabIds: ["home"],
+    entityNonces: [],
   }, "close-study");
 
   assert.equal(forged.outcome, "unchanged");
@@ -1610,6 +1628,7 @@ test("an exact zero-dependent move-branch confirmation is rejected as unissued",
     kind: "move-branch",
     tabId: "branch",
     dependentEntityIds: [],
+    entityNonces: [],
     sourceGroupId: "g1",
     sourceTabIds: ["home", "branch"],
     targetGroupId: "g2",
@@ -1633,6 +1652,7 @@ test("an exact zero-dependent passage-dependencies confirmation is rejected as u
     kind: "passage-dependencies" as const,
     tabId: "branch",
     dependentEntityIds: [],
+    entityNonces: [],
     sourceGroupId: "g1",
     sourceTabIds: ["home", "branch"],
   };
@@ -1673,9 +1693,685 @@ test("a decision reports unchanged when its guarded removal cannot produce a val
     kind: "passage-dependencies",
     tabId: "home",
     dependentEntityIds: ["paul"],
+    entityNonces: [{ tabId: "paul", nonce: 1 }],
     sourceGroupId: "g1",
     sourceTabIds: ["home", "paul"],
   }, "close-passage-and-research");
   assert.equal(refused.outcome, "unchanged");
   assert.equal(refused.state, grouped);
+});
+
+test("a passage-dependencies confirmation expires when dependent research navigates", () => {
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
+    groupId: "g1",
+    passageTabId: "home",
+  });
+  const branched = openPassageWorkspaceTab(initial, {
+    id: "branch",
+    sourceTabId: "home",
+    view: view("JHN", 3, "BSB"),
+  }).state;
+  const researched = openEntityWorkspaceTab(branched, {
+    id: "entity",
+    sourceTabId: "branch",
+    entityId: "person:nicodemus",
+    entityKind: "person",
+    nonce: 1,
+    origin: view("JHN", 3, "BSB"),
+    returnPassageTabId: "branch",
+  }).state;
+  const requested = closeStudyWorkspaceTab(researched, "branch");
+  assert.equal(requested.outcome, "needs-confirmation");
+  if (requested.outcome !== "needs-confirmation") return;
+  const navigated = navigateEntityWorkspaceTab(
+    researched,
+    "entity",
+    { id: "person:joseph", displayName: "Joseph", kind: "person" },
+    2,
+  );
+
+  const closed = resolveStudyWorkspaceDecision(
+    navigated,
+    requested.confirmation,
+    "close-passage-and-research",
+  );
+  const kept = resolveStudyWorkspaceDecision(
+    navigated,
+    requested.confirmation,
+    "keep-research",
+  );
+
+  assert.equal(closed.outcome, "unchanged");
+  assert.equal(closed.state, navigated);
+  assert.equal(kept.outcome, "unchanged");
+  assert.equal(kept.state, navigated);
+});
+
+test("a move-branch confirmation expires when dependent research navigates", () => {
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
+    groupId: "g1",
+    passageTabId: "home",
+  });
+  const branched = openPassageWorkspaceTab(initial, {
+    id: "branch",
+    sourceTabId: "home",
+    view: view("JHN", 3, "BSB"),
+  }).state;
+  const researched = openEntityWorkspaceTab(branched, {
+    id: "entity",
+    sourceTabId: "branch",
+    entityId: "person:nicodemus",
+    entityKind: "person",
+    nonce: 1,
+    origin: view("JHN", 3, "BSB"),
+    returnPassageTabId: "branch",
+  }).state;
+  const grouped = createStudyWorkspaceGroup(researched, {
+    id: "g2",
+    passageTabId: "other-home",
+    view: view("ROM", 8, "BSB"),
+  }).state;
+  const requested = moveStudyWorkspaceTab(grouped, { tabId: "branch", targetGroupId: "g2" });
+  assert.equal(requested.outcome, "needs-confirmation");
+  if (requested.outcome !== "needs-confirmation") return;
+  const navigated = navigateEntityWorkspaceTab(
+    grouped,
+    "entity",
+    { id: "person:joseph", displayName: "Joseph", kind: "person" },
+    2,
+  );
+
+  const moved = resolveStudyWorkspaceDecision(
+    navigated,
+    requested.confirmation,
+    "move-branch",
+  );
+
+  assert.equal(moved.outcome, "unchanged");
+  assert.equal(moved.state, navigated);
+});
+
+test("a move-home confirmation expires when research in the study navigates", () => {
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
+    groupId: "g1",
+    passageTabId: "home",
+  });
+  const researched = openEntityWorkspaceTab(initial, {
+    id: "entity",
+    sourceTabId: "home",
+    entityId: "person:paul",
+    entityKind: "person",
+    nonce: 1,
+    origin: view("ACT", 19, "BSB"),
+    returnPassageTabId: "home",
+  }).state;
+  const grouped = createStudyWorkspaceGroup(researched, {
+    id: "g2",
+    passageTabId: "other-home",
+    view: view("ROM", 8, "BSB"),
+  }).state;
+  const requested = moveStudyWorkspaceTab(grouped, { tabId: "home", targetGroupId: "g2" });
+  assert.equal(requested.outcome, "needs-confirmation");
+  if (requested.outcome !== "needs-confirmation") return;
+  const navigated = navigateEntityWorkspaceTab(
+    grouped,
+    "entity",
+    { id: "person:barnabas", displayName: "Barnabas", kind: "person" },
+    2,
+  );
+
+  for (const decision of ["move-study", "duplicate-home"] as const) {
+    const moved = resolveStudyWorkspaceDecision(navigated, requested.confirmation, decision);
+    assert.equal(moved.outcome, "unchanged");
+    assert.equal(moved.state, navigated);
+  }
+});
+
+test("a sole-group-passage confirmation expires when research in the study navigates", () => {
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
+    groupId: "g1",
+    passageTabId: "home",
+  });
+  const researched = openEntityWorkspaceTab(initial, {
+    id: "entity",
+    sourceTabId: "home",
+    entityId: "person:paul",
+    entityKind: "person",
+    nonce: 1,
+    origin: view("ACT", 19, "BSB"),
+    returnPassageTabId: "home",
+  }).state;
+  const grouped = createStudyWorkspaceGroup(researched, {
+    id: "g2",
+    passageTabId: "other-home",
+    view: view("ROM", 8, "BSB"),
+  }).state;
+  const requested = closeStudyWorkspaceTab(grouped, "home");
+  assert.equal(requested.outcome, "needs-confirmation");
+  if (requested.outcome !== "needs-confirmation") return;
+  const navigated = navigateEntityWorkspaceTab(
+    grouped,
+    "entity",
+    { id: "person:barnabas", displayName: "Barnabas", kind: "person" },
+    2,
+  );
+
+  const closed = resolveStudyWorkspaceDecision(
+    navigated,
+    requested.confirmation,
+    "close-study",
+  );
+
+  assert.equal(closed.outcome, "unchanged");
+  assert.equal(closed.state, navigated);
+});
+
+test("a close-study confirmation expires when research in the study navigates", () => {
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
+    groupId: "g1",
+    passageTabId: "home",
+  });
+  const researched = openEntityWorkspaceTab(initial, {
+    id: "entity",
+    sourceTabId: "home",
+    entityId: "person:paul",
+    entityKind: "person",
+    nonce: 1,
+    origin: view("ACT", 19, "BSB"),
+    returnPassageTabId: "home",
+  }).state;
+  const grouped = createStudyWorkspaceGroup(researched, {
+    id: "g2",
+    passageTabId: "other-home",
+    view: view("ROM", 8, "BSB"),
+  }).state;
+  const requested = closeStudyWorkspaceGroup(grouped, "g1");
+  assert.equal(requested.outcome, "needs-confirmation");
+  if (requested.outcome !== "needs-confirmation") return;
+  const navigated = navigateEntityWorkspaceTab(
+    grouped,
+    "entity",
+    { id: "person:barnabas", displayName: "Barnabas", kind: "person" },
+    2,
+  );
+
+  const closed = resolveStudyWorkspaceDecision(
+    navigated,
+    requested.confirmation,
+    "close-study",
+  );
+
+  assert.equal(closed.outcome, "unchanged");
+  assert.equal(closed.state, navigated);
+});
+
+test("opening research clears a return passage outside the source group", () => {
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
+    groupId: "g1",
+    passageTabId: "home",
+  });
+  const grouped = createStudyWorkspaceGroup(initial, {
+    id: "g2",
+    passageTabId: "other-home",
+    view: view("JHN", 3, "BSB"),
+  }).state;
+
+  const opened = openEntityWorkspaceTab(grouped, {
+    id: "entity",
+    sourceTabId: "home",
+    entityId: "person:paul",
+    entityKind: "person",
+    nonce: 1,
+    origin: view("ACT", 19, "BSB"),
+    returnPassageTabId: "other-home",
+  });
+
+  assert.equal(opened.outcome, "opened");
+  const entity = opened.state.tabsById["entity"];
+  assert.equal(entity?.kind === "entity" ? entity.returnPassageTabId : undefined, null);
+});
+
+test("reopening research clears a return passage that moved to another group", () => {
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
+    groupId: "g1",
+    passageTabId: "home",
+  });
+  const branched = openPassageWorkspaceTab(initial, {
+    id: "branch",
+    sourceTabId: "home",
+    view: view("JHN", 3, "BSB"),
+  }).state;
+  const researched = openEntityWorkspaceTab(branched, {
+    id: "entity",
+    sourceTabId: "branch",
+    entityId: "person:nicodemus",
+    entityKind: "person",
+    nonce: 1,
+    origin: view("JHN", 3, "BSB"),
+    returnPassageTabId: "branch",
+  }).state;
+  const grouped = createStudyWorkspaceGroup(researched, {
+    id: "g2",
+    passageTabId: "other-home",
+    view: view("ROM", 8, "BSB"),
+  }).state;
+  const closed = closeStudyWorkspaceTab(grouped, "entity");
+  assert.equal(closed.outcome, "applied");
+  const moved = moveStudyWorkspaceTab(closed.state, { tabId: "branch", targetGroupId: "g2" });
+  assert.equal(moved.outcome, "applied");
+
+  const reopened = reopenClosedStudyItem(moved.state);
+
+  assert.equal(reopened.outcome, "opened");
+  const entity = reopened.state.tabsById["entity"];
+  assert.equal(entity?.groupId, "g1");
+  assert.equal(reopened.state.tabsById["branch"]?.groupId, "g2");
+  assert.equal(entity?.kind === "entity" ? entity.returnPassageTabId : undefined, null);
+});
+
+test("reopening a closed passage branch restores its complete canonical tab order", () => {
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
+    groupId: "g1",
+    passageTabId: "home",
+  });
+  const branched = openPassageWorkspaceTab(initial, {
+    id: "branch",
+    sourceTabId: "home",
+    view: view("JHN", 3, "BSB"),
+  }).state;
+  const withFirst = openEntityWorkspaceTab(branched, {
+    id: "first",
+    sourceTabId: "branch",
+    entityId: "person:first",
+    entityKind: "person",
+    nonce: 1,
+    origin: view("JHN", 3, "BSB"),
+    returnPassageTabId: "branch",
+  }).state;
+  const withSecond = openEntityWorkspaceTab(withFirst, {
+    id: "second",
+    sourceTabId: "branch",
+    entityId: "person:second",
+    entityKind: "person",
+    nonce: 1,
+    origin: view("JHN", 3, "BSB"),
+    returnPassageTabId: "branch",
+  }).state;
+  const complete = openPassageWorkspaceTab(withSecond, {
+    id: "tail",
+    sourceTabId: "first",
+    view: view("ROM", 8, "BSB"),
+  }).state;
+  const originalOrder = [...(complete.groups[0]?.tabIds ?? [])];
+  assert.deepEqual(originalOrder, ["home", "branch", "second", "first", "tail"]);
+  const requested = closeStudyWorkspaceTab(complete, "branch");
+  assert.equal(requested.outcome, "needs-confirmation");
+  if (requested.outcome !== "needs-confirmation") return;
+  let recovered = resolveStudyWorkspaceDecision(
+    complete,
+    requested.confirmation,
+    "close-passage-and-research",
+  ).state;
+
+  for (let index = 0; index < 3; index += 1) {
+    const reopened = reopenClosedStudyItem(recovered);
+    assert.equal(reopened.outcome, "opened");
+    recovered = reopened.state;
+  }
+
+  assert.deepEqual(recovered.groups[0]?.tabIds, originalOrder);
+  assert.equal(recovered.recentlyClosed.length, 0);
+  for (const entityId of ["first", "second"]) {
+    const entity = recovered.tabsById[entityId];
+    assert.equal(entity?.kind === "entity" ? entity.returnPassageTabId : undefined, "branch");
+  }
+});
+
+test("copied origin IDs reserve every live and group-recovery tab ID", () => {
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
+    groupId: "g1",
+    passageTabId: "home",
+  });
+  const researched = openEntityWorkspaceTab(initial, {
+    id: "research",
+    sourceTabId: "home",
+    entityId: "person:paul",
+    entityKind: "person",
+    nonce: 1,
+    origin: view("ACT", 19, "BSB"),
+    returnPassageTabId: "home",
+  }).state;
+  const targetGroup = createStudyWorkspaceGroup(researched, {
+    id: "g2",
+    passageTabId: "target-home",
+    view: view("JHN", 3, "BSB"),
+  }).state;
+  const withLiveBase = openPassageWorkspaceTab(targetGroup, {
+    id: "research-origin",
+    sourceTabId: "target-home",
+    view: view("ROM", 8, "BSB"),
+    duplicate: true,
+  }).state;
+  const withReservedGroup = createStudyWorkspaceGroup(withLiveBase, {
+    id: "g3",
+    passageTabId: "research-origin-2",
+    view: view("GAL", 2, "BSB"),
+  }).state;
+  const closedGroup = closeStudyWorkspaceGroup(withReservedGroup, "g3");
+  assert.equal(closedGroup.outcome, "applied");
+  const withFiller = openPassageWorkspaceTab(closedGroup.state, {
+    id: "filler",
+    sourceTabId: "target-home",
+    view: view("EPH", 2, "BSB"),
+    duplicate: true,
+  }).state;
+  const buried = closeStudyWorkspaceTab(withFiller, "filler");
+  assert.equal(buried.outcome, "applied");
+  const requested = moveStudyWorkspaceTab(
+    buried.state,
+    { tabId: "research", targetGroupId: "g2" },
+  );
+  assert.equal(requested.outcome, "needs-confirmation");
+  if (requested.outcome !== "needs-confirmation") return;
+
+  const moved = resolveStudyWorkspaceDecision(
+    buried.state,
+    requested.confirmation,
+    "copy-origin-passage",
+  );
+
+  assert.equal(moved.outcome, "applied");
+  const entity = moved.state.tabsById["research"];
+  assert.equal(
+    entity?.kind === "entity" ? entity.returnPassageTabId : undefined,
+    "research-origin-3",
+  );
+  assert.equal(moved.state.tabsById["research-origin-3"]?.kind, "passage");
+  const fillerReopened = reopenClosedStudyItem(moved.state);
+  assert.equal(fillerReopened.outcome, "opened");
+  const groupReopened = reopenClosedStudyItem(fillerReopened.state);
+  assert.equal(groupReopened.outcome, "opened");
+  assert.equal(groupReopened.state.recentlyClosed.length, 0);
+  assert.equal(groupReopened.state.tabsById["research-origin-2"]?.groupId, "g3");
+});
+
+test("duplicate home IDs reserve every live and tab-recovery tab ID", () => {
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
+    groupId: "g1",
+    passageTabId: "home",
+  });
+  const withLiveBase = openPassageWorkspaceTab(initial, {
+    id: "home-home",
+    sourceTabId: "home",
+    view: view("JHN", 3, "BSB"),
+    duplicate: true,
+  }).state;
+  const withReserved = openPassageWorkspaceTab(withLiveBase, {
+    id: "home-home-2",
+    sourceTabId: "home-home",
+    view: view("ROM", 8, "BSB"),
+    duplicate: true,
+  }).state;
+  const closedReserved = closeStudyWorkspaceTab(withReserved, "home-home-2");
+  assert.equal(closedReserved.outcome, "applied");
+  const withFiller = openPassageWorkspaceTab(closedReserved.state, {
+    id: "filler",
+    sourceTabId: "home-home",
+    view: view("GAL", 2, "BSB"),
+    duplicate: true,
+  }).state;
+  const buried = closeStudyWorkspaceTab(withFiller, "filler");
+  assert.equal(buried.outcome, "applied");
+  const grouped = createStudyWorkspaceGroup(buried.state, {
+    id: "g2",
+    passageTabId: "target-home",
+    view: view("EPH", 2, "BSB"),
+  }).state;
+  const requested = moveStudyWorkspaceTab(grouped, { tabId: "home", targetGroupId: "g2" });
+  assert.equal(requested.outcome, "needs-confirmation");
+  if (requested.outcome !== "needs-confirmation") return;
+
+  const moved = resolveStudyWorkspaceDecision(
+    grouped,
+    requested.confirmation,
+    "duplicate-home",
+  );
+
+  assert.equal(moved.outcome, "applied");
+  assert.equal(moved.state.groups.find((group) => group.id === "g1")?.homePassageTabId, "home-home-3");
+  const fillerReopened = reopenClosedStudyItem(moved.state);
+  assert.equal(fillerReopened.outcome, "opened");
+  const reservedReopened = reopenClosedStudyItem(fillerReopened.state);
+  assert.equal(reservedReopened.outcome, "opened");
+  assert.equal(reservedReopened.state.recentlyClosed.length, 0);
+  assert.equal(reservedReopened.state.tabsById["home-home-2"]?.groupId, "g1");
+});
+
+test("creating the first study clones the caller passage view", () => {
+  const input = aliasProbeView("ACT", 19);
+  const created = createStudyWorkspace(input, { groupId: "g1", passageTabId: "home" });
+
+  input.book = "ROM";
+  input.selection?.pieces.splice(0, 1, { verse: 9, charStart: 90, charEnd: 99 });
+  if (input.margin.scope?.kind === "selection") input.margin.scope.start = 90;
+  input.margin.scrollTopByTab.overview = 90;
+
+  const stored = created.tabsById["home"];
+  assert.equal(stored?.kind, "passage");
+  if (stored?.kind !== "passage") return;
+  assert.equal(stored.session.current.book, "ACT");
+  assert.equal(stored.session.current.selection?.pieces[0]?.charStart, 2);
+  assert.deepEqual(stored.session.current.margin.scope, { kind: "selection", start: 2, end: 6 });
+  assert.equal(stored.session.current.margin.scrollTopByTab.overview, 12);
+});
+
+test("creating a study group clones the caller passage view", () => {
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
+    groupId: "g1",
+    passageTabId: "home",
+  });
+  const input = aliasProbeView("JHN", 3);
+  const created = createStudyWorkspaceGroup(initial, {
+    id: "g2",
+    passageTabId: "other-home",
+    view: input,
+  });
+
+  input.selection?.pieces.splice(0, 1, { verse: 9, charStart: 90, charEnd: 99 });
+  if (input.margin.scope?.kind === "selection") input.margin.scope.start = 90;
+  input.margin.scrollTopByTab.overview = 90;
+
+  const stored = created.state.tabsById["other-home"];
+  assert.equal(stored?.kind, "passage");
+  if (stored?.kind !== "passage") return;
+  assert.equal(stored.session.current.selection?.pieces[0]?.charStart, 2);
+  assert.deepEqual(stored.session.current.margin.scope, { kind: "selection", start: 2, end: 6 });
+  assert.equal(stored.session.current.margin.scrollTopByTab.overview, 12);
+});
+
+test("opening a new passage clones the caller passage view", () => {
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
+    groupId: "g1",
+    passageTabId: "home",
+  });
+  const input = aliasProbeView("JHN", 3);
+  const opened = openPassageWorkspaceTab(initial, {
+    id: "branch",
+    sourceTabId: "home",
+    view: input,
+  });
+
+  input.selection?.pieces.splice(0, 1, { verse: 9, charStart: 90, charEnd: 99 });
+  if (input.margin.scope?.kind === "selection") input.margin.scope.start = 90;
+  input.margin.scrollTopByTab.overview = 90;
+
+  const stored = opened.state.tabsById["branch"];
+  assert.equal(stored?.kind, "passage");
+  if (stored?.kind !== "passage") return;
+  assert.equal(stored.session.current.selection?.pieces[0]?.charStart, 2);
+  assert.deepEqual(stored.session.current.margin.scope, { kind: "selection", start: 2, end: 6 });
+  assert.equal(stored.session.current.margin.scrollTopByTab.overview, 12);
+});
+
+test("focusing a matching passage isolates the new view and prior history snapshot", () => {
+  const initial = createStudyWorkspace(aliasProbeView("ACT", 19), {
+    groupId: "g1",
+    passageTabId: "home",
+  });
+  const prior = initial.tabsById["home"];
+  assert.equal(prior?.kind, "passage");
+  if (prior?.kind !== "passage") return;
+  const input = aliasProbeView("ACT", 19);
+  if (input.selection) input.selection.pieces[0] = { verse: 1, charStart: 20, charEnd: 26 };
+  const focused = openPassageWorkspaceTab(initial, {
+    id: "unused",
+    sourceTabId: "home",
+    view: input,
+  });
+  assert.equal(focused.outcome, "focused");
+
+  if (input.selection) input.selection.pieces[0] = { verse: 9, charStart: 90, charEnd: 99 };
+  if (prior.session.current.selection) {
+    prior.session.current.selection.pieces[0] = { verse: 8, charStart: 80, charEnd: 88 };
+  }
+
+  const stored = focused.state.tabsById["home"];
+  assert.equal(stored?.kind, "passage");
+  if (stored?.kind !== "passage") return;
+  assert.equal(stored.session.current.selection?.pieces[0]?.charStart, 20);
+  assert.equal(stored.session.history.back.at(-1)?.selection?.pieces[0]?.charStart, 2);
+});
+
+test("entity navigation clones both incoming and prior trail entries", () => {
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
+    groupId: "g1",
+    passageTabId: "home",
+  });
+  const researched = openEntityWorkspaceTab(initial, {
+    id: "entity",
+    sourceTabId: "home",
+    entityId: "person:paul",
+    entityKind: "person",
+    nonce: 1,
+    origin: view("ACT", 19, "BSB"),
+    returnPassageTabId: "home",
+  }).state;
+  const prior = researched.tabsById["entity"];
+  assert.equal(prior?.kind, "entity");
+  if (prior?.kind !== "entity") return;
+  const entry = { id: "person:barnabas", displayName: "Barnabas", kind: "person" as const };
+  const navigated = navigateEntityWorkspaceTab(researched, "entity", entry, 2);
+
+  entry.displayName = "Changed caller";
+  const firstPrior = prior.trail[0];
+  if (firstPrior) firstPrior.displayName = "Changed prior";
+
+  const stored = navigated.tabsById["entity"];
+  assert.equal(stored?.kind, "entity");
+  if (stored?.kind !== "entity") return;
+  assert.equal(stored.trail[0]?.displayName, "person:paul");
+  assert.equal(stored.trail.at(-1)?.displayName, "Barnabas");
+});
+
+test("tab recovery snapshots isolate the closed and reopened entity state", () => {
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
+    groupId: "g1",
+    passageTabId: "home",
+  });
+  const researched = openEntityWorkspaceTab(initial, {
+    id: "entity",
+    sourceTabId: "home",
+    entityId: "person:paul",
+    entityKind: "person",
+    nonce: 1,
+    origin: aliasProbeView("ACT", 19),
+    returnPassageTabId: "home",
+  }).state;
+  const prior = researched.tabsById["entity"];
+  assert.equal(prior?.kind, "entity");
+  if (prior?.kind !== "entity") return;
+  const closed = closeStudyWorkspaceTab(researched, "entity");
+  assert.equal(closed.outcome, "applied");
+
+  prior.origin.margin.scrollTopByTab.overview = 90;
+  if (prior.canvas.current.selection) {
+    prior.canvas.current.selection.pieces[0] = { verse: 9, charStart: 90, charEnd: 99 };
+  }
+  const priorTrail = prior.trail[0];
+  if (priorTrail) priorTrail.displayName = "Changed prior";
+  const snapshot = closed.state.recentlyClosed.at(-1);
+  assert.equal(snapshot?.kind, "tab");
+  if (snapshot?.kind !== "tab" || snapshot.tab.kind !== "entity") return;
+  assert.equal(snapshot.tab.origin.margin.scrollTopByTab.overview, 12);
+  assert.equal(snapshot.tab.canvas.current.selection?.pieces[0]?.charStart, 2);
+  assert.equal(snapshot.tab.trail[0]?.displayName, "person:paul");
+
+  const reopened = reopenClosedStudyItem(closed.state);
+  assert.equal(reopened.outcome, "opened");
+  snapshot.tab.origin.margin.scrollTopByTab.overview = 70;
+  if (snapshot.tab.canvas.current.selection) {
+    snapshot.tab.canvas.current.selection.pieces[0] = { verse: 7, charStart: 70, charEnd: 77 };
+  }
+  const snapshotTrail = snapshot.tab.trail[0];
+  if (snapshotTrail) snapshotTrail.displayName = "Changed snapshot";
+
+  const restored = reopened.state.tabsById["entity"];
+  assert.equal(restored?.kind, "entity");
+  if (restored?.kind !== "entity") return;
+  assert.equal(restored.origin.margin.scrollTopByTab.overview, 12);
+  assert.equal(restored.canvas.current.selection?.pieces[0]?.charStart, 2);
+  assert.equal(restored.trail[0]?.displayName, "person:paul");
+});
+
+test("group recovery snapshots isolate the closed and reopened group state", () => {
+  const initial = renameStudyWorkspaceGroup(
+    createStudyWorkspace(aliasProbeView("ACT", 19), {
+      groupId: "g1",
+      passageTabId: "home",
+    }),
+    "g1",
+    "Acts study",
+  );
+  const grouped = createStudyWorkspaceGroup(initial, {
+    id: "g2",
+    passageTabId: "other-home",
+    view: view("JHN", 3, "BSB"),
+  }).state;
+  const priorGroup = grouped.groups.find((group) => group.id === "g1");
+  const priorTab = grouped.tabsById["home"];
+  assert.ok(priorGroup);
+  assert.equal(priorTab?.kind, "passage");
+  if (!priorGroup || priorTab?.kind !== "passage") return;
+  const closed = closeStudyWorkspaceGroup(grouped, "g1");
+  assert.equal(closed.outcome, "applied");
+
+  priorGroup.tabIds.push("changed-prior");
+  if (priorGroup.label.kind === "custom") priorGroup.label.value = "Changed prior";
+  priorTab.session.current.margin.scrollTopByTab.overview = 90;
+  const snapshot = closed.state.recentlyClosed.at(-1);
+  assert.equal(snapshot?.kind, "group");
+  if (snapshot?.kind !== "group") return;
+  assert.deepEqual(snapshot.group.tabIds, ["home"]);
+  assert.deepEqual(snapshot.group.label, { kind: "custom", value: "Acts study" });
+  const snapshotTab = snapshot.tabsById["home"];
+  assert.equal(snapshotTab?.kind, "passage");
+  if (snapshotTab?.kind !== "passage") return;
+  assert.equal(snapshotTab.session.current.margin.scrollTopByTab.overview, 12);
+
+  const reopened = reopenClosedStudyItem(closed.state);
+  assert.equal(reopened.outcome, "opened");
+  snapshot.group.tabIds.push("changed-snapshot");
+  if (snapshot.group.label.kind === "custom") snapshot.group.label.value = "Changed snapshot";
+  snapshotTab.session.current.margin.scrollTopByTab.overview = 70;
+
+  const restoredGroup = reopened.state.groups.find((group) => group.id === "g1");
+  const restoredTab = reopened.state.tabsById["home"];
+  assert.deepEqual(restoredGroup?.tabIds, ["home"]);
+  assert.deepEqual(restoredGroup?.label, { kind: "custom", value: "Acts study" });
+  assert.equal(
+    restoredTab?.kind === "passage"
+      ? restoredTab.session.current.margin.scrollTopByTab.overview
+      : undefined,
+    12,
+  );
 });
