@@ -47,7 +47,8 @@ from restoring tab state, not keeping many readers mounted.
 - Meaningful ordered study groups containing mixed passage and entity tabs.
 - Clear creation, duplicate handling, closing, restoration, overflow, keyboard,
   persistence, migration, and draft-exit behavior.
-- A premium-minimal single-row desktop strip.
+- A premium-minimal single-row desktop strip with a stable material in all six
+  existing themes.
 - One bounded real-Electron acceptance path based on pastoral workflows.
 
 ### Excluded
@@ -75,6 +76,24 @@ from restoring tab state, not keeping many readers mounted.
 6. **Resume after interruption:** ordered groups, active tabs, entity trails,
    reading eye-lines, and recently closed tabs survive the expected lifecycle.
 
+### Multi-persona audit result
+
+The model was checked against weekly exposition, sequential-series planning, a
+four-reading lectionary Sunday, small-group teaching, pastoral-care note work,
+keyboard-only use, low-vision/themed use, and interruption/restart. The model
+holds if the implementation preserves these cross-persona constraints:
+
+- A group is an active study question, not a sermon archive or an incidental
+  bucket created by every chapter change.
+- Each entity keeps immutable opening provenance while owning a separate current
+  canvas session. Following its references never mutates a hidden passage tab.
+- Same-reference translations and repeated entity names remain distinguishable.
+- Every authored draft/recovery owner can veto a tab, group, or chapter change.
+- Workspace persistence contains navigation metadata only; it never copies note
+  bodies, note quotes, surfaced-note titles, or search queries.
+- Focus mode hides the strip, and the strip remains fully usable without color,
+  translucency, pointer hover, or fine motor precision.
+
 ## Unified state model
 
 The renderer owns one versioned workspace state.
@@ -91,21 +110,39 @@ interface StudyWorkspaceStateV2 {
 
 interface StudyWorkspaceGroup {
   id: string;
-  rootPassageTabId: string;
+  homePassageTabId: string;
   tabIds: string[];
   lastActiveTabId: string;
   collapsed: boolean;
-  label?: string;
+  label:
+    | { kind: "automatic"; frozenReference?: string }
+    | { kind: "custom"; value: string };
 }
 
 type StudyWorkspaceTab = PassageWorkspaceTab | EntityWorkspaceTab;
+
+interface PassageWorkspaceSession {
+  current: PassageViewState;
+  history: {
+    back: PassageViewState[];
+    forward: PassageViewState[];
+  };
+}
+
+interface PassageViewState extends NavigationHistoryEntry {
+  selection?: PackageSelectionSnapshot;
+  margin: NavigationHistoryEntry["margin"] & {
+    scrollTopByTab: Partial<Record<NavigationMarginTab, number>>;
+    wordsVerse?: number;
+    wordsFollowingReading: boolean;
+  };
+}
 
 interface PassageWorkspaceTab {
   kind: "passage";
   id: string;
   groupId: string;
-  location: NavigationHistoryEntry;
-  history: NavigationHistoryState;
+  session: PassageWorkspaceSession;
 }
 
 interface EntityWorkspaceTab {
@@ -114,39 +151,68 @@ interface EntityWorkspaceTab {
   groupId: string;
   entityId: string;
   entityKind: "person" | "place" | "other";
-  contextPassageTabId: string;
-  origin: CommandReadingContext;
+  origin: PassageViewState;
+  canvas: PassageWorkspaceSession;
+  returnPassageTabId: string | null;
   trail: EntityResearchTrailEntry[];
   scrollTop: number;
   nonce: number;
 }
 ```
 
-`NavigationHistoryEntry` remains the canonical passage snapshot and is extended
-only where necessary to retain the Study margin scroll. It already carries the
-translation, reading eye-line, selected/kept scope, and active Study lens.
+`NavigationHistoryEntry` remains the base passage snapshot. `PassageViewState`
+adds the meaningful state currently held only in component memory: an exact
+package-local selection snapshot, per-lens Study scroll, the engaged Words
+verse, and whether Words follows reading. It deliberately excludes hover,
+expanded cards, fetched prose, and note contents.
 
-Every group has at least one passage tab. Its root passage supplies the default
-group label (`Acts 19`) and the context for globally opened person/place tabs.
-Additional passages and entities join the active group unless the user chooses
-`New study group`.
+Every group has at least one passage tab. Its home passage is the close fallback
+and the seed used only when no active canvas exists; it is not universal entity
+context. A one-passage automatic label follows that passage while the group is
+still pristine. The first branch/entity addition freezes the current reference
+as that study's automatic identity; a custom label is always stable. Additional
+passages and entities join the active group unless the user explicitly starts a
+new study.
 
 ## Passage-tab behavior
 
+- The pinned global `Scripture` tab is retired. Passage tabs are Scripture; at
+  least one passage tab always remains.
 - Previous/Next chapter, plain Left/Right on the reading canvas, and the passage
-  picker update the active passage tab in place and append to that tab's
-  Back/Forward history.
+  picker update the active tab's own canvas session in place and append to that
+  session's Back/Forward history. They never create a tab and never mutate a
+  hidden passage tab.
+- On an entity tab those controls update only the entity's current canvas while
+  its Research margin and immutable opening provenance remain intact. The
+  research header distinguishes `Opened from Acts 19` from the current
+  `Viewing Romans 6` when they differ.
+- The chapter controls expose an explicit `Open previous/next chapter in new
+  tab` action for series preparation.
 - `Open passage in new tab` creates a passage tab in the active group. A
   modifier/middle-click on a Scripture reference invokes the same action.
 - Selecting a passage tab restores its translation, chapter, verse eye-line,
-  selected/kept scope, Study lens, Study scroll, and Back/Forward stacks.
-- Back/Forward operates on the active passage tab. It is not a workspace-tab
-  switcher.
-- An ordinary Scripture reference inside a passage follows in that passage tab.
-  An explicit new-tab action preserves the source for comparison.
+  exact phrase/verse scope, kept scope, Study lens and per-lens scroll, Words
+  verse/follow state, and Back/Forward stacks.
+- Back/Forward operates inside the active tab's canvas session. The visible
+  Research breadcrumb Back remains the entity-trail control; neither control is
+  a workspace-tab switcher.
+- Existing reference controls that first open VersePeek keep that preview
+  behavior. Their explicit `Follow passage` action navigates the active canvas;
+  `Open passage tab` preserves the source for comparison, and `Keep in Study`
+  continues to change only the Living Margin scope.
+- Opening a verse range whose chapter/translation already has a normal tab
+  focuses that tab and navigates it to the requested range, recording history.
+  Retaining two independent ranges in the same chapter requires explicit
+  duplication.
+- Passage accessible names and All Tabs always include translation. A quiet
+  visible suffix (`Acts 19 · WEB`, `Acts 19 · KJV`) appears only while
+  same-reference translations would otherwise collide.
+- Changing translation into an already-open normal identity focuses that tab
+  and leaves both histories unchanged. Only `Open duplicate` may retain two
+  identical passage identities.
 - The final passage tab in the app cannot close. Its close affordance is absent,
   not disabled.
-- Closing a group's root passage promotes the nearest remaining passage. If no
+- Closing a group's home passage promotes the nearest remaining passage. If no
   other passage exists and entity tabs remain, a calm in-app confirmation
   offers `Close study` or `Keep open`; entities are never orphaned and no native
   dialog is used.
@@ -155,30 +221,51 @@ Additional passages and entities join the active group unless the user chooses
 
 - A person/place row in Study exposes one primary action named
   `Open research tab`. Plain row activation performs that action.
-- The active passage tab becomes the entity tab's `contextPassageTabId`, and the
-  entity joins the same study group.
-- Opening the same entity with the same context focuses its existing tab.
+- The active tab's full canvas snapshot is copied into both the entity's
+  immutable `origin` and its independent current `canvas`; the originating
+  passage tab becomes `returnPassageTabId`. The entity joins the same study.
+- Opening the same entity with the same group and immutable origin focuses its
+  existing tab. The same biblical person opened from a materially different
+  passage is a valid separate investigation.
   `Open duplicate` is an explicit context action rather than an accidental
   second copy.
 - A related entity selected inside Research navigates the current entity tab,
-  appends its visible breadcrumb/Back trail, and retains the tab's root context.
+  appends its visible breadcrumb/Back trail, and retains its opening provenance.
 - A trailing `Open in new tab` action plus modifier/middle-click creates a
   sibling entity tab without changing the current trail.
-- Selecting an entity tab restores its linked passage context on the canvas and
-  its own entity trail/scroll in the margin.
-- A Scripture reference selected inside an entity tab follows in its linked
-  passage tab and selects that passage tab. An explicit new-tab action creates
-  a sibling passage tab. References never mutate an unrelated hidden canvas.
+- Selecting an entity tab restores its own current canvas session and its entity
+  trail/scroll in the margin. Its immutable origin remains available for
+  `Return to Acts 19` even if the source passage tab later navigates elsewhere.
+- A Scripture reference selected inside an entity tab updates that entity's
+  canvas and brings the reference into attention while keeping Research
+  visible. `Open as passage tab` creates/focuses a sibling passage tab instead.
+- If the return passage tab was closed, `Return` creates or reuses a passage tab
+  from the immutable origin; it never silently retargets the entity.
+- Moving an entity preserves its immutable origin and copies/reuses the matching
+  context passage in the destination group. Moving a passage with dependent
+  entity tabs moves that branch atomically. No move, close, or root promotion
+  silently rebinds research to an unrelated passage.
+- Closing a passage with dependent research offers `Close passage and research`
+  or `Keep open`; a move-to-study action may preserve the branch first. There is
+  no implicit orphan cleanup.
+- Repeated names are disambiguated in tooltips and All Tabs with type, opening
+  passage, and translation (`Mary · person · from John 2 · BSB`).
+- VersePeek's `Keep in Study` continues to freeze the Living Margin subject. It
+  is not tab creation; `Open passage tab` is the explicit branching vocabulary.
 
 ## Creation and discoverability
 
-The strip's `+` opens a compact **Open tab** popover; it never jumps directly
-to one search mode.
+At normal desktop width the strip shows `+ Open`; it may collapse to an icon
+only after labels need the space. It opens a compact **Open tab** popover and
+never jumps directly to one search mode. The heading states the destination,
+for example `Add to Sunday — Trinity`.
 
-1. `Open passage…` — focuses a reference field and shows recent passages.
+1. `Open passage in this study…` — focuses a reference field and shows recent
+   passages.
 2. `Research person or place…` — opens the existing Names index, with the two
    quiet glyphs taught in the result rows.
-3. `New study group` — creates a group rooted in the current passage snapshot.
+3. `Start new study from Acts 19` — copies the active canvas snapshot into a new
+   home passage; it never moves the source tab or silently copies an entity.
 
 The passage picker and person/place rows also expose contextual new-tab actions,
 so the plus menu is not the only discovery path. Tooltips and accessible names
@@ -189,47 +276,62 @@ use the same vocabulary: `Open tab`, `Open passage in new tab`, and
 
 - Groups are durable, ordered, and manually meaningful; they are not inferred
   every render from `book:chapter:packageId`.
-- A new group auto-labels from its root passage. `Rename study` is available in
-  the group menu for labels such as `Sunday — Trinity` or `Romans series`.
-- `Move to study` moves a tab through a deterministic menu. Moving an entity
-  rebinds its context to the destination group's root passage. Moving a
-  non-root passage retains its complete history; entity tabs left behind that
-  referenced it rebind to their current group's root. A sole/root passage must
-  first be duplicated in the destination or moved with the entire group.
+- Groups are the active bench for a sermon, lesson, series, or question—not an
+  archive. Permanent sermon filing and saved layouts remain separate products.
+- A pristine one-passage automatic label follows its home passage. The first
+  branch/entity addition freezes that reference as the group's automatic study
+  identity. `Rename study` creates a stable custom label such as
+  `Sunday — Trinity` or `Romans series`.
+- `Move to study` moves a tab through a deterministic menu using the provenance
+  rules above. A sole/home passage must move with its whole group or first be
+  duplicated in the destination.
+- New tabs insert immediately after their source. Group and tab menus provide
+  deterministic `Move left`, `Move right`, `Move to start`, and `Move to end`
+  actions; drag-and-drop remains deferred.
 - Expanded groups show readable tabs separated by a restrained boundary.
-- Collapsing a group never activates global Scripture or another group. A
+- Collapsing a group never activates another group. A
   collapsed proxy represents the group's `lastActiveTabId`, shows the group
   label and count, and remains a valid selectable tab.
 - Closing a group uses the existing confirmation language when it contains
   more than one tab. At least one passage group always remains.
 - Group disclosure controls are excluded from the tab roving set; Left/Right
-  traverses only actual tabs/proxies.
+  traverses only actual tabs/proxies. The DOM uses a workspace navigation
+  container with per-group tablist segments and sibling group controls; no
+  arbitrary button is interspersed inside a `role="tablist"`.
 
 ## Closing, limits, and recovery
 
 - Closing the active tab chooses the nearest tab in its group, then the group's
-  root, then the most-recent tab in the nearest group.
+  home passage, then the most-recent tab in the nearest group.
 - The last ten explicitly closed tabs/groups enter a bounded recently-closed
   stack. `Reopen closed tab` and `Cmd/Ctrl+Shift+T` restore the latest item.
+- Recently closed metadata contains only tab/group identity and navigation
+  state—never note content, note titles, quotes, or search queries.
 - The workspace accepts at most 64 total tabs. Reaching the limit does not
   silently evict anything. The Open-tab popover explains `64 tabs open` and
   opens the searchable All Tabs manager.
 - Duplicate passage identity is book, chapter, translation, and group. Normal
   opening focuses the duplicate; explicit `Open duplicate` bypasses reuse.
-- Invalid/missing restored chapters fall back visibly to the group's root
+- Invalid/missing restored chapters fall back visibly to the group's home
   passage without deleting the stored tab. Missing entities retain a named
   unavailable tab that can be closed.
 
 ## Draft and mutation safety
 
-- Switching to a tab whose linked passage differs, closing a passage/group, or
-  changing translation uses the existing Save/Discard/Keep draft controller.
-- Switching between entity tabs linked to the same passage is non-destructive
-  and does not prompt.
+- One workspace-transition gate covers switching, closing, moving, group
+  collapse, translation/chapter changes, and app/library/view exit.
+- The gate asks every authored owner: marking/connection draft, note capture or
+  edit, dirty connection card, in-flight mutation, and recovery state. Existing
+  surface-specific Save/Discard/Keep language remains authoritative; the tab
+  system does not invent an implicit save or generic destructive shortcut.
+- A transition with no dirty owner proceeds immediately. Merely switching
+  between clean tabs never prompts.
 - `Keep editing` restores focus to the originating reading canvas and leaves
   workspace state unchanged.
 - Authored mutation recovery continues to block context changes. Workspace
   state is settings data and never writes Substrate autonomously.
+- Global tab shortcuts are inert while text entry, a dialog, popover, recovery
+  layer, or another registered Escape/keyboard owner is active.
 
 ## Keyboard and focus
 
@@ -241,6 +343,8 @@ use the same vocabulary: `Open tab`, `Open passage in new tab`, and
   tab when the app owns the shortcut.
 - `Cmd/Ctrl+Shift+T` reopens the last closed tab.
 - Plain Left/Right on the reading canvas remains Previous/Next chapter.
+- The workspace strip participates in the existing F6 pane cycle, and the
+  Shortcuts overlay names tab traversal, close, and reopen commands.
 - Activation from the strip leaves focus on the selected tab. Tab enters the
   panel. Opening research from content may move focus to its heading once; a
   later tab switch does not steal focus back into the margin.
@@ -253,19 +357,47 @@ use the same vocabulary: `Open tab`, `Open passage in new tab`, and
   second toolbar row.
 - Passage labels are references (`Acts 19`); research labels are names
   (`Apollos`, `Ephesus`). Person/place glyphs remain quiet single-stroke marks.
-- The active tab gets one neutral material lift and one neutral baseline. Gold
-  remains reserved for focus.
+- Define resolved `--workspace-bar-bg` and `--workspace-active-bg` tokens for
+  Paper, Ink, Glass, Candlelight, Porcelain, and Onyx. Paint the rail material
+  once. No background beneath text may mix an already-translucent theme token
+  with `transparent`.
+
+  ```css
+  /* Paper */       --workspace-bar-bg: #F7F1E6; --workspace-active-bg: #FCF8EF;
+  /* Ink */         --workspace-bar-bg: #13110E; --workspace-active-bg: #1D1915;
+  /* Glass */       --workspace-bar-bg: rgba(250,246,238,.78); --workspace-active-bg: rgba(255,252,246,.92);
+  /* Candlelight */ --workspace-bar-bg: rgba(25,21,18,.80); --workspace-active-bg: rgba(45,37,31,.94);
+  /* Porcelain */   --workspace-bar-bg: #F7F7F9; --workspace-active-bg: #FFFFFF;
+  /* Onyx */        --workspace-bar-bg: #18181B; --workspace-active-bg: #232326;
+  ```
+- Glass and Candlelight apply the same blur/saturation treatment as the topbar.
+  Action controls sit directly on the rail material; no second translucent
+  gradient or pseudo-element is layered behind scrolled labels.
+- The active tab gets one neutral active material and one solid
+  `var(--text-secondary)` baseline. It does not also receive an inset border and
+  shadow. Gold remains reserved for a solid, 3:1-safe keyboard focus outline.
 - The active tab receives enough width to remain readable; inactive tabs may
   compact before overflow. Close appears on hover, focus, or selection.
+- Tab labels use approximately 12px UI text; human-readable group labels use at
+  least 10.5–11px UI text rather than 9px mono. Close targets are at least
+  24×24px, and type glyphs render at full tertiary contrast rather than reduced
+  opacity.
 - Group labels, boundaries, count badges, edge fades, and collapsed proxies use
   neutral ink/material only. No categorical tab colors, halos, or stacked card
   silhouettes.
+- Expanded groups do not repeat count badges. Counts belong on collapsed
+  proxies and in All Tabs.
 - Overflow is a searchable grouped switcher showing group, type, label, and
   current state. It is not a second permanently visible tab list.
+- All Tabs opens on its search field or active row, never a destructive group
+  action. Overflow appears from measured clipping, not a hard tab count.
+- Scroll continuation uses a non-interactive edge curtain/divider painted in
+  the rail material. It never masks or lowers the opacity of label glyphs.
 - `All tabs` and `Open tab` use text in tooltips/accessibility names; icon-only
   controls are never the sole explanation of capability.
-- Forced-colors mode removes masks and exposes full system outlines; reduced
-  motion removes tab-entry and reorder animation.
+- Forced-colors mode uses `Highlight`/`HighlightText` for selection, exposes a
+  system-color focus outline and group keyline, and removes masks. Reduced
+  motion removes tab-entry, reorder, and disclosure rotation animation.
 
 ## Persistence and migration
 
@@ -274,22 +406,36 @@ use the same vocabulary: `Open tab`, `Open passage in new tab`, and
   12 entity trail entries, and 10 recently closed records. Unknown cosmetic
   fields are dropped rather than rejecting the workspace.
 - The current `researchWorkspace` migrates once: each origin becomes a group,
-  a passage root is created from that origin, and its entity tabs retain order,
+  a home passage is created from that origin, and its entity tabs retain order,
   trails, kinds, and nonce values. The current `lastRead` becomes or updates the
-  active root passage.
+  active home passage.
 - The legacy single `researchSession` remains readable for one migration cycle
   but is no longer written after version 2 settles.
 - Migration never mutates authored data or event logs.
+- Persist after every structural mutation and debounce only high-frequency view
+  snapshots, with a close-time flush. A settings write failure leaves the live
+  workspace intact, reports a calm retryable status, and never overwrites the
+  last valid saved object with a partial record.
+- Reload validates every tab but hydrates/fetches only the active tab. Inactive
+  tabs remain metadata until selected, so a 64-tab workspace cannot trigger 64
+  background research requests.
+- Workspace and recently-closed records contain references, package IDs, entity
+  IDs, view state, and intentional group labels only. All Tabs search indexes
+  those labels—not note/search content. Product copy encourages study names,
+  not counselee names; shared-device locking is a separate architecture item.
 
 ## Verification contract
 
 ### Pure state tests
 
 - Passage open/reuse/explicit duplicate and in-place navigation.
-- Per-tab Back/Forward isolation and restored passage snapshot.
+- Per-tab Back/Forward isolation and restored exact passage/Words/Study state.
 - Entity open/reuse, related-entity in-place navigation, and explicit branch.
-- Mixed group creation, rename, move, collapse proxy, close fallback, and root
+- Immutable entity origin plus independent canvas navigation and safe return.
+- Mixed group creation, rename, move, collapse proxy, close fallback, and home
   promotion.
+- Automatic-label follow/freeze behavior, deterministic reorder, translation
+  collision, same-chapter range reuse, and dependent-branch moves.
 - Limit refusal without eviction and recently-closed restoration.
 - Version-1 migration plus strict version-2 normalization.
 
@@ -299,7 +445,8 @@ use the same vocabulary: `Open tab`, `Open passage in new tab`, and
 - Only real tabs/proxies participate in roving focus.
 - Passage, person, and place accessible names match visible labels.
 - Contextual actions expose current-tab versus new-tab consequences.
-- Draft guards cover destructive passage/group changes.
+- Draft guards cover destructive changes for every authored/recovery owner.
+- All Tabs initial focus is non-destructive; F6 and shortcut suppression hold.
 
 ### One real desktop Electron scenario
 
@@ -309,8 +456,9 @@ At one representative 1180px width:
 2. Open John 3 and Romans 6 as passage tabs.
 3. Open Apollos and Ephesus from Acts 19.
 4. Navigate Apollos to Priscilla in place; branch Ephesus explicitly.
-5. Follow a cross-reference in the linked passage, Back, and verify the other
-   passage tabs retain eye-line, lens, and selection.
+5. Follow a cross-reference inside Apollos, Back, and verify Research stays
+   visible while all other passage tabs retain eye-line, lens, Words state, and
+   exact selection.
 6. Create and rename a second study group; move one passage into it.
 7. Collapse both groups, reopen the active group, use searchable overflow, and
    close/reopen one tab.
@@ -318,10 +466,20 @@ At one representative 1180px width:
    passage, entity kinds/trails, and passage histories survive.
 9. Capture a real-app screenshot with the dense grouped state visible.
 
+### Bounded material/accessibility sweep
+
+Capture the same deterministic 1180×900 stress state once in each of the six
+themes: one named expanded group, one collapsed group, two passages (including a
+translation collision), one person, one place, one long label, an active entity,
+and All Tabs visible. Add one forced-colors interaction pass plus computed checks
+for the focus indicator and 24px targets. This six-image bar sweep directly tests
+the reported defect without multiplying themes across marking surfaces or mobile
+viewports.
+
 Run the focused contracts during development, then lint, renderer/Electron
-builds, the full unit suite once, and this bounded Electron path. Do not repeat
-the theme × marking-surface × mobile matrices because this design does not
-change those contracts.
+builds, the full unit suite once, this bounded Electron path, and the six-image
+bar-only theme sweep. Do not repeat the theme × marking-surface × mobile matrices
+because this design does not change those contracts.
 
 ## Research basis
 
