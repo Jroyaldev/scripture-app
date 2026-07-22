@@ -543,8 +543,12 @@ export function normalizeStudyWorkspace(value: unknown): StudyWorkspaceValidatio
     if (usedGroupIds.has(rawGroup.id)) continue;
     const localTabs: PersistedStudyWorkspaceTab[] = [];
     const localIds = new Set<string>();
+    let truncatedByTabLimit = false;
     for (const tabId of rawGroup.tabIds) {
-      if (usedTabIds.size + localIds.size >= TAB_LIMIT) break;
+      if (usedTabIds.size + localIds.size >= TAB_LIMIT) {
+        truncatedByTabLimit = true;
+        break;
+      }
       if (usedTabIds.has(tabId) || localIds.has(tabId)) continue;
       if (!Object.prototype.hasOwnProperty.call(rawTabs, tabId)) continue;
       const tab = normalizeLiveTab(rawTabs[tabId], tabId, rawGroup.id);
@@ -553,7 +557,14 @@ export function normalizeStudyWorkspace(value: unknown): StudyWorkspaceValidatio
       localTabs.push(tab);
     }
     const passageIds = localTabs.flatMap((tab) => tab.kind === "passage" ? [tab.id] : []);
-    if (passageIds.length === 0) return { ok: false, reason: "invalid" };
+    if (passageIds.length === 0) {
+      const passageWasCutOff = truncatedByTabLimit && rawGroup.tabIds.some((tabId) => {
+        if (usedTabIds.has(tabId) || localIds.has(tabId)) return false;
+        return normalizePassageTab(rawTabs[tabId], tabId, rawGroup.id) !== null;
+      });
+      if (passageWasCutOff) continue;
+      return { ok: false, reason: "invalid" };
+    }
     const canonicalTabs = localTabs.map((tab): PersistedStudyWorkspaceTab => (
       tab.kind === "entity"
         && tab.returnPassageTabId !== null

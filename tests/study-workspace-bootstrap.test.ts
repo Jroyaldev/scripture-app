@@ -129,6 +129,23 @@ test("App establishes V2 authority only after refusal and projects it into trans
   assert.doesNotMatch(app, /res\.value\.(?:researchWorkspace|researchSession|keptContext)/);
 });
 
+test("window close approves only after authored exit and the latest workspace flush", () => {
+  const app = read("src/renderer/app.tsx");
+  const closeHandler = app.slice(
+    app.indexOf("window.api.appWindow.onCloseRequested"),
+    app.indexOf("const handleCreateNoteFromPassage"),
+  );
+  const authoredExit = closeHandler.indexOf('await controller.requestExit("window-close")');
+  const flush = closeHandler.indexOf("await persistence.flush(workspace)");
+  const approve = closeHandler.indexOf("window.api.appWindow.resolveCloseRequest(true)");
+  assert.ok(authoredExit >= 0);
+  assert.ok(flush > authoredExit);
+  assert.ok(approve > flush);
+  assert.match(closeHandler, /if \(!proceed\) \{[\s\S]{0,120}?resolveCloseRequest\(false\);[\s\S]{0,80}?return;/);
+  assert.match(closeHandler, /if \(!flushed\) \{[\s\S]{0,120}?resolveCloseRequest\(false\);[\s\S]{0,80}?return;/);
+  assert.match(closeHandler, /catch \{[\s\S]{0,120}?resolveCloseRequest\(false\)/);
+});
+
 test("Electron settles V2 once, preserves V3, and merges workspace patches by key presence", () => {
   const main = read("src/electron/main.ts");
   assert.match(main, /bootstrapStudyWorkspaceSetting/);

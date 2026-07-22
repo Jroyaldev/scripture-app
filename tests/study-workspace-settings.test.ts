@@ -211,6 +211,50 @@ test("workspace, navigation, trail, and recently-closed collections are bounded"
     Array.from({ length: 10 }, (_, index) => index + 2));
 });
 
+test("a group crossing the tab cap never invalidates earlier canonical groups", () => {
+  const firstGroupTabIds = Array.from({ length: 63 }, (_, index) => `group-1-tab-${index + 1}`);
+  const input = {
+    version: 2,
+    groups: [
+      {
+        id: "group-1",
+        homePassageTabId: firstGroupTabIds[0],
+        tabIds: firstGroupTabIds,
+        lastActiveTabId: firstGroupTabIds.at(-1),
+        collapsed: false,
+        label: { kind: "automatic" },
+      },
+      {
+        id: "group-2",
+        homePassageTabId: "group-2-home",
+        tabIds: ["group-2-entity", "group-2-home"],
+        lastActiveTabId: "group-2-entity",
+        collapsed: false,
+        label: { kind: "automatic" },
+      },
+    ],
+    tabsById: {
+      ...Object.fromEntries(firstGroupTabIds.map((tabId) => [
+        tabId,
+        passageTab(tabId, "group-1"),
+      ])),
+      "group-2-entity": entityTab("group-2-entity", "group-2"),
+      "group-2-home": passageTab("group-2-home", "group-2"),
+    },
+    activeTabId: "group-2-entity",
+    activationOrder: [...firstGroupTabIds, "group-2-home", "group-2-entity"],
+    recentlyClosed: [],
+  };
+
+  const result = normalizeStudyWorkspace(input);
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.ok(Object.keys(result.value.tabsById).length <= 64);
+  for (const group of result.value.groups) {
+    assert.ok(group.tabIds.some((tabId) => result.value.tabsById[tabId]?.kind === "passage"));
+  }
+});
+
 test("history normalization keeps the nearest Forward entry over the farthest Back entry", () => {
   const input = workspace();
   input.tabsById.home.session.history.back = Array.from(

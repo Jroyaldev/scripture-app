@@ -538,15 +538,36 @@ export function App(): React.JSX.Element {
   }, []);
 
   useEffect(() => window.api.appWindow.onCloseRequested(() => {
-    const controller = connectionDraftExitControllerRef.current;
-    if (!controller) {
-      window.api.appWindow.resolveCloseRequest(true);
-      return;
-    }
-    void controller.requestExit("window-close").then(
-      (proceed) => window.api.appWindow.resolveCloseRequest(proceed),
-      () => window.api.appWindow.resolveCloseRequest(false),
-    );
+    void (async () => {
+      try {
+        const controller = connectionDraftExitControllerRef.current;
+        const proceed = controller ? await controller.requestExit("window-close") : true;
+        if (!proceed) {
+          window.api.appWindow.resolveCloseRequest(false);
+          return;
+        }
+        const workspace = studyWorkspaceRef.current;
+        if (workspace === undefined) {
+          window.api.appWindow.resolveCloseRequest(false);
+          return;
+        }
+        if (workspace) {
+          const persistence = workspacePersistenceRef.current;
+          if (!persistence) {
+            window.api.appWindow.resolveCloseRequest(false);
+            return;
+          }
+          const flushed = await persistence.flush(workspace);
+          if (!flushed) {
+            window.api.appWindow.resolveCloseRequest(false);
+            return;
+          }
+        }
+        window.api.appWindow.resolveCloseRequest(true);
+      } catch {
+        window.api.appWindow.resolveCloseRequest(false);
+      }
+    })();
   }), []);
 
   const handleCreateNoteFromPassage = (prefillBody?: string) => {
