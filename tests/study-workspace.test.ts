@@ -1908,6 +1908,50 @@ test("reopen refuses at tab and group caps without consuming recently closed rec
   assert.equal(refusedGroup.state.recentlyClosed, groupRecovery);
 });
 
+test("an entity move that would exceed the tab cap is refused before its confirmation", () => {
+  const origin = view("ACT", 19, "BSB");
+  let state = createStudyWorkspace(origin, { groupId: "g1", passageTabId: "home" });
+  // A second group whose passage does NOT match the entity's origin, so moving
+  // there must mint a fresh origin-passage tab.
+  state = createStudyWorkspaceGroup(state, {
+    id: "g2",
+    passageTabId: "john",
+    view: view("JHN", 3, "BSB"),
+  }).state;
+  // Fill g1 with entities until the workspace sits exactly at the 64-tab cap.
+  for (let index = 1; state.tabsById && Object.keys(state.tabsById).length < 64; index += 1) {
+    const id = `entity-${index}`;
+    const tab: EntityWorkspaceTab = {
+      kind: "entity",
+      id,
+      groupId: "g1",
+      entityId: `person:${index}`,
+      entityKind: "person",
+      origin,
+      canvas: { current: origin, history: createNavigationHistory<PassageViewState>() },
+      returnPassageTabId: "home",
+      trail: [{ id: `person:${index}`, displayName: `Person ${index}`, kind: "person" }],
+      scrollTop: 0,
+      nonce: index,
+    };
+    const g1 = state.groups.find((group) => group.id === "g1")!;
+    state = {
+      ...state,
+      groups: state.groups.map((group) => group.id === "g1"
+        ? { ...group, tabIds: [...g1.tabIds, id] }
+        : group),
+      tabsById: { ...state.tabsById, [id]: tab },
+      activationOrder: [...state.activationOrder, id],
+    };
+  }
+  assert.equal(Object.keys(state.tabsById).length, 64);
+  // The move needs a new origin-passage tab in g2 but the cap is reached, so the
+  // capacity refusal happens up front — no copy-origin confirmation is offered.
+  const refused = moveStudyWorkspaceTab(state, { tabId: "entity-1", targetGroupId: "g2" });
+  assert.equal(refused.outcome, "tab-limit");
+  assert.equal(refused.state, state);
+});
+
 test("forged confirmation payloads cannot mutate the workspace", () => {
   const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
     groupId: "g1",

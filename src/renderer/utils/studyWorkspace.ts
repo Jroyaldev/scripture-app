@@ -700,6 +700,21 @@ export function moveStudyWorkspaceTab(
     return { state, outcome: "unchanged" };
   }
   if (tab.kind === "entity") {
+    // Moving an entity may need to mint a fresh origin-passage tab in the
+    // target group. If none already matches AND we are at the tab cap, refuse
+    // up front so the copy-origin confirmation is never offered for an action
+    // that resolution would only reject.
+    const hasContextInTarget = targetGroup.tabIds.some((id) => {
+      const candidate = state.tabsById[id];
+      return candidate?.kind === "passage"
+        && candidate.session.current.book === tab.origin.book
+        && candidate.session.current.chapter === tab.origin.chapter
+        && candidate.session.current.packageId === tab.origin.packageId;
+    });
+    if (!hasContextInTarget
+      && Object.keys(state.tabsById).length >= STUDY_WORKSPACE_TAB_LIMIT) {
+      return { state, outcome: "tab-limit" };
+    }
     return {
       state,
       outcome: "needs-confirmation",
@@ -1359,12 +1374,29 @@ export function resolveStudyWorkspaceDecision(
 export function reopenClosedStudyItem(
   state: StudyWorkspaceStateV2,
 ): WorkspaceMutationResult {
-  const storedItem = state.recentlyClosed.at(-1);
+  return reopenClosedStudyItemAt(state, state.recentlyClosed.length - 1);
+}
+
+/**
+ * Reopen a specific retained recently-closed entry by its index in
+ * `recentlyClosed` (oldest first). The strip-level recovery button always
+ * reopens the most recent (last index); the All Tabs list can target any
+ * retained item. Index bounds are validated so a stale index is a no-op.
+ */
+export function reopenClosedStudyItemAt(
+  state: StudyWorkspaceStateV2,
+  index: number,
+): WorkspaceMutationResult {
+  if (!Number.isInteger(index) || index < 0 || index >= state.recentlyClosed.length) {
+    return { state, outcome: "unchanged" };
+  }
+  const storedItem = state.recentlyClosed[index];
   if (!storedItem) return { state, outcome: "unchanged" };
   const item = cloneClosedStudyItem(storedItem);
-  const remainingRecentlyClosed = state.recentlyClosed
-    .slice(0, -1)
-    .map(cloneClosedStudyItem);
+  const remainingRecentlyClosed = [
+    ...state.recentlyClosed.slice(0, index),
+    ...state.recentlyClosed.slice(index + 1),
+  ].map(cloneClosedStudyItem);
   if (item.kind === "tab") {
     if (state.tabsById[item.tab.id]) return { state, outcome: "unchanged" };
     if (Object.keys(state.tabsById).length >= STUDY_WORKSPACE_TAB_LIMIT) {
@@ -1384,16 +1416,16 @@ export function reopenClosedStudyItem(
           ),
         }
       : normalizedTab;
-    const index = Math.max(0, Math.min(item.index, group.tabIds.length));
+    const insertIndex = Math.max(0, Math.min(item.index, group.tabIds.length));
     const next: StudyWorkspaceStateV2 = {
       ...state,
       groups: state.groups.map((candidate) => candidate.id === group.id
         ? {
             ...candidate,
             tabIds: [
-              ...candidate.tabIds.slice(0, index),
+              ...candidate.tabIds.slice(0, insertIndex),
               item.tab.id,
-              ...candidate.tabIds.slice(index),
+              ...candidate.tabIds.slice(insertIndex),
             ],
           }
         : candidate),
@@ -1415,7 +1447,7 @@ export function reopenClosedStudyItem(
   if (Object.keys(state.tabsById).length + item.group.tabIds.length > STUDY_WORKSPACE_TAB_LIMIT) {
     return { state, outcome: "tab-limit" };
   }
-  const index = Math.max(0, Math.min(item.index, state.groups.length));
+  const groupIndex = Math.max(0, Math.min(item.index, state.groups.length));
   const normalizedTabsById: Record<string, StudyWorkspaceTab> = {};
   for (const [tabId, tab] of Object.entries(item.tabsById)) {
     normalizedTabsById[tabId] = normalizeStudyWorkspaceTab(tab);
@@ -1438,7 +1470,7 @@ export function reopenClosedStudyItem(
     ? item.group.lastActiveTabId
     : item.group.homePassageTabId;
   const groups = [...state.groups];
-  groups.splice(index, 0, item.group);
+  groups.splice(groupIndex, 0, item.group);
   const next: StudyWorkspaceStateV2 = {
     ...state,
     groups,

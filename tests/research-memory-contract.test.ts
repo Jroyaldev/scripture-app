@@ -144,7 +144,7 @@ test("entity references follow the current canvas and expose an explicit passage
   const viewStart = margin.indexOf("function EntityResearchView");
   const viewEnd = margin.indexOf("function CrossReferenceRow", viewStart);
   const view = margin.slice(viewStart, viewEnd);
-  assert.match(view, /onClick=\{\(\) => onNavigate\?\.\(`bref:v1\/\$\{ref\}`\)\}/);
+  assert.match(view, /\{\.\.\.crossRefBranchHandlers\(`bref:v1\/\$\{ref\}`, target, onNavigate, onOpenPassageTab\)\}/);
   assert.match(view, /void onOpenPassageTab\(target\)/);
   assert.match(view, /aria-label=\{`Open \$\{label\} as a passage tab`\}/);
   assert.match(margin, /useVersePeek\(packageId, onKeepReference, onOpenPassageTab\)/);

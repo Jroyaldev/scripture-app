@@ -55,6 +55,7 @@ import {
   openEntityWorkspaceTab,
   openPassageWorkspaceTab,
   reopenClosedStudyItem,
+  reopenClosedStudyItemAt,
   renameStudyWorkspaceGroup,
   reorderStudyWorkspaceGroup,
   reorderStudyWorkspaceTab,
@@ -1302,14 +1303,16 @@ export function App(): React.JSX.Element {
     });
     return proceed && applied;
   }, [commitStudyWorkspace, requestWorkspaceDecision, runWorkspaceTransition]);
-  const reopenRecentWorkspaceItem = useCallback(async (): Promise<boolean> => {
+  const reopenRecentWorkspaceItem = useCallback(async (index?: number): Promise<boolean> => {
     let applied = false;
     let focusTabId: string | null = null;
     let outcome: WorkspaceMutationOutcome = "unchanged";
     const proceed = await runWorkspaceTransition("group-change", () => {
       commitStudyWorkspace((current) => {
         if (!current) return current;
-        const result = reopenClosedStudyItem(current);
+        const result = index === undefined
+          ? reopenClosedStudyItem(current)
+          : reopenClosedStudyItemAt(current, index);
         outcome = result.outcome;
         if (result.state === current) return current;
         applied = true;
@@ -1921,6 +1924,7 @@ export function App(): React.JSX.Element {
                 onWorkspaceTabReorder={reorderWorkspaceTab}
                 onWorkspaceGroupReorder={reorderWorkspaceGroup}
                 onWorkspaceRecentReopen={reopenRecentWorkspaceItem}
+                onWorkspaceTabDuplicate={duplicateActivePassageTab}
                 workspacePersistenceStatus={workspacePersistenceStatus}
                 onRetryWorkspacePersistence={retryWorkspacePersistence}
                 researchScrollTop={activeEntityTab?.scrollTop}

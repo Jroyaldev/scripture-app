@@ -82,8 +82,8 @@ test("modifier and middle clicks are explicit passage-tab branches", async () =>
 test("VersePeek keeps Study and new passage tabs as separate actions", () => {
   assert.match(peek, /onKeepReference\?: \(target: PeekTarget\) => void/);
   assert.match(peek, /onOpenPassageTab\?: \([\s\S]{0,120}?options\?: VersePeekOpenOptions/);
-  assert.match(peek, />\s*Keep in Study\s*</);
-  assert.match(peek, /"Open passage tab"/);
+  assert.match(peek, />\s*Keep in margin\s*</);
+  assert.match(peek, /"Open in tab"/);
   assert.match(peek, /if \(await onOpenPassageTab\(peek\.target, \{ focusDestination \}\)\) onClose\(\)/);
   const keepAction = peek.slice(
     peek.indexOf('className="verse-peek-keep"'),

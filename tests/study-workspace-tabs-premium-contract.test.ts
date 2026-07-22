@@ -68,10 +68,41 @@ test("the fixed toolbar stays small and exposes one active-group menu, Open, rec
   assert.equal([...toolbar.matchAll(/data-study-active-group-manage/g)].length, 1);
   assert.doesNotMatch(toolbar, /groups\.map/);
   assert.match(toolbar, /data-study-open=""/);
-  assert.match(toolbar, />\s*<span aria-hidden="true">\+<\/span>\s*<span>Open<\/span>/);
-  assert.match(toolbar, /data-study-reopen-recent/);
+  // The Open control now carries an inline stroke glyph, not the "+" character.
+  assert.match(toolbar, /<span aria-hidden="true"><PlusGlyph \/><\/span><span>Open<\/span>/);
+  // The standalone reopen button is gone from the at-rest cluster; recovery now
+  // lives entirely inside the All Tabs overflow.
+  assert.doesNotMatch(toolbar, /data-study-reopen-recent/);
+  assert.doesNotMatch(toolbar, /scripture-workspace-reopen/);
   assert.match(toolbar, /data-study-all-tabs/);
   assert.match(componentSource, />Study or question<\/label>/);
+});
+
+test("the strip and its popovers use custom menus and shared tooltips, never native selects", () => {
+  // No native <select> anywhere in the strip or its popovers.
+  assert.doesNotMatch(componentSource, /<select/);
+  assert.doesNotMatch(componentSource, /<option/);
+  // Order/Move controls are custom menus on the Popover primitive.
+  assert.match(componentSource, /className="scripture-workspace-menu-trigger"/);
+  assert.match(componentSource, /data-study-workspace-menu=/);
+  assert.match(componentSource, /role="menu"/);
+  assert.match(componentSource, /role="menuitem"/);
+  // Strip controls use the shared Tooltip component.
+  assert.match(componentSource, /import \{ Tooltip \} from "\.\/Tooltip\.js"/);
+  assert.match(componentSource, /<Tooltip label=\{openTooltip\}>/);
+  // One glyph system: inline stroke-SVG components, no unicode control glyphs.
+  for (const glyph of ["CaretGlyph", "PlusGlyph", "OverflowGlyph", "SearchGlyph", "ReopenGlyph"]) {
+    assert.match(componentSource, new RegExp(`function ${glyph}\\(`));
+  }
+  assert.doesNotMatch(componentSource, /⌄|↶|•••|⌕/);
+});
+
+test("the Open control gauges the 64-tab capacity", () => {
+  assert.match(componentSource, /const atTabCapacity = totalTabs >= STUDY_WORKSPACE_TAB_LIMIT/);
+  assert.match(componentSource, /aria-disabled=\{atTabCapacity \|\| undefined\}/);
+  assert.match(componentSource, /if \(!atTabCapacity\) onNewResearch\(\)/);
+  // The tooltip surfaces the count when within a few tabs of the cap.
+  assert.match(componentSource, /of \$\{STUDY_WORKSPACE_TAB_LIMIT\} studies open/);
 });
 
 test("All Tabs is searchable, grouped, and owns tab and group management", () => {
@@ -120,17 +151,26 @@ test("the rail remains premium, opaque, zoom-safe, and accessible across themes"
   assert.match(rail, /flex: 0 0 38px/);
   assert.match(rail, /background: var\(--workspace-bar-bg\)/);
   assert.match(rail, /\.scripture-workspace-tab-label \{[\s\S]{0,180}opacity: 1/);
-  assert.match(rail, /\.scripture-workspace-tab-wrap\[data-study-group-label\]::before \{[\s\S]{0,260}font: 560 10px\/1 var\(--font-ui\)/);
-  assert.match(rail, /\.scripture-workspace-active-group small \{[\s\S]{0,260}font: 550 9px\/1 var\(--font-mono\)/);
+  // Invented weights are snapped to the 500/600 rhythm.
+  assert.match(rail, /\.scripture-workspace-group-tab \{[\s\S]{0,320}font: 500 10px\/1 var\(--font-ui\)/);
+  assert.match(rail, /\.scripture-workspace-active-group small \{[\s\S]{0,260}font: 500 9px\/1 var\(--font-ui\);[\s\S]{0,80}font-variant-numeric: tabular-nums/);
   assert.match(rail, /min-width: 24px/);
   assert.match(rail, /min-height: 24px/);
   assert.match(rail, /overflow-x: auto/);
   assert.match(rail, /overscroll-behavior-inline: contain/);
   assert.match(rail, /scroll-padding-inline/);
-  assert.match(rail, /\.popover-panel\.scripture-workspace-group-popover,\s*\.popover-panel\.scripture-workspace-overflow-popover \{[\s\S]{0,180}background: var\(--workspace-active-bg\)/);
+  // Workspace popovers inherit the shared --bg-float material (no fill override).
+  assert.doesNotMatch(
+    rail,
+    /\.popover-panel\.scripture-workspace-group-popover,\s*\.popover-panel\.scripture-workspace-overflow-popover \{[\s\S]{0,180}background: var\(--workspace-active-bg\)/,
+  );
   assert.match(rail, /\.scripture-workspace-overflow-popover \{[\s\S]{0,220}display: grid;[\s\S]{0,180}grid-template-rows: auto auto minmax\(0, 1fr\)/);
   assert.match(rail, /\.scripture-workspace-overflow-list \{[\s\S]{0,220}min-height: 0;[\s\S]{0,120}overflow-y: auto;[\s\S]{0,120}overscroll-behavior: contain;/);
-  assert.doesNotMatch(rail, /mask-image|linear-gradient/);
+  // Scroll-edge indicators are clean mask fades, never a blurred inset shadow.
+  assert.match(rail, /\.scripture-workspace-viewport\.is-scrollable-left \{[\s\S]{0,160}mask-image: linear-gradient/);
+  assert.doesNotMatch(rail, /is-scrollable-left \{[\s\S]{0,120}box-shadow/);
+  // Gold is reserved for selection: the 2px indicator tints --study-gold.
+  assert.match(rail, /\.scripture-workspace-tab\[aria-selected="true"\]::after \{[\s\S]{0,200}background: var\(--study-gold\)/);
   assert.match(rail, /@media \(forced-colors: active\)/);
   assert.match(rail, /@media \(prefers-reduced-motion: reduce\)/);
 });

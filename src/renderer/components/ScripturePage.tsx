@@ -463,7 +463,8 @@ interface Props {
     groupId: string,
     position: "left" | "right" | "start" | "end",
   ) => Promise<boolean>;
-  onWorkspaceRecentReopen?: () => Promise<boolean>;
+  onWorkspaceRecentReopen?: (index?: number) => Promise<boolean>;
+  onWorkspaceTabDuplicate?: () => Promise<boolean>;
   workspacePersistenceStatus: WorkspacePersistenceStatus;
   onRetryWorkspacePersistence: () => Promise<boolean>;
   researchScrollTop?: number;
@@ -675,6 +676,7 @@ export function ScripturePage({
   onWorkspaceTabReorder,
   onWorkspaceGroupReorder,
   onWorkspaceRecentReopen,
+  onWorkspaceTabDuplicate,
   workspacePersistenceStatus,
   onRetryWorkspacePersistence,
   researchScrollTop,
@@ -4616,6 +4618,8 @@ export function ScripturePage({
             onWorkspaceGroupReorder?.(groupId, position) ?? Promise.resolve(false)
           )}
           onReopenRecent={() => onWorkspaceRecentReopen?.() ?? Promise.resolve(false)}
+          onReopenRecentItem={(index) => onWorkspaceRecentReopen?.(index) ?? Promise.resolve(false)}
+          onDuplicateTab={() => onWorkspaceTabDuplicate?.() ?? Promise.resolve(false)}
           onNewResearch={() => (onOpenResearchPalette ?? onOpenCommandPalette)?.()}
           persistenceStatus={workspacePersistenceStatus}
           onRetryPersistence={onRetryWorkspacePersistence}

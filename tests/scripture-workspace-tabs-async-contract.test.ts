@@ -59,11 +59,18 @@ test("collapse is a single approved group intent and keyboard or middle click aw
   const keyboard = section("const handleTabKeyDown", "const deferMouseFocus");
   assert.match(keyboard, /async/);
   assert.match(keyboard, /await handleCloseTab\(tabId/);
-  assert.match(keyboard, /await handleSelectTab\(next/);
+  // APG manual activation: Enter/Space commit the focused tab; arrows only move
+  // roving focus (never a transition) and never touch aria-selected.
+  assert.match(keyboard, /event\.key === "Enter"[\s\S]{0,160}handleSelectTab\(tabId/);
+  assert.match(keyboard, /setFocusedTabId\(next\)/);
+  assert.doesNotMatch(keyboard, /await handleSelectTab\(next/);
 
+  // A collapsed study's proxy no longer closes the whole study on middle-click,
+  // but individual tabs keep middle-click-to-close.
   const middleClick = section("const handleTabAuxClick", "const handleTabKeyDown");
   assert.match(middleClick, /async/);
   assert.match(middleClick, /await handleCloseTab\(tabId/);
+  assert.match(middleClick, /if \(collapsedProxy\) \{[\s\S]{0,80}return;/);
 });
 
 test("desktop pointer actions defer browser focus until their intent is approved", () => {
@@ -84,7 +91,9 @@ test("the APG tablist exposes only tabs while group management stays in the adja
 
   assert.doesNotMatch(tablist, /role="group"/);
   assert.doesNotMatch(tablist, /scripture-workspace-group-toggle/);
-  assert.doesNotMatch(tablist, /tabIndex=\{-1\}/);
+  // Tabs must rove (never a hardcoded -1); the in-strip collapse control is a
+  // deliberate non-roving stop, so scope the check to role="tab".
+  assert.doesNotMatch(tablist, /role="tab"[^>]*tabIndex=\{-1\}/);
   assert.match(
     source,
     /<div className="scripture-workspace-actions" role="toolbar" aria-label="Study tab controls">/,

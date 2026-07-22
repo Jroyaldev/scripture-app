@@ -18,17 +18,17 @@ test("VersePeek presents Keep and Open as independent keyboard actions", () => {
   assert.match(peek, /const hasActions = Boolean\(onKeepReference \|\| onOpenPassageTab\)/);
   assert.match(peek, /role=\{hasActions \? "dialog" : "tooltip"\}/);
   assert.match(peek, /panel\.querySelector<HTMLElement>\("\.verse-peek-keep, \.verse-peek-open"\)/);
-  assert.match(peek, /className="verse-peek-keep"[\s\S]{0,260}>\s*Keep in Study\s*</);
+  assert.match(peek, /className="verse-peek-keep"[\s\S]{0,600}>\s*Keep in margin\s*</);
   const openAction = peek.slice(
     peek.indexOf('className="verse-peek-open"'),
     peek.indexOf("</button>", peek.indexOf('className="verse-peek-open"')),
   );
-  assert.match(openAction, />\s*\{openingPassage \? "Opening…" : "Open passage tab"\}\s*$/);
+  assert.match(openAction, /\{openingPassage \? "Opening…" : "Open in tab"\}/);
 });
 
 test("VersePeek closes only after an accepted passage-tab open", () => {
   const actionStart = peek.indexOf('className="verse-peek-open"');
-  const action = peek.slice(actionStart, actionStart + 700);
+  const action = peek.slice(actionStart, actionStart + 1000);
   assert.ok(actionStart >= 0);
   assert.match(action, /setOpeningPassage\(true\)/);
   assert.match(action, /if \(await onOpenPassageTab\(peek\.target, \{ focusDestination \}\)\) onClose\(\)/);
@@ -50,7 +50,7 @@ test("keyboard Peek open hands focus to the committed passage without changing p
   assert.equal(shouldFocus(1), false);
 
   const actionStart = peek.indexOf('className="verse-peek-open"');
-  const action = peek.slice(actionStart, actionStart + 900);
+  const action = peek.slice(actionStart, actionStart + 1200);
   assert.match(action, /onClick=\{\(event\) =>/);
   assert.match(action, /const focusDestination = versePeekShouldFocusDestination\(event\.detail\)/);
   assert.match(action, /onOpenPassageTab\(peek\.target, \{ focusDestination \}\)/);

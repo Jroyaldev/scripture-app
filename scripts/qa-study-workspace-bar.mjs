@@ -347,7 +347,7 @@ function normalMetricsExpression(themeId, hitTarget, keyboardFocusMetrics) {
     const mark = active.querySelector(".scripture-workspace-tab-mark");
     const close = active.querySelector(".scripture-workspace-tab-close");
     const groupControl = document.querySelector("[data-study-active-group-manage]");
-    const groupLabelOwner = document.querySelector("[data-study-group-label]");
+    const groupLabelOwner = document.querySelector("[data-study-group-tab]");
     const barColor = parseColor(barStyle.backgroundColor);
     const activeBackground = parseColor(activeStyle.backgroundColor);
     const inactiveRect = inactive.getBoundingClientRect();
@@ -388,7 +388,8 @@ function normalMetricsExpression(themeId, hitTarget, keyboardFocusMetrics) {
     const groupVisible = groupControl instanceof HTMLElement
       && groupControl.getBoundingClientRect().width >= 24
       && groupLabelOwner instanceof HTMLElement
-      && getComputedStyle(groupLabelOwner, "::before").content !== "none";
+      && groupLabelOwner.getBoundingClientRect().width >= 24
+      && (groupLabelOwner.textContent ?? "").trim().length > 0;
     const activeBoxShadow = activeStyle.boxShadow.trim();
     const neutralHalo = activeBoxShadow === "none"
       || splitTopLevel(activeBoxShadow).every((shadow) => /(^|\\s)inset(\\s|$)/.test(shadow));
@@ -670,14 +671,23 @@ try {
     active?.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
     return true;
   })()`);
-  await driver.waitFor(`document.querySelector('[role="tab"][aria-selected="true"]')?.getAttribute("data-study-tab-id") !== ${JSON.stringify(rovingBefore.activeId)}`);
+  await driver.waitFor(`document.activeElement?.getAttribute("role") === "tab"
+    && document.activeElement?.getAttribute("data-study-tab-id") !== ${JSON.stringify(rovingBefore.activeId)}`);
   const arrowFocus = await driver.evaluate(`({
     id: document.activeElement?.getAttribute("data-study-tab-id") ?? null,
     role: document.activeElement?.getAttribute("role") ?? null,
     managementControl: Boolean(document.activeElement?.closest(".scripture-workspace-actions")),
+    selectedId: document.querySelector('[role="tab"][aria-selected="true"]')?.getAttribute("data-study-tab-id") ?? null,
   })`);
   assert.equal(arrowFocus.role, "tab", "ArrowRight did not land on the next study tab");
   assert.equal(arrowFocus.managementControl, false, "ArrowRight entered a management control");
+  assert.equal(
+    arrowFocus.selectedId,
+    rovingBefore.activeId,
+    "ArrowRight must move focus only — selection commits on Enter (manual activation)",
+  );
+  await driver.evaluate(`document.activeElement?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }))`);
+  await driver.waitFor(`document.querySelector('[role="tab"][aria-selected="true"]')?.getAttribute("data-study-tab-id") !== ${JSON.stringify(rovingBefore.activeId)}`);
 
   await driver.evaluate(`document.querySelector("[data-study-all-tabs]")?.click()`);
   await driver.waitFor(`document.activeElement?.matches("[data-study-all-tabs-search]") === true`);

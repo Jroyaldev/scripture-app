@@ -559,16 +559,19 @@ try {
   await driver.waitFor(`Boolean(document.querySelector("[data-study-group-rename] input"))`);
   await setNativeControlValue(driver, "[data-study-group-rename] input", "Baptism and New Life");
   await clickStudyControl(driver, '[data-study-group-rename] button[type="submit"]');
-  await driver.waitFor(`document.querySelector('[data-study-group-id="pastoral-romans-study"][data-study-group-label]')
-    ?.getAttribute("data-study-group-label") === "Baptism and New Life"`);
+  await driver.waitFor(`document.querySelector('[data-study-group-tab][data-study-group-id="pastoral-romans-study"]')
+    ?.textContent?.trim() === "Baptism and New Life"`);
 
   await clickStudyControl(driver, "[data-study-all-tabs]");
   await driver.waitFor(`Boolean(document.querySelector("[data-study-all-tabs-search]"))`);
-  await setNativeControlValue(
+  await clickStudyControl(
     driver,
     '[data-study-all-tabs-row][data-study-tab-id="john-3-kjv"] [data-study-tab-move]',
-    "pastoral-romans-study",
   );
+  await driver.waitFor(`Boolean(document.querySelector(
+    '[data-study-workspace-menu] [data-study-menu-item="pastoral-romans-study"]'
+  ))`);
+  await clickStudyControl(driver, '[data-study-workspace-menu] [data-study-menu-item="pastoral-romans-study"]');
   await driver.waitFor(`Boolean(document.querySelector(
     '[data-study-group-id="pastoral-romans-study"] [data-study-all-tabs-row][data-study-tab-id="john-3-kjv"]'
   ))`);
@@ -595,8 +598,14 @@ try {
     button?.click();
     return Boolean(button);
   })()`);
-  await driver.waitFor(`!document.querySelector('[data-study-tab-id="ephesus-entity"]')
-    && Boolean(document.querySelector("[data-study-reopen-recent]"))`);
+  await driver.waitFor(`!document.querySelector('[data-study-tab-id="ephesus-entity"]')`);
+  await driver.evaluate(`(() => {
+    if (!document.querySelector("[data-study-all-tabs-search]")) {
+      document.querySelector("[data-study-all-tabs]")?.click();
+    }
+    return true;
+  })()`);
+  await driver.waitFor(`Boolean(document.querySelector("[data-study-reopen-recent]"))`);
   await clickStudyControl(driver, "[data-study-reopen-recent]");
   await driver.waitFor(`Boolean(document.querySelector('[data-study-tab-id="ephesus-entity"]'))`);
   await clickStudyControl(driver, "[data-study-all-tabs]");
@@ -607,8 +616,14 @@ try {
   await driver.waitFor(`document.querySelector('[data-study-decision="close-study"]')
     && Boolean(document.querySelector('[data-study-decision-action="close-study"]'))`);
   await clickStudyControl(driver, '[data-study-decision-action="close-study"]');
-  await driver.waitFor(`!document.querySelector('[data-study-group-id="pastoral-romans-study"]')
-    && Boolean(document.querySelector("[data-study-reopen-recent]"))`);
+  await driver.waitFor(`!document.querySelector('[data-study-group-id="pastoral-romans-study"]')`);
+  await driver.evaluate(`(() => {
+    if (!document.querySelector("[data-study-all-tabs-search]")) {
+      document.querySelector("[data-study-all-tabs]")?.click();
+    }
+    return true;
+  })()`);
+  await driver.waitFor(`Boolean(document.querySelector("[data-study-reopen-recent]"))`);
   await clickStudyControl(driver, "[data-study-reopen-recent]");
   await driver.waitFor(`Boolean(document.querySelector('[data-study-group-id="pastoral-romans-study"]'))
     && Boolean(document.querySelector('[data-study-tab-id="ephesus-entity"]'))`);
@@ -690,11 +705,14 @@ try {
   await clickButtonByText(driver, ".connection-draft-exit-actions button", "Keep editing");
   await driver.evaluate(`window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))`);
   await clickStudyControl(driver, "[data-study-all-tabs]");
-  await setNativeControlValue(
+  await clickStudyControl(
     driver,
     '[data-study-all-tabs-row][data-study-tab-id="john-3-kjv"] [data-study-tab-move]',
-    "pastoral-acts-study",
   );
+  await driver.waitFor(`Boolean(document.querySelector(
+    '[data-study-workspace-menu] [data-study-menu-item="pastoral-acts-study"]'
+  ))`);
+  await clickStudyControl(driver, '[data-study-workspace-menu] [data-study-menu-item="pastoral-acts-study"]');
   await driver.waitFor(`Boolean(document.querySelector(".connection-draft-exit-dialog"))`);
   await clickButtonByText(driver, ".connection-draft-exit-actions button", "Discard");
   await driver.waitFor(`Boolean(document.querySelector(

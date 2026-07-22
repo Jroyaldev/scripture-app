@@ -1,8 +1,9 @@
 import type React from "react";
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { BookNameData } from "../api.js";
 import {
   orderedStudyWorkspaceTabs,
+  STUDY_WORKSPACE_TAB_LIMIT,
   studyWorkspaceGroupCloseAvailability,
   studyWorkspaceGroupLabel,
   studyWorkspaceTabCloseAvailability,
@@ -16,8 +17,15 @@ import {
 } from "../utils/studyWorkspace.js";
 import type { WorkspacePersistenceStatus } from "../utils/workspacePersistence.js";
 import { Popover } from "./Popover.js";
+import { Tooltip } from "./Tooltip.js";
+
+/** Warn on the `+` control once within this many tabs of the hard cap. */
+const CAPACITY_HINT_THRESHOLD = 4;
 
 export type WorkspaceReorderPosition = "left" | "right" | "start" | "end";
+
+/** Pointer travel (px) before a press on a tab becomes a reorder drag. */
+const DRAG_THRESHOLD_PX = 4;
 
 export interface ScriptureWorkspaceTabsProps {
   workspace: StudyWorkspaceStateV2;
@@ -31,6 +39,8 @@ export interface ScriptureWorkspaceTabsProps {
   onReorderTab: (tabId: string, position: WorkspaceReorderPosition) => Promise<boolean>;
   onReorderGroup: (groupId: string, position: WorkspaceReorderPosition) => Promise<boolean>;
   onReopenRecent: () => Promise<boolean>;
+  onReopenRecentItem: (index: number) => Promise<boolean>;
+  onDuplicateTab: () => Promise<boolean>;
   onNewResearch: () => void;
   persistenceStatus: WorkspacePersistenceStatus;
   onRetryPersistence: () => Promise<boolean>;
@@ -49,6 +59,33 @@ interface SelectTabOptions {
 }
 
 interface CloseTabOptions extends SelectTabOptions {}
+
+type WorkspaceContextTarget =
+  | { kind: "tab"; tabId: string; groupId: string }
+  | { kind: "group"; groupId: string }
+  | { kind: "empty" };
+
+interface WorkspaceContextMenu {
+  target: WorkspaceContextTarget;
+  anchor: DOMRect;
+}
+
+interface WorkspaceDragState {
+  tabId: string;
+  groupId: string;
+  insertionIndex: number;
+}
+
+interface TabExitGeometry {
+  label: string;
+  kind: string;
+  left: number;
+  width: number;
+}
+
+interface ExitingTab extends TabExitGeometry {
+  id: string;
+}
 
 export function studyWorkspaceRovingTabId(
   visibleTabIds: readonly string[],
@@ -77,6 +114,48 @@ export function studyWorkspaceCloseActionCopy(
   };
 }
 
+/**
+ * Map a pointer drag inside one study to a legal `onReorderTab` position.
+ *
+ * The reorder model only exposes coarse single-step and end-stop moves
+ * (`start`/`left`/`right`/`end`) and never crosses group boundaries, so a drag
+ * is resolved against the ordering of the dragged tab's own group. `insertionIndex`
+ * is the slot (0..length) the drop indicator sits in; the source's own removal is
+ * accounted for before choosing a direction. Returns `null` for a no-op drop.
+ */
+export function studyWorkspaceDragReorderPosition(
+  orderedGroupTabIds: readonly string[],
+  draggedTabId: string,
+  insertionIndex: number,
+): WorkspaceReorderPosition | null {
+  const current = orderedGroupTabIds.indexOf(draggedTabId);
+  if (current < 0) return null;
+  const lastIndex = orderedGroupTabIds.length - 1;
+  // Removing the dragged tab shifts every later slot back by one.
+  let destination = insertionIndex > current ? insertionIndex - 1 : insertionIndex;
+  destination = Math.max(0, Math.min(lastIndex, destination));
+  if (destination === current) return null;
+  if (destination <= 0) return "start";
+  if (destination >= lastIndex) return "end";
+  return destination < current ? "left" : "right";
+}
+
+/**
+ * Translate a wheel event into a horizontal scroll delta for the tab strip.
+ * Only predominantly-vertical wheels over an overflowing strip are captured;
+ * everything else (no overflow, horizontal intent, or zero travel) is ignored
+ * so trackpad horizontal scrolling and non-overflow strips behave natively.
+ */
+export function studyWorkspaceWheelScrollDelta(
+  deltaX: number,
+  deltaY: number,
+  canScrollHorizontally: boolean,
+): number | null {
+  if (!canScrollHorizontally) return null;
+  if (deltaY === 0 || Math.abs(deltaY) <= Math.abs(deltaX)) return null;
+  return deltaY;
+}
+
 function PassageGlyph(): React.JSX.Element {
   return (
     <svg viewBox="0 0 18 18" aria-hidden="true">
@@ -87,6 +166,30 @@ function PassageGlyph(): React.JSX.Element {
 
 function CloseGlyph(): React.JSX.Element {
   return <svg viewBox="0 0 14 14" aria-hidden="true"><path d="m4 4 6 6M10 4l-6 6" /></svg>;
+}
+
+// Shared stroke-SVG control glyphs. All follow the PassageGlyph/CloseGlyph
+// convention (consistent viewBox, currentColor stroke, no fill, round caps)
+// and are styled through `.scripture-workspace-glyph`.
+function CaretGlyph(): React.JSX.Element {
+  return <svg className="scripture-workspace-glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6.5 8 10.5 12 6.5" /></svg>;
+}
+
+function PlusGlyph(): React.JSX.Element {
+  return <svg className="scripture-workspace-glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3.5v9M3.5 8h9" /></svg>;
+}
+
+function OverflowGlyph(): React.JSX.Element {
+  // Round caps on zero-length segments render as three even dots.
+  return <svg className="scripture-workspace-glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8h.01M8 8h.01M12 8h.01" /></svg>;
+}
+
+function SearchGlyph(): React.JSX.Element {
+  return <svg className="scripture-workspace-glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4" /><path d="m10.2 10.2 3.3 3.3" /></svg>;
+}
+
+function ReopenGlyph(): React.JSX.Element {
+  return <svg className="scripture-workspace-glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 4.5 3.2 7.3 6 10.1" /><path d="M3.2 7.3h6.3a3.4 3.4 0 0 1 0 6.8H6.6" /></svg>;
 }
 
 function PersonGlyph(): React.JSX.Element {
@@ -115,17 +218,27 @@ function TabMark({ tab }: { tab: StudyWorkspaceTab }): React.JSX.Element {
   return <span className="scripture-workspace-tab-mark" aria-hidden="true" />;
 }
 
-function ReorderOptions(): React.JSX.Element {
-  return (
-    <>
-      <option value="">Order…</option>
-      <option value="start">Move to first</option>
-      <option value="left">Move earlier</option>
-      <option value="right">Move later</option>
-      <option value="end">Move to last</option>
-    </>
-  );
+interface WorkspaceMenuItem {
+  key: string;
+  label: string;
+  disabled?: boolean;
+  run: () => void | Promise<unknown>;
 }
+
+interface WorkspaceMenuState {
+  id: string;
+  anchor: DOMRect;
+  trigger: HTMLElement;
+  ariaLabel: string;
+  items: WorkspaceMenuItem[];
+}
+
+const REORDER_MENU_LABELS: ReadonlyArray<{ position: WorkspaceReorderPosition; label: string }> = [
+  { position: "start", label: "Move to first" },
+  { position: "left", label: "Move earlier" },
+  { position: "right", label: "Move later" },
+  { position: "end", label: "Move to last" },
+];
 
 export function ScriptureWorkspaceTabs({
   workspace,
@@ -139,6 +252,8 @@ export function ScriptureWorkspaceTabs({
   onReorderTab,
   onReorderGroup,
   onReopenRecent,
+  onReopenRecentItem,
+  onDuplicateTab,
   onNewResearch,
   persistenceStatus,
   onRetryPersistence,
@@ -152,19 +267,42 @@ export function ScriptureWorkspaceTabs({
   const [renameDraft, setRenameDraft] = useState("");
   const [hasMeasuredOverflow, setHasMeasuredOverflow] = useState(false);
   const [scrollEdges, setScrollEdges] = useState({ left: false, right: false });
+  const [focusedTabId, setFocusedTabId] = useState<string | null>(null);
+  const [contextMenu, setContextMenu] = useState<WorkspaceContextMenu | null>(null);
+  const [dragState, setDragState] = useState<WorkspaceDragState | null>(null);
+  const [menu, setMenu] = useState<WorkspaceMenuState | null>(null);
+  const [exitingTabs, setExitingTabs] = useState<ExitingTab[]>([]);
   const viewportRef = useRef<HTMLDivElement>(null);
   const overflowButtonRef = useRef<HTMLButtonElement>(null);
   const overflowSearchRef = useRef<HTMLInputElement>(null);
   const groupMenuButtonRef = useRef<HTMLButtonElement>(null);
   const groupRenameInputRef = useRef<HTMLInputElement>(null);
+  const contextTriggerRef = useRef<HTMLElement | null>(null);
   const tabRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const pendingWorkspaceIntentCountRef = useRef(0);
+  const dragPointerRef = useRef<
+    { x: number; y: number; tabId: string; groupId: string; started: boolean; insertionIndex: number } | null
+  >(null);
+  const suppressTabClickRef = useRef(false);
+  // Symmetric exit motion: a closed tab leaves a decorative ghost that collapses
+  // its width/opacity to mirror the 150ms entrance. Geometry is captured while
+  // the tab still exists, so the ghost can be painted after React unmounts it.
+  const tabGeometryRef = useRef<Map<string, TabExitGeometry>>(new Map());
+  const prevVisibleTabIdsRef = useRef<string[]>([]);
+  const prefersReducedMotionRef = useRef(false);
 
   const visibleTabIds = useMemo(() => visibleStudyWorkspaceTabIds(workspace), [workspace]);
   const visibleTabIdSet = useMemo(() => new Set(visibleTabIds), [visibleTabIds]);
   const rovingTabId = useMemo(
     () => studyWorkspaceRovingTabId(visibleTabIds, workspace.activeTabId),
     [visibleTabIds, workspace.activeTabId],
+  );
+  // Manual activation: roving FOCUS may lead the active (aria-selected) tab, so
+  // the single tabindex=0 stop follows the focused tab and only falls back to
+  // the active tab once focus leaves or the selection commits.
+  const effectiveRovingTabId = useMemo(
+    () => (focusedTabId && visibleTabIdSet.has(focusedTabId) ? focusedTabId : rovingTabId),
+    [focusedTabId, rovingTabId, visibleTabIdSet],
   );
   const groups = useMemo<WorkspaceTabGroup[]>(() => workspace.groups.map((group) => {
     const tabs = orderedStudyWorkspaceTabs(workspace, group.id);
@@ -208,6 +346,21 @@ export function ScriptureWorkspaceTabs({
     };
     return studyWorkspaceGroupLabel(reopenedContext, recentlyClosed.group, bookNames);
   }, [bookNames, recentlyClosed, workspace]);
+  // Newest first for the recovery list; each entry keeps its true index for reopen.
+  const recentlyClosedList = useMemo(
+    () => workspace.recentlyClosed
+      .map((item, index) => ({ item, index }))
+      .reverse(),
+    [workspace.recentlyClosed],
+  );
+  const recentlyClosedItemLabel = useCallback((item: typeof workspace.recentlyClosed[number]): string => {
+    if (item.kind === "tab") return studyWorkspaceTabLabel(workspace, item.tab, bookNames);
+    const context: StudyWorkspaceStateV2 = {
+      ...workspace,
+      tabsById: { ...workspace.tabsById, ...item.tabsById },
+    };
+    return studyWorkspaceGroupLabel(context, item.group, bookNames);
+  }, [bookNames, workspace]);
 
   const runApprovedIntent = useCallback(async (
     request: () => Promise<boolean>,
@@ -259,6 +412,45 @@ export function ScriptureWorkspaceTabs({
     scheduleControlFocus(groupMenuButtonRef.current, groupMenuButtonRef);
   }, [scheduleControlFocus]);
 
+  const dismissContextMenu = useCallback((): void => {
+    setContextMenu(null);
+    scheduleControlFocus(contextTriggerRef.current, overflowButtonRef);
+  }, [scheduleControlFocus]);
+
+  const openMenu = useCallback((
+    id: string,
+    trigger: HTMLElement,
+    ariaLabel: string,
+    items: WorkspaceMenuItem[],
+  ): void => {
+    setMenu({ id, trigger, ariaLabel, items, anchor: trigger.getBoundingClientRect() });
+  }, []);
+
+  const dismissMenu = useCallback((): void => {
+    setMenu((current) => {
+      if (current) scheduleControlFocus(current.trigger, overflowButtonRef);
+      return null;
+    });
+  }, [scheduleControlFocus]);
+
+  const runMenuItem = useCallback(async (item: WorkspaceMenuItem): Promise<void> => {
+    if (item.disabled) return;
+    setMenu(null);
+    await item.run();
+  }, []);
+
+  const openContextMenu = useCallback((
+    target: WorkspaceContextTarget,
+    event: React.MouseEvent<HTMLElement>,
+  ): void => {
+    event.preventDefault();
+    setMenu(null);
+    setOverflowOpen(false);
+    setGroupMenuOpen(false);
+    contextTriggerRef.current = event.currentTarget;
+    setContextMenu({ target, anchor: new DOMRect(event.clientX, event.clientY, 0, 0) });
+  }, []);
+
   useLayoutEffect(() => {
     const viewport = viewportRef.current;
     if (!viewport) return;
@@ -278,6 +470,77 @@ export function ScriptureWorkspaceTabs({
       viewport.removeEventListener("scroll", measure);
     };
   }, [groups]);
+
+  // A vertical wheel over an overflowing strip pans it horizontally. Bound as a
+  // non-passive native listener so preventDefault actually suppresses the page.
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    const onWheel = (event: WheelEvent): void => {
+      const canScrollHorizontally = viewport.scrollWidth > viewport.clientWidth + 1;
+      const delta = studyWorkspaceWheelScrollDelta(event.deltaX, event.deltaY, canScrollHorizontally);
+      if (delta == null) return;
+      viewport.scrollLeft += delta;
+      event.preventDefault();
+    };
+    viewport.addEventListener("wheel", onWheel, { passive: false });
+    return () => viewport.removeEventListener("wheel", onWheel);
+  }, []);
+
+  useEffect(() => {
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    prefersReducedMotionRef.current = query.matches;
+    const onChange = (): void => { prefersReducedMotionRef.current = query.matches; };
+    query.addEventListener("change", onChange);
+    return () => query.removeEventListener("change", onChange);
+  }, []);
+
+  // Track tab geometry each commit so a removed tab can be replayed as a
+  // collapsing ghost. Runs in layout phase: the diff uses the geometry captured
+  // on the previous commit (still valid for the just-removed tab), then records
+  // fresh geometry for the surviving tabs.
+  useLayoutEffect(() => {
+    const viewport = viewportRef.current;
+    const priorGeometry = tabGeometryRef.current;
+    const currentIds = new Set(visibleTabIds);
+    if (!prefersReducedMotionRef.current && viewport) {
+      const removed = prevVisibleTabIdsRef.current.filter((id) => !currentIds.has(id));
+      const ghosts: ExitingTab[] = [];
+      for (const id of removed) {
+        const geometry = priorGeometry.get(id);
+        if (geometry) ghosts.push({ id, ...geometry });
+      }
+      if (ghosts.length > 0) {
+        setExitingTabs((current) => [
+          ...current.filter((ghost) => !currentIds.has(ghost.id) && !ghosts.some((g) => g.id === ghost.id)),
+          ...ghosts,
+        ]);
+      }
+    }
+    const nextGeometry = new Map<string, TabExitGeometry>();
+    if (viewport) {
+      const viewportRect = viewport.getBoundingClientRect();
+      for (const id of visibleTabIds) {
+        const node = tabRefs.current.get(id);
+        if (!node) continue;
+        const wrap = (node.closest(".scripture-workspace-tab-wrap") as HTMLElement | null) ?? node;
+        const rect = wrap.getBoundingClientRect();
+        nextGeometry.set(id, {
+          label: node.querySelector(".scripture-workspace-tab-label")?.textContent ?? "",
+          kind: node.dataset.studyTabKind ?? "",
+          left: rect.left - viewportRect.left + viewport.scrollLeft,
+          width: rect.width,
+        });
+      }
+    }
+    tabGeometryRef.current = nextGeometry;
+    prevVisibleTabIdsRef.current = visibleTabIds;
+  }, [visibleTabIds]);
+
+  // Once a selection commits, roving focus rejoins the active tab.
+  useEffect(() => {
+    setFocusedTabId(null);
+  }, [workspace.activeTabId]);
 
   useLayoutEffect(() => {
     if (pendingWorkspaceIntentCountRef.current > 0) return;
@@ -376,16 +639,134 @@ export function ScriptureWorkspaceTabs({
     },
   ), [onReopenRecent, runApprovedIntent, scheduleCommittedTabFocus]);
 
+  const handleReopenRecentItem = useCallback(async (index: number): Promise<boolean> => await runApprovedIntent(
+    () => onReopenRecentItem(index),
+    () => {
+      setOverflowOpen(false);
+      setGroupMenuOpen(false);
+      scheduleCommittedTabFocus(null, true);
+    },
+  ), [onReopenRecentItem, runApprovedIntent, scheduleCommittedTabFocus]);
+
+  const beginRenameFromContext = useCallback((groupId: string): void => {
+    const entry = groups.find((candidate) => candidate.group.id === groupId);
+    setContextMenu(null);
+    setGroupMenuOpen(false);
+    setOverflowQuery("");
+    setRenameGroupId(groupId);
+    setRenameDraft(entry?.label ?? "");
+    setOverflowAnchor(overflowButtonRef.current?.getBoundingClientRect() ?? null);
+    setOverflowOpen(true);
+    window.requestAnimationFrame(() => groupRenameInputRef.current?.focus({ preventScroll: true }));
+  }, [groups]);
+
+  const handleCloseOthers = useCallback(async (groupId: string, keepTabId: string): Promise<void> => {
+    const entry = groups.find((candidate) => candidate.group.id === groupId);
+    if (!entry) return;
+    const targets = entry.tabs
+      .filter((tab) => tab.id !== keepTabId
+        && studyWorkspaceTabCloseAvailability(workspace, tab.id) !== "unavailable")
+      .map((tab) => tab.id);
+    for (const id of targets) {
+      // Each sibling close is its own approved intent; stop if one is refused.
+      const closed = await handleCloseTab(id);
+      if (!closed) break;
+    }
+  }, [groups, handleCloseTab, workspace]);
+
+  const handleDuplicateTab = useCallback(async (tabId: string): Promise<void> => {
+    if (workspace.activeTabId !== tabId) {
+      const selected = await handleSelectTab(tabId);
+      if (!selected) return;
+    }
+    await onDuplicateTab();
+  }, [handleSelectTab, onDuplicateTab, workspace.activeTabId]);
+
+  const handleTabPointerDown = (
+    event: React.PointerEvent<HTMLButtonElement>,
+    tabId: string,
+    groupId: string,
+    draggable: boolean,
+  ): void => {
+    if (!draggable || event.button !== 0) return;
+    if (event.target instanceof Element && event.target.closest("[data-workspace-tab-close]")) return;
+    dragPointerRef.current = {
+      x: event.clientX,
+      y: event.clientY,
+      tabId,
+      groupId,
+      started: false,
+      insertionIndex: 0,
+    };
+  };
+
+  const handleTabPointerMove = (
+    event: React.PointerEvent<HTMLButtonElement>,
+    groupId: string,
+  ): void => {
+    const origin = dragPointerRef.current;
+    if (!origin || origin.groupId !== groupId) return;
+    if (!origin.started) {
+      if (Math.hypot(event.clientX - origin.x, event.clientY - origin.y) < DRAG_THRESHOLD_PX) return;
+      origin.started = true;
+      try { event.currentTarget.setPointerCapture(event.pointerId); } catch { /* capture is best-effort */ }
+    }
+    const entry = groups.find((candidate) => candidate.group.id === groupId);
+    if (!entry) return;
+    const orderedIds = entry.visibleTabs.map((tab) => tab.id);
+    let insertionIndex = orderedIds.length;
+    for (let index = 0; index < orderedIds.length; index += 1) {
+      const node = tabRefs.current.get(orderedIds[index]);
+      if (!node) continue;
+      const rect = node.getBoundingClientRect();
+      if (event.clientX < rect.left + rect.width / 2) {
+        insertionIndex = index;
+        break;
+      }
+    }
+    origin.insertionIndex = insertionIndex;
+    setDragState({ tabId: origin.tabId, groupId, insertionIndex });
+  };
+
+  const handleTabPointerUp = async (
+    event: React.PointerEvent<HTMLButtonElement>,
+    tabId: string,
+    groupId: string,
+  ): Promise<void> => {
+    const origin = dragPointerRef.current;
+    dragPointerRef.current = null;
+    setDragState(null);
+    if (!origin || !origin.started) return;
+    suppressTabClickRef.current = true;
+    try { event.currentTarget.releasePointerCapture(event.pointerId); } catch { /* release is best-effort */ }
+    const entry = groups.find((candidate) => candidate.group.id === groupId);
+    if (!entry) return;
+    const orderedIds = entry.visibleTabs.map((tab) => tab.id);
+    const position = studyWorkspaceDragReorderPosition(orderedIds, tabId, origin.insertionIndex);
+    if (position) await handleReorderTab(tabId, position, event.currentTarget);
+  };
+
+  const handleTabPointerCancel = (): void => {
+    dragPointerRef.current = null;
+    setDragState(null);
+  };
+
   const handleTabAuxClick = async (
     event: React.MouseEvent<HTMLButtonElement>,
     tabId: string,
     canClose: boolean,
-    collapsedGroupId: string | null,
+    collapsedProxy: boolean,
   ): Promise<void> => {
-    if (event.button !== 1 || !canClose) return;
+    if (event.button !== 1) return;
+    // A collapsed study's proxy stands in for many tabs; middle-clicking it must
+    // never close the whole study. Individual tabs keep middle-click-to-close.
+    if (collapsedProxy) {
+      event.preventDefault();
+      return;
+    }
+    if (!canClose) return;
     event.preventDefault();
-    if (collapsedGroupId) await handleCloseGroup(collapsedGroupId);
-    else await handleCloseTab(tabId);
+    await handleCloseTab(tabId, { moveFocus: true });
   };
 
   const handleTabKeyDown = async (
@@ -400,6 +781,12 @@ export function ScriptureWorkspaceTabs({
       else await handleCloseTab(tabId, { moveFocus: true });
       return;
     }
+    // APG manual activation: Enter/Space commit the focused tab's transition.
+    if (event.key === "Enter" || event.key === " " || event.key === "Spacebar") {
+      event.preventDefault();
+      await handleSelectTab(tabId, { moveFocus: true });
+      return;
+    }
     if (visibleTabIds.length === 0) return;
     const current = Math.max(0, visibleTabIds.indexOf(tabId));
     let index: number | null = null;
@@ -410,11 +797,40 @@ export function ScriptureWorkspaceTabs({
     if (index == null) return;
     event.preventDefault();
     const next = visibleTabIds[index];
-    if (next) await handleSelectTab(next, { moveFocus: true });
+    if (!next) return;
+    // Arrows move roving FOCUS only; aria-selected/activation is untouched.
+    setFocusedTabId(next);
+    window.requestAnimationFrame(() => tabRefs.current.get(next)?.focus({ preventScroll: true }));
   };
 
   const deferMouseFocus = (event: React.MouseEvent<HTMLElement>): void => event.preventDefault();
+
+  const handleViewportDoubleClick = (event: React.MouseEvent<HTMLDivElement>): void => {
+    if (event.target instanceof Element
+      && event.target.closest("button, input, select, a, [role='tab']")) return;
+    onNewResearch();
+  };
+
+  const handleViewportContextMenu = (event: React.MouseEvent<HTMLDivElement>): void => {
+    if (event.target instanceof Element
+      && event.target.closest("[data-study-tab-id], [data-study-group-tab]")) return;
+    openContextMenu({ kind: "empty" }, event);
+  };
+
   const totalTabs = Object.keys(workspace.tabsById).length;
+  const atTabCapacity = totalTabs >= STUDY_WORKSPACE_TAB_LIMIT;
+  const nearTabCapacity = totalTabs >= STUDY_WORKSPACE_TAB_LIMIT - CAPACITY_HINT_THRESHOLD;
+  const openTooltip = atTabCapacity
+    ? `All ${STUDY_WORKSPACE_TAB_LIMIT} studies open — close one to open another`
+    : nearTabCapacity
+      ? `${totalTabs} of ${STUDY_WORKSPACE_TAB_LIMIT} studies open`
+      : "Open a new study tab";
+  const contextGroupId = contextMenu && "groupId" in contextMenu.target
+    ? contextMenu.target.groupId
+    : null;
+  const contextGroup = contextGroupId
+    ? groups.find((entry) => entry.group.id === contextGroupId) ?? null
+    : null;
 
   return (
     <nav
@@ -432,11 +848,13 @@ export function ScriptureWorkspaceTabs({
         ].filter(Boolean).join(" ")}
         role="tablist"
         aria-label="Open study tabs"
+        onDoubleClick={handleViewportDoubleClick}
+        onContextMenu={handleViewportContextMenu}
       >
         {groups.flatMap(({ group, label: groupLabel, visibleTabs }, groupIndex) => visibleTabs.map((tab, tabIndex) => {
           const label = studyWorkspaceTabLabel(workspace, tab, bookNames);
           const selected = workspace.activeTabId === tab.id;
-          const roving = rovingTabId === tab.id;
+          const roving = effectiveRovingTabId === tab.id;
           const collapsedProxy = group.collapsed;
           const visibleLabel = collapsedProxy ? groupLabel : label;
           const closeAvailability = collapsedProxy
@@ -451,15 +869,34 @@ export function ScriptureWorkspaceTabs({
           const expandedGroupLabel = !collapsedProxy && tabIndex === 0
             ? groupLabel
             : undefined;
+          const dragging = dragState?.tabId === tab.id;
+          const dropBefore = dragState?.groupId === group.id && dragState.insertionIndex === tabIndex;
+          const dropAfter = dragState?.groupId === group.id
+            && tabIndex === visibleTabs.length - 1
+            && dragState.insertionIndex >= visibleTabs.length;
           return (
             <div
-              className={`scripture-workspace-tab-wrap${selected ? " is-selected" : ""}${collapsedProxy ? " is-collapsed-proxy" : ""}`}
+              className={`scripture-workspace-tab-wrap${selected ? " is-selected" : ""}${collapsedProxy ? " is-collapsed-proxy" : ""}${dragging ? " is-dragging" : ""}`}
               role="presentation"
               key={tab.id}
               data-study-group-id={group.id}
               data-study-group-start={groupStart || undefined}
-              data-study-group-label={expandedGroupLabel}
+              data-study-drop={dropBefore ? "before" : dropAfter ? "after" : undefined}
             >
+              {expandedGroupLabel !== undefined && (
+                <button
+                  type="button"
+                  className="scripture-workspace-group-tab"
+                  data-study-group-tab=""
+                  data-study-group-id={group.id}
+                  tabIndex={-1}
+                  title={expandedGroupLabel}
+                  aria-label={`Collapse study ${expandedGroupLabel}`}
+                  onMouseDown={deferMouseFocus}
+                  onClick={async (event) => { await toggleGroup(group.id, true, event.currentTarget); }}
+                  onContextMenu={(event) => openContextMenu({ kind: "group", groupId: group.id }, event)}
+                >{expandedGroupLabel}</button>
+              )}
               <button
                 ref={(node) => {
                   if (node) tabRefs.current.set(tab.id, node);
@@ -481,7 +918,15 @@ export function ScriptureWorkspaceTabs({
                 data-study-collapsed-proxy={collapsedProxy || undefined}
                 title={collapsedProxy ? `${groupLabel} — ${group.tabIds.length} tabs` : `${label} — ${groupLabel}`}
                 onMouseDown={deferMouseFocus}
+                onPointerDown={(event) => handleTabPointerDown(event, tab.id, group.id, !collapsedProxy)}
+                onPointerMove={(event) => handleTabPointerMove(event, group.id)}
+                onPointerUp={(event) => handleTabPointerUp(event, tab.id, group.id)}
+                onPointerCancel={handleTabPointerCancel}
                 onClick={async (event) => {
+                  if (suppressTabClickRef.current) {
+                    suppressTabClickRef.current = false;
+                    return;
+                  }
                   if (event.target instanceof Element && event.target.closest("[data-workspace-tab-close]")) {
                     if (collapsedProxy) await handleCloseGroup(group.id);
                     else await handleCloseTab(tab.id, { moveFocus: true });
@@ -489,7 +934,13 @@ export function ScriptureWorkspaceTabs({
                   }
                   await handleSelectTab(tab.id, { moveFocus: true });
                 }}
-                onAuxClick={(event) => handleTabAuxClick(event, tab.id, canClose, collapsedProxy ? group.id : null)}
+                onAuxClick={(event) => handleTabAuxClick(event, tab.id, canClose, collapsedProxy)}
+                onContextMenu={(event) => openContextMenu(
+                  collapsedProxy
+                    ? { kind: "group", groupId: group.id }
+                    : { kind: "tab", tabId: tab.id, groupId: group.id },
+                  event,
+                )}
                 onKeyDown={(event) => handleTabKeyDown(event, tab.id, canClose, collapsedProxy ? group.id : null)}
               >
                 <TabMark tab={tab} />
@@ -512,6 +963,22 @@ export function ScriptureWorkspaceTabs({
             </div>
           );
         }))}
+        {exitingTabs.map((ghost) => (
+          <div
+            key={`exit-${ghost.id}`}
+            className="scripture-workspace-tab-exit"
+            data-study-tab-exit=""
+            aria-hidden="true"
+            style={{ left: ghost.left, width: ghost.width }}
+            onAnimationEnd={() => setExitingTabs((current) => current.filter((entry) => entry.id !== ghost.id))}
+          >
+            <span
+              className={`scripture-workspace-tab-mark${ghost.kind === "passage" || ghost.kind === "person" || ghost.kind === "place" ? ` is-${ghost.kind}` : ""}`}
+              aria-hidden="true"
+            />
+            <span className="scripture-workspace-tab-label">{ghost.label}</span>
+          </div>
+        ))}
       </div>
 
       <div className="scripture-workspace-actions" role="toolbar" aria-label="Study tab controls">
@@ -528,73 +995,69 @@ export function ScriptureWorkspaceTabs({
           ) : <span className="sr-only">Tabs saved</span>}
         </span>
         {activeGroup && (
-          <button
-            ref={groupMenuButtonRef}
-            type="button"
-            className="scripture-workspace-active-group"
-            data-study-active-group-manage=""
-            data-study-group-id={activeGroup.group.id}
-            aria-haspopup="dialog"
-            aria-expanded={groupMenuOpen}
-            onMouseDown={deferMouseFocus}
-            onClick={() => {
-              setOverflowOpen(false);
-              setRenameGroupId(activeGroup.group.id);
-              setRenameDraft(activeGroup.label);
-              setGroupMenuAnchor(groupMenuButtonRef.current?.getBoundingClientRect() ?? null);
-              setGroupMenuOpen(true);
-            }}
-            title={`Manage ${activeGroup.label}`}
-          >
-            <span>{activeGroup.label}</span>
-            <small>{activeGroup.tabs.length}</small>
-            <span className="scripture-workspace-caret" aria-hidden="true">⌄</span>
-          </button>
+          <Tooltip label={`Manage ${activeGroup.label}`}>
+            <button
+              ref={groupMenuButtonRef}
+              type="button"
+              className="scripture-workspace-active-group"
+              data-study-active-group-manage=""
+              data-study-group-id={activeGroup.group.id}
+              aria-haspopup="dialog"
+              aria-expanded={groupMenuOpen}
+              aria-label={`Manage ${activeGroup.label}`}
+              onMouseDown={deferMouseFocus}
+              onClick={() => {
+                setMenu(null);
+                setOverflowOpen(false);
+                setRenameGroupId(activeGroup.group.id);
+                setRenameDraft(activeGroup.label);
+                setGroupMenuAnchor(groupMenuButtonRef.current?.getBoundingClientRect() ?? null);
+                setGroupMenuOpen(true);
+              }}
+            >
+              <span>{activeGroup.label}</span>
+              <small>{activeGroup.tabs.length}</small>
+              <span className="scripture-workspace-caret" aria-hidden="true"><CaretGlyph /></span>
+            </button>
+          </Tooltip>
         )}
-        <button
-          type="button"
-          className="scripture-workspace-open"
-          data-study-open=""
-          data-study-open-tab=""
-          onMouseDown={deferMouseFocus}
-          onClick={onNewResearch}
-          title="Open a new study tab"
-        >
-          <span aria-hidden="true">+</span><span>Open</span>
-        </button>
-        {recentlyClosed && (
+        <Tooltip label={openTooltip}>
           <button
             type="button"
-            className="scripture-workspace-reopen"
-            data-study-reopen-recent=""
+            className="scripture-workspace-open"
+            data-study-open=""
+            data-study-open-tab=""
+            data-study-open-disabled={atTabCapacity || undefined}
+            aria-disabled={atTabCapacity || undefined}
+            aria-label="Open a new study tab"
             onMouseDown={deferMouseFocus}
-            onClick={async () => { await handleReopenRecent(); }}
-            aria-label={`Reopen ${recentlyClosedLabel ?? "recently closed study"}`}
-            title={`Reopen ${recentlyClosedLabel ?? "recently closed study"}`}
+            onClick={() => { if (!atTabCapacity) onNewResearch(); }}
           >
-            <span aria-hidden="true">↶</span>
+            <span aria-hidden="true"><PlusGlyph /></span><span>Open</span>
           </button>
-        )}
+        </Tooltip>
         {(groups.length > 0 || hasMeasuredOverflow) && (
-          <button
-            ref={overflowButtonRef}
-            type="button"
-            className="scripture-workspace-overflow"
-            data-study-all-tabs=""
-            data-study-overflowing={hasMeasuredOverflow || undefined}
-            onMouseDown={deferMouseFocus}
-            onClick={() => {
-              setGroupMenuOpen(false);
-              setRenameGroupId(null);
-              setOverflowQuery("");
-              setOverflowAnchor(overflowButtonRef.current?.getBoundingClientRect() ?? null);
-              setOverflowOpen(true);
-            }}
-            aria-label={`Show all ${totalTabs} study tabs`}
-            aria-haspopup="dialog"
-            aria-expanded={overflowOpen}
-            title="All study tabs and groups"
-          ><span aria-hidden="true">•••</span></button>
+          <Tooltip label="All study tabs and groups">
+            <button
+              ref={overflowButtonRef}
+              type="button"
+              className="scripture-workspace-overflow"
+              data-study-all-tabs=""
+              data-study-overflowing={hasMeasuredOverflow || undefined}
+              onMouseDown={deferMouseFocus}
+              onClick={() => {
+                setMenu(null);
+                setGroupMenuOpen(false);
+                setRenameGroupId(null);
+                setOverflowQuery("");
+                setOverflowAnchor(overflowButtonRef.current?.getBoundingClientRect() ?? null);
+                setOverflowOpen(true);
+              }}
+              aria-label={`Show all ${totalTabs} study tabs`}
+              aria-haspopup="dialog"
+              aria-expanded={overflowOpen}
+            ><span aria-hidden="true"><OverflowGlyph /></span></button>
+          </Tooltip>
         )}
       </div>
 
@@ -635,18 +1098,28 @@ export function ScriptureWorkspaceTabs({
             <button type="submit" disabled={!renameDraft.trim() || renameDraft.trim() === activeGroup.label}>Save</button>
           </form>
           <div className="scripture-workspace-group-menu-actions">
-            <label>
-              <span className="sr-only">Order {activeGroup.label}</span>
-              <select
-                value=""
-                data-study-group-reorder=""
-                aria-label={`Change order of ${activeGroup.label}`}
-                onChange={async (event) => {
-                  const position = event.currentTarget.value as WorkspaceReorderPosition;
-                  if (position) await handleReorderGroup(activeGroup.group.id, position, event.currentTarget);
-                }}
-              ><ReorderOptions /></select>
-            </label>
+            <button
+              type="button"
+              className="scripture-workspace-menu-trigger"
+              data-study-group-reorder=""
+              aria-haspopup="menu"
+              aria-expanded={menu?.id === "group-reorder-active"}
+              aria-label={`Change order of ${activeGroup.label}`}
+              onMouseDown={deferMouseFocus}
+              onClick={(event) => {
+                const trigger = event.currentTarget;
+                openMenu(
+                  "group-reorder-active",
+                  trigger,
+                  `Change order of ${activeGroup.label}`,
+                  REORDER_MENU_LABELS.map(({ position, label }) => ({
+                    key: position,
+                    label,
+                    run: () => handleReorderGroup(activeGroup.group.id, position, trigger),
+                  })),
+                );
+              }}
+            ><span>Order</span><CaretGlyph /></button>
             <button
               type="button"
               data-study-group-collapse=""
@@ -694,7 +1167,7 @@ export function ScriptureWorkspaceTabs({
           </div>
           <label className="scripture-workspace-search">
             <span className="sr-only">Search open study tabs</span>
-            <span aria-hidden="true">⌕</span>
+            <span className="scripture-workspace-search-icon" aria-hidden="true"><SearchGlyph /></span>
             <input
               ref={overflowSearchRef}
               type="search"
@@ -748,18 +1221,28 @@ export function ScriptureWorkspaceTabs({
                       </div>
                     )}
                     <div className="scripture-workspace-group-tools">
-                      <label>
-                        <span className="sr-only">Order {label}</span>
-                        <select
-                          value=""
-                          data-study-group-reorder=""
-                          aria-label={`Change order of ${label}`}
-                          onChange={async (event) => {
-                            const position = event.currentTarget.value as WorkspaceReorderPosition;
-                            if (position) await handleReorderGroup(group.id, position, event.currentTarget);
-                          }}
-                        ><ReorderOptions /></select>
-                      </label>
+                      <button
+                        type="button"
+                        className="scripture-workspace-menu-trigger"
+                        data-study-group-reorder=""
+                        aria-haspopup="menu"
+                        aria-expanded={menu?.id === `group-reorder-${group.id}`}
+                        aria-label={`Change order of ${label}`}
+                        onMouseDown={deferMouseFocus}
+                        onClick={(event) => {
+                          const trigger = event.currentTarget;
+                          openMenu(
+                            `group-reorder-${group.id}`,
+                            trigger,
+                            `Change order of ${label}`,
+                            REORDER_MENU_LABELS.map(({ position, label: itemLabel }) => ({
+                              key: position,
+                              label: itemLabel,
+                              run: () => handleReorderGroup(group.id, position, trigger),
+                            })),
+                          );
+                        }}
+                      ><span>Order</span><CaretGlyph /></button>
                       <button
                         type="button"
                         data-study-group-collapse=""
@@ -798,36 +1281,53 @@ export function ScriptureWorkspaceTabs({
                             {workspace.activeTabId === tab.id && <small>Current</small>}
                           </button>
                           <div className="scripture-workspace-row-tools">
-                            <label>
-                              <span className="sr-only">Reorder {tabLabel}</span>
-                              <select
-                                value=""
-                                data-study-tab-reorder=""
-                                aria-label={`Reorder ${tabLabel}`}
-                                onChange={async (event) => {
-                                  const position = event.currentTarget.value as WorkspaceReorderPosition;
-                                  if (position) await handleReorderTab(tab.id, position, event.currentTarget);
-                                }}
-                              ><ReorderOptions /></select>
-                            </label>
+                            <button
+                              type="button"
+                              className="scripture-workspace-menu-trigger"
+                              data-study-tab-reorder=""
+                              aria-haspopup="menu"
+                              aria-expanded={menu?.id === `tab-reorder-${tab.id}`}
+                              aria-label={`Reorder ${tabLabel}`}
+                              onMouseDown={deferMouseFocus}
+                              onClick={(event) => {
+                                const trigger = event.currentTarget;
+                                openMenu(
+                                  `tab-reorder-${tab.id}`,
+                                  trigger,
+                                  `Reorder ${tabLabel}`,
+                                  REORDER_MENU_LABELS.map(({ position, label: itemLabel }) => ({
+                                    key: position,
+                                    label: itemLabel,
+                                    run: () => handleReorderTab(tab.id, position, trigger),
+                                  })),
+                                );
+                              }}
+                            ><span>Order</span><CaretGlyph /></button>
                             {groups.length > 1 && (
-                              <label>
-                                <span className="sr-only">Move {tabLabel} to another study</span>
-                                <select
-                                  value={group.id}
-                                  data-study-tab-move=""
-                                  aria-label={`Move ${tabLabel} to another study`}
-                                  onChange={async (event) => {
-                                    const targetGroupId = event.currentTarget.value;
-                                    if (targetGroupId !== group.id) await handleMoveTab(tab.id, targetGroupId, event.currentTarget);
-                                  }}
-                                >
-                                  <option value={group.id}>Move…</option>
-                                  {groups.filter((entry) => entry.group.id !== group.id).map((entry) => (
-                                    <option value={entry.group.id} key={entry.group.id}>{entry.label}</option>
-                                  ))}
-                                </select>
-                              </label>
+                              <button
+                                type="button"
+                                className="scripture-workspace-menu-trigger"
+                                data-study-tab-move=""
+                                aria-haspopup="menu"
+                                aria-expanded={menu?.id === `tab-move-${tab.id}`}
+                                aria-label={`Move ${tabLabel} to another study`}
+                                onMouseDown={deferMouseFocus}
+                                onClick={(event) => {
+                                  const trigger = event.currentTarget;
+                                  openMenu(
+                                    `tab-move-${tab.id}`,
+                                    trigger,
+                                    `Move ${tabLabel} to another study`,
+                                    groups
+                                      .filter((entry) => entry.group.id !== group.id)
+                                      .map((entry) => ({
+                                        key: entry.group.id,
+                                        label: entry.label,
+                                        run: () => handleMoveTab(tab.id, entry.group.id, trigger),
+                                      })),
+                                  );
+                                }}
+                              ><span>Move</span><CaretGlyph /></button>
                             )}
                             {canClose && (
                               <button
@@ -852,6 +1352,205 @@ export function ScriptureWorkspaceTabs({
                 <strong>No open tab matches</strong><span>Try a chapter, person, place, or study name.</span>
               </div>
             )}
+          </div>
+          {recentlyClosedList.length > 0 && (
+            <div className="scripture-workspace-recent-list" data-study-recent-list="">
+              <span className="scripture-workspace-recent-heading">Recently closed</span>
+              {recentlyClosedList.map(({ item, index }) => (
+                <button
+                  type="button"
+                  key={`${item.kind}-${index}`}
+                  data-study-recent-item=""
+                  onMouseDown={deferMouseFocus}
+                  onClick={async () => { await handleReopenRecentItem(index); }}
+                >
+                  <span aria-hidden="true"><ReopenGlyph /></span>
+                  <span>{recentlyClosedItemLabel(item)}</span>
+                  <small>{item.kind === "group" ? "Study" : "Tab"}</small>
+                </button>
+              ))}
+            </div>
+          )}
+        </Popover>
+      )}
+
+      {contextMenu && (
+        <Popover
+          anchorRect={contextMenu.anchor}
+          onClose={dismissContextMenu}
+          width={244}
+          maxHeight={360}
+          className="scripture-workspace-context-popover"
+          ariaLabel="Tab actions"
+        >
+          <div
+            className="scripture-workspace-context-menu"
+            role="menu"
+            data-study-context-menu={contextMenu.target.kind}
+          >
+            {contextMenu.target.kind === "tab" && (() => {
+              const target = contextMenu.target;
+              const otherCount = contextGroup
+                ? contextGroup.tabs.filter((tab) => tab.id !== target.tabId
+                    && studyWorkspaceTabCloseAvailability(workspace, tab.id) !== "unavailable").length
+                : 0;
+              const tabCloseAvailability = studyWorkspaceTabCloseAvailability(workspace, target.tabId);
+              const moveTargets = groups.filter((entry) => entry.group.id !== target.groupId);
+              return (
+                <>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    data-study-context-close=""
+                    disabled={tabCloseAvailability === "unavailable"}
+                    onMouseDown={deferMouseFocus}
+                    onClick={async () => { setContextMenu(null); await handleCloseTab(target.tabId, { moveFocus: true }); }}
+                  >Close</button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    disabled={otherCount === 0}
+                    onMouseDown={deferMouseFocus}
+                    onClick={async () => { setContextMenu(null); await handleCloseOthers(target.groupId, target.tabId); }}
+                  >Close others in this study</button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    data-study-context-duplicate=""
+                    onMouseDown={deferMouseFocus}
+                    onClick={async () => { setContextMenu(null); await handleDuplicateTab(target.tabId); }}
+                  >Duplicate tab</button>
+                  {moveTargets.length > 0 && (
+                    <div className="scripture-workspace-context-submenu" role="group" aria-label="Move to study">
+                      <span>Move to study…</span>
+                      {moveTargets.map((entry) => (
+                        <button
+                          type="button"
+                          role="menuitem"
+                          key={entry.group.id}
+                          data-study-context-move=""
+                          onMouseDown={deferMouseFocus}
+                          onClick={async (event) => {
+                            const trigger = event.currentTarget;
+                            setContextMenu(null);
+                            await handleMoveTab(target.tabId, entry.group.id, trigger);
+                          }}
+                        >{entry.label}</button>
+                      ))}
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onMouseDown={deferMouseFocus}
+                    onClick={() => beginRenameFromContext(target.groupId)}
+                  >Rename study</button>
+                </>
+              );
+            })()}
+            {contextMenu.target.kind === "group" && (() => {
+              const target = contextMenu.target;
+              const groupCloseAvailability = studyWorkspaceGroupCloseAvailability(workspace, target.groupId);
+              const collapsed = contextGroup?.group.collapsed ?? false;
+              return (
+                <>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onMouseDown={deferMouseFocus}
+                    onClick={() => beginRenameFromContext(target.groupId)}
+                  >Rename study</button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    data-study-context-collapse=""
+                    aria-expanded={!collapsed}
+                    onMouseDown={deferMouseFocus}
+                    onClick={async (event) => {
+                      const trigger = event.currentTarget;
+                      setContextMenu(null);
+                      await toggleGroup(target.groupId, !collapsed, trigger);
+                    }}
+                  >{collapsed ? "Expand study" : "Collapse study"}</button>
+                  {groupCloseAvailability !== "unavailable" && (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="is-danger"
+                      data-study-context-close-group=""
+                      onMouseDown={deferMouseFocus}
+                      onClick={async () => { setContextMenu(null); await handleCloseGroup(target.groupId); }}
+                    >{groupCloseAvailability === "decision" ? "Close study…" : "Close study"}</button>
+                  )}
+                </>
+              );
+            })()}
+            {contextMenu.target.kind === "empty" && (
+              <>
+                <button
+                  type="button"
+                  role="menuitem"
+                  data-study-context-open=""
+                  onMouseDown={deferMouseFocus}
+                  onClick={() => { setContextMenu(null); onNewResearch(); }}
+                >Open new tab</button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  data-study-context-reopen=""
+                  disabled={!recentlyClosed}
+                  onMouseDown={deferMouseFocus}
+                  onClick={async () => { setContextMenu(null); await handleReopenRecent(); }}
+                >Reopen closed tab</button>
+              </>
+            )}
+          </div>
+        </Popover>
+      )}
+
+      {menu && (
+        <Popover
+          anchorRect={menu.anchor}
+          onClose={dismissMenu}
+          width={196}
+          maxHeight={320}
+          className="scripture-workspace-menu-popover"
+          ariaLabel={menu.ariaLabel}
+        >
+          <div
+            className="scripture-workspace-menu"
+            role="menu"
+            aria-label={menu.ariaLabel}
+            data-study-workspace-menu=""
+            onKeyDown={(event) => {
+              const items = [...event.currentTarget.querySelectorAll<HTMLButtonElement>(
+                '[role="menuitem"]:not([disabled])',
+              )];
+              if (items.length === 0) return;
+              const currentIndex = items.indexOf(document.activeElement as HTMLButtonElement);
+              let next: number | null = null;
+              if (event.key === "ArrowDown") next = (currentIndex + 1) % items.length;
+              else if (event.key === "ArrowUp") next = (currentIndex - 1 + items.length) % items.length;
+              else if (event.key === "Home") next = 0;
+              else if (event.key === "End") next = items.length - 1;
+              if (next == null) return;
+              event.preventDefault();
+              items[next]?.focus({ preventScroll: true });
+            }}
+          >
+            {menu.items.length === 0 ? (
+              <span className="scripture-workspace-menu-empty">No other studies</span>
+            ) : menu.items.map((item) => (
+              <button
+                type="button"
+                role="menuitem"
+                key={item.key}
+                disabled={item.disabled}
+                data-study-menu-item={item.key}
+                onMouseDown={deferMouseFocus}
+                onClick={() => { void runMenuItem(item); }}
+              >{item.label}</button>
+            ))}
           </div>
         </Popover>
       )}

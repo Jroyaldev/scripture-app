@@ -23,6 +23,7 @@ import { compareConnectionsCanonical } from "../../core/annotations/connection-o
 import { safeCall } from "../utils/safeCall.js";
 import { isTopLayer, layerStackIsEmpty, useLayer } from "../layerStack.js";
 import { phraseCount } from "../utils/relationshipVocabulary.js";
+import { passageTabOpenIntent } from "../utils/passageTabIntent.js";
 import { formatCanonicalRef } from "../utils/formatRef.js";
 import { LanguageWordsSection } from "./LanguageWordsSection.js";
 import { SourcesDisclosure, formatSourceCitation, type CitationSource } from "./SourcesDisclosure.js";
@@ -477,6 +478,49 @@ function CrossReferenceArrow(): React.JSX.Element {
   );
 }
 
+/** Line-icon "open in a new tab" glyph, shared with the VersePeek open action
+ *  so the durable-branch gesture reads the same everywhere. */
+export function OpenInTabIcon(): React.JSX.Element {
+  return (
+    <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true">
+      <path d="M8.5 3H4.5A1.5 1.5 0 0 0 3 4.5v7A1.5 1.5 0 0 0 4.5 13h7A1.5 1.5 0 0 0 13 11.5v-4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M8 8 13 3M9.5 3H13v3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+/**
+ * A cross-reference row travels in the current tab on a plain click, but a
+ * ⌘/Ctrl-click or middle-click branches it into a durable passage tab — the
+ * same convention chapter arrows and the passage picker already honor. When no
+ * peekable target parses, the row keeps its ordinary same-tab behavior.
+ */
+function crossRefBranchHandlers(
+  bref: string,
+  target: PeekTarget | null,
+  onNavigate?: (ref: string) => void,
+  onOpenPassageTab?: (target: PeekTarget) => Promise<boolean> | boolean,
+): {
+  onClick: (event: React.MouseEvent<HTMLElement>) => void;
+  onAuxClick: (event: React.MouseEvent<HTMLElement>) => void;
+} {
+  return {
+    onClick: (event) => {
+      if (target && onOpenPassageTab && passageTabOpenIntent(event)) {
+        event.preventDefault();
+        void onOpenPassageTab(target);
+        return;
+      }
+      onNavigate?.(bref);
+    },
+    onAuxClick: (event) => {
+      if (!target || !onOpenPassageTab || !passageTabOpenIntent(event)) return;
+      event.preventDefault();
+      void onOpenPassageTab(target);
+    },
+  };
+}
+
 function EntityGlyph({ kind }: { kind: "person" | "place" | "other" }): React.JSX.Element {
   if (kind === "place") {
     return (
@@ -736,7 +780,7 @@ function EntityOpeningContextSection({
                 <span className="entity-reference-actions is-opening" key={ref}>
                   <button
                     type="button"
-                    onClick={() => onNavigate?.(`bref:v1/${ref}`)}
+                    {...crossRefBranchHandlers(`bref:v1/${ref}`, target, onNavigate, onOpenPassageTab)}
                     aria-label={`View ${label} in this research tab`}
                     title="Follow in this Research tab"
                   >
@@ -1296,7 +1340,7 @@ function EntityResearchView({
                     <span className="entity-reference-actions" key={ref}>
                       <button
                         type="button"
-                        onClick={() => onNavigate?.(`bref:v1/${ref}`)}
+                        {...crossRefBranchHandlers(`bref:v1/${ref}`, target, onNavigate, onOpenPassageTab)}
                         aria-label={`View ${label} in this research tab`}
                         title="Follow in this Research tab"
                         {...(target ? peekTriggerProps(target) : {})}
@@ -1366,6 +1410,7 @@ function EntityResearchView({
 function CrossReferenceRow({
   item,
   onNavigate,
+  onOpenPassageTab,
   onCapture,
   sourceAttribution,
   frozenOrigin,
@@ -1373,19 +1418,19 @@ function CrossReferenceRow({
 }: {
   item: CrossReferenceMatchData;
   onNavigate?: (ref: string) => void;
+  onOpenPassageTab?: (target: PeekTarget) => Promise<boolean> | boolean;
   onCapture?: (capture: LivingMarginCaptureRequest) => void;
   sourceAttribution: string;
   frozenOrigin: string;
   peekProps?: (target: PeekTarget) => Partial<React.HTMLAttributes<HTMLElement>>;
 }): React.JSX.Element {
   const target = parsePeekRef(item.targetBref, item.targetDisplay);
-  const openReference = (): void => onNavigate?.(item.targetBref);
   return (
     <div className="crossref-row">
       <button
         type="button"
         className="crossref-row-open"
-        onClick={openReference}
+        {...crossRefBranchHandlers(item.targetBref, target, onNavigate, onOpenPassageTab)}
         aria-label={item.preview ? `Open ${item.targetDisplay}. ${item.preview}` : `Open ${item.targetDisplay}`}
         title={item.preview ? `${item.targetDisplay} — ${item.preview}` : `Open ${item.targetDisplay}`}
         {...(target && peekProps ? peekProps(target) : {})}
@@ -1432,12 +1477,14 @@ function CrossReferenceRow({
 function CrossRefsBlock({
   result,
   onNavigate,
+  onOpenPassageTab,
   peekTriggerProps,
   onCapture,
   frozenOrigin,
 }: {
   result: CrossReferenceResultData;
   onNavigate?: (ref: string) => void;
+  onOpenPassageTab?: (target: PeekTarget) => Promise<boolean> | boolean;
   peekTriggerProps: (target: PeekTarget) => VersePeekTriggerProps;
   onCapture?: (capture: LivingMarginCaptureRequest) => void;
   frozenOrigin: string;
@@ -1466,6 +1513,7 @@ function CrossRefsBlock({
             key={item.targetBref}
             item={item}
             onNavigate={onNavigate}
+            onOpenPassageTab={onOpenPassageTab}
             onCapture={onCapture}
             sourceAttribution={sourceAttribution}
             frozenOrigin={frozenOrigin}
@@ -1485,12 +1533,14 @@ function CrossRefsBlock({
 function NoteCrossRefsBlock({
   items,
   onNavigate,
+  onOpenPassageTab,
   peekTriggerProps,
   onCapture,
   frozenOrigin,
 }: {
   items: SuggestedCrossRefData[];
   onNavigate?: (ref: string) => void;
+  onOpenPassageTab?: (target: PeekTarget) => Promise<boolean> | boolean;
   peekTriggerProps: (target: PeekTarget) => VersePeekTriggerProps;
   onCapture?: (capture: LivingMarginCaptureRequest) => void;
   frozenOrigin: string;
@@ -1512,7 +1562,7 @@ function NoteCrossRefsBlock({
             <button
               type="button"
               className="crossref-row-open"
-              onClick={() => onNavigate?.(item.targetBref)}
+              {...crossRefBranchHandlers(item.targetBref, target, onNavigate, onOpenPassageTab)}
               aria-label={`Open ${item.targetDisplay} from notes`}
               {...(target ? peekTriggerProps(target) : {})}
             >
@@ -1556,6 +1606,7 @@ function IntentOverview({
   entityResult,
   loading,
   onNavigate,
+  onOpenPassageTab,
   peekTriggerProps,
   onOpenTab,
   onOpenEntity,
@@ -1566,6 +1617,7 @@ function IntentOverview({
   entityResult: LanguageEntityRangeResult;
   loading: boolean;
   onNavigate?: (ref: string) => void;
+  onOpenPassageTab?: (target: PeekTarget) => Promise<boolean> | boolean;
   peekTriggerProps: (target: PeekTarget) => VersePeekTriggerProps;
   onOpenTab: (tab: MarginTab) => void;
   onOpenEntity?: (target: EntityResearchTarget) => void;
@@ -1602,20 +1654,32 @@ function IntentOverview({
             {scripture.map((item) => {
               const target = parsePeekRef(item.targetBref, item.targetDisplay);
               return (
-              <button
-                key={item.targetBref}
-                type="button"
-                className="intent-ref-row"
-                onClick={() => onNavigate?.(item.targetBref)}
-                aria-label={`Open ${item.targetDisplay}`}
-                {...(target ? peekTriggerProps(target) : {})}
-              >
-                <span className="intent-ref-copy">
-                  <span className="intent-ref-title">{item.targetDisplay}</span>
-                  {item.preview && <span className="intent-ref-preview">{item.preview}</span>}
-                </span>
-                <CrossReferenceArrow />
-              </button>
+              <div className="intent-ref-row" key={item.targetBref}>
+                <button
+                  type="button"
+                  className="intent-ref-row-open"
+                  {...crossRefBranchHandlers(item.targetBref, target, onNavigate, onOpenPassageTab)}
+                  aria-label={`Open ${item.targetDisplay}`}
+                  {...(target ? peekTriggerProps(target) : {})}
+                >
+                  <span className="intent-ref-copy">
+                    <span className="intent-ref-title">{item.targetDisplay}</span>
+                    {item.preview && <span className="intent-ref-preview">{item.preview}</span>}
+                  </span>
+                  <CrossReferenceArrow />
+                </button>
+                {target && onOpenPassageTab && (
+                  <button
+                    type="button"
+                    className="intent-ref-open-tab"
+                    onClick={() => void onOpenPassageTab(target)}
+                    aria-label={`Open ${item.targetDisplay} in a new passage tab`}
+                    title="Open in a new passage tab"
+                  >
+                    <OpenInTabIcon />
+                  </button>
+                )}
+              </div>
               );
             })}
           </div>
@@ -2747,6 +2811,7 @@ export function LivingMargin({
               entityResult={entityResult}
               loading={entityLoading || Boolean(semanticLoading)}
               onNavigate={onNavigateToRef}
+              onOpenPassageTab={onOpenPassageTab}
               peekTriggerProps={versePeek.triggerProps}
               onOpenTab={activateTab}
               onOpenEntity={onOpenEntity}
@@ -2799,6 +2864,7 @@ export function LivingMargin({
               <CrossRefsBlock
                 result={crossRefs}
                 onNavigate={onNavigateToRef}
+                onOpenPassageTab={onOpenPassageTab}
                 peekTriggerProps={versePeek.triggerProps}
                 onCapture={onCapture}
                 frozenOrigin={contextReference}
@@ -2876,6 +2942,7 @@ export function LivingMargin({
               entityResult={entityResult}
               loading={entityLoading || Boolean(semanticLoading)}
               onNavigate={onNavigateToRef}
+              onOpenPassageTab={onOpenPassageTab}
               peekTriggerProps={versePeek.triggerProps}
               onOpenTab={activateTab}
               onOpenEntity={onOpenEntity}
@@ -2923,6 +2990,7 @@ export function LivingMargin({
               <CrossRefsBlock
                 result={crossRefs}
                 onNavigate={onNavigateToRef}
+                onOpenPassageTab={onOpenPassageTab}
                 peekTriggerProps={versePeek.triggerProps}
                 onCapture={onCapture}
                 frozenOrigin={contextReference}
@@ -2986,6 +3054,7 @@ export function LivingMargin({
               entityResult={entityResult}
               loading={entityLoading || pinnedAiLoading}
               onNavigate={onNavigateToRef}
+              onOpenPassageTab={onOpenPassageTab}
               peekTriggerProps={versePeek.triggerProps}
               onOpenTab={activateTab}
               onOpenEntity={onOpenEntity}
@@ -3104,6 +3173,7 @@ export function LivingMargin({
               <CrossRefsBlock
                 result={crossRefs}
                 onNavigate={onNavigateToRef}
+                onOpenPassageTab={onOpenPassageTab}
                 peekTriggerProps={versePeek.triggerProps}
                 onCapture={onCapture}
                 frozenOrigin={contextReference}
@@ -3113,6 +3183,7 @@ export function LivingMargin({
               <NoteCrossRefsBlock
                 items={pinnedSemantic.suggestedCrossRefs.slice(0, 6)}
                 onNavigate={onNavigateToRef}
+                onOpenPassageTab={onOpenPassageTab}
                 peekTriggerProps={versePeek.triggerProps}
                 onCapture={onCapture}
                 frozenOrigin={contextReference}

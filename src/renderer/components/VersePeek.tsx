@@ -81,6 +81,17 @@ function samePeekTarget(left: PeekTarget, right: PeekTarget): boolean {
     && left.endVerse === right.endVerse;
 }
 
+/** Line-icon "open in a new tab" glyph, matching the margin's open-in-tab
+ *  affordance so the durable-branch gesture reads the same in both places. */
+function PeekOpenInTabIcon(): React.JSX.Element {
+  return (
+    <svg viewBox="0 0 16 16" width="13" height="13" fill="none" aria-hidden="true">
+      <path d="M8.5 3H4.5A1.5 1.5 0 0 0 3 4.5v7A1.5 1.5 0 0 0 4.5 13h7A1.5 1.5 0 0 0 13 11.5v-4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M8 8 13 3M9.5 3H13v3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export interface VersePeekTriggerProps {
   onMouseEnter: (event: React.MouseEvent<HTMLElement>) => void;
   onMouseLeave: () => void;
@@ -180,12 +191,14 @@ function PeekPanel({
               type="button"
               className="verse-peek-keep"
               disabled={openingPassage}
+              aria-label={`Keep ${peek.target.label} in the margin, replacing the current kept comparison`}
+              title="Keep in the margin — replaces the current kept comparison"
               onClick={() => {
                 onKeepReference(peek.target);
                 onClose();
               }}
             >
-              Keep in Study
+              Keep in margin
             </button>
           )}
           {onOpenPassageTab && (
@@ -193,6 +206,8 @@ function PeekPanel({
               type="button"
               className="verse-peek-open"
               disabled={openingPassage}
+              aria-label={`Open ${peek.target.label} in a new passage tab`}
+              title="Open in a new passage tab"
               onClick={(event) => {
                 if (openingPassage) return;
                 const focusDestination = versePeekShouldFocusDestination(event.detail);
@@ -209,7 +224,8 @@ function PeekPanel({
                 })();
               }}
             >
-              {openingPassage ? "Opening…" : "Open passage tab"}
+              <PeekOpenInTabIcon />
+              <span>{openingPassage ? "Opening…" : "Open in tab"}</span>
             </button>
           )}
         </div>

@@ -26,5 +26,5 @@ test("close and reopen use conventional accelerators through authored workspace 
 
 test("shortcut help makes current-tab chapter movement and explicit passage branching clear", () => {
   assert.match(overlay, /Move the current tab to the previous or next chapter/);
-  assert.match(overlay, /Open a chapter or passage in another tab/);
+  assert.match(overlay, /Open a chapter, passage, or cross-reference in another tab/);
 });
