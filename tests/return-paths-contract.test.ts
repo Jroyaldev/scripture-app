@@ -16,8 +16,8 @@ test("goTo is the single deliberate canvas-history push point", () => {
   assert.ok(start >= 0 && end > start);
   const goTo = page.slice(start, end);
   assert.match(goTo, /pushNavigationHistory\([\s\S]*captureNavigationEntry\(\)/);
-  assert.match(goTo, /opts\?\.historyMode !== "traverse"/);
-  assert.match(page, /goTo\(r\.book, r\.chapter, r\.verse\)/);
+  assert.match(goTo, /if \(opts\?\.historyMode === "traverse"\)[\s\S]*else \{[\s\S]*pushNavigationHistory/);
+  assert.match(page, /goTo\(r\.book, r\.chapter, r\.verse, \{\s*packageId: r\.packageId/);
   assert.match(page, /goTo\(browseBook, n\)/);
   assert.match(page, /goTo\(book, chapter - 1, undefined, \{ recordRecent: false \}\)/);
   assert.match(page, /handleNavigateToRef[\s\S]{0,900}?goTo\(/);

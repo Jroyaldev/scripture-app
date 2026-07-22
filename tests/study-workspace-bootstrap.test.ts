@@ -137,28 +137,37 @@ test("App establishes V2 authority only after refusal and projects it into trans
 
 test("window close distinguishes refusal from bootstrap and flushes normal workspace", () => {
   const app = read("src/renderer/app.tsx");
+  const transitionRunner = app.slice(
+    app.indexOf("const runWorkspaceTransition"),
+    app.indexOf("const handleStudyCanvasControllerChange"),
+  );
   const closeHandler = app.slice(
     app.indexOf("window.api.appWindow.onCloseRequested"),
     app.indexOf("const handleCreateNoteFromPassage"),
   );
-  const authoredExit = closeHandler.indexOf('await controller.requestExit("window-close")');
+  const authoredExit = closeHandler.indexOf('await runWorkspaceTransition("window-close"');
   const decision = closeHandler.indexOf("decideStudyWorkspaceClose(");
   const refusalApprove = closeHandler.indexOf('workspaceClose.kind === "approve"');
   const unresolvedVeto = closeHandler.indexOf('workspaceClose.kind === "veto"');
   const flush = closeHandler.indexOf("await persistence.flush(workspaceClose.workspace)");
-  const approve = closeHandler.indexOf("window.api.appWindow.resolveCloseRequest(true)", flush);
+  const resolve = closeHandler.indexOf("window.api.appWindow.resolveCloseRequest(request.requestId, proceed)", flush);
   assert.ok(authoredExit >= 0);
   assert.ok(decision > authoredExit);
   assert.ok(refusalApprove > decision);
   assert.ok(unresolvedVeto > refusalApprove);
   assert.ok(flush > unresolvedVeto);
   assert.ok(flush > authoredExit);
-  assert.ok(approve > flush);
-  assert.match(closeHandler, /workspaceClose\.kind === "approve"[\s\S]{0,120}?resolveCloseRequest\(true\);[\s\S]{0,80}?return;/);
-  assert.match(closeHandler, /workspaceClose\.kind === "veto"[\s\S]{0,120}?resolveCloseRequest\(false\);[\s\S]{0,80}?return;/);
-  assert.match(closeHandler, /if \(!proceed\) \{[\s\S]{0,120}?resolveCloseRequest\(false\);[\s\S]{0,80}?return;/);
-  assert.match(closeHandler, /if \(!flushed\) \{[\s\S]{0,120}?resolveCloseRequest\(false\);[\s\S]{0,80}?return;/);
-  assert.match(closeHandler, /catch \{[\s\S]{0,120}?resolveCloseRequest\(false\)/);
+  assert.ok(resolve > flush);
+  assert.match(transitionRunner, /captureCurrentStudyWorkspace\(\)[\s\S]{0,100}?await commit\(\)/);
+  assert.match(closeHandler, /workspaceClose\.kind === "approve"\) return/);
+  assert.match(closeHandler, /workspaceClose\.kind === "veto"\) throw new Error/);
+  assert.match(closeHandler, /if \(!flushed\) throw new Error/);
+  assert.match(closeHandler, /finally \{[\s\S]{0,120}?resolveCloseRequest\(request\.requestId, proceed\)/);
+  assert.equal(
+    closeHandler.match(/resolveCloseRequest\(/g)?.length,
+    1,
+    "each correlated request must receive exactly one renderer response",
+  );
 });
 
 test("Electron settles V2 once, preserves V3, and merges workspace patches by key presence", () => {

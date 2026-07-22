@@ -8,9 +8,16 @@ import type {
   ReadingWidth,
   VerseNumberMode,
 } from "./api.js";
-import { ScripturePage, type KeptMarginReference } from "./components/ScripturePage.js";
+import {
+  ScripturePage,
+  type KeptMarginReference,
+  type StudyCanvasController,
+} from "./components/ScripturePage.js";
 import { layerStackIsEmpty } from "./layerStack.js";
-import type { EntityResearchTrailEntry } from "./components/LivingMargin.js";
+import type {
+  EntityResearchOpenOptions,
+  EntityResearchTrailEntry,
+} from "./components/LivingMargin.js";
 import { WritingSheet, type WritingDraft } from "./components/WritingSheet.js";
 import { SearchView } from "./components/SearchView.js";
 import { SettingsPage } from "./components/SettingsPage.js";
@@ -21,7 +28,6 @@ import { WelcomeScreen } from "./components/WelcomeScreen.js";
 import { PericopeMark } from "./components/PericopeMark.js";
 import { ShortcutsOverlay } from "./components/ShortcutsOverlay.js";
 import type { ReadingPrefs } from "./components/ReadingComfort.js";
-import type { ConnectionDraftExitController } from "./utils/connectionDraftLifecycle.js";
 import { Tooltip } from "./components/Tooltip.js";
 import {
   CommandPalette,
@@ -42,6 +48,7 @@ import {
   SCRIPTURE_WORKSPACE_ID,
 } from "./utils/researchWorkspace.js";
 import {
+  activateStudyCanvasOwnerPassageTab,
   closeStudyWorkspaceTab,
   createStudyWorkspace,
   createStudyWorkspaceGroup,
@@ -49,6 +56,8 @@ import {
   navigateEntityWorkspaceTab,
   openEntityWorkspaceTab,
   selectStudyWorkspaceTab,
+  studyCanvasOwnerPassageTabId,
+  truncateEntityResearchTrail,
   updateStudyCanvasSession,
   type EntityWorkspaceKind,
   type PassageViewState,
@@ -61,6 +70,12 @@ import {
   projectStudyWorkspaceCompatibility,
   type WorkspacePersistenceController,
 } from "./utils/workspacePersistence.js";
+import {
+  createWorkspaceTransitionCoordinator,
+  type WorkspaceExitController,
+  type WorkspaceTransitionCoordinator,
+  type WorkspaceTransitionReason,
+} from "./utils/workspaceTransition.js";
 import "./styles.css";
 
 type View = "scripture" | "write" | "search" | "notes" | "settings";
@@ -226,12 +241,15 @@ function NavItem({ active, onClick, disabled = false, label, icon, shortcut }: N
 
 export function App(): React.JSX.Element {
   const [view, setView] = useState<View>("scripture");
+  const viewRef = useRef<View>(view);
+  viewRef.current = view;
   const [loadState, setLoadState] = useState<LoadState>({ status: "loading" });
   const [navigateRef, setNavigateRef] = useState<{
     book: string;
     chapter: number;
     verse?: number;
     endVerse?: number;
+    preapproved: true;
   } | null>(null);
   const [navigationHistory, setNavigationHistory] = useState<NavigationHistoryState>(
     createNavigationHistory,
@@ -292,7 +310,16 @@ export function App(): React.JSX.Element {
   const [focusMode, setFocusMode] = useState(false);
   const [authoredMutationState, setAuthoredMutationState] = useState<AuthoredMutationState>("idle");
   const authoredMutationStateRef = useRef<AuthoredMutationState>("idle");
-  const connectionDraftExitControllerRef = useRef<ConnectionDraftExitController | null>(null);
+  const scriptureExitControllerRef = useRef<WorkspaceExitController | null>(null);
+  const studyCanvasControllerRef = useRef<StudyCanvasController | null>(null);
+  const canvasOwnerTabIdRef = useRef<string | null>(null);
+  const workspaceTransitionCoordinatorRef = useRef<WorkspaceTransitionCoordinator | null>(null);
+  if (workspaceTransitionCoordinatorRef.current === null) {
+    workspaceTransitionCoordinatorRef.current = createWorkspaceTransitionCoordinator(() => {
+      const controller = scriptureExitControllerRef.current;
+      return controller ? [controller] : [];
+    });
+  }
   /** Margin visibility before focus mode — restored on exit. */
   const preFocusMargin = useRef(true);
   const [aiBusy, setAiBusy] = useState(false);
@@ -311,6 +338,63 @@ export function App(): React.JSX.Element {
   // settings-load effect below for the race this guards against).
   const userDirtySettings = useRef({ sidebarCollapsed: false, marginVisible: false, theme: false, markingSurface: false });
 
+  const captureCurrentStudyWorkspace = useCallback((): boolean => {
+    const current = studyWorkspaceRef.current;
+    if (current === undefined) {
+      return studyWorkspaceRefusalRef.current === "newer-version";
+    }
+    if (current === null) return true;
+
+    const controller = studyCanvasControllerRef.current;
+    if (!controller) return true;
+    const captured = controller.captureCurrent();
+    if (!captured) return false;
+
+    const ownerId = studyCanvasOwnerPassageTabId(current);
+    if (!ownerId) return false;
+    if (captured.ownerTabId !== canvasOwnerTabIdRef.current) return false;
+    if (captured.ownerTabId !== ownerId) return false;
+    const owner = current.tabsById[captured.ownerTabId];
+    if (owner?.kind !== "passage") return false;
+
+    const next = updateStudyCanvasSession(current, captured.ownerTabId, (session) => ({
+      ...session,
+      current: {
+        ...session.current,
+        ...captured.entry,
+        margin: {
+          ...session.current.margin,
+          ...captured.entry.margin,
+        },
+      },
+    }));
+    canvasOwnerTabIdRef.current = studyCanvasOwnerPassageTabId(next);
+    studyWorkspaceRef.current = next;
+    setStudyWorkspace(next);
+    workspacePersistenceRef.current?.publishView(next);
+    return true;
+  }, []);
+
+  const runWorkspaceTransition = useCallback(async (
+    reason: WorkspaceTransitionReason,
+    commit: () => void | Promise<void>,
+  ): Promise<boolean> => workspaceTransitionCoordinatorRef.current!.run(reason, async () => {
+    if (!captureCurrentStudyWorkspace()) throw new Error("Study canvas capture failed");
+    await commit();
+  }), [captureCurrentStudyWorkspace]);
+
+  const handleStudyCanvasControllerChange = useCallback((
+    controller: StudyCanvasController | null,
+  ): void => {
+    studyCanvasControllerRef.current = controller;
+  }, []);
+
+  const handleWorkspaceExitControllerChange = useCallback((
+    controller: WorkspaceExitController | null,
+  ): void => {
+    scriptureExitControllerRef.current = controller;
+  }, []);
+
   const commitStudyWorkspace = useCallback((
     update: (current: StudyWorkspaceStateV2 | null) => StudyWorkspaceStateV2 | null,
   ): void => {
@@ -318,6 +402,7 @@ export function App(): React.JSX.Element {
     if (current === undefined) return;
     const next = update(current);
     if (next === current) return;
+    canvasOwnerTabIdRef.current = next ? studyCanvasOwnerPassageTabId(next) : null;
     studyWorkspaceRef.current = next;
     setStudyWorkspace(next);
     if (next && workspacePersistenceRef.current) {
@@ -419,6 +504,7 @@ export function App(): React.JSX.Element {
         return;
       }
       const loadedWorkspace = res.ok ? res.value.studyWorkspace ?? null : null;
+      canvasOwnerTabIdRef.current = loadedWorkspace ? studyCanvasOwnerPassageTabId(loadedWorkspace) : null;
       studyWorkspaceRef.current = loadedWorkspace;
       setStudyWorkspace(loadedWorkspace);
       if (res.ok) {
@@ -497,9 +583,7 @@ export function App(): React.JSX.Element {
           passageTabId: `study-passage-${crypto.randomUUID()}`,
         });
       }
-      const ownerId = workspace.tabsById[workspace.activeTabId]
-        ? workspace.activeTabId
-        : compatibilityPassageTabId(workspace);
+      const ownerId = studyCanvasOwnerPassageTabId(workspace);
       if (!ownerId) return workspace;
       return updateStudyCanvasSession(workspace, ownerId, (session) => ({
         ...session,
@@ -525,62 +609,42 @@ export function App(): React.JSX.Element {
     setAuthoredMutationState(state);
   }, []);
 
-  const changeView = useCallback((next: View, onProceed?: () => void): boolean => {
-    if (next !== "scripture" && authoredMutationStateRef.current !== "idle") return false;
-    if (next !== "scripture" && connectionDraftExitControllerRef.current) {
-      void connectionDraftExitControllerRef.current.requestExit("view-change").then((proceed) => {
-        if (!proceed) return;
-        onProceed?.();
-        setFocusMode(false);
-        setView(next);
-      });
-      return false;
-    }
-    onProceed?.();
-    setView(next);
-    return true;
-  }, []);
+  const changeView = useCallback(async (
+    next: View,
+    onProceed?: () => void,
+  ): Promise<boolean> => {
+    if (viewRef.current === next && !onProceed) return true;
+    return runWorkspaceTransition("view-change", () => {
+      onProceed?.();
+      viewRef.current = next;
+      setView(next);
+    });
+  }, [runWorkspaceTransition]);
 
-  useEffect(() => window.api.appWindow.onCloseRequested(() => {
+  useEffect(() => window.api.appWindow.onCloseRequested((request) => {
     void (async () => {
+      let proceed = false;
       try {
-        const controller = connectionDraftExitControllerRef.current;
-        const proceed = controller ? await controller.requestExit("window-close") : true;
-        if (!proceed) {
-          window.api.appWindow.resolveCloseRequest(false);
-          return;
-        }
-        const workspaceClose = decideStudyWorkspaceClose(
-          studyWorkspaceRef.current,
-          studyWorkspaceRefusalRef.current,
-        );
-        if (workspaceClose.kind === "approve") {
-          window.api.appWindow.resolveCloseRequest(true);
-          return;
-        }
-        if (workspaceClose.kind === "veto") {
-          window.api.appWindow.resolveCloseRequest(false);
-          return;
-        }
-        const persistence = workspacePersistenceRef.current;
-        if (!persistence) {
-          window.api.appWindow.resolveCloseRequest(false);
-          return;
-        }
-        const flushed = await persistence.flush(workspaceClose.workspace);
-        if (!flushed) {
-          window.api.appWindow.resolveCloseRequest(false);
-          return;
-        }
-        window.api.appWindow.resolveCloseRequest(true);
-      } catch {
-        window.api.appWindow.resolveCloseRequest(false);
+        proceed = await runWorkspaceTransition("window-close", async () => {
+          const workspaceClose = decideStudyWorkspaceClose(
+            studyWorkspaceRef.current,
+            studyWorkspaceRefusalRef.current,
+          );
+          if (workspaceClose.kind === "approve") return;
+          if (workspaceClose.kind === "veto") throw new Error("Workspace is not ready to close");
+          const persistence = workspacePersistenceRef.current;
+          if (!persistence) throw new Error("Workspace persistence is unavailable");
+          const flushed = await persistence.flush(workspaceClose.workspace);
+          if (!flushed) throw new Error("Workspace flush was not acknowledged");
+        });
+      } finally {
+        window.api.appWindow.resolveCloseRequest(request.requestId, proceed);
       }
     })();
-  }), []);
+  }), [runWorkspaceTransition]);
 
   const handleCreateNoteFromPassage = (prefillBody?: string) => {
-    changeView("write", () => {
+    void changeView("write", () => {
       if (!prefillBody) return;
       setWritingDraft((current) => ({
         ...current,
@@ -596,11 +660,19 @@ export function App(): React.JSX.Element {
     chapter: number,
     verse?: number,
     endVerse?: number,
-  ) => {
-    if (authoredMutationStateRef.current !== "idle") return;
-    setNavigateRef({ book, chapter, verse, endVerse });
-    changeView("scripture");
-  }, [changeView]);
+  ): Promise<boolean> => {
+    const reason: WorkspaceTransitionReason = viewRef.current === "scripture"
+      ? "chapter-change"
+      : "view-change";
+    return runWorkspaceTransition(reason, () => {
+      commitStudyWorkspace((current) => current
+        ? activateStudyCanvasOwnerPassageTab(current)
+        : current);
+      viewRef.current = "scripture";
+      setView("scripture");
+      setNavigateRef({ book, chapter, verse, endVerse, preapproved: true });
+    });
+  }, [commitStudyWorkspace, runWorkspaceTransition]);
   const consumeNavigateRef = useCallback(() => setNavigateRef(null), []);
 
   const handleReadingContextChange = useCallback((next: CommandReadingContext) => {
@@ -633,127 +705,184 @@ export function App(): React.JSX.Element {
     entityId: string,
     origin: CommandReadingContext,
     mode: "tab" | "navigate" = "tab",
-  ) => {
-    if (authoredMutationStateRef.current !== "idle") return;
-    if (!entityIntent) {
-      const active = document.activeElement;
-      entityReturnFocusRef.current = active instanceof HTMLElement && active !== document.body
-        ? active
-        : null;
-    }
+    options?: EntityResearchOpenOptions,
+  ): Promise<boolean> => {
+    const active = document.activeElement;
+    const returnFocus = active instanceof HTMLElement && active !== document.body
+      ? active
+      : null;
     const nonce = Date.now();
-    commitStudyWorkspace((current) => {
-      let workspace = current ?? createStudyWorkspace(compatibilityPassageView(origin), {
-        groupId: `study-group-${crypto.randomUUID()}`,
-        passageTabId: `study-passage-${crypto.randomUUID()}`,
-      });
-      if (mode === "navigate" && workspace.tabsById[workspace.activeTabId]?.kind === "entity") {
-        return navigateEntityWorkspaceTab(workspace, workspace.activeTabId, {
-          id: entityId,
-          displayName: entityId,
-          kind: compatibilityEntityKind(entityId),
-        }, nonce);
-      }
-      let sourceTabId = compatibilityPassageTabId(workspace, origin);
-      const source = sourceTabId ? workspace.tabsById[sourceTabId] : null;
-      const sourceMatches = source?.kind === "passage"
-        && source.session.current.book === origin.book
-        && source.session.current.chapter === origin.chapter
-        && source.session.current.packageId === origin.packageId;
-      if (!sourceMatches) {
-        const passageTabId = `study-passage-${crypto.randomUUID()}`;
-        const openedGroup = createStudyWorkspaceGroup(workspace, {
-          id: `study-group-${crypto.randomUUID()}`,
-          passageTabId,
-          view: compatibilityPassageView(origin),
+    return runWorkspaceTransition("tab-change", () => {
+      commitStudyWorkspace((current) => {
+        let workspace = current ?? createStudyWorkspace(compatibilityPassageView(origin), {
+          groupId: `study-group-${crypto.randomUUID()}`,
+          passageTabId: `study-passage-${crypto.randomUUID()}`,
         });
-        workspace = openedGroup.state;
-        if (openedGroup.outcome !== "opened") return workspace;
-        sourceTabId = passageTabId;
-      }
-      sourceTabId ??= compatibilityPassageTabId(workspace);
-      if (!sourceTabId) return workspace;
-      return openEntityWorkspaceTab(workspace, {
-        id: `research-${crypto.randomUUID()}`,
-        sourceTabId,
-        entityId,
-        entityKind: compatibilityEntityKind(entityId),
-        nonce,
-        origin: compatibilityPassageView(origin),
-        ...(origin.verseStart !== undefined
-          ? { originRange: { start: origin.verseStart, end: origin.verseEnd ?? origin.verseStart } }
-          : {}),
-        returnPassageTabId: sourceTabId,
-      }).state;
+        const activeTab = workspace.tabsById[workspace.activeTabId];
+        if (mode === "navigate" && activeTab?.kind === "entity") {
+          let navigableWorkspace = workspace;
+          let target: EntityResearchTrailEntry = {
+            id: entityId,
+            displayName: entityId,
+            kind: compatibilityEntityKind(entityId),
+          };
+          if (options?.trailIndex !== undefined) {
+            const existingTarget = activeTab.trail[options.trailIndex];
+            if (!existingTarget || existingTarget.id !== entityId) {
+              throw new Error("Entity trail target is stale");
+            }
+            target = existingTarget;
+            navigableWorkspace = {
+              ...workspace,
+              tabsById: {
+                ...workspace.tabsById,
+                [activeTab.id]: {
+                  ...activeTab,
+                  trail: truncateEntityResearchTrail(activeTab.trail, options.trailIndex),
+                },
+              },
+            };
+          }
+          return navigateEntityWorkspaceTab(navigableWorkspace, activeTab.id, target, nonce);
+        }
+        if (options?.trailIndex !== undefined) throw new Error("Entity trail owner is unavailable");
+        let sourceTabId = compatibilityPassageTabId(workspace, origin);
+        const source = sourceTabId ? workspace.tabsById[sourceTabId] : null;
+        const sourceMatches = source?.kind === "passage"
+          && source.session.current.book === origin.book
+          && source.session.current.chapter === origin.chapter
+          && source.session.current.packageId === origin.packageId;
+        if (!sourceMatches) {
+          const passageTabId = `study-passage-${crypto.randomUUID()}`;
+          const openedGroup = createStudyWorkspaceGroup(workspace, {
+            id: `study-group-${crypto.randomUUID()}`,
+            passageTabId,
+            view: compatibilityPassageView(origin),
+          });
+          workspace = openedGroup.state;
+          if (openedGroup.outcome !== "opened") return workspace;
+          sourceTabId = passageTabId;
+        }
+        sourceTabId ??= compatibilityPassageTabId(workspace);
+        if (!sourceTabId) return workspace;
+        return openEntityWorkspaceTab(workspace, {
+          id: `research-${crypto.randomUUID()}`,
+          sourceTabId,
+          entityId,
+          entityKind: compatibilityEntityKind(entityId),
+          nonce,
+          origin: compatibilityPassageView(origin),
+          ...(origin.verseStart !== undefined
+            ? { originRange: { start: origin.verseStart, end: origin.verseEnd ?? origin.verseStart } }
+            : {}),
+          returnPassageTabId: sourceTabId,
+        }).state;
+      });
+      if (!entityIntent) entityReturnFocusRef.current = returnFocus;
+      viewRef.current = "scripture";
+      setView("scripture");
+      setFocusMode(false);
+      userDirtySettings.current.marginVisible = true;
+      setMarginVisible(true);
     });
-    changeView("scripture");
-    setFocusMode(false);
-    userDirtySettings.current.marginVisible = true;
-    setMarginVisible(true);
-  }, [changeView, commitStudyWorkspace, entityIntent]);
+  }, [commitStudyWorkspace, entityIntent, runWorkspaceTransition]);
   const openEntityResearch = useCallback((
     entityId: string,
     origin?: CommandReadingContext,
     mode: "tab" | "navigate" = "tab",
-  ) => {
-    openEntityResearchAt(entityId, origin ?? readingContext, mode);
+    options?: EntityResearchOpenOptions,
+  ): Promise<boolean> => {
+    return openEntityResearchAt(entityId, origin ?? readingContext, mode, options);
   }, [openEntityResearchAt, readingContext]);
-  const openCommandEntityResearch = useCallback((entityId: string) => {
-    openEntityResearchAt(entityId, commandContext);
+  const openCommandEntityResearch = useCallback((entityId: string): Promise<boolean> => {
+    return openEntityResearchAt(entityId, commandContext);
   }, [commandContext, openEntityResearchAt]);
-  const selectResearchWorkspace = useCallback((tabId: string) => {
-    commitStudyWorkspace((current) => {
-      if (!current) return current;
-      const targetId = tabId === SCRIPTURE_WORKSPACE_ID
-        ? compatibilityPassageTabId(current)
-        : tabId;
-      return targetId ? selectStudyWorkspaceTab(current, targetId) : current;
+  const selectResearchWorkspace = useCallback(async (tabId: string): Promise<boolean> => {
+    const current = studyWorkspaceRef.current;
+    const currentTargetId = current
+      ? (tabId === SCRIPTURE_WORKSPACE_ID ? compatibilityPassageTabId(current) : tabId)
+      : null;
+    if (current && currentTargetId === current.activeTabId && viewRef.current === "scripture") {
+      return true;
+    }
+    const proceed = await runWorkspaceTransition("tab-change", () => {
+      commitStudyWorkspace((workspace) => {
+        if (!workspace) return workspace;
+        const targetId = tabId === SCRIPTURE_WORKSPACE_ID
+          ? compatibilityPassageTabId(workspace)
+          : tabId;
+        return targetId ? selectStudyWorkspaceTab(workspace, targetId) : workspace;
+      });
+      viewRef.current = "scripture";
+      setView("scripture");
     });
-    changeView("scripture");
-    if (tabId !== SCRIPTURE_WORKSPACE_ID) {
+    if (proceed && tabId !== SCRIPTURE_WORKSPACE_ID) {
       setFocusMode(false);
       userDirtySettings.current.marginVisible = true;
       setMarginVisible(true);
     }
-  }, [changeView, commitStudyWorkspace]);
-  const closeResearchTab = useCallback((tabId: string) => {
+    return proceed;
+  }, [commitStudyWorkspace, runWorkspaceTransition]);
+  const closeResearchTab = useCallback(async (tabId: string): Promise<boolean> => {
     const target = entityReturnFocusRef.current;
     let focusId = "scripture-workspace-tab";
     let hasResearchAfterClose = false;
-    commitStudyWorkspace((current) => {
-      if (!current) return current;
-      const next = closeStudyWorkspaceTab(current, tabId).state;
-      const projection = projectStudyWorkspaceCompatibility(next).researchWorkspace;
-      hasResearchAfterClose = projection.tabs.length > 0;
-      focusId = projection.activeTabId === SCRIPTURE_WORKSPACE_ID
-        ? "scripture-workspace-tab"
-        : `research-workspace-tab-${projection.activeTabId}`;
-      return next;
+    const proceed = await runWorkspaceTransition("tab-close", () => {
+      commitStudyWorkspace((current) => {
+        if (!current) return current;
+        const next = closeStudyWorkspaceTab(current, tabId).state;
+        const projection = projectStudyWorkspaceCompatibility(next).researchWorkspace;
+        hasResearchAfterClose = projection.tabs.length > 0;
+        focusId = projection.activeTabId === SCRIPTURE_WORKSPACE_ID
+          ? "scripture-workspace-tab"
+          : `research-workspace-tab-${projection.activeTabId}`;
+        return next;
+      });
     });
+    if (!proceed) return false;
     window.setTimeout(() => {
       const workspaceTab = document.getElementById(focusId);
       if (workspaceTab instanceof HTMLElement) workspaceTab.focus({ preventScroll: true });
       else if (!hasResearchAfterClose && target?.isConnected) target.focus();
       if (!hasResearchAfterClose) entityReturnFocusRef.current = null;
     }, 0);
-  }, [commitStudyWorkspace]);
-  const closeEntityResearch = useCallback(() => {
-    if (!researchWorkspace || researchWorkspace.activeTabId === SCRIPTURE_WORKSPACE_ID) return;
-    closeResearchTab(researchWorkspace.activeTabId);
+    return true;
+  }, [commitStudyWorkspace, runWorkspaceTransition]);
+  const closeEntityResearch = useCallback((): Promise<boolean> => {
+    if (!researchWorkspace || researchWorkspace.activeTabId === SCRIPTURE_WORKSPACE_ID) {
+      return Promise.resolve(false);
+    }
+    return closeResearchTab(researchWorkspace.activeTabId);
   }, [closeResearchTab, researchWorkspace]);
-  const closeResearchGroup = useCallback((groupKey: string) => {
+  const closeResearchGroup = useCallback((groupKey: string): Promise<boolean> => {
+    return runWorkspaceTransition("group-change", () => {
+      commitStudyWorkspace((current) => {
+        if (!current) return current;
+        const projection = projectStudyWorkspaceCompatibility(current).researchWorkspace;
+        const removedIds = projection.tabs.filter(
+          (tab) => researchOriginGroupKey(tab.origin) === groupKey,
+        ).map((tab) => tab.id);
+        return removedIds.reduce(
+          (workspace, tabId) => closeStudyWorkspaceTab(workspace, tabId).state,
+          current,
+        );
+      });
+    });
+  }, [commitStudyWorkspace, runWorkspaceTransition]);
+  const toggleResearchGroup = useCallback((
+    groupKey: string,
+    collapsing: boolean,
+  ): Promise<boolean> => runWorkspaceTransition("group-change", () => {
+    if (!collapsing) return;
     commitStudyWorkspace((current) => {
       if (!current) return current;
       const projection = projectStudyWorkspaceCompatibility(current).researchWorkspace;
-      const removedIds = projection.tabs.filter(
-        (tab) => researchOriginGroupKey(tab.origin) === groupKey,
-      ).map((tab) => tab.id);
-      return removedIds.reduce(
-        (workspace, tabId) => closeStudyWorkspaceTab(workspace, tabId).state,
-        current,
-      );
+      const active = projection.tabs.find((tab) => tab.id === projection.activeTabId);
+      if (!active || researchOriginGroupKey(active.origin) !== groupKey) return current;
+      const passageTabId = compatibilityPassageTabId(current, active.origin);
+      return passageTabId ? selectStudyWorkspaceTab(current, passageTabId) : current;
     });
-  }, [commitStudyWorkspace]);
+  }), [commitStudyWorkspace, runWorkspaceTransition]);
   const updateEntityResearchTrail = useCallback((
     update: (current: readonly EntityResearchTrailEntry[]) => EntityResearchTrailEntry[],
   ): void => {
@@ -793,8 +922,9 @@ export function App(): React.JSX.Element {
   };
 
   const handleManageInSettings = () => {
-    setLibraryPopoverOpen(false);
-    changeView("settings");
+    void changeView("settings", () => {
+      setLibraryPopoverOpen(false);
+    });
   };
 
   const revealLibrary = async (): Promise<void> => {
@@ -812,10 +942,6 @@ export function App(): React.JSX.Element {
   };
 
   const switchLibrary = async (): Promise<void> => {
-    if (authoredMutationStateRef.current !== "idle") {
-      setLibraryActionError("Finish or recover the current authored change before switching libraries.");
-      return;
-    }
     setLibraryAction("switch");
     setLibraryActionError(null);
     const picked = await safeCall(() => window.api.dialog.openDirectory());
@@ -829,20 +955,28 @@ export function App(): React.JSX.Element {
       setLibraryAction(null);
       return;
     }
-    const controller = connectionDraftExitControllerRef.current;
-    if (controller && !await controller.requestExit("library-change")) {
-      setLibraryAction(null);
+    let switchError: string | null = null;
+    const proceed = await runWorkspaceTransition("library-change", async () => {
+      const workspace = studyWorkspaceRef.current;
+      if (workspace) {
+        const persistence = workspacePersistenceRef.current;
+        if (!persistence || !await persistence.flush(workspace)) {
+          switchError = "Could not save the current study before switching libraries.";
+          throw new Error(switchError);
+        }
+      }
+      const result = await safeCall(() => window.api.library.init(chosen));
+      if (!result.ok || !result.value.ok) {
+        switchError = result.ok ? (result.value.error ?? "Switch failed.") : result.error;
+        throw new Error(switchError);
+      }
+    });
+    setLibraryAction(null);
+    if (switchError) {
+      setLibraryActionError(switchError);
       return;
     }
-    const result = await safeCall(() => window.api.library.init(chosen));
-    if (!result.ok || !result.value.ok) {
-      setLibraryAction(null);
-      setLibraryActionError(
-        result.ok ? (result.value.error ?? "Switch failed.") : result.error,
-      );
-      return;
-    }
-    window.location.reload();
+    if (proceed) window.location.reload();
   };
 
   const toggleMargin = () => {
@@ -892,35 +1026,46 @@ export function App(): React.JSX.Element {
     });
   }, [focusMode, marginVisible]);
 
+  const globalShortcutBlocked = useCallback((event: KeyboardEvent): boolean => {
+    if (event.defaultPrevented) return true;
+    const target = event.target instanceof HTMLElement ? event.target : null;
+    if (target?.matches("input, textarea, select") || target?.isContentEditable) return true;
+    if (authoredMutationStateRef.current !== "idle") return true;
+    if (!layerStackIsEmpty()) return true;
+    // Layer registration happens in an effect. Keep the DOM fallback so a
+    // shortcut dispatched during the first rendered frame of a dialog or
+    // popover cannot slip through before that effect runs.
+    return document.querySelector('[data-floating-layer="dialog"], [data-floating-layer="popover"], .command-palette-root') != null;
+  }, []);
+
   useEffect(() => {
     const onKey = (event: KeyboardEvent): void => {
       if (!(event.metaKey || event.ctrlKey) || event.altKey || event.key.toLocaleLowerCase() !== "k") return;
+      if (globalShortcutBlocked(event)) return;
       event.preventDefault();
       openCommandPalette();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [openCommandPalette]);
+  }, [globalShortcutBlocked, openCommandPalette]);
 
   useEffect(() => {
     const openShortcutsOverlay = (event: KeyboardEvent): void => {
       const shortcutKey = event.key === "?" || (event.key === "/" && event.shiftKey);
-      if (!shortcutKey || event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
-      const target = event.target instanceof HTMLElement ? event.target : null;
-      if (target?.matches("input, textarea, select") || target?.isContentEditable) return;
-      if (document.querySelector('[data-floating-layer="dialog"]')) return;
+      if (!shortcutKey || event.metaKey || event.ctrlKey || event.altKey) return;
+      if (globalShortcutBlocked(event)) return;
       event.preventDefault();
       event.stopPropagation();
       setShortcutsOpen(true);
     };
     window.addEventListener("keydown", openShortcutsOverlay, true);
     return () => window.removeEventListener("keydown", openShortcutsOverlay, true);
-  }, []);
+  }, [globalShortcutBlocked]);
 
   useEffect(() => {
     const cyclePanes = (event: KeyboardEvent): void => {
-      if (event.key !== "F6" || event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
-      if (document.querySelector('[data-floating-layer="dialog"], [data-floating-layer="popover"], .command-palette-root')) return;
+      if (event.key !== "F6" || event.metaKey || event.ctrlKey || event.altKey) return;
+      if (globalShortcutBlocked(event)) return;
 
       const panes: Array<{ root: HTMLElement; target: HTMLElement }> = [];
       const addPane = (root: HTMLElement | null, target: HTMLElement | null): void => {
@@ -948,16 +1093,14 @@ export function App(): React.JSX.Element {
     };
     window.addEventListener("keydown", cyclePanes, true);
     return () => window.removeEventListener("keydown", cyclePanes, true);
-  }, []);
+  }, [globalShortcutBlocked]);
 
   // Global keyboard: view digits 1–4, F = focus mode, Esc exits focus.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.defaultPrevented) return;
-      const t = e.target as HTMLElement | null;
-      const tag = t?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || t?.isContentEditable) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (globalShortcutBlocked(e)) return;
 
       if (e.key === "f" || e.key === "F") {
         e.preventDefault();
@@ -985,13 +1128,14 @@ export function App(): React.JSX.Element {
       if (next) {
         e.preventDefault();
         if (next !== "scripture" && authoredMutationStateRef.current !== "idle") return;
-        const changed = changeView(next);
-        if (changed && focusMode) toggleFocusMode();
+        void changeView(next).then((changed) => {
+          if (changed && focusMode) toggleFocusMode();
+        });
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [changeView, focusMode, toggleFocusMode]);
+  }, [changeView, focusMode, globalShortcutBlocked, toggleFocusMode]);
 
   const shellClass = [
     "app-shell",
@@ -1107,26 +1251,32 @@ export function App(): React.JSX.Element {
     },
   ];
 
-  const runCommandAction = (id: string): void => {
+  const runCommandAction = (id: string): Promise<boolean> => {
     if (id === "new-note") {
-      changeView("write", () => {
+      return changeView("write", () => {
         setWritingDraft((current) => current.title.trim() || current.body.trim()
           ? current
           : { title: contextLabel, body: "" });
       });
-    } else if (id === "toggle-study") {
-      if (focusMode) toggleFocusMode();
-      if (!marginVisible) toggleMargin();
-      else if (!focusMode) toggleMargin();
-    } else if (id === "toggle-focus") {
-      toggleFocusMode();
-    } else if (id === "open-notes") {
-      changeView("notes", () => setWorkspaceIntent({ nonce: Date.now() }));
-    } else if (id === "search-notes") {
-      changeView("search", () => setWorkspaceIntent({ query: "", nonce: Date.now() }));
-    } else if (id === "open-settings") {
-      changeView("settings");
     }
+    if (id === "toggle-study") {
+      return runWorkspaceTransition("view-change", () => {
+        if (focusMode) toggleFocusMode();
+        if (!marginVisible) toggleMargin();
+        else if (!focusMode) toggleMargin();
+      });
+    }
+    if (id === "toggle-focus") {
+      return runWorkspaceTransition("view-change", toggleFocusMode);
+    }
+    if (id === "open-notes") {
+      return changeView("notes", () => setWorkspaceIntent({ nonce: Date.now() }));
+    }
+    if (id === "search-notes") {
+      return changeView("search", () => setWorkspaceIntent({ query: "", nonce: Date.now() }));
+    }
+    if (id === "open-settings") return changeView("settings");
+    return Promise.resolve(false);
   };
 
   const libraryPopover = libraryPopoverOpen && (
@@ -1210,12 +1360,12 @@ export function App(): React.JSX.Element {
                 </Tooltip>
               </div>
               <div className="sidebar-nav">
-                <NavItem active={view === "scripture"} onClick={() => { changeView("scripture"); }} label="Read" icon={<ReadIcon />} shortcut="1" />
-                <NavItem active={view === "write"} onClick={() => { changeView("write"); }} disabled={authoredMutationState !== "idle"} label="Write" icon={<WriteIcon />} shortcut="2" />
-                <NavItem active={view === "notes"} onClick={() => { changeView("notes"); }} disabled={authoredMutationState !== "idle"} label="My notes" icon={<NotesIcon />} shortcut="3" />
-                <NavItem active={view === "search"} onClick={() => { changeView("search"); }} disabled={authoredMutationState !== "idle"} label="Search" icon={<SearchIcon />} shortcut="4" />
+                <NavItem active={view === "scripture"} onClick={() => { void changeView("scripture"); }} label="Read" icon={<ReadIcon />} shortcut="1" />
+                <NavItem active={view === "write"} onClick={() => { void changeView("write"); }} disabled={authoredMutationState !== "idle"} label="Write" icon={<WriteIcon />} shortcut="2" />
+                <NavItem active={view === "notes"} onClick={() => { void changeView("notes"); }} disabled={authoredMutationState !== "idle"} label="My notes" icon={<NotesIcon />} shortcut="3" />
+                <NavItem active={view === "search"} onClick={() => { void changeView("search"); }} disabled={authoredMutationState !== "idle"} label="Search" icon={<SearchIcon />} shortcut="4" />
                 <div className="nav-divider" />
-                <NavItem active={view === "settings"} onClick={() => { changeView("settings"); }} disabled={authoredMutationState !== "idle"} label="Settings" icon={<SettingsIcon />} shortcut="5" />
+                <NavItem active={view === "settings"} onClick={() => { void changeView("settings"); }} disabled={authoredMutationState !== "idle"} label="Settings" icon={<SettingsIcon />} shortcut="5" />
               </div>
               <div className="sidebar-spacer" />
               <div className="sidebar-footer">
@@ -1276,14 +1426,16 @@ export function App(): React.JSX.Element {
                 focusMode={focusMode}
                 onToggleFocus={toggleFocusMode}
                 onAuthoredMutationStateChange={handleAuthoredMutationStateChange}
-                onConnectionDraftExitControllerChange={(controller) => {
-                  connectionDraftExitControllerRef.current = controller;
-                }}
+                onStudyCanvasControllerChange={handleStudyCanvasControllerChange}
+                canvasOwnerTabId={studyWorkspace ? studyCanvasOwnerPassageTabId(studyWorkspace) : null}
+                onWorkspaceExitControllerChange={handleWorkspaceExitControllerChange}
+                onRequestWorkspaceTransition={runWorkspaceTransition}
                 researchTabs={researchWorkspace.tabs}
                 activeWorkspaceTabId={researchWorkspace.activeTabId}
                 onWorkspaceTabSelect={selectResearchWorkspace}
                 onResearchTabClose={closeResearchTab}
                 onResearchGroupClose={closeResearchGroup}
+                onResearchGroupToggle={toggleResearchGroup}
                 entityIntent={entityIntent}
                 onOpenEntity={openEntityResearch}
                 onCloseEntity={closeEntityResearch}
@@ -1304,7 +1456,7 @@ export function App(): React.JSX.Element {
               <SearchView
                 mode="search"
                 onNavigate={handleNavigateToRef}
-                onWrite={() => { changeView("write"); }}
+                onWrite={() => { void changeView("write"); }}
                 initialQuery={workspaceIntent.query}
                 intentNonce={workspaceIntent.nonce}
               />
@@ -1313,7 +1465,7 @@ export function App(): React.JSX.Element {
               <SearchView
                 mode="notes"
                 onNavigate={handleNavigateToRef}
-                onWrite={() => { changeView("write"); }}
+                onWrite={() => { void changeView("write"); }}
                 initialNoteId={workspaceIntent.noteId}
                 intentNonce={workspaceIntent.nonce}
               />
@@ -1352,13 +1504,9 @@ export function App(): React.JSX.Element {
             context={commandContext}
             actions={commandActions}
             onNavigate={handleNavigateToRef}
-            onOpenNote={(noteId) => {
-              changeView("notes", () => setWorkspaceIntent({ noteId, nonce: Date.now() }));
-            }}
+            onOpenNote={(noteId) => changeView("notes", () => setWorkspaceIntent({ noteId, nonce: Date.now() }))}
             onOpenEntity={openCommandEntityResearch}
-            onSearchNotes={(query) => {
-              changeView("search", () => setWorkspaceIntent({ query, nonce: Date.now() }));
-            }}
+            onSearchNotes={(query) => changeView("search", () => setWorkspaceIntent({ query, nonce: Date.now() }))}
             onRunAction={runCommandAction}
           />
           {shortcutsOpen && <ShortcutsOverlay onClose={closeShortcutsOverlay} />}

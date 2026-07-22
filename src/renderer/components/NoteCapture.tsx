@@ -2,6 +2,7 @@ import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { isTopLayer, useLayer } from "../layerStack.js";
 import { safeCall } from "../utils/safeCall.js";
+import type { WorkspaceExitController } from "../utils/workspaceTransition.js";
 import { Button, ControlInput, ControlTextarea } from "./Controls.js";
 import { Tooltip } from "./Tooltip.js";
 
@@ -27,11 +28,13 @@ export interface NoteCaptureDraft {
   packageId: string;
 }
 
-interface Props {
+export interface NoteCaptureProps {
   draft: NoteCaptureDraft;
   onClose: () => void;
   /** Fired after a successful save (noteId for optional follow-up). */
   onSaved: (info: { noteId: string; title: string }) => void;
+  /** Registers this authored surface with the workspace-transition gate. */
+  onExitControllerChange?: (controller: WorkspaceExitController | null) => void;
 }
 
 function CloseIcon(): React.JSX.Element {
@@ -65,12 +68,103 @@ export function buildNoteCaptureMarkdown(quote: string, body: string): string {
   return user ? `${user}\n` : "";
 }
 
+export interface NoteCaptureExitControllerInput {
+  isDirty(): boolean;
+  isSaving(): boolean;
+  revealDecision(): void;
+  save(): Promise<boolean>;
+  discard(): void;
+  keepWriting(): void;
+}
+
+export interface NoteCaptureExitOwner {
+  controller: WorkspaceExitController;
+  save(): Promise<boolean>;
+  discard(): void;
+  keepWriting(): void;
+  dispose(): void;
+}
+
+/**
+ * Owns the pending decision without performing an authored action itself.
+ * Approval comes only from the reader's existing Save note or Discard action.
+ */
+export function createNoteCaptureExitController(
+  input: NoteCaptureExitControllerInput,
+): NoteCaptureExitOwner {
+  let pendingResolution: ((approved: boolean) => void) | null = null;
+  let saveInFlight = false;
+
+  const settle = (approved: boolean): void => {
+    const resolve = pendingResolution;
+    pendingResolution = null;
+    resolve?.(approved);
+  };
+
+  const controller: WorkspaceExitController = {
+    requestExit: async (_reason) => {
+      if (pendingResolution || saveInFlight || input.isSaving()) return false;
+      if (!input.isDirty()) return true;
+      return new Promise<boolean>((resolve) => {
+        pendingResolution = resolve;
+        try {
+          input.revealDecision();
+        } catch {
+          settle(false);
+        }
+      });
+    },
+  };
+
+  return {
+    controller,
+    async save(): Promise<boolean> {
+      if (saveInFlight || input.isSaving()) return false;
+      saveInFlight = true;
+      let saved = false;
+      try {
+        saved = await input.save() === true;
+      } catch {
+        saved = false;
+      } finally {
+        saveInFlight = false;
+      }
+      settle(saved);
+      return saved;
+    },
+    discard(): void {
+      try {
+        input.discard();
+        settle(true);
+      } catch {
+        settle(false);
+      }
+    },
+    keepWriting(): void {
+      settle(false);
+      try {
+        input.keepWriting();
+      } catch {
+        // The transition already failed closed; focus recovery is best-effort.
+      }
+    },
+    dispose(): void {
+      settle(false);
+    },
+  };
+}
+
 /**
  * Slide-over note capture: stays on Read, seeds title + quote from selection,
  * leaves the body free for the user's own words. Save is explicit (⌘S / button).
  * INV-1: AI never writes the note body — only the user does.
  */
-export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Element {
+export function NoteCapture({
+  draft,
+  onClose,
+  onSaved,
+  onExitControllerChange,
+}: NoteCaptureProps): React.JSX.Element {
   const [title, setTitle] = useState(draft.title);
   const initialBody = draft.bodyPrefill ?? "";
   const [body, setBody] = useState(initialBody);
@@ -82,21 +176,12 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
   const returnFocusRef = useRef<HTMLElement | null>(null);
   const savingRef = useRef(false);
   const isDirty = body !== initialBody || title !== draft.title;
+  const isDirtyRef = useRef(isDirty);
+  isDirtyRef.current = isDirty;
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+  const handleSaveRef = useRef<() => Promise<boolean>>(async () => false);
   const layerRef = useLayer("dialog");
-
-  const requestClose = useCallback(() => {
-    if (savingRef.current) return;
-    if (isDirty) {
-      if (discardArmed) {
-        setDiscardArmed(false);
-        bodyRef.current?.focus();
-        return;
-      }
-      setDiscardArmed(true);
-      return;
-    }
-    onClose();
-  }, [discardArmed, isDirty, onClose]);
 
   useEffect(() => {
     const active = document.activeElement;
@@ -124,7 +209,81 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
     return () => window.clearTimeout(t);
   }, []);
 
-  // Esc closes (unless saving).
+  const buildMarkdown = useCallback(
+    () => buildNoteCaptureMarkdown(draft.quote, body),
+    [draft.quote, body],
+  );
+
+  const handleSave = useCallback(async (): Promise<boolean> => {
+    if (savingRef.current) return false;
+    const t = title.trim();
+    if (!t) {
+      setError("Add a title to save.");
+      return false;
+    }
+    savingRef.current = true;
+    setSaving(true);
+    setError(null);
+    const md = buildMarkdown();
+    const result = await safeCall(() =>
+      window.api.library.createNote(t, md, {
+        type: "note",
+        tags: draft.bodyPrefill ? [] : ["from-selection"],
+      }),
+    );
+    savingRef.current = false;
+    setSaving(false);
+    if (!result.ok || !result.value.ok) {
+      setError(result.ok ? result.value.error ?? "Could not save note" : result.error);
+      return false;
+    }
+    const noteId = result.value.noteId ?? result.value.id ?? "";
+    onSaved({ noteId, title: t });
+    // Fire-and-forget enrichment so the note can resurface later (B3.6).
+    if (noteId) {
+      void safeCall(() => window.api.ai.enrichNote(noteId));
+    }
+    return true;
+  }, [title, draft.bodyPrefill, buildMarkdown, onSaved]);
+  handleSaveRef.current = handleSave;
+
+  const exitOwnerRef = useRef<NoteCaptureExitOwner | null>(null);
+  if (!exitOwnerRef.current) {
+    exitOwnerRef.current = createNoteCaptureExitController({
+      isDirty: () => isDirtyRef.current,
+      isSaving: () => savingRef.current,
+      revealDecision: () => setDiscardArmed(true),
+      save: () => handleSaveRef.current(),
+      discard: () => onCloseRef.current(),
+      keepWriting: () => {
+        setDiscardArmed(false);
+        bodyRef.current?.focus();
+      },
+    });
+  }
+  const exitOwner = exitOwnerRef.current;
+
+  useEffect(() => {
+    onExitControllerChange?.(exitOwner.controller);
+    return () => onExitControllerChange?.(null);
+  }, [exitOwner, onExitControllerChange]);
+
+  useEffect(() => () => exitOwner.dispose(), [exitOwner]);
+
+  const requestClose = useCallback(() => {
+    if (savingRef.current) return;
+    if (isDirty) {
+      if (discardArmed) {
+        exitOwner.keepWriting();
+        return;
+      }
+      setDiscardArmed(true);
+      return;
+    }
+    onClose();
+  }, [discardArmed, exitOwner, isDirty, onClose]);
+
+  // Esc closes (unless saving), and remains owned by the shared layer registry.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape" && !savingRef.current) {
@@ -153,54 +312,18 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
     };
     window.addEventListener("keydown", onKey, true);
     return () => window.removeEventListener("keydown", onKey, true);
-  }, [requestClose, saving]);
-
-  const buildMarkdown = useCallback(
-    () => buildNoteCaptureMarkdown(draft.quote, body),
-    [draft.quote, body],
-  );
-
-  const handleSave = useCallback(async () => {
-    if (savingRef.current) return;
-    const t = title.trim();
-    if (!t) {
-      setError("Add a title to save.");
-      return;
-    }
-    savingRef.current = true;
-    setSaving(true);
-    setError(null);
-    const md = buildMarkdown();
-    const result = await safeCall(() =>
-      window.api.library.createNote(t, md, {
-        type: "note",
-        tags: draft.bodyPrefill ? [] : ["from-selection"],
-      }),
-    );
-    savingRef.current = false;
-    setSaving(false);
-    if (!result.ok || !result.value.ok) {
-      setError(result.ok ? result.value.error ?? "Could not save note" : result.error);
-      return;
-    }
-    const noteId = result.value.noteId ?? result.value.id ?? "";
-    onSaved({ noteId, title: t });
-    // Fire-and-forget enrichment so the note can resurface later (B3.6).
-    if (noteId) {
-      void safeCall(() => window.api.ai.enrichNote(noteId));
-    }
-  }, [title, draft.passageRef, draft.bodyPrefill, buildMarkdown, onSaved]);
+  }, [layerRef, requestClose]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "s") {
         e.preventDefault();
-        void handleSave();
+        void exitOwner.save();
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [handleSave]);
+  }, [exitOwner]);
 
   const isMac =
     typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
@@ -213,6 +336,7 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
       aria-labelledby="note-capture-title"
       aria-describedby="note-capture-description"
       data-floating-layer="dialog"
+      data-dirty={isDirty ? "true" : "false"}
     >
       <button
         type="button"
@@ -286,10 +410,7 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
                 <Button
                   variant="secondary"
                   size="sm"
-                  onClick={() => {
-                    setDiscardArmed(false);
-                    bodyRef.current?.focus();
-                  }}
+                  onClick={exitOwner.keepWriting}
                 >
                   Keep writing
                 </Button>
@@ -297,7 +418,7 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
                   variant="primary"
                   size="sm"
                   className="note-capture-discard-confirm"
-                  onClick={onClose}
+                  onClick={exitOwner.discard}
                 >
                   Discard
                 </Button>
@@ -322,7 +443,7 @@ export function NoteCapture({ draft, onClose, onSaved }: Props): React.JSX.Eleme
                 variant="primary"
                 size="sm"
                 className="note-capture-save"
-                onClick={() => void handleSave()}
+                onClick={() => void exitOwner.save()}
                 disabled={saving || !title.trim()}
                 busy={saving}
               >

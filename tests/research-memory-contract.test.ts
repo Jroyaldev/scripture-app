@@ -76,7 +76,7 @@ test("entity kind rides the research trail into tab marks and survives settings 
 test("Close exits directly while Back and Escape remain stepwise and named", () => {
   assert.match(margin, /className="entity-research-close"[\s\S]{0,100}?onClick=\{onCloseEntity\}/);
   assert.match(margin, /const previousIndex = entityTrail\.length - \(currentIsRecorded \? 2 : 1\)/);
-  assert.match(margin, /truncateEntityResearchTrail\(current, previousIndex\)/);
+  assert.match(margin, /void onOpenEntity\(previous\.id, \{ trailIndex: previousIndex \}\)/);
   assert.match(margin, /aria-label=\{`Back to \$\{researchBackDestination\}`\}/);
   assert.match(margin, /event\.key !== "Escape"[\s\S]{0,340}?openPreviousEntity\(\)/);
 });

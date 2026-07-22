@@ -60,6 +60,11 @@ export interface EntityResearchTrailEntry {
   kind?: "person" | "place" | "other";
 }
 
+export interface EntityResearchOpenOptions {
+  /** Truncate the active entity tab's existing trail through this target. */
+  trailIndex?: number;
+}
+
 export const ENTITY_RESEARCH_TRAIL_LIMIT = 12;
 
 export function appendEntityResearchTrail(
@@ -152,8 +157,8 @@ interface Props {
     nonce: number;
     origin: { book: string; chapter: number; chapterEndVerse?: number; packageId: string; verseStart?: number; verseEnd?: number };
   } | null;
-  onOpenEntity?: (entityId: string) => void;
-  onCloseEntity?: () => void;
+  onOpenEntity?: (entityId: string, options?: EntityResearchOpenOptions) => Promise<boolean>;
+  onCloseEntity?: () => Promise<boolean>;
   entityTrail?: readonly EntityResearchTrailEntry[];
   onEntityTrailChange?: (
     update: (current: readonly EntityResearchTrailEntry[]) => EntityResearchTrailEntry[],
@@ -1877,14 +1882,13 @@ export function LivingMargin({
 
   const openRelatedEntity = (entityId: string): void => {
     if (!onOpenEntity || !entityResearch || entityResearch.entity.id === entityId) return;
-    onOpenEntity(entityId);
+    void onOpenEntity(entityId);
   };
 
   const openTrailEntity = (index: number): void => {
     const target = entityTrail[index];
     if (!target || !onOpenEntity || index === entityTrail.length - 1) return;
-    onEntityTrailChange?.((current) => truncateEntityResearchTrail(current, index));
-    onOpenEntity(target.id);
+    void onOpenEntity(target.id, { trailIndex: index });
   };
 
   const openPreviousEntity = (): void => {
@@ -1892,11 +1896,10 @@ export function LivingMargin({
     const previousIndex = entityTrail.length - (currentIsRecorded ? 2 : 1);
     const previous = entityTrail[previousIndex];
     if (!previous || !onOpenEntity) {
-      onCloseEntity?.();
+      void onCloseEntity?.();
       return;
     }
-    onEntityTrailChange?.((current) => truncateEntityResearchTrail(current, previousIndex));
-    onOpenEntity(previous.id);
+    void onOpenEntity(previous.id, { trailIndex: previousIndex });
   };
 
   const currentResearchIsRecorded = entityTrail.at(-1)?.id === entityIntent?.id;

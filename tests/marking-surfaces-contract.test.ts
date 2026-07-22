@@ -113,7 +113,8 @@ test("held authored connections use the quiet typeset Living Margin card", () =>
     "refresh reconciliation must preserve an intentional dismissed focus instead of waking the last held route");
   assert.match(page, /const releaseHeldConnection = useCallback[\s\S]*filter\(\(candidate\) => candidate !== connectionId\)[\s\S]*next\.at\(-1\) \?\? null/);
   assert.match(page, /setSelectedConnectionId\(\(current\) => \([\s\S]*current === connectionId \? \(next\.at\(-1\) \?\? null\) : current/);
-  assert.match(page, /const handleSelectConnection = useCallback\(\([\s\S]{0,180}connection: ConnectionRecord \| null,[\s\S]*visibleConnectionByIdRef\.current\.get\(connection\.id\)[\s\S]*replaceHeldConnectionIds\(\[\.\.\.heldConnectionIdsRef\.current, visibleConnection\.id\]\)[\s\S]*onCloseEntity\?\.\(\);[\s\S]*onEnsureMarginVisible\?\.\(\);/);
+  assert.match(page, /const handleSelectConnection = useCallback\(async \([\s\S]{0,180}connection: ConnectionRecord \| null,[\s\S]*visibleConnectionByIdRef\.current\.get\(connection\.id\)[\s\S]*!await requestScriptureWorkspaceAttention\(\)[\s\S]*replaceHeldConnectionIds\(\[\.\.\.heldConnectionIdsRef\.current, visibleConnection\.id\]\)[\s\S]*onEnsureMarginVisible\?\.\(\);/,
+    "canvas attention must await the Scripture-tab transition before changing held routes or focus");
   assert.match(page, /const handleSelectConnection = useCallback[\s\S]*advanceSelectionGeneration\(\)/);
   assert.match(page, /onSelectConnection=\{handleSelectConnection\}/);
   assert.match(page, /heldConnectionIds=\{visibleHeldConnectionIds\}/);
@@ -218,7 +219,8 @@ test("held authored connections use the quiet typeset Living Margin card", () =>
   );
   assert.doesNotMatch(card, /connection-card-close|Close connection details/);
   assert.match(card, /autoComplete="off"/);
-  assert.doesNotMatch(card, /autoFocus|\.focus\(/);
+  assert.doesNotMatch(card, /autoFocus/,
+    "opening the inspector must stay focus-neutral; only the explicit exit decision may move focus");
   assert.match(card, /const runUpdate = async[\s\S]*try \{[\s\S]*await onUpdate\([\s\S]*catch \{[\s\S]*finally \{[\s\S]*requestInFlightRef\.current = false;[\s\S]*setBusy\(false\)/);
   assert.match(card, /const runDelete = async[\s\S]*try \{[\s\S]*await onDelete\([\s\S]*catch \{[\s\S]*finally \{[\s\S]*requestInFlightRef\.current = false;[\s\S]*setBusy\(false\)/);
   assert.match(margin, /onClick=\{\(\) => onSelectAuthoredConnection\?\.\(connection, true\)\}/,
@@ -289,6 +291,53 @@ test("held authored connections use the quiet typeset Living Margin card", () =>
     "a short-lived inspector must not be retained by a DocumentTimeline animation",
   );
   assert.doesNotMatch(styles, /@keyframes connection-card-in/);
+});
+
+test("ConnectionCard registers one deduplicated fail-closed authored exit controller", () => {
+  const card = read("src", "renderer", "components", "ConnectionCard.tsx");
+
+  assert.match(card, /onExitControllerChange\?: \(controller: WorkspaceExitController \| null\) => void/);
+  assert.match(card, /onExitControllerChange\?\.\(exitController\)[\s\S]*onExitControllerChange\?\.\(null\)/,
+    "the selected card must register and unregister exactly one workspace owner");
+  assert.match(card, /if \(exitGuardPromiseRef\.current\) return exitGuardPromiseRef\.current/,
+    "concurrent transition attempts must share the open decision and its eventual outcome");
+  assert.match(
+    card,
+    /requestInFlightRef\.current[\s\S]*queuedCardEditRef\.current != null[\s\S]*updateCommandRef\.current != null[\s\S]*deleteCommandRef\.current != null[\s\S]*conflictReviewRef\.current != null[\s\S]*ambiguousMutation != null[\s\S]*recovery != null[\s\S]*return Promise\.resolve\(false\)/,
+    "queued, in-flight, update, delete, conflict, ambiguous, and recovery ownership must all fail closed",
+  );
+  assert.match(card, /if \(!labelChanged && !observationChanged\) return Promise\.resolve\(true\)/,
+    "a clean card must let the workspace transition proceed without prompting");
+});
+
+test("ConnectionCard exit Save sends one combined payload and approves only confirmed completion", () => {
+  const card = read("src", "renderer", "components", "ConnectionCard.tsx");
+  const saveStart = card.indexOf("const saveCardForExit");
+  const saveEnd = card.indexOf("const requestCardExit", saveStart);
+  const save = card.slice(saveStart, saveEnd);
+
+  assert.ok(saveStart >= 0 && saveEnd > saveStart, "missing the dedicated card-exit save path");
+  assert.match(save, /const next: ConnectionRecordV2 = \{[\s\S]*label,[\s\S]{0,160}observation: draftObservationRef\.current/,
+    "label and observation drafts must travel in the same whole-record update");
+  assert.equal([...save.matchAll(/runUpdate\(pendingCommand\)/g)].length, 1,
+    "the exit save must issue one exact update command");
+  assert.match(save, /const complete = await runUpdate\(pendingCommand\)[\s\S]*return complete/);
+  assert.doesNotMatch(save, /\bcommit\(/,
+    "commit() reports command ownership, not confirmed authored completion");
+});
+
+test("ConnectionCard exit choices preserve Keep editing and explicit Discard semantics", () => {
+  const card = read("src", "renderer", "components", "ConnectionCard.tsx");
+
+  assert.match(card, />Save changes<\/button>/);
+  assert.match(card, />Discard<\/button>/);
+  assert.match(card, />Keep editing<\/button>/);
+  assert.match(card, /setDraftLabel\(displayTitle\(latestConnectionRef\.current\)\)[\s\S]*setDraftObservation\([\s\S]*latestConnectionRef\.current\.observation/,
+    "Discard must restore both fields from the latest authoritative connection");
+  assert.match(card, /settleCardExit\(false, \{ restoreFocus: true \}\)/,
+    "Keep editing must preserve the draft and restore the pre-decision focus target");
+  assert.match(card, /data-dirty=\{labelChanged \|\| observationChanged\}/,
+    "real Electron QA needs a stable card-level dirty state while a transition is vetoed");
 });
 
 test("connection traces measure and paint in one persistent responsive coordinate frame", () => {
@@ -565,7 +614,7 @@ test("a live marking selection keeps exact words in focus without creating conne
 test("Electron rejects unknown marking-surface values at the settings boundary", () => {
   const source = read("src", "electron", "main.ts");
   assert.match(source, /function normalizeMarkingSurface\(value: unknown\)/);
-  assert.match(source, /markingSurface: normalizeMarkingSurface\(store\.store\.markingSurface\)/);
+  assert.match(source, /markingSurface: normalizeMarkingSurface\(settled\.markingSurface\)/);
   assert.match(source, /markingSurface: normalizeMarkingSurface\(partial\.markingSurface \?\? store\.store\.markingSurface\)/);
 });
 
@@ -740,7 +789,7 @@ test("Dock note capture preserves exact multi-verse words and rejects duplicate 
   assert.match(capture, /verse === verseStart && phraseSelection\.charStart[\s\S]*fragment\.slice\(phraseSelection\.charStart\)/);
   assert.match(capture, /verse === verseEnd && phraseSelection\.charEnd[\s\S]*phraseSelection\.charEnd - phraseSelection\.charStart/);
   assert.match(note, /const savingRef = useRef\(false\)/);
-  assert.match(note, /if \(savingRef\.current\) return;[\s\S]*const t = title\.trim\(\)/);
+  assert.match(note, /if \(savingRef\.current\) return false;[\s\S]*const t = title\.trim\(\)/);
   assert.doesNotMatch(note, /title\.trim\(\) \|\| draft\.passageRef/);
 });
 

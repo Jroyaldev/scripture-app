@@ -51,6 +51,8 @@ test("capture actions remain explicit and create-note stays behind Save", () => 
   assert.match(handler, /setNoteDraft\(buildMarginCaptureDraft/);
   assert.doesNotMatch(handler, /createNote/);
   assert.equal(capture.match(/window\.api\.library\.createNote/g)?.length, 1);
+  assert.match(capture, /onExitControllerChange\?:/);
+  assert.match(page, /noteExitControllerRef/);
   assert.match(capture, /tags: draft\.bodyPrefill \? \[\] : \["from-selection"\]/);
   assert.match(css, /\.margin-capture-action\s*\{[\s\S]*opacity: 0\.45/);
 });

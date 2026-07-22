@@ -228,15 +228,26 @@ const api = {
     openExternalResearchUrl: (url: string) => ipcRenderer.invoke("open-external-research-url", url),
   },
   appWindow: {
-    onCloseRequested: (listener: () => void) => {
-      const handler = () => listener();
+    onCloseRequested: (listener: (request: { requestId: string; source: "window" | "quit" }) => void) => {
+      const handler = (_event: unknown, request: unknown) => {
+        if (!request || typeof request !== "object") return;
+        const candidate = request as Record<string, unknown>;
+        if (
+          typeof candidate["requestId"] !== "string"
+          || (candidate["source"] !== "window" && candidate["source"] !== "quit")
+        ) return;
+        listener({
+          requestId: candidate["requestId"],
+          source: candidate["source"],
+        });
+      };
       ipcRenderer.on("app-window-close-requested", handler);
       ipcRenderer.send("app-window-close-guard-ready");
       return () => ipcRenderer.removeListener("app-window-close-requested", handler);
     },
     requestClose: () => ipcRenderer.send("app-window-request-close"),
-    resolveCloseRequest: (proceed: boolean) => {
-      ipcRenderer.send("app-window-close-response", proceed);
+    resolveCloseRequest: (requestId: string, proceed: boolean) => {
+      ipcRenderer.send("app-window-close-response", requestId, proceed);
     },
   },
   settings: {

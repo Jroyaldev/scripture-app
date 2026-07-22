@@ -2,6 +2,11 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { test } from "node:test";
+import * as ReactModule from "react";
+
+(globalThis as unknown as { React: typeof ReactModule }).React = ReactModule;
+
+const { createNoteCaptureExitController } = await import("../src/renderer/components/NoteCapture.js");
 
 const repoRoot = resolve(import.meta.dirname, "..");
 const read = (path: string): string => readFileSync(join(repoRoot, path), "utf-8");
@@ -119,4 +124,120 @@ test("note capture contains and restores focus while using shared fields and act
   assert.match(capture, /<ControlTextarea/);
   assert.match(capture, /variant="primary"/);
   assert.match(capture, /busy=\{saving\}/);
+  assert.match(capture, /onExitControllerChange\?:/);
+  assert.match(capture, /onExitControllerChange\?\.\(exitOwner\.controller\)/);
+  assert.match(capture, /onExitControllerChange\?\.\(null\)/);
+  assert.match(capture, /requestExit: async/);
+  assert.match(capture, /data-dirty=\{isDirty \? "true" : "false"\}/);
+  assert.match(capture, /const handleSave = useCallback\(async \(\): Promise<boolean>/);
+  assert.match(capture, /Save note/);
+  assert.match(capture, /Discard/);
+  assert.match(capture, /Keep writing/);
+});
+
+test("NoteCapture exits immediately only when clean and fails closed while saving", async () => {
+  let dirty = false;
+  let saving = false;
+  let reveals = 0;
+  const owner = createNoteCaptureExitController({
+    isDirty: () => dirty,
+    isSaving: () => saving,
+    revealDecision: () => { reveals += 1; },
+    save: async () => true,
+    discard: () => undefined,
+    keepWriting: () => undefined,
+  });
+
+  assert.equal(await owner.controller.requestExit("tab-change"), true);
+  dirty = true;
+  saving = true;
+  assert.equal(await owner.controller.requestExit("window-close"), false);
+  assert.equal(reveals, 0);
+});
+
+test("NoteCapture Keep writing vetoes one dirty request and concurrent requests fail closed", async () => {
+  let reveals = 0;
+  let kept = 0;
+  const owner = createNoteCaptureExitController({
+    isDirty: () => true,
+    isSaving: () => false,
+    revealDecision: () => { reveals += 1; },
+    save: async () => true,
+    discard: () => undefined,
+    keepWriting: () => { kept += 1; },
+  });
+
+  const pending = owner.controller.requestExit("chapter-change");
+  assert.equal(reveals, 1);
+  assert.equal(await owner.controller.requestExit("translation-change"), false);
+  owner.keepWriting();
+  assert.equal(await pending, false);
+  assert.equal(kept, 1);
+});
+
+test("NoteCapture approves a dirty exit only after explicit discard", async () => {
+  let discarded = 0;
+  const owner = createNoteCaptureExitController({
+    isDirty: () => true,
+    isSaving: () => false,
+    revealDecision: () => undefined,
+    save: async () => false,
+    discard: () => { discarded += 1; },
+    keepWriting: () => undefined,
+  });
+
+  const pending = owner.controller.requestExit("group-change");
+  owner.discard();
+  assert.equal(await pending, true);
+  assert.equal(discarded, 1);
+});
+
+test("NoteCapture approves confirmed saves without duplicating an in-flight save", async () => {
+  let resolveSave!: (saved: boolean) => void;
+  let saves = 0;
+  const owner = createNoteCaptureExitController({
+    isDirty: () => true,
+    isSaving: () => false,
+    revealDecision: () => undefined,
+    save: () => {
+      saves += 1;
+      return new Promise<boolean>((resolve) => { resolveSave = resolve; });
+    },
+    discard: () => undefined,
+    keepWriting: () => undefined,
+  });
+
+  const pending = owner.controller.requestExit("tab-close");
+  const saving = owner.save();
+  assert.equal(await owner.save(), false);
+  resolveSave(true);
+  assert.equal(await saving, true);
+  assert.equal(await pending, true);
+  assert.equal(saves, 1);
+});
+
+test("NoteCapture failed saves and disposal veto a pending dirty exit", async () => {
+  const failed = createNoteCaptureExitController({
+    isDirty: () => true,
+    isSaving: () => false,
+    revealDecision: () => undefined,
+    save: async () => false,
+    discard: () => undefined,
+    keepWriting: () => undefined,
+  });
+  const failedPending = failed.controller.requestExit("view-change");
+  assert.equal(await failed.save(), false);
+  assert.equal(await failedPending, false);
+
+  const disposed = createNoteCaptureExitController({
+    isDirty: () => true,
+    isSaving: () => false,
+    revealDecision: () => undefined,
+    save: async () => true,
+    discard: () => undefined,
+    keepWriting: () => undefined,
+  });
+  const disposedPending = disposed.controller.requestExit("library-change");
+  disposed.dispose();
+  assert.equal(await disposedPending, false);
 });

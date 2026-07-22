@@ -1,5 +1,6 @@
 import type React from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { isBinaryConnectionKind } from "../../core/annotations/index.js";
 import type {
   ConnectionAnchor,
@@ -15,6 +16,10 @@ import {
 } from "../utils/connectionMutationReconciliation.js";
 import type { ConnectionPaintAnchor } from "../utils/connectionPaint.js";
 import { phraseCount, RELATIONSHIP_LABELS } from "../utils/relationshipVocabulary.js";
+import type {
+  WorkspaceExitController,
+  WorkspaceTransitionReason,
+} from "../utils/workspaceTransition.js";
 
 interface Props {
   connection: ConnectionRecord;
@@ -43,6 +48,7 @@ interface Props {
   recovery?: ConnectionCardRecovery | null;
   onRecoveryChange: (recovery: ConnectionCardRecovery | null) => void;
   onMutationStateChange?: (state: "idle" | "in-flight" | "recovery") => void;
+  onExitControllerChange?: (controller: WorkspaceExitController | null) => void;
 }
 
 type MomentPosition = "above" | "here" | "below";
@@ -270,6 +276,7 @@ export function ConnectionCard({
   recovery = null,
   onRecoveryChange,
   onMutationStateChange,
+  onExitControllerChange,
 }: Props): React.JSX.Element {
   const kindLabel = KIND_LABELS[connection.kind];
   const titlePrefix = `${kindLabel} · `;
@@ -289,11 +296,13 @@ export function ConnectionCard({
   );
   const [queuedEditPending, setQueuedEditPending] = useState(false);
   const [conflictReview, setConflictReview] = useState<"update" | "delete" | null>(null);
+  const [exitGuardReason, setExitGuardReason] = useState<WorkspaceTransitionReason | null>(null);
   const requestInFlightRef = useRef(false);
   // The card is the visible face of the selected relationship shape. It
   // registers as that shape's Escape owner; an active marking session or an
   // open chooser outranks it in the shared layer registry.
   const layerRef = useLayer("connection-focus");
+  const exitGuardLayerRef = useLayer(exitGuardReason ? "dialog" : null);
   const mutationStateRef = useRef<"idle" | "in-flight" | "recovery">(
     recovery ? "recovery" : "idle",
   );
@@ -319,9 +328,17 @@ export function ConnectionCard({
   // visible, never against the stale base event the editor started from.
   const armDeleteAfterFingerprintRef = useRef<string | null>(null);
   const queuedCardEditRef = useRef<QueuedCardEdit | null>(null);
+  const exitGuardRef = useRef<HTMLDivElement | null>(null);
+  const exitGuardKeepRef = useRef<HTMLButtonElement | null>(null);
+  const exitGuardPromiseRef = useRef<Promise<boolean> | null>(null);
+  const exitGuardResolveRef = useRef<((proceed: boolean) => void) | null>(null);
+  const exitGuardOriginRef = useRef<HTMLElement | null>(null);
+  const exitSavePromiseRef = useRef<Promise<boolean> | null>(null);
   const connectionVersion = connectionMutationFingerprint(connection);
   const views = useMomentViews(connection.anchors, book, chapter, packageId);
   const mutationLocked = busy || queuedEditPending || conflictReview != null || ambiguousMutation != null;
+  const labelChanged = draftLabel !== originalTitle;
+  const observationChanged = draftObservation !== currentObservation;
 
   const reportMutationState = useCallback((state: "idle" | "in-flight" | "recovery"): void => {
     mutationStateRef.current = state;
@@ -503,6 +520,149 @@ export function ConnectionCard({
     }
   };
 
+  const settleCardExit = useCallback((
+    proceed: boolean,
+    options: { restoreFocus?: boolean } = {},
+  ): void => {
+    const resolve = exitGuardResolveRef.current;
+    const origin = exitGuardOriginRef.current;
+    exitGuardResolveRef.current = null;
+    exitGuardPromiseRef.current = null;
+    exitGuardOriginRef.current = null;
+    setExitGuardReason(null);
+    resolve?.(proceed);
+    if (!options.restoreFocus) return;
+    window.setTimeout(() => {
+      const visible = latestConnectionRef.current;
+      const visibleObservation = visible.format_version === 2 ? visible.observation : "";
+      const fallbackSelector = draftObservationRef.current !== visibleObservation
+        ? ".connection-card-observation textarea"
+        : ".connection-card-title";
+      const fallback = document.querySelector<HTMLElement>(
+        "#connection-card-inspector " + fallbackSelector,
+      );
+      const target = origin?.isConnected ? origin : fallback;
+      target?.focus({ preventScroll: true });
+    }, 0);
+  }, []);
+
+  const saveCardForExit = async (): Promise<boolean> => {
+    if (exitSavePromiseRef.current) return exitSavePromiseRef.current;
+    const operation = (async (): Promise<boolean> => {
+      const visible = latestConnectionRef.current;
+      if (
+        visible.format_version !== 2
+        || requestInFlightRef.current
+        || queuedCardEditRef.current != null
+        || updateCommandRef.current != null
+        || deleteCommandRef.current != null
+        || conflictReviewRef.current != null
+        || ambiguousMutation != null
+        || recovery != null
+      ) return false;
+      const visiblePrefix = KIND_LABELS[visible.kind] + " · ";
+      const titleText = draftLabelRef.current.trim();
+      const label = titleText
+        ? visible.label.startsWith(visiblePrefix)
+          ? visiblePrefix + titleText
+          : titleText
+        : visible.label;
+      if (!titleText) {
+        const authoritativeTitle = displayTitle(visible);
+        draftLabelRef.current = authoritativeTitle;
+        setDraftLabel(authoritativeTitle);
+      }
+      const next: ConnectionRecordV2 = {
+        ...visible,
+        label,
+        observation: draftObservationRef.current,
+      };
+      const fingerprint = connectionMutationFingerprint(next);
+      if (fingerprint === connectionMutationFingerprint(visible)) return true;
+      const pendingCommand: PendingUpdateCommand = {
+        fingerprint,
+        commandId: crypto.randomUUID(),
+        expectedBaseEventId: visible.activeEventId,
+        next: {
+          ...next,
+          anchors: next.anchors.map((anchor) => ({
+            ...anchor,
+            exact: {
+              ...anchor.exact,
+              occurrences: anchor.exact.occurrences.map((occurrence) => ({ ...occurrence })),
+            },
+          })),
+        },
+      };
+      updateCommandRef.current = pendingCommand;
+      const complete = await runUpdate(pendingCommand);
+      return complete;
+    })();
+    exitSavePromiseRef.current = operation;
+    try {
+      return await operation;
+    } finally {
+      if (exitSavePromiseRef.current === operation) exitSavePromiseRef.current = null;
+    }
+  };
+
+  const requestCardExit = useCallback((reason: WorkspaceTransitionReason): Promise<boolean> => {
+    if (exitGuardPromiseRef.current) return exitGuardPromiseRef.current;
+    if (
+      requestInFlightRef.current
+      || queuedCardEditRef.current != null
+      || updateCommandRef.current != null
+      || deleteCommandRef.current != null
+      || conflictReviewRef.current != null
+      || ambiguousMutation != null
+      || recovery != null
+      || busy
+      || queuedEditPending
+    ) return Promise.resolve(false);
+    if (!labelChanged && !observationChanged) return Promise.resolve(true);
+    if (connection.format_version !== 2) return Promise.resolve(false);
+    const active = document.activeElement;
+    exitGuardOriginRef.current = active instanceof HTMLElement ? active : null;
+    const decision = new Promise<boolean>((resolve) => {
+      exitGuardResolveRef.current = resolve;
+    });
+    exitGuardPromiseRef.current = decision;
+    setExitGuardReason(reason);
+    return decision;
+  }, [
+    ambiguousMutation,
+    busy,
+    connection.format_version,
+    labelChanged,
+    observationChanged,
+    queuedEditPending,
+    recovery,
+  ]);
+
+  const exitController = useMemo<WorkspaceExitController>(() => ({
+    requestExit: requestCardExit,
+  }), [requestCardExit]);
+
+  useLayoutEffect(() => {
+    onExitControllerChange?.(exitController);
+    return () => onExitControllerChange?.(null);
+  }, [exitController, onExitControllerChange]);
+
+  useEffect(() => {
+    if (!exitGuardReason) return;
+    const frame = window.requestAnimationFrame(() => {
+      exitGuardKeepRef.current?.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [exitGuardReason]);
+
+  useEffect(() => () => {
+    exitGuardResolveRef.current?.(false);
+    exitGuardResolveRef.current = null;
+    exitGuardPromiseRef.current = null;
+    exitGuardOriginRef.current = null;
+  }, []);
+
   const commit = async (next: ConnectionRecordV2, allowConflictReview = false): Promise<boolean> => {
     if (
       requestInFlightRef.current
@@ -537,7 +697,12 @@ export function ConnectionCard({
   };
 
   const saveLabel = async (): Promise<void> => {
-    if (ambiguousMutation != null || conflictReviewRef.current != null || connection.format_version !== 2) return;
+    if (
+      exitGuardPromiseRef.current
+      || ambiguousMutation != null
+      || conflictReviewRef.current != null
+      || connection.format_version !== 2
+    ) return;
     const visibleLabel = draftLabel.trim();
     if (!visibleLabel) {
       resetDraftTitle();
@@ -566,7 +731,12 @@ export function ConnectionCard({
   };
 
   const saveObservation = async (): Promise<void> => {
-    if (ambiguousMutation != null || conflictReviewRef.current != null || connection.format_version !== 2) return;
+    if (
+      exitGuardPromiseRef.current
+      || ambiguousMutation != null
+      || conflictReviewRef.current != null
+      || connection.format_version !== 2
+    ) return;
     if (draftObservation === connection.observation) return;
     if (requestInFlightRef.current) {
       const queued = queuedCardEditRef.current;
@@ -795,15 +965,102 @@ export function ConnectionCard({
     }
   };
 
-  const labelChanged = draftLabel !== originalTitle;
-  const observationChanged = draftObservation !== currentObservation;
+  const discardCardExitChanges = (): void => {
+    const authoritativeTitle = displayTitle(latestConnectionRef.current);
+    const authoritativeObservation = latestConnectionRef.current.format_version === 2
+      ? latestConnectionRef.current.observation
+      : "";
+    draftLabelRef.current = authoritativeTitle;
+    draftObservationRef.current = authoritativeObservation;
+    setDraftLabel(displayTitle(latestConnectionRef.current));
+    setDraftObservation(
+      latestConnectionRef.current.format_version === 2
+        ? latestConnectionRef.current.observation
+        : "",
+    );
+    setDeleteArmed(false);
+    setError(null);
+    settleCardExit(true);
+  };
+
+  const exitGuardNode = exitGuardReason ? createPortal(
+    <div
+      className="connection-draft-exit-scrim"
+      data-floating-layer="dialog"
+      data-transition-reason={exitGuardReason}
+      onKeyDown={(event) => {
+        if (!isTopLayer(exitGuardLayerRef.current)) return;
+        if (event.key === "Escape") {
+          event.preventDefault();
+          event.stopPropagation();
+          settleCardExit(false, { restoreFocus: true });
+          return;
+        }
+        if (event.key !== "Tab") return;
+        const controls = [...(exitGuardRef.current?.querySelectorAll<HTMLButtonElement>(
+          "button:not(:disabled)",
+        ) ?? [])];
+        if (controls.length === 0) return;
+        const activeIndex = controls.indexOf(document.activeElement as HTMLButtonElement);
+        const nextIndex = event.shiftKey
+          ? (activeIndex <= 0 ? controls.length - 1 : activeIndex - 1)
+          : (activeIndex < 0 || activeIndex === controls.length - 1 ? 0 : activeIndex + 1);
+        event.preventDefault();
+        controls[nextIndex]?.focus();
+      }}
+    >
+      <div
+        ref={exitGuardRef}
+        className="connection-draft-exit-dialog"
+        role="alertdialog"
+        aria-modal="true"
+        aria-busy={busy}
+        aria-labelledby="connection-card-exit-title"
+        aria-describedby="connection-card-exit-copy"
+      >
+        <span className="connection-draft-exit-eyebrow">Connection changes</span>
+        <h2 id="connection-card-exit-title">Save changes before leaving?</h2>
+        <p id="connection-card-exit-copy">
+          The connection name and observation have unsaved changes.
+        </p>
+        <div className="connection-draft-exit-actions">
+          <button
+            type="button"
+            className="primary"
+            disabled={busy}
+            onClick={() => {
+              void saveCardForExit().then((complete) => {
+                settleCardExit(complete, { restoreFocus: !complete });
+              });
+            }}
+          >Save changes</button>
+          <button
+            type="button"
+            className="danger"
+            disabled={busy}
+            onClick={discardCardExitChanges}
+          >Discard</button>
+          <button
+            ref={exitGuardKeepRef}
+            type="button"
+            disabled={busy}
+            onClick={() => settleCardExit(false, { restoreFocus: true })}
+          >Keep editing</button>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  ) : null;
+
   const phrases = phraseCount(connection.anchors.length);
   return (
+    <>
     <section
       id="connection-card-inspector"
       className={`connection-card connection-kind-${connection.kind.replace("link:", "")}`}
       aria-label={`${kindLabel} connection: ${draftLabel.trim() || originalTitle}`}
       aria-busy={busy}
+      data-dirty={labelChanged || observationChanged}
       data-pending-mutation={ambiguousMutation?.kind}
       data-pending-state={ambiguousMutation?.state}
       tabIndex={-1}
@@ -988,5 +1245,7 @@ export function ConnectionCard({
         <time dateTime={connection.updatedAt}>Updated {formatConnectionTimestamp(connection.updatedAt)}</time>
       </p>
     </section>
+    {exitGuardNode}
+    </>
   );
 }

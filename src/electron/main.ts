@@ -524,6 +524,137 @@ let semanticOperationCount = 0;
 let semanticIdleWaiters: Array<() => void> = [];
 let engineLifecycleTail: Promise<void> = Promise.resolve();
 let isAppQuitting = false;
+
+type RendererCloseRequestSource = "window" | "quit";
+
+interface MainWindowCloseTarget {
+  window: BrowserWindow;
+  windowGeneration: number;
+  guardReady: boolean;
+}
+
+interface PendingRendererCloseRequest {
+  requestId: string;
+  source: "window" | "quit";
+  windowGeneration: number;
+  senderId: number;
+  promise: Promise<boolean>;
+  resolve(approved: boolean): void;
+}
+
+let windowGeneration = 0;
+let mainWindowCloseTarget: MainWindowCloseTarget | null = null;
+let pendingRendererCloseRequest: PendingRendererCloseRequest | null = null;
+
+function currentRendererCloseTarget(): MainWindowCloseTarget | null {
+  const target = mainWindowCloseTarget;
+  if (
+    !target
+    || mainWindow !== target.window
+    || target.window.isDestroyed()
+    || target.window.webContents.isDestroyed()
+  ) return null;
+  return target;
+}
+
+function cancelRendererCloseAcknowledgement(targetGeneration: number): void {
+  const pending = pendingRendererCloseRequest;
+  if (!pending || pending.windowGeneration !== targetGeneration) return;
+  pendingRendererCloseRequest = null;
+  pending.resolve(false);
+}
+
+/** Window chrome, renderer titlebar controls, and app.before-quit all wait on
+ * this one renderer-owned authored-workspace decision. Repeated requests for
+ * the current window share the same promise and therefore cannot duplicate a
+ * flush, prompt, or close response. */
+function requestRendererCloseAcknowledgement(
+  source: RendererCloseRequestSource,
+): Promise<boolean> {
+  const target = currentRendererCloseTarget();
+  // Startup failures and a renderer that has not installed its guard cannot
+  // own authored in-memory state yet, so Electron may continue its native
+  // lifecycle. A ready visible renderer must always acknowledge explicitly.
+  if (!target || !target.guardReady) return Promise.resolve(true);
+
+  if (
+    pendingRendererCloseRequest
+    && pendingRendererCloseRequest.windowGeneration === target.windowGeneration
+    && pendingRendererCloseRequest.senderId === target.window.webContents.id
+  ) {
+    return pendingRendererCloseRequest.promise;
+  }
+
+  if (pendingRendererCloseRequest) {
+    const stale = pendingRendererCloseRequest;
+    pendingRendererCloseRequest = null;
+    stale.resolve(false);
+  }
+
+  const requestId = ulid();
+  let resolveAcknowledgement!: (approved: boolean) => void;
+  const promise = new Promise<boolean>((resolvePending) => {
+    resolveAcknowledgement = resolvePending;
+  });
+  pendingRendererCloseRequest = {
+    requestId,
+    source,
+    windowGeneration: target.windowGeneration,
+    senderId: target.window.webContents.id,
+    promise,
+    resolve: resolveAcknowledgement,
+  };
+  try {
+    target.window.webContents.send("app-window-close-requested", { requestId, source });
+  } catch (error) {
+    pendingRendererCloseRequest = null;
+    resolveAcknowledgement(false);
+    logLifecycle("renderer-close-request-send-failed", {
+      requestId,
+      source,
+      windowGeneration: target.windowGeneration,
+      error: diagnosticError(error),
+    }, "error");
+  }
+  return promise;
+}
+
+function resolveRendererCloseAcknowledgement(
+  event: IpcMainEvent,
+  requestId: unknown,
+  proceed: unknown,
+): void {
+  const pending = pendingRendererCloseRequest;
+  const target = currentRendererCloseTarget();
+  if (
+    typeof requestId !== "string" || typeof proceed !== "boolean"
+    || !pending
+    || !target
+    || pending.requestId !== requestId
+    || pending.senderId !== event.sender.id
+    || pending.windowGeneration !== target.windowGeneration
+    || event.sender !== target.window.webContents
+  ) {
+    logLifecycle("renderer-close-response-rejected", {
+      requestId: typeof requestId === "string" ? requestId.slice(0, 64) : null,
+      senderId: event.sender.id,
+      activeWindowGeneration: target?.windowGeneration ?? null,
+    }, "warn");
+    return;
+  }
+  pendingRendererCloseRequest = null;
+  pending.resolve(proceed);
+}
+
+ipcMain.on("app-window-close-response", resolveRendererCloseAcknowledgement);
+ipcMain.on("app-window-close-guard-ready", (event) => {
+  const target = currentRendererCloseTarget();
+  if (target && event.sender === target.window.webContents) target.guardReady = true;
+});
+ipcMain.on("app-window-request-close", (event) => {
+  const target = currentRendererCloseTarget();
+  if (target && event.sender === target.window.webContents) target.window.close();
+});
 /** Original-language packages (MACULA Greek, later OSHB Hebrew). */
 let tokenPackages: TokenPackageLoader | null = null;
 let reverseIndexes: ReverseIndexLoader | null = null;
@@ -1497,6 +1628,12 @@ function createWindow(): void {
     return;
   }
   mainWindow = win;
+  const closeTarget: MainWindowCloseTarget = {
+    window: win,
+    windowGeneration: ++windowGeneration,
+    guardReady: false,
+  };
+  mainWindowCloseTarget = closeTarget;
 
   win.webContents.on("will-frame-navigate", (details) => {
     if (details.isMainFrame && isTrustedRendererUrl(details.url)) return;
@@ -1521,6 +1658,8 @@ function createWindow(): void {
 
   let rendererRecoveryPromptOpen = false;
   win.webContents.on("render-process-gone", (_event, details) => {
+    closeTarget.guardReady = false;
+    cancelRendererCloseAcknowledgement(closeTarget.windowGeneration);
     const expected = isAppQuitting || details.reason === "clean-exit";
     logLifecycle("main-render-process-gone", {
       reason: details.reason,
@@ -1581,35 +1720,27 @@ function createWindow(): void {
   // Browser beforeunload cannot await a custom renderer decision. Keep the
   // native close pending here, then let the renderer resolve the same draft
   // guard used by chapter, view, translation, and library exits.
-  let closeGuardReady = false;
   let closeRequestPending = false;
   let closeApproved = false;
-  const markCloseGuardReady = (event: IpcMainEvent): void => {
-    if (event.sender === win.webContents) closeGuardReady = true;
-  };
-  const requestWindowClose = (event: IpcMainEvent): void => {
-    if (event.sender === win.webContents && !win.isDestroyed()) win.close();
-  };
-  const resolveCloseRequest = (event: IpcMainEvent, proceed: unknown): void => {
-    if (event.sender !== win.webContents || typeof proceed !== "boolean") return;
-    closeRequestPending = false;
-    if (!proceed || win.isDestroyed()) return;
-    closeApproved = true;
-    win.close();
-  };
-  ipcMain.on("app-window-close-guard-ready", markCloseGuardReady);
-  ipcMain.on("app-window-request-close", requestWindowClose);
-  ipcMain.on("app-window-close-response", resolveCloseRequest);
   win.webContents.on("did-start-loading", () => {
-    closeGuardReady = false;
+    closeTarget.guardReady = false;
     closeRequestPending = false;
+    cancelRendererCloseAcknowledgement(closeTarget.windowGeneration);
   });
   win.on("close", (event) => {
-    if (isAppQuitting || closeApproved || !closeGuardReady || win.webContents.isDestroyed()) return;
+    if (isAppQuitting || closeApproved || !closeTarget.guardReady || win.webContents.isDestroyed()) return;
     event.preventDefault();
     if (closeRequestPending) return;
     closeRequestPending = true;
-    win.webContents.send("app-window-close-requested");
+    void requestRendererCloseAcknowledgement("window")
+      .then((approved) => {
+        if (!approved || win.isDestroyed() || mainWindowCloseTarget !== closeTarget) return;
+        closeApproved = true;
+        win.close();
+      })
+      .finally(() => {
+        closeRequestPending = false;
+      });
   });
 
   const developmentUrl = trustedDevelopmentRendererUrl();
@@ -1638,9 +1769,8 @@ function createWindow(): void {
   win.on("move", saveBounds);
 
   win.on("closed", () => {
-    ipcMain.removeListener("app-window-close-guard-ready", markCloseGuardReady);
-    ipcMain.removeListener("app-window-request-close", requestWindowClose);
-    ipcMain.removeListener("app-window-close-response", resolveCloseRequest);
+    cancelRendererCloseAcknowledgement(closeTarget.windowGeneration);
+    if (mainWindowCloseTarget === closeTarget) mainWindowCloseTarget = null;
     if (boundsSaveTimer) clearTimeout(boundsSaveTimer);
     if (mainWindow === win) mainWindow = null;
     // Hidden embedding BrowserWindows must not keep a non-macOS application
@@ -3675,25 +3805,35 @@ if (!hasSingleInstanceLock) {
 
 let quitTeardownStarted = false;
 let quitTeardownComplete = false;
+let quitApprovalPending = false;
+let quitApproved = false;
 app.on("before-quit", (event) => {
-  isAppQuitting = true;
   if (quitTeardownComplete) return;
   event.preventDefault();
-  if (quitTeardownStarted) return;
-  quitTeardownStarted = true;
+  if (quitApprovalPending || quitTeardownStarted) return;
+  if (quitApproved) return;
+  quitApprovalPending = true;
 
-  void shutdownForQuitDeadline()
-    .catch((error) => {
-      logLifecycle("quit-teardown-failed", { error: diagnosticError(error) }, "error");
-    })
-    .finally(() => {
-      quitTeardownComplete = true;
-      logLifecycle("session-end");
-      // A second app.quit() issued from an asynchronously prevented
-      // before-quit cycle is ignored by Electron on macOS. Cleanup is now
-      // complete, so exit without re-entering that lifecycle event.
-      app.exit(0);
-    });
+  void requestRendererCloseAcknowledgement("quit").then((approved) => {
+    quitApprovalPending = false;
+    if (!approved) return;
+    quitApproved = true;
+    isAppQuitting = true;
+    quitTeardownStarted = true;
+
+    return shutdownForQuitDeadline()
+      .catch((error) => {
+        logLifecycle("quit-teardown-failed", { error: diagnosticError(error) }, "error");
+      })
+      .finally(() => {
+        quitTeardownComplete = true;
+        logLifecycle("session-end");
+        // A second app.quit() issued from an asynchronously prevented
+        // before-quit cycle is ignored by Electron on macOS. Cleanup is now
+        // complete, so exit without re-entering that lifecycle event.
+        app.exit(0);
+      });
+  });
 });
 
 app.on("window-all-closed", () => {

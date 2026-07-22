@@ -498,6 +498,33 @@ export function selectStudyWorkspaceTab(
   return activateStudyWorkspaceTab(state, tabId);
 }
 
+export function studyCanvasOwnerPassageTabId(
+  state: StudyWorkspaceStateV2,
+): string | null {
+  const active = state.tabsById[state.activeTabId];
+  if (active?.kind === "passage") return active.id;
+  if (active?.kind === "entity") {
+    const returnTab = active.returnPassageTabId
+      ? state.tabsById[active.returnPassageTabId]
+      : undefined;
+    if (returnTab?.kind === "passage") return returnTab.id;
+    const group = state.groups.find((candidate) => candidate.id === active.groupId);
+    const home = group ? state.tabsById[group.homePassageTabId] : undefined;
+    if (home?.kind === "passage") return home.id;
+  }
+  return [...state.activationOrder].reverse().find(
+    (tabId) => state.tabsById[tabId]?.kind === "passage",
+  ) ?? state.groups[0]?.homePassageTabId ?? null;
+}
+
+export function activateStudyCanvasOwnerPassageTab(
+  state: StudyWorkspaceStateV2,
+): StudyWorkspaceStateV2 {
+  const ownerTabId = studyCanvasOwnerPassageTabId(state);
+  if (!ownerTabId || ownerTabId === state.activeTabId) return state;
+  return selectStudyWorkspaceTab(state, ownerTabId);
+}
+
 export function renameStudyWorkspaceGroup(
   state: StudyWorkspaceStateV2,
   groupId: string,

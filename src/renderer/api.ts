@@ -23,6 +23,8 @@ export type { RankedTrustedResource } from "../core/resources/trusted-resources.
 export type { EntityResearchData } from "../core/entities/place-research.js";
 export type { ConnectionAnchor, ConnectionKind, ConnectionRecord } from "../core/annotations/types.js";
 
+export type AppWindowCloseRequest = { requestId: string; source: "window" | "quit" };
+
 /**
  * Type-safe wrapper for the contextBridge API exposed by preload.
  * Provides typed access to all Electron IPC calls.
@@ -182,9 +184,9 @@ declare global {
         openExternalResearchUrl(url: string): Promise<{ ok: true }>;
       };
       appWindow: {
-        onCloseRequested(listener: () => void): () => void;
+        onCloseRequested(listener: (request: AppWindowCloseRequest) => void): () => void;
         requestClose(): void;
-        resolveCloseRequest(proceed: boolean): void;
+        resolveCloseRequest(requestId: string, proceed: boolean): void;
       };
       settings: {
         get(): Promise<AppSettings>;

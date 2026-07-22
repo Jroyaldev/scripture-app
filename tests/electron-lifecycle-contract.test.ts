@@ -25,6 +25,59 @@ test("Electron records renderer and child-process failures outside Library subst
     "renderer failure must not immediately trigger an automatic reload");
 });
 
+test("window close and app quit share one correlated renderer acknowledgement", () => {
+  const main = read("src/electron/main.ts");
+  const preload = read("src/electron/preload.ts");
+  const api = read("src/renderer/api.ts");
+
+  assert.match(main, /requestRendererCloseAcknowledgement/);
+  assert.match(main, /interface PendingRendererCloseRequest[\s\S]{0,400}requestId: string[\s\S]{0,200}windowGeneration: number[\s\S]{0,200}senderId: number/);
+  assert.match(main, /source: "window" \| "quit"/);
+  assert.match(main, /pendingRendererCloseRequest[\s\S]{0,500}return pendingRendererCloseRequest\.promise/,
+    "repeated native close and quit attempts must share one in-flight renderer decision");
+  assert.match(main, /win\.on\("close"[\s\S]{0,700}requestRendererCloseAcknowledgement\("window"/);
+  assert.match(main, /app\.on\("before-quit"[\s\S]{0,900}requestRendererCloseAcknowledgement\("quit"/);
+  assert.match(main, /if \(!approved\)[\s\S]{0,180}return/);
+  assert.ok(
+    main.indexOf("isAppQuitting = true", main.indexOf('app.on("before-quit"'))
+      > main.indexOf('requestRendererCloseAcknowledgement("quit")', main.indexOf('app.on("before-quit"')),
+    "quit mode starts only after the renderer approves",
+  );
+  assert.match(preload, /listener: \(request: \{ requestId: string; source: "window" \| "quit" \}\)/);
+  assert.match(preload, /resolveCloseRequest: \(requestId: string, proceed: boolean\)/);
+  assert.match(api, /requestId: string; source: "window" \| "quit"/);
+  assert.match(api, /resolveCloseRequest\(requestId: string, proceed: boolean\)/);
+});
+
+test("renderer close responses fail closed when stale, unsolicited, or from another window generation", () => {
+  const main = read("src/electron/main.ts");
+
+  const responseStart = main.indexOf("function resolveRendererCloseAcknowledgement");
+  const responseEnd = main.indexOf("ipcMain.on", responseStart);
+  assert.notEqual(responseStart, -1);
+  assert.notEqual(responseEnd, -1);
+  const response = main.slice(responseStart, responseEnd);
+  assert.match(response, /typeof requestId !== "string" \|\| typeof proceed !== "boolean"/);
+  assert.match(response, /!pending/);
+  assert.match(response, /pending\.requestId !== requestId/);
+  assert.match(response, /pending\.senderId !== event\.sender\.id/);
+  assert.match(response, /pending\.windowGeneration !== target\.windowGeneration/);
+  assert.match(response, /event\.sender !== target\.window\.webContents/);
+  assert.match(response, /pendingRendererCloseRequest = null[\s\S]{0,120}pending\.resolve\(proceed\)/,
+    "only the current correlated response may settle the close request");
+  assert.match(main, /webContents\.on\("render-process-gone"[\s\S]{0,260}closeTarget\.guardReady = false[\s\S]{0,160}cancelRendererCloseAcknowledgement/,
+    "a dead renderer must cancel its request instead of hanging app quit");
+
+  const beforeQuit = main.slice(main.indexOf('app.on("before-quit"'));
+  const request = beforeQuit.indexOf('requestRendererCloseAcknowledgement("quit")');
+  const approval = beforeQuit.indexOf("quitApproved = true", request);
+  const quitting = beforeQuit.indexOf("isAppQuitting = true", request);
+  const shutdown = beforeQuit.indexOf("shutdownForQuitDeadline()", request);
+  assert.ok(request >= 0 && approval > request && quitting > request && shutdown > quitting);
+  assert.match(beforeQuit, /if \(quitApprovalPending \|\| quitTeardownStarted\) return/,
+    "repeated quit events must not start another renderer request or teardown");
+});
+
 test("library cutover is reversible before commit and retires only after publish", () => {
   const main = read("src/electron/main.ts");
 

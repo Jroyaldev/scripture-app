@@ -1,10 +1,6 @@
-export type ConnectionDraftExitReason =
-  | "chapter-change"
-  | "translation-change"
-  | "view-change"
-  | "library-change"
-  | "window-close"
-  | "escape";
+import type { WorkspaceTransitionReason } from "./workspaceTransition.js";
+
+export type ConnectionDraftExitReason = WorkspaceTransitionReason | "escape";
 
 export interface ConnectionDraftExitController {
   requestExit(reason: ConnectionDraftExitReason): Promise<boolean>;
@@ -20,6 +16,9 @@ export function connectionDraftExitActions(phraseCount: number): readonly Connec
 
 export function connectionDraftExitTitle(reason: ConnectionDraftExitReason): string {
   if (reason === "window-close") return "Close with an unfinished connection?";
+  if (reason === "tab-change") return "Switch tabs with an unfinished connection?";
+  if (reason === "tab-close") return "Close this tab with an unfinished connection?";
+  if (reason === "group-change") return "Change this study group with an unfinished connection?";
   if (reason === "translation-change") return "Change translation with an unfinished connection?";
   if (reason === "chapter-change") return "Leave this chapter with an unfinished connection?";
   if (reason === "library-change") return "Switch libraries with an unfinished connection?";

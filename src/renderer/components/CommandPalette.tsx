@@ -1,5 +1,5 @@
 import type React from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type {
   BackboneData,
@@ -41,11 +41,11 @@ interface Props {
   bookNames: BookNameData;
   context: CommandReadingContext;
   actions: CommandPaletteAction[];
-  onNavigate: (book: string, chapter: number, verse?: number, endVerse?: number) => void;
-  onOpenNote: (noteId: string) => void;
-  onOpenEntity: (entityId: string) => void;
-  onSearchNotes: (query: string) => void;
-  onRunAction: (id: string) => void;
+  onNavigate: (book: string, chapter: number, verse?: number, endVerse?: number) => Promise<boolean>;
+  onOpenNote: (noteId: string) => Promise<boolean>;
+  onOpenEntity: (entityId: string) => Promise<boolean>;
+  onSearchNotes: (query: string) => Promise<boolean>;
+  onRunAction: (id: string) => Promise<boolean>;
 }
 
 type PaletteResult = {
@@ -140,6 +140,26 @@ function matchesAction(action: CommandPaletteAction, query: string): boolean {
   return terms.every((term) => haystack.includes(term));
 }
 
+export async function runApprovedPaletteActivation(
+  inFlight: { current: boolean },
+  request: () => Promise<boolean>,
+  commit: () => void,
+  ownerIsCurrent: () => boolean = () => true,
+): Promise<boolean> {
+  if (inFlight.current) return false;
+  inFlight.current = true;
+  try {
+    const approved = await request();
+    if (!approved || !ownerIsCurrent()) return false;
+    commit();
+    return true;
+  } catch {
+    return false;
+  } finally {
+    inFlight.current = false;
+  }
+}
+
 export function CommandPalette({
   open,
   initialTab = "intelligence",
@@ -166,16 +186,44 @@ export function CommandPalette({
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const resultRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const returnFocusRef = useRef<HTMLElement | null>(null);
+  const resultActivationInFlightRef = useRef(false);
+  const paletteOwnerRef = useRef(0);
+  const openRef = useRef(open);
+  openRef.current = open;
   const layerRef = useLayer(open ? "dialog" : null);
 
-  const closeAnd = useCallback((work: () => void) => {
+  const dismissPalette = useCallback((): void => {
+    paletteOwnerRef.current += 1;
+    onClose();
+  }, [onClose]);
+
+  const closeForDestination = useCallback((): void => {
     // Activating a result transfers focus ownership to its destination
     // (Scripture selection, note workspace, or entity research). Only a
     // dismissed palette should restore the invoking control.
+    paletteOwnerRef.current += 1;
     returnFocusRef.current = null;
     onClose();
-    work();
   }, [onClose]);
+
+  const activateResult = useCallback((request: () => Promise<boolean>): void => {
+    const owner = paletteOwnerRef.current;
+    void runApprovedPaletteActivation(
+      resultActivationInFlightRef,
+      request,
+      closeForDestination,
+      () => openRef.current && paletteOwnerRef.current === owner,
+    );
+  }, [closeForDestination]);
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    const owner = paletteOwnerRef.current + 1;
+    paletteOwnerRef.current = owner;
+    return () => {
+      if (paletteOwnerRef.current === owner) paletteOwnerRef.current += 1;
+    };
+  }, [initialTab, open]);
 
   useEffect(() => {
     if (!open) return;
@@ -191,7 +239,11 @@ export function CommandPalette({
     return () => {
       window.clearTimeout(timer);
       const target = returnFocusRef.current;
-      window.setTimeout(() => target?.isConnected && target.focus(), 0);
+      const restoreOwner = paletteOwnerRef.current;
+      window.setTimeout(() => {
+        if (openRef.current || paletteOwnerRef.current !== restoreOwner) return;
+        if (target?.isConnected) target.focus();
+      }, 0);
     };
   }, [initialTab, open]);
 
@@ -202,7 +254,7 @@ export function CommandPalette({
         if (!isTopLayer(layerRef.current)) return;
         event.preventDefault();
         event.stopImmediatePropagation();
-        onClose();
+        dismissPalette();
         return;
       }
       const isLensKey = event.key === "Tab" || event.key === "ArrowLeft" || event.key === "ArrowRight";
@@ -221,7 +273,7 @@ export function CommandPalette({
     };
     window.addEventListener("keydown", onKeyDown, true);
     return () => window.removeEventListener("keydown", onKeyDown, true);
-  }, [onClose, open]);
+  }, [dismissPalette, open]);
 
   useEffect(() => {
     if (!open) return;
@@ -273,7 +325,7 @@ export function CommandPalette({
             title: refTitle,
             detail: cleanExcerpt(preview ?? ""),
             meta: "Exact reference",
-            activate: () => closeAnd(() => onNavigate(book, chapter, verse, endVerse)),
+            activate: () => activateResult(() => onNavigate(book, chapter, verse, endVerse)),
           };
         }
 
@@ -289,7 +341,7 @@ export function CommandPalette({
       });
     }, 120);
     return () => window.clearTimeout(timer);
-  }, [backbone, bookNames, closeAnd, context.book, context.chapter, context.packageId, onNavigate, open, query]);
+  }, [activateResult, backbone, bookNames, context.book, context.chapter, context.packageId, onNavigate, open, query]);
 
   const scriptureResults = useMemo<PaletteResult[]>(() => data.scripture
     .filter((hit) => data.exact?.id !== `exact:${hit.book}:${hit.chapter}:${hit.verse}:0`)
@@ -299,8 +351,8 @@ export function CommandPalette({
       title: `${displayBook(bookNames, hit.book)} ${hit.chapter}:${hit.verse}`,
       detail: cleanExcerpt(hit.text),
       meta: hit.matchKind === "phrase" ? "Phrase" : context.packageId.toUpperCase(),
-      activate: () => closeAnd(() => onNavigate(hit.book, hit.chapter, hit.verse)),
-    })), [bookNames, closeAnd, context.packageId, data.exact?.id, data.scripture, onNavigate]);
+      activate: () => activateResult(() => onNavigate(hit.book, hit.chapter, hit.verse)),
+    })), [activateResult, bookNames, context.packageId, data.exact?.id, data.scripture, onNavigate]);
 
   const noteResults = useMemo<PaletteResult[]>(() => data.notes.map((note) => ({
     id: `note:${note.id}`,
@@ -308,8 +360,8 @@ export function CommandPalette({
     title: note.title || "Untitled note",
     detail: cleanExcerpt(note.body_text) || "No note text yet.",
     meta: "My notes",
-    activate: () => closeAnd(() => onOpenNote(note.id)),
-  })), [closeAnd, data.notes, onOpenNote]);
+    activate: () => activateResult(() => onOpenNote(note.id)),
+  })), [activateResult, data.notes, onOpenNote]);
 
   const entityResults = useMemo<PaletteResult[]>(() => data.entities.map(({ entity }) => {
     return {
@@ -318,9 +370,9 @@ export function CommandPalette({
       title: displayEntityName(entity.displayName),
       detail: cleanExcerpt(entity.brief || entity.short || "Indexed biblical name"),
       meta: `${entity.kind === "place" ? "Place" : "Person"} · ${entity.refCount}`,
-      activate: () => closeAnd(() => onOpenEntity(entity.id)),
+      activate: () => activateResult(() => onOpenEntity(entity.id)),
     } satisfies PaletteResult;
-  }), [closeAnd, data.entities, onOpenEntity]);
+  }), [activateResult, data.entities, onOpenEntity]);
 
   const actionResults = useMemo<PaletteResult[]>(() => actions
     .filter((action) => !query.trim() || matchesAction(action, query))
@@ -330,8 +382,8 @@ export function CommandPalette({
       title: action.title,
       detail: action.detail,
       meta: "Action",
-      activate: () => closeAnd(() => onRunAction(action.id)),
-    })), [actions, closeAnd, onRunAction, query]);
+      activate: () => activateResult(() => onRunAction(action.id)),
+    })), [actions, activateResult, onRunAction, query]);
 
   const preferredActionResults = useMemo<PaletteResult[]>(() => {
     const needle = query.trim().toLocaleLowerCase();
@@ -353,8 +405,8 @@ export function CommandPalette({
     title: formatRecentLabel(recent, bookNames),
     detail: `Recently opened in ${recent.packageId.toUpperCase()}`,
     meta: "Recent",
-    activate: () => closeAnd(() => onNavigate(recent.book, recent.chapter, recent.verse)),
-  })), [bookNames, closeAnd, onNavigate, recents]);
+    activate: () => activateResult(() => onNavigate(recent.book, recent.chapter, recent.verse)),
+  })), [activateResult, bookNames, onNavigate, recents]);
 
   const results = useMemo<PaletteResult[]>(() => {
     const hasQuery = query.trim().length >= 2;
@@ -370,7 +422,7 @@ export function CommandPalette({
         title: `Search all notes for “${query.trim()}”`,
         detail: "Open the full note search workspace",
         meta: "Deep search",
-        activate: () => closeAnd(() => onSearchNotes(query.trim())),
+        activate: () => activateResult(() => onSearchNotes(query.trim())),
       };
       return [...noteResults, deep].slice(0, 24);
     }
@@ -386,7 +438,7 @@ export function CommandPalette({
       ...entityResults.slice(0, 2),
       ...remainingActions.slice(0, 1),
     ].slice(0, 7);
-  }, [activeTab, actionResults, closeAnd, data.exact, entityResults, noteResults, onSearchNotes, preferredActionResults, query, recentResults, scriptureResults]);
+  }, [activateResult, activeTab, actionResults, data.exact, entityResults, noteResults, onSearchNotes, preferredActionResults, query, recentResults, scriptureResults]);
 
   const emptyCopy = activeTab === "scripture"
     ? "Enter a reference, phrase, or natural-language question."
@@ -438,7 +490,7 @@ export function CommandPalette({
 
   return createPortal(
     <div className={`command-palette-root ${materialClass}`} data-floating-layer="dialog">
-      <button type="button" className="command-palette-scrim" aria-label="Close search" onClick={onClose} />
+      <button type="button" className="command-palette-scrim" aria-label="Close search" onClick={dismissPalette} />
       <div
         className="command-palette-panel"
         role="dialog"

@@ -101,12 +101,12 @@ test("a Scripture drag commits on document mouseup when release leaves the text 
   assert.match(documentRelease, /target\?\.closest\("\.verse-text-span"\) != null/);
   assert.match(documentRelease, /verseTextRef\.current\?\.contains\(target\) === true/);
   assert.match(documentRelease, /document\.addEventListener\("mouseup", handleDocumentMouseUp\)/);
-  assert.match(documentRelease, /if \(event\.button !== 0 \|\| !textSelectionGestureRef\.current\) return/);
-  assert.match(documentRelease, /textSelectionGestureRef\.current = false;\s*handleTextMouseUp\(\)/);
+  assert.match(documentRelease, /if \(event\.button !== 0\) return;[\s\S]{0,360}if \(!textSelectionGestureRef\.current\) return;/);
+  assert.match(documentRelease, /textSelectionGestureRef\.current = false;\s*void handleTextMouseUp\(\)/);
   assert.match(documentRelease, /document\.addEventListener\("pointercancel", cancelTextSelectionGesture\)/);
   assert.match(documentRelease, /window\.addEventListener\("blur", cancelTextSelectionGesture\)/);
   assert.match(page, /const suppressTrailingDragClick = useCallback[\s\S]{0,700}window\.setTimeout\(\(\) => \{[\s\S]{0,180}suppressNextClickRef\.current = false;[\s\S]{0,60}\}, 0\)/);
-  assert.match(page, /suppressTrailingDragClick\(\);[\s\S]{0,260}setPhraseSelection/);
+  assert.match(page, /suppressTrailingDragClick\(\);[\s\S]{0,120}if \(!await requestCanvasResearchExit\(\)\) return;/);
   assert.doesNotMatch(page, /onMouseDown=\{\(event\) => \{\s*suppressNextClickRef\.current = false/);
   assert.doesNotMatch(page, /onMouseUp=\{handleTextMouseUp\}/);
 });
@@ -264,8 +264,8 @@ test("outside clicks dismiss only connection focus and overlapping exact hits ha
   assert.match(chooser, /connectionWordChooser\.hits\.map\(\(hit, index\)/);
   assert.match(chooser, /ref=\{index === 0 \? connectionWordChooserFirstChoiceRef : undefined\}/);
   assert.match(chooser, /event\.detail === 0/);
-  assert.match(chooser, /closeConnectionWordChooser\(!focusInspector\)/);
-  assert.match(chooser, /handleSelectConnection\(hit\.connection, focusInspector\)/);
+  assert.doesNotMatch(chooser, /closeConnectionWordChooser\(!focusInspector\)/);
+  assert.match(chooser, /void handleSelectConnection\(hit\.connection, focusInspector\)/);
   assert.match(page, /handleConnectionWordChooserKeyDown[\s\S]{0,1800}event\.key === "ArrowDown"[\s\S]{0,500}event\.key === "ArrowUp"[\s\S]{0,500}event\.key === "Home"[\s\S]{0,240}event\.key === "End"/);
   assert.match(page, /target\?\.focus\(\{ preventScroll: true \}\)[\s\S]{0,160}target\?\.scrollIntoView\(\{ block: "nearest", inline: "nearest" \}\)/);
   assert.match(page, /event\.key !== "Enter" && event\.key !== " "[\s\S]{0,520}activeChoice\.click\(\)/);
@@ -291,7 +291,12 @@ test("stale connection projections and chooser rows cannot resurrect a removed d
 
   assert.match(page, /visibleConnectionByIdRef\.current = visibleConnectionById/);
   assert.match(selection, /visibleConnectionByIdRef\.current\.get\(connection\.id\)/);
-  assert.match(selection, /if \(connection != null && visibleConnection == null\) \{[\s\S]{0,120}return;/);
+  assert.match(selection, /if \(connection != null && visibleConnection == null\) \{[\s\S]{0,120}return false;/);
+  assert.ok(
+    selection.indexOf("await requestScriptureWorkspaceAttention()")
+      < selection.lastIndexOf("closeConnectionWordChooser(false)"),
+    "the chooser must remain unchanged until Scripture attention is approved",
+  );
   assert.match(selection, /replaceHeldConnectionIds\(\[\.\.\.heldConnectionIdsRef\.current, visibleConnection\.id\]\)/);
   assert.match(chooserReconciliation, /visibleConnectionById\.get\(hit\.connection\.id\)/);
   assert.match(chooserReconciliation, /if \(hits\.length === 0\) \{[\s\S]{0,120}closeConnectionWordChooser\(false\)/);
