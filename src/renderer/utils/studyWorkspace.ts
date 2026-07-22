@@ -118,17 +118,37 @@ export type WorkspaceMutationOutcome =
   | "unchanged";
 
 export type WorkspaceConfirmation =
-  | { kind: "passage-dependencies"; tabId: string; dependentEntityIds: string[] }
-  | { kind: "sole-group-passage"; groupId: string; tabId: string }
+  | {
+      kind: "passage-dependencies";
+      tabId: string;
+      dependentEntityIds: string[];
+      sourceGroupId: string;
+      sourceTabIds: string[];
+    }
+  | { kind: "sole-group-passage"; groupId: string; tabId: string; tabIds: string[] }
   | { kind: "close-study"; groupId: string; tabIds: string[] }
   | {
       kind: "move-branch";
       tabId: string;
       dependentEntityIds: string[];
+      sourceGroupId: string;
+      sourceTabIds: string[];
       targetGroupId: string;
     }
-  | { kind: "move-entity-context"; tabId: string; targetGroupId: string }
-  | { kind: "move-home-passage"; tabId: string; groupId: string; targetGroupId: string };
+  | {
+      kind: "move-entity-context";
+      tabId: string;
+      sourceGroupId: string;
+      nonce: number;
+      targetGroupId: string;
+    }
+  | {
+      kind: "move-home-passage";
+      tabId: string;
+      groupId: string;
+      sourceTabIds: string[];
+      targetGroupId: string;
+    };
 
 export type WorkspaceDecision =
   | "close-passage-and-research"
@@ -458,9 +478,10 @@ function moveTabRecords(
   targetGroup: StudyWorkspaceGroup,
 ): StudyWorkspaceStateV2 {
   const moving = new Set(tabIds);
+  const frozenTargetGroup = freezeAutomaticGroupLabel(state, targetGroup);
   const sourceTabIds = sourceGroup.tabIds.filter((id) => !moving.has(id));
   const targetTabIds = [
-    ...targetGroup.tabIds.filter((id) => !moving.has(id)),
+    ...frozenTargetGroup.tabIds.filter((id) => !moving.has(id)),
     ...tabIds,
   ];
   const tabsById = { ...state.tabsById };
@@ -482,7 +503,7 @@ function moveTabRecords(
       }
       if (group.id === targetGroup.id) {
         return {
-          ...group,
+          ...frozenTargetGroup,
           tabIds: targetTabIds,
           lastActiveTabId: tabIds.includes(state.activeTabId)
             ? state.activeTabId
@@ -514,6 +535,8 @@ export function moveStudyWorkspaceTab(
       confirmation: {
         kind: "move-entity-context",
         tabId: tab.id,
+        sourceGroupId: sourceGroup.id,
+        nonce: tab.nonce,
         targetGroupId: targetGroup.id,
       },
     };
@@ -527,6 +550,7 @@ export function moveStudyWorkspaceTab(
         kind: "move-home-passage",
         tabId: tab.id,
         groupId: sourceGroup.id,
+        sourceTabIds: [...sourceGroup.tabIds],
         targetGroupId: targetGroup.id,
       },
     };
@@ -540,6 +564,8 @@ export function moveStudyWorkspaceTab(
         kind: "move-branch",
         tabId: tab.id,
         dependentEntityIds,
+        sourceGroupId: sourceGroup.id,
+        sourceTabIds: [...sourceGroup.tabIds],
         targetGroupId: targetGroup.id,
       },
     };
@@ -718,7 +744,12 @@ export function closeStudyWorkspaceTab(
       return {
         state,
         outcome: "needs-confirmation",
-        confirmation: { kind: "sole-group-passage", groupId: group.id, tabId: tab.id },
+        confirmation: {
+          kind: "sole-group-passage",
+          groupId: group.id,
+          tabId: tab.id,
+          tabIds: [...group.tabIds],
+        },
       };
     }
     const dependentEntityIds = dependentEntityTabIds(state, group, tab.id);
@@ -726,7 +757,13 @@ export function closeStudyWorkspaceTab(
       return {
         state,
         outcome: "needs-confirmation",
-        confirmation: { kind: "passage-dependencies", tabId: tab.id, dependentEntityIds },
+        confirmation: {
+          kind: "passage-dependencies",
+          tabId: tab.id,
+          dependentEntityIds,
+          sourceGroupId: group.id,
+          sourceTabIds: [...group.tabIds],
+        },
       };
     }
     return { state: removeTabsFromGroup(state, group, [tab.id]), outcome: "applied" };
@@ -801,6 +838,8 @@ export function resolveStudyWorkspaceDecision(
     const globalPassageCount = Object.values(state.tabsById)
       .filter((candidate) => candidate.kind === "passage").length;
     if (!group || tab?.kind !== "passage" || tab.groupId !== group.id
+      || group.tabIds.length !== confirmation.tabIds.length
+      || group.tabIds.some((id, index) => id !== confirmation.tabIds[index])
       || passages.length !== 1 || passages[0] !== tab.id || globalPassageCount <= 1) {
       return { state, outcome: "unchanged" };
     }
@@ -830,7 +869,10 @@ export function resolveStudyWorkspaceDecision(
         && candidate.tabIds.includes(tab.id))
       : undefined;
     const targetGroup = state.groups.find((candidate) => candidate.id === confirmation.targetGroupId);
-    if (!tab || !sourceGroup || !targetGroup || sourceGroup.id === targetGroup.id
+    if (!tab || !sourceGroup || sourceGroup.id !== confirmation.sourceGroupId
+      || sourceGroup.tabIds.length !== confirmation.sourceTabIds.length
+      || sourceGroup.tabIds.some((id, index) => id !== confirmation.sourceTabIds[index])
+      || !targetGroup || sourceGroup.id === targetGroup.id
       || sourceGroup.homePassageTabId === tab.id) {
       return { state, outcome: "unchanged" };
     }
@@ -851,7 +893,9 @@ export function resolveStudyWorkspaceDecision(
     const sourceGroup = state.groups.find((candidate) => candidate.id === tab.groupId
       && candidate.tabIds.includes(tab.id));
     const targetGroup = state.groups.find((candidate) => candidate.id === confirmation.targetGroupId);
-    if (!sourceGroup || !targetGroup || sourceGroup.id === targetGroup.id) {
+    if (!sourceGroup || sourceGroup.id !== confirmation.sourceGroupId
+      || tab.nonce !== confirmation.nonce
+      || !targetGroup || sourceGroup.id === targetGroup.id) {
       return { state, outcome: "unchanged" };
     }
     let contextTabId = targetGroup.tabIds.find((id) => {
@@ -915,6 +959,8 @@ export function resolveStudyWorkspaceDecision(
     const targetGroup = state.groups.find((candidate) => candidate.id === confirmation.targetGroupId);
     if (tab?.kind !== "passage" || !sourceGroup || !targetGroup
       || tab.groupId !== sourceGroup.id || sourceGroup.id === targetGroup.id
+      || sourceGroup.tabIds.length !== confirmation.sourceTabIds.length
+      || sourceGroup.tabIds.some((id, index) => id !== confirmation.sourceTabIds[index])
       || sourceGroup.homePassageTabId !== tab.id) {
       return { state, outcome: "unchanged" };
     }
@@ -1008,6 +1054,11 @@ export function resolveStudyWorkspaceDecision(
       && candidate.tabIds.includes(tab.id))
     : undefined;
   if (!tab || !group) return { state, outcome: "unchanged" };
+  if (group.id !== confirmation.sourceGroupId
+    || group.tabIds.length !== confirmation.sourceTabIds.length
+    || group.tabIds.some((id, index) => id !== confirmation.sourceTabIds[index])) {
+    return { state, outcome: "unchanged" };
+  }
   const dependents = dependentEntityTabIds(state, group, tab.id);
   if (dependents.length !== confirmation.dependentEntityIds.length
     || dependents.some((id, index) => id !== confirmation.dependentEntityIds[index])) {
@@ -1026,15 +1077,15 @@ export function resolveStudyWorkspaceDecision(
         })),
       },
     };
-    return {
-      state: removeTabsFromGroup(detached, group, [tab.id]),
-      outcome: "applied",
-    };
+    const next = removeTabsFromGroup(detached, group, [tab.id]);
+    return next === detached
+      ? { state, outcome: "unchanged" }
+      : { state: next, outcome: "applied" };
   }
-  return {
-    state: removeTabsFromGroup(state, group, [tab.id, ...dependents]),
-    outcome: "applied",
-  };
+  const next = removeTabsFromGroup(state, group, [tab.id, ...dependents]);
+  return next === state
+    ? { state, outcome: "unchanged" }
+    : { state: next, outcome: "applied" };
 }
 
 export function reopenClosedStudyItem(
