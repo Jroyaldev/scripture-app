@@ -102,7 +102,7 @@ The renderer owns one versioned workspace state.
 interface StudyWorkspaceStateV2 {
   version: 2;
   groups: StudyWorkspaceGroup[];
-  tabs: StudyWorkspaceTab[];
+  tabsById: Record<string, StudyWorkspaceTab>;
   activeTabId: string;
   activationOrder: string[];
   recentlyClosed: ClosedStudyItem[];
@@ -115,11 +115,24 @@ interface StudyWorkspaceGroup {
   lastActiveTabId: string;
   collapsed: boolean;
   label:
-    | { kind: "automatic"; frozenReference?: string }
+    | { kind: "automatic"; frozenReference?: { book: string; chapter: number } }
     | { kind: "custom"; value: string };
 }
 
 type StudyWorkspaceTab = PassageWorkspaceTab | EntityWorkspaceTab;
+
+interface PackageSelectionSnapshot {
+  packageId: string;
+  pieces: Array<{
+    verse: number;
+    charStart: number | null;
+    charEnd: number | null;
+  }>;
+}
+
+type ClosedStudyItem =
+  | { kind: "tab"; tab: StudyWorkspaceTab; index: number }
+  | { kind: "group"; group: StudyWorkspaceGroup; tabsById: Record<string, StudyWorkspaceTab>; index: number };
 
 interface PassageWorkspaceSession {
   current: PassageViewState;
@@ -152,6 +165,7 @@ interface EntityWorkspaceTab {
   entityId: string;
   entityKind: "person" | "place" | "other";
   origin: PassageViewState;
+  originRange?: { start: number; end: number };
   canvas: PassageWorkspaceSession;
   returnPassageTabId: string | null;
   trail: EntityResearchTrailEntry[];
@@ -159,6 +173,13 @@ interface EntityWorkspaceTab {
   nonce: number;
 }
 ```
+
+`groups` and each group's `tabIds` are the canonical group/tab order.
+`tabsById` is record storage only. Normalization drops unreferenced tab records,
+removes missing/duplicate `tabIds`, rejects a group without a passage, repairs
+`homePassageTabId`/`lastActiveTabId` to a referenced tab, and then repairs the
+global active/activation order. Recently closed snapshots are JSON-safe and use
+array order rather than wall-clock time.
 
 `NavigationHistoryEntry` remains the base passage snapshot. `PassageViewState`
 adds the meaningful state currently held only in component memory: an exact
@@ -207,15 +228,22 @@ new study.
 - Passage accessible names and All Tabs always include translation. A quiet
   visible suffix (`Acts 19 · WEB`, `Acts 19 · KJV`) appears only while
   same-reference translations would otherwise collide.
-- Changing translation into an already-open normal identity focuses that tab
-  and leaves both histories unchanged. Only `Open duplicate` may retain two
-  identical passage identities.
+- Duplicate prevention applies to structural creation: normal `Open passage`
+  focuses an existing same-group book/chapter/translation tab, while explicit
+  `Open duplicate` creates another. Navigation inside an existing tab—arrows,
+  picker, Back/Forward, range follow, or translation change—never merges or
+  discards histories, even if two tabs temporarily converge on the same
+  identity. Tooltips and All Tabs disambiguate converged tabs by group and
+  recent history.
 - The final passage tab in the app cannot close. Its close affordance is absent,
   not disabled.
-- Closing a group's home passage promotes the nearest remaining passage. If no
-  other passage exists and entity tabs remain, a calm in-app confirmation
-  offers `Close study` or `Keep open`; entities are never orphaned and no native
-  dialog is used.
+- Closing a passage with no dependent research closes directly. With dependents,
+  one calm in-app prompt offers `Close passage and research`, `Keep research`,
+  or `Cancel`; keeping research clears only its return pointer, and its immutable
+  origin can later recreate/reuse the passage. If the passage was home, the
+  nearest remaining passage is promoted. If it was the group's only passage,
+  the only valid choices are `Close study` or `Keep open`. No native dialog is
+  used and every outcome preserves the at-least-one-passage invariant.
 
 ## Person/place behavior
 
@@ -224,9 +252,10 @@ new study.
 - The active tab's full canvas snapshot is copied into both the entity's
   immutable `origin` and its independent current `canvas`; the originating
   passage tab becomes `returnPassageTabId`. The entity joins the same study.
-- Opening the same entity with the same group and immutable origin focuses its
-  existing tab. The same biblical person opened from a materially different
-  passage is a valid separate investigation.
+- Entity reuse key is exactly group, entity ID, origin book/chapter/package, and
+  `originRange`. It excludes eye-line, scroll, lens, and selection.
+  The same biblical person opened from a different keyed passage is a valid
+  separate investigation.
   `Open duplicate` is an explicit context action rather than an accidental
   second copy.
 - A related entity selected inside Research navigates the current entity tab,
@@ -245,9 +274,8 @@ new study.
   context passage in the destination group. Moving a passage with dependent
   entity tabs moves that branch atomically. No move, close, or root promotion
   silently rebinds research to an unrelated passage.
-- Closing a passage with dependent research offers `Close passage and research`
-  or `Keep open`; a move-to-study action may preserve the branch first. There is
-  no implicit orphan cleanup.
+- A move-to-study action may preserve a branch before close. There is no
+  implicit orphan cleanup or hidden retargeting.
 - Repeated names are disambiguated in tooltips and All Tabs with type, opening
   passage, and translation (`Mary · person · from John 2 · BSB`).
 - VersePeek's `Keep in Study` continues to freeze the Living Margin subject. It
@@ -295,9 +323,11 @@ use the same vocabulary: `Open tab`, `Open passage in new tab`, and
 - Closing a group uses the existing confirmation language when it contains
   more than one tab. At least one passage group always remains.
 - Group disclosure controls are excluded from the tab roving set; Left/Right
-  traverses only actual tabs/proxies. The DOM uses a workspace navigation
-  container with per-group tablist segments and sibling group controls; no
-  arbitrary button is interspersed inside a `role="tablist"`.
+  traverses only actual tabs/proxies. The DOM uses one `role="tablist"` containing
+  actual tabs, collapsed proxies, and non-interactive presentation labels only.
+  The active group's management button lives in the sibling actions rail;
+  management for any group is also available in All Tabs. No arbitrary button
+  is interspersed in the tab composite.
 
 ## Closing, limits, and recovery
 
@@ -310,7 +340,11 @@ use the same vocabulary: `Open tab`, `Open passage in new tab`, and
 - The workspace accepts at most 64 total tabs. Reaching the limit does not
   silently evict anything. The Open-tab popover explains `64 tabs open` and
   opens the searchable All Tabs manager.
-- Duplicate passage identity is book, chapter, translation, and group. Normal
+- The workspace accepts at most 16 groups. Starting or reopening a group at the
+  limit refuses without mutation, says `16 studies open`, and opens All Tabs so
+  the reader can close one first. A recently closed group remains recoverable
+  until its bounded record ages out.
+- Structural passage identity is book, chapter, translation, and group. Normal
   opening focuses the duplicate; explicit `Open duplicate` bypasses reuse.
 - Invalid/missing restored chapters fall back visibly to the group's home
   passage without deleting the stored tab. Missing entities retain a named
@@ -405,10 +439,18 @@ use the same vocabulary: `Open tab`, `Open passage in new tab`, and
 - Validation caps 64 total tabs, 16 groups, 50 history entries per passage,
   12 entity trail entries, and 10 recently closed records. Unknown cosmetic
   fields are dropped rather than rejecting the workspace.
-- The current `researchWorkspace` migrates once: each origin becomes a group,
-  a home passage is created from that origin, and its entity tabs retain order,
-  trails, kinds, and nonce values. The current `lastRead` becomes or updates the
-  active home passage.
+- A valid version-2 `studyWorkspace` is authoritative. `lastRead`,
+  `keptContext`, and the unversioned legacy `researchWorkspace` never overwrite
+  it after reload; `lastRead` may remain a compatibility mirror of the active
+  canvas only.
+- Without valid version 2, migration creates the first/home passage from valid
+  `lastRead` (or the existing Acts 19 default), copies legacy `keptContext` into
+  that passage's margin scope, and then stops writing the global kept setting.
+  Each unversioned research origin becomes/reuses a group with a home passage;
+  entity order, trails, kinds, and nonce values survive. If legacy state names
+  an active research tab it remains active; otherwise the `lastRead` passage is
+  active. A different `lastRead` origin creates a separate first group rather
+  than rewriting a legacy origin.
 - The legacy single `researchSession` remains readable for one migration cycle
   but is no longer written after version 2 settles.
 - Migration never mutates authored data or event logs.
