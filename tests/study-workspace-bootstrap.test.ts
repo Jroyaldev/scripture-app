@@ -114,6 +114,11 @@ test("App establishes V2 authority only after refusal and projects it into trans
   assert.match(app, /workspacePersistenceRef\.current\.persistStructure/);
   assert.match(hydration, /const persisted = await window\.api\.settings\.set\(\{ studyWorkspace: workspace \}\)/);
   assert.match(hydration, /if \(persisted\.studyWorkspaceRefusal\) throw new Error/);
+  assert.match(
+    hydration,
+    /if \(!isStudyWorkspaceSnapshotAcknowledged\(workspace, persisted\.studyWorkspace\)\) throw new Error/,
+  );
+  assert.doesNotMatch(hydration, /persisted\.studyWorkspace\?\.version !== 2/);
   assert.match(hydration, /setStudyWorkspaceRefusal\("newer-version"\)/);
   assert.match(app, /role="alert"[\s\S]{0,500}?newer version of Pericope/);
   assert.match(app, /if \(studyWorkspaceRefusal === "newer-version"\)/);

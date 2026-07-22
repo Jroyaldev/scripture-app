@@ -8,6 +8,7 @@ import {
 } from "../src/renderer/utils/studyWorkspace.js";
 import {
   createWorkspacePersistenceController,
+  isStudyWorkspaceSnapshotAcknowledged,
   projectStudyWorkspaceCompatibility,
 } from "../src/renderer/utils/workspacePersistence.js";
 
@@ -120,6 +121,28 @@ test("compatibility kept context comes from the active canvas instead of the fir
     chapter: 3,
     verse: 14,
   });
+});
+
+test("snapshot acknowledgement is canonical across key order and exact across values", () => {
+  const requested = state(19);
+  const sameSnapshotDifferentKeyOrder = {
+    recentlyClosed: requested.recentlyClosed,
+    activationOrder: requested.activationOrder,
+    activeTabId: requested.activeTabId,
+    tabsById: Object.fromEntries(Object.entries(requested.tabsById).map(([id, tab]) => [
+      id,
+      Object.fromEntries(Object.entries(tab).reverse()),
+    ])),
+    groups: requested.groups.map((group) => Object.fromEntries(
+      Object.entries(group).reverse(),
+    )),
+    version: requested.version,
+  };
+  const staleSnapshot = state(18);
+
+  assert.equal(isStudyWorkspaceSnapshotAcknowledged(requested, sameSnapshotDifferentKeyOrder), true);
+  assert.equal(isStudyWorkspaceSnapshotAcknowledged(requested, staleSnapshot), false);
+  assert.equal(isStudyWorkspaceSnapshotAcknowledged(requested, null), false);
 });
 
 test("structural publications get monotonic revisions and writes never overlap", async () => {
@@ -385,6 +408,36 @@ test("flush waits through an older write and succeeds only after its newest revi
   assert.deepEqual(controller.status(), {
     phase: "idle",
     acknowledgedRevision: 3,
+    pendingRevision: null,
+  });
+  controller.dispose();
+});
+
+test("a stale V2 acknowledgement makes close flush fail and remains retryable", async () => {
+  let attempts = 0;
+  const controller = createWorkspacePersistenceController({
+    debounceMs: 0,
+    async write(snapshot) {
+      attempts += 1;
+      const persisted = attempts === 1 ? state(18) : structuredClone(snapshot);
+      if (!isStudyWorkspaceSnapshotAcknowledged(snapshot, persisted)) {
+        throw new Error("Workspace write not acknowledged");
+      }
+    },
+  });
+
+  assert.equal(await controller.flush(state(19)), false);
+  assert.deepEqual(controller.status(), {
+    phase: "failed",
+    acknowledgedRevision: 0,
+    pendingRevision: 1,
+    error: "Workspace write not acknowledged",
+  });
+  assert.equal(await controller.retry(), true);
+  assert.equal(attempts, 2);
+  assert.deepEqual(controller.status(), {
+    phase: "idle",
+    acknowledgedRevision: 1,
     pendingRevision: null,
   });
   controller.dispose();

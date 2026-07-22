@@ -56,6 +56,7 @@ import {
 } from "./utils/studyWorkspace.js";
 import {
   createWorkspacePersistenceController,
+  isStudyWorkspaceSnapshotAcknowledged,
   projectStudyWorkspaceCompatibility,
   type WorkspacePersistenceController,
 } from "./utils/workspacePersistence.js";
@@ -423,7 +424,7 @@ export function App(): React.JSX.Element {
           async write(workspace) {
             const persisted = await window.api.settings.set({ studyWorkspace: workspace });
             if (persisted.studyWorkspaceRefusal) throw new Error("Workspace version refused");
-            if (persisted.studyWorkspace?.version !== 2) throw new Error("Workspace write not acknowledged");
+            if (!isStudyWorkspaceSnapshotAcknowledged(workspace, persisted.studyWorkspace)) throw new Error("Workspace write not acknowledged");
           },
         });
       }

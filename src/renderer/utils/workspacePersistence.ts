@@ -101,6 +101,31 @@ export interface WorkspacePersistenceStatus {
   error?: string;
 }
 
+function canonicalJson(value: unknown): string | null {
+  try {
+    const serialized = JSON.stringify(value, (_key, current: unknown) => {
+      if (current === null || typeof current !== "object" || Array.isArray(current)) {
+        return current;
+      }
+      const record = current as Record<string, unknown>;
+      return Object.fromEntries(
+        Object.keys(record).sort().map((key) => [key, record[key]]),
+      );
+    });
+    return serialized ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export function isStudyWorkspaceSnapshotAcknowledged(
+  requested: StudyWorkspaceStateV2,
+  persisted: unknown,
+): boolean {
+  const requestedCanonical = canonicalJson(requested);
+  return requestedCanonical !== null && requestedCanonical === canonicalJson(persisted);
+}
+
 export interface WorkspacePersistenceController {
   publishView(state: StudyWorkspaceStateV2): void;
   persistStructure(state: StudyWorkspaceStateV2): Promise<boolean>;
