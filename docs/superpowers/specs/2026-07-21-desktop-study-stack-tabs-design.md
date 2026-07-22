@@ -261,7 +261,10 @@ new study.
 - A related entity selected inside Research navigates the current entity tab,
   appends its visible breadcrumb/Back trail, and retains its opening provenance.
 - A trailing `Open in new tab` action plus modifier/middle-click creates a
-  sibling entity tab without changing the current trail.
+  sibling entity tab without changing the current trail. That branch inherits
+  the parent's immutable opening origin and return passage while copying the
+  parent's current canvas, so `Opened from Acts 19 · Viewing Romans 6` remains
+  truthful after reload.
 - Selecting an entity tab restores its own current canvas session and its entity
   trail/scroll in the margin. Its immutable origin remains available for
   `Return to Acts 19` even if the source passage tab later navigates elsewhere.
@@ -269,7 +272,9 @@ new study.
   canvas and brings the reference into attention while keeping Research
   visible. `Open as passage tab` creates/focuses a sibling passage tab instead.
 - If the return passage tab was closed, `Return` creates or reuses a passage tab
-  from the immutable origin; it never silently retargets the entity.
+  from the immutable origin. If the old return tab has navigated elsewhere,
+  Return reuses another matching origin passage or creates one; it never
+  overwrites the moved tab or silently retargets the entity.
 - Moving an entity preserves its immutable origin and copies/reuses the matching
   context passage in the destination group. Moving a passage with dependent
   entity tabs moves that branch atomically. No move, close, or root promotion
@@ -382,6 +387,10 @@ use the same vocabulary: `Open tab`, `Open passage in new tab`, and
 - Activation from the strip leaves focus on the selected tab. Tab enters the
   panel. Opening research from content may move focus to its heading once; a
   later tab switch does not steal focus back into the margin.
+- Roving focus uses one consistent automatic-activation model for cached and
+  uncached tabs. Only the final active owner may hydrate or paint the panel;
+  stale or aborted responses from tabs crossed during keyboard traversal are
+  ignored.
 - Close, collapse, restore, and overflow selection always land focus on a valid
   visible tab or the triggering control.
 
@@ -412,8 +421,8 @@ use the same vocabulary: `Open tab`, `Open passage in new tab`, and
   shadow. Gold remains reserved for a solid, 3:1-safe keyboard focus outline.
 - The active tab receives enough width to remain readable; inactive tabs may
   compact before overflow. Close appears on hover, focus, or selection.
-- Tab labels use approximately 12px UI text; human-readable group labels use at
-  least 10.5–11px UI text rather than 9px mono. Close targets are at least
+- Tab labels and human-readable group labels use at least 12px UI text rather
+  than miniature mono metadata. Close targets are at least
   24×24px, and type glyphs render at full tertiary contrast rather than reduced
   opacity.
 - Group labels, boundaries, count badges, edge fades, and collapsed proxies use
@@ -423,6 +432,14 @@ use the same vocabulary: `Open tab`, `Open passage in new tab`, and
   proxies and in All Tabs.
 - Overflow is a searchable grouped switcher showing group, type, label, and
   current state. It is not a second permanently visible tab list.
+- Glass and Candlelight acceptance uses actual composited pixels behind label
+  bounds, not token values alone: full-opacity small text remains at least
+  4.5:1 and icons/focus at least 3:1 even over patterned shell content. If a
+  translucent resolved material cannot meet that gate, use a resolved opaque
+  material instead of adding another layer.
+- Desktop tabs remain available at 150% and 200% zoom. A CSS viewport-width
+  breakpoint alone must not classify a zoomed desktop window as mobile or hide
+  Open, All Tabs, the active tab/proxy, or its focus indicator.
 - All Tabs opens on its search field or active row, never a destructive group
   action. Overflow appears from measured clipping, not a hard tab count.
 - Scroll continuation uses a non-interactive edge curtain/divider painted in
