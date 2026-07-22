@@ -122,6 +122,8 @@ export type WorkspaceMutationOutcome =
   | "needs-confirmation"
   | "unchanged";
 
+export type WorkspaceCloseAvailability = "direct" | "decision" | "unavailable";
+
 export type WorkspaceConfirmation =
   | {
       kind: "passage-dependencies";
@@ -276,6 +278,27 @@ export function truncateEntityResearchTrail(
 ): EntityResearchTrailEntry[] {
   if (index < 0 || index >= trail.length) return [...trail];
   return trail.slice(0, index + 1);
+}
+
+function entityResearchTrailsEqual(
+  left: readonly EntityResearchTrailEntry[],
+  right: readonly EntityResearchTrailEntry[],
+): boolean {
+  return left.length === right.length && left.every((entry, index) => {
+    const candidate = right[index];
+    return entry.id === candidate?.id
+      && entry.displayName === candidate.displayName
+      && entry.kind === candidate.kind;
+  });
+}
+
+function canonicalEntityResearchTrail(
+  entries: readonly EntityResearchTrailEntry[],
+): EntityResearchTrailEntry[] {
+  return entries.reduce<EntityResearchTrailEntry[]>(
+    (trail, entry) => appendEntityResearchTrail(trail, entry),
+    [],
+  );
 }
 
 function clonePassageViewState(view: PassageViewState): PassageViewState {
@@ -1016,6 +1039,41 @@ export function closeStudyWorkspaceGroup(
   return { state: removeStudyGroup(state, group), outcome: "applied" };
 }
 
+export function studyWorkspaceTabCloseAvailability(
+  state: StudyWorkspaceStateV2,
+  tabId: string,
+): WorkspaceCloseAvailability {
+  const tab = state.tabsById[tabId];
+  const group = tab
+    ? state.groups.find((candidate) => candidate.id === tab.groupId
+      && candidate.tabIds.includes(tab.id))
+    : undefined;
+  if (!tab || !group) return "unavailable";
+  if (tab.kind === "entity") return "direct";
+  const globalPassageCount = Object.values(state.tabsById)
+    .filter((candidate) => candidate.kind === "passage").length;
+  if (globalPassageCount <= 1) return "unavailable";
+  const groupPassageCount = group.tabIds.filter((candidateId) => (
+    state.tabsById[candidateId]?.kind === "passage"
+  )).length;
+  if (groupPassageCount <= 1) return "decision";
+  return dependentEntityTabIds(state, group, tab.id).length > 0 ? "decision" : "direct";
+}
+
+export function studyWorkspaceGroupCloseAvailability(
+  state: StudyWorkspaceStateV2,
+  groupId: string,
+): WorkspaceCloseAvailability {
+  const group = state.groups.find((candidate) => candidate.id === groupId);
+  if (!group || state.groups.length <= 1) return "unavailable";
+  const globalPassageCount = Object.values(state.tabsById)
+    .filter((tab) => tab.kind === "passage").length;
+  const groupPassageCount = group.tabIds
+    .filter((tabId) => state.tabsById[tabId]?.kind === "passage").length;
+  if (globalPassageCount - groupPassageCount < 1) return "unavailable";
+  return group.tabIds.length > 1 ? "decision" : "direct";
+}
+
 export function resolveStudyWorkspaceDecision(
   state: StudyWorkspaceStateV2,
   confirmation: WorkspaceConfirmation,
@@ -1490,6 +1548,62 @@ export function updateStudyCanvasSession(
   };
 }
 
+/**
+ * Publish live canvas state only for the tab that still owns the rendered
+ * canvas. Delayed scroll/selection work from a previously active tab must not
+ * be allowed to write into either that inactive tab or the new active owner.
+ */
+export function updateActiveStudyCanvasSession(
+  state: StudyWorkspaceStateV2,
+  ownerTabId: string,
+  update: (current: PassageWorkspaceSession) => PassageWorkspaceSession,
+): StudyWorkspaceStateV2 {
+  if (state.activeTabId !== ownerTabId) return state;
+  return updateStudyCanvasSession(state, ownerTabId, update);
+}
+
+export function updateEntityWorkspaceScrollTop(
+  state: StudyWorkspaceStateV2,
+  tabId: string,
+  scrollTop: number,
+): StudyWorkspaceStateV2 {
+  const tab = state.tabsById[tabId];
+  if (tab?.kind !== "entity" || !Number.isFinite(scrollTop) || scrollTop < 0) return state;
+  if (tab.scrollTop === scrollTop) return state;
+  return {
+    ...state,
+    tabsById: {
+      ...state.tabsById,
+      [tabId]: { ...tab, scrollTop },
+    },
+  };
+}
+
+export function updateEntityWorkspaceTrail(
+  state: StudyWorkspaceStateV2,
+  tabId: string,
+  update: (
+    current: readonly EntityResearchTrailEntry[],
+  ) => readonly EntityResearchTrailEntry[],
+): StudyWorkspaceStateV2 {
+  const tab = state.tabsById[tabId];
+  if (tab?.kind !== "entity") return state;
+  const requested = update(tab.trail.map(cloneEntityResearchTrailEntry));
+  const trail = canonicalEntityResearchTrail(requested);
+  const currentCheckpoint = trail.at(-1);
+  const entityKind = currentCheckpoint?.id === tab.entityId && currentCheckpoint.kind
+    ? currentCheckpoint.kind
+    : tab.entityKind;
+  if (entityKind === tab.entityKind && entityResearchTrailsEqual(tab.trail, trail)) return state;
+  return {
+    ...state,
+    tabsById: {
+      ...state.tabsById,
+      [tabId]: { ...tab, entityKind, trail },
+    },
+  };
+}
+
 function passageMatchesView(tab: StudyWorkspaceTab, view: PassageViewState): boolean {
   if (tab.kind !== "passage") return false;
   const current = tab.session.current;
@@ -1593,6 +1707,19 @@ export function orderedStudyWorkspaceTabs(
     const tab = state.tabsById[tabId];
     return tab ? [tab] : [];
   });
+}
+
+/**
+ * Collapsed studies retain the active tab as their single APG proxy. This
+ * guarantees that the selected tab remains the tablist's one roving tab stop.
+ */
+export function visibleStudyWorkspaceTabIds(
+  state: StudyWorkspaceStateV2,
+): string[] {
+  return state.groups.flatMap((group) => group.tabIds.filter((tabId) => (
+    state.tabsById[tabId]
+    && (!group.collapsed || tabId === state.activeTabId)
+  )));
 }
 
 function referenceLabel(

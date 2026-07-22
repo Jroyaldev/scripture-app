@@ -18,12 +18,13 @@ import {
   type EntityResearchOpenOptions,
   type EntityResearchTrailEntry,
   type LivingMarginCaptureRequest,
+  type LivingMarginScrollController,
 } from "./LivingMargin.js";
 import type { MarginWorkspace } from "../utils/marginWorkspace.js";
-import {
-  SCRIPTURE_WORKSPACE_ID,
-  type ResearchWorkspaceTab,
-} from "../utils/researchWorkspace.js";
+import type {
+  PassageViewState,
+  StudyWorkspaceStateV2,
+} from "../utils/studyWorkspace.js";
 import type {
   ConnectionDraftExitController,
 } from "../utils/connectionDraftLifecycle.js";
@@ -102,7 +103,6 @@ import {
   backNavigationHistory,
   forwardNavigationHistory,
   pushNavigationHistory,
-  type NavigationHistoryEntry,
   type NavigationHistoryState,
   type NavigationMarginScope,
   type NavigationMarginTab,
@@ -222,9 +222,120 @@ interface GoToOptions {
   recordRecent?: boolean;
   rangeEnd?: number;
   historyMode?: "push" | "traverse";
-  history?: NavigationHistoryState;
+  history?: NavigationHistoryState<PassageViewState>;
   packageId?: string;
-  restoreEntry?: NavigationHistoryEntry;
+  restoreEntry?: PassageViewState;
+}
+
+export interface RestoredPassageSelection {
+  phrase: HighlightRange | null;
+  verses: number[];
+  anchor: number | null;
+}
+
+/**
+ * Rebuild the selection model from one durable passage snapshot. Exact,
+ * package-local pieces take precedence over their coarse margin envelope;
+ * the envelope exists for Study scope and must not widen a phrase back to
+ * whole verses during relaunch, history traversal, or an owner switch.
+ */
+export function restorePassageSelection(entry: PassageViewState): RestoredPassageSelection {
+  const pieces = entry.selection?.packageId === entry.packageId
+    ? [...entry.selection.pieces].sort((left, right) => left.verse - right.verse)
+    : [];
+  const firstPiece = pieces[0];
+  const lastPiece = pieces.at(-1);
+  if (firstPiece && lastPiece) {
+    return {
+      phrase: {
+        verseStart: firstPiece.verse,
+        verseEnd: lastPiece.verse,
+        charStart: firstPiece.charStart,
+        charEnd: lastPiece.charEnd,
+      },
+      verses: [],
+      anchor: firstPiece.verse,
+    };
+  }
+
+  const scope = entry.margin.scope;
+  if (scope?.kind !== "selection") {
+    return { phrase: null, verses: [], anchor: null };
+  }
+  return {
+    phrase: null,
+    verses: Array.from(
+      { length: Math.max(1, scope.end - scope.start + 1) },
+      (_, index) => scope.start + index,
+    ),
+    anchor: scope.start,
+  };
+}
+
+export interface PassageRestoreCandidate {
+  ownerTabId: string;
+  entry: PassageViewState;
+}
+
+export interface PassageRestoreContext {
+  ownerTabId: string;
+  book: string;
+  chapter: number;
+  packageId: string;
+}
+
+/**
+ * Return a controlled selection snapshot only for the workspace and rendered
+ * text that scheduled it. Matching coordinates alone are insufficient because
+ * duplicate passage tabs may retain different exact phrases.
+ */
+export function passageRestoreEntryForContext(
+  candidate: PassageRestoreCandidate | null,
+  context: PassageRestoreContext,
+): PassageViewState | null {
+  if (
+    candidate?.ownerTabId !== context.ownerTabId
+    || candidate.entry.book !== context.book
+    || candidate.entry.chapter !== context.chapter
+    || candidate.entry.packageId !== context.packageId
+  ) return null;
+  return candidate.entry;
+}
+
+/** Build the controlled snapshot for a deliberate, non-history navigation. */
+export function freshPassageNavigationEntry(
+  current: PassageViewState,
+  target: {
+    book: string;
+    chapter: number;
+    packageId: string;
+    verse?: number;
+    rangeEnd?: number;
+  },
+): PassageViewState {
+  const endVerse = target.verse == null
+    ? undefined
+    : Math.max(target.verse, target.rangeEnd ?? target.verse);
+  const keptScope = current.margin.scope?.kind === "kept"
+    ? current.margin.scope
+    : null;
+  return {
+    book: target.book,
+    chapter: target.chapter,
+    packageId: target.packageId,
+    ...(target.verse != null
+      ? { verse: target.verse, verseOffset: 0, scrollTop: 0 }
+      : { scrollTop: 0 }),
+    margin: {
+      activeTab: current.margin.activeTab,
+      scope: target.verse != null
+        ? { kind: "selection", start: target.verse, end: endVerse! }
+        : keptScope,
+      scrollTopByTab: {},
+      ...(target.verse != null ? { wordsVerse: target.verse } : {}),
+      wordsFollowingReading: true,
+    },
+  };
 }
 
 interface ReferenceViewportTarget {
@@ -270,10 +381,11 @@ type MarginReloadOutcome =
 
 export interface StudyCanvasCapture {
   ownerTabId: string;
-  entry: NavigationHistoryEntry;
+  entry: PassageViewState;
 }
 
 export interface StudyCanvasController {
+  flushPendingMarginScroll(): void;
   captureCurrent(): StudyCanvasCapture | null;
 }
 
@@ -282,10 +394,14 @@ interface Props {
   bookNames: BookNameData;
   navigateRef: { book: string; chapter: number; verse?: number; endVerse?: number; preapproved: true } | null;
   onNavigateRefConsumed?: () => void;
-  navigationHistory: NavigationHistoryState;
-  onNavigationHistoryChange: (history: NavigationHistoryState) => void;
-  sessionEntry: NavigationHistoryEntry | null;
-  onSessionEntryChange: (entry: NavigationHistoryEntry) => void;
+  sessionOwnerTabId: string;
+  sessionEntry: PassageViewState;
+  navigationHistory: NavigationHistoryState<PassageViewState>;
+  onNavigationHistoryChange: (
+    ownerTabId: string,
+    history: NavigationHistoryState<PassageViewState>,
+  ) => void;
+  onSessionEntryChange: (ownerTabId: string, entry: PassageViewState) => void;
   onOpenCommandPalette?: () => void;
   onOpenResearchPalette?: () => void;
   onReadingContextChange?: (context: {
@@ -318,18 +434,21 @@ interface Props {
   onAuthoredMutationStateChange?: (state: "idle" | "in-flight" | "recovery") => void;
   onConnectionDraftExitControllerChange?: (controller: ConnectionDraftExitController | null) => void;
   onStudyCanvasControllerChange?: (controller: StudyCanvasController | null) => void;
-  canvasOwnerTabId: string | null;
   onWorkspaceExitControllerChange?: (controller: WorkspaceExitController | null) => void;
   onRequestWorkspaceTransition: (
     reason: WorkspaceTransitionReason,
     commit: () => void | Promise<void>,
   ) => Promise<boolean>;
-  researchTabs?: readonly ResearchWorkspaceTab[];
-  activeWorkspaceTabId?: string;
+  studyWorkspace: StudyWorkspaceStateV2;
+  activeWorkspaceKind: "passage" | "entity";
   onWorkspaceTabSelect?: (tabId: string) => Promise<boolean>;
-  onResearchTabClose?: (tabId: string) => Promise<boolean>;
-  onResearchGroupClose?: (groupKey: string) => Promise<boolean>;
-  onResearchGroupToggle?: (groupKey: string, collapsing: boolean) => Promise<boolean>;
+  onWorkspaceTabClose?: (tabId: string) => Promise<boolean>;
+  onWorkspaceGroupClose?: (groupId: string) => Promise<boolean>;
+  onWorkspaceGroupToggle?: (groupId: string, collapsing: boolean) => Promise<boolean>;
+  researchScrollTop?: number;
+  onResearchScrollTopChange?: (ownerTabId: string, scrollTop: number) => void;
+  entityResearchFocusRequest?: number | null;
+  onEntityResearchFocusRequestHandled?: (ownerTabId: string, requestId: number) => void;
   entityIntent?: {
     id: string;
     nonce: number;
@@ -346,6 +465,7 @@ interface Props {
   onCloseEntity?: () => Promise<boolean>;
   entityTrail?: readonly EntityResearchTrailEntry[];
   onEntityTrailChange?: (
+    ownerTabId: string,
     update: (current: readonly EntityResearchTrailEntry[]) => EntityResearchTrailEntry[],
   ) => void;
   keptContext?: KeptMarginReference | null;
@@ -496,6 +616,7 @@ export function ScripturePage({
   bookNames,
   navigateRef,
   onNavigateRefConsumed,
+  sessionOwnerTabId,
   navigationHistory,
   onNavigationHistoryChange,
   sessionEntry,
@@ -521,15 +642,18 @@ export function ScripturePage({
   onAuthoredMutationStateChange,
   onConnectionDraftExitControllerChange,
   onStudyCanvasControllerChange,
-  canvasOwnerTabId,
   onWorkspaceExitControllerChange,
   onRequestWorkspaceTransition,
-  researchTabs = [],
-  activeWorkspaceTabId = SCRIPTURE_WORKSPACE_ID,
+  studyWorkspace,
+  activeWorkspaceKind,
   onWorkspaceTabSelect,
-  onResearchTabClose,
-  onResearchGroupClose,
-  onResearchGroupToggle,
+  onWorkspaceTabClose,
+  onWorkspaceGroupClose,
+  onWorkspaceGroupToggle,
+  researchScrollTop,
+  onResearchScrollTopChange,
+  entityResearchFocusRequest,
+  onEntityResearchFocusRequestHandled,
   entityIntent,
   onOpenEntity,
   onCloseEntity,
@@ -541,25 +665,23 @@ export function ScripturePage({
   // Selection notes use the in-place NoteCapture slide-over (stay on Read).
   // Parent still supplies onCreateNote for a future “open full Write” path.
   void _onCreateNote;
-  const [book, setBook] = useState(sessionEntry?.book ?? "ACT");
-  const [chapter, setChapter] = useState(sessionEntry?.chapter ?? 19);
-  const [packageId, setPackageId] = useState(sessionEntry?.packageId ?? "bsb");
+  const [book, setBook] = useState(sessionEntry.book);
+  const [chapter, setChapter] = useState(sessionEntry.chapter);
+  const [packageId, setPackageId] = useState(sessionEntry.packageId);
   const [chapterData, setChapterData] = useState<ChapterData | null>(null);
   const [chapterError, setChapterError] = useState<string | null>(null);
-  const [selectedVerses, setSelectedVerses] = useState<Set<number>>(() => {
-    const scope = sessionEntry?.margin.scope;
-    if (scope?.kind !== "selection") return new Set();
-    return new Set(Array.from(
-      { length: Math.max(1, scope.end - scope.start + 1) },
-      (_, index) => scope.start + index,
-    ));
-  });
-  const [marginTab, setMarginTab] = useState<NavigationMarginTab>(
-    sessionEntry?.margin.activeTab ?? "overview",
+  const [selectedVerses, setSelectedVerses] = useState<Set<number>>(
+    () => new Set(restorePassageSelection(sessionEntry).verses),
   );
-  const marginWorkspace: MarginWorkspace = activeWorkspaceTabId === SCRIPTURE_WORKSPACE_ID
-    ? "study"
-    : "research";
+  const [marginTab, setMarginTab] = useState<NavigationMarginTab>(
+    sessionEntry.margin.activeTab,
+  );
+  // Initial mount is itself one controlled snapshot restore. Subsequent owner,
+  // history, and fresh-navigation commits advance this token so LivingMargin
+  // can restore an intentional zero scroll without confusing it with a live
+  // scope transition.
+  const [sessionRestoreNonce, setSessionRestoreNonce] = useState(1);
+  const marginWorkspace: MarginWorkspace = activeWorkspaceKind === "entity" ? "research" : "study";
   const [marginData, setMarginData] = useState<QueryResult>(EMPTY_MARGIN_DATA);
   const [marginDataChapterKey, setMarginDataChapterKey] = useState<string | null>(null);
   const marginRequestSequenceRef = useRef(0);
@@ -657,7 +779,9 @@ export function ScripturePage({
   // (see rangeToVerseCharOffsets — this null-normalization is what lets the
   // selection bridge into an adjacent same-color verse like a whole-verse
   // highlight would).
-  const [phraseSelection, setPhraseSelection] = useState<HighlightRange | null>(null);
+  const [phraseSelection, setPhraseSelection] = useState<HighlightRange | null>(
+    () => restorePassageSelection(sessionEntry).phrase,
+  );
   // Set on a mouseup that completed a real drag-selection, consumed by the
   // click handler that fires immediately after, so drag-residue clicks don't
   // collapse the phrase selection back to a whole-verse one.
@@ -671,7 +795,9 @@ export function ScripturePage({
   // Whole-verse range selections are always contiguous. Shift extends from
   // this stable anchor; Command/Control-click intentionally behaves like a
   // normal click until discontiguous groups have an honest persistence model.
-  const verseSelectionAnchorRef = useRef<number | null>(null);
+  const verseSelectionAnchorRef = useRef<number | null>(
+    restorePassageSelection(sessionEntry).anchor,
+  );
   const [retryToken, setRetryToken] = useState(0);
   const [scrolled, setScrolled] = useState(false);
 
@@ -730,6 +856,13 @@ export function ScripturePage({
     setSelectionNonce(next);
   }, []);
 
+  const applyPassageSelectionRestore = useCallback((entry: PassageViewState): void => {
+    const restored = restorePassageSelection(entry);
+    setPhraseSelection(restored.phrase ? { ...restored.phrase } : null);
+    setSelectedVerses(new Set(restored.verses));
+    verseSelectionAnchorRef.current = restored.anchor;
+  }, []);
+
   const closeConnectionWordChooser = useCallback((restoreFocus = false): void => {
     if (connectionWordChooserFocusFrameRef.current != null) {
       window.cancelAnimationFrame(connectionWordChooserFocusFrameRef.current);
@@ -784,16 +917,16 @@ export function ScripturePage({
   const [stageBounds, setStageBounds] = useState({ left: 0, top: 58, width: 900, height: 700, bottom: 758 });
   const pendingTranslationViewportRef = useRef<TranslationViewport | null>(null);
   const savedViewportRequestRef = useRef(
-    sessionEntry?.verse != null && sessionEntry.verseOffset != null ? 1 : 0,
+    sessionEntry.scrollTop != null || (sessionEntry.verse != null && sessionEntry.verseOffset != null) ? 1 : 0,
   );
   const [savedViewportTarget, setSavedViewportTarget] = useState<SavedViewportTarget | null>(() => (
-    sessionEntry?.verse != null && sessionEntry.verseOffset != null
+    sessionEntry.scrollTop != null || (sessionEntry.verse != null && sessionEntry.verseOffset != null)
       ? {
           book: sessionEntry.book,
           chapter: sessionEntry.chapter,
           packageId: sessionEntry.packageId,
-          verse: sessionEntry.verse,
-          verseOffset: sessionEntry.verseOffset,
+          verse: sessionEntry.verse ?? null,
+          verseOffset: sessionEntry.verseOffset ?? 0,
           scrollTop: sessionEntry.scrollTop ?? 0,
           requestId: 1,
         }
@@ -802,14 +935,17 @@ export function ScripturePage({
   const [referenceViewportTarget, setReferenceViewportTarget] = useState<ReferenceViewportTarget | null>(null);
   const referenceViewportRequestRef = useRef(0);
   const navigationHistoryRef = useRef(navigationHistory);
-  const sessionEntryRef = useRef(sessionEntry);
-  const mountedWithSessionEntryRef = useRef(sessionEntry != null);
-  useEffect(() => {
-    navigationHistoryRef.current = navigationHistory;
-  }, [navigationHistory]);
-  useEffect(() => {
-    sessionEntryRef.current = sessionEntry;
-  }, [sessionEntry]);
+  const sessionEntryRef = useRef<PassageViewState>(sessionEntry);
+  const sessionOwnerTabIdRef = useRef(sessionOwnerTabId);
+  const livingMarginScrollControllerRef = useRef<LivingMarginScrollController | null>(null);
+  sessionOwnerTabIdRef.current = sessionOwnerTabId;
+  navigationHistoryRef.current = navigationHistory;
+  sessionEntryRef.current = sessionEntry;
+  const [restoredSessionOwnerTabId, setRestoredSessionOwnerTabId] = useState(sessionOwnerTabId);
+  const pendingPassageRestoreRef = useRef<PassageRestoreCandidate | null>({
+    ownerTabId: sessionOwnerTabId,
+    entry: sessionEntry,
+  });
   const loadedChapterKeyRef = useRef<string | null>(null);
   const lastLoadedChapterVerseTextRef = useRef<{
     book: string;
@@ -904,14 +1040,14 @@ export function ScripturePage({
   }, [onRequestWorkspaceTransition]);
 
   const requestCanvasResearchExit = useCallback(async (): Promise<boolean> => {
-    if (activeWorkspaceTabId === SCRIPTURE_WORKSPACE_ID) return true;
+    if (activeWorkspaceKind !== "entity") return true;
     if (!onCloseEntity) return false;
     try {
       return await onCloseEntity();
     } catch {
       return false;
     }
-  }, [activeWorkspaceTabId, onCloseEntity]);
+  }, [activeWorkspaceKind, onCloseEntity]);
 
   // Verse nearest the reading eye-line — ambient Living Margin only.
   // Frozen while the pointer is over the margin or language study has locked
@@ -921,7 +1057,7 @@ export function ScripturePage({
   // position. Verse-to-verse drift inside one chapter re-scopes the panel at
   // most once per pause; a book/chapter move drops back to chapter scope in
   // the same render, so no stale cross-chapter pairing can ever fetch.
-  const scopeKey = `${book}:${chapter}`;
+  const scopeKey = `${sessionOwnerTabId}:${book}:${chapter}`;
   const [settledScope, setSettledScope] = useState<{ key: string; verse: number | null }>({ key: scopeKey, verse: null });
   if (settledScope.key !== scopeKey) {
     setSettledScope({ key: scopeKey, verse: null });
@@ -968,6 +1104,76 @@ export function ScripturePage({
     }
     setScrolled(root.scrollTop > 0);
   }, []);
+
+  // A workspace owner switch is a controlled restore, even when both tabs
+  // happen to show the same chapter and package. Using only book/chapter as an
+  // effect key leaks selection, lens, and scroll state between duplicate tabs.
+  useLayoutEffect(() => {
+    if (restoredSessionOwnerTabId === sessionOwnerTabId) return;
+    pendingPassageRestoreRef.current = {
+      ownerTabId: sessionOwnerTabId,
+      entry: sessionEntry,
+    };
+    setRestoredSessionOwnerTabId(sessionOwnerTabId);
+    setSessionRestoreNonce((current) => current + 1);
+    advanceSelectionGeneration();
+    setBook(sessionEntry.book);
+    setChapter(sessionEntry.chapter);
+    setPackageId(sessionEntry.packageId);
+    setMarginTab(sessionEntry.margin.activeTab);
+    applyPassageSelectionRestore(sessionEntry);
+
+    setShowHighlightPalette(false);
+    setSelectionCapture(null);
+    heldConnectionIdsRef.current = [];
+    setHeldConnectionIds([]);
+    setSelectedConnectionId(null);
+    closeConnectionWordChooser(false);
+    setConnectionExtension(null);
+    setConnectionDraft(null);
+    if (suppressNextClickTimerRef.current != null) {
+      window.clearTimeout(suppressNextClickTimerRef.current);
+      suppressNextClickTimerRef.current = null;
+    }
+    suppressNextClickRef.current = false;
+    textSelectionGestureRef.current = false;
+    deferredVersePointerFocusRef.current = null;
+    setNearVerse(null);
+    setSettledScope({
+      key: `${sessionOwnerTabId}:${sessionEntry.book}:${sessionEntry.chapter}`,
+      verse: null,
+    });
+    setReferenceViewportTarget(null);
+    setSavedViewportTarget({
+      book: sessionEntry.book,
+      chapter: sessionEntry.chapter,
+      packageId: sessionEntry.packageId,
+      verse: sessionEntry.verse ?? null,
+      verseOffset: sessionEntry.verseOffset ?? 0,
+      scrollTop: sessionEntry.scrollTop ?? 0,
+      requestId: ++savedViewportRequestRef.current,
+    });
+  }, [
+    advanceSelectionGeneration,
+    applyPassageSelectionRestore,
+    book,
+    chapter,
+    closeConnectionWordChooser,
+    packageId,
+    restoredSessionOwnerTabId,
+    sessionEntry,
+    sessionOwnerTabId,
+  ]);
+
+  // Invalidate every owner-sensitive request generation before downstream
+  // effects start work for the new tab. LivingMargin itself is keyed by this
+  // owner below, so its shared VersePeek controller unmounts, clearing open /
+  // close timers and making it impossible for tab A's Keep action to land in B.
+  useEffect(() => {
+    marginRequestSequenceRef.current += 1;
+    connectionPaintRequestRef.current += 1;
+    referenceViewportRequestRef.current += 1;
+  }, [sessionOwnerTabId]);
   const marginActiveRef = useRef(false);
   const readingFocusContextRef = useRef({
     book,
@@ -1019,7 +1225,7 @@ export function ScripturePage({
   // Results are chapter-scoped. Suppress the previous chapter immediately
   // when navigation changes context; an interrupted or failed query must
   // never leave old authored connections clickable in Living Margin.
-  const visibleMarginData = marginDataChapterKey === `${book}:${chapter}`
+  const visibleMarginData = marginDataChapterKey === `${sessionOwnerTabId}:${book}:${chapter}`
     ? marginData
     : EMPTY_MARGIN_DATA;
   const visibleConnectionById = useMemo<ReadonlyMap<string, ConnectionRecord>>(
@@ -1097,11 +1303,12 @@ export function ScripturePage({
   }, [heldConnectionIds, visibleMarginData.connections]);
 
   const connectionPaintRequestKey = useMemo(() => JSON.stringify([
+    sessionOwnerTabId,
     book,
     chapter,
     packageId,
     ...visibleMarginData.connections.map((connection) => [connection.id, connection.activeEventId]),
-  ]), [book, chapter, packageId, visibleMarginData.connections]);
+  ]), [book, chapter, packageId, sessionOwnerTabId, visibleMarginData.connections]);
   const currentConnectionPaintProjections = connectionPaintState?.requestKey === connectionPaintRequestKey
     ? connectionPaintState.projections
     : EMPTY_CONNECTION_PAINT_PROJECTIONS;
@@ -1189,17 +1396,15 @@ export function ScripturePage({
   // this check, that late response would silently overwrite the correctly-
   // loaded data for whatever chapter is actually showing with old data for
   // wherever the user used to be.
-  const currentChapterKeyRef = useRef(`${book}:${chapter}`);
-  const currentMarkingContextKeyRef = useRef(`${book}:${chapter}:${packageId}`);
-  currentMarkingContextKeyRef.current = `${book}:${chapter}:${packageId}`;
-  useEffect(() => {
-    currentChapterKeyRef.current = `${book}:${chapter}`;
-  }, [book, chapter]);
+  const currentChapterKeyRef = useRef(`${sessionOwnerTabId}:${book}:${chapter}`);
+  const currentMarkingContextKeyRef = useRef(`${sessionOwnerTabId}:${book}:${chapter}:${packageId}`);
+  currentChapterKeyRef.current = `${sessionOwnerTabId}:${book}:${chapter}`;
+  currentMarkingContextKeyRef.current = `${sessionOwnerTabId}:${book}:${chapter}:${packageId}`;
 
   // Load chapter text
   useEffect(() => {
     let cancelled = false;
-    const loadKey = `${packageId}:${book}:${chapter}`;
+    const loadKey = `${sessionOwnerTabId}:${packageId}:${book}:${chapter}`;
     loadedChapterKeyRef.current = null;
     setChapterData(null);
     setChapterError(null);
@@ -1213,7 +1418,7 @@ export function ScripturePage({
       }
     });
     return () => { cancelled = true; };
-  }, [book, chapter, packageId, retryToken]);
+  }, [book, chapter, packageId, retryToken, sessionOwnerTabId]);
 
   // Translation text reflows, so preserving raw scrollTop alone is not
   // enough. Restore the verse nearest the reading eye-line to the exact same
@@ -1231,12 +1436,25 @@ export function ScripturePage({
     const target = savedViewportTarget;
     if (!target || !chapterData || !contentRef.current) return;
     if (target.book !== book || target.chapter !== chapter || target.packageId !== packageId) return;
-    if (loadedChapterKeyRef.current !== `${packageId}:${book}:${chapter}`) return;
+    if (loadedChapterKeyRef.current !== `${sessionOwnerTabId}:${packageId}:${book}:${chapter}`) return;
     restoreReadingViewport(target);
     setSavedViewportTarget((current) => (
       current?.requestId === target.requestId ? null : current
     ));
-  }, [book, chapter, chapterData, packageId, restoreReadingViewport, savedViewportTarget]);
+  }, [book, chapter, chapterData, packageId, restoreReadingViewport, savedViewportTarget, sessionOwnerTabId]);
+
+  useLayoutEffect(() => {
+    const pending = pendingPassageRestoreRef.current;
+    if (!pending || !chapterData) return;
+    if (pending.ownerTabId !== sessionOwnerTabId) return;
+    if (
+      pending.entry.book !== book
+      || pending.entry.chapter !== chapter
+      || pending.entry.packageId !== packageId
+      || loadedChapterKeyRef.current !== `${sessionOwnerTabId}:${packageId}:${book}:${chapter}`
+    ) return;
+    pendingPassageRestoreRef.current = null;
+  }, [book, chapter, chapterData, packageId, sessionOwnerTabId]);
 
   // A verse reference is both a canonical selection and a reading-location
   // request. Selection can be committed before a new chapter's text exists,
@@ -1249,7 +1467,7 @@ export function ScripturePage({
     const root = contentRef.current;
     if (!target || !root || !chapterData) return;
     if (target.book !== book || target.chapter !== chapter) return;
-    if (loadedChapterKeyRef.current !== `${packageId}:${book}:${chapter}`) return;
+    if (loadedChapterKeyRef.current !== `${sessionOwnerTabId}:${packageId}:${book}:${chapter}`) return;
 
     const row = verseRowRefs.current.get(target.verse);
     if (!row) return;
@@ -1261,13 +1479,13 @@ export function ScripturePage({
     setReferenceViewportTarget((current) => (
       current?.requestId === target.requestId ? null : current
     ));
-  }, [book, chapter, chapterData, packageId, referenceViewportTarget]);
+  }, [book, chapter, chapterData, packageId, referenceViewportTarget, sessionOwnerTabId]);
 
   // Phase 1: Load deterministic margin data (fast)
   useEffect(() => {
     let cancelled = false;
     const requestSequence = ++marginRequestSequenceRef.current;
-    const requestChapterKey = `${book}:${chapter}`;
+    const requestChapterKey = `${sessionOwnerTabId}:${book}:${chapter}`;
     const verseCount = backbone.books[book]?.chapters[chapter - 1] ?? 0;
     if (verseCount === 0) {
       setMarginData(EMPTY_MARGIN_DATA);
@@ -1300,7 +1518,7 @@ export function ScripturePage({
     return () => {
       cancelled = true;
     };
-  }, [book, chapter, backbone, marginVisible]);
+  }, [book, chapter, backbone, marginVisible, sessionOwnerTabId]);
 
   // Phase 2: Load semantic margin (slow, non-blocking)
   useEffect(() => {
@@ -1344,7 +1562,7 @@ export function ScripturePage({
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [book, chapter, backbone, chapterData, marginVisible]);
+  }, [book, chapter, backbone, chapterData, marginVisible, sessionOwnerTabId]);
 
   // Notify the host shell whenever the AI-busy state changes (drives the
   // sidebar footer's "Analyzing passage..." indicator).
@@ -1356,51 +1574,21 @@ export function ScripturePage({
   const chapterCount = bookData?.chapters.length ?? 0;
   const displayBookName = bookNames[book]?.[0] ?? book;
 
-  // Load recents once from persisted settings — and restore the last-read
-  // passage, so launch resumes where the reader left off instead of always
-  // opening the hardcoded boot default. Only applies while the reader is
-  // still at that default (a fast user jump before settings resolve wins).
+  // Load recents once. The active V2 workspace session is the sole restore
+  // authority; lastRead is only a write mirror for older integrations and
+  // must never overwrite a controlled tab owner.
   useEffect(() => {
     let cancelled = false;
     safeCall(() => window.api.settings.get()).then((res) => {
       if (cancelled || !res.ok) return;
       setRecents(normalizeRecents(res.value.recentPassages));
       recentsLoaded.current = true;
-
-      const last = res.value.lastRead;
-      if (
-        last &&
-        !mountedWithSessionEntryRef.current &&
-        !userNavigatedRef.current &&
-        connectionDraftExitControllerRef.current == null &&
-        markingMutationStateRef.current === "idle" &&
-        cardMutationStateRef.current === "idle" &&
-        connectionCardRecovery == null &&
-        backbone.books[last.book] &&
-        last.chapter >= 1 &&
-        last.chapter <= (backbone.books[last.book]?.chapters.length ?? 0)
-      ) {
-        setBook(last.book);
-        setChapter(last.chapter);
-        if (last.packageId) setPackageId(last.packageId);
-        if (last.verse != null && last.verseOffset != null) {
-          setSavedViewportTarget({
-            book: last.book,
-            chapter: last.chapter,
-            packageId: last.packageId,
-            verse: last.verse,
-            verseOffset: last.verseOffset,
-            scrollTop: 0,
-            requestId: ++savedViewportRequestRef.current,
-          });
-        }
-      }
       lastReadLoaded.current = true;
     });
     return () => {
       cancelled = true;
     };
-  }, [backbone, connectionCardRecovery]);
+  }, []);
 
   // Persist recents after the initial load (never write empty defaults over disk).
   useEffect(() => {
@@ -1424,37 +1612,76 @@ export function ScripturePage({
   );
 
   const captureMarginScope = useCallback((): NavigationMarginScope => {
+    if (phraseSelection) {
+      return { kind: "selection", start: phraseSelection.verseStart, end: phraseSelection.verseEnd };
+    }
     const selected = [...selectedVerses].sort((left, right) => left - right);
     if (selected.length > 0) return { kind: "selection", start: selected[0]!, end: selected.at(-1)! };
     return keptContext ? { kind: "kept", ...keptContext } : null;
-  }, [keptContext, selectedVerses]);
+  }, [keptContext, phraseSelection, selectedVerses]);
 
-  const captureNavigationEntry = useCallback((): NavigationHistoryEntry => {
-    const loadedKey = `${packageId}:${book}:${chapter}`;
-    if (loadedChapterKeyRef.current !== loadedKey && sessionEntryRef.current) {
+  const captureNavigationEntry = useCallback((): PassageViewState => {
+    const loadedKey = `${sessionOwnerTabId}:${packageId}:${book}:${chapter}`;
+    if (loadedChapterKeyRef.current !== loadedKey) {
       return sessionEntryRef.current;
     }
     const viewport = captureReadingViewport();
+    const selection = phraseSelection
+      ? {
+          packageId,
+          pieces: Array.from(
+            { length: phraseSelection.verseEnd - phraseSelection.verseStart + 1 },
+            (_, index) => {
+              const verse = phraseSelection.verseStart + index;
+              return {
+                verse,
+                charStart: verse === phraseSelection.verseStart ? phraseSelection.charStart : null,
+                charEnd: verse === phraseSelection.verseEnd ? phraseSelection.charEnd : null,
+              };
+            },
+          ),
+        }
+      : undefined;
     return {
       book,
       chapter,
       packageId,
       ...(viewport?.verse != null ? { verse: viewport.verse, verseOffset: viewport.verseOffset } : {}),
       ...(viewport ? { scrollTop: viewport.scrollTop } : {}),
-      margin: { activeTab: marginTab, scope: captureMarginScope() },
+      ...(selection ? { selection } : {}),
+      margin: {
+        ...sessionEntryRef.current.margin,
+        activeTab: marginTab,
+        scope: captureMarginScope(),
+        scrollTopByTab: { ...sessionEntryRef.current.margin.scrollTopByTab },
+      },
     };
-  }, [book, captureMarginScope, captureReadingViewport, chapter, marginTab, packageId]);
+  }, [book, captureMarginScope, captureReadingViewport, chapter, marginTab, packageId, phraseSelection, sessionOwnerTabId]);
 
-  const studyCanvasOwnerTabIdRef = useRef<string | null>(canvasOwnerTabId);
-  studyCanvasOwnerTabIdRef.current = canvasOwnerTabId;
   const captureCurrentStudyCanvasRef = useRef<() => StudyCanvasCapture | null>(() => null);
   captureCurrentStudyCanvasRef.current = () => {
-    if (!chapterData || loadedChapterKeyRef.current !== `${packageId}:${book}:${chapter}`) return null;
-    const ownerTabId = studyCanvasOwnerTabIdRef.current;
-    if (!ownerTabId) return null;
-    return { ownerTabId, entry: captureNavigationEntry() };
+    if (!chapterData || loadedChapterKeyRef.current !== `${sessionOwnerTabId}:${packageId}:${book}:${chapter}`) return null;
+    if (restoredSessionOwnerTabId !== sessionOwnerTabId) return null;
+    if (book !== sessionEntry.book || chapter !== sessionEntry.chapter || packageId !== sessionEntry.packageId) {
+      return null;
+    }
+    return { ownerTabId: sessionOwnerTabId, entry: captureNavigationEntry() };
   };
+  const handleLivingMarginScrollControllerChange = useCallback((
+    ownerTabId: string,
+    controller: LivingMarginScrollController | null,
+  ): void => {
+    if (ownerTabId !== sessionOwnerTabIdRef.current) return;
+    if (controller === null) {
+      if (livingMarginScrollControllerRef.current?.ownerTabId === ownerTabId) {
+        livingMarginScrollControllerRef.current = null;
+      }
+      return;
+    }
+    livingMarginScrollControllerRef.current = controller;
+  }, []);
   const studyCanvasController = useMemo<StudyCanvasController>(() => ({
+    flushPendingMarginScroll: () => livingMarginScrollControllerRef.current?.flushPendingScroll(),
     captureCurrent: () => captureCurrentStudyCanvasRef.current(),
   }), []);
   useEffect(() => {
@@ -1462,94 +1689,97 @@ export function ScripturePage({
     return () => onStudyCanvasControllerChange?.(null);
   }, [onStudyCanvasControllerChange, studyCanvasController]);
 
-  const commitNavigationHistory = useCallback((next: NavigationHistoryState): void => {
+  const commitNavigationHistory = useCallback((
+    next: NavigationHistoryState<PassageViewState>,
+  ): void => {
+    if (sessionOwnerTabIdRef.current !== sessionOwnerTabId) return;
     navigationHistoryRef.current = next;
-    onNavigationHistoryChange(next);
-  }, [onNavigationHistoryChange]);
+    onNavigationHistoryChange(sessionOwnerTabId, next);
+  }, [onNavigationHistoryChange, sessionOwnerTabId]);
 
-  // Atomic navigation: set book+chapter together in one render so only a
-  // single getChapterText fetch happens (avoids the intermediate chapter-1 load).
-  // An optional verse is remembered in a ref (not state) so the chapter-change
-  // reset effect below can tell "this navigation deliberately wants verse N
-  // selected" apart from "this is a plain chapter change, clear any stale
-  // selection" — otherwise that effect (which must keep running for prev/next
-  // arrows and keyboard nav) would wipe the selection right back out in the
-  // same commit.
-  //
-  // `recordRecent` defaults true for jumps/picker/xrefs; prev/next arrows call
-  // setChapter directly so sequential reading does not flood the recents list.
-  const pendingVerseSelectRef = useRef<number | null>(null);
-  const pendingVerseEndRef = useRef<number | null>(null);
+  // Atomic navigation: the durable target snapshot is prepared before the
+  // canvas coordinates change. Chapter/package reset effects then restore
+  // that exact snapshot instead of reconstructing it from a coarse verse
+  // range. This is what lets Back/Forward recover phrase offsets and every
+  // controlled Study field while ordinary navigation starts a fresh subject.
   const goTo = useCallback(
     async (b: string, c: number, verse?: number, opts?: GoToOptions): Promise<boolean> => {
+      const requestedOwnerTabId = sessionOwnerTabId;
       const targetPackageId = opts?.restoreEntry?.packageId ?? opts?.packageId ?? packageId;
+      let navigationCommitted = false;
       const performNavigation = (): void => {
+        if (sessionOwnerTabIdRef.current !== requestedOwnerTabId) return;
+        let currentEntry: PassageViewState;
         if (opts?.historyMode === "traverse") {
+          currentEntry = captureNavigationEntry();
           if (opts.history) commitNavigationHistory(opts.history);
         } else {
           commitNavigationHistory(pushNavigationHistory(
             navigationHistoryRef.current,
-            captureNavigationEntry(),
+            currentEntry = captureNavigationEntry(),
           ));
         }
+        const targetEntry = opts?.restoreEntry ?? freshPassageNavigationEntry(currentEntry, {
+          book: b,
+          chapter: c,
+          packageId: targetPackageId,
+          ...(verse != null ? { verse } : {}),
+          ...(opts?.rangeEnd != null ? { rangeEnd: opts.rangeEnd } : {}),
+        });
+        navigationCommitted = true;
         userNavigatedRef.current = true;
+        const changesRenderedText = targetEntry.book !== book
+          || targetEntry.chapter !== chapter
+          || targetEntry.packageId !== packageId;
+        pendingPassageRestoreRef.current = changesRenderedText
+          ? { ownerTabId: requestedOwnerTabId, entry: targetEntry }
+          : null;
+        sessionEntryRef.current = targetEntry;
+        onSessionEntryChange(requestedOwnerTabId, targetEntry);
+        setSessionRestoreNonce((current) => current + 1);
+        setMarginTab(targetEntry.margin.activeTab);
+        applyPassageSelectionRestore(targetEntry);
         const restoredScope = opts?.restoreEntry?.margin.scope;
-        const restoredVerse = restoredScope?.kind === "selection" ? restoredScope.start : verse;
-        const restoredVerseEnd = restoredScope?.kind === "selection" ? restoredScope.end : opts?.rangeEnd;
-        pendingVerseSelectRef.current = restoredVerse ?? null;
-        pendingVerseEndRef.current = restoredVerseEnd ?? null;
-        if (opts?.restoreEntry) {
-          setMarginTab(opts.restoreEntry.margin.activeTab);
-          onKeptContextChange?.(restoredScope?.kind === "kept" ? {
+        if (restoredScope?.kind === "kept") {
+          onKeptContextChange?.({
             book: restoredScope.book,
             chapter: restoredScope.chapter,
             verse: restoredScope.verse,
             ...(restoredScope.endVerse != null ? { endVerse: restoredScope.endVerse } : {}),
             ...(restoredScope.label ? { label: restoredScope.label } : {}),
-          } : null);
-          if (opts.restoreEntry.verse != null && opts.restoreEntry.verseOffset != null) {
-            setSavedViewportTarget({
-              book: opts.restoreEntry.book,
-              chapter: opts.restoreEntry.chapter,
-              packageId: targetPackageId,
-              verse: opts.restoreEntry.verse,
-              verseOffset: opts.restoreEntry.verseOffset,
-              scrollTop: opts.restoreEntry.scrollTop ?? 0,
-              requestId: ++savedViewportRequestRef.current,
-            });
-          }
+          });
         }
+        setSavedViewportTarget(opts?.restoreEntry ? {
+          book: targetEntry.book,
+          chapter: targetEntry.chapter,
+          packageId: targetEntry.packageId,
+          verse: targetEntry.verse ?? null,
+          verseOffset: targetEntry.verseOffset ?? 0,
+          scrollTop: targetEntry.scrollTop ?? 0,
+          requestId: ++savedViewportRequestRef.current,
+        } : null);
         if (targetPackageId !== packageId) {
           setChapterData(null);
           setChapterError(null);
           setShowHighlightPalette(false);
-          setPhraseSelection(null);
           setPackageId(targetPackageId);
         }
         if (opts?.focusHeading) shouldFocusChapterHeading.current = true;
-        setReferenceViewportTarget(verse == null
-          ? null
-          : {
-              book: b,
-              chapter: c,
-              verse,
-              requestId: ++referenceViewportRequestRef.current,
-            });
+        if (opts?.restoreEntry) {
+          setReferenceViewportTarget(null);
+        } else {
+          setReferenceViewportTarget(verse == null
+            ? null
+            : {
+                book: b,
+                chapter: c,
+                verse,
+                requestId: ++referenceViewportRequestRef.current,
+              });
+        }
         setBook(b);
         setChapter(c);
-        if (b === book && c === chapter) {
-          pendingVerseSelectRef.current = null;
-          pendingVerseEndRef.current = null;
-          verseSelectionAnchorRef.current = restoredVerse ?? null;
-          setSelectedVerses(restoredVerse
-            ? new Set(Array.from(
-                { length: Math.max(1, (restoredVerseEnd ?? restoredVerse) - restoredVerse + 1) },
-                (_, index) => restoredVerse + index,
-              ))
-            : new Set());
-          setPhraseSelection(null);
-          setShowHighlightPalette(false);
-        }
+        setShowHighlightPalette(false);
         if (opts?.recordRecent !== false) {
           recordRecent(b, c, verse, targetPackageId);
         }
@@ -1559,18 +1789,19 @@ export function ScripturePage({
       if (changesTranslation || changesChapter) {
         if (opts?.preapproved) {
           performNavigation();
-          return true;
+          return navigationCommitted;
         }
-        return requestWorkspaceTransition(
+        const approved = await requestWorkspaceTransition(
           changesTranslation ? "translation-change" : "chapter-change",
           performNavigation,
         );
+        return approved && navigationCommitted;
       }
       if (!changesTranslation && !changesChapter && !opts?.preapproved && !requireSafeConnectionNavigation()) return false;
       performNavigation();
-      return true;
+      return navigationCommitted;
     },
-    [book, captureNavigationEntry, chapter, commitNavigationHistory, onKeptContextChange, packageId, recordRecent, requestWorkspaceTransition, requireSafeConnectionNavigation],
+    [applyPassageSelectionRestore, book, captureNavigationEntry, chapter, commitNavigationHistory, onKeptContextChange, onSessionEntryChange, packageId, recordRecent, requestWorkspaceTransition, requireSafeConnectionNavigation, sessionOwnerTabId],
   );
 
   const navigateBack = useCallback((): void => {
@@ -1609,13 +1840,31 @@ export function ScripturePage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigateRef]);
 
-  const publishSessionEntry = useCallback((): NavigationHistoryEntry | null => {
-    if (!chapterData || loadedChapterKeyRef.current !== `${packageId}:${book}:${chapter}`) return null;
+  const publishSessionEntry = useCallback((): PassageViewState | null => {
+    if (!chapterData || loadedChapterKeyRef.current !== `${sessionOwnerTabId}:${packageId}:${book}:${chapter}`) return null;
+    if (restoredSessionOwnerTabId !== sessionOwnerTabId) return null;
     const entry = captureNavigationEntry();
     sessionEntryRef.current = entry;
-    onSessionEntryChange(entry);
+    onSessionEntryChange(sessionOwnerTabId, entry);
     return entry;
-  }, [book, captureNavigationEntry, chapter, chapterData, onSessionEntryChange, packageId]);
+  }, [book, captureNavigationEntry, chapter, chapterData, onSessionEntryChange, packageId, restoredSessionOwnerTabId, sessionOwnerTabId]);
+
+  const publishMarginSessionChange = useCallback((
+    ownerTabId: string,
+    update: (current: PassageViewState["margin"]) => PassageViewState["margin"],
+  ): void => {
+    if (ownerTabId !== sessionOwnerTabId || restoredSessionOwnerTabId !== sessionOwnerTabId) return;
+    const currentEntry = loadedChapterKeyRef.current === `${sessionOwnerTabId}:${packageId}:${book}:${chapter}`
+      ? captureNavigationEntry()
+      : sessionEntryRef.current;
+    const nextEntry: PassageViewState = {
+      ...currentEntry,
+      margin: update(currentEntry.margin),
+    };
+    sessionEntryRef.current = nextEntry;
+    setMarginTab(nextEntry.margin.activeTab);
+    onSessionEntryChange(ownerTabId, nextEntry);
+  }, [book, captureNavigationEntry, chapter, onSessionEntryChange, packageId, restoredSessionOwnerTabId, sessionOwnerTabId]);
 
   const persistCurrentReadingPosition = useCallback((): void => {
     const entry = publishSessionEntry();
@@ -1644,7 +1893,7 @@ export function ScripturePage({
 
   useEffect(() => {
     publishSessionEntry();
-  }, [marginTab, publishSessionEntry, selectedVerses]);
+  }, [marginTab, phraseSelection, publishSessionEntry, selectedVerses]);
 
   useEffect(() => {
     if (!onReadingContextChange) return;
@@ -1703,7 +1952,7 @@ export function ScripturePage({
       el.removeEventListener("scroll", handler);
       if (settleTimer) window.clearTimeout(settleTimer);
     };
-  }, []);
+  }, [sessionOwnerTabId]);
 
   // A chapter is a new reading surface, not the continuation of the previous
   // scroll position. Translation changes are deliberately excluded: they
@@ -1842,7 +2091,7 @@ export function ScripturePage({
     kept: keptContext,
   }), [book, canvasChapterEndVerse, chapter, keptContext, settledNearVerse, pinnedRange]);
   const keptSubjectKey = marginSubject.kind === "kept"
-    ? `${packageId}:${marginSubject.book}:${marginSubject.chapter}:${marginSubject.verse}-${marginSubject.endVerse}`
+    ? `${sessionOwnerTabId}:${packageId}:${marginSubject.book}:${marginSubject.chapter}:${marginSubject.verse}-${marginSubject.endVerse}`
     : null;
 
   useEffect(() => {
@@ -1900,7 +2149,7 @@ export function ScripturePage({
   // next scope resolves, so reading never flashes a false empty state.
   useEffect(() => {
     setCrossRefs(null);
-  }, [book, chapter, packageId]);
+  }, [book, chapter, packageId, sessionOwnerTabId]);
   useEffect(() => {
     if (!marginVisible) {
       setCrossRefs(null);
@@ -1926,13 +2175,14 @@ export function ScripturePage({
     return () => {
       cancelled = true;
     };
-  }, [backbone, book, chapter, marginVisible, settledNearVerse, packageId, pinnedRange]);
+  }, [backbone, book, chapter, marginVisible, settledNearVerse, packageId, pinnedRange, sessionOwnerTabId]);
 
   // Reload margin data after highlight changes
   const reloadMarginHighlights = useCallback(async (options?: {
     preserveConnection?: ConnectionRecord;
   }): Promise<MarginReloadOutcome> => {
     const requestSequence = ++marginRequestSequenceRef.current;
+    const requestOwnerTabId = sessionOwnerTabId;
     const requestBook = book;
     const requestChapter = chapter;
     const verseCount = backbone.books[requestBook]?.chapters[requestChapter - 1] ?? 0;
@@ -1947,7 +2197,7 @@ export function ScripturePage({
     // navigating away) — bail rather than clobber the current chapter's
     // already-correct data with a stale response for the one we left.
     if (
-      currentChapterKeyRef.current !== `${requestBook}:${requestChapter}`
+      currentChapterKeyRef.current !== `${requestOwnerTabId}:${requestBook}:${requestChapter}`
       || requestSequence !== marginRequestSequenceRef.current
     ) return { status: "superseded" };
     if (!res.ok) return { status: "failed" };
@@ -1970,9 +2220,9 @@ export function ScripturePage({
       if (JSON.stringify(prev) === JSON.stringify(nextValue)) return prev;
       return nextValue;
     });
-    setMarginDataChapterKey(`${requestBook}:${requestChapter}`);
+    setMarginDataChapterKey(`${requestOwnerTabId}:${requestBook}:${requestChapter}`);
     return { status: "applied", value: nextValue };
-  }, [book, chapter, backbone]);
+  }, [book, chapter, backbone, sessionOwnerTabId]);
 
   // Click-outside to dismiss palette.
   // CRITICAL: clicks inside the Living Margin are language-study interactions
@@ -2242,6 +2492,7 @@ export function ScripturePage({
   // first and last verse retain character offsets; every verse between them is
   // implicitly covered in full by the shared range model.
   const handleTextMouseUp = useCallback(async (): Promise<void> => {
+    const ownerContextKey = currentMarkingContextKeyRef.current;
     const sel = window.getSelection();
     if (!sel || sel.isCollapsed || sel.rangeCount === 0) return;
     const range = sel.getRangeAt(0);
@@ -2298,6 +2549,7 @@ export function ScripturePage({
     // follows before an async Research-exit decision can settle.
     suppressTrailingDragClick();
     if (!await requestCanvasResearchExit()) return;
+    if (currentMarkingContextKeyRef.current !== ownerContextKey) return;
 
     // A completed drag owns this gesture. It may replace an idle connection
     // focus, but it must never strand an authored command that is settling or
@@ -2552,7 +2804,9 @@ export function ScripturePage({
       await reloadMarginHighlights();
       // Clear this id after the sweep would have finished so a later unrelated
       // re-measure (resize, other edits) doesn't replay it.
+      const sweepContextKey = selectionSnapshot.contextKey;
       window.setTimeout(() => {
+        if (currentMarkingContextKeyRef.current !== sweepContextKey) return;
         setAnimateIds((prev) => {
           if (!prev.has(hlId)) return prev;
           const next = new Set(prev);
@@ -2571,7 +2825,7 @@ export function ScripturePage({
   };
 
   const handleDeleteHighlights = async (entityIds: string[]): Promise<boolean> => {
-    const requestKey = `${book}:${chapter}`;
+    const requestKey = `${sessionOwnerTabId}:${book}:${chapter}`;
     const activeHere = normalizedHighlights.filter(
       (h) => h.deleted === 0 && h.book === book && h.chapter === chapter,
     );
@@ -2904,7 +3158,7 @@ export function ScripturePage({
   ), [markingSelectionPaintAnchors]);
 
   useEffect(() => {
-    const contextKey = `${book}:${chapter}:${packageId}`;
+    const contextKey = `${sessionOwnerTabId}:${book}:${chapter}:${packageId}`;
     const nonce = selectionNonce;
     if (markingSelectionPieces.length === 0) {
       setSelectionCapture(null);
@@ -2952,7 +3206,7 @@ export function ScripturePage({
     return () => {
       cancelled = true;
     };
-  }, [book, chapter, markingSelectionPieces, packageId, selectionNonce]);
+  }, [book, chapter, markingSelectionPieces, packageId, selectionNonce, sessionOwnerTabId]);
 
   const markingSelection = useMemo<MarkingSelectionModel | null>(() => {
     if (!showHighlightPalette) return null;
@@ -2989,7 +3243,7 @@ export function ScripturePage({
       .replace(/\s+/g, " ")
       .trim();
 
-    const contextKey = `${book}:${chapter}:${packageId}`;
+    const contextKey = `${sessionOwnerTabId}:${book}:${chapter}:${packageId}`;
     const capture = selectionCapture?.nonce === selectionNonce
       && selectionCapture.contextKey === contextKey
       ? selectionCapture.capture
@@ -3018,6 +3272,7 @@ export function ScripturePage({
     phraseSelection,
     selectedHighlightColor,
     selectedVerses,
+    sessionOwnerTabId,
     selectionCapture,
     selectionNonce,
     selectionRangeLabel,
@@ -3101,7 +3356,7 @@ export function ScripturePage({
       window.removeEventListener("resize", onScroll);
       if (scrollTimer) window.clearTimeout(scrollTimer);
     };
-  }, [chapterData, book, chapter]);
+  }, [chapterData, book, chapter, sessionOwnerTabId]);
 
   /** Pointer entered/left the Living Margin chrome. */
   const handleMarginActiveChange = useCallback((active: boolean) => {
@@ -3244,6 +3499,7 @@ export function ScripturePage({
   }, [closeConnectionWordChooser, connectionWordChooser, visibleConnectionById]);
 
   const releaseHeldConnection = useCallback((connectionId: string, restoreFocus = false): void => {
+    const ownerContextKey = currentMarkingContextKeyRef.current;
     const next = heldConnectionIdsRef.current.filter((candidate) => candidate !== connectionId);
     replaceHeldConnectionIds(next);
     // A delete/update can resolve after the reader has focused a newer held
@@ -3254,24 +3510,23 @@ export function ScripturePage({
     ));
     if (!restoreFocus) return;
     window.requestAnimationFrame(() => {
+      if (currentMarkingContextKeyRef.current !== ownerContextKey) return;
       findConnectionTickControl(connectionId)?.focus({ preventScroll: true });
     });
   }, [replaceHeldConnectionIds]);
 
   const requestScriptureWorkspaceAttention = useCallback(async (): Promise<boolean> => {
-    if (activeWorkspaceTabId === SCRIPTURE_WORKSPACE_ID) return true;
-    if (!onWorkspaceTabSelect) return false;
-    try {
-      return await onWorkspaceTabSelect(SCRIPTURE_WORKSPACE_ID);
-    } catch {
-      return false;
-    }
-  }, [activeWorkspaceTabId, onWorkspaceTabSelect]);
+    // The active tab owns this canvas, including entity tabs. Canvas study
+    // interactions must not implicitly close Research or jump to its return
+    // passage; explicit tab selection remains the only workspace transfer.
+    return true;
+  }, []);
 
   const handleSelectConnection = useCallback(async (
     connection: ConnectionRecord | null,
     focusInspector = false,
   ): Promise<boolean> => {
+    const ownerContextKey = currentMarkingContextKeyRef.current;
     const visibleConnection = connection == null
       ? null
       : visibleConnectionByIdRef.current.get(connection.id) ?? null;
@@ -3285,6 +3540,7 @@ export function ScripturePage({
     if (visibleConnection && !await requestScriptureWorkspaceAttention()) {
       return false;
     }
+    if (currentMarkingContextKeyRef.current !== ownerContextKey) return false;
     // Opening or closing the relationship inspector is a newer focus transfer.
     // A late failed highlight write must not resurrect an older palette over it.
     advanceSelectionGeneration();
@@ -3312,7 +3568,9 @@ export function ScripturePage({
     connection: ConnectionRecord,
     focusInspector = false,
   ): Promise<void> => {
+    const ownerContextKey = currentMarkingContextKeyRef.current;
     if (!await handleSelectConnection(connection, focusInspector)) return;
+    if (currentMarkingContextKeyRef.current !== ownerContextKey) return;
     const localAnchors = canonicalConnectionAnchors(connection).filter((anchor) => (
       anchor.book === book && anchor.chapter === chapter
     ));
@@ -3332,6 +3590,7 @@ export function ScripturePage({
         ?? attentionAnchor.verse_start
       : attentionAnchor.verse_start;
     window.requestAnimationFrame(() => {
+      if (currentMarkingContextKeyRef.current !== ownerContextKey) return;
       const row = verseRowRefs.current.get(targetVerse);
       if (!row) return;
       const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -3348,6 +3607,7 @@ export function ScripturePage({
     anchorRect: DOMRect,
     origin: HTMLButtonElement,
   ): Promise<void> => {
+    const ownerContextKey = currentMarkingContextKeyRef.current;
     if (!requireSafeConnectionNavigation()) {
       return;
     }
@@ -3363,6 +3623,7 @@ export function ScripturePage({
     ).map((candidate) => candidate.value);
     if (hits.length === 0) return;
     if (!await requestScriptureWorkspaceAttention()) return;
+    if (currentMarkingContextKeyRef.current !== ownerContextKey) return;
     connectionWordChooserOriginRef.current = origin;
     setConnectionWordChooser({
       anchorRect,
@@ -3389,7 +3650,9 @@ export function ScripturePage({
     selectedConnectionIdRef.current = null;
     setSelectedConnectionId(null);
     if (restoreFocus) {
+      const ownerContextKey = currentMarkingContextKeyRef.current;
       window.requestAnimationFrame(() => {
+        if (currentMarkingContextKeyRef.current !== ownerContextKey) return;
         findConnectionTickControl(connectionId)?.focus({ preventScroll: true });
       });
     }
@@ -3447,7 +3710,9 @@ export function ScripturePage({
   }, []);
 
   const selectStudyScope = useCallback(async (verse: number, extend: boolean): Promise<boolean> => {
+    const ownerContextKey = currentMarkingContextKeyRef.current;
     if (!await requestCanvasResearchExit()) return false;
+    if (currentMarkingContextKeyRef.current !== ownerContextKey) return false;
     if (!handleDismissConnectionFocus()) return false;
     setPhraseSelection(null);
     setShowHighlightPalette(false);
@@ -3482,7 +3747,7 @@ export function ScripturePage({
   }, []);
 
   const handleVerseMouseDown = useCallback((event: React.MouseEvent<HTMLDivElement>): void => {
-    if (activeWorkspaceTabId === SCRIPTURE_WORKSPACE_ID || event.button !== 0) return;
+    if (activeWorkspaceKind !== "entity" || event.button !== 0) return;
     // Chromium focuses a tabindex=0 row as the mousedown default action. Remove
     // only that focus target for this event; preventing the event itself would
     // also break native phrase dragging and connected-word hit detection.
@@ -3497,9 +3762,10 @@ export function ScripturePage({
     window.setTimeout(() => {
       if (row.isConnected) row.tabIndex = 0;
     }, 0);
-  }, [activeWorkspaceTabId]);
+  }, [activeWorkspaceKind]);
 
   const handleVerseClick = useCallback(async (verse: number, event: React.MouseEvent<HTMLDivElement>): Promise<void> => {
+    const ownerContextKey = currentMarkingContextKeyRef.current;
     const deferredFocus = takeDeferredVersePointerFocus(verse);
     // A drag-selection's trailing click is residue — mouseup already created
     // the exact marking selection. Consuming it also prevents a connected
@@ -3509,7 +3775,7 @@ export function ScripturePage({
       return;
     }
 
-    const focusVerseAfterApproval = activeWorkspaceTabId !== SCRIPTURE_WORKSPACE_ID;
+    const focusVerseAfterApproval = activeWorkspaceKind === "entity";
 
     const nativeSelection = window.getSelection();
     const nativeSelectionCollapsed = nativeSelection?.isCollapsed ?? true;
@@ -3548,6 +3814,7 @@ export function ScripturePage({
       const origin = event.currentTarget;
       const anchorRect = new DOMRect(event.clientX, event.clientY, 1, 1);
       void requestScriptureWorkspaceAttention().then((proceed) => {
+        if (currentMarkingContextKeyRef.current !== ownerContextKey) return;
         if (!proceed) {
           restoreDeferredVersePointerFocus(deferredFocus);
           return;
@@ -3566,10 +3833,11 @@ export function ScripturePage({
       // App's approved tab close restores workspace focus on a timer. Queue
       // the reader's explicit pointer destination after that restoration.
       window.setTimeout(() => {
+        if (currentMarkingContextKeyRef.current !== ownerContextKey) return;
         verseRowRefs.current.get(verse)?.focus({ preventScroll: true });
       }, 0);
     }
-  }, [activeWorkspaceTabId, handleSelectConnection, requestScriptureWorkspaceAttention, requireSafeConnectionNavigation, restoreDeferredVersePointerFocus, selectStudyScope, selectedConnectionId, takeDeferredVersePointerFocus]);
+  }, [activeWorkspaceKind, handleSelectConnection, requestScriptureWorkspaceAttention, requireSafeConnectionNavigation, restoreDeferredVersePointerFocus, selectStudyScope, selectedConnectionId, takeDeferredVersePointerFocus]);
 
   const handleVerseKeyDown = useCallback(async (verse: number, event: React.KeyboardEvent<HTMLDivElement>): Promise<void> => {
     if (!event.metaKey && !event.ctrlKey && !event.altKey) {
@@ -3592,7 +3860,9 @@ export function ScripturePage({
     // carried Rail/Dock authoring tool.
     if (!event.metaKey && !event.ctrlKey && !event.altKey && event.key.toLowerCase() === "m") {
       event.preventDefault();
+      const ownerContextKey = currentMarkingContextKeyRef.current;
       if (!await requestCanvasResearchExit()) return;
+      if (currentMarkingContextKeyRef.current !== ownerContextKey) return;
       if (!handleDismissConnectionFocus()) return;
       const next = new Set([verse]);
       closeConnectionWordChooser(false);
@@ -3669,7 +3939,7 @@ export function ScripturePage({
       needsLocalConnectionReconciliation(reload.status, result.value)
       && !isRecovery
       && result.value.connection
-      && currentChapterKeyRef.current === `${book}:${chapter}`
+      && currentChapterKeyRef.current === `${sessionOwnerTabId}:${book}:${chapter}`
     ) {
       setMarginData((current) => ({
         ...current,
@@ -3681,7 +3951,7 @@ export function ScripturePage({
     }
     showToast(`${label} saved`, undefined, undefined, { tone: "success" });
     return "complete";
-  }, [book, chapter, reloadMarginHighlights, showToast]);
+  }, [book, chapter, reloadMarginHighlights, sessionOwnerTabId, showToast]);
 
   const handleUpdateConnection = useCallback(async (
     connectionId: string,
@@ -3724,7 +3994,7 @@ export function ScripturePage({
     if (
       reload.status !== "superseded"
       && result.value.connection
-      && currentChapterKeyRef.current === `${book}:${chapter}`
+      && currentChapterKeyRef.current === `${sessionOwnerTabId}:${book}:${chapter}`
     ) {
       setMarginData((current) => ({
         ...current,
@@ -3740,7 +4010,7 @@ export function ScripturePage({
     }
     showToast("Connection updated", undefined, undefined, { tone: "success" });
     return "complete";
-  }, [book, chapter, reloadMarginHighlights, showToast, visibleMarginData.connections]);
+  }, [book, chapter, reloadMarginHighlights, sessionOwnerTabId, showToast, visibleMarginData.connections]);
 
   const focusLivingMarginHeading = useCallback((): void => {
     window.requestAnimationFrame(() => {
@@ -3784,7 +4054,7 @@ export function ScripturePage({
     if (
       !projectionPending
       && reload.status !== "superseded"
-      && currentChapterKeyRef.current === `${book}:${chapter}`
+      && currentChapterKeyRef.current === `${sessionOwnerTabId}:${book}:${chapter}`
     ) {
       setMarginData((current) => ({
         ...current,
@@ -3802,7 +4072,7 @@ export function ScripturePage({
     focusLivingMarginHeading();
     showToast("Connection deleted", undefined, undefined, { tone: "success" });
     return "complete";
-  }, [book, chapter, focusLivingMarginHeading, releaseHeldConnection, reloadMarginHighlights, showToast]);
+  }, [book, chapter, focusLivingMarginHeading, releaseHeldConnection, reloadMarginHighlights, sessionOwnerTabId, showToast]);
 
   const handleCloseConnection = useCallback((restoreFocus = false): void => {
     const connectionId = selectedConnectionId;
@@ -3865,14 +4135,10 @@ export function ScripturePage({
     handleNavigateToRef(`bref:v1/${anchor.book}.${anchor.chapter}.${anchor.verse_start}${end}`);
   }, [handleNavigateToRef]);
 
-  // Reset nearVerse immediately on chapter/book change so a stale
-  // "currently reading" preview from the previous text never flashes. Also clear any
-  // pending verse selection/palette — otherwise a highlight action left open
-  // while navigating (prev/next arrows, ⌘←/→) would apply to the new chapter
-  // using verse numbers selected in the old one. Exception: if this chapter
-  // change came from goTo(..., verse) (passage jump, cross-ref click-through),
-  // pendingVerseSelectRef carries the verse that should end up selected —
-  // honor that instead of clearing it right back out.
+  // Reset nearVerse immediately on chapter/book change, together with every
+  // owner-sensitive canvas state that cannot leak into the next text. An
+  // intentional target snapshot (history restore or fresh reference jump)
+  // restores its exact selection after that cleanup.
   useEffect(() => {
     advanceSelectionGeneration();
     setNearVerse(null);
@@ -3886,18 +4152,17 @@ export function ScripturePage({
     setSelectedConnectionId(null);
     closeConnectionWordChooser(false);
     setConnectionExtension(null);
-    const verse = pendingVerseSelectRef.current;
-    const verseEnd = pendingVerseEndRef.current;
-    pendingVerseSelectRef.current = null;
-    pendingVerseEndRef.current = null;
-    verseSelectionAnchorRef.current = verse ?? null;
-    setSelectedVerses(verse
-      ? new Set(Array.from(
-          { length: Math.max(1, (verseEnd ?? verse) - verse + 1) },
-          (_, index) => verse + index,
-        ))
-      : new Set());
-  }, [advanceSelectionGeneration, book, chapter, closeConnectionWordChooser]);
+    const restoreEntry = passageRestoreEntryForContext(
+      pendingPassageRestoreRef.current,
+      { ownerTabId: sessionOwnerTabId, book, chapter, packageId },
+    );
+    if (restoreEntry) {
+      applyPassageSelectionRestore(restoreEntry);
+    } else {
+      setSelectedVerses(new Set());
+      verseSelectionAnchorRef.current = null;
+    }
+  }, [advanceSelectionGeneration, applyPassageSelectionRestore, book, chapter, closeConnectionWordChooser, packageId, sessionOwnerTabId]);
 
   // Phrase offsets and highlight animations belong to one translation's text
   // shape, so they cannot survive a package change. Whole-verse selection and
@@ -3910,10 +4175,18 @@ export function ScripturePage({
     setShowHighlightPalette(false);
     setAnimateIds(new Set());
     setFadingIds(new Set());
-    setPhraseSelection(null);
+    const restoreEntry = passageRestoreEntryForContext(
+      pendingPassageRestoreRef.current,
+      { ownerTabId: sessionOwnerTabId, book, chapter, packageId },
+    );
+    if (restoreEntry) {
+      applyPassageSelectionRestore(restoreEntry);
+    } else {
+      setPhraseSelection(null);
+    }
     closeConnectionWordChooser(false);
     setConnectionExtension(null);
-  }, [advanceSelectionGeneration, closeConnectionWordChooser, packageId]);
+  }, [advanceSelectionGeneration, applyPassageSelectionRestore, book, chapter, closeConnectionWordChooser, packageId, sessionOwnerTabId]);
 
   return (
     <div className="scripture-page">
@@ -4261,14 +4534,13 @@ export function ScripturePage({
 
       {!focusMode && (
         <ScriptureWorkspaceTabs
-          tabs={researchTabs}
-          activeTabId={activeWorkspaceTabId}
+          workspace={studyWorkspace}
           bookNames={bookNames}
           onSelect={(tabId) => onWorkspaceTabSelect?.(tabId) ?? Promise.resolve(false)}
-          onClose={(tabId) => onResearchTabClose?.(tabId) ?? Promise.resolve(false)}
-          onCloseGroup={(groupKey) => onResearchGroupClose?.(groupKey) ?? Promise.resolve(false)}
-          onToggleGroup={(groupKey, collapsing) => (
-            onResearchGroupToggle?.(groupKey, collapsing) ?? Promise.resolve(false)
+          onClose={(tabId) => onWorkspaceTabClose?.(tabId) ?? Promise.resolve(false)}
+          onCloseGroup={(groupId) => onWorkspaceGroupClose?.(groupId) ?? Promise.resolve(false)}
+          onToggleGroup={(groupId, collapsing) => (
+            onWorkspaceGroupToggle?.(groupId, collapsing) ?? Promise.resolve(false)
           )}
           onNewResearch={() => (onOpenResearchPalette ?? onOpenCommandPalette)?.()}
         />
@@ -4278,9 +4550,7 @@ export function ScripturePage({
         id="scripture-workspace-panel"
         className="scripture-body"
         role="tabpanel"
-        aria-labelledby={activeWorkspaceTabId === SCRIPTURE_WORKSPACE_ID
-          ? "scripture-workspace-tab"
-          : `research-workspace-tab-${activeWorkspaceTabId}`}
+        aria-labelledby={`study-workspace-tab-${studyWorkspace.activeTabId}`}
       >
       <div className="scripture-reading-stage" ref={stageRef}>
       <div className="scripture-content" ref={contentRef}>
@@ -4318,7 +4588,7 @@ export function ScripturePage({
               verseRowRefs={verseRowRefs}
               connections={visibleMarginData.connections}
               paintProjections={currentConnectionPaintProjections}
-              draftConnection={connectionDraft?.contextKey === `${book}:${chapter}:${packageId}` ? connectionDraft : null}
+              draftConnection={connectionDraft?.contextKey === `${sessionOwnerTabId}:${book}:${chapter}:${packageId}` ? connectionDraft : null}
               selectionEmphasis={markingSelectionEmphasis}
               book={book}
               chapter={chapter}
@@ -4427,7 +4697,7 @@ export function ScripturePage({
         surface={markingSurface}
         theme={theme}
         focusMode={focusMode}
-        contextKey={`${book}:${chapter}:${packageId}`}
+        contextKey={`${sessionOwnerTabId}:${book}:${chapter}:${packageId}`}
         stageBounds={stageBounds}
         selection={showHighlightPalette ? markingSelection : null}
         extensionRequest={connectionExtension}
@@ -4496,6 +4766,7 @@ export function ScripturePage({
 
       {marginVisible && !focusMode && (
         <LivingMargin
+          key={sessionOwnerTabId}
           book={marginSubject.book}
           chapter={marginSubject.chapter}
           packageId={packageId}
@@ -4527,10 +4798,16 @@ export function ScripturePage({
           ambientKept={marginSubject.kind === "kept"}
           onAmbientKeptChange={handleAmbientKeptChange}
           onClearSelection={handleClearMarginSelection}
-          activeTab={marginTab}
-          onActiveTabChange={setMarginTab}
+          sessionOwnerTabId={sessionOwnerTabId}
+          sessionRestoreNonce={sessionRestoreNonce}
+          marginSession={sessionEntry.margin}
+          onMarginSessionChange={publishMarginSessionChange}
           workspace={marginWorkspace}
-          workspaceTabId={activeWorkspaceTabId}
+          researchScrollTop={researchScrollTop}
+          onResearchScrollTopChange={onResearchScrollTopChange}
+          onScrollControllerChange={handleLivingMarginScrollControllerChange}
+          entityResearchFocusRequest={entityResearchFocusRequest}
+          onEntityResearchFocusRequestHandled={onEntityResearchFocusRequestHandled}
           entityIntent={entityIntent}
           onOpenEntity={handleOpenMarginEntity}
           onCloseEntity={onCloseEntity}

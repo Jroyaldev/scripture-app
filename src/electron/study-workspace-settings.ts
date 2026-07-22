@@ -261,8 +261,10 @@ function normalizePassageView(value: unknown): PersistedPassageViewState | null 
       const charEnd = piece["charEnd"] === null ? null : nonNegativeInteger(piece["charEnd"]);
       if (charStart === null && piece["charStart"] !== null) return null;
       if (charEnd === null && piece["charEnd"] !== null) return null;
-      if ((charStart === null) !== (charEnd === null)
-        || (charStart !== null && charEnd !== null && charEnd < charStart)) return null;
+      // Multi-verse selections deliberately carry open endpoint pieces: the
+      // first verse may continue past its stored slice and the final verse may
+      // begin before it. Only compare offsets when both are present.
+      if (charStart !== null && charEnd !== null && charEnd < charStart) return null;
       pieces.push({ verse: pieceVerse, charStart, charEnd });
     }
     selection = { packageId: selectionPackageId, pieces };

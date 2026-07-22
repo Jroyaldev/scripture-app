@@ -22,11 +22,15 @@ import {
   resolveStudyWorkspaceDecision,
   selectStudyWorkspaceTab,
   studyWorkspaceGroupLabel,
+  studyWorkspaceGroupCloseAvailability,
+  studyWorkspaceTabCloseAvailability,
   studyWorkspaceTabLabel,
   studyWorkspaceTabType,
   studyWorkspaceTranslationCollisionTabIds,
+  visibleStudyWorkspaceTabIds,
   toggleStudyWorkspaceGroup,
   truncateEntityResearchTrail,
+  updateEntityWorkspaceTrail,
   updateStudyCanvasSession,
   type EntityWorkspaceTab,
   type PassageViewState,
@@ -252,6 +256,42 @@ test("entity trail checkpoints retain kind, causal order, and the 12-entry bound
   const reaffirmed = appendEntityResearchTrail(overlong, correctedKind.at(-1)!);
   assert.equal(reaffirmed.length, 12);
   assert.equal(reaffirmed[0]?.id, "entity-2");
+});
+
+test("entity trail publication preserves semantic no-op identity and canonically upgrades kind", () => {
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
+    groupId: "study-1",
+    passageTabId: "acts-19",
+  });
+  const researched = openEntityWorkspaceTab(initial, {
+    id: "paul",
+    sourceTabId: "acts-19",
+    entityId: "person:paul",
+    entityKind: "other",
+    nonce: 1,
+    origin: view("ACT", 19, "BSB"),
+    returnPassageTabId: "acts-19",
+  }).state;
+
+  const noOp = updateEntityWorkspaceTrail(researched, "paul", (trail) => (
+    trail.map((entry) => ({ ...entry }))
+  ));
+  assert.equal(noOp, researched);
+
+  const upgraded = updateEntityWorkspaceTrail(researched, "paul", (trail) => (
+    appendEntityResearchTrail(trail, {
+      id: "person:paul",
+      displayName: "Paul",
+      kind: "person",
+    })
+  ));
+  assert.notEqual(upgraded, researched);
+  const tab = upgraded.tabsById["paul"];
+  assert.equal(tab?.kind, "entity");
+  if (tab?.kind !== "entity") return;
+  assert.deepEqual(tab.trail, [{ id: "person:paul", displayName: "Paul", kind: "person" }]);
+  assert.equal(tab.entityKind, "person");
+  assert.equal(updateEntityWorkspaceTrail(upgraded, "paul", (trail) => [...trail]), upgraded);
 });
 
 test("selecting a known tab updates only activation metadata", () => {
@@ -514,9 +554,40 @@ test("collapsing an active group preserves the active tab and its proxy identity
   assert.equal(collapsed.activeTabId, "paul");
   assert.equal(collapsed.groups[0]?.lastActiveTabId, "paul");
   assert.equal(collapsed.activationOrder, activationOrder);
+  assert.deepEqual(visibleStudyWorkspaceTabIds(collapsed), ["paul"]);
   const expanded = toggleStudyWorkspaceGroup(collapsed, "study-1");
   assert.equal(expanded.groups[0]?.collapsed, false);
   assert.equal(expanded.activeTabId, "paul");
+});
+
+test("close availability distinguishes direct actions from decisions and impossible closes", () => {
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
+    groupId: "g1",
+    passageTabId: "acts",
+  });
+  assert.equal(studyWorkspaceTabCloseAvailability(initial, "acts"), "unavailable");
+  assert.equal(studyWorkspaceGroupCloseAvailability(initial, "g1"), "unavailable");
+
+  const researched = openEntityWorkspaceTab(initial, {
+    id: "paul",
+    sourceTabId: "acts",
+    entityId: "person:paul",
+    entityKind: "person",
+    nonce: 1,
+    origin: view("ACT", 19, "BSB"),
+    returnPassageTabId: "acts",
+  }).state;
+  const grouped = createStudyWorkspaceGroup(researched, {
+    id: "g2",
+    passageTabId: "john",
+    view: view("JHN", 3, "BSB"),
+  }).state;
+
+  assert.equal(studyWorkspaceTabCloseAvailability(grouped, "paul"), "direct");
+  assert.equal(studyWorkspaceTabCloseAvailability(grouped, "acts"), "decision");
+  assert.equal(studyWorkspaceTabCloseAvailability(grouped, "missing"), "unavailable");
+  assert.equal(studyWorkspaceGroupCloseAvailability(grouped, "g1"), "decision");
+  assert.equal(studyWorkspaceGroupCloseAvailability(grouped, "g2"), "direct");
 });
 
 test("a non-home passage moves between groups without changing its active identity", () => {

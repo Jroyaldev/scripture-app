@@ -49,6 +49,7 @@ const NT = new Set([
 ]);
 
 interface Props {
+  sessionOwnerTabId: string;
   book: string;
   bookDisplayName?: string;
   bookNames?: BookNameData;
@@ -70,6 +71,12 @@ interface Props {
    * the next scroll, until they resume following or the chapter changes.
    */
   freezeOnEngage?: boolean;
+  wordsVerse?: number;
+  wordsFollowingReading: boolean;
+  onWordsStateChange: (
+    ownerTabId: string,
+    next: { wordsVerse: number; wordsFollowingReading: boolean },
+  ) => void;
   onCapture?: (capture: LanguageWordCaptureRequest) => void;
 }
 
@@ -796,6 +803,7 @@ function NameEntityCard({ hit, bookNames }: { hit: LanguageNameEntityHit; bookNa
 }
 
 export function LanguageWordsSection({
+  sessionOwnerTabId,
   book,
   bookDisplayName,
   bookNames,
@@ -804,14 +812,24 @@ export function LanguageWordsSection({
   readingPackageId,
   onStudyEngage,
   freezeOnEngage = false,
+  wordsVerse,
+  wordsFollowingReading,
+  onWordsStateChange,
   onCapture,
 }: Props): React.JSX.Element | null {
   // Ambient freeze: the first study engagement (word pick, grammar, uses…)
-  // holds the verse steady so ordinary scrolling cannot collapse open study
-  // state. Cleared on chapter change or an explicit "Follow reading" resume.
-  const [engagedVerse, setEngagedVerse] = useState<number | null>(null);
-  const verse = freezeOnEngage ? engagedVerse ?? followedVerse : followedVerse;
-  const frozenOnOtherVerse = freezeOnEngage && engagedVerse != null && engagedVerse !== followedVerse;
+  // holds the controlled verse steady so ordinary scrolling cannot collapse
+  // open study state. Fresh navigation supplies a following snapshot; an
+  // owner/history restore supplies its own frozen-or-following snapshot.
+  const controlledWordsVerse = Number.isInteger(wordsVerse) && (wordsVerse ?? 0) > 0
+    ? wordsVerse!
+    : followedVerse;
+  const verse = wordsFollowingReading
+    ? followedVerse
+    : freezeOnEngage
+      ? controlledWordsVerse
+      : followedVerse;
+  const readingFrozen = freezeOnEngage && !wordsFollowingReading;
   const [load, setLoad] = useState<LoadState>({ kind: "idle" });
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [card, setCard] = useState<LanguageTokenCard | null>(null);
@@ -834,24 +852,37 @@ export function LanguageWordsSection({
   // track local engagement for UI (notes open) but do not fight parent scroll.
   const verseRef = useRef(verse);
   verseRef.current = verse;
+  const followedVerseRef = useRef(followedVerse);
+  followedVerseRef.current = followedVerse;
   const onStudyEngageRef = useRef(onStudyEngage);
   onStudyEngageRef.current = onStudyEngage;
+  const wordsStateChangeRef = useRef(onWordsStateChange);
+  wordsStateChangeRef.current = onWordsStateChange;
+  const ownerContextKey = `${sessionOwnerTabId}:${book}:${chapter}:${verse}:${readingPackageId ?? ""}`;
+  const ownerContextKeyRef = useRef(ownerContextKey);
+  ownerContextKeyRef.current = ownerContextKey;
+  const tokenRequestSequenceRef = useRef(0);
+  const syntaxRequestSequenceRef = useRef(0);
 
   const engageStudy = useCallback(() => {
-    if (freezeOnEngage) setEngagedVerse(verseRef.current);
+    if (freezeOnEngage) {
+      wordsStateChangeRef.current(sessionOwnerTabId, {
+        wordsVerse: verseRef.current,
+        wordsFollowingReading: false,
+      });
+    }
     onStudyEngageRef.current?.(verseRef.current);
-  }, [freezeOnEngage]);
+  }, [freezeOnEngage, sessionOwnerTabId]);
 
   // Book/chapter change always clears local expand state.
   useEffect(() => {
-    setEngagedVerse(null);
     setGrammarOpen(false);
     setDefinitionOpen(false);
     setUsesOpen(false);
     setSyntaxOpen(false);
     setSyntaxHit(null);
     setShowAll(false);
-  }, [book, chapter]);
+  }, [book, chapter, sessionOwnerTabId]);
 
   // When parent verse changes (new pin / ambient), close expanders so STEP
   // notes always belong to the card on screen.
@@ -864,6 +895,8 @@ export function LanguageWordsSection({
   }, [verse]);
 
   const openToken = useCallback(async (packageId: string, tokenId: string, opts?: { userPick?: boolean }) => {
+    const requestSequence = ++tokenRequestSequenceRef.current;
+    const requestContextKey = ownerContextKeyRef.current;
     if (opts?.userPick) {
       engageStudy();
       setGrammarOpen(false);
@@ -878,6 +911,8 @@ export function LanguageWordsSection({
     const result = await safeCall(() =>
       window.api.language.getTokenCard(packageId, tokenId, readingPackageId),
     );
+    if (requestSequence !== tokenRequestSequenceRef.current
+      || requestContextKey !== ownerContextKeyRef.current) return;
     setCard(result.ok ? result.value : null);
     setCardLoading(false);
   }, [engageStudy, readingPackageId]);
@@ -954,10 +989,14 @@ export function LanguageWordsSection({
     setSyntaxOpen(true);
     if (!card || load.kind !== "ready") return;
     if (syntaxHit?.focusTokenId === card.token.id) return;
+    const requestSequence = ++syntaxRequestSequenceRef.current;
+    const requestContextKey = ownerContextKeyRef.current;
     setSyntaxLoading(true);
     const result = await safeCall(() =>
       window.api.language.getSyntaxForToken(load.packageId, book, card.token.id),
     );
+    if (requestSequence !== syntaxRequestSequenceRef.current
+      || requestContextKey !== ownerContextKeyRef.current) return;
     setSyntaxHit(result.ok ? result.value : null);
     setSyntaxLoading(false);
   }, [engageStudy, card, load, syntaxHit, book]);
@@ -1075,11 +1114,14 @@ export function LanguageWordsSection({
     <div className="margin-section lang">
       <div className="margin-section-header lang-section-header">
         <span>{header}</span>
-        {frozenOnOtherVerse && (
+        {readingFrozen && (
           <button
             type="button"
             className="margin-frame-action"
-            onClick={() => setEngagedVerse(null)}
+            onClick={() => wordsStateChangeRef.current(sessionOwnerTabId, {
+              wordsVerse: followedVerseRef.current,
+              wordsFollowingReading: true,
+            })}
             title="Release this study verse and follow your reading"
           >
             Follow reading

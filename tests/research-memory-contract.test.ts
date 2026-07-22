@@ -55,22 +55,50 @@ test("validated V2 settings absorb legacy workspace inputs without renderer lega
     /window\.api\.settings\.set\(\{\s*(?:researchWorkspace|researchSession|keptContext)\b/,
   );
   const close = app.slice(app.indexOf("const closeResearchTab"), app.indexOf("const updateEntityResearchTrail"));
-  assert.match(close, /closeStudyWorkspaceTab\(current, tabId\)\.state/);
+  assert.match(close, /const result = closeStudyWorkspaceTab\(current, tabId\)/);
+  assert.match(close, /result\.outcome === "needs-confirmation"/);
   assert.match(app, /workspacePersistenceRef\.current\.persistStructure\(next\)/);
   assert.doesNotMatch(app, /setResearchWorkspace|createResearchWorkspaceState/);
 });
 
 test("entity kind rides the research trail into tab marks and survives settings normalization", () => {
   const workspaceTabs = read("src/renderer/components/ScriptureWorkspaceTabs.tsx");
-  const workspaceUtil = read("src/renderer/utils/researchWorkspace.ts");
+  const workspaceUtil = read("src/renderer/utils/studyWorkspace.ts");
   assert.match(margin, /kind: result\.value!\.entity\.kind/);
   assert.match(main, /kind === "person" \|\| kind === "place" \|\| kind === "other"/);
-  assert.match(workspaceUtil, /export function researchWorkspaceTabKind/);
-  assert.match(workspaceTabs, /<TabMark kind=\{researchWorkspaceTabKind\(tab\)\} \/>/);
+  assert.match(workspaceUtil, /export function studyWorkspaceTabType/);
+  assert.match(workspaceTabs, /<TabMark tab=\{tab\} \/>/);
   assert.match(workspaceTabs, /function PersonGlyph/);
   assert.match(workspaceTabs, /function PlaceGlyph/);
   assert.match(css, /\.scripture-workspace-tab-mark\.is-person,/);
   assert.match(css, /\.scripture-workspace-tab-mark\.is-place \{/);
+});
+
+test("workspace-derived research and kept intents memoize by semantic scalars", () => {
+  const entityMemo = app.slice(
+    app.indexOf("const entityIntent = useMemo"),
+    app.indexOf("const activeScope", app.indexOf("const entityIntent = useMemo")),
+  );
+  assert.doesNotMatch(entityMemo, /\[activeEntityTab\]/);
+  for (const dependency of [
+    "activeEntityId",
+    "activeEntityNonce",
+    "activeEntityOriginBook",
+    "activeEntityOriginChapter",
+    "activeEntityOriginPackageId",
+    "activeEntityOriginVerseStart",
+    "activeEntityOriginVerseEnd",
+  ]) {
+    assert.match(entityMemo, new RegExp(`\\b${dependency}\\b`));
+  }
+
+  const keptStart = app.indexOf("const keptContext:");
+  const keptMemo = app.slice(
+    keptStart,
+    app.indexOf("const [workspaceIntent", keptStart),
+  );
+  assert.match(keptMemo, /\[keptBook, keptChapter, keptVerse, keptEndVerse, keptLabel\]/);
+  assert.doesNotMatch(keptMemo, /\[activeScope\]/);
 });
 
 test("Close exits directly while Back and Escape remain stepwise and named", () => {

@@ -48,9 +48,11 @@ test("lastRead uses the shared verse and pixel eye-line contract", () => {
   assert.match(page, /persistCurrentReadingPositionRef\.current\(\)/);
 });
 
-test("renderer session retains history and research Back names its destination", () => {
-  assert.match(app, /useState<NavigationHistoryState>[\s\S]{0,100}?createNavigationHistory/);
-  assert.match(app, /const \[canvasSessionEntry, setCanvasSessionEntry\]/);
+test("active V2 tabs retain history and research Back names its destination", () => {
+  assert.match(app, /activeStudyWorkspaceSession\(studyWorkspace\)/);
+  assert.match(app, /navigationHistory=\{activeWorkspaceSession\.history\}/);
+  assert.match(app, /sessionEntry=\{activeWorkspaceSession\.current\}/);
+  assert.match(app, /updateActiveStudyCanvasSession/);
   assert.match(page, /onNavigateRefConsumed\?\.\(\)/);
   assert.match(margin, /const researchBackDestination = entityTrail\.at\(currentResearchIsRecorded \? -2 : -1\)\?\.displayName/);
   assert.match(margin, /aria-label=\{`Back to \$\{researchBackDestination\}`\}/);

@@ -21,7 +21,7 @@ test("research close remains async across the margin and Scripture boundary", ()
     "const requestCanvasResearchExit",
     "const selectStudyScope",
   );
-  assert.match(preflight, /activeWorkspaceTabId === SCRIPTURE_WORKSPACE_ID/);
+  assert.match(preflight, /activeWorkspaceKind !== "entity"/);
   assert.match(preflight, /if \(!onCloseEntity\) return false;/);
   assert.match(preflight, /return await onCloseEntity\(\);/);
   assert.match(preflight, /catch \{/);
@@ -121,7 +121,7 @@ test("Research pointer Study defers native row focus until close approval", () =
     "const handleVerseMouseDown",
     "const handleVerseClick",
   );
-  assert.match(mouseDown, /activeWorkspaceTabId === SCRIPTURE_WORKSPACE_ID/);
+  assert.match(mouseDown, /activeWorkspaceKind !== "entity"/);
   assert.match(mouseDown, /event\.button !== 0/);
   assert.match(mouseDown, /row\.removeAttribute\("tabindex"\)/);
   assert.match(mouseDown, /if \(row\.isConnected\) row\.tabIndex = 0;/);
@@ -135,7 +135,7 @@ test("Research pointer Study defers native row focus until close approval", () =
   );
   const approval = click.indexOf("await selectStudyScope(verse, event.shiftKey)");
   const focus = click.indexOf("verseRowRefs.current.get(verse)?.focus({ preventScroll: true })");
-  assert.match(click, /activeWorkspaceTabId !== SCRIPTURE_WORKSPACE_ID/);
+  assert.match(click, /focusVerseAfterApproval = activeWorkspaceKind === "entity"/);
   assert.ok(approval >= 0 && focus > approval);
   assert.doesNotMatch(click.slice(0, approval), /verseRowRefs\.current\.get\(verse\)\?\.focus/);
 });
@@ -159,7 +159,8 @@ test("every rejected pointer intent restores the exact prior Research control", 
   assert.match(click, /const deferredFocus = takeDeferredVersePointerFocus\(verse\);/);
   assert.match(click, /handleSelectConnection\(ordered\[0\]!\.connection\)\.then\(\(proceed\) => \{[\s\S]{0,140}if \(!proceed\) restoreDeferredVersePointerFocus\(deferredFocus\)/);
   assert.match(click, /if \(!requireSafeConnectionNavigation\(\)\) \{\s*restoreDeferredVersePointerFocus\(deferredFocus\);\s*return;/);
-  assert.match(click, /requestScriptureWorkspaceAttention\(\)\.then\(\(proceed\) => \{\s*if \(!proceed\) \{\s*restoreDeferredVersePointerFocus\(deferredFocus\)/);
+  assert.match(click, /requestScriptureWorkspaceAttention\(\)\.then\(\(proceed\) => \{\s*if \(currentMarkingContextKeyRef\.current !== ownerContextKey\) return;\s*if \(!proceed\) \{\s*restoreDeferredVersePointerFocus\(deferredFocus\)/,
+    "a stale owner must not focus or mutate the newly selected Research tab before rejection handling");
   assert.match(click, /if \(!await selectStudyScope\(verse, event\.shiftKey\)\) \{\s*restoreDeferredVersePointerFocus\(deferredFocus\);\s*return;/);
 
   const pointerLifecycle = section(

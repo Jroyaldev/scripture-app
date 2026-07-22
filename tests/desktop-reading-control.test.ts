@@ -156,13 +156,14 @@ test("desktop integration owns one draft rail, exit controller, attention scroll
   assert.match(main, /win\.on\("close", \(event\) => \{[\s\S]{0,700}event\.preventDefault\(\)[\s\S]{0,700}requestRendererCloseAcknowledgement\("window"\)/);
   assert.doesNotMatch(marking, /beforeunload/);
   assert.match(scripture, /<ScriptureWorkspaceTabs/);
-  assert.match(workspaceTabs, /role="tablist" aria-label="Open workspaces"/);
-  assert.match(workspaceTabs, /role="toolbar" aria-label="Workspace tab controls"/);
-  assert.match(workspaceTabs, /aria-expanded=\{!collapsedGroups\.has\(group\.key\)\}/);
-  assert.match(workspaceTabs, /Show all \$\{tabs\.length\} research tabs/);
+  assert.match(workspaceTabs, /role="tablist"[\s\S]{0,80}aria-label="Open study tabs"/);
+  assert.match(workspaceTabs, /role="toolbar" aria-label="Study tab controls"/);
+  assert.match(workspaceTabs, /aria-expanded=\{!group\.collapsed\}/);
+  assert.match(workspaceTabs, /Show all \$\{totalTabs\} study tabs/);
   assert.match(workspaceTabs, /event\.key === "Delete"/);
   assert.doesNotMatch(margin, /margin-workspace-tabs/);
-  assert.match(margin, /workspaceScrollPositionsRef/);
+  assert.doesNotMatch(margin, /workspaceScrollPositionsRef|tabScrollPositionsRef/);
+  assert.match(margin, /marginSession\.scrollTopByTab\[activeTab\]/);
 });
 
 test("App is the sole workspace transition authority and Scripture aggregates authored owners", () => {
@@ -176,7 +177,7 @@ test("App is the sole workspace transition authority and Scripture aggregates au
   assert.match(app, /canvasOwnerTabIdRef/);
   assert.match(app, /captureCurrentStudyWorkspace/);
   assert.match(app, /captured\.ownerTabId !== canvasOwnerTabIdRef\.current/);
-  assert.match(app, /updateStudyCanvasSession\(current, captured\.ownerTabId/);
+  assert.match(app, /updateActiveStudyCanvasSession\(current, captured\.ownerTabId/);
   assert.match(app, /studyWorkspaceRef\.current = next;[\s\S]{0,100}setStudyWorkspace\(next\)/);
   assert.match(app, /onRequestWorkspaceTransition=\{runWorkspaceTransition\}/);
   assert.match(app, /onWorkspaceExitControllerChange=\{handleWorkspaceExitControllerChange\}/);
@@ -189,6 +190,6 @@ test("App is the sole workspace transition authority and Scripture aggregates au
   assert.match(card, /label,[\s\S]{0,120}observation: draftObservationRef\.current/);
   assert.match(tabs, /onSelect: \(tabId: string\) => Promise<boolean>/);
   assert.match(tabs, /onClose: \(tabId: string\) => Promise<boolean>/);
-  assert.match(tabs, /onCloseGroup: \(groupKey: string\) => Promise<boolean>/);
-  assert.match(tabs, /onToggleGroup: \(groupKey: string, collapsing: boolean\) => Promise<boolean>/);
+  assert.match(tabs, /onCloseGroup: \(groupId: string\) => Promise<boolean>/);
+  assert.match(tabs, /onToggleGroup: \(groupId: string, collapsing: boolean\) => Promise<boolean>/);
 });

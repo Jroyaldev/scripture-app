@@ -2,48 +2,44 @@ import type React from "react";
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { BookNameData } from "../api.js";
 import {
-  researchOriginGroupKey,
-  researchWorkspaceTabKind,
-  researchWorkspaceTabLabel,
-  SCRIPTURE_WORKSPACE_ID,
-  type ResearchWorkspaceTab,
-} from "../utils/researchWorkspace.js";
+  orderedStudyWorkspaceTabs,
+  studyWorkspaceGroupCloseAvailability,
+  studyWorkspaceGroupLabel,
+  studyWorkspaceTabCloseAvailability,
+  studyWorkspaceTabLabel,
+  studyWorkspaceTabType,
+  visibleStudyWorkspaceTabIds,
+  type StudyWorkspaceGroup,
+  type StudyWorkspaceStateV2,
+  type StudyWorkspaceTab,
+} from "../utils/studyWorkspace.js";
 import { Popover } from "./Popover.js";
 
 interface Props {
-  tabs: readonly ResearchWorkspaceTab[];
-  activeTabId: string;
+  workspace: StudyWorkspaceStateV2;
   bookNames: BookNameData;
   onSelect: (tabId: string) => Promise<boolean>;
   onClose: (tabId: string) => Promise<boolean>;
-  onCloseGroup: (groupKey: string) => Promise<boolean>;
-  onToggleGroup: (groupKey: string, collapsing: boolean) => Promise<boolean>;
+  onCloseGroup: (groupId: string) => Promise<boolean>;
+  onToggleGroup: (groupId: string, collapsing: boolean) => Promise<boolean>;
   onNewResearch: () => void;
 }
 
-interface ResearchTabGroup {
-  key: string;
+interface WorkspaceTabGroup {
+  group: StudyWorkspaceGroup;
   label: string;
-  tabs: ResearchWorkspaceTab[];
+  tabs: StudyWorkspaceTab[];
+  visibleTabs: StudyWorkspaceTab[];
 }
 
 interface SelectTabOptions {
-  expandGroupKey?: string;
   closeOverflow?: boolean;
   moveFocus?: boolean;
 }
 
-interface CloseTabOptions {
-  closeOverflow?: boolean;
-  moveFocus?: boolean;
-}
+interface CloseTabOptions extends SelectTabOptions {}
 
-function groupLabel(tab: ResearchWorkspaceTab, bookNames: BookNameData): string {
-  const book = bookNames[tab.origin.book]?.[0] ?? tab.origin.book;
-  return `${book} ${tab.origin.chapter}`;
-}
-
-function ScriptureGlyph(): React.JSX.Element {
+function PassageGlyph(): React.JSX.Element {
   return (
     <svg viewBox="0 0 18 18" aria-hidden="true">
       <path d="M2.5 4.2c2-.8 4-.6 6 .5v9.2c-2-1.1-4-1.3-6-.5zM15.5 4.2c-2-.8-4-.6-6 .5v9.2c2-1.1 4-1.3 6-.5z" />
@@ -52,15 +48,9 @@ function ScriptureGlyph(): React.JSX.Element {
 }
 
 function CloseGlyph(): React.JSX.Element {
-  return (
-    <svg viewBox="0 0 14 14" aria-hidden="true">
-      <path d="m4 4 6 6M10 4l-6 6" />
-    </svg>
-  );
+  return <svg viewBox="0 0 14 14" aria-hidden="true"><path d="m4 4 6 6M10 4l-6 6" /></svg>;
 }
 
-/* Kind marks are quiet single-stroke glyphs at the same optical weight as the
-   close/chevron marks — a hint of who or where, never an icon billboard. */
 function PersonGlyph(): React.JSX.Element {
   return (
     <svg viewBox="0 0 12 12" aria-hidden="true">
@@ -79,17 +69,16 @@ function PlaceGlyph(): React.JSX.Element {
   );
 }
 
-type ResearchTabKind = ReturnType<typeof researchWorkspaceTabKind>;
-
-function TabMark({ kind }: { kind: ResearchTabKind }): React.JSX.Element {
+function TabMark({ tab }: { tab: StudyWorkspaceTab }): React.JSX.Element {
+  const kind = studyWorkspaceTabType(tab);
+  if (kind === "passage") return <span className="scripture-workspace-tab-mark is-passage" aria-hidden="true"><PassageGlyph /></span>;
   if (kind === "person") return <span className="scripture-workspace-tab-mark is-person" aria-hidden="true"><PersonGlyph /></span>;
   if (kind === "place") return <span className="scripture-workspace-tab-mark is-place" aria-hidden="true"><PlaceGlyph /></span>;
   return <span className="scripture-workspace-tab-mark" aria-hidden="true" />;
 }
 
 export function ScriptureWorkspaceTabs({
-  tabs,
-  activeTabId,
+  workspace,
   bookNames,
   onSelect,
   onClose,
@@ -97,15 +86,26 @@ export function ScriptureWorkspaceTabs({
   onToggleGroup,
   onNewResearch,
 }: Props): React.JSX.Element {
-  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [overflowOpen, setOverflowOpen] = useState(false);
   const [overflowAnchor, setOverflowAnchor] = useState<DOMRect | null>(null);
   const [hasMeasuredOverflow, setHasMeasuredOverflow] = useState(false);
-  const [scrollEdges, setScrollEdges] = useState<{ left: boolean; right: boolean }>({ left: false, right: false });
+  const [scrollEdges, setScrollEdges] = useState({ left: false, right: false });
   const viewportRef = useRef<HTMLDivElement>(null);
   const overflowButtonRef = useRef<HTMLButtonElement>(null);
   const tabRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const pendingWorkspaceIntentCountRef = useRef(0);
+
+  const visibleTabIds = useMemo(() => visibleStudyWorkspaceTabIds(workspace), [workspace]);
+  const visibleTabIdSet = useMemo(() => new Set(visibleTabIds), [visibleTabIds]);
+  const groups = useMemo<WorkspaceTabGroup[]>(() => workspace.groups.map((group) => {
+    const tabs = orderedStudyWorkspaceTabs(workspace, group.id);
+    return {
+      group,
+      label: studyWorkspaceGroupLabel(workspace, group, bookNames),
+      tabs,
+      visibleTabs: tabs.filter((tab) => visibleTabIdSet.has(tab.id)),
+    };
+  }), [bookNames, visibleTabIdSet, workspace]);
 
   const runApprovedIntent = useCallback(async (
     request: () => Promise<boolean>,
@@ -126,45 +126,21 @@ export function ScriptureWorkspaceTabs({
 
   const scheduleCommittedTabFocus = useCallback((tabId: string | null, moveFocus: boolean): void => {
     window.requestAnimationFrame(() => {
-      const requestedTab = tabId ? tabRefs.current.get(tabId) : undefined;
-      const selectedTab = viewportRef.current?.querySelector<HTMLButtonElement>(
-        '[role="tab"][aria-selected="true"]',
-      );
-      const target = requestedTab?.isConnected
-        ? requestedTab
-        : selectedTab ?? overflowButtonRef.current;
+      const requested = tabId ? tabRefs.current.get(tabId) : undefined;
+      const selected = viewportRef.current?.querySelector<HTMLButtonElement>('[role="tab"][aria-selected="true"]');
+      const target = requested?.isConnected ? requested : selected ?? overflowButtonRef.current;
       target?.scrollIntoView({ block: "nearest", inline: "nearest" });
       if (moveFocus) target?.focus({ preventScroll: true });
     });
   }, []);
 
-  const groups = useMemo<ResearchTabGroup[]>(() => {
-    const byKey = new Map<string, ResearchTabGroup>();
-    for (const tab of tabs) {
-      const key = researchOriginGroupKey(tab.origin);
-      const existing = byKey.get(key);
-      if (existing) existing.tabs.push(tab);
-      else byKey.set(key, { key, label: groupLabel(tab, bookNames), tabs: [tab] });
-    }
-    return [...byKey.values()];
-  }, [bookNames, tabs]);
-
-  const visibleTabIds = useMemo(() => [
-    SCRIPTURE_WORKSPACE_ID,
-    ...groups.flatMap((group) => collapsedGroups.has(group.key) ? [] : group.tabs.map((tab) => tab.id)),
-  ], [collapsedGroups, groups]);
-
-  useLayoutEffect(() => {
-    if (pendingWorkspaceIntentCountRef.current > 0) return;
-    if (activeTabId === SCRIPTURE_WORKSPACE_ID) return;
-    const activeGroup = groups.find((group) => group.tabs.some((tab) => tab.id === activeTabId));
-    if (!activeGroup || !collapsedGroups.has(activeGroup.key)) return;
-    setCollapsedGroups((current) => {
-      const next = new Set(current);
-      next.delete(activeGroup.key);
-      return next;
+  const dismissOverflow = useCallback((): void => {
+    setOverflowOpen(false);
+    window.requestAnimationFrame(() => {
+      const trigger = overflowButtonRef.current;
+      if (trigger?.isConnected) trigger.focus({ preventScroll: true });
     });
-  }, [activeTabId, collapsedGroups, groups]);
+  }, []);
 
   useLayoutEffect(() => {
     const viewport = viewportRef.current;
@@ -184,21 +160,12 @@ export function ScriptureWorkspaceTabs({
       observer.disconnect();
       viewport.removeEventListener("scroll", measure);
     };
-  }, [groups, collapsedGroups]);
+  }, [groups]);
 
   useLayoutEffect(() => {
     if (pendingWorkspaceIntentCountRef.current > 0) return;
-    scheduleCommittedTabFocus(activeTabId, false);
-  }, [activeTabId, scheduleCommittedTabFocus, visibleTabIds]);
-
-  const closeOverflow = useCallback((): void => {
-    setOverflowOpen(false);
-    window.requestAnimationFrame(() => overflowButtonRef.current?.focus({ preventScroll: true }));
-  }, []);
-
-  const deferMouseFocus = useCallback((event: React.MouseEvent<HTMLButtonElement>): void => {
-    event.preventDefault();
-  }, []);
+    scheduleCommittedTabFocus(workspace.activeTabId, false);
+  }, [scheduleCommittedTabFocus, visibleTabIds, workspace.activeTabId]);
 
   const handleSelectTab = useCallback(async (
     tabId: string,
@@ -206,14 +173,6 @@ export function ScriptureWorkspaceTabs({
   ): Promise<boolean> => await runApprovedIntent(
     () => onSelect(tabId),
     () => {
-      if (options.expandGroupKey) {
-        setCollapsedGroups((current) => {
-          if (!current.has(options.expandGroupKey!)) return current;
-          const next = new Set(current);
-          next.delete(options.expandGroupKey!);
-          return next;
-        });
-      }
       if (options.closeOverflow) setOverflowOpen(false);
       scheduleCommittedTabFocus(tabId, options.moveFocus ?? false);
     },
@@ -223,263 +182,212 @@ export function ScriptureWorkspaceTabs({
     tabId: string,
     options: CloseTabOptions = {},
   ): Promise<boolean> => await runApprovedIntent(
-    () => onClose(tabId),
-    () => {
-      if (options.closeOverflow) setOverflowOpen(false);
-      if (options.moveFocus) scheduleCommittedTabFocus(null, true);
-    },
-  ), [onClose, runApprovedIntent, scheduleCommittedTabFocus]);
+      () => onClose(tabId),
+      () => {
+        if (options.closeOverflow) setOverflowOpen(false);
+        scheduleCommittedTabFocus(null, options.moveFocus ?? false);
+      },
+    ), [onClose, runApprovedIntent, scheduleCommittedTabFocus]);
 
-  const handleCloseGroup = useCallback(async (group: ResearchTabGroup): Promise<boolean> => await runApprovedIntent(
-    () => onCloseGroup(group.key),
+  const handleCloseGroup = useCallback(async (groupId: string): Promise<boolean> => await runApprovedIntent(
+    () => onCloseGroup(groupId),
     () => {
       setOverflowOpen(false);
       scheduleCommittedTabFocus(null, true);
     },
   ), [onCloseGroup, runApprovedIntent, scheduleCommittedTabFocus]);
 
+  const toggleGroup = useCallback(async (
+    groupId: string,
+    collapsing: boolean,
+    focusTarget?: HTMLButtonElement,
+  ): Promise<boolean> => await runApprovedIntent(
+    () => onToggleGroup(groupId, collapsing),
+    () => window.requestAnimationFrame(() => {
+      if (focusTarget?.isConnected) focusTarget.focus({ preventScroll: true });
+    }),
+  ), [onToggleGroup, runApprovedIntent]);
+
+  const handleTabAuxClick = async (
+    event: React.MouseEvent<HTMLButtonElement>,
+    tabId: string,
+    canClose: boolean,
+  ): Promise<void> => {
+    if (event.button !== 1 || !canClose) return;
+    event.preventDefault();
+    await handleCloseTab(tabId);
+  };
+
   const handleTabKeyDown = async (
     event: React.KeyboardEvent<HTMLButtonElement>,
     tabId: string,
+    canClose: boolean,
   ): Promise<void> => {
-    if ((event.key === "Delete" || event.key === "Backspace") && tabId !== SCRIPTURE_WORKSPACE_ID) {
+    if (canClose && (event.key === "Delete" || event.key === "Backspace")) {
       event.preventDefault();
       await handleCloseTab(tabId, { moveFocus: true });
       return;
     }
-    let index: number | null = null;
     const current = Math.max(0, visibleTabIds.indexOf(tabId));
+    let index: number | null = null;
     if (event.key === "ArrowRight") index = (current + 1) % visibleTabIds.length;
     else if (event.key === "ArrowLeft") index = (current - 1 + visibleTabIds.length) % visibleTabIds.length;
     else if (event.key === "Home") index = 0;
     else if (event.key === "End") index = visibleTabIds.length - 1;
     if (index == null) return;
     event.preventDefault();
-    const next = visibleTabIds[index]!;
-    await handleSelectTab(next, { moveFocus: true });
+    const next = visibleTabIds[index];
+    if (next) await handleSelectTab(next, { moveFocus: true });
   };
 
-  const handleTabAuxClick = async (
-    event: React.MouseEvent<HTMLButtonElement>,
-    tabId: string,
-  ): Promise<void> => {
-    if (event.button !== 1 || tabId === SCRIPTURE_WORKSPACE_ID) return;
-    event.preventDefault();
-    await handleCloseTab(tabId);
-  };
-
-  const toggleGroup = async (
-    group: ResearchTabGroup,
-    focusTarget: HTMLButtonElement,
-  ): Promise<void> => {
-    const collapsing = !collapsedGroups.has(group.key);
-    await runApprovedIntent(
-      () => onToggleGroup(group.key, collapsing),
-      () => {
-        setCollapsedGroups((current) => {
-          const next = new Set(current);
-          if (collapsing) next.add(group.key);
-          else next.delete(group.key);
-          return next;
-        });
-        window.requestAnimationFrame(() => {
-          if (focusTarget.isConnected) focusTarget.focus({ preventScroll: true });
-        });
-      },
-    );
-  };
-
-  const openOverflow = (): void => {
-    setOverflowAnchor(overflowButtonRef.current?.getBoundingClientRect() ?? null);
-    setOverflowOpen(true);
-  };
-  const showOverflow = groups.length > 0 || hasMeasuredOverflow;
+  const deferMouseFocus = (event: React.MouseEvent<HTMLButtonElement>): void => event.preventDefault();
+  const totalTabs = Object.keys(workspace.tabsById).length;
 
   return (
-    <nav className="scripture-workspace-bar" aria-label="Scripture and research workspaces">
+    <nav className="scripture-workspace-bar" aria-label="Study workspace tabs" data-study-workspace-bar="">
       <div
+        ref={viewportRef}
         className={[
           "scripture-workspace-viewport",
           scrollEdges.left ? "is-scrollable-left" : "",
           scrollEdges.right ? "is-scrollable-right" : "",
         ].filter(Boolean).join(" ")}
-        ref={viewportRef}
-        role="tablist" aria-label="Open workspaces"
+        role="tablist"
+        aria-label="Open study tabs"
       >
-        <button
-          ref={(node) => {
-            if (node) tabRefs.current.set(SCRIPTURE_WORKSPACE_ID, node);
-            else tabRefs.current.delete(SCRIPTURE_WORKSPACE_ID);
-          }}
-          type="button"
-          id="scripture-workspace-tab"
-          className="scripture-workspace-tab is-scripture"
-          role="tab"
-          aria-selected={activeTabId === SCRIPTURE_WORKSPACE_ID}
-          aria-controls="scripture-workspace-panel"
-          tabIndex={activeTabId === SCRIPTURE_WORKSPACE_ID ? 0 : -1}
-          onMouseDown={deferMouseFocus}
-          onClick={async () => {
-            await handleSelectTab(SCRIPTURE_WORKSPACE_ID, { moveFocus: true });
-          }}
-          onKeyDown={(event) => handleTabKeyDown(event, SCRIPTURE_WORKSPACE_ID)}
-        >
-          <ScriptureGlyph />
-          <span>Scripture</span>
-        </button>
-
-        {groups.flatMap((group) => collapsedGroups.has(group.key) ? [] : group.tabs.map((tab) => {
-          const label = researchWorkspaceTabLabel(tab);
-          const selected = activeTabId === tab.id;
+        {groups.flatMap(({ group, label: groupLabel, visibleTabs }) => visibleTabs.map((tab) => {
+          const label = studyWorkspaceTabLabel(workspace, tab, bookNames);
+          const selected = workspace.activeTabId === tab.id;
+          const collapsedProxy = group.collapsed;
+          const canClose = studyWorkspaceTabCloseAvailability(workspace, tab.id) === "direct";
           return (
-            <div
-              className={`scripture-workspace-tab-wrap${selected ? " is-selected" : ""}`}
-              role="presentation"
-              key={tab.id}
-            >
+            <div className={`scripture-workspace-tab-wrap${selected ? " is-selected" : ""}${collapsedProxy ? " is-collapsed-proxy" : ""}`} role="presentation" key={tab.id}>
               <button
                 ref={(node) => {
                   if (node) tabRefs.current.set(tab.id, node);
                   else tabRefs.current.delete(tab.id);
                 }}
                 type="button"
-                id={`research-workspace-tab-${tab.id}`}
-                className="scripture-workspace-tab is-research"
+                id={`study-workspace-tab-${tab.id}`}
+                className={`scripture-workspace-tab is-${tab.kind}`}
                 role="tab"
-                aria-label={`${label}, ${group.label} research`}
+                aria-label={`${label}, ${groupLabel}`}
                 aria-selected={selected}
                 aria-controls="scripture-workspace-panel"
-                aria-keyshortcuts="Delete"
+                aria-keyshortcuts={canClose ? "Delete" : undefined}
                 tabIndex={selected ? 0 : -1}
-                title={`${label} — ${group.label} research`}
+                data-study-tab-id={tab.id}
+                data-study-tab-kind={studyWorkspaceTabType(tab)}
+                data-study-collapsed-proxy={collapsedProxy || undefined}
+                title={`${label} — ${groupLabel}`}
                 onMouseDown={deferMouseFocus}
                 onClick={async (event) => {
-                  const target = event.target;
-                  if (target instanceof Element && target.closest("[data-workspace-tab-close]")) {
+                  if (event.target instanceof Element && event.target.closest("[data-workspace-tab-close]")) {
                     await handleCloseTab(tab.id, { moveFocus: true });
                     return;
                   }
                   await handleSelectTab(tab.id, { moveFocus: true });
                 }}
-                onAuxClick={(event) => handleTabAuxClick(event, tab.id)}
-                onKeyDown={(event) => handleTabKeyDown(event, tab.id)}
+                onAuxClick={(event) => handleTabAuxClick(event, tab.id, canClose)}
+                onKeyDown={(event) => handleTabKeyDown(event, tab.id, canClose)}
               >
-                <TabMark kind={researchWorkspaceTabKind(tab)} />
+                <TabMark tab={tab} />
                 <span className="scripture-workspace-tab-label">{label}</span>
-                <span
-                  className="scripture-workspace-tab-close"
-                  data-workspace-tab-close=""
-                  title={`Close ${label} research`}
-                  aria-hidden="true"
-                >
-                  <CloseGlyph />
-                </span>
+                {canClose && (
+                  <span className="scripture-workspace-tab-close" data-workspace-tab-close="" aria-hidden="true">
+                    <CloseGlyph />
+                  </span>
+                )}
               </button>
             </div>
           );
         }))}
       </div>
 
-      <div className="scripture-workspace-actions" role="toolbar" aria-label="Workspace tab controls">
-        <button type="button" className="scripture-workspace-new" onClick={onNewResearch} aria-label="Open a new research tab" title="New research">
+      <div className="scripture-workspace-actions" role="toolbar" aria-label="Study tab controls">
+        {groups.map(({ group, label, tabs }) => (
+          <button
+            key={group.id}
+            type="button"
+            className="scripture-workspace-group-toggle"
+            data-study-group-id={group.id}
+            aria-expanded={!group.collapsed}
+            onMouseDown={deferMouseFocus}
+            onClick={async (event) => { await toggleGroup(group.id, !group.collapsed, event.currentTarget); }}
+            title={`${group.collapsed ? "Expand" : "Collapse"} ${label}`}
+          >
+            <span>{label}</span><small>{tabs.length}</small>
+          </button>
+        ))}
+        <button type="button" className="scripture-workspace-new" onClick={onNewResearch} aria-label="Open a new study tab" title="New study tab">
           <span aria-hidden="true">+</span>
         </button>
-        {showOverflow && (
+        {(groups.length > 0 || hasMeasuredOverflow) && (
           <button
             ref={overflowButtonRef}
             type="button"
             className="scripture-workspace-overflow"
-            onClick={openOverflow}
-            aria-label={`Show all ${tabs.length} research tabs`}
+            data-study-all-tabs=""
+            onClick={() => {
+              setOverflowAnchor(overflowButtonRef.current?.getBoundingClientRect() ?? null);
+              setOverflowOpen(true);
+            }}
+            aria-label={`Show all ${totalTabs} study tabs`}
             aria-haspopup="dialog"
             aria-expanded={overflowOpen}
-            title={hasMeasuredOverflow ? "All research tabs — more tabs off screen" : "All research tabs and groups"}
-          >
-            <span aria-hidden="true">•••</span>
-          </button>
+            title="All study tabs and groups"
+          ><span aria-hidden="true">•••</span></button>
         )}
       </div>
 
       {overflowOpen && overflowAnchor && (
         <Popover
           anchorRect={overflowAnchor}
-          onClose={closeOverflow}
-          width={320}
+          onClose={dismissOverflow}
+          width={340}
           maxHeight={520}
           className="scripture-workspace-overflow-popover"
-          ariaLabel="All research tabs"
+          ariaLabel="All study tabs"
         >
-          <div className="scripture-workspace-overflow-head">
-            <strong>Research tabs</strong>
-            <span>{tabs.length} open</span>
-          </div>
+          <div className="scripture-workspace-overflow-head"><strong>Study tabs</strong><span>{totalTabs} open</span></div>
           <div className="scripture-workspace-overflow-list">
-            {groups.map((group) => (
-              <section className="scripture-workspace-overflow-group" aria-label={group.label} key={group.key}>
-                <header>
-                  <span>{group.label} · {group.tabs.length}</span>
-                  <div>
-                    <button
-                      type="button"
-                      aria-expanded={!collapsedGroups.has(group.key)}
-                      onMouseDown={deferMouseFocus}
-                      onClick={async (event) => {
-                        const focusTarget = event.currentTarget;
-                        await toggleGroup(group, focusTarget);
-                      }}
-                      aria-label={`${collapsedGroups.has(group.key) ? "Expand" : "Collapse"} ${group.label} group`}
-                    >
-                      {collapsedGroups.has(group.key) ? "Expand" : "Collapse"}
-                    </button>
-                    <button
-                      type="button"
-                      onMouseDown={deferMouseFocus}
-                      onClick={async () => {
-                        await handleCloseGroup(group);
-                      }}
-                      aria-label={`Close ${group.label} group`}
-                    >Close group</button>
-                  </div>
-                </header>
-                {group.tabs.map((tab) => {
-                  const label = researchWorkspaceTabLabel(tab);
-                  return (
-                    <div className="scripture-workspace-overflow-row" key={tab.id}>
-                      <button
-                        type="button"
-                        className={activeTabId === tab.id ? "is-active" : undefined}
-                        title={`${label} — ${group.label} research`}
-                        onMouseDown={deferMouseFocus}
-                        onClick={async () => {
-                          await handleSelectTab(tab.id, {
-                            expandGroupKey: group.key,
-                            closeOverflow: true,
-                            moveFocus: true,
-                          });
-                        }}
-                      >
-                        <TabMark kind={researchWorkspaceTabKind(tab)} />
-                        <span>{label}</span>
-                        {activeTabId === tab.id && <small>Current</small>}
+            {groups.map(({ group, label, tabs }) => {
+              const canCloseGroup = studyWorkspaceGroupCloseAvailability(workspace, group.id) === "direct";
+              return (
+                <section className="scripture-workspace-overflow-group" aria-label={label} key={group.id}>
+                  <header>
+                    <span>{label} · {tabs.length}</span>
+                    <div>
+                      <button type="button" aria-expanded={!group.collapsed} onMouseDown={deferMouseFocus} onClick={async (event) => { await toggleGroup(group.id, !group.collapsed, event.currentTarget); }}>
+                        {group.collapsed ? "Expand" : "Collapse"}
                       </button>
-                      <button
-                        type="button"
-                        aria-label={`Close ${label} research`}
-                        onMouseDown={deferMouseFocus}
-                        onClick={async () => {
-                          await handleCloseTab(tab.id, {
-                            closeOverflow: true,
-                            moveFocus: true,
-                          });
-                        }}
-                      >
-                        <CloseGlyph />
-                      </button>
+                      {canCloseGroup && (
+                        <button type="button" onMouseDown={deferMouseFocus} onClick={async () => { await handleCloseGroup(group.id); }}>Close group</button>
+                      )}
                     </div>
-                  );
-                })}
-              </section>
-            ))}
+                  </header>
+                  {tabs.map((tab) => {
+                    const tabLabel = studyWorkspaceTabLabel(workspace, tab, bookNames);
+                    const canClose = studyWorkspaceTabCloseAvailability(workspace, tab.id) === "direct";
+                    return (
+                      <div className="scripture-workspace-overflow-row" data-study-all-tabs-row="" key={tab.id}>
+                        <button
+                          type="button"
+                          className={workspace.activeTabId === tab.id ? "is-active" : undefined}
+                          onClick={async () => { await handleSelectTab(tab.id, { closeOverflow: true, moveFocus: true }); }}
+                        >
+                          <TabMark tab={tab} /><span>{tabLabel}</span>
+                          {workspace.activeTabId === tab.id && <small>Current</small>}
+                        </button>
+                        {canClose && (
+                          <button type="button" aria-label={`Close ${tabLabel}`} onMouseDown={deferMouseFocus} onClick={async () => { await handleCloseTab(tab.id, { closeOverflow: true, moveFocus: true }); }}><CloseGlyph /></button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </section>
+              );
+            })}
           </div>
         </Popover>
       )}

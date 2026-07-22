@@ -29,6 +29,18 @@ import { SourcesDisclosure, formatSourceCitation, type CitationSource } from "./
 import { useToast } from "./Toast.js";
 import { parsePeekRef, useVersePeek, type PeekTarget, type VersePeekTriggerProps } from "./VersePeek.js";
 import type { MarginWorkspace } from "../utils/marginWorkspace.js";
+import {
+  appendEntityResearchTrail,
+  type EntityResearchTrailEntry,
+  type PassageViewState,
+} from "../utils/studyWorkspace.js";
+
+export {
+  appendEntityResearchTrail,
+  ENTITY_RESEARCH_TRAIL_LIMIT,
+  truncateEntityResearchTrail,
+} from "../utils/studyWorkspace.js";
+export type { EntityResearchTrailEntry } from "../utils/studyWorkspace.js";
 
 export interface PinnedRange {
   start: number;
@@ -53,39 +65,101 @@ const MarginSourcesDisclosure = SourcesDisclosure;
 
 type MarginTab = "overview" | "connections" | "passage" | "notes";
 
-export interface EntityResearchTrailEntry {
-  id: string;
-  displayName: string;
-  /** TIPNR entity kind, when known — lets workspace tabs distinguish people from places. */
-  kind?: "person" | "place" | "other";
-}
-
 export interface EntityResearchOpenOptions {
   /** Truncate the active entity tab's existing trail through this target. */
   trailIndex?: number;
 }
 
-export const ENTITY_RESEARCH_TRAIL_LIMIT = 12;
+const MARGIN_SCROLL_PUBLISH_DELAY_MS = 220;
 
-export function appendEntityResearchTrail(
-  trail: readonly EntityResearchTrailEntry[],
-  entry: EntityResearchTrailEntry,
-): EntityResearchTrailEntry[] {
-  const current = trail.at(-1);
-  if (current?.id === entry.id) {
-    return current.displayName === entry.displayName
-      ? [...trail]
-      : [...trail.slice(0, -1), entry];
-  }
-  return [...trail, entry].slice(-ENTITY_RESEARCH_TRAIL_LIMIT);
+export type MarginScrollScope =
+  | { kind: "research"; entityId: string }
+  | { kind: "connection"; connectionId: string }
+  | { kind: "selection"; start: number; end: number }
+  | { kind: "kept"; verse: number }
+  | { kind: "following"; verse: number }
+  | { kind: "chapter" };
+
+export interface MarginScrollRestoreContext {
+  ownerTabId: string;
+  sessionRestoreNonce: number;
+  workspace: MarginWorkspace;
+  activeTab: MarginTab;
+  book: string;
+  chapter: number;
+  scope: MarginScrollScope;
 }
 
-export function truncateEntityResearchTrail(
-  trail: readonly EntityResearchTrailEntry[],
-  index: number,
-): EntityResearchTrailEntry[] {
-  if (index < 0 || index >= trail.length) return [...trail];
-  return trail.slice(0, index + 1);
+/**
+ * Identity for deliberate margin restores. The ambient verse is intentionally
+ * absent while following: eye-line drift within one chapter must not yank a
+ * reader back to a persisted offset.
+ */
+function marginScrollSubjectKey(context: MarginScrollRestoreContext): string {
+  return context.scope.kind === "research"
+    ? `research:${context.scope.entityId}`
+    : context.scope.kind === "connection"
+      ? `connection:${context.scope.connectionId}`
+      : context.scope.kind === "selection"
+        ? `selection:${context.scope.start}-${context.scope.end}`
+        : context.scope.kind === "kept"
+          ? `kept:${context.scope.verse}`
+          : context.scope.kind;
+}
+
+export function marginScrollRestoreKey(context: MarginScrollRestoreContext): string {
+  return [
+    context.ownerTabId,
+    context.sessionRestoreNonce,
+    context.workspace,
+    context.activeTab,
+    context.book,
+    context.chapter,
+    marginScrollSubjectKey(context),
+  ].join(":");
+}
+
+export interface MarginScrollRestoration {
+  top: number;
+  /** Reset publications keep the controlled snapshot aligned with the DOM. */
+  publish: boolean;
+}
+
+/** Synchronous handoff used before a workspace owner can be replaced. */
+export interface LivingMarginScrollController {
+  ownerTabId: string;
+  flushPendingScroll(): void;
+}
+
+export function resolveMarginScrollRestoration(
+  previous: MarginScrollRestoreContext | null,
+  current: MarginScrollRestoreContext,
+  controlledScrollTop: number,
+): MarginScrollRestoration | null {
+  if (!previous
+    || previous.ownerTabId !== current.ownerTabId
+    || previous.sessionRestoreNonce !== current.sessionRestoreNonce
+    || previous.workspace !== current.workspace
+    || previous.activeTab !== current.activeTab) {
+    return { top: controlledScrollTop, publish: false };
+  }
+  // The connection inspector is transient UI over the active Study lens. It
+  // may use its own top while open, but must never replace the lens snapshot.
+  if (current.scope.kind === "connection") {
+    return previous.scope.kind === "connection"
+      && previous.scope.connectionId === current.scope.connectionId
+      ? null
+      : { top: 0, publish: false };
+  }
+  if (previous.scope.kind === "connection") {
+    return { top: controlledScrollTop, publish: false };
+  }
+  if (previous.book !== current.book
+    || previous.chapter !== current.chapter
+    || marginScrollSubjectKey(previous) !== marginScrollSubjectKey(current)) {
+    return { top: 0, publish: true };
+  }
+  return null;
 }
 
 const MARGIN_TABS: Array<{ id: MarginTab; label: string; accessibleLabel: string }> = [
@@ -147,11 +221,26 @@ interface Props {
   onAmbientKeptChange?: (kept: boolean) => void;
   /** Leave the explicit selected-passage state and return to the reading eye-line. */
   onClearSelection?: () => void;
-  /** Renderer-session tab state used by reversible canvas travel. */
-  activeTab?: MarginTab;
-  onActiveTabChange?: (tab: MarginTab) => void;
+  /** V2 owner-tagged session state. No local map may outlive this owner. */
+  sessionOwnerTabId: string;
+  /** Changes only for an intentional owner/history/navigation snapshot restore. */
+  sessionRestoreNonce: number;
+  marginSession: PassageViewState["margin"];
+  onMarginSessionChange: (
+    ownerTabId: string,
+    update: (current: PassageViewState["margin"]) => PassageViewState["margin"],
+  ) => void;
   workspace?: MarginWorkspace;
-  workspaceTabId?: string;
+  researchScrollTop?: number;
+  onResearchScrollTopChange?: (ownerTabId: string, scrollTop: number) => void;
+  onScrollControllerChange?: (
+    ownerTabId: string,
+    controller: LivingMarginScrollController | null,
+  ) => void;
+  /** One-shot request issued only by an explicit content-originated Research
+   * open. Ordinary workspace-tab activation deliberately supplies no request. */
+  entityResearchFocusRequest?: number | null;
+  onEntityResearchFocusRequestHandled?: (ownerTabId: string, requestId: number) => void;
   entityIntent?: {
     id: string;
     nonce: number;
@@ -161,6 +250,7 @@ interface Props {
   onCloseEntity?: () => Promise<boolean>;
   entityTrail?: readonly EntityResearchTrailEntry[];
   onEntityTrailChange?: (
+    ownerTabId: string,
     update: (current: readonly EntityResearchTrailEntry[]) => EntityResearchTrailEntry[],
   ) => void;
   /** A selected user-authored connection, composed by ScripturePage. */
@@ -1533,10 +1623,16 @@ export function LivingMargin({
   ambientKept = false,
   onAmbientKeptChange,
   onClearSelection,
-  activeTab: controlledActiveTab,
-  onActiveTabChange,
+  sessionOwnerTabId,
+  sessionRestoreNonce,
+  marginSession,
+  onMarginSessionChange,
   workspace,
-  workspaceTabId,
+  researchScrollTop = 0,
+  onResearchScrollTopChange,
+  onScrollControllerChange,
+  entityResearchFocusRequest = null,
+  onEntityResearchFocusRequestHandled,
   entityIntent,
   onOpenEntity,
   onCloseEntity,
@@ -1552,13 +1648,19 @@ export function LivingMargin({
   const [pinnedClaims, setPinnedClaims] = useState<Set<string>>(new Set());
   const [pendingClaimId, setPendingClaimId] = useState<string | null>(null);
   const [claimPinError, setClaimPinError] = useState<{ id: string; message: string } | null>(null);
-  const [internalActiveTab, setInternalActiveTab] = useState<MarginTab>(controlledActiveTab ?? "overview");
-  const activeTab = controlledActiveTab ?? internalActiveTab;
+  const activeTab = marginSession.activeTab;
   const setActiveTab = (tab: MarginTab): void => {
-    setInternalActiveTab(tab);
-    onActiveTabChange?.(tab);
+    onMarginSessionChange(sessionOwnerTabId, (current) => ({ ...current, activeTab: tab }));
   };
-  const [wordsVerse, setWordsVerse] = useState(pinnedRange?.start ?? 1);
+  const requestedWordsVerse = marginSession.wordsVerse ?? pinnedRange?.start ?? nearVerse ?? 1;
+  const wordsVerse = pinnedRange
+    ? Math.min(pinnedRange.end, Math.max(pinnedRange.start, requestedWordsVerse))
+    : requestedWordsVerse;
+  const setWordsState = (
+    update: Pick<PassageViewState["margin"], "wordsVerse" | "wordsFollowingReading">,
+  ): void => {
+    onMarginSessionChange(sessionOwnerTabId, (current) => ({ ...current, ...update }));
+  };
   const [entityResult, setEntityResult] = useState<LanguageEntityRangeResult>({
     entities: [],
     attribution: { name: "STEPBible TIPNR", license: "CC BY 4.0" },
@@ -1576,26 +1678,193 @@ export function LivingMargin({
   const researchTitleRef = useRef<HTMLHeadingElement>(null);
   const marginRef = useRef<HTMLElement>(null);
   const activeWorkspace: MarginWorkspace = workspace ?? (entityIntent ? "research" : "study");
-  const activeWorkspaceKey = activeWorkspace === "study"
-    ? "study"
-    : `research:${workspaceTabId ?? entityIntent?.id ?? "active"}`;
-  const workspaceScrollPositionsRef = useRef<Map<string, number>>(new Map([["study", 0]]));
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const tabScrollPositionsRef = useRef<Record<MarginTab, number>>({
-    overview: 0,
-    passage: 0,
-    connections: 0,
-    notes: 0,
-  });
+  const isPinned = !!pinnedRange;
+  const isNear = !isPinned && nearVerse != null;
+  const connectionInspectorOpen = connectionInspector != null;
+  const suppressRestoredScrollRef = useRef(false);
+  const connectionInspectorOpenRef = useRef(false);
+  connectionInspectorOpenRef.current = connectionInspector != null;
+  const controlledScrollTop = activeWorkspace === "research"
+    ? researchScrollTop
+    : marginSession.scrollTopByTab[activeTab] ?? 0;
+  const scrollScope: MarginScrollScope = activeWorkspace === "research"
+    ? { kind: "research", entityId: entityIntent?.id ?? "unavailable" }
+    : connectionInspectorOpen
+      ? { kind: "connection", connectionId: selectedAuthoredConnectionId ?? "active" }
+      : isPinned
+        ? { kind: "selection", start: pinnedRange.start, end: pinnedRange.end }
+        : isNear && ambientKept
+          ? { kind: "kept", verse: nearVerse }
+          : isNear
+            ? { kind: "following", verse: nearVerse }
+            : { kind: "chapter" };
+  const scrollRestoreContext: MarginScrollRestoreContext = {
+    ownerTabId: sessionOwnerTabId,
+    sessionRestoreNonce,
+    workspace: activeWorkspace,
+    activeTab,
+    book,
+    chapter,
+    scope: scrollScope,
+  };
+  const scrollRestoreKey = marginScrollRestoreKey(scrollRestoreContext);
+  const controlledScrollTopRef = useRef(controlledScrollTop);
+  controlledScrollTopRef.current = controlledScrollTop;
+  const scrollPublicationContextRef = useRef(scrollRestoreContext);
+  scrollPublicationContextRef.current = scrollRestoreContext;
+  const lastRestoredScrollContextRef = useRef<MarginScrollRestoreContext | null>(null);
+  const pendingScrollPublicationRef = useRef<{
+    context: MarginScrollRestoreContext;
+    top: number;
+  } | null>(null);
+  const scrollPublishTimerRef = useRef<number | null>(null);
+  const restoredScrollFrameRef = useRef<number | null>(null);
+  const onMarginSessionChangeRef = useRef(onMarginSessionChange);
+  onMarginSessionChangeRef.current = onMarginSessionChange;
+  const onResearchScrollTopChangeRef = useRef(onResearchScrollTopChange);
+  onResearchScrollTopChangeRef.current = onResearchScrollTopChange;
+
+  const clearScrollPublishTimer = (): void => {
+    if (scrollPublishTimerRef.current == null) return;
+    window.clearTimeout(scrollPublishTimerRef.current);
+    scrollPublishTimerRef.current = null;
+  };
+
+  const publishScrollSample = (sample: {
+    context: MarginScrollRestoreContext;
+    top: number;
+  }): void => {
+    const current = scrollPublicationContextRef.current;
+    // Owner/restore generation are the write authority. An old timer may keep
+    // running after a workspace switch, but it may never touch the new tab or
+    // overwrite a Back/Forward snapshot. A prior lens in the same generation
+    // is allowed so its exact exit offset can be flushed before restoration.
+    if (sample.context.ownerTabId !== current.ownerTabId
+      || sample.context.sessionRestoreNonce !== current.sessionRestoreNonce
+      || sample.context.workspace !== current.workspace) return;
+    if (sample.context.workspace === "research") {
+      onResearchScrollTopChangeRef.current?.(sample.context.ownerTabId, sample.top);
+      return;
+    }
+    onMarginSessionChangeRef.current(sample.context.ownerTabId, (margin) => ({
+      ...margin,
+      scrollTopByTab: {
+        ...margin.scrollTopByTab,
+        [sample.context.activeTab]: sample.top,
+      },
+    }));
+  };
+
+  const flushWorkspaceScrollPublication = (captureCurrent = false): void => {
+    clearScrollPublishTimer();
+    let sample = pendingScrollPublicationRef.current;
+    pendingScrollPublicationRef.current = null;
+    const margin = marginRef.current;
+    if (captureCurrent && margin && !connectionInspectorOpenRef.current) {
+      sample = {
+        context: scrollPublicationContextRef.current,
+        top: margin.scrollTop,
+      };
+    }
+    if (sample) publishScrollSample(sample);
+  };
+  const flushWorkspaceScrollPublicationRef = useRef(flushWorkspaceScrollPublication);
+  flushWorkspaceScrollPublicationRef.current = flushWorkspaceScrollPublication;
+  const scrollController = useMemo<LivingMarginScrollController>(() => ({
+    ownerTabId: sessionOwnerTabId,
+    flushPendingScroll: () => flushWorkspaceScrollPublicationRef.current(true),
+  }), [sessionOwnerTabId]);
+
+  useEffect(() => {
+    onScrollControllerChange?.(sessionOwnerTabId, scrollController);
+    return () => onScrollControllerChange?.(sessionOwnerTabId, null);
+  }, [onScrollControllerChange, scrollController, sessionOwnerTabId]);
+
+  const scheduleWorkspaceScrollPublication = (): void => {
+    const margin = marginRef.current;
+    if (!margin || suppressRestoredScrollRef.current || connectionInspectorOpenRef.current) return;
+    pendingScrollPublicationRef.current = {
+      context: scrollPublicationContextRef.current,
+      top: margin.scrollTop,
+    };
+    clearScrollPublishTimer();
+    scrollPublishTimerRef.current = window.setTimeout(() => {
+      scrollPublishTimerRef.current = null;
+      const sample = pendingScrollPublicationRef.current;
+      pendingScrollPublicationRef.current = null;
+      if (sample) publishScrollSample(sample);
+    }, MARGIN_SCROLL_PUBLISH_DELAY_MS);
+  };
 
   useLayoutEffect(() => {
-    if (!marginRef.current) return;
-    marginRef.current.scrollTop = workspaceScrollPositionsRef.current.get(activeWorkspaceKey) ?? 0;
-  }, [activeWorkspaceKey]);
+    const margin = marginRef.current;
+    if (!margin) return;
+    const previous = lastRestoredScrollContextRef.current;
+    const restoration = resolveMarginScrollRestoration(
+      previous,
+      scrollRestoreContext,
+      controlledScrollTopRef.current,
+    );
 
-  const rememberWorkspaceScroll = (): void => {
-    if (!marginRef.current) return;
-    workspaceScrollPositionsRef.current.set(activeWorkspaceKey, marginRef.current.scrollTop);
+    // A lens/subject boundary owns the exact DOM offset that existed before
+    // the controlled restore. Restore generations deliberately reject this
+    // sample so delayed work cannot overwrite a history/owner snapshot.
+    if (previous && previous.scope.kind !== "connection") {
+      clearScrollPublishTimer();
+      pendingScrollPublicationRef.current = null;
+      publishScrollSample({ context: previous, top: margin.scrollTop });
+    }
+    lastRestoredScrollContextRef.current = scrollRestoreContext;
+    if (!restoration) return;
+
+    suppressRestoredScrollRef.current = true;
+    margin.scrollTop = restoration.top;
+    if (restoration.publish) {
+      publishScrollSample({ context: scrollRestoreContext, top: restoration.top });
+    }
+    if (restoredScrollFrameRef.current != null) {
+      window.cancelAnimationFrame(restoredScrollFrameRef.current);
+    }
+    restoredScrollFrameRef.current = window.requestAnimationFrame(() => {
+      restoredScrollFrameRef.current = null;
+      suppressRestoredScrollRef.current = false;
+    });
+  // scrollRestoreKey deliberately excludes controlledScrollTop. Native scroll
+  // publications update that value without turning into programmatic writes.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scrollRestoreKey]);
+
+  useEffect(() => () => {
+    // A keyed owner replacement normally reaches this sample through App's
+    // synchronous transition preflight. Keep unmount as a final owner-tagged
+    // handoff so conditional margin removal cannot silently discard it.
+    flushWorkspaceScrollPublicationRef.current();
+    if (scrollPublishTimerRef.current != null) {
+      window.clearTimeout(scrollPublishTimerRef.current);
+      scrollPublishTimerRef.current = null;
+    }
+    if (restoredScrollFrameRef.current != null) {
+      window.cancelAnimationFrame(restoredScrollFrameRef.current);
+      restoredScrollFrameRef.current = null;
+    }
+    pendingScrollPublicationRef.current = null;
+  }, []);
+
+  useEffect(() => {
+    const flushOnWindowBlur = (): void => {
+      flushWorkspaceScrollPublicationRef.current(true);
+    };
+    window.addEventListener("blur", flushOnWindowBlur);
+    return () => window.removeEventListener("blur", flushOnWindowBlur);
+  }, []);
+
+  const handleMarginPointerLeave = (): void => {
+    flushWorkspaceScrollPublication(true);
+    onMarginActiveChange?.(false);
+  };
+  const handleMarginBlur = (): void => {
+    flushWorkspaceScrollPublication(true);
   };
 
   // Session-only cache of AI insight results for the pinned range, keyed by
@@ -1629,11 +1898,8 @@ export function LivingMargin({
     semanticData.suggestedCrossRefs.length > 0
   );
 
-  const isPinned = !!pinnedRange;
-  const isNear = !isPinned && nearVerse != null;
   const subjectVerseStart = pinnedRange?.start ?? nearVerse ?? 1;
   const subjectVerseEnd = pinnedRange?.end ?? nearVerse ?? Number.MAX_SAFE_INTEGER;
-  const connectionInspectorOpen = connectionInspector != null;
   // The connections strip belongs to the margin's subject: in kept mode the
   // panel studies a different passage than the canvas, and only relationships
   // anchored to that subject belong under its header.
@@ -1653,13 +1919,6 @@ export function LivingMargin({
   const versePeek = useVersePeek(packageId, onKeepReference);
   // Compact (≤760px) layouts can give the Study pane a second, roomier size.
   const [compactExpanded, setCompactExpanded] = useState(false);
-
-  useEffect(() => {
-    if (!pinnedRange) return;
-    setWordsVerse((current) => (
-      current >= pinnedRange.start && current <= pinnedRange.end ? current : pinnedRange.start
-    ));
-  }, [pinnedRange?.start, pinnedRange?.end]);
 
   // The same canonical passage can contain materially different wording in
   // WEB and KJV. Cache passage-text analysis independently so switching
@@ -1866,7 +2125,7 @@ export function LivingMargin({
       if (cancelled) return;
       if (result.ok && result.value) {
         setEntityResearch(result.value);
-        onEntityTrailChange?.((current) => appendEntityResearchTrail(current, {
+        onEntityTrailChange?.(sessionOwnerTabId, (current) => appendEntityResearchTrail(current, {
           id: result.value!.entity.id,
           displayName: result.value!.entity.displayName,
           kind: result.value!.entity.kind,
@@ -1878,7 +2137,7 @@ export function LivingMargin({
       setEntityResearchLoading(false);
     });
     return () => { cancelled = true; };
-  }, [entityIntent, onEntityTrailChange]);
+  }, [entityIntent, onEntityTrailChange, sessionOwnerTabId]);
 
   const openRelatedEntity = (entityId: string): void => {
     if (!onOpenEntity || !entityResearch || entityResearch.entity.id === entityId) return;
@@ -1911,10 +2170,21 @@ export function LivingMargin({
   );
 
   useEffect(() => {
+    if (entityResearchFocusRequest == null) return;
     if (activeWorkspace !== "research" || !entityIntent || entityResearch?.entity.id !== entityIntent.id) return;
-    const frame = window.requestAnimationFrame(() => researchTitleRef.current?.focus());
+    const frame = window.requestAnimationFrame(() => {
+      researchTitleRef.current?.focus({ preventScroll: true });
+      onEntityResearchFocusRequestHandled?.(sessionOwnerTabId, entityResearchFocusRequest);
+    });
     return () => window.cancelAnimationFrame(frame);
-  }, [activeWorkspace, entityIntent, entityResearch]);
+  }, [
+    activeWorkspace,
+    entityIntent,
+    entityResearch,
+    entityResearchFocusRequest,
+    onEntityResearchFocusRequestHandled,
+    sessionOwnerTabId,
+  ]);
 
   useEffect(() => {
     if (activeWorkspace !== "research" || !entityIntent || !onCloseEntity) return;
@@ -1951,35 +2221,6 @@ export function LivingMargin({
     };
   }, [activeTab, isPinned, marginData.notes.length]);
 
-  // Reset scroll only when the panel's subject actually changes: a different
-  // book/chapter, a deliberate pin, or a scope-kind transition. Verse-to-verse
-  // drift inside one chapter keeps the reader's place in long lists.
-  const scopeResetKey = connectionInspectorOpen
-    ? `connection:${book}:${chapter}`
-    : isPinned
-      ? `pinned:${book}:${chapter}:${pinnedRange.start}-${pinnedRange.end}`
-      : isNear
-        ? `near:${book}:${chapter}`
-        : `chapter:${book}:${chapter}`;
-  useEffect(() => {
-    tabScrollPositionsRef.current = { overview: 0, passage: 0, connections: 0, notes: 0 };
-    marginRef.current?.scrollTo({ top: 0 });
-  }, [scopeResetKey]);
-
-  const connectionInspectorWasOpenRef = useRef(false);
-  const connectionInspectorReturnScrollRef = useRef(0);
-  useEffect(() => {
-    const margin = marginRef.current;
-    if (!margin || connectionInspectorWasOpenRef.current === connectionInspectorOpen) return;
-    if (connectionInspectorOpen) {
-      connectionInspectorReturnScrollRef.current = margin.scrollTop;
-      margin.scrollTo({ top: 0 });
-    } else {
-      margin.scrollTo({ top: connectionInspectorReturnScrollRef.current });
-    }
-    connectionInspectorWasOpenRef.current = connectionInspectorOpen;
-  }, [connectionInspectorOpen]);
-
   const lastConnectionInspectorFocusRequestRef = useRef(connectionInspectorFocusRequest);
   useEffect(() => {
     if (lastConnectionInspectorFocusRequestRef.current === connectionInspectorFocusRequest) return;
@@ -1995,11 +2236,8 @@ export function LivingMargin({
   const activateTab = (tab: MarginTab, focus = false): void => {
     if (tab === activeTab) return;
     versePeek.close();
-    if (marginRef.current) tabScrollPositionsRef.current[activeTab] = marginRef.current.scrollTop;
+    flushWorkspaceScrollPublication(true);
     setActiveTab(tab);
-    window.requestAnimationFrame(() => {
-      marginRef.current?.scrollTo({ top: tabScrollPositionsRef.current[tab] });
-    });
     if (focus) {
       const index = MARGIN_TABS.findIndex((item) => item.id === tab);
       window.setTimeout(() => tabRefs.current[index]?.focus(), 0);
@@ -2108,9 +2346,10 @@ export function LivingMargin({
         className="living-margin entity-research-margin"
         aria-label="Entity research"
         data-margin-mode="research"
-        onScroll={rememberWorkspaceScroll}
+        onScroll={scheduleWorkspaceScrollPublication}
         onPointerEnter={() => onMarginActiveChange?.(true)}
-        onPointerLeave={() => onMarginActiveChange?.(false)}
+        onPointerLeave={handleMarginPointerLeave}
+        onBlur={handleMarginBlur}
       >
         <div
           id="margin-research-workspace"
@@ -2215,9 +2454,10 @@ export function LivingMargin({
       aria-labelledby="living-margin-title"
       data-margin-mode={marginMode}
       data-compact-expanded={compactExpanded || undefined}
-      onScroll={rememberWorkspaceScroll}
+      onScroll={scheduleWorkspaceScrollPublication}
       onPointerEnter={() => onMarginActiveChange?.(true)}
-      onPointerLeave={() => onMarginActiveChange?.(false)}
+      onPointerLeave={handleMarginPointerLeave}
+      onBlur={handleMarginBlur}
     >
       <div
         id="margin-study-workspace"
@@ -2492,6 +2732,8 @@ export function LivingMargin({
           >
             {nearVerse != null && (
               <LanguageWordsSection
+                key={`${sessionOwnerTabId}:${book}:${chapter}:${packageId}:ambient`}
+                sessionOwnerTabId={sessionOwnerTabId}
                 book={book}
                 bookDisplayName={displayBook}
                 bookNames={bookNames}
@@ -2499,6 +2741,11 @@ export function LivingMargin({
                 verse={nearVerse}
                 readingPackageId={packageId}
                 freezeOnEngage
+                wordsVerse={marginSession.wordsVerse}
+                wordsFollowingReading={marginSession.wordsFollowingReading}
+                onWordsStateChange={(ownerTabId, next) => {
+                  onMarginSessionChange(ownerTabId, (current) => ({ ...current, ...next }));
+                }}
                 onStudyEngage={onStudyVerse}
                 onCapture={onCapture}
               />
@@ -2639,7 +2886,7 @@ export function LivingMargin({
                   if (event.key === "End") next = pinnedRange.end;
                   if (next == null || next === wordsVerse || verseCount <= 1) return;
                   event.preventDefault();
-                  setWordsVerse(next);
+                  setWordsState({ wordsVerse: next, wordsFollowingReading: false });
                   window.setTimeout(() => {
                     group.querySelector<HTMLButtonElement>(`[data-words-verse="${next}"]`)?.focus();
                   }, 0);
@@ -2658,7 +2905,7 @@ export function LivingMargin({
                     aria-checked={wordsVerse === verse}
                     data-words-verse={verse}
                     tabIndex={wordsVerse === verse ? 0 : -1}
-                    onClick={() => setWordsVerse(verse)}
+                    onClick={() => setWordsState({ wordsVerse: verse, wordsFollowingReading: false })}
                   >
                     {verse}
                   </button>
@@ -2667,12 +2914,19 @@ export function LivingMargin({
             </div>
           )}
           <LanguageWordsSection
+            key={`${sessionOwnerTabId}:${book}:${chapter}:${packageId}:selected`}
+            sessionOwnerTabId={sessionOwnerTabId}
             book={book}
             bookDisplayName={displayBook}
             bookNames={bookNames}
             chapter={chapter}
             verse={wordsVerse}
             readingPackageId={packageId}
+            wordsVerse={wordsVerse}
+            wordsFollowingReading={marginSession.wordsFollowingReading}
+            onWordsStateChange={(ownerTabId, next) => {
+              onMarginSessionChange(ownerTabId, (current) => ({ ...current, ...next }));
+            }}
             onStudyEngage={onStudyVerse}
             onCapture={onCapture}
           />

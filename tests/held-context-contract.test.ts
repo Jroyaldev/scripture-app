@@ -21,6 +21,7 @@ const margin = read("src/renderer/components/LivingMargin.tsx");
 const peek = read("src/renderer/components/VersePeek.tsx");
 const main = read("src/electron/main.ts");
 const api = read("src/renderer/api.ts");
+const settingsBoundary = read("src/electron/study-workspace-settings.ts");
 const css = read("src/renderer/styles.css");
 
 const base = {
@@ -121,7 +122,8 @@ test("history and validated settings preserve at most one kept subject", () => {
   assert.deepEqual(backNavigationHistory({ back: [keptEntry], forward: [] }, current).target, keptEntry);
   assert.match(page, /return keptContext \? \{ kind: "kept", \.\.\.keptContext \} : null/);
   assert.match(page, /restoredScope\?\.kind === "kept"[\s\S]{0,360}?book: restoredScope\.book[\s\S]{0,160}?chapter: restoredScope\.chapter[\s\S]{0,160}?verse: restoredScope\.verse/);
-  assert.match(api, /keptContext\?: \{[\s\S]{0,220}?book: string;[\s\S]{0,160}?verse: number;/);
-  assert.match(main, /function normalizeKeptContext\(value: unknown\)/);
-  assert.match(main, /hasKeptContext \? partial\.keptContext : store\.store\.keptContext/);
+  assert.doesNotMatch(api, /keptContext\?:/);
+  assert.match(settingsBoundary, /if \(scope\["kind"\] !== "kept"\) return undefined/);
+  assert.match(settingsBoundary, /kind: "kept",[\s\S]{0,180}?book,[\s\S]{0,180}?chapter,[\s\S]{0,180}?verse/);
+  assert.match(main, /bootstrapStudyWorkspaceSetting/);
 });

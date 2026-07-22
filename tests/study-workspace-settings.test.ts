@@ -5,9 +5,10 @@ import {
   mergeStudyWorkspaceSetting,
   migrateLegacyStudyWorkspace,
   normalizeStudyWorkspace,
+  type PersistedPassageViewState,
 } from "../src/electron/study-workspace-settings.js";
 
-function view(book = "ACT", chapter = 19, packageId = "bsb") {
+function view(book = "ACT", chapter = 19, packageId = "bsb"): PersistedPassageViewState {
   return {
     book,
     chapter,
@@ -103,6 +104,105 @@ test("a minimal V2 workspace is reconstructed without unknown fields", () => {
   const result = normalizeStudyWorkspace({ ...input, query: "private search" });
   assert.deepEqual(result, { ok: true, value: workspace() });
   assert.doesNotMatch(JSON.stringify(result), /noteBody|private search|query/);
+});
+
+test("multi-verse selection pieces retain independent open endpoints", () => {
+  const input = workspace();
+  input.tabsById.home.session.current.selection = {
+    packageId: "bsb",
+    pieces: [
+      { verse: 2, charStart: 7, charEnd: null },
+      { verse: 3, charStart: null, charEnd: null },
+      { verse: 4, charStart: null, charEnd: 11 },
+    ],
+  };
+
+  const result = normalizeStudyWorkspace(input);
+  assert.equal(result.ok, true);
+  if (!result.ok || !result.value) return;
+  const home = result.value.tabsById.home;
+  assert.equal(home?.kind, "passage");
+  if (home?.kind !== "passage") return;
+  assert.deepEqual(home.session.current.selection, input.tabsById.home.session.current.selection);
+});
+
+test("selection pieces still reject a reversed pair of concrete offsets", () => {
+  const input = workspace();
+  input.tabsById.home.session.current.selection = {
+    packageId: "bsb",
+    pieces: [{ verse: 2, charStart: 12, charEnd: 4 }],
+  };
+  assert.deepEqual(normalizeStudyWorkspace(input), { ok: false, reason: "invalid" });
+});
+
+test("duplicate same-chapter tabs round-trip independent canvas and margin state", () => {
+  const ownerA: PersistedPassageViewState = {
+    ...view(),
+    scrollTop: 180,
+    selection: {
+      packageId: "bsb",
+      pieces: [{ verse: 3, charStart: 0, charEnd: 7 }],
+    },
+    margin: {
+      activeTab: "connections",
+      scope: { kind: "selection", start: 3, end: 3 },
+      scrollTopByTab: { connections: 75 },
+      wordsVerse: 3,
+      wordsFollowingReading: false,
+    },
+  };
+  const ownerB: PersistedPassageViewState = {
+    ...view(),
+    scrollTop: 940,
+    selection: {
+      packageId: "bsb",
+      pieces: [
+        { verse: 5, charStart: 12, charEnd: null },
+        { verse: 6, charStart: null, charEnd: 11 },
+      ],
+    },
+    margin: {
+      activeTab: "passage",
+      scope: { kind: "selection", start: 5, end: 6 },
+      scrollTopByTab: { overview: 22, passage: 315 },
+      wordsVerse: 6,
+      wordsFollowingReading: false,
+    },
+  };
+  const input = {
+    version: 2,
+    groups: [{
+      id: "group-1",
+      homePassageTabId: "acts-a",
+      tabIds: ["acts-a", "acts-b"],
+      lastActiveTabId: "acts-b",
+      collapsed: false,
+      label: { kind: "custom", value: "Acts study" },
+    }],
+    tabsById: {
+      "acts-a": {
+        kind: "passage",
+        id: "acts-a",
+        groupId: "group-1",
+        session: { current: ownerA, history: { back: [view("ACT", 18)], forward: [] } },
+      },
+      "acts-b": {
+        kind: "passage",
+        id: "acts-b",
+        groupId: "group-1",
+        session: { current: ownerB, history: { back: [], forward: [view("ACT", 20)] } },
+      },
+    },
+    activeTabId: "acts-b",
+    activationOrder: ["acts-a", "acts-b"],
+    recentlyClosed: [],
+  };
+
+  const result = normalizeStudyWorkspace(input);
+  assert.equal(result.ok, true);
+  if (!result.ok || !result.value) return;
+  assert.deepEqual(result.value.tabsById["acts-a"], input.tabsById["acts-a"]);
+  assert.deepEqual(result.value.tabsById["acts-b"], input.tabsById["acts-b"]);
 });
 
 test("group membership is canonical and entity research state is preserved", () => {

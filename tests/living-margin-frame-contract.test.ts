@@ -40,8 +40,8 @@ test("authored connection inspection is a contextual margin view, not a replacem
 test("Overview is the quiet default, with stable keyboard deep-dive tabs over the current scope", () => {
   assert.match(margin, /type MarginTab = "overview" \| "connections" \| "passage" \| "notes"/);
   assert.match(margin, /const MARGIN_TABS[\s\S]*\{ id: "overview", label: "Overview"[\s\S]*\{ id: "connections", label: "Related"/);
-  assert.match(margin, /useState<MarginTab>\(controlledActiveTab \?\? "overview"\)/);
-  assert.match(margin, /const activeTab = controlledActiveTab \?\? internalActiveTab/);
+  assert.match(margin, /const activeTab = marginSession\.activeTab/);
+  assert.doesNotMatch(margin, /internalActiveTab|controlledActiveTab/);
   assert.match(margin, /role="tablist" aria-label="Study views" aria-orientation="horizontal"/);
   assert.match(margin, /aria-selected=\{selected\}/);
   assert.match(margin, /aria-controls=\{`margin-\$\{tab\.id\}-panel`\}/);
@@ -56,7 +56,8 @@ test("Overview is the quiet default, with stable keyboard deep-dive tabs over th
   assert.match(margin, /hidden=\{activeTab !== "passage"\}/);
   assert.match(margin, /hidden=\{activeTab !== "connections"\}/);
   assert.match(margin, /hidden=\{activeTab !== "notes"\}/);
-  assert.match(margin, /tabScrollPositionsRef/);
+  assert.doesNotMatch(margin, /tabScrollPositionsRef|workspaceScrollPositionsRef/);
+  assert.match(margin, /marginSession\.scrollTopByTab\[activeTab\]/);
   assert.match(margin, /if \(event\.key !== "Tab"\) return/);
   const globalLensHandler = margin.slice(
     margin.indexOf("const cycleStudyLens"),
@@ -99,7 +100,7 @@ test("reference navigation brings the selected verse to the reading eye-line aft
   assert.match(page, /interface ReferenceViewportTarget/);
   assert.match(page, /loadedChapterKeyRef\.current = loadKey/);
   assert.match(page, /setReferenceViewportTarget\(verse == null/);
-  assert.match(page, /if \(loadedChapterKeyRef\.current !== `\$\{packageId\}:\$\{book\}:\$\{chapter\}`\) return/);
+  assert.match(page, /if \(loadedChapterKeyRef\.current !== `\$\{sessionOwnerTabId\}:\$\{packageId\}:\$\{book\}:\$\{chapter\}`\) return/);
   assert.match(page, /const readingEyeLine = rootRect\.height \* 0\.28/);
   assert.match(page, /root\.scrollTop = Math\.max\(0, root\.scrollTop \+ rowRect\.top - rootRect\.top - readingEyeLine\)/);
   assert.match(page, /Focus[\s\S]*stays on the invoking reference in the Living Margin/);

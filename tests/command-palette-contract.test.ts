@@ -159,7 +159,9 @@ test("palette Scripture navigation has one App approval and no later canvas veto
     page.indexOf("const goTo = useCallback"),
     page.indexOf("const navigateBack"),
   );
-  assert.match(goTo, /if \(opts\?\.preapproved\) \{\s*performNavigation\(\);\s*return true;\s*\}/);
+  assert.match(goTo, /if \(opts\?\.preapproved\) \{\s*performNavigation\(\);\s*return navigationCommitted;\s*\}/);
+  assert.match(goTo, /if \(sessionOwnerTabIdRef\.current !== requestedOwnerTabId\) return;/,
+    "a preapproved request still fails closed if its original canvas owner is stale");
   assert.match(goTo, /!opts\?\.preapproved && !requireSafeConnectionNavigation\(\)/);
 });
 

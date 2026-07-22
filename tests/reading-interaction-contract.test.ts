@@ -119,7 +119,7 @@ test("Study scope cannot enter exact marking capture unless the marking surface 
   );
   const captureEffect = sourceBetween(
     page,
-    "useEffect(() => {\n    const contextKey = `${book}:${chapter}:${packageId}`;",
+    "useEffect(() => {\n    const contextKey = `${sessionOwnerTabId}:${book}:${chapter}:${packageId}`;",
     "  const markingSelection = useMemo",
   );
   const markingSelection = sourceBetween(
@@ -205,17 +205,13 @@ test("reading-canvas pointer activation keeps reading focus while authored-list 
   );
   assert.match(verseClick, /handleSelectConnection\(ordered\[0\]!\.connection\)/);
   assert.doesNotMatch(verseClick, /handleSelectConnection\(ordered\[0\]!\.connection, true\)/);
-  const pointerOpenEffect = sourceBetween(
-    margin,
-    "const connectionInspectorWasOpenRef",
-    "  const lastConnectionInspectorFocusRequestRef",
-  );
-  assert.doesNotMatch(pointerOpenEffect, /\.focus\(/);
   const requestedFocusEffect = sourceBetween(
     margin,
     "const lastConnectionInspectorFocusRequestRef",
     "  const activateTab",
   );
+  assert.match(requestedFocusEffect, /if \(lastConnectionInspectorFocusRequestRef\.current === connectionInspectorFocusRequest\) return;/,
+    "opening an inspector without an authored-list focus request must preserve reading focus");
   assert.match(requestedFocusEffect, /if \(!connectionInspectorOpen\) return;/);
   assert.match(requestedFocusEffect, /frameTitleRef\.current\?\.focus\(\{ preventScroll: true \}\)/);
 });
@@ -309,7 +305,8 @@ test("translation changes close point-anchored chooser state before prose reflow
     '  return (\n    <div className="scripture-page">',
   );
   assert.match(packageReset, /closeConnectionWordChooser\(false\)/);
-  assert.match(packageReset, /\[advanceSelectionGeneration, closeConnectionWordChooser, packageId\]/);
+  assert.match(packageReset, /\[[^\]]*closeConnectionWordChooser[^\]]*packageId[^\]]*sessionOwnerTabId[^\]]*\]/,
+    "package cleanup must rerun for the exact owner as well as the translation");
 });
 
 test("connection-card query refreshes preserve dirty fields and blank titles reset on blur", () => {

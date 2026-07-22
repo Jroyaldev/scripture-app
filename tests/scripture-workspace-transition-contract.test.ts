@@ -8,12 +8,14 @@ const app = readFileSync(resolve(import.meta.dirname, "../src/renderer/app.tsx")
 const lifecycle = readFileSync(resolve(import.meta.dirname, "../src/renderer/utils/connectionDraftLifecycle.ts"), "utf8");
 
 test("ScripturePage exposes one owner-correlated live canvas capture controller", () => {
-  assert.match(page, /export interface StudyCanvasCapture \{\s*ownerTabId: string;\s*entry: NavigationHistoryEntry;\s*\}/);
-  assert.match(page, /export interface StudyCanvasController \{\s*captureCurrent\(\): StudyCanvasCapture \| null;/);
-  assert.match(page, /canvasOwnerTabId: string \| null;/);
-  assert.match(page, /loadedChapterKeyRef\.current !== `\$\{packageId\}:\$\{book\}:\$\{chapter\}`\) return null;/);
-  assert.match(page, /return \{ ownerTabId, entry: captureNavigationEntry\(\) \};/);
+  assert.match(page, /export interface StudyCanvasCapture \{\s*ownerTabId: string;\s*entry: PassageViewState;\s*\}/);
+  assert.match(page, /export interface StudyCanvasController \{\s*flushPendingMarginScroll\(\): void;\s*captureCurrent\(\): StudyCanvasCapture \| null;/);
+  assert.match(page, /sessionOwnerTabId: string;/);
+  assert.match(page, /loadedChapterKeyRef\.current !== `\$\{sessionOwnerTabId\}:\$\{packageId\}:\$\{book\}:\$\{chapter\}`\) return null;/);
+  assert.match(page, /return \{ ownerTabId: sessionOwnerTabId, entry: captureNavigationEntry\(\) \};/);
+  assert.match(page, /restoredSessionOwnerTabId !== sessionOwnerTabId/);
   assert.match(page, /onStudyCanvasControllerChange\?\.\(studyCanvasController\)[\s\S]*onStudyCanvasControllerChange\?\.\(null\)/);
+  assert.match(page, /livingMarginScrollControllerRef\.current\?\.flushPendingScroll\(\)/);
 });
 
 test("App rejects stale canvas captures and updates the owner synchronously", () => {
@@ -21,23 +23,31 @@ test("App rejects stale canvas captures and updates the owner synchronously", ()
     app.indexOf("const captureCurrentStudyWorkspace"),
     app.indexOf("const runWorkspaceTransition"),
   );
+  const flushPendingMargin = capture.indexOf("controller.flushPendingMarginScroll()");
+  const readFlushedWorkspace = capture.indexOf("const current = studyWorkspaceRef.current", flushPendingMargin);
+  const captureCanvas = capture.indexOf("controller.captureCurrent()", readFlushedWorkspace);
+  assert.ok(flushPendingMargin >= 0);
+  assert.ok(
+    readFlushedWorkspace > flushPendingMargin && captureCanvas > readFlushedWorkspace,
+    "App must synchronously flush the margin before reading and capturing the structural-transition snapshot",
+  );
   assert.match(capture, /captured\.ownerTabId !== canvasOwnerTabIdRef\.current/);
   assert.match(capture, /captured\.ownerTabId !== ownerId/);
-  assert.match(capture, /updateStudyCanvasSession\(current, captured\.ownerTabId/);
-  assert.match(capture, /\.\.\.captured\.entry/);
+  assert.match(capture, /updateActiveStudyCanvasSession\(current, captured\.ownerTabId/);
+  assert.match(capture, /current: captured\.entry/);
 
   const commit = app.slice(
     app.indexOf("const commitStudyWorkspace"),
     app.indexOf("const loadData"),
   );
-  assert.match(commit, /canvasOwnerTabIdRef\.current = next \? studyCanvasOwnerPassageTabId\(next\) : null;[\s\S]{0,100}studyWorkspaceRef\.current = next;/);
+  assert.match(commit, /canvasOwnerTabIdRef\.current = next\?\.activeTabId \?\? null;[\s\S]{0,100}studyWorkspaceRef\.current = next;/);
 
   const hydration = app.slice(
     app.indexOf("safeCall(() => window.api.settings.get())"),
     app.indexOf("settingsLoaded.current = true"),
   );
-  assert.match(hydration, /canvasOwnerTabIdRef\.current = loadedWorkspace \? studyCanvasOwnerPassageTabId\(loadedWorkspace\) : null;/);
-  assert.match(app, /canvasOwnerTabId=\{studyWorkspace \? studyCanvasOwnerPassageTabId\(studyWorkspace\) : null\}/);
+  assert.match(hydration, /canvasOwnerTabIdRef\.current = resolvedWorkspace\.activeTabId/);
+  assert.match(app, /sessionOwnerTabId=\{activeWorkspaceTab\.id\}/);
 });
 
 test("ScripturePage preflights mutations then asks authored owners in fixed order", () => {
@@ -60,7 +70,8 @@ test("canvas navigation delegates one structural commit to App", () => {
   assert.doesNotMatch(page, /onRequestWorkspaceTransition\?: \(/);
   assert.match(transition, /return await onRequestWorkspaceTransition\(reason, commit\);/);
   assert.doesNotMatch(transition, /workspaceExitController\.requestExit/);
-  assert.match(page, /return requestWorkspaceTransition\(\s*changesTranslation \? "translation-change" : "chapter-change",\s*performNavigation/);
+  assert.match(page, /const approved = await requestWorkspaceTransition\(\s*changesTranslation \? "translation-change" : "chapter-change",\s*performNavigation[\s\S]{0,80}return approved && navigationCommitted;/,
+    "App owns the one transition commit and Scripture reports success only when that owner-correlated commit ran");
   assert.match(page, /historyMode: "traverse",\s*history: move\.history/);
   assert.match(page, /goTo\(r\.book, r\.chapter, r\.verse, \{\s*packageId: r\.packageId,[\s\S]*if \(proceed\) closePassagePopover\(\)/);
 });
@@ -86,7 +97,7 @@ test("research attention waits for tab approval before chooser and focus mutatio
   const held = handler.indexOf("replaceHeldConnectionIds");
   assert.ok(approval >= 0 && held > approval);
   assert.doesNotMatch(handler, /onCloseEntity\?\./);
-  assert.match(page, /onToggleGroup=\{\(groupKey, collapsing\) =>/);
+  assert.match(page, /onToggleGroup=\{\(groupId, collapsing\) =>/);
 });
 
 test("marking draft reasons cover every structural workspace exit", () => {

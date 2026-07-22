@@ -95,7 +95,7 @@ test("valid V2 is authoritative while a missing or invalid key migrates and clea
   assert.equal(retainedNull.write?.studyWorkspace, null);
 });
 
-test("App establishes V2 authority only after refusal and projects it into transitional rendering", () => {
+test("App establishes V2 authority only after refusal and renders active V2 sessions directly", () => {
   const app = read("src/renderer/app.tsx");
   const api = read("src/renderer/api.ts");
   const hydration = app.slice(
@@ -110,7 +110,9 @@ test("App establishes V2 authority only after refusal and projects it into trans
   assert.equal(app.indexOf("useState<ResearchWorkspaceState>"), -1);
   assert.equal(app.indexOf("setResearchWorkspace"), -1);
   assert.doesNotMatch(app, /createResearchWorkspaceState/);
-  assert.match(app, /projectStudyWorkspaceCompatibility\(studyWorkspace\)/);
+  assert.doesNotMatch(app, /projectStudyWorkspaceCompatibility/);
+  assert.match(app, /activeStudyWorkspaceSession\(studyWorkspace\)/);
+  assert.match(app, /studyWorkspace=\{studyWorkspace\}/);
   assert.match(app, /workspacePersistenceRef\.current\.persistStructure/);
   assert.match(hydration, /const persisted = await window\.api\.settings\.set\(\{ studyWorkspace: workspace \}\)/);
   assert.match(hydration, /if \(persisted\.studyWorkspaceRefusal\) throw new Error/);
