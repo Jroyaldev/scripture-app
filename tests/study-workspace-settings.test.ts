@@ -69,6 +69,22 @@ function workspace() {
   };
 }
 
+function inaccessibleArray<T>(length = 1_000_000): {
+  value: T[];
+  elementAccesses(): number;
+} {
+  let elementAccesses = 0;
+  const target = new Array<T>(length);
+  const value = new Proxy(target, {
+    get(array, property, receiver) {
+      if (property === "length") return Reflect.get(array, property, receiver);
+      elementAccesses += 1;
+      throw new Error(`unexpected oversized-array access: ${String(property)}`);
+    },
+  });
+  return { value, elementAccesses: () => elementAccesses };
+}
+
 test("null is handled by merge/bootstrap rather than V2 structural validation", () => {
   assert.deepEqual(normalizeStudyWorkspace(null), { ok: false, reason: "invalid" });
 });
@@ -311,6 +327,84 @@ test("a single oversized group reserves one tab slot for its home passage", () =
   assert.equal(Object.keys(result.value.tabsById).length, 64);
   assert.equal(result.value.tabsById[entityTabIds[63]!], undefined);
   assert.equal(result.value.activeTabId, "home");
+});
+
+test("million-entry workspace index arrays are rejected from length alone", () => {
+  const rawGroups = inaccessibleArray<ReturnType<typeof workspace>["groups"][number]>();
+  const groupsInput = workspace();
+  groupsInput.groups = rawGroups.value;
+  let groupsResult: ReturnType<typeof normalizeStudyWorkspace> | undefined;
+  assert.doesNotThrow(() => {
+    groupsResult = normalizeStudyWorkspace(groupsInput);
+  });
+  assert.deepEqual(groupsResult, { ok: false, reason: "invalid" });
+  assert.equal(rawGroups.elementAccesses(), 0);
+
+  const rawTabIds = inaccessibleArray<string>();
+  const tabIdsInput = workspace();
+  tabIdsInput.groups[0]!.tabIds = rawTabIds.value;
+  let tabIdsResult: ReturnType<typeof normalizeStudyWorkspace> | undefined;
+  assert.doesNotThrow(() => {
+    tabIdsResult = normalizeStudyWorkspace(tabIdsInput);
+  });
+  assert.deepEqual(tabIdsResult, { ok: false, reason: "invalid" });
+  assert.equal(rawTabIds.elementAccesses(), 0);
+
+  const rawActivationOrder = inaccessibleArray<string>();
+  const activationInput = workspace();
+  activationInput.activationOrder = rawActivationOrder.value;
+  let activationResult: ReturnType<typeof normalizeStudyWorkspace> | undefined;
+  assert.doesNotThrow(() => {
+    activationResult = normalizeStudyWorkspace(activationInput);
+  });
+  assert.deepEqual(activationResult, { ok: false, reason: "invalid" });
+  assert.equal(rawActivationOrder.elementAccesses(), 0);
+});
+
+test("oversized selection and legacy workspace arrays are rejected before element access", () => {
+  const rawPieces = inaccessibleArray<{
+    verse: number;
+    charStart: number | null;
+    charEnd: number | null;
+  }>();
+  const selectionInput = workspace();
+  const current = selectionInput.tabsById.home.session.current as
+    typeof selectionInput.tabsById.home.session.current & {
+      selection?: { packageId: string; pieces: typeof rawPieces.value };
+    };
+  current.selection = { packageId: "bsb", pieces: rawPieces.value };
+  let selectionResult: ReturnType<typeof normalizeStudyWorkspace> | undefined;
+  assert.doesNotThrow(() => {
+    selectionResult = normalizeStudyWorkspace(selectionInput);
+  });
+  assert.deepEqual(selectionResult, { ok: false, reason: "invalid" });
+  assert.equal(rawPieces.elementAccesses(), 0);
+
+  const rawLegacyTabs = inaccessibleArray<unknown>();
+  assert.doesNotThrow(() => migrateLegacyStudyWorkspace({
+    researchWorkspace: {
+      tabs: rawLegacyTabs.value,
+      activeTabId: "scripture",
+      activationOrder: [],
+    },
+    researchSession: null,
+    lastRead: null,
+    keptContext: null,
+  }));
+  assert.equal(rawLegacyTabs.elementAccesses(), 0);
+
+  const rawLegacyActivation = inaccessibleArray<string>();
+  assert.doesNotThrow(() => migrateLegacyStudyWorkspace({
+    researchWorkspace: {
+      tabs: [],
+      activeTabId: "scripture",
+      activationOrder: rawLegacyActivation.value,
+    },
+    researchSession: null,
+    lastRead: null,
+    keptContext: null,
+  }));
+  assert.equal(rawLegacyActivation.elementAccesses(), 0);
 });
 
 test("history normalization keeps the nearest Forward entry over the farthest Back entry", () => {

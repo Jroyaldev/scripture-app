@@ -56,6 +56,7 @@ import {
 } from "./utils/studyWorkspace.js";
 import {
   createWorkspacePersistenceController,
+  decideStudyWorkspaceClose,
   isStudyWorkspaceSnapshotAcknowledged,
   projectStudyWorkspaceCompatibility,
   type WorkspacePersistenceController,
@@ -255,6 +256,7 @@ export function App(): React.JSX.Element {
   const [studyWorkspace, setStudyWorkspace] = useState<StudyWorkspaceStateV2 | null>();
   const studyWorkspaceRef = useRef<StudyWorkspaceStateV2 | null | undefined>(undefined);
   const workspacePersistenceRef = useRef<WorkspacePersistenceController | null>(null);
+  const studyWorkspaceRefusalRef = useRef<"newer-version" | null>(null);
   const workspaceCompatibility = useMemo(
     () => studyWorkspace === undefined
       ? null
@@ -412,6 +414,7 @@ export function App(): React.JSX.Element {
       if (res.ok && res.value.studyWorkspaceRefusal === "newer-version") {
         // INV-17: do not construct, migrate, or persist any workspace state
         // when the saved format is newer than this app understands.
+        studyWorkspaceRefusalRef.current = "newer-version";
         setStudyWorkspaceRefusal("newer-version");
         return;
       }
@@ -547,22 +550,27 @@ export function App(): React.JSX.Element {
           window.api.appWindow.resolveCloseRequest(false);
           return;
         }
-        const workspace = studyWorkspaceRef.current;
-        if (workspace === undefined) {
+        const workspaceClose = decideStudyWorkspaceClose(
+          studyWorkspaceRef.current,
+          studyWorkspaceRefusalRef.current,
+        );
+        if (workspaceClose.kind === "approve") {
+          window.api.appWindow.resolveCloseRequest(true);
+          return;
+        }
+        if (workspaceClose.kind === "veto") {
           window.api.appWindow.resolveCloseRequest(false);
           return;
         }
-        if (workspace) {
-          const persistence = workspacePersistenceRef.current;
-          if (!persistence) {
-            window.api.appWindow.resolveCloseRequest(false);
-            return;
-          }
-          const flushed = await persistence.flush(workspace);
-          if (!flushed) {
-            window.api.appWindow.resolveCloseRequest(false);
-            return;
-          }
+        const persistence = workspacePersistenceRef.current;
+        if (!persistence) {
+          window.api.appWindow.resolveCloseRequest(false);
+          return;
+        }
+        const flushed = await persistence.flush(workspaceClose.workspace);
+        if (!flushed) {
+          window.api.appWindow.resolveCloseRequest(false);
+          return;
         }
         window.api.appWindow.resolveCloseRequest(true);
       } catch {

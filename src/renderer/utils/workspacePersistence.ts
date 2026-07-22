@@ -126,6 +126,20 @@ export function isStudyWorkspaceSnapshotAcknowledged(
   return requestedCanonical !== null && requestedCanonical === canonicalJson(persisted);
 }
 
+export type StudyWorkspaceCloseDecision =
+  | { kind: "approve" }
+  | { kind: "veto" }
+  | { kind: "flush"; workspace: StudyWorkspaceStateV2 };
+
+export function decideStudyWorkspaceClose(
+  workspace: StudyWorkspaceStateV2 | null | undefined,
+  refusal: "newer-version" | null,
+): StudyWorkspaceCloseDecision {
+  if (refusal === "newer-version") return { kind: "approve" };
+  if (workspace === undefined) return { kind: "veto" };
+  return workspace ? { kind: "flush", workspace } : { kind: "approve" };
+}
+
 export interface WorkspacePersistenceController {
   publishView(state: StudyWorkspaceStateV2): void;
   persistStructure(state: StudyWorkspaceStateV2): Promise<boolean>;

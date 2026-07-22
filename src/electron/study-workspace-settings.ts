@@ -5,6 +5,15 @@ const HISTORY_LIMIT = 50;
 const TRAIL_LIMIT = 12;
 const RECENT_LIMIT = 10;
 
+// Raw inputs get repair headroom above their durable caps, while length checks
+// keep validation work independent of adversarial collection size. In
+// particular, 128 tab references preserve the 65th-tab home-passage repair.
+const RAW_GROUP_LIMIT = GROUP_LIMIT * 2;
+const RAW_TAB_REFERENCE_LIMIT = TAB_LIMIT * 2;
+// A continuous canonical-chapter selection needs at most one piece per verse;
+// 512 leaves ample format headroom while bounding nested validation work.
+const SELECTION_PIECE_LIMIT = 512;
+
 type PersistedMarginTab = "overview" | "connections" | "passage" | "notes";
 type PersistedEntityKind = "person" | "place" | "other";
 
@@ -241,7 +250,8 @@ function normalizePassageView(value: unknown): PersistedPassageViewState | null 
   if (Object.prototype.hasOwnProperty.call(source, "selection")) {
     const rawSelection = asRecord(source["selection"]);
     const selectionPackageId = rawSelection ? boundedString(rawSelection["packageId"]) : null;
-    if (!rawSelection || !selectionPackageId || !Array.isArray(rawSelection["pieces"])) return null;
+    if (!rawSelection || !selectionPackageId || !Array.isArray(rawSelection["pieces"])
+      || rawSelection["pieces"].length > SELECTION_PIECE_LIMIT) return null;
     const pieces: NonNullable<PersistedPassageViewState["selection"]>["pieces"] = [];
     for (const rawPiece of rawSelection["pieces"]) {
       const piece = asRecord(rawPiece);
@@ -437,7 +447,9 @@ interface RawGroup {
 
 function normalizeRawGroup(value: unknown): RawGroup | null {
   const source = asRecord(value);
-  if (!source || !Array.isArray(source["tabIds"]) || typeof source["collapsed"] !== "boolean") {
+  if (!source || !Array.isArray(source["tabIds"])
+    || source["tabIds"].length > RAW_TAB_REFERENCE_LIMIT
+    || typeof source["collapsed"] !== "boolean") {
     return null;
   }
   const id = identifier(source["id"]);
@@ -524,9 +536,11 @@ export function normalizeStudyWorkspace(value: unknown): StudyWorkspaceValidatio
   }
   if (version !== WORKSPACE_VERSION
     || !Array.isArray(source["groups"])
+    || source["groups"].length > RAW_GROUP_LIMIT
     || !asRecord(source["tabsById"])
     || typeof source["activeTabId"] !== "string"
     || !Array.isArray(source["activationOrder"])
+    || source["activationOrder"].length > RAW_TAB_REFERENCE_LIMIT
     || !Array.isArray(source["recentlyClosed"])) {
     return { ok: false, reason: "invalid" };
   }
@@ -798,8 +812,10 @@ function normalizeLegacyResearchTab(value: unknown): LegacyResearchTab | null {
 function normalizeLegacyResearchWorkspace(value: unknown): LegacyResearchWorkspace | null {
   const source = asRecord(value);
   if (!source || !Array.isArray(source["tabs"])
+    || source["tabs"].length > RAW_TAB_REFERENCE_LIMIT
     || typeof source["activeTabId"] !== "string"
-    || !Array.isArray(source["activationOrder"])) return null;
+    || !Array.isArray(source["activationOrder"])
+    || source["activationOrder"].length > RAW_TAB_REFERENCE_LIMIT) return null;
   const tabs: LegacyResearchTab[] = [];
   const ids = new Set<string>();
   for (const rawTab of source["tabs"]) {

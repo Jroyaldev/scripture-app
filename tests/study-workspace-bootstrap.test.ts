@@ -120,6 +120,7 @@ test("App establishes V2 authority only after refusal and projects it into trans
   );
   assert.doesNotMatch(hydration, /persisted\.studyWorkspace\?\.version !== 2/);
   assert.match(hydration, /setStudyWorkspaceRefusal\("newer-version"\)/);
+  assert.match(hydration, /studyWorkspaceRefusalRef\.current = "newer-version"/);
   assert.match(app, /role="alert"[\s\S]{0,500}?newer version of Pericope/);
   assert.match(app, /if \(studyWorkspaceRefusal === "newer-version"\)/);
   assert.match(api, /studyWorkspace\?: StudyWorkspaceStateV2 \| null/);
@@ -134,18 +135,27 @@ test("App establishes V2 authority only after refusal and projects it into trans
   assert.doesNotMatch(app, /res\.value\.(?:researchWorkspace|researchSession|keptContext)/);
 });
 
-test("window close approves only after authored exit and the latest workspace flush", () => {
+test("window close distinguishes refusal from bootstrap and flushes normal workspace", () => {
   const app = read("src/renderer/app.tsx");
   const closeHandler = app.slice(
     app.indexOf("window.api.appWindow.onCloseRequested"),
     app.indexOf("const handleCreateNoteFromPassage"),
   );
   const authoredExit = closeHandler.indexOf('await controller.requestExit("window-close")');
-  const flush = closeHandler.indexOf("await persistence.flush(workspace)");
-  const approve = closeHandler.indexOf("window.api.appWindow.resolveCloseRequest(true)");
+  const decision = closeHandler.indexOf("decideStudyWorkspaceClose(");
+  const refusalApprove = closeHandler.indexOf('workspaceClose.kind === "approve"');
+  const unresolvedVeto = closeHandler.indexOf('workspaceClose.kind === "veto"');
+  const flush = closeHandler.indexOf("await persistence.flush(workspaceClose.workspace)");
+  const approve = closeHandler.indexOf("window.api.appWindow.resolveCloseRequest(true)", flush);
   assert.ok(authoredExit >= 0);
+  assert.ok(decision > authoredExit);
+  assert.ok(refusalApprove > decision);
+  assert.ok(unresolvedVeto > refusalApprove);
+  assert.ok(flush > unresolvedVeto);
   assert.ok(flush > authoredExit);
   assert.ok(approve > flush);
+  assert.match(closeHandler, /workspaceClose\.kind === "approve"[\s\S]{0,120}?resolveCloseRequest\(true\);[\s\S]{0,80}?return;/);
+  assert.match(closeHandler, /workspaceClose\.kind === "veto"[\s\S]{0,120}?resolveCloseRequest\(false\);[\s\S]{0,80}?return;/);
   assert.match(closeHandler, /if \(!proceed\) \{[\s\S]{0,120}?resolveCloseRequest\(false\);[\s\S]{0,80}?return;/);
   assert.match(closeHandler, /if \(!flushed\) \{[\s\S]{0,120}?resolveCloseRequest\(false\);[\s\S]{0,80}?return;/);
   assert.match(closeHandler, /catch \{[\s\S]{0,120}?resolveCloseRequest\(false\)/);

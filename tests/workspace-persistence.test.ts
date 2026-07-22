@@ -8,6 +8,7 @@ import {
 } from "../src/renderer/utils/studyWorkspace.js";
 import {
   createWorkspacePersistenceController,
+  decideStudyWorkspaceClose,
   isStudyWorkspaceSnapshotAcknowledged,
   projectStudyWorkspaceCompatibility,
 } from "../src/renderer/utils/workspacePersistence.js";
@@ -143,6 +144,15 @@ test("snapshot acknowledgement is canonical across key order and exact across va
   assert.equal(isStudyWorkspaceSnapshotAcknowledged(requested, sameSnapshotDifferentKeyOrder), true);
   assert.equal(isStudyWorkspaceSnapshotAcknowledged(requested, staleSnapshot), false);
   assert.equal(isStudyWorkspaceSnapshotAcknowledged(requested, null), false);
+});
+
+test("close decision approves explicit refusal but vetoes unresolved bootstrap", () => {
+  const workspace = state(19);
+
+  assert.deepEqual(decideStudyWorkspaceClose(undefined, "newer-version"), { kind: "approve" });
+  assert.deepEqual(decideStudyWorkspaceClose(undefined, null), { kind: "veto" });
+  assert.deepEqual(decideStudyWorkspaceClose(null, null), { kind: "approve" });
+  assert.deepEqual(decideStudyWorkspaceClose(workspace, null), { kind: "flush", workspace });
 });
 
 test("structural publications get monotonic revisions and writes never overlap", async () => {
