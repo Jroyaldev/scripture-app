@@ -234,14 +234,14 @@ interface AppSettingsSchema {
       verseStart?: number;
       verseEnd?: number;
     };
-    trail: Array<{ id: string; displayName: string }>;
+    trail: Array<{ id: string; displayName: string; kind?: "person" | "place" | "other" }>;
   } | null;
   researchWorkspace: {
     tabs: Array<{
       id: string;
       entityId: string;
       origin: NonNullable<AppSettingsSchema["researchSession"]>["origin"];
-      trail: Array<{ id: string; displayName: string }>;
+      trail: Array<{ id: string; displayName: string; kind?: "person" | "place" | "other" }>;
       nonce: number;
     }>;
     activeTabId: string;
@@ -352,7 +352,7 @@ function normalizeResearchSession(value: unknown): AppSettingsSchema["researchSe
     const field = source[key];
     return Number.isInteger(field) && (field as number) > 0 ? field as number : undefined;
   };
-  const normalizedTrail: Array<{ id: string; displayName: string }> = [];
+  const normalizedTrail: Array<{ id: string; displayName: string; kind?: "person" | "place" | "other" }> = [];
   for (const item of trail.slice(-12)) {
     if (!item || typeof item !== "object") return null;
     const record = item as Record<string, unknown>;
@@ -364,7 +364,14 @@ function normalizeResearchSession(value: unknown): AppSettingsSchema["researchSe
       || record["displayName"].length < 1
       || record["displayName"].length > 256
     ) return null;
-    normalizedTrail.push({ id: record["id"], displayName: record["displayName"] });
+    // Kind is cosmetic (tab glyph only) — an unrecognized value is dropped,
+    // never a reason to refuse the whole session.
+    const kind = record["kind"];
+    normalizedTrail.push({
+      id: record["id"],
+      displayName: record["displayName"],
+      ...(kind === "person" || kind === "place" || kind === "other" ? { kind } : {}),
+    });
   }
   return {
     origin: {

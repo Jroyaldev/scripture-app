@@ -184,3 +184,9 @@ export function retainedResearchWorkspaceTab(
 export function researchWorkspaceTabLabel(tab: ResearchWorkspaceTab): string {
   return tab.trail.at(-1)?.displayName ?? "Research";
 }
+
+export function researchWorkspaceTabKind(
+  tab: ResearchWorkspaceTab,
+): "person" | "place" | "other" | null {
+  return tab.trail.at(-1)?.kind ?? null;
+}

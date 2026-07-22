@@ -3,6 +3,7 @@ import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { BookNameData } from "../api.js";
 import {
   researchOriginGroupKey,
+  researchWorkspaceTabKind,
   researchWorkspaceTabLabel,
   SCRIPTURE_WORKSPACE_ID,
   type ResearchWorkspaceTab,
@@ -46,6 +47,42 @@ function CloseGlyph(): React.JSX.Element {
   );
 }
 
+function ChevronGlyph(): React.JSX.Element {
+  return (
+    <svg viewBox="0 0 10 10" aria-hidden="true">
+      <path d="m3.25 1.75 3 3.25-3 3.25" />
+    </svg>
+  );
+}
+
+/* Kind marks are quiet single-stroke glyphs at the same optical weight as the
+   close/chevron marks — a hint of who or where, never an icon billboard. */
+function PersonGlyph(): React.JSX.Element {
+  return (
+    <svg viewBox="0 0 12 12" aria-hidden="true">
+      <circle cx="6" cy="3.8" r="2" />
+      <path d="M2.1 10.3c.75-2.2 2.15-3.2 3.9-3.2s3.15 1 3.9 3.2" />
+    </svg>
+  );
+}
+
+function PlaceGlyph(): React.JSX.Element {
+  return (
+    <svg viewBox="0 0 12 12" aria-hidden="true">
+      <path d="M6 10.6S2.8 7.1 2.8 4.8a3.2 3.2 0 1 1 6.4 0C9.2 7.1 6 10.6 6 10.6Z" />
+      <circle cx="6" cy="4.8" r="1.05" />
+    </svg>
+  );
+}
+
+type ResearchTabKind = ReturnType<typeof researchWorkspaceTabKind>;
+
+function TabMark({ kind }: { kind: ResearchTabKind }): React.JSX.Element {
+  if (kind === "person") return <span className="scripture-workspace-tab-mark is-person" aria-hidden="true"><PersonGlyph /></span>;
+  if (kind === "place") return <span className="scripture-workspace-tab-mark is-place" aria-hidden="true"><PlaceGlyph /></span>;
+  return <span className="scripture-workspace-tab-mark" aria-hidden="true" />;
+}
+
 export function ScriptureWorkspaceTabs({
   tabs,
   activeTabId,
@@ -59,6 +96,7 @@ export function ScriptureWorkspaceTabs({
   const [overflowOpen, setOverflowOpen] = useState(false);
   const [overflowAnchor, setOverflowAnchor] = useState<DOMRect | null>(null);
   const [hasMeasuredOverflow, setHasMeasuredOverflow] = useState(false);
+  const [scrollEdges, setScrollEdges] = useState<{ left: boolean; right: boolean }>({ left: false, right: false });
   const viewportRef = useRef<HTMLDivElement>(null);
   const overflowButtonRef = useRef<HTMLButtonElement>(null);
   const tabRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
@@ -93,11 +131,21 @@ export function ScriptureWorkspaceTabs({
   useLayoutEffect(() => {
     const viewport = viewportRef.current;
     if (!viewport) return;
-    const measure = (): void => setHasMeasuredOverflow(viewport.scrollWidth > viewport.clientWidth + 2);
+    const measure = (): void => {
+      setHasMeasuredOverflow(viewport.scrollWidth > viewport.clientWidth + 2);
+      setScrollEdges({
+        left: viewport.scrollLeft > 2,
+        right: viewport.scrollLeft + viewport.clientWidth < viewport.scrollWidth - 2,
+      });
+    };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(viewport);
-    return () => observer.disconnect();
+    viewport.addEventListener("scroll", measure, { passive: true });
+    return () => {
+      observer.disconnect();
+      viewport.removeEventListener("scroll", measure);
+    };
   }, [groups, collapsedGroups]);
 
   useLayoutEffect(() => {
@@ -129,6 +177,12 @@ export function ScriptureWorkspaceTabs({
     tabRefs.current.get(next)?.focus({ preventScroll: true });
   };
 
+  const handleTabAuxClick = (event: React.MouseEvent<HTMLButtonElement>, tabId: string): void => {
+    if (event.button !== 1 || tabId === SCRIPTURE_WORKSPACE_ID) return;
+    event.preventDefault();
+    onClose(tabId);
+  };
+
   const toggleGroup = (group: ResearchTabGroup): void => {
     const collapsing = !collapsedGroups.has(group.key);
     if (collapsing && group.tabs.some((tab) => tab.id === activeTabId)) onSelect(SCRIPTURE_WORKSPACE_ID);
@@ -148,7 +202,15 @@ export function ScriptureWorkspaceTabs({
 
   return (
     <nav className="scripture-workspace-bar" aria-label="Scripture and research workspaces">
-      <div className="scripture-workspace-viewport" ref={viewportRef} role="tablist" aria-label="Open workspaces">
+      <div
+        className={[
+          "scripture-workspace-viewport",
+          scrollEdges.left ? "is-scrollable-left" : "",
+          scrollEdges.right ? "is-scrollable-right" : "",
+        ].filter(Boolean).join(" ")}
+        ref={viewportRef}
+        role="tablist" aria-label="Open workspaces"
+      >
         <button
           ref={(node) => {
             if (node) tabRefs.current.set(SCRIPTURE_WORKSPACE_ID, node);
@@ -179,7 +241,7 @@ export function ScriptureWorkspaceTabs({
                 onClick={() => toggleGroup(group)}
                 title={`${collapsed ? "Expand" : "Collapse"} ${group.label} research group`}
               >
-                <span className="scripture-workspace-group-caret" aria-hidden="true">›</span>
+                <span className="scripture-workspace-group-caret" aria-hidden="true"><ChevronGlyph /></span>
                 <span>{group.label}</span>
                 <span className="scripture-workspace-group-count">{group.tabs.length}</span>
               </button>
@@ -201,11 +263,12 @@ export function ScriptureWorkspaceTabs({
                       aria-controls="scripture-workspace-panel"
                       aria-keyshortcuts="Delete"
                       tabIndex={selected ? 0 : -1}
-                      title={label}
+                      title={`${label} — ${group.label} research`}
                       onClick={() => onSelect(tab.id)}
+                      onAuxClick={(event) => handleTabAuxClick(event, tab.id)}
                       onKeyDown={(event) => handleTabKeyDown(event, tab.id)}
                     >
-                      <span className="scripture-workspace-tab-mark" aria-hidden="true" />
+                      <TabMark kind={researchWorkspaceTabKind(tab)} />
                       <span className="scripture-workspace-tab-label">{label}</span>
                     </button>
                     <button
@@ -265,7 +328,7 @@ export function ScriptureWorkspaceTabs({
             {groups.map((group) => (
               <section className="scripture-workspace-overflow-group" aria-label={group.label} key={group.key}>
                 <header>
-                  <span>{group.label}</span>
+                  <span>{group.label} · {group.tabs.length}</span>
                   <button
                     type="button"
                     onClick={() => {
@@ -289,6 +352,7 @@ export function ScriptureWorkspaceTabs({
                       <button
                         type="button"
                         className={activeTabId === tab.id ? "is-active" : undefined}
+                        title={`${label} — ${group.label} research`}
                         onClick={() => {
                           setCollapsedGroups((current) => {
                             const next = new Set(current);
@@ -300,6 +364,7 @@ export function ScriptureWorkspaceTabs({
                           window.requestAnimationFrame(() => tabRefs.current.get(tab.id)?.focus({ preventScroll: true }));
                         }}
                       >
+                        <TabMark kind={researchWorkspaceTabKind(tab)} />
                         <span>{label}</span>
                         {activeTabId === tab.id && <small>Current</small>}
                       </button>

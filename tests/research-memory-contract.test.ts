@@ -54,6 +54,19 @@ test("validated settings persist grouped workspace tabs while legacy session sta
   assert.doesNotMatch(close, /setResearchWorkspace\(createResearchWorkspaceState/);
 });
 
+test("entity kind rides the research trail into tab marks and survives settings normalization", () => {
+  const workspaceTabs = read("src/renderer/components/ScriptureWorkspaceTabs.tsx");
+  const workspaceUtil = read("src/renderer/utils/researchWorkspace.ts");
+  assert.match(margin, /kind: result\.value!\.entity\.kind/);
+  assert.match(main, /kind === "person" \|\| kind === "place" \|\| kind === "other"/);
+  assert.match(workspaceUtil, /export function researchWorkspaceTabKind/);
+  assert.match(workspaceTabs, /<TabMark kind=\{researchWorkspaceTabKind\(tab\)\} \/>/);
+  assert.match(workspaceTabs, /function PersonGlyph/);
+  assert.match(workspaceTabs, /function PlaceGlyph/);
+  assert.match(css, /\.scripture-workspace-tab-mark\.is-person,/);
+  assert.match(css, /\.scripture-workspace-tab-mark\.is-place \{/);
+});
+
 test("Close exits directly while Back and Escape remain stepwise and named", () => {
   assert.match(margin, /className="entity-research-close"[\s\S]{0,100}?onClick=\{onCloseEntity\}/);
   assert.match(margin, /const previousIndex = entityTrail\.length - \(currentIsRecorded \? 2 : 1\)/);

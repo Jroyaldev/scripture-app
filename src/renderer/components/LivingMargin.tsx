@@ -56,6 +56,8 @@ type MarginTab = "overview" | "connections" | "passage" | "notes";
 export interface EntityResearchTrailEntry {
   id: string;
   displayName: string;
+  /** TIPNR entity kind, when known — lets workspace tabs distinguish people from places. */
+  kind?: "person" | "place" | "other";
 }
 
 export const ENTITY_RESEARCH_TRAIL_LIMIT = 12;
@@ -1862,6 +1864,7 @@ export function LivingMargin({
         onEntityTrailChange?.((current) => appendEntityResearchTrail(current, {
           id: result.value!.entity.id,
           displayName: result.value!.entity.displayName,
+          kind: result.value!.entity.kind,
         }));
       } else {
         setEntityResearch(null);

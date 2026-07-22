@@ -368,6 +368,15 @@ try {
   await driver.waitFor(`document.querySelector('[id^="research-workspace-tab-"]')?.getAttribute("aria-selected") === "true"`);
   await driver.evaluate(`document.querySelector(".scripture-workspace-overflow")?.click()`);
   await driver.waitFor(`document.querySelectorAll(".scripture-workspace-overflow-row").length === 6`);
+  // A live reload must return the same six grouped tabs with their kind marks —
+  // the workspace is a durable study bench, not scratch memory.
+  await cdp.send("Page.reload", { ignoreCache: true });
+  await driver.waitFor(`document.querySelectorAll('[id^="research-workspace-tab-"]').length === 6
+    && document.querySelectorAll(".scripture-workspace-group").length === 1
+    && document.querySelectorAll(".scripture-workspace-tab-mark.is-person").length >= 1
+    && document.querySelectorAll(".scripture-workspace-tab-mark.is-place").length >= 1`, 20_000);
+  await driver.evaluate(`document.querySelector(".scripture-workspace-overflow")?.click()`);
+  await driver.waitFor(`document.querySelectorAll(".scripture-workspace-overflow-row").length === 6`, 20_000);
   const screenshotPath = process.env["D8_QA_SCREENSHOT"];
   if (screenshotPath) {
     await cdp.send("Page.bringToFront");

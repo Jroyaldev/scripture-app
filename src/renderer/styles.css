@@ -1003,6 +1003,13 @@ html, body, #root {
   scrollbar-width: none;
 }
 
+/* When tabs run past the right edge, fade the trailing sliver so the strip
+   reads as continuing rather than clipped mid-label. */
+.scripture-workspace-viewport.is-scrollable-right {
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 30px), transparent);
+  mask-image: linear-gradient(90deg, #000 calc(100% - 30px), transparent);
+}
+
 .scripture-workspace-viewport::-webkit-scrollbar { display: none; }
 
 .scripture-workspace-tab,
@@ -1038,8 +1045,25 @@ html, body, #root {
 }
 
 .scripture-workspace-tab.is-scripture {
+  position: sticky;
+  left: 0;
+  z-index: 2;
   min-width: 98px;
   padding-inline: 10px 12px;
+}
+
+/* The pinned home tab rides above scrolling research tabs on a full-height
+   slab of the bar's own material, so Scripture is always one click away. */
+.scripture-workspace-tab.is-scripture::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -5px -7px -5px -14px;
+  background: color-mix(in srgb, var(--bg-topbar) 96%, var(--bg-canvas));
+}
+
+.scripture-workspace-viewport.is-scrollable-left .scripture-workspace-tab.is-scripture::before {
+  box-shadow: 9px 0 12px -9px color-mix(in srgb, var(--text-primary) 34%, transparent);
 }
 
 .scripture-workspace-tab.is-scripture svg {
@@ -1061,6 +1085,19 @@ html, body, #root {
   background: color-mix(in srgb, var(--bg-surface) 82%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border-subtle) 76%, transparent), 0 1px 2px color-mix(in srgb, var(--text-primary) 5%, transparent);
   color: var(--text-primary);
+}
+
+/* A quiet baseline tick anchors the selected tab the same way the app's
+   other sliding indicators do — neutral ink, never gold. */
+.scripture-workspace-tab[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 2px;
+  height: 2px;
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--text-primary) 34%, transparent);
 }
 
 .scripture-workspace-tab:focus-visible,
@@ -1086,32 +1123,87 @@ html, body, #root {
   height: 26px;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   flex: 0 0 auto;
-  padding: 0 6px 0 4px;
+  padding: 0 6px 0 5px;
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-tertiary);
   cursor: pointer;
-  font: 500 8.5px/1 var(--font-mono);
-  letter-spacing: 0.025em;
+  font: 600 9px/1 var(--font-mono);
+  letter-spacing: 0.05em;
+  transition: background-color var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .scripture-workspace-group-toggle:hover { background: color-mix(in srgb, var(--text-primary) 4%, transparent); color: var(--text-secondary); }
-.scripture-workspace-group-caret { font: 500 13px/1 var(--font-ui); transform: rotate(90deg); transition: transform var(--transition-fast); }
+.scripture-workspace-group-caret { display: inline-flex; transform: rotate(90deg); transition: transform var(--transition-fast); }
+.scripture-workspace-group-caret svg { width: 9px; height: 9px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .scripture-workspace-group.is-collapsed .scripture-workspace-group-caret { transform: rotate(0deg); }
-.scripture-workspace-group-count { min-width: 12px; color: var(--text-tertiary); font-variant-numeric: tabular-nums; text-align: center; }
+.scripture-workspace-group-count {
+  min-width: 15px;
+  padding: 2px 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-primary) 6%, transparent);
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+/* A collapsed group reads as a small stack card — its tabs are sleeping
+   inside, one click wakes them. */
+.scripture-workspace-group.is-collapsed .scripture-workspace-group-toggle {
+  background: color-mix(in srgb, var(--bg-surface) 66%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border-subtle) 85%, transparent);
+  color: var(--text-secondary);
+}
+
+.scripture-workspace-group.is-collapsed .scripture-workspace-group-toggle:hover {
+  background: color-mix(in srgb, var(--bg-surface) 88%, transparent);
+  color: var(--text-primary);
+}
+
+.scripture-workspace-group.is-collapsed .scripture-workspace-group-count {
+  background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+  color: var(--text-secondary);
+}
 
 .scripture-workspace-tab-wrap {
   position: relative;
   flex: 0 0 auto;
   display: flex;
   align-items: center;
+  animation: scripture-workspace-tab-in 160ms ease-out;
+}
+
+/* New research arrives with a short settle, never a pop. */
+@keyframes scripture-workspace-tab-in {
+  from { opacity: 0; transform: translateX(-5px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scripture-workspace-tab-wrap { animation: none; }
+}
+
+@media (forced-colors: active) {
+  .scripture-workspace-viewport.is-scrollable-right { -webkit-mask-image: none; mask-image: none; }
+  .scripture-workspace-tab[aria-selected="true"]::after { background: Highlight; }
+  .scripture-workspace-group-count { border: 1px solid CanvasText; }
 }
 
 .scripture-workspace-tab-wrap .scripture-workspace-tab { padding: 0 29px 0 10px; }
 .scripture-workspace-tab-mark { width: 4px; height: 4px; flex: 0 0 auto; border-radius: 50%; background: currentColor; opacity: 0.38; }
-.scripture-workspace-tab-wrap.is-selected .scripture-workspace-tab-mark { opacity: 0.72; }
+.scripture-workspace-tab-mark.is-person,
+.scripture-workspace-tab-mark.is-place {
+  width: 11px;
+  height: 11px;
+  display: inline-flex;
+  border-radius: 0;
+  background: transparent;
+  opacity: 0.52;
+}
+.scripture-workspace-tab-mark svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round; }
+.scripture-workspace-tab-wrap.is-selected .scripture-workspace-tab-mark { opacity: 0.8; }
 .scripture-workspace-tab-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .scripture-workspace-tab-close {
@@ -1174,21 +1266,50 @@ html, body, #root {
 
 .scripture-workspace-overflow-head strong { color: var(--text-primary); font-size: 11px; font-weight: var(--fw-semibold); }
 .scripture-workspace-overflow-head span { color: var(--text-tertiary); font: 500 9px/1 var(--font-mono); }
-.scripture-workspace-overflow-list { display: grid; gap: 11px; padding-top: 10px; }
-.scripture-workspace-overflow-group { display: grid; gap: 3px; }
+.scripture-workspace-overflow-list { display: grid; gap: 12px; padding-top: 10px; }
+.scripture-workspace-overflow-group { display: grid; gap: 2px; }
 .scripture-workspace-overflow-group > header { display: flex; align-items: center; justify-content: space-between; min-height: 22px; padding: 0 3px; }
 .scripture-workspace-overflow-group > header > span { color: var(--text-tertiary); font: 500 9px/1 var(--font-mono); letter-spacing: 0.03em; }
-.scripture-workspace-overflow-group > header button { padding: 3px 5px; border-radius: 5px; background: transparent; color: var(--text-tertiary); cursor: pointer; font-size: 9px; }
-.scripture-workspace-overflow-group > header button:hover { background: var(--study-hover-surface); color: var(--text-primary); }
-.scripture-workspace-overflow-row { display: grid; grid-template-columns: minmax(0, 1fr) 28px; align-items: center; gap: 2px; }
-.scripture-workspace-overflow-row > button { min-height: 30px; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 8px; border-radius: var(--radius-sm); background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 10.5px; text-align: left; }
+
+/* Group dismissal stays available but never outranks the tabs themselves. */
+.scripture-workspace-overflow-group > header button {
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font: 500 8px/1 var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  opacity: 0.72;
+  transition: opacity var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast);
+}
+.scripture-workspace-overflow-group > header button:hover { background: var(--study-hover-surface); color: var(--text-primary); opacity: 1; }
+
+.scripture-workspace-overflow-row { display: grid; grid-template-columns: minmax(0, 1fr) 26px; align-items: center; gap: 2px; }
+.scripture-workspace-overflow-row > button { min-height: 28px; display: flex; align-items: center; justify-content: flex-start; gap: 7px; padding: 0 8px; border-radius: var(--radius-sm); background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 10.5px; text-align: left; }
 .scripture-workspace-overflow-row > button:first-child:hover,
 .scripture-workspace-overflow-row > button:first-child.is-active { background: color-mix(in srgb, var(--text-primary) 5%, transparent); color: var(--text-primary); }
-.scripture-workspace-overflow-row > button span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.scripture-workspace-overflow-row > button small { color: var(--text-tertiary); font: 500 8px/1 var(--font-mono); }
-.scripture-workspace-overflow-row > button:last-child { display: grid; padding: 0; color: var(--text-tertiary); place-items: center; }
-.scripture-workspace-overflow-row > button:last-child:hover { background: color-mix(in srgb, var(--text-primary) 6%, transparent); color: var(--text-primary); }
-.scripture-workspace-overflow-row svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; }
+.scripture-workspace-overflow-row > button span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.scripture-workspace-overflow-row > button .scripture-workspace-tab-mark { flex: 0 0 auto; }
+.scripture-workspace-overflow-row > button:first-child:hover .scripture-workspace-tab-mark,
+.scripture-workspace-overflow-row > button:first-child.is-active .scripture-workspace-tab-mark { opacity: 0.78; }
+.scripture-workspace-overflow-row > button small {
+  flex: 0 0 auto;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-primary) 7%, transparent);
+  color: var(--text-tertiary);
+  font: 500 8px/1 var(--font-mono);
+}
+
+/* Row close buttons surface under the pointer or focus, like the strip's own
+   tab closes, instead of standing a permanent column of x's. */
+.scripture-workspace-overflow-row > button:last-child { display: grid; padding: 0; color: var(--text-tertiary); opacity: 0; place-items: center; transition: opacity var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast); }
+.scripture-workspace-overflow-row:hover > button:last-child,
+.scripture-workspace-overflow-row:focus-within > button:last-child { opacity: 0.72; }
+.scripture-workspace-overflow-row > button:last-child:hover { background: color-mix(in srgb, var(--text-primary) 6%, transparent); color: var(--text-primary); opacity: 1; }
+.scripture-workspace-overflow-row > button:last-child svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; }
 
 .topbar-navigation,
 .topbar-tools {
