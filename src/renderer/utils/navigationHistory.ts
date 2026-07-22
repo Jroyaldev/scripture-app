@@ -20,36 +20,46 @@ export interface NavigationHistoryEntry {
   };
 }
 
-export interface NavigationHistoryState {
-  back: NavigationHistoryEntry[];
-  forward: NavigationHistoryEntry[];
+export interface NavigationHistoryState<
+  T extends NavigationHistoryEntry = NavigationHistoryEntry,
+> {
+  back: T[];
+  forward: T[];
 }
 
-export interface NavigationHistoryMove {
-  history: NavigationHistoryState;
-  target: NavigationHistoryEntry | null;
+export interface NavigationHistoryMove<
+  T extends NavigationHistoryEntry = NavigationHistoryEntry,
+> {
+  history: NavigationHistoryState<T>;
+  target: T | null;
 }
 
-export function createNavigationHistory(): NavigationHistoryState {
+export function createNavigationHistory<
+  T extends NavigationHistoryEntry = NavigationHistoryEntry,
+>(): NavigationHistoryState<T> {
   return { back: [], forward: [] };
 }
 
-export function pushNavigationHistory(
-  history: NavigationHistoryState,
-  current: NavigationHistoryEntry,
+export function pushNavigationHistory<
+  T extends NavigationHistoryEntry = NavigationHistoryEntry,
+>(
+  history: NavigationHistoryState<T>,
+  current: T,
   limit = NAVIGATION_HISTORY_LIMIT,
-): NavigationHistoryState {
+): NavigationHistoryState<T> {
   return {
     back: [...history.back, current].slice(-Math.max(1, limit)),
     forward: [],
   };
 }
 
-export function backNavigationHistory(
-  history: NavigationHistoryState,
-  current: NavigationHistoryEntry,
+export function backNavigationHistory<
+  T extends NavigationHistoryEntry = NavigationHistoryEntry,
+>(
+  history: NavigationHistoryState<T>,
+  current: T,
   limit = NAVIGATION_HISTORY_LIMIT,
-): NavigationHistoryMove {
+): NavigationHistoryMove<T> {
   const target = history.back.at(-1) ?? null;
   if (!target) return { history, target: null };
   return {
@@ -61,11 +71,13 @@ export function backNavigationHistory(
   };
 }
 
-export function forwardNavigationHistory(
-  history: NavigationHistoryState,
-  current: NavigationHistoryEntry,
+export function forwardNavigationHistory<
+  T extends NavigationHistoryEntry = NavigationHistoryEntry,
+>(
+  history: NavigationHistoryState<T>,
+  current: T,
   limit = NAVIGATION_HISTORY_LIMIT,
-): NavigationHistoryMove {
+): NavigationHistoryMove<T> {
   const target = history.forward[0] ?? null;
   if (!target) return { history, target: null };
   return {

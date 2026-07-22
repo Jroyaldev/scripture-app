@@ -8,6 +8,7 @@ import {
   pushNavigationHistory,
   type NavigationHistoryEntry,
 } from "../src/renderer/utils/navigationHistory.js";
+import type { PassageViewState } from "../src/renderer/utils/studyWorkspace.js";
 
 function entry(chapter: number, verse = chapter): NavigationHistoryEntry {
   return {
@@ -55,4 +56,48 @@ test("empty traversal is a no-op and both stacks are bounded", () => {
   }
   assert.equal(history.back.length, NAVIGATION_HISTORY_LIMIT);
   assert.equal(history.back[0]?.chapter, 8);
+});
+
+test("generic Back and Forward retain the full PassageViewState", () => {
+  const acts: PassageViewState = {
+    ...entry(19, 2),
+    selection: {
+      packageId: "bsb",
+      pieces: [{ verse: 2, charStart: 37, charEnd: 48 }],
+    },
+    margin: {
+      ...entry(19, 2).margin,
+      scrollTopByTab: { overview: 120, passage: 340 },
+      wordsVerse: 2,
+      wordsFollowingReading: false,
+    },
+  };
+  const john: PassageViewState = {
+    ...acts,
+    book: "JHN",
+    chapter: 3,
+    selection: undefined,
+    margin: {
+      ...acts.margin,
+      wordsVerse: 16,
+      wordsFollowingReading: true,
+    },
+  };
+  const romans: PassageViewState = {
+    ...john,
+    book: "ROM",
+    chapter: 6,
+    margin: { ...john.margin, scrollTopByTab: { connections: 515 } },
+  };
+  const history = pushNavigationHistory(
+    pushNavigationHistory(createNavigationHistory<PassageViewState>(), acts),
+    john,
+  );
+  const back = backNavigationHistory(history, romans);
+  assert.deepEqual(back.target, john);
+  assert.deepEqual(back.history.forward, [romans]);
+  const forward = forwardNavigationHistory(back.history, john);
+  assert.deepEqual(forward.target, romans);
+  assert.deepEqual(forward.history.back.at(-1), john);
+  assert.deepEqual(forward.history.back[0]?.selection, acts.selection);
 });
