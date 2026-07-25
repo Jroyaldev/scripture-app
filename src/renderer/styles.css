@@ -1096,8 +1096,12 @@ html, body, #root {
 
 /* --- Topbar (passage/version pickers, theme toggle) --- */
 
+/* One band, 48px, hairline-free on canvas. Reference left in reading serif,
+   instruments right in mono. Because the right side is one flex row, a tool
+   whose handler is absent simply does not render and leaves no gap — the
+   header loses instruments without losing shape. */
 .scripture-topbar {
-  height: 58px;
+  height: 48px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -2263,11 +2267,14 @@ html, body, #root {
   gap: 2px;
 }
 
+/* Interval, not a line. The tools are already obviously a different kind of
+   thing from the reference beside them; a rule between them is the header
+   explaining something the type has already said. */
 .topbar-tool-divider {
-  width: 1px;
-  height: 18px;
-  margin: 0 5px;
-  background: var(--border-subtle);
+  width: 0;
+  height: 0;
+  margin: 0 6px;
+  background: none;
 }
 
 .topbar-spacer {
@@ -2280,11 +2287,11 @@ html, body, #root {
   align-items: center;
   gap: 0;
   position: relative;
-  height: 36px;
-  padding: 2px;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .passage-picker-btn {
@@ -2295,19 +2302,21 @@ html, body, #root {
   background: none;
   border: none;
   font-family: var(--font-reading);
-  font-size: 15.5px;
-  font-weight: var(--fw-semibold);
+  font-size: 17px;
+  font-weight: var(--fw-normal);
   color: var(--text-primary);
   cursor: pointer;
-  padding: 0 9px;
-  border-radius: var(--radius-sm);
+  padding: 0 8px 0 0;
+  border-radius: 0;
   min-width: 0;
   transition: background var(--transition-fast), color var(--transition-fast);
 }
 
+/* Nothing moves and nothing fills on hover: ink only. */
 .passage-picker-btn:hover,
 .passage-picker-btn.open {
-  background: var(--bg-reading);
+  background: transparent;
+  color: var(--text-primary);
 }
 
 .passage-picker-btn svg {
@@ -2626,6 +2635,7 @@ html, body, #root {
 /* Living Margin toggle (topbar, sibling of theme toggle) */
 
 .margin-toggle-btn {
+  position: relative;
   width: 32px;
   height: 32px;
   display: flex;
@@ -2640,13 +2650,8 @@ html, body, #root {
 }
 
 .margin-toggle-btn:hover {
-  background: var(--bg-secondary);
+  background: transparent;
   color: var(--text-primary);
-}
-
-.margin-toggle-btn.active {
-  color: var(--accent-current);
-  background: color-mix(in srgb, var(--accent-current) 8%, transparent);
 }
 
 .passage-jump {
@@ -13816,6 +13821,7 @@ textarea:focus-visible,
   margin-right: 0;
 }
 .reading-comfort-btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -13832,13 +13838,34 @@ textarea:focus-visible,
 }
 .reading-comfort-btn:hover,
 .reading-comfort-btn.open {
-  background: var(--bg-secondary);
+  background: transparent;
   color: var(--text-primary);
 }
-.reading-comfort-btn.active {
-  background: color-mix(in srgb, var(--accent-current) 12%, transparent);
-  color: var(--accent-current);
-  border-color: color-mix(in srgb, var(--accent-current) 28%, transparent);
+
+/* On is a mark; off is nothing. The space for the mark exists at rest, so
+   toggling one never moves the row of instruments beside it. */
+.reading-comfort-btn::after,
+.margin-toggle-btn::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 3px;
+  height: 1.5px;
+  border-radius: var(--radius-mark);
+  background: transparent;
+}
+
+.reading-comfort-btn.active,
+.margin-toggle-btn.active {
+  background: transparent;
+  color: var(--text-primary);
+  border-color: transparent;
+}
+
+.reading-comfort-btn.active::after,
+.margin-toggle-btn.active::after {
+  background: var(--study-gold);
 }
 .reading-comfort-popover {
   padding: 12px 12px 10px;
