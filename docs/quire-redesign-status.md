@@ -19,6 +19,10 @@ built, and where the build deliberately departs from the handoff.
 | 6 | E — passage header | `feat: quiet the passage header into one 48px band` |
 | 9 | I, I·2 — themes + material | `feat: collapse six themes into four appearances and one material` |
 
+Suite is green — 1006 passing, 0 failing, `npm run lint` clean. The design
+contracts now assert the Quire rules rather than the ones it replaced, so a
+regression toward the old system fails a test rather than passing quietly.
+
 ## Not done
 
 - **F — palette and search.** Query-shape routing, the scope line with *change*,
