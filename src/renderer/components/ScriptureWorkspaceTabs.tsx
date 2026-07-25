@@ -8,6 +8,7 @@ import {
   studyWorkspaceGroupLabel,
   studyWorkspaceTabCloseAvailability,
   studyWorkspaceTabLabel,
+  studyWorkspaceTabLabelParts,
   studyWorkspaceTabType,
   visibleStudyWorkspaceTabIds,
   type StudyWorkspaceGroup,
@@ -864,6 +865,7 @@ export function ScriptureWorkspaceTabs({
       >
         {groups.flatMap(({ group, label: groupLabel, visibleTabs }, groupIndex) => visibleTabs.map((tab, tabIndex) => {
           const label = studyWorkspaceTabLabel(workspace, tab, bookNames);
+          const labelParts = studyWorkspaceTabLabelParts(workspace, tab, bookNames);
           const selected = workspace.activeTabId === tab.id;
           const roving = effectiveRovingTabId === tab.id;
           const collapsedProxy = group.collapsed;
@@ -955,7 +957,17 @@ export function ScriptureWorkspaceTabs({
                 onKeyDown={(event) => handleTabKeyDown(event, tab.id, canClose, collapsedProxy ? group.id : null)}
               >
                 <TabMark tab={tab} />
-                <span className="scripture-workspace-tab-label">{visibleLabel}</span>
+                {labelParts && !collapsedProxy ? (
+                  <span className="scripture-workspace-tab-label">
+                    <span className="scripture-workspace-tab-book">{labelParts.book}</span>
+                    <span className="scripture-workspace-tab-chapter">{labelParts.chapter}</span>
+                    {labelParts.qualifier && (
+                      <span className="scripture-workspace-tab-qualifier">{labelParts.qualifier}</span>
+                    )}
+                  </span>
+                ) : (
+                  <span className="scripture-workspace-tab-label">{visibleLabel}</span>
+                )}
                 {collapsedProxy && group.tabIds.length > 1 && (
                   <span className="scripture-workspace-tab-count" aria-hidden="true">{group.tabIds.length}</span>
                 )}

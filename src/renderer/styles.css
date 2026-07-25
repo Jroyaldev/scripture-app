@@ -811,27 +811,32 @@ html, body, #root {
   background: var(--bg-float);
 }
 
+/* The rail IS canvas. Not a tinted panel beside the page — no fill of its own
+   and no right border, because the page's 24px inset already separates them
+   with interval, which divides two planes better than a line does.
+
+   232px expanded, 56px collapsed, nothing in between. An intermediate width
+   is a width nobody chose. */
 .sidebar {
-  width: 228px;
+  width: var(--rail-w);
   /* Flex items default to min-width:auto, which floors the used width at
-     the content's min-content size — without this override, collapsing to
-     64px silently does nothing once any child (nav label, footer text) has
+     the content's min-content size — without this override, collapsing
+     silently does nothing once any child (nav label, footer text) has
      a wider intrinsic minimum, regardless of the width/flex-shrink values.
      min-width:0 removes that automatic floor. */
   min-width: 0;
   flex-shrink: 0;
-  background: var(--bg-canvas);
-  border-right: 1px solid var(--border-subtle);
+  background: transparent;
   display: flex;
   flex-direction: column;
   user-select: none;
   position: relative;
   padding-top: env(titlebar-area-height, 28px);
-  transition: width var(--transition-normal), background var(--transition-normal);
+  transition: width var(--transition-normal);
 }
 
 .sidebar.collapsed {
-  width: 64px;
+  width: var(--rail-w-collapsed);
 }
 
 .sidebar-collapse-btn {
@@ -947,16 +952,18 @@ html, body, #root {
   max-width: 0;
 }
 
+/* 32 + 2: one reading band per row, two of canvas between. Rows run the rail's
+   full width so the active one can end in its pebble at the rail's edge. */
 .sidebar-nav {
-  padding: 0 10px;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   -webkit-app-region: no-drag;
 }
 
 .sidebar.collapsed .sidebar-nav {
-  padding-inline: 8px;
+  padding-inline: 0;
 }
 
 .nav-divider {
@@ -965,15 +972,19 @@ html, body, #root {
   margin: 12px 8px;
 }
 
+/* State is a mark on a reserved gutter, never a fill. Every row keeps 3px of
+   space at its leading edge whether or not it is carrying a mark, so nothing
+   moves when one appears. The active row is the one place paper appears in
+   the rail — three scales of one material: pebble 4, tab 8, page 8. */
 .nav-item {
   display: flex;
   align-items: center;
   gap: 11px;
   width: 100%;
-  min-height: 40px;
-  padding: 9px 10px;
+  min-height: var(--band);
+  padding: 0 12px 0 calc(var(--mark-w) + 12px);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: 0 var(--radius-pebble) var(--radius-pebble) 0;
   background: none;
   color: var(--text-secondary);
   font-family: var(--font-ui);
@@ -982,35 +993,67 @@ html, body, #root {
   cursor: pointer;
   text-align: left;
   position: relative;
-  transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition: color var(--transition-fast);
 }
 
-.nav-item:active {
-  transform: scale(0.98);
+/* The mark itself. It exists at rest and is simply transparent, which is what
+   makes the row hold still. Left edge, because that is the edge nearest the
+   content the row opens. */
+.nav-item::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 2px;
+  border-radius: 0 var(--radius-mark) var(--radius-mark) 0;
+  background: transparent;
 }
 
 .nav-item svg {
   flex-shrink: 0;
 }
 
+/* Nothing moves on hover. Ink changes; geometry does not. */
 .nav-item:hover {
-  background: var(--study-hover-surface);
+  background: none;
   color: var(--text-primary);
 }
 
+/* Instant, with no transition: this is the app answering "where am I", and an
+   animated answer feels like a delayed one. */
 .nav-item.active {
   background: var(--bg-reading);
   color: var(--text-primary);
-  box-shadow: inset 0 0 0 1px var(--border-subtle);
+  transition: none;
 }
 
-.nav-item.active svg {
-  color: var(--accent-current);
+.nav-item.active::before {
+  background: var(--study-gold);
+}
+
+/* Pressed dims the mark rather than moving the row. */
+.nav-item:active::before {
+  opacity: 0.5;
+}
+
+.nav-item:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--study-gold) 40%, transparent);
+}
+
+/* Locked drops the icon to a 1px stroke — the single exception to constant
+   stroke weight, earned because disabled must not rely on colour alone. */
+.nav-item:disabled {
+  cursor: default;
+  color: var(--text-tertiary);
+}
+
+.nav-item:disabled svg {
+  stroke-width: 1;
 }
 
 .sidebar.collapsed .nav-item {
   justify-content: center;
-  padding: 9px;
+  padding: 0;
   gap: 0;
 }
 
@@ -1139,18 +1182,18 @@ html, body, #root {
    across the six themes. Only the overflowing edge(s) fade; a fully in-view
    strip carries no mask at all. */
 .scripture-workspace-viewport.is-scrollable-left {
-  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 22px);
-  mask-image: linear-gradient(to right, transparent 0, #000 22px);
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 36px);
+  mask-image: linear-gradient(to right, transparent 0, #000 36px);
 }
 
 .scripture-workspace-viewport.is-scrollable-right {
-  -webkit-mask-image: linear-gradient(to left, transparent 0, #000 22px);
-  mask-image: linear-gradient(to left, transparent 0, #000 22px);
+  -webkit-mask-image: linear-gradient(to left, transparent 0, #000 36px);
+  mask-image: linear-gradient(to left, transparent 0, #000 36px);
 }
 
 .scripture-workspace-viewport.is-scrollable-left.is-scrollable-right {
-  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 22px, #000 calc(100% - 22px), transparent 100%);
-  mask-image: linear-gradient(to right, transparent 0, #000 22px, #000 calc(100% - 22px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 36px, #000 calc(100% - 36px), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 36px, #000 calc(100% - 36px), transparent 100%);
 }
 
 .scripture-workspace-viewport::-webkit-scrollbar { display: none; }
@@ -1183,10 +1226,12 @@ html, body, #root {
   animation: scripture-workspace-tab-in 150ms ease;
 }
 
+/* Separate with interval, not with lines. The vertical rule before a new group
+   is gone; 12px of canvas says the same thing without drawing anything. */
 .scripture-workspace-tab-wrap[data-study-group-start="true"] {
-  margin-left: 6px;
-  padding-left: 8px;
-  border-left: 1px solid color-mix(in srgb, var(--border-subtle) 90%, transparent);
+  margin-left: 12px;
+  padding-left: 0;
+  border-left: 0;
 }
 
 @keyframes scripture-workspace-tab-in {
@@ -1334,12 +1379,42 @@ html, body, #root {
 
 .scripture-workspace-tab-wrap.is-selected .scripture-workspace-tab-mark { opacity: 1; }
 
+/* Book in mono caps, chapter in serif numerals — ACTS 19. Two voices in one
+   label, because the book is an identifier and the chapter is a number you
+   read. Never truncated: the abbreviation is already the short form. */
 .scripture-workspace-tab-label {
   min-width: 0;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
   overflow: hidden;
   opacity: 1;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.scripture-workspace-tab-book {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.scripture-workspace-tab-chapter {
+  font-family: var(--font-reading);
+  font-size: 14px;
+  font-weight: 400;
+  font-variant-numeric: lining-nums tabular-nums;
+  line-height: 1;
+}
+
+.scripture-workspace-tab-qualifier {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
 }
 
 .scripture-workspace-tab-count {
@@ -1900,27 +1975,42 @@ html, body, #root {
 .scripture-workspace-empty strong { color: var(--text-secondary); font-size: 11px; font-weight: var(--fw-medium); }
 .scripture-workspace-empty span { font-size: 9.5px; }
 
+/* A group is a bracket, not a chip: a 1px rule over its members carrying a 9px
+   mono label, with ends that do not turn down. A turned-down end would draw a
+   box, and a box around tabs is a second kind of container. */
 .scripture-workspace-group-tab {
+  position: relative;
   flex: 0 0 auto;
+  align-self: flex-end;
   min-width: 24px;
-  max-width: 74px;
-  height: 24px;
-  margin-right: 5px;
-  padding: 0 6px;
-  border-radius: var(--radius-sm);
+  max-width: 96px;
+  height: 30px;
+  margin-right: 8px;
+  padding: 0 6px 0 0;
+  border-radius: 0;
   background: transparent;
   color: var(--text-tertiary);
   cursor: pointer;
-  font: 500 10px/1 var(--font-ui);
-  letter-spacing: 0.015em;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font: 500 9px/1 var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  overflow: visible;
   white-space: nowrap;
-  transition: color var(--transition-fast), background-color var(--transition-fast);
+  transition: color var(--transition-fast);
+}
+
+.scripture-workspace-group-tab::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 0;
+  right: 4px;
+  height: 1px;
+  background: var(--border-medium);
 }
 
 .scripture-workspace-group-tab:hover {
-  background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+  background: transparent;
   color: var(--text-secondary);
 }
 
@@ -12426,10 +12516,38 @@ button.lang-phrase-diagram-node:focus-visible {
 /* --- Sidebar footer --- */
 
 .sidebar-footer {
+  position: relative;
   padding: 10px;
   margin: 0;
   border-top: 1px solid var(--border-subtle);
   -webkit-app-region: no-drag;
+}
+
+/* The one loading device in the app: a 1px seal segment travelling a hairline.
+   It replaces the pulsing avatar, which made the reader's own identity into a
+   progress indicator. No spinners, no skeletons — anywhere. */
+.sidebar-footer:has(.library-switcher.analyzing)::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 34%;
+  height: 1px;
+  background: var(--study-gold);
+  animation: rail-progress 1.6s linear infinite;
+}
+
+@keyframes rail-progress {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(394%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-footer:has(.library-switcher.analyzing)::before {
+    animation: none;
+    width: 100%;
+    opacity: 0.5;
+  }
 }
 
 .sidebar.collapsed .sidebar-footer {
@@ -12485,13 +12603,10 @@ button.lang-phrase-diagram-node:focus-visible {
   flex-shrink: 0;
 }
 
+/* aiBusy stops driving the avatar. Work the app is doing is not a property of
+   who you are, and a pulsing identity cannot say what it is working on. */
 .footer-avatar.analyzing {
-  animation: footer-avatar-pulse 1.4s ease-in-out infinite;
-}
-
-@keyframes footer-avatar-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--study-gold) 45%, transparent); }
-  50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--study-gold) 0%, transparent); }
+  animation: none;
 }
 
 .footer-lib-text {
@@ -12529,13 +12644,14 @@ button.lang-phrase-diagram-node:focus-visible {
   white-space: nowrap;
 }
 
+/* Slate, not amber: the app inferring something is provenance, not a warning. */
 .footer-ai-status.analyzing {
-  color: var(--warning);
+  color: var(--accent-machine);
 }
 
 .footer-ai-dot {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
   background: var(--text-tertiary);
   opacity: 0.68;
@@ -12544,9 +12660,9 @@ button.lang-phrase-diagram-node:focus-visible {
 }
 
 .footer-ai-status.analyzing .footer-ai-dot {
-  background: var(--accent-current);
+  background: var(--accent-machine);
   opacity: 1;
-  animation: footer-ai-dot-pulse 1.4s ease-in-out infinite;
+  animation: none;
 }
 
 .footer-chevron {

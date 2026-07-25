@@ -1956,6 +1956,35 @@ export function studyWorkspaceTabLabel(
     : reference;
 }
 
+/**
+ * A register tab is a chapter, and it says so in two voices: the book in mono
+ * caps, the chapter in serif numerals. The abbreviation is a fixed string from
+ * the book-name table (`1 THESS`, `PHLM`), never a truncation computed at
+ * render time — a label that shortens itself stops being a name you can scan.
+ */
+export function studyWorkspaceTabLabelParts(
+  state: StudyWorkspaceStateV2,
+  tab: StudyWorkspaceTab,
+  bookNames?: StudyWorkspaceBookNames,
+): { book: string; chapter: string; qualifier?: string } | null {
+  if (tab.kind !== "passage") return null;
+  const reference = tab.session.current;
+  const names = bookNames?.[reference.book];
+  const full = names?.[0];
+  // Abbreviate only where abbreviating buys something. ACTS, MARK and JOHN are
+  // already as short as their abbreviations; clipping them to ACT and JOH just
+  // makes the register harder to read for no width at all.
+  const book = (full && full.length <= 5 ? full : names?.[1] ?? full ?? reference.book)
+    .toUpperCase();
+  return {
+    book,
+    chapter: String(reference.chapter),
+    ...(studyWorkspaceTranslationCollisionTabIds(state).includes(tab.id)
+      ? { qualifier: reference.packageId }
+      : {}),
+  };
+}
+
 export function studyWorkspaceTabType(
   tab: StudyWorkspaceTab,
 ): "passage" | EntityWorkspaceKind {
