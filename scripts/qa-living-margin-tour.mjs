@@ -1,11 +1,11 @@
 /**
  * Desktop-only visual and interaction QA for the Living Margin frame.
  *
- * Requires Electron on --remote-debugging-port=9222. Exercises the deliberate
- * Chapter / In view / Selected scope model; compact Overview plus complete
- * Refs / Passage / Notes navigation; entity provenance, deep-note disclosure,
- * focus recovery, preserved tab choice, and all four reading atmospheres. The
- * tour never creates, removes, or recolors authored data.
+ * Requires Electron on --remote-debugging-port=9222. Exercises the chapter /
+ * reading / selected scope model; Overview, Notes, Connections and Words
+ * navigation; entity provenance, deep-note disclosure, focus recovery,
+ * preserved tab choice, and all four reading atmospheres. The tour never
+ * creates, removes, or recolors authored data.
  */
 
 import assert from "node:assert/strict";
@@ -14,14 +14,18 @@ import { mkdirSync, writeFileSync } from "node:fs";
 const CDP_HTTP = `http://localhost:${process.env.CDP_PORT ?? "9222"}/json/list`;
 const OUT_DIR = "docs/ui-audit/living-margin";
 const CAPTURE_SCREENSHOTS = !process.argv.includes("--no-screenshots");
-// Finish on Paper so the following interaction captures begin from a fully
-// repainted opaque surface after the two backdrop-filter atmospheres.
-const THEMES = ["dark", "glass", "dark-glass", "light"];
+// Glass and Candlelight were never atmospheres — they were Paper and Ink with
+// the translucent material on, which is why they are a material class now and
+// not entries here. Driving them made this tour fail at its first theme, since
+// the picker has no such option to click. The four that exist are temperature
+// crossed with luminance, each cell filled once. Finish on Paper so the
+// interaction captures below begin from a fully repainted opaque surface.
+const THEMES = ["dark", "porcelain", "onyx", "light"];
 const THEME_NAMES = {
   light: "paper",
   dark: "ink",
-  glass: "glass",
-  "dark-glass": "candlelight",
+  porcelain: "porcelain",
+  onyx: "onyx",
 };
 const MARKING_SELECTION_CHROME_SELECTOR = [
   '[data-floating-layer="toolbar"]',
@@ -327,7 +331,11 @@ const chapterState = await evaluate(`(() => ({
   ref: document.querySelector(".margin-frame-ref")?.textContent?.trim(),
   mode: document.querySelector(".margin-frame-mode")?.textContent?.trim(),
   view: document.querySelector("[data-margin-view]")?.getAttribute("data-margin-view"),
-  clear: Boolean(document.querySelector(".margin-frame-action")),
+  // Scoped to the verb slot AND past the compact size toggle, which is a
+  // .margin-frame-action too and is rendered at every width (display:none
+  // above 760px). A bare ".margin-frame-action" always matches it, so it can
+  // never report an empty slot.
+  clear: document.querySelector(".margin-frame-verb .margin-frame-action:not(.margin-compact-size-toggle)")?.textContent?.trim() ?? null,
   verbSlot: Boolean(document.querySelector(".margin-frame-verb")),
   tabs: [...document.querySelectorAll(".margin-tab")].map((tab) => tab.textContent?.trim()),
   activeTab: document.querySelector('.margin-tab[aria-selected="true"]')?.id,
@@ -341,7 +349,7 @@ assert.equal(chapterState.mode, "following your reading");
 assert.equal(chapterState.view, "chapter");
 // Chapter scope has nothing to clear, but the slot stays rendered so the tab row
 // cannot shift by a pixel between the two scopes. Absent verb, present slot.
-assert.equal(chapterState.clear, false);
+assert.equal(chapterState.clear, null);
 assert.equal(chapterState.verbSlot, true);
 assert.equal(chapterState.tabs.length, 4);
 assert.match(chapterState.tabs[0] ?? "", /^Overview/);
@@ -404,7 +412,34 @@ assert.equal(overviewState.mono, 0);
 console.log("overview", overviewState);
 await screenshot("paper-default-overview", ".living-margin");
 await screenshot("paper-overview-context");
-await selectMarginTab("passage");
+// This step was `selectMarginTab("passage")`, which now hangs rather than
+// fails: §C4·5 — "you confirmed the four tabs are chapter-scoped until a verse
+// is chosen, and Words has nothing to say about a whole chapter" — makes Words
+// a disabled instrument at chapter scope, so it refuses activation and the
+// helper's wait for aria-selected never resolves. The refusal is the thing
+// worth touring, so it is asserted here instead of worked around, and the
+// inverse is asserted the moment a verse is chosen.
+const wordsAtChapterScope = await evaluate(`(() => {
+  const tab = document.querySelector("#margin-passage-tab");
+  tab?.click();
+  return {
+    ariaDisabled: tab?.getAttribute("aria-disabled"),
+    selected: tab?.getAttribute("aria-selected"),
+    // "Disabled is the label without its count." A count of nothing and a count
+    // that does not apply are different facts; only the second is true here.
+    count: tab?.querySelector(".margin-tab-count")?.textContent?.trim() ?? null,
+    // aria-disabled, never the disabled attribute: a keyboard reader has to be
+    // able to reach the instrument to find out that it is off.
+    hardDisabled: tab?.hasAttribute("disabled"),
+    stillActive: document.querySelector('.margin-tab[aria-selected="true"]')?.id,
+  };
+})()`);
+assert.equal(wordsAtChapterScope.ariaDisabled, "true");
+assert.equal(wordsAtChapterScope.selected, "false");
+assert.equal(wordsAtChapterScope.count, null);
+assert.equal(wordsAtChapterScope.hardDisabled, false);
+assert.equal(wordsAtChapterScope.stillActive, "margin-overview-tab");
+console.log("words disabled at chapter scope", wordsAtChapterScope);
 await screenshot("paper-chapter-overview");
 await screenshot("paper-chapter-overview-margin", ".living-margin");
 
@@ -415,12 +450,16 @@ const readingState = await evaluate(`(() => ({
   mode: document.querySelector(".margin-frame-mode")?.textContent?.trim(),
   view: document.querySelector("[data-margin-view]")?.getAttribute("data-margin-view"),
   reference: document.querySelector(".margin-frame-ref")?.textContent?.trim(),
-  done: Boolean(document.querySelector(".margin-frame-verb .margin-frame-action")),
+  verb: document.querySelector(".margin-frame-verb .margin-frame-action:not(.margin-compact-size-toggle)")?.textContent?.trim() ?? null,
 }))()`);
 assert.equal(readingState.mode, "following your reading");
 assert.equal(readingState.view, "reading");
 assert.match(readingState.reference ?? "", /^Acts 19:\d+$/);
-assert.equal(readingState.done, false);
+// §C4·1 · the slot holds "the verb that changes it", and in reading scope that
+// verb is Keep — the reader holds this passage while the eye-line moves on.
+// This asserted `false` from when the slot only ever held Done and reading
+// scope offered nothing at all.
+assert.equal(readingState.verb, "Keep");
 console.log("reading", readingState);
 await screenshot("paper-reading-eye-line-margin", ".living-margin");
 
@@ -444,7 +483,7 @@ const selectedState = await evaluate(`(() => ({
   mode: document.querySelector(".margin-frame-mode")?.textContent?.trim(),
   view: document.querySelector("[data-margin-view]")?.getAttribute("data-margin-view"),
   reference: document.querySelector(".margin-frame-ref")?.textContent?.trim(),
-  done: document.querySelector(".margin-frame-verb .margin-frame-action")?.textContent?.trim(),
+  done: document.querySelector(".margin-frame-verb .margin-frame-action:not(.margin-compact-size-toggle)")?.textContent?.trim(),
   swatches: document.querySelectorAll(".margin-hl-swatch").length,
   activeTab: document.querySelector('.margin-tab[aria-selected="true"]')?.id,
   activePanel: document.querySelector('.margin-tab-panel:not([hidden])')?.id,
@@ -455,11 +494,34 @@ assert.deepEqual(selectedState, {
   reference: "Acts 19:1–7",
   done: "Clear",
   swatches: 5,
-  activeTab: "margin-passage-tab",
-  activePanel: "margin-passage-panel",
+  // Overview, not Words. Nothing switches lens when a verse is chosen —
+  // `setActiveTab` is reachable only from `activateTab`, which is a reader
+  // action — and this used to read Words only because the step above it
+  // selected that tab while still at chapter scope. §C4·5: selecting a verse
+  // "must not restructure the panel, it must narrow it", and the lens the
+  // reader was standing in is part of what must not be restructured.
+  activeTab: "margin-overview-tab",
+  activePanel: "margin-overview-panel",
 });
 console.log("selected", selectedState);
 await screenshot("paper-selected-context");
+
+// The inverse of the chapter-scope refusal above: a verse is chosen, so Words
+// has something to say and becomes an instrument again. Off is nothing;
+// disabled is the label without its count.
+await selectMarginTab("passage");
+const wordsAtVerseScope = await evaluate(`(() => {
+  const tab = document.querySelector("#margin-passage-tab");
+  return {
+    ariaDisabled: tab?.getAttribute("aria-disabled"),
+    selected: tab?.getAttribute("aria-selected"),
+    panelHidden: document.querySelector("#margin-passage-panel")?.hidden,
+  };
+})()`);
+assert.equal(wordsAtVerseScope.ariaDisabled, null);
+assert.equal(wordsAtVerseScope.selected, "true");
+assert.equal(wordsAtVerseScope.panelHidden, false);
+console.log("words enabled at verse scope", wordsAtVerseScope);
 
 // The reading canvas owns two non-overlapping keyboard paths: Tab/Shift-Tab
 // cycles study lenses without moving focus, while plain Left/Right traverses
@@ -694,8 +756,15 @@ await evaluate(`document.querySelector(".notes-deep-dive, .deep-note-card")?.scr
 await sleep(260);
 await screenshot("paper-notes-deep-margin", ".living-margin");
 
-await evaluate(`document.querySelector(".margin-frame-action")?.click()`);
+// Scoped past the compact size toggle, which is a `.margin-frame-action` too
+// and is in the DOM at every width. A bare selector here happens to find Clear
+// only because Clear is first in the slot; that is an ordering accident, not a
+// contract.
+await evaluate(`document.querySelector(".margin-frame-verb .margin-frame-action:not(.margin-compact-size-toggle)")?.click()`);
 await waitFor(`document.querySelector("[data-margin-view]")?.getAttribute("data-margin-view") !== "selected"`);
+// §C4·1 · Clear returns focus to the scope line. The id did not move when the
+// "Study" title was deleted — the scope line took it, because it is the panel's
+// real name and it says what the reader has just been returned to.
 await waitFor(`document.activeElement?.id === "living-margin-title"`);
 assert.equal(await evaluate(`document.querySelectorAll('.verse-line[aria-pressed="true"]').length`), 0);
 assert.equal(
