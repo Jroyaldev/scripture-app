@@ -13,14 +13,7 @@ import type {
   LanguageReverseOrbit,
   LanguageSemanticSenseOutline,
 } from "../api.js";
-import { donutSegmentPath } from "../../core/language/rendering-orbit.js";
 
-const SEGMENT_COLORS = 9;
-const FULL = Math.PI * 2;
-
-function vizColor(i: number): string {
-  return `var(--viz-${(i % SEGMENT_COLORS) + 1})`;
-}
 
 /** Shared orbit shape so all modes use one renderer. */
 export type OrbitViewModel = {
@@ -383,7 +376,7 @@ export function SenseOutlineView({
       className={`lang-sense-outline is-${model.shape}`}
       aria-label={model.ariaLabel}
     >
-      {model.nodes.map((node, index) => {
+      {model.nodes.map((node) => {
         const open = openRoot === node.n;
         const hasChildren = node.children.length > 0;
         const flat = model.shape === "flat";
@@ -413,7 +406,7 @@ export function SenseOutlineView({
           <section
             key={node.n}
             className={`lang-sense-primary${open ? " is-open" : ""}${node.current ? " is-current" : ""}`}
-            style={{ "--sense-color": vizColor(index) } as React.CSSProperties}
+            style={{ "--sense-color": "var(--study-gold)" } as React.CSSProperties}
           >
             {expandable ? (
               <button
@@ -478,7 +471,6 @@ export function RenderingOrbitView({
   model: modelProp,
   orbit,
   surface,
-  dir = "ltr",
   onSelectSegment,
 }: Props): React.JSX.Element | null {
   const model: OrbitViewModel | null = modelProp
@@ -488,42 +480,28 @@ export function RenderingOrbitView({
       : null;
 
   const [focusIdx, setFocusIdx] = useState<number | null>(null);
-  const size = 140;
-  const cx = size / 2;
-  const cy = size / 2;
-  const rOuter = 61;
-  const rInner = 35;
 
   // Reset sticky focus when the model changes (mode switch / new word).
   useEffect(() => {
     setFocusIdx(null);
   }, [model?.hubLabel, model?.segments]);
 
-  const arcs = useMemo(() => {
-    const segs = model?.segments ?? [];
-    if (segs.length === 0) return [];
-    const MIN = 0.012;
-    const floored = segs.map((s) => Math.max(s.share, MIN));
-    const sum = floored.reduce((a, b) => a + b, 0);
-    const gap = segs.length > 1 ? 0.02 : 0;
-    let angle = 0;
-    return segs.map((seg, i) => {
-      const sweep = (floored[i]! / sum) * FULL;
-      const a0 = angle + gap / 2;
-      const a1 = Math.max(angle + sweep - gap / 2, a0 + 0.04);
-      angle += sweep;
-      return { seg, i, path: donutSegmentPath(cx, cy, rOuter, rInner, a0, a1) };
-    });
-  }, [model?.segments, cx, cy]);
-
   if (!model || model.segments.length === 0) return null;
+
+  /**
+   * Three ranked rows, and a count for the rest. The donut this replaces put
+   * nine hues on screen to say one thing — which rendering dominates — and its
+   * legend was already saying it in words. Three rows say it in reading order,
+   * with the proportion rule doing the comparing.
+   */
+  const RANKED = 3;
+  const ranked = model.segments.slice(0, RANKED);
+  const remainder = model.segments.length - ranked.length;
 
   const active =
     focusIdx !== null
       ? model.segments[focusIdx]
       : model.segments.find((s) => s.isCurrent) ?? model.segments[0];
-  const centerLabel = model.hubLabel;
-  const hubDir = model.hubDir ?? dir;
   const showCounts = model.countMeta !== false;
 
   const activate = (i: number): void => {
@@ -546,63 +524,18 @@ export function RenderingOrbitView({
         </div>
       ) : null}
       <div className="lang-orbit-body">
-        <svg
-          className="lang-orbit-svg"
-          width={size}
-          height={size}
-          viewBox={`0 0 ${size} ${size}`}
-          role="img"
-          aria-label={model.ariaLabel}
-        >
-          <circle cx={cx} cy={cy} r={rOuter + 2} className="lang-orbit-halo" />
-          {arcs.map(({ seg, i, path }) => (
-            <path
-              key={`${seg.label}-${i}`}
-              d={path}
-              fill={vizColor(i)}
-              className={`lang-orbit-seg${seg.isCurrent ? " is-current" : ""}${focusIdx === i ? " is-hover" : ""}${onSelectSegment ? " is-interactive" : ""}`}
-              opacity={focusIdx === null || focusIdx === i ? 1 : 0.4}
-              onMouseEnter={() => setFocusIdx(i)}
-              onClick={() => activate(i)}
-            >
-              <title>
-                {seg.label}
-                {showCounts
-                  ? `: ${seg.count} of ${model.total} (${Math.round(seg.share * 100)}%)`
-                  : ""}
-              </title>
-            </path>
-          ))}
-          <circle cx={cx} cy={cy} r={rInner - 1} className="lang-orbit-hub" />
-          <text
-            x={cx}
-            y={model.hubMeta ? cy - 3 : cy + 4}
-            textAnchor="middle"
-            className="lang-orbit-hub-lemma"
-            style={{ direction: hubDir }}
-            textLength={centerLabel.length > 8 ? rInner * 2 - 14 : undefined}
-            lengthAdjust="spacingAndGlyphs"
-          >
-            {centerLabel}
-          </text>
-          {model.hubMeta ? (
-            <text x={cx} y={cy + 13} textAnchor="middle" className="lang-orbit-hub-meta">
-              {model.hubMeta}
-            </text>
-          ) : null}
-        </svg>
-        <div className="lang-orbit-legend">
-          {model.segments.map((seg, i) => (
+        <div className="lang-orbit-legend" role="img" aria-label={model.ariaLabel}>
+          {ranked.map((seg, i) => (
             <button
               key={`${seg.label}-${i}`}
               type="button"
               className={`lang-orbit-row${seg.isCurrent ? " is-current" : ""}${focusIdx === i ? " is-hover" : ""}${onSelectSegment ? " is-interactive" : ""}`}
+              data-rank={i + 1}
               onMouseEnter={() => setFocusIdx(i)}
               onFocus={() => setFocusIdx(i)}
               onClick={() => activate(i)}
               title={seg.label}
             >
-              <span className="lang-orbit-swatch" style={{ background: vizColor(i) }} />
               <span className="lang-orbit-label">{seg.label}</span>
               {onSelectSegment && focusIdx === i ? (
                 <span className="lang-orbit-open-hint">open →</span>
@@ -611,8 +544,18 @@ export function RenderingOrbitView({
                   {seg.count}× {Math.round(seg.share * 100)}%
                 </span>
               ) : null}
+              {showCounts ? (
+                /* One hue at three lightnesses by rank, not nine hues. The rule
+                   IS the comparison; a swatch would only be a key to itself. */
+                <span className="lang-orbit-rule" aria-hidden="true">
+                  <i style={{ inlineSize: `${Math.max(2, Math.round(seg.share * 100))}%` }} />
+                </span>
+              ) : null}
             </button>
           ))}
+          {remainder > 0 ? (
+            <p className="lang-orbit-remainder">+{remainder} more</p>
+          ) : null}
           {active && (
             <p className="lang-orbit-focus" aria-live="polite">
               <strong>{active.label}</strong>

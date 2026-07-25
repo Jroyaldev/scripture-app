@@ -9720,14 +9720,16 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 
 /* --- Rendering Orbit (gloss spectrum) --- */
 
+/* They are entries, not cards. The fill, the border and the accent glow were
+   three devices saying "this is a group of related rows", which the interval
+   above and below already says — and inside a paper plane they add a third
+   fill the two-plane rule has no room for. */
 .lang-orbit {
-  margin: 12px 0 10px;
-  padding: 10px 8px 8px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-subtle);
-  background:
-    radial-gradient(ellipse 80% 70% at 20% 0%, color-mix(in srgb, var(--accent-current) 8%, transparent), transparent 55%),
-    var(--bg-secondary);
+  margin: var(--band) 0 calc(var(--band) / 2);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
 }
 
 .lang-orbit-kicker {
@@ -9756,6 +9758,42 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   display: flex;
   gap: 6px;
   align-items: flex-start;
+}
+
+/* Three ranked rows with a 3px proportion rule, replacing a nine-hue donut
+   whose legend was already doing all the work. One hue at three lightnesses by
+   rank: the rule is the comparison, so a swatch would only be a key to itself.
+
+   Rank is carried by weight of colour, not by a different colour — reading
+   order already says which is first. */
+.lang-orbit-rule {
+  grid-column: 1 / -1;
+  display: block;
+  height: 3px;
+  margin-top: 2px;
+  border-radius: var(--radius-mark);
+  background: color-mix(in srgb, var(--study-gold) 10%, transparent);
+}
+
+.lang-orbit-rule > i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--study-gold);
+}
+
+.lang-orbit-row[data-rank="2"] .lang-orbit-rule > i {
+  background: color-mix(in srgb, var(--study-gold) 62%, var(--bg-reading));
+}
+
+.lang-orbit-row[data-rank="3"] .lang-orbit-rule > i {
+  background: color-mix(in srgb, var(--study-gold) 38%, var(--bg-reading));
+}
+
+.lang-orbit-remainder {
+  margin: 4px 0 0;
+  font: 400 10.5px var(--font-ui);
+  color: var(--text-tertiary);
 }
 
 .lang-orbit-svg {
@@ -9815,9 +9853,9 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 
 .lang-orbit-row {
   display: grid;
-  grid-template-columns: 8px minmax(0, 1fr) auto;
-  gap: 4px;
-  align-items: center;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 8px;
+  align-items: baseline;
   border: none;
   background: transparent;
   padding: 2px 4px;
@@ -14726,10 +14764,6 @@ textarea:focus-visible,
    are intentionally translucent, so use the atmosphere's opaque base here
    to prevent labels from ghosting through the title while retaining blur at
    the edge. */
-
-.lang-orbit {
-  padding: 11px 10px 9px;
-}
 
 .lang-orbit-body {
   gap: 9px;
