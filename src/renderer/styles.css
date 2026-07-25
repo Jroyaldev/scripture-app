@@ -77,10 +77,21 @@
   --hl-pink-mark: rgb(194, 87, 138);
   --hl-purple-mark: rgb(124, 92, 176);
 
-  /* Ink — four steps, not a gradient. */
+  /* Ink — four steps, not a gradient.
+
+     Ink-3 carries almost every piece of mono chrome in the app at 8–10px, and
+     since the header's instruments became words it is load-bearing type rather
+     than decoration. The drawn #928C84 measured 3.22:1 on paper, so it moved
+     up the lightness axis until it cleared 4.6:1 — not 4.5, because subpixel
+     antialiasing on 9px mono eats the margin at the threshold. Hue and chroma
+     are the drawn values untouched; only OKLCH lightness moved, which is why
+     the ramp still reads as one family. Ink-2 deliberately did NOT move: it is
+     a drawn Rev 01 foundation swatch, and its small delta to ink-3 is carried
+     by voice — ink-3 is mono uppercase at 0.1em+, ink-2 is sans or serif
+     sentence case at 12.5–13px. */
   --text-primary: #322F2B;
   --text-secondary: #6B6660;
-  --text-tertiary: #928C84;
+  --text-tertiary: #77726A;
   --text-verse-number: #B4AEA5;
   --text-link: #96684A;
   --text-link-hover: #7A5238;
@@ -107,7 +118,10 @@
   --accent-user: #96684A;
   --accent-source: #5A6A7E;
   --accent-ai: #5A6A7E;
-  --accent-xref: #928C84;
+  /* Byte-identical to --text-tertiary in all four atmospheres, and it inks
+     cross-reference text. It moves with ink-3 or the ramp visibly forks:
+     cross-refs would sit at 3.2:1 while every other quiet label lifted. */
+  --accent-xref: #77726A;
   --accent-current: #96684A;
 
   /* --study-gold is the seal under its shipped name. Reserved for authorship
@@ -384,8 +398,19 @@
 }
 .entity-research-title-row h2,
 .lang-detail-heading .lang-detail-form { min-width: 0; flex: 1; }
-.lang-capture-action,
 .ai-insight-actions .margin-capture-action { opacity: 0.68; }
+
+/* The word entry's writing verb is a footer verb, not a hover reveal. It sat in
+   the 0.68 group above while `.margin-capture-action` was already holding it at
+   0.45, and the two multiplied into a label at roughly a third of its ink. The
+   0.45 base is right for the rows that genuinely reveal on hover; this one is
+   always there, so it is drawn as C2·7 draws it — 11.5px, medium, ink. */
+.lang-capture-action {
+  opacity: 1;
+  color: var(--text-primary);
+  font-size: 0.71875rem;   /* 11.5 */
+  font-weight: var(--fw-medium);
+}
 .lang-sources { margin-top: 12px; }
 
 .note-detail-eyebrow { justify-content: flex-start; }
@@ -459,7 +484,10 @@
 
   --text-primary: #EDE8E0;
   --text-secondary: #A8A19A;
-  --text-tertiary: #7A736C;
+  /* Ink-3 lifts away from the ground here rather than toward it, and lands at
+     4.61:1 on Ink's paper. Same rule as Paper's: hue and chroma held, OKLCH
+     lightness the only axis that moved. */
+  --text-tertiary: #8B837C;
   --text-verse-number: #58524C;
   --text-link: #C99A6E;
   --text-link-hover: #DDB289;
@@ -476,7 +504,9 @@
   --accent-warm-light: #DDB289;
   --accent-source: #8FA3B8;
   --accent-ai: #8FA3B8;
-  --accent-xref: #7A736C;
+  /* Ink-3 under its cross-reference name; the two are one value in every
+     atmosphere, so they move together or the ramp forks. */
+  --accent-xref: #8B837C;
   --accent-current: #C99A6E;
   --accent-user: #C99A6E;
 
@@ -599,7 +629,9 @@
 
   --text-primary: #2E2E33;
   --text-secondary: #66666E;
-  --text-tertiary: #8A8A92;
+  /* 4.63:1 on Porcelain's pure-white paper, which is the least forgiving of
+     the four grounds. Cool hue and chroma held; lightness alone moved. */
+  --text-tertiary: #74747C;
   --text-verse-number: #ADADB6;
   /* A link is the seal under a third name, exactly as it is on Paper and in
      Ink. Porcelain had it as a slate blue, which said "machine wrote this"
@@ -628,7 +660,8 @@
   --accent-warm-light: #A87A58;
   --accent-source: #5A6A7E;
   --accent-ai: #5A6A7E;
-  --accent-xref: #8A8A92;
+  /* Ink-3 under its cross-reference name; one value, so it moves with it. */
+  --accent-xref: #74747C;
   --accent-current: #96684A;
   --accent-user: #96684A;
   --study-gold: #96684A;
@@ -670,7 +703,9 @@
      same lightness, not a brighter one. */
   --text-primary: #E9E9EC;
   --text-secondary: #A0A0A8;
-  --text-tertiary: #76767D;
+  /* 4.64:1 on Onyx's paper, lifting away from the ground as Ink's does. Cool
+     hue and chroma held; lightness alone moved. */
+  --text-tertiary: #85858C;
   --text-verse-number: #55555E;
   --text-link: #C99A6E;
   --text-link-hover: #DDB289;
@@ -691,7 +726,8 @@
   --accent-warm-light: #DDB289;
   --accent-source: #8FA3B8;
   --accent-ai: #8FA3B8;
-  --accent-xref: #76767D;
+  /* Ink-3 under its cross-reference name; one value, so it moves with it. */
+  --accent-xref: #85858C;
   --accent-current: #C99A6E;
   --accent-user: #C99A6E;
   --study-gold: #C99A6E;
@@ -2335,22 +2371,93 @@ html, body, #root {
 }
 
 .topbar-navigation {
-  gap: 8px;
+  gap: 18px;
 }
 
 .topbar-tools {
   flex-shrink: 0;
-  gap: 2px;
+  gap: 20px;
 }
 
-/* Interval, not a line. The tools are already obviously a different kind of
-   thing from the reference beside them; a rule between them is the header
-   explaining something the type has already said. */
-.topbar-tool-divider {
-  width: 0;
-  height: 0;
-  margin: 0 6px;
+/* The instruments: translation, comfort, margin, focus, theme, in that order
+   and never another. Each is the word for the thing it operates, set in the
+   chrome voice, and its whole state vocabulary is a 1.5px seal underline —
+   §E: "On is a 1.5px seal underline. Off is nothing. No switches, no pills,
+   no filled state — the same mark language as the rail and the register, at
+   the smallest scale it appears."
+
+   The transparent border at rest is Reserve stated in one declaration: the
+   mark's 1.5px is already spent in the resting layout, so turning an
+   instrument on cannot move the four beside it, and the header never reflows
+   when you toggle the margin. */
+.topbar-instrument {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 0 0 2px;
+  border: 0;
+  border-bottom: 1.5px solid transparent;
+  border-radius: 0;
   background: none;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+/* The word is 9.5px tall; the thing you press is not. A transparent extent
+   takes the pointer target back to the band's own height without the mark
+   drifting away from the word it belongs to — it stays inside the 20px
+   interval, so no two instruments can steal each other's clicks. */
+.topbar-instrument::before {
+  content: "";
+  position: absolute;
+  inset: -11px -8px -9px;
+}
+
+/* On, under both of the names the app has for it: a toggle is pressed, a
+   picker is expanded, and neither is drawn any differently because both mean
+   "this instrument is doing something right now". */
+.topbar-instrument[aria-pressed="true"],
+.topbar-instrument[aria-expanded="true"] {
+  border-bottom-color: var(--accent-seal);
+  color: var(--text-primary);
+}
+
+/* Nothing moves on hover, literally: ink, and nothing else. */
+.topbar-instrument:hover:not(:disabled) {
+  color: var(--text-primary);
+}
+
+.topbar-instrument:focus-visible {
+  outline: 2px solid var(--study-gold);
+  outline-offset: 3px;
+}
+
+.topbar-instrument:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+/* Drawn beside the reference and never rendered: the chapter count. It is the
+   one piece of the header that answers "how much of this book is left", and it
+   is chrome, so it takes the instruments' voice rather than the reference's. */
+.passage-chapter-count {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .topbar-spacer {
@@ -2560,32 +2667,9 @@ html, body, #root {
   position: relative;
 }
 
-.version-picker-btn {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  height: 34px;
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 600;
-  padding: 0 9px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast);
-}
-
-.version-picker-btn:hover,
-.version-picker-btn.open {
-  background: var(--study-hover-surface);
-  color: var(--text-primary);
-}
-
-.version-picker-btn svg {
-  color: var(--text-tertiary);
-}
+/* The translation's own button is gone: it is the first of the five
+   instruments now, so it is styled by .topbar-instrument like the other four
+   and carries no chrome of its own. */
 
 .version-picker-item {
   display: flex;
@@ -2666,40 +2750,19 @@ html, body, #root {
 
 /* Theme toggle */
 
-.theme-toggle-btn {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: none;
-  color: var(--text-tertiary);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast);
-}
+/* The orb's button is the fifth instrument, so it is .topbar-instrument like
+   the other four and has no chrome of its own. Only the swatch is drawn here.
 
-.theme-toggle-btn:hover,
-.theme-toggle-btn.open {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-}
-
+   §E draws a squircle, not a dot: 16px square on a 6px radius. The radius names
+   --radius-sm rather than the literal 6px because every radius in the 6-20px
+   band has to name a token, or the family drifts one swatch at a time. */
 .theme-orb {
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
   display: block;
-  border-radius: 50%;
+  border-radius: var(--radius-sm);
   border: 1px solid rgba(24, 21, 17, 0.19);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.theme-toggle-btn:hover .theme-orb,
-.theme-toggle-btn.open .theme-orb {
-  transform: scale(1.08);
-  box-shadow: 0 0 0 3px var(--study-gold-focus), inset 0 0 0 1px rgba(255, 255, 255, 0.25);
 }
 
 /* paper 0-58% · seal 59-67% · canvas 68% — the swatch is the theme in
@@ -2709,27 +2772,8 @@ html, body, #root {
 .theme-orb-porcelain { background: linear-gradient(135deg, #FFFFFF 0 58%, #96684A 59% 67%, #F4F4F6 68%); border-color: rgba(0, 0, 0, 0.12); }
 .theme-orb-onyx { background: linear-gradient(135deg, #1C1C20 0 58%, #C99A6E 59% 67%, #131316 68%); border-color: rgba(233, 233, 236, 0.22); }
 
-/* Living Margin toggle (topbar, sibling of theme toggle) */
-
-.margin-toggle-btn {
-  position: relative;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: none;
-  color: var(--text-tertiary);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast);
-}
-
-.margin-toggle-btn:hover {
-  background: transparent;
-  color: var(--text-primary);
-}
+/* Living Margin toggle — the word "Margin", third of the five instruments, so
+   everything it looks like is .topbar-instrument and nothing is drawn here. */
 
 .passage-jump {
   width: 190px;
@@ -6297,44 +6341,11 @@ html, body, #root {
   box-shadow: var(--shadow-subtle);
 }
 
-.control-segmented {
-  display: flex;
-  gap: 2px;
-  padding: 3px;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--bg-secondary) 88%, transparent);
-}
-
-.control-segment {
-  position: relative;
-  flex: 1;
-  min-height: 30px;
-  padding: 5px 8px;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--text-secondary);
-  font: var(--fw-medium) 12px/1 var(--font-ui);
-  cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
-}
-
-.control-segment:hover {
-  background: color-mix(in srgb, var(--study-hover-surface) 58%, transparent);
-  color: var(--text-primary);
-}
-
-.control-segment.active,
-.control-segment[aria-checked="true"] {
-  background: var(--bg-reading);
-  color: var(--text-primary);
-  box-shadow: var(--shadow-subtle), inset 0 -2px var(--study-gold);
-}
-
-.control-segment:active {
-  transform: scale(0.98);
-}
+/* The segmented control was declared twice in this sheet, here and again in the
+   UX-pass section below, which meant every edit to it silently missed half of
+   itself and the later copy won on source order anyway. The surviving
+   declaration is the later one, next to .rc-seg, which it already shares a rule
+   with. */
 
 .control-menu-item {
   display: flex;
@@ -6778,12 +6789,14 @@ html, body, #root {
   height: 28px;
 }
 
+/* Ma: separate with space, not with lines. The tools' divider had already been
+   zeroed and this one was missed, which left the same rule half-removed inside
+   one band; both are now gone, and the arrows are divided from the reference by
+   the navigation row's own 18px interval and nothing else. */
 .chapter-nav-arrows {
   display: flex;
   align-items: center;
   gap: 0;
-  padding-left: 2px;
-  border-left: 1px solid var(--border-subtle);
 }
 
 .nav-arrow {
@@ -9174,8 +9187,12 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   background: color-mix(in srgb, var(--text-primary) 5%, transparent);
 }
 
+/* State is a mark, never a fill. The tinted capsule this used to paint said
+   "selected" a second time on top of the seal mark below, and a tint under a
+   word in the reading face is indistinguishable from a highlight the reader
+   made. The whole active state is the 2px seal rule and the label's weight. */
 .lang-word.is-active {
-  background: color-mix(in srgb, var(--accent-user) 10%, transparent);
+  background: none;
 }
 
 .lang-word-form {
@@ -9189,7 +9206,6 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 
 .lang-word.is-active .lang-word-form {
   color: var(--text-primary);
-  box-shadow: inset 0 -1.5px 0 color-mix(in srgb, var(--accent-user) 55%, transparent);
 }
 
 .lang-word-eng {
@@ -9208,6 +9224,9 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   color: var(--text-secondary);
 }
 
+/* "All 47" is a count, so it takes tabular figures like every other count on
+   this surface — and it takes them in the UI sans, because mono is withdrawn
+   from the margin entirely. */
 .lang-more {
   background: none;
   border: none;
@@ -9215,11 +9234,14 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   margin: 0;
   font-size: 11px;
   color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
   cursor: pointer;
 }
 
+/* Seal means a human did this. The pointer being somewhere is not authorship,
+   so hover is an ink change and nothing more. */
 .lang-more:hover {
-  color: var(--accent-user);
+  color: var(--text-primary);
 }
 
 /* Detail panel under the strip */
@@ -9270,14 +9292,18 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   font-family: var(--font-ui);
 }
 
+/* Nothing moves on hover, and nothing fills. Opening the form notes is worth
+   one shade of ink on the line you are about to open. */
 .lang-form-row:hover .lang-chip {
-  background: color-mix(in srgb, var(--accent-user) 8%, transparent);
+  color: var(--text-secondary);
 }
 
+/* The separator is a middle dot inside the line, so the gap between chips is
+   the dot's own margin — a flex gap on top of it would space the line twice. */
 .lang-form-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 0;
   flex: 1;
   min-width: 0;
 }
@@ -9332,9 +9358,13 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   font-weight: 600;
 }
 
+/* Mono is withdrawn from the margin — the moment a parse code or a count is set
+   in the instrument face the entry stops being a page and becomes a database
+   row. So counts take the UI sans with tabular figures, at a size a person can
+   actually read rather than a tracked 9px that only imitates mono. */
 .lang-orbit-mode-meta {
   margin-left: auto;
-  font-size: 10.5px;
+  font-size: 11px;
   color: var(--text-tertiary);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -9385,10 +9415,14 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   margin: 0 0 10px;
 }
 
+/* C2·7 keeps the truncated definition with a disclosure, but stops setting it
+   as a label-and-value pair on one line: the label takes its own line so the
+   gloss gets the full column width and can be read as prose. */
 .lang-def-row {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
   width: 100%;
   margin: 0;
   padding: 4px 0;
@@ -9399,29 +9433,35 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   font-family: var(--font-ui);
 }
 
+/* A wash under a row is the highlight vocabulary. A definition row is not
+   marked, so hovering it changes nothing but the disclosure word's ink. */
 .lang-def-row:hover {
-  background: color-mix(in srgb, var(--accent-user) 5%, transparent);
-  border-radius: 4px;
+  background: none;
 }
 
+/* Sentence case, no tracking: a kicker set in small caps and tracked is the
+   chrome voice, and this label sits inside an entry the reader is reading. */
 .lang-def-kicker {
   flex-shrink: 0;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 400;
   color: var(--text-tertiary);
 }
 
+/* A gloss string is content, not a quotation — G3·05: only quotation is ever
+   clipped. The truncation is already done by content upstream (firstSense is
+   the first clause of the entry), so nothing here needs an ellipsis to hide
+   what it could not fit; it wraps and finishes. */
 .lang-def-preview {
-  flex: 1;
+  align-self: stretch;
   min-width: 0;
-  font-size: 12.5px;
-  line-height: 1.4;
-  color: var(--text-secondary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-family: var(--font-reading);
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--text-primary);
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
 }
 
 .lang-def-preview.is-open-label {
@@ -9429,14 +9469,20 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   font-variant-numeric: tabular-nums;
 }
 
+/* The caret became the word "more" / "less", so it is set in the UI sans
+   inside a serif line and reads as an action rather than an ornament. */
 .lang-def-caret {
-  flex-shrink: 0;
-  font-size: 10px;
+  margin-left: 6px;
+  font-family: var(--font-ui);
+  font-size: 11.5px;
   color: var(--text-tertiary);
+  white-space: nowrap;
 }
 
+/* Seal is human authorship. An open disclosure is not something the reader
+   wrote, so the open word takes ink rather than the accent. */
 .lang-def-row.is-open .lang-def-caret {
-  color: var(--accent-user);
+  color: var(--text-secondary);
 }
 
 .lang-def-body {
@@ -9503,36 +9549,40 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   min-width: 0;
 }
 
+/* C2·7 steps away from the chips: three chips of different shapes carrying
+   language, morph code and lexicon key read as filter controls but are labels.
+   They collapse into one quiet line — "Adjective · dative singular feminine" —
+   which is a sentence about the word, not a row of controls to press. */
 .lang-chip {
   font-size: 11px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  background: var(--bg-secondary);
-  padding: 2px 7px;
-  border-radius: 4px;
+  font-weight: 400;
+  color: var(--text-tertiary);
+  background: none;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
   line-height: 1.35;
 }
 
-/* Part of speech — slightly stronger so the “kind of word” reads first */
+/* The dot is the separator the drawn line uses. It belongs to the chip that
+   follows, so a lone chip never trails one. */
+.lang-chip + .lang-chip::before {
+  content: "·";
+  margin: 0 6px;
+  opacity: 0.6;
+}
+
+/* Part of speech still reads first, but by one shade of ink rather than by a
+   second fill: word order was already saying it. */
 .lang-chip-pos {
-  font-weight: 600;
-  color: var(--text-primary);
-  background: color-mix(in srgb, var(--bg-secondary) 70%, var(--border-medium));
+  color: var(--text-secondary);
 }
 
-.lang-chip-more {
-  color: var(--text-tertiary);
-  background: transparent;
-  border: 1px dashed var(--border-medium);
-  font-weight: 500;
-}
-
-/* Uncatalogued label — still shown for correction, never alarming */
+/* Uncatalogued label — still shown for correction, never alarming. The dashed
+   box said "input" about a label; italic says "we do not know" and stops. */
 .lang-chip-unknown {
   color: var(--text-tertiary);
   font-style: italic;
-  background: transparent;
-  border: 1px solid var(--border-subtle);
 }
 
 .lang-chip-id {
@@ -9908,14 +9958,19 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
    rank: the rule is the comparison, so a swatch would only be a key to itself.
 
    Rank is carried by weight of colour, not by a different colour — reading
-   order already says which is first. */
+   order already says which is first.
+
+   The track is the study rule, #E2DED6, and it is square. A gold track makes
+   the whole strip read as seal, and seal marks the majority bar only — a
+   proportion you can see at a glance stops working the moment every bar is
+   already the accent colour. */
 .lang-orbit-rule {
   grid-column: 1 / -1;
   display: block;
   height: 3px;
   margin-top: 2px;
-  border-radius: var(--radius-mark);
-  background: color-mix(in srgb, var(--study-gold) 10%, transparent);
+  border-radius: 0;
+  background: var(--border-subtle);
 }
 
 .lang-orbit-rule > i {
@@ -9939,51 +9994,10 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   color: var(--text-tertiary);
 }
 
-.lang-orbit-svg {
-  flex: 0 0 auto;
-  display: block;
-}
-
-.lang-orbit-halo {
-  fill: none;
-  stroke: var(--border-subtle);
-  stroke-width: 1;
-  opacity: 0.7;
-}
-
-.lang-orbit-hub {
-  fill: var(--bg-reading);
-  stroke: var(--border-medium);
-  stroke-width: 1;
-}
-
-.lang-orbit-hub-lemma {
-  font-family: var(--font-reading);
-  font-size: 11px;
-  font-weight: 600;
-  fill: var(--text-primary);
-}
-
-.lang-orbit-hub-meta {
-  font-family: var(--font-ui);
-  font-size: 10px;
-  fill: var(--text-tertiary);
-}
-
-.lang-orbit-seg {
-  cursor: pointer;
-  transition: opacity 120ms ease, filter 120ms ease;
-}
-
-.lang-orbit-seg.is-current {
-  filter: brightness(1.08);
-  stroke: var(--bg-reading);
-  stroke-width: 1.25;
-}
-
-.lang-orbit-seg.is-hover {
-  filter: brightness(1.12);
-}
+/* The donut's own furniture — the ring, its halo, the 70px hub and the nine
+   segments — went out with the donut. RenderingOrbit renders a legend, its rows
+   and their rules and nothing else, so these were nine rules describing a shape
+   no longer on the page, waiting to be reinstated by someone who found them. */
 
 .lang-orbit-legend {
   flex: 1 1 auto;
@@ -10010,9 +10024,11 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   transition: background var(--transition-fast);
 }
 
+/* A band of tint behind a row is a third fill on a paper plane. The ink change
+   below is the whole hover. */
 .lang-orbit-row:hover,
 .lang-orbit-row.is-hover {
-  background: color-mix(in srgb, var(--text-tertiary) 8%, transparent);
+  background: none;
 }
 
 .lang-orbit-row.is-current .lang-orbit-label,
@@ -10021,22 +10037,22 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   font-weight: 600;
 }
 
-.lang-orbit-swatch {
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-}
-
+/* C2·7's stated reason the bars beat the donut is that they carry a long label
+   — "deserted place", "on the one hand … but on the other" — which no slice
+   can. Clipping the label to one line throws away the argument for the form,
+   so the label is set in the reading face at the entry's own size and wraps. */
 .lang-orbit-label {
-  font-size: 11.5px;
-  color: var(--text-secondary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-family: var(--font-reading);
+  font-size: 14.5px;
+  color: var(--text-primary);
+  overflow: visible;
+  white-space: normal;
 }
 
+/* The study writes this as "6 · 67%": a middle dot, not a multiplication sign,
+   because it is two facts about one rendering rather than an equation. */
 .lang-orbit-meta {
-  font-size: 9.5px;
+  font-size: 11px;
   color: var(--text-tertiary);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -10062,23 +10078,29 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   font-weight: 600;
 }
 
-/* Senses are a lexicon hierarchy, not a frequency distribution. */
+/* Senses are a lexicon hierarchy, not a frequency distribution.
+
+   C2·7: "the grey card becomes hairlines". The border, the radius, the tinted
+   fill and the accent gradient were four devices saying "these rows belong
+   together", which one hairline between rows says on bare paper — and the fill
+   was a third plane inside a plane the two-plane rule has no room for. The
+   overflow clip went with the radius; it existed only to round the children. */
 .lang-sense-outline {
   margin: 12px 0 10px;
-  overflow: hidden;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  background:
-    radial-gradient(
-      ellipse 80% 70% at 20% 0%,
-      color-mix(in srgb, var(--accent-current) 6%, transparent),
-      transparent 55%
-    ),
-    var(--bg-secondary);
+  border: 0;
+  border-radius: 0;
+  background: none;
 }
 
-.lang-sense-primary + .lang-sense-primary {
-  border-top: 1px solid var(--border-subtle);
+/* The hairline hangs below each sense rather than above the next one, so the
+   list closes on a rule when something follows it (the "+N less common" line)
+   and simply stops when nothing does. */
+.lang-sense-primary {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.lang-sense-primary:last-child {
+  border-bottom: 0;
 }
 
 .lang-sense-primary-row,
@@ -10096,33 +10118,39 @@ button.lang-sense-branch-row {
   cursor: pointer;
 }
 
+/* The number hangs in a 9px column instead of sitting in a 22px box, and the
+   caret column becomes auto because the disclosure word sizes itself. The 10px
+   left padding stays: it is now the reserved gutter the current sense's seal
+   spine paints into, so nothing moves when a sense becomes the one in play. */
 .lang-sense-primary-row {
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr) 12px;
+  grid-template-columns: 9px minmax(0, 1fr) auto;
   gap: 8px;
   align-items: center;
   padding: 9px 10px;
   background: transparent;
-  transition: background var(--transition-fast);
 }
 
+/* Nothing moves and nothing fills on hover; the figure goes to ink. */
 .lang-sense-primary-row:hover,
 .lang-sense-primary.is-open > .lang-sense-primary-row {
-  background: color-mix(in srgb, var(--text-tertiary) 5%, transparent);
+  background: none;
 }
 
+.lang-sense-primary-row:hover .lang-sense-number,
+.lang-sense-primary.is-open > .lang-sense-primary-row .lang-sense-number {
+  color: var(--text-primary);
+}
+
+/* C2·7: "Numbered chips lose their colour fill and become hanging figures."
+   A numeral in a tinted bordered square reads as a button you can press; the
+   same numeral hanging at ink-3 reads as an enumeration, which is what it is. */
 .lang-sense-number {
-  display: grid;
-  width: 22px;
-  height: 22px;
-  place-items: center;
-  border: 1px solid color-mix(in srgb, var(--sense-color) 38%, var(--border-subtle));
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--sense-color) 14%, transparent);
-  color: color-mix(in srgb, var(--sense-color) 70%, var(--text-primary));
+  width: 9px;
+  color: var(--text-tertiary);
   font-family: var(--font-ui);
-  font-size: 10.5px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 400;
   font-variant-numeric: tabular-nums;
 }
 
@@ -10159,8 +10187,16 @@ button.lang-sense-branch-row {
   text-transform: uppercase;
 }
 
+/* State is a mark, never a fill. The panel's job is to say which sense you are
+   reading, and it says it with a 2px seal spine in the row's reserved left
+   gutter — the same mark the rail uses for an active destination. */
+.lang-sense-primary.is-current {
+  background: none;
+  box-shadow: inset 2px 0 0 var(--accent-seal);
+}
+
 .lang-sense-primary.is-current > .lang-sense-primary-row {
-  background: color-mix(in srgb, var(--accent-current) 4%, transparent);
+  background: none;
 }
 
 .lang-sense-outline.is-flat .lang-sense-primary-row {
@@ -10173,8 +10209,10 @@ button.lang-sense-branch-row {
   line-height: 1.4;
 }
 
+/* 10px of row padding + a 9px figure + an 8px gap: the revealed prose lands
+   under the sense it belongs to rather than under where the old chip was. */
 .lang-sense-flat-detail {
-  margin: 0 10px 10px 43px;
+  margin: 0 10px 10px 27px;
   padding: 1px 7px 1px 12px;
   border-left: 1px solid color-mix(in srgb, var(--sense-color) 34%, var(--border-subtle));
   animation: lang-sense-reveal 140ms ease-out;
@@ -10214,7 +10252,7 @@ button.lang-sense-branch-row {
 }
 
 .lang-sense-more {
-  padding: 7px 10px 8px 43px;
+  padding: 7px 10px 8px 27px;
   border-top: 1px solid var(--border-subtle);
   color: var(--text-tertiary);
   font-size: 9px;
@@ -10236,7 +10274,7 @@ button.lang-sense-branch-row {
 }
 
 .lang-sense-branches {
-  margin: 0 10px 9px 21px;
+  margin: 0 10px 9px 19px;
   padding: 2px 0 1px 14px;
   border-left: 1px solid color-mix(in srgb, var(--sense-color) 34%, var(--border-subtle));
   animation: lang-sense-reveal 140ms ease-out;
@@ -10340,26 +10378,29 @@ button.lang-sense-branch-row:hover {
   margin: 8px 0 4px;
 }
 
+/* C2·7: "A real destination, wrongly dressed as a button in the body." The
+   border, the sunk fill and the radius made a text link look like a form
+   control sitting in the middle of an entry. It is the same kind of verb as
+   Add to note, so it is drawn the same way: a line of type you can press. */
 .lang-syntax-toggle {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border: 1px solid var(--border-subtle);
-  background: var(--bg-secondary);
-  padding: 5px 10px;
-  border-radius: var(--radius-sm);
+  border: 0;
+  background: none;
+  padding: 0;
+  border-radius: 0;
   font-family: var(--font-ui);
   font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-weight: 500;
+  letter-spacing: 0;
   color: var(--text-secondary);
   cursor: pointer;
 }
 
 .lang-syntax-toggle:hover,
 .lang-syntax-toggle.is-open {
-  border-color: var(--border-medium);
-  background: var(--bg-reading);
+  background: none;
   color: var(--text-primary);
 }
 
@@ -13335,7 +13376,11 @@ button.lang-phrase-diagram-node:focus-visible {
 }
 
 .settings-control-row:last-child { border-bottom: 0; }
-.settings-segmented { width: 300px; }
+/* The 300px was there to stretch three pills across the column. There are no
+   pills any more, so a fixed width would leave the words bunched at the left of
+   an empty box while the select and the toggle beside them end at the right;
+   the control now shrinks to its words and shares their edge. */
+.settings-segmented { justify-self: end; }
 
 .settings-ai-summary {
   display: flex;
@@ -13381,42 +13426,15 @@ button.lang-phrase-diagram-node:focus-visible {
   cursor: pointer;
 }
 
-.settings-switch {
-  position: relative;
+/* The switch is gone. It was a pill with a border, a fill, a gold-tinted
+   checked state and a knob that slid — Mark, Plane and Ma broken at once, in
+   one 38x22 component, against a study that asks for the same mark language
+   "at the smallest scale it appears". So a settings toggle is now the same word
+   the header's instruments are, and only its placement in the row is stated
+   here. */
+.settings-toggle {
   justify-self: end;
-  width: 38px;
-  height: 22px;
-  padding: 0;
-  border: 1px solid var(--border-medium);
-  border-radius: 999px;
-  background: var(--bg-secondary);
-  cursor: pointer;
-  transition: background var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
-
-.settings-switch > span {
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--text-tertiary);
-  box-shadow: var(--shadow-subtle);
-  transition: transform var(--transition-fast), background var(--transition-fast);
-}
-
-.settings-switch[aria-checked="true"] {
-  border-color: var(--study-gold);
-  background: color-mix(in srgb, var(--study-gold) 26%, var(--bg-secondary));
-}
-
-.settings-switch[aria-checked="true"] > span {
-  background: var(--study-gold);
-  transform: translateX(16px);
-}
-
-.settings-switch:disabled { cursor: not-allowed; opacity: 0.48; }
 
 .settings-inline-field {
   display: grid;
@@ -13810,9 +13828,13 @@ textarea:focus-visible,
   box-shadow: 0 0 0 3px var(--study-gold-focus);
 }
 
+/* The inset offset was drawn for a segment that was a 30px pill with room
+   inside it. A segment is now the word itself, so an inset ring would strike
+   through the type it is meant to point at; it takes the same outward offset
+   the header's instruments use, and for the same reason. */
 .control-segment:focus-visible {
   outline: 2px solid var(--study-gold);
-  outline-offset: -1px;
+  outline-offset: 3px;
 }
 
 /* ==========================================================================
@@ -13927,59 +13949,14 @@ textarea:focus-visible,
 
 /* --- Reading comfort chrome --- */
 
-.reading-comfort {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-right: 0;
-}
-.reading-comfort-btn {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-  font-family: var(--font-ui);
-  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
-}
-.reading-comfort-btn:hover,
-.reading-comfort-btn.open {
-  background: transparent;
-  color: var(--text-primary);
-}
+/* The comfort and focus controls were two 32px icon buttons in a wrapper, with
+   the seal underline painted under the icons by a ::after. The rule was already
+   right and only the thing it was drawn under was wrong, so it is gone rather
+   than adjusted: comfort and focus are now the second and fourth
+   .topbar-instrument, and the border-bottom there IS this mark. The wrapper
+   went with them, because the fixed order puts Margin between the two and a
+   wrapper holding both would have made that impossible. */
 
-/* On is a mark; off is nothing. The space for the mark exists at rest, so
-   toggling one never moves the row of instruments beside it. */
-.reading-comfort-btn::after,
-.margin-toggle-btn::after {
-  content: "";
-  position: absolute;
-  left: 8px;
-  right: 8px;
-  bottom: 3px;
-  height: 1.5px;
-  border-radius: var(--radius-mark);
-  background: transparent;
-}
-
-.reading-comfort-btn.active,
-.margin-toggle-btn.active {
-  background: transparent;
-  color: var(--text-primary);
-  border-color: transparent;
-}
-
-.reading-comfort-btn.active::after,
-.margin-toggle-btn.active::after {
-  background: var(--study-gold);
-}
 .reading-comfort-popover {
   padding: 12px 12px 10px;
 }
@@ -14018,39 +13995,69 @@ textarea:focus-visible,
   text-transform: uppercase;
   margin-bottom: 6px;
 }
+/* The trough is gone. A sunk, bordered well holding three pills is Plane and
+   Mark broken together — a third fill where there are only two planes, and a
+   filled chip where state is a mark — so the container stops being a container
+   and becomes what it always was: three words on an interval. */
 .rc-segmented,
 .control-segmented {
   display: flex;
-  gap: 2px;
-  padding: 3px;
-  background: var(--bg-secondary);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-subtle);
+  gap: 20px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
 }
+
+/* Same voice and same mark as the header's instruments, because it is the same
+   decision at the same scale: mono, uppercase, ink-3, and a 1.5px seal
+   underline that is reserved at rest so choosing a segment never shifts the
+   two beside it. flex: 1 goes with the trough — a segment that stretches puts
+   its underline under a third of the row rather than under the word. */
 .rc-seg,
 .control-segment {
-  flex: 1;
-  border: none;
+  position: relative;
+  flex: 0 0 auto;
+  padding: 0 0 2px;
+  border: 0;
+  border-bottom: 1.5px solid transparent;
+  border-radius: 0;
   background: transparent;
-  color: var(--text-secondary);
-  font-family: var(--font-ui);
-  font-size: 12px;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
   font-weight: var(--fw-medium);
-  padding: 6px 8px;
-  border-radius: var(--radius-sm);
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
+  transition: color var(--transition-fast), border-color var(--transition-fast);
 }
+
+/* The word is small; the thing you press is not. Same reserved extent the
+   header's instruments use, sized to stay inside the 20px interval. */
+.rc-seg::before,
+.control-segment::before {
+  content: "";
+  position: absolute;
+  inset: -11px -8px -9px;
+}
+
 .rc-seg:hover,
 .control-segment:hover {
   color: var(--text-primary);
 }
+
+/* No fill and no shadow. The old rule already had the right idea — an
+   `inset 0 -2px var(--study-gold)` is a seal underline — but it was wearing a
+   pill and a raised paper chip on top of it, which said "selected" three times. */
 .rc-seg.active,
 .control-segment.active,
 .control-segment[aria-checked="true"] {
-  background: var(--bg-reading);
+  background: none;
   color: var(--text-primary);
-  box-shadow: var(--shadow-subtle), inset 0 -2px var(--study-gold);
+  border-bottom-color: var(--accent-seal);
+  box-shadow: none;
 }
 .rc-seg-letter.size-s { font-size: 11px; }
 .rc-seg-letter.size-m { font-size: 13px; }
@@ -14823,26 +14830,18 @@ textarea:focus-visible,
   color: var(--text-primary);
 }
 
+/* Root Study A, for the rail's active row and true here too: a 2px seal mark,
+   the label to ink and 600, no background change. The fill plus the 1px inset
+   ring were a second and third device saying what the seal mark already says,
+   and inside the interlinear a tinted capsule reads as a highlight. */
 .lang-word.is-active {
-  background: color-mix(in srgb, var(--bg-reading) 72%, var(--study-hover-surface));
-  box-shadow:
-    inset 0 0 0 1px var(--border-subtle),
-    inset 0 -2px var(--study-gold);
+  background: none;
+  box-shadow: inset 0 -2px var(--study-gold);
   color: var(--text-primary);
 }
 
 .lang-word.is-active .lang-word-form {
-  box-shadow: none;
-}
-
-.lang-detail {
-  margin-top: 8px;
-  padding-top: 15px;
-}
-
-.lang-detail-form {
-  font-size: 23px;
-  font-weight: 560;
+  font-weight: 600;
 }
 
 /* Word-map tabs behave like the Structure tabs: one spatial keyboard path,
@@ -14894,22 +14893,30 @@ textarea:focus-visible,
   border-radius: var(--radius-sm);
 }
 
+/* Size and tracking are set once, above. A tracked 9px label reads as mono
+   without being mono, which is the worst of both: it borrows the instrument
+   voice the margin has withdrawn and gives up legibility to do it. */
 .lang-orbit-mode-meta {
   padding: 0 2px 1px 8px;
   font-family: var(--font-ui);
-  font-size: 9px;
-  letter-spacing: 0.015em;
 }
 
 .lang-orbit-panel:focus {
   outline: none;
 }
 
+/* This rule is the one that already went wrong once. The rule above on
+   `.lang-orbit` alone had removed the fill for the stated reason that a third
+   fill has no room on a paper plane; this one has the same specificity and
+   comes later, so writing a background here silently puts the card back — and
+   it put it back on the sense outline too. C2·7 draws the ranked block on bare
+   paper: a column, an 11px gap, and 16px above / 18px below. Keep it bare. */
 .lang-orbit,
 .lang-sense-outline {
   margin: 0 0 11px;
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--bg-secondary) 58%, transparent);
+  border: 0;
+  border-radius: 0;
+  background: none;
   box-shadow: none;
 }
 
@@ -14933,27 +14940,26 @@ textarea:focus-visible,
   outline-offset: -1px;
 }
 
-.lang-sense-number {
-  background: color-mix(in srgb, var(--sense-color) 9%, transparent);
-  border-color: color-mix(in srgb, var(--sense-color) 25%, var(--border-subtle));
-}
+/* The sense number is a hanging figure now, so it has no box left to tint. */
 
 .lang-sense-primary.is-current > .lang-sense-primary-row {
-  background: color-mix(in srgb, var(--study-hover-surface) 58%, transparent);
+  background: none;
   color: var(--text-primary);
 }
 
+/* The hit target stays 32px tall — space for a control is reserved in the
+   resting layout — but the control itself is type, so it gains no fill, no
+   radius and no horizontal padding that would push it out of the column. */
 .lang-syntax-toggle {
   min-height: 32px;
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
-  background: transparent;
+  padding: 6px 0;
+  border-radius: 0;
+  background: none;
 }
 
 .lang-syntax-toggle:hover,
 .lang-syntax-toggle.is-open {
-  background: var(--study-hover-surface);
-  border-color: var(--study-hover-line);
+  background: none;
   color: var(--text-primary);
 }
 

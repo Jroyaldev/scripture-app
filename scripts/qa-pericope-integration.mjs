@@ -192,7 +192,7 @@ try {
   for (const theme of THEMES) {
     const current = await driver.evaluate(`document.querySelector(".app-shell")?.dataset.theme`);
     if (current !== theme) {
-      await driver.evaluate(`document.querySelector(".theme-toggle-btn")?.click()`);
+      await driver.evaluate(`document.querySelector("[data-instrument=theme]")?.click()`);
       await driver.waitFor(`Boolean(document.querySelector(${JSON.stringify(`[data-theme-id="${theme}"]`)}))`);
       await driver.evaluate(`document.querySelector(${JSON.stringify(`[data-theme-id="${theme}"]`)})?.click()`);
       await driver.waitFor(`document.querySelector(".app-shell")?.dataset.theme === ${JSON.stringify(theme)}`);

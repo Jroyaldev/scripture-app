@@ -557,17 +557,27 @@ export function SettingsPage({
                       <span className="settings-control-label" id="network-background-label">Background network</span>
                       <p id="network-background-help">Allow background jobs to contact configured network providers.</p>
                     </div>
+                    {/* The same word-toggle the reading header uses, because it
+                        is the same decision: on is a 1.5px seal underline, off
+                        is nothing. The word stays "Allow" in both states so the
+                        row cannot reflow as you press it, and aria-pressed
+                        carries what the underline carries. It replaces
+                        role="switch"/aria-checked because a pressed button is
+                        what this now is; aria-labelledby names the row label and
+                        the button's own word, so the accessible name reads
+                        "Background network Allow" and contains the text a
+                        speech-input user can see. */}
                     <button
                       type="button"
-                      className="settings-switch"
-                      role="switch"
-                      aria-checked={envelope.networkBackground}
-                      aria-labelledby="network-background-label"
+                      id="network-background-toggle"
+                      className="topbar-instrument settings-toggle"
+                      aria-pressed={envelope.networkBackground}
+                      aria-labelledby="network-background-label network-background-toggle"
                       aria-describedby="network-background-help"
                       disabled={saving}
                       onClick={() => void persistEnvelope({ ...envelope, networkBackground: !envelope.networkBackground }, envelope.networkBackground ? "Background network blocked." : "Background network allowed.")}
                     >
-                      <span aria-hidden="true" />
+                      Allow
                     </button>
                   </div>
 

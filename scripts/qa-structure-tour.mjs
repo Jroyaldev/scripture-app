@@ -119,17 +119,17 @@ await evaluate(`(() => {
 await sleep(800);
 
 const marginOpen = await evaluate(
-  `document.querySelector(".margin-toggle-btn")?.classList.contains("active") ?? false`,
+  `document.querySelector("[data-instrument=margin]")?.getAttribute("aria-pressed") === "true"`,
 );
 if (!marginOpen) {
-  await evaluate(`document.querySelector(".margin-toggle-btn")?.click()`);
+  await evaluate(`document.querySelector("[data-instrument=margin]")?.click()`);
   await sleep(500);
 }
 
 // Use BSB where available so the visible passage and source glosses are stable.
-const version = await evaluate(`document.querySelector(".version-picker-btn")?.textContent ?? ""`);
+const version = await evaluate(`document.querySelector("[data-instrument=translation]")?.textContent ?? ""`);
 if (!/BSB/i.test(version)) {
-  await evaluate(`document.querySelector(".version-picker-btn")?.click()`);
+  await evaluate(`document.querySelector("[data-instrument=translation]")?.click()`);
   await sleep(250);
   await evaluate(`
     [...document.querySelectorAll(".version-picker-item")]
@@ -194,7 +194,7 @@ const themes = originallyDark ? ["dark", "light"] : ["light", "dark"];
 
 for (let themeIndex = 0; themeIndex < themes.length; themeIndex += 1) {
   if (themeIndex > 0) {
-    await evaluate(`document.querySelector(".theme-toggle-btn")?.click()`);
+    await evaluate(`document.querySelector("[data-instrument=theme]")?.click()`);
     await sleep(350);
   }
   const modeLabels = await evaluate(`
@@ -331,7 +331,7 @@ for (let themeIndex = 0; themeIndex < themes.length; themeIndex += 1) {
   }
 }
 
-await evaluate(`document.querySelector(".theme-toggle-btn")?.click()`);
+await evaluate(`document.querySelector("[data-instrument=theme]")?.click()`);
 await sleep(250);
 await evaluate(`document.querySelector(".structure-modal-close")?.click()`);
 await sleep(180);

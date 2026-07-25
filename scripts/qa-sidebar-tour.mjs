@@ -98,7 +98,7 @@ async function moveTo(selector) {
 async function setTheme(theme) {
   const current = await evaluate(`document.querySelector(".app-shell")?.dataset.theme ?? "light"`);
   if (current === theme) return;
-  await evaluate(`document.querySelector(".theme-toggle-btn")?.click()`);
+  await evaluate(`document.querySelector("[data-instrument=theme]")?.click()`);
   await sleep(180);
   const changed = await evaluate(`(() => {
     const option = document.querySelector(${JSON.stringify(`[data-theme-id="${theme}"]`)});
@@ -128,7 +128,7 @@ async function setCollapsed(collapsed) {
 }
 
 await cdp.send("Page.reload", { ignoreCache: true });
-await waitFor(`Boolean(document.querySelector(".sidebar") && document.querySelector(".theme-toggle-btn"))`);
+await waitFor(`Boolean(document.querySelector(".sidebar") && document.querySelector("[data-instrument=theme]"))`);
 await sleep(500);
 
 const original = await evaluate(`(() => ({

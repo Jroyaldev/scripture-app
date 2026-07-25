@@ -133,6 +133,40 @@ test("no atmosphere carries a bright amber, because the accent means authorship"
   assert.match(css, /\.connection-mark\.focused,[\s\S]{0,400}--connection-ink: var\(--study-gold\);/);
 });
 
+test("the quiet ink clears AA in every atmosphere, under both of its names", () => {
+  const css = read(STYLES);
+
+  // Ink-3 is not decoration. It carries nearly every piece of mono chrome in
+  // the app at 8–10px, and since §E turned the header's instruments into words
+  // it is the ink the reader actually reads state off. As drawn it measured
+  // 3.22:1 on Paper, which is a legibility failure dressed as restraint.
+  //
+  // The bar here is 4.5:1 — the AA threshold for body-sized text, applied to
+  // type well below it, because that is what the token is now being asked to
+  // do. The shipped values sit at 4.61–4.64 rather than on the line, since
+  // subpixel antialiasing on 9px mono eats the margin at the threshold and a
+  // token that only just passes will not survive its next nudge.
+  //
+  // --accent-xref is byte-identical to --text-tertiary in all four
+  // atmospheres and inks cross-reference text, so it is checked here too: if
+  // it were ever left behind, cross-refs would sit at the old ratio while
+  // every other quiet label lifted, and the ramp would visibly fork.
+  for (const [scope, paper] of [
+    [":root", "#FCFBF8"], [".theme-porcelain", "#FFFFFF"],
+    [".dark", "#1D1B18"], [".theme-onyx", "#1C1C20"],
+  ] as const) {
+    const block = themeBlock(css, scope);
+    for (const name of ["--text-tertiary", "--accent-xref"] as const) {
+      const ink = declaration(block, name);
+      assert.ok(ink, `${scope} must declare ${name}`);
+      assert.ok(contrastRatio(ink, paper) >= 4.5,
+        `${scope}: ${name} ${ink} on ${paper} is ${contrastRatio(ink, paper).toFixed(2)}:1, needs 4.5:1`);
+    }
+    assert.equal(declaration(block, "--accent-xref"), declaration(block, "--text-tertiary"),
+      `${scope}: a cross-reference is ink-3, so the two names must stay one value`);
+  }
+});
+
 test("paper is the brightest plane in every atmosphere, including both darks", () => {
   const css = read("src/renderer/styles.css");
 

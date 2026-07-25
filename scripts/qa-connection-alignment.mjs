@@ -88,7 +88,7 @@ function createDriver(cdp) {
 async function setTheme(driver, theme) {
   const current = await driver.evaluate(`document.querySelector(".app-shell")?.dataset.theme ?? "light"`);
   if (current === theme) return;
-  await driver.evaluate(`document.querySelector(".theme-toggle-btn")?.click()`);
+  await driver.evaluate(`document.querySelector("[data-instrument=theme]")?.click()`);
   await driver.waitFor(`Boolean(document.querySelector(".theme-picker-popover"))`);
   const changed = await driver.evaluate(`(() => {
     const option = document.querySelector(${JSON.stringify(`[data-theme-id="${theme}"]`)});
@@ -459,12 +459,12 @@ try {
   // transition reach the 1px terminal value before freezing geometry.
   await sleep(240);
   await driver.evaluate(`(() => {
-    if (document.querySelector(".focus-btn")?.getAttribute("aria-pressed") !== "true") {
-      document.querySelector(".focus-btn")?.click();
+    if (document.querySelector("[data-instrument=focus]")?.getAttribute("aria-pressed") !== "true") {
+      document.querySelector("[data-instrument=focus]")?.click();
     }
     return true;
   })()`);
-  await driver.waitFor(`document.querySelector(".focus-btn")?.getAttribute("aria-pressed") === "true"
+  await driver.waitFor(`document.querySelector("[data-instrument=focus]")?.getAttribute("aria-pressed") === "true"
     && !document.querySelector(".living-margin")`);
 
   const reports = [];

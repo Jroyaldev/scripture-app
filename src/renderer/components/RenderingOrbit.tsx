@@ -539,8 +539,11 @@ export function RenderingOrbitView({
               {onSelectSegment && focusIdx === i ? (
                 <span className="lang-orbit-open-hint">open →</span>
               ) : showCounts ? (
+                /* The study writes this "6 · 67%". A multiplication sign says
+                   the count is an operation on something; a middle dot says
+                   these are two readings of one rendering, which they are. */
                 <span className="lang-orbit-meta">
-                  {seg.count}× {Math.round(seg.share * 100)}%
+                  {seg.count} · {Math.round(seg.share * 100)}%
                 </span>
               ) : null}
               {showCounts ? (

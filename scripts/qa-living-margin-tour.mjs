@@ -181,7 +181,7 @@ async function setReadingScroll(scrollTop) {
 async function setTheme(theme) {
   const current = await evaluate(`document.querySelector(".app-shell")?.dataset.theme ?? "light"`);
   if (current === theme) return;
-  await evaluate(`document.querySelector(".theme-toggle-btn")?.click()`);
+  await evaluate(`document.querySelector("[data-instrument=theme]")?.click()`);
   await waitFor(`Boolean(document.querySelector(".theme-picker-popover"))`);
   const changed = await evaluate(`(() => {
     const option = document.querySelector(${JSON.stringify(`[data-theme-id="${theme}"]`)});
@@ -197,9 +197,9 @@ async function setTheme(theme) {
 }
 
 async function setTranslation(code) {
-  const current = await evaluate(`document.querySelector(".version-picker-btn")?.textContent?.trim().toLowerCase().split(/\\s+/)[0]`);
+  const current = await evaluate(`document.querySelector("[data-instrument=translation]")?.textContent?.trim().toLowerCase().split(/\\s+/)[0]`);
   if (current === code) return;
-  await clickElement(".version-picker-btn");
+  await clickElement("[data-instrument=translation]");
   await waitFor(`Boolean(document.querySelector(".version-picker-popover"))`);
   const optionPoint = await evaluate(`(() => {
     const option = [...document.querySelectorAll(".version-picker-item")].find((item) =>
@@ -211,7 +211,7 @@ async function setTranslation(code) {
   })()`);
   if (!optionPoint) throw new Error(`Translation option not found: ${code}`);
   await clickPoint(optionPoint);
-  await waitFor(`document.querySelector(".version-picker-btn")?.textContent?.trim().toLowerCase().startsWith(${JSON.stringify(code)})`);
+  await waitFor(`document.querySelector("[data-instrument=translation]")?.textContent?.trim().toLowerCase().startsWith(${JSON.stringify(code)})`);
   await waitFor(`document.querySelectorAll(".verse-line").length > 0`);
   await sleep(300);
 }
@@ -219,7 +219,7 @@ async function setTranslation(code) {
 async function setMargin(visible) {
   const current = await evaluate(`Boolean(document.querySelector(".living-margin"))`);
   if (current === visible) return;
-  await evaluate(`document.querySelector(".margin-toggle-btn")?.click()`);
+  await evaluate(`document.querySelector("[data-instrument=margin]")?.click()`);
   await waitFor(`Boolean(document.querySelector(".living-margin")) === ${visible}`);
   await sleep(260);
 }
@@ -232,10 +232,10 @@ async function setCollapsed(collapsed) {
 }
 
 async function setFocusMode(active) {
-  const current = await evaluate(`document.querySelector(".focus-btn")?.getAttribute("aria-pressed") === "true"`);
+  const current = await evaluate(`document.querySelector("[data-instrument=focus]")?.getAttribute("aria-pressed") === "true"`);
   if (current === active) return;
-  await evaluate(`document.querySelector(".focus-btn")?.click()`);
-  await waitFor(`document.querySelector(".focus-btn")?.getAttribute("aria-pressed") === ${JSON.stringify(active ? "true" : "false")}`);
+  await evaluate(`document.querySelector("[data-instrument=focus]")?.click()`);
+  await waitFor(`document.querySelector("[data-instrument=focus]")?.getAttribute("aria-pressed") === ${JSON.stringify(active ? "true" : "false")}`);
   await sleep(260);
 }
 
@@ -285,8 +285,8 @@ const original = await evaluate(`(() => ({
   theme: document.querySelector(".app-shell")?.dataset.theme ?? "light",
   collapsed: document.querySelector(".sidebar")?.classList.contains("collapsed") ?? false,
   margin: Boolean(document.querySelector(".living-margin")),
-  focus: document.querySelector(".focus-btn")?.getAttribute("aria-pressed") === "true",
-  packageId: document.querySelector(".version-picker-btn")?.textContent?.trim().toLowerCase().split(/\\s+/)[0] ?? "bsb",
+  focus: document.querySelector("[data-instrument=focus]")?.getAttribute("aria-pressed") === "true",
+  packageId: document.querySelector("[data-instrument=translation]")?.textContent?.trim().toLowerCase().split(/\\s+/)[0] ?? "bsb",
   passage: (() => {
     const title = document.querySelector(".chapter-title");
     return [title?.querySelector(".book-name")?.textContent, title?.querySelector(".chapter-number")?.textContent]

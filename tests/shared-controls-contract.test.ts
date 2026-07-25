@@ -82,16 +82,33 @@ test("tooltips replace native title-only hints for compact reading actions", () 
   const tooltip = read("src/renderer/components/Tooltip.tsx");
   const comfort = read("src/renderer/components/ReadingComfort.tsx");
   const theme = read("src/renderer/components/ThemePicker.tsx");
+  const page = read("src/renderer/components/ScripturePage.tsx");
 
   assert.match(tooltip, /HOVER_DELAY_MS = 420/);
   assert.match(tooltip, /role="tooltip"/);
   assert.match(tooltip, /"aria-describedby": describedBy/);
   assert.match(tooltip, /onFocusCapture=\{\(\) => showAfter\(120\)\}/);
   assert.match(tooltip, /event\.key === "Escape"/);
-  assert.match(comfort, /<Tooltip label="Reading layout">/);
-  assert.match(comfort, /function TextLayoutIcon/);
   assert.doesNotMatch(comfort, /reading-comfort-size-tag|function AaIcon/);
-  assert.match(comfort, /shortcut="F"/);
+
+  // This test used to require a Tooltip and a TextLayoutIcon on the comfort
+  // control, and the "F" hint on a focus button that lived beside it. §E
+  // removed the premise rather than the guarantee: the reading instruments are
+  // words now — "Comfort", "Focus" — so there is no icon left to caption, and a
+  // tooltip that repeats the word you are already reading is the header saying
+  // it twice, 420ms late. What the test was actually protecting was that these
+  // compact actions are NAMED and that the shortcut is DISCOVERABLE, so both
+  // assertions move to where those two facts now live.
+  assert.doesNotMatch(comfort, /<Tooltip|function TextLayoutIcon|function FocusIcon/,
+    "a word needs no tooltip and no icon");
+  assert.match(comfort, /className="topbar-instrument"[\s\S]{0,320}aria-label="Comfort/,
+    "the comfort instrument is a word with an accessible name containing it");
+  assert.match(page, /data-instrument="focus"[\s\S]{0,240}aria-keyshortcuts="f"/,
+    "F is stated to assistive technology rather than to a hover");
+
+  // The theme orb keeps its tooltip, and that is not an inconsistency: it is
+  // the one instrument with no text on it, so the hint is the only place the
+  // atmosphere's name is written.
   assert.match(theme, /<Tooltip label=\{`Reading atmosphere/);
 });
 

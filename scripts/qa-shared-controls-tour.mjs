@@ -141,7 +141,7 @@ async function clickSelector(selector) {
 async function setTheme(theme) {
   const current = await evaluate(`document.querySelector(".app-shell")?.dataset.theme ?? "light"`);
   if (current === theme) return;
-  await evaluate(`document.querySelector(".theme-toggle-btn")?.click()`);
+  await evaluate(`document.querySelector("[data-instrument=theme]")?.click()`);
   await waitFor(`Boolean(document.querySelector(".theme-picker-popover"))`);
   const changed = await evaluate(`(() => {
     const option = document.querySelector(${JSON.stringify(`[data-theme-id="${theme}"]`)});
@@ -164,23 +164,23 @@ async function setCollapsed(collapsed) {
 async function setMargin(visible) {
   const current = await evaluate(`Boolean(document.querySelector(".living-margin"))`);
   if (current === visible) return;
-  await evaluate(`document.querySelector(".margin-toggle-btn")?.click()`);
+  await evaluate(`document.querySelector("[data-instrument=margin]")?.click()`);
   await waitFor(`Boolean(document.querySelector(".living-margin")) === ${visible}`);
   await sleep(220);
 }
 
 async function setFocusMode(active) {
-  const current = await evaluate(`document.querySelector(".focus-btn")?.getAttribute("aria-pressed") === "true"`);
+  const current = await evaluate(`document.querySelector("[data-instrument=focus]")?.getAttribute("aria-pressed") === "true"`);
   if (current === active) return;
-  await evaluate(`document.querySelector(".focus-btn")?.click()`);
-  await waitFor(`document.querySelector(".focus-btn")?.getAttribute("aria-pressed") === ${JSON.stringify(active ? "true" : "false")}`);
+  await evaluate(`document.querySelector("[data-instrument=focus]")?.click()`);
+  await waitFor(`document.querySelector("[data-instrument=focus]")?.getAttribute("aria-pressed") === ${JSON.stringify(active ? "true" : "false")}`);
   await sleep(220);
 }
 
 async function setTranslation(code) {
-  const current = await evaluate(`document.querySelector(".version-picker-btn")?.textContent?.trim().toLowerCase().split(/\\s+/)[0]`);
+  const current = await evaluate(`document.querySelector("[data-instrument=translation]")?.textContent?.trim().toLowerCase().split(/\\s+/)[0]`);
   if (current === code) return;
-  await evaluate(`document.querySelector(".version-picker-btn")?.click()`);
+  await evaluate(`document.querySelector("[data-instrument=translation]")?.click()`);
   await waitFor(`Boolean(document.querySelector(".version-picker-popover"))`);
   const changed = await evaluate(`(() => {
     const option = [...document.querySelectorAll(".version-picker-item")].find((item) =>
@@ -191,7 +191,7 @@ async function setTranslation(code) {
     return true;
   })()`);
   if (!changed) throw new Error(`Translation option not found: ${code}`);
-  await waitFor(`document.querySelector(".version-picker-btn")?.textContent?.trim().toLowerCase().startsWith(${JSON.stringify(code)})`);
+  await waitFor(`document.querySelector("[data-instrument=translation]")?.textContent?.trim().toLowerCase().startsWith(${JSON.stringify(code)})`);
   await sleep(280);
 }
 
@@ -215,7 +215,7 @@ async function navigatePassage(passage) {
 }
 
 async function openReadingLayout() {
-  await clickSelector(".reading-comfort-btn");
+  await clickSelector("[data-instrument=comfort]");
   await waitFor(`Boolean(document.querySelector(".reading-comfort-popover"))`);
   await sleep(180);
 }
@@ -257,8 +257,8 @@ const original = await evaluate(`(() => ({
   theme: document.querySelector(".app-shell")?.dataset.theme ?? "light",
   collapsed: document.querySelector(".sidebar")?.classList.contains("collapsed") ?? false,
   margin: Boolean(document.querySelector(".living-margin")),
-  focus: document.querySelector(".focus-btn")?.getAttribute("aria-pressed") === "true",
-  packageId: document.querySelector(".version-picker-btn")?.textContent?.trim().toLowerCase().split(/\\s+/)[0] ?? "bsb",
+  focus: document.querySelector("[data-instrument=focus]")?.getAttribute("aria-pressed") === "true",
+  packageId: document.querySelector("[data-instrument=translation]")?.textContent?.trim().toLowerCase().split(/\\s+/)[0] ?? "bsb",
   passage: (() => {
     const title = document.querySelector(".chapter-title");
     return [title?.querySelector(".book-name")?.textContent, title?.querySelector(".chapter-number")?.textContent]
@@ -325,7 +325,7 @@ for (const theme of THEMES) {
     await pressEscape();
   }
   await waitFor(`!document.querySelector(".reading-comfort-popover")`);
-  assert.equal(await evaluate(`document.activeElement?.classList.contains("reading-comfort-btn")`), true);
+  assert.equal(await evaluate(`document.activeElement?.getAttribute("data-instrument") === "comfort"`), true);
 
   await openNoteCapture();
   const dialogState = await evaluate(`(() => ({
@@ -360,13 +360,13 @@ for (const theme of THEMES) {
 }
 
 await setTheme("light");
-await evaluate(`document.querySelector(".margin-toggle-btn")?.focus()`);
+await evaluate(`document.querySelector("[data-instrument=margin]")?.focus()`);
 await waitFor(`Boolean(document.querySelector('[role="tooltip"]'))`);
 await waitFor(`Number.parseFloat(getComputedStyle(document.querySelector('[role="tooltip"]')).opacity) > 0.9`);
 const tooltipState = await evaluate(`(() => ({
   role: document.querySelector("[role=tooltip]")?.getAttribute("role"),
   text: document.querySelector("[role=tooltip]")?.textContent?.trim(),
-  described: document.querySelector(".margin-toggle-btn")?.getAttribute("aria-describedby"),
+  described: document.querySelector("[data-instrument=margin]")?.getAttribute("aria-describedby"),
   visible: Number.parseFloat(getComputedStyle(document.querySelector("[role=tooltip]")).opacity) > 0.9,
 }))()`);
 assert.equal(tooltipState.role, "tooltip");
@@ -374,7 +374,7 @@ assert.match(tooltipState.text ?? "", /Study/);
 assert.ok(tooltipState.described);
 assert.equal(tooltipState.visible, true);
 console.log("tooltip", tooltipState);
-await screenshot("paper-keyboard-tooltip", [".margin-toggle-btn", "[role=tooltip]"]);
+await screenshot("paper-keyboard-tooltip", ["[data-instrument=margin]", "[role=tooltip]"]);
 await pressEscape();
 await waitFor(`!document.querySelector('[role="tooltip"]')`);
 

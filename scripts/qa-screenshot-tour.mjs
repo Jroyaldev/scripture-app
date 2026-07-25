@@ -96,9 +96,9 @@ async function shot(name, clipSel) {
 
 if (passage) {
   // 1. Version → BSB (skip if already BSB)
-  const cur = await evaluate(`document.querySelector(".version-picker-btn")?.textContent?.trim() ?? ""`);
+  const cur = await evaluate(`document.querySelector("[data-instrument=translation]")?.textContent?.trim() ?? ""`);
   if (!/BSB/i.test(cur)) {
-    await evaluate(`document.querySelector(".version-picker-btn")?.click()`);
+    await evaluate(`document.querySelector("[data-instrument=translation]")?.click()`);
     await sleep(350);
     await evaluate(`
       [...document.querySelectorAll(".version-picker-item")]
@@ -197,7 +197,7 @@ async function clickPill(text) {
 async function setTheme(theme) {
   const current = await evaluate(`document.querySelector(".app-shell")?.dataset.theme ?? "light"`);
   if (current === theme) return;
-  await evaluate(`document.querySelector(".theme-toggle-btn")?.click()`);
+  await evaluate(`document.querySelector("[data-instrument=theme]")?.click()`);
   await sleep(200);
   const changed = await evaluate(`(() => {
     const option = document.querySelector(${JSON.stringify(`[data-theme-id="${theme}"]`)});

@@ -68,7 +68,7 @@ async function screenshot(name) {
 async function setTheme(theme) {
   const current = await evaluate(`document.querySelector(".app-shell")?.dataset.theme ?? "light"`);
   if (current === theme) return;
-  await evaluate(`document.querySelector(".theme-toggle-btn")?.click()`);
+  await evaluate(`document.querySelector("[data-instrument=theme]")?.click()`);
   await sleep(180);
   const changed = await evaluate(`(() => {
     const option = document.querySelector(${JSON.stringify(`[data-theme-id="${theme}"]`)});
@@ -99,7 +99,7 @@ for (const theme of THEMES) {
   })()`);
   console.log(theme, metrics);
   await screenshot(`${theme}-shell`);
-  await evaluate(`document.querySelector(".theme-toggle-btn")?.click()`);
+  await evaluate(`document.querySelector("[data-instrument=theme]")?.click()`);
   await sleep(220);
   await screenshot(`${theme}-picker`);
   await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape" });

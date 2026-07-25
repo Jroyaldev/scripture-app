@@ -119,7 +119,7 @@ async function blurActiveElement() {
 async function setTheme(theme) {
   const current = await evaluate(`document.querySelector(".app-shell")?.dataset.theme ?? "light"`);
   if (current === theme) return;
-  await evaluate(`document.querySelector(".theme-toggle-btn")?.click()`);
+  await evaluate(`document.querySelector("[data-instrument=theme]")?.click()`);
   await sleep(160);
   const changed = await evaluate(`(() => {
     const option = document.querySelector(${JSON.stringify(`[data-theme-id="${theme}"]`)});
@@ -133,12 +133,12 @@ async function setTheme(theme) {
 }
 
 async function setMargin(visible) {
-  const current = await evaluate(`document.querySelector(".margin-toggle-btn")?.classList.contains("active")`);
+  const current = await evaluate(`document.querySelector("[data-instrument=margin]")?.getAttribute("aria-pressed") === "true"`);
   if (current === visible) return;
-  await evaluate(`document.querySelector(".margin-toggle-btn")?.click()`);
+  await evaluate(`document.querySelector("[data-instrument=margin]")?.click()`);
   await sleep(360);
   assert.equal(
-    await evaluate(`document.querySelector(".margin-toggle-btn")?.classList.contains("active")`),
+    await evaluate(`document.querySelector("[data-instrument=margin]")?.getAttribute("aria-pressed") === "true"`),
     visible,
   );
 }
@@ -168,7 +168,7 @@ const original = await evaluate(`(() => ({
   theme: document.querySelector(".app-shell")?.dataset.theme ?? "light",
   collapsed: document.querySelector(".sidebar")?.classList.contains("collapsed") ?? false,
   active: document.querySelector('.nav-item[aria-current="page"]')?.getAttribute("aria-label") ?? "Read (1)",
-  margin: document.querySelector(".margin-toggle-btn")?.classList.contains("active") ?? true,
+  margin: document.querySelector("[data-instrument=margin]")?.getAttribute("aria-pressed") !== "false",
 }))()`);
 
 if (await evaluate(`window.innerWidth < 1_200`)) {
@@ -228,8 +228,8 @@ for (const theme of THEMES) {
 
 await setTheme("light");
 await blurActiveElement();
-await moveTo(".version-picker-btn");
-assert.equal(await evaluate(`document.querySelector(".version-picker-btn")?.matches(":hover")`), true);
+await moveTo("[data-instrument=translation]");
+assert.equal(await evaluate(`document.querySelector("[data-instrument=translation]")?.matches(":hover")`), true);
 await screenshot("light-hover");
 
 await parkPointer();
@@ -243,12 +243,12 @@ await pressEscape();
 assert.equal(await evaluate(`document.activeElement === document.querySelector(".passage-picker-btn")`), true);
 await blurActiveElement();
 
-await evaluate(`document.querySelector(".version-picker-btn")?.click()`);
+await evaluate(`document.querySelector("[data-instrument=translation]")?.click()`);
 await waitFor(`Boolean(document.querySelector(".version-picker-popover"))`);
 await evaluate(`document.querySelector(".version-picker-item")?.focus()`);
 await screenshot("light-translation-picker");
 await pressEscape();
-assert.equal(await evaluate(`document.activeElement === document.querySelector(".version-picker-btn")`), true);
+assert.equal(await evaluate(`document.activeElement === document.querySelector("[data-instrument=translation]")`), true);
 await blurActiveElement();
 
 await evaluate(`document.querySelector('[aria-label="Reading size and layout"]')?.click()`);
@@ -281,12 +281,12 @@ assert.ok(Math.abs(beforeMargin.navRight - afterMargin.navRight) < 1, "navigatio
 await screenshot("light-margin-hidden");
 await setMargin(true);
 
-await evaluate(`document.querySelector(".focus-btn")?.click()`);
-await waitFor(`document.querySelector(".focus-btn")?.getAttribute("aria-pressed") === "true"`);
+await evaluate(`document.querySelector("[data-instrument=focus]")?.click()`);
+await waitFor(`document.querySelector("[data-instrument=focus]")?.getAttribute("aria-pressed") === "true"`);
 assert.equal(await evaluate(`Boolean(document.querySelector(".sidebar"))`), false);
 assert.equal(await evaluate(`Boolean(document.querySelector(".living-margin"))`), false);
 await screenshot("light-focus-mode");
-await evaluate(`document.querySelector(".focus-btn")?.click()`);
+await evaluate(`document.querySelector("[data-instrument=focus]")?.click()`);
 await waitFor(`Boolean(document.querySelector(".sidebar"))`);
 
 await evaluate(`(() => {

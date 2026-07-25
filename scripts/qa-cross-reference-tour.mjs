@@ -49,15 +49,15 @@ async function evaluate(expression) {
 async function ensureMargin() {
   const visible = await evaluate(`Boolean(document.querySelector(".living-margin"))`);
   if (!visible) {
-    await evaluate(`document.querySelector(".margin-toggle-btn")?.click()`);
+    await evaluate(`document.querySelector("[data-instrument=margin]")?.click()`);
     await sleep(450);
   }
 }
 
 async function ensureBsb() {
-  const current = await evaluate(`document.querySelector(".version-picker-btn")?.textContent?.trim() ?? ""`);
+  const current = await evaluate(`document.querySelector("[data-instrument=translation]")?.textContent?.trim() ?? ""`);
   if (/BSB/i.test(current)) return;
-  await evaluate(`document.querySelector(".version-picker-btn")?.click()`);
+  await evaluate(`document.querySelector("[data-instrument=translation]")?.click()`);
   await sleep(250);
   await evaluate(`
     [...document.querySelectorAll(".version-picker-item")]
@@ -172,7 +172,7 @@ async function capture(name, selector = ".living-margin", padding = 0) {
 }
 
 async function toggleTheme() {
-  await evaluate(`document.querySelector(".theme-toggle-btn")?.click()`);
+  await evaluate(`document.querySelector("[data-instrument=theme]")?.click()`);
   await sleep(350);
 }
 

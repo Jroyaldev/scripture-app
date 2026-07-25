@@ -227,7 +227,7 @@ async function setViewport(cdp, width, height) {
 async function setTheme(driver, theme) {
   const current = await driver.evaluate(`document.querySelector(".app-shell")?.dataset.theme ?? "light"`);
   if (current === theme) return;
-  await driver.evaluate(`document.querySelector(".theme-toggle-btn")?.click()`);
+  await driver.evaluate(`document.querySelector("[data-instrument=theme]")?.click()`);
   await driver.waitFor(`Boolean(document.querySelector(".theme-picker-popover"))`);
   const changed = await driver.evaluate(`(() => {
     const option = document.querySelector(${JSON.stringify(`[data-theme-id="${theme}"]`)});
@@ -3030,11 +3030,11 @@ async function assertWarmPlateau(driver, cdp) {
   // Living Margin owns an independent async Study loader; allowing that tree
   // to resolve between heap snapshots would masquerade as retained Dock DOM.
   await driver.evaluate(`(() => {
-    const marginToggle = document.querySelector(".margin-toggle-btn");
+    const marginToggle = document.querySelector("[data-instrument=margin]");
     if (marginToggle?.getAttribute("aria-pressed") === "true") marginToggle.click();
     return true;
   })()`);
-  await driver.waitFor(`document.querySelector(".margin-toggle-btn")?.getAttribute("aria-pressed") === "false"
+  await driver.waitFor(`document.querySelector("[data-instrument=margin]")?.getAttribute("aria-pressed") === "false"
     && !document.querySelector(".living-margin")`);
   await setViewport(cdp, 1280, 900);
   await ensureDockResting(driver, cdp);

@@ -154,7 +154,7 @@ function createDriver(cdp) {
 async function setTheme(driver, theme) {
   const current = await driver.evaluate(`document.querySelector(".app-shell")?.dataset.theme ?? "light"`);
   if (current === theme) return;
-  await driver.evaluate(`document.querySelector(".theme-toggle-btn")?.click()`);
+  await driver.evaluate(`document.querySelector("[data-instrument=theme]")?.click()`);
   await driver.waitFor(`Boolean(document.querySelector(".theme-picker-popover"))`);
   const changed = await driver.evaluate(`(() => {
     const option = document.querySelector(${JSON.stringify(`[data-theme-id="${theme}"]`)});
@@ -583,7 +583,7 @@ try {
   // Open the translation view before making either field dirty. Pointer-open
   // would otherwise blur the title and start its save before this gate owns
   // the intended same-task window.
-  await driver.evaluate(`document.querySelector(".version-picker-btn")?.click()`);
+  await driver.evaluate(`document.querySelector("[data-instrument=translation]")?.click()`);
   await driver.waitFor(`Boolean(document.querySelector(".version-picker-popover .version-picker-item:not(.active)"))`);
   const fieldsEdited = await driver.evaluate(`(() => {
     const title = document.querySelector(".connection-card-title");
@@ -617,8 +617,8 @@ try {
     observation.blur();
     otherRelationship.click();
     document.querySelector('button[aria-label="Next chapter"]')?.click();
-    document.querySelector('.margin-toggle-btn')?.click();
-    document.querySelector('.focus-btn')?.click();
+    document.querySelector('[data-instrument=margin]')?.click();
+    document.querySelector('[data-instrument=focus]')?.click();
     version.click();
 
     const selected = document.querySelector(".connection-mark.selected")?.getAttribute("data-connection-id") ?? null;
@@ -627,9 +627,9 @@ try {
       cardTitle: document.querySelector(".connection-card-title")?.value ?? null,
       chapter: document.querySelector(".chapter-number")?.textContent?.trim() ?? null,
       marginPresent: Boolean(document.querySelector(".living-margin")),
-      marginPressed: document.querySelector(".margin-toggle-btn")?.getAttribute("aria-pressed") ?? null,
-      focusPressed: document.querySelector(".focus-btn")?.getAttribute("aria-pressed") ?? null,
-      packageLabel: document.querySelector(".version-picker-btn")?.textContent?.trim() ?? null,
+      marginPressed: document.querySelector("[data-instrument=margin]")?.getAttribute("aria-pressed") ?? null,
+      focusPressed: document.querySelector("[data-instrument=focus]")?.getAttribute("aria-pressed") ?? null,
+      packageLabel: document.querySelector("[data-instrument=translation]")?.textContent?.trim() ?? null,
       ownershipPressed: document.querySelector(
         ${JSON.stringify(`[data-connection-tick="${fixture.ownershipId}"]`)}
       )?.getAttribute("aria-pressed") ?? null,
@@ -768,22 +768,22 @@ try {
   const recoveryOwnership = await driver.evaluate(`(() => {
     document.querySelector(${JSON.stringify(`[data-connection-tick="${fixture.secondId}"]`)})?.click();
     document.querySelector('button[aria-label="Next chapter"]')?.click();
-    document.querySelector('.margin-toggle-btn')?.click();
-    document.querySelector('.focus-btn')?.click();
-    document.querySelector('.version-picker-btn')?.click();
+    document.querySelector('[data-instrument=margin]')?.click();
+    document.querySelector('[data-instrument=focus]')?.click();
+    document.querySelector('[data-instrument=translation]')?.click();
     return {
       selected: document.querySelector(".connection-mark.selected")?.getAttribute("data-connection-id") ?? null,
       cardTitle: document.querySelector(".connection-card-title")?.value ?? null,
       chapter: document.querySelector(".chapter-number")?.textContent?.trim() ?? null,
       marginPresent: Boolean(document.querySelector(".living-margin")),
-      marginPressed: document.querySelector(".margin-toggle-btn")?.getAttribute("aria-pressed") ?? null,
-      focusPressed: document.querySelector(".focus-btn")?.getAttribute("aria-pressed") ?? null,
-      packageLabel: document.querySelector(".version-picker-btn")?.textContent?.trim() ?? null,
+      marginPressed: document.querySelector("[data-instrument=margin]")?.getAttribute("aria-pressed") ?? null,
+      focusPressed: document.querySelector("[data-instrument=focus]")?.getAttribute("aria-pressed") ?? null,
+      packageLabel: document.querySelector("[data-instrument=translation]")?.textContent?.trim() ?? null,
       pending: document.querySelector(".connection-card")?.getAttribute("data-pending-mutation") ?? null,
       nextDisabled: document.querySelector('button[aria-label="Next chapter"]')?.disabled ?? null,
-      marginDisabled: document.querySelector('.margin-toggle-btn')?.disabled ?? null,
+      marginDisabled: document.querySelector('[data-instrument=margin]')?.disabled ?? null,
       passageDisabled: document.querySelector('.passage-picker-btn')?.disabled ?? null,
-      versionDisabled: document.querySelector('.version-picker-btn')?.disabled ?? null,
+      versionDisabled: document.querySelector('[data-instrument=translation]')?.disabled ?? null,
     };
   })()`);
   assert.deepEqual(

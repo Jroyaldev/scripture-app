@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import type { ReadingSize, ReadingWidth, VerseNumberMode } from "../api.js";
 import { SegmentedControl, type SegmentedOption } from "./Controls.js";
 import { Popover } from "./Popover.js";
-import { Tooltip } from "./Tooltip.js";
 
 export interface ReadingPrefs {
   readingSize: ReadingSize;
@@ -14,32 +13,6 @@ export interface ReadingPrefs {
 interface Props {
   prefs: ReadingPrefs;
   onChange: (partial: Partial<ReadingPrefs>) => void;
-  focusMode: boolean;
-  onToggleFocus: () => void;
-}
-
-function TextLayoutIcon(): React.JSX.Element {
-  return (
-    <svg className="reading-layout-icon" viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M3.5 15.5 7.2 5h1.3l3.7 10.5" />
-      <path d="M5.1 11.5h5.5" />
-      <path d="M14 6h3" />
-      <path d="M14 9.5h3" />
-      <path d="M14 13h3" />
-    </svg>
-  );
-}
-
-function FocusIcon(): React.JSX.Element {
-  return (
-    <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M4 7V4.5A.5.5 0 0 1 4.5 4H7" />
-      <path d="M13 4h2.5a.5.5 0 0 1 .5.5V7" />
-      <path d="M16 13v2.5a.5.5 0 0 1-.5.5H13" />
-      <path d="M7 16H4.5a.5.5 0 0 1-.5-.5V13" />
-      <circle cx="10" cy="10" r="2.2" />
-    </svg>
-  );
 }
 
 const SIZES: SegmentedOption<ReadingSize>[] = [
@@ -61,10 +34,15 @@ const VERSE_MODES: SegmentedOption<VerseNumberMode>[] = [
 ];
 
 /**
- * Super-clean reading chrome: one text-layout control + focus toggle.
- * Size / width / verse-number density live in a small popover.
+ * The header's second instrument: the word "Comfort", and the popover behind
+ * it holding size, measure and verse-number density.
+ *
+ * Focus used to live here as a sibling button, and it does not any more —
+ * §E fixes the instrument order as translation, comfort, margin, focus, theme,
+ * which puts Margin between these two. A component that owned both could not
+ * produce that row, so Focus is now rendered by the header itself.
  */
-export function ReadingComfort({ prefs, onChange, focusMode, onToggleFocus }: Props): React.JSX.Element {
+export function ReadingComfort({ prefs, onChange }: Props): React.JSX.Element {
   const [open, setOpen] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
   const shouldReturnFocus = useRef(false);
@@ -87,32 +65,23 @@ export function ReadingComfort({ prefs, onChange, focusMode, onToggleFocus }: Pr
   };
 
   return (
-    <div className="reading-comfort">
-      <Tooltip label="Reading layout">
-        <button
-          ref={btnRef}
-          type="button"
-          className={`reading-comfort-btn${open ? " open" : ""}`}
-          onClick={() => (open ? setOpen(false) : openPopover())}
-          aria-label="Reading size and layout"
-          aria-haspopup="dialog"
-          aria-expanded={open}
-        >
-          <TextLayoutIcon />
-        </button>
-      </Tooltip>
-
-      <Tooltip label={focusMode ? "Exit focus" : "Focus reading"} shortcut="F">
-        <button
-          type="button"
-          className={`reading-comfort-btn focus-btn${focusMode ? " active" : ""}`}
-          onClick={onToggleFocus}
-          aria-label={focusMode ? "Exit focus mode" : "Enter focus mode"}
-          aria-pressed={focusMode}
-        >
-          <FocusIcon />
-        </button>
-      </Tooltip>
+    <>
+      {/* No tooltip: the control is the word for the thing it opens, so a hint
+          repeating that word 420ms later is the header saying it twice. The
+          aria-label contains the visible word so speech input still reaches
+          it by what is written on it. */}
+      <button
+        ref={btnRef}
+        type="button"
+        className="topbar-instrument"
+        data-instrument="comfort"
+        onClick={() => (open ? setOpen(false) : openPopover())}
+        aria-label="Comfort — reading size and layout"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+      >
+        Comfort
+      </button>
 
       {open && (
         <Popover
@@ -157,6 +126,6 @@ export function ReadingComfort({ prefs, onChange, focusMode, onToggleFocus }: Pr
           </div>
         </Popover>
       )}
-    </div>
+    </>
   );
 }

@@ -133,7 +133,7 @@ async function setViewport(cdp, width, height) {
 async function setTheme(driver, theme) {
   const current = await driver.evaluate(`document.querySelector(".app-shell")?.dataset.theme ?? "light"`);
   if (current === theme) return;
-  await driver.evaluate(`document.querySelector(".theme-toggle-btn")?.click()`);
+  await driver.evaluate(`document.querySelector("[data-instrument=theme]")?.click()`);
   await driver.waitFor(`Boolean(document.querySelector(".theme-picker-popover"))`);
   const changed = await driver.evaluate(`(() => {
     const option = document.querySelector(${JSON.stringify(`[data-theme-id="${theme}"]`)});

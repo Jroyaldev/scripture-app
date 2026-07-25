@@ -83,7 +83,7 @@
     ":root": {
       "--text-primary": "#322F2B",
       "--text-secondary": "#6B6660",
-      "--text-tertiary": "#928C84",
+      "--text-tertiary": "#77726A",
       "--text-verse-number": "#B4AEA5",
       "--text-link": "#96684A",
       "--text-link-hover": "#7A5238",
@@ -92,7 +92,7 @@
     ".dark": {
       "--text-primary": "#EDE8E0",
       "--text-secondary": "#A8A19A",
-      "--text-tertiary": "#7A736C",
+      "--text-tertiary": "#8B837C",
       "--text-verse-number": "#58524C",
       "--text-link": "#C99A6E",
       "--text-link-hover": "#DDB289",
@@ -101,7 +101,7 @@
     ".theme-porcelain": {
       "--text-primary": "#2E2E33",
       "--text-secondary": "#66666E",
-      "--text-tertiary": "#8A8A92",
+      "--text-tertiary": "#74747C",
       "--text-verse-number": "#ADADB6",
       "--text-link": "#96684A",
       "--text-link-hover": "#7A5238",
@@ -110,7 +110,7 @@
     ".theme-onyx": {
       "--text-primary": "#E9E9EC",
       "--text-secondary": "#A0A0A8",
-      "--text-tertiary": "#76767D",
+      "--text-tertiary": "#85858C",
       "--text-verse-number": "#55555E",
       "--text-link": "#C99A6E",
       "--text-link-hover": "#DDB289",
@@ -149,7 +149,7 @@
       "--accent-user": "#96684A",
       "--accent-source": "#5A6A7E",
       "--accent-ai": "#5A6A7E",
-      "--accent-xref": "#928C84",
+      "--accent-xref": "#77726A",
       "--accent-current": "#96684A",
       "--study-gold": "#96684A",
       "--study-gold-focus": "rgba(150, 104, 74, 0.36)"
@@ -163,7 +163,7 @@
       "--accent-user": "#C99A6E",
       "--accent-source": "#8FA3B8",
       "--accent-ai": "#8FA3B8",
-      "--accent-xref": "#7A736C",
+      "--accent-xref": "#8B837C",
       "--accent-current": "#C99A6E",
       "--study-gold": "#C99A6E",
       "--study-gold-focus": "rgba(201, 154, 110, 0.42)"
@@ -177,7 +177,7 @@
       "--accent-user": "#96684A",
       "--accent-source": "#5A6A7E",
       "--accent-ai": "#5A6A7E",
-      "--accent-xref": "#8A8A92",
+      "--accent-xref": "#74747C",
       "--accent-current": "#96684A",
       "--study-gold": "#96684A",
       "--study-gold-focus": "rgba(150, 104, 74, 0.36)"
@@ -191,7 +191,7 @@
       "--accent-user": "#C99A6E",
       "--accent-source": "#8FA3B8",
       "--accent-ai": "#8FA3B8",
-      "--accent-xref": "#76767D",
+      "--accent-xref": "#85858C",
       "--accent-current": "#C99A6E",
       "--study-gold": "#C99A6E",
       "--study-gold-focus": "rgba(201, 154, 110, 0.42)"

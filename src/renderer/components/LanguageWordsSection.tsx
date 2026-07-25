@@ -34,9 +34,6 @@ import {
 import { StructureModal } from "./StructureModal.js";
 import { SourcesDisclosure, formatSourceCitation, type CitationSource } from "./SourcesDisclosure.js";
 
-/** Closed row shows at most this many grammar chips (+ optional Strong's id). */
-const MORPH_CHIP_MAX = 5;
-
 type OrbitMode = "english" | "behind" | "senses";
 
 /** Session memory for orbit mode pills (not persisted to disk). */
@@ -282,9 +279,9 @@ function MorphFormBlock({
   open: boolean;
   onToggle: () => void;
 }): React.JSX.Element {
-  const overflow = Math.max(0, parts.length - MORPH_CHIP_MAX);
-  const chipParts = open || overflow === 0 ? parts : parts.slice(0, MORPH_CHIP_MAX);
-
+  // The morph line is never elided. C2·7 draws it whole — "Adjective · dative
+  // singular feminine" — and a "+1" standing in for one word costs the reader
+  // a click to learn a word that would have fitted on the line it was cut from.
   return (
     <div className="lang-form">
       <button
@@ -299,7 +296,7 @@ function MorphFormBlock({
         title={open ? "Hide form notes" : "Show what these mean"}
       >
         <span className="lang-form-chips">
-          {chipParts.map((p) => (
+          {parts.map((p) => (
             <span
               key={p.label}
               className={[
@@ -313,11 +310,6 @@ function MorphFormBlock({
               {p.label}
             </span>
           ))}
-          {!open && overflow > 0 && (
-            <span className="lang-chip lang-chip-more" aria-hidden="true">
-              +{overflow}
-            </span>
-          )}
           {/* Strong's number left the resting row for the entry's name line,
               where it arrives on hover. It is a lookup key for a book the
               reader does not have open. */}
@@ -422,18 +414,18 @@ function DefinitionBlock({
         aria-expanded={open}
         title={open ? "Hide definition" : "Show full definition"}
       >
+        {/* C2·7 keeps the truncated gloss and its disclosure, but the label
+            drops to sentence case on its own line and the caret becomes a
+            word. "more" sits at the end of the gloss it continues, because a
+            triangle in the corner says "this row expands" without saying what
+            is behind it. */}
         <span className="lang-def-kicker">Definition</span>
-        {!open ? (
-          <span className="lang-def-preview" dir="ltr">
-            {definition.firstSense}
-          </span>
-        ) : (
-          <span className="lang-def-preview is-open-label" dir="ltr">
-            {definition.id}
-          </span>
-        )}
-        <span className="lang-def-caret" aria-hidden="true">
-          {open ? "▴" : "▾"}
+        <span
+          className={`lang-def-preview${open ? " is-open-label" : ""}`}
+          dir="ltr"
+        >
+          {open ? definition.id : definition.firstSense}
+          <span className="lang-def-caret">{open ? "less" : "more"}</span>
         </span>
       </button>
       {open && (

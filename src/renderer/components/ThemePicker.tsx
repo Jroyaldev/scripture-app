@@ -99,11 +99,17 @@ export function ThemePicker({ theme, onChange, material, onMaterialChange }: The
 
   return (
     <>
+      {/* The fifth instrument, and the only one that is not a word: §E draws a
+          16px squircle of the current atmosphere rather than its name, because
+          the swatch says which atmosphere in a way "Paper" cannot. It keeps its
+          tooltip for the same reason the four words lost theirs — a swatch has
+          no text to read, so the hint is the only place the name appears. */}
       <Tooltip label={`Reading atmosphere · ${themeLabel(theme)}`}>
         <button
           ref={buttonRef}
           type="button"
-          className={`theme-toggle-btn theme-toggle-${theme}${open ? " open" : ""}`}
+          className="topbar-instrument"
+          data-instrument="theme"
           onClick={toggle}
           aria-label={`Reading atmosphere: ${themeLabel(theme)}`}
           aria-haspopup="dialog"

@@ -663,8 +663,8 @@ async function ensureCellReady(driver, cdp, surface, width, fixture) {
     if (!document.querySelector(".sidebar")?.classList.contains("collapsed")) {
       document.querySelector(".sidebar-collapse-btn")?.click();
     }
-    if (document.querySelector(".focus-btn")?.getAttribute("aria-pressed") === "true") {
-      document.querySelector(".focus-btn")?.click();
+    if (document.querySelector("[data-instrument=focus]")?.getAttribute("aria-pressed") === "true") {
+      document.querySelector("[data-instrument=focus]")?.click();
     }
     window.getSelection()?.removeAllRanges();
     return true;

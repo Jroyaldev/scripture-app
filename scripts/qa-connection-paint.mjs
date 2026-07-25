@@ -94,7 +94,7 @@ function createDriver(cdp) {
 async function setTheme(driver, theme) {
   const current = await driver.evaluate(`document.querySelector(".app-shell")?.dataset.theme ?? "light"`);
   if (current === theme) return;
-  await driver.evaluate(`document.querySelector(".theme-toggle-btn")?.click()`);
+  await driver.evaluate(`document.querySelector("[data-instrument=theme]")?.click()`);
   await driver.waitFor(`Boolean(document.querySelector(".theme-picker-popover"))`);
   const changed = await driver.evaluate(`(() => {
     const option = document.querySelector(${JSON.stringify(`[data-theme-id="${theme}"]`)});
@@ -146,9 +146,9 @@ async function restoreFocusMode(driver) {
   // Selecting a connection deliberately reveals Living Margin and exits Focus
   // mode. This paint-only gate then restores the full reading canvas before
   // evaluating route availability, matching the alignment harness.
-  await driver.waitFor(`document.querySelector(".focus-btn")?.getAttribute("aria-pressed") === "false"`);
-  await driver.evaluate(`document.querySelector(".focus-btn")?.click()`);
-  await driver.waitFor(`document.querySelector(".focus-btn")?.getAttribute("aria-pressed") === "true"
+  await driver.waitFor(`document.querySelector("[data-instrument=focus]")?.getAttribute("aria-pressed") === "false"`);
+  await driver.evaluate(`document.querySelector("[data-instrument=focus]")?.click()`);
+  await driver.waitFor(`document.querySelector("[data-instrument=focus]")?.getAttribute("aria-pressed") === "true"
     && !document.querySelector(".living-margin")`);
 }
 
@@ -895,13 +895,13 @@ try {
     if (!document.querySelector(".sidebar")?.classList.contains("collapsed")) {
       document.querySelector(".sidebar-collapse-btn")?.click();
     }
-    if (document.querySelector(".focus-btn")?.getAttribute("aria-pressed") !== "true") {
-      document.querySelector(".focus-btn")?.click();
+    if (document.querySelector("[data-instrument=focus]")?.getAttribute("aria-pressed") !== "true") {
+      document.querySelector("[data-instrument=focus]")?.click();
     }
     document.querySelector("#reading-chapter-title")?.focus({ preventScroll: true });
     return true;
   })()`);
-  await driver.waitFor(`document.querySelector(".focus-btn")?.getAttribute("aria-pressed") === "true"
+  await driver.waitFor(`document.querySelector("[data-instrument=focus]")?.getAttribute("aria-pressed") === "true"
     && !document.querySelector(".living-margin")`);
 
   const reportExpression = paintReportExpression(fixture);

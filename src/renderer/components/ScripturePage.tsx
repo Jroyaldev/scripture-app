@@ -551,19 +551,6 @@ const EMPTY_MARGIN_DATA: QueryResult = {
 };
 const EMPTY_CHAPTER_VERSE_TEXT = new Map<number, string>();
 
-function MarginToggleIcon(): React.JSX.Element {
-  // Mirror of the sidebar's PanelToggleIcon: divider sits on the RIGHT
-  // third of the rect (x=12.5, vs the sidebar icon's x=7.5) so the glyph
-  // itself hints "this collapses the right-hand panel," not a duplicate
-  // of the sidebar's own "collapses the left-hand panel" icon.
-  return (
-    <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="4" width="14" height="12" rx="2.5" />
-      <path d="M12.5 4v12" />
-    </svg>
-  );
-}
-
 function ChevronIcon(): React.JSX.Element {
   return (
     <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -4742,6 +4729,15 @@ export function ScripturePage({
             <span className="passage-picker-chapter">{chapter}</span>
             <ChevronIcon />
           </button>
+          {/* Drawn in §E beside the reference and never rendered until now. It
+              is the answer to "how far through this book am I", which the
+              chapter arrows ask on every press, and chapterCount was already
+              computed for exactly those arrows. It sits outside the picker
+              button so pressing the reference still means "choose a passage"
+              rather than "choose a passage, of 28". */}
+          {chapterCount > 0 && (
+            <span className="passage-chapter-count">of {chapterCount}</span>
+          )}
           <div className="chapter-nav-arrows" role="group" aria-label="Move by chapter">
             <Tooltip label="Previous chapter" shortcut="⌘←">
               <button
@@ -4937,68 +4933,6 @@ export function ScripturePage({
           )}
         </div>
 
-        <div className="version-picker-group">
-          <button
-            ref={versionBtnRef}
-            type="button"
-            className={`version-picker-btn${versionOpen ? " open" : ""}`}
-            onClick={openVersionPopover}
-            title="Choose Bible translation"
-            aria-label={`Choose Bible translation. Current translation: ${packageId.toUpperCase()}`}
-            aria-haspopup="dialog"
-            aria-expanded={versionOpen}
-            disabled={connectionNavigationLocked}
-          >
-            {packageId.toUpperCase()}
-            <ChevronIcon />
-          </button>
-          {versionOpen && (
-            <Popover
-              anchorRect={versionAnchor}
-              onClose={closeVersionPopover}
-              width={280}
-              className="version-picker-popover"
-              ariaLabel="Choose Bible translation"
-            >
-              <div className="picker-menu-heading">
-                <span>Bible text</span>
-                <small>Notes stay anchored when the translation changes.</small>
-              </div>
-              {TRANSLATIONS.map((t) => (
-                <button
-                  key={t.code}
-                  type="button"
-                  className={`control-menu-item version-picker-item${t.code === packageId ? " active" : ""}`}
-                  onClick={() => {
-                    const changeTranslation = (): void => {
-                      captureTranslationViewport(t.code);
-                      // Clear the old translation's DOM in the same approved
-                      // commit as the package switch so package-specific paint
-                      // can never appear over the previous text.
-                      setChapterData(null);
-                      setChapterError(null);
-                      setShowHighlightPalette(false);
-                      setPhraseSelection(null);
-                      setPackageId(t.code);
-                      closeVersionPopover();
-                    };
-                    if (t.code !== packageId) {
-                      void requestWorkspaceTransition("translation-change", changeTranslation);
-                    } else {
-                      closeVersionPopover();
-                    }
-                  }}
-                  aria-pressed={t.code === packageId}
-                >
-                  <span className="version-picker-code">{t.code.toUpperCase()}</span>
-                  <span className="version-picker-name">{t.name}</span>
-                  {t.code === packageId && <CheckIcon />}
-                </button>
-              ))}
-            </Popover>
-          )}
-        </div>
-
         <button
           type="button"
           className="passage-jump command-palette-trigger"
@@ -5014,34 +4948,122 @@ export function ScripturePage({
 
         <div className="topbar-spacer" />
 
+        {/* §E: five instruments, in one fixed order — translation, comfort,
+            margin, focus, theme — each the word for what it operates, in mono
+            at 9.5px. Each renders only when its handler exists, and because
+            the cluster is a single flex row an absent one leaves no gap: the
+            header loses instruments without losing shape. The order is the
+            contract, so a new instrument goes at its place in it or nowhere. */}
         <div className="topbar-tools" aria-label="Reading tools">
-        {onReadingPrefsChange && onToggleFocus && (
-          <ReadingComfort
-            prefs={{ readingSize, readingWidth, verseNumbers }}
-            onChange={onReadingPrefsChange}
-            focusMode={focusMode}
-            onToggleFocus={() => {
-              if (requireSafeConnectionNavigation()) onToggleFocus();
-            }}
-          />
-        )}
-
-        <span className="topbar-tool-divider" aria-hidden="true" />
-          {onToggleMargin && !focusMode && (
-            <Tooltip label={marginVisible ? "Hide Study" : "Show Study"}>
-              <button
-                type="button"
-                className={`margin-toggle-btn${marginVisible ? " active" : ""}`}
-                onClick={() => {
-                  if (requireSafeConnectionNavigation()) onToggleMargin();
-                }}
-                disabled={connectionNavigationLocked}
-                aria-label={marginVisible ? "Hide Study" : "Show Study"}
-                aria-pressed={marginVisible}
+          <div className="version-picker-group">
+            {/* The visible text is a three-letter code, which is why this one
+                keeps an aria-label naming the translation in full — the other
+                instruments are already words and need no translation of their
+                own. The chevron goes: a word with a caret beside it is the
+                header explaining twice that pressing things opens things. */}
+            <button
+              ref={versionBtnRef}
+              type="button"
+              className="topbar-instrument"
+              data-instrument="translation"
+              onClick={openVersionPopover}
+              aria-label={`Choose Bible translation. Current translation: ${packageId.toUpperCase()}`}
+              aria-haspopup="dialog"
+              aria-expanded={versionOpen}
+              disabled={connectionNavigationLocked}
+            >
+              {packageId.toUpperCase()}
+            </button>
+            {versionOpen && (
+              <Popover
+                anchorRect={versionAnchor}
+                onClose={closeVersionPopover}
+                width={280}
+                className="version-picker-popover"
+                ariaLabel="Choose Bible translation"
               >
-                <MarginToggleIcon />
-              </button>
-            </Tooltip>
+                <div className="picker-menu-heading">
+                  <span>Bible text</span>
+                  <small>Notes stay anchored when the translation changes.</small>
+                </div>
+                {TRANSLATIONS.map((t) => (
+                  <button
+                    key={t.code}
+                    type="button"
+                    className={`control-menu-item version-picker-item${t.code === packageId ? " active" : ""}`}
+                    onClick={() => {
+                      const changeTranslation = (): void => {
+                        captureTranslationViewport(t.code);
+                        // Clear the old translation's DOM in the same approved
+                        // commit as the package switch so package-specific paint
+                        // can never appear over the previous text.
+                        setChapterData(null);
+                        setChapterError(null);
+                        setShowHighlightPalette(false);
+                        setPhraseSelection(null);
+                        setPackageId(t.code);
+                        closeVersionPopover();
+                      };
+                      if (t.code !== packageId) {
+                        void requestWorkspaceTransition("translation-change", changeTranslation);
+                      } else {
+                        closeVersionPopover();
+                      }
+                    }}
+                    aria-pressed={t.code === packageId}
+                  >
+                    <span className="version-picker-code">{t.code.toUpperCase()}</span>
+                    <span className="version-picker-name">{t.name}</span>
+                    {t.code === packageId && <CheckIcon />}
+                  </button>
+                ))}
+              </Popover>
+            )}
+          </div>
+
+          {onReadingPrefsChange && (
+            <ReadingComfort
+              prefs={{ readingSize, readingWidth, verseNumbers }}
+              onChange={onReadingPrefsChange}
+            />
+          )}
+
+          {/* No tooltip, and the accessible name no longer flips between "Show
+              Study" and "Hide Study": the word stays put and aria-pressed
+              carries the state, which is the same decision the underline makes
+              visually. A name that changes as you press it is a second, quieter
+              reflow. */}
+          {onToggleMargin && !focusMode && (
+            <button
+              type="button"
+              className="topbar-instrument"
+              data-instrument="margin"
+              onClick={() => {
+                if (requireSafeConnectionNavigation()) onToggleMargin();
+              }}
+              disabled={connectionNavigationLocked}
+              aria-pressed={marginVisible}
+            >
+              Margin
+            </button>
+          )}
+
+          {/* The F shortcut lived in a tooltip that is now gone, so it is
+              declared where it belongs: aria-keyshortcuts states it to assistive
+              technology instead of to a hover. */}
+          {onToggleFocus && (
+            <button
+              type="button"
+              className="topbar-instrument"
+              data-instrument="focus"
+              onClick={() => {
+                if (requireSafeConnectionNavigation()) onToggleFocus();
+              }}
+              aria-pressed={focusMode}
+              aria-keyshortcuts="f"
+            >
+              Focus
+            </button>
           )}
 
           {onThemeChange && (

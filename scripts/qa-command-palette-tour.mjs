@@ -113,7 +113,7 @@ async function setTheme(theme) {
   await closePalette();
   const current = await evaluate(`document.querySelector(".app-shell")?.dataset.theme`);
   if (current !== theme) {
-    await evaluate(`document.querySelector(".theme-toggle-btn")?.click()`);
+    await evaluate(`document.querySelector("[data-instrument=theme]")?.click()`);
     await waitFor(`Boolean(document.querySelector(${JSON.stringify(`[data-theme-id="${theme}"]`)}))`);
     await evaluate(`document.querySelector(${JSON.stringify(`[data-theme-id="${theme}"]`)})?.click()`);
     await waitFor(`document.querySelector(".app-shell")?.dataset.theme === ${JSON.stringify(theme)}`);
