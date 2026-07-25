@@ -191,8 +191,18 @@
 
    B3: "A group with no active tab drops its rule and label to 72% — present,
    receded." Opacity, not a second ink: the bracket is already the quietest
-   thing in the strip and a paler grey would put it below the canvas. */
-.scripture-workspace-viewport .scripture-workspace-group-tab[data-study-group-active="false"] {
+   thing in the strip and a paler grey would put it below the canvas.
+
+   The study says "its rule AND label", so the flag is read off the member's
+   wrap and both halves of the bracket recede together. Reading it off the
+   label alone left a full-strength rule stretched over a receded name, which
+   is a bracket that half-belongs to the study it names. */
+.scripture-workspace-viewport
+  .scripture-workspace-tab-wrap[data-study-group-active="false"]
+  .scripture-workspace-group-tab,
+.scripture-workspace-viewport
+  .scripture-workspace-tab-wrap[data-study-group-active="false"]
+  .scripture-workspace-group-rule {
   opacity: 0.72;
 }
 

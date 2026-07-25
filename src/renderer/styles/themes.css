@@ -2,3 +2,37 @@
 
    Owned partial. New rules for this surface live here; anything that must
    CHANGE an existing rule in styles.css is reported, not shadowed. */
+
+/* ── The two destructive labels the palette never reached ──────────────────
+   I·1 reads the shipped values and finds "one palette with a hue and a
+   polarity": every semantic colour is declared once for the light pair and
+   once for the dark pair, and which of the two you get is decided by the
+   contrast requirement rather than by the theme. Two call sites sit outside
+   that system entirely — `var(--text-danger, #c0392b)` on the register's
+   destructive context-menu item and `var(--danger, #9f4d45)` on the
+   connection draft's discard button. Neither token is declared anywhere in
+   the bundle, so the fallback is not a fallback: it is the colour that
+   renders, in all four atmospheres, unchanged by polarity.
+
+   That is the amber mistake inverted. The amber changed when it had no reason
+   to; these two never change when they must. #9f4d45 is 5.60:1 on Paper and
+   2.96:1 on Ink's paper — a discard button whose label falls below even the
+   3:1 a non-text mark needs, on the atmosphere where a misread discard costs
+   the most.
+
+   Declaring the names as the semantic error hue puts them back inside the
+   palette. They are declared in every atmosphere scope rather than only on
+   :root because a custom property substitutes `var()` at the element that
+   declares it: aliased once on the root, they would freeze whatever --error
+   the root happens to hold and quietly ignore a dark polarity added later.
+   Repeated per scope, each shell re-resolves against its own --error.
+
+   Declared here rather than corrected at the call sites because those two
+   rules live in styles.css; the one-line substitution there is reported. */
+:root,
+.dark,
+.theme-porcelain,
+.theme-onyx {
+  --text-danger: var(--error);
+  --danger: var(--error);
+}

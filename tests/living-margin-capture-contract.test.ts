@@ -69,7 +69,6 @@ test("entity research captures only the source datasets actually present", () =>
     },
     place: null,
     pleiades: null,
-    minimap: null,
     imageDataUrl: null,
   } as unknown as Parameters<typeof buildEntityResearchCapture>[0];
   assert.deepEqual(buildEntityResearchCapture(data, {

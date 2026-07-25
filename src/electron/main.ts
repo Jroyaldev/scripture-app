@@ -2707,7 +2707,6 @@ function registerIpcHandlers(): void {
         entity,
         place: null,
         pleiades: null,
-        minimap: null,
         imageDataUrl: null,
       };
     },

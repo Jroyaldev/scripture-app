@@ -344,19 +344,19 @@
 .margin-sources summary:hover { color: var(--text-primary); }
 .margin-sources summary:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 2px; }
 
-.margin-source-list { display: grid; padding: 0 0 8px; }
+/* Sources are entries of one kind in a list, so they are separated by interval
+   and not by a rule apiece. The disclosure already opens on one rule, where the
+   apparatus meets the entry; ruling each row closed under it drew a stack of
+   boxes, which is the pattern study C cut wholesale in favour of air. */
+.margin-source-list { display: grid; gap: 9px; padding: 4px 0 10px; }
 .margin-source-row {
-  min-height: 31px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 4px 0;
-  border-bottom: 1px solid var(--border-subtle);
   font-size: 0.59375rem;
   line-height: 1.35;
 }
-.margin-source-row:last-child { border-bottom: 0; }
 .margin-source-copy { min-width: 0; display: grid; gap: 1px; }
 .margin-source-copy > span:first-child { color: var(--text-secondary); }
 .margin-source-detail { color: var(--text-tertiary); font-size: 0.53125rem; }
@@ -1194,8 +1194,15 @@ html, body, #root {
 
 .scripture-workspace-viewport::-webkit-scrollbar { display: none; }
 
+/* Every control in the register is drawn by this sheet and nothing is left to
+   the platform. The bracket was missing from this list, so it kept the UA's
+   `2px outset` button chrome: a hard black rectangle around the study name,
+   permanently, on all four sides. That is the Ma violation the bracket exists
+   to avoid — a bracket names a span, a box encloses one — and it is also what
+   reads as a stuck focus ring. */
 .scripture-workspace-tab,
 .scripture-workspace-tab-close,
+.scripture-workspace-group-tab,
 .scripture-workspace-active-group,
 .scripture-workspace-open,
 .scripture-workspace-reopen,
@@ -1363,6 +1370,18 @@ html, body, #root {
 }
 
 .scripture-workspace-tab-mark.is-passage { width: 13px; height: 13px; }
+
+/* Provenance, not emphasis. B calls the two kinds of tab apart by who made
+   them: a passage is one you chose, a Research tab is one "the app derived —
+   slate mark". Selection used to repaint every mark seal, which said a person
+   opened Apollos the moment you looked at it. The machine hue is therefore
+   stated after the selected rule and outranks it: a derived tab wears slate
+   whether or not it is the tab you are reading. */
+.scripture-workspace-tab .scripture-workspace-tab-mark.is-person,
+.scripture-workspace-tab .scripture-workspace-tab-mark.is-place {
+  color: var(--accent-machine);
+}
+
 .scripture-workspace-tab-mark svg {
   width: 100%;
   height: 100%;
@@ -1588,12 +1607,20 @@ html, body, #root {
   font-size: 9px;
 }
 
+/* One focus mark for the whole register, and no control may fall through to the
+   platform's own ring. The bracket and the context menu's items were both
+   missing here, so keyboard focus on either drew the UA rectangle — the one
+   piece of chrome in the app nobody designed. Focus is the seal at full
+   strength rather than the translucent halo the rest of the app rings with:
+   that wash is 34-42% and cannot carry a 3:1 ring against paper. */
 .scripture-workspace-tab:focus-visible,
+.scripture-workspace-group-tab:focus-visible,
 .scripture-workspace-active-group:focus-visible,
 .scripture-workspace-open:focus-visible,
 .scripture-workspace-reopen:focus-visible,
 .scripture-workspace-overflow:focus-visible,
 .scripture-workspace-persistence button:focus-visible,
+.scripture-workspace-context-menu button:focus-visible,
 .scripture-workspace-group-popover button:focus-visible,
 .scripture-workspace-overflow-popover button:focus-visible,
 .scripture-workspace-group-popover input:focus-visible,
@@ -1602,6 +1629,13 @@ html, body, #root {
 .scripture-workspace-overflow-popover select:focus-visible {
   outline: 2px solid var(--study-gold);
   outline-offset: 2px;
+}
+
+/* The bracket's ring hugs the label instead of standing off it. Offset outward
+   the ring would cross the 1px rule the bracket is made of, and a ring that
+   cuts its own control apart is worse than no ring. */
+.scripture-workspace-group-tab:focus-visible {
+  outline-offset: -1px;
 }
 
 /* The active group popover is the fixed rail's only management surface. It
@@ -1961,36 +1995,102 @@ html, body, #root {
 
 /* A group is a bracket, not a chip: a 1px rule over its members carrying a 9px
    mono label, with ends that do not turn down. A turned-down end would draw a
-   box, and a box around tabs is a second kind of container. */
+   box, and a box around tabs is a second kind of container.
+
+   "Over its members" is the load-bearing word, and the bracket used to sit
+   BESIDE the first member instead — a 96px box in the tab row. That cost three
+   separate defects: the study name was clipped to 92px of usable width, the
+   box shouldered the strip 104px to the right so a flush-start tab no longer
+   reached the page's corner it is supposed to supply, and at the far end it
+   arrived against the actions cluster where the +n count is drawn.
+
+   The bracket now occupies a 15px band above the tab row — 1px of rule, 5px of
+   air, a 9px label — which is the one place it can span its members without
+   competing with them for width. The band is reserved by padding on every
+   member's wrap, so the rule sits at the same height across the whole group
+   and the tabs stay on one baseline. */
+.scripture-workspace-tab-wrap[data-study-group-bracket] {
+  padding-top: 15px;
+}
+
+/* The rule, carried by the members so that it ends where they do. A segment
+   overhangs its member by the 2px the strip puts between tabs plus the 8px a
+   selected member reserves for its fillets, because both of those gaps fall
+   INSIDE the bracket and a rule that stops at each of them is not one rule but
+   a row of dashes. Segments overlap; they are the same hairline, so it does
+   not show. */
+.scripture-workspace-group-rule {
+  position: absolute;
+  top: 0;
+  left: calc(-2px - var(--radius-page));
+  right: calc(-2px - var(--radius-page));
+  height: 1px;
+  background: var(--border-medium);
+  pointer-events: none;
+}
+
+/* Trimmed at the one end the study says it must be trimmed at. */
+.scripture-workspace-tab-wrap[data-study-group-end] .scripture-workspace-group-rule {
+  right: 0;
+}
+
 .scripture-workspace-group-tab {
-  position: relative;
-  flex: 0 0 auto;
-  align-self: flex-end;
-  min-width: 24px;
-  max-width: 96px;
-  height: 30px;
-  margin-right: 8px;
-  padding: 0 6px 0 0;
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 15px;
+  display: flex;
+  align-items: flex-end;
+  font: 500 9px/1 var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   border-radius: 0;
   background: transparent;
   color: var(--text-tertiary);
   cursor: pointer;
-  font: 500 9px/1 var(--font-mono);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  /* Absolute, so the label can never take a pixel of the tab row again. Its
+     box is the first member's width — that is what "left-aligned to the first
+     member" means — and the text is free to run on over the rest of its own
+     bracket, where there is nothing but the rule above it. */
   overflow: visible;
-  white-space: nowrap;
   transition: color var(--transition-fast);
 }
 
+/* The rule above the first member belongs to the label, because the label is
+   anchored there; the continuation segments carry it across the rest. This one
+   starts flush at left:0 — it is the end of the bracket, and the study is
+   explicit that a bracket's ends do not turn down or run on. */
 .scripture-workspace-group-tab::before {
   content: "";
   position: absolute;
-  top: 3px;
+  top: 0;
   left: 0;
-  right: 4px;
+  right: calc(-2px - var(--radius-page));
   height: 1px;
   background: var(--border-medium);
+}
+
+.scripture-workspace-tab-wrap[data-study-group-end] .scripture-workspace-group-tab::before {
+  right: 0;
+}
+
+/* Indented to the tab's own text so the name reads as a heading for the column
+   of labels beneath it. `flex: 0 0 auto` because the label's box is only the
+   first member wide: left to shrink, a three-tab study's name would be clipped
+   to its first tab even though the bracket over it is three tabs long. Capped
+   at one whole tab instead — a bracket is at least one member wide and a member
+   is at most 176px, so that is the widest a label can be and still be answerable
+   to the rule above it. A study can be named anything, and an unbounded run of
+   9px caps across the strip is the defect this device was drawn to replace. */
+.scripture-workspace-group-tab > span {
+  flex: 0 0 auto;
+  max-width: 176px;
+  padding-left: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .scripture-workspace-group-tab:hover {
@@ -2972,10 +3072,17 @@ html, body, #root {
   background: var(--study-gold);
 }
 
-.scripture-content .verse-line:focus .verse-num,
-.verse-line:hover .verse-num {
-  color: var(--text-secondary);
-}
+/* There is deliberately no `:focus .verse-num` colour here. There used to be a
+   trailing rule that set ink-2 on two selectors at once — the focused number
+   under this same `.scripture-content` prefix, and the hovered number — and
+   because it matched at exactly the specificity of both rules above but came
+   later in the sheet, it silently won twice. Hover moved off ink-3, and
+   keyboard focus lost its ink entirely, so the two states the gutter draws
+   most often were both a step off the study while the rules that state them
+   correctly sat above looking right.
+
+   `:focus-visible` also matches `:focus`, which is why the clash was invisible
+   in the source: the two rules read as being about different things. */
 
 /*
  * Selecting an already-highlighted verse used to composite a hardcoded blue
@@ -3082,28 +3189,62 @@ html, body, #root {
 
 .connection-emphasis-underlay { z-index: 1; }
 .connection-underlay {
-  --connection-focus-veil-color: var(--bg-reading);
   z-index: 4;
 }
 
+/* Two inks on this whole layer, and no third.
+ *
+ * D·2 lists "hue is doing structural work" as the fourth defect of the shipped
+ * overlay: "green for one connection, terracotta for another, with nothing to
+ * tell you why. Two arbitrary hues become five, then the page has a legend it
+ * never shows." That is exactly what a `.connection-kind-*` → `--mark-*` table
+ * builds, and it built it in six hues.
+ *
+ * The study's answer is one sentence: "Seal, and only ever seal." A connection
+ * is something the reader wrote, so it takes the authorship colour — the same
+ * seal as their notes and the margin's note spine. Provenance is the law being
+ * kept here: seal means a human did this, and a relationship a reader drew is
+ * about as human as this app gets. A teal or a terracotta says nothing about
+ * who made the mark, so it spends the one signal that does.
+ *
+ * "There is no per-connection palette, because only one connection is ever
+ * coloured at a time. Everything else on the page rests in ink-faint. That
+ * single rule removes the legend problem entirely." So: everything faint, the
+ * one attended connection seal. Nothing to look up, because there is never
+ * more than one coloured thing to look up.
+ *
+ * Relationship KIND is not lost — it moves to where D·2b puts it, in stroke
+ * and terminal, "the way a stemma or a syntax diagram does it". D·2b is
+ * explicit that hue may not be reclaimed for it: "hue is already committed:
+ * seal means you wrote this, everywhere in the app. Spending it on type would
+ * break that." The `.connection-kind-*` classes stay on the elements — they
+ * are what a stroke/terminal treatment will hang off — they just no longer
+ * carry colour. */
 .connection-mark,
 .connection-emphasis-mark {
   --connection-ink: var(--text-tertiary);
   color: var(--connection-ink);
 }
 
-.connection-kind-parallel { --connection-ink: var(--mark-parallel); }
-.connection-kind-contrast { --connection-ink: var(--mark-contrast); }
-.connection-kind-echo { --connection-ink: var(--mark-echo); }
-.connection-kind-mirror { --connection-ink: var(--mark-mirror); }
-.connection-kind-series { --connection-ink: var(--mark-series); }
-.connection-kind-hinge { --connection-ink: var(--mark-hinge); }
+/* Attended, in all four ways a connection can be attended: the reader is
+   hovering or has selected it, they are drawing one right now, or the marking
+   selection is standing in for one that does not exist yet. A companion — held
+   but not attended — is deliberately absent from this list. It stays faint and
+   stays put, because "dimming a thing to emphasise another is how a page
+   starts flickering", and promoting one is the same move in reverse. */
+.connection-mark.focused,
+.connection-tick.focused,
+.connection-emphasis-mark[data-paint-state="selected"],
+.connection-emphasis-mark[data-paint-state="needs-space"],
+.connection-emphasis-mark[data-paint-state="authoring"] {
+  --connection-ink: var(--study-gold);
+}
 
 .connection-emphasis-wash {
   fill: currentColor;
   fill-opacity: .09;
   pointer-events: none;
-  transition: fill-opacity 220ms ease;
+  transition: fill-opacity var(--transition-fast);
 }
 
 .connection-shared-mask { mask-type: luminance; }
@@ -3111,7 +3252,7 @@ html, body, #root {
   fill: var(--text-secondary);
   fill-opacity: .12;
   pointer-events: none;
-  transition: fill-opacity 220ms ease;
+  transition: fill-opacity var(--transition-fast);
 }
 .connection-emphasis-underlay.is-awake .connection-emphasis-shared { fill-opacity: 0; }
 
@@ -3153,14 +3294,32 @@ html, body, #root {
 }
 
 .connection-focus-mask { mask-type: luminance; }
+
+/* The veil does not paint, in any state.
+ *
+ * It was a full-page rect of paper at 56% with a hole cut for the attended
+ * connection — which means selecting a connection washed the entire chapter,
+ * scripture included, to make a 1px rule easier to find. Both connection
+ * studies rule that out in the same words. D·2: "The other connection's tick
+ * stays faint and stays put — it does not dim, because dimming a thing to
+ * emphasise another is how a page starts flickering." D·2b, on what happens
+ * when a thread is attended: "Others stay exactly where they are and do not
+ * dim."
+ *
+ * It is also a plane violation and the most expensive kind. There are two
+ * planes, paper and canvas; a translucent sheet of paper laid over paper is a
+ * third, and this one covered the words. Attention on this canvas is made by
+ * taking one thing to seal, never by pushing everything else back.
+ *
+ * The rect and its mask are still emitted by ConnectionUnderlay — reported,
+ * not edited, since that file is shared. `fill: none` is what makes them
+ * inert; the opacity is belt and braces so no later `.is-ready` rule can
+ * revive it by accident. */
 .connection-focus-veil {
-  fill: var(--connection-focus-veil-color);
+  fill: none;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 180ms ease;
 }
-.connection-focus-veil.is-ready { opacity: .56; }
-.dark .connection-focus-veil.is-ready { opacity: .52; }
 
 .connection-underline,
 .connection-route,
@@ -3169,6 +3328,20 @@ html, body, #root {
   pointer-events: none;
 }
 
+/* The thread's motion budget, from D·2's own table: underline colour 120ms,
+   spine and tick opacity 120ms, the tie 0ms. Ink and opacity are the only
+   things allowed to move, and `--transition-fast` IS 120ms — the token block
+   at the top of this sheet already says so, and already says why the tie is
+   the exception: "The tab fillet and the connection tie are instant for the
+   same reason — a shape that grows into place stops reading as an object."
+
+   `stroke-dashoffset` is what draws these paths on, so it is deliberately not
+   in either transition list. The study is blunt about it: "The tie and spine
+   appear instantly rather than animating along their path. A drawn-on line is
+   a delightful demo and an irritant on the two-hundredth hover." The property
+   still does its job — it is the show/hide gate the route-ready state flips,
+   and that state is a geometry-is-measured gate, not an animation — it just
+   flips in one frame now instead of travelling for a third of a second. */
 .connection-underline {
   fill: none;
   stroke: currentColor;
@@ -3177,7 +3350,7 @@ html, body, #root {
   stroke-dasharray: 1;
   stroke-dashoffset: 0;
   opacity: .62;
-  transition: opacity 180ms ease, stroke-width 180ms ease, stroke-dashoffset 300ms cubic-bezier(.3,.7,.3,1);
+  transition: opacity var(--transition-fast), stroke-width var(--transition-fast);
 }
 
 .connection-route {
@@ -3189,7 +3362,7 @@ html, body, #root {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
   opacity: 0;
-  transition: stroke-dashoffset 340ms cubic-bezier(.22,.72,.2,1) 40ms, opacity 180ms ease 40ms;
+  transition: opacity var(--transition-fast);
 }
 
 .connection-route-hit {
@@ -3200,14 +3373,16 @@ html, body, #root {
   cursor: pointer;
 }
 
+/* The terminal at the end of the arm. D·2b describes what it does when the
+   thread is attended in one word — "its terminals fill" — so it arrives by
+   ink alone. It used to scale up from .72 on a 200ms delay, which is the
+   drawn-on line again in miniature: a shape growing into place, and geometry
+   moving in response to attention. Reserve forbids the second on its own. */
 .connection-contact {
   fill: currentColor;
   stroke: none;
   opacity: 0;
-  transform: scale(.72);
-  transform-box: fill-box;
-  transform-origin: center;
-  transition: opacity 200ms ease 90ms, transform 200ms ease 90ms;
+  transition: opacity var(--transition-fast);
 }
 
 .connection-mark.focused .connection-route {
@@ -3230,7 +3405,6 @@ html, body, #root {
 .connection-mark.route-ready .connection-underline { stroke-dashoffset: 0; }
 .connection-mark.route-ready .connection-contact {
   opacity: .9;
-  transform: scale(1);
 }
 .connection-mark.held .connection-underline { opacity: .72; }
 
@@ -3267,14 +3441,22 @@ html, body, #root {
   background: currentColor;
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--bg-reading) 70%, transparent);
   opacity: .66;
-  transition: width 120ms ease, opacity 120ms ease;
+  transition: opacity var(--transition-fast), background-color var(--transition-fast);
 }
 
 .connection-tick:hover,
 .connection-tick.focused { background: transparent; }
+
+/* Held is a state the reader put the connection in, so it may show in the
+   mark's length. Hover and attention may not: the tick used to grow 11px →
+   15px under the pointer, and Reserve is unambiguous that "reveals change
+   opacity and ink, never geometry". Both now say the same thing the study
+   draws in its tick stack — "three, one attended" is three identical marks
+   with one of them in seal — by taking the ink to full and the colour to seal
+   while the mark stays exactly the size it was at rest. */
 .connection-tick.user-held:not(.selected) .connection-tick-dash { width: 13px; opacity: .86; }
 .connection-tick:hover .connection-tick-dash,
-.connection-tick.focused .connection-tick-dash { width: 15px; opacity: 1; }
+.connection-tick.focused .connection-tick-dash { opacity: 1; }
 .connection-tick.needs-space .connection-tick-dash { background: transparent; border-top: 1px dashed currentColor; }
 .connection-tick:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 1px; }
 
@@ -3669,11 +3851,16 @@ html, body, #root {
   .connection-contact,
   .connection-tick,
   .connection-tick > span { animation: none !important; transition: none !important; }
+  /* This block used to be where the thread behaved correctly: with motion off,
+     the route stopped being drawn on and simply appeared. That is now the
+     behaviour everywhere, per D·2's 0ms tie, so all that is left here is the
+     safety net — if a transition is ever added back above, reduced motion must
+     still not leave a focused thread stuck mid-draw at dashoffset 1. There is
+     no veil line any more, because there is no veil. */
   .connection-mark.focused .connection-underline,
   .connection-mark.focused .connection-route { stroke-dashoffset: 0; }
   .connection-mark.focused .connection-route { opacity: .96; }
-  .connection-mark.focused .connection-contact { opacity: .9; transform: scale(1); }
-  .connection-focus-veil { opacity: .56; }
+  .connection-mark.focused .connection-contact { opacity: .9; }
 }
 
 @media (forced-colors: active) {
@@ -7571,66 +7758,28 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   font-size: 0.5rem;
 }
 
+/* The research entry is the margin's entry skeleton at a larger size, so its
+   header is the first four parts and nothing else: name line, kind line, why
+   it is here, facts. Everything Rev 01 put here has been deleted rather than
+   left unused, because one of those rules was still matching and doing damage.
+
+   `.entity-research-identity > p` was written for a description paragraph that
+   no longer exists — but the kind line IS a <p>, and this rule outranked
+   `.margin-entry-kind` on both specificity and source order. So the taxonomy
+   was being re-dressed as serif body copy AND had its `margin: 0 0 14px`
+   overwritten with `margin: 0`. Together with the name line's own margin being
+   zeroed in margin-entries.css, that is what crushed the name, the taxonomy
+   and the description into a single block with no interval between the three —
+   the clearest Ma violation on the surface. Study C·2 part 2 sets the kind
+   line as "one 11px line, sans, ink-3", 14px clear of what follows.
+
+   The kicker, the <h2> and the person-fact chip row went with it: study C
+   replaced the mono kicker with the provenance mark and the page title with a
+   dictionary head, and the chip row is the kind line now. Nothing renders
+   them. `.entity-research-expanded` never sat inside this header either — it
+   lives under More, where `.entity-research-more-content` styles it. */
 .entity-research-identity {
   margin-bottom: 24px;
-}
-
-.entity-research-kicker {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 5px;
-  color: var(--text-tertiary);
-  font-family: var(--font-ui);
-  font-size: 0.53125rem;
-  letter-spacing: 0.055em;
-  text-transform: uppercase;
-}
-
-.entity-research-identity h2 {
-  margin: 0 0 7px;
-  color: var(--text-primary);
-  font-family: var(--font-reading);
-  font-size: 1.5rem;
-  font-weight: var(--fw-semibold);
-  line-height: 1.14;
-  letter-spacing: -0.025em;
-}
-
-.entity-person-facts {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 7px;
-  margin: 0 0 11px;
-  color: var(--text-tertiary);
-  font-family: var(--font-ui);
-  font-size: 0.5625rem;
-  line-height: 1.35;
-}
-
-.entity-person-facts strong {
-  color: var(--text-secondary);
-  font-weight: var(--fw-medium);
-}
-
-.entity-person-facts span::before {
-  content: "·";
-  margin-right: 7px;
-  color: color-mix(in srgb, var(--text-tertiary) 62%, transparent);
-}
-
-.entity-research-identity > p {
-  margin: 0;
-  color: var(--text-primary);
-  font-family: var(--font-reading);
-  font-size: 0.875rem;
-  line-height: 1.52;
-}
-
-.entity-research-identity .entity-research-expanded {
-  margin-top: 8px;
-  color: var(--text-secondary);
-  font-size: 0.75rem;
 }
 
 .entity-opening-context {
@@ -7685,31 +7834,46 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   text-align: right;
 }
 
+/* A verse and a fragment of it. The margin has exactly one shape for that —
+   the reference row — and study C·2 part 5 says so explicitly, so that the
+   margin has one way of showing it rather than three. This was drawn instead
+   as a filled, rounded, four-sided card, which breaks three things at once: a
+   full border where an interval belongs (Ma), a third fill inside the margin's
+   paper (Plane), and a box announcing "I am a component" on the one surface
+   whose brief opens by saying these are not cards.
+
+   The number keeps a narrow column of its own rather than the entry's 76px
+   reference column, because it is a bare verse number and not a reference —
+   22px carries three figures, which is every verse in the canon. It carries no
+   provenance mark and no seal: this is the edition's own text, not an opinion,
+   and seal means a human wrote it. Interval above, nothing around it. */
 .entity-opening-context blockquote {
   display: grid;
-  grid-template-columns: 18px minmax(0, 1fr);
-  gap: 8px;
-  margin: 9px 0 0;
-  padding: 9px 10px;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--bg-secondary) 54%, transparent);
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 0 12px;
+  align-items: baseline;
+  margin: 11px 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .entity-opening-context blockquote > span {
-  padding-top: 2px;
-  color: color-mix(in srgb, var(--study-gold) 76%, var(--text-tertiary));
+  color: var(--text-tertiary);
   font-family: var(--font-ui);
-  font-size: 0.5rem;
+  font-size: 0.71875rem;   /* 11.5 — the reference column's figure */
+  font-weight: var(--fw-semibold);
   font-variant-numeric: tabular-nums;
+  line-height: 1.45;
 }
 
 .entity-opening-context blockquote p {
   margin: 0;
   color: var(--text-secondary);
   font-family: var(--font-reading);
-  font-size: 0.6875rem;
-  line-height: 1.5;
+  font-size: 0.84375rem;   /* 13.5 — the reference row's fragment */
+  line-height: 1.45;
 }
 
 .entity-opening-context-refs {
@@ -7756,15 +7920,30 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   font-size: 0.46875rem;
 }
 
+/* The section already opens on a rule. Closing it with a second one drew a box
+   out of two hairlines around a single line of copy — and study C cut every
+   rule that merely fences an entry off, keeping one only where two kinds of
+   content meet and the type does not already say so. */
 .entity-opening-context.is-research .entity-opening-context-copy {
-  padding: 2px 0 9px;
-  border-bottom: 1px solid var(--border-subtle);
+  padding: 2px 0 0;
 }
 
+/* One rule, above the pair. More and the sources disclosure are two rows of
+   the same kind, one after the other, so drawing this block's underside AND
+   the sources block's topside put two stacked hairlines with a 21px gap
+   between them at the foot of every research entry — a double rule, which is
+   the one thing a rule can never be. The rule that survives is the one where
+   the kind actually changes: the entry's six parts end here and the apparatus
+   begins. Below it the two disclosures are separated by interval, at the 11px
+   the studies give two entries of the same kind. */
 .entity-research-more {
-  margin: 1px 0 8px;
+  margin: 1px 0 0;
   border-top: 1px solid var(--border-subtle);
-  border-bottom: 1px solid var(--border-subtle);
+}
+
+.entity-research-more + .margin-sources {
+  margin-top: 11px;
+  border-top: 0;
 }
 .entity-research-more > summary {
   min-height: 38px;
@@ -7816,8 +7995,12 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   margin-top: -4px;
 }
 
+/* One rule, at the top, where the section head meets the rows. The rows below
+   it are all the same kind of thing — a label and the people under it — so
+   they are told apart by interval, exactly as the entries in the pane are. */
 .entity-relationship-rows {
   border-top: 1px solid var(--border-subtle);
+  padding-top: 4px;
 }
 
 .entity-relationship-row {
@@ -7827,7 +8010,6 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   align-items: start;
   gap: 10px;
   padding: 7px 0;
-  border-bottom: 1px solid var(--border-subtle);
 }
 
 .entity-relationship-label {
@@ -7918,18 +8100,21 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   line-height: 1.35;
 }
 
+/* Competing site proposals are never merged and never silently disambiguated,
+   so they are a list of the same kind of claim. One rule above the list, air
+   between the claims. */
 .entity-location-alternatives {
   margin-top: 9px;
+  padding-top: 4px;
   border-top: 1px solid var(--border-subtle);
 }
 
 .entity-location-alternatives > div {
-  min-height: 31px;
+  min-height: 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  border-bottom: 1px solid var(--border-subtle);
   color: var(--text-secondary);
   font-family: var(--font-ui);
   font-size: 0.625rem;
@@ -7958,32 +8143,40 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   font-style: normal;
 }
 
+/* This sentence is the app comparing two gazetteers and saying what it found,
+   which is the definition of an inferred line — so it takes the machine mark,
+   the same 2px spine in the hanging indent that every other app-written
+   sentence in the margin carries. It was wearing a grey spine and a tinted
+   panel instead: the grey belongs to neither half of the provenance pair, and
+   the tint was a third plane inside the margin's paper. The mark says where
+   the sentence came from; the fill said nothing and cost a plane. */
 .entity-coordinate-comparison {
   margin: 9px 0 0;
-  padding: 7px 9px;
-  border-left: 2px solid color-mix(in srgb, var(--text-tertiary) 36%, transparent);
-  background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
+  padding: 0 0 0 11px;
+  border-left: 2px solid var(--accent-machine);
+  background: transparent;
   color: var(--text-tertiary);
   font-family: var(--font-ui);
   font-size: 0.5625rem;
   line-height: 1.45;
 }
 
+/* A divergence between sources is still the app's inference, not a fault, so
+   the mark stays slate and the ink does the work of saying "look at this". */
 .entity-coordinate-comparison.is-divergent {
-  border-left-color: color-mix(in srgb, var(--warning) 55%, var(--border-medium));
   color: var(--text-secondary);
 }
 
 .entity-coordinate-comparison.is-broad {
-  border-left-color: color-mix(in srgb, var(--text-tertiary) 38%, var(--border-medium));
   color: var(--text-tertiary);
 }
 
+/* "We could not place this" is an empty state, and an empty state in this app
+   is a sentence with air around it — never a dashed box with a tint in it,
+   which is two violations (a four-sided border, a third fill) in service of
+   saying something the sentence already says. */
 .entity-location-unmapped {
-  padding: 12px 13px;
-  border: 1px dashed var(--border-medium);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--bg-secondary) 52%, transparent);
+  padding: 0;
 }
 
 .entity-location-unmapped .entity-research-section-head { margin-bottom: 5px; }
@@ -8000,14 +8193,15 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   padding-top: 1px;
 }
 
+/* One rule where the gazetteer's material begins. The second one underneath
+   closed the lead into a band, which is a box drawn out of two hairlines. */
 .entity-pleiades-lead {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  padding: 10px 0 9px;
+  padding: 10px 0 0;
   border-top: 1px solid var(--border-subtle);
-  border-bottom: 1px solid var(--border-subtle);
 }
 
 .entity-pleiades-lead > div {
@@ -8083,10 +8277,18 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   gap: 4px;
 }
 
+/* An alternate name is a name, not a filter control. Set as a rounded outlined
+   capsule it read as something you could switch on, which is the false
+   affordance study C·2·7 stepped away from — and a pill is a fill-and-border
+   where state is supposed to be a mark. The studies set a name on a hairline
+   underline and nothing else, which is how a name is set in print. */
+.entity-pleiades-names > div {
+  gap: 4px 11px;
+}
+
 .entity-pleiades-names > div > span {
-  padding: 3px 6px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 999px;
+  padding-bottom: 1px;
+  border-bottom: 1px solid var(--border-subtle);
   color: var(--text-secondary);
   font-family: var(--font-reading);
   font-size: 0.5625rem;
@@ -8104,16 +8306,17 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 
 .entity-pleiades-connections > span { grid-row: 1 / span 6; }
 
+/* Connected places are one kind of row repeated. The block's own rule above is
+   the only one it needs; ruling each row closed made a table out of a list. */
 .entity-pleiades-connections button {
   min-width: 0;
-  min-height: 31px;
+  min-height: 29px;
   display: grid;
   grid-template-columns: 65px minmax(0, 1fr) 11px;
   align-items: center;
   gap: 6px;
   padding: 0 2px;
   border: 0;
-  border-bottom: 1px solid var(--border-subtle);
   background: transparent;
   color: var(--text-secondary);
   text-align: left;
@@ -8164,20 +8367,22 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 .entity-pleiades-bibliography summary:hover > span:first-child { color: var(--study-gold); }
 .entity-pleiades-bibliography summary:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 2px; }
 
+/* The indent is what says these belong to the disclosure above them, and the
+   indent alone does it — a drawn line down the side is a fence, and the only
+   vertical rule this app draws is a 2px mark that means a person or the app
+   wrote something. A grey one down a citation list means neither. */
 .entity-pleiades-bibliography > div {
   display: grid;
-  padding: 1px 0 5px 10px;
-  border-left: 1px solid var(--border-subtle);
+  padding: 1px 0 5px 11px;
 }
 
 .entity-pleiades-bibliography p {
-  min-height: 27px;
+  min-height: 25px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
   margin: 0;
-  border-bottom: 1px solid var(--border-subtle);
   font-size: 0.53125rem;
 }
 
@@ -8220,19 +8425,22 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 .entity-footprint-books {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 2px 8px;
+  gap: 3px 14px;
 }
 
+/* Twelve identical rows, each underlined, in three columns: a ruled table of
+   book names, which is the shape the study replaced with a list. The type
+   already says what each row is — a name and a count — so the rules were
+   telling the reader nothing they could not see. */
 .entity-footprint-books button {
   min-width: 0;
-  min-height: 25px;
+  min-height: 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 5px;
   padding: 0 2px;
   border: 0;
-  border-bottom: 1px solid var(--border-subtle);
   background: transparent;
   color: var(--text-tertiary);
   font-family: var(--font-ui);
@@ -8312,19 +8520,22 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 .entity-reference-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1px 12px;
+  gap: 2px 12px;
 }
 
+/* The study draws a full occurrence list as reference rows in two columns and
+   nothing else — no rule per row. Every reference here is the same kind of
+   thing, so a rule under each one is a grid drawn around a list that already
+   had a shape. */
 .entity-reference-grid button {
   min-width: 0;
-  min-height: 34px;
+  min-height: 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 5px;
   padding: 0 3px;
   border: 0;
-  border-bottom: 1px solid var(--border-subtle);
   background: transparent;
   color: var(--text-secondary);
   font-family: var(--font-ui);
@@ -8366,14 +8577,6 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 3px;
-}
-
-.entity-reference-grid .entity-reference-actions {
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.entity-reference-grid .entity-reference-actions > button {
-  border-bottom: 0;
 }
 
 .entity-reference-grid .entity-reference-actions > .entity-reference-open-tab {
@@ -8483,19 +8686,19 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   line-height: 1.55;
 }
 
+/* Same as the bibliography: the indent already says these hang off the
+   disclosure, and the rows are one kind repeated. Fence removed, rules gone. */
 .entity-edition-note-list {
   display: grid;
-  padding: 1px 0 9px 10px;
-  border-left: 1px solid var(--border-subtle);
+  padding: 1px 0 9px 11px;
 }
 
 .entity-edition-note-list > div {
-  min-height: 27px;
+  min-height: 25px;
   display: grid;
   grid-template-columns: minmax(88px, 0.55fr) minmax(0, 1fr);
   align-items: center;
   gap: 9px;
-  border-bottom: 1px solid var(--border-subtle);
   font-size: 0.53125rem;
 }
 
@@ -8619,8 +8822,12 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   border-top: 1px solid var(--border-subtle);
 }
 
+/* Two notes in a row are two entries of the same kind, and the studies put
+   11px of air between those, not a rule. A rule here was the Rev 01 habit of
+   closing every entry off — the one thing study C deleted wholesale. The rule
+   between two subsections stays, because that is a change of kind. */
 .margin-subsection .margin-card + .margin-card {
-  border-top: 1px solid var(--border-subtle);
+  margin-top: 11px;
 }
 
 .card-reasons {
@@ -13950,19 +14157,17 @@ textarea:focus-visible,
   color: var(--text-tertiary);
 }
 
+/* One rule, underneath, where the selection's tools give way to the pane's
+   content. The rule above it closed the block into a band — a box drawn out of
+   two hairlines, which is the shape the studies replaced with air. Inside a
+   tab panel the block already opens the panel, so it keeps only its underside
+   there too and the geometry no longer has to be unwound row by row. */
 .margin-selection-tools {
   display: grid;
   gap: 8px;
-  margin: -2px 0 25px;
-  padding: 11px 0 12px;
-  border-top: 1px solid var(--border-subtle);
+  margin: 0 0 25px;
+  padding: 0 0 12px;
   border-bottom: 1px solid var(--border-subtle);
-}
-
-.margin-tab-panel > .margin-selection-tools {
-  margin-top: 0;
-  padding-top: 0;
-  border-top: 0;
 }
 
 .margin-pin-status {
@@ -17523,13 +17728,20 @@ button.lang-phrase-diagram-node:focus-visible,
 }
 
 /* Quieter than the scripture it introduces. It is an h3 for screen-reader
-   navigation: visually recessive, structurally a heading. */
+   navigation: visually recessive, structurally a heading.
+
+   Ink-2, not ink-3. D draws the fold twice — once at full size and once inside
+   the rounded page — and sets #6B6660 both times. The distinction it is making
+   is finer than "recessive": at 11.5px uppercase and tracked, ink-3 stops
+   reading as a heading at all and starts reading as a caption for the verse
+   below it. Ink-2 is quiet against 19px scripture and still the title of
+   something. The fold's own rule is the seal; the words are ink. */
 .pericope-fold-title {
   margin: 10px 0 0;
   font: 500 11.5px/1.3 var(--font-ui);
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
 }
 
 /* The first fold in a chapter needs no opening air — the chapter header
@@ -17671,9 +17883,16 @@ button.lang-phrase-diagram-node:focus-visible,
 
   /* Register keeps its tabs and loses its groups — a bracket needs horizontal
      room the strip no longer has. Groups survive as labels in the overflow
-     list, which is the stated loss. */
-  .scripture-workspace-group-tab {
+     list, which is the stated loss. The rule goes with the label: half a
+     bracket is a stray hairline, and the band it stood in is reclaimed for
+     the reading pane rather than left empty. */
+  .scripture-workspace-group-tab,
+  .scripture-workspace-group-rule {
     display: none;
+  }
+
+  .scripture-workspace-tab-wrap[data-study-group-bracket] {
+    padding-top: 0;
   }
 
   .scripture-workspace-tab-wrap[data-study-group-start="true"] {

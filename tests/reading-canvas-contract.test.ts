@@ -147,6 +147,97 @@ test("text selection is the seal at 18%, and says so exactly once", () => {
   );
 });
 
+test("no later rule overrides the gutter's hover and focus ink", () => {
+  // The gutter states are stated once each, and the LAST rule wins — which is
+  // how this broke. A trailing
+  //   `.scripture-content .verse-line:focus .verse-num,
+  //    .verse-line:hover .verse-num { color: var(--text-secondary); }`
+  // matched at exactly the specificity of both correct rules and came after
+  // them, so hover quietly moved off ink-3 (D draws hovered as ".8", #928C84)
+  // and focus-visible lost its ink altogether — `:focus-visible` also matches
+  // `:focus`, so the clash was invisible in the source.
+  //
+  // Asserting the correct rules exist cannot catch this; a regex is happy to
+  // match the loser. So walk every declaration in document order and check
+  // that the last one to claim each state is the right one.
+  const winners = new Map<string, string>();
+  for (const [selector, body] of ruleBlocks()) {
+    const colour = [...body.matchAll(/(?:^|[\s;])color:\s*([^;]+);/g)].pop()?.[1]?.trim();
+    if (!colour) continue;
+    for (const part of selector.split(",").map((s) => s.trim())) {
+      if (!/\.verse-num$/.test(part)) continue;
+      if (/:hover \.verse-num$/.test(part)) winners.set("hover", colour);
+      if (/:focus(?:-visible)? \.verse-num$/.test(part)) winners.set("focus", colour);
+    }
+  }
+  assert.equal(winners.get("hover"), "var(--text-tertiary)",
+    "the hovered verse number is ink-3; a later rule has taken it somewhere else");
+  assert.equal(winners.get("focus"), "var(--text-primary)",
+    "a focused verse number goes to ink like a selected one; a later rule has taken it somewhere else");
+});
+
+test("a connection is seal or it is faint, and never a hue of its own", () => {
+  // D·2's fourth defect is "hue is doing structural work — green for one
+  // connection, terracotta for another, with nothing to tell you why", and its
+  // answer is "Seal, and only ever seal… there is no per-connection palette,
+  // because only one connection is ever coloured at a time." Provenance is
+  // what is actually at stake: seal means a human did this, and a relationship
+  // the reader drew is the clearest case of that in the app.
+  const inks = new Set<string>();
+  for (const [selector, body] of ruleBlocks()) {
+    if (!/\.connection-(?:mark|emphasis-mark|tick)\b/.test(selector)) continue;
+    for (const value of [...body.matchAll(/--connection-ink:\s*([^;]+);/g)]) inks.add(value[1]!.trim());
+  }
+  assert.deepEqual([...inks].sort(), ["var(--study-gold)", "var(--text-tertiary)"],
+    "the thread layer knows exactly two inks: ink-faint at rest, the seal when attended");
+  // Kind is carried by stroke and terminal per D·2b, never by colour — "hue is
+  // already committed: seal means you wrote this, everywhere in the app."
+  assert.doesNotMatch(css, /\.connection-kind-\w+\s*\{[^}]*--connection-ink/);
+});
+
+test("the thread never dims the page to make itself findable", () => {
+  // The veil was a full-page sheet of paper at 56% with a hole cut for the
+  // attended connection: scripture washed out so a 1px rule would read. D·2:
+  // "it does not dim, because dimming a thing to emphasise another is how a
+  // page starts flickering." D·2b: "Others stay exactly where they are and do
+  // not dim." It is a plane violation too — translucent paper over paper is a
+  // third plane, and this one covered the words.
+  const veils = [...css.matchAll(/\.connection-focus-veil[^{]*\{([^}]*)\}/g)].map((m) => m[1]!);
+  assert.ok(veils.length > 0, "the veil rule is still declared, so it is still being held down");
+  for (const body of veils) {
+    const fill = [...body.matchAll(/(?:^|[\s;])fill:\s*([^;]+);/g)].map((m) => m[1]!.trim());
+    assert.ok(fill.every((value) => value === "none"), `the focus veil paints again: fill ${fill.join(", ")}`);
+    for (const opacity of [...body.matchAll(/(?:^|[\s;])opacity:\s*([^;]+);/g)].map((m) => m[1]!.trim())) {
+      assert.equal(opacity, "0", "the focus veil is opaque again");
+    }
+  }
+});
+
+test("the thread appears rather than drawing itself on, and holds still under a pointer", () => {
+  // D·2's motion table: underline colour 120ms, spine and tick opacity 120ms,
+  // TIE DRAW-ON 0ms — "the tie and spine appear instantly rather than
+  // animating along their path. A drawn-on line is a delightful demo and an
+  // irritant on the two-hundredth hover." stroke-dashoffset is the draw-on, so
+  // it may be set but never transitioned.
+  for (const rule of [".connection-underline", ".connection-route", ".connection-contact"]) {
+    const body = css.match(new RegExp(`\\${rule}\\s*\\{([^}]*)\\}`))?.[1];
+    assert.ok(body, `${rule} is declared`);
+    const transition = body.match(/transition:\s*([^;]+);/)?.[1] ?? "";
+    assert.doesNotMatch(transition, /stroke-dashoffset|transform/,
+      `${rule} animates its own geometry; only ink and opacity may move`);
+    for (const duration of transition.matchAll(/(\d+)ms/g)) {
+      assert.equal(duration[1], "120", `${rule} moves at ${duration[0]}, and ink moves in 120ms`);
+    }
+  }
+  // Reserve: "reveals change opacity and ink, never geometry." The tick used
+  // to grow 11px → 15px under the pointer.
+  for (const [selector, body] of ruleBlocks()) {
+    if (!/\.connection-tick[.:][^,]*(?:hover|focused)[^,]*\.connection-tick-dash/.test(selector)) continue;
+    assert.doesNotMatch(body, /width|height|transform|padding|margin/,
+      `${selector} moves the mark on hover instead of changing its ink`);
+  }
+});
+
 test("chapter changes reset the reading position and the chapter end continues with focus", () => {
   assert.match(page, /contentRef\.current\.scrollTop = 0/);
   assert.match(page, /shouldFocusChapterHeading\.current = false;\s*chapterHeadingRef\.current\?\.focus\(\)/);

@@ -79,6 +79,16 @@ export type PlaceResearchArtifact = {
   places: Record<string, PlaceResearchRecord>;
 };
 
+/**
+ * Geometry for a small locator map. Nothing renders this today: §C·2 replaced
+ * the 340x140 decorative map with the bearing line, and sends the real map to
+ * "Research at 800px" — a surface that does not exist yet. The generator below
+ * stays, and stays tested, because it is deterministic and offline; deleting it
+ * would make that surface expensive to build rather than cheap. What was removed
+ * is the *plumbing*: `EntityResearchData` no longer carries it, so opening a
+ * place stops clipping land polygons out of a 1,000-feature GeoJSON and
+ * serialising the result across IPC for a reader who never sees it.
+ */
 export type MiniMapData = {
   width: 320;
   height: 164;
@@ -92,7 +102,6 @@ export type EntityResearchData = {
   entity: TipnrEntity;
   place: PlaceResearchRecord | null;
   pleiades: PleiadesEntityResearch | null;
-  minimap: MiniMapData | null;
   imageDataUrl: string | null;
 };
 

@@ -942,6 +942,14 @@ export function ScriptureWorkspaceTabs({
           const expandedGroupLabel = !collapsedProxy && tabIndex === 0
             ? groupLabel
             : undefined;
+          // B3: the bracket is "1px over the members, ending at the last one".
+          // A rule that spans several members cannot belong to any one of them,
+          // and the members have to stay direct children of the strip so drag
+          // and drop keeps one flat index space — so each member carries its own
+          // segment and the group's span is the sum of them. The last member is
+          // marked because that is the only place the rule is allowed to stop.
+          const bracketed = !collapsedProxy;
+          const groupEnd = bracketed && tabIndex === visibleTabs.length - 1;
           const dragging = dragState?.tabId === tab.id;
           const dropBefore = dragState?.groupId === group.id && dragState.insertionIndex === tabIndex;
           const dropAfter = dragState?.groupId === group.id
@@ -954,16 +962,24 @@ export function ScriptureWorkspaceTabs({
               key={tab.id}
               data-study-group-id={group.id}
               data-study-group-start={groupStart || undefined}
+              data-study-group-bracket={bracketed || undefined}
+              data-study-group-end={groupEnd || undefined}
+              // B3: a study with no active tab drops its bracket to 72% —
+              // present, receded. Never a second ink, only less of the one. The
+              // flag sits on the wrap because the rule and the label are two
+              // elements and they have to recede together.
+              data-study-group-active={bracketed ? activeGroup?.group.id === group.id : undefined}
               data-study-drop={dropBefore ? "before" : dropAfter ? "after" : undefined}
             >
+              {bracketed && tabIndex > 0 && (
+                <span className="scripture-workspace-group-rule" aria-hidden="true" />
+              )}
               {expandedGroupLabel !== undefined && (
                 <button
                   type="button"
                   className="scripture-workspace-group-tab"
                   data-study-group-tab=""
                   data-study-group-id={group.id}
-                  // B3: a study with no active tab drops its bracket to 72% —
-                  // present, receded. Never a second ink, only less of the one.
                   data-study-group-active={activeGroup?.group.id === group.id}
                   tabIndex={-1}
                   title={expandedGroupLabel}
@@ -971,7 +987,7 @@ export function ScriptureWorkspaceTabs({
                   onMouseDown={deferMouseFocus}
                   onClick={async (event) => { await toggleGroup(group.id, true, event.currentTarget); }}
                   onContextMenu={(event) => openContextMenu({ kind: "group", groupId: group.id }, event)}
-                >{expandedGroupLabel}</button>
+                ><span>{expandedGroupLabel}</span></button>
               )}
               <button
                 ref={(node) => {

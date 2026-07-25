@@ -246,6 +246,102 @@ test("a flush-right tab docks the register so nothing sits between it and the pa
   );
 });
 
+test("the bracket names its members' span from above and takes no width from the tab row", () => {
+  const rail = section(stylesSource, ".scripture-workspace-bar {", ".topbar-navigation,");
+
+  // B3: "1px over the members, ending at the last one." Over, not beside. The
+  // bracket used to be a 96px box in the tab row, which clipped the study name,
+  // shouldered a flush-start tab off the page corner it exists to supply, and
+  // at the far end arrived against the actions cluster the +n count is drawn
+  // in. It now lives in a 15px band above the members: 1px rule, 5px of air,
+  // a 9px label, reserved by padding on every member's wrap.
+  assert.match(
+    rail,
+    /\.scripture-workspace-tab-wrap\[data-study-group-bracket\] \{\s*padding-top: 15px;\s*\}/,
+  );
+  assert.match(rail, /\.scripture-workspace-group-tab \{[\s\S]{0,200}position: absolute;/);
+  assert.match(rail, /\.scripture-workspace-group-tab \{[\s\S]{0,320}height: 15px;/);
+  // Nothing that would put it back in the row, and no cap that would clip a
+  // name the bracket underneath it is wide enough to hold.
+  const bracketRule = rail.slice(
+    rail.indexOf(".scripture-workspace-group-tab {"),
+    rail.indexOf("}", rail.indexOf(".scripture-workspace-group-tab {")),
+  );
+  assert.doesNotMatch(bracketRule, /align-self|margin-right|max-width: 96px/);
+
+  // The rule is carried by the members, so it ends where they do rather than
+  // where the label does. Members stay direct children of the strip: B5 keeps
+  // drag and drop in one flat index space.
+  assert.match(rail, /\.scripture-workspace-group-rule \{[\s\S]{0,240}height: 1px;/);
+  assert.match(
+    rail,
+    /\.scripture-workspace-tab-wrap\[data-study-group-end\] \.scripture-workspace-group-rule \{\s*right: 0;\s*\}/,
+  );
+  assert.match(componentSource, /const groupEnd = bracketed && tabIndex === visibleTabs\.length - 1/);
+  assert.match(componentSource, /<span className="scripture-workspace-group-rule" aria-hidden="true" \/>/);
+  assert.match(componentSource, /data-study-group-bracket=\{bracketed \|\| undefined\}/);
+  assert.match(componentSource, /data-study-group-end=\{groupEnd \|\| undefined\}/);
+
+  // Both halves of the bracket recede together — B3 says "its rule and label",
+  // and a full-strength rule over a receded name is a bracket that half-belongs
+  // to the study it names.
+  assert.match(
+    registerSource,
+    /\[data-study-group-active="false"\][\s\S]{0,220}\.scripture-workspace-group-rule \{\s*opacity: 0\.72;/,
+  );
+});
+
+test("no control in the register is left to the platform to draw", () => {
+  const rail = section(stylesSource, ".scripture-workspace-bar {", ".topbar-navigation,");
+
+  // The bracket was missing from the reset, so it kept the UA's `2px outset`
+  // button border: a hard black rectangle on all four sides, permanently. That
+  // is the Ma violation the bracket exists to avoid — it names a span, it does
+  // not enclose one — and it reads as a focus ring that never clears.
+  const reset = rail.slice(rail.indexOf(".scripture-workspace-tab,"));
+  assert.match(
+    reset.slice(0, reset.indexOf("}")),
+    /\.scripture-workspace-group-tab,/,
+    "the bracket must be reset with the rest of the register's controls",
+  );
+
+  // And every focusable control carries the register's own mark. The bracket
+  // and the context menu's items both fell through to the platform ring.
+  const focusStart = rail.indexOf(".scripture-workspace-tab:focus-visible");
+  const focusSelectors = rail.slice(focusStart, rail.indexOf("{", focusStart));
+  for (const selector of [
+    ".scripture-workspace-group-tab:focus-visible",
+    ".scripture-workspace-context-menu button:focus-visible",
+    ".scripture-workspace-active-group:focus-visible",
+    ".scripture-workspace-open:focus-visible",
+    ".scripture-workspace-overflow:focus-visible",
+    ".scripture-workspace-persistence button:focus-visible",
+  ]) {
+    assert.ok(focusSelectors.includes(selector), `${selector} must carry the register's focus mark`);
+  }
+});
+
+test("a derived tab wears the machine hue whether or not you are reading it", () => {
+  const rail = section(stylesSource, ".scripture-workspace-bar {", ".topbar-navigation,");
+
+  // Provenance: B1 calls the two kinds of tab apart by who made them — a
+  // passage is one you chose, a Research tab is one "the app derived — slate
+  // mark". Selection repainted every mark seal, which said a person opened
+  // Apollos the moment you looked at it. The machine hue is stated after the
+  // selected rule so it outranks it on source order at equal specificity.
+  const machineIndex = rail.indexOf(".scripture-workspace-tab .scripture-workspace-tab-mark.is-person,");
+  const selectedIndex = rail.indexOf('.scripture-workspace-tab[aria-selected="true"] .scripture-workspace-tab-mark {');
+  assert.ok(machineIndex > 0, "a derived tab's mark must name the machine hue");
+  assert.ok(
+    machineIndex > selectedIndex,
+    "the machine hue must be declared after the selected mark or selection will repaint it seal",
+  );
+  assert.match(
+    rail.slice(machineIndex, rail.indexOf("}", machineIndex)),
+    /\.scripture-workspace-tab-mark\.is-place \{\s*color: var\(--accent-machine\);/,
+  );
+});
+
 test("a persistence failure seals the strip's baseline and states four words beside the retry", () => {
   // B4: nothing closes, nothing greys out — the baseline turns seal across the
   // page's width and the reason is four words. A failure to save the workspace

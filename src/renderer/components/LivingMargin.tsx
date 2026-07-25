@@ -849,8 +849,51 @@ export function bearingFromKnownPlace(latitude: number, longitude: number): stri
   return `${Number(distance).toLocaleString()} km ${nearest.point} of ${nearest.name}`;
 }
 
-function formatResearchRef(value: string, bookNames: BookNameData): string {
-  return formatCanonicalRef(value, bookNames);
+/**
+ * A gazetteer title often carries every spelling any source has ever used for
+ * a place, slash-joined: "Peloponnesus/Peloponnesos/Peloponnese". The kind
+ * line is one 11px line of about five words — the line that lets a reader skip
+ * an entry safely — and an alias list is not one situating fact, it is three,
+ * which is what pushed the line to two and drove it into the description. Take
+ * the first form. Alternate spellings are a fact row in study C·2 ("Also ·
+ * Diana, in Latin texts"), never part of the kind line.
+ */
+function primaryTitleForm(title: string | undefined): string | undefined {
+  const first = title?.split("/")[0]?.trim();
+  return first ? first : undefined;
+}
+
+/**
+ * Twelve characters is what the margin's 76px reference column carries at
+ * Instrument Sans 11.5 semibold with tabular figures. Every reference in the
+ * canon fits inside it once the book name is allowed to shorten.
+ */
+const REFERENCE_COLUMN_CHARS = 12;
+
+/**
+ * A reference is one token and must never break across lines. Given the full
+ * book name, "1 Corinthians 1:12" wrapped inside the reference column to
+ * "1 Corinthians" over "1:12" — which reads as two references and destroys the
+ * column the fixed width exists to form.
+ *
+ * The edition ships its own list of names for each book, longest first, so
+ * "the first name that keeps the whole reference inside the column" is the
+ * edition's own preference order rather than an abbreviation table of ours.
+ * That rule reproduces every reference the studies draw: Acts 18:19, Matt
+ * 12:27, 1 Cor 15:32, Eph 1:1, Rev 2:1. If no name fits — a three-digit psalm
+ * with a three-digit verse — the shortest the edition offers is still better
+ * than an overflow.
+ */
+export function formatResearchRef(value: string, bookNames: BookNameData): string {
+  const match = /^([1-3A-Z]{3})\.(\d+)\.(\d+)$/.exec(value);
+  const names = match ? bookNames[match[1]!] : undefined;
+  if (!match || !names || names.length === 0) return formatCanonicalRef(value, bookNames);
+  const suffix = ` ${Number(match[2])}:${Number(match[3])}`;
+  const fitted = names.find((name) => name.length + suffix.length <= REFERENCE_COLUMN_CHARS);
+  const name = fitted ?? names.reduce((shortest, candidate) => (
+    candidate.length < shortest.length ? candidate : shortest
+  ));
+  return `${name}${suffix}`;
 }
 
 export function formatEntityResearchOrigin(
@@ -1398,8 +1441,8 @@ function EntityResearchView({
 
   // 2 · kind & situation. One line absorbs the whole difference between a
   // place, a person, a deity and a group.
-  const containedIn = data.pleiades?.place.connections
-    .find((connection) => connection.type.startsWith("part_of"))?.title;
+  const containedIn = primaryTitleForm(data.pleiades?.place.connections
+    .find((connection) => connection.type.startsWith("part_of"))?.title);
   const kindLineParts: Array<string | null | undefined> = data.entity.kind === "place"
     ? [sentenceCase(place?.type ?? "Place"), containedIn ? `within ${containedIn}` : null]
     : data.entity.kind === "person"

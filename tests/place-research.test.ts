@@ -134,7 +134,6 @@ test("host research gracefully keeps people and unmapped places useful", () => {
   const personResearch = loader.research(paul);
   assert.equal(personResearch.place, null);
   assert.equal(personResearch.pleiades, null);
-  assert.equal(personResearch.minimap, null);
   assert.equal(personResearch.imageDataUrl, null);
 
   const corinth = tipnr.entities["Corinth@Act.18.1-2Ti=G2882"];
@@ -144,8 +143,13 @@ test("host research gracefully keeps people and unmapped places useful", () => {
   assert.equal(placeResearch.pleiades?.place.id, "570182");
   assert.equal(placeResearch.pleiades?.place.title, "Corinthus/Korinthos");
   assert.equal(placeResearch.pleiades?.coordinateComparison?.relation, "close");
-  assert.ok(placeResearch.minimap?.landPaths.length);
   assert.match(placeResearch.imageDataUrl ?? "", /^data:image\/jpeg;base64,/);
+
+  // The loader must not carry the minimap. §C·2 replaced the decorative map
+  // with the bearing line, so shipping clipped land polygons across IPC on
+  // every place opened bought a reader nothing. The generator is still tested
+  // above — this asserts only that nothing is paying for it in the meantime.
+  assert.ok(!("minimap" in placeResearch), "research() must not compute the minimap for a reader who cannot see it");
 });
 
 test("pinned Pleiades release preserves ancient names, geometry, connections, and bibliography", () => {

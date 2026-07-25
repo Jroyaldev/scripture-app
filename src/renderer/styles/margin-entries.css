@@ -158,6 +158,13 @@
   font-size: 0.6875rem;
   font-weight: var(--fw-normal);
   line-height: 1.35;
+  /* The study draws this as a single line of about five words, and the copy
+     is trimmed to keep it that way. A long containing region can still take
+     two, so the break is balanced rather than left to fall where it likes: a
+     taxonomy that orphans one word onto a second line stops reading as one
+     label and starts reading as a second, unexplained line of copy. The 14px
+     below is what keeps a two-line kind line off the description either way. */
+  text-wrap: balance;
 }
 
 /* --- 3 · why it is here --------------------------------------------------
@@ -313,7 +320,14 @@
 
 /* The one place the margin uses the UI face for content, because a reference
    IS a label. Semibold with tabular figures at a fixed 76px, so a stack of
-   them forms a true column rather than a ragged left edge. */
+   them forms a true column rather than a ragged left edge.
+
+   A reference is one token and never breaks. "1 Corinthians 1:12" was wrapping
+   inside the column to "1 Corinthians" over "1:12", which reads as two
+   references and destroys the column it was supposed to form. The book name is
+   abbreviated at source so it fits the 76px — every reference the studies draw
+   is set that way, "1 Cor 15:32" and "Matt 12:27" — and this stops the break
+   from happening at all if a name ever outgrows the column. */
 .margin-entry-appears-ref {
   color: var(--text-primary);
   font-family: var(--font-ui);
@@ -321,6 +335,7 @@
   font-weight: var(--fw-semibold);
   font-variant-numeric: tabular-nums;
   line-height: 1.45;
+  white-space: nowrap;
 }
 
 /* A verse and a fragment of it — the same shape the cross-references use, so
@@ -568,11 +583,42 @@
 }
 
 /* The research entry's name line takes the place of the old <h2>, and the
-   capture action still rides at the row's trailing edge. */
+   capture action still rides at the row's trailing edge. It keeps the 3px the
+   base rule gives it: the name and the kind line are a unit, but they are not
+   the same line, and zeroing the gap here was half of what made the head, the
+   taxonomy and the description read as one crowded block. */
 .living-margin .entity-research-title-row > .margin-entry-name {
   min-width: 0;
   flex: 1;
-  margin-bottom: 0;
+}
+
+/* Add to note is one of the three writing actions, and the studies set those
+   at 11.5px medium wherever they appear. This one had inherited the row-reveal
+   treatment instead — ink-3 at 45% opacity, which computes to roughly #C4C0BA
+   on paper and is not legible at 10px. That treatment is right for the
+   cross-reference rows, where the action's space is reserved at rest and only
+   ink arrives on hover; it is wrong here, because nothing reveals this one. It
+   is simply always on the page, so it has to be readable at rest. The base
+   rule keeps its 0.45 for the rows that do reveal.
+
+   Ink-2 rather than the footer's ink, because this action shares a baseline
+   with a 22px serif head, and a trailing action on a head row is the quieter
+   of the two in the studies — the research view's own Close sits in ink-3
+   there. Reserve: legible, and still not the brightest thing on the row.
+
+   (Study C·2·7 also moves this action to the pane footer beside Capture and
+   Note so the three writing actions sit together. That is a structural move,
+   not a visual one, and it is not made here.) */
+.living-margin .entity-research-capture {
+  color: var(--text-secondary);
+  font-size: 0.71875rem;   /* 11.5 */
+  font-weight: var(--fw-medium);
+  opacity: 1;
+}
+
+.living-margin .entity-research-capture:hover,
+.living-margin .entity-research-capture:focus-visible {
+  color: var(--accent-seal);
 }
 
 /* The word entry is the same six parts as a place or a person, so nothing new

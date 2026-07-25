@@ -39,7 +39,6 @@ export class PlaceResearchLoader {
 
   research(entity: TipnrEntity): EntityResearchData {
     const place = entity.kind === "place" ? this.index.get(entity.id) : null;
-    const minimap = place ? this.index.minimap(entity.id) : null;
     const pleiadesPlace = place?.linkedData.pleiadesId
       ? this.pleiades.get(place.linkedData.pleiadesId)
       : null;
@@ -60,6 +59,6 @@ export class PlaceResearchLoader {
         imageDataUrl = `data:${place.image.mimeType};base64,${readFileSync(path).toString("base64")}`;
       }
     }
-    return { entity, place, pleiades, minimap, imageDataUrl };
+    return { entity, place, pleiades, imageDataUrl };
   }
 }

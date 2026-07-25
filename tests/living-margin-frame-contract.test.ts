@@ -2,13 +2,23 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { test } from "node:test";
+import { formatResearchRef } from "../src/renderer/components/LivingMargin.js";
 
 const repoRoot = resolve(import.meta.dirname, "..");
+const read = (path: string): string => readFileSync(join(repoRoot, path), "utf-8");
 const margin = readFileSync(join(repoRoot, "src", "renderer", "components", "LivingMargin.tsx"), "utf-8");
 const page = readFileSync(join(repoRoot, "src", "renderer", "components", "ScripturePage.tsx"), "utf-8");
 const css = readFileSync(join(repoRoot, "src", "renderer", "styles.css"), "utf-8");
 const language = readFileSync(join(repoRoot, "src", "renderer", "components", "LanguageWordsSection.tsx"), "utf-8");
 const entriesCss = readFileSync(join(repoRoot, "src", "renderer", "styles", "margin-entries.css"), "utf-8");
+
+/** The border declarations in a rule body that actually paint something —
+ *  `border: 0` and `border: none` reset, they do not draw. */
+function drawnRules(body: string): string[] {
+  return [...body.matchAll(/(border(?:-(?:top|bottom|left|right))?)\s*:\s*([^;]+);/g)]
+    .filter((match) => !/^(0|none)$/.test(match[2]!.trim()))
+    .map((match) => match[1]!);
+}
 
 /** Every flat rule block in a sheet, as [selector, body] pairs. */
 function ruleBlocks(sheet: string = css): Array<[string, string]> {
@@ -109,6 +119,166 @@ test("margin content is entries — one skeleton, six parts, and no box", () => 
   assert.match(language, /className="margin-entry-name-key lang-detail-strong"/);
   assert.match(entriesCss, /\.margin-entry-name-key\s*\{[\s\S]*?opacity: 0;/);
   assert.match(entriesCss, /\.margin-entry:hover \.margin-entry-name-key,\s*\.margin-entry:focus-within \.margin-entry-name-key\s*\{\s*opacity: 1;/);
+});
+
+test("the research entry's head, taxonomy and description are held apart by interval", () => {
+  // The clearest way to lose this again is the way it was lost the first time:
+  // a rule written for the identity header's old description paragraph, which
+  // outranks `.margin-entry-kind` and silently re-dresses the taxonomy — the
+  // kind line is a <p>, and it is the only direct <p> child this header has.
+  // Any rule matching a bare <p> under `.entity-research-identity` is that bug
+  // by construction, whatever it intends to do.
+  for (const [selector] of ruleBlocks()) {
+    for (const single of selector.split(",")) {
+      assert.doesNotMatch(
+        single.trim(),
+        /\.entity-research-identity(\s*>)?\s+p\b/,
+        `${selector} restyles the research entry's kind line as body copy`,
+      );
+    }
+  }
+
+  // The interval itself: 3px between the head and the taxonomy, because they
+  // are a unit and not the same line, then 14px clear of the description.
+  assert.match(entriesCss, /\.margin-entry-name\s*\{[\s\S]*?margin-bottom: 3px;/);
+  assert.match(entriesCss, /\.margin-entry-kind\s*\{[\s\S]*?margin: 0 0 14px;/);
+  assert.match(entriesCss, /\.margin-entry-why\s*\{[\s\S]*?margin-bottom: 18px;/);
+  // Nothing may take that 3px back the way the research title row once did.
+  const titleRow = entriesCss.slice(
+    entriesCss.indexOf(".living-margin .entity-research-title-row > .margin-entry-name"),
+    entriesCss.indexOf(".living-margin .entity-research-capture"),
+  );
+  assert.ok(titleRow.length > 0, "the research title row's name rule has gone missing");
+  assert.doesNotMatch(titleRow, /margin-bottom:\s*0/);
+
+  // Rev 01's identity header is gone rather than merely unrendered: a kicker,
+  // an <h2> page title and a chip row of person facts all describe an entry
+  // the studies replaced with a dictionary head and one taxonomy line.
+  for (const dead of [".entity-research-kicker", ".entity-person-facts"]) {
+    assert.doesNotMatch(css, new RegExp(dead.replace(".", "\\.")), `${dead} is still dressed`);
+    assert.doesNotMatch(margin, new RegExp(dead.slice(1)), `${dead} is still rendered`);
+  }
+
+  // The kind line is one line of about five words. A gazetteer title that
+  // carries every spelling a source ever used is three situating facts wearing
+  // one, and it is what pushed this line onto a second row.
+  assert.match(margin, /function primaryTitleForm\(title: string \| undefined\)/);
+  assert.match(margin, /title\?\.split\("\/"\)\[0\]\?\.trim\(\)/);
+  assert.match(margin, /const containedIn = primaryTitleForm\(/);
+  // If it does take two lines anyway, it breaks evenly rather than orphaning a
+  // word onto a row that then reads as unexplained copy.
+  assert.match(entriesCss, /\.margin-entry-kind\s*\{[\s\S]*?text-wrap: balance;/);
+
+  // Add to note is always on the page here — nothing reveals it — so it has to
+  // be legible at rest rather than wearing the row-reveal's 45% ghost.
+  assert.match(
+    entriesCss,
+    /\.living-margin \.entity-research-capture\s*\{[\s\S]*?color: var\(--text-secondary\);[\s\S]*?opacity: 1;/,
+  );
+});
+
+test("a scripture reference is one token and never breaks across lines", () => {
+  // "1 Corinthians 1:12" wrapped inside the 76px column to "1 Corinthians"
+  // over "1:12", which reads as two references and destroys the column the
+  // fixed width exists to form.
+  assert.match(entriesCss, /\.margin-entry-appears-ref\s*\{[\s\S]*?white-space: nowrap;/);
+
+  // The book name shortens until the whole reference fits, using the edition's
+  // own list of names in its own preference order. These are the exact strings
+  // the studies draw, which is the check that the rule is the studies' rule and
+  // not merely a rule.
+  const bookNames = JSON.parse(read("data/scripture/book-names-en.json")) as Record<string, string[]>;
+  for (const [ref, expected] of [
+    ["ACT.18.19", "Acts 18:19"],
+    ["MAT.12.27", "Matt 12:27"],
+    ["MRK.9.38", "Mark 9:38"],
+    ["1CO.15.32", "1 Cor 15:32"],
+    ["EPH.1.1", "Eph 1:1"],
+    ["1TI.1.3", "1 Tim 1:3"],
+    ["REV.2.1", "Rev 2:1"],
+    ["1CO.1.12", "1 Cor 1:12"],
+  ] as const) {
+    assert.equal(formatResearchRef(ref, bookNames), expected);
+  }
+
+  // And no reference anywhere in the canon overflows the column it sits in.
+  for (const code of Object.keys(bookNames)) {
+    for (const [chapter, verse] of [[1, 1], [19, 14], [119, 176]] as const) {
+      const label = formatResearchRef(`${code}.${chapter}.${verse}`, bookNames);
+      assert.ok(label.length <= 12, `${label} does not fit the reference column`);
+      assert.doesNotMatch(label, /^[A-Z0-9]{3} /, `${code} fell back to its raw canonical code`);
+    }
+  }
+});
+
+test("margin entries are closed by air, not by a hairline apiece", () => {
+  // Study C deleted the rule under every entry that Rev 01 drew, and kept one
+  // only where two kinds of content meet and the type does not already say so.
+  // A list of one kind of row — sources, relationships, occurrences, connected
+  // places, citations — therefore carries at most the rule above it.
+  const fencedRows: Array<[string, RegExp]> = [
+    ["source rows", /\n\.margin-source-row\s*\{([^}]*)\}/],
+    ["relationship rows", /\n\.entity-relationship-row\s*\{([^}]*)\}/],
+    ["alternative sites", /\n\.entity-location-alternatives > div\s*\{([^}]*)\}/],
+    ["gazetteer connections", /\n\.entity-pleiades-connections button\s*\{([^}]*)\}/],
+    ["bibliography rows", /\n\.entity-pleiades-bibliography p\s*\{([^}]*)\}/],
+    ["footprint books", /\n\.entity-footprint-books button\s*\{([^}]*)\}/],
+    ["occurrence rows", /\n\.entity-reference-grid button\s*\{([^}]*)\}/],
+    ["edition notes", /\n\.entity-edition-note-list > div\s*\{([^}]*)\}/],
+    ["stacked note cards", /\n\.margin-subsection \.margin-card \+ \.margin-card\s*\{([^}]*)\}/],
+  ];
+  for (const [what, pattern] of fencedRows) {
+    const block = pattern.exec(css);
+    assert.ok(block, `${what} no longer has a rule to check`);
+    assert.deepEqual(drawnRules(block[1]!), [], `${what} are still fenced off one by one`);
+  }
+
+  // Two rules bracketing a block is a box drawn out of hairlines, and a rule
+  // on each side of a gap is a double rule. Both were on screen: More closed
+  // itself and the sources disclosure opened itself, 21px apart.
+  const boxed: Array<[string, RegExp]> = [
+    ["the More disclosure", /\n\.entity-research-more\s*\{([^}]*)\}/],
+    ["the gazetteer lead", /\n\.entity-pleiades-lead\s*\{([^}]*)\}/],
+    ["the selection tools", /\n\.margin-selection-tools\s*\{([^}]*)\}/],
+    ["the opening-context copy", /\n\.entity-opening-context\.is-research \.entity-opening-context-copy\s*\{([^}]*)\}/],
+  ];
+  for (const [what, pattern] of boxed) {
+    const block = pattern.exec(css);
+    assert.ok(block, `${what} no longer has a rule to check`);
+    const drawn = drawnRules(block[1]!);
+    assert.ok(drawn.length <= 1, `${what} is bracketed by ${drawn.join(" + ")} — that is a box, not a rule`);
+  }
+  assert.match(css, /\n\.entity-research-more \+ \.margin-sources\s*\{[\s\S]*?border-top: 0;/);
+
+  // A quoted verse is "a verse and a fragment of it", which the margin has
+  // exactly one shape for — the reference row. It was a filled, rounded,
+  // four-sided card: a border where an interval belongs, and a third fill
+  // inside the margin's paper.
+  const quote = /\n\.entity-opening-context blockquote\s*\{([^}]*)\}/.exec(css);
+  assert.ok(quote, "the opening-context quote no longer has a rule to check");
+  assert.match(quote[1]!, /border: 0;/);
+  assert.match(quote[1]!, /background: transparent;/);
+  assert.doesNotMatch(quote[1]!, /border-radius: var/);
+
+  // An alternate name is a name, not a filter control, and state is a mark
+  // rather than a fill: no outlined capsules anywhere in the entry.
+  const names = /\n\.entity-pleiades-names > div > span\s*\{([^}]*)\}/.exec(css);
+  assert.ok(names, "the gazetteer name list no longer has a rule to check");
+  assert.doesNotMatch(names[1]!, /border-radius: 999px/);
+  assert.match(names[1]!, /border-bottom: 1px solid var\(--border-subtle\);/);
+
+  // Empty is a sentence with air around it, never a dashed box with a tint.
+  const unmapped = /\n\.entity-location-unmapped\s*\{([^}]*)\}/.exec(css);
+  assert.ok(unmapped, "the unmapped-place state no longer has a rule to check");
+  assert.doesNotMatch(unmapped[1]!, /border|background/);
+
+  // Seal is human authorship and slate is the machine's, and a grey 2px spine
+  // is neither. This sentence is the app comparing two gazetteers, so it takes
+  // the machine mark — and no fill, which would be a third plane.
+  const comparison = /\n\.entity-coordinate-comparison\s*\{([^}]*)\}/.exec(css);
+  assert.ok(comparison, "the coordinate comparison no longer has a rule to check");
+  assert.match(comparison[1]!, /border-left: 2px solid var\(--accent-machine\);/);
+  assert.match(comparison[1]!, /background: transparent;/);
 });
 
 test("Living Margin is one labelled frame with truthful chapter, reading, and selected modes", () => {
