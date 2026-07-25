@@ -51,6 +51,53 @@
   --quire-hl-purple-line: oklch(0.74 var(--quire-hl-c) 305);
 }
 
+/* ── The paint ───────────────────────────────────────────────────────────────
+   HighlightUnderlay draws the geometry; the ink is named here, so a mark's
+   colour is one lookup and a theme change needs no re-measure.
+
+   Two rules govern the overlap and they are enforced in different places. The
+   wash is painted exactly ONCE per stretch of text — the component resolves
+   that geometrically, which is why nothing here carries a blend mode: two
+   translucent layers make a third colour that belongs to neither mark. The
+   2px rules DO stack, newest against the text, to a 4px cap. */
+.quire-hl-wash[data-hl="yellow"] { fill: var(--quire-hl-yellow-wash); }
+.quire-hl-wash[data-hl="green"] { fill: var(--quire-hl-green-wash); }
+.quire-hl-wash[data-hl="blue"] { fill: var(--quire-hl-blue-wash); }
+.quire-hl-wash[data-hl="pink"] { fill: var(--quire-hl-pink-wash); }
+.quire-hl-wash[data-hl="purple"] { fill: var(--quire-hl-purple-wash); }
+
+.quire-hl-rule[data-hl="yellow"] { fill: var(--quire-hl-yellow-line); }
+.quire-hl-rule[data-hl="green"] { fill: var(--quire-hl-green-line); }
+.quire-hl-rule[data-hl="blue"] { fill: var(--quire-hl-blue-line); }
+.quire-hl-rule[data-hl="pink"] { fill: var(--quire-hl-pink-line); }
+.quire-hl-rule[data-hl="purple"] { fill: var(--quire-hl-purple-line); }
+
+/* The count beyond two, in the reserved gutter. Never a badge, never a fill:
+   three marks on one phrase is a filing problem, and the gutter is where this
+   system already says so. */
+.quire-hl-count {
+  fill: var(--text-tertiary);
+  font: 500 9px/1 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 180ms to arrive, 120ms to leave, and nothing moves either way. */
+@keyframes quire-hl-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes quire-hl-out { from { opacity: 1; } to { opacity: 0; } }
+
+.quire-hl-wash.hl-arriving,
+.quire-hl-rule.hl-arriving { animation: quire-hl-in 180ms linear; }
+
+.quire-hl-wash.hl-leaving,
+.quire-hl-rule.hl-leaving { animation: quire-hl-out 120ms linear forwards; }
+
+/* Quieted while a pin holds the page. */
+.quire-hl-wash.hl-dimmed,
+.quire-hl-rule.hl-dimmed { opacity: 0.28; transition: opacity 120ms linear; }
+
+.quire-hl-wash:not(.hl-dimmed),
+.quire-hl-rule:not(.hl-dimmed) { transition: opacity 120ms linear; }
+
 /* ── The bar ─────────────────────────────────────────────────────────────────
    Five swatches, then Note · Connect · More, at every width and in every
    state. Groups are separated by interval, never by a rule: 14px of the plane
@@ -301,6 +348,26 @@
 .marking-connect-draft[data-connect-state="in-flight"] .marking-choice,
 .marking-connect-draft[data-connect-state="recovery"] .marking-choice { pointer-events: none; }
 
+/* In flight: the hairline runs the full width at the head of the draft, and
+   the held phrases go quiet. The bar does not move and is not dismissed —
+   a bar that vanished would have nowhere to put the failure. */
+.marking-connect-progress {
+  display: block;
+  margin: 0 0 2px;
+}
+
+.marking-connect-progress .seal-progress {
+  display: flex;
+  width: 100%;
+  height: 1px;
+}
+
+.marking-connect-draft[data-connect-state="in-flight"] .marking-connect-anchors,
+.marking-connect-draft[data-connect-state="in-flight"] .marking-connect-field {
+  opacity: 0.6;
+  transition: opacity 120ms linear;
+}
+
 /* ── The ten states ─────────────────────────────────────────────────────────
    One loading device, never an illustration, name the thing and the reason,
    never lose the reader's text, say whether it was local. */
@@ -376,6 +443,47 @@
   to { transform: translateX(357%); }
 }
 
+/* Note capture is an authored surface, so it carries the same two states the
+   draft bar does: one loading device at the head of the footer, and a failure
+   that names the thing, gives the reason, and offers two ways out. */
+.note-capture-progress {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.note-capture-progress .seal-progress {
+  display: flex;
+  width: 100%;
+  height: 1px;
+}
+
+/* One loading device, and this surface's is the hairline above. The shared
+   Button still marks itself aria-busy — that is the semantic half, and it
+   stays — but its rotating glyph is the spinner the state study bans, so it
+   does not draw here. This is a suppression scoped to one surface, NOT a fix:
+   .control-button-spinner (Controls.tsx and styles.css) is where the device
+   itself should be replaced, and both are reported rather than edited. */
+.note-capture-save .control-button-spinner { display: none; }
+
+.note-capture-state-action {
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: none;
+  color: var(--text-secondary);
+  font: 400 0.75rem/1.4 var(--font-ui);
+  cursor: pointer;
+  transition: color 120ms linear, border-color 120ms linear;
+}
+
+.note-capture-state-action.primary {
+  color: var(--text-primary);
+  border-bottom-color: var(--error);
+}
+
+.note-capture-state-action:hover { color: var(--text-primary); }
+.note-capture-state-action:disabled { color: var(--text-tertiary); cursor: default; }
+
 /* ── Hosting the bar ────────────────────────────────────────────────────────
    The palette never shrinks, scrolls, or re-orders to fit. If it does not fit
    above it opens below; the one thing it may not do is become a smaller,
@@ -427,10 +535,16 @@
   .marking-more,
   .marking-more-item,
   .marking-connect-draft,
+  .quire-hl-wash,
+  .quire-hl-rule,
   .seal-progress-segment {
     animation: none !important;
     transition: none !important;
   }
+  /* A mark that is leaving must still end up gone: ScripturePage drops the
+     record on the same timer either way. */
+  .quire-hl-wash.hl-leaving,
+  .quire-hl-rule.hl-leaving { opacity: 0; }
   /* Stillness must not mean silence: the segment holds at the start of its
      hairline so the state is still legible as "in progress". */
   .seal-progress-segment { transform: translateX(0); }

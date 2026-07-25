@@ -4,6 +4,7 @@ import { isTopLayer, useLayer } from "../layerStack.js";
 import { safeCall } from "../utils/safeCall.js";
 import type { WorkspaceExitController } from "../utils/workspaceTransition.js";
 import { Button, ControlInput, ControlTextarea } from "./Controls.js";
+import { SealProgress, SurfaceState } from "./MarkingSurface.js";
 import { Tooltip } from "./Tooltip.js";
 
 /**
@@ -169,7 +170,16 @@ export function NoteCapture({
   const initialBody = draft.bodyPrefill ?? "";
   const [body, setBody] = useState(initialBody);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  /**
+   * Two different things used to share one string. A missing title is a
+   * precondition the reader can meet; a refused write is a FAILURE, and the
+   * state study is explicit about what one of those owes the reader: the
+   * thing, the reason, and two ways out — one of which keeps the words
+   * whatever happens to the write.
+   */
+  const [needsTitle, setNeedsTitle] = useState(false);
+  const [saveFailure, setSaveFailure] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const [discardArmed, setDiscardArmed] = useState(false);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -214,16 +224,38 @@ export function NoteCapture({
     [draft.quote, body],
   );
 
+  /**
+   * The way out that keeps the words regardless of whether the write ever
+   * succeeds. The quote goes with them: a quotation without its reference is
+   * the one clipboard behaviour a Scripture app must not have.
+   */
+  const copyDraft = useCallback(async (): Promise<void> => {
+    const markdown = `${buildMarkdown()}\n— ${draft.passageRef}\n`;
+    try {
+      await navigator.clipboard.writeText(markdown);
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
+  }, [buildMarkdown, draft.passageRef]);
+
+  useEffect(() => {
+    if (!copied) return;
+    const timer = window.setTimeout(() => setCopied(false), 2400);
+    return () => window.clearTimeout(timer);
+  }, [copied]);
+
   const handleSave = useCallback(async (): Promise<boolean> => {
     if (savingRef.current) return false;
     const t = title.trim();
     if (!t) {
-      setError("Add a title to save.");
+      setNeedsTitle(true);
       return false;
     }
     savingRef.current = true;
     setSaving(true);
-    setError(null);
+    setNeedsTitle(false);
+    setSaveFailure(null);
     const md = buildMarkdown();
     const result = await safeCall(() =>
       window.api.library.createNote(t, md, {
@@ -234,7 +266,12 @@ export function NoteCapture({
     savingRef.current = false;
     setSaving(false);
     if (!result.ok || !result.value.ok) {
-      setError(result.ok ? result.value.error ?? "Could not save note" : result.error);
+      // The library's own words when it gave any. "Something went wrong" is an
+      // apology, not a state, so the fallback names the surface that refused.
+      setSaveFailure(
+        (result.ok ? result.value.error : result.error)
+          || "The library refused the write and did not say why.",
+      );
       return false;
     }
     const noteId = result.value.noteId ?? result.value.id ?? "";
@@ -402,7 +439,39 @@ export function NoteCapture({
         </div>
 
         <footer className="note-capture-footer">
-          {error && <p className="note-capture-error" role="status">{error}</p>}
+          {/* The one loading device: a 1px seal segment travelling a hairline,
+              across the head of the footer that is waiting. No spinner. */}
+          {saving && (
+            <span className="note-capture-progress">
+              <SealProgress label="Saving note" />
+            </span>
+          )}
+          {needsTitle && (
+            <p className="note-capture-error" role="status">Add a title to save.</p>
+          )}
+          {saveFailure && (
+            <SurfaceState
+              state="failed"
+              thing="This note was not saved."
+              reason={saveFailure}
+              locality="local"
+              actions={
+                <>
+                  <button
+                    type="button"
+                    className="note-capture-state-action primary"
+                    disabled={saving}
+                    onClick={() => void exitOwner.save()}
+                  >Retry</button>
+                  <button
+                    type="button"
+                    className="note-capture-state-action"
+                    onClick={() => void copyDraft()}
+                  >{copied ? "Copied" : "Copy text"}</button>
+                </>
+              }
+            />
+          )}
           {discardArmed && (
             <div className="note-capture-discard" role="alert">
               <span>Discard this draft? What you wrote will be lost.</span>

@@ -106,8 +106,37 @@ type PaletteResult = {
   title: string;
   detail: string;
   meta: string;
+  /**
+   * "verse" is the shared result row — an 80px reference in sans with tabular
+   * figures, the quotation in the reading serif, the match in the wash. The
+   * search view, the margin's cross references and the connections list want
+   * the same row; this is where it starts.
+   */
+  layout?: "verse";
+  /** Present on anything a modifier can open in its own tab. */
+  passage?: ReadingPassage;
   activate: () => void;
 };
+
+/**
+ * One corpus, present in the same list as every other. The chosen scope's
+ * group is first and pre-selected; the rest follow with their counts, so a
+ * reader who typed a name and wanted the verse gets it two rows down instead
+ * of one tab across.
+ */
+interface PaletteGroup {
+  id: string;
+  /** Empty for the reading group, which is the palette answering, not a corpus. */
+  label: string;
+  results: PaletteResult[];
+  /** Stated before the rows: why nothing parsed. */
+  note?: string;
+  /** Stated after the rows: "Read as Acts · chapter 19 · verses 13–16". */
+  statement?: ReadingSegment[];
+}
+
+/** Top hits only. The last row carries the rest to the workspace. */
+const GROUP_CAP = 3;
 
 type SearchData = {
   scripture: ScriptureSearchHitData[];
@@ -524,6 +553,26 @@ function ResultGlyph({ kind }: { kind: PaletteResult["kind"] }): React.JSX.Eleme
   );
 }
 
+/**
+ * The match, in the wash. One treatment across both search surfaces, so the
+ * eye keeps its landmark moving between them.
+ */
+function Wash({ text, term }: { text: string; term: string }): React.JSX.Element {
+  const needle = term.trim();
+  if (needle.length < 2) return <>{text}</>;
+  const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pieces = text.split(new RegExp(`(${escaped})`, "ig"));
+  return (
+    <>
+      {pieces.map((piece, index) => (
+        piece.toLocaleLowerCase() === needle.toLocaleLowerCase()
+          ? <mark key={index}>{piece}</mark>
+          : <span key={index}>{piece}</span>
+      ))}
+    </>
+  );
+}
+
 function cleanExcerpt(value: string, limit = 128): string {
   const cleaned = value
     .replace(/^#{1,6}\s+/gm, "")
@@ -669,6 +718,20 @@ export function CommandPalette({
     setFocusedResult(-1);
     window.requestAnimationFrame(() => inputRef.current?.focus());
   }, []);
+
+  // `change` on the scope line and ⇥ are the same move. There is only ever one
+  // focusable thing in the palette — the field — so Tab cycles rather than
+  // leaves, and the line names where it landed.
+  const cycleScope = useCallback((reverse = false): void => {
+    setScopeChosen(true);
+    setActiveTab((current) => {
+      const currentIndex = Math.max(0, visibleTabs.findIndex((tab) => tab.id === current));
+      const nextIndex = (currentIndex + (reverse ? -1 : 1) + visibleTabs.length) % visibleTabs.length;
+      return visibleTabs[nextIndex]?.id ?? "intelligence";
+    });
+    setFocusedResult(-1);
+    window.requestAnimationFrame(() => inputRef.current?.focus());
+  }, [visibleTabs]);
 
   const chooseStudyLens = useCallback((tab: "scripture" | "names"): void => {
     setScopeChosen(true);
@@ -818,6 +881,8 @@ export function CommandPalette({
             title: refTitle,
             detail: cleanExcerpt(preview ?? ""),
             meta: "Exact reference",
+            layout: "verse",
+            passage: { book, chapter, ...(verse != null ? { verse } : {}), ...(endVerse != null ? { endVerse } : {}) },
             activate: () => activateResult(() => (
               mode === "open-study-tab"
                 ? onOpenPassage(book, chapter, verse, endVerse)
@@ -849,6 +914,8 @@ export function CommandPalette({
       title: `${displayBook(bookNames, hit.book)} ${hit.chapter}:${hit.verse}`,
       detail: cleanExcerpt(hit.text),
       meta: hit.matchKind === "phrase" ? "Phrase" : context.packageId.toUpperCase(),
+      layout: "verse",
+      passage: { book: hit.book, chapter: hit.chapter, verse: hit.verse },
       activate: () => activateResult(() => (
         mode === "open-study-tab"
           ? onOpenPassage(hit.book, hit.chapter, hit.verse)
@@ -911,6 +978,7 @@ export function CommandPalette({
     title: formatRecentLabel(recent, bookNames),
     detail: `Recently opened in ${recent.packageId.toUpperCase()}`,
     meta: "Recent",
+    passage: { book: recent.book, chapter: recent.chapter, ...(recent.verse != null ? { verse: recent.verse } : {}) },
     activate: () => activateResult(() => (
       mode === "open-study-tab"
         ? onOpenPassage(recent.book, recent.chapter, recent.verse)
@@ -996,94 +1064,126 @@ export function CommandPalette({
     activate: () => activateResult(() => onRunAction("open-settings")),
   }), [activateResult, envelope, onRunAction, routing.term]);
 
-  // The out-of-scope count. Intelligence is never counted here: it is the one
-  // scope that leaves the device, so it may not appear as a group inside a
-  // local result set — it has to be asked for.
-  const elsewhereResults = useMemo<PaletteResult[]>(() => {
-    if (!hasQuery || status !== "ready") return [];
-    const counts: Array<{ tab: CommandPaletteTab; label: string; count: number }> = [
-      { tab: "scripture", label: "Scripture", count: (data.exact ? 1 : 0) + data.scripture.length },
-      { tab: "notes", label: "your notes", count: data.notes.length },
-      { tab: "names", label: "names", count: data.entities.length },
-    ];
-    return counts
-      .filter((entry) => entry.tab !== activeTab && entry.count > 0)
-      .filter((entry) => visibleTabs.some((tab) => tab.id === entry.tab))
-      .map((entry) => ({
-        id: `elsewhere:${entry.tab}`,
-        kind: "correction" as const,
-        title: `${entry.count} in ${entry.label}`,
-        detail: `Searched on this device, outside the scope you are looking at`,
-        meta: "Elsewhere",
-        activate: () => chooseScope(entry.tab),
-      }));
-  }, [activeTab, chooseScope, data.entities.length, data.exact, data.notes.length, data.scripture.length, hasQuery, status, visibleTabs]);
+  /* ------------------------------------------------------------------
+     Groups, not tabs
+     ------------------------------------------------------------------
+     Every corpus that answered is present in one list. The chosen scope
+     leads and is pre-selected; the rest follow with their counts, three
+     rows each, so a reader who typed a name and wanted the verse gets it
+     two rows down instead of one tab across.
 
-  const results = useMemo<PaletteResult[]>(() => {
+     Intelligence is never among them. It is the only scope that leaves
+     this device, so it may not appear inside a local result set — a
+     question routes to it explicitly and nothing else ever does.
+     ------------------------------------------------------------------ */
+  const corpora = useMemo(() => ({
+    scripture: {
+      lead: "Scripture",
+      rest: "In Scripture",
+      rows: [data.exact, ...scriptureResults].filter((item): item is PaletteResult => item != null),
+    },
+    notes: { lead: "My notes", rest: "In your notes", rows: noteResults },
+    names: { lead: "Names", rest: "In names", rows: entityResults },
+  }), [data.exact, entityResults, noteResults, scriptureResults]);
+
+  const elsewhereResults = useMemo<PaletteGroup[]>(() => {
+    if (!hasQuery || status !== "ready") return [];
+    const order: Array<"scripture" | "notes" | "names"> = ["scripture", "notes", "names"];
+    return order
+      .filter((corpus) => corpus !== activeTab)
+      .filter((corpus) => visibleTabs.some((entry) => entry.id === corpus))
+      .filter((corpus) => corpora[corpus].rows.length > 0)
+      .map((corpus) => ({
+        id: `group:${corpus}`,
+        label: `${corpora[corpus].rest} · ${corpora[corpus].rows.length}`,
+        results: corpora[corpus].rows.slice(0, GROUP_CAP),
+      }));
+  }, [activeTab, corpora, hasQuery, status, visibleTabs]);
+
+  const groups = useMemo<PaletteGroup[]>(() => {
     if (!hasQuery) {
-      if (mode === "open-study-tab" && activeTab === "intelligence") return studyOpenResults;
-      return [...recentResults, ...actionResults].slice(0, 7);
+      if (mode === "open-study-tab" && activeTab === "intelligence") {
+        return [{ id: "group:study-open", label: "", results: studyOpenResults }];
+      }
+      const resting = [...recentResults, ...actionResults].slice(0, 7);
+      return resting.length > 0 ? [{ id: "group:resting", label: "", results: resting }] : [];
     }
-    const head = preferredActionResults;
+
+    const built: PaletteGroup[] = [];
+
+    // The palette answering for itself: what it could not read, the fixes it
+    // offers, and the actions the words matched outright. Never a corpus, so
+    // never a heading.
+    const reading: PaletteGroup = {
+      id: "group:reading",
+      label: "",
+      results: [...correctionResults, ...preferredActionResults],
+    };
+    if (routing.fellThrough) reading.note = `${routing.fellThrough[0]?.toLocaleUpperCase()}${routing.fellThrough.slice(1)}.`;
+    if (reading.results.length > 0 || reading.note) built.push(reading);
+
     if (activeTab === "intelligence") {
-      return [...correctionResults, ...head, intelligenceAsk];
+      built.push({ id: "group:intelligence", label: "Ask · 1", results: [intelligenceAsk] });
+      return built;
     }
-    if (activeTab === "scripture") {
-      const found = [data.exact, ...scriptureResults].filter((item): item is PaletteResult => item != null);
-      return [...correctionResults, ...head, ...found.slice(0, 24), ...elsewhereResults];
-    }
-    if (activeTab === "notes") {
-      const deep: PaletteResult = {
-        id: "deep-search:notes",
-        kind: "deep-search",
-        title: `Search all notes for “${routing.term}”`,
-        detail: "Open the full note search workspace",
-        meta: "Deep search",
-        activate: () => activateResult(() => onSearchNotes(routing.term)),
+
+    const corpus = corpora[activeTab as "scripture" | "notes" | "names"];
+    if (corpus.rows.length > 0) {
+      const lead: PaletteGroup = {
+        id: `group:${activeTab}`,
+        label: `${corpus.lead} · ${corpus.rows.length}`,
+        results: corpus.rows.slice(0, GROUP_CAP),
       };
-      return [...correctionResults, ...head, ...noteResults.slice(0, 24), deep, ...elsewhereResults];
+      // The parse, stated in words underneath — so an abbreviation that
+      // resolved to the wrong book is caught before the jump, not after.
+      const parsed = routing.readings[0];
+      if (activeTab === "scripture" && parsed?.passage && !scopeChosen) lead.statement = parsed.statement;
+      built.push(lead);
     }
-    return [...correctionResults, ...head, ...entityResults.slice(0, 24), ...elsewhereResults];
+    built.push(...elsewhereResults);
+    return built;
   }, [
     actionResults,
-    activateResult,
     activeTab,
+    corpora,
     correctionResults,
-    data.exact,
     elsewhereResults,
-    entityResults,
     hasQuery,
     intelligenceAsk,
     mode,
-    noteResults,
-    onSearchNotes,
     preferredActionResults,
     recentResults,
-    routing.term,
-    scriptureResults,
+    routing.fellThrough,
+    routing.readings,
+    scopeChosen,
     studyOpenResults,
   ]);
 
-  const scopeStatement = useMemo<ReadingSegment[]>(() => {
-    if (!hasQuery) {
-      return [
-        { text: "Type to search · " },
-        { text: "the shape of what you type", value: true },
-        { text: " picks the scope" },
-      ];
-    }
-    const chosenLabel = visibleTabs.find((tab) => tab.id === activeTab)?.label ?? "";
-    if (scopeChosen) {
-      return [{ text: "Searching " }, { text: chosenLabel, value: true }, { text: " · you chose this scope" }];
-    }
-    return routing.readings[0]?.statement ?? [{ text: "Searching " }, { text: chosenLabel, value: true }];
-  }, [activeTab, hasQuery, routing.readings, scopeChosen, visibleTabs]);
+  // The one bridge to the workspace: the last row, carrying the query across.
+  // The palette is for going somewhere; the workspace is for staying.
+  const bridge = useMemo<PaletteResult | null>(() => {
+    if (!hasQuery || mode === "open-study-tab") return null;
+    const beyond = data.notes.length;
+    return {
+      id: "deep-search:notes",
+      kind: "deep-search",
+      title: beyond > GROUP_CAP ? `See all ${beyond} in Search` : `Take “${routing.term}” to Search`,
+      detail: "The workspace keeps the query and stays open",
+      meta: "⇧↵",
+      activate: () => activateResult(() => onSearchNotes(routing.term)),
+    };
+  }, [activateResult, data.notes.length, hasQuery, mode, onSearchNotes, routing.term]);
 
-  const scopeReason = !hasQuery
-    ? "recent passages and the actions that fit — nothing has left this device"
-    : scopeChosen
-      ? routing.readings[0]?.reason ?? ""
-      : routing.readings[0]?.reason ?? "";
+  const renderedGroups = useMemo<PaletteGroup[]>(() => (
+    bridge && groups.length > 0
+      ? [...groups, { id: "group:bridge", label: "", results: [bridge] }]
+      : groups
+  ), [bridge, groups]);
+
+  const results = useMemo<PaletteResult[]>(
+    () => renderedGroups.flatMap((group) => group.results),
+    [renderedGroups],
+  );
 
   const emptyCopy = activeTab === "scripture"
     ? `Nothing in Scripture matches “${routing.term}”.`
@@ -1115,7 +1215,45 @@ export function CommandPalette({
     tabRefs.current[nextIndex]?.focus();
   };
 
+  /** ⇧↵ — take the query to the workspace, which is where you stay. */
+  const takeToSearch = (): void => {
+    if (!hasQuery || mode === "open-study-tab") return;
+    const owner = paletteOwnerRef.current;
+    void runApprovedPaletteActivation(
+      resultActivationInFlightRef,
+      () => onSearchNotes(routing.term),
+      closeForDestination,
+      () => openRef.current && paletteOwnerRef.current === owner,
+    );
+  };
+
+  /** ⌥↵ — open the passage in its own tab instead of moving this canvas. */
+  const openInNewTab = (result: PaletteResult): boolean => {
+    const passage = result.passage;
+    if (!passage) return false;
+    const owner = paletteOwnerRef.current;
+    void runApprovedPaletteActivation(
+      resultActivationInFlightRef,
+      () => onOpenPassage(passage.book, passage.chapter, passage.verse, passage.endVerse),
+      closeForDestination,
+      () => openRef.current && paletteOwnerRef.current === owner,
+    );
+    return true;
+  };
+
   const handleResultKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number): void => {
+    if (event.key === "Enter" && (event.shiftKey || event.altKey)) {
+      const result = results[index];
+      if (event.shiftKey) {
+        event.preventDefault();
+        takeToSearch();
+        return;
+      }
+      if (result && openInNewTab(result)) {
+        event.preventDefault();
+        return;
+      }
+    }
     if (event.key === "ArrowDown") {
       event.preventDefault();
       moveResultFocus(index + 1);
@@ -1153,6 +1291,11 @@ export function CommandPalette({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             onKeyDown={(event) => {
+              if (event.key === "Enter" && event.shiftKey) {
+                event.preventDefault();
+                takeToSearch();
+                return;
+              }
               if (event.key === "ArrowDown" && results.length > 0) {
                 event.preventDefault();
                 moveResultFocus(0);
@@ -1164,24 +1307,16 @@ export function CommandPalette({
             autoComplete="off"
             spellCheck={false}
           />
-          <kbd aria-label="Escape closes">esc</kbd>
-        </div>
-
-        {/* One scope line. It states what happened; the tabs are its *change*
-            affordance and occupy their space at rest, so nothing moves. */}
-        <div className="palette-scope" data-shape={hasQuery ? routing.shape : "resting"}>
-          <p className="palette-scope-statement" aria-live="polite">
-            {scopeStatement.map((segment, index) => (
-              segment.value
-                ? <em key={index}>{segment.text}</em>
-                : <span key={index}>{segment.text}</span>
-            ))}
-            {scopeReason && <span className="palette-scope-reason">{scopeReason}</span>}
-          </p>
-          <span className="palette-scope-change">
-            <span className="palette-scope-rest" aria-hidden="true">change<kbd>⇥</kbd></span>
+          {/* One scope line, at the right of the field: the scope it chose, and
+              `change`. Never a tab strip — a strip asks the question before the
+              reader has typed anything and then keeps asking it. The four
+              scopes are a real tablist for anything reading the tree; only the
+              chosen one is painted, and `change` is the move ⇥ makes. The cell
+              holds its width at rest, so naming a longer scope moves nothing. */}
+          <span className="palette-field-tail">
+          <span className="palette-scope" data-shape={hasQuery ? routing.shape : "resting"}>
             <span
-              className="command-palette-tabs palette-scope-tabs"
+              className="palette-scope-tabs"
               role="tablist"
               aria-label={mode === "open-study-tab" ? "Study tab destination" : "Search scope"}
             >
@@ -1191,6 +1326,7 @@ export function CommandPalette({
                   ref={(node) => { tabRefs.current[index] = node; }}
                   type="button"
                   role="tab"
+                  className="palette-scope-tab"
                   id={`command-tab-${tab.id}`}
                   aria-selected={activeTab === tab.id}
                   aria-controls="command-results"
@@ -1202,6 +1338,16 @@ export function CommandPalette({
                 </button>
               ))}
             </span>
+            <button
+              type="button"
+              className="palette-scope-change"
+              aria-label={`Change scope — currently ${visibleTabs.find((tab) => tab.id === activeTab)?.label ?? ""}`}
+              onClick={() => cycleScope()}
+            >
+              change<span className="palette-scope-key" aria-hidden="true">⇥</span>
+            </button>
+          </span>
+          <kbd aria-label="Escape closes">esc</kbd>
           </span>
         </div>
 
@@ -1228,25 +1374,53 @@ export function CommandPalette({
                   {`${failed.join(" and ")} could not be read, so these results are incomplete.`}
                 </p>
               )}
-              {results.map((result, index) => (
-                <button
-                  key={result.id}
-                  ref={(node) => { resultRefs.current[index] = node; }}
-                  type="button"
-                  className={`command-palette-result${focusedResult === index ? " is-focused" : ""}`}
-                  onFocus={() => setFocusedResult(index)}
-                  onMouseMove={() => setFocusedResult(index)}
-                  onClick={result.activate}
-                  onKeyDown={(event) => handleResultKeyDown(event, index)}
-                >
-                  <span className={`command-result-glyph is-${result.kind}`}><ResultGlyph kind={result.kind} /></span>
-                  <span className="command-result-copy">
-                    <strong>{result.title}</strong>
-                    <span>{result.detail}</span>
-                  </span>
-                  <span className="command-result-meta">{result.meta}</span>
-                  <span className="command-result-open" aria-hidden="true">Open&nbsp;↵</span>
-                </button>
+              {renderedGroups.map((group) => (
+                <div className="palette-group" key={group.id}>
+                  {group.label && <div className="palette-group-label">{group.label}</div>}
+                  {group.note && <p className="palette-group-note">{group.note}</p>}
+                  {group.results.map((result) => {
+                    const index = results.indexOf(result);
+                    return (
+                      <button
+                        key={result.id}
+                        ref={(node) => { resultRefs.current[index] = node; }}
+                        type="button"
+                        className={`command-palette-result${focusedResult === index ? " is-focused" : ""}`}
+                        data-layout={result.layout ?? "stacked"}
+                        onFocus={() => setFocusedResult(index)}
+                        onMouseMove={() => setFocusedResult(index)}
+                        onClick={result.activate}
+                        onKeyDown={(event) => handleResultKeyDown(event, index)}
+                      >
+                        <span className={`command-result-glyph is-${result.kind}`}><ResultGlyph kind={result.kind} /></span>
+                        {result.layout === "verse" ? (
+                          <span className="command-result-verse">
+                            <b className="command-result-ref">{result.title}</b>
+                            <span className="command-result-quote">
+                              <Wash text={result.detail} term={routing.term} />
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="command-result-copy">
+                            <strong><Wash text={result.title} term={routing.term} /></strong>
+                            <span><Wash text={result.detail} term={routing.term} /></span>
+                          </span>
+                        )}
+                        <span className="command-result-meta">{result.meta}</span>
+                        <span className="command-result-open" aria-hidden="true">Open&nbsp;↵</span>
+                      </button>
+                    );
+                  })}
+                  {group.statement && (
+                    <p className="palette-group-statement">
+                      {group.statement.map((segment, segmentIndex) => (
+                        segment.value
+                          ? <em key={segmentIndex}>{segment.text}</em>
+                          : <span key={segmentIndex}>{segment.text}</span>
+                      ))}
+                    </p>
+                  )}
+                </div>
               ))}
             </div>
           ) : (

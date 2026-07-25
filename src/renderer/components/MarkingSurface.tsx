@@ -365,7 +365,10 @@ export function SurfaceState({
         {reason && <span className="surface-state-reason">{reason}</span>}
         {locality && (
           <span className="surface-state-locality">
-            {locality === "local" ? "On this device." : "From the library."}
+            {/* Local-first means "offline" has to distinguish what still
+                works from what does not, so the remote half names the
+                network rather than the library it could not reach. */}
+            {locality === "local" ? "On this device." : "This needed the network."}
           </span>
         )}
       </p>
@@ -755,6 +758,14 @@ function ConnectDraft({
       role="group"
       aria-label="Connection draft"
     >
+      {/* The one loading device, at the head of the draft where the study
+          draws it: a hairline across the surface that is waiting, so the
+          fields below it can go quiet without moving. */}
+      {state === "in-flight" && (
+        <span className="marking-connect-progress">
+          <SealProgress label="Saving connection" />
+        </span>
+      )}
       <span className="marking-session-kind">
         {session.kindChosen && <RelationshipGlyph kind={session.kind} />}
         {session.kindChosen ? `${relationshipLabel(session.kind)} · ${phraseLabel}` : phraseLabel}
@@ -778,7 +789,6 @@ function ConnectDraft({
               ? "Select another phrase to connect."
               : "Select more text to keep adding.")}
       </span>
-      {state === "in-flight" && <SealProgress label="Saving connection" />}
       {/* Two anchors is the moment a relation exists, and therefore the first
           moment the question "what kind?" has an answer. */}
       {session.anchors.length >= 2 && (
@@ -810,7 +820,9 @@ function ConnectDraft({
       )}
       {session.recoveryState ? (
         <>
-          <span className="marking-session-recovery">Recovery required</span>
+          {/* "Not saved" — the state named as the reader would name it. The
+              draft is still here, which is the point of not dismissing it. */}
+          <span className="marking-session-recovery">Not saved</span>
           <SurfaceState
             state="failed"
             thing={session.recoveryState === "committed-pending"
@@ -2102,7 +2114,7 @@ export function MarkingSurface({
       state={offline ? "offline" : "failed"}
       thing={selectionFailure.message}
       reason={offline
-        ? "The library could not be reached, so nothing was written."
+        ? "The library could not be reached, so nothing was written. Reading and the marks you already made are local and unaffected."
         : "Nothing was written, and your words are still selected."}
       locality={offline ? "remote" : "local"}
       actions={
@@ -2241,8 +2253,7 @@ export function MarkingSurface({
                 <SurfaceState
                   state="read-only"
                   thing="This library is read-only."
-                  reason="Marks are stated at the library, before you act on a verse."
-                  locality="local"
+                  reason="Marking is disabled. Reading is not."
                 />
               )}
               {/* Connect replaces the bar. There is one working area, and only
@@ -2311,8 +2322,7 @@ export function MarkingSurface({
             <SurfaceState
               state="read-only"
               thing="This library is read-only."
-              reason="Marks are stated at the library, before you act on a verse."
-              locality="local"
+              reason="Marking is disabled. Reading is not."
             />
           )}
           {connectNode ?? failureNode ?? barNode ?? (

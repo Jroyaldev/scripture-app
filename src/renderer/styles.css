@@ -1098,14 +1098,20 @@ html, body, #root {
    whose handler is absent simply does not render and leaves no gap — the
    header loses instruments without losing shape. */
 .scripture-topbar {
+  position: sticky;
+  top: 0;
+  /* Paper, because it is part of the page now, and the page's own top corners
+     because it is the first thing in it. Sticky rather than fixed: the page is
+     the scroll container, so the band holds while the verses move under it. */
+  border-radius: var(--radius-page) var(--radius-page) 0 0;
+  border-bottom: 1px solid var(--border-subtle);
   height: 48px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 0;
   padding: 0 var(--page-inset);
-  background: var(--bg-canvas);
-  position: relative;
+  background: var(--bg-reading);
   z-index: 8;
 }
 
@@ -2821,7 +2827,7 @@ html, body, #root {
   flex: 1;
   overflow-y: auto;
   overflow-x: clip;
-  padding: var(--band) var(--reading-inline-gutter) 80px;
+  padding: 0 0 80px;
   background: var(--bg-reading);
   border-radius: var(--radius-page);
   scroll-padding-top: var(--band);
@@ -2837,9 +2843,15 @@ html, body, #root {
   border-top-right-radius: 0;
 }
 
+/* Everything is border-box, so the inline padding has to be added back or it
+   eats the measure. The block is measure + gutter; the reading gutter is the
+   air around it, not part of it. */
 .scripture-inner {
-  max-width: calc(var(--reading-max-width) + var(--verse-gutter));
+  max-width: calc(
+    var(--reading-max-width) + var(--verse-gutter) + var(--reading-inline-gutter) * 2
+  );
   margin: 0 auto;
+  padding: var(--band) var(--reading-inline-gutter) 0;
 }
 
 .chapter-header {

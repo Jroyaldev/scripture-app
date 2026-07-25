@@ -9,6 +9,13 @@ import {
   orderConnectionTicks,
 } from "../src/renderer/components/ConnectionUnderlay.js";
 import {
+  MAX_STACK,
+  RULE,
+  RULE_CAP,
+  elementaryIntervals,
+  runsAtDepth,
+} from "../src/renderer/components/HighlightUnderlay.js";
+import {
   CONNECTION_ROUTE_QUIET_STROKE,
   CONNECTION_ROUTE_SELECTED_STROKE,
   CONNECTION_UNDERLINE_CENTER_OFFSET,
@@ -1550,7 +1557,10 @@ test("marking async outcomes stay truthful and return keyboard focus to Scriptur
   assert.match(source, /export interface ConnectionExtensionRequest \{[\s\S]*contextKey: string/);
   assert.match(source, /setSession\(\(current\) => current\?\.recoveryState \? current : null\)/,
     "chapter or package navigation must preserve the one stable recovery command");
-  assert.match(source, /session\.recoveryState \? \(\s*<>\s*<span className="marking-session-recovery">Recovery required<\/span>/,
+  // The label is the one G·2 draws on the recovery card: "Not saved". It is
+  // the state said in the reader's words rather than in the system's — and it
+  // is still a status, never a cancel action wearing a status's clothes.
+  assert.match(source, /session\.recoveryState \? \(\s*<>[\s\S]{0,320}?<span className="marking-session-recovery">Not saved<\/span>/,
     "an ambiguous or committed-pending session must expose recovery as status, not a false cancel action");
   // Recovery states the reason AND the consequence, says whether it was local,
   // and keeps the reader's own words reachable. A failure that loses what the
@@ -1597,4 +1607,176 @@ test("marking async outcomes stay truthful and return keyboard focus to Scriptur
     "the palette's one exit puts down the tool and releases the words together");
   assert.equal([...source.matchAll(/>Cancel draft<\/button>/g)].length, 1,
     "a draft has exactly one explicit way out that is not the exit guard");
+});
+
+/**
+ * G·2·6 — the paint. A mark is two things and always both: a wash that makes
+ * it findable and a 2px rule at double chroma that makes it survive being
+ * printed, screenshotted, and seen by a reader who cannot separate the hues.
+ * The rule is the accommodation, so it is not optional, and the overlap has a
+ * different answer for each half: washes do not multiply, rules stack.
+ */
+test("a mark is a wash and a rule, and an overlap resolves as geometry rather than as blending", () => {
+  const recency = new Map([["older", 0], ["newer", 1], ["newest", 2]]);
+  const seg = (id: string, color: string, charStart: number | null, charEnd: number | null) => ({
+    id, color, verse: 13, charStart, charEnd,
+  });
+
+  // The study's own case: a green mark laid over part of a yellow one.
+  const overlap = elementaryIntervals(
+    [seg("older", "yellow", null, null), seg("newer", "green", 20, 40)],
+    60,
+    recency,
+  );
+  assert.deepEqual(
+    overlap.map((interval) => [interval.start, interval.end, interval.marks.map((mark) => mark.hue)]),
+    [[0, 20, ["yellow"]], [20, 40, ["green", "yellow"]], [40, 60, ["yellow"]]],
+    "the covering set is constant across each stretch, and the newest mark reads first",
+  );
+
+  // WASHES DO NOT MULTIPLY. The overlap is painted once, in the newer hue —
+  // the older wash is absent there rather than showing through it.
+  assert.deepEqual(
+    runsAtDepth(overlap, 0).map((run) => [run.start, run.end, run.hue]),
+    [[0, 20, "yellow"], [20, 40, "green"], [40, 60, "yellow"]],
+    "the newer wash wins the overlap outright; nothing is composited over anything",
+  );
+
+  // RULES STACK. The second row exists only under the overlap, which is what
+  // makes a 4px stack mean "two marks are present".
+  assert.deepEqual(
+    runsAtDepth(overlap, 1).map((run) => [run.start, run.end, run.hue]),
+    [[20, 40, "yellow"]],
+  );
+  assert.equal(MAX_STACK * RULE, RULE_CAP, "two rules of 2px, and the stack caps at 4px");
+  assert.equal(RULE_CAP, 4);
+
+  // Beyond two the stack does not grow: the third mark is counted, not drawn.
+  const crowded = elementaryIntervals(
+    [seg("older", "yellow", null, null), seg("newer", "green", 20, 40), seg("newest", "blue", 25, 30)],
+    60,
+    recency,
+  );
+  const three = crowded.find((interval) => interval.start === 25 && interval.end === 30);
+  assert.ok(three, "the third mark cuts its own stretch");
+  assert.deepEqual(three.marks.map((mark) => mark.hue), ["blue", "green", "yellow"]);
+  assert.ok(three.marks.length > MAX_STACK, "three marks on one phrase is a filing problem, not a display problem");
+
+  // Same hue, no overlap, touching: one run of paint. Two rectangles meeting
+  // at a seam is a hairline the reader can see, and it belongs to no mark.
+  const neighbours = elementaryIntervals(
+    [seg("older", "yellow", null, 20), seg("newer", "yellow", 20, null)],
+    60,
+    recency,
+  );
+  assert.deepEqual(
+    runsAtDepth(neighbours, 0).map((run) => [run.start, run.end, run.hue]),
+    [[0, 60, "yellow"]],
+    "adjacent same-hue marks merge into one measured run, so they never meet at a seam",
+  );
+});
+
+test("the underlay paints flat ink with no blend mode, and states a count in the gutter beyond two", () => {
+  const source = read("src", "renderer", "components", "HighlightUnderlay.tsx");
+  const css = read("src", "renderer", "styles", "marking-actions.css");
+
+  // Multiply is exactly the "two translucent layers make a third colour" the
+  // study forbids, and a gradient would make one end of a mark louder than the
+  // other when all five hues are meant to hold the same lightness and chroma.
+  for (const banned of [/mix-blend-mode/, /linear-gradient|radial-gradient/, /hl-grad-/]) {
+    assert.doesNotMatch(withoutComments(source), banned, "the paint is flat ink, laid once");
+    assert.doesNotMatch(withoutComments(css), banned, "the paint is flat ink, laid once");
+  }
+
+  // Each hue publishes both halves of the mark, and the rule reads from the
+  // double-chroma token rather than from the wash.
+  for (const hue of ["yellow", "green", "blue", "pink", "purple"]) {
+    assert.ok(
+      css.includes(`.quire-hl-wash[data-hl="${hue}"] { fill: var(--quire-hl-${hue}-wash); }`),
+      `${hue} must publish its wash`,
+    );
+    assert.ok(
+      css.includes(`.quire-hl-rule[data-hl="${hue}"] { fill: var(--quire-hl-${hue}-line); }`),
+      `${hue}'s rule is the colour-blindness accommodation and is not optional`,
+    );
+  }
+
+  // The stack is drawn depth by depth and stops at the cap; the count is what
+  // happens past it, and it lands in the reserved gutter as a mark, not a fill.
+  assert.match(source, /for \(let depth = -1; depth < MAX_STACK; depth\+\+\)/,
+    "the rule stack is bounded by the cap, not by the number of marks");
+  assert.match(source, /if \(interval\.marks\.length <= MAX_STACK\) continue;/);
+  assert.match(source, /className="quire-hl-count"/);
+  assert.match(source, /span\.getBoundingClientRect\(\)\.left - cRect\.left - COUNT_INSET/,
+    "the gutter lane is measured off the text, so the count holds at both gutter widths");
+
+  // Motion budget: 180ms to arrive, 120ms to leave, and nothing moves.
+  assert.match(css, /@keyframes quire-hl-in \{ from \{ opacity: 0; \} to \{ opacity: 1; \} \}/);
+  assert.match(css, /animation: quire-hl-in 180ms linear;/);
+  assert.match(css, /animation: quire-hl-out 120ms linear forwards;/);
+  assert.doesNotMatch(css, /\.quire-hl-[a-z]+[^{]*\{[^}]*transform:/,
+    "a mark arrives by ink alone; nothing about it moves");
+});
+
+/**
+ * The five rules, held where they can be checked rather than remembered: one
+ * loading device, never an illustration, name the thing and the reason, never
+ * lose the reader's text, say whether it was local.
+ */
+test("every state in these surfaces uses the one loading device and names what happened", () => {
+  const marking = read("src", "renderer", "components", "MarkingSurface.tsx");
+  const capture = read("src", "renderer", "components", "NoteCapture.tsx");
+  const css = read("src", "renderer", "styles", "marking-actions.css");
+
+  // ONE loading device. Both authored surfaces use the shared component, and
+  // neither invents a second one.
+  assert.match(marking, /export function SealProgress/);
+  assert.match(capture, /import \{ SealProgress, SurfaceState \} from "\.\/MarkingSurface\.js";/);
+  assert.equal([...marking.matchAll(/<SealProgress /g)].length, 2,
+    "the shared state component and the draft's head hairline, and nothing else");
+  assert.equal([...marking.matchAll(/role="progressbar"/g)].length, 1,
+    "one component declares progress for every surface that waits");
+  assert.equal([...capture.matchAll(/<SealProgress /g)].length, 1,
+    "note capture's save is the surface's only loading device");
+  for (const source of [marking, capture]) {
+    assert.doesNotMatch(withoutComments(source), /skeleton|<Spinner|spinner-/i);
+  }
+  // The shared Button's rotating glyph is a spinner, so it does not draw on a
+  // surface this study governs. The suppression is scoped and says so.
+  assert.match(css, /\.note-capture-save \.control-button-spinner \{ display: none; \}/);
+
+  // NAME THE THING AND THE REASON, and never apologise instead.
+  for (const source of [marking, capture]) {
+    assert.doesNotMatch(withoutComments(source), /Something went wrong|Oops|An error occurred/i,
+      "an apology is not a state");
+  }
+  assert.match(capture, /thing="This note was not saved\."/);
+  assert.match(capture, /reason=\{saveFailure\}/);
+  assert.match(capture, /"The library refused the write and did not say why\."/,
+    "even the fallback names which surface refused");
+
+  // NEVER LOSE THE READER'S TEXT: a failed write keeps the words on the
+  // surface AND offers a way to carry them off it.
+  assert.match(capture, /const copyDraft = useCallback/);
+  assert.match(capture, /\{copied \? "Copied" : "Copy text"\}/);
+  assert.match(capture, /`\$\{buildMarkdown\(\)\}\\n— \$\{draft\.passageRef\}\\n`/,
+    "copied words leave with their reference, always");
+
+  // SAY WHETHER IT WAS LOCAL, and let "offline" distinguish what still works.
+  assert.match(marking, /locality === "local" \? "On this device\." : "This needed the network\."/);
+  assert.match(marking, /Reading and the marks you already made are local and unaffected\./);
+
+  // READ-ONLY is stated before you act, in the reader's terms.
+  assert.equal([...marking.matchAll(/reason="Marking is disabled\. Reading is not\."/g)].length, 2,
+    "both surfaces state the same consequence of a read-only library");
+
+  // TRUNCATION CLIPS QUOTATION ONLY. Every caller passes a quotation; a
+  // reference, date, count or identifier may never be routed through it.
+  const clipped = [...marking.matchAll(/clipQuotation\(([^,]+),/g)]
+    .map(([, argument]) => argument.trim())
+    .filter((argument) => argument !== "quotation: string"); // the declaration itself
+  assert.deepEqual(clipped.sort(), ["label", "selection.quote"],
+    "only quotations are clipped — a truncated reference is a lie");
+  assert.match(marking, /export function clipQuotation\(quotation: string/,
+    "the parameter is named for the one thing it may accept");
 });

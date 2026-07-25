@@ -50,112 +50,199 @@
 /* ==========================================================================
    Palette — the scope line
    --------------------------------------------------------------------------
-   One line stating what the palette did with what was typed. The four scopes
-   are still here, but as this line's *change* affordance: they sit in a cell
-   that is already their width at rest, so revealing them moves nothing.
+   One 10.5px line at the right of the field: the scope it chose, and `change`.
+   Never a tab strip — a strip asks the question before the reader has typed
+   anything and then keeps asking it.
+
+   The four scopes are still a real tablist, because they are four mutually
+   exclusive doors and nothing here may become unreachable. Only the chosen one
+   is painted; the rest stay in the tree, reachable by ⇥ and by the arrows, and
+   `change` is the same move ⇥ makes. Nothing is revealed on hover and nothing
+   moves: the line holds its width at rest.
    ========================================================================== */
 
-.palette-scope {
-  display: grid;
-  min-height: 32px;
+.palette-field-tail {
+  display: flex;
   align-items: center;
-  grid-template-columns: minmax(0, 1fr) auto;
-  column-gap: 16px;
-  padding: 0 17px;
+  gap: 14px;
 }
 
-.palette-scope-statement {
-  min-width: 0;
-  margin: 0;
-  overflow: hidden;
+.palette-scope {
+  display: inline-flex;
+  min-width: 96px;
+  align-items: baseline;
+  justify-content: flex-end;
   color: var(--text-tertiary);
   font: 400 10.5px/1.4 var(--font-ui);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.palette-scope-statement em {
-  color: var(--text-primary);
-  font-style: normal;
-  font-weight: var(--fw-medium);
-}
-
-/* The reason the palette read it this way. Always present, never louder than
-   the reading itself, first to be clipped when the line runs out of room. */
-.palette-scope-reason {
-  color: var(--text-tertiary);
-  font: 400 9.5px/1.4 var(--font-mono);
-  opacity: 0.72;
-}
-
-.palette-scope-reason::before {
-  margin: 0 7px;
-  content: "·";
-}
-
-/* Both states occupy the same cell, so the wider one (the tabs) reserves the
-   space and the swap is opacity only. */
-.palette-scope-change {
-  display: grid;
-  align-items: center;
-  grid-template-areas: "scope-swap";
-  justify-items: end;
-}
-
-.palette-scope-rest,
-.palette-scope .palette-scope-tabs {
-  grid-area: scope-swap;
   transition: opacity var(--transition-fast);
 }
 
-.palette-scope-rest {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--text-tertiary);
-  font: 400 9.5px/1 var(--font-mono);
-  letter-spacing: 0.04em;
-}
-
-.palette-scope-rest kbd {
-  display: inline-block;
-  min-width: 15px;
-  color: var(--text-tertiary);
-  font: 400 10px/1 var(--font-mono);
-  text-align: center;
-}
-
-.palette-scope .palette-scope-tabs {
-  display: flex;
-  min-height: 0;
-  align-items: center;
-  gap: 14px;
-  padding: 0;
-  border: 0;
+/* At rest there is no scope to change, so the line has nothing to say — but it
+   keeps its cell, so the first keystroke does not widen the field. */
+.palette-scope[data-shape="resting"] {
   opacity: 0;
   pointer-events: none;
 }
 
-.palette-scope .palette-scope-tabs button {
-  font: 500 10.5px/1 var(--font-ui);
+.palette-scope-tabs {
+  display: inline-flex;
+  min-width: 0;
+  align-items: baseline;
 }
 
-.palette-scope:hover .palette-scope-rest,
-.palette-scope:focus-within .palette-scope-rest {
-  opacity: 0;
+.palette-scope-tab {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
-.palette-scope:hover .palette-scope-tabs,
-.palette-scope:focus-within .palette-scope-tabs {
-  opacity: 1;
-  pointer-events: auto;
+.palette-scope-tab[aria-selected="true"] {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  background: transparent;
+  color: var(--text-primary);
+  font: 500 10.5px/1.4 var(--font-ui);
+  clip-path: none;
+  cursor: default;
+}
+
+.palette-scope-change {
+  display: inline-flex;
+  align-items: baseline;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-tertiary);
+  font: 400 10.5px/1.4 var(--font-ui);
+  cursor: pointer;
+}
+
+.palette-scope-change::before {
+  margin: 0 6px;
+  content: "·";
+}
+
+.palette-scope-change:hover {
+  color: var(--text-secondary);
+}
+
+.palette-scope .palette-scope-key {
+  margin-left: 6px;
+  color: var(--text-tertiary);
+  font: 400 10px/1 var(--font-mono);
+}
+
+.palette-scope-tab:focus-visible,
+.palette-scope-change:focus-visible {
+  outline: 2px solid var(--study-gold);
+  outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .palette-scope-rest,
-  .palette-scope .palette-scope-tabs {
+  .palette-scope {
     transition: none;
   }
+}
+
+/* ==========================================================================
+   Palette — groups, not tabs
+   --------------------------------------------------------------------------
+   Every corpus that answered is in the same list. The chosen scope leads and
+   is pre-selected; the rest follow with their counts. A reader who typed a
+   name and wanted the verse gets it two rows down instead of one tab across.
+
+   Separated by interval. The study rules each group off with a hairline; a
+   line between two things already held apart is a line doing no work.
+   ========================================================================== */
+
+.palette-group + .palette-group {
+  padding-top: 12px;
+}
+
+.palette-group-label {
+  padding: 0 17px 5px;
+  color: var(--text-tertiary);
+  font: 400 9px/1.4 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Why nothing parsed, before the rows that offer the fix. Stated in the
+   reading serif because it is a sentence, not a label. */
+.palette-group-note {
+  margin: 0;
+  padding: 2px 17px 8px;
+  color: var(--text-tertiary);
+  font: 400 13.5px/1.5 var(--font-reading);
+}
+
+/* The parse, stated in words underneath. It costs one line, and it means an
+   abbreviation that resolved to the wrong book is caught before the jump
+   rather than after it. */
+.palette-group-statement {
+  margin: 0;
+  padding: 4px 17px 6px;
+  color: var(--text-tertiary);
+  font: 400 11px/1.5 var(--font-ui);
+}
+
+.palette-group-statement em {
+  color: var(--text-primary);
+  font-style: normal;
+}
+
+/* ==========================================================================
+   Palette — the shared result row
+   --------------------------------------------------------------------------
+   Reference · quotation · match wash. An 80px reference column in sans with
+   tabular figures, the quotation in the reading serif. The same row wants to
+   serve the search view, the margin's cross references and the connections
+   list; it starts here.
+   ========================================================================== */
+
+.command-result-verse {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.command-result-ref {
+  width: 80px;
+  flex-shrink: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font: 600 11.5px/1.45 var(--font-ui);
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.command-result-quote {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font: 400 14px/1.45 var(--font-reading);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* One wash across both search surfaces, so the eye keeps its landmark moving
+   between them. */
+.command-result-quote mark,
+.command-result-copy mark {
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--study-gold) 20%, transparent);
+  color: var(--text-primary);
 }
 
 /* ==========================================================================
@@ -201,6 +288,182 @@
   border-radius: 50%;
   background: var(--accent-machine);
   content: "";
+}
+
+/* ==========================================================================
+   SearchView — the scopes, as tabs
+   --------------------------------------------------------------------------
+   The palette is fast and scopeless; this is the room you stay in, and the one
+   surface where choosing a corpus is the task rather than an obstacle. So the
+   tabs are real here and routed there — the same corpora at two depths.
+
+   On is a 1.5px seal underline. Off is nothing: no pill, no fill, the same
+   mark language as the rail, the register and the passage header. The rule's
+   space is held at rest, so selecting a scope reflows nothing.
+   ========================================================================== */
+
+.workspace-scopes {
+  display: flex;
+  flex-shrink: 0;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.workspace-scope-tabs {
+  display: flex;
+  gap: 20px;
+}
+
+.workspace-scope-tab {
+  padding: 0 0 5px;
+  border: 0;
+  border-bottom: 1.5px solid transparent;
+  background: transparent;
+  color: var(--text-tertiary);
+  font: 500 12px/1.4 var(--font-ui);
+  cursor: pointer;
+}
+
+.workspace-scope-tab:hover {
+  color: var(--text-secondary);
+}
+
+.workspace-scope-tab[aria-selected="true"] {
+  border-bottom-color: var(--accent-seal);
+  color: var(--text-primary);
+}
+
+.workspace-scope-tab:focus-visible,
+.workspace-range-step:focus-visible {
+  outline: 2px solid var(--study-gold);
+  outline-offset: 3px;
+}
+
+/* The palette's scope line doing a second job, one level down — because
+   "thoroughly" usually means "within this book first". The row is present on
+   every tab, so switching corpus never moves the list. */
+.workspace-range {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  min-height: 17px;
+  padding-bottom: 5px;
+  color: var(--text-tertiary);
+  font: 400 10.5px/1.4 var(--font-ui);
+}
+
+.workspace-range-step {
+  padding: 0 0 1px;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: transparent;
+  color: var(--text-tertiary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.workspace-range-step:hover {
+  color: var(--text-secondary);
+}
+
+.workspace-range-step[aria-pressed="true"] {
+  border-bottom-color: var(--accent-seal);
+  color: var(--text-primary);
+}
+
+/* ==========================================================================
+   SearchView — verses and names
+   --------------------------------------------------------------------------
+   Each tab keeps its own treatment: verses get a reference and a quotation,
+   names get a kind line. The notes list keeps the meta-line-above-excerpt row
+   it already had, which reads better at this width than the palette's.
+   ========================================================================== */
+
+.workspace-results {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--bg-reading);
+  box-shadow: var(--shadow-subtle);
+}
+
+.workspace-result-rows {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 0;
+}
+
+.workspace-verse-row,
+.workspace-name-row {
+  width: 100%;
+  padding: 10px 18px 10px 16px;
+  border: 0;
+  border-left: 2px solid transparent;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.workspace-verse-row {
+  display: grid;
+  align-items: baseline;
+  grid-template-columns: 80px minmax(0, 1fr);
+  column-gap: 12px;
+}
+
+.workspace-verse-row:hover,
+.workspace-name-row:hover {
+  background: color-mix(in srgb, var(--bg-secondary) 58%, transparent);
+}
+
+.workspace-verse-row:focus-visible,
+.workspace-name-row:focus-visible {
+  outline: 2px solid var(--study-gold);
+  outline-offset: -2px;
+}
+
+.workspace-verse-ref {
+  overflow: hidden;
+  color: var(--text-primary);
+  font: 600 11.5px/1.5 var(--font-ui);
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workspace-verse-quote {
+  min-width: 0;
+  color: var(--text-secondary);
+  font: 400 14px/1.45 var(--font-reading);
+}
+
+.workspace-name-row {
+  display: grid;
+  align-items: baseline;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  column-gap: 12px;
+}
+
+.workspace-name-title {
+  color: var(--text-primary);
+  font: 400 15px/1.45 var(--font-reading);
+}
+
+.workspace-name-kind {
+  color: var(--text-tertiary);
+  font: 400 11px/1.5 var(--font-ui);
+}
+
+.workspace-name-brief {
+  grid-column: 1 / -1;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font: 400 12px/1.5 var(--font-ui);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ==========================================================================

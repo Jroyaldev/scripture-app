@@ -2906,7 +2906,11 @@ export function LivingMargin({
                 onClick={onReturnEntityOrigin}
                 aria-label={`Return to ${originLabel}`}
               >
-                Return
+                {/* The study names the destination in the visible label, not
+                    only in the accessible one: a bare "Return" makes the
+                    reader guess which of Back, Return and Close keeps their
+                    place. "Return to Acts 19:13–16" cannot be misread. */}
+                {`Return to ${originLabel}`}
               </button>
             )}
             {onCloseEntity && (

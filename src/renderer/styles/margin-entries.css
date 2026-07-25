@@ -28,7 +28,13 @@
 
 .margin-entry {
   --margin-entry-hang: 12px;
+  /* Two columns, two widths, and they are not the same number. C·2 part 4
+     specifies "74px label column in ink-3"; study C's anatomy specifies
+     "76 · reference column". A fact label is a word, a reference is a
+     measured string — the reference column is the wider of the two so a
+     stack of them forms a true column. */
   --margin-entry-label: 74px;
+  --margin-entry-ref: 76px;
   display: block;
   padding-left: var(--margin-entry-hang, 12px);
   border: 0;
@@ -64,18 +70,29 @@
   font-family: var(--font-reading);
   font-size: 1.375rem;   /* serif 22 */
   font-weight: var(--fw-normal);
-  line-height: 1.18;
-  letter-spacing: -0.015em;
+  line-height: 1.1;
 }
 
-/* Present for the scholar, ignorable by everyone else. Italic serif because a
-   transliteration is a pronunciation, not an identifier. */
+/* Present for the scholar, ignorable by everyone else — the spelling the
+   source uses, beside the spelling the reader just saw. Upright, never italic:
+   italic is a Latin convention and applying it to Greek yields a different
+   alphabet's letterforms. (The transliteration below a lemma IS italic serif;
+   that is a pronunciation, and it is set by .lang-detail-xlit.) */
 .margin-entry-name-original {
   color: var(--text-secondary);
   font-family: var(--font-reading);
   font-size: 0.9375rem;  /* 15 */
-  font-style: italic;
-  line-height: 1.3;
+  font-style: normal;
+  line-height: 1.3;      /* breathings and circumflexes live above the cap line */
+}
+
+/* Greek runs a smaller apparent size at the same point size, and pointed
+   Hebrew needs more room again: niqqud sit below the baseline and dagesh sits
+   inside the letter, so anything tighter than 1.5 collides. */
+.margin-entry-name-original:lang(he),
+.margin-entry-name-original[dir="rtl"] {
+  font-size: 1.0625rem;  /* 17 — +2 over the Greek beside it */
+  line-height: 1.5;
 }
 
 /* Name collisions are stated here, and the alternatives are never merged. */
@@ -85,10 +102,6 @@
   font-size: 0.6875rem;
   font-weight: var(--fw-normal);
   line-height: 1.3;
-}
-
-.margin-entry-name-collision::before {
-  content: "· ";
 }
 
 /* The lexicon key: a lookup for a book the reader does not have open. Its
@@ -139,7 +152,7 @@
    kinds — place, person, deity/other, group — differ here and nowhere else. */
 
 .margin-entry-kind {
-  margin: 0 0 8px;
+  margin: 0 0 14px;
   color: var(--text-tertiary);
   font-family: var(--font-ui);
   font-size: 0.6875rem;
@@ -156,7 +169,7 @@
 .margin-entry-why {
   position: relative;
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: 18px;
 }
 
 .margin-entry-mark {
@@ -187,12 +200,14 @@
   gap: 2px;
 }
 
+/* 15/1.6 across a 336px measure gives about 46 characters. Short for prose,
+   right for apparatus — margin notes are read in glances, not paragraphs. */
 .margin-entry-why-text {
   margin: 0;
   color: var(--text-primary);
   font-family: var(--font-reading);
-  font-size: 0.875rem;
-  line-height: 1.52;
+  font-size: 0.9375rem;
+  line-height: 1.6;
   text-wrap: pretty;
 }
 
@@ -210,15 +225,15 @@
    something belongs in Research. */
 
 .margin-entry-facts {
-  margin: 0 0 12px;
+  margin: 0 0 18px;
   display: grid;
-  gap: 4px;
+  gap: 7px;
 }
 
 .margin-entry-fact {
   display: grid;
   grid-template-columns: var(--margin-entry-label, 74px) minmax(0, 1fr);
-  gap: 0 10px;
+  gap: 0 12px;
   align-items: baseline;
 }
 
@@ -232,12 +247,17 @@
   line-height: 1.45;
 }
 
+/* A fact is a label and a value, never a paragraph — so the value takes the
+   handle face, like a reference or a date. That is also what makes the italic
+   serif of a proposed value legible as a change of register rather than as
+   emphasis: the face itself carries the uncertainty. */
 .margin-entry-fact > dd {
   margin: 0;
   min-width: 0;
   color: var(--text-primary);
-  font-family: var(--font-reading);
-  font-size: 0.8125rem;
+  font-family: var(--font-ui);
+  font-size: 0.78125rem;   /* 12.5 */
+  font-variant-numeric: tabular-nums;
   line-height: 1.45;
 }
 
@@ -246,35 +266,37 @@
    whole row is the bug everyone ships first. */
 .margin-entry-fact > dd[dir="rtl"] {
   text-align: right;
+  /* Pointing needs its own leading, not the reading one. */
+  line-height: 1.5;
 }
 
 /* --- 5 · appears in — three, then a count -------------------------------- */
 
 .margin-entry-appears {
-  margin-bottom: 12px;
+  margin-bottom: 18px;
 }
 
 .margin-entry-part-label {
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
   color: var(--text-tertiary);
   font-family: var(--font-ui);
   font-size: 0.6875rem;
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-normal);
 }
 
 .margin-entry-appears-list {
   display: grid;
-  gap: 1px;
+  gap: 4px;
 }
 
 .margin-entry-appears-row {
   width: calc(100% + 12px);
   margin-inline: -6px;
-  padding: 4px 6px;
+  padding: 2px 6px;
   display: grid;
-  grid-template-columns: var(--margin-entry-label, 74px) minmax(0, 1fr);
-  gap: 0 10px;
+  grid-template-columns: var(--margin-entry-ref, 76px) minmax(0, 1fr);
+  gap: 0 12px;
   align-items: baseline;
   border: 0;
   border-radius: var(--radius-mark);
@@ -289,10 +311,15 @@
   cursor: default;
 }
 
+/* The one place the margin uses the UI face for content, because a reference
+   IS a label. Semibold with tabular figures at a fixed 76px, so a stack of
+   them forms a true column rather than a ragged left edge. */
 .margin-entry-appears-ref {
-  color: var(--text-secondary);
+  color: var(--text-primary);
   font-family: var(--font-ui);
-  font-size: 0.6875rem;
+  font-size: 0.71875rem;   /* 11.5 */
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
   line-height: 1.45;
 }
 
@@ -302,14 +329,19 @@
   min-width: 0;
   color: var(--text-secondary);
   font-family: var(--font-reading);
-  font-size: 0.8125rem;
+  font-size: 0.84375rem;   /* 13.5 */
   line-height: 1.45;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.margin-entry-appears-row:hover .margin-entry-appears-ref,
+/* The reference already sits in ink at rest, so hover has to spend the seal to
+   say anything at all. Ink only, never geometry. */
+.margin-entry-appears-row:hover .margin-entry-appears-ref {
+  color: var(--accent-seal);
+}
+
 .margin-entry-appears-row:hover .margin-entry-appears-preview {
   color: var(--text-primary);
 }
@@ -361,8 +393,20 @@
    is made. Nothing moves; only ink changes. A reader should be able to
    predict which one loses their place, and neither one does. */
 
+/* THE one rule inside an entry. Study C cut most hairlines and kept the rule
+   "where two kinds of content meet" — and both studies draw exactly one, here,
+   between the reference rows and the names. Everything else is interval. It is
+   only drawn when something precedes it, so an entry that stops at part 3 does
+   not end on a line. */
 .margin-entry-related {
   margin-bottom: 4px;
+}
+
+.margin-entry-facts + .margin-entry-related,
+.margin-entry-appears + .margin-entry-related,
+.margin-entry-why + .margin-entry-related {
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .margin-entry-related-list {
@@ -387,7 +431,7 @@
   background: transparent;
   color: var(--text-primary);
   font-family: var(--font-reading);
-  font-size: 0.8125rem;
+  font-size: 0.78125rem;   /* 12.5 */
   line-height: 1.5;
   text-align: left;
   cursor: pointer;
@@ -433,16 +477,23 @@
   opacity: 1;
 }
 
+/* Follow is the verb that keeps your place, so it leads in ink; Branch, which
+   forks the trail, follows in ink-2. A reader should be able to predict which
+   one loses their place — and neither one does. */
 .margin-entry-verb {
   padding: 0;
   border: 0;
   background: transparent;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   font-family: var(--font-ui);
   font-size: 0.6875rem;
   line-height: 1.5;
   cursor: pointer;
   transition: color var(--transition-fast);
+}
+
+.margin-entry-verb:first-child {
+  color: var(--text-primary);
 }
 
 .margin-entry-verb:hover {
@@ -538,19 +589,39 @@
   margin-left: auto;
 }
 
+/* A lemma is not a Latin head. Greek runs a smaller apparent size at the same
+   point size, so it takes +4px over the 24px Latin head to look equal, and its
+   leading never drops below 1.3 — breathings and circumflexes live above the
+   cap line and tight leading clips them, which is the single most common way
+   Greek gets set badly. */
 .living-margin .lang-detail-form.margin-entry-name-text {
   flex: 0 1 auto;
   margin: 0;
-  font-size: 1.375rem;
+  font-size: 1.75rem;    /* 28 */
   font-weight: var(--fw-normal);
+  line-height: 1.3;
+}
+
+/* Pointed Hebrew takes +6px again, and 1.5 leading: vowel points sit below the
+   baseline and dagesh sits inside the letter, so anything tighter collides. */
+.living-margin .lang-detail-form.margin-entry-name-text[dir="rtl"] {
+  font-size: 1.875rem;   /* 30 */
+  line-height: 1.5;
+}
+
+/* Mono says "identifier". A transliteration is a pronunciation, which is
+   content — and italic serif is how every print lexicon sets it. This is the
+   one place the name line's original slot is italic. */
+.living-margin .lang-detail-xlit.margin-entry-name-original {
+  font-style: italic;
 }
 
 .living-margin .lang-detail-gloss.margin-entry-why-text {
-  margin: 0 0 12px;
+  margin: 0 0 16px;
   color: var(--text-primary);
   font-family: var(--font-reading);
-  font-size: 0.875rem;
-  line-height: 1.52;
+  font-size: 0.90625rem;   /* 14.5 */
+  line-height: 1.55;
 }
 
 .living-margin .lang-usage.margin-entry-fact {
@@ -558,18 +629,21 @@
   margin-bottom: 10px;
   display: grid;
   grid-template-columns: var(--margin-entry-label, 74px) minmax(0, 1fr);
-  gap: 0 10px;
+  gap: 0 12px;
   align-items: baseline;
   font-size: 0.75rem;
   color: var(--text-secondary);
 }
 
-/* The value half of the frequency row is one sentence in three scales, so it
-   flows rather than stacking. */
+/* Three scales in one line — "2 in this chapter · 10 in Luke · 47 in the
+   corpus" — with the abbreviations spelled out to fit the no-mono rule. It is
+   a fact value, so it takes the handle face and tabular figures, and it flows
+   rather than stacking. */
 .living-margin .lang-usage.margin-entry-fact > :not(.lang-usage-label) {
   grid-column: 2;
   display: inline;
-  font-family: var(--font-reading);
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
 }
 
 /* The Overview lens's people & places: entries, and the hairlines that used
@@ -594,6 +668,25 @@
 
 .living-margin .intent-note-lead .margin-entry-why {
   margin-bottom: 0;
+}
+
+/* The connection inspector opens in place at the foot of the pane, so it is
+   inside the margin and bound by the margin's rules — and two of its rules in
+   styles.css still set the chrome's face. A reference is a label in Instrument
+   Sans 11.5 semibold with tabular figures; a date is a handle in the same
+   face. Neither is a database row. (Reported for repair at source:
+   styles.css:3564 .connection-card-ref, styles.css:3658
+   .connection-card-timestamp — both `var(--font-mono)`.) */
+.living-margin .connection-card-ref {
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 0.71875rem;
+  font-weight: var(--fw-semibold);
+}
+
+.living-margin .connection-card-timestamp {
+  font-family: var(--font-ui);
+  letter-spacing: 0;
 }
 
 .living-margin .intent-note-lead .margin-entry-why-copy > span {

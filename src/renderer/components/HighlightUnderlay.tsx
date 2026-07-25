@@ -1,48 +1,104 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import type { HighlightRecord } from "../api.js";
-import { buildHighlightPath, mergeHighlightLineRects, type LineRect } from "../utils/highlightPath.js";
+import { mergeHighlightLineRects, type LineRect } from "../utils/highlightPath.js";
 import { useUnderlayMeasurementLifecycle } from "../utils/useUnderlayMeasurementLifecycle.js";
 import { locateTextOffset } from "../utils/textOffsets.js";
-import { buildSegments, buildRuns, isAdjacent, type HighlightRun } from "../../core/events/highlightAdjacency.js";
+import { buildSegments, type HighlightSegment } from "../../core/events/highlightAdjacency.js";
 
 /*
- * HighlightUnderlay — the SVG layer that paints highlights as one continuous
- * rounded blob per contiguous same-color run, instead of N independent pills.
+ * HighlightUnderlay — the paint, per G·2.
  *
- * Why this exists (see the design note in highlightPath.ts): the verse row is
- * a flex container, so `.verse-text-span` is blockified — box-decoration-break:
- * clone cannot fragment it per visual line, and CSS border-radius cannot draw
- * a continuous shoulder where a wider wrapped line meets a narrower one. So
- * we measure each segment's rect via Range.getClientRects (one rect
- * per visual line, and works identically for a whole verse or a sub-verse
- * character range), hand the stack to buildHighlightPath, and draw a single
- * <path> per run behind the text.
+ * A mark is TWO things and always both: a WASH that makes it findable, and a
+ * 2px rule under it at double the wash's chroma. The rule is the colour-
+ * blindness accommodation — green and pink at these lightnesses are near
+ * identical under deuteranopia and their rules are not — so it is drawn for
+ * every marked line, not only the last, and it is never optional.
  *
- * The unit of input is a HIGHLIGHT RECORD, not a verse. Records are flattened
- * into per-verse (or per-char-range) segments and grouped into runs by the
- * shared adjacency logic in core/events/highlightAdjacency.ts — the same logic
- * the whole-blob remove/recolor path uses, so "what looks merged" and "what
- * acts as one unit" can never diverge. This is deliberately NOT a
- * color-per-verse projection: that projection is exactly what let N separate
- * records render as one indivisible-looking blob (the original bug).
+ * Overlap is the case nobody designs, and it has one rule each way:
  *
- * Re-measurement is triggered on: highlight data change, container reflow,
- * window resize, font settlement, and theme change (colors are read
- * from computed CSS vars each pass, so dark mode is free).
+ *   WASHES DO NOT MULTIPLY. Two translucent layers make a third colour that
+ *   belongs to neither mark and appears in no palette. So the overlap is
+ *   resolved as GEOMETRY, not as blending: every stretch of text is painted
+ *   exactly once, in the newest mark's hue. Nothing is composited over
+ *   anything, which is also why this layer carries no mix-blend-mode.
+ *
+ *   RULES STACK. Both 2px rules are drawn, newest against the text and the
+ *   one beneath it below, so an overlap is 4px tall and visibly reports that
+ *   two marks are present. The stack caps at 4px; beyond two marks the
+ *   reserved gutter shows a count, because three marks on one phrase is a
+ *   filing problem and not a display problem.
+ *
+ * "Newest" is the order the records arrive in. There is no timestamp on a
+ * highlight record (see the note in the report — the table has no `created`
+ * column), and SQLite returns this chapter's rows in insertion order, so array
+ * position is the only recency signal the renderer is given. ScripturePage
+ * appends an optimistic record to the end, which makes the one overlap a
+ * reader can actually produce — a fresh wash over an old one, before the host
+ * has trimmed it — resolve the right way round.
+ *
+ * Geometry is measured, never inferred: one rect per visual line from
+ * Range.getClientRects, so a marked phrase, a whole verse and a wrapped range
+ * all measure identically. Re-measurement is driven by the shared underlay
+ * lifecycle (data, reflow, resize, font settlement, theme).
  */
 
-export interface BlobData {
-  /** Stable key — the distinct record ids in this run. */
+/** The five hues, and the only colours this layer knows how to paint. */
+const HUES = new Set(["yellow", "green", "blue", "pink", "purple"]);
+
+/** A hair of air above and below the glyphs. No horizontal bleed: adjacent
+ *  hues have to tile exactly, and 2.5px of overhang each side would overlap
+ *  them into a third colour at every seam. */
+const PAD_V = 1;
+/** The rule, at double chroma. Two of them, and no more. */
+export const RULE = 2;
+export const RULE_CAP = 4;
+export const MAX_STACK = RULE_CAP / RULE;
+/** Where the count sits: the reserved gutter's trailing lane, clear of both
+ *  the verse number and the first glyph. */
+const COUNT_INSET = 4;
+
+// Exported so ScripturePage's handleHighlight can clear the just-created ids
+// out of animateIds once the entrance would have finished. Without that,
+// animateIds is only ever reset on chapter change — it stays populated
+// indefinitely after a create, and any LATER re-measure (a resize, or editing
+// a different highlight) would recompute the flag fresh and replay the
+// entrance on a mark that finished arriving long ago.
+export const SWEEP_MS = 180;
+// Exported so ScripturePage's removal handlers can delay clearing the deleted
+// highlight from local data by exactly this long — long enough for the fade
+// (same duration) to actually play before the data disappears under it.
+export const FADE_MS = 120;
+
+/** One painted stretch of text: a wash, or one row of the rule stack. */
+export interface PaintBand {
   key: string;
-  color: string;
-  path: string;
+  /** Hue id, resolved to ink by marking-actions.css. */
+  hue: string;
+  /** -1 for the wash; 0 and 1 for the rule rows, newest first. */
+  depth: number;
+  rects: LineRect[];
+  /** Record ids this band speaks for, for entrance/exit hit-testing. */
+  ids: string[];
   sweep: boolean;
   fading: boolean;
   /** Outside the active pin range — keep quiet so the pin reads. */
   dimmed: boolean;
-  /** Record ids this blob spans, for sweep/fade hit-testing. */
-  ids: string[];
 }
+
+/** Beyond two marks the gutter states how many, once per visual line. */
+export interface GutterCount {
+  key: string;
+  x: number;
+  y: number;
+  count: number;
+}
+
+interface UnderlayPaint {
+  bands: PaintBand[];
+  counts: GutterCount[];
+}
+
+const EMPTY_PAINT: UnderlayPaint = { bands: [], counts: [] };
 
 interface Props {
   /** The .verse-text container (position: relative). */
@@ -53,33 +109,92 @@ interface Props {
   highlights: HighlightRecord[];
   book: string;
   chapter: number;
-  /** Record ids of a just-created highlight — blobs of these sweep in. */
+  /** Record ids of a just-created highlight — these bands arrive. */
   animateIds: Set<string>;
-  /** Record ids of a highlight mid-deletion — blobs of these fade out instead
-   * of vanishing instantly (see ScripturePage's grouped removal path). */
+  /** Record ids of a highlight mid-deletion — these bands leave instead of
+   * vanishing instantly (see ScripturePage's grouped removal path). */
   fadingIds: Set<string>;
-  /** Bumped on theme toggle so colors are re-read from CSS. */
+  /** Bumped on theme toggle so geometry is re-read after any font change. */
   themeToken: unknown;
-  /** When set, blobs that do not overlap this verse range are dimmed
-   * (optional “quiet the page while pinned” mode). */
+  /** When set, bands that do not overlap this verse range are dimmed
+   * (optional "quiet the page while pinned" mode). */
   pinRange?: { start: number; end: number } | null;
 }
 
-const PAD_H = 2.5; // enough ink beyond glyphs without reading as a full-width field
-const PAD_V = 1.5;
-const RADIUS = 5;
-// Exported so ScripturePage's handleHighlight can clear the just-created ids
-// out of animateIds once the sweep would have finished. Without that,
-// animateIds is only ever reset on chapter change — it stays populated
-// indefinitely after a create, and any LATER re-measure (a resize, or editing
-// a different highlight) would recompute sweep fresh and replay the reveal on
-// a highlight that finished sweeping long ago.
-export const SWEEP_MS = 450;
-// Exported so ScripturePage's removal handlers can delay clearing the
-// deleted highlight from local data by exactly this long — long enough for
-// the CSS fade-out (same duration) to actually play before the blob's data
-// disappears out from under it.
-export const FADE_MS = 320;
+/** One record's claim on one stretch of one verse. */
+export interface Mark {
+  id: string;
+  hue: string;
+  /** Array position of the record. Higher is newer. */
+  recency: number;
+}
+
+/** A stretch of one verse over which the set of covering marks is constant. */
+export interface Interval {
+  start: number;
+  end: number;
+  /** Newest first. */
+  marks: Mark[];
+}
+
+/**
+ * Cut a verse's segments into the maximal stretches over which the covering
+ * set does not change. Every boundary of every segment is a cut, so each
+ * stretch has one answer to "which marks cover this?" — which is what makes
+ * the wash paintable exactly once and the stack countable.
+ */
+export function elementaryIntervals(
+  segments: readonly HighlightSegment[],
+  total: number,
+  recencyOf: ReadonlyMap<string, number>,
+): Interval[] {
+  const bounds = new Set<number>();
+  for (const segment of segments) {
+    bounds.add(Math.max(0, Math.min(segment.charStart ?? 0, total)));
+    bounds.add(Math.max(0, Math.min(segment.charEnd ?? total, total)));
+  }
+  const points = [...bounds].sort((a, b) => a - b);
+  const intervals: Interval[] = [];
+  for (let index = 0; index < points.length - 1; index++) {
+    const start = points[index]!;
+    const end = points[index + 1]!;
+    if (end <= start) continue;
+    const marks: Mark[] = [];
+    for (const segment of segments) {
+      const segStart = segment.charStart ?? 0;
+      const segEnd = segment.charEnd ?? total;
+      if (segStart <= start && segEnd >= end) {
+        marks.push({ id: segment.id, hue: segment.color, recency: recencyOf.get(segment.id) ?? 0 });
+      }
+    }
+    if (marks.length === 0) continue;
+    // Newest first: the wash is marks[0]'s, and the stack reads downward.
+    marks.sort((a, b) => b.recency - a.recency || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+    intervals.push({ start, end, marks });
+  }
+  return intervals;
+}
+
+/**
+ * Merge neighbouring intervals that would paint the same ink at this depth, so
+ * a wash that happens to be overlapped halfway along is still ONE run of paint
+ * rather than two rectangles meeting at a seam.
+ */
+export function runsAtDepth(intervals: readonly Interval[], depth: number): { start: number; end: number; hue: string; ids: string[] }[] {
+  const runs: { start: number; end: number; hue: string; ids: string[] }[] = [];
+  for (const interval of intervals) {
+    const mark = interval.marks[depth];
+    if (!mark) continue;
+    const previous = runs[runs.length - 1];
+    if (previous && previous.hue === mark.hue && previous.end === interval.start) {
+      previous.end = interval.end;
+      if (!previous.ids.includes(mark.id)) previous.ids.push(mark.id);
+      continue;
+    }
+    runs.push({ start: interval.start, end: interval.end, hue: mark.hue, ids: [mark.id] });
+  }
+  return runs;
+}
 
 export function HighlightUnderlay({
   containerRef,
@@ -92,179 +207,134 @@ export function HighlightUnderlay({
   themeToken,
   pinRange = null,
 }: Props): React.JSX.Element | null {
-  const [blobs, setBlobs] = useState<BlobData[]>([]);
+  const [paint, setPaint] = useState<UnderlayPaint>(EMPTY_PAINT);
   const [size, setSize] = useState({ w: 0, h: 0 });
-  /** Per-color resolved gradient stops, read from computed CSS vars. */
-  const colorsRef = useRef<Record<string, { a: string; mid: string; b: string }>>({});
 
   const doMeasure = useCallback(() => {
     const container = containerRef.current;
     if (!container) {
-      setBlobs([]);
+      setPaint(EMPTY_PAINT);
       return;
     }
     const cRect = container.getBoundingClientRect();
 
     const active = highlights.filter((h) => h.deleted === 0 && h.book === book && h.chapter === chapter);
-    const segments = buildSegments(active);
-    const runs = buildRuns(segments);
+    const recencyOf = new Map<string, number>();
+    active.forEach((record, index) => recencyOf.set(record.id, index));
 
-    // Resolve gradient stops for each color present from CSS vars on every
-    // pass, so a theme switch reflects immediately.
-    const cs = getComputedStyle(container);
-    const colors: Record<string, { a: string; mid: string; b: string }> = {};
-    for (const c of new Set(active.map((h) => h.color))) {
-      colors[c] = {
-        a: cs.getPropertyValue(`--hl-${c}-a`).trim(),
-        mid: cs.getPropertyValue(`--hl-${c}-mid`).trim(),
-        b: cs.getPropertyValue(`--hl-${c}-b`).trim(),
-      };
-    }
-    colorsRef.current = colors;
-
-    interface MeasuredRun {
-      run: HighlightRun;
-      rects: LineRect[];
-      ids: string[];
-      sweep: boolean;
-      fading: boolean;
-      dimmed: boolean;
-      joinInitialLeft: boolean;
-      joinTerminalRight: boolean;
-      joinInitialTop: boolean;
-      joinTerminalBottom: boolean;
+    const byVerse = new Map<number, HighlightSegment[]>();
+    for (const segment of buildSegments(active)) {
+      if (!HUES.has(segment.color)) continue; // an unknown hue is not painted a wrong one
+      const bucket = byVerse.get(segment.verse);
+      if (bucket) bucket.push(segment);
+      else byVerse.set(segment.verse, [segment]);
     }
 
-    const measuredRuns: MeasuredRun[] = [];
-    for (const run of runs) {
-      const measured: LineRect[] = [];
-      for (const seg of run.segments) {
-        const row = verseRowRefs.current.get(seg.verse);
-        if (!row) continue;
-        const span = row.querySelector<HTMLElement>(".verse-text-span");
-        if (!span) continue;
+    /** Measure one char range of one verse as one rect per visual line. The
+     *  wash and its rule ask for the same stretch, so the answer is cached
+     *  per verse rather than re-measured for each. */
+    const rectCache = new Map<string, LineRect[]>();
+    const measureRange = (span: HTMLElement, total: number, start: number, end: number): LineRect[] => {
+      const cacheKey = `${start}:${end}`;
+      const hit = rectCache.get(cacheKey);
+      if (hit) return hit;
+      const range = document.createRange();
+      const from = locateTextOffset(span, start);
+      const to = locateTextOffset(span, end);
+      if (!from || !to) {
+        if (start === 0 && end === total) range.selectNodeContents(span);
+        else return [];
+      } else {
+        range.setStart(from.node, from.offset);
+        range.setEnd(to.node, to.offset);
+      }
+      const lines: LineRect[] = [];
+      const lineRects = range.getClientRects();
+      for (let index = 0; index < lineRects.length; index++) {
+        const lr = lineRects[index]!;
+        if (lr.width <= 0) continue;
+        lines.push({
+          x0: lr.left - cRect.left,
+          y0: lr.top - cRect.top - PAD_V,
+          x1: lr.right - cRect.left,
+          y1: lr.bottom - cRect.top + PAD_V,
+        });
+      }
+      const rects = mergeHighlightLineRects(lines);
+      // Consecutive lines may not overlap: two translucent washes sharing a
+      // strip is the very compositing this design forbids. A gap is fine — a
+      // mark is per line — but an overlap is split down the middle.
+      for (let index = 0; index < rects.length - 1; index++) {
+        const current = rects[index]!;
+        const next = rects[index + 1]!;
+        if (current.y1 <= next.y0) continue;
+        const seam = (current.y1 + next.y0) / 2;
+        current.y1 = seam;
+        next.y0 = seam;
+      }
+      rectCache.set(cacheKey, rects);
+      return rects;
+    };
 
-        const range = document.createRange();
-        if (seg.charStart == null && seg.charEnd == null) {
-          range.selectNodeContents(span);
-        } else {
-          const total = span.textContent?.length ?? 0;
-          const start = locateTextOffset(span, seg.charStart ?? 0);
-          const end = locateTextOffset(span, seg.charEnd ?? total);
-          if (!start || !end) range.selectNodeContents(span);
-          else {
-            range.setStart(start.node, start.offset);
-            range.setEnd(end.node, end.offset);
-          }
-        }
+    const bands: PaintBand[] = [];
+    const counts: GutterCount[] = [];
 
-        const lineRects = range.getClientRects();
-        for (let i = 0; i < lineRects.length; i++) {
-          const lr = lineRects[i]!;
-          measured.push({
-            x0: lr.left - cRect.left - PAD_H,
-            y0: lr.top - cRect.top - PAD_V,
-            x1: lr.right - cRect.left + PAD_H,
-            y1: lr.bottom - cRect.top + PAD_V,
+    for (const [verse, segments] of [...byVerse.entries()].sort((a, b) => a[0] - b[0])) {
+      const row = verseRowRefs.current.get(verse);
+      if (!row) continue;
+      const span = row.querySelector<HTMLElement>(".verse-text-span");
+      if (!span) continue;
+      const total = span.textContent?.length ?? 0;
+      if (total === 0) continue;
+      rectCache.clear(); // offsets are verse-local, so the cache is too
+
+      const intervals = elementaryIntervals(segments, total, recencyOf);
+      if (intervals.length === 0) continue;
+
+      const dimmed = pinRange != null && !(verse >= pinRange.start && verse <= pinRange.end);
+
+      // Depth -1 is the wash; depths 0…MAX_STACK-1 are the rule stack. Each
+      // is merged independently so same-ink neighbours never meet at a seam.
+      for (let depth = -1; depth < MAX_STACK; depth++) {
+        for (const run of runsAtDepth(intervals, Math.max(depth, 0))) {
+          const rects = measureRange(span, total, run.start, run.end);
+          if (rects.length === 0) continue;
+          bands.push({
+            key: `${verse}:${depth}:${run.start}:${run.end}:${run.hue}`,
+            hue: run.hue,
+            depth,
+            rects,
+            ids: run.ids,
+            sweep: run.ids.every((id) => animateIds.has(id)),
+            fading: run.ids.every((id) => fadingIds.has(id)),
+            dimmed,
           });
         }
       }
-      if (measured.length === 0) continue;
 
-      // Preserve the actual rag of the text instead of extending every
-      // interior line to the reading column's edge. Duplicate/overlapping
-      // records on one line collapse to one band before the outline is traced.
-      const rects = mergeHighlightLineRects(measured);
-
-      // Consecutive lines in one color share the exact midpoint of their
-      // padded edges. No overlap means no dark band; no gap means one boundary.
-      for (let i = 0; i < rects.length - 1; i++) {
-        const seam = (rects[i]!.y1 + rects[i + 1]!.y0) / 2;
-        rects[i]!.y1 = seam;
-        rects[i + 1]!.y0 = seam;
+      // Beyond two marks the gutter says how many. The gutter is measured off
+      // the row and the text, not derived from a token, so it stays right at
+      // both gutter widths and under any reading measure.
+      const gutterX = span.getBoundingClientRect().left - cRect.left - COUNT_INSET;
+      const perLine = new Map<number, GutterCount>();
+      for (const interval of intervals) {
+        if (interval.marks.length <= MAX_STACK) continue;
+        for (const rect of measureRange(span, total, interval.start, interval.end)) {
+          const y = Math.round((rect.y0 + rect.y1) / 2);
+          const existing = perLine.get(y);
+          if (existing && existing.count >= interval.marks.length) continue;
+          perLine.set(y, {
+            key: `${verse}:${y}`,
+            x: gutterX,
+            y,
+            count: interval.marks.length,
+          });
+        }
       }
-
-      const ids = [...new Set(run.segments.map((s) => s.id))];
-      const sweep = ids.length > 0 && ids.every((id) => animateIds.has(id));
-      const fading = ids.length > 0 && ids.every((id) => fadingIds.has(id));
-      // Dim when a pin is active and this run never touches the pin range.
-      const dimmed = pinRange != null && !run.segments.some(
-        (s) => s.verse >= pinRange.start && s.verse <= pinRange.end,
-      );
-      measuredRuns.push({
-        run,
-        rects,
-        ids,
-        sweep,
-        fading,
-        dimmed,
-        joinInitialLeft: false,
-        joinTerminalRight: false,
-        joinInitialTop: false,
-        joinTerminalBottom: false,
-      });
+      counts.push(...perLine.values());
     }
 
-    // Different colors that meet with no unhighlighted character between them
-    // share one exact seam. Horizontal seams remove the two ranges' padding
-    // overlap; vertical seams remove the old deliberate pullback gap. The later
-    // SVG path paints last, producing one crisp color handoff with no muddy
-    // blended strip.
-    for (let index = 0; index < measuredRuns.length - 1; index++) {
-      const current = measuredRuns[index]!;
-      const next = measuredRuns[index + 1]!;
-      const lastSegment = current.run.segments[current.run.segments.length - 1]!;
-      const firstSegment = next.run.segments[0]!;
-      if (!isAdjacent(lastSegment, firstSegment)) continue;
-
-      const lastRect = current.rects[current.rects.length - 1]!;
-      const firstRect = next.rects[0]!;
-      const overlapY = Math.min(lastRect.y1, firstRect.y1) - Math.max(lastRect.y0, firstRect.y0);
-      const sameVisualLine = lastSegment.verse === firstSegment.verse && overlapY > 2;
-      if (sameVisualLine) {
-        const seam = (lastRect.x1 + firstRect.x0) / 2;
-        lastRect.x1 = seam;
-        firstRect.x0 = seam;
-        current.joinTerminalRight = true;
-        next.joinInitialLeft = true;
-      } else {
-        const seam = (lastRect.y1 + firstRect.y0) / 2;
-        lastRect.y1 = seam;
-        firstRect.y0 = seam;
-        current.joinTerminalBottom = true;
-        next.joinInitialTop = true;
-      }
-    }
-
-    const built: BlobData[] = measuredRuns.map(({
-      run,
-      rects,
-      ids,
-      sweep,
-      fading,
-      dimmed,
-      joinInitialLeft,
-      joinTerminalRight,
-      joinInitialTop,
-      joinTerminalBottom,
-    }) => ({
-      key: [...ids].sort().join("_"),
-      color: run.color,
-      path: buildHighlightPath(rects, RADIUS, {
-        joinInitialLeft,
-        joinTerminalRight,
-        joinInitialTop,
-        joinTerminalBottom,
-        seamLean: 0.3,
-        junctionRadius: 1.5,
-      }),
-      sweep,
-      fading,
-      dimmed,
-      ids,
-    }));
-
-    setBlobs(built);
+    setPaint({ bands, counts });
     setSize({ w: cRect.width, h: cRect.height });
   }, [containerRef, verseRowRefs, highlights, book, chapter, animateIds, fadingIds, pinRange]);
 
@@ -278,20 +348,20 @@ export function HighlightUnderlay({
     measure();
   }, [highlights, book, chapter, animateIds, fadingIds, themeToken, pinRange, measure]);
 
-  // Clear the sweep flag after the animation finishes so a re-measure (e.g.
-  // on resize) doesn't replay it.
+  // Clear the entrance flag once it has played, so a later re-measure (a
+  // resize, say) does not replay it.
   useEffect(() => {
-    if (!blobs.some((b) => b.sweep)) return;
-    const t = setTimeout(() => {
-      setBlobs((prev) => prev.map((b) => (b.sweep ? { ...b, sweep: false } : b)));
+    if (!paint.bands.some((band) => band.sweep)) return;
+    const timer = window.setTimeout(() => {
+      setPaint((previous) => ({
+        ...previous,
+        bands: previous.bands.map((band) => (band.sweep ? { ...band, sweep: false } : band)),
+      }));
     }, SWEEP_MS);
-    return () => clearTimeout(t);
-  }, [blobs]);
+    return () => window.clearTimeout(timer);
+  }, [paint]);
 
-  if (blobs.length === 0) return null;
-
-  const colors = colorsRef.current;
-  const gradIds = new Set(blobs.map((b) => b.color));
+  if (paint.bands.length === 0) return null;
 
   return (
     <svg
@@ -301,33 +371,35 @@ export function HighlightUnderlay({
       viewBox={`0 0 ${size.w} ${size.h}`}
       aria-hidden="true"
     >
-      <defs>
-        {Array.from(gradIds).map((c) => {
-          const stops = colors[c] ?? { a: "transparent", mid: "transparent", b: "transparent" };
-          return (
-            <linearGradient id={`hl-grad-${c}`} key={c} x1="0" y1="0" x2="1" y2="0.14">
-              <stop offset="0%" style={{ stopColor: stops.a }} />
-              <stop offset="46%" style={{ stopColor: stops.mid }} />
-              <stop offset="100%" style={{ stopColor: stops.b }} />
-            </linearGradient>
-          );
-        })}
-      </defs>
-      {blobs.map((b) => {
-        const classNames = ["hl-blob"];
-        if (b.sweep) classNames.push("hl-sweep");
-        if (b.fading) classNames.push("hl-fade-out");
-        if (b.dimmed) classNames.push("hl-dimmed");
+      {paint.bands.map((band) => {
+        const classNames = [band.depth < 0 ? "quire-hl-wash" : "quire-hl-rule"];
+        if (band.sweep) classNames.push("hl-arriving");
+        if (band.fading) classNames.push("hl-leaving");
+        if (band.dimmed) classNames.push("hl-dimmed");
         return (
-          <path
-            key={b.key}
-            d={b.path}
-            fill={`url(#hl-grad-${b.color})`}
-            className={classNames.join(" ")}
-            data-highlight-color={b.color}
-          />
+          <g key={band.key} className={classNames.join(" ")} data-hl={band.hue} data-hl-depth={band.depth}>
+            {band.rects.map((rect, index) => (
+              <rect
+                key={index}
+                x={rect.x0}
+                y={band.depth < 0 ? rect.y0 : rect.y1 + band.depth * RULE}
+                width={Math.max(0, rect.x1 - rect.x0)}
+                height={band.depth < 0 ? Math.max(0, rect.y1 - rect.y0) : RULE}
+              />
+            ))}
+          </g>
         );
       })}
+      {paint.counts.map((count) => (
+        <text
+          key={count.key}
+          className="quire-hl-count"
+          x={count.x}
+          y={count.y}
+          textAnchor="end"
+          dominantBaseline="middle"
+        >{count.count}</text>
+      ))}
     </svg>
   );
 }

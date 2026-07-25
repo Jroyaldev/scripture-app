@@ -1,11 +1,42 @@
 import type React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { NoteSearchResult, ParsedNoteData, ScriptureSearchHitData } from "../api.js";
+import type { LanguageNameEntity, NoteSearchResult, ParsedNoteData, ScriptureSearchHitData } from "../api.js";
 import { Button, ControlInput } from "./Controls.js";
 import { useToast } from "./Toast.js";
 import { safeCall } from "../utils/safeCall.js";
 
 type WorkspaceMode = "notes" | "search";
+
+/* ==========================================================================
+   The scopes live here, not in the palette
+   --------------------------------------------------------------------------
+   The palette is fast and scopeless — the query's shape picks where it goes.
+   This is the other depth: the room you stay in, where choosing a corpus is
+   the task rather than an obstacle. So the tabs are real here, and each keeps
+   its own result treatment: verses get a reference and a quotation, notes a
+   date and an excerpt, names a kind line.
+   ========================================================================== */
+
+type WorkspaceScope = "scripture" | "notes" | "names";
+
+const SCOPES: ReadonlyArray<{ id: WorkspaceScope; label: string }> = [
+  { id: "scripture", label: "Scripture" },
+  { id: "notes", label: "Notes" },
+  { id: "names", label: "Names" },
+];
+
+/** "Thoroughly" usually means "within this book first". */
+type WorkspaceRange = "book" | "testament" | "everywhere";
+
+/**
+ * Renderer-local canon split. Duplicated rather than imported so this
+ * component stays inside the renderer boundary; it is pure data.
+ */
+const NEW_TESTAMENT = new Set([
+  "MAT", "MRK", "LUK", "JHN", "ACT", "ROM", "1CO", "2CO", "GAL",
+  "EPH", "PHP", "COL", "1TH", "2TH", "1TI", "2TI", "TIT", "PHM", "HEB", "JAS",
+  "1PE", "2PE", "1JN", "2JN", "3JN", "JUD", "REV",
+]);
 
 /**
  * What the search found outside the scope it was told to look in. Zero notes
@@ -209,8 +240,16 @@ export function SearchView({
   const [searchState, setSearchState] = useState<SearchState>({ status: "idle" });
   const [searchNonce, setSearchNonce] = useState(0);
   const [readingPackageId, setReadingPackageId] = useState<string | null>(null);
+  const [readingBook, setReadingBook] = useState<string | null>(null);
   const [bookNames, setBookNames] = useState<Record<string, string[]>>({});
   const [outOfScope, setOutOfScope] = useState<OutOfScope | null>(null);
+  // The mode picks the room's opening tab — Search lands on Scripture, My
+  // notes on Notes — and the tabs stay reachable from either.
+  const [scope, setScope] = useState<WorkspaceScope>(mode === "notes" ? "notes" : "scripture");
+  const [range, setRange] = useState<WorkspaceRange>("book");
+  const [verses, setVerses] = useState<ScriptureSearchHitData[]>([]);
+  const [names, setNames] = useState<LanguageNameEntity[]>([]);
+  const [corpusStatus, setCorpusStatus] = useState<"idle" | "searching" | "ready">("idle");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
@@ -227,19 +266,23 @@ export function SearchView({
   useEffect(() => {
     if (mode === "search") setQuery(initialQuery);
     if (initialNoteId) setSelectedId(initialNoteId);
+    setScope(mode === "notes" ? "notes" : "scripture");
   }, [initialNoteId, initialQuery, intentNonce, mode]);
 
-  // The edition the reader was last in. It is what makes the out-of-scope
-  // count answerable without a prop the caller would have to remember.
+  // The passage the reader was last in. It is what makes both the out-of-scope
+  // count and the range line answerable without a prop the caller would have
+  // to remember.
   useEffect(() => {
-    if (mode !== "search") return;
     void safeCall(() => window.api.settings.get()).then((result) => {
-      if (result.ok) setReadingPackageId(result.value.lastRead?.packageId ?? null);
+      if (!result.ok) return;
+      setReadingPackageId(result.value.lastRead?.packageId ?? null);
+      setReadingBook(result.value.lastRead?.book ?? null);
+      if (!result.value.lastRead?.book) setRange("everywhere");
     });
     void safeCall(() => window.api.scripture.getBookNames()).then((result) => {
       if (result.ok) setBookNames(result.value);
     });
-  }, [mode]);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -308,6 +351,46 @@ export function SearchView({
 
     return () => window.clearTimeout(timer);
   }, [mode, notes, query, readingPackageId, searchNonce]);
+
+  // Scripture and names, for the tabs the palette hands over to. Both indexes
+  // are on this device; nothing here leaves it.
+  useEffect(() => {
+    const trimmed = query.trim();
+    if (trimmed.length < 2) {
+      setCorpusStatus("idle");
+      setVerses([]);
+      setNames([]);
+      return;
+    }
+    let cancelled = false;
+    setCorpusStatus("searching");
+    const timer = window.setTimeout(() => {
+      const scripture = readingPackageId
+        ? safeCall(() => window.api.scripture.search(readingPackageId, trimmed, 60))
+        : Promise.resolve({ ok: false as const, error: "no edition" });
+      void Promise.all([
+        scripture,
+        safeCall(() => window.api.language.searchEntities(trimmed, 40)),
+      ]).then(([found, entities]) => {
+        if (cancelled) return;
+        setVerses(found.ok ? found.value : []);
+        setNames(entities.ok ? entities.value.entities.map((hit) => hit.entity) : []);
+        setCorpusStatus("ready");
+      });
+    }, 180);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [query, readingPackageId, searchNonce]);
+
+  // The range line's work: "thoroughly" usually means "within this book first".
+  const verseRows = useMemo(() => {
+    if (range === "everywhere" || !readingBook) return verses;
+    if (range === "book") return verses.filter((hit) => hit.book === readingBook);
+    const here = NEW_TESTAMENT.has(readingBook);
+    return verses.filter((hit) => NEW_TESTAMENT.has(hit.book) === here);
+  }, [range, readingBook, verses]);
 
   const noteById = useMemo(() => new Map(notes.map((note) => [note.id, note])), [notes]);
   const normalizedQuery = query.trim().toLocaleLowerCase();
@@ -443,7 +526,7 @@ export function SearchView({
 
   // A ratio, beside the field rather than inside it. A bare number sitting in
   // the input with pointer events off looked like something you could edit.
-  const resultCount = mode === "notes"
+  const noteCount = mode === "notes"
     ? normalizedQuery
       ? `${rows.length} of ${notes.length} notes`
       : `${notes.length} ${notes.length === 1 ? "note" : "notes"}`
@@ -453,10 +536,29 @@ export function SearchView({
         ? "Searching your notes"
         : `${notes.length} ${notes.length === 1 ? "note" : "notes"}`;
 
+  const resultCount = scope === "notes"
+    ? noteCount
+    : corpusStatus === "searching"
+      ? scope === "scripture" ? "Searching Scripture" : "Searching names"
+      : scope === "scripture"
+        ? `${verseRows.length} of ${verses.length} verses`
+        : `${names.length} ${names.length === 1 ? "name" : "names"}`;
+
   const scriptureHit = outOfScope?.first ?? null;
-  const outOfScopeLabel = mode === "search" && outOfScope && outOfScope.count > 0
-    ? `${outOfScope.count} in Scripture`
-    : "";
+
+  // What the query found in the scopes the reader is not looking at. Zero here
+  // and twenty-seven one tab across is a next step, not a dead end.
+  const elsewhere = useMemo<string[]>(() => {
+    if (query.trim().length < 2) return [];
+    const tallies: Array<[WorkspaceScope, number, string]> = [
+      ["scripture", verses.length, "in Scripture"],
+      ["notes", mode === "search" && searchState.status === "ready" ? searchState.results.length : rows.length, "in your notes"],
+      ["names", names.length, "in names"],
+    ];
+    return tallies
+      .filter(([id, count]) => id !== scope && count > 0)
+      .map(([, count, label]) => `${count} ${label}`);
+  }, [mode, names.length, query, rows.length, scope, searchState, verses.length]);
 
   const handleReference = useCallback(async (reference: WorkspaceReference) => {
     const result = await safeCall(() => window.api.ref.parseBref(reference.bref));
@@ -472,6 +574,20 @@ export function SearchView({
     }
     onNavigate(book, chapter);
   }, [onNavigate, showToast]);
+
+  /**
+   * A name's own first mention. The workspace can reach the passage; it cannot
+   * open Living Margin research, because no handler for that reaches this
+   * component — see the report.
+   */
+  const openName = useCallback((entity: LanguageNameEntity) => {
+    const ref = entity.firstRef ?? entity.refs[0];
+    if (!ref) {
+      showToast(`${entity.displayName} has no indexed mention to open.`, undefined, undefined, { tone: "error" });
+      return;
+    }
+    void handleReference({ raw: entity.displayName, bref: `bref:v1/${ref}` });
+  }, [handleReference, showToast]);
 
   const moveRowFocus = (event: React.KeyboardEvent<HTMLButtonElement>, index: number): void => {
     let target: number | null = null;
@@ -504,16 +620,93 @@ export function SearchView({
     <section className={`note-workspace note-workspace--${mode}`} aria-labelledby={`${mode}-workspace-title`}>
       <header className="note-workspace-hero">
         <div>
-          <span className="workspace-kicker">{mode === "notes" ? "Your own work" : "Search your notes"}</span>
+          {/* The two modes made visible. "My notes" and a library-wide search
+              share one shell; the hero has to say which room this is. */}
+          <span className="workspace-kicker">{mode === "notes" ? "Your own work" : "Everything on this device"}</span>
           <h1 id={`${mode}-workspace-title`}>{mode === "notes" ? "My notes" : "Search"}</h1>
           <p>
             {mode === "notes"
               ? "Read the thinking you have already done, then return to its Scripture context."
-              : "Find a phrase, question, or theme across your notes."}
+              : "Work through a phrase across Scripture, your own notes, and the indexed names."}
           </p>
         </div>
         <Button variant="secondary" onClick={onWrite} disabled={editing}>New note</Button>
       </header>
+
+      {/* Real tabs, because this is the surface where choosing a corpus is the
+          task rather than an obstacle. The palette stays routed; here the four
+          doors are drawn. */}
+      <div className="workspace-scopes">
+        <div className="workspace-scope-tabs" role="tablist" aria-label="Search scope">
+          {SCOPES.map((entry) => (
+            <button
+              key={entry.id}
+              type="button"
+              role="tab"
+              id={`workspace-scope-${entry.id}`}
+              className="workspace-scope-tab"
+              aria-selected={scope === entry.id}
+              aria-controls="workspace-results"
+              tabIndex={scope === entry.id ? 0 : -1}
+              onClick={() => setScope(entry.id)}
+              onKeyDown={(event) => {
+                const index = SCOPES.findIndex((item) => item.id === scope);
+                let next: number | null = null;
+                if (event.key === "ArrowRight") next = (index + 1) % SCOPES.length;
+                if (event.key === "ArrowLeft") next = (index - 1 + SCOPES.length) % SCOPES.length;
+                if (event.key === "Home") next = 0;
+                if (event.key === "End") next = SCOPES.length - 1;
+                if (next == null) return;
+                event.preventDefault();
+                setScope(SCOPES[next]?.id ?? "notes");
+              }}
+            >
+              {entry.label}
+            </button>
+          ))}
+        </div>
+
+        {/* The palette's scope line, doing a second job one level down. The row
+            is always here, so switching tabs never moves the list. */}
+        <div className="workspace-range">
+          {scope === "scripture" ? (
+            <>
+              {readingBook && (
+                <button
+                  type="button"
+                  className="workspace-range-step"
+                  aria-pressed={range === "book"}
+                  onClick={() => setRange("book")}
+                >
+                  in {bookNames[readingBook]?.[0] ?? readingBook}
+                </button>
+              )}
+              {readingBook && (
+                <button
+                  type="button"
+                  className="workspace-range-step"
+                  aria-pressed={range === "testament"}
+                  onClick={() => setRange("testament")}
+                >
+                  in the {NEW_TESTAMENT.has(readingBook) ? "New" : "Old"} Testament
+                </button>
+              )}
+              <button
+                type="button"
+                className="workspace-range-step"
+                aria-pressed={range === "everywhere"}
+                onClick={() => setRange("everywhere")}
+              >
+                everywhere
+              </button>
+            </>
+          ) : (
+            <span className="workspace-range-statement">
+              {scope === "notes" ? "in every note you have written" : "in every indexed biblical name"}
+            </span>
+          )}
+        </div>
+      </div>
 
       <div className="note-workspace-query">
         <div className="note-workspace-field">
@@ -522,7 +715,11 @@ export function SearchView({
             ref={searchInputRef}
             type="search"
             aria-label={mode === "notes" ? "Filter notes" : "Search note content"}
-            placeholder={mode === "notes" ? "Filter titles, text, or tags" : "Search every note"}
+            placeholder={scope === "scripture"
+              ? "A phrase in the text"
+              : scope === "names"
+                ? "A person or place"
+                : mode === "notes" ? "Filter titles, text, or tags" : "Search every note"}
             value={query}
             disabled={editing}
             onChange={(event) => setQuery(event.target.value)}
@@ -550,10 +747,82 @@ export function SearchView({
         </div>
         <p className="note-workspace-count" role="status">
           <span>{resultCount}</span>
-          {outOfScopeLabel && <span className="note-workspace-count-beyond">{outOfScopeLabel}</span>}
+          {elsewhere.map((entry) => (
+            <span key={entry} className="note-workspace-count-beyond">{entry}</span>
+          ))}
         </p>
       </div>
 
+      {scope !== "notes" ? (
+        <div
+          id="workspace-results"
+          className="workspace-results"
+          role="tabpanel"
+          aria-labelledby={`workspace-scope-${scope}`}
+        >
+          {corpusStatus === "searching" ? (
+            <Progress label={scope === "scripture" ? "Reading the edition on this device" : "Reading the name index on this device"} />
+          ) : scope === "scripture" ? (
+            verseRows.length > 0 ? (
+              <div className="workspace-result-rows">
+                {verseRows.map((hit) => (
+                  <button
+                    key={`${hit.book}:${hit.chapter}:${hit.verse}`}
+                    type="button"
+                    className="workspace-verse-row"
+                    onClick={() => onNavigate(hit.book, hit.chapter)}
+                  >
+                    <span className="workspace-verse-ref">
+                      {`${bookNames[hit.book]?.[0] ?? hit.book} ${hit.chapter}:${hit.verse}`}
+                    </span>
+                    <span className="workspace-verse-quote">
+                      <HighlightText text={hit.text} query={query} />
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                title={query.trim().length < 2 ? "Search the edition" : "Nothing in this range"}
+                body={query.trim().length < 2
+                  ? "Enter a phrase and it is matched against the text you are reading."
+                  : verses.length > 0
+                    ? `Nothing matches “${query.trim()}” in this range, but the edition has ${verses.length}.`
+                    : `Nothing in this edition matches “${query.trim()}”.`}
+                action={verses.length > 0 && range !== "everywhere"
+                  ? <Button size="sm" onClick={() => setRange("everywhere")}>Search everywhere</Button>
+                  : undefined}
+              />
+            )
+          ) : names.length > 0 ? (
+            <div className="workspace-result-rows">
+              {names.map((entity) => (
+                <button
+                  key={entity.id}
+                  type="button"
+                  className="workspace-name-row"
+                  onClick={() => openName(entity)}
+                >
+                  <span className="workspace-name-title">
+                    <HighlightText text={entity.displayName} query={query} />
+                  </span>
+                  <span className="workspace-name-kind">
+                    {`${entity.kind === "place" ? "place" : entity.kind === "person" ? "person" : "name"} · ${entity.refCount} ${entity.refCount === 1 ? "mention" : "mentions"}`}
+                  </span>
+                  <span className="workspace-name-brief">{entity.brief || entity.short || "Indexed biblical name"}</span>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              title={query.trim().length < 2 ? "Search the indexed names" : "No indexed name matches"}
+              body={query.trim().length < 2
+                ? "Enter a person or place; name matches rank before definition matches."
+                : `Nothing in the name index matches “${query.trim()}”.`}
+            />
+          )}
+        </div>
+      ) : (
       <div className="note-workspace-grid">
         <aside className="note-workspace-list" aria-label={mode === "notes" ? "My notes list" : "Search results"}>
           <div className="note-list-heading">
@@ -779,6 +1048,7 @@ export function SearchView({
           )}
         </article>
       </div>
+      )}
     </section>
   );
 }

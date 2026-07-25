@@ -100,6 +100,27 @@
   inset: -17px -8px -17px 0;
 }
 
+/* ── Dynamic type — the gutter grows because the number inside it does ─────
+   §H·2·4: type scales, chrome does not — up to a point. The chrome holds its
+   size for the first two steps and then grows, which is the same rule the
+   bottom bar already follows when it goes 56 → 72px at the largest reading
+   size rather than dropping its labels.
+
+   The verse gutter is the one piece of chrome that cannot hold, because it is
+   not chrome around the number — it IS the number's column, and the number is
+   set in the reading face. 24px at the default, 32px at the largest. The
+   passage reflows when the reading size changes, and that is correct: the
+   gutter is reserved, so the measure is what gives the 8px back.
+
+   Only the largest step moves. `s` and `m` stay at the 24px the narrow shell
+   sets, so the two steps a reader is most likely to be on cost the measure
+   nothing. */
+@media (max-width: 979px) {
+  .app-shell.reading-size-l {
+    --verse-gutter: 32px;
+  }
+}
+
 /* ── Stated loss: connection threads do not render here ────────────────────
    A thread needs a routing lane, and the router asks for about 36px of it.
    The narrow shell has a 24px gutter. Rather than paint a route that collides

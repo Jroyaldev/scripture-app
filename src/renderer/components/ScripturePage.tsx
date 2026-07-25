@@ -2660,6 +2660,13 @@ export function ScripturePage({
     lastCanvasPointerTypeRef.current = event.pointerType;
     if (event.pointerType !== "touch" || !event.isPrimary) return;
     if (pageSwipeRef.current) return;
+    // A grip drag is tracked on the window rather than through pointer capture,
+    // because extending the range re-renders the grip into a different row. So
+    // the grip's own element stops seeing the pointer partway through, and a
+    // finger that lands on the page while an edge is moving would otherwise
+    // start a chapter turn underneath it. The range owns the gesture until it
+    // is let go — and a misfired chapter turn loses the reader's place.
+    if (verseRangeDragRef.current) return;
     if (event.clientX <= BACK_GESTURE_STRIP) return;
     const target = event.target instanceof Element ? event.target : null;
     // Controls own their own gestures, and the gutter grips own the vertical
@@ -4642,6 +4649,55 @@ export function ScripturePage({
 
   return (
     <div className="scripture-page">
+
+      {!focusMode && (
+        <ScriptureWorkspaceTabs
+          workspace={studyWorkspace}
+          bookNames={bookNames}
+          onSelect={(tabId) => onWorkspaceTabSelect?.(tabId) ?? Promise.resolve(false)}
+          onClose={(tabId) => onWorkspaceTabClose?.(tabId) ?? Promise.resolve(false)}
+          onCloseGroup={(groupId) => onWorkspaceGroupClose?.(groupId) ?? Promise.resolve(false)}
+          onToggleGroup={(groupId, collapsing) => (
+            onWorkspaceGroupToggle?.(groupId, collapsing) ?? Promise.resolve(false)
+          )}
+          onRenameGroup={(groupId, label) => (
+            onWorkspaceGroupRename?.(groupId, label) ?? Promise.resolve(false)
+          )}
+          onMoveTab={(tabId, targetGroupId) => (
+            onWorkspaceTabMove?.(tabId, targetGroupId) ?? Promise.resolve(false)
+          )}
+          onReorderTab={(tabId, position) => (
+            onWorkspaceTabReorder?.(tabId, position) ?? Promise.resolve(false)
+          )}
+          onReorderGroup={(groupId, position) => (
+            onWorkspaceGroupReorder?.(groupId, position) ?? Promise.resolve(false)
+          )}
+          onReopenRecent={() => onWorkspaceRecentReopen?.() ?? Promise.resolve(false)}
+          onReopenRecentItem={(index) => onWorkspaceRecentReopen?.(index) ?? Promise.resolve(false)}
+          onDuplicateTab={() => onWorkspaceTabDuplicate?.() ?? Promise.resolve(false)}
+          onNewResearch={() => (onOpenResearchPalette ?? onOpenCommandPalette)?.()}
+          persistenceStatus={workspacePersistenceStatus}
+          onRetryPersistence={onRetryWorkspacePersistence}
+        />
+      )}
+
+      <div
+        id="scripture-workspace-panel"
+        className="scripture-body"
+        role="tabpanel"
+        aria-labelledby={`study-workspace-tab-${studyWorkspace.activeTabId}`}
+        data-study-canvas-owner={restoredSessionOwnerTabId === sessionOwnerTabId ? sessionOwnerTabId : undefined}
+      >
+      <div className="scripture-reading-stage" ref={stageRef}>
+      <div
+        className="scripture-content"
+        ref={contentRef}
+        onPointerDown={handlePagePointerDown}
+        onPointerMove={handlePagePointerMove}
+        onPointerUp={handlePagePointerUp}
+        onPointerCancel={handlePagePointerCancel}
+      >
+      
       <header className={`scripture-topbar${scrolled ? " scrolled" : ""}`} role="toolbar" aria-label="Reading toolbar">
         <div className="topbar-navigation">
         <div className="canvas-history-arrows" role="group" aria-label="Reading history">
@@ -4998,54 +5054,6 @@ export function ScripturePage({
           )}
         </div>
       </header>
-
-      {!focusMode && (
-        <ScriptureWorkspaceTabs
-          workspace={studyWorkspace}
-          bookNames={bookNames}
-          onSelect={(tabId) => onWorkspaceTabSelect?.(tabId) ?? Promise.resolve(false)}
-          onClose={(tabId) => onWorkspaceTabClose?.(tabId) ?? Promise.resolve(false)}
-          onCloseGroup={(groupId) => onWorkspaceGroupClose?.(groupId) ?? Promise.resolve(false)}
-          onToggleGroup={(groupId, collapsing) => (
-            onWorkspaceGroupToggle?.(groupId, collapsing) ?? Promise.resolve(false)
-          )}
-          onRenameGroup={(groupId, label) => (
-            onWorkspaceGroupRename?.(groupId, label) ?? Promise.resolve(false)
-          )}
-          onMoveTab={(tabId, targetGroupId) => (
-            onWorkspaceTabMove?.(tabId, targetGroupId) ?? Promise.resolve(false)
-          )}
-          onReorderTab={(tabId, position) => (
-            onWorkspaceTabReorder?.(tabId, position) ?? Promise.resolve(false)
-          )}
-          onReorderGroup={(groupId, position) => (
-            onWorkspaceGroupReorder?.(groupId, position) ?? Promise.resolve(false)
-          )}
-          onReopenRecent={() => onWorkspaceRecentReopen?.() ?? Promise.resolve(false)}
-          onReopenRecentItem={(index) => onWorkspaceRecentReopen?.(index) ?? Promise.resolve(false)}
-          onDuplicateTab={() => onWorkspaceTabDuplicate?.() ?? Promise.resolve(false)}
-          onNewResearch={() => (onOpenResearchPalette ?? onOpenCommandPalette)?.()}
-          persistenceStatus={workspacePersistenceStatus}
-          onRetryPersistence={onRetryWorkspacePersistence}
-        />
-      )}
-
-      <div
-        id="scripture-workspace-panel"
-        className="scripture-body"
-        role="tabpanel"
-        aria-labelledby={`study-workspace-tab-${studyWorkspace.activeTabId}`}
-        data-study-canvas-owner={restoredSessionOwnerTabId === sessionOwnerTabId ? sessionOwnerTabId : undefined}
-      >
-      <div className="scripture-reading-stage" ref={stageRef}>
-      <div
-        className="scripture-content"
-        ref={contentRef}
-        onPointerDown={handlePagePointerDown}
-        onPointerMove={handlePagePointerMove}
-        onPointerUp={handlePagePointerUp}
-        onPointerCancel={handlePagePointerCancel}
-      >
         <article className="scripture-inner" aria-labelledby="reading-chapter-title">
           <div className="chapter-header">
             <h1 id="reading-chapter-title" className="chapter-title" ref={chapterHeadingRef} tabIndex={-1}>
