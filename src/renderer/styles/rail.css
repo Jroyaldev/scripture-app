@@ -362,9 +362,13 @@
 /* The strip is a pointer affordance. On touch there is no hover to float it
    with, so focus mode keeps the bottom bar instead. */
 @media (max-width: 979px) {
-  .app-shell.focus-mode > .sidebar {
+  .app-shell.focus-mode > .sidebar,
+  .app-shell.focus-mode > .sidebar:hover,
+  .app-shell.focus-mode > .sidebar:focus-within {
     width: 100%;
     min-width: 0;
+    margin-right: 0;
+    box-shadow: none;
   }
 
   .app-shell.focus-mode > .sidebar > *:not(.rail-focus-handle) {

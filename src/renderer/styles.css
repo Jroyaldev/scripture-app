@@ -2021,7 +2021,6 @@ html, body, #root {
 
 .scripture-workspace-tab-wrap.is-dragging {
   opacity: 0.55;
-  transform: translateY(-1px);
 }
 
 .scripture-workspace-tab-wrap[data-study-drop="before"]::before,
@@ -4966,7 +4965,7 @@ html, body, #root {
 }
 
 .note-row.selected {
-  background: color-mix(in srgb, var(--study-hover-surface) 74%, transparent);
+  background: transparent;
   color: var(--text-primary);
 }
 
@@ -12449,7 +12448,7 @@ button.lang-phrase-diagram-node:focus-visible {
   width: 13px;
   height: 13px;
   border: 2px solid var(--border-subtle);
-  border-top-color: var(--study-gold);
+  border-top-color: var(--accent-machine);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
   flex-shrink: 0;
@@ -15501,7 +15500,6 @@ button.lang-phrase-diagram-node:focus-visible,
 .marking-choice:hover {
   background: var(--study-hover-surface);
   color: var(--text-primary);
-  transform: translateY(-1px);
 }
 
 .marking-choice:active { transform: translateY(0); }
@@ -15546,7 +15544,6 @@ button.lang-phrase-diagram-node:focus-visible,
 .marking-palette .marking-choice:hover {
   background: var(--study-hover-surface);
   color: var(--text-primary);
-  transform: translateY(-1px);
 }
 
 .marking-palette .marking-choice.active {
@@ -15829,7 +15826,6 @@ button.lang-phrase-diagram-node:focus-visible,
 .marking-intent:hover {
   border-color: var(--border-medium);
   background: var(--study-hover-surface);
-  transform: translateY(-1px);
   color: var(--text-primary);
 }
 

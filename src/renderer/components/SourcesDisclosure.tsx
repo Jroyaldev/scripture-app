@@ -38,7 +38,7 @@ export function SourcesDisclosure({
   };
   return (
     <details className={`margin-sources${className ? ` ${className}` : ""}`}>
-      <summary>Sources</summary>
+      <summary>{sources.length} {sources.length === 1 ? "source" : "sources"}</summary>
       <div className="margin-source-list">
         {sources.map((source) => (
           <div className="margin-source-row" key={`${source.name}-${source.license}-${source.detail ?? ""}`}>

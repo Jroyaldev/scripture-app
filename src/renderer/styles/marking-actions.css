@@ -460,7 +460,14 @@
   font: 400 0.8125rem/1.45 var(--font-ui);
 }
 
-.surface-state-thing { color: var(--text-primary); }
+/* The mark's lane is reserved at rest, so a state can light it without
+   moving the words. Previously the padding arrived WITH the state and the
+   failing thing's name jumped 8px at the worst possible moment. */
+.surface-state-thing {
+  padding-left: 8px;
+  box-shadow: inset 2px 0 0 transparent;
+  color: var(--text-primary);
+}
 .surface-state-reason { color: var(--text-secondary); }
 .surface-state-locality { color: var(--text-tertiary); }
 
@@ -474,13 +481,11 @@
 .surface-state[data-surface-state="failed"] .surface-state-thing,
 .surface-state[data-surface-state="conflict"] .surface-state-thing {
   box-shadow: inset 2px 0 0 var(--error);
-  padding-left: 8px;
 }
 
 .surface-state[data-surface-state="read-only"] .surface-state-thing,
 .surface-state[data-surface-state="offline"] .surface-state-thing {
   box-shadow: inset 2px 0 0 var(--text-tertiary);
-  padding-left: 8px;
 }
 
 /* THE loading device, and the only one: a 1px seal segment travelling a

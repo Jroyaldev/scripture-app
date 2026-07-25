@@ -104,7 +104,10 @@ test("word capture uses visible form, gloss, definition, package, and verse", ()
 });
 
 test("public-data surfaces consolidate provenance under Sources with Cite", () => {
-  assert.match(disclosure, /<summary>Sources<\/summary>/);
+  // "Every generated line carries a source count." The disclosure is the one
+  // place counts live, so a bare "Sources" put the count behind a click on
+  // every generated surface at once.
+  assert.match(disclosure, /<summary>\{sources\.length\} \{sources\.length === 1 \? "source" : "sources"\}<\/summary>/);
   assert.match(disclosure, /navigator\.clipboard\.writeText\(formatSourceCitation\(source\)\)/);
   assert.match(margin, /formatSourceCitation\(source\)/);
   assert.match(language, /formatSourceCitation\(source\)/);
