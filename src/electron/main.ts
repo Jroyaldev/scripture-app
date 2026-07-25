@@ -1666,6 +1666,10 @@ function createWindow(): void {
   let win: BrowserWindow;
   try {
     win = new BrowserWindow({
+      // Canvas. Without it Chromium paints its default white before the
+      // renderer's first frame, so every cold start flashes white into an app
+      // whose ground is #F1EFEA.
+      backgroundColor: "#F1EFEA",
       width: hasSaneBounds ? savedBounds.width : 1400,
       height: hasSaneBounds ? savedBounds.height : 900,
       ...(hasSaneBounds && savedBounds.x != null && savedBounds.y != null

@@ -67,19 +67,15 @@ test("every atmosphere paints the register out of the two planes and nothing els
     /\.scripture-workspace-tab\[aria-selected="true"\] \{\s*background: var\(--bg-reading\);/,
   );
 
-  // The two vestigial bar tokens survive as aliases only. Nothing consumes them,
-  // and no theme may reintroduce a bespoke literal through them — that is how
-  // the third fill got in last time (#FFF9F0 for Glass, #2D251F for Candlelight).
-  assert.equal([...styles.matchAll(/var\(--workspace-(?:bar|active)-bg\)/g)].length, 0);
-  const barTokens = [...styles.matchAll(/^\s*--workspace-(?:bar|active)-bg:\s*([^;]+);/gm)].map((m) => m[1]!.trim());
-  assert.ok(barTokens.length > 0);
-  for (const value of barTokens) {
-    assert.match(
-      value,
-      /^(?:var\(--bg-canvas\)|var\(--bg-reading\)|transparent)$/,
-      `--workspace-*-bg may only alias a plane, never carry its own colour (${value})`,
-    );
-  }
+  // Both vestigial bar tokens are GONE, not merely aliased. They were two of
+  // the eight surface fills the design document retires, and they are how the
+  // third fill got in last time (#FFF9F0 for Glass, #2D251F for Candlelight).
+  // A token nothing reads cannot reintroduce a bespoke literal; a token that
+  // still exists as an alias is one careless edit away from doing so.
+  assert.equal([...styles.matchAll(/var\(--workspace-(?:bar|active)-bg\)/g)].length, 0,
+    "nothing may consume the retired bar fills");
+  assert.equal([...styles.matchAll(/--workspace-(?:bar|active)-bg\s*:/g)].length, 0,
+    "the retired bar fills must not be declared at all");
 });
 
 test("the active tab joins the page with two fillets, not with an underline", () => {

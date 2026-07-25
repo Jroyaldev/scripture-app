@@ -264,7 +264,7 @@
     "--fs-xs": "0.75rem",
     "--fs-sm": "0.875rem",
     "--fs-base": "1rem",
-    "--fs-reading": "1.125rem",
+    "--fs-reading": "1.1875rem",
     "--fs-lg": "1.25rem",
     "--fs-xl": "1.5rem",
     "--fs-2xl": "1.75rem",

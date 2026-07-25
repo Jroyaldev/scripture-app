@@ -116,8 +116,6 @@
   --study-gold-focus: rgba(150, 104, 74, 0.36);
   --study-hover-surface: transparent;
   --study-hover-line: rgba(50, 47, 43, 0.10);
-  --workspace-bar-bg: var(--bg-canvas);
-  --workspace-active-bg: var(--bg-reading);
   --map-water: #DCE3DE;
   --map-land: #EEE3D0;
   --map-land-line: #B7AA94;
@@ -142,7 +140,7 @@
   --fs-xs: 0.75rem;
   --fs-sm: 0.875rem;
   --fs-base: 1rem;
-  --fs-reading: 1.125rem;
+  --fs-reading: 1.1875rem;
   --fs-lg: 1.25rem;
   --fs-xl: 1.5rem;
   --fs-2xl: 1.75rem;
@@ -486,8 +484,6 @@
   --study-gold-focus: rgba(201, 154, 110, 0.42);
   --study-hover-surface: transparent;
   --study-hover-line: rgba(237, 232, 224, 0.14);
-  --workspace-bar-bg: var(--bg-canvas);
-  --workspace-active-bg: var(--bg-reading);
   --map-water: #161B1A;
   --map-land: #292821;
   --map-land-line: #625A4B;
@@ -575,7 +571,6 @@
   --bg-float: color-mix(in srgb, var(--paper-solid) 94%, transparent);
   --material-blur: 26px;
   --material-saturate: 1.28;
-  --workspace-bar-bg: transparent;
 }
 
 .material-translucent .scripture-content,
@@ -640,8 +635,6 @@
   --study-gold-focus: rgba(150, 104, 74, 0.36);
   --study-hover-surface: transparent;
   --study-hover-line: rgba(46, 46, 51, 0.10);
-  --workspace-bar-bg: var(--bg-canvas);
-  --workspace-active-bg: var(--bg-reading);
 
   --map-water: #E9EEF2;
   --map-land: #F4F4F6;
@@ -705,8 +698,6 @@
   --study-gold-focus: rgba(201, 154, 110, 0.42);
   --study-hover-surface: transparent;
   --study-hover-line: rgba(233, 233, 236, 0.14);
-  --workspace-bar-bg: var(--bg-canvas);
-  --workspace-active-bg: var(--bg-reading);
 
   --map-water: #17181C;
   --map-land: #222226;
@@ -1093,7 +1084,7 @@ html, body, #root {
 
 /* --- Topbar (passage/version pickers, theme toggle) --- */
 
-/* One band, 48px, hairline-free on canvas. Reference left in reading serif,
+/* One band, 48px, inside the page. Reference left in reading serif,
    instruments right in mono. Because the right side is one flex row, a tool
    whose handler is absent simply does not render and leaves no gap — the
    header loses instruments without losing shape. */
@@ -1115,9 +1106,9 @@ html, body, #root {
   z-index: 8;
 }
 
-/* No rule and no shadow under the topbar. It is ground, the strip below it is
-   ground, and the page is the only object — a hairline here would draw a
-   boundary between two halves of the same empty field. */
+/* No shadow. The hairline below IS licensed — §E asks for it, and it is the
+   one place a change of kind is not already obvious from the type — but a
+   shadow would float the band off a page it is part of. */
 .scripture-topbar.scrolled {
   box-shadow: none;
 }
@@ -1425,9 +1416,6 @@ html, body, #root {
 .scripture-workspace-tab-count {
   min-width: 17px;
   flex: 0 0 auto;
-  padding: 2px 4px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--text-primary) 7%, transparent);
   color: var(--text-secondary);
   font: 500 8px/1 var(--font-ui);
   font-variant-numeric: tabular-nums;
@@ -1520,9 +1508,6 @@ html, body, #root {
 
 .scripture-workspace-active-group small {
   min-width: 15px;
-  padding: 2px 4px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--text-primary) 6%, transparent);
   color: var(--text-tertiary);
   font: 500 9px/1 var(--font-ui);
   font-variant-numeric: tabular-nums;
@@ -1830,9 +1815,6 @@ html, body, #root {
 
 .scripture-workspace-group-title > span {
   min-width: 16px;
-  padding: 2px 4px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--text-primary) 6%, transparent);
   color: var(--text-tertiary);
   font: 500 8px/1 var(--font-ui);
   font-variant-numeric: tabular-nums;
@@ -1927,9 +1909,6 @@ html, body, #root {
 
 .scripture-workspace-overflow-row > button small {
   flex: 0 0 auto;
-  padding: 2px 5px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--text-primary) 7%, transparent);
   color: var(--text-tertiary);
   font: 500 8px/1 var(--font-ui);
   font-variant-numeric: tabular-nums;
