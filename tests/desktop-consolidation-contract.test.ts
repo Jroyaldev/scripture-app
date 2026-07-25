@@ -268,7 +268,10 @@ test("desktop components keep only data-driven inline styles and no native dialo
   assert.doesNotMatch(sources, /stroke="#[0-9A-Fa-f]{3,8}"/);
   assert.doesNotMatch(sources, /\balert\(|window\.confirm\(|\bconfirm\(/);
   assert.match(sources, /style=\{\{\s*top: position\.top,\s*left: position\.left,\s*width: position\.width,\s*maxHeight: position\.maxHeight/);
-  assert.match(sources, /style=\{\{ "--sense-color": vizColor\(index\) \}/);
+  // The sense spine's colour is a constant, so it moved out of the style
+  // attribute into CSS. Only genuinely data-driven values may stay inline.
+  assert.doesNotMatch(sources, /style=\{\{ "--sense-color"/);
+  assert.match(read("src/renderer/styles.css"), /\.lang-sense-primary \{\s*--sense-color: var\(--study-gold\);/);
   assert.match(sources, /top:\s*placement\?\.top \?\? effectiveStageBounds\.top \+ 8/);
   assert.match(sources, /left:\s*placement\?\.left \?\? effectiveStageBounds\.left \+ 8/);
   assert.match(sources, /visibility:\s*placement \? "visible" : "hidden"/);

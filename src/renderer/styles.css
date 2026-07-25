@@ -9754,6 +9754,12 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   font-variant-numeric: tabular-nums;
 }
 
+/* The sense spine is seal for every sense; which sense is in play is a class,
+   not a value, so this belongs here rather than in a style attribute. */
+.lang-sense-primary {
+  --sense-color: var(--study-gold);
+}
+
 .lang-orbit-body {
   display: flex;
   gap: 6px;

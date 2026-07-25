@@ -406,7 +406,6 @@ export function SenseOutlineView({
           <section
             key={node.n}
             className={`lang-sense-primary${open ? " is-open" : ""}${node.current ? " is-current" : ""}`}
-            style={{ "--sense-color": "var(--study-gold)" } as React.CSSProperties}
           >
             {expandable ? (
               <button
