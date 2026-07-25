@@ -192,11 +192,14 @@ export function resolveMarginScrollRestoration(
   return null;
 }
 
+// Four lenses, named for what they hold rather than for how they relate to the
+// passage. "Related" described a relationship; "Connections" names the thing
+// the reader actually authored, which is what they will look for.
 const MARGIN_TABS: Array<{ id: MarginTab; label: string; accessibleLabel: string }> = [
   { id: "overview", label: "Overview", accessibleLabel: "Overview" },
-  { id: "connections", label: "Related", accessibleLabel: "Related verses" },
+  { id: "notes", label: "Notes", accessibleLabel: "My notes" },
+  { id: "connections", label: "Connections", accessibleLabel: "Connections" },
   { id: "passage", label: "Words", accessibleLabel: "Words & structure" },
-  { id: "notes", label: "My notes", accessibleLabel: "My notes" },
 ];
 
 const PANEL_FOCUSABLE_SELECTOR = [

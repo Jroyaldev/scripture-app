@@ -164,6 +164,9 @@
   --margin-width: 380px;
   --reading-max-width: 660px;
   --verse-gutter: 32px;
+  /* The margin's tab row sticks below its header. One value drives the
+     header's height and the tabs' offset, so they cannot drift apart. */
+  --margin-header-h: 52px;
 
   /* Radius ≈ 0.22 × the element's shorter dimension, rounded even, capped at
      8. Not concentric: strict concentricity would put the window at 32px, and
@@ -322,7 +325,7 @@
   content: "+";
   margin-left: auto;
   color: var(--text-tertiary);
-  font: 500 0.75rem/1 var(--font-mono);
+  font: 500 0.75rem/1 var(--font-ui);
 }
 .margin-sources[open] summary::after { content: "−"; }
 .margin-sources summary:hover { color: var(--text-primary); }
@@ -2887,74 +2890,91 @@ html, body, #root {
   padding-inline: var(--connection-loom-gutter);
 }
 
+/* Verse numbers hang in a fixed 32px gutter. Fixed is the point: the width
+   never varies between the always/faint/hover modes, so switching them can
+   never reflow the passage. Everything the row needs to say about its state
+   is said in that gutter, and the prose is left alone. */
 .verse-line {
   display: grid;
-  grid-template-columns: 30px minmax(0, 1fr);
+  grid-template-columns: var(--verse-gutter) minmax(0, 1fr);
   align-items: baseline;
-  column-gap: 10px;
+  column-gap: 0;
   margin-bottom: 2px;
   position: relative;
   /* Lift the row above the SVG highlight underlay (which sits at z-index 0
      inside the .verse-text stacking context). */
   z-index: 2;
   cursor: pointer;
-  padding: 3px 10px 4px 0;
-  border-radius: var(--radius-sm);
-  transition:
-    background-color var(--transition-fast),
-    box-shadow var(--transition-fast);
+  padding: 0;
+  border-radius: 0;
 }
 
-/* Pinned-verse left accent bar. A row-level pin indicator — distinct from
-   the text-span-level highlight wash below (Part D6). */
+/* The selection mark. Lane 0-2 of the gutter, seal, sized to the verse's
+   first line rather than centred on the row — it points at where the verse
+   starts, not at its middle. */
 .verse-line::before {
   content: '';
   position: absolute;
   left: 0;
-  top: 50%;
+  top: 0;
   width: 2px;
   height: 0;
-  border-radius: 0 2px 2px 0;
-  background: var(--accent-current);
-  transform: translateY(-50%);
-  transition: height var(--transition-normal);
+  border-radius: 0 var(--radius-mark) var(--radius-mark) 0;
+  background: var(--study-gold);
 }
 
 .verse-line.selected::before {
-  height: 18px;
+  height: calc(var(--fs-reading) * var(--lh-reading));
 }
 
-.verse-line:hover {
-  background: color-mix(in srgb, var(--study-hover-surface) 42%, transparent);
-}
-
-/* Pinned row tint — a very subtle full-row background, never a wide flat
-   block (kept separate from the highlight-wash layer on .verse-text-span). */
+/* Selection stops tinting the measure. That space belongs to highlights, and
+   two tints competing over the same words is how a reader loses track of
+   which one is theirs. Hover and focus live in the gutter too. */
+.verse-line:hover,
 .verse-line.selected {
-  background: color-mix(in srgb, var(--study-gold) 8%, transparent);
+  background: transparent;
 }
 
 .verse-num {
-  font-family: var(--font-ui);
-  font-size: var(--fs-xs);
+  font-family: var(--font-mono);
+  font-size: 10px;
   font-weight: var(--fw-medium);
+  font-variant-numeric: tabular-nums;
   color: var(--text-verse-number);
-  padding-top: 0.16em;
+  padding-top: 0.3em;
+  padding-right: 12px;
   text-align: right;
-  flex-shrink: 0;
   user-select: none;
-  transition: color var(--transition-fast);
+  transition: color var(--transition-fast), opacity var(--transition-fast);
 }
 
+.verse-line:hover .verse-num {
+  opacity: 0.8;
+  color: var(--text-tertiary);
+}
+
+/* Selected: ink number, indented clear of the mark. The prose does not move. */
 .verse-line.selected .verse-num {
-  color: var(--accent-current);
-  font-weight: var(--fw-medium);
+  color: var(--text-primary);
+  opacity: 1;
+  padding-left: 8px;
 }
 
 .scripture-content .verse-line:focus {
   outline: none;
-  background: color-mix(in srgb, var(--study-hover-surface) 54%, transparent);
+  background: transparent;
   box-shadow: none;
+}
+
+.scripture-content .verse-line:focus-visible .verse-num {
+  color: var(--text-primary);
+  opacity: 1;
+}
+
+/* Text selection is seal at 18% — distinct from every highlight hue, so the
+   reader can always tell their own colour from a transient selection. */
+.scripture-content ::selection {
+  background: color-mix(in srgb, var(--study-gold) 18%, transparent);
 }
 
 .scripture-content .verse-line:focus::before {
@@ -3332,7 +3352,7 @@ html, body, #root {
 }
 
 .margin-authored-connections-head small {
-  font: 400 0.625rem/1 var(--font-mono);
+  font: 400 0.625rem/1 var(--font-ui);
 }
 
 .margin-authored-connections-list {
@@ -6657,12 +6677,13 @@ html, body, #root {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 52px;
+  min-height: var(--margin-header-h);
   margin: 0 calc(var(--sp-xl) * -1) 18px;
   padding: 10px var(--sp-xl) 9px;
-  border-bottom: 1px solid var(--border-subtle);
-  background: color-mix(in srgb, var(--bg-canvas) 94%, transparent);
-  backdrop-filter: blur(18px) saturate(1.08);
+  /* Paper, not canvas. The margin is one plane; a tinted band inside it is a
+     third fill, and the two-plane rule has no room for one. It stays opaque
+     because it is sticky and content scrolls beneath it. */
+  background: var(--bg-reading);
 }
 
 .margin-frame-title {
@@ -6690,7 +6711,7 @@ html, body, #root {
 
 .margin-frame-mode {
   color: var(--text-tertiary);
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 0.625rem;
   font-weight: var(--fw-medium);
   letter-spacing: 0.065em;
@@ -6734,16 +6755,16 @@ html, body, #root {
 
 .margin-tabs {
   position: sticky;
-  top: 52px;
+  top: var(--margin-header-h);
   z-index: 7;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   margin: 12px calc(var(--sp-xl) * -1) 18px;
   padding: 0 12px;
-  border-top: 1px solid var(--border-subtle);
+  /* One rule, under the tabs, where a change of kind is not already obvious
+     from the type. The rule above them was drawing a box. */
   border-bottom: 1px solid var(--border-subtle);
-  background: color-mix(in srgb, var(--bg-canvas) 96%, transparent);
-  backdrop-filter: blur(18px) saturate(1.08);
+  background: var(--bg-reading);
 }
 
 .margin-tab {
@@ -6802,7 +6823,7 @@ html, body, #root {
 
 .margin-tab-count {
   color: var(--text-tertiary);
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 0.53125rem;
   font-variant-numeric: tabular-nums;
   transform: translateY(-0.08em);
@@ -13689,22 +13710,23 @@ textarea:focus-visible,
 
 /* --- Reading size / width / verse numbers (applied on .app-shell) --- */
 
+/* Reading size and measure COUPLE: 17/560, 19/660, 22/780, each landing near
+   68 characters. Left independent, the two settings permit a 22px column at
+   560px — 42 characters, a width nobody would choose on purpose but which the
+   controls happily allow. The line-height is constant at 1.62 because the
+   32px band is derived from it. */
 .app-shell.reading-size-s {
-  --fs-reading: 1rem;
-  --lh-reading: 1.7;
+  --fs-reading: 1.0625rem;
+  --reading-max-width: 560px;
 }
 .app-shell.reading-size-m {
-  --fs-reading: 1.125rem;
-  --lh-reading: 1.8;
+  --fs-reading: 1.1875rem;
+  --reading-max-width: 660px;
 }
 .app-shell.reading-size-l {
-  --fs-reading: 1.3rem;
-  --lh-reading: 1.85;
+  --fs-reading: 1.375rem;
+  --reading-max-width: 780px;
 }
-
-.app-shell.reading-width-narrow { --reading-max-width: 560px; }
-.app-shell.reading-width-medium { --reading-max-width: 680px; }
-.app-shell.reading-width-wide   { --reading-max-width: 820px; }
 
 .app-shell.verse-nums-faint .verse-num {
   color: color-mix(in srgb, var(--text-verse-number) 55%, transparent);
