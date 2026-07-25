@@ -832,12 +832,23 @@ export function ScriptureWorkspaceTabs({
     ? groups.find((entry) => entry.group.id === contextGroupId) ?? null
     : null;
 
+  // The active tab flows into the page with a concave fillet, and claims the
+  // page's corner outright when it is first or last in the register. Which of
+  // those applies is computed from the tab's INDEX, never from scroll
+  // position — a shape that changes as you scroll stops reading as an object.
+  const registerTabIds = groups.flatMap(({ visibleTabs }) => visibleTabs.map((tab) => tab.id));
+  const activeRegisterIndex = registerTabIds.indexOf(workspace.activeTabId);
+  const flushStart = activeRegisterIndex === 0;
+  const flushEnd = activeRegisterIndex >= 0 && activeRegisterIndex === registerTabIds.length - 1;
+
   return (
     <nav
       className="scripture-workspace-bar"
       aria-label="Study workspace tabs"
       data-study-workspace-bar=""
       data-study-overflowing={hasMeasuredOverflow || undefined}
+      data-flush-start={flushStart || undefined}
+      data-flush-end={flushEnd || undefined}
     >
       <div
         ref={viewportRef}

@@ -1044,7 +1044,8 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: transparent;
+  /* Ground. Everything in this column except the page itself is canvas. */
+  background: var(--bg-canvas);
 }
 
 /* --- Topbar (passage/version pickers, theme toggle) --- */
@@ -1055,16 +1056,17 @@ html, body, #root {
   display: flex;
   align-items: center;
   gap: 0;
-  padding: 0 20px;
+  padding: 0 var(--page-inset);
   background: var(--bg-canvas);
-  border-bottom: 1px solid var(--border-subtle);
   position: relative;
   z-index: 8;
-  transition: box-shadow var(--transition-normal), background-color var(--transition-slow);
 }
 
+/* No rule and no shadow under the topbar. It is ground, the strip below it is
+   ground, and the page is the only object — a hairline here would draw a
+   boundary between two halves of the same empty field. */
 .scripture-topbar.scrolled {
-  box-shadow: var(--shadow-topbar);
+  box-shadow: none;
 }
 
 /* Desktop research is a first-class workspace directly beneath Scripture's
@@ -1078,18 +1080,32 @@ html, body, #root {
    one active-study control, and management that opens only on demand. Its
    surface is a deliberate derivative of the toolbar token (--bg-topbar) so the
    two read as one continuous chrome, separated only by a hairline border. */
+/* A register, not browser tabs: a 30px tab in a 34px strip, sitting on canvas.
+   The 24px of canvas above it is the page inset's top edge, and doubles as the
+   window drag region — which is why that number is 24 and not 8.
+
+   No border-bottom. The baseline seal is a failure state only (see the
+   persistence rules below); a rule here would fight the fillet, which is the
+   thing actually joining the tab to the page. */
 .scripture-workspace-bar {
   position: relative;
   z-index: 7;
-  min-height: 38px;
-  flex: 0 0 38px;
+  min-height: 34px;
+  flex: 0 0 auto;
   display: flex;
-  align-items: stretch;
+  align-items: flex-end;
   min-width: 0;
-  padding: 0 8px 0 12px;
-  border-bottom: 1px solid var(--border-subtle);
-  background: var(--workspace-bar-bg);
+  padding: var(--page-inset) var(--page-inset) 0 0;
+  background: transparent;
   color: var(--text-secondary);
+}
+
+/* The register belongs to the page, not to the window. When the margin is
+   open the strip has to stop at the page's right edge — otherwise a tab can
+   sit above the gutter, and its fillet reaches for a page edge that is not
+   underneath it. */
+.scripture-page:has(.living-margin) .scripture-workspace-bar {
+  padding-right: calc(var(--margin-width) + var(--pane-gutter) + var(--page-inset));
 }
 
 .theme-glass .scripture-workspace-bar,
@@ -1098,18 +1114,24 @@ html, body, #root {
   backdrop-filter: blur(var(--material-blur)) saturate(var(--material-saturate));
 }
 
+/* Overflow scrolls, it never squeezes — a register whose tabs shrink stops
+   being readable exactly when you have most need of it.
+
+   The container must clip on the x-axis ONLY. `overflow: hidden` would clip
+   the fillets flush against the tab and read as a rendering bug rather than a
+   missing flourish. */
 .scripture-workspace-viewport {
   position: relative;
   min-width: 0;
   flex: 1 1 auto;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 2px;
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: visible;
   overscroll-behavior-inline: contain;
-  padding-inline: 4px;
-  scroll-padding-inline: 12px;
+  padding-inline: var(--page-inset) 0;
+  scroll-padding-inline: var(--page-inset);
   scrollbar-width: none;
 }
 
@@ -1199,10 +1221,12 @@ html, body, #root {
   to { opacity: 0; width: 0; padding-inline: 0; transform: translate(-4px, -50%); }
 }
 
+/* Minimum 104px so the flat run between the two top curves stays at least
+   40px — below that the tab reads as a lozenge instead of a tab. */
 .scripture-workspace-tab {
   position: relative;
-  height: 28px;
-  min-width: 92px;
+  height: 30px;
+  min-width: 104px;
   max-width: 176px;
   flex: 0 0 auto;
   display: inline-flex;
@@ -1210,41 +1234,67 @@ html, body, #root {
   justify-content: center;
   gap: 6px;
   padding: 0 29px 0 10px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-page) var(--radius-page) 0 0;
   background: transparent;
   color: var(--text-tertiary);
   cursor: pointer;
   font-size: 12px;
   font-weight: var(--fw-medium);
   letter-spacing: 0.002em;
-  transition:
-    color var(--transition-fast),
-    background-color var(--transition-fast),
-    box-shadow var(--transition-fast);
+  transition: color var(--transition-fast);
 }
 
+/* Inactive tabs get no shape and no hover fill, ever. This is where the
+   browser idiom stops being borrowed: a hovered shape introduces a third fill
+   and re-creates exactly the mush the two-plane rule exists to prevent.
+   Hover changes label ink, and reveals the close glyph. Nothing else. */
 .scripture-workspace-tab:hover {
-  background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+  background: transparent;
   color: var(--text-secondary);
 }
 
+/* The paper fill IS the mark. The tab is a piece of the page that has been
+   pulled up above the register's baseline, so it takes paper and the page's
+   own radius — no underline, no second indicator. Instant, because this is
+   the app answering "where am I". */
 .scripture-workspace-tab[aria-selected="true"] {
-  min-width: 112px;
-  background: var(--workspace-active-bg);
+  background: var(--bg-reading);
   color: var(--text-primary);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border-subtle) 70%, transparent);
+  transition: none;
 }
 
-/* Gold is reserved for selection: the indicator (and type-mark) tint gold. */
+/* The two fillets. Each is an 8×8 block of paper sitting outside the tab at
+   its baseline with the outer top corner rounded away, so the tab's side
+   sweeps into the page's top edge on a continuous curve. A radial gradient
+   carves the concave quarter — no mask, no SVG, and because they are the
+   tab's own pseudo-elements they travel with it on reorder. */
+.scripture-workspace-tab[aria-selected="true"]::before,
 .scripture-workspace-tab[aria-selected="true"]::after {
   content: "";
   position: absolute;
-  right: 12px;
-  bottom: 2px;
-  left: 12px;
-  height: 2px;
-  border-radius: 1px;
-  background: var(--study-gold);
+  bottom: 0;
+  width: var(--radius-page);
+  height: var(--radius-page);
+  pointer-events: none;
+}
+
+.scripture-workspace-tab[aria-selected="true"]::before {
+  left: calc(-1 * var(--radius-page));
+  background: radial-gradient(
+    circle at 0 0, transparent var(--radius-page), var(--bg-reading) 0);
+}
+
+.scripture-workspace-tab[aria-selected="true"]::after {
+  right: calc(-1 * var(--radius-page));
+  background: radial-gradient(
+    circle at 100% 0, transparent var(--radius-page), var(--bg-reading) 0);
+}
+
+/* When the active tab is first or last in the register it claims the page's
+   corner outright, so the fillet on that side would have nothing to join. */
+.scripture-workspace-bar[data-flush-start] .scripture-workspace-tab[aria-selected="true"]::before,
+.scripture-workspace-bar[data-flush-end] .scripture-workspace-tab[aria-selected="true"]::after {
+  display: none;
 }
 
 .scripture-workspace-tab[aria-selected="true"] .scripture-workspace-tab-mark {
@@ -2623,9 +2673,18 @@ html, body, #root {
    .scripture-content and .living-margin (both direct children of the
    column-direction .scripture-page) stack vertically instead of sitting
    side by side. */
+/* The page inset: 24px, four sides, one number. The top edge is spent above
+   the register (see .scripture-workspace-bar), the other three here. It is
+   paid for out of the page's own internal padding — 32 down to 24 — so the
+   real cost in reading height is 16px, not 48.
+
+   The gap is the pane gutter: 24px of canvas divides the page from the margin
+   better than a border does, which is why the margin's border-left is gone. */
 .scripture-body {
   flex: 1;
   display: flex;
+  gap: var(--pane-gutter);
+  padding: 0 var(--page-inset) var(--page-inset);
   overflow: hidden;
 }
 
@@ -2666,14 +2725,28 @@ html, body, #root {
   scroll-padding-bottom: calc(24px + var(--marking-bottom-inset));
 }
 
+/* The page. It is the scroll container, not the window — verses move, the
+   page's own bottom radius clips them, and nothing bleeds past the corner.
+   Docked, so it takes a hairline rather than a shadow; it earns a shadow only
+   in the material state, where what sits behind it becomes visible. */
 .scripture-content {
   flex: 1;
   overflow-y: auto;
   overflow-x: clip;
-  padding: clamp(36px, 5vh, 56px) var(--reading-inline-gutter) 80px;
+  padding: var(--band) var(--reading-inline-gutter) 80px;
   background: var(--bg-reading);
-  scroll-padding-top: 32px;
-  transition: background-color var(--transition-slow);
+  border-radius: var(--radius-page);
+  scroll-padding-top: var(--band);
+}
+
+/* The first tab claims the page's top-left corner, the last its top-right.
+   Read off the register's index, so the shape holds still under scroll. */
+.scripture-workspace-bar[data-flush-start] ~ .scripture-body .scripture-content {
+  border-top-left-radius: 0;
+}
+
+.scripture-workspace-bar[data-flush-end] ~ .scripture-body .scripture-content {
+  border-top-right-radius: 0;
 }
 
 .scripture-inner {
@@ -3764,13 +3837,17 @@ html, body, #root {
 
 /* --- Living Margin --- */
 
+/* A workbench that reads as part of the book, not a tool panel bolted to its
+   edge: its own paper plane across a 24px canvas gutter, with the page's own
+   radius on all four corners. The border-left is gone — the gutter separates
+   these two panes far better than a hairline did. */
 .living-margin {
   width: var(--margin-width);
-  min-width: 300px;
-  max-width: 400px;
+  min-width: 320px;
+  max-width: 420px;
   flex-shrink: 0;
-  background: var(--bg-canvas);
-  border-left: 1px solid var(--border-subtle);
+  background: var(--bg-reading);
+  border-radius: var(--radius-page);
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 0 var(--sp-xl) var(--sp-3xl);
