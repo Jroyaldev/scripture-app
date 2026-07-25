@@ -6,7 +6,7 @@
   "srcDir": "src/renderer/components",
   "tsconfig": "tsconfig.renderer.json",
   "cssEntry": "src/renderer/styles.css",
-  "runtimeFontPrefixes": ["Source Serif", "Inter", "JetBrains Mono", "Fira Code", "Consolas"],
+  "runtimeFontPrefixes": ["Source Serif", "Instrument Sans", "Geist Mono", "Noto Serif", "Consolas"],
   "guidelinesGlob": [],
   "componentSrcMap": {
     "App": "src/renderer/app.tsx",

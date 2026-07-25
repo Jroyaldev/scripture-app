@@ -101,8 +101,8 @@
   "typography": {
     "font-family": {
       "reading": "'Source Serif 4', 'Georgia', 'Times New Roman', serif",
-      "ui": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      "mono": "'JetBrains Mono', 'Fira Code', 'Consolas', monospace"
+      "ui": "'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif",
+      "mono": "'Geist Mono', ui-monospace, 'SFMono-Regular', 'Consolas', monospace"
     },
     "font-size": {
       "xs": "0.75rem",

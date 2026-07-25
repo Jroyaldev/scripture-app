@@ -1,3 +1,5 @@
+@import "./fonts.css";
+
 /* Design tokens → CSS custom properties */
 :root {
   /* Paper — the default reading atmosphere. Warmth belongs to the material;
@@ -93,10 +95,16 @@
   --warning: #C0A030;
   --error: #C05A5A;
 
-  /* Typography */
+  /* Typography — three voices. Anything you read or write is serif; the UI
+     that frames it is sans; the chrome that instruments it is mono. A label
+     set in the wrong one of these reads as the wrong kind of thing.
+
+     'Source Serif 4' also resolves Greek and Hebrew: fonts.css declares those
+     scripts under this same family name with a unicode-range, so a Greek word
+     cannot come out half Source Serif and half fallback. */
   --font-reading: 'Source Serif 4', 'Georgia', 'Times New Roman', serif;
-  --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  --font-ui: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', 'Consolas', monospace;
 
   --fs-xs: 0.75rem;
   --fs-sm: 0.875rem;
