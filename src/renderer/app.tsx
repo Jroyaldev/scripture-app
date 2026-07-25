@@ -1971,7 +1971,7 @@ export function App(): React.JSX.Element {
               <div className="sidebar-nav">
                 <NavItem active={view === "scripture"} onClick={() => { void changeView("scripture"); }} label="Read" icon={<ReadIcon />} shortcut="1" />
                 <NavItem active={view === "write"} onClick={() => { void changeView("write"); }} disabled={authoredMutationState !== "idle"} label="Write" icon={<WriteIcon />} shortcut="2" />
-                <NavItem active={view === "notes"} onClick={() => { void changeView("notes"); }} disabled={authoredMutationState !== "idle"} label="My notes" icon={<NotesIcon />} shortcut="3" />
+                <NavItem active={view === "notes"} onClick={() => { void changeView("notes"); }} disabled={authoredMutationState !== "idle"} label="Notes" icon={<NotesIcon />} shortcut="3" />
                 <NavItem active={view === "search"} onClick={() => { void changeView("search"); }} disabled={authoredMutationState !== "idle"} label="Search" icon={<SearchIcon />} shortcut="4" />
                 {/* Five rows, one uninterrupted run on the 32+2 rhythm. The
                     divider that used to sit here was a line doing a job the

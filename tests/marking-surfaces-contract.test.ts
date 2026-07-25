@@ -1048,7 +1048,7 @@ test("production marking surfaces retain distinct grammar at the supported deskt
   assert.match(styles, /@media \(any-pointer: coarse\) \{[\s\S]*?\.marking-dock-modes \{ width: 238px; grid-template-columns: repeat\(5, 44px\); \}[\s\S]*?data-dock-layout="stacked"\] \.marking-dock-modes \{ width: 228px; gap: 2px; \}/);
   assert.match(styles, /\.app-shell:has\(\.marking-dock-host\[data-dock-layout="shelf"\]\) \+ \.toast-container \{[\s\S]*?bottom:\s*calc\(104px/);
   assert.match(styles, /\.app-shell:has\(\.marking-dock-host\[data-dock-layout="stacked"\]\) \+ \.toast-container \{[\s\S]*?bottom:\s*calc\(144px/);
-  assert.match(styles, /@media \(max-width: 760px\) \{[\s\S]*?\.scripture-body \{[\s\S]*?flex-direction:\s*column;[\s\S]*?\.scripture-body > \.scripture-reading-stage \{[\s\S]*?min-height:\s*0;[\s\S]*?\.scripture-body > \.living-margin \{[\s\S]*?position:\s*static;[\s\S]*?width:\s*100%;[\s\S]*?max-height:\s*calc\(var\(--margin-header-h\) \+ 44px\)/);
+  assert.match(styles, /@media \(max-width: 979px\) \{[\s\S]*?\.scripture-body \{[\s\S]*?flex-direction:\s*column;[\s\S]*?\.scripture-body > \.scripture-reading-stage \{[\s\S]*?min-height:\s*0;[\s\S]*?\.scripture-body > \.living-margin \{[\s\S]*?position:\s*static;[\s\S]*?width:\s*100%;[\s\S]*?max-height:\s*calc\(var\(--margin-header-h\) \+ 44px\)/);
   assert.match(styles, /\.scripture-body > \.living-margin\[data-compact-expanded="true"\] \{[\s\S]*?max-height:\s*min\(58vh, 520px\)/,
     "the compact Study pane offers a second calm size instead of one cramped strip");
   assert.doesNotMatch(styles, /\.scripture-body > \.living-margin \{[^}]*position:\s*absolute/);
@@ -1388,7 +1388,8 @@ test("no marking surface may move the reading measure, and the dock's inset stay
   assert.doesNotMatch(styles, /--marking-bottom-inset/,
     "the dock's layout arithmetic must not read as a theme token");
   const insetDeclarations = rules.filter(({ body }) => /--mdock-bottom-inset\s*:/.test(body));
-  assert.equal(insetDeclarations.length, 4, "one zero default plus one value per dock state");
+  assert.equal(insetDeclarations.length, 5,
+    "one zero default, one per dock state, and the narrow shell's flush dock");
   for (const { selector, body } of insetDeclarations) {
     const value = /--mdock-bottom-inset:\s*([^;]+);/.exec(body)?.[1]?.trim();
     if (selector === ".scripture-reading-stage") {

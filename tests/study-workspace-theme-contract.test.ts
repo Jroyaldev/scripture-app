@@ -171,9 +171,13 @@ test("workspace labels and controls stay readable without nested alpha masks", (
 test("forced colors, reduced motion, and desktop zoom keep the strip operable", () => {
   assert.match(workspaceStyles, /@media \(forced-colors: active\)[\s\S]*background: Highlight; color: HighlightText/);
   assert.match(workspaceStyles, /@media \(prefers-reduced-motion: reduce\)[\s\S]*transition: none/);
-  assert.match(styles, /@media \(max-width: 760px\) and \(hover: none\) and \(pointer: coarse\) and \(any-hover: none\) \{\s*\.scripture-workspace-bar \{ display: none; \}/);
+  // The register survives on a phone. H makes it the narrow shell's signature —
+  // "everything the desktop shell says about hierarchy is said in 24 pixels" —
+  // and hiding it deleted the filleted tab, the scrolling strip and the +n
+  // count, all of which were already built.
+  assert.doesNotMatch(styles, /\.scripture-workspace-bar \{ display: none; \}/);
   const compactWidthBlock = styles.slice(
-    styles.indexOf("@media (max-width: 760px) {"),
+    styles.indexOf("@media (max-width: 979px) {"),
     styles.indexOf("/* Do not mistake desktop zoom for a phone."),
   );
   assert.doesNotMatch(compactWidthBlock, /\.scripture-workspace-bar \{ display: none; \}/);
