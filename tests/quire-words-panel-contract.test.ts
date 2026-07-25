@@ -125,28 +125,194 @@ test("the bars keep the argument that beat the donut: a study track and a label 
   assert.match(orbit, /\{seg\.count\} · \{Math\.round\(seg\.share \* 100\)\}%/);
 });
 
-test("the morph line is a sentence about the word, not a row of controls", () => {
-  // "Step away": three chips of different shapes read as filter controls but
-  // are labels. The drawn form is one line — "Adjective · dative singular
-  // feminine" — so the fill, the border and the radius all go, and the dot
-  // that separates the parts is type rather than geometry.
-  const chipBody = bodyOf(".lang-chip");
-  assert.deepEqual(paintedBackgrounds(chipBody), []);
-  assert.deepEqual(drawnBorders(chipBody), []);
-  assert.deepEqual(roundedRadii(chipBody), []);
-  assert.match(css, /\.lang-chip \+ \.lang-chip::before\s*\{[^}]*content: "·";/);
+test("morphology is spelled out once, at the head, and the duplicate row is gone", () => {
+  // SUPERSEDED, C2·7 → C·4 §3·2. C2·7's ruling was that the three chips stop
+  // being chips: no fill, no border, no radius, a middle dot for a separator.
+  // This file used to assert that shape. C·4 goes further and deletes the row:
+  // the chips and `.lang-detail-kind` were both built from
+  // `card.morphExplain.parts` and rendered the same words with the same
+  // separator, so the entry said "aorist middle indicative" twice before the
+  // reader reached the gloss. "Morphology is spelled out once, at the head,
+  // and the duplicate chip row goes."
+  //
+  // What replaces the old assertions: the chip family must be gone from both
+  // the markup and the sheet — a rule kept "just in case" is how the duplicate
+  // comes back — and the one surviving copy must be the head's kind line.
+  assert.doesNotMatch(language, /lang-chip/, "the chip row came back into the word entry");
+  assert.doesNotMatch(css, /\.lang-chip/, "the chip row's rules are styling nothing");
+  assert.doesNotMatch(language, /lang-form-chips/);
+  assert.doesNotMatch(css, /\.lang-form-chips/);
 
-  for (const [selector, body] of ruleBlocks()) {
-    if (!/\.lang-chip(?![\w-])|\.lang-chip-(pos|unknown)/.test(selector)) continue;
-    assert.deepEqual(paintedBackgrounds(body), [], `${selector} fills the morph line again`);
-    assert.deepEqual(drawnBorders(body), [], `${selector} boxes the morph line again`);
-  }
+  // Exactly one element carries the spelled-out form, and it is the head's.
+  assert.equal(language.match(/lang-detail-kind/g)?.length, 2, "the kind line is drawn in exactly two branches: with the disclosure, and without one when there are no parts to open");
+  assert.match(language, /`lang-form-row\$\{open[\s\S]{0,700}margin-entry-kind lang-detail-kind/);
+
+  // Deleting the duplicate must not delete what it opened. The STEP sentences,
+  // each part's meaning, and the parse code and lexicon key C2·7 put behind a
+  // disclosure all still open — from the surviving line.
+  assert.match(language, /aria-expanded=\{open\}/);
+  assert.match(language, /lang-step-overlay/);
+  assert.match(language, /<strong>lexicon key<\/strong>/);
+  assert.match(language, /<strong>code<\/strong>/);
 
   // The study never elides the morph line, so there is no "+1" to style and no
   // cap to enforce. A word that would have fitted must not cost a click.
   assert.doesNotMatch(language, /MORPH_CHIP_MAX/);
-  assert.doesNotMatch(language, /lang-chip-more/);
-  assert.doesNotMatch(css, /\.lang-chip-more/);
+
+  // C·4 draws the line "Verb · aorist middle indicative, third person
+  // singular" and C2·7 draws "Adjective · dative singular feminine". Both come
+  // out of one join: the part of speech, then what the form does, then who it
+  // is about — so the comma is read off the feature families, never typed into
+  // a lookup table of forms.
+  assert.match(language, /morphAction/);
+  assert.match(language, /morphAgreement/);
+  assert.match(language, /\[morphAction\.join\(" "\), morphAgreement\.join\(" "\)\]\.filter\(Boolean\)\.join\(", "\)/);
+});
+
+test("the word entry ends in a footer, and both verbs are in it", () => {
+  // C·4 §3·3: "Structure and Add to note join the footer where every other
+  // destination lives." This finishes what C2·7 asked for and could not have —
+  // it wanted a pane footer and none existed, which is why Add to note rode
+  // the lemma's baseline and Structure sat mid-entry dressed as a button.
+  const footerBody = bodyOf(".lang-footer");
+  assert.match(footerBody, /border-top: 1px solid var\(--border-subtle\)/);
+  assert.deepEqual(paintedBackgrounds(footerBody), [], "the footer is a rule and a row, not a bar");
+  assert.deepEqual(roundedRadii(footerBody), []);
+
+  const footer = language.slice(
+    language.indexOf('<div className="lang-footer">'),
+    language.indexOf("<StructureModal"),
+  );
+  assert.ok(footer.length > 0, "the footer disappeared from the word entry");
+  assert.match(footer, /lang-capture-action/);
+  assert.match(footer, /lang-syntax-toggle/);
+  assert.match(footer, /lang-study-verse/);
+  // Order is the drawing's: the writing verb, the destination, then the
+  // reference closing the row.
+  assert.ok(
+    footer.indexOf("lang-capture-action") < footer.indexOf("lang-syntax-toggle"),
+    "the destination overtook the writing verb",
+  );
+  assert.ok(
+    footer.indexOf("lang-syntax-toggle") < footer.indexOf("lang-study-verse"),
+    "the reference no longer closes the footer row",
+  );
+
+  // §C4·6 · "Verbs are words in a footer. No bordered buttons, no circular
+  // chips." Both verbs, and the reference, at the same test.
+  for (const base of [".lang-syntax-toggle", ".lang-capture-action", ".lang-study-verse"]) {
+    for (const [selector, body] of ruleBlocks()) {
+      if (!targetsItself(selector, base)) continue;
+      assert.deepEqual(paintedBackgrounds(body), [], `${selector} fills a footer verb`);
+      assert.deepEqual(drawnBorders(body), [], `${selector} boxes a footer verb`);
+      assert.deepEqual(roundedRadii(body), [], `${selector} rounds a footer verb into a chip`);
+    }
+  }
+
+  // The body's Structure block, and the second word that used to sit beside the
+  // verb telling the reader what pressing a destination does, are both gone.
+  assert.doesNotMatch(language, /lang-syntax-block/);
+  assert.doesNotMatch(css, /\.lang-syntax-block/);
+  assert.doesNotMatch(language, /lang-syntax-toggle-hint/);
+  assert.doesNotMatch(css, /\.lang-syntax-toggle-hint/);
+
+  // The reference is a count-shaped string, so Law 4 applies: tabular figures
+  // do the aligning, and the tracking that made it read as a mono kicker goes.
+  const verseBody = bodyOf(".lang-study-verse");
+  assert.match(verseBody, /font-variant-numeric: tabular-nums/);
+  assert.match(verseBody, /letter-spacing: 0;/);
+  assert.doesNotMatch(verseBody, /text-transform/);
+});
+
+test("the lexicon key is a hover reveal and the frequency line is a sentence", () => {
+  // C·4 §3·4 · "G1096 is gone, per C2·6 — on hover for anyone cross-referencing
+  // a commentary." The key rides the head's reserved slot, so arriving changes
+  // ink and nothing else; nothing below it moves.
+  assert.match(language, /className="margin-entry-name-key lang-detail-strong"/);
+  const entries = read("src/renderer/styles/margin-entries.css");
+  assert.match(entries, /\.margin-entry-name-key\s*\{[^}]*opacity: 0;/);
+  assert.match(entries, /\.margin-entry:hover \.margin-entry-name-key,[\s\S]{0,120}opacity: 1;/);
+
+  // C·4 §3·5 · "8 in this chapter · 125 in Acts · 668 in the corpus" — three
+  // scales in one line, spelled, with the middle dot as the separator.
+  assert.match(language, /in this chapter/);
+  assert.match(language, /in the corpus/);
+  assert.match(language, /<span className="lang-dot">·<\/span>/);
+  assert.doesNotMatch(language, /\d×|×\s*ch\b/);
+});
+
+test("the renderings block keeps its bars and its tail names what it counts", () => {
+  // C·4 §3·6 · "become 109 · 16%, came to pass 67 · 10%, be 58 · 9%, then
+  // 6 more renderings." The pair separator was implemented from C2·7 and is
+  // asserted above; what C·4 adds is the tail, which stops being the notation
+  // "+6 more" and becomes a phrase that names the thing being counted.
+  assert.match(orbit, /remainderNoun: "renderings"/);
+  assert.match(orbit, /\{remainder\} more\{model\.remainderNoun \? ` \$\{model\.remainderNoun\}` : ""\}/);
+  assert.doesNotMatch(orbit, /\+\{remainder\} more/);
+  // It is one of the panel's "there is more of this" lines and sets like the
+  // rest of them, rather than shrinking below the rows it summarises.
+  assert.match(bodyOf(".lang-orbit-remainder"), /font: 400 11\.5px var\(--font-ui\)/);
+  assert.match(bodyOf(".lang-orbit-remainder"), /color: var\(--text-secondary\)/);
+});
+
+test("the multi-verse chooser is two words, not two pills", () => {
+  // C·4 §3·1 · "Verse chips become two words." What went: a standing label and
+  // a row of numerals in radius-999 capsules with a border, a paper fill, a
+  // shadow and a seal underline inside the capsule — a bordered button and a
+  // circular chip at once, both banned by §C4·6, and two devices saying
+  // "selected" where Law 2 allows one.
+  const margin = read("src/renderer/components/LivingMargin.tsx");
+  assert.doesNotMatch(margin, /words-verse-chip/);
+  assert.doesNotMatch(css, /\.words-verse-chip/);
+  assert.doesNotMatch(margin, /Words for verse<\/span>/);
+  assert.match(margin, /className=\{`words-verse-word\$\{wordsVerse === verse \? " is-showing" : ""\}`\}/);
+  assert.match(margin, /Verse \{verse\}/);
+
+  for (const [selector, body] of ruleBlocks()) {
+    if (!/\.words-verse-word/.test(selector)) continue;
+    assert.deepEqual(paintedBackgrounds(body), [], `${selector} fills a verse switch again`);
+    assert.deepEqual(drawnBorders(body), [], `${selector} boxes a verse switch again`);
+    assert.deepEqual(roundedRadii(body), [], `${selector} re-rounds a verse switch into a pill`);
+  }
+
+  // The grid stays capped at one verse — the designer's own question in the
+  // quire's closing section — so the switch is a switch and never a filter that
+  // could show both at once.
+  assert.match(margin, /role="radiogroup"/);
+  // Reserve: switching verses may change ink and weight, never the row's
+  // height, or the word grid below it steps.
+  assert.match(css, /\.words-verse-switch\s*\{[^}]*min-height: 18px;/);
+});
+
+test("disabled is the label without its count, and it is drawn once for everyone", () => {
+  // §C4·5 · "Words has nothing to say about a whole chapter. It renders in
+  // ink-3 with no count and no underline." §C4·6 makes it a ruling: "Disabled
+  // is the label without its count. Ink-3, no rule, no number. No fourth ink
+  // was needed."
+  const margin = read("src/renderer/components/LivingMargin.tsx");
+  assert.match(margin, /const wordsScopeDisabled = !isPinned && !isNear;/);
+  assert.match(margin, /tabIsDisabled = \(tab: MarginTab\): boolean => tab === "passage" && wordsScopeDisabled/);
+  // No count when disabled — withheld, not zeroed. `Notes 0` is a fact; a
+  // Words count at chapter scope is not, so the count is not computed at all.
+  assert.match(margin, /const count = disabled \? null : tabCount\(tab\.id\);/);
+  assert.match(margin, /aria-disabled=\{disabled \|\| undefined\}/);
+  assert.match(margin, /disabled \? " is-disabled-instrument" : ""/);
+
+  // The treatment is shared, not a one-off on this tab: nothing in the rule
+  // knows what a tab is, so any instrument can adopt it.
+  const disabledBody = bodyOf(".is-disabled-instrument");
+  assert.match(disabledBody, /color: var\(--text-tertiary\)/, "disabled must be ink-3");
+  assert.match(disabledBody, /opacity: 1;/, "disabled is an ink, never the on-state photocopied");
+  assert.match(disabledBody, /box-shadow: none/, "no rule");
+  assert.doesNotMatch(disabledBody, /not-allowed/, "the cursor is a fourth signal the ruling does not ask for");
+  assert.doesNotMatch(disabledBody, /pointer-events/, "an instrument a keyboard cannot reach is off, not disabled");
+  assert.match(css, /\.is-disabled-instrument:hover\s*\{[^}]*color: var\(--text-tertiary\)/);
+
+  // It has to win over each host's resting and hover ink, and every host writes
+  // those at one class of specificity — so it is last in the sheet rather than
+  // escalated to a doubled selector.
+  const lastRule = ruleBlocks().at(-1)?.[0];
+  assert.equal(lastRule, ".is-disabled-instrument:hover", "the disabled treatment stopped being the sheet's last word");
 });
 
 test("an active word is a seal mark, and a current sense is a seal spine", () => {

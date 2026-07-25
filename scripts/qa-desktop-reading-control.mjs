@@ -323,12 +323,27 @@ try {
   await driver.waitFor(`document.querySelector(".book-name")?.textContent?.trim() === "Acts"
     && document.querySelector(".chapter-number")?.textContent?.trim() === "19"
     && document.querySelectorAll(".verse-line").length > 20`, 20_000);
-  await driver.waitFor(`document.querySelectorAll(".margin-authored-connections-list button").length === 2`);
-  const visibleOrder = await driver.evaluate(`[...document.querySelectorAll(".margin-authored-connections-list button > span")]
-    .map((node) => node.textContent?.trim())`);
-  assert.deepEqual(visibleOrder, ["Earlier Acts phrase", "Later Acts phrase"]);
+  // This step used to read the `.margin-authored-connections` strip above the
+  // tab row and click a connection by its label. Both are gone: the strip drew
+  // the Connections tab's dataset a second time and moved the tab row (§C4·1),
+  // and a connection's label is not rendered anywhere now — "the type and the
+  // members are the whole claim, and any prose about it is a note."
+  //
+  // So the tour opens the tab and reads the rows' `data-connection-id`, which
+  // asserts canonical order against the fixture's identities rather than
+  // against display copy — a stricter check than the label text it replaces.
+  await clickStudyControl(driver, "#margin-connections-tab");
+  await driver.waitFor(`document.querySelectorAll(".margin-connection-row").length === 2`);
+  const visibleOrder = await driver.evaluate(`[...document.querySelectorAll(".margin-connection-row")]
+    .map((node) => node.dataset.connectionId)`);
+  assert.deepEqual(visibleOrder, [fixture.earlierId, fixture.laterId]);
+  // The tab shows connections and nothing the edition wrote.
+  assert.equal(
+    await driver.evaluate(`document.querySelectorAll(".margin-connections .crossref-row, .margin-connections .note-crossref-row").length`),
+    0,
+  );
 
-  await clickButtonByText(driver, ".margin-authored-connections-list button", "Later Acts phrase");
+  await clickStudyControl(driver, `.margin-connection-row[data-connection-id="${fixture.laterId}"]`);
   await driver.waitFor(`Boolean(document.querySelector('.connection-mark.selected[data-connection-id="${fixture.laterId}"] .connection-route'))`);
   await sleep(650);
   const attention = await driver.evaluate(`(() => {
@@ -658,9 +673,13 @@ try {
     && document.querySelector(".living-margin")?.getAttribute("data-margin-mode") === "selection"`);
   await clickStudyControl(driver, "#margin-notes-tab");
   await driver.waitFor(`document.querySelector("#margin-notes-tab")?.getAttribute("aria-selected") === "true"`);
-  await driver.waitFor(`[...document.querySelectorAll(".margin-view-action")]
-    .some((button) => button.textContent?.trim() === "Add note")`);
-  await clickButtonByText(driver, ".margin-view-action", "Add note");
+  // Was `.margin-view-action` reading "Add note" — the one bordered control in
+  // the panel, at the head of a three-sentence heading. Quire C4·6 puts verbs
+  // in the footer as words, and the empty state offers the same verb inline,
+  // so the handle is `.margin-note-verb` reading "Write a note" in both.
+  await driver.waitFor(`[...document.querySelectorAll(".margin-note-verb")]
+    .some((button) => button.textContent?.trim() === "Write a note")`);
+  await clickButtonByText(driver, ".margin-note-verb", "Write a note");
   await driver.waitFor(`Boolean(document.querySelector(".note-capture-root"))`);
   await setNativeControlValue(driver, ".note-capture-title-input", "Pastoral observation");
   await setNativeControlValue(driver, ".note-capture-textarea", "The Spirit forms a patient teaching community.");
@@ -682,7 +701,9 @@ try {
 
   // A dirty ConnectionCard blocks tab switch, close, move, and collapse. The
   // final Discard approves exactly the requested move without writing JSONL.
-  await clickButtonByText(driver, ".margin-authored-connections-list button", "Later Acts phrase");
+  // Entered from the Connections tab's row, by identity — see the note above.
+  await clickStudyControl(driver, "#margin-connections-tab");
+  await clickStudyControl(driver, `.margin-connection-row[data-connection-id="${fixture.laterId}"]`);
   await driver.waitFor(`Boolean(document.querySelector("#connection-card-inspector"))`);
   await setNativeControlValue(driver, ".connection-card-observation textarea", "Uncommitted pastoral wording");
   await driver.waitFor(`document.querySelector('.connection-card')?.getAttribute("data-dirty") === "true"`);

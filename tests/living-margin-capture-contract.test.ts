@@ -41,9 +41,24 @@ test("Living Margin capture produces readable Markdown with frozen provenance", 
 });
 
 test("capture actions remain explicit and create-note stays behind Save", () => {
-  assert.equal(margin.match(/Add to note…/g)?.length, 4);
-  assert.equal(language.match(/Add to note…/g)?.length, 1);
-  assert.match(margin, /function CrossReferenceRow[\s\S]*className="margin-capture-action"/);
+  // Was 4. Two of those capture verbs belonged to `CrossReferenceRow` and
+  // `NoteCrossRefsBlock`, the Connections tab's cross-reference lists, which
+  // Quire C·4 removed from that tab and which are now deleted — Overview
+  // re-drew the edition's list on C4·2's compact row, whose verbs are Open and
+  // Tab. The remaining two are unchanged and still explicit.
+  assert.equal(margin.match(/Add to note…/g)?.length, 2);
+  // Quire C·4 §3·3 moves the word entry's capture verb into the pane footer,
+  // and C2·7 already ruled the ellipsis off it there: "Losing the ellipsis: it
+  // opens inline, not a dialog." The drawn footer reads `Add to note`. The
+  // action is still explicit and still exactly one — only its punctuation and
+  // its position changed — so the count is asserted on the verb itself and the
+  // ellipsis is asserted gone rather than counted.
+  assert.equal(language.match(/Add to note(?!…)/g)?.length, 1);
+  assert.doesNotMatch(language, /Add to note…/);
+  // Was: /function CrossReferenceRow[\s\S]*className="margin-capture-action"/ —
+  // the deleted cross-reference row. The surviving capture verbs still carry
+  // the same explicit class, and one of them is still reached from a reference.
+  assert.match(margin, /className="margin-capture-action"/);
   assert.match(margin, /className="margin-capture-action entity-research-capture"/);
   assert.match(language, /onCapture\(buildLanguageWordCapture\(\{/);
   assert.match(page, /onCapture=\{handleMarginCapture\}/);

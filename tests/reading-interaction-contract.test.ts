@@ -213,6 +213,10 @@ test("reading-canvas pointer activation keeps reading focus while authored-list 
   assert.doesNotMatch(underlay, /onSelectConnection\(selected \? null : item\.connection\.durableRecord/);
   assert.match(page, /if \(focusInspector\) \{\s*setConnectionInspectorFocusRequest/);
   assert.match(page, /connectionInspectorFocusRequest=\{connectionInspectorFocusRequest\}/);
+  // Unchanged assertions, moved surface: the "authored list" is now the
+  // Connections tab's own row (`.margin-connection-row`). The
+  // `.margin-authored-connections` strip that used to carry them is retired —
+  // it was the tab's dataset drawn twice, and it moved the tab row.
   assert.match(margin, /onClick=\{\(\) => onSelectAuthoredConnection\?\.\(connection, true\)\}/);
   assert.doesNotMatch(margin, /onSelectAuthoredConnection\?\.\(connection, event\.detail === 0\)/);
   const verseClick = sourceBetween(

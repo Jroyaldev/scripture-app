@@ -3,23 +3,31 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type {
   AnchorRecord,
   BookNameData,
-  CrossReferenceMatchData,
   CrossReferenceResultData,
+  ConnectionAnchor,
   ConnectionRecord,
   EntityResearchData,
   LanguageEntityRangeResult,
+  LanguageNameEntity,
   NoteRecord,
   ParsedNoteData,
   QueryResult,
   RankedTrustedResource,
   SemanticMarginResult,
-  SuggestedCrossRefData,
 } from "../api.js";
 import {
   deriveEntityOpeningContext,
   type EntityOpeningOrigin,
 } from "../../core/integrations/shepherdly-resource-node.js";
-import { compareConnectionsCanonical } from "../../core/annotations/connection-order.js";
+import {
+  canonicalConnectionAnchors,
+  compareConnectionsCanonical,
+} from "../../core/annotations/connection-order.js";
+import { CONNECTION_ROUTE_SELECTED_STROKE } from "../utils/connectionGeometry.js";
+import type {
+  ConnectionPaintAnchor,
+  ConnectionPaintProjection,
+} from "../utils/connectionPaint.js";
 import { safeCall } from "../utils/safeCall.js";
 import {
   laurelInk,
@@ -29,10 +37,11 @@ import {
   type LaurelSource,
 } from "../utils/laurel.js";
 import { isTopLayer, layerStackIsEmpty, useLayer } from "../layerStack.js";
-import { phraseCount } from "../utils/relationshipVocabulary.js";
+import { phraseCount, RELATIONSHIP_LABELS } from "../utils/relationshipVocabulary.js";
 import { passageTabOpenIntent } from "../utils/passageTabIntent.js";
 import { formatCanonicalRef } from "../utils/formatRef.js";
 import { LanguageWordsSection } from "./LanguageWordsSection.js";
+import { SurfaceState } from "./MarkingSurface.js";
 import { SourcesDisclosure, formatSourceCitation, type CitationSource } from "./SourcesDisclosure.js";
 import { useToast } from "./Toast.js";
 import { parsePeekRef, useVersePeek, type PeekTarget, type VersePeekTriggerProps } from "./VersePeek.js";
@@ -310,6 +319,10 @@ interface Props {
   /** Durable authored relationships remain reachable even when this package
    * has no exact word projection and therefore no reading-canvas tick. */
   authoredConnections?: readonly ConnectionRecord[];
+  /** Package-local paint evidence for the authored connections, so a member's
+   * own wording can be quoted — and so a connection with no projection in this
+   * translation is still listed, with its position markers only. */
+  connectionPaintProjections?: ReadonlyMap<string, ConnectionPaintProjection>;
   selectedAuthoredConnectionId?: string | null;
   onSelectAuthoredConnection?: (connection: ConnectionRecord, focusInspector?: boolean) => void;
   /** Incremented for explicit inspector-entry requests. Reading-canvas pointer
@@ -325,39 +338,12 @@ function AiSparkIcon(): React.JSX.Element {
   );
 }
 
-function PassageQuote({
-  text,
-  contextKey,
-}: {
-  text: string;
-  contextKey: string;
-}): React.JSX.Element {
-  const [expanded, setExpanded] = useState(false);
-  const canExpand = text.length > 220;
-
-  useEffect(() => {
-    setExpanded(false);
-  }, [contextKey]);
-
-  return (
-    <div className="margin-quote-wrap">
-      <blockquote className={`margin-focus-quote${canExpand && !expanded ? " is-collapsed" : ""}`}>
-        {text}
-      </blockquote>
-      {canExpand && (
-        <button
-          type="button"
-          className="margin-quote-toggle"
-          aria-expanded={expanded}
-          onClick={() => setExpanded((value) => !value)}
-        >
-          {expanded ? "Show less" : "Read full selection"}
-          <span aria-hidden="true">{expanded ? "↑" : "↓"}</span>
-        </button>
-      )}
-    </div>
-  );
-}
+// C4·1 deleted `PassageQuote`. It drew a truncated copy of the selected verses
+// under the scope bar, with a "Read full selection ↓" disclosure beneath it —
+// "a truncated copy of two verses, offered beside the full, untruncated
+// originals 300px to the left. It cost 140px and a Read full selection link
+// whose answer is 'look left'." The reference alone is enough; the reader has
+// not lost the text. Deleting it is what stops the tab row moving.
 
 function MarginEmptyView({
   title,
@@ -656,17 +642,12 @@ function MarginEntryKindLine({ parts }: { parts: Array<string | null | undefined
   return <p className="margin-entry-kind">{kept.join(" · ")}</p>;
 }
 
-/**
- * Open a laurel siglum's destination from a surface that has no error slot of
- * its own. The Research view has `openMediaLink`, which can show the host's
- * refusal beside the photo credits it belongs to; the overview has nowhere to
- * put that sentence, and inventing a slot for it would be a fourth thing on a
- * surface whose job is to be skimmable. A refused link is silent here on
- * purpose — the sources disclosure still names the corpus in full.
- */
-function openLicensedSourceUrl(url: string): void {
-  void safeCall(() => window.api.system.openExternalResearchUrl(url));
-}
+/* `openLicensedSourceUrl` lived here to open a laurel siglum from the
+   overview's entity briefs. Quire C·4 takes those briefs off the overview
+   entirely — the entity list is a 16px column of name, kind and count — so the
+   surface no longer draws licensed prose and has no siglum to open. TIPNR is
+   named in Sources, in the same block the research pane uses. The Research
+   view keeps its own opener (`openMediaLink`), which has an error slot. */
 
 /**
  * The siglum: laurel's kicker, and the only clickable provenance mark in the
@@ -907,6 +888,231 @@ function formatEntryDate(value: string): string | undefined {
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return undefined;
   return parsed.toLocaleDateString(undefined, { day: "numeric", month: "long" });
+}
+
+/**
+ * "3 days ago" — the date voice for a list the reader is judging by recency,
+ * which is what "Elsewhere in this study" is. Past a week the relative form
+ * stops carrying a fact anybody holds ("eleven days ago" is arithmetic, not
+ * memory), so it hands back to the absolute date the margin already uses
+ * rather than inventing a second scale of weeks and months.
+ *
+ * @quire derived · kin: margin entry · relative for a week, then the date
+ */
+function formatRelativeDay(value: string, now: Date = new Date()): string | undefined {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return undefined;
+  const dayOf = (date: Date): number => Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+  const days = Math.round((dayOf(now) - dayOf(parsed)) / 86_400_000);
+  if (days < 0) return formatEntryDate(value);
+  if (days === 0) return "Today";
+  if (days === 1) return "Yesterday";
+  if (days < 7) return `${days} days ago`;
+  return formatEntryDate(value);
+}
+
+/* ---------------------------------------------------------------------------
+   Quire C·4 · Notes — the reader's own writing, in scope and elsewhere
+   ---------------------------------------------------------------------------
+   "Empty is never blank. One sentence naming what is absent, then the nearest
+   true thing — notes elsewhere in the study." The nearest true thing this
+   panel actually holds is the chapter: `marginData` is queried per chapter, so
+   "this study" is scoped to the passage in view. A library-wide study is still
+   an open question in C4·6, and drawing a number against a study that does not
+   exist yet would be worse than drawing the one that does.
+
+   @quire guessed · "this study" = the chapter in view · pending C4·6's "does a
+   connection (and a note) belong to a study or to the library?"
+   ------------------------------------------------------------------------ */
+
+interface StudyNoteEntry {
+  note: NoteRecord;
+  anchor: AnchorRecord;
+  /** The anchor's own reference, e.g. "Acts 19:11" or "Acts 19:11–13". */
+  reference: string;
+}
+
+/** Text order, by anchor — the order the reader met their own notes in. The
+ *  same rule §C4·5 sets for entities: nothing on this surface re-ranks. */
+function studyNoteEntries(
+  marginData: QueryResult,
+  chapter: number,
+  displayBook: string,
+): StudyNoteEntry[] {
+  const byId = new Map(marginData.notes.map((note) => [note.id, note]));
+  const seen = new Set<string>();
+  return marginData.anchors
+    .filter((anchor) => anchor.chapter === chapter && byId.has(anchor.note_id))
+    .slice()
+    .sort((left, right) => left.verse_start - right.verse_start || left.verse_end - right.verse_end)
+    .flatMap((anchor) => {
+      if (seen.has(anchor.note_id)) return [];
+      seen.add(anchor.note_id);
+      const note = byId.get(anchor.note_id);
+      if (!note) return [];
+      const verses = anchor.verse_end !== anchor.verse_start
+        ? `${anchor.verse_start}–${anchor.verse_end}`
+        : `${anchor.verse_start}`;
+      return [{ note, anchor, reference: `${displayBook} ${chapter}:${verses}` }];
+    });
+}
+
+function anchorTouches(anchor: AnchorRecord, start: number, end: number): boolean {
+  return anchor.verse_start <= end && anchor.verse_end >= start;
+}
+
+const VERSE_COUNT_WORDS = [
+  "", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+] as const;
+
+/** One sentence. The half that explains the interface to itself is deleted —
+ *  it used to read "Add a note when this passage gives you something worth
+ *  carrying forward", which told the reader what a note is for. */
+function notesEmptySentence(
+  scope: { start: number; end: number } | null,
+  reference: string,
+): string {
+  if (!scope) return `You have not written anything in ${reference}.`;
+  const count = Math.max(1, scope.end - scope.start + 1);
+  if (count === 1) return "You have not written anything on this verse.";
+  const word = VERSE_COUNT_WORDS[count] ?? count.toLocaleString();
+  return `You have not written anything on these ${word} verses.`;
+}
+
+/**
+ * The reader's notes as C4·2 compact rows, with two things a cross-reference
+ * row does not carry: a seal mark, and when it was last written.
+ *
+ * The mark is a 4px seal dot, as C4·3 draws it. C·2 reserved the dot for the
+ * app and the spine for the reader; Rev 04 Law 3 puts provenance in the INK,
+ * and ruling 4·2's "later study wins" settles the shape. Seal says you wrote
+ * it wherever it appears.
+ *
+ * Everything else — the clamp, the fade, the reserved verb slot and its hover
+ * reveal — is `.study-ref-row*`, which c4-foundation owns. Only the mark, the
+ * date and the trailing-edge rule for the two of them live in this file.
+ */
+function MarginNoteRows({
+  entries,
+  onNavigate,
+}: {
+  entries: readonly StudyNoteEntry[];
+  onNavigate?: (ref: string) => void;
+}): React.JSX.Element {
+  return (
+    <div className="study-ref-row-list">
+      {entries.map((entry) => (
+        <div className="study-ref-row study-ref-row--compact margin-note-row" key={entry.note.id}>
+          <div className="study-ref-row-head">
+            <span className="margin-note-mark" aria-hidden="true" />
+            <span className="sr-only">Written by you.</span>
+            <span className="study-ref-row-ref">{entry.reference}</span>
+            <span className="study-ref-row-verbs">
+              <button
+                type="button"
+                className="study-ref-row-verb"
+                onClick={() => onNavigate?.(entry.reference)}
+                aria-label={`Go to ${entry.reference}`}
+              >
+                Open
+              </button>
+            </span>
+            <span className="margin-note-when">{formatRelativeDay(entry.note.modified)}</span>
+          </div>
+          <p className="study-ref-row-text">{entry.note.title || entry.note.body_text}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * C4·6: "Verbs are words in a footer. No bordered buttons, no circular chips,
+ * no repeated capture verb floating beside a paragraph." The same row the
+ * Connections and Words panels close with, on the tab that had a bordered
+ * button at its head instead.
+ */
+function MarginNoteFooter({
+  onCreateNote,
+}: {
+  onCreateNote?: () => void;
+}): React.JSX.Element | null {
+  if (!onCreateNote) return null;
+  return (
+    <div className="margin-note-footer">
+      <button type="button" className="margin-note-verb" onClick={() => onCreateNote()}>
+        Write a note
+      </button>
+    </div>
+  );
+}
+
+/**
+ * Law 7's `empty`, drawn. One sentence, then the verbs as words, then the
+ * notes the reader wrote elsewhere in this study — "the empty state is not
+ * empty; the notes you wrote elsewhere fill the space the absence left."
+ *
+ * `Add note` has lost its border: it was the only bordered control in the
+ * panel, and C4·6 rules that verbs are words.
+ */
+function MarginNotesEmpty({
+  sentence,
+  elsewhere,
+  onCreateNote,
+  onNavigate,
+}: {
+  sentence: string;
+  elsewhere: readonly StudyNoteEntry[];
+  onCreateNote?: () => void;
+  onNavigate?: (ref: string) => void;
+}): React.JSX.Element {
+  const [showAllElsewhere, setShowAllElsewhere] = useState(false);
+  const shown = showAllElsewhere ? elsewhere : elsewhere.slice(0, 2);
+  return (
+    <div className="margin-notes-empty">
+      <p className="margin-notes-empty-sentence">{sentence}</p>
+      <div className="margin-note-verbs">
+        {onCreateNote && (
+          <button type="button" className="margin-note-verb" onClick={() => onCreateNote()}>
+            Write a note
+          </button>
+        )}
+        {/* @quire trigger · taxonomy · "Capture a phrase" has nothing behind it
+            The study draws a second verb here. Capture in this app needs an
+            excerpt and a `LivingMarginCaptureRequest.originLabel`, whose four
+            values — Related verse, Passage insight, Entity research, Word
+            study — have no slot for "a phrase of the passage you are reading".
+            Rev 04 §9 forbids widening the nearest slot, which is how a
+            Pleiades brief came to claim it was scripture. So the verb is
+            absent rather than mislabelled, and this needs one sentence back:
+            either a fifth origin, or the phrase-capture surface that C4·6's
+            own open question ("where does a connection get made?") is already
+            waiting on. */}
+      </div>
+      {elsewhere.length > 0 && (
+        <section className="margin-note-elsewhere" aria-labelledby="margin-notes-elsewhere-title">
+          <StudySectionHead
+            titleId="margin-notes-elsewhere-title"
+            title="Elsewhere in this study"
+            count={elsewhere.length.toLocaleString()}
+            countValue={elsewhere.length}
+            countIsYours
+          />
+          <MarginNoteRows entries={shown} onNavigate={onNavigate} />
+          {elsewhere.length > 2 && (
+            <button
+              type="button"
+              className="intent-more-toggle"
+              aria-expanded={showAllElsewhere}
+              onClick={() => setShowAllElsewhere((current) => !current)}
+            >
+              {showAllElsewhere ? "Fewer notes" : `All ${elsewhere.length.toLocaleString()}`}
+            </button>
+          )}
+        </section>
+      )}
+    </div>
+  );
 }
 
 /** Every place in the Levant and the west that a reader already has a feel
@@ -1946,196 +2152,430 @@ function EntityResearchView({
   );
 }
 
-function CrossReferenceRow({
-  item,
-  onNavigate,
-  onOpenPassageTab,
-  onCapture,
-  sourceAttribution,
-  frozenOrigin,
-  peekProps,
+/* `CrossReferenceRow`, `CrossRefsBlock` and `NoteCrossRefsBlock` stood here.
+
+   They were the Connections tab's contents before Quire C·4: the edition's
+   OpenBible list under the heading "Related verses", and the app's
+   note-derived suggestions under "From notes". Both left that tab with the
+   finding — "cross-references are the edition's", and putting them under the
+   word Connections made third-party data wear the reader's own hand.
+
+   They are deleted rather than kept for Overview to adopt, because Overview
+   re-implemented both rather than re-parenting them, and was right to: the
+   heading was mono, which C4·6 strikes, and `.crossref-row` was one of the
+   five reference-row treatments C4·2 collapses into two. The live drawings are
+   IntentOverview's `Cross-references` section (the edition's, with its count,
+   its `All n`, and OpenBible named in Sources) and its `Your library` entries
+   in slate (the app's). Restoring either of these functions would ship a
+   retired drawing back into a corrected surface. */
+
+/* ---------------------------------------------------------------------------
+   Connections · yours  (Quire C·4 §3, §4 · Rev 04 §5)
+
+   The tab shows connections: typed, seal-marked, with their member phrases and
+   a live tie to the thread already drawn in the gutter. Nothing the edition
+   wrote appears here, and no count in this file may be assembled from a
+   cross-reference list again.
+--------------------------------------------------------------------------- */
+
+/** How many members a block shows before it says `n more`. */
+export const CONNECTION_MEMBERS_SHOWN = 3;
+
+/**
+ * @quire guessed · Rev 04 §5 gives the language "two weights" and C·4 §4 asks
+ * the thread to thicken under a panel row's pointer, which is a third. 1px over
+ * the committed selected stroke is the smallest step that reads at this scale.
+ * The route's centre datum is fixed, so the growth is symmetric about it and no
+ * geometry moves — the same reserve the panel's inset outline keeps.
+ */
+const CONNECTION_THREAD_HOVER_STROKE = CONNECTION_ROUTE_SELECTED_STROKE + 1;
+
+/**
+ * "Type is a word, never a colour." Every connection is seal; the ink that
+ * varies inside a block is only ink vs ink-2, and it varies for exactly the
+ * three reasons C·4 §4 gives.
+ */
+type ConnectionMemberInk = "ink" | "ink-2";
+
+/** The role a member plays in its own type, where the type has roles at all. */
+type ConnectionMemberRole = "source" | "pivot" | "span" | "member";
+
+export interface ConnectionMemberView {
+  key: string;
+  /** Verse position, hanging left, so a same-verse pair reads as one. */
+  position: string;
+  /**
+   * The member's own wording. Empty when this translation has no projection
+   * for the phrase: "a connection with no thread drawn is still listed, with
+   * its position markers only."
+   */
+  quote: string;
+  ink: ConnectionMemberInk;
+  role: ConnectionMemberRole;
+}
+
+function connectionMemberPosition(anchor: ConnectionAnchor, currentBook: string): string {
+  const verses = anchor.verse_start === anchor.verse_end
+    ? `${anchor.verse_start}`
+    : `${anchor.verse_start}–${anchor.verse_end}`;
+  return `${anchor.book === currentBook ? "" : `${anchor.book} `}${anchor.chapter}:${verses}`;
+}
+
+function connectionMemberQuote(
+  anchor: ConnectionAnchor,
+  packageId: string,
+  paintAnchor: ConnectionPaintAnchor | undefined,
+): string {
+  const projected = paintAnchor?.fragments.map((fragment) => fragment.quote).join(" ").trim();
+  if (projected) return projected;
+  const locator = anchor.render_locator;
+  return locator?.package === packageId ? locator.quote.trim() : "";
+}
+
+/**
+ * The six kinds' ordering and ink rules, which are the substance of C·4 §4 and
+ * the only per-type behaviour a connection has:
+ *
+ *   Parallelism — "Members are peers — no first, no last, and the panel lists
+ *     them in text order."
+ *   Echo — "The only type with a direction. The earliest member is the source
+ *     and sits first regardless of which one you selected."
+ *   Series — text order; the one type that regularly exceeds four members, so
+ *     it is the one that reaches `n more`.
+ *   Contrast — "Both members carry equal weight; neither is quoted in ink-2."
+ *   Mirror — "Order is the content. The panel must never re-sort a mirror's
+ *     members" — so this is the one type read straight off the authored array.
+ *   Hinge — "a hinge has a pivot and a span. The pivot is the member set in
+ *     ink; the span is set in ink-2, whichever comes first in the text." Ink
+ *     follows the role, position follows the text.
+ *
+ * @quire guessed · nothing in the durable record names a hinge's pivot, so the
+ * first authored member is read as the pivot: it is the phrase the reader began
+ * the hinge from. The list still runs in text order, which is what "whichever
+ * comes first in the text" protects.
+ *
+ * @quire guessed · the default ink — first listed member in ink, the rest in
+ * ink-2 — is read off C·4 §3's drawn Echo and Series blocks. Contrast is called
+ * out as the type where "neither is quoted in ink-2", which only distinguishes
+ * it if the default is not already that; so Parallelism's "peers, no first, no
+ * last" is read as a statement about order, not about ink, and it keeps the
+ * default. If peers were meant to reach ink too, this is the line to change.
+ */
+export function connectionMemberViews(
+  connection: ConnectionRecord,
+  paintAnchors: readonly ConnectionPaintAnchor[],
+  currentBook: string,
+  packageId: string,
+): ConnectionMemberView[] {
+  // The two durable anchor shapes are a union, so read them through the shared
+  // arm: this function needs only position, and identity for the paint lookup.
+  const authored: readonly ConnectionAnchor[] = connection.anchors;
+  // Mirror is the one type that is never re-sorted; every other type is listed
+  // in text order, which is what canonical anchor order already is.
+  const ordered: readonly ConnectionAnchor[] = connection.kind === "mirror"
+    ? [...authored]
+    : canonicalConnectionAnchors(connection);
+  return ordered.map((anchor, index) => {
+    const authoredIndex = authored.indexOf(anchor);
+    const paintAnchor = authoredIndex >= 0 ? paintAnchors[authoredIndex] : undefined;
+    const isPivot = authoredIndex === 0;
+    const ink: ConnectionMemberInk = connection.kind === "link:contrast"
+      ? "ink"
+      : connection.kind === "hinge"
+        ? (isPivot ? "ink" : "ink-2")
+        : (index === 0 ? "ink" : "ink-2");
+    const role: ConnectionMemberRole = connection.kind === "hinge"
+      ? (isPivot ? "pivot" : "span")
+      : connection.kind === "link:echo" && index === 0
+        ? "source"
+        : "member";
+    return {
+      key: `${anchor.book}:${anchor.chapter}:${anchor.verse_start}:${anchor.verse_end}:${authoredIndex}:${index}`,
+      position: connectionMemberPosition(anchor, currentBook),
+      quote: connectionMemberQuote(anchor, packageId, paintAnchor),
+      ink,
+      role,
+    };
+  });
+}
+
+function ConnectionBlock({
+  connection,
+  members,
+  selected,
+  threadHovered,
+  onSelectAuthoredConnection,
+  onHoverChange,
 }: {
-  item: CrossReferenceMatchData;
-  onNavigate?: (ref: string) => void;
-  onOpenPassageTab?: (target: PeekTarget) => Promise<boolean> | boolean;
-  onCapture?: (capture: LivingMarginCaptureRequest) => void;
-  sourceAttribution: string;
-  frozenOrigin: string;
-  peekProps?: (target: PeekTarget) => Partial<React.HTMLAttributes<HTMLElement>>;
+  connection: ConnectionRecord;
+  members: readonly ConnectionMemberView[];
+  selected: boolean;
+  threadHovered: boolean;
+  onSelectAuthoredConnection?: (connection: ConnectionRecord, focusInspector?: boolean) => void;
+  onHoverChange: (connectionId: string | null) => void;
 }): React.JSX.Element {
-  const target = parsePeekRef(item.targetBref, item.targetDisplay);
+  const kindLabel = RELATIONSHIP_LABELS[connection.kind];
+  const shown = members.slice(0, CONNECTION_MEMBERS_SHOWN);
+  const overflow = members.length - shown.length;
+  // "A connection with no thread drawn is still listed, with its position
+  // markers only — the gutter has finite room, the panel does not, and an
+  // unrouted connection is not a missing one."
+  const drawn = members.some((member) => member.quote.length > 0);
   return (
-    <div className="crossref-row">
-      <button
-        type="button"
-        className="crossref-row-open"
-        {...crossRefBranchHandlers(item.targetBref, target, onNavigate, onOpenPassageTab)}
-        aria-label={item.preview ? `Open ${item.targetDisplay}. ${item.preview}` : `Open ${item.targetDisplay}`}
-        title={item.preview ? `${item.targetDisplay} — ${item.preview}` : `Open ${item.targetDisplay}`}
-        {...(target && peekProps ? peekProps(target) : {})}
-      >
-        <span className="crossref-row-copy">
-          <span className="crossref-reference">{item.targetDisplay}</span>
-          {item.preview && <span className="crossref-preview">{item.preview}</span>}
-          {item.supportingSourceCount > 1 && (
-            <span className="crossref-support">
-              Linked from {item.supportingSourceCount} verses in this passage
-            </span>
-          )}
-          {item.relationshipKinds.length > 0 && (
-            <span className="crossref-kinds">
-              {item.relationshipKinds.map((kind) => <span key={kind}>{kind}</span>)}
-            </span>
-          )}
+    <button
+      type="button"
+      className="margin-connection-row"
+      data-connection-id={connection.id}
+      data-connection-kind={connection.kind}
+      /* Mirror's order is its content, so the panel states which order it drew. */
+      data-member-order={connection.kind === "mirror" ? "authored" : "text"}
+      data-thread={drawn ? "drawn" : "undrawn"}
+      data-thread-hover={threadHovered ? "" : undefined}
+      aria-current={selected || undefined}
+      /* The block is one button, so its name replaces its contents for a screen
+         reader. The members' wording is the visible content and the reason the
+         row exists, so the name carries it rather than reading out positions
+         alone — a row whose name is a list of verse numbers tells a reader
+         nothing about what they are attending. */
+      aria-label={`${kindLabel}, ${phraseCount(members.length)}: ${members
+        .map((member) => (member.quote ? `${member.position}. ${member.quote}` : member.position))
+        .join(", ")}`}
+      /* All three ways of attending are one behaviour, and the shared one
+         scrolls the reading canvas the least distance that brings every member
+         into view. The panel itself never scrolls: the reader's place is never
+         taken by a list. The row hands focus to the inspector, which is the
+         persistent entry point it is about to be replaced by. */
+      onClick={() => onSelectAuthoredConnection?.(connection, true)}
+      onPointerEnter={() => onHoverChange(connection.id)}
+      onPointerLeave={() => onHoverChange(null)}
+      onFocus={() => onHoverChange(connection.id)}
+      onBlur={() => onHoverChange(null)}
+    >
+      <span className="margin-connection-row-head">
+        {/* The type is the heading, in seal, because you wrote it. */}
+        <span className="margin-connection-type">{kindLabel}</span>
+        <span className="margin-connection-arity">
+          {members.length} {members.length === 1 ? "member" : "members"}
         </span>
-        <span className="crossref-open-affordance">
-          <span>Open</span>
-          <CrossReferenceArrow />
-        </span>
-      </button>
-      {onCapture && (
-        <button
-          type="button"
-          className="margin-capture-action"
-          aria-label={`Add ${item.targetDisplay} to a note`}
-          onClick={() => onCapture({
-            excerpt: item.preview?.trim() || item.targetDisplay,
-            sourceAttribution,
-            reference: item.targetDisplay,
-            frozenOrigin,
-            originLabel: "Related verse",
-          })}
+      </span>
+      {shown.map((member) => (
+        <span
+          key={member.key}
+          /* The shared quoted reference row (§C4·2): full text, ink rather than
+             ink-2, and no trailing verb at all — quoted rows are read, not
+             chosen from. The panel arranges it one way of its own: the verse
+             position hangs left instead of sitting on its own line, "so a
+             same-verse pair reads as one". */
+          className="study-ref-row study-ref-row--quoted margin-connection-member"
+          data-member-ink={member.ink}
+          data-member-role={member.role}
         >
-          Add to note…
-        </button>
+          <span className="study-ref-row-head margin-connection-position">
+            <span className="study-ref-row-ref">{member.position}</span>
+          </span>
+          <span className={`study-ref-row-text margin-connection-quote${member.quote ? "" : " is-unprojected"}`}>
+            {member.quote || "Not in this translation"}
+          </span>
+        </span>
+      ))}
+      {overflow > 0 && (
+        <span className="margin-connection-more">{overflow} more</span>
+      )}
+    </button>
+  );
+}
+
+function ConnectionsPanel({
+  connections,
+  elsewhere,
+  paintProjections,
+  book,
+  packageId,
+  selectedConnectionId,
+  onSelectAuthoredConnection,
+}: {
+  connections: readonly ConnectionRecord[];
+  elsewhere: readonly ConnectionRecord[];
+  paintProjections: ReadonlyMap<string, ConnectionPaintProjection> | undefined;
+  book: string;
+  packageId: string;
+  selectedConnectionId: string | null | undefined;
+  onSelectAuthoredConnection?: (connection: ConnectionRecord, focusInspector?: boolean) => void;
+}): React.JSX.Element {
+  const [rowHoverId, setRowHoverId] = useState<string | null>(null);
+  const [threadHoverId, setThreadHoverId] = useState<string | null>(null);
+
+  /**
+   * "Hover a thread, its row takes the same inset seal outline." The canvas
+   * marks every connection it draws with `data-connection-id`, and its gutter
+   * ticks with `data-connection-tick`, so the panel reads the pointer off those
+   * without the thread layer having to know a panel exists.
+   */
+  useEffect(() => {
+    const connectionIdAt = (target: EventTarget | null): string | null => {
+      if (!(target instanceof Element)) return null;
+      const marked = target.closest("[data-connection-id], [data-connection-tick]");
+      if (!marked) return null;
+      // A panel row carries the same attribute; its own :hover already answers.
+      if (marked.closest(".margin-connection-row")) return null;
+      return marked.getAttribute("data-connection-id")
+        || marked.getAttribute("data-connection-tick")
+        || null;
+    };
+    const handleOver = (event: PointerEvent): void => {
+      setThreadHoverId(connectionIdAt(event.target));
+    };
+    const handleOut = (event: PointerEvent): void => {
+      if (connectionIdAt(event.target) == null) return;
+      setThreadHoverId(null);
+    };
+    document.addEventListener("pointerover", handleOver, true);
+    document.addEventListener("pointerout", handleOut, true);
+    return () => {
+      document.removeEventListener("pointerover", handleOver, true);
+      document.removeEventListener("pointerout", handleOut, true);
+    };
+  }, []);
+
+  /**
+   * "Hover a row, its thread thickens." The route reads its width from a custom
+   * property the canvas already publishes, so the tie is one value set on the
+   * hovered connection's own group and removed again — never a rule of this
+   * sheet's, never a coordinate, and never anything the route engine owns.
+   * Stroke width grows about the fixed centre datum, so nothing moves.
+   */
+  useEffect(() => {
+    if (!rowHoverId) return;
+    const marks = [...document.querySelectorAll<SVGElement | HTMLElement>(
+      `[data-connection-overlay] [data-connection-id="${CSS.escape(rowHoverId)}"]`,
+    )];
+    for (const mark of marks) {
+      mark.style.setProperty("--connection-route-selected-width", `${CONNECTION_THREAD_HOVER_STROKE}px`);
+    }
+    return () => {
+      for (const mark of marks) mark.style.removeProperty("--connection-route-selected-width");
+    };
+  }, [rowHoverId]);
+
+  const renderBlock = (connection: ConnectionRecord): React.JSX.Element => (
+    <ConnectionBlock
+      key={connection.id}
+      connection={connection}
+      members={connectionMemberViews(
+        connection,
+        paintProjections?.get(connection.id)?.anchors ?? [],
+        book,
+        packageId,
+      )}
+      selected={selectedConnectionId === connection.id}
+      threadHovered={threadHoverId === connection.id}
+      onSelectAuthoredConnection={onSelectAuthoredConnection}
+      onHoverChange={setRowHoverId}
+    />
+  );
+
+  return (
+    <section className="margin-connections" aria-label="Your connections">
+      <div className="margin-connection-head">
+        <h3>In this passage</h3>
+        <span className="margin-connection-count">
+          <span className="margin-connection-seal" aria-hidden="true" />
+          <span>{connections.length} · yours</span>
+        </span>
+      </div>
+
+      {connections.length > 0 ? (
+        <div className="margin-connection-list">
+          {connections.map(renderBlock)}
+        </div>
+      ) : (
+        // "Empty is never blank. One sentence naming what is absent, then the
+        // nearest true thing — … connections in the chapter."
+        <p className="margin-connection-absent">You have not connected any phrases here.</p>
+      )}
+
+      {connections.length === 0 && elsewhere.length > 0 && (
+        <div className="margin-connection-elsewhere">
+          <div className="margin-connection-head">
+            <h3>Elsewhere in this chapter</h3>
+            <span className="margin-connection-count">
+              <span className="margin-connection-seal" aria-hidden="true" />
+              <span>{elsewhere.length}</span>
+            </span>
+          </div>
+          <div className="margin-connection-list">
+            {elsewhere.slice(0, 2).map(renderBlock)}
+          </div>
+        </div>
+      )}
+
+      {/* Verbs are words in a footer: no bordered buttons, no circular chips.
+          `Connect a phrase` names where a connection comes from; C·4 §6 leaves
+          the authoring surface undrawn and open, so nothing is faked behind it
+          and the phrase stays a statement rather than a control that lies. */}
+      <div className="margin-connection-footer">
+        <span className="margin-connection-verb">Connect a phrase</span>
+        <span className="margin-connection-state">Threads shown</span>
+      </div>
+    </section>
+  );
+}
+
+/* ---------------------------------------------------------------------------
+   Quire C·4 — the study panel's section head
+   ---------------------------------------------------------------------------
+   One grammar for every section on this surface: the label, and a count that
+   states WHOSE the count is. Seal when the reader wrote them, unmarked ink
+   when they are the edition's — Law 3 in the one place a whole section can
+   carry it, which is why the word travels with the number ("8 · edition",
+   "3 · yours") rather than being left to the reader to infer from context.
+
+   The count is deliberately NOT ink-faint. The quire sets #B4AEA5 here, which
+   is the pre-Rev-03 `--text-tertiary` the handoff §4 lists as a shipped defect
+   at 3.22:1; Law 6 has no large-text exemption and no small-text one either,
+   and a number the reader acts on carries meaning. `--text-tertiary` is that
+   same role at 4.60:1.
+   ------------------------------------------------------------------------ */
+function StudySectionHead({
+  titleId,
+  title,
+  count,
+  countValue,
+  countIsYours = false,
+}: {
+  titleId?: string;
+  title: React.ReactNode;
+  /** Already-composed, e.g. "8 · edition", "21 here", "4". */
+  count?: string | null;
+  /** The number inside `count`. Required wherever `countIsYours` is set. */
+  countValue?: number;
+  /** Seal: the reader wrote the things being counted. */
+  countIsYours?: boolean;
+}): React.JSX.Element {
+  // A ZERO IS NEVER SEAL. Seal is a mark of authorship, and a count of nothing
+  // of yours is not authorship — §C4·1 draws the same Notes tab as `Notes 0`
+  // faint at verse scope and `Notes 4` seal at chapter scope, so that "a reader
+  // can see at a glance that they have three connections and no notes here".
+  // This is c4-foundation's `provenance === "reader" && value > 0` for the tab
+  // row, held here so the section heads and the tabs cannot drift apart. Every
+  // call site currently renders inside a `length > 0` guard; the rule lives in
+  // one place so the first one that does not stays correct.
+  const yours = countIsYours && (countValue ?? 0) > 0;
+  return (
+    <div className="intent-section-head">
+      <h3 id={titleId}>{title}</h3>
+      {count != null && count !== "" && (
+        <span className={`intent-section-count${yours ? " is-yours" : ""}`}>{count}</span>
       )}
     </div>
   );
 }
 
-function CrossRefsBlock({
-  result,
-  onNavigate,
-  onOpenPassageTab,
-  peekTriggerProps,
-  onCapture,
-  frozenOrigin,
-}: {
-  result: CrossReferenceResultData;
-  onNavigate?: (ref: string) => void;
-  onOpenPassageTab?: (target: PeekTarget) => Promise<boolean> | boolean;
-  peekTriggerProps: (target: PeekTarget) => VersePeekTriggerProps;
-  onCapture?: (capture: LivingMarginCaptureRequest) => void;
-  frozenOrigin: string;
-}): React.JSX.Element {
-  const sourceAttribution = `${result.attribution.name} (${result.attribution.license})`;
-  return (
-    <section className="margin-section crossref-section" aria-label="Related verses">
-      <div className="crossref-heading">
-        <div>
-          <h3 className="margin-section-header crossref-title">Related verses</h3>
-          <div className="crossref-context">
-            <span>{result.scope === "verse" ? "For this verse" : "Across this passage"}</span>
-          </div>
-        </div>
-        <span
-          className="crossref-total"
-          title={`${result.items.length} highest-ranked of ${result.totalCount} positive-score connections`}
-        >
-          <strong>{result.items.length}</strong>
-        </span>
-      </div>
-
-      <div className="crossref-list">
-        {result.items.map((item) => (
-          <CrossReferenceRow
-            key={item.targetBref}
-            item={item}
-            onNavigate={onNavigate}
-            onOpenPassageTab={onOpenPassageTab}
-            onCapture={onCapture}
-            sourceAttribution={sourceAttribution}
-            frozenOrigin={frozenOrigin}
-            peekProps={peekTriggerProps}
-          />
-        ))}
-      </div>
-      <MarginSourcesDisclosure sources={[{
-        name: result.attribution.name,
-        license: result.attribution.license,
-        citation: `${result.attribution.attribution} · ${result.attribution.license} · ${result.attribution.sourceUrl}`,
-      }]} />
-    </section>
-  );
-}
-
-function NoteCrossRefsBlock({
-  items,
-  onNavigate,
-  onOpenPassageTab,
-  peekTriggerProps,
-  onCapture,
-  frozenOrigin,
-}: {
-  items: SuggestedCrossRefData[];
-  onNavigate?: (ref: string) => void;
-  onOpenPassageTab?: (target: PeekTarget) => Promise<boolean> | boolean;
-  peekTriggerProps: (target: PeekTarget) => VersePeekTriggerProps;
-  onCapture?: (capture: LivingMarginCaptureRequest) => void;
-  frozenOrigin: string;
-}): React.JSX.Element {
-  return (
-    <section className="margin-section note-crossref-section" aria-label="Cross references from notes">
-      <div className="crossref-heading">
-        <div>
-          <h3 className="margin-section-header crossref-title">From notes</h3>
-          <div className="crossref-context">Connections in your library</div>
-        </div>
-        <span className="crossref-total"><strong>{items.length}</strong></span>
-      </div>
-      <div className="crossref-list">
-        {items.map((item) => {
-          const target = parsePeekRef(item.targetBref, item.targetDisplay);
-          return (
-          <div className="note-crossref-row" key={item.targetBref}>
-            <button
-              type="button"
-              className="crossref-row-open"
-              {...crossRefBranchHandlers(item.targetBref, target, onNavigate, onOpenPassageTab)}
-              aria-label={`Open ${item.targetDisplay} from notes`}
-              {...(target ? peekTriggerProps(target) : {})}
-            >
-              <span className="crossref-row-copy">
-                <span className="crossref-reference">{item.targetDisplay}</span>
-                <span className="note-crossref-reason">{item.reason}</span>
-              </span>
-              <span className="crossref-open-affordance">
-                <span>Open</span>
-                <CrossReferenceArrow />
-              </span>
-            </button>
-            {onCapture && (
-              <button
-                type="button"
-                className="margin-capture-action"
-                aria-label={`Add ${item.targetDisplay} to a note`}
-                onClick={() => onCapture({
-                  excerpt: item.reason,
-                  sourceAttribution: "From your notes",
-                  reference: item.targetDisplay,
-                  frozenOrigin,
-                  originLabel: "Related verse",
-                })}
-              >
-                Add to note…
-              </button>
-            )}
-          </div>
-          );
-        })}
-      </div>
-    </section>
-  );
+/** §C4·5's people-and-places kind word. One word, never an icon or a chip. */
+function entityKindLabel(kind: LanguageNameEntity["kind"]): string {
+  if (kind === "person") return "Person";
+  if (kind === "place") return "Place";
+  return "Deity or object";
 }
 
 function IntentOverview({
@@ -2161,76 +2601,171 @@ function IntentOverview({
   onOpenTab: (tab: MarginTab) => void;
   onOpenEntity?: (target: EntityResearchTarget) => void;
 }): React.JSX.Element {
-  const scripture = crossRefs?.items.slice(0, 2) ?? [];
+  const [showAllCrossRefs, setShowAllCrossRefs] = useState(false);
+  const [showAllEntities, setShowAllEntities] = useState(false);
+  const crossRefItems = crossRefs?.items ?? [];
+  const crossRefTotal = crossRefs?.totalCount ?? crossRefItems.length;
+  // §C4·5: "Same three rows and an All 64. A section never changes its shape
+  // because the scope changed size." Three rows at every scope; only the
+  // numbers grow.
+  const crossRefRows = showAllCrossRefs ? crossRefItems : crossRefItems.slice(0, 3);
   const relatedNote = semantic?.semanticNotes[0] ?? null;
   const thread = semantic?.threads[0] ?? null;
   const claim = semantic?.claims.find((item) => item.status === "active") ?? null;
-  const [showAllEntities, setShowAllEntities] = useState(false);
+  const suggested = semantic?.suggestedCrossRefs.slice(0, 6) ?? [];
+  // §C4·5: "Text order, always — the order the reader met them in. Ranking by
+  // frequency would put Paul first in every chapter of Acts and teach the
+  // reader nothing." Nothing sorts here, and the host's `entitiesForRange`
+  // walks the range verse by verse for exactly this reason. `refCount` is
+  // drawn but never ordered on.
   const entities = showAllEntities ? entityResult.entities : entityResult.entities.slice(0, 4);
-  const hasLibraryLead = directNote != null || relatedNote != null || thread != null || claim != null;
-  const hasContent = scripture.length > 0 || hasLibraryLead || entities.length > 0;
+  const hasLibraryLead = directNote != null || relatedNote != null || thread != null || claim != null
+    || suggested.length > 0;
+  const hasContent = crossRefItems.length > 0 || hasLibraryLead || entities.length > 0;
+  // The store ranks and caps; the scope's true size lives in `totalCount`. An
+  // "All 64" that reveals twelve rows would be a promise the panel cannot keep,
+  // so the label states both numbers when they differ.
+  // @quire guessed · "All 12 of 64" where the drawing has "All 64" · the
+  // cross-reference store returns at most 12 ranked items per scope
+  const allCrossRefsLabel = crossRefItems.length >= crossRefTotal
+    ? `All ${crossRefTotal.toLocaleString()}`
+    : `All ${crossRefItems.length.toLocaleString()} of ${crossRefTotal.toLocaleString()}`;
+  // Sources: the research pane's own rows, verbatim, so a reader who learned
+  // the block on one surface has learned it on this one. §C4·5.
   const sources: MarginCitationSource[] = [
-    ...(scripture.length > 0 && crossRefs ? [{
+    ...(crossRefItems.length > 0 && crossRefs ? [{
       name: crossRefs.attribution.name,
       license: crossRefs.attribution.license,
+      detail: "Cross-references",
       citation: `${crossRefs.attribution.attribution} · ${crossRefs.attribution.license} · ${crossRefs.attribution.sourceUrl}`,
     }] : []),
     ...(entities.length > 0 ? [{
       name: entityResult.attribution.name,
       license: entityResult.attribution.license,
+      detail: "Identity",
     }] : []),
   ];
 
   return (
     <div className="intent-overview" aria-label="Most relevant study leads">
-      {scripture.length > 0 && (
-        <section className="intent-section" aria-labelledby="intent-scripture-title">
-          <div className="intent-section-head">
-            <h3 id="intent-scripture-title">Scripture</h3>
-            <button type="button" onClick={() => onOpenTab("connections")}>All refs</button>
-          </div>
-          <div className="intent-ref-list">
-            {scripture.map((item) => {
+      {crossRefItems.length > 0 && (
+        /* Not "Scripture", and not under the word Connections. A connection is
+           a thing the reader made; these are the edition's, and the head says
+           so. Putting them under Connections made third-party data wear the
+           reader's own hand — the same class of error as unmarked licensed
+           prose. §C4·6. */
+        <section className="intent-section" aria-labelledby="intent-crossrefs-title">
+          <StudySectionHead
+            titleId="intent-crossrefs-title"
+            title="Cross-references"
+            count={`${crossRefTotal.toLocaleString()} · edition`}
+          />
+          {/* C4·2's compact row. `.study-ref-row*` is c4-foundation's: the
+              clamp, the fade, the reserved verb slot and the hover reveal all
+              live in its rules, and none of them are restated here. */}
+          <div className="study-ref-row-list">
+            {crossRefRows.map((item) => {
               const target = parsePeekRef(item.targetBref, item.targetDisplay);
               return (
-              <div className="intent-ref-row" key={item.targetBref}>
-                <button
-                  type="button"
-                  className="intent-ref-row-open"
-                  {...crossRefBranchHandlers(item.targetBref, target, onNavigate, onOpenPassageTab)}
-                  aria-label={`Open ${item.targetDisplay}`}
-                  {...(target ? peekTriggerProps(target) : {})}
-                >
-                  <span className="intent-ref-copy">
-                    <span className="intent-ref-title">{item.targetDisplay}</span>
-                    {item.preview && <span className="intent-ref-preview">{item.preview}</span>}
-                  </span>
-                  <CrossReferenceArrow />
-                </button>
-                {target && onOpenPassageTab && (
-                  <button
-                    type="button"
-                    className="intent-ref-open-tab"
-                    onClick={() => void onOpenPassageTab(target)}
-                    aria-label={`Open ${item.targetDisplay} in a new passage tab`}
-                    title="Open in a new passage tab"
-                  >
-                    <OpenInTabIcon />
-                  </button>
-                )}
-              </div>
+                <div className="study-ref-row study-ref-row--compact" key={item.targetBref}>
+                  <div className="study-ref-row-head">
+                    <span className="study-ref-row-ref">{item.targetDisplay}</span>
+                    <span className="study-ref-row-verbs">
+                      <button
+                        type="button"
+                        className="study-ref-row-verb"
+                        {...crossRefBranchHandlers(item.targetBref, target, onNavigate, onOpenPassageTab)}
+                        aria-label={`Open ${item.targetDisplay}`}
+                        {...(target ? peekTriggerProps(target) : {})}
+                      >
+                        Open
+                      </button>
+                      {target && onOpenPassageTab && (
+                        <button
+                          type="button"
+                          className="study-ref-row-verb is-secondary"
+                          onClick={() => void onOpenPassageTab(target)}
+                          aria-label={`Open ${item.targetDisplay} in a new passage tab`}
+                        >
+                          Tab
+                        </button>
+                      )}
+                    </span>
+                  </div>
+                  {item.preview && <p className="study-ref-row-text">{item.preview}</p>}
+                </div>
               );
             })}
           </div>
+          {crossRefItems.length > 3 && (
+            <button
+              type="button"
+              className="intent-more-toggle"
+              aria-expanded={showAllCrossRefs}
+              onClick={() => setShowAllCrossRefs((current) => !current)}
+            >
+              {showAllCrossRefs ? "Fewer cross-references" : allCrossRefsLabel}
+            </button>
+          )}
+        </section>
+      )}
+
+      {entities.length > 0 && (
+        <section className="intent-section" aria-labelledby="intent-entities-title">
+          <StudySectionHead
+            titleId="intent-entities-title"
+            title={<>People &amp; places</>}
+            count={`${entityResult.entities.length.toLocaleString()} here`}
+          />
+          {/* 16px serif in a fixed column, the kind on one side and the count
+              on the other: four fit in 130px instead of 400, and the column
+              edge does the aligning that size was doing badly. The C·2 entry
+              skeleton stays where its lower parts earn their space — the
+              research pane and the words panel. Here the brief is what the
+              28px name was spending: gone with it.
+              @quire derived · kin: margin entry · a list of four names is a
+              column, not four entries; TIPNR is named in Sources, which is
+              where the research pane names it too. */}
+          <ul className="intent-entity-list">
+            {entities.map((entity) => (
+              <li className="intent-entity-row" key={entity.id}>
+                <button
+                  type="button"
+                  className="intent-entity-name"
+                  onClick={() => onOpenEntity?.(entityResearchTarget(entity))}
+                  aria-label={`Open research tab for ${entity.displayName}`}
+                >
+                  {entity.displayName}
+                </button>
+                <span className="intent-entity-kind">{entityKindLabel(entity.kind)}</span>
+                <span className="intent-entity-count">{entity.refCount.toLocaleString()}</span>
+              </li>
+            ))}
+          </ul>
+          {entityResult.entities.length > 4 && (
+            <button
+              type="button"
+              className="intent-more-toggle"
+              aria-expanded={showAllEntities}
+              onClick={() => setShowAllEntities((current) => !current)}
+            >
+              {showAllEntities
+                ? "Fewer people & places"
+                : `All ${entityResult.entities.length.toLocaleString()}`}
+            </button>
+          )}
         </section>
       )}
 
       {hasLibraryLead && (
+        /* @quire guessed · Your library sits after People & places · the
+           overview is drawn with two sections and a foot, and this one is not
+           in the drawing. It is kept because nothing rules against it and it
+           carries threads and claims that live nowhere else, and it is placed
+           last so the drawn adjacency (cross-references above people) and the
+           drawn foot (Sources) both survive. */
         <section className="intent-section" aria-labelledby="intent-library-title">
-          <div className="intent-section-head">
-            <h3 id="intent-library-title">Your library</h3>
-            <button type="button" onClick={() => onOpenTab("notes")}>All notes</button>
-          </div>
+          <StudySectionHead titleId="intent-library-title" title="Your library" />
           {/* Provenance, persistently: a 2px seal spine and a date on your own
               writing, a 4px slate dot on the app's. The mono kickers that used
               to label these ("Anchored note", "Theme in your notes") told the
@@ -2267,73 +2802,55 @@ function IntentOverview({
                 </MarginEntryWhy>
               </button>
             )}
-          </div>
-        </section>
-      )}
+            {/* Re-homed from the Connections tab, which c4-connections emptied
+                of cross-references of every provenance. These are the app's,
+                inferred from the reader's own notes, so they are slate and
+                they carry a sentence — which is exactly what a connection may
+                not do, and exactly why they were never connections.
 
-      {entities.length > 0 && (
-        <section className="intent-section" aria-labelledby="intent-entities-title">
-          <div className="intent-section-head">
-            <h3 id="intent-entities-title">People &amp; places</h3>
-          </div>
-          {/* C·2 · the same skeleton the Research view uses, with parts 4–6
-              simply absent — an entry that stops here is finished, not
-              broken, which is the discipline a card layout takes away. */}
-          <div className="margin-entry-list intent-entity-list">
-            {entities.map((entity) => (
-              <article className="margin-entry" key={entity.id}>
-                <MarginEntryNameLine
-                  name={entity.displayName}
-                  onOpen={() => onOpenEntity?.(entityResearchTarget(entity))}
-                  openLabel={`Open research tab for ${entity.displayName}`}
-                />
-                <MarginEntryKindLine
-                  parts={[
-                    entity.kind === "person" ? "Person" : entity.kind === "place" ? "Place" : "Deity or object",
-                    entity.refCount === 1 ? "named once" : `named ${entity.refCount.toLocaleString()} times`,
-                  ]}
-                />
-                {/* TIPNR's brief, not the edition's. Laurel with a siglum, and
-                    nothing at all if the index cannot name itself — an entry
-                    that stops after its kind line is finished, not broken. */}
-                <MarginEntryWhy
-                  provenance="licensed"
-                  licensed={entityResult.licensed}
-                  onOpenSource={openLicensedSourceUrl}
+                @quire derived · kin: margin entry · the app's inferences about
+                the reader's library already have a treatment in this section,
+                and this is that treatment rather than a second drawing of the
+                reference row (C4·2) under a second heading using the word
+                Connections (C4·6). */}
+            {suggested.map((item) => {
+              const target = parsePeekRef(item.targetBref, item.targetDisplay);
+              return (
+                <button
+                  key={item.targetBref}
+                  type="button"
+                  className="intent-note-lead is-secondary"
+                  {...crossRefBranchHandlers(item.targetBref, target, onNavigate, onOpenPassageTab)}
+                  aria-label={`Open ${item.targetDisplay}`}
+                  {...(target ? peekTriggerProps(target) : {})}
                 >
-                  <p className="margin-entry-why-text">{entity.brief}</p>
-                </MarginEntryWhy>
-              </article>
-            ))}
+                  <MarginEntryWhy provenance="app">
+                    <strong>{item.targetDisplay}</strong>
+                    <span>{item.reason}</span>
+                  </MarginEntryWhy>
+                </button>
+              );
+            })}
           </div>
-          {entityResult.entities.length > 4 && (
-            <button
-              type="button"
-              className="intent-more-toggle"
-              aria-expanded={showAllEntities}
-              onClick={() => setShowAllEntities((current) => !current)}
-            >
-              {showAllEntities
-                ? "Fewer people & places"
-                : `All ${entityResult.entities.length} people & places in this scope`}
-            </button>
-          )}
         </section>
       )}
 
+      {/* Law 7's loading and empty, in the app's own shipped grammar: one
+          loading device, the thing named, never a spinner and never an
+          illustration. */}
       {loading && (
-        <div className="intent-loading" role="status">
-          <span className="ai-insight-spinner" aria-hidden="true" />
-          <span>Reading your library…</span>
-        </div>
+        <SurfaceState state="loading" thing="Reading your library" locality="local" />
       )}
 
       {!hasContent && !loading && (
-        <MarginEmptyView
-          title="Nothing strong enough to surface"
-          detail="The deeper passage, reference, and note views remain available without filling this overview with weak guesses."
+        <SurfaceState
+          state="empty"
+          thing="Nothing indexed here"
+          reason="The edition lists no cross-references, and no people or places are named."
         />
       )}
+      {/* §C4·5: Sources stay last. Same block, same position, same marks as
+          the research pane — one treatment, learned once. */}
       <MarginSourcesDisclosure sources={sources} />
     </div>
   );
@@ -2385,6 +2902,7 @@ export function LivingMargin({
   onEntityTrailChange,
   connectionInspector,
   authoredConnections = [],
+  connectionPaintProjections,
   selectedAuthoredConnectionId = null,
   onSelectAuthoredConnection,
   connectionInspectorFocusRequest = 0,
@@ -2416,6 +2934,10 @@ export function LivingMargin({
   const [entityResearchError, setEntityResearchError] = useState<string | null>(null);
   const [deepNotesById, setDeepNotesById] = useState<Record<string, ParsedNoteData> | null>(null);
   const [deepNotesLoading, setDeepNotesLoading] = useState(false);
+  const [deepNotesFailed, setDeepNotesFailed] = useState(false);
+  /** Bumped by "Try again" — a failed state that cannot be retried is a
+   *  message, not a state. */
+  const [deepNotesAttempt, setDeepNotesAttempt] = useState(0);
   const [trustedResources, setTrustedResources] = useState<RankedTrustedResource[]>([]);
   const [trustedResourcesLoading, setTrustedResourcesLoading] = useState(false);
   const [trustedResourcesRefusal, setTrustedResourcesRefusal] = useState<string | null>(null);
@@ -2635,13 +3157,9 @@ export function LivingMargin({
   };
 
   const activeHighlights = marginData.highlights.filter((h) => h.deleted === 0);
-  const hasDeterministicData = marginData.notes.length > 0 || activeHighlights.length > 0 || (crossRefs?.totalCount ?? 0) > 0;
-  const hasSemanticData = semanticData && (
-    semanticData.semanticNotes.length > 0 ||
-    semanticData.threads.length > 0 ||
-    semanticData.claims.length > 0 ||
-    semanticData.suggestedCrossRefs.length > 0
-  );
+  // (`hasDeterministicData` / `hasSemanticData` retired with the chapter-scope
+  // Words body they gated. §C4·5 disables that lens rather than filling it with
+  // a heading, a subtitle and an invitation, so there is nothing left to gate.)
 
   const subjectVerseStart = pinnedRange?.start ?? nearVerse ?? 1;
   const subjectVerseEnd = pinnedRange?.end ?? nearVerse ?? Number.MAX_SAFE_INTEGER;
@@ -2733,14 +3251,9 @@ export function LivingMargin({
     : [];
   const pinnedColors = [...new Set(pinnedHighlights.map((highlight) => highlight.color))];
   const pinnedHighlightColor = pinnedColors.length === 1 ? pinnedColors[0]! : null;
-  const quoteVerseText = displayChapterVerseText ?? chapterVerseText;
-  const pinnedQuote = pinnedRange && quoteVerseText
-    ? [...quoteVerseText.entries()]
-        .filter(([v]) => v >= pinnedRange.start && v <= pinnedRange.end)
-        .sort((a, b) => a[0] - b[0])
-        .map(([, t]) => t)
-        .join(" ")
-    : "";
+  // C4·1. `pinnedQuote` / `nearQuote` / `quoteVerseText` went with the quoted
+  // selection: nothing in the frame quotes the passage any more, because the
+  // passage is on screen 300px to the left, untruncated.
   const pinnedRef = pinnedRange
     ? `${displayBook} ${chapter}:${pinnedRange.start}${pinnedRange.end !== pinnedRange.start ? `–${pinnedRange.end}` : ""}`
     : "";
@@ -2760,7 +3273,6 @@ export function LivingMargin({
     : 0;
 
   const nearNote = nearVerse != null ? findNoteForRange(marginData, chapter, nearVerse, nearVerse) : null;
-  const nearQuote = nearVerse != null ? quoteVerseText?.get(nearVerse) ?? "" : "";
   const nearRef = nearVerse != null ? `${displayBook} ${chapter}:${nearVerse}` : "";
   const contextReference = isPinned ? pinnedRef : isNear ? nearRef : `${displayBook} ${chapter}`;
   const chapterEndVerse = Math.max(1, ...Array.from(chapterVerseText?.keys() ?? []));
@@ -2799,13 +3311,25 @@ export function LivingMargin({
       : isNear && ambientKept
         ? "kept"
         : "following";
-  const scopeCopy = connectionInspectorOpen
-    ? `Connection · ${contextReference}`
+  // C4·1. The scope reads as a sentence: serif reference, sans state word.
+  // "The two modes then differ by one word instead of by three bands and a
+  // blockquote." What stood here was a whole clause per mode — `Selection ·
+  // Acts 19:1–2`, `Kept on Acts 19:5`, `Following your reading · Acts 19` —
+  // set at 11px above a 22px repeat of the same reference. The reference is
+  // now said once, in the serif, and this is only the word after it.
+  //
+  // @quire derived · ruling 4·1 · the prose writes the chapter mode as
+  // `Acts 19 · following your reading`; the drawing sets the two spans 10px
+  // apart with no separator glyph. A middot is a separator, and the section
+  // asks for a sentence, so the gap does it. The state word for the connection
+  // view is undrawn and takes the same one-word shape.
+  const scopeState = connectionInspectorOpen
+    ? "connection"
     : isPinned
-      ? `Selection · ${contextReference}`
+      ? "selected"
       : isNear && ambientKept
-        ? `Kept on ${contextReference}`
-      : `Following your reading · ${contextReference}`;
+        ? "kept"
+        : "following your reading";
   // Announce scope-kind transitions only. The visible scope line carries the
   // verse reference, which changes on every reading eye-line move; putting it
   // in a live region reads the entire chapter aloud while scrolling.
@@ -2816,24 +3340,68 @@ export function LivingMargin({
       : isNear && ambientKept
         ? "Passage kept in Study"
         : "Following your reading";
-  const contextQuote = isPinned ? pinnedQuote : isNear ? nearQuote : "";
-  const contextKey = isPinned
-    ? `selected:${book}:${chapter}:${pinnedRange.start}-${pinnedRange.end}`
-    : isNear
-      ? `reading:${book}:${chapter}:${nearVerse}`
-      : `chapter:${book}:${chapter}`;
   const contextStartVerse = pinnedRange?.start ?? nearVerse ?? 1;
   const finalChapterVerse = chapterVerseText && chapterVerseText.size > 0
     ? Math.max(...chapterVerseText.keys())
     : 1;
   const contextEndVerse = pinnedRange?.end ?? nearVerse ?? finalChapterVerse;
-  const noteConnectionCount = isPinned ? pinnedSemantic?.suggestedCrossRefs.length ?? 0 : 0;
-  const connectionCount = (crossRefs?.items.length ?? 0) + noteConnectionCount;
-  const notesCount = isPinned
-    ? (pinnedNote ? 1 : 0) + pinnedLibraryItemCount
-    : isNear
-      ? (nearNote ? 1 : 0)
-      : marginData.notes.length;
+  /**
+   * Quire C·4, the headline finding: "the Connections tab is showing
+   * cross-references." The count read `(crossRefs?.items.length ?? 0) +
+   * noteConnectionCount` — the edition's list plus the app's inferences, and no
+   * authored connection at all, which made third-party data wear the reader's
+   * own hand. It is the same class of error as unmarked licensed prose.
+   *
+   * A connection is a thing you made, so the count is authored connections in
+   * the scope the panel is looking at, and nothing else may be added to it.
+   * `crossRefs` is deliberately not in this expression or its dependencies.
+   */
+  const passageConnectionScope = useMemo(() => ({
+    book,
+    chapter,
+    verseStart: contextStartVerse,
+    verseEnd: contextEndVerse,
+  }), [book, chapter, contextStartVerse, contextEndVerse]);
+  const passageConnections = useMemo(() => authoredConnections
+    .filter((connection) => canonicalConnectionAnchors(connection, passageConnectionScope).length > 0)
+    .sort((left, right) => compareConnectionsCanonical(left, right, passageConnectionScope)),
+  [authoredConnections, passageConnectionScope]);
+  // The nearest true thing when the scope holds none: the chapter's own.
+  const elsewhereConnections = useMemo(() => {
+    const inScope = new Set(passageConnections.map((connection) => connection.id));
+    return subjectConnections.filter((connection) => !inScope.has(connection.id));
+  }, [passageConnections, subjectConnections]);
+  const connectionCount = passageConnections.length;
+
+  /* --- Notes, in scope and elsewhere -------------------------------------
+     C4·6: a tab count is seal when the count is YOURS. So the Notes count is
+     the reader's own notes anchored in scope and nothing else. It used to add
+     `pinnedLibraryItemCount` — the app's threads and claims — which put a seal
+     number on material the reader never wrote, and made "Notes 4" unfalsifiable
+     against a passage with no notes on it at all. */
+  const studyNotes = useMemo(
+    () => studyNoteEntries(marginData, chapter, displayBook),
+    [marginData, chapter, displayBook],
+  );
+  const notesScope = isPinned
+    ? { start: pinnedRange.start, end: pinnedRange.end }
+    : isNear && nearVerse != null
+      ? { start: nearVerse, end: nearVerse }
+      : null;
+  const notesHere = useMemo(
+    () => (notesScope
+      ? studyNotes.filter((entry) => anchorTouches(entry.anchor, notesScope.start, notesScope.end))
+      : studyNotes),
+    [studyNotes, notesScope?.start, notesScope?.end],
+  );
+  const notesElsewhere = useMemo(
+    () => (notesScope
+      ? studyNotes.filter((entry) => !anchorTouches(entry.anchor, notesScope.start, notesScope.end))
+      : []),
+    [studyNotes, notesScope?.start, notesScope?.end],
+  );
+  const notesCount = notesHere.length;
+  const notesEmptyCopy = notesEmptySentence(notesScope, contextReference);
 
   useEffect(() => {
     let cancelled = false;
@@ -2957,6 +3525,7 @@ export function LivingMargin({
     if (activeTab !== "notes" || !isPinned) return;
     let cancelled = false;
     setDeepNotesLoading(true);
+    setDeepNotesFailed(false);
     void safeCall(() => window.api.library.readAllNotes()).then((result) => {
       if (cancelled) return;
       if (result.ok) {
@@ -2964,12 +3533,17 @@ export function LivingMargin({
           result.value.map((note) => [note.frontmatter.id, note]),
         ));
       }
+      // Law 7's `failed`. A read that could not happen used to leave the panel
+      // showing the snippets it already had and saying nothing, which reads as
+      // "these are your notes" when it means "this is all of them we could
+      // reach". The state names the thing, the reason, and that it was local.
+      setDeepNotesFailed(!result.ok);
       setDeepNotesLoading(false);
     });
     return () => {
       cancelled = true;
     };
-  }, [activeTab, isPinned, marginData.notes.length]);
+  }, [activeTab, isPinned, marginData.notes.length, deepNotesAttempt]);
 
   const lastConnectionInspectorFocusRequestRef = useRef(connectionInspectorFocusRequest);
   useEffect(() => {
@@ -2983,16 +3557,47 @@ export function LivingMargin({
     frameTitleRef.current?.focus({ preventScroll: true });
   }, [connectionInspectorFocusRequest, connectionInspectorOpen]);
 
+  /**
+   * §C4·5 — the four tabs are chapter-scoped until a verse is chosen, and
+   * "Words has nothing to say about a whole chapter". Chapter scope here is
+   * the state where the scope line carries no verse at all: `Acts 19`, not
+   * `Acts 19:5`. Following your reading resolves a verse and keeps its words.
+   *
+   * @quire derived · kin: header instruments · the app has three scopes where
+   * the quire draws two, and the line the quire draws disabled is the one with
+   * no verse in its reference.
+   */
+  const wordsScopeDisabled = !isPinned && !isNear;
+  const tabIsDisabled = (tab: MarginTab): boolean => tab === "passage" && wordsScopeDisabled;
+
   const activateTab = (tab: MarginTab, focus = false): void => {
+    const focusTab = (): void => {
+      const index = MARGIN_TABS.findIndex((item) => item.id === tab);
+      window.setTimeout(() => tabRefs.current[index]?.focus(), 0);
+    };
+    // A disabled instrument still takes focus — it is a tab in a tablist and a
+    // keyboard reader has to be able to find out that it is off — but nothing
+    // activates it: not the pointer, not an arrow key, not the canvas's lens
+    // cycle. Off is nothing; disabled is the label without its count.
+    if (tabIsDisabled(tab)) {
+      if (focus) focusTab();
+      return;
+    }
     if (tab === activeTab) return;
     versePeek.close();
     flushWorkspaceScrollPublication(true);
     setActiveTab(tab);
-    if (focus) {
-      const index = MARGIN_TABS.findIndex((item) => item.id === tab);
-      window.setTimeout(() => tabRefs.current[index]?.focus(), 0);
-    }
+    if (focus) focusTab();
   };
+
+  // Clearing a selection takes Words out of scope underneath a reader who is
+  // standing in it. The pane holds its height across all five states (Law 7),
+  // but it may not hold a tab that has stopped being true, so the panel falls
+  // back to the lens that is always in scope.
+  useEffect(() => {
+    if (!wordsScopeDisabled || activeTab !== "passage") return;
+    onMarginSessionChange(sessionOwnerTabId, (current) => ({ ...current, activeTab: "overview" }));
+  }, [wordsScopeDisabled, activeTab, sessionOwnerTabId, onMarginSessionChange]);
 
   // While the reading canvas owns focus, Tab and Shift-Tab cycle study lenses
   // without moving focus. The tab row remains its own keyboard domain.
@@ -3016,13 +3621,20 @@ export function LivingMargin({
       event.stopPropagation();
       const currentIndex = Math.max(0, MARGIN_TABS.findIndex((tab) => tab.id === activeTab));
       const reverse = event.shiftKey;
-      const nextIndex = (currentIndex + (reverse ? -1 : 1) + MARGIN_TABS.length) % MARGIN_TABS.length;
+      // A disabled lens is stepped over rather than stepped onto: this cycle
+      // never moves focus, so stopping on it would look like the key failed.
+      let nextIndex = (currentIndex + (reverse ? -1 : 1) + MARGIN_TABS.length) % MARGIN_TABS.length;
+      for (let hop = 0; hop < MARGIN_TABS.length && tabIsDisabled(MARGIN_TABS[nextIndex]!.id); hop += 1) {
+        nextIndex = (nextIndex + (reverse ? -1 : 1) + MARGIN_TABS.length) % MARGIN_TABS.length;
+      }
       activateTab(MARGIN_TABS[nextIndex]?.id ?? "overview");
     };
 
     window.addEventListener("keydown", cycleStudyLens, true);
     return () => window.removeEventListener("keydown", cycleStudyLens, true);
-  }, [activeTab, entityIntent]);
+    // wordsScopeDisabled re-binds the listener so the cycle never steps onto a
+    // lens that went out of scope after the handler was attached.
+  }, [activeTab, entityIntent, wordsScopeDisabled]);
 
   const handleTabKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number): void => {
     if ((event.key === "Enter" || event.key === "ArrowDown") && activeTab === MARGIN_TABS[index]?.id) {
@@ -3074,9 +3686,34 @@ export function LivingMargin({
     return () => window.removeEventListener("keydown", returnToActiveTab, true);
   }, [activeTab, connectionInspectorOpen]);
 
-  const tabCount = (tab: MarginTab): number | null => {
-    if (tab === "connections") return connectionCount;
-    if (tab === "notes") return notesCount;
+  /**
+   * §C4·1 / §C4·6 · "All four tabs carry counts. Inline, 12.5px. Seal when the
+   * count is yours, faint when it is the edition's, absent when the tab is
+   * disabled." Shipped, only Connections carried one and it was a superscript.
+   *
+   * The count carries its own provenance, because ink is what says whose the
+   * number is (Law 3). A zero is never seal: a count of nothing of yours is
+   * not a mark of your authorship, which is why the drawing sets `Notes 0`
+   * faint and `Notes 4` seal on the same tab.
+   *
+   * @quire derived · ruling 4·1, drawings beat prose · §C4·6 says "all four
+   * tabs carry counts", but Overview carries none in any of the five drawings —
+   * including the three where it is not the active tab. It should not: it is
+   * the sum of the others and counts nothing of its own.
+   *
+   * @quire guessed · the Words count. C4·1 draws `Words 21` — the
+   * original-language words in scope. That number is fetched inside
+   * `LanguageWordsSection` (listPackages → pickLanguagePackage → getVerseTokens)
+   * and there is no renderer-side source for it in the frame; reproducing the
+   * fetch here would be a second package-selection truth and one IPC round trip
+   * per verse in the selection. Words therefore carries its label and no count
+   * until the panel publishes one. HANDOFF §10.6 is the precedent: draw no
+   * index at all rather than a wrong one.
+   */
+  const tabCount = (tab: MarginTab): { value: number; provenance: "reader" | "edition" } | null => {
+    if (tabIsDisabled(tab)) return null;
+    if (tab === "connections") return { value: connectionCount, provenance: "reader" };
+    if (tab === "notes") return { value: notesCount, provenance: "reader" };
     return null;
   };
 
@@ -3248,34 +3885,50 @@ export function LivingMargin({
         className="margin-workspace-panel"
       >
       <span className="sr-only" aria-live="polite">{scopeAnnouncement}</span>
+      {/*
+        §C4·1 · the scope bar. Three bands and 118px became one band of 62px,
+        fixed: what the panel is looking at, and the verb that changes it.
+
+        Two things were deleted here and neither is coming back.
+
+        The "Study" title — "it is the only panel in the column and it is
+        permanently on screen. A title that never changes and never
+        distinguishes anything is a 34px band spent on nothing." Its id moved
+        onto the scope line, which is the panel's real name and the same
+        focus target it always was.
+
+        The quoted selection and its "Read full selection ↓" — see the note
+        where `PassageQuote` used to be.
+
+        The verb slot renders in every mode, empty or not. That is the point
+        of the section: the tab row beneath it must sit at the same y in
+        chapter scope and in selection, and it is measured in
+        tests/living-margin-frame-contract.test.ts rather than eyeballed.
+      */}
       <header className="margin-frame-header">
         <h2
           ref={frameTitleRef}
           id="living-margin-title"
-          className="margin-frame-title"
-          aria-describedby="living-margin-mode"
+          className="margin-frame-scope"
           tabIndex={-1}
         >
-          Study
+          <span className="margin-frame-ref">{contextReference}</span>
+          <span id="living-margin-mode" className="margin-frame-mode">{scopeState}</span>
         </h2>
-        <div className="margin-frame-state">
-          <span id="living-margin-mode" className="margin-frame-mode">{scopeCopy}</span>
-          {!connectionInspectorOpen && isNear && onAmbientKeptChange && (
-            <>
-              <span className="margin-frame-separator" aria-hidden="true">·</span>
-              <button
-                type="button"
-                className="margin-frame-action margin-keep-toggle"
-                onClick={() => onAmbientKeptChange(!ambientKept)}
-                title={ambientKept ? "Release this passage and follow your reading" : "Keep this passage while you work"}
-              >
-                {ambientKept ? "Follow reading" : "Keep"}
-              </button>
-            </>
-          )}
+        <div className="margin-frame-verb">
           {!connectionInspectorOpen && isPinned && onClearSelection && (
             <button type="button" className="margin-frame-action" onClick={clearSelection}>
               Clear
+            </button>
+          )}
+          {!connectionInspectorOpen && isNear && onAmbientKeptChange && (
+            <button
+              type="button"
+              className="margin-frame-action margin-keep-toggle"
+              onClick={() => onAmbientKeptChange(!ambientKept)}
+              title={ambientKept ? "Release this passage and follow your reading" : "Keep this passage while you work"}
+            >
+              {ambientKept ? "Follow reading" : "Keep"}
             </button>
           )}
           <button
@@ -3297,57 +3950,77 @@ export function LivingMargin({
         </div>
       )}
 
-      {!connectionInspectorOpen && subjectConnections.length > 0 && (
-        <nav className="margin-authored-connections" aria-label="Your authored connections in this passage">
-          <div className="margin-authored-connections-head">
-            <span>Your connections</span>
-            <small>{subjectConnections.length}</small>
-          </div>
-          <div className="margin-authored-connections-list">
-            {subjectConnections.map((connection) => (
-              <button
-                key={connection.id}
-                type="button"
-                aria-current={selectedAuthoredConnectionId === connection.id || undefined}
-                onClick={() => onSelectAuthoredConnection?.(connection, true)}
-              >
-                <span>{connection.label}</span>
-                <small>{phraseCount(connection.anchors.length)}</small>
-              </button>
-            ))}
-          </div>
-        </nav>
-      )}
+      {/*
+        §C4·1 and the C·4 headline finding, together. A `.margin-authored-connections`
+        strip stood here — "Your connections", a count, and a button per
+        connection carrying its label — between the scope bar and the tab row.
 
+        It went for two reasons, and the second is the worse one:
+
+        1. It is the same dataset as the Connections tab in a second treatment,
+           which is the finding this surface was corrected for. Its scope was
+           even a superset (the whole chapter, against the tab's scope overlap),
+           so the two disagreed on their own counts.
+        2. It rendered on `subjectConnections.length > 0`, so **the tab row
+           moved** the moment a reader authored their first connection in a
+           chapter — the exact thing §C4·1 exists to stop. "Navigation should
+           not move."
+
+        A connection's label does not appear anywhere now, and that is
+        deliberate: "the type and the members are the whole claim, and any prose
+        about it is a note." Nothing became unreachable — the three ways to
+        attend (the member, its gutter tick, its row in the tab) are untouched,
+        and the tab carries a seal count so the reader sees from any lens that
+        there is something of theirs here.
+      */}
       <div className={`margin-study-content${connectionInspectorOpen ? " has-connection-inspector" : ""}`}>
-      <div className="margin-context" aria-label={`Study scope: ${contextReference}`}>
-        <h3 className="margin-header-ref">{contextReference}</h3>
-        {contextQuote && <PassageQuote text={contextQuote} contextKey={contextKey} />}
-      </div>
-
+      {/*
+        §C4·1. `.margin-context` stood here — the reference again at 22px, and
+        under it the quoted selection. Between them they were the ~300px that
+        pushed the tab row down the moment a verse was chosen: "selecting a
+        verse must not restructure the panel, it must narrow it." Nothing may
+        be reintroduced between the scope bar and the tab row that depends on
+        the scope.
+      */}
       <div className="margin-tabs" role="tablist" aria-label="Study views" aria-orientation="horizontal">
         {MARGIN_TABS.map((tab, index) => {
           const selected = activeTab === tab.id;
-          const count = tabCount(tab.id);
-          const hasCount = count != null && count > 0;
+          const disabled = tabIsDisabled(tab.id);
+          // §C4·6 · "Disabled is the label without its count." The number is
+          // withheld rather than zeroed: a count of nothing and a count that
+          // does not apply are different facts, and only one of them is true
+          // of Words at chapter scope. A count of nothing, where the tab is in
+          // scope, is drawn — `Notes 0` is a fact the reader wants.
+          const count = disabled ? null : tabCount(tab.id);
+          // Seal is authorship, so a zero never wears it. Ink-3 rather than
+          // ink-faint: the drawing's #B4AEA5 is the ink-3 Rev 04 §4 corrected
+          // as a shipped defect at 3.22:1, and a number carries meaning, so
+          // Law 6 puts it on the 4.5:1 token.
+          const countIsSeal = count != null && count.provenance === "reader" && count.value > 0;
           return (
             <button
               key={tab.id}
               ref={(node) => { tabRefs.current[index] = node; }}
               type="button"
               id={`margin-${tab.id}-tab`}
-              className={`margin-tab${selected ? " is-active" : ""}`}
+              className={`margin-tab${selected ? " is-active" : ""}${disabled ? " is-disabled-instrument" : ""}`}
               role="tab"
-              aria-label={hasCount ? `${tab.accessibleLabel}, ${count}` : tab.accessibleLabel}
+              aria-label={count ? `${tab.accessibleLabel}, ${count.value}` : tab.accessibleLabel}
               aria-selected={selected}
+              aria-disabled={disabled || undefined}
               aria-controls={`margin-${tab.id}-panel`}
               tabIndex={selected ? 0 : -1}
               onClick={() => activateTab(tab.id)}
               onKeyDown={(event) => handleTabKeyDown(event, index)}
             >
               <span>{tab.label}</span>
-              {hasCount && (
-                <span className="margin-tab-count" aria-hidden="true">{count}</span>
+              {count && (
+                <span
+                  className={`margin-tab-count${countIsSeal ? " is-yours" : ""}`}
+                  aria-hidden="true"
+                >
+                  {count.value}
+                </span>
               )}
             </button>
           );
@@ -3386,31 +4059,17 @@ export function LivingMargin({
             aria-labelledby="margin-passage-tab"
             hidden={activeTab !== "passage"}
           >
-            {(hasDeterministicData || hasSemanticData) && (
-              <>
-                <div className="margin-view-heading">
-                  <h3>Words &amp; structure</h3>
-                  <p>Your marks and study activity remain secondary to the text.</p>
-                </div>
-                <p className="margin-invite">
-                  Select a verse to study its language, add a highlight, or narrow each view to that passage.
-                </p>
-              </>
-            )}
-
-            {!hasDeterministicData && !hasSemanticData && semanticLoading && (
-              <div className="margin-overview-loading" role="status">
-                <span className="ai-insight-spinner" aria-hidden="true" />
-                <span>Reading your library…</span>
-              </div>
-            )}
-
-            {!hasDeterministicData && !hasSemanticData && !semanticLoading && (
-              <MarginEmptyView
-                title="A quiet chapter"
-                detail="Select a verse to begin studying or leave your first mark."
-              />
-            )}
+            {/* §C4·5 — the lens itself is disabled at chapter scope, so this
+                body is only ever seen for the frame between a selection being
+                cleared and the panel falling back. §C4·6: empty is never
+                blank — one sentence naming what is absent, then the nearest
+                true thing, which here is the act that brings the words back.
+                The old heading and its subtitle explained the interface to
+                itself and were the second and third sentences §9 deletes. */}
+            <MarginEmptyView
+              title="Words are read one verse at a time"
+              detail="Choose a verse and its original-language words open here."
+            />
           </section>
 
           <section
@@ -3420,21 +4079,15 @@ export function LivingMargin({
             aria-labelledby="margin-connections-tab"
             hidden={activeTab !== "connections"}
           >
-            {crossRefs && crossRefs.items.length > 0 ? (
-              <CrossRefsBlock
-                result={crossRefs}
-                onNavigate={onNavigateToRef}
-                onOpenPassageTab={onOpenPassageTab}
-                peekTriggerProps={versePeek.triggerProps}
-                onCapture={onCapture}
-                frozenOrigin={contextReference}
-              />
-            ) : (
-              <MarginEmptyView
-                title="No chapter connections"
-                detail="Select a verse to look for a more focused relationship."
-              />
-            )}
+            <ConnectionsPanel
+              connections={passageConnections}
+              elsewhere={elsewhereConnections}
+              paintProjections={connectionPaintProjections}
+              book={book}
+              packageId={packageId}
+              selectedConnectionId={selectedAuthoredConnectionId}
+              onSelectAuthoredConnection={onSelectAuthoredConnection}
+            />
           </section>
 
           <section
@@ -3444,10 +4097,6 @@ export function LivingMargin({
             aria-labelledby="margin-notes-tab"
             hidden={activeTab !== "notes"}
           >
-            <div className="margin-view-heading">
-              <h3>In this chapter</h3>
-              <p>Material from My notes for this chapter.</p>
-            </div>
             {semanticData && semanticData.threads.length > 0 && (
               <div className="margin-overview-themes">
                 <span className="margin-overview-label">Themes in your notes</span>
@@ -3458,27 +4107,35 @@ export function LivingMargin({
                 </div>
               </div>
             )}
-            {marginData.notes.length > 0 ? (
-              <div className="margin-note-list">
-                {marginData.notes.map((note, index) => (
-                  <DeepNoteCard
-                    key={note.id}
-                    title={note.title}
-                    body={note.body_text}
-                    meta="Anchored in this chapter"
-                    defaultOpen={index === 0}
-                  />
-                ))}
-              </div>
+            {notesHere.length > 0 ? (
+              <>
+                <StudySectionHead
+                  title="In this chapter"
+                  count={`${notesHere.length.toLocaleString()} · yours`}
+                  countValue={notesHere.length}
+                  countIsYours
+                />
+                <div className="margin-note-list">
+                  {notesHere.map((entry, index) => (
+                    <DeepNoteCard
+                      key={entry.note.id}
+                      title={entry.note.title}
+                      body={entry.note.body_text}
+                      meta={entry.reference}
+                      defaultOpen={index === 0}
+                    />
+                  ))}
+                </div>
+                <MarginNoteFooter onCreateNote={onCreateNote} />
+              </>
             ) : semanticLoading ? (
-              <div className="margin-overview-loading" role="status">
-                <span className="ai-insight-spinner" aria-hidden="true" />
-                <span>Reading your library…</span>
-              </div>
+              <SurfaceState state="loading" thing="Reading your library" locality="local" />
             ) : (
-              <MarginEmptyView
-                title="No chapter notes yet"
-                detail="Select a verse, then add a note when you have something worth keeping."
+              <MarginNotesEmpty
+                sentence={notesEmptyCopy}
+                elsewhere={notesElsewhere}
+                onCreateNote={onCreateNote}
+                onNavigate={onNavigateToRef}
               />
             )}
           </section>
@@ -3546,21 +4203,15 @@ export function LivingMargin({
             aria-labelledby="margin-connections-tab"
             hidden={activeTab !== "connections"}
           >
-            {crossRefs && crossRefs.items.length > 0 ? (
-              <CrossRefsBlock
-                result={crossRefs}
-                onNavigate={onNavigateToRef}
-                onOpenPassageTab={onOpenPassageTab}
-                peekTriggerProps={versePeek.triggerProps}
-                onCapture={onCapture}
-                frozenOrigin={contextReference}
-              />
-            ) : (
-              <MarginEmptyView
-                title="No connections here"
-                detail="Continue reading or select a passage to widen the scope."
-              />
-            )}
+            <ConnectionsPanel
+              connections={passageConnections}
+              elsewhere={elsewhereConnections}
+              paintProjections={connectionPaintProjections}
+              book={book}
+              packageId={packageId}
+              selectedConnectionId={selectedAuthoredConnectionId}
+              onSelectAuthoredConnection={onSelectAuthoredConnection}
+            />
           </section>
 
           <section
@@ -3570,21 +4221,33 @@ export function LivingMargin({
             aria-labelledby="margin-notes-tab"
             hidden={activeTab !== "notes"}
           >
-            <div className="margin-view-heading">
-              <h3>At this verse</h3>
-              <p>Material from My notes at this verse.</p>
-            </div>
-            {nearNote ? (
-              <DeepNoteCard
-                title={nearNote.title}
-                body={nearNote.body_text}
-                meta="Anchored at this verse"
-                defaultOpen
-              />
+            {notesHere.length > 0 ? (
+              <>
+                <StudySectionHead
+                  title="At this verse"
+                  count={`${notesHere.length.toLocaleString()} · yours`}
+                  countValue={notesHere.length}
+                  countIsYours
+                />
+                <div className="margin-note-list">
+                  {notesHere.map((entry, index) => (
+                    <DeepNoteCard
+                      key={entry.note.id}
+                      title={entry.note.title}
+                      body={entry.note.body_text}
+                      meta={entry.reference}
+                      defaultOpen={index === 0}
+                    />
+                  ))}
+                </div>
+                <MarginNoteFooter onCreateNote={onCreateNote} />
+              </>
             ) : (
-              <MarginEmptyView
-                title="No note on this verse"
-                detail="Select the verse when you want to highlight it or add a note."
+              <MarginNotesEmpty
+                sentence={notesEmptyCopy}
+                elsewhere={notesElsewhere}
+                onCreateNote={onCreateNote}
+                onNavigate={onNavigateToRef}
               />
             )}
           </section>
@@ -3654,12 +4317,22 @@ export function LivingMargin({
 
           </div>
 
-          {/* Primary study surface */}
+          {/* Primary study surface.
+
+              C·4 §3·1 — "Verse chips become two words." The pill row is gone:
+              the drawing sets the verse whose grid is on screen as the section
+              head this block never had, and the other verses beside it as the
+              switch. §C4·6 bans the bordered button and the circular chip, and
+              a 25px radius-999 pill was both. The label is spelled — "Verse 1",
+              not "1" — so the row reads without its old standing label.
+
+              The grid stays capped at one verse, which is what the designer
+              asks us to confirm in the closing section: 21 words over two
+              verses would run the strip past the lemma. */}
           {pinnedRange.end > pinnedRange.start && (
-            <div className="words-verse-chooser" role="radiogroup" aria-label="Words for verse">
-              <span className="words-verse-chooser-label">Words for verse</span>
+            <div className="words-verse-switch" role="radiogroup" aria-label="Words for verse">
               <span
-                className="words-verse-chips"
+                className="words-verse-switch-list"
                 onKeyDown={(event) => {
                   // APG radio behavior: arrows move between verses and select.
                   const verseCount = pinnedRange.end - pinnedRange.start + 1;
@@ -3688,15 +4361,14 @@ export function LivingMargin({
                   <button
                     key={verse}
                     type="button"
-                    className="words-verse-chip"
+                    className={`words-verse-word${wordsVerse === verse ? " is-showing" : ""}`}
                     role="radio"
-                    aria-label={`Verse ${verse}`}
                     aria-checked={wordsVerse === verse}
                     data-words-verse={verse}
                     tabIndex={wordsVerse === verse ? 0 : -1}
                     onClick={() => setWordsState({ wordsVerse: verse, wordsFollowingReading: false })}
                   >
-                    {verse}
+                    Verse {verse}
                   </button>
                 ))}
               </span>
@@ -3729,32 +4401,15 @@ export function LivingMargin({
             aria-labelledby="margin-connections-tab"
             hidden={activeTab !== "connections"}
           >
-            {(crossRefs?.items.length ?? 0) > 0 && crossRefs && (
-              <CrossRefsBlock
-                result={crossRefs}
-                onNavigate={onNavigateToRef}
-                onOpenPassageTab={onOpenPassageTab}
-                peekTriggerProps={versePeek.triggerProps}
-                onCapture={onCapture}
-                frozenOrigin={contextReference}
-              />
-            )}
-            {pinnedSemantic && pinnedSemantic.suggestedCrossRefs.length > 0 && (
-              <NoteCrossRefsBlock
-                items={pinnedSemantic.suggestedCrossRefs.slice(0, 6)}
-                onNavigate={onNavigateToRef}
-                onOpenPassageTab={onOpenPassageTab}
-                peekTriggerProps={versePeek.triggerProps}
-                onCapture={onCapture}
-                frozenOrigin={contextReference}
-              />
-            )}
-            {connectionCount === 0 && (
-              <MarginEmptyView
-                title="No connections for this passage"
-                detail="Try a single verse for a narrower OpenBible match."
-              />
-            )}
+            <ConnectionsPanel
+              connections={passageConnections}
+              elsewhere={elsewhereConnections}
+              paintProjections={connectionPaintProjections}
+              book={book}
+              packageId={packageId}
+              selectedConnectionId={selectedAuthoredConnectionId}
+              onSelectAuthoredConnection={onSelectAuthoredConnection}
+            />
           </section>
 
           <section
@@ -3764,35 +4419,68 @@ export function LivingMargin({
             aria-labelledby="margin-notes-tab"
             hidden={activeTab !== "notes"}
           >
-            <div className="margin-view-heading margin-view-heading--action">
-              <div>
-                <h3>For this passage</h3>
-                <p>Your anchored note and grounded library context.</p>
-              </div>
-              {onCreateNote && (
-                <button type="button" className="margin-view-action" onClick={() => onCreateNote()}>
-                  Add note
-                </button>
-              )}
-            </div>
-
-          {pinnedNote && (
+          {/* C4·3 · Notes. The three-sentence heading and the bordered
+              "Add note" are both gone: the heading told the reader what the
+              tab was for, and the button was the only bordered control in the
+              panel. What replaced them is one sentence when there is nothing,
+              a section head with a seal count when there is, and the verbs as
+              words at the foot. */}
+          {notesHere.length > 0 && (
             <section className="margin-section margin-note-section">
-              <h3 className="margin-section-header">Your note</h3>
-              <DeepNoteCard
-                title={pinnedNote.title}
-                body={pinnedNote.body_text}
-                meta="Anchored to this passage"
-                defaultOpen
+              <StudySectionHead
+                title="On this passage"
+                count={`${notesHere.length.toLocaleString()} · yours`}
+                countValue={notesHere.length}
+                countIsYours
               />
+              {notesHere.map((entry, index) => (
+                <DeepNoteCard
+                  key={entry.note.id}
+                  title={entry.note.title}
+                  body={deepNotesById?.[entry.note.id]?.body ?? entry.note.body_text}
+                  meta={entry.reference}
+                  defaultOpen={index === 0}
+                />
+              ))}
             </section>
           )}
 
-          {pinnedAiLoading && (
-            <div className="ai-insight-loading" role="status">
-              <span className="ai-insight-spinner" aria-hidden="true" />
-              <span className="ai-insight-label">Reading your library…</span>
-            </div>
+          {/* Law 7's `empty`, and the only one the study draws for this tab.
+              "Empty is never blank": one sentence naming the absence, the
+              verbs as words, then the nearest true thing the panel holds. */}
+          {notesHere.length === 0 && !pinnedAiLoading && !deepNotesLoading && !deepNotesFailed && (
+            <MarginNotesEmpty
+              sentence={notesEmptyCopy}
+              elsewhere={notesElsewhere}
+              onCreateNote={onCreateNote}
+              onNavigate={onNavigateToRef}
+            />
+          )}
+
+          {/* Law 7's `loading` and `failed`, in the app's own shipped
+              grammar — one loading device, the thing named, the reason given,
+              and whether it happened on this machine. No spinner: Rev 03b's
+              seal segment is the only loading device in the language. */}
+          {(pinnedAiLoading || deepNotesLoading) && (
+            <SurfaceState state="loading" thing="Reading your library" locality="local" />
+          )}
+
+          {!deepNotesLoading && deepNotesFailed && (
+            <SurfaceState
+              state="failed"
+              thing="Your notes"
+              reason="The library could not be read."
+              locality="local"
+              actions={(
+                <button
+                  type="button"
+                  className="margin-note-verb"
+                  onClick={() => setDeepNotesAttempt((attempt) => attempt + 1)}
+                >
+                  Try again
+                </button>
+              )}
+            />
           )}
 
           {!pinnedAiLoading && pinnedInsight && (
@@ -3821,13 +4509,6 @@ export function LivingMargin({
               </div>
               <p className="ai-insight-text">{pinnedInsight}</p>
             </section>
-          )}
-
-          {!pinnedAiLoading && deepNotesLoading && pinnedSemantic && pinnedSemantic.semanticNotes.length > 0 && (
-            <div className="deep-notes-loading" role="status">
-              <span className="ai-insight-spinner" aria-hidden="true" />
-              <span>Reading your library…</span>
-            </div>
           )}
 
           {/* Notes is the deliberate deep-dive view. All retrieved material is
@@ -3892,12 +4573,10 @@ export function LivingMargin({
             </section>
           )}
 
-          {!pinnedAiLoading && !pinnedNote && !pinnedInsight && pinnedLibraryItemCount === 0 && (
-            <MarginEmptyView
-              title="Nothing from your notes yet"
-              detail="Add a note when this passage gives you something worth carrying forward."
-            />
-          )}
+          {/* C4·6 · verbs are words in a footer. It appears only when the tab
+              has content — the empty state offers the same verb inline, and a
+              panel does not need to say "Write a note" twice. */}
+          {notesHere.length > 0 && <MarginNoteFooter onCreateNote={onCreateNote} />}
           </section>
         </div>
       )}

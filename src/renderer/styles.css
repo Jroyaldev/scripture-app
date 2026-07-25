@@ -268,7 +268,10 @@
   --verse-gutter: 32px;
   /* The margin's tab row sticks below its header. One value drives the
      header's height and the tabs' offset, so they cannot drift apart. */
-  --margin-header-h: 52px;
+  /* §C4·1 · one band, fixed. Three bands and 118px became this. It is a
+     `height`, never a `min-height`: the tab row is stuck to it, so a header
+     that could grow is a tab row that could move. */
+  --margin-header-h: 62px;
 
   /* Radius ≈ 0.22 × the element's shorter dimension, rounded even, capped at
      8. Not concentric: strict concentricity would put the window at 32px, and
@@ -1574,10 +1577,17 @@ html, body, #root {
    the register. Selection once repainted this glyph seal, which said a person
    opened Apollos the moment you looked at it; that rule is gone with the rest
    of the state mark, so slate is now the only thing this glyph ever says and
-   it says it whether or not you are reading the tab. The selector stays
-   tab-scoped because the hue belongs to a tab's own glyph. */
+   it says it whether or not you are reading the tab. The selector names every
+   surface a tab is drawn on, because the hue belongs to the tab and not to the
+   strip. It was once scoped to the strip alone, and the identical glyph in the
+   All Tabs list fell through to the row's own ink and read as unmarked — which
+   Law 3 reserves for the edition and nothing else. The list is in fact where
+   the mark earns its keep: a reader with forty tabs tells them apart there,
+   not in a strip that can show eight. */
 .scripture-workspace-tab .scripture-workspace-tab-mark.is-person,
-.scripture-workspace-tab .scripture-workspace-tab-mark.is-place {
+.scripture-workspace-tab .scripture-workspace-tab-mark.is-place,
+.scripture-workspace-overflow-row .scripture-workspace-tab-mark.is-person,
+.scripture-workspace-overflow-row .scripture-workspace-tab-mark.is-place {
   color: var(--accent-machine);
 }
 
@@ -2676,9 +2686,26 @@ html, body, #root {
   outline-offset: 3px;
 }
 
+/* C·4 §6: "Disabled is the label without its count. Ink-3, no rule, no number.
+   No fourth ink was needed." The 0.48 that used to live here composited ink-3
+   against the topbar's paper at 1.88:1 — a Law 6 failure on load-bearing 9.5px
+   type, and a larger one than the warning hue Rev 04 §4 corrected. Opacity is
+   the wrong instrument for this: it dims a meaning-carrying label to say
+   something the ink already says.
+
+   @quire trigger · states · the ruling was drawn for a TAB, where the withheld
+   count is what distinguishes disabled from off. A header instrument has no
+   count, and it already rests in ink-3 — so under this ruling a disabled
+   instrument and an off one are the same pixels, and only the dead hover tells
+   them apart. That may be intended (§1·3: "off is nothing"), but a reader
+   cannot discover it. Held at the ruling rather than invented past it. */
 .topbar-instrument:disabled {
-  cursor: not-allowed;
-  opacity: 0.48;
+  color: var(--text-tertiary);
+  opacity: 1;
+}
+
+.topbar-instrument:disabled:hover {
+  color: var(--text-tertiary);
 }
 
 /* Drawn beside the reference and never rendered: the chapter count. It is the
@@ -3868,68 +3895,225 @@ html, body, #root {
   }
 }
 
-.margin-authored-connections {
+/* The `.margin-authored-connections` strip was drawn here — a bordered lane of
+   connection labels between the scope bar and the tab row. It is gone with its
+   markup: it drew the Connections tab's dataset a second time, in a second
+   treatment, over a wider scope, and it appeared only once a chapter held a
+   connection, which moved the tab row underneath it. §C4·1: navigation should
+   not move. Nothing replaced it; the tab is where a reader's connections are
+   listed, and it is the only place. */
+
+/* The Connections tab · Quire C·4 §3–§4
+ *
+ * The tab used to show the edition's cross-references under the reader's own
+ * word. It now shows connections: the type as the heading in seal because you
+ * wrote it, the members as quoted phrases with their verse position hanging
+ * left, and nothing else — "a connection carries no sentence of its own", so
+ * no row in here has a description in it.
+ *
+ * No mono anywhere on this surface; tabular figures do the aligning. */
+.margin-connections {
   display: grid;
-  gap: 5px;
-  margin: 0;
-  padding: 9px 0;
-  border-block: 1px solid var(--border-subtle);
+  gap: 16px;
+  align-content: start;
+  /* @quire guessed · the attend budget is 140ms and the panel is the other
+     half of the same object, so its outline arrives on the same clock. */
+  --margin-connection-attend: 140ms cubic-bezier(.2, 0, .2, 1);
 }
 
-.margin-authored-connections-head {
+.margin-connection-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+  gap: 12px;
+}
+
+.margin-connection-head h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 0.78125rem;
+  font-weight: var(--fw-semibold);
+  line-height: 1.35;
+}
+
+/* "Seal when the count is yours" — every connection is authored, so this count
+   always is, and the mark beside it says so without a second word. */
+.margin-connection-count {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   color: var(--text-tertiary);
-  font: 550 0.625rem/1.2 var(--font-ui);
-  letter-spacing: .075em;
-  text-transform: uppercase;
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
 }
 
-.margin-authored-connections-head small {
-  font: 400 0.625rem/1 var(--font-ui);
+.margin-connection-seal {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--study-gold);
 }
 
-.margin-authored-connections-list {
+.margin-connection-list {
   display: grid;
-  max-height: 116px;
-  overflow-y: auto;
+  gap: 22px;
+  align-content: start;
 }
 
-.margin-authored-connections-list button {
-  min-width: 0;
+/* The block is the control: clicking it attends the connection, which scrolls
+   the reading canvas the least distance that brings every member into view.
+   The outline is inset and the padding is always there, so no row reflows
+   under a pointer — the same reserve the route keeps about its centre datum. */
+.margin-connection-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  /* Two columns for the whole block, not per member: the position column is as
+     wide as the widest position in this connection and no wider, and every
+     member's wording therefore starts at the same x. That is what makes a
+     mirror's second member set flush with its first, and it is why the column
+     is `auto` above a 26px reserve rather than a fixed 26px — a range like
+     19:12–13, or a member in another book, grows the column instead of
+     spilling over the phrase beside it. */
+  grid-template-columns: minmax(26px, auto) minmax(0, 1fr);
   gap: 8px;
-  padding: 4px 0;
+  width: 100%;
+  padding: 11px 12px;
+  margin: -11px -12px;
   border: 0;
   border-radius: 0;
   background: transparent;
-  color: var(--text-secondary);
-  font: 400 0.72rem/1.35 var(--font-ui);
+  box-shadow: inset 0 0 0 1.5px transparent;
+  font: inherit;
   text-align: left;
   cursor: pointer;
+  transition: box-shadow var(--margin-connection-attend);
 }
 
-.margin-authored-connections-list button > span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.margin-connection-row:hover,
+.margin-connection-row[data-thread-hover],
+.margin-connection-row[aria-current="true"] {
+  box-shadow: inset 0 0 0 1.5px var(--study-gold-focus);
 }
 
-.margin-authored-connections-list button > small {
-  color: var(--text-tertiary);
-  font: 400 0.6rem/1.35 var(--font-ui);
-}
-
-.margin-authored-connections-list button:hover,
-.margin-authored-connections-list button[aria-current="true"] {
-  color: var(--text-primary);
-}
-
-.margin-authored-connections-list button:focus-visible {
-  outline: 2px solid var(--study-gold-focus);
+.margin-connection-row:focus-visible {
+  outline: 2px solid var(--study-gold);
   outline-offset: 2px;
+}
+
+.margin-connection-row-head {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+/* Type is a word, never a colour: six kinds, one ink, and it is seal in every
+   one of them because the reader is the author of all six. */
+.margin-connection-type {
+  color: var(--study-gold);
+  font-family: var(--font-ui);
+  font-size: 0.71875rem;
+  font-weight: var(--fw-semibold);
+  line-height: 1.3;
+}
+
+.margin-connection-arity {
+  margin-left: auto;
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  font-size: 0.65625rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The shared quoted reference row (§C4·2) arranged the one way this panel needs
+   it: the verse position hangs left in a fixed column rather than sitting on
+   its own line, "so a same-verse pair reads as one" and a mirror's second
+   member sets flush with its first. Everything else about the row — full text,
+   ink, and the structural refusal of a trailing verb — is the shared object's,
+   and these rules deliberately do not restate it. */
+.margin-connection-list .margin-connection-member {
+  display: grid;
+  grid-column: 1 / -1;
+  /* The member borrows the block's two columns rather than declaring its own,
+     which is the whole point: a column measured per member would align nothing
+     with the member above it. The reference keeps its real width, so it never
+     needs a clip — and never synthesises its baseline from a scroll container,
+     which is what ruling 4·6 protects. */
+  grid-template-columns: subgrid;
+  align-items: baseline;
+  column-gap: 11px;
+}
+
+.margin-connection-position .study-ref-row-ref {
+  color: var(--text-tertiary);
+  font-size: 0.65625rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Ink-2 is the answering member. Contrast never reaches it — both of its
+   members carry equal weight — and a hinge spends it on the span, never on
+   the pivot, wherever the two fall in the text. */
+.margin-connection-member[data-member-ink="ink-2"] .margin-connection-quote {
+  color: var(--text-secondary);
+}
+
+/* "An unrouted connection is not a missing one": the row keeps its position
+   markers and says plainly that this translation has no wording for it. That
+   sentence is a state word rather than the verse's own words, so it is set in
+   the UI face and never mistaken for a quotation. */
+.margin-connection-member .margin-connection-quote.is-unprojected {
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+}
+
+/* The overflow line starts where the wording does — the drawing's 37px is the
+   26px column plus its 11px gap, so the grid states it once and keeps stating
+   it correctly after the column grows. */
+.margin-connection-more {
+  grid-column: 2;
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+}
+
+.margin-connection-absent {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-reading);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+}
+
+.margin-connection-elsewhere {
+  display: grid;
+  gap: 16px;
+  padding-top: 19px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* Verbs are words in a footer: no bordered buttons, no circular chips. */
+.margin-connection-footer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-top: 19px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.margin-connection-verb {
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 0.71875rem;
+  font-weight: var(--fw-medium);
+}
+
+.margin-connection-state {
+  margin-left: auto;
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
 }
 
 .connection-card {
@@ -4578,9 +4762,12 @@ html, body, #root {
   .scripture-body > .living-margin .margin-frame-header,
   .scripture-body > .living-margin .entity-research-frame { top: 0; }
 
+  /* The band keeps its height here too: the dock is sized from
+     --margin-header-h, and the tab row is stuck to it at every width. Only
+     the horizontal bleed narrows. */
   .scripture-body > .living-margin .margin-frame-header {
-    margin: 0 -12px 12px;
-    padding: 10px 12px 9px;
+    margin: 0 -12px;
+    padding: 20px 12px 0;
     border-radius: var(--radius-md) var(--radius-md) 0 0;
   }
 
@@ -7199,50 +7386,89 @@ html, body, #root {
 
 .margin-workspace-panel { min-width: 0; }
 
+/* §C4·1 · the scope bar. One band, 62px, FIXED — not a minimum. The height is
+   the whole claim of the section: the tab row sits directly beneath it and
+   never moves, so nothing inside this header may be allowed to grow it. The
+   band replaces three: a panel title, a scope statement, and a scope control
+   set smaller and greyer than the statement it controlled.
+
+   20px of air above the line and the rest below it is the drawing's own
+   interval — 20 + 22.8 (19px serif at 1.2) + 18 = 60.8, held at 62. */
 .margin-frame-header {
   position: sticky;
   top: 0;
   z-index: 8;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: var(--margin-header-h);
-  margin: 0 calc(var(--sp-xl) * -1) 18px;
-  padding: 10px var(--sp-xl) 9px;
+  align-items: baseline;
+  gap: 10px;
+  box-sizing: border-box;
+  height: var(--margin-header-h);
+  margin: 0 calc(var(--sp-xl) * -1);
+  padding: 20px var(--sp-xl) 0;
   /* Paper, not canvas. The margin is one plane; a tinted band inside it is a
      third fill, and the two-plane rule has no room for one. It stays opaque
      because it is sticky and content scrolls beneath it. */
   background: var(--bg-reading);
 }
 
-.margin-frame-title {
+/* The scope as a sentence. `.margin-frame-title` set the word "Study" at 16px
+   semibold and is deleted; this is a heading only because the panel needs a
+   name and its name is what it is looking at. */
+.margin-frame-scope {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
   margin: 0;
   color: var(--text-primary);
   font-family: var(--font-reading);
-  font-size: 1rem;
-  font-weight: var(--fw-semibold);
-  letter-spacing: -0.01em;
+  font-size: 19px;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 0;
 }
 
-.margin-frame-title:focus {
+.margin-frame-scope:focus {
   outline: none;
 }
 
-.margin-frame-title:focus-visible {
-  box-shadow: 0 2px 0 var(--study-gold);
+.margin-frame-scope:focus-visible {
+  outline: 2px solid var(--accent-seal);
+  outline-offset: 2px;
 }
 
-.margin-frame-state {
+/* A scripture reference is one token and never breaks across lines. It is NOT
+   given `overflow: hidden` to truncate: a flex item that establishes a scroll
+   container has its baseline synthesised from its border box, which would lift
+   the reference clear of the state word beside it — and ruling 4·6 makes
+   baseline alignment general. The longest reference in the canon sets well
+   inside 380px at 19px, so there is nothing here worth breaking it for. */
+.margin-frame-ref {
+  white-space: nowrap;
+}
+
+/* The verb slot. Reserved in every mode — in chapter scope it is empty and it
+   still occupies the end of the line, "so the tab row never shifts by a pixel
+   between the two modes". `margin-left: auto` is the reservation: the slot
+   ends the line whether or not it has a word in it. */
+.margin-frame-verb {
+  flex: 0 0 auto;
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   gap: 9px;
+  margin-left: auto;
 }
 
+/* One word, in the UI sans, after the serif reference. Ink-3 — the reference
+   carries the weight, and the state word is only the word that distinguishes
+   the two modes. */
 .margin-frame-mode {
+  flex: 0 0 auto;
   color: var(--text-tertiary);
   font-family: var(--font-ui);
   font-size: 11px;
   font-weight: var(--fw-medium);
+  line-height: 1.2;
   letter-spacing: 0;
   text-transform: none;
 }
@@ -7274,24 +7500,45 @@ html, body, #root {
   color: var(--text-primary);
 }
 
+/* §C4·6 · "Verbs are words in a footer. No bordered buttons, no circular
+   chips." Clear is a word at the end of the scope line: no radius, no fill,
+   and a hover that moves ink only. The padding is hit area, not a shape —
+   it has no background to draw it. */
+.margin-frame-verb .margin-frame-action {
+  min-height: 0;
+  padding: 7px 0;
+  border-radius: 0;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.2;
+}
+
+.margin-frame-verb .margin-frame-action:hover {
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.margin-frame-verb .margin-frame-action:focus-visible {
+  outline: 2px solid var(--accent-seal);
+  outline-offset: 2px;
+}
+
 /* The compact size toggle only exists in the stacked ≤760px layout. */
 .margin-compact-size-toggle { display: none; }
 
-.margin-context {
-  padding: 0 0 2px;
-}
-
-.margin-context .margin-quote-wrap {
-  margin-bottom: 14px;
-}
+/* `.margin-context` and its quote wrap stood here. §C4·1 deleted both — see
+   the note in LivingMargin where the block was rendered. */
 
 .margin-tabs {
   position: sticky;
+  /* Directly beneath the scope bar, at rest and stuck. The 12px top margin
+     that used to sit here was the last thing that could put air between the
+     two, and air between them is a y-position that can drift. */
   top: var(--margin-header-h);
   z-index: 7;
   display: flex;
   gap: 18px;
-  margin: 12px calc(var(--sp-xl) * -1) 18px;
+  margin: 0 calc(var(--sp-xl) * -1) 18px;
   padding: 0 var(--sp-xl);
   /* One rule, under the tabs, where a change of kind is not already obvious
      from the type. The rule above them was drawing a box. */
@@ -7312,7 +7559,9 @@ html, body, #root {
   background: transparent;
   color: var(--text-tertiary);
   font-family: var(--font-ui);
-  font-size: 12px;
+  /* 12.5px, the size the label and its count share — a count is a fact about
+     the tab, not a superscript on it. */
+  font-size: 12.5px;
   font-weight: var(--fw-medium);
   white-space: nowrap;
   cursor: pointer;
@@ -7325,7 +7574,9 @@ html, body, #root {
   bottom: -1px;
   left: 0;
   right: 0;
-  height: 1.5px;
+  /* Law 2 · a 2px seal mark on the edge nearest the content it opens, and the
+     thickness the drawing sets. */
+  height: 2px;
   border-radius: var(--radius-mark);
   background: var(--study-gold);
   opacity: 0;
@@ -7346,22 +7597,57 @@ html, body, #root {
   opacity: 1;
 }
 
+/* §4·4 · full-strength seal. This was `color-mix(var(--study-gold) 72%,
+   transparent)`, which lands at roughly 2.6:1 over paper — under Law 6's 3:1
+   floor for a mark that carries meaning without words, which is exactly the
+   ".4 wash a keyboard user gets nothing from" that §4·4 struck.
+
+   @quire derived · §4·4 also says "never inset", and this ring is inset by 3px.
+   Its reason is stated with it — "an inset outline lands on the element's own
+   fill and loses its ratio" — and a tab has no fill: it is transparent on
+   paper, so the ring keeps the full 4.64:1 either way. What an outside ring
+   would lose is its top edge, because the tab row is stuck directly beneath an
+   opaque scope bar one z-index above it, and a ring missing 2px of its top is
+   worse than a ring 3px in. Strength was the defect; the offset is not. */
 .margin-tab:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--study-gold) 72%, transparent);
+  outline: 2px solid var(--accent-seal);
   outline-offset: -3px;
   border-radius: var(--radius-sm);
 }
 
+/* §C4·6 · "All four tabs carry counts. Inline, 12.5px. Seal when the count is
+   yours, faint when it is the edition's, absent when the tab is disabled."
+   Shipped, this was an 8.5px superscript on one tab: `transform:
+   translateY(-0.08em)` and a size below the type scale were doing the work of
+   a <sup>. A count is a fact about the tab, set on the same line as its
+   label. Tabular figures do the aligning — no mono anywhere on this surface. */
 .margin-tab-count {
   color: var(--text-tertiary);
   font-family: var(--font-ui);
-  font-size: 0.53125rem;
+  font-size: 12.5px;
+  font-weight: var(--fw-normal);
   font-variant-numeric: tabular-nums;
-  transform: translateY(-0.08em);
 }
 
-.margin-tab.is-active .margin-tab-count {
-  color: color-mix(in srgb, var(--text-secondary) 82%, var(--study-gold));
+/* Seal only when the number is the reader's own work and there is some of it.
+   A zero is not authorship, so `Notes 0` stays ink-3 and `Notes 4` is seal —
+   which is the whole point of the count: "a reader can then see at a glance
+   that they have three connections and no notes here." */
+.margin-tab-count.is-yours {
+  color: var(--accent-seal);
+}
+
+/* §C4·5 · "Off is nothing; disabled is the label without its count." Ink-3,
+   no rule, no number — no fourth ink was needed, and no opacity either: an
+   .38 ghost would put a meaningful label under Law 6's floor. */
+.margin-tab.is-disabled-instrument,
+.margin-tab.is-disabled-instrument:hover {
+  color: var(--text-tertiary);
+  cursor: default;
+}
+
+.margin-tab.is-disabled-instrument::after {
+  opacity: 0;
 }
 
 .margin-tab-panel[hidden] {
@@ -7377,16 +7663,223 @@ html, body, #root {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* ==========================================================================
+   §C4·2 · ONE ROW GRAMMAR
+   --------------------------------------------------------------------------
+   "A verse-with-a-fragment appears in every tab and in the research pane. It
+   is one object and it gets one drawing." There were five: Overview clamped
+   to two lines with a floating ↗, Connections ran to nine lines with a
+   floating "Add to note…", Words used a third, the research pane a fourth.
+
+   Two variants, and only two:
+
+     .study-ref-row--compact   the row is a list item
+     .study-ref-row--quoted    the verse's own wording is the reason the row
+                               exists — a connection's member phrases, a
+                               note's anchor
+
+   Never both variants in one list; if a surface needs both kinds of row they
+   are two lists. That is asserted in
+   tests/living-margin-frame-contract.test.ts, not merely asked for here.
+
+   Anatomy, and the class names four panels are written against:
+
+     .study-ref-row-list         the list. gap, never hairlines (§4·2).
+       .study-ref-row            the object. modifier required.
+         .study-ref-row-head     line 1. always present.
+           .study-ref-row-ref    the reference. tabular, never bold.
+           .study-ref-row-verbs  the reserved verb slot. compact only.
+             .study-ref-row-verb one verb. a word, not a button.
+         .study-ref-row-text     the verse's wording. serif.
+   ========================================================================== */
+
+.study-ref-row-list {
+  display: flex;
+  flex-direction: column;
+  /* Study C closed entries with air rather than a hairline apiece, and ruling
+     4·2 confirmed it. One reading interval between rows, nothing drawn. */
+  gap: 14px;
+  min-width: 0;
+}
+
+.study-ref-row {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  width: 100%;
+  /* The row may be a div or a button. If it is a button it stops looking like
+     one here: no border, no fill, no radius, and copy that reads left. */
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+}
+
+.study-ref-row-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* "Reference on its own line, never bold, tabular figures." Never bold is a
+   declaration rather than an omission: three of the five shipped rows set it
+   at 600, which made a list of references read as a list of headings. */
+/* No `overflow: hidden` here either, and for the same reason as the scope
+   bar's reference: a flex item that establishes a scroll container has its
+   baseline synthesised from its border box, and the verb slot beside it is
+   required to sit on the reference's baseline. */
+.study-ref-row-ref {
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: var(--fw-normal);
+  line-height: 1.35;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  transition: color var(--transition-fast);
+}
+
+.study-ref-row-text {
+  margin: 0;
+  min-width: 0;
+  font-family: var(--font-reading);
+}
+
+/* --- compact ------------------------------------------------------------ */
+
+.study-ref-row--compact {
+  gap: 4px;
+}
+
+.study-ref-row--compact .study-ref-row-text {
+  color: var(--text-secondary);
+  font-size: 13.5px;
+  line-height: 1.55;
+  /* Two lines, "clamped without an ellipsis character — the fade of a cut
+     line is enough". The WebKit line clamp is deliberately not used: it stamps
+     a literal … that no declaration can take back off. Height and a mask do
+     the same job and leave the cut silent. */
+  max-height: calc(1lh * 2);
+  overflow: hidden;
+  /* THE FADE. Two mask layers: everything above the last line at full
+     strength, and the last line dissolving to its right. A mask takes the
+     plane's own pixels, so the cut reads correctly on paper and on canvas and
+     in all four atmospheres — including over the row's own hover mark. A
+     gradient to a literal white smears on the dark pair; a gradient to
+     var(--bg-reading) still smears anywhere the row is not sitting flat on
+     paper. §C4·6: derive the fade from the plane's own background. */
+  -webkit-mask-image:
+    linear-gradient(#000, #000),
+    linear-gradient(to right, #000 58%, transparent 100%);
+  mask-image:
+    linear-gradient(#000, #000),
+    linear-gradient(to right, #000 58%, transparent 100%);
+  -webkit-mask-size: 100% calc(100% - 1lh), 100% 1lh;
+  mask-size: 100% calc(100% - 1lh), 100% 1lh;
+  -webkit-mask-position: top left, bottom left;
+  mask-position: top left, bottom left;
+  -webkit-mask-repeat: no-repeat, no-repeat;
+  mask-repeat: no-repeat, no-repeat;
+}
+
+/* "Verbs appear on hover, top-aligned with the reference, in reserved space."
+   Shipped, they were vertically centred, "so on a nine-line row the verb
+   floats in the middle of a paragraph with nothing beside it." The slot is on
+   the head line, it is there at rest, and only its opacity changes — space
+   for every reveal exists before the pointer arrives, so nothing moves. */
+.study-ref-row-verbs {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 11px;
+  margin-left: auto;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.study-ref-row--compact:hover .study-ref-row-verbs,
+.study-ref-row--compact:focus-within .study-ref-row-verbs,
+.study-ref-row-verbs:focus-within {
+  opacity: 1;
+}
+
+.study-ref-row--compact:hover .study-ref-row-ref,
+.study-ref-row--compact:focus-within .study-ref-row-ref {
+  color: var(--accent-seal);
+}
+
+/* §C4·6 · "Verbs are words in a footer. No bordered buttons, no circular
+   chips, no repeated Add to note… floating beside a paragraph." */
+.study-ref-row-verb {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 10.5px;
+  font-weight: var(--fw-medium);
+  line-height: 1.35;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.study-ref-row-verb.is-secondary {
+  color: var(--text-secondary);
+  font-weight: var(--fw-normal);
+}
+
+.study-ref-row-verb:hover {
+  color: var(--accent-seal);
+}
+
+/* §4·4 · full-strength seal, 2px, outside the shape. A wash cannot reach 3:1
+   and a keyboard reader would get nothing. The slot is opaque while it holds
+   focus, which is what the `:focus-within` above is for. */
+.study-ref-row-verb:focus-visible {
+  outline: 2px solid var(--accent-seal);
+  outline-offset: 2px;
+}
+
+.study-ref-row--compact:focus-visible {
+  outline: 2px solid var(--accent-seal);
+  outline-offset: 2px;
+}
+
+/* --- quoted ------------------------------------------------------------- */
+
+.study-ref-row--quoted {
+  gap: 6px;
+}
+
+/* "Full text, ink rather than ink-2, and no trailing verb at all: quoted rows
+   are read, not chosen from." Full text means no clamp and therefore no fade
+   — a quoted row that faded would be a compact row with a longer leash. */
+.study-ref-row--quoted .study-ref-row-text {
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* The prohibition, made structural rather than merely written down: a verb
+   inside a quoted row does not render, so it cannot be added by accident in a
+   panel that copied its markup from a compact list. */
+.study-ref-row--quoted .study-ref-row-verbs {
+  display: none;
+}
+
 .margin-view-heading {
   margin: 0 0 18px;
 }
 
-.margin-view-heading--action {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 14px;
-}
+/* `.margin-view-heading--action` held the Notes tab's bordered "Add note"
+   beside its heading. Both are gone: C4·6 puts verbs in the footer as words,
+   and the heading was the "three sentences" the empty state is drawn against. */
 
 .margin-view-heading h3,
 .margin-view-empty h3 {
@@ -7407,31 +7900,6 @@ html, body, #root {
   line-height: 1.45;
 }
 
-.margin-view-action {
-  flex: none;
-  min-height: 28px;
-  padding: 0 8px;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--study-gold);
-  font-family: var(--font-ui);
-  font-size: 0.6875rem;
-  font-weight: var(--fw-medium);
-  cursor: pointer;
-}
-
-.margin-view-action:hover {
-  border-color: color-mix(in srgb, var(--study-gold) 32%, var(--border-subtle));
-  background: color-mix(in srgb, var(--study-hover-surface) 54%, transparent);
-  color: var(--text-primary);
-}
-
-.margin-view-action:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--study-gold) 70%, transparent);
-  outline-offset: 2px;
-}
-
 .margin-view-empty {
   padding: 20px 0 10px;
   border-top: 1px solid var(--border-subtle);
@@ -7442,65 +7910,164 @@ html, body, #root {
   gap: 10px;
 }
 
+/* --- C4·3 · Notes ----------------------------------------------------------
+   Empty is never blank: one sentence naming the absence, the verbs as words,
+   then the notes the reader wrote elsewhere in this study filling the space
+   the absence left. `.margin-view-action` — the bordered "Add note", the one
+   bordered control in the panel — is gone with the heading that carried it. */
+
+.margin-notes-empty-sentence {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-reading);
+  font-size: 0.9375rem;   /* serif 15 */
+  line-height: 1.65;
+  text-wrap: pretty;
+}
+
+/* Verbs are words. No border, no chip, no fill — C4·6. */
+.margin-note-verbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.margin-note-verb {
+  min-height: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 0.71875rem;  /* 11.5 */
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.margin-note-verb.is-secondary {
+  color: var(--text-secondary);
+  font-weight: var(--fw-normal);
+}
+
+.margin-note-verb:hover {
+  color: var(--accent-seal);
+}
+
+/* §4·4, restated in C4·5: full-strength seal, outside the shape. */
+.margin-note-verb:focus-visible {
+  outline: 2px solid var(--accent-seal);
+  outline-offset: 2px;
+  border-radius: var(--radius-mark);
+}
+
+/* The footer the other three tabs already close with. */
+.margin-note-footer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 19px;
+  padding-top: 19px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.margin-note-elsewhere {
+  margin-top: 56px;
+  padding-top: 27px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* Law 3, and the smallest mark in the language: seal says you wrote it. C·2
+   gave the dot to the app and the spine to the reader; Rev 04 puts provenance
+   in the INK, and C4·3 draws a seal dot on the reader's own rows. Later study
+   wins (ruling 4·2), and the ink is doing the saying either way. */
+.margin-note-mark {
+  flex: none;
+  align-self: center;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent-seal);
+}
+
+/* Last in the head, so it is flush right. `.study-ref-row-verbs` already
+   carries the auto margin (c4-foundation's rule), which means the verbs fade
+   in to the date's LEFT inside space that exists at rest — the date does not
+   move when the pointer arrives, and nothing here restates the reveal. */
+.margin-note-when {
+  flex: none;
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  font-size: 0.65625rem;  /* 10.5 */
+  font-variant-numeric: tabular-nums;
+  line-height: 1.35;
+}
+
 .intent-overview {
   display: grid;
   gap: 0;
 }
 
+/* Quire C·4 · the overview's rhythm. A section is 28px of air, its head, 16px,
+   its list. Sections are parted by 28 / hairline / 27, which is the interval
+   the study draws at the shipped 340px width. */
 .intent-section {
-  padding: 2px 0 18px;
+  padding: 0 0 28px;
 }
 
 .intent-section + .intent-section {
-  padding-top: 17px;
+  padding-top: 27px;
   border-top: 1px solid var(--border-subtle);
 }
 
 .intent-section-head {
   min-height: 24px;
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 5px;
+  margin-bottom: 16px;
 }
 
 .intent-section-head h3 {
   margin: 0;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   font-family: var(--font-ui);
-  font-size: 0.6875rem;
+  font-size: 0.78125rem;  /* 12.5 */
   font-weight: var(--fw-semibold);
+  line-height: 1.35;
 }
 
-.intent-section-head button {
-  padding: 3px 0;
-  border: 0;
-  background: transparent;
+/* The count states whose it is, so it is read, so it clears 4.5:1. The study
+   sets #B4AEA5 here — the pre-Rev-03 tertiary the handoff §4 records as a
+   shipped defect at 3.22:1. Law 6 has no small-text exemption. */
+.intent-section-count {
+  flex: none;
   color: var(--text-tertiary);
   font-family: var(--font-ui);
-  font-size: 0.625rem;
-  cursor: pointer;
+  font-size: 0.6875rem;   /* 11 */
+  font-variant-numeric: tabular-nums;
+  line-height: 1.35;
 }
 
-.intent-section-head button:hover,
-.intent-section-head button:focus-visible {
-  color: var(--study-gold);
+/* Seal: the reader wrote the things being counted. Law 3. */
+.intent-section-count.is-yours {
+  color: var(--accent-seal);
 }
 
-.intent-section-head button:focus-visible {
-  outline: 2px solid var(--study-gold-focus);
-  outline-offset: 2px;
-  border-radius: var(--radius-sm);
-}
-
-.intent-ref-list,
-.intent-library-leads,
-.intent-entity-list {
+.intent-library-leads {
   display: grid;
 }
 
-.intent-ref-row-open,
+/* The overview's cross-reference rows moved to `.study-ref-row--compact`,
+   which c4-foundation owns: one row grammar for every tab and the research
+   pane, so `.intent-ref-*` — the row, its open button, its icon affordance and
+   its private clamp — is gone rather than kept as a fifth drawing of one
+   object (C4·2). `.intent-lead-kind`, the mono kicker, went with the mono
+   ruling in C4·6. */
+
 .intent-note-lead {
   appearance: none;
   width: calc(100% + 12px);
@@ -7513,91 +8080,22 @@ html, body, #root {
   font: inherit;
   text-align: left;
   cursor: pointer;
-}
-
-/* The row is a calm container; the open button keeps the full-bleed hover
-   surface while the tab affordance rides at its trailing edge. */
-.intent-ref-row {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: calc(100% + 12px);
-  margin-inline: -6px;
-}
-
-.intent-ref-row-open {
-  flex: 1;
   min-width: 0;
-  width: auto;
-  margin-inline: 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  display: grid;
+  gap: 2px;
 }
 
-.intent-ref-row-open:hover,
-.intent-ref-row-open:focus-visible,
 .intent-note-lead:hover,
 .intent-note-lead:focus-visible {
   background: var(--study-hover-surface);
   color: var(--text-primary);
 }
 
-.intent-ref-row-open:focus-visible,
 .intent-note-lead:focus-visible {
-  outline: 2px solid var(--study-gold-focus);
+  outline: 2px solid var(--accent-seal);
   outline-offset: 0;
 }
 
-/* Hidden at rest so rows stay quiet; revealed on hover and keyboard reach so
-   it is a real, focusable open-in-tab control rather than pointer-only chrome. */
-.intent-ref-open-tab {
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  margin-right: 2px;
-  padding: 0;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
-}
-
-.intent-ref-row:hover .intent-ref-open-tab,
-.intent-ref-row:focus-within .intent-ref-open-tab {
-  opacity: 1;
-}
-
-.intent-ref-open-tab:hover {
-  background: color-mix(in srgb, var(--study-hover-surface) 58%, transparent);
-  color: var(--text-primary);
-}
-
-.intent-ref-open-tab:focus-visible {
-  opacity: 1;
-  outline: 2px solid var(--study-gold-focus);
-  outline-offset: 1px;
-  color: var(--text-primary);
-}
-
-.intent-ref-copy,
-.intent-note-lead {
-  min-width: 0;
-  display: grid;
-  gap: 2px;
-}
-
-.intent-ref-copy {
-  flex: 1;
-}
-
-.intent-ref-title,
 .intent-note-lead strong {
   color: var(--text-primary);
   font-family: var(--font-ui);
@@ -7606,7 +8104,6 @@ html, body, #root {
   line-height: 1.35;
 }
 
-.intent-ref-preview,
 .intent-note-lead > span:last-child {
   display: -webkit-box;
   overflow: hidden;
@@ -7618,11 +8115,6 @@ html, body, #root {
   line-height: 1.42;
 }
 
-.intent-ref-row-open > svg {
-  flex: none;
-  color: var(--text-tertiary);
-}
-
 .intent-note-lead.is-secondary {
   margin-top: 2px;
   padding-top: 10px;
@@ -7630,104 +8122,79 @@ html, body, #root {
   border-radius: 0;
 }
 
-.intent-lead-kind {
-  color: var(--text-tertiary);
-  font-family: var(--font-mono) !important;
-  font-size: 0.5625rem !important;
-  line-height: 1.3 !important;
-  letter-spacing: 0.04em;
-}
-
-.intent-entity-card {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 10px 0;
-  border: 0;
-  border-top: 1px solid var(--border-subtle);
-  border-radius: 0;
-  background: transparent;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-  transition: color var(--transition-fast), background-color var(--transition-fast);
-}
-
-.intent-entity-card:last-child {
-  border-bottom: 1px solid var(--border-subtle);
-}
-
 .deep-note-card summary::-webkit-details-marker {
   display: none;
 }
 
-.intent-entity-card:hover .intent-entity-line strong,
-.intent-entity-card:focus-visible .intent-entity-line strong {
-  color: var(--study-gold);
-}
+/* --- C4·3 · people & places, as a column ----------------------------------
+   The name came down from 28px to 16px serif and went into a fixed column,
+   with the kind on one side and the count on the other. Four fit in 130px
+   instead of 400, and the column edge does the aligning that size was doing
+   badly. The order is the text's — see IntentOverview; nothing here sorts.
 
-.intent-entity-card:focus-visible {
-  outline: 2px solid var(--study-gold-focus);
-  outline-offset: 2px;
-}
+   Kind and count are `--text-tertiary`, not the study's #928C84 / #B4AEA5:
+   both are words a reader acts on, and Law 6 has no small-text exemption. */
 
-.intent-entity-glyph {
-  width: 30px;
-  height: 30px;
-  flex: 0 0 30px;
+.intent-entity-list {
+  margin: 0;
+  padding: 0;
   display: grid;
-  place-items: center;
-  border: 1px solid var(--border-subtle);
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--bg-reading) 62%, transparent);
-  color: var(--text-tertiary);
+  gap: 13px;
+  list-style: none;
 }
 
-.intent-entity-glyph svg {
-  width: 15px;
-  height: 15px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.35;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.intent-entity-copy {
-  min-width: 0;
-  flex: 1;
-  display: grid;
-  gap: 3px;
-}
-
-.intent-entity-line {
+.intent-entity-row {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
   gap: 10px;
 }
 
-.intent-entity-line strong {
+/* The column, and the whole device. A long name wraps inside 92px rather than
+   pushing the kind out of line — the edge is what is doing the aligning. */
+.intent-entity-name {
+  flex: 0 0 92px;
+  width: 92px;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: var(--text-primary);
-  font-family: var(--font-ui);
-  font-size: 0.75rem;
-  font-weight: var(--fw-medium);
-}
-
-.intent-entity-line span {
-  color: var(--text-tertiary);
-  font-family: var(--font-mono);
-  font-size: 0.53125rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.intent-entity-brief {
-  color: var(--text-secondary);
   font-family: var(--font-reading);
-  font-size: 0.71875rem;
-  line-height: 1.4;
+  font-size: 1rem;        /* serif 16 */
+  font-weight: var(--fw-normal);
+  line-height: 1.35;
+  text-align: left;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.intent-entity-name:hover {
+  color: var(--accent-seal);
+}
+
+/* §4·4, restated in C4·5: full-strength seal, outside the shape. A wash at .4
+   cannot reach 3:1 and a keyboard user gets nothing. */
+.intent-entity-name:focus-visible {
+  outline: 2px solid var(--accent-seal);
+  outline-offset: 2px;
+  border-radius: var(--radius-mark);
+}
+
+.intent-entity-kind {
+  min-width: 0;
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;   /* 11 */
+  line-height: 1.35;
+}
+
+.intent-entity-count {
+  flex: none;
+  margin-left: auto;
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;   /* 11 */
+  font-variant-numeric: tabular-nums;
+  line-height: 1.35;
 }
 
 .deep-note-caret {
@@ -7740,26 +8207,6 @@ html, body, #root {
 .deep-note-card[open] .deep-note-caret {
   transform: rotate(90deg);
   color: var(--study-gold);
-}
-
-.intent-entity-open {
-  flex: none;
-  align-self: flex-end;
-  padding-bottom: 2px;
-  color: var(--text-tertiary);
-  font-family: var(--font-mono);
-  font-size: 0.5rem;
-  letter-spacing: 0.025em;
-  opacity: 0;
-  transform: translateX(-2px);
-  transition: color var(--transition-fast), opacity var(--transition-fast), transform var(--transition-fast);
-}
-
-.intent-entity-card:hover .intent-entity-open,
-.intent-entity-card:focus-visible .intent-entity-open {
-  color: var(--study-gold);
-  opacity: 1;
-  transform: translateX(0);
 }
 
 /* --- Entity research object ------------------------------------------------ */
@@ -9116,45 +9563,28 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   line-height: 1.4;
 }
 
-.intent-more-count,
-.intent-attribution {
-  margin: 9px 0 0;
-  color: var(--text-tertiary);
-  font-family: var(--font-ui);
-  font-size: 0.5625rem;
-  line-height: 1.4;
-}
-
+/* "All 8", "All 21", "All 4" — the last line of a list, in the list's own
+   interval. §C4·5: counts grow, sections do not, so this line is what a
+   larger scope changes and the section's shape is what it does not. */
 .intent-more-toggle {
-  margin: 9px 0 0;
+  margin: 14px 0 0;
   padding: 0;
   border: 0;
   background: none;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   font-family: var(--font-ui);
-  font-size: 0.625rem;
-  font-weight: var(--fw-medium);
-  letter-spacing: 0.02em;
+  font-size: 0.71875rem;  /* 11.5 */
+  font-weight: var(--fw-normal);
   cursor: pointer;
   transition: color var(--transition-fast);
 }
 
 .intent-more-toggle:hover { color: var(--text-primary); }
 
-.intent-attribution {
-  display: flex;
-  gap: 5px;
-}
-
-.intent-loading,
-.deep-notes-loading {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 10px 0;
-  color: var(--text-tertiary);
-  font-family: var(--font-ui);
-  font-size: 0.625rem;
+.intent-more-toggle:focus-visible {
+  outline: 2px solid var(--accent-seal);
+  outline-offset: 2px;
+  border-radius: var(--radius-mark);
 }
 
 .deep-note-card {
@@ -9188,11 +9618,15 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   font-weight: var(--fw-medium);
 }
 
+/* C4·6, restating C2·6: no mono on this surface. The meta line now carries a
+   reference ("Acts 19:11") rather than a caption, and tabular figures do the
+   aligning that the monospace was there to do. */
 .deep-note-meta {
   color: var(--text-tertiary);
-  font-family: var(--font-mono);
-  font-size: 0.53125rem;
-  letter-spacing: 0.035em;
+  font-family: var(--font-ui);
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
 }
 
 .deep-note-body {
@@ -9236,12 +9670,9 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   line-height: 1.4;
 }
 
-.margin-header-ref {
-  margin: 0;
-  color: var(--text-primary);
-  font: 400 16px/1.35 var(--font-reading);
-  line-height: 1.35;
-}
+/* `.margin-header-ref` — the scope reference set a second time, below the
+   scope bar that already said it. §C4·1: it is said once, in the serif, on
+   the one band. */
 
 .highlight-margin-item {
   display: flex;
@@ -9332,17 +9763,20 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 .margin-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: 5px 14px;
   margin: 6px 0 0;
 }
 
+/* Was a 99px pill on a tinted fill — Law 2 bans pills and tinted chips
+   outright, and a theme label is a word, not an object. The words are parted
+   by interval now, which is the same device the tab row uses to hold four
+   labels in 300px. */
 .margin-tag {
-  font-size: 10.5px;
-  font-weight: var(--fw-medium);
   color: var(--text-tertiary);
-  background: color-mix(in srgb, var(--bg-secondary) 68%, transparent);
-  padding: 3px 8px;
-  border-radius: 99px;
+  font-family: var(--font-ui);
+  font-size: 0.65625rem;  /* 10.5 */
+  font-weight: var(--fw-normal);
+  line-height: 1.35;
 }
 
 .margin-overview-themes {
@@ -9399,46 +9833,10 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   font-size: 0.75rem;
 }
 
-.margin-quote-wrap {
-  margin: 10px 0 22px;
-}
-
-.margin-focus-quote {
-  font-family: var(--font-reading);
-  font-size: 0.875rem;
-  font-style: italic;
-  line-height: 1.58;
-  color: var(--text-secondary);
-  border-left: 2px solid color-mix(in srgb, var(--study-gold) 42%, var(--border-medium));
-  padding-left: 12px;
-  margin: 0;
-}
-
-.margin-focus-quote.is-collapsed {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
-  line-clamp: 4;
-}
-
-.margin-quote-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  margin-top: 7px;
-  padding: 2px 0;
-  border: 0;
-  background: transparent;
-  color: var(--text-tertiary);
-  font-family: var(--font-ui);
-  font-size: 0.6875rem;
-  cursor: pointer;
-}
-
-.margin-quote-toggle:hover {
-  color: var(--text-primary);
-}
+/* `.margin-quote-wrap`, `.margin-focus-quote` and `.margin-quote-toggle` drew
+   the quoted selection and its "Read full selection ↓". §C4·1 deleted all
+   three. A verse whose own wording is the point is now `.study-ref-row
+   --quoted`, below, and it has no disclosure because it is never truncated. */
 
 .margin-subsection + .margin-subsection {
   margin-top: 13px;
@@ -9651,8 +10049,10 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   margin: 0 0 12px;
 }
 
+/* The morph line sits between the lemma and the gloss now, so the interval it
+   used to carry as `.margin-entry-kind`'s own 14px margin moves here. */
 .lang-form {
-  margin-bottom: 10px;
+  margin: 0 0 14px;
 }
 
 .lang-form-row {
@@ -9672,18 +10072,18 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 
 /* Nothing moves on hover, and nothing fills. Opening the form notes is worth
    one shade of ink on the line you are about to open. */
-.lang-form-row:hover .lang-chip {
+.lang-form-row:hover .lang-detail-kind {
   color: var(--text-secondary);
 }
 
-/* The separator is a middle dot inside the line, so the gap between chips is
-   the dot's own margin — a flex gap on top of it would space the line twice. */
-.lang-form-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0;
+/* C·4 §3·2 — the head's morph line is the row now, so it stops carrying the
+   kind line's own bottom margin: the interval below belongs to `.lang-form`,
+   which is what the gloss is spaced from. */
+.lang-form-row > .lang-detail-kind {
   flex: 1;
   min-width: 0;
+  margin: 0;
+  text-align: left;
 }
 
 .lang-form-caret {
@@ -9927,52 +10327,12 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   min-width: 0;
 }
 
-/* C2·7 steps away from the chips: three chips of different shapes carrying
-   language, morph code and lexicon key read as filter controls but are labels.
-   They collapse into one quiet line — "Adjective · dative singular feminine" —
-   which is a sentence about the word, not a row of controls to press. */
-.lang-chip {
-  font-size: 11px;
-  font-weight: 400;
-  color: var(--text-tertiary);
-  background: none;
-  border: 0;
-  border-radius: 0;
-  padding: 0;
-  line-height: 1.35;
-}
-
-/* The dot is the separator the drawn line uses. It belongs to the chip that
-   follows, so a lone chip never trails one. */
-.lang-chip + .lang-chip::before {
-  content: "·";
-  margin: 0 6px;
-  opacity: 0.6;
-}
-
-/* Part of speech still reads first, but by one shade of ink rather than by a
-   second fill: word order was already saying it. */
-.lang-chip-pos {
-  color: var(--text-secondary);
-}
-
-/* Uncatalogued label — still shown for correction, never alarming. The dashed
-   box said "input" about a label; italic says "we do not know" and stops. */
-.lang-chip-unknown {
-  color: var(--text-tertiary);
-  font-style: italic;
-}
-
-.lang-chip-id {
-  font-family: var(--font-ui);
-  font-weight: 400;
-  font-size: 10.5px;
-  color: var(--text-tertiary);
-  background: transparent;
-  border: none;
-  padding-left: 4px;
-  padding-right: 2px;
-}
+/* C2·7 stepped away from the chips; C·4 §3·2 finishes the job and deletes the
+   row. The chip line and the head's `.lang-detail-kind` were built from one
+   array — `card.morphExplain.parts` — and rendered the same words with the
+   same middle dot, so the entry said "aorist middle indicative" twice before
+   the reader reached the gloss. The surviving copy is at the head, where the
+   quire draws it; there is nothing left for those rules to style. */
 
 .lang-toggle {
   background: none;
@@ -10118,11 +10478,17 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   letter-spacing: 0.02em;
 }
 
+/* The reference that closes the footer row. It was a tracked 10.5px medium
+   standing on its own line — a mono kicker in everything but the face. C·4
+   draws it as the last item on the verbs' row, quiet, in tabular figures, and
+   with no tracking: Law 4's "tabular figures do the aligning", not letter
+   spacing doing the announcing. */
 .lang-study-verse {
-  margin: 8px 0 0;
-  font-size: 10.5px;
-  font-weight: 500;
-  letter-spacing: 0.03em;
+  margin: 0 0 0 auto;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.4;
   color: var(--text-tertiary);
   font-variant-numeric: tabular-nums;
 }
@@ -10375,10 +10741,14 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   background: color-mix(in srgb, var(--study-gold) 38%, var(--bg-reading));
 }
 
+/* C·4 §3·6 draws the tail of the renderings block as "6 more renderings" —
+   the same 11.5px ink-2 the drawing gives every other "there is more of this"
+   line in the panel ("All 8", "All 21", "1 more"). It was 10.5px in ink-3,
+   which set it below the rows it summarises instead of beside them. */
 .lang-orbit-remainder {
   margin: 4px 0 0;
-  font: 400 10.5px var(--font-ui);
-  color: var(--text-tertiary);
+  font: 400 11.5px var(--font-ui);
+  color: var(--text-secondary);
 }
 
 /* The donut's own furniture — the ring, its halo, the 70px hub and the nine
@@ -10761,8 +11131,29 @@ button.lang-sense-branch-row:hover {
 
 /* --- Structure (MACULA clause outline — pastor phrasing) --- */
 
-.lang-syntax-block {
-  margin: 8px 0 4px;
+/* C·4 §3·3 — the pane footer C2·7 asked for and could not have, because none
+   existed. "Structure and Add to note join the footer where every other
+   destination lives." One rule above it, then a row of words: the writing verb
+   in ink, the destination in ink-2, and the reference closing the row in
+   tabular figures. §C4·6: verbs are words in a footer — no bordered buttons,
+   no circular chips — and no mono, so the reference sets in the UI sans.
+
+   It is the last block in the entry rather than a bar pinned to the pane's
+   floor: the study panel scrolls as one column and does not lay its tab panels
+   out as full-height flex, so a pinned footer would need the tab panel to
+   change shape — and `.margin-tab-panel` is not this surface's to change.
+   @quire derived · kin: margin entry · footer as the entry's last part. */
+.lang-footer {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  /* 19px below the rule is the drawing's own interval; above it the drawing
+     spends whatever `margin-top:auto` leaves, which this column has no floor
+     to give — so it takes the nearest licensed step instead of inventing one. */
+  margin-top: 24px;
+  padding-top: 19px;
+  border-top: 1px solid var(--border-subtle);
 }
 
 /* C2·7: "A real destination, wrongly dressed as a button in the body." The
@@ -10791,13 +11182,9 @@ button.lang-sense-branch-row:hover {
   color: var(--text-primary);
 }
 
-.lang-syntax-toggle-hint {
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-tertiary);
-}
+/* The tracked uppercase "open" beside the word was the last piece of chrome
+   voice on this surface — a second word saying what pressing a destination
+   does. §C4·6: verbs are words in a footer, and the word is "Structure". */
 
 /* ── Structure full-page modal ─────────────────────────────── */
 
@@ -15383,13 +15770,8 @@ textarea:focus-visible,
   color: var(--text-primary);
 }
 
-.lang-syntax-toggle-hint {
-  margin-left: 2px;
-  font-family: var(--font-ui);
-  font-size: 8.5px;
-  font-weight: var(--fw-medium);
-  text-transform: lowercase;
-}
+/* (The toggle's trailing hint retired with the body's Structure button — the
+   footer verb is one word.) */
 
 /* Structure is the one full-workspace drill-down. It keeps the proven
    diagrams, but now carries the exact atmosphere through its body portal. */
@@ -17790,58 +18172,66 @@ button.lang-phrase-diagram-node:focus-visible,
   line-height: 1.45;
 }
 
-.words-verse-chooser {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 7px;
-  margin: -12px 0 14px;
-  color: var(--text-tertiary);
+/* C·4 §3·1 — "Verse chips become two words."
+
+   What was here: a standing label, "Words for verse", and a row of numerals in
+   25px radius-999 pills with a border, a paper fill, a drop shadow and a seal
+   underline inside the capsule. §C4·6 bans the bordered button and the
+   circular chip; Law 2 bans the second device saying "selected" on top of the
+   first. The drawing replaces all of it with two words on one line: the verse
+   whose grid is on screen, set as this block's section head, and the verse you
+   can switch to, set beside it as a switch.
+
+   The row reserves the taller of the two sizes at rest, so switching verses
+   changes ink and weight and never the height of the line — the strip below
+   does not move. */
+.words-verse-switch {
+  display: block;
+  min-height: 18px;
+  margin: -12px 0 16px;
   font-family: var(--font-ui);
 }
 
-.words-verse-chooser-label {
-  font-size: 0.65625rem;
-  line-height: 1.3;
-}
-
-.words-verse-chips {
-  display: inline-flex;
+.words-verse-switch-list {
+  display: flex;
+  align-items: baseline;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 4px;
-  max-width: 100%;
+  justify-content: space-between;
+  gap: 4px 16px;
 }
 
-.words-verse-chip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 25px;
-  min-height: 23px;
-  padding: 2px 7px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 999px;
-  background: var(--bg-reading);
+.words-verse-word {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
   color: var(--text-secondary);
-  font: var(--fw-medium) 0.65625rem/1 var(--font-ui);
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;    /* 11 */
+  font-weight: var(--fw-normal);
+  line-height: 1.4;
   font-variant-numeric: tabular-nums;
   cursor: pointer;
+  transition: color var(--transition-fast);
 }
 
-.words-verse-chip:hover,
-.words-verse-chip[aria-checked="true"] {
-  border-color: var(--border-medium);
+/* The verse being shown is the head of the block, so it takes the section
+   head's size and weight. Nothing fills and nothing is ruled: this is a
+   heading that happens to be pressable, not a selected control. */
+.words-verse-word.is-showing {
+  color: var(--text-primary);
+  font-size: 0.78125rem;   /* 12.5 */
+  font-weight: var(--fw-semibold);
+  cursor: default;
+}
+
+.words-verse-word:not(.is-showing):hover {
   color: var(--text-primary);
 }
 
-.words-verse-chip[aria-checked="true"] {
-  box-shadow: var(--shadow-subtle), inset 0 -2px var(--study-gold);
-}
-
-.words-verse-chip:focus-visible {
-  outline: 2px solid var(--study-gold-focus);
-  outline-offset: 1px;
+.words-verse-word:focus-visible {
+  outline: 2px solid var(--accent-seal);
+  outline-offset: 2px;
 }
 
 @media (max-width: 660px) {
@@ -18399,4 +18789,58 @@ button.lang-phrase-diagram-node:focus-visible,
   .passage-picker-book {
     max-width: 118px;
   }
+}
+
+/* ── Disabled, drawn once ──────────────────────────────────────────────────
+   Quire C4·6, a ruling in its own right: "Disabled is the label without its
+   count. Ink-3, no rule, no number. No fourth ink was needed."
+
+   Drawn for the Words lens at chapter scope — §C4·5, "Words has nothing to say
+   about a whole chapter" — but written here rather than beside that tab,
+   because Rev 04 Law 7 owes five states on every surface and this is the first
+   one the language has actually drawn. Any instrument whose state vocabulary is
+   ink and a mark can adopt it by taking the class; nothing in these
+   declarations knows what a tab is.
+
+   It sits last in the sheet on purpose. A disabled instrument has to be able to
+   override its host's resting and hover ink, and every host writes those at one
+   class of specificity — so the treatment wins on order rather than by being
+   escalated to a doubled selector, which is how a shared rule turns into an
+   arms race. Move it and the hover states come back.
+
+   Three things it deliberately does NOT do:
+
+   - It does not dim. An opacity below 1 is the on-state photocopied, and it
+     takes an ink that passes Law 6 down with it: ink-3 at .48 over canvas
+     computes to about #B3AEA7, which is 1.6:1. A disabled label is still a
+     label a reader has to read in order to learn that it is off, so it holds
+     the 4.60:1 ink-3 already in the palette. That is the ruling's "no fourth
+     ink was needed", stated as CSS.
+   - It does not draw the on-mark. Off is nothing, and disabled is not louder
+     than off. The two ways this language draws a mark — a border edge and an
+     inset box-shadow — are cleared here; a host that marks state with a
+     pseudo-element must also never mark a disabled instrument active, which is
+     enforced in the markup rather than overpainted from here.
+   - It does not say `cursor: not-allowed`. That is a fourth signal, and a
+     pointer scolding the reader about a state the label already states is the
+     kind of second sentence §9 deletes.
+
+   Pointer events stay live: the element remains focusable and reachable, and
+   whatever owns it refuses the activation in behaviour. `pointer-events: none`
+   here would take the label out of reach of a keyboard reader, and an
+   instrument you cannot find is off, not disabled. */
+.is-disabled-instrument {
+  color: var(--text-tertiary);
+  cursor: default;
+  opacity: 1;
+  background: none;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* Hover is a promise that something will happen. Nothing will. */
+.is-disabled-instrument:hover {
+  color: var(--text-tertiary);
+  background: none;
+  box-shadow: none;
 }

@@ -46,10 +46,24 @@ test("capture, highlight, and cross-reference overlays state trust and source cl
   assert.match(marking, /data-floating-layer="toolbar"/);
   assert.match(marking, /theme-\$\{theme\}/);
 
-  assert.match(margin, /aria-label="Related verses"/);
-  assert.match(margin, />Related verses<\/h3>/);
-  assert.match(margin, /For this verse/);
-  assert.match(margin, /Across this passage/);
+  // These four lines used to assert the cross-reference block's own copy:
+  //   /aria-label="Related verses"/, />Related verses<\/h3>/,
+  //   /For this verse/, /Across this passage/
+  // — the heading and scope line of `CrossRefsBlock`, which the Connections tab
+  // rendered. Quire C·4 struck all of it: the tab shows connections now, the
+  // heading and its subtitle were set in mono (C4·6 withdraws mono from this
+  // surface), and the block itself is deleted. The requirement this test
+  // carries is that the list states trust and source, so it is asserted against
+  // the live drawing: Overview's own section, whose head names whose the list
+  // is, and whose Sources row names OpenBible and its licence.
+  assert.match(margin, /title="Cross-references"/);
+  assert.match(margin, /count=\{`\$\{crossRefTotal\.toLocaleString\(\)\} · edition`\}/);
+  assert.match(margin, /detail: "Cross-references"/);
+  assert.match(margin, /name: crossRefs\.attribution\.name,\s*license: crossRefs\.attribution\.license/);
+  // And nothing licensed is drawn under the reader's own word. Matched in the
+  // forms the copy could only take if it were rendered, so the note recording
+  // why it went is not itself a failure.
+  assert.doesNotMatch(margin, /aria-label="Related verses"|>Related verses</);
 });
 
 test("study surfaces share restrained material styling without malformed blur expressions", () => {

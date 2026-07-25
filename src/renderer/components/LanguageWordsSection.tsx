@@ -262,10 +262,23 @@ export function buildLanguageWordCapture({
 }
 
 /**
- * Persistent form row: chips always on; meanings progressive.
- * STEP overlay (Approach A) only when open — never changes chips.
+ * The head's morph line, and the form notes behind it.
+ *
+ * C·4 §3·2: "Morphology is spelled out once, at the head, and the duplicate
+ * chip row goes." The row of chip spans this block used to draw was
+ * built from `card.morphExplain.parts` — the same array, the same words, the
+ * same middle dot — as the head's kind line two blocks above it, so the entry
+ * said "aorist middle indicative" twice before the reader reached the gloss.
+ * C2·7 said step away from the chips; C·4 says where the surviving copy lives.
+ * It lives at the head, and it carries the disclosure the chip row carried:
+ * the STEP sentences, each part's meaning in plain English, and the parse code
+ * and lexicon key that C2·7 kept behind a disclosure rather than on the row.
+ *
+ * @quire derived · kin: margin entry · the one remaining morph line becomes the
+ * trigger, because deleting the duplicate must not also delete what opened.
  */
 function MorphFormBlock({
+  kindLine,
   parts,
   code,
   strongId,
@@ -273,6 +286,7 @@ function MorphFormBlock({
   open,
   onToggle,
 }: {
+  kindLine: string;
   parts: LanguageMorphPart[];
   code: string;
   strongId?: string | null;
@@ -296,25 +310,10 @@ function MorphFormBlock({
         aria-expanded={open}
         title={open ? "Hide form notes" : "Show what these mean"}
       >
-        <span className="lang-form-chips">
-          {parts.map((p) => (
-            <span
-              key={p.label}
-              className={[
-                "lang-chip",
-                p.kind === "pos" ? "lang-chip-pos" : "",
-                p.unknown ? "lang-chip-unknown" : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-            >
-              {p.label}
-            </span>
-          ))}
-          {/* Strong's number left the resting row for the entry's name line,
-              where it arrives on hover. It is a lookup key for a book the
-              reader does not have open. */}
-        </span>
+        {/* Strong's number left the resting row for the entry's name line,
+            where it arrives on hover. It is a lookup key for a book the
+            reader does not have open. */}
+        <span className="margin-entry-kind lang-detail-kind">{kindLine}</span>
         <span className="lang-form-caret" aria-hidden="true">
           {open ? "▴" : "▾"}
         </span>
@@ -1161,12 +1160,25 @@ export function LanguageWordsSection({
   const reference = `${bookDisplayName ?? book} ${chapter}:${verse}`;
   // The kind line: part of speech, then the form in words. Never the code —
   // that lives in the form disclosure, where someone reading a commentary
-  // will look for it.
+  // will look for it. C·4 sets it whole at the head: "Verb · aorist middle
+  // indicative, third person singular". The comma is the drawing's, and it is
+  // read off the feature families rather than guessed — what the form does
+  // (stem, tense, voice, mood) on one side, who it is about (person, number,
+  // gender, case) on the other. An adjective has nothing on the first side and
+  // reads "Adjective · dative singular feminine", exactly as C2·7 draws it.
   const morphParts = card?.morphExplain?.parts ?? [];
   const morphPos = morphParts.find((part) => part.kind === "pos")?.label;
-  const morphRest = morphParts.filter((part) => part.kind !== "pos").map((part) => part.label);
-  const morphKindLine = morphPos || morphRest.length > 0
-    ? [morphPos, morphRest.join(" ")].filter(Boolean).join(" · ")
+  const morphAction = morphParts
+    .filter((part) => part.kind === "stem" || part.kind === "tense" || part.kind === "voice" || part.kind === "mood")
+    .map((part) => part.label);
+  const morphAgreement = morphParts
+    .filter((part) => part.kind !== "pos" && !(part.kind === "stem" || part.kind === "tense" || part.kind === "voice" || part.kind === "mood"))
+    .map((part) => part.label);
+  const morphClauses = [morphAction.join(" "), morphAgreement.join(" ")].filter(Boolean).join(", ");
+  const morphKindLine = morphPos || morphClauses
+    ? [morphPos ? morphPos.charAt(0).toUpperCase() + morphPos.slice(1) : null, morphClauses]
+        .filter(Boolean)
+        .join(" · ")
     : null;
   const cardSources = card && load.kind === "ready"
     ? languageCardSources(card, load.packageId, load.packageName, strongPeek)
@@ -1261,27 +1273,26 @@ export function LanguageWordsSection({
                 {card.token.strongPrefixed && (
                   <span className="margin-entry-name-key lang-detail-strong">{card.token.strongPrefixed}</span>
                 )}
-                {onCapture && load.kind === "ready" && (
-                  <button
-                    type="button"
-                    className="margin-capture-action lang-capture-action"
-                    aria-label={`Add ${surfaceOf(card.token, card.displaySurface)} word study to a note`}
-                    onClick={() => onCapture(buildLanguageWordCapture({
-                      card,
-                      packageId: load.packageId,
-                      packageName: load.packageName,
-                      reference,
-                    }))}
-                  >
-                    Add to note…
-                  </button>
-                )}
               </div>
 
-              {/* C·2 · part 2 — morphology spelled out in words. A bare parse
-                  code is the only genuinely intimidating thing on this
-                  surface, and it costs 30px to fix. */}
-              {morphKindLine && <p className="margin-entry-kind lang-detail-kind">{morphKindLine}</p>}
+              {/* C·2 · part 2, and C·4 §3·2 — morphology spelled out in words,
+                  once. A bare parse code is the only genuinely intimidating
+                  thing on this surface, and it costs 30px to fix. The chip row
+                  that used to repeat this line further down the entry is gone;
+                  this is the surviving copy and it opens the form notes. */}
+              {card.morphExplain && card.morphExplain.parts.length > 0 ? (
+                <MorphFormBlock
+                  kindLine={morphKindLine ?? card.morphExplain.summary}
+                  parts={card.morphExplain.parts}
+                  code={card.morphExplain.code}
+                  strongId={card.token.strongPrefixed}
+                  stepMorph={card.stepMorph}
+                  open={grammarOpen}
+                  onToggle={toggleGrammar}
+                />
+              ) : morphKindLine ? (
+                <p className="margin-entry-kind lang-detail-kind">{morphKindLine}</p>
+              ) : null}
 
               {/* C·2 · part 3 — why it is here, in the reading face */}
               {(card.gloss || card.token.gloss) && (
@@ -1319,45 +1330,6 @@ export function LanguageWordsSection({
                 <p className="lang-muted lang-reverse-empty">No word data for this translation</p>
               )}
 
-              {/* Form chips: persistent skeleton; meanings open on demand */}
-              {card.morphExplain && card.morphExplain.parts.length > 0 && (
-                <MorphFormBlock
-                  parts={card.morphExplain.parts}
-                  code={card.morphExplain.code}
-                  strongId={card.token.strongPrefixed}
-                  stepMorph={card.stepMorph}
-                  open={grammarOpen}
-                  onToggle={toggleGrammar}
-                />
-              )}
-
-              {/* Structure — full-page modal (Greek + Hebrew when data present) */}
-              <div className="lang-syntax-block">
-                <button
-                  type="button"
-                  className={`lang-syntax-toggle${syntaxOpen ? " is-open" : ""}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (syntaxOpen) closeStructureModal();
-                    else void openStructureModal();
-                  }}
-                  aria-expanded={syntaxOpen}
-                  aria-haspopup="dialog"
-                >
-                  Structure
-                  <span className="lang-syntax-toggle-hint" aria-hidden="true">
-                    open
-                  </span>
-                </button>
-                <StructureModal
-                  open={syntaxOpen}
-                  onClose={closeStructureModal}
-                  hit={syntaxHit}
-                  loading={syntaxLoading}
-                  dir={dirAttr}
-                />
-              </div>
-
               {/* C·2 · part 4 — three scales in one line, with the
                   abbreviations spelled out to fit the margin's no-mono rule. */}
               <div className="lang-usage margin-entry-fact">
@@ -1385,10 +1357,6 @@ export function LanguageWordsSection({
                 )}
               </div>
 
-              <p className="lang-study-verse" aria-live="polite">
-                {bookDisplayName ?? book} {chapter}:{verse}
-              </p>
-
               {usesOpen && card.occurrencesInBook.length > 1 && (
                 <ul className="lang-uses">
                   {card.occurrencesInBook.slice(0, 10).map((o) => (
@@ -1409,6 +1377,57 @@ export function LanguageWordsSection({
                 </ul>
               )}
               <SourcesDisclosure sources={cardSources} className="lang-sources" />
+
+              {/* C·4 §3·3 — Structure and the capture verb "join the footer
+                  where every other destination lives". C2·7 asked for a pane
+                  footer and there was none, which is why both were marooned in
+                  the body: capture rode the lemma's baseline and Structure sat
+                  mid-entry dressed as a button. §C4·6: verbs are words in a
+                  footer — no bordered buttons, no circular chips — and the
+                  reference closes the row in tabular figures.
+
+                  The Structure drill-down itself is undrawn and parked. This
+                  is the link; the destination is not touched. */}
+              <div className="lang-footer">
+                {onCapture && load.kind === "ready" && (
+                  <button
+                    type="button"
+                    className="margin-capture-action lang-capture-action"
+                    aria-label={`Add ${surfaceOf(card.token, card.displaySurface)} word study to a note`}
+                    onClick={() => onCapture(buildLanguageWordCapture({
+                      card,
+                      packageId: load.packageId,
+                      packageName: load.packageName,
+                      reference,
+                    }))}
+                  >
+                    Add to note
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className={`lang-syntax-toggle${syntaxOpen ? " is-open" : ""}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (syntaxOpen) closeStructureModal();
+                    else void openStructureModal();
+                  }}
+                  aria-expanded={syntaxOpen}
+                  aria-haspopup="dialog"
+                >
+                  Structure
+                </button>
+                <p className="lang-study-verse" aria-live="polite">
+                  {bookDisplayName ?? book} {chapter}:{verse}
+                </p>
+              </div>
+              <StructureModal
+                open={syntaxOpen}
+                onClose={closeStructureModal}
+                hit={syntaxHit}
+                loading={syntaxLoading}
+                dir={dirAttr}
+              />
             </div>
           )}
         </>

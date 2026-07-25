@@ -303,7 +303,7 @@
     "--margin-width": "380px",
     "--reading-max-width": "660px",
     "--verse-gutter": "32px",
-    "--margin-header-h": "52px"
+    "--margin-header-h": "62px"
   },
   "highlight": {
     ":root": {

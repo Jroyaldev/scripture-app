@@ -126,9 +126,17 @@ test("Study opens a named research tab while entity drill and branch remain dist
   assert.equal(isExplicitEntityBranchGesture({ button: 1, metaKey: false, ctrlKey: false, shiftKey: false }), true);
 
   assert.match(margin, /export interface EntityResearchTarget \{[\s\S]{0,220}?displayName: string;[\s\S]{0,120}?kind: "person" \| "place" \| "other";/);
-  // The entry's name line carries the destination as its accessible name; the
-  // caption that used to appear on hover is gone with the card.
-  assert.match(margin, /openLabel=\{`Open research tab for \$\{entity\.displayName\}`\}/);
+  // The name carries the destination as its accessible name; the caption that
+  // used to appear on hover is gone with the card.
+  //
+  // This used to read `openLabel={`Open research tab for ${entity.displayName}`}`,
+  // when the overview drew its entities through `MarginEntryNameLine` and the
+  // label arrived as a prop. Quire C4·3 sets those four names at 16px serif in
+  // a fixed column instead of 28px in an entry, so the overview's name is now a
+  // plain button carrying the same sentence as its own `aria-label`. The entry
+  // skeleton — and its `openLabel` prop — still serves the research pane, and
+  // the assertion below still guards it.
+  assert.match(margin, /aria-label=\{`Open research tab for \$\{entity\.displayName\}`\}/);
   assert.match(margin, /<button type="button" className="margin-entry-name-open" onClick=\{onOpen\} aria-label=\{openLabel\}>/);
   assert.match(margin, /onOpenEntity\?\.\(entityResearchTarget\(entity\)\)/);
 
@@ -150,7 +158,16 @@ test("Study opens a named research tab while entity drill and branch remain dist
 
 test("entity references follow the current canvas and expose an explicit passage-tab branch", () => {
   const viewStart = margin.indexOf("function EntityResearchView");
-  const viewEnd = margin.indexOf("function CrossReferenceRow", viewStart);
+  // This slice used to end at `function CrossReferenceRow`, which Quire C·4
+  // deleted along with the Connections tab's cross-reference lists. `indexOf`
+  // answered -1, and `slice(start, -1)` is not an error — it silently runs to
+  // the end of the file, so "the view" became every line below it and the three
+  // assertions could have been satisfied by code in any later component. The
+  // test stayed green the whole time. Both ends are asserted found now, so the
+  // next deletion fails loudly here instead of quietly widening the scope.
+  const viewEnd = margin.indexOf("function connectionMemberPosition", viewStart);
+  assert.ok(viewStart >= 0, "EntityResearchView must exist for this test to mean anything");
+  assert.ok(viewEnd > viewStart, "the slice's end anchor must still exist and follow its start");
   const view = margin.slice(viewStart, viewEnd);
   assert.match(view, /\{\.\.\.crossRefBranchHandlers\(`bref:v1\/\$\{ref\}`, target, onNavigate, onOpenPassageTab\)\}/);
   assert.match(view, /void onOpenPassageTab\(target\)/);

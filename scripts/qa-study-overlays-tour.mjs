@@ -434,21 +434,61 @@ try {
     await clickSelector(".structure-modal-done");
     await waitFor(`!document.querySelector(".structure-modal-root")`);
 
+    // This step used to open the Connections tab and assert `.crossref-section`,
+    // its OpenBible attribution and its rows — the defect Quire C·4 exists for.
+    // The tab was showing the edition's cross-reference list under the reader's
+    // own word. Cross-references stay in Overview under their own name, marked
+    // as the edition's; the tour for them belongs to that step now. Connections
+    // shows connections, so that is what is checked here.
     await clickSelector("#margin-connections-tab");
     await waitFor(`document.querySelector("#margin-connections-tab")?.getAttribute("aria-selected") === "true"`);
-    await waitFor(`Boolean(document.querySelector(".crossref-section"))`, 15_000);
-    await scrollMarginTo(".crossref-section");
-    const crossRefState = await evaluate(`(() => ({
-      label: document.querySelector(".crossref-section")?.getAttribute("aria-label"),
-      context: document.querySelector(".crossref-context")?.textContent?.replace(/\\s+/g, " ").trim(),
-      rows: document.querySelectorAll(".crossref-row").length,
-      source: document.querySelector(".crossref-attribution span:first-child")?.textContent?.trim(),
+    await waitFor(`Boolean(document.querySelector(".margin-connections"))`, 15_000);
+    await scrollMarginTo(".margin-connections");
+    const connectionsState = await evaluate(`(() => ({
+      label: document.querySelector(".margin-connections")?.getAttribute("aria-label"),
+      crossRefs: document.querySelectorAll(".margin-connections .crossref-row, .margin-connections .note-crossref-row").length,
+      types: [...document.querySelectorAll(".margin-connection-type")].map((node) => node.textContent?.trim()),
+      verb: document.querySelector(".margin-connection-verb")?.textContent?.trim(),
     }))()`);
-    assert.equal(crossRefState.label, "OpenBible cross references");
-    assert.match(crossRefState.context ?? "", /^Cross References\s*·\s*For this verse$/);
-    assert.ok(crossRefState.rows >= 1);
-    assert.equal(crossRefState.source, "OpenBible Cross References");
-    await screenshot(`${name}-openbible-preview`, [".living-margin"]);
+    assert.equal(connectionsState.label, "Your connections");
+    assert.equal(connectionsState.crossRefs, 0);
+    assert.equal(connectionsState.verb, "Connect a phrase");
+    for (const type of connectionsState.types) {
+      assert.ok(
+        ["Parallelism", "Echo", "Series", "Contrast", "Mirror", "Hinge"].includes(type),
+        `unexpected connection type ${type}`,
+      );
+    }
+    await screenshot(`${name}-connections-preview`, [".living-margin"]);
+
+    // …and here is where the cross-reference tour landed. Same three facts the
+    // Connections step used to assert — the corpus, its licence, and that rows
+    // are actually drawn — now read off the section that names them as the
+    // edition's, in every theme.
+    await clickSelector("#margin-overview-tab");
+    await waitFor(`document.querySelector("#margin-overview-tab")?.getAttribute("aria-selected") === "true"`);
+    await waitFor(`Boolean(document.querySelector(".intent-overview"))`, 15_000);
+    await waitFor(
+      `!document.querySelector('.intent-overview .surface-state[data-surface-state="loading"]')`,
+      30_000,
+    );
+    const crossRefState = await evaluate(`(() => {
+      const heads = [...document.querySelectorAll(".intent-section-head")];
+      const head = heads.find((node) => node.querySelector("h3")?.textContent?.trim() === "Cross-references");
+      return {
+        head: head?.querySelector("h3")?.textContent?.trim(),
+        count: head?.querySelector(".intent-section-count")?.textContent?.trim(),
+        rows: document.querySelectorAll(".intent-overview .study-ref-row--compact").length,
+        sources: [...document.querySelectorAll(".intent-overview .margin-source-copy")]
+          .map((node) => node.textContent?.replace(/\\s+/g, " ").trim()).join(" | "),
+      };
+    })()`);
+    assert.equal(crossRefState.head, "Cross-references");
+    assert.match(crossRefState.count ?? "", /·\\s*edition$/);
+    assert.ok(crossRefState.rows > 0 && crossRefState.rows <= 3);
+    assert.match(crossRefState.sources ?? "", /OpenBible/i);
+    assert.match(crossRefState.sources ?? "", /CC[- ]BY/i);
+    await screenshot(`${name}-cross-references`, [".living-margin"]);
   }
 
   await setTheme("light");

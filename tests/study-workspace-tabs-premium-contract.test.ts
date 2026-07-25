@@ -391,6 +391,23 @@ test("a derived tab wears the machine hue whether or not you are reading it", ()
     /\.scripture-workspace-tab-mark\.is-place \{\s*color: var\(--accent-machine\);/,
   );
 
+  // The same glyph is drawn in the All Tabs list, and the strip-scoped selector
+  // did not reach it there, so a derived tab read slate in the strip and
+  // unmarked in the list. That is the one place forty tabs are told apart, so
+  // it is the place the mark matters most; provenance belongs to the tab, not
+  // to the surface the tab happens to be drawn on.
+  assert.match(componentSource, /className="scripture-workspace-overflow-row"[\s\S]{0,700}<TabMark tab=\{tab\} \/>/);
+  const overflowRule = rail.slice(machineIndex, rail.indexOf("}", machineIndex));
+  for (const selector of [
+    ".scripture-workspace-overflow-row .scripture-workspace-tab-mark.is-person",
+    ".scripture-workspace-overflow-row .scripture-workspace-tab-mark.is-place",
+  ]) {
+    assert.ok(
+      overflowRule.includes(selector),
+      `${selector} must wear --accent-machine: a derived tab cannot go unmarked in the All Tabs list`,
+    );
+  }
+
   // These two lines used to read:
   //   const selectedIndex = rail.indexOf('.scripture-workspace-tab[aria-selected="true"] .scripture-workspace-tab-mark {');
   //   assert.ok(machineIndex > selectedIndex, "the machine hue must be declared after the selected mark or selection will repaint it seal");

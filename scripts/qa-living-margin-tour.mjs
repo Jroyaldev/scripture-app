@@ -330,16 +330,57 @@ assert.match(chapterState.tabs[2] ?? "", /^Passage/);
 assert.match(chapterState.tabs[3] ?? "", /^Notes/);
 assert.equal(chapterState.activeTab, "margin-overview-tab");
 console.log("chapter", chapterState);
-await waitFor(`!document.querySelector(".intent-loading")`, 30_000);
-const overviewState = await evaluate(`(() => ({
-  scripture: document.querySelectorAll(".intent-ref-row").length,
-  library: document.querySelectorAll(".intent-note-lead").length,
-  entities: document.querySelectorAll(".intent-entity-card").length,
-  attribution: [...document.querySelectorAll(".intent-attribution")].map((node) => node.textContent?.trim()).join(" | "),
-}))()`);
-assert.ok(overviewState.scripture > 0 && overviewState.scripture <= 2);
-assert.ok(overviewState.entities > 0);
-assert.match(overviewState.attribution ?? "", /STEPBible TIPNR.*CC BY 4\.0/);
+// The cross-reference tour lives here now. It used to run on the Connections
+// tab against `.crossref-section` — the OpenBible source, the licence and the
+// row count — which is the defect Quire C·4 exists for. The list did not go
+// away with that tab: it is in Overview under its own name, marked as the
+// edition's, so the same three facts are asserted against the head that says
+// so and the Sources block that names the corpus.
+await waitFor(
+  `!document.querySelector('.intent-overview .surface-state[data-surface-state="loading"]')`,
+  30_000,
+);
+const overviewState = await evaluate(`(() => {
+  const heads = [...document.querySelectorAll(".intent-section-head")];
+  const headFor = (label) => heads.find((node) => node.querySelector("h3")?.textContent?.trim() === label);
+  return {
+    crossRefHead: headFor("Cross-references")?.querySelector("h3")?.textContent?.trim(),
+    crossRefCount: headFor("Cross-references")?.querySelector(".intent-section-count")?.textContent?.trim(),
+    crossRefRows: document.querySelectorAll(".intent-overview .study-ref-row--compact").length,
+    crossRefAll: [...document.querySelectorAll(".intent-overview .intent-more-toggle")]
+      .map((node) => node.textContent?.trim()).join(" | "),
+    entityHead: headFor("People & places")?.querySelector("h3")?.textContent?.trim(),
+    entityCount: headFor("People & places")?.querySelector(".intent-section-count")?.textContent?.trim(),
+    entities: document.querySelectorAll(".intent-entity-row").length,
+    entityNameSize: document.querySelector(".intent-entity-name")
+      ? getComputedStyle(document.querySelector(".intent-entity-name")).fontSize
+      : null,
+    library: document.querySelectorAll(".intent-note-lead").length,
+    sourcesLast: document.querySelector(".intent-overview > :last-child")?.classList.contains("margin-sources"),
+    sources: [...document.querySelectorAll(".intent-overview .margin-source-copy")]
+      .map((node) => node.textContent?.replace(/\\s+/g, " ").trim()).join(" | "),
+    mono: [...document.querySelectorAll(".intent-overview *")]
+      .filter((node) => /mono/i.test(getComputedStyle(node).fontFamily)).length,
+  };
+}) ()`);
+assert.equal(overviewState.crossRefHead, "Cross-references");
+assert.match(overviewState.crossRefCount ?? "", /^\\d[\\d,]*\\s·\\sedition$/);
+// Three rows at every scope: "a section never changes its shape because the
+// scope changed size."
+assert.ok(overviewState.crossRefRows > 0 && overviewState.crossRefRows <= 3);
+assert.match(overviewState.crossRefAll ?? "", /All \\d/);
+assert.equal(overviewState.entityHead, "People & places");
+assert.match(overviewState.entityCount ?? "", /^\\d[\\d,]*\\shere$/);
+assert.ok(overviewState.entities > 0 && overviewState.entities <= 4);
+assert.equal(overviewState.entityNameSize, "16px");
+// The edition's cross-references and TIPNR's identities are both named, in
+// the same block the research pane uses, and it is the last thing drawn.
+assert.equal(overviewState.sourcesLast, true);
+assert.match(overviewState.sources ?? "", /OpenBible/i);
+assert.match(overviewState.sources ?? "", /CC[- ]BY/i);
+assert.match(overviewState.sources ?? "", /STEPBible TIPNR/);
+// C4·6: no mono on this surface.
+assert.equal(overviewState.mono, 0);
 console.log("overview", overviewState);
 await screenshot("paper-default-overview", ".living-margin");
 await screenshot("paper-overview-context");
@@ -353,8 +394,8 @@ await waitFor(`document.querySelector(".living-margin")?.dataset.marginMode === 
 const readingState = await evaluate(`(() => ({
   mode: document.querySelector(".margin-frame-mode")?.textContent?.trim(),
   view: document.querySelector("[data-margin-view]")?.getAttribute("data-margin-view"),
-  reference: document.querySelector(".margin-header-ref")?.textContent?.trim(),
-  done: Boolean(document.querySelector(".margin-frame-action")),
+  reference: document.querySelector(".margin-frame-ref")?.textContent?.trim(),
+  done: Boolean(document.querySelector(".margin-frame-verb .margin-frame-action")),
 }))()`);
 assert.equal(readingState.mode, "In view");
 assert.equal(readingState.view, "reading");
@@ -365,19 +406,25 @@ await screenshot("paper-reading-eye-line-margin", ".living-margin");
 
 await setReadingScroll(0);
 await waitFor(`document.querySelector(".living-margin")?.dataset.marginMode === "chapter"`);
+// §C4·1 · the tab row must sit at exactly the same y before and after a verse
+// is chosen. That is the section's whole claim — shipped, selecting a verse
+// pushed the row down roughly 300px — so the tour measures it rather than
+// photographing it.
+const tabRowBeforeSelection = await evaluate(`document.querySelector(".margin-tabs")?.getBoundingClientRect().top ?? null`);
 await evaluate(`document.querySelector('.verse-line[data-verse="1"]')?.click()`);
 await waitFor(`document.querySelectorAll('.verse-line[aria-pressed="true"]').length === 1`);
 await evaluate(`document.querySelector('.verse-line[data-verse="7"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true, shiftKey: true }))`);
 await waitFor(`document.querySelectorAll('.verse-line[aria-pressed="true"]').length === 7`);
 await waitFor(`!document.querySelector(${JSON.stringify(MARKING_SELECTION_CHROME_SELECTOR)})`);
 await waitFor(`document.querySelector(".living-margin")?.dataset.marginMode === "selected"`);
-await waitFor(`Boolean(document.querySelector(".margin-quote-toggle"))`);
+const tabRowAfterSelection = await evaluate(`document.querySelector(".margin-tabs")?.getBoundingClientRect().top ?? null`);
+assert.equal(tabRowAfterSelection, tabRowBeforeSelection,
+  "the tab row moved when a verse was chosen — §C4·1 says it never does");
 const selectedState = await evaluate(`(() => ({
   mode: document.querySelector(".margin-frame-mode")?.textContent?.trim(),
   view: document.querySelector("[data-margin-view]")?.getAttribute("data-margin-view"),
-  reference: document.querySelector(".margin-header-ref")?.textContent?.trim(),
-  done: document.querySelector(".margin-frame-action")?.textContent?.trim(),
-  quoteExpanded: document.querySelector(".margin-quote-toggle")?.getAttribute("aria-expanded"),
+  reference: document.querySelector(".margin-frame-ref")?.textContent?.trim(),
+  done: document.querySelector(".margin-frame-verb .margin-frame-action")?.textContent?.trim(),
   swatches: document.querySelectorAll(".margin-hl-swatch").length,
   activeTab: document.querySelector('.margin-tab[aria-selected="true"]')?.id,
   activePanel: document.querySelector('.margin-tab-panel:not([hidden])')?.id,
@@ -387,7 +434,6 @@ assert.deepEqual(selectedState, {
   view: "selected",
   reference: "Acts 19:1–7",
   done: "Done",
-  quoteExpanded: "false",
   swatches: 5,
   activeTab: "margin-passage-tab",
   activePanel: "margin-passage-panel",
@@ -449,57 +495,55 @@ const translationAnchor = await evaluate(`(() => {
   return { offset: row.getBoundingClientRect().top - root.getBoundingClientRect().top, scrollTop: root.scrollTop };
 })()`);
 assert.ok(translationAnchor && translationAnchor.scrollTop > 0);
-const quoteBeforeTranslation = await evaluate(`document.querySelector(".margin-focus-quote")?.textContent?.trim() ?? ""`);
-assert.ok(quoteBeforeTranslation.length > 0);
+// Quire §C4·1 deleted the margin's quoted selection, so the probe for "the
+// panel's copy of the text followed the translation" has nothing to read: the
+// scope bar carries a reference and no wording. What the probe was really
+// guarding — the canonical range and the reading anchor surviving a package
+// swap — is asserted below on the canvas itself, which is where the text is.
+const scopeBeforeTranslation = await evaluate(`document.querySelector(".margin-frame-ref")?.textContent?.trim() ?? ""`);
+assert.equal(scopeBeforeTranslation, "Acts 19:1–7");
 // Translation controls are outside the reading canvas. Their real pointer
 // path must retain the canonical Study range without synthesizing marking UI.
 assert.equal(await evaluate(`Boolean(document.querySelector(${JSON.stringify(MARKING_SELECTION_CHROME_SELECTOR)}))`), false);
-await evaluate(`(() => {
-  window.__marginQuoteHadGap = false;
-  const margin = document.querySelector(".living-margin");
-  window.__marginQuoteObserver = new MutationObserver(() => {
-    const quote = document.querySelector(".margin-focus-quote")?.textContent?.trim() ?? "";
-    if (!quote) window.__marginQuoteHadGap = true;
-  });
-  if (margin) window.__marginQuoteObserver.observe(margin, { subtree: true, childList: true, characterData: true });
-})()`);
 await setTranslation("web");
 const translatedState = await evaluate(`(() => {
   const root = document.querySelector(".scripture-content");
   const row = document.querySelector('.verse-line[data-verse="7"]');
-  window.__marginQuoteObserver?.disconnect();
   return {
     selected: [...document.querySelectorAll('.verse-line[aria-pressed="true"]')].map((node) => Number(node.getAttribute("data-verse"))),
     activeTab: document.querySelector('.margin-tab[aria-selected="true"]')?.id,
     offset: root && row ? row.getBoundingClientRect().top - root.getBoundingClientRect().top : null,
     scrollTop: root?.scrollTop ?? 0,
-    quote: document.querySelector(".margin-focus-quote")?.textContent?.trim() ?? "",
-    quoteHadGap: window.__marginQuoteHadGap,
+    scope: document.querySelector(".margin-frame-ref")?.textContent?.trim() ?? "",
   };
 })()`);
 assert.deepEqual(translatedState.selected, [1, 2, 3, 4, 5, 6, 7]);
 assert.equal(translatedState.activeTab, "margin-passage-tab");
 assert.ok(translatedState.scrollTop > 0);
 assert.ok(Math.abs(translatedState.offset - translationAnchor.offset) < 3);
-assert.equal(translatedState.quoteHadGap, false);
-assert.ok(translatedState.quote.length > 0);
-assert.notEqual(translatedState.quote, quoteBeforeTranslation);
+// The scope is canonical, so it is the one thing a translation change must
+// not touch.
+assert.equal(translatedState.scope, scopeBeforeTranslation);
 await setTranslation("bsb");
 assert.equal(await evaluate(`document.querySelectorAll('.verse-line[aria-pressed="true"]').length`), 7);
 console.log("translation continuity ok", { before: translationAnchor, translated: translatedState });
 
 await selectMarginTab("overview");
-await waitFor(`!document.querySelector(".intent-loading")`, 30_000);
-await waitFor(`Boolean(document.querySelector(".intent-ref-row, .intent-note-lead, .intent-entity-card"))`);
+await waitFor(
+  `!document.querySelector('.intent-overview .surface-state[data-surface-state="loading"]')`,
+  30_000,
+);
+await waitFor(`Boolean(document.querySelector(".intent-overview .study-ref-row--compact, .intent-note-lead, .intent-entity-row"))`);
 const selectedOverview = await evaluate(`(() => ({
-  scripture: document.querySelectorAll(".intent-ref-row").length,
+  crossRefRows: document.querySelectorAll(".intent-overview .study-ref-row--compact").length,
   library: document.querySelectorAll(".intent-note-lead").length,
-  entities: document.querySelectorAll(".intent-entity-card").length,
+  entities: document.querySelectorAll(".intent-entity-row").length,
 }))()`);
-assert.ok(selectedOverview.scripture <= 2);
-assert.ok(selectedOverview.entities > 0);
+// Narrowing to a selection narrows the numbers, never the shape.
+assert.ok(selectedOverview.crossRefRows <= 3);
+assert.ok(selectedOverview.entities > 0 && selectedOverview.entities <= 4);
 await screenshot("paper-intent-overview");
-await evaluate(`document.querySelector(".intent-entity-card")?.click()`);
+await evaluate(`document.querySelector(".intent-entity-name")?.click()`);
 await waitFor(`Boolean(document.querySelector(".entity-research-view"))`);
 assert.ok(await evaluate(`document.querySelectorAll(".entity-reference-list button").length > 0`));
 assert.ok(await evaluate(`[...document.querySelectorAll(".entity-research-sources span")].some((node) => /STEPBible TIPNR/.test(node.textContent ?? ""))`));
@@ -522,10 +566,9 @@ for (const theme of THEMES) {
 }
 
 await setTheme("light");
-await evaluate(`document.querySelector(".margin-quote-toggle")?.click()`);
-await waitFor(`document.querySelector(".margin-quote-toggle")?.getAttribute("aria-expanded") === "true"`);
-await screenshot("paper-expanded-selection-margin", ".living-margin");
-await evaluate(`document.querySelector(".margin-quote-toggle")?.click()`);
+// The "Read full selection ↓" disclosure and its expanded screenshot are gone
+// with the quotation (§C4·1): there is no long state of the scope bar to
+// photograph, because the bar is one fixed band in both scope modes.
 
 await selectMarginTab("overview");
 await evaluate(`document.querySelector("#margin-overview-tab")?.focus()`);
@@ -542,49 +585,86 @@ await pressKey("End", "End");
 await waitFor(`document.activeElement?.id === "margin-notes-tab"`);
 console.log("margin tab keyboard path ok");
 
+// This step used to open the Connections tab and read `.crossref-section` —
+// its OpenBible source, licence, row count and title. That was the defect
+// Quire C·4 exists for: "A connection in this app is a thing you made…
+// Cross-references are the edition's. Putting the edition's list under the word
+// Connections makes third-party data wear the reader's own hand." The
+// cross-reference tour moves to Overview with the list; this tab is toured for
+// what it now holds — typed, seal-marked connections with their member phrases,
+// and no cross-reference of any provenance.
 await selectMarginTab("connections");
-await waitFor(`Boolean(document.querySelector(".crossref-section"))`);
+await waitFor(`Boolean(document.querySelector(".margin-connections"))`);
 await evaluate(`document.querySelector(".living-margin").scrollTop = 0`);
 await screenshot("paper-connections-margin");
-const crossRefTruth = await evaluate(`(() => ({
-  source: document.querySelector(".crossref-attribution span:first-child")?.textContent?.trim(),
-  license: document.querySelector(".crossref-attribution span:last-child")?.textContent?.trim(),
-  links: document.querySelectorAll(".crossref-row").length,
-  title: document.querySelector(".crossref-title")?.textContent?.trim(),
-  context: document.querySelector(".crossref-context")?.textContent?.trim(),
-  hasCollapsedRemainder: Boolean(document.querySelector(".crossref-expand")),
+const connectionsTruth = await evaluate(`(() => ({
+  label: document.querySelector(".margin-connections")?.getAttribute("aria-label"),
+  head: document.querySelector(".margin-connection-head h3")?.textContent?.trim(),
+  count: document.querySelector(".margin-connection-count")?.textContent?.replace(/\\s+/g, " ").trim(),
+  rows: document.querySelectorAll(".margin-connection-row").length,
+  types: [...document.querySelectorAll(".margin-connection-type")].map((node) => node.textContent?.trim()),
+  crossRefs: document.querySelectorAll(".margin-connections .crossref-row, .margin-connections .note-crossref-row").length,
+  verb: document.querySelector(".margin-connection-verb")?.textContent?.trim(),
+  state: document.querySelector(".margin-connection-state")?.textContent?.trim(),
 }))()`);
-assert.equal(crossRefTruth.source, "OpenBible Cross References");
-assert.match(crossRefTruth.license ?? "", /CC[- ]BY/i);
-assert.ok(crossRefTruth.links >= 1);
-assert.equal(crossRefTruth.title, "OpenBible");
-assert.equal(crossRefTruth.context, "Cross References·Across this passage");
-assert.equal(crossRefTruth.hasCollapsedRemainder, false);
-assert.ok(crossRefTruth.links >= 6);
-console.log("cross references", crossRefTruth);
+assert.equal(connectionsTruth.label, "Your connections");
+assert.equal(connectionsTruth.head, "In this passage");
+assert.match(connectionsTruth.count ?? "", /·\s*yours$/);
+assert.equal(connectionsTruth.crossRefs, 0);
+assert.equal(connectionsTruth.verb, "Connect a phrase");
+assert.equal(connectionsTruth.state, "Threads shown");
+for (const type of connectionsTruth.types) {
+  assert.ok(
+    ["Parallelism", "Echo", "Series", "Contrast", "Mirror", "Hinge"].includes(type),
+    `unexpected connection type ${type}`,
+  );
+}
+console.log("connections", connectionsTruth);
 await evaluate(`(() => {
   const margin = document.querySelector(".living-margin");
-  const section = document.querySelector(".crossref-section");
+  const section = document.querySelector(".margin-connections");
   const marginRect = margin.getBoundingClientRect();
   const sectionRect = section.getBoundingClientRect();
   margin.scrollTop += sectionRect.top - marginRect.top - 64;
 })()`);
 await sleep(240);
-await screenshot("paper-openbible-connections-margin", ".living-margin");
+await screenshot("paper-authored-connections-margin", ".living-margin");
 
 await selectMarginTab("notes");
-await waitFor(`!document.querySelector(".ai-insight-loading")`, 30_000);
-await waitFor(`!document.querySelector(".deep-notes-loading")`, 30_000);
-await waitFor(`Boolean(document.querySelector(".notes-deep-dive, .deep-note-card, .ai-insight-block"))`, 30_000);
+// The two spinner classes this used to wait on are gone: Rev 03b's seal
+// segment is the only loading device in the language, so the wait is on the
+// state itself.
+await waitFor(
+  `!document.querySelector('#margin-notes-panel .surface-state[data-surface-state="loading"]')`,
+  30_000,
+);
+await waitFor(
+  `Boolean(document.querySelector(".notes-deep-dive, .deep-note-card, .ai-insight-block, .margin-notes-empty"))`,
+  30_000,
+);
 await evaluate(`document.querySelector(".living-margin").scrollTop = 0`);
 await screenshot("paper-notes-margin", ".living-margin");
 const notesDeepDive = await evaluate(`(() => ({
   cards: document.querySelectorAll(".deep-note-card").length,
   collapsedGate: Boolean(document.querySelector(".margin-disclosure-toggle")),
   insightSource: document.querySelector(".ai-insight-source")?.textContent?.trim(),
+  // C4·6: the bordered Add note is gone and the verb is a word.
+  borderedAction: document.querySelectorAll(".margin-view-action").length,
+  footerVerb: document.querySelector(".margin-note-footer .margin-note-verb")?.textContent?.trim(),
+  // Empty is never blank: one sentence, then the notes written elsewhere.
+  emptySentences: [...document.querySelectorAll(".margin-notes-empty-sentence")]
+    .map((node) => node.textContent?.trim()),
+  elsewhere: document.querySelectorAll(".margin-note-elsewhere .margin-note-row").length,
 }))()`);
 assert.equal(notesDeepDive.collapsedGate, false);
-assert.equal(notesDeepDive.insightSource, "From your notes");
+assert.equal(notesDeepDive.borderedAction, 0);
+for (const sentence of notesDeepDive.emptySentences) {
+  assert.match(sentence ?? "", /^You have not written anything .*\\.$/);
+}
+if (notesDeepDive.cards > 0) {
+  assert.equal(notesDeepDive.insightSource, "From your notes");
+  assert.equal(notesDeepDive.footerVerb, "Write a note");
+}
 console.log("note evidence", notesDeepDive);
 if (notesDeepDive.cards > 0) {
   await evaluate(`document.querySelector(".deep-note-card:not([open]) summary")?.click()`);

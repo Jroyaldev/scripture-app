@@ -424,6 +424,12 @@ test("held authored connections use the quiet typeset Living Margin card", () =>
     "opening the inspector must stay focus-neutral; only the explicit exit decision may move focus");
   assert.match(card, /const runUpdate = async[\s\S]*try \{[\s\S]*await onUpdate\([\s\S]*catch \{[\s\S]*finally \{[\s\S]*requestInFlightRef\.current = false;[\s\S]*setBusy\(false\)/);
   assert.match(card, /const runDelete = async[\s\S]*try \{[\s\S]*await onDelete\([\s\S]*catch \{[\s\S]*finally \{[\s\S]*requestInFlightRef\.current = false;[\s\S]*setBusy\(false\)/);
+  // Unchanged assertion, moved surface: the authored row it guards used to be
+  // the `.margin-authored-connections` strip above the tab row, which is
+  // retired — it drew the Connections tab's own dataset a second time and made
+  // the tab row move when a chapter gained its first connection (§C4·1). The
+  // row is now the Connections tab's `.margin-connection-row`, and the
+  // requirement it carries is identical.
   assert.match(margin, /onClick=\{\(\) => onSelectAuthoredConnection\?\.\(connection, true\)\}/,
     "an authored row must hand both pointer and keyboard focus to the persistent inspector entry point before it unmounts");
   assert.match(margin, /lastConnectionInspectorFocusRequestRef[\s\S]*connectionInspectorFocusRequest[\s\S]*if \(!connectionInspectorOpen\) return;[\s\S]*frameTitleRef\.current\?\.focus\(\{ preventScroll: true \}\)/,
@@ -434,7 +440,17 @@ test("held authored connections use the quiet typeset Living Margin card", () =>
   );
   assert.doesNotMatch(inspectorOpenEffect, /frameTitleRef\.current\?\.focus/,
     "opening from the reading canvas must not steal focus without an explicit inspector-entry request");
-  assert.match(margin, /aria-describedby="living-margin-mode"/);
+  // REWRITTEN by Quire §C4·1. This asserted `aria-describedby="living-margin-mode"`
+  // on the Study heading. It was there because the heading said the word
+  // "Study" and had to borrow the scope line to say anything true; the scope
+  // line was a separate 11px band beside it. The heading is now the scope line
+  // itself — `Acts 19:1–2 selected` — so what was the description is the name,
+  // and an aria-describedby pointing at its own descendant would only make a
+  // screen reader say the state word twice. The mode keeps its id, because the
+  // stylesheet and the live region both still address it.
+  assert.doesNotMatch(margin, /aria-describedby="living-margin-mode"/);
+  assert.match(margin, /id="living-margin-title"\n\s*className="margin-frame-scope"/);
+  assert.match(margin, /<span id="living-margin-mode" className="margin-frame-mode">\{scopeState\}<\/span>/);
   assert.match(margin, /id="living-margin-mode"[\s\S]*aria-live="polite"/);
   assert.match(styles, /\.connection-card \{[\s\S]*width: min\(340px, 100%\);[\s\S]*max-height: none;[\s\S]*overflow: visible;/);
   assert.match(styles, /\.connection-card \{[\s\S]*padding: 12px 14px 10px;[\s\S]*border: 1px solid var\(--border-subtle\);[\s\S]*border-radius: var\(--radius-md\);[\s\S]*background: var\(--bg-reading\);[\s\S]*box-shadow: none;/);

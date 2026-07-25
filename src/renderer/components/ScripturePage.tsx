@@ -5410,6 +5410,7 @@ export function ScripturePage({
           entityTrail={entityTrail}
           onEntityTrailChange={onEntityTrailChange}
           authoredConnections={subjectMarginData.connections}
+          connectionPaintProjections={currentConnectionPaintProjections}
           selectedAuthoredConnectionId={selectedConnectionId}
           onSelectAuthoredConnection={handleSelectAuthoredConnection}
           connectionInspectorFocusRequest={connectionInspectorFocusRequest}

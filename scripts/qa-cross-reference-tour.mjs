@@ -205,7 +205,7 @@ await toggleTheme();
 await evaluate(`document.querySelectorAll(".crossref-row")[1]?.click()`);
 await sleep(850);
 const rangeNavigation = await evaluate(`({
-  header: document.querySelector(".margin-header-ref")?.textContent?.trim(),
+  header: document.querySelector(".margin-frame-ref")?.textContent?.trim(),
   selected: [...document.querySelectorAll(".verse-line.selected")].map((row) => row.dataset.verse),
 })`);
 if (!/1 John 4:9/.test(rangeNavigation.header ?? "") || rangeNavigation.selected.join(",") !== "9,10") {

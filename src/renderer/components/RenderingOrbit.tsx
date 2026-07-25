@@ -27,6 +27,13 @@ export type OrbitViewModel = {
   hubDir?: "ltr" | "rtl";
   /** Set false for a future non-frequency orbit that must hide counts. */
   countMeta?: boolean;
+  /**
+   * What the unranked rest are, as a plural noun. C·4 §3·6 writes the tail of
+   * the renderings block as "6 more renderings" — a phrase, not a "+6" — so
+   * the row has to know what it is counting. Forward counts renderings;
+   * reverse counts the originals standing behind an English word.
+   */
+  remainderNoun?: string;
 };
 
 export function forwardOrbitModel(
@@ -41,6 +48,7 @@ export function forwardOrbitModel(
     segments: orbit.segments,
     ariaLabel: `How ${orbit.lemma} is rendered in English`,
     countMeta: true,
+    remainderNoun: "renderings",
   };
 }
 
@@ -57,6 +65,7 @@ export function reverseOrbitModel(orbit: LanguageReverseOrbit): OrbitViewModel {
     ariaLabel: `Original-language lemmas behind “${orbit.englishWord}”`,
     hubDir: "ltr",
     countMeta: true,
+    remainderNoun: "words behind it",
   };
 }
 
@@ -556,7 +565,12 @@ export function RenderingOrbitView({
             </button>
           ))}
           {remainder > 0 ? (
-            <p className="lang-orbit-remainder">+{remainder} more</p>
+            /* C·4 §3·6 draws this "6 more renderings". A bare "+6" is a
+               notation; the drawing writes a sentence and names the thing
+               being counted, which is the same move the frequency line made. */
+            <p className="lang-orbit-remainder">
+              {remainder} more{model.remainderNoun ? ` ${model.remainderNoun}` : ""}
+            </p>
           ) : null}
           {active && (
             <p className="lang-orbit-focus" aria-live="polite">

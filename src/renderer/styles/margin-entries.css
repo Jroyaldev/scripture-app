@@ -717,9 +717,10 @@
   justify-content: flex-start;
 }
 
-.living-margin .lang-detail-heading .margin-capture-action {
-  margin-left: auto;
-}
+/* (The word entry's Add to note used to ride the lemma's baseline and needed
+   pushing to the row's trailing edge. C·4 §3·3 moves it to the pane footer
+   "where every other destination lives", so the head row is the lemma, its
+   transliteration and the lexicon key alone.) */
 
 /* A lemma is not a Latin head. Greek runs a smaller apparent size at the same
    point size, so it takes +4px over the 24px Latin head to look equal, and its

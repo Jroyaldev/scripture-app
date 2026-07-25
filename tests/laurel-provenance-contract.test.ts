@@ -276,7 +276,15 @@ test("every laurel render site is handed a source to name", () => {
   // instead of marking it. Catch that here rather than in the margin.
   const sites = [...margin.matchAll(/<MarginEntryWhy\b([\s\S]*?)>/g)].map((match) => match[1]!);
   const licensedSites = sites.filter((props) => /provenance="licensed"/.test(props));
-  assert.ok(licensedSites.length >= 2, "expected the migrated laurel entries to be present");
+  // This used to read `>= 2`, guarding that BOTH of ruling 4·5's migrated
+  // entries were present: the research pane's entity brief and the overview's.
+  // Quire C4·3 takes the brief off the overview altogether — people and places
+  // are a 16px column of name, kind and count, with no prose to mark — so one
+  // laurel site is now the correct number and TIPNR is named in Sources, in
+  // the same block the research pane uses. The invariant the test exists for
+  // is the loop, not the count: a laurel site with no source to name would
+  // suppress its own prose at runtime and silently delete content.
+  assert.ok(licensedSites.length >= 1, "expected the migrated laurel entry to be present");
   for (const props of licensedSites) {
     assert.match(props, /licensed=\{/, "a laurel entry was given no source to name");
   }

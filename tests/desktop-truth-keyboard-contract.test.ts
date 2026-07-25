@@ -48,7 +48,20 @@ test("accessible reading and related-verse names include visible content", () =>
   const margin = read("src/renderer/components/LivingMargin.tsx");
   assert.match(page, /aria-label=\{`\$\{displayBookName\} \$\{chapter\}:\$\{v\.verse\}\. \$\{v\.text\}/);
   assert.match(page, /\$\{isSelected \? "\. Selected" : ""\}/);
-  assert.match(margin, /item\.preview \? `Open \$\{item\.targetDisplay\}\. \$\{item\.preview\}`/);
+  // This used to assert /item\.preview \? `Open \$\{item\.targetDisplay\}\. \$\{item\.preview\}`/
+  // against the Connections tab's `.crossref-row`, which was one button whose
+  // accessible name carried the verse preview. That row is deleted: the tab
+  // shows connections now, and Overview re-drew the edition's list on C4·2's
+  // compact row (Quire C·4). Two rows carry the requirement instead.
+  //
+  // Overview's row is a div, not a button, so the preview stays visible sibling
+  // content that a screen reader reaches by reading the row, and the verb names
+  // its target.
+  assert.match(margin, /aria-label=\{`Open \$\{item\.targetDisplay\}`\}/);
+  assert.match(margin, /\{item\.preview && <p className="study-ref-row-text">\{item\.preview\}<\/p>\}/);
+  // A connection block IS one button, so its name must carry its members'
+  // wording — the visible content, and the reason the row exists.
+  assert.match(margin, /member\.quote \? `\$\{member\.position\}\. \$\{member\.quote\}` : member\.position/);
   assert.match(appSource(), /target\?\.isConnected/);
   assert.match(appSource(), /#living-margin-title/);
 });
