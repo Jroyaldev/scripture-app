@@ -524,21 +524,329 @@ function crossRefBranchHandlers(
   };
 }
 
-function EntityGlyph({ kind }: { kind: "person" | "place" | "other" }): React.JSX.Element {
-  if (kind === "place") {
-    return (
-      <svg viewBox="0 0 20 20" aria-hidden="true">
-        <path d="M10 17s4.7-5.1 4.7-8.7a4.7 4.7 0 1 0-9.4 0C5.3 11.9 10 17 10 17Z" />
-        <circle cx="10" cy="8.2" r="1.55" />
-      </svg>
-    );
-  }
-  return (
-    <svg viewBox="0 0 20 20" aria-hidden="true">
-      <circle cx="10" cy="6.1" r="2.55" />
-      <path d="M5 16c.55-3.05 2.2-4.65 5-4.65s4.45 1.6 5 4.65" />
-    </svg>
+/* ---------------------------------------------------------------------------
+   C·2 — the margin entry
+   ---------------------------------------------------------------------------
+   They are ENTRIES, not cards: a hanging indent and no box, so an entry can
+   end early without looking broken. A card with nothing in its lower half
+   reads as a loading failure; an entry that simply stops reads as an entry
+   that had nothing more to say.
+
+   ONE skeleton, six parts, always in this order:
+
+     1 name line          serif 22, the original beside it
+     2 kind & situation   one 11px line — the line that lets a reader skip
+     3 why it is here     serif, passage-relative, 1–2 sentences
+     4 fact rows          74px label column; absent fields DO NOT render
+     5 appears-in         three, then a count
+     6 related            2–3 names; Follow / Branch in space reserved at rest
+
+   Parts 1–3 are mandatory. 4–6 appear only when there is something true to
+   say. Four kinds — place, person, deity/other, group — share this one
+   skeleton; the KIND line absorbs the difference, and the layout never forks.
+
+   Uncertainty is content, not an error state: `proposed` sets italic serif,
+   and it means the same thing everywhere — unidentified sites, contested
+   titles, manuscript variants, estimates.
+   ------------------------------------------------------------------------- */
+
+/** 4px slate dot = the app wrote this sentence. 2px seal spine + a date = you
+ *  wrote it. Unmarked = it is the edition. The mark is persistent, never a
+ *  hover reveal — provenance you have to already suspect is not provenance. */
+export type MarginEntryProvenance = "app" | "reader" | "edition";
+
+export interface MarginEntryFact {
+  label: string;
+  value: React.ReactNode;
+  /** Italic serif — proposed, contested, a manuscript variant, an estimate. */
+  proposed?: boolean;
+  /** Hebrew values carry direction themselves; the label column stays LTR. */
+  dir?: "ltr" | "rtl";
+}
+
+export interface MarginEntryAppearance {
+  key: string;
+  label: string;
+  preview?: string;
+  onOpen?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  onAuxOpen?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  openLabel: string;
+}
+
+export interface MarginEntryRelation {
+  key: string;
+  name: string;
+  /** TIPNR marks some identifications as uncertain — say so in the type. */
+  proposed?: boolean;
+  onFollow?: () => void;
+  onBranch?: () => void;
+  onAuxActivate?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  followLabel: string;
+  branchLabel: string;
+}
+
+function MarginEntryNameLine({
+  name,
+  original,
+  originalDir,
+  originalLang,
+  collision,
+  proposed,
+  onOpen,
+  openLabel,
+}: {
+  name: string;
+  original?: string | null;
+  originalDir?: "ltr" | "rtl";
+  originalLang?: string;
+  collision?: { index: number; total: number } | null;
+  proposed?: boolean;
+  onOpen?: () => void;
+  openLabel?: string;
+}): React.JSX.Element {
+  // A dictionary head, never a page title. The original sits beside it for the
+  // scholar and is ignorable by everyone else.
+  const head = (
+    <>
+      <span className={`margin-entry-name-text${proposed ? " is-proposed" : ""}`}>{name}</span>
+      {original && (
+        <span className="margin-entry-name-original" dir={originalDir} lang={originalLang}>
+          {original}
+        </span>
+      )}
+      {collision && collision.total > 1 && (
+        // Name collisions are stated, never silently disambiguated.
+        <span className="margin-entry-name-collision">{collision.index} of {collision.total}</span>
+      )}
+    </>
   );
+  return (
+    <div className="margin-entry-name">
+      {onOpen ? (
+        <button type="button" className="margin-entry-name-open" onClick={onOpen} aria-label={openLabel}>
+          {head}
+        </button>
+      ) : (
+        head
+      )}
+    </div>
+  );
+}
+
+/** One 11px line. It replaces an icon, a badge and a category chip with five
+ *  words, and it is what lets a reader skip an entry safely. */
+function MarginEntryKindLine({ parts }: { parts: Array<string | null | undefined> }): React.JSX.Element | null {
+  const kept = parts.map((part) => part?.trim()).filter((part): part is string => Boolean(part));
+  if (kept.length === 0) return null;
+  return <p className="margin-entry-kind">{kept.join(" · ")}</p>;
+}
+
+function MarginEntryWhy({
+  provenance,
+  writtenOn,
+  children,
+}: {
+  provenance: MarginEntryProvenance;
+  writtenOn?: string;
+  children: React.ReactNode;
+}): React.JSX.Element {
+  return (
+    <div className={`margin-entry-why is-${provenance}`}>
+      {provenance === "app" && (
+        <span className="margin-entry-mark is-app">
+          <span className="sr-only">Written by the app</span>
+        </span>
+      )}
+      {provenance === "reader" && (
+        <span className="margin-entry-mark is-reader">
+          <span className="sr-only">Written by you</span>
+        </span>
+      )}
+      <div className="margin-entry-why-copy">
+        {children}
+        {provenance === "reader" && writtenOn && (
+          <span className="margin-entry-why-date">{writtenOn}</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** Two to four rows. A fifth means something belongs in Research. */
+function MarginEntryFacts({ facts }: { facts: MarginEntryFact[] }): React.JSX.Element | null {
+  const rows = facts.slice(0, 4);
+  if (rows.length === 0) return null;
+  return (
+    <dl className="margin-entry-facts">
+      {rows.map((fact) => (
+        <div className="margin-entry-fact" key={fact.label}>
+          <dt>{fact.label}</dt>
+          <dd className={fact.proposed ? "is-proposed" : undefined} dir={fact.dir}>{fact.value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+function MarginEntryAppearsIn({
+  items,
+  remaining,
+  emptyNote,
+  onMore,
+  moreLabel,
+}: {
+  items: MarginEntryAppearance[];
+  remaining: number;
+  emptyNote?: string;
+  onMore?: () => void;
+  moreLabel?: string;
+}): React.JSX.Element | null {
+  if (items.length === 0 && !emptyNote) return null;
+  return (
+    <div className="margin-entry-appears">
+      <span className="margin-entry-part-label">Appears in</span>
+      {items.length === 0 ? (
+        <p className="margin-entry-appears-empty">{emptyNote}</p>
+      ) : (
+        <div className="margin-entry-appears-list">
+          {items.map((item) => (
+            <button
+              key={item.key}
+              type="button"
+              className="margin-entry-appears-row"
+              onClick={item.onOpen}
+              onAuxClick={item.onAuxOpen}
+              aria-label={item.openLabel}
+            >
+              <span className="margin-entry-appears-ref">{item.label}</span>
+              {item.preview && <span className="margin-entry-appears-preview">{item.preview}</span>}
+            </button>
+          ))}
+          {remaining > 0 && (
+            onMore ? (
+              <button type="button" className="margin-entry-appears-more" onClick={onMore}>
+                {moreLabel ?? `${remaining.toLocaleString()} more`}
+              </button>
+            ) : (
+              <span className="margin-entry-appears-more is-static">{remaining.toLocaleString()} more</span>
+            )
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Both verbs are always named, never inferred from a modifier key, and the
+ *  row height is reserved so revealing them shifts nothing. */
+function MarginEntryRelated({ relations }: { relations: MarginEntryRelation[] }): React.JSX.Element | null {
+  if (relations.length === 0) return null;
+  return (
+    <div className="margin-entry-related">
+      <span className="margin-entry-part-label">Related</span>
+      <div className="margin-entry-related-list">
+        {relations.map((relation) => (
+          <span className="margin-entry-relation" key={relation.key}>
+            <button
+              type="button"
+              className={`margin-entry-relation-name${relation.proposed ? " is-proposed" : ""}`}
+              onClick={relation.onFollow}
+              onAuxClick={relation.onAuxActivate}
+              aria-label={relation.followLabel}
+            >
+              {relation.name}
+            </button>
+            <span className="margin-entry-verbs">
+              <button
+                type="button"
+                className="margin-entry-verb"
+                onClick={relation.onFollow}
+                aria-label={relation.followLabel}
+              >
+                Follow
+              </button>
+              {relation.onBranch && (
+                <button
+                  type="button"
+                  className="margin-entry-verb"
+                  onClick={relation.onBranch}
+                  aria-label={relation.branchLabel}
+                >
+                  Branch
+                </button>
+              )}
+            </span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Your own handwriting needs no byline, only a date. */
+function formatEntryDate(value: string): string | undefined {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return undefined;
+  return parsed.toLocaleDateString(undefined, { day: "numeric", month: "long" });
+}
+
+/** Every place in the Levant and the west that a reader already has a feel
+ *  for. A bearing from one of these beats a 340×140 map at 380px. */
+const BEARING_ANCHORS: ReadonlyArray<{ name: string; latitude: number; longitude: number }> = [
+  { name: "Jerusalem", latitude: 31.7784, longitude: 35.2296 },
+  { name: "Rome", latitude: 41.8931, longitude: 12.4832 },
+];
+
+const COMPASS_POINTS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"] as const;
+
+function toRadians(degrees: number): number {
+  return (degrees * Math.PI) / 180;
+}
+
+/** Great-circle distance, mean Earth radius. */
+export function greatCircleKm(
+  from: { latitude: number; longitude: number },
+  to: { latitude: number; longitude: number },
+): number {
+  const dLat = toRadians(to.latitude - from.latitude);
+  const dLon = toRadians(to.longitude - from.longitude);
+  const a = Math.sin(dLat / 2) ** 2
+    + Math.cos(toRadians(from.latitude)) * Math.cos(toRadians(to.latitude)) * Math.sin(dLon / 2) ** 2;
+  return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function compassPoint(
+  from: { latitude: number; longitude: number },
+  to: { latitude: number; longitude: number },
+): string {
+  const lat1 = toRadians(from.latitude);
+  const lat2 = toRadians(to.latitude);
+  const dLon = toRadians(to.longitude - from.longitude);
+  const y = Math.sin(dLon) * Math.cos(lat2);
+  const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+  const bearing = (Math.atan2(y, x) * 180) / Math.PI;
+  const index = Math.round(((bearing + 360) % 360) / 45) % 8;
+  return COMPASS_POINTS[index]!;
+}
+
+/**
+ * "1,050 km NW of Jerusalem" in 40px says what a decorative 340×140 map
+ * cannot. Built from the record's own coordinates — never drawn by hand, and
+ * absent entirely when the place is the anchor or carries no coordinates.
+ */
+export function bearingFromKnownPlace(latitude: number, longitude: number): string | null {
+  const here = { latitude, longitude };
+  let nearest: { name: string; km: number; point: string } | null = null;
+  for (const anchor of BEARING_ANCHORS) {
+    const km = greatCircleKm(anchor, here);
+    if (!nearest || km < nearest.km) nearest = { name: anchor.name, km, point: compassPoint(anchor, here) };
+  }
+  // Inside the anchor's own footprint there is no bearing worth stating.
+  if (!nearest || nearest.km < 20) return null;
+  const distance = nearest.km < 100
+    ? `${Math.round(nearest.km)}`
+    : `${Math.round(nearest.km / 10) * 10}`;
+  return `${Number(distance).toLocaleString()} km ${nearest.point} of ${nearest.name}`;
 }
 
 function formatResearchRef(value: string, bookNames: BookNameData): string {
@@ -600,7 +908,8 @@ function entityResearchSources(data: EntityResearchData): MarginCitationSource[]
       detail: "Linked identity",
     });
   }
-  if (data.place) sources.push({ name: "Natural Earth", license: "Public domain", detail: "Map" });
+  // Natural Earth went with the minimap. A source is only listed while
+  // something on the surface is actually drawn from it.
   if (data.place?.image) {
     sources.push({
       name: data.place.image.credit,
@@ -610,6 +919,13 @@ function entityResearchSources(data: EntityResearchData): MarginCitationSource[]
     });
   }
   return sources;
+}
+
+/** OpenBible's place types arrive lowercase; the kind line opens a sentence. */
+function sentenceCase(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return trimmed;
+  return trimmed.charAt(0).toLocaleUpperCase() + trimmed.slice(1);
 }
 
 function coordinatesLabel(latitude: number, longitude: number): string {
@@ -764,6 +1080,11 @@ function EntityOpeningContextSection({
       {context.relationship === "direct-mention" ? (
         <>
           <div className="entity-opening-context-copy">
+            {/* Persistent, not a hover: this sentence is the app's, and the
+                reader should not have to already suspect that to find out. */}
+            <span className="margin-entry-mark is-app">
+              <span className="sr-only">Written by the app</span>
+            </span>
             <strong>Indexed in {scopeLabel}</strong>
             <span>
               {context.mentionRefs.length.toLocaleString()} {context.mentionRefs.length === 1 ? "direct reference" : "direct references"}
@@ -855,51 +1176,29 @@ function PersonRelationships({
             <div key={group.kind} className="entity-relationship-row">
               <span className="entity-relationship-label">{group.label}</span>
               <div className="entity-relationship-links">
-                {visibleItems.map((relationship) => {
+                <MarginEntryRelated relations={visibleItems.map((relationship) => {
                   const target: EntityResearchTarget = {
                     id: relationship.targetId,
                     displayName: relationship.displayName,
                     kind: "person",
                   };
-                  const activateRelated = (event: React.MouseEvent<HTMLButtonElement>): void => {
-                    if (isExplicitEntityBranchGesture(event) && onBranchEntity) {
+                  return {
+                    key: `${relationship.kind}-${relationship.targetId}`,
+                    name: relationship.displayName,
+                    // Uncertainty is content: TIPNR's doubt is carried by the
+                    // type, not by a "?" glyph with the reason in a tooltip.
+                    proposed: relationship.uncertain,
+                    onFollow: () => { void onDrillEntity?.(target); },
+                    onBranch: onBranchEntity ? () => { void onBranchEntity(target); } : undefined,
+                    onAuxActivate: (event: React.MouseEvent<HTMLButtonElement>) => {
+                      if (!isExplicitEntityBranchGesture(event) || !onBranchEntity) return;
                       event.preventDefault();
                       void onBranchEntity(target);
-                      return;
-                    }
-                    void onDrillEntity?.(target);
+                    },
+                    followLabel: `View ${relationship.displayName} in this research tab${relationship.uncertain ? ", proposed identification" : ""}`,
+                    branchLabel: `Open ${relationship.displayName} in a new research tab${relationship.uncertain ? ", proposed identification" : ""}`,
                   };
-                  return (
-                    <span className="entity-relationship-target-actions" key={`${relationship.kind}-${relationship.targetId}`}>
-                      <button
-                        type="button"
-                        onClick={activateRelated}
-                        onAuxClick={(event) => {
-                          if (!isExplicitEntityBranchGesture(event) || !onBranchEntity) return;
-                          event.preventDefault();
-                          void onBranchEntity(target);
-                        }}
-                        aria-label={`View ${relationship.displayName} in this research tab${relationship.uncertain ? ", uncertain identification" : ""}`}
-                        title={relationship.uncertain ? "TIPNR marks this identification as uncertain" : "Follow in this Research tab"}
-                      >
-                        <span>{relationship.displayName}</span>
-                        {relationship.uncertain && <span className="entity-relationship-uncertain" aria-hidden="true">?</span>}
-                        <CrossReferenceArrow />
-                      </button>
-                      {onBranchEntity && (
-                        <button
-                          type="button"
-                          className="entity-relationship-branch"
-                          onClick={() => void onBranchEntity(target)}
-                          aria-label={`Open ${relationship.displayName} in a new research tab${relationship.uncertain ? ", uncertain identification" : ""}`}
-                          title="Open in a new Research tab"
-                        >
-                          New tab
-                        </button>
-                      )}
-                    </span>
-                  );
-                })}
+                })} />
                 {items.length > visibleItems.length && (
                   <button
                     type="button"
@@ -938,71 +1237,11 @@ function PersonRelationships({
   );
 }
 
-function EntityMiniMap({ data }: { data: EntityResearchData }): React.JSX.Element | null {
-  if (!data.place || !data.minimap) return null;
-  const { minimap, place } = data;
-  const pleiadesPoint = data.pleiades?.place.reprPoint;
-  const pleiadesMarker = pleiadesPoint
-    ? {
-        x: ((pleiadesPoint[0] - minimap.bounds.west) / (minimap.bounds.east - minimap.bounds.west)) * minimap.width,
-        y: ((minimap.bounds.north - pleiadesPoint[1]) / (minimap.bounds.north - minimap.bounds.south)) * minimap.height,
-      }
-    : null;
-  const showPleiadesMarker = pleiadesMarker
-    && pleiadesMarker.x >= 0 && pleiadesMarker.x <= minimap.width
-    && pleiadesMarker.y >= 0 && pleiadesMarker.y <= minimap.height
-    && (data.pleiades?.coordinateComparison?.distanceKm ?? 0) > 2;
-  return (
-    <figure className="entity-minimap">
-      <svg
-        viewBox={`0 0 ${minimap.width} ${minimap.height}`}
-        role="img"
-        aria-label={`Regional map locating ${data.entity.displayName}`}
-      >
-        <rect className="entity-map-water" width={minimap.width} height={minimap.height} rx="10" />
-        <g className="entity-map-grid" aria-hidden="true">
-          <path d={`M0 ${minimap.height / 2}H${minimap.width}`} />
-          <path d={`M${minimap.width / 2} 0V${minimap.height}`} />
-        </g>
-        <g className="entity-map-land" aria-hidden="true">
-          {minimap.landPaths.map((path, index) => <path key={`${path.slice(0, 24)}-${index}`} d={path} />)}
-        </g>
-        <g className="entity-map-alternatives" aria-hidden="true">
-          {minimap.alternatives.map((point, index) => (
-            <g key={`${point.name}-${point.x}-${point.y}`} transform={`translate(${point.x} ${point.y})`}>
-              <circle r="4.6" />
-              <text textAnchor="middle" dominantBaseline="central">{index + 1}</text>
-            </g>
-          ))}
-        </g>
-        {showPleiadesMarker && (
-          <g
-            className="entity-map-pleiades"
-            transform={`translate(${pleiadesMarker.x} ${pleiadesMarker.y})`}
-            aria-hidden="true"
-          >
-            <circle r="4.2" />
-            <circle r="1.2" />
-          </g>
-        )}
-        <g className="entity-map-pin" transform={`translate(${minimap.center.x} ${minimap.center.y})`} aria-hidden="true">
-          <circle className="entity-map-pulse" r="12" />
-          <circle className="entity-map-halo" r="6" />
-          <circle className="entity-map-dot" r="2.6" />
-        </g>
-      </svg>
-      <figcaption>
-        <span>{place.primary.name} · OpenBible location</span>
-        <span>{coordinatesLabel(place.primary.latitude, place.primary.longitude)}</span>
-      </figcaption>
-      <div className="entity-map-legend" aria-label="Map key">
-        <span><i className="is-primary" aria-hidden="true" />OpenBible</span>
-        {showPleiadesMarker && <span><i className="is-pleiades" aria-hidden="true" />Pleiades</span>}
-        {minimap.alternatives.length > 0 && <span><i className="is-alternative" aria-hidden="true" />Numbered proposals</span>}
-      </div>
-    </figure>
-  );
-}
+/* The 340×140 map that used to sit here was a decorative smudge — too small
+   to place anything, big enough to displace the sentence that would have. It
+   is replaced by the bearing fact row, which is built from the same
+   coordinates. The map returns in Research at 800px, where it is worth
+   looking at. */
 
 function PleiadesResearchSection({
   data,
@@ -1155,6 +1394,95 @@ function EntityResearchView({
     });
   };
 
+  /* ---- C·2 · the six parts, derived once ------------------------------- */
+
+  // 2 · kind & situation. One line absorbs the whole difference between a
+  // place, a person, a deity and a group.
+  const containedIn = data.pleiades?.place.connections
+    .find((connection) => connection.type.startsWith("part_of"))?.title;
+  const kindLineParts: Array<string | null | undefined> = data.entity.kind === "place"
+    ? [sentenceCase(place?.type ?? "Place"), containedIn ? `within ${containedIn}` : null]
+    : data.entity.kind === "person"
+      ? ["Person", person?.role, person?.era]
+      : ["Deity or object", containedIn ? `within ${containedIn}` : null];
+
+  // 4 · facts. Absent fields do not render — no "Unknown", no empty row —
+  // and four is the ceiling; a fifth means it belongs in Research.
+  const bearing = place ? bearingFromKnownPlace(place.primary.latitude, place.primary.longitude) : null;
+  const siteIsProposed = place != null
+    && (place.primary.confidence === "tentative" || place.primary.confidence === "disputed");
+  const entryFacts: MarginEntryFact[] = [];
+  if (data.entity.kind === "place") {
+    if (place) {
+      entryFacts.push({
+        label: "Today",
+        value: siteIsProposed ? `${place.primary.name} — ${confidenceLabel(place.primary.confidence).toLocaleLowerCase()}` : place.primary.name,
+        proposed: siteIsProposed,
+      });
+    } else {
+      // "We do not know where this is" is genuine information, and a reader
+      // who wanted it should not have to go looking for its absence.
+      entryFacts.push({ label: "Today", value: "unidentified", proposed: true });
+    }
+    if (bearing) entryFacts.push({ label: "Bearing", value: bearing });
+    if (place && place.alternatives.length > 0) {
+      entryFacts.push({
+        label: "Proposed",
+        value: `${place.alternatives.length + 1} locations, not merged`,
+        proposed: true,
+      });
+    }
+  } else {
+    if (person?.affiliation) entryFacts.push({ label: "Among", value: person.affiliation });
+  }
+  if (entryFacts.length < 4 && data.entity.refCount > 0) {
+    entryFacts.push({
+      label: "Named",
+      value: data.entity.refCount === 1
+        ? "once"
+        : `${data.entity.refCount.toLocaleString()} times`,
+    });
+  }
+
+  // 5 · appears in — three, then a count, and never the passage the reader is
+  // already looking at.
+  const elsewhereRefs = orderedRefs.filter((ref) => {
+    const parts = ref.split(".");
+    return !(parts[0] === origin.book && Number(parts[1]) === origin.chapter);
+  });
+  const principalAppearances: MarginEntryAppearance[] = elsewhereRefs.slice(0, 3).map((ref) => {
+    const label = formatResearchRef(ref, bookNames);
+    const target = parsePeekRef(ref, label);
+    const handlers = crossRefBranchHandlers(`bref:v1/${ref}`, target, onNavigate, onOpenPassageTab);
+    return {
+      key: ref,
+      label,
+      onOpen: handlers.onClick,
+      onAuxOpen: handlers.onAuxClick,
+      openLabel: `View ${label} in this research tab`,
+    };
+  });
+
+  // 6 · related — two or three names, then the rest under More.
+  const principalRelations: MarginEntryRelation[] = (person?.relationships ?? [])
+    .slice(0, 3)
+    .map((relationship) => {
+      const target: EntityResearchTarget = {
+        id: relationship.targetId,
+        displayName: relationship.displayName,
+        kind: "person",
+      };
+      return {
+        key: `principal-${relationship.kind}-${relationship.targetId}`,
+        name: relationship.displayName,
+        proposed: relationship.uncertain,
+        onFollow: () => { void onDrillEntity?.(target); },
+        onBranch: onBranchEntity ? () => { void onBranchEntity(target); } : undefined,
+        followLabel: `View ${relationship.displayName} in this research tab${relationship.uncertain ? ", proposed identification" : ""}`,
+        branchLabel: `Open ${relationship.displayName} in a new research tab${relationship.uncertain ? ", proposed identification" : ""}`,
+      };
+    });
+
   const photo = data.imageDataUrl && place?.image ? (
     <figure className="entity-photo">
       <img src={data.imageDataUrl} alt={place.image.alt} />
@@ -1185,14 +1513,11 @@ function EntityResearchView({
   ) : null;
 
   return (
-    <article className={`entity-research-view is-${data.entity.kind}`}>
+    <article className={`entity-research-view margin-entry is-${data.entity.kind}`}>
       <header className="entity-research-identity">
-        <div className="entity-research-kicker">
-          <span>{data.entity.kind}</span>
-          {place && <><span aria-hidden="true">·</span><span>{place.type}</span></>}
-        </div>
+        {/* 1 · name line — a dictionary head, not a page title */}
         <div className="entity-research-title-row">
-          <h2>{data.entity.displayName}</h2>
+          <MarginEntryNameLine name={data.entity.displayName} />
           {onCapture && (
             <button
               type="button"
@@ -1204,14 +1529,15 @@ function EntityResearchView({
             </button>
           )}
         </div>
-        {person && (
-          <div className="entity-person-facts" aria-label="Person identity">
-            <strong>{person.role}</strong>
-            {person.era && <span>{person.era}</span>}
-            {person.affiliation && <span>{person.affiliation}</span>}
-          </div>
-        )}
-        <p>{data.entity.brief}</p>
+        {/* 2 · kind & situation — one line, and the difference between the
+            four kinds lives here rather than in four layouts */}
+        <MarginEntryKindLine parts={kindLineParts} />
+        {/* 3 · why it is here */}
+        <MarginEntryWhy provenance="edition">
+          <p className="margin-entry-why-text">{data.entity.brief}</p>
+        </MarginEntryWhy>
+        {/* 4 · facts — the bearing is the map's replacement at this width */}
+        <MarginEntryFacts facts={entryFacts} />
       </header>
 
       <EntityOpeningContextSection
@@ -1225,34 +1551,18 @@ function EntityResearchView({
         onOpenPassageTab={onOpenPassageTab}
       />
 
-      {place && (
-        <section className="entity-research-section" aria-labelledby="entity-location-title">
-          <div className="entity-research-section-head">
-            <h3 id="entity-location-title">Location</h3>
-            <span>{confidenceLabel(place.primary.confidence)}</span>
-          </div>
-          <EntityMiniMap data={data} />
-          <div className="entity-location-note">
-            <span>{place.primary.precision ?? place.primary.type}</span>
-            {place.alternatives.length > 0 && (
-              <span>{place.alternatives.length + 1} proposed locations</span>
-            )}
-          </div>
-        </section>
-      )}
+      {/* 5 · appears in — three, then a count. The current passage is never
+          listed back at the reader; the full list lives under More. */}
+      <MarginEntryAppearsIn
+        items={principalAppearances}
+        remaining={Math.max(0, elsewhereRefs.length - principalAppearances.length)}
+        emptyNote={elsewhereRefs.length === 0 ? "No other mention" : undefined}
+        onMore={orderedRefs.length > 12 ? () => setShowAllRefs(true) : undefined}
+        moreLabel={`${Math.max(0, elsewhereRefs.length - principalAppearances.length).toLocaleString()} more`}
+      />
 
-      {data.entity.kind === "place" && !place && (
-        <section className="entity-research-section entity-location-unmapped" aria-labelledby="entity-location-unmapped-title">
-          <div className="entity-research-section-head">
-            <h3 id="entity-location-unmapped-title">Location</h3>
-            <span>Not mapped</span>
-          </div>
-          <p>
-            No geographic record is joined to this identity. The app keeps it unmapped rather than inventing a location;
-            its Scripture references remain available below.
-          </p>
-        </section>
-      )}
+      {/* 6 · related */}
+      <MarginEntryRelated relations={principalRelations} />
 
       <details className="entity-research-more" key={data.entity.id}>
         <summary>More</summary>
@@ -1266,12 +1576,20 @@ function EntityResearchView({
             onDrillEntity={onDrillEntity}
             onBranchEntity={onBranchEntity}
           />
-          {place && (data.pleiades?.coordinateComparison || place.alternatives.length > 0) && (
+          {place && (
             <section className="entity-research-section entity-location-details" aria-labelledby="entity-location-details-title">
               <div className="entity-research-section-head">
                 <h3 id="entity-location-details-title">Location detail</h3>
                 <span>{place.alternatives.length > 0 ? `${place.alternatives.length + 1} proposals` : "Source comparison"}</span>
               </div>
+              {/* The coordinates the bearing was computed from. They belong
+                  here rather than on the entry: a reader checking a bearing is
+                  already past the glance. */}
+              <MarginEntryFacts facts={[
+                { label: "Coordinates", value: coordinatesLabel(place.primary.latitude, place.primary.longitude) },
+                { label: "Precision", value: place.primary.precision ?? place.primary.type },
+                { label: "Confidence", value: confidenceLabel(place.primary.confidence) },
+              ]} />
               {data.pleiades?.coordinateComparison && (
                 <p className={`entity-coordinate-comparison ${isBroadPlaceType(place.type) ? "is-broad" : `is-${data.pleiades.coordinateComparison.relation}`}`}>
                   {coordinateComparisonCopy(data.pleiades, place.type)}
@@ -1695,32 +2013,40 @@ function IntentOverview({
             <h3 id="intent-library-title">Your library</h3>
             <button type="button" onClick={() => onOpenTab("notes")}>All notes</button>
           </div>
+          {/* Provenance, persistently: a 2px seal spine and a date on your own
+              writing, a 4px slate dot on the app's. The mono kickers that used
+              to label these ("Anchored note", "Theme in your notes") told the
+              reader what the mark now tells them, in the margin's own voice. */}
           <div className="intent-library-leads">
             {directNote && (
               <button type="button" className="intent-note-lead" onClick={() => onOpenTab("notes")}>
-                <span className="intent-lead-kind">Anchored note</span>
-                <strong>{directNote.title || "Untitled"}</strong>
-                <span>{directNote.body_text}</span>
+                <MarginEntryWhy provenance="reader" writtenOn={formatEntryDate(directNote.modified)}>
+                  <strong>{directNote.title || "Untitled"}</strong>
+                  <span>{directNote.body_text}</span>
+                </MarginEntryWhy>
               </button>
             )}
             {!directNote && relatedNote && (
               <button type="button" className="intent-note-lead" onClick={() => onOpenTab("notes")}>
-                <span className="intent-lead-kind">Related note</span>
-                <strong>{relatedNote.title || "Untitled"}</strong>
-                <span>{relatedNote.snippet}</span>
+                <MarginEntryWhy provenance="reader">
+                  <strong>{relatedNote.title || "Untitled"}</strong>
+                  <span>{relatedNote.snippet}</span>
+                </MarginEntryWhy>
               </button>
             )}
             {thread && (
               <button type="button" className="intent-note-lead is-secondary" onClick={() => onOpenTab("notes")}>
-                <span className="intent-lead-kind">Theme in your notes</span>
-                <strong>{thread.label}</strong>
-                <span>{thread.summary}</span>
+                <MarginEntryWhy provenance="app">
+                  <strong>{thread.label}</strong>
+                  <span>{thread.summary}</span>
+                </MarginEntryWhy>
               </button>
             )}
             {!thread && claim && (
               <button type="button" className="intent-note-lead is-secondary" onClick={() => onOpenTab("notes")}>
-                <span className="intent-lead-kind">Grounded in your notes</span>
-                <strong>{claim.assertion}</strong>
+                <MarginEntryWhy provenance="app">
+                  <strong>{claim.assertion}</strong>
+                </MarginEntryWhy>
               </button>
             )}
           </div>
@@ -1732,25 +2058,27 @@ function IntentOverview({
           <div className="intent-section-head">
             <h3 id="intent-entities-title">People &amp; places</h3>
           </div>
-          <div className="intent-entity-list">
+          {/* C·2 · the same skeleton the Research view uses, with parts 4–6
+              simply absent — an entry that stops here is finished, not
+              broken, which is the discipline a card layout takes away. */}
+          <div className="margin-entry-list intent-entity-list">
             {entities.map((entity) => (
-              <button
-                key={entity.id}
-                type="button"
-                className="intent-entity-card"
-                onClick={() => onOpenEntity?.(entityResearchTarget(entity))}
-                aria-label={`Open research tab for ${entity.displayName}`}
-              >
-                <span className={`intent-entity-glyph is-${entity.kind}`}><EntityGlyph kind={entity.kind} /></span>
-                  <span className="intent-entity-copy">
-                    <span className="intent-entity-line">
-                      <strong>{entity.displayName}</strong>
-                      <span>{entity.kind}</span>
-                    </span>
-                    <span className="intent-entity-brief">{entity.brief}</span>
-                  </span>
-                <span className="intent-entity-open" aria-hidden="true">Open research tab&nbsp;→</span>
-              </button>
+              <article className="margin-entry" key={entity.id}>
+                <MarginEntryNameLine
+                  name={entity.displayName}
+                  onOpen={() => onOpenEntity?.(entityResearchTarget(entity))}
+                  openLabel={`Open research tab for ${entity.displayName}`}
+                />
+                <MarginEntryKindLine
+                  parts={[
+                    entity.kind === "person" ? "Person" : entity.kind === "place" ? "Place" : "Deity or object",
+                    entity.refCount === 1 ? "named once" : `named ${entity.refCount.toLocaleString()} times`,
+                  ]}
+                />
+                <MarginEntryWhy provenance="edition">
+                  <p className="margin-entry-why-text">{entity.brief}</p>
+                </MarginEntryWhy>
+              </article>
             ))}
           </div>
           {entityResult.entities.length > 4 && (

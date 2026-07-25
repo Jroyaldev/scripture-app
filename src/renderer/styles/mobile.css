@@ -4,3 +4,148 @@
    styles.css, so this work can proceed without serialising on an 17k-line
    file. Anything that must CHANGE an existing rule in styles.css belongs in
    styles.css — do not shadow it from here. */
+
+/* ── horizontal·page — the swipe that moves by chapter ─────────────────────
+   Below 720px the header arrows are gone, so this gesture is not a shortcut
+   for a button: it is the only way to move by chapter. It therefore has to
+   answer. The page follows the finger while the gesture is live and settles
+   in 180ms when it is let go — a swipe that does not commit says so by
+   returning the text rather than by doing nothing at all.
+
+   The passage has no horizontal pan to give up, so declining that one axis
+   costs the reader nothing and keeps the browser from claiming a sideways
+   drag as a scroll and cancelling the pointer mid-gesture. Vertical pan and
+   pinch-zoom are named explicitly: scrolling the passage and magnifying it
+   are the platform's, and a gesture must never take those. */
+@media (any-pointer: coarse) {
+  .scripture-content {
+    touch-action: pan-y pinch-zoom;
+  }
+}
+
+/* The attribute exists only for the length of one gesture. Outside it nothing
+   on this page carries a transform, so no stacking context or containing
+   block is created for a fixed descendant to fall into. */
+.scripture-content[data-page-swipe] .scripture-inner {
+  transform: translate3d(var(--page-swipe-dx, 0px), 0, 0);
+}
+
+.scripture-content[data-page-swipe="tracking"] .scripture-inner {
+  will-change: transform;
+}
+
+/* Pane motion, 180ms, per the motion table. Only on release: while the finger
+   is down the page is under direct manipulation and must not lag it. */
+.scripture-content[data-page-swipe="settling"] .scripture-inner {
+  transition: transform 180ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scripture-content[data-page-swipe] .scripture-inner {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ── vertical·gutter — the mark's two grips ────────────────────────────────
+   The indicator becomes the control. No new element appears when a verse is
+   selected: the 2px seal in lane 0 simply grows a grip at each end of the
+   selected run, and dragging either extends the range by whole verses.
+
+   The OS back-gesture strip owns the left 20px, which overlaps the 24px
+   gutter. So the mark stays at x = 0 — read, never grabbed — and every
+   grabbable pixel of the grip begins at x = 20. Nothing here competes with
+   Back, which §3 names as one of the two conventions to match rather than
+   override. */
+.verse-range-grip {
+  position: absolute;
+  left: 20px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--study-gold);
+  /* The grip owns its vertical drag outright; the passage keeps scrolling
+     everywhere else in the gutter. */
+  touch-action: none;
+  cursor: ns-resize;
+}
+
+/* Both grips sit on the mark itself, which is one reading line tall and
+   measured from the top of the verse — it points at where the verse starts,
+   not at its middle, and the grips inherit that. */
+.verse-range-grip[data-verse-range-grip="start"] {
+  top: -5px;
+}
+
+.verse-range-grip[data-verse-range-grip="end"] {
+  top: calc(var(--fs-reading) * var(--lh-reading) - 5px);
+}
+
+/* 2px of the same ink runs back to lane 0, so the grip reads as the mark
+   having grown one rather than as a second thing arriving beside it. */
+.verse-range-grip::before {
+  content: "";
+  position: absolute;
+  top: 4px;
+  right: 100%;
+  width: 18px;
+  height: 2px;
+  background: var(--study-gold);
+}
+
+/* 44px of touch target, and not one pixel of it to the left of x = 20. */
+.verse-range-grip::after {
+  content: "";
+  position: absolute;
+  inset: -17px -8px -17px 0;
+}
+
+/* ── Stated loss: connection threads do not render here ────────────────────
+   A thread needs a routing lane, and the router asks for about 36px of it.
+   The narrow shell has a 24px gutter. Rather than paint a route that collides
+   with the measure, the thread is withheld and the relationship keeps the two
+   marks that still fit: the member underline and one tick.
+
+   Withheld, not deleted. Everything the thread would have shown is still in
+   the record, and tracing it is the sheet's job at this width. */
+@media (max-width: 979px) {
+  .connection-route,
+  .connection-route-hit,
+  .connection-contact {
+    display: none;
+  }
+
+  /* And the shell says so. The tick already owns this sentence for the case
+     where the router itself runs out of room; here the same sentence is
+     stated by the same mark, so the reader is never left to infer that a
+     relationship has no thread from the fact that they cannot see one.
+     `.needs-space` is excluded because the underlay renders the real note
+     there and two would be one too many. */
+  .connection-tick.selected:not(.needs-space)::after {
+    content: "Line hidden at this width";
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: max-content;
+    max-width: 148px;
+    padding: 2px 7px;
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--bg-reading) 92%, transparent);
+    box-shadow: 0 0 0 1px var(--border-subtle);
+    color: var(--text-secondary);
+    font-family: var(--font-ui);
+    font-size: 0.625rem;
+    font-weight: var(--fw-medium);
+    letter-spacing: 0.02em;
+    line-height: 1.3;
+    pointer-events: none;
+  }
+
+  .connection-tick.selected[data-connection-tick-side="left"]:not(.needs-space)::after {
+    left: calc(100% + 7px);
+  }
+
+  .connection-tick.selected[data-connection-tick-side="right"]:not(.needs-space)::after {
+    right: calc(100% + 7px);
+  }
+}

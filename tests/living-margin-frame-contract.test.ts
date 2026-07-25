@@ -7,10 +7,12 @@ const repoRoot = resolve(import.meta.dirname, "..");
 const margin = readFileSync(join(repoRoot, "src", "renderer", "components", "LivingMargin.tsx"), "utf-8");
 const page = readFileSync(join(repoRoot, "src", "renderer", "components", "ScripturePage.tsx"), "utf-8");
 const css = readFileSync(join(repoRoot, "src", "renderer", "styles.css"), "utf-8");
+const language = readFileSync(join(repoRoot, "src", "renderer", "components", "LanguageWordsSection.tsx"), "utf-8");
+const entriesCss = readFileSync(join(repoRoot, "src", "renderer", "styles", "margin-entries.css"), "utf-8");
 
-/** Every flat rule block in the sheet, as [selector, body] pairs. */
-function ruleBlocks(): Array<[string, string]> {
-  return [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((match) => [
+/** Every flat rule block in a sheet, as [selector, body] pairs. */
+function ruleBlocks(sheet: string = css): Array<[string, string]> {
+  return [...sheet.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((match) => [
     match[1]!.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/\s+/g, " ").trim(),
     match[2]!,
   ]);
@@ -36,6 +38,77 @@ test("the margin is paper across a gutter, not a tool panel bolted to the page's
       assert.doesNotMatch(body, /--font-mono/, `${selector} sets margin copy in the chrome voice`);
     }
   }
+});
+
+test("margin content is entries — one skeleton, six parts, and no box", () => {
+  // A card with nothing in its lower half reads as a loading failure. An entry
+  // that simply stops reads as an entry that had nothing more to say, so the
+  // shape is a hanging indent: no border, no fill, no radius. A tinted entry
+  // background would also be a third plane inside the margin's paper.
+  assert.match(entriesCss, /\.margin-entry\s*\{[\s\S]*?padding-left: var\(--margin-entry-hang/);
+  assert.match(entriesCss, /\.margin-entry\s*\{[\s\S]*?border: 0;/);
+  assert.match(entriesCss, /\.margin-entry\s*\{[\s\S]*?border-radius: 0;/);
+  assert.match(entriesCss, /\.margin-entry\s*\{[\s\S]*?background: transparent;/);
+  // Separate with interval, not with lines: one reading band between entries.
+  assert.match(entriesCss, /\.margin-entry-list > \.margin-entry \+ \.margin-entry\s*\{\s*margin-top: var\(--band\);\s*\}/);
+
+  for (const [selector, body] of ruleBlocks(entriesCss)) {
+    // The margin gives up mono entirely — serif for content, Instrument Sans
+    // for handles. That contrast is what makes it read as more page.
+    if (/\.margin-[\w-]/.test(selector)) {
+      assert.doesNotMatch(body, /--font-mono/, `${selector} sets margin copy in the chrome voice`);
+    }
+    // Nothing moves on hover: space for every reveal exists at rest, so a
+    // reveal may change opacity and ink and nothing else.
+    if (/:hover|:focus-within/.test(selector)) {
+      assert.doesNotMatch(
+        body,
+        /(^|[;{\s])(transform|translate|width|height|margin|padding|font-size|display|inset|top|left|right|bottom)\s*:/,
+        `${selector} moves geometry on hover`,
+      );
+    }
+  }
+
+  // The six parts exist as one component set, so four kinds cannot fork into
+  // four layouts.
+  for (const part of [
+    "function MarginEntryNameLine",
+    "function MarginEntryKindLine",
+    "function MarginEntryWhy",
+    "function MarginEntryFacts",
+    "function MarginEntryAppearsIn",
+    "function MarginEntryRelated",
+  ]) {
+    assert.ok(margin.includes(part), `the entry skeleton is missing ${part}`);
+  }
+
+  // Uncertainty is content, not an error state: italic serif means proposed,
+  // and it means that everywhere — unidentified sites, contested titles,
+  // manuscript variants, estimates.
+  assert.match(entriesCss, /\.margin-entry \.is-proposed[\s\S]*?font-style: italic;/);
+  assert.match(margin, /value: "unidentified", proposed: true/);
+
+  // Provenance is persistent, never a hover: 4px slate dot for the app's own
+  // sentence, 2px seal spine and a date for the reader's.
+  assert.match(entriesCss, /\.margin-entry-mark\.is-app\s*\{[\s\S]*?width: 4px;[\s\S]*?background: var\(--accent-machine\);/);
+  assert.match(entriesCss, /\.margin-entry-mark\.is-reader\s*\{[\s\S]*?width: 2px;[\s\S]*?background: var\(--accent-seal\);/);
+  assert.match(margin, /provenance="app"/);
+  assert.match(margin, /provenance="reader" writtenOn=/);
+  assert.doesNotMatch(entriesCss, /\.margin-entry-mark[^{]*\{[^}]*opacity: 0;/);
+
+  // A bearing beats a map at 380px, and it is computed from the record's own
+  // coordinates rather than written by hand.
+  assert.match(margin, /export function bearingFromKnownPlace\(latitude: number, longitude: number\)/);
+  assert.match(margin, /greatCircleKm\(anchor, here\)/);
+  assert.match(margin, /bearingFromKnownPlace\(place\.primary\.latitude, place\.primary\.longitude\)/);
+  assert.match(margin, /label: "Bearing"/);
+
+  // Word entries keep the lexicon head, and Strong's number waits in space
+  // reserved for it rather than crowding the resting row.
+  assert.doesNotMatch(language, /lang-chip lang-chip-id/);
+  assert.match(language, /className="margin-entry-name-key lang-detail-strong"/);
+  assert.match(entriesCss, /\.margin-entry-name-key\s*\{[\s\S]*?opacity: 0;/);
+  assert.match(entriesCss, /\.margin-entry:hover \.margin-entry-name-key,\s*\.margin-entry:focus-within \.margin-entry-name-key\s*\{\s*opacity: 1;/);
 });
 
 test("Living Margin is one labelled frame with truthful chapter, reading, and selected modes", () => {
@@ -154,7 +227,12 @@ test("Overview surfaces only grounded Scripture, library, and TIPNR entity leads
 
 test("People and place actions use explicit workspace language", () => {
   assert.match(margin, /Open research tab for/);
-  assert.match(margin, />Open research tab&nbsp;→<\/span>/);
+  // The entry's name line is the handle, so the destination is named once, in
+  // its accessible name. The "Open research tab →" caption it replaces was a
+  // hover reveal that also translated 2px — geometry moving on hover, which
+  // the language forbids outright.
+  assert.match(margin, /openLabel=\{`Open research tab for \$\{entity\.displayName\}`\}/);
+  assert.doesNotMatch(margin, /intent-entity-open/);
   assert.match(margin, /Open .* in a new research tab/);
   assert.match(margin, /Open .* as a passage tab/);
   assert.match(margin, /Opened from/);

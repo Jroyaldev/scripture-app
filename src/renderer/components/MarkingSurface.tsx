@@ -69,7 +69,21 @@ export interface ConnectionDraftModel {
   label: string;
 }
 
-interface Props {
+/**
+ * The deferred and modal half of the action set (G·2). None of these write a
+ * mark: each opens work somewhere else, so each is a callback the shell owns.
+ * They are optional on purpose — an action whose host is not wired cannot act,
+ * and More states that in the list rather than dropping the row.
+ */
+export interface MarkingDeferredActions {
+  onCapture?: (() => void) | undefined;
+  onStudyVerse?: (() => void) | undefined;
+  onKeepAsComparison?: (() => void) | undefined;
+  onOpenInTab?: (() => void) | undefined;
+  onPericope?: (() => void) | undefined;
+}
+
+interface Props extends MarkingDeferredActions {
   surface: MarkingSurfaceId;
   theme: AppTheme;
   focusMode: boolean;
@@ -77,6 +91,10 @@ interface Props {
   stageBounds: { left: number; top: number; width: number; height: number; bottom: number };
   selection: MarkingSelectionModel | null;
   extensionRequest: ConnectionExtensionRequest | null;
+  /** Read-only libraries are stated before you act; the bar states it too. */
+  readOnly?: boolean | undefined;
+  /** Whether the last write attempt could reach the library at all. */
+  offline?: boolean | undefined;
   onSetColor: (color: string) => Promise<boolean>;
   onNote: () => void;
   onRemove: () => Promise<boolean>;
@@ -129,6 +147,12 @@ interface ConnectionSession {
   /** Exact visible version this extension command was authored against. */
   expectedBaseEventId?: string;
   kind: ConnectionKind;
+  /**
+   * Whether the reader has named the relation. Until a second phrase exists
+   * there is nothing to name, so the draft carries a provisional kind that the
+   * kind row does not yet offer and no write may act on.
+   */
+  kindChosen: boolean;
   anchors: ConnectionAnchorV2[];
   paintAnchors: ConnectionPaintAnchor[];
   labels: string[];
@@ -159,13 +183,52 @@ const BINARY_KINDS = new Set<ConnectionKind>(["link:contrast", "mirror", "hinge"
 /** The narrow shell's breakpoint, matching styles.css's @media (max-width: 979px). */
 const NARROW_SHELL = "(max-width: 979px)";
 
-const DOCK_MODES = [
-  { id: "read", label: "Read" },
-  { id: "wash", label: "Wash" },
-  { id: "connect", label: "Connect" },
-  { id: "note", label: "Note" },
-  { id: "erase", label: "Erase" },
+/**
+ * G·2 — eleven actions in three kinds.
+ *
+ * IMMEDIATE acts and finishes; DEFERRED opens the work elsewhere; MODAL turns
+ * the surface into a workbench. Only immediate belongs on the bar. Note earns
+ * its slot through use and Connect earns one as an entry point; everything
+ * else lives behind More. The table is the single place that decides which is
+ * which, so a new action cannot quietly award itself a permanent slot.
+ */
+type MarkingActionId =
+  | "highlight"
+  | "remove"
+  | "note"
+  | "capture"
+  | "study-verse"
+  | "keep-comparison"
+  | "open-in-tab"
+  | "copy-reference"
+  | "connect"
+  | "pericope";
+
+type MarkingActionKind = "immediate" | "deferred" | "modal";
+
+interface MarkingActionSpec {
+  id: MarkingActionId;
+  kind: MarkingActionKind;
+  label: string;
+  /** "bar" earns a permanent slot; "more" lives in the overflow list. */
+  home: "bar" | "more";
+}
+
+const MARKING_ACTIONS: readonly MarkingActionSpec[] = [
+  { id: "highlight", kind: "immediate", label: "Highlight", home: "bar" },
+  { id: "remove", kind: "immediate", label: "Remove", home: "bar" },
+  { id: "note", kind: "deferred", label: "Note", home: "bar" },
+  { id: "connect", kind: "modal", label: "Connect", home: "bar" },
+  { id: "capture", kind: "deferred", label: "Capture to sheet", home: "more" },
+  { id: "study-verse", kind: "deferred", label: "Study this verse", home: "more" },
+  { id: "keep-comparison", kind: "deferred", label: "Keep as comparison", home: "more" },
+  { id: "open-in-tab", kind: "deferred", label: "Open in a tab", home: "more" },
+  { id: "copy-reference", kind: "deferred", label: "Copy with reference", home: "more" },
+  { id: "pericope", kind: "modal", label: "Mark a pericope", home: "more" },
 ] as const;
+
+/** The overflow list, in the fixed order the table declares. */
+const MORE_ACTIONS = MARKING_ACTIONS.filter((action) => action.home === "more");
 
 const REST_GUIDANCE = "Select words, or choose a tool to keep in hand.";
 
@@ -218,27 +281,102 @@ function markRestHintSeen(): void {
   } catch { /* storage may be unavailable; the hint simply stays session-scoped */ }
 }
 
-type DockModeId = typeof DOCK_MODES[number]["id"];
+/* ── The ten states ──────────────────────────────────────────────────────────
+   Loading · Empty · Failed · Offline · Truncated · In-flight · Conflict ·
+   Read-only · Not-installed · No-results, as shared components rather than ten
+   local improvisations. Five rules govern them, and each is enforced here
+   rather than remembered: ONE loading device, never an illustration, name the
+   thing and the reason, never lose the reader's text, say whether it was
+   local. */
+
+export type SurfaceStateId =
+  | "loading"
+  | "empty"
+  | "failed"
+  | "offline"
+  | "truncated"
+  | "in-flight"
+  | "conflict"
+  | "read-only"
+  | "not-installed"
+  | "no-results";
+
+/**
+ * The one loading device in the app: a 1px seal segment travelling a hairline.
+ * No spinners, no skeletons, anywhere. Loading and in-flight are the same
+ * device because they are the same fact — something is happening and the
+ * reader is waiting on it.
+ */
+export function SealProgress({ label }: { label: string }): React.JSX.Element {
+  return (
+    <span
+      className="seal-progress"
+      role="progressbar"
+      aria-label={label}
+      aria-valuetext={label}
+    >
+      <span className="seal-progress-hairline" aria-hidden="true">
+        <i className="seal-progress-segment" />
+      </span>
+    </span>
+  );
+}
+
+/**
+ * Clip a QUOTATION, and only a quotation. A reference, a date, a count or an
+ * identifier is the part a reader needs whole in order to act, so no caller
+ * may route one through here — the parameter is named for what it accepts.
+ */
+export function clipQuotation(quotation: string, max: number): string {
+  if (max <= 1 || quotation.length <= max) return quotation;
+  return `${quotation.slice(0, max - 1).trimEnd()}…`;
+}
+
+export function SurfaceState({
+  state,
+  thing,
+  reason,
+  locality,
+  actions,
+  children,
+}: {
+  state: SurfaceStateId;
+  /** The thing this is about, named. Never "something". */
+  thing: string;
+  /** Why it is in this state. Never an apology. */
+  reason?: string;
+  /** Whether this happened on the reader's own machine. */
+  locality?: "local" | "remote";
+  actions?: React.ReactNode;
+  /** The reader's own text, which a state may never swallow. */
+  children?: React.ReactNode;
+}): React.JSX.Element {
+  const loading = state === "loading" || state === "in-flight";
+  return (
+    <div
+      className="surface-state"
+      data-surface-state={state}
+      role={state === "failed" || state === "conflict" ? "alert" : "status"}
+      aria-live={state === "failed" || state === "conflict" ? "assertive" : "polite"}
+    >
+      <p className="surface-state-line">
+        {loading && <SealProgress label={thing} />}
+        <span className="surface-state-thing">{thing}</span>
+        {reason && <span className="surface-state-reason">{reason}</span>}
+        {locality && (
+          <span className="surface-state-locality">
+            {locality === "local" ? "On this device." : "From the library."}
+          </span>
+        )}
+      </p>
+      {children}
+      {actions && <div className="surface-state-actions">{actions}</div>}
+    </div>
+  );
+}
 
 function pigmentLabel(color: PigmentId): string {
   return PIGMENTS.find((option) => option.id === color)?.label ?? color;
-}
-
-/** One armed-tool description for every surface: same words, same order. */
-function describeArmedTool(armedTool: ToolMode | null): { key: string | null; label: string; guidance: string } {
-  const key = armedTool?.type === "wash" ? `wash:${armedTool.color}`
-    : armedTool?.type === "connect" ? `connect:${armedTool.kind}`
-      : armedTool?.type ?? null;
-  const label = armedTool?.type === "wash" ? `${pigmentLabel(armedTool.color)} wash`
-    : armedTool?.type === "connect" ? relationshipLabel(armedTool.kind)
-      : armedTool?.type === "note" ? "Note"
-        : armedTool?.type === "erase" ? "Erase" : "";
-  const guidance = armedTool?.type === "connect"
-    ? "Select words to add the next relationship phrase."
-    : armedTool?.type === "wash"
-      ? "Select more words to lay this wash again."
-      : "Select words to use this tool again.";
-  return { key, label, guidance };
 }
 
 function anchorKey(anchor: ConnectionAnchorV2): string {
@@ -272,11 +410,12 @@ function RelationshipGlyph({ kind }: { kind: ConnectionKind }): React.JSX.Elemen
   return <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 9h4M11 9h4M9 5.5 12.5 9 9 12.5 5.5 9z" /></svg>;
 }
 
-function ToolGlyph({ tool }: { tool: "read" | "wash" | "connect" | "note" | "erase" }): React.JSX.Element {
+function ToolGlyph({ tool }: { tool: "read" | "wash" | "connect" | "note" | "erase" | "more" }): React.JSX.Element {
   if (tool === "read") return <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3.2 4.4c1.9-.7 3.8-.5 5.8.7v9c-2-1.2-3.9-1.4-5.8-.7zM14.8 4.4c-1.9-.7-3.8-.5-5.8.7v9c2-1.2 3.9-1.4 5.8-.7z" /></svg>;
   if (tool === "wash") return <svg viewBox="0 0 18 18" aria-hidden="true"><path d="m4.1 10.7 5.8-6.1 3.5 3.3-5.9 6.2H4.1zM3.2 14.1h11.6" /></svg>;
   if (tool === "connect") return <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M7.2 11.7 5.9 13a3 3 0 0 1-4.2-4.2l2-2a3 3 0 0 1 4.2 0M10.8 6.3 12.1 5a3 3 0 0 1 4.2 4.2l-2 2a3 3 0 0 1-4.2 0M6.5 11.5l5-5" /></svg>;
   if (tool === "note") return <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M4 3.2h10v8.1l-3.4 3.5H4zM10.6 14.8v-3.5H14M6.6 6.2h4.8M6.6 8.8h3.6" /></svg>;
+  if (tool === "more") return <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3.6 9h.01M9 9h.01M14.4 9h.01" /></svg>;
   return <svg viewBox="0 0 18 18" aria-hidden="true"><path d="m6.6 14.3-3.4-3.4 6.9-7a1.5 1.5 0 0 1 2.2 0l2 2a1.5 1.5 0 0 1 0 2.2l-6.2 6.2zM6.3 7.8l4.4 4.4M6.6 14.3h8.2" /></svg>;
 }
 
@@ -314,6 +453,7 @@ function RelationshipChoices({
   helpId,
   activateOnMove = false,
   onMoveChoose,
+  disabled = false,
 }: {
   selected: ConnectionKind | null;
   onChoose: (kind: ConnectionKind) => void;
@@ -323,6 +463,7 @@ function RelationshipChoices({
   helpId?: string;
   activateOnMove?: boolean;
   onMoveChoose?: (kind: ConnectionKind) => void;
+  disabled?: boolean;
 }): React.JSX.Element {
   const selectedIndex = RELATIONSHIPS.findIndex((option) => option.id === selected);
   const roving = useRovingFocus<HTMLButtonElement>(RELATIONSHIPS.length, Math.max(0, selectedIndex));
@@ -342,6 +483,7 @@ function RelationshipChoices({
           role={activateOnMove ? "radio" : undefined}
           className={`marking-choice marking-relationship marking-kind-${option.id.replace("link:", "")}${selected === option.id ? " active" : ""}`}
           data-relationship-kind={option.id}
+          disabled={disabled}
           aria-checked={activateOnMove ? selected === option.id : undefined}
           aria-pressed={activateOnMove ? undefined : selected === option.id}
           aria-label={`${option.label}. ${option.description}`}
@@ -371,72 +513,6 @@ function RelationshipChoices({
   );
 }
 
-function PigmentChoices({
-  selected,
-  onChoose,
-  compact = false,
-  initialFocusRef,
-  onHelpChange,
-  helpId,
-  activateOnMove = false,
-  onMoveChoose,
-}: {
-  selected: PigmentId | null;
-  onChoose: (color: PigmentId) => void;
-  compact?: boolean;
-  initialFocusRef?: React.RefObject<HTMLButtonElement | null>;
-  onHelpChange?: (help: PaletteHelp | null) => void;
-  helpId?: string;
-  activateOnMove?: boolean;
-  onMoveChoose?: (color: PigmentId) => void;
-}): React.JSX.Element {
-  const selectedIndex = PIGMENTS.findIndex((option) => option.id === selected);
-  const roving = useRovingFocus<HTMLButtonElement>(PIGMENTS.length, Math.max(0, selectedIndex));
-  useEffect(() => {
-    if (selectedIndex >= 0) roving.setActiveIndex(selectedIndex);
-  }, [roving.setActiveIndex, selectedIndex]);
-  return (
-    <div className={`marking-choice-grid marking-pigment-grid${compact ? " compact" : ""}`} role={activateOnMove ? "radiogroup" : "group"} aria-label="Highlight color">
-      {PIGMENTS.map((option, index) => (
-        <button
-          key={option.id}
-          ref={(node) => {
-            roving.refs.current[index] = node;
-            if (index === Math.max(0, selectedIndex) && initialFocusRef) initialFocusRef.current = node;
-          }}
-          type="button"
-          role={activateOnMove ? "radio" : undefined}
-          className={`marking-choice marking-wash${selected === option.id ? " active" : ""}`}
-          data-pigment={option.id}
-          aria-checked={activateOnMove ? selected === option.id : undefined}
-          aria-pressed={activateOnMove ? undefined : selected === option.id}
-          aria-label={`${option.label} wash. ${option.description}`}
-          aria-describedby={helpId}
-          title={option.description}
-          tabIndex={roving.activeIndex === index ? 0 : -1}
-          onMouseDown={(event) => { if (!activateOnMove) event.preventDefault(); }}
-          onMouseEnter={() => onHelpChange?.(option)}
-          onMouseLeave={(event) => {
-            if (document.activeElement !== event.currentTarget) onHelpChange?.(null);
-          }}
-          onFocus={() => { roving.setActiveIndex(index); onHelpChange?.(option); }}
-          onBlur={(event) => {
-            if (!event.currentTarget.matches(":hover")) onHelpChange?.(null);
-          }}
-          onKeyDown={(event) => {
-            const next = roving.onKeyDown(event, index);
-            if (activateOnMove && next != null) (onMoveChoose ?? onChoose)(PIGMENTS[next]!.id);
-          }}
-          onClick={() => (activateOnMove ? (onMoveChoose ?? onChoose) : onChoose)(option.id)}
-        >
-          <PigmentSwatch color={option.id} />
-          <span className="marking-choice-label">{option.label}</span>
-        </button>
-      ))}
-    </div>
-  );
-}
-
 interface PaletteHelp {
   label: string;
   description: string;
@@ -451,163 +527,243 @@ interface PalettePlacement {
   layout: "floating" | "sheet";
 }
 
-function PaletteHeaderGlyph({ icon }: { icon: "note" | "erase" | "pin" | "close" }): React.JSX.Element {
+function PaletteHeaderGlyph({ icon }: { icon: "note" | "erase" | "close" }): React.JSX.Element {
   if (icon === "note") return <ToolGlyph tool="note" />;
   if (icon === "erase") return <ToolGlyph tool="erase" />;
-  if (icon === "pin") {
-    return <svg viewBox="0 0 18 18" aria-hidden="true"><path d="m6 3h6l-.8 3.6 2.2 2.1H4.6l2.2-2.1zM9 8.7v6.4" /></svg>;
-  }
   return <svg viewBox="0 0 18 18" aria-hidden="true"><path d="m4.5 4.5 9 9M13.5 4.5l-9 9" /></svg>;
 }
 
-function PaletteVocabulary({
-  selectedKind,
+/**
+ * The bar. Five swatches, then Note · Connect · More, at every width and in
+ * every state — Remove takes Note's slot when the selection already carries a
+ * mark, and nothing else moves. That constancy is the whole point: a bar whose
+ * contents shuffle cannot be used without looking at it first.
+ */
+function MarkingBar({
+  hasExistingHighlight,
+  phraseMode,
   selectedWash,
-  onChooseKind,
+  disabled,
+  moreOpen,
+  firstChoiceRef,
   onChooseWash,
+  onNote,
+  onRemove,
+  onConnect,
+  onToggleMore,
   onHelpChange,
-  initialFocusRef,
   helpId,
 }: {
-  selectedKind: ConnectionKind | null;
+  hasExistingHighlight: boolean;
+  phraseMode: boolean;
   selectedWash: PigmentId | null;
-  onChooseKind: (kind: ConnectionKind) => void;
+  disabled: boolean;
+  moreOpen: boolean;
+  firstChoiceRef: React.RefObject<HTMLButtonElement | null>;
   onChooseWash: (color: PigmentId) => void;
+  onNote: () => void;
+  onRemove: () => void;
+  onConnect: () => void;
+  onToggleMore: (opener: HTMLButtonElement) => void;
   onHelpChange: (help: PaletteHelp | null) => void;
-  initialFocusRef: React.RefObject<HTMLButtonElement | null>;
   helpId: string;
 }): React.JSX.Element {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const refs = useRef<Array<HTMLButtonElement | null>>([]);
-  const count = RELATIONSHIPS.length + PIGMENTS.length;
-
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number): void => {
-    let next: number | null = null;
-    if (event.key === "ArrowRight" || event.key === "ArrowDown") next = index + 1;
-    if (event.key === "ArrowLeft" || event.key === "ArrowUp") next = index - 1;
-    if (event.key === "Home") next = 0;
-    if (event.key === "End") next = count - 1;
-    if (next == null) return;
-    event.preventDefault();
-    const normalized = (next + count) % count;
-    setActiveIndex(normalized);
-    refs.current[normalized]?.focus({ preventScroll: true });
-  };
-
   const explain = (option: PaletteHelp): void => onHelpChange(option);
-  const clearExplanationAfterPointer = (event: React.MouseEvent<HTMLButtonElement>): void => {
+  const clearAfterPointer = (event: React.MouseEvent<HTMLButtonElement>): void => {
     if (document.activeElement !== event.currentTarget) onHelpChange(null);
   };
-  const clearExplanationAfterFocus = (event: React.FocusEvent<HTMLButtonElement>): void => {
+  const clearAfterFocus = (event: React.FocusEvent<HTMLButtonElement>): void => {
     if (!event.currentTarget.matches(":hover")) onHelpChange(null);
   };
-
   return (
-    <div className="marking-palette-vocabularies">
-      <section className="marking-palette-vocabulary" role="group" aria-labelledby="marking-palette-connect-label">
-        <div className="marking-palette-section-heading">
-          <span id="marking-palette-connect-label">Connect</span>
-          <small>How do these words relate?</small>
-        </div>
-        <div className="marking-choice-grid marking-relationship-grid">
-          {RELATIONSHIPS.map((option, index) => (
-            <button
-              key={option.id}
-              ref={(node) => {
-                refs.current[index] = node;
-                if (index === 0) initialFocusRef.current = node;
-              }}
-              type="button"
-              className={`marking-choice marking-relationship marking-kind-${option.id.replace("link:", "")}${selectedKind === option.id ? " active" : ""}`}
-              data-relationship-kind={option.id}
-              aria-label={`${index + 1}. ${option.label}. ${option.description}`}
-              aria-keyshortcuts={`${index + 1}`}
-              aria-pressed={selectedKind === option.id}
-              aria-describedby={helpId}
-              tabIndex={activeIndex === index ? 0 : -1}
-              onMouseDown={(event) => event.preventDefault()}
-              onMouseEnter={() => explain(option)}
-              onMouseLeave={clearExplanationAfterPointer}
-              onFocus={() => { setActiveIndex(index); explain(option); }}
-              onBlur={clearExplanationAfterFocus}
-              onKeyDown={(event) => handleKeyDown(event, index)}
-              onClick={() => onChooseKind(option.id)}
-            >
-              <span className="marking-choice-glyph"><RelationshipGlyph kind={option.id} /></span>
-              <span className="marking-choice-label">{option.label}</span>
-            </button>
-          ))}
-        </div>
-      </section>
-      <section className="marking-palette-vocabulary" role="group" aria-labelledby="marking-palette-highlight-label">
-        <div className="marking-palette-section-heading">
-          <span id="marking-palette-highlight-label">Wash</span>
-          <small>Choose a quiet wash.</small>
-        </div>
-        <div className="marking-choice-grid marking-pigment-grid">
-          {PIGMENTS.map((option, pigmentIndex) => {
-            const index = RELATIONSHIPS.length + pigmentIndex;
-            return (
-              <button
-                key={option.id}
-                ref={(node) => { refs.current[index] = node; }}
-                type="button"
-                className={`marking-choice marking-wash${selectedWash === option.id ? " active" : ""}`}
-                data-pigment={option.id}
-                aria-label={`Shift+${pigmentIndex + 1}. ${option.label} wash. ${option.description}`}
-                aria-keyshortcuts={`Shift+${pigmentIndex + 1}`}
-                aria-pressed={selectedWash === option.id}
-                aria-describedby={helpId}
-                tabIndex={activeIndex === index ? 0 : -1}
-                onMouseDown={(event) => event.preventDefault()}
-                onMouseEnter={() => explain(option)}
-                onMouseLeave={clearExplanationAfterPointer}
-                onFocus={() => { setActiveIndex(index); explain(option); }}
-                onBlur={clearExplanationAfterFocus}
-                onKeyDown={(event) => handleKeyDown(event, index)}
-                onClick={() => onChooseWash(option.id)}
-              >
-                <PigmentSwatch color={option.id} />
-                <span className="marking-choice-label">{option.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </section>
+    <div className="marking-bar" data-bar-slot-count={MARKING_ACTIONS.filter((a) => a.home === "bar").length}>
+      <div className="marking-bar-swatches" role="group" aria-label="Highlight colour">
+        {PIGMENTS.map((option, index) => (
+          <button
+            key={option.id}
+            ref={index === 0 ? firstChoiceRef : undefined}
+            type="button"
+            className={`marking-choice marking-wash marking-bar-swatch${selectedWash === option.id ? " active" : ""}`}
+            data-pigment={option.id}
+            data-bar-action="highlight"
+            disabled={disabled}
+            aria-pressed={selectedWash === option.id}
+            aria-keyshortcuts={`${index + 1}`}
+            aria-label={`${index + 1}. ${option.label} wash. ${option.description}`}
+            aria-describedby={helpId}
+            title={option.description}
+            onMouseDown={(event) => event.preventDefault()}
+            onMouseEnter={() => explain(option)}
+            onMouseLeave={clearAfterPointer}
+            onFocus={() => explain(option)}
+            onBlur={clearAfterFocus}
+            onClick={() => onChooseWash(option.id)}
+          ><PigmentSwatch color={option.id} /></button>
+        ))}
+      </div>
+      {/* One slot, two occupants. Remove replaces Note when there is already a
+          mark to remove — the reader's next act on a marked phrase is almost
+          never a second note, and the slot must not grow a sixth control. */}
+      {hasExistingHighlight ? (
+        <button
+          type="button"
+          className="marking-bar-action"
+          data-bar-action="remove"
+          disabled={disabled}
+          aria-keyshortcuts="0"
+          aria-label={phraseMode ? "Remove selected text from wash" : "Remove wash"}
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={onRemove}
+        ><ToolGlyph tool="erase" /><span>Remove</span></button>
+      ) : (
+        <button
+          type="button"
+          className="marking-bar-action"
+          data-bar-action="note"
+          disabled={disabled}
+          aria-keyshortcuts="Meta+Shift+M"
+          aria-label="Add note"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={onNote}
+        ><ToolGlyph tool="note" /><span>Note</span></button>
+      )}
+      <button
+        type="button"
+        className="marking-bar-action"
+        data-bar-action="connect"
+        disabled={disabled}
+        aria-label="Connect these words to another phrase"
+        onMouseDown={(event) => event.preventDefault()}
+        onClick={onConnect}
+      ><ToolGlyph tool="connect" /><span>Connect</span></button>
+      <button
+        type="button"
+        className="marking-bar-action"
+        data-bar-action="more"
+        aria-haspopup="menu"
+        aria-expanded={moreOpen}
+        aria-controls="marking-more-list"
+        aria-label="More actions for this selection"
+        onMouseDown={(event) => event.preventDefault()}
+        onClick={(event) => onToggleMore(event.currentTarget)}
+      ><ToolGlyph tool="more" /><span>More</span></button>
     </div>
   );
 }
 
-function SessionStatus({
+interface MoreItem {
+  id: MarkingActionId;
+  label: string;
+  kind: MarkingActionKind;
+  /** null when the item can act; otherwise the reason it cannot. */
+  blockedReason: string | null;
+  run: () => void;
+}
+
+/**
+ * More is a plain list with the scope stated at the top. An item that cannot
+ * act shows an em-dash and the reason rather than vanishing: a disappearing
+ * item changes the list's shape, and a list that changes shape costs the
+ * reader the place they had learned.
+ */
+function MoreList({
+  scope,
+  items,
+  panelRef,
+}: {
+  scope: string;
+  items: readonly MoreItem[];
+  panelRef: React.RefObject<HTMLDivElement | null>;
+}): React.JSX.Element {
+  return (
+    <div ref={panelRef} className="marking-more" data-floating-layer="popover">
+      <p className="marking-more-scope" id="marking-more-scope">{scope}</p>
+      <ul id="marking-more-list" className="marking-more-list" role="menu" aria-describedby="marking-more-scope">
+        {items.map((item) => (
+          <li key={item.id} className="marking-more-row">
+            <button
+              type="button"
+              role="menuitem"
+              className="marking-more-item"
+              data-more-action={item.id}
+              data-action-kind={item.kind}
+              disabled={item.blockedReason != null}
+              aria-disabled={item.blockedReason != null}
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={item.run}
+            >
+              <span className="marking-more-label">{item.label}</span>
+              {item.blockedReason && (
+                <span className="marking-more-reason">
+                  <i aria-hidden="true">—</i> {item.blockedReason}
+                </span>
+              )}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+type ConnectDraftState = "one-anchor" | "two-anchors" | "in-flight" | "recovery";
+
+function connectDraftState(session: ConnectionSession, busy: boolean): ConnectDraftState {
+  if (session.recoveryState) return "recovery";
+  if (busy) return "in-flight";
+  return session.anchors.length >= 2 ? "two-anchors" : "one-anchor";
+}
+
+/**
+ * Connect replaces the bar rather than floating beside it, and it is never
+ * dismissed optimistically: `onMutationStateChange` exists precisely because
+ * this write can fail, and a bar that has already vanished has nowhere to put
+ * the failure. Four states, and the kind row only exists from the second
+ * anchor — asking what the relation IS before a relation exists is a question
+ * with no answer.
+ */
+function ConnectDraft({
   session,
   busy,
-  stageBounds,
-  onDone,
+  draft,
+  copied,
+  onDraftChange,
+  onChooseKind,
+  onSave,
   onCancel,
+  onCopyText,
 }: {
   session: ConnectionSession;
   busy: boolean;
-  stageBounds: { left: number; top: number; width: number };
-  onDone: () => void;
+  draft: string;
+  copied: boolean;
+  onDraftChange: (value: string) => void;
+  onChooseKind: (kind: ConnectionKind) => void;
+  onSave: () => void;
   onCancel: () => void;
+  onCopyText: () => void;
 }): React.JSX.Element {
-  const binary = BINARY_KINDS.has(session.kind);
+  const state = connectDraftState(session, busy);
+  const readOnly = state === "in-flight" || state === "recovery";
   const phraseLabel = `${session.anchors.length} phrase${session.anchors.length === 1 ? "" : "s"}`;
+  const heldQuotes = session.labels.map((label) => clipQuotation(label, 40));
   return (
     <div
-      className="marking-session"
+      className="marking-session marking-connect-draft"
+      data-connect-state={state}
       aria-busy={busy}
-      data-floating-layer="marking-session"
-      style={{
-        "--mark-session-left": `${stageBounds.left}px`,
-        "--mark-session-top": `${stageBounds.top}px`,
-        "--mark-session-width": `${stageBounds.width}px`,
-      } as React.CSSProperties}
+      role="group"
+      aria-label="Connection draft"
     >
       <span className="marking-session-kind">
-        <RelationshipGlyph kind={session.kind} />
-        {relationshipLabel(session.kind)} · {phraseLabel}
+        {session.kindChosen && <RelationshipGlyph kind={session.kind} />}
+        {session.kindChosen ? `${relationshipLabel(session.kind)} · ${phraseLabel}` : phraseLabel}
       </span>
+      <ol className="marking-connect-anchors">
+        {heldQuotes.map((quote, index) => (
+          <li key={`${quote}:${index}`}><q>{quote}</q></li>
+        ))}
+      </ol>
       <span
         className="marking-session-copy"
         role={session.recoveryState === "unconfirmed" ? "alert" : "status"}
@@ -618,26 +774,81 @@ function SessionStatus({
           ? "Saving connection…"
           : session.feedback
             ?? session.notice
-            ?? (binary
-              ? "Select the counterpart."
-              : session.anchors.length === 1
-                ? "Select another phrase to connect."
-                : "Select more text to keep adding.")}
+            ?? (session.anchors.length === 1
+              ? "Select another phrase to connect."
+              : "Select more text to keep adding.")}
       </span>
-      {session.anchors.length >= 2 && (!binary || Boolean(session.feedback)) && (
-        <button type="button" className="marking-session-action primary" disabled={busy} onClick={onDone}>
-          {session.feedback || binary ? "Retry" : "Save connection"}
-        </button>
+      {state === "in-flight" && <SealProgress label="Saving connection" />}
+      {/* Two anchors is the moment a relation exists, and therefore the first
+          moment the question "what kind?" has an answer. */}
+      {session.anchors.length >= 2 && (
+        <div className="marking-connect-kinds">
+          <RelationshipChoices
+            selected={session.kindChosen ? session.kind : null}
+            onChoose={onChooseKind}
+            compact
+            disabled={readOnly}
+          />
+        </div>
+      )}
+      {session.anchors.length >= 2 && (
+        <label className="marking-connect-field">
+          {/* Label and observation are ONE field. The first line names the
+              connection; anything after it is the observation. Two boxes asked
+              the reader to sort a single thought into two containers before
+              they had finished having it. */}
+          <span>Name it, and say why</span>
+          <textarea
+            value={draft}
+            readOnly={readOnly}
+            rows={2}
+            spellCheck
+            placeholder="Both answer the same charge — first line names it, the rest is why."
+            onChange={(event) => onDraftChange(event.target.value)}
+          />
+        </label>
       )}
       {session.recoveryState ? (
-        <span className="marking-session-recovery">Recovery required</span>
+        <>
+          <span className="marking-session-recovery">Recovery required</span>
+          <SurfaceState
+            state="failed"
+            thing={session.recoveryState === "committed-pending"
+              ? "This connection was recorded, but its reading index was not rebuilt."
+              : "This connection's result was never confirmed."}
+            reason={session.recoveryState === "committed-pending"
+              ? "Until Retry rebuilds it the connection will not appear on the page."
+              : "Retrying sends the same command, so it cannot be saved twice."}
+            locality="local"
+            actions={
+              <>
+                <button type="button" className="marking-session-action primary" disabled={busy} onClick={onSave}>Retry</button>
+                <button type="button" className="marking-session-action" onClick={onCopyText}>
+                  {copied ? "Copied" : "Copy text"}
+                </button>
+              </>
+            }
+          >
+            {draft.trim() && <q className="marking-connect-kept-text">{draft}</q>}
+          </SurfaceState>
+        </>
       ) : (
-        <button
-          type="button"
-          className="marking-session-action"
-          disabled={busy}
-          onClick={onCancel}
-        >Cancel draft</button>
+        <div className="marking-connect-actions">
+          {session.anchors.length >= 2 && (
+            <button
+              type="button"
+              className="marking-session-action primary"
+              disabled={busy || !session.kindChosen}
+              onClick={onSave}
+            >Save connection</button>
+          )}
+          <button
+            type="button"
+            className="marking-session-action"
+            disabled={busy}
+            onClick={onCancel}
+          >Cancel draft</button>
+        </div>
       )}
     </div>
   );
@@ -651,6 +862,8 @@ export function MarkingSurface({
   stageBounds,
   selection,
   extensionRequest,
+  readOnly = false,
+  offline = false,
   onSetColor,
   onNote,
   onRemove,
@@ -662,23 +875,31 @@ export function MarkingSurface({
   onMutationStateChange,
   onCreateConnection,
   onUpdateConnection,
+  onCapture,
+  onStudyVerse,
+  onKeepAsComparison,
+  onOpenInTab,
+  onPericope,
 }: Props): React.JSX.Element | null {
   const [tool, setTool] = useState<ToolMode | null>(null);
   const [session, setSession] = useState<ConnectionSession | null>(null);
   const [keepActive, setKeepActive] = useState(false);
-  const [tray, setTray] = useState<"intent" | "wash" | "connect" | null>(null);
+  const [tray, setTray] = useState<"more" | null>(null);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState(REST_GUIDANCE);
   const [selectionFailure, setSelectionFailure] = useState<SelectionFailure | null>(null);
   const [paletteHelp, setPaletteHelp] = useState<PaletteHelp | null>(null);
   const [palettePlacement, setPalettePlacement] = useState<PalettePlacement | null>(null);
   const [consumingSelectionNonce, setConsumingSelectionNonce] = useState<number | null>(null);
-  const [dockHelp, setDockHelp] = useState<PaletteHelp | null>(null);
   const [dockEntranceComplete, setDockEntranceComplete] = useState(false);
   const [focusRingMode, setFocusRingMode] = useState<"pointer" | "keyboard">("pointer");
   const [exitGuardReason, setExitGuardReason] = useState<ConnectionDraftExitReason | null>(null);
+  const [connectDraftText, setConnectDraftText] = useState("");
+  const [copiedNotice, setCopiedNotice] = useState<"draft" | "reference" | null>(null);
   const sessionRef = useRef<ConnectionSession | null>(session);
   sessionRef.current = session;
+  const connectDraftTextRef = useRef(connectDraftText);
+  connectDraftTextRef.current = connectDraftText;
   const exitGuardPromiseRef = useRef<Promise<boolean> | null>(null);
   const exitGuardResolveRef = useRef<((proceed: boolean) => void) | null>(null);
   const exitGuardOriginRef = useRef<HTMLElement | null>(null);
@@ -694,7 +915,6 @@ export function MarkingSurface({
   const paletteRef = useRef<HTMLDivElement>(null);
   const trayPanelRef = useRef<HTMLDivElement>(null);
   const trayOpenerRef = useRef<HTMLButtonElement>(null);
-  const trayOpenerModeRef = useRef<"wash" | "connect" | null>(null);
   const trayShouldFocusRef = useRef(true);
   const focusRestoreTimerRef = useRef<number | null>(null);
   const lastDockAutofocusedSelectionRef = useRef<number | null>(null);
@@ -702,8 +922,6 @@ export function MarkingSurface({
   const dockRef = useRef<HTMLDivElement>(null);
   const dockModesRef = useRef<HTMLDivElement>(null);
   const exitGuardRef = useRef<HTMLDivElement>(null);
-  const dockModeRoving = useRovingFocus<HTMLButtonElement>(DOCK_MODES.length);
-  const dockIntentRoving = useRovingFocus<HTMLButtonElement>(2);
 
   const clearPendingFocusRestore = useCallback((): void => {
     if (focusRestoreTimerRef.current == null) return;
@@ -745,7 +963,7 @@ export function MarkingSurface({
    * overwritten, only overridden while there is no room to honour it.
    *
    * The test is the SHELL's width, not the reading stage's. At a 1440px window
-   * the stage is only ~756px once the rail, the insets and the margin are
+   * the stage is only ~756px once the nav, the insets and the margin are
    * subtracted, so measuring the stage would put a desktop into the narrow
    * shell — which is the whole reason this reads a media query instead.
    */
@@ -761,7 +979,7 @@ export function MarkingSurface({
   }, []);
   const surface: MarkingSurfaceId = isNarrowShell ? "dock" : surfaceSetting;
   const persistentSurface = surface === "dock";
-  // Escape ownership rank in the shared layer registry. An open tray or an
+  // Escape ownership rank in the shared layer registry. An open More list or an
   // in-progress session is deliberate work and cancels before a passive
   // connection card; a plain text selection yields to it. Focus mode hides
   // every marking surface, so nothing registers there.
@@ -793,13 +1011,8 @@ export function MarkingSurface({
     : null;
   const activeSelectionNonce = selection?.nonce ?? null;
   activeSelectionNonceRef.current = activeSelectionNonce;
-  const dockMode: DockModeId = session
-    ? "connect"
-    : tray === "wash" || tray === "connect"
-      ? tray
-      : tool?.type ?? "read";
-  const dockModeIndex = Math.max(0, DOCK_MODES.findIndex((item) => item.id === dockMode));
   const dockLayout = effectiveStageBounds.width <= 759 ? "stacked" : "shelf";
+  const moreOpen = tray === "more";
   const connectionDraft = useMemo<ConnectionDraftModel | null>(() => {
     if (!session || session.contextKey !== contextKey) return null;
     // Durable anchors preserve the canonical authored relationship; these
@@ -841,53 +1054,6 @@ export function MarkingSurface({
     if (mutationStateRef.current === "idle") onMutationStateChange?.("idle");
   }, [onMutationStateChange]);
 
-  useEffect(() => {
-    if (surface !== "dock") return;
-    dockModeRoving.setActiveIndex(dockModeIndex);
-  }, [dockModeIndex, dockModeRoving.setActiveIndex, surface]);
-
-  useLayoutEffect(() => {
-    if (surface !== "dock") return;
-    const group = dockModesRef.current;
-    if (!group) return;
-    let frame = 0;
-    let cancelled = false;
-    const measure = (): void => {
-      if (cancelled) return;
-      const active = group.querySelector<HTMLButtonElement>(`button[data-dock-tool="${dockMode}"]`);
-      if (!active) return;
-      const groupRect = group.getBoundingClientRect();
-      const activeRect = active.getBoundingClientRect();
-      if (groupRect.width <= 0 || activeRect.width <= 0) return;
-      group.style.setProperty("--mark-dock-x", `${activeRect.left - groupRect.left}px`);
-      group.style.setProperty("--mark-dock-width", `${activeRect.width}px`);
-      group.dataset.thumbReady = "true";
-    };
-    const schedule = (): void => {
-      if (frame) return;
-      frame = window.requestAnimationFrame(() => {
-        frame = 0;
-        measure();
-      });
-    };
-    measure();
-    const observer = new ResizeObserver(schedule);
-    observer.observe(group);
-    for (const button of group.querySelectorAll("button")) observer.observe(button);
-    let fontsCancelled = false;
-    void document.fonts?.ready.then(() => {
-      if (!fontsCancelled) schedule();
-    });
-    document.fonts?.addEventListener("loadingdone", schedule);
-    return () => {
-      cancelled = true;
-      fontsCancelled = true;
-      observer.disconnect();
-      document.fonts?.removeEventListener("loadingdone", schedule);
-      if (frame) window.cancelAnimationFrame(frame);
-    };
-  }, [dockMode, effectiveStageBounds.height, effectiveStageBounds.width, surface]);
-
   const beginOperation = useCallback((): { token: number; contextKey: string } | null => {
     if (activeOperation.current != null) return null;
     const token = ++operationSequence.current;
@@ -923,7 +1089,9 @@ export function MarkingSurface({
       const panelRect = panel.getBoundingClientRect();
       if (panelRect.width <= 0 || panelRect.height <= 0) return;
       const inset = 8;
-      const gap = 10;
+      // 8px of clear air above the words, and never over them. The palette is
+      // about that phrase; covering it to talk about it is self-defeating.
+      const gap = 8;
       const stageRight = effectiveStageBounds.left + effectiveStageBounds.width;
       const stageBottom = effectiveStageBounds.bottom;
       const anchor = selection.position.anchorBox;
@@ -937,7 +1105,11 @@ export function MarkingSurface({
       const width = layout === "sheet"
         ? Math.min(panelRect.width, Math.max(0, effectiveStageBounds.width - inset * 2))
         : panelRect.width;
-      const height = Math.min(panelRect.height, Math.max(0, effectiveStageBounds.height - inset * 2));
+      // The panel is placed at its own measured height. It never shrinks,
+      // scrolls, or re-orders itself to fit a stage; when the stage cannot
+      // hold it above, it opens below, and only a stage too small for either
+      // turns it into a sheet.
+      const height = panelRect.height;
       const anchorCenter = (anchor.left + anchor.right) / 2;
       const left = layout === "sheet"
         ? effectiveStageBounds.left + inset
@@ -999,26 +1171,18 @@ export function MarkingSurface({
     surface,
   ]);
 
-
-
-  const openTray = (next: "wash" | "connect", opener: HTMLButtonElement, focusChoices = true): void => {
+  const openTray = (next: "more", opener: HTMLButtonElement, focusChoices = true): void => {
     clearPendingFocusRestore();
     trayOpenerRef.current = opener;
-    trayOpenerModeRef.current = next;
     trayShouldFocusRef.current = focusChoices;
     setSelectionFailure(null);
-    setDockHelp(null);
     setTray(next);
   };
 
   const closeTray = useCallback((restoreFocus: boolean): void => {
     const opener = trayOpenerRef.current;
-    const openerMode = trayOpenerModeRef.current;
     setTray(null);
-    setDockHelp(null);
-    if (tool?.type === "wash") setStatus("Select words to lay this wash.");
-    else if (tool?.type === "connect") setStatus("Select words to add the next relationship phrase.");
-    else if (activeSelectionNonce != null) setStatus("Selected words remain ready to mark.");
+    if (activeSelectionNonce != null) setStatus("Selected words remain ready to mark.");
     else setStatus(REST_GUIDANCE);
     clearPendingFocusRestore();
     if (!restoreFocus) return;
@@ -1026,25 +1190,15 @@ export function MarkingSurface({
     focusRestoreTimerRef.current = window.setTimeout(() => {
       focusRestoreTimerRef.current = null;
       if (currentContextKey.current !== ownerContextKey) return;
-      if (surface === "dock" && opener?.matches("[data-dock-intent]")) {
-        const remountedIntent = dockRef.current?.querySelector<HTMLButtonElement>(`button[data-dock-intent="${openerMode}"]`);
-        if (remountedIntent) {
-          remountedIntent.focus({ preventScroll: true });
-          return;
-        }
-      }
-      if (opener?.isConnected && (surface !== "dock" || opener.getAttribute("aria-checked") === "true")) {
+      if (opener?.isConnected) {
         opener.focus({ preventScroll: true });
         return;
       }
       const toolbar = dockModesRef.current;
-      const fallback = surface === "dock"
-        ? toolbar?.querySelector<HTMLButtonElement>('button[role="radio"][aria-checked="true"]')
-        : [...(toolbar?.querySelectorAll<HTMLButtonElement>("button") ?? [])]
-          .find((button) => button.getAttribute("aria-label")?.startsWith(openerMode === "wash" ? "Wash" : "Connect"));
+      const fallback = toolbar?.querySelector<HTMLButtonElement>('button[data-bar-action="more"]');
       fallback?.focus({ preventScroll: true });
     }, 0);
-  }, [activeSelectionNonce, clearPendingFocusRestore, surface, tool]);
+  }, [activeSelectionNonce, clearPendingFocusRestore]);
 
   useEffect(() => () => {
     clearPendingFocusRestore();
@@ -1055,16 +1209,35 @@ export function MarkingSurface({
     activeOperation.current = null;
   }, []);
 
+  /**
+   * The single field splits at its first newline: the first line names the
+   * connection, the remainder is the observation. One thought, one box.
+   */
+  const splitDraftText = useCallback((text: string): { label: string; observation: string } => {
+    const trimmed = text.trim();
+    if (!trimmed) return { label: "", observation: "" };
+    const breakAt = trimmed.indexOf("\n");
+    if (breakAt < 0) return { label: trimmed, observation: "" };
+    return {
+      label: trimmed.slice(0, breakAt).trim(),
+      observation: trimmed.slice(breakAt + 1).trim(),
+    };
+  }, []);
+
   const finishConnection = useCallback(async (target: ConnectionSession): Promise<boolean> => {
     if (
       target.anchors.length < 2
+      || !target.kindChosen
       || (!target.recoveryState && target.contextKey !== contextKey)
       || busy
     ) return false;
     const operation = beginOperation();
     if (!operation) return false;
-    const label = target.label
-      ?? `${relationshipLabel(target.kind)} · ${target.labels.slice(0, 2).join(" / ")}${target.labels.length > 2 ? ` +${target.labels.length - 2}` : ""}`;
+    const written = splitDraftText(connectDraftTextRef.current);
+    const label = written.label
+      || target.label
+      || `${relationshipLabel(target.kind)} · ${target.labels.slice(0, 2).join(" / ")}${target.labels.length > 2 ? ` +${target.labels.length - 2}` : ""}`;
+    const observation = written.observation || target.observation;
     let outcome: ConnectionMutationUiOutcome = "failed";
     try {
       outcome = target.connectionId
@@ -1073,7 +1246,7 @@ export function MarkingSurface({
           target.kind,
           target.anchors,
           label,
-          target.observation,
+          observation,
           target.commandId,
           target.expectedBaseEventId!,
         )
@@ -1081,7 +1254,7 @@ export function MarkingSurface({
           target.kind,
           target.anchors,
           label,
-          target.observation,
+          observation,
           target.commandId,
           Boolean(target.recoveryState),
         );
@@ -1112,10 +1285,11 @@ export function MarkingSurface({
     setStatus(`${relationshipLabel(target.kind)} ${target.connectionId ? "updated" : "saved"} · ${target.anchors.length} phrases connected.`);
     sessionRef.current = null;
     setSession((current) => current === target ? null : current);
+    setConnectDraftText("");
     if (!persistentSurface && !keepActive) setTool(null);
     onRequestReadingFocus(target.anchors);
     return true;
-  }, [beginOperation, busy, contextKey, keepActive, onCreateConnection, onRequestReadingFocus, onUpdateConnection, persistentSurface, releaseOperation]);
+  }, [beginOperation, busy, contextKey, keepActive, onCreateConnection, onRequestReadingFocus, onUpdateConnection, persistentSurface, releaseOperation, splitDraftText]);
 
   const settleExitGuard = useCallback((proceed: boolean): void => {
     const resolve = exitGuardResolveRef.current;
@@ -1138,6 +1312,7 @@ export function MarkingSurface({
     sessionRef.current = null;
     setSession(null);
     setTray(null);
+    setConnectDraftText("");
     if (!persistentSurface) setTool(null);
     setStatus("Connection draft discarded.");
     onRequestReadingFocus(anchors);
@@ -1194,6 +1369,7 @@ export function MarkingSurface({
           contextKey,
           commandId: crypto.randomUUID(),
           kind,
+          kindChosen: false,
           anchors: [],
           paintAnchors: [],
           labels: [],
@@ -1219,14 +1395,15 @@ export function MarkingSurface({
     setSession(next);
     setTray(null);
     setTool({ type: "connect", kind });
-    setStatus(BINARY_KINDS.has(kind)
-      ? "Select the counterpart."
-      : next.anchors.length === 1
-        ? `${relationshipLabel(kind)} · 1 phrase · Select another phrase to connect.`
-        : `${relationshipLabel(kind)} · ${next.anchors.length} phrases · Select more text to keep adding.`);
+    setStatus(next.anchors.length === 1
+      ? "1 phrase · Select another phrase to connect."
+      : `${next.anchors.length} phrases · Name the relationship, then save.`);
     onClearSelection(current.nonce);
     onRequestReadingFocus([current.capture.anchor], current.nonce);
-    if (BINARY_KINDS.has(kind) && next.anchors.length === 2) void finishConnection(next);
+    // A binary relation completes itself the moment its counterpart lands —
+    // but only once the reader has actually named it, which cannot happen
+    // before the second anchor exists.
+    if (next.kindChosen && BINARY_KINDS.has(kind) && next.anchors.length === 2) void finishConnection(next);
     return true;
   }, [busy, contextKey, finishConnection, onClearSelection, onRequestReadingFocus, session]);
 
@@ -1268,7 +1445,7 @@ export function MarkingSurface({
         ? `${pigmentLabel(nextTool.color)} wash applied.`
         : "The wash could not be saved. Selection restored for retry.";
       setStatus(message);
-      if (!ok && surface === "dock") {
+      if (!ok) {
         setSelectionFailure({ nonce: current.nonce, tool: nextTool, message, oneShot: Boolean(options.oneShot) });
         setTray(null);
       }
@@ -1301,14 +1478,14 @@ export function MarkingSurface({
       ? "Selected wash removed."
       : "The wash could not be removed. Selection restored for retry.";
     setStatus(message);
-    if (!ok && surface === "dock") {
+    if (!ok) {
       setSelectionFailure({ nonce: current.nonce, tool: nextTool, message, oneShot: Boolean(options.oneShot) });
       setTray(null);
     }
     if (ok) onClearSelection(current.nonce);
     if (!ok || !persistentSurface) setTool(null);
     return ok;
-  }, [beginOperation, busy, captureConnection, keepActive, onClearSelection, onNote, onRemove, onRequestReadingFocus, onSetColor, persistentSurface, releaseOperation, session?.recoveryState, surface]);
+  }, [beginOperation, busy, captureConnection, keepActive, onClearSelection, onNote, onRemove, onRequestReadingFocus, onSetColor, persistentSurface, releaseOperation, session?.recoveryState]);
 
   const chooseWash = (color: PigmentId): void => {
     if (busy || activeOperation.current != null || session?.recoveryState) {
@@ -1321,7 +1498,7 @@ export function MarkingSurface({
     }
     const next: ToolMode = { type: "wash", color };
     setTool(next);
-    setTray(surface === "dock" ? "wash" : null);
+    setTray(null);
     setStatus("Select words to lay this wash.");
     if (!selection) {
       onRequestReadingFocus();
@@ -1345,7 +1522,7 @@ export function MarkingSurface({
     }
     const next: ToolMode = { type: "connect", kind };
     setTool(next);
-    setTray(surface === "dock" ? "connect" : null);
+    setTray(null);
     setStatus("Select words to add the next relationship phrase.");
     if (!selection) {
       onRequestReadingFocus();
@@ -1365,7 +1542,6 @@ export function MarkingSurface({
       return;
     }
     if (!tool || busy || processedSelection.current === selection.nonce) return;
-    if ((tray === "wash" || tray === "connect") && tool.type !== tray) return;
     const nonce = selection.nonce;
     setConsumingSelectionNonce(nonce);
     void applyTool(tool, selection).then(
@@ -1374,7 +1550,7 @@ export function MarkingSurface({
       },
       () => setConsumingSelectionNonce((current) => current === nonce ? null : current),
     );
-  }, [applyTool, busy, contextKey, selection, tool, tray]);
+  }, [applyTool, busy, contextKey, selection, tool]);
 
   useLayoutEffect(() => {
     stateContextKey.current = contextKey;
@@ -1393,14 +1569,11 @@ export function MarkingSurface({
     setPaletteHelp(null);
     setPalettePlacement(null);
     setConsumingSelectionNonce(null);
-    setDockHelp(null);
     setStatus(REST_GUIDANCE);
   }, [contextKey]);
 
   useEffect(() => {
     setPaletteHelp(null);
-    setDockHelp(null);
-    dockIntentRoving.setActiveIndex(0);
   }, [selection?.nonce, surface]);
 
   useEffect(() => {
@@ -1410,18 +1583,14 @@ export function MarkingSurface({
       const timer = window.setTimeout(() => {
         if (activeSelectionNonceRef.current != null || activeOperation.current != null) return;
         setSelectionFailure(null);
-        if (tool?.type === "wash") setStatus("Select words to lay this wash.");
-        else if (tool?.type === "connect") setStatus("Select words to add the next relationship phrase.");
-        else if (tool?.type === "note") setStatus("Select a passage to open a note.");
-        else if (tool?.type === "erase") setStatus("Select a passage with a wash to remove its mark.");
-        else setStatus(REST_GUIDANCE);
+        setStatus(REST_GUIDANCE);
       }, 0);
       return () => window.clearTimeout(timer);
     }
     if (selectionFailure.nonce === activeSelectionNonce) return;
     setSelectionFailure(null);
     setStatus("Selected words remain ready to mark.");
-  }, [activeSelectionNonce, busy, selectionFailure, tool]);
+  }, [activeSelectionNonce, busy, selectionFailure]);
 
   useEffect(() => {
     setKeepActive(false);
@@ -1457,6 +1626,7 @@ export function MarkingSurface({
       connectionId: connection.id,
       expectedBaseEventId: connection.activeEventId,
       kind: connection.kind,
+      kindChosen: true,
       anchors: connection.anchors,
       paintAnchors: [...extensionRequest.paintAnchors],
       labels: connection.anchors.map((anchor, index) => {
@@ -1467,6 +1637,9 @@ export function MarkingSurface({
       label: connection.label,
       observation: connection.observation,
     });
+    setConnectDraftText(connection.observation
+      ? `${connection.label}\n${connection.observation}`
+      : connection.label);
     setTool({ type: "connect", kind: connection.kind });
     setTray(null);
     setStatus(`${relationshipLabel(connection.kind)} · select words to add, then finish.`);
@@ -1492,7 +1665,6 @@ export function MarkingSurface({
     return () => window.clearTimeout(timer);
   }, [activeSelectionNonce, palettePlacement?.nonce, persistentSurface, surface, tool]);
 
-
   useEffect(() => {
     if (surface !== "dock" || activeSelectionNonce == null) return;
     if (lastDockAutofocusedSelectionRef.current === activeSelectionNonce) return;
@@ -1516,17 +1688,19 @@ export function MarkingSurface({
   }, [busy, session?.feedback, surface]);
 
   useEffect(() => {
-    if (tray !== "connect" && tray !== "wash") return;
+    if (tray !== "more") return;
     if (!trayShouldFocusRef.current) {
       trayShouldFocusRef.current = true;
       return;
     }
-    const timer = window.setTimeout(() => firstChoiceRef.current?.focus({ preventScroll: true }), 0);
+    const timer = window.setTimeout(() => {
+      trayPanelRef.current?.querySelector<HTMLButtonElement>('button[role="menuitem"]:not(:disabled)')?.focus({ preventScroll: true });
+    }, 0);
     return () => window.clearTimeout(timer);
   }, [tray]);
 
   useEffect(() => {
-    if (!persistentSurface || (tray !== "connect" && tray !== "wash")) return;
+    if (tray !== "more") return;
     const onMouseDown = (event: MouseEvent): void => {
       const target = event.target;
       if (!(target instanceof Node)) return;
@@ -1535,7 +1709,36 @@ export function MarkingSurface({
     };
     document.addEventListener("mousedown", onMouseDown);
     return () => document.removeEventListener("mousedown", onMouseDown);
-  }, [closeTray, persistentSurface, tray]);
+  }, [closeTray, tray]);
+
+  /**
+   * The palette closes on scroll, on an outside click and on Escape — and NOT
+   * on a selection change, so dragging to extend keeps it open and following
+   * the words. An outside click that leaves live words selected is exactly
+   * that drag, so it must not be read as a dismissal.
+   */
+  useEffect(() => {
+    if (surface !== "palette" || !selection || session) return;
+    const onScroll = (event: Event): void => {
+      const target = event.target;
+      if (target instanceof Node && paletteRef.current?.contains(target)) return;
+      onDismissSelection();
+    };
+    const onClick = (event: MouseEvent): void => {
+      const target = event.target;
+      if (target instanceof Node && paletteRef.current?.contains(target)) return;
+      if (target instanceof Node && trayPanelRef.current?.contains(target)) return;
+      const native = window.getSelection();
+      if (native && !native.isCollapsed && native.toString().trim()) return;
+      onDismissSelection();
+    };
+    window.addEventListener("scroll", onScroll, true);
+    document.addEventListener("click", onClick);
+    return () => {
+      window.removeEventListener("scroll", onScroll, true);
+      document.removeEventListener("click", onClick);
+    };
+  }, [onDismissSelection, selection, session, surface]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
@@ -1547,7 +1750,7 @@ export function MarkingSurface({
       // This listener runs in capture so the active marking layer owns Escape
       // before App's older window listener can interpret it as "exit Focus".
       // Ownership is decided by the shared layer registry: an open marking
-      // session or tray outranks a passive connection card, while a plain
+      // session or More list outranks a passive connection card, while a plain
       // text selection yields to it — the deliberate work cancels first.
       if (!layerKind) return;
       if (!isTopLayer(layerRef.current)) return;
@@ -1570,7 +1773,7 @@ export function MarkingSurface({
         void requestDraftExit("escape");
         return;
       }
-      if (persistentSurface && (tray === "connect" || tray === "wash")) {
+      if (tray === "more") {
         event.preventDefault();
         event.stopImmediatePropagation();
         closeTray(true);
@@ -1581,12 +1784,8 @@ export function MarkingSurface({
         event.stopImmediatePropagation();
         clearPendingFocusRestore();
         setSelectionFailure(null);
-        if (tool?.type === "wash") setStatus("Select words to lay this wash.");
-        else if (tool?.type === "connect") setStatus("Select words to add the next relationship phrase.");
-        else if (tool?.type === "note") setStatus("Select a passage to open a note.");
-        else if (tool?.type === "erase") setStatus("Select a passage with a wash to remove its mark.");
-        else setStatus(REST_GUIDANCE);
-        if (surface === "palette" && !tool) setKeepActive(false);
+        setStatus(REST_GUIDANCE);
+        setKeepActive(false);
         onDismissSelection();
         onRequestReadingFocus(selection ? selection.paintAnchors : undefined);
         return;
@@ -1604,7 +1803,7 @@ export function MarkingSurface({
     };
     window.addEventListener("keydown", onKeyDown, true);
     return () => window.removeEventListener("keydown", onKeyDown, true);
-  }, [activeSelectionNonce, busy, clearPendingFocusRestore, closeTray, focusMode, layerKind, onDismissSelection, onRequestReadingFocus, persistentSurface, requestDraftExit, selection, session, surface, tool, tray]);
+  }, [activeSelectionNonce, busy, clearPendingFocusRestore, closeTray, focusMode, layerKind, onDismissSelection, onRequestReadingFocus, requestDraftExit, selection, session, tool, tray]);
 
   const chooseNote = (): void => {
     if (busy || activeOperation.current != null || session?.recoveryState) {
@@ -1616,7 +1815,6 @@ export function MarkingSurface({
       return;
     }
     const next: ToolMode = { type: "note" };
-    if (surface === "palette") setKeepActive(false);
     setTool(next);
     setTray(null);
     setStatus("Select a passage to open a note.");
@@ -1641,7 +1839,6 @@ export function MarkingSurface({
       return;
     }
     const next: ToolMode = { type: "erase" };
-    if (surface === "palette") setKeepActive(false);
     setTool(next);
     setTray(null);
     setStatus("Select a passage with a wash to remove its mark.");
@@ -1656,21 +1853,16 @@ export function MarkingSurface({
     });
   };
 
-  const applyDockSelectionAction = (type: "note" | "erase"): void => {
-    if (!selection || busy || activeOperation.current != null || session?.recoveryState) {
-      if (session?.recoveryState) {
-        setStatus("Recovery required · Retry the exact connection command before another marking action.");
-        return;
-      }
-      setStatus("Finishing the current change · your selection is still held.");
-      return;
-    }
-    const nonce = selection.nonce;
-    const next: ToolMode = type === "note" ? { type: "note" } : { type: "erase" };
-    setConsumingSelectionNonce(nonce);
-    void applyTool(next, selection, { oneShot: true }).finally(() => {
-      setConsumingSelectionNonce((current) => current === nonce ? null : current);
-    });
+  /** Connect is an entry point, not a choice of kind: it holds this phrase. */
+  const beginConnect = (): void => {
+    const kind = session?.kind ?? currentKind ?? "link:parallel";
+    chooseConnection(kind);
+  };
+
+  const chooseDraftKind = (kind: ConnectionKind): void => {
+    setSession((current) => current ? { ...current, kind, kindChosen: true, notice: undefined } : current);
+    setTool({ type: "connect", kind });
+    setStatus(`${relationshipLabel(kind)} · ready to save.`);
   };
 
   const putDownTool = (requestReadingFocus = true): void => {
@@ -1701,48 +1893,228 @@ export function MarkingSurface({
   };
 
   const dismissPalette = (): void => {
-    if (!tool) setKeepActive(false);
     setPaletteHelp(null);
+    // Closing the palette is the explicit return to reading, so it puts down
+    // whatever was in hand first — unless a draft is open, which owns its own
+    // exit decision and must not be resolved by a close button.
+    if (!session) putDownTool(false);
     onDismissSelection();
   };
 
-  const handlePaletteKeyDown = (event: React.KeyboardEvent<HTMLDivElement>): void => {
-    if (event.repeat || event.nativeEvent.isComposing || event.metaKey || event.ctrlKey || event.altKey) return;
-    const target = event.target;
-    if (target instanceof HTMLElement && (
-      target.isContentEditable
-      || target.matches("input, textarea, select, [role='textbox']")
-    )) return;
-    const match = /^Digit([1-6])$/.exec(event.code);
-    if (!match) return;
-    const index = Number(match[1]) - 1;
-    if (event.shiftKey) {
-      const pigment = PIGMENTS[index];
-      if (!pigment) return;
+  const copyText = useCallback(async (text: string, kind: "draft" | "reference"): Promise<void> => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedNotice(kind);
+      setStatus(kind === "reference" ? "Copied with its reference." : "Draft text copied.");
+    } catch {
+      setStatus("The clipboard is unavailable in this window; the text is still here.");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!copiedNotice) return;
+    const timer = window.setTimeout(() => setCopiedNotice(null), 2400);
+    return () => window.clearTimeout(timer);
+  }, [copiedNotice]);
+
+  /**
+   * Bare digits set a colour, `0` removes, `⌘⇧M` opens a note, and `⇧↑/↓`
+   * extends the selection by a whole verse. Unmodified digits are safe here
+   * only because the bar is modal on a selection: with no words held, none of
+   * these listeners exist at all.
+   */
+  const extendSelectionByVerse = useCallback((direction: 1 | -1): boolean => {
+    const native = window.getSelection();
+    if (!native || native.rangeCount === 0) return false;
+    const focusNode = native.focusNode;
+    if (!focusNode) return false;
+    const focusElement = focusNode instanceof Element ? focusNode : focusNode.parentElement;
+    const row = focusElement?.closest<HTMLElement>(".verse-line[data-verse]");
+    if (!row) return false;
+    const rows = [...document.querySelectorAll<HTMLElement>(".verse-line[data-verse]")];
+    const index = rows.indexOf(row);
+    const nextRow = rows[index + direction];
+    if (!nextRow) return false;
+    const text = nextRow.querySelector<HTMLElement>(".verse-text-span") ?? nextRow;
+    const range = native.getRangeAt(0).cloneRange();
+    if (direction === 1) range.setEndAfter(text);
+    else range.setStartBefore(text);
+    native.removeAllRanges();
+    native.addRange(range);
+    return true;
+  }, []);
+
+  useEffect(() => {
+    if (focusMode || !selection || session || busy) return;
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.defaultPrevented || event.repeat || event.isComposing || event.altKey) return;
+      const target = event.target;
+      if (target instanceof HTMLElement && (
+        target.isContentEditable
+        || target.matches("input, textarea, select, [role='textbox']")
+      )) return;
+      if (event.shiftKey && (event.key === "ArrowUp" || event.key === "ArrowDown")) {
+        if (event.metaKey || event.ctrlKey) return;
+        if (!extendSelectionByVerse(event.key === "ArrowDown" ? 1 : -1)) return;
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+      if (event.shiftKey && (event.metaKey || event.ctrlKey) && (event.key === "m" || event.key === "M")) {
+        event.preventDefault();
+        event.stopPropagation();
+        chooseNote();
+        return;
+      }
+      if (event.metaKey || event.ctrlKey || event.shiftKey) return;
+      const digit = /^Digit([0-5])$/.exec(event.code);
+      if (!digit) return;
+      const index = Number(digit[1]);
       event.preventDefault();
       event.stopPropagation();
-      chooseWash(pigment.id);
-      return;
-    }
-    const relationship = RELATIONSHIPS[index];
-    if (!relationship) return;
-    event.preventDefault();
-    event.stopPropagation();
-    chooseConnection(relationship.id);
-  };
+      if (index === 0) {
+        if (selection.hasExistingHighlight) chooseErase();
+        else setStatus("These words carry no wash to remove.");
+        return;
+      }
+      const pigment = PIGMENTS[index - 1];
+      if (pigment) chooseWash(pigment.id);
+    };
+    window.addEventListener("keydown", onKeyDown, true);
+    return () => window.removeEventListener("keydown", onKeyDown, true);
+    // chooseWash/chooseErase/chooseNote are re-created each render and close
+    // over the live selection; the identity list below is what actually
+    // decides whether these bindings should exist at all.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [busy, extendSelectionByVerse, focusMode, selection, session]);
 
   const portalThemeClass = `${isDarkTheme(theme) ? "dark " : ""}theme-${theme}`;
-  const sessionNode = session ? createPortal(
-    <div className={`marking-session-portal ${portalThemeClass}`}>
-      <SessionStatus
-        session={session}
-        busy={busy}
-        stageBounds={effectiveStageBounds}
-        onDone={() => void finishConnection(session)}
-        onCancel={() => { void requestDraftExit("escape"); }}
-      />
-    </div>,
-    document.body,
+
+  const moreItems = useMemo<MoreItem[]>(() => {
+    const quote = selection?.quote ?? "";
+    const reference = selection?.rangeLabel ?? "";
+    const handlers: Record<string, (() => void) | undefined> = {
+      capture: onCapture,
+      "study-verse": onStudyVerse,
+      "keep-comparison": onKeepAsComparison,
+      "open-in-tab": onOpenInTab,
+      pericope: onPericope,
+    };
+    const unavailable: Record<string, string> = {
+      capture: "no writing sheet is open in this window",
+      "study-verse": "Study is not available for this passage",
+      "keep-comparison": "comparison needs a second translation installed",
+      "open-in-tab": "this passage is already the open tab",
+      pericope: "pericopes are edited from the passage header",
+    };
+    return MORE_ACTIONS.map((action) => {
+      if (action.id === "copy-reference") {
+        // Copy always includes the reference: a quotation without one is a
+        // sentence the reader cannot put back where they found it. Reading is
+        // never blocked by a read-only library.
+        const blocked = navigator.clipboard ? null : "the clipboard is unavailable in this window";
+        return {
+          id: action.id,
+          label: action.label,
+          kind: action.kind,
+          blockedReason: blocked,
+          run: () => { void copyText(`“${quote}”\n— ${reference}`, "reference"); closeTray(true); },
+        } satisfies MoreItem;
+      }
+      const handler = handlers[action.id];
+      const blocked = readOnly && action.kind !== "deferred"
+        ? "this library is read-only"
+        : handler
+          ? null
+          : unavailable[action.id] ?? "this is not available here";
+      return {
+        id: action.id,
+        label: action.label,
+        kind: action.kind,
+        blockedReason: blocked,
+        run: () => { handler?.(); closeTray(true); },
+      } satisfies MoreItem;
+    });
+  }, [closeTray, copyText, onCapture, onKeepAsComparison, onOpenInTab, onPericope, onStudyVerse, readOnly, selection?.quote, selection?.rangeLabel]);
+
+  const moreScope = selection
+    ? `${selection.rangeLabel} · ${selection.phraseMode ? "selected words" : "whole verses"}`
+    : "No words selected";
+
+  const moreNode = moreOpen && selection ? (
+    <MoreList scope={moreScope} items={moreItems} panelRef={trayPanelRef} />
+  ) : null;
+
+  // An unresolved exact capture blocks Connect and nothing else: a wash does
+  // not need canonical anchors, so making the reader wait for them would be a
+  // delay bought for no one.
+  const barDisabled = busy || readOnly;
+
+  const barNode = selection ? (
+    <MarkingBar
+      hasExistingHighlight={selection.hasExistingHighlight}
+      phraseMode={selection.phraseMode}
+      selectedWash={currentWash ?? selectedWash}
+      disabled={barDisabled}
+      moreOpen={moreOpen}
+      firstChoiceRef={firstChoiceRef}
+      onChooseWash={chooseWash}
+      onNote={chooseNote}
+      onRemove={chooseErase}
+      onConnect={beginConnect}
+      onToggleMore={(opener) => { if (moreOpen) closeTray(true); else openTray("more", opener); }}
+      onHelpChange={setPaletteHelp}
+      helpId="marking-palette-help"
+    />
+  ) : null;
+
+  const connectNode = session ? (
+    <ConnectDraft
+      session={session}
+      busy={busy}
+      draft={connectDraftText}
+      copied={copiedNotice === "draft"}
+      onDraftChange={setConnectDraftText}
+      onChooseKind={chooseDraftKind}
+      onSave={() => void finishConnection(session)}
+      onCancel={() => { void requestDraftExit("escape"); }}
+      onCopyText={() => { void copyText(connectDraftTextRef.current, "draft"); }}
+    />
+  ) : null;
+
+  const retryFailure = (): void => {
+    const failure = selectionFailure;
+    const current = selection;
+    if (!failure || !current || failure.nonce !== current.nonce || busy || activeOperation.current != null) return;
+    setTool(failure.tool);
+    const nonce = current.nonce;
+    setConsumingSelectionNonce(nonce);
+    void applyTool(failure.tool, current, { oneShot: failure.oneShot }).then((ok) => {
+      if (failure.oneShot || !ok) setTool(null);
+    }).finally(() => {
+      setConsumingSelectionNonce((value) => value === nonce ? null : value);
+    });
+  };
+
+  const failureNode = selection && !busy && selectionFailure?.nonce === selection.nonce ? (
+    <SurfaceState
+      key={`failure:${selection.nonce}`}
+      state={offline ? "offline" : "failed"}
+      thing={selectionFailure.message}
+      reason={offline
+        ? "The library could not be reached, so nothing was written."
+        : "Nothing was written, and your words are still selected."}
+      locality={offline ? "remote" : "local"}
+      actions={
+        <button
+          type="button"
+          className="marking-session-action primary"
+          data-dock-action="retry"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={retryFailure}
+        >Retry</button>
+      }
+    />
   ) : null;
 
   const exitGuardNode = exitGuardReason && session ? createPortal(
@@ -1814,67 +2186,20 @@ export function MarkingSurface({
     document.body,
   ) : null;
 
-  const choicePanel = tray === "connect" ? (
-    <div key="connect" ref={trayPanelRef} className="marking-choice-panel">
-      <div className="marking-panel-heading">
-        <span>Connect</span>
-        <small
-          id={surface === "dock" ? "marking-dock-choice-help" : undefined}
-          title={surface === "dock" && dockHelp ? dockHelp.description : undefined}
-          aria-live={surface === "dock" ? "polite" : undefined}
-        >{captureFeedback ?? (surface === "dock" && dockHelp ? dockHelp.description : "How do these words relate?")}</small>
-      </div>
-      <RelationshipChoices
-        selected={currentKind}
-        onChoose={chooseConnection}
-        compact={surface === "dock"}
-        initialFocusRef={firstChoiceRef}
-        onHelpChange={surface === "dock" ? setDockHelp : undefined}
-        helpId={surface === "dock" ? "marking-dock-choice-help" : undefined}
-        activateOnMove={surface === "dock" && !selection}
-        onMoveChoose={surface === "dock" ? (kind) => {
-          setTool({ type: "connect", kind });
-          setStatus("Select words to add the next relationship phrase.");
-        } : undefined}
-      />
-    </div>
-  ) : tray === "wash" ? (
-    <div key="wash" ref={trayPanelRef} className="marking-choice-panel">
-      <div className="marking-panel-heading">
-        <span>Wash</span>
-        <small
-          id={surface === "dock" ? "marking-dock-choice-help" : undefined}
-          title={surface === "dock" && dockHelp ? dockHelp.description : undefined}
-        >{surface === "dock" && dockHelp ? dockHelp.description : "Choose a quiet wash."}</small>
-      </div>
-      <PigmentChoices
-        selected={currentWash ?? selectedWash}
-        onChoose={chooseWash}
-        compact={surface === "dock"}
-        initialFocusRef={firstChoiceRef}
-        onHelpChange={surface === "dock" ? setDockHelp : undefined}
-        helpId={surface === "dock" ? "marking-dock-choice-help" : undefined}
-        activateOnMove={surface === "dock" && !selection}
-        onMoveChoose={surface === "dock" ? (color) => {
-          setTool({ type: "wash", color });
-          setStatus("Select words to lay this wash.");
-        } : undefined}
-      />
-    </div>
-  ) : null;
+  const toolKey = tool?.type === "wash"
+    ? `wash:${tool.color}`
+    : tool?.type === "connect"
+      ? `connect:${tool.kind}`
+      : tool?.type ?? "false";
 
   if (surface === "palette") {
-    const armedTool = keepActive ? tool : null;
-    if (!selection && !session && !armedTool) {
+    if (!selection && !session) {
       return <MarkingRestHint stageBounds={effectiveStageBounds} theme={theme} />;
     }
     const materialClass = `${isDarkTheme(theme) ? "dark " : ""}theme-${theme}`;
     const placement = selection && palettePlacement?.nonce === selection.nonce ? palettePlacement : null;
     const paletteLayout = placement?.layout ?? paletteLayoutHint;
-    const paletteQuote = selection
-      ? selection.quote.length > 42 ? `${selection.quote.slice(0, 41)}…` : selection.quote
-      : "";
-    const { key: armedKey, label: armedLabel, guidance: armedGuidance } = describeArmedTool(armedTool);
+    const paletteQuote = selection ? clipQuotation(selection.quote, 42) : "";
     const content = (
       <div
         className={`marking-floating-host ${materialClass}`}
@@ -1883,7 +2208,7 @@ export function MarkingSurface({
         data-stage-size={stageClass}
         data-palette-layout={paletteLayout}
         data-selection-capture={selection?.capture.status ?? "none"}
-        data-tool-armed={armedKey ?? "false"}
+        data-tool-armed={toolKey}
         data-floating-layer="toolbar"
         style={floatingStageStyle}
       >
@@ -1901,7 +2226,6 @@ export function MarkingSurface({
             } as React.CSSProperties}
             role="toolbar"
             aria-label="Mark selected text"
-            onKeyDown={handlePaletteKeyDown}
           >
             <div className="marking-palette-frame">
               <header className="marking-palette-header">
@@ -1910,212 +2234,54 @@ export function MarkingSurface({
                   <q className="marking-selection-quote" title={selection.quote}>“{paletteQuote || selection.rangeLabel}”</q>
                 </div>
                 <div className="marking-palette-header-actions">
-                  <button type="button" className="marking-palette-action" aria-label="Add note" title="Add note" onMouseDown={(event) => event.preventDefault()} onClick={chooseNote}><PaletteHeaderGlyph icon="note" /></button>
-                  {selection.hasExistingHighlight && (
-                    <button type="button" className="marking-palette-action" aria-label={selection.phraseMode ? "Remove selected text from wash" : "Remove wash"} title="Remove wash" onMouseDown={(event) => event.preventDefault()} onClick={chooseErase}><PaletteHeaderGlyph icon="erase" /></button>
-                  )}
-                  <button
-                    type="button"
-                    className={`marking-palette-action marking-palette-pin${keepActive ? " active" : ""}`}
-                    aria-label={keepActive ? "Tool will stay active" : "Keep chosen tool active"}
-                    title={keepActive ? "Tool will stay active" : "Keep chosen tool active"}
-                    aria-pressed={keepActive}
-                    onMouseDown={(event) => event.preventDefault()}
-                    onClick={() => { setKeepActive((current) => !current); setPaletteHelp(null); }}
-                  ><PaletteHeaderGlyph icon="pin" /></button>
                   <button type="button" className="marking-palette-action" aria-label="Close palette" title="Close palette" onMouseDown={(event) => event.preventDefault()} onClick={dismissPalette}><PaletteHeaderGlyph icon="close" /></button>
                 </div>
               </header>
-              <PaletteVocabulary
-                selectedKind={currentKind}
-                selectedWash={currentWash ?? selectedWash}
-                onChooseKind={chooseConnection}
-                onChooseWash={chooseWash}
-                onHelpChange={setPaletteHelp}
-                initialFocusRef={firstChoiceRef}
-                helpId="marking-palette-help"
-              />
+              {readOnly && (
+                <SurfaceState
+                  state="read-only"
+                  thing="This library is read-only."
+                  reason="Marks are stated at the library, before you act on a verse."
+                  locality="local"
+                />
+              )}
+              {/* Connect replaces the bar. There is one working area, and only
+                  one thing is ever in it. */}
+              {connectNode ?? failureNode ?? barNode}
+              {moreNode}
               <footer className="marking-palette-footer">
                 <span id="marking-palette-help" className="marking-palette-help" aria-live="polite">
-                  {keepActive
-                    ? "The tool you choose will remain in your hand."
-                    : captureFeedback ?? (paletteHelp ? paletteHelp.description
-                      : selection.mixedColors ? "Mixed washes selected — choose one to unify them."
-                        : "Connect the words — or lay a wash.")}
+                  {captureFeedback ?? (paletteHelp ? paletteHelp.description
+                    : selection.mixedColors ? "Mixed washes selected — choose one to unify them."
+                      : "Highlight, note, or connect these words.")}
                 </span>
-                <span className="marking-palette-shortcuts" aria-hidden="true"><kbd>1–6</kbd> connect <i>·</i> <kbd>⇧1–5</kbd> wash</span>
+                <span className="marking-palette-shortcuts" aria-hidden="true"><kbd>1–5</kbd> colour <i>·</i> <kbd>0</kbd> remove <i>·</i> <kbd>⌘⇧M</kbd> note</span>
               </footer>
             </div>
           </div>
         )}
-        {sessionNode}
-        {exitGuardNode}
-        {!selection && !session && armedTool && (
-          <div className="marking-armed-status" role="status" aria-live="polite" data-tool-armed={armedKey}>
-            <span className="marking-armed-tag">{armedLabel}</span>
-            <span className="marking-armed-copy">{armedGuidance}</span>
-            <button type="button" onClick={() => putDownTool()}>Put down</button>
+        {!selection && session && (
+          <div className="marking-palette marking-palette-session is-placed" role="group" aria-label="Connection draft">
+            <div className="marking-palette-frame">{connectNode}</div>
           </div>
         )}
+        {exitGuardNode}
       </div>
     );
     return createPortal(content, document.body);
   }
 
-  const chooseMode = (
-    id: DockModeId,
-    opener?: HTMLButtonElement | null,
-    focusChoices = true,
-    applyCurrentSelection = true,
-  ): void => {
-    if (busy || session) return;
-    if (id === "read") { putDownTool(applyCurrentSelection); return; }
-    if (id === "wash" || id === "connect") {
-      if (tool?.type !== id) {
-        setTool(null);
-        setKeepActive(false);
-      }
-      setStatus(id === "wash" ? "Choose a quiet wash." : "Choose how the words relate.");
-      if (opener) openTray(id, opener, focusChoices);
-      return;
-    }
-    if (!applyCurrentSelection) {
-      if (selection) processedSelection.current = selection.nonce;
-      setSelectionFailure(null);
-      setTool(id === "note" ? { type: "note" } : { type: "erase" });
-      setTray(null);
-      setStatus(id === "note"
-        ? "Note tool ready · select a passage to open a note."
-        : "Erase tool ready · select a passage with a wash to remove its mark.");
-      return;
-    }
-    if (id === "note") { chooseNote(); return; }
-    chooseErase();
-  };
-
-  const dockFailureVisible = Boolean(
-    selection
-    && !busy
-    && selectionFailure?.nonce === selection.nonce,
-  );
-  const retryDockFailure = (): void => {
-    const failure = selectionFailure;
-    const current = selection;
-    if (!failure || !current || failure.nonce !== current.nonce || busy || activeOperation.current != null) return;
-    setTool(failure.tool);
-    if (failure.tool.type === "wash") setTray("wash");
-    const nonce = current.nonce;
-    setConsumingSelectionNonce(nonce);
-    void applyTool(failure.tool, current, { oneShot: failure.oneShot }).then((ok) => {
-      if (ok) setTray(null);
-      if (failure.oneShot || !ok) setTool(null);
-    }).finally(() => {
-      setConsumingSelectionNonce((value) => value === nonce ? null : value);
-    });
-  };
   const dockState = busy
     ? "busy"
     : session
       ? "session"
-      : dockFailureVisible
+      : failureNode
         ? "feedback"
-        : choicePanel
+        : moreOpen
           ? "choices"
-          : selection && !tool
+          : selection
             ? "selection"
-            : tool
-              ? "armed"
-              : "rest";
-  const dockContextKind = session
-    ? "session"
-    : busy
-      ? "status"
-      : dockFailureVisible
-        ? "feedback"
-        : tray === "wash" || tray === "connect"
-          ? tray
-          : selection && !tool
-            ? "intent"
-            : "status";
-  const dockArmedKey = tool?.type === "wash"
-    ? `wash:${tool.color}`
-    : tool?.type === "connect"
-      ? `connect:${tool.kind}`
-      : tool?.type ?? "false";
-  const dockBusyCopy = session
-    ? "Saving connection…"
-    : dockMode === "erase"
-      ? "Removing wash…"
-      : dockMode === "wash"
-        ? "Saving wash…"
-        : "Finishing change…";
-  const dockToolLabel = tool?.type === "wash"
-    ? `${pigmentLabel(tool.color)} wash`
-    : tool?.type === "connect"
-      ? relationshipLabel(tool.kind)
-      : tool?.type === "note"
-        ? "Note"
-        : tool?.type === "erase"
-          ? "Erase"
-          : "Read";
-  const dockContext = sessionNode ?? (busy ? (
-    <div key="busy" className="marking-dock-feedback is-busy" role="status" aria-live="polite">
-      <span className="marking-dock-spinner" aria-hidden="true" />
-      <span>{dockBusyCopy}</span>
-    </div>
-  ) : dockFailureVisible ? (
-    <div key={`feedback:${selection?.nonce ?? 0}`} className="marking-dock-feedback" role="status" aria-live="assertive">
-      <span>{selectionFailure?.message}</span>
-      <button
-        type="button"
-        className="marking-dock-retry"
-        data-dock-action="retry"
-        autoFocus
-        onMouseDown={(event) => event.preventDefault()}
-        onClick={retryDockFailure}
-      >Retry</button>
-    </div>
-  ) : choicePanel ?? (selection && !tool ? (
-    <div key={`selection:${selection.nonce}`} className="marking-dock-selection" data-dock-context="intent">
-      <span className="marking-dock-context-label">Mark selection</span>
-      <div className="marking-dock-intents" role="group" aria-label="Mark selected words">
-        <button
-          ref={(node) => {
-            firstChoiceRef.current = node;
-            dockIntentRoving.refs.current[0] = node;
-          }}
-          type="button"
-          className="marking-dock-intent"
-          data-dock-intent="wash"
-          tabIndex={dockIntentRoving.activeIndex === 0 ? 0 : -1}
-          onMouseDown={(event) => event.preventDefault()}
-          onFocus={() => dockIntentRoving.setActiveIndex(0)}
-          onKeyDown={(event) => { dockIntentRoving.onKeyDown(event, 0); }}
-          onClick={(event) => openTray("wash", event.currentTarget)}
-        ><ToolGlyph tool="wash" /><span>Wash</span></button>
-        <button
-          ref={(node) => { dockIntentRoving.refs.current[1] = node; }}
-          type="button"
-          className="marking-dock-intent"
-          data-dock-intent="connect"
-          tabIndex={dockIntentRoving.activeIndex === 1 ? 0 : -1}
-          onMouseDown={(event) => event.preventDefault()}
-          onFocus={() => dockIntentRoving.setActiveIndex(1)}
-          onKeyDown={(event) => { dockIntentRoving.onKeyDown(event, 1); }}
-          onClick={(event) => openTray("connect", event.currentTarget)}
-        ><ToolGlyph tool="connect" /><span>Connect</span></button>
-      </div>
-      <q className="marking-dock-quote" title={selection.quote}>{selection.quote}</q>
-    </div>
-  ) : tool ? (
-    <div key={`armed:${dockArmedKey}`} className="marking-dock-tool-status" role="status" aria-live="polite">
-      <span className="marking-dock-tool-tag">{dockToolLabel}</span>
-      <span>{status}</span>
-      <button type="button" className="marking-dock-put-down" onMouseDown={(event) => event.preventDefault()} onClick={() => putDownTool()}>Put down</button>
-    </div>
-  ) : (
-    <span key="rest" className="marking-dock-resting"><span aria-hidden="true"><ToolGlyph tool="read" /></span>{status}</span>
-  )));
+            : "rest";
 
   return (
     <div
@@ -2124,9 +2290,8 @@ export function MarkingSurface({
       data-focus-ring={focusRingMode}
       data-dock-layout={dockLayout}
       data-selection-capture={selection?.capture.status ?? "none"}
-      data-dock-mode={dockMode}
       data-dock-state={dockState}
-      data-tool-armed={dockArmedKey}
+      data-tool-armed={toolKey}
     >
       {exitGuardNode}
       <div
@@ -2141,81 +2306,19 @@ export function MarkingSurface({
           }
         }}
       >
-        <div ref={dockModesRef} className="marking-dock-modes" role="radiogroup" aria-label="Marking mode">
-          <span className="marking-dock-thumb" aria-hidden="true" />
-          {DOCK_MODES.map((item, index) => {
-            const active = item.id === dockMode;
-            const subtypeClass = item.id === "connect" && currentKind
-              ? ` marking-kind-${currentKind.replace("link:", "")}`
-              : item.id === "wash" && currentWash ? ` tone-${currentWash}` : "";
-            const modeLabel = item.id === "connect" && currentKind
-              ? `${item.label}: ${relationshipLabel(currentKind)}`
-              : item.id === "wash" && currentWash
-                ? `${item.label}: ${pigmentLabel(currentWash)}`
-                : item.label;
-            const ownsContext = item.id === "wash" || item.id === "connect";
-            return (
-              <button
-                key={item.id}
-                ref={(node) => { dockModeRoving.refs.current[index] = node; }}
-                type="button"
-                role="radio"
-                data-dock-tool={item.id}
-                data-tooltip={modeLabel}
-                disabled={busy || !!session}
-                className={`marking-dock-mode${active ? " active" : ""}${subtypeClass}`}
-                aria-checked={active}
-                aria-label={modeLabel}
-                aria-controls={ownsContext ? "marking-dock-context" : undefined}
-                aria-expanded={ownsContext ? tray === item.id : undefined}
-                tabIndex={active ? 0 : -1}
-                onMouseDown={(event) => event.preventDefault()}
-                onFocus={() => dockModeRoving.setActiveIndex(index)}
-                onKeyDown={(event) => {
-                  if (!["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp", "Home", "End"].includes(event.key)) return;
-                  const nextIndex = dockModeRoving.onKeyDown(event, index);
-                  const nextMode = nextIndex == null ? null : DOCK_MODES[nextIndex];
-                  if (nextMode) {
-                    chooseMode(nextMode.id, dockModeRoving.refs.current[nextIndex ?? index] ?? event.currentTarget, false, false);
-                  }
-                }}
-                onClick={(event) => chooseMode(item.id, event.currentTarget)}
-              ><ToolGlyph tool={item.id} /><span className="marking-dock-mode-label">{item.label}</span></button>
-            );
-          })}
-        </div>
-        <div id="marking-dock-context" className="marking-dock-context" data-dock-context={dockContextKind}>
-          {dockContext}
-        </div>
-        <div className="marking-dock-actions" aria-label="Selected wash actions">
-          {selection?.hasExistingHighlight && (
-            <span className="marking-dock-hit" data-highlight-color={selectedWash ?? (selection.mixedColors ? "mixed" : "unknown")}>
-              {selectedWash && <PigmentSwatch color={selectedWash} />}
-              <span>{selectedWash ? pigmentLabel(selectedWash) : selection.mixedColors ? "Mixed wash" : "Highlight"}</span>
-            </span>
+        <div ref={dockModesRef} className="marking-dock-context" id="marking-dock-context">
+          {readOnly && (
+            <SurfaceState
+              state="read-only"
+              thing="This library is read-only."
+              reason="Marks are stated at the library, before you act on a verse."
+              locality="local"
+            />
           )}
-          {selection?.hasExistingHighlight && (
-            <button
-              type="button"
-              data-dock-action="note"
-              data-tooltip="Add note"
-              aria-label="Add note to selected highlight"
-              disabled={busy}
-              onMouseDown={(event) => event.preventDefault()}
-              onClick={() => applyDockSelectionAction("note")}
-            ><ToolGlyph tool="note" /></button>
+          {connectNode ?? failureNode ?? barNode ?? (
+            <span key="rest" className="marking-dock-resting"><span aria-hidden="true"><ToolGlyph tool="read" /></span>{status}</span>
           )}
-          {selection?.hasExistingHighlight && (
-            <button
-              type="button"
-              data-dock-action="erase"
-              data-tooltip={selection.phraseMode ? "Remove selected words" : "Remove wash"}
-              aria-label={selection.phraseMode ? "Remove selected text from wash" : "Remove selected highlight"}
-              disabled={busy}
-              onMouseDown={(event) => event.preventDefault()}
-              onClick={() => applyDockSelectionAction("erase")}
-            ><ToolGlyph tool="erase" /></button>
-          )}
+          {moreNode}
         </div>
         <span className="sr-only" role="status" aria-live="polite">{status}</span>
       </div>

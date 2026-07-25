@@ -318,9 +318,9 @@ function MorphFormBlock({
               +{overflow}
             </span>
           )}
-          {strongId && (
-            <span className="lang-chip lang-chip-id">{strongId}</span>
-          )}
+          {/* Strong's number left the resting row for the entry's name line,
+              where it arrives on hover. It is a lookup key for a book the
+              reader does not have open. */}
         </span>
         <span className="lang-form-caret" aria-hidden="true">
           {open ? "▴" : "▾"}
@@ -358,10 +358,19 @@ function MorphFormBlock({
                 <span>{p.meaning}</span>
               </li>
             ))}
+            {/* The code and the lexicon key, behind the disclosure: same
+                information as the three chips they replace, one row, and no
+                false affordance. */}
             {code ? (
               <li className="lang-form-code">
                 <strong>code</strong>
                 <span>{code}</span>
+              </li>
+            ) : null}
+            {strongId ? (
+              <li className="lang-form-code">
+                <strong>lexicon key</strong>
+                <span>{strongId}</span>
               </li>
             ) : null}
           </ul>
@@ -734,67 +743,80 @@ function NameEntityCard({ hit, bookNames }: { hit: LanguageNameEntityHit; bookNa
   const e = hit.entity;
   const title = prettyName(e.displayName);
   const kindLabel =
-    e.kind === "person" ? "Person" : e.kind === "place" ? "Place" : "Name";
+    e.kind === "person" ? "Person" : e.kind === "place" ? "Place" : "Deity or object";
   const otherRefs = e.refs.filter((r) => r !== e.firstRef).slice(0, 12);
+  // A name collision is stated on the name line, never silently disambiguated
+  // — this is the field where a study app most easily lies by omission. The
+  // group is ordered by its lexicon key, which is how the source numbers them.
+  const sameName = [e, ...hit.alternatives]
+    .filter((candidate) => prettyName(candidate.displayName) === title)
+    .sort((left, right) => left.uStrong.localeCompare(right.uStrong));
+  const collisionIndex = sameName.findIndex((candidate) => candidate.id === e.id) + 1;
+  const collision = sameName.length > 1 && collisionIndex > 0
+    ? { index: collisionIndex, total: sameName.length }
+    : null;
+  const otherNames = sameName.filter((candidate) => candidate.id !== e.id);
 
   return (
-    <div className={`lang-name-card kind-${e.kind}`}>
-      <div className="lang-name-kicker">
-        <span className="lang-name-kind">{kindLabel}</span>
-        {hit.match === "ref+strong" && (
-          <span className="lang-name-match" title="Matched this verse and Strong’s number">
-            this verse
-          </span>
+    <div className={`lang-name-card margin-entry kind-${e.kind}`}>
+      <div className="margin-entry-name lang-name-title">
+        <span className="margin-entry-name-text">{title}</span>
+        {collision && (
+          <span className="margin-entry-name-collision">{collision.index} of {collision.total}</span>
         )}
+        {e.uStrong && <span className="margin-entry-name-key">{e.uStrong}</span>}
       </div>
-      <div className="lang-name-title">{title}</div>
-      <p className="lang-name-brief">{e.brief}</p>
+      <p className="margin-entry-kind lang-name-kind">
+        {[
+          kindLabel,
+          // Provenance is stated, not hidden in a tooltip: this identity was
+          // matched on the verse and the lexicon key, not on the name alone.
+          hit.match === "ref+strong" ? "matched in this verse" : null,
+          e.refCount === 1 ? "named once" : `named ${e.refCount.toLocaleString()} times`,
+        ].filter(Boolean).join(" · ")}
+      </p>
+      <p className="lang-name-brief margin-entry-why-text">{e.brief}</p>
       {e.short && e.short !== e.brief && (
         <p className="lang-name-short">{e.short}</p>
       )}
-      <div className="lang-name-meta">
-        {e.uStrong && <span className="lang-name-strong">{e.uStrong}</span>}
-        {e.refCount > 0 && (
-          <span className="lang-name-refcount">
-            {e.refCount} passage{e.refCount === 1 ? "" : "s"}
-          </span>
-        )}
-      </div>
-      {otherRefs.length > 0 && (
-        <div className="lang-name-refs">
-          <button
-            type="button"
-            className="lang-name-refs-toggle"
-            onClick={(ev) => {
-              ev.stopPropagation();
-              setOpenRefs((v) => !v);
-            }}
-            aria-expanded={openRefs}
-          >
-            {openRefs ? "Hide references" : "Other references"}
-            <span aria-hidden="true">{openRefs ? "▴" : "▾"}</span>
-          </button>
-          {openRefs && (
-            <ul className="lang-name-ref-list">
-              {otherRefs.map((r) => (
-                <li key={r}>{formatAppRef(r, bookNames)}</li>
-              ))}
-              {e.refCount > otherRefs.length + 1 && (
-                <li className="lang-name-ref-more">+{e.refCount - otherRefs.length - 1} more</li>
-              )}
-            </ul>
-          )}
-        </div>
-      )}
-      {hit.alternatives.length > 0 && (
-        <div className="lang-name-alts">
-          <span className="lang-name-alts-label">Also at this Strong’s</span>
-          <div className="lang-name-alt-chips">
-            {hit.alternatives.map((a) => (
-              <span key={a.id} className="lang-name-alt-chip" title={a.brief}>
-                {prettyName(a.displayName)}
+      {otherNames.length > 0 && (
+        // Alternatives are never merged. They are listed as themselves.
+        <div className="margin-entry-related lang-name-alts">
+          <span className="margin-entry-part-label">Others with this name</span>
+          <div className="margin-entry-related-list">
+            {otherNames.map((alternative) => (
+              <span className="margin-entry-relation is-static" key={alternative.id}>
+                <span className="margin-entry-relation-name">{prettyName(alternative.displayName)}</span>
+                <span className="margin-entry-relation-note">{alternative.brief}</span>
               </span>
             ))}
+          </div>
+        </div>
+      )}
+      {/* Appears in — three, then a count. The rest is a disclosure, not a
+          wall: a reader who wants all 22 is going to Research anyway. */}
+      {otherRefs.length > 0 && (
+        <div className="margin-entry-appears lang-name-refs">
+          <span className="margin-entry-part-label">Appears in</span>
+          <div className="margin-entry-appears-list">
+            {(openRefs ? otherRefs : otherRefs.slice(0, 3)).map((r) => (
+              <span className="margin-entry-appears-row is-static" key={r}>
+                <span className="margin-entry-appears-ref">{formatAppRef(r, bookNames)}</span>
+              </span>
+            ))}
+            {e.refCount > 4 && (
+              <button
+                type="button"
+                className="margin-entry-appears-more lang-name-refs-toggle"
+                onClick={(ev) => {
+                  ev.stopPropagation();
+                  setOpenRefs((v) => !v);
+                }}
+                aria-expanded={openRefs}
+              >
+                {openRefs ? "Fewer" : `${(e.refCount - 4).toLocaleString()} more`}
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -1106,6 +1128,15 @@ export function LanguageWordsSection({
           : "Language"
       : "Language";
   const reference = `${bookDisplayName ?? book} ${chapter}:${verse}`;
+  // The kind line: part of speech, then the form in words. Never the code —
+  // that lives in the form disclosure, where someone reading a commentary
+  // will look for it.
+  const morphParts = card?.morphExplain?.parts ?? [];
+  const morphPos = morphParts.find((part) => part.kind === "pos")?.label;
+  const morphRest = morphParts.filter((part) => part.kind !== "pos").map((part) => part.label);
+  const morphKindLine = morphPos || morphRest.length > 0
+    ? [morphPos, morphRest.join(" ")].filter(Boolean).join(" · ")
+    : null;
   const cardSources = card && load.kind === "ready"
     ? languageCardSources(card, load.packageId, load.packageName, strongPeek)
     : [];
@@ -1179,16 +1210,26 @@ export function LanguageWordsSection({
           {cardLoading && <div className="lang-muted">…</div>}
 
           {!cardLoading && card && (
-            <div className="lang-detail">
-              {/* Primary: form + English */}
-              <div className="lang-detail-heading">
+            <div className="lang-detail margin-entry">
+              {/* C·2 · part 1 — the lexicon head is the default. The
+                  transliteration is italic serif beside it, because it is a
+                  pronunciation and not an identifier; Strong's number is a
+                  lookup key for a book the reader does not have open, so it
+                  waits in space reserved for it and arrives on hover. */}
+              <div className="lang-detail-heading margin-entry-name">
                 <div
-                  className="lang-detail-form"
+                  className="lang-detail-form margin-entry-name-text"
                   dir={dirAttr}
                   lang={langAttr}
                 >
                   {surfaceOf(card.token, card.displaySurface)}
                 </div>
+                {card.definition?.xlit && (
+                  <span className="margin-entry-name-original lang-detail-xlit">{card.definition.xlit}</span>
+                )}
+                {card.token.strongPrefixed && (
+                  <span className="margin-entry-name-key lang-detail-strong">{card.token.strongPrefixed}</span>
+                )}
                 {onCapture && load.kind === "ready" && (
                   <button
                     type="button"
@@ -1206,8 +1247,14 @@ export function LanguageWordsSection({
                 )}
               </div>
 
+              {/* C·2 · part 2 — morphology spelled out in words. A bare parse
+                  code is the only genuinely intimidating thing on this
+                  surface, and it costs 30px to fix. */}
+              {morphKindLine && <p className="margin-entry-kind lang-detail-kind">{morphKindLine}</p>}
+
+              {/* C·2 · part 3 — why it is here, in the reading face */}
               {(card.gloss || card.token.gloss) && (
-                <p className="lang-detail-gloss" dir="ltr">
+                <p className="lang-detail-gloss margin-entry-why-text" dir="ltr">
                   {card.gloss ?? card.token.gloss}
                 </p>
               )}
@@ -1280,13 +1327,15 @@ export function LanguageWordsSection({
                 />
               </div>
 
-              {/* Quiet usage line */}
-              <div className="lang-usage">
-                <span>{card.lemmaFreq.chapter}× ch</span>
+              {/* C·2 · part 4 — three scales in one line, with the
+                  abbreviations spelled out to fit the margin's no-mono rule. */}
+              <div className="lang-usage margin-entry-fact">
+                <span className="lang-usage-label">Frequency</span>
+                <span>{card.lemmaFreq.chapter.toLocaleString()} in this chapter</span>
                 <span className="lang-dot">·</span>
-                <span>{card.lemmaFreq.book}× book</span>
+                <span>{card.lemmaFreq.book.toLocaleString()} in {bookDisplayName ?? book}</span>
                 <span className="lang-dot">·</span>
-                <span>{card.lemmaFreq.corpus}× corpus</span>
+                <span>{card.lemmaFreq.corpus.toLocaleString()} in the corpus</span>
                 {card.occurrencesInBook.length > 1 && (
                   <>
                     <span className="lang-dot">·</span>

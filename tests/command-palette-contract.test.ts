@@ -28,6 +28,138 @@ function deferred<T>(): {
   return { promise, resolve };
 }
 
+type ReadQuery = (
+  raw: string,
+  bookNames: Record<string, string[]>,
+  backbone: { version: string; books: Record<string, { chapters: number[] }> },
+) => {
+  shape: string;
+  term: string;
+  fellThrough: string;
+  readings: Array<{ tab: string; reason: string; statement: Array<{ text: string; value?: boolean }>; passage?: { book: string; chapter: number; verse?: number; endVerse?: number } }>;
+  corrections: Array<{ id: string; label: string; reason: string; query?: string; tab?: string }>;
+};
+
+async function loadReadQuery(): Promise<ReadQuery> {
+  const paletteModule = await import("../src/renderer/components/CommandPalette.js") as Record<string, unknown>;
+  const readQuery = paletteModule.readQuery;
+  assert.equal(typeof readQuery, "function", "CommandPalette must expose the shape router it actually uses");
+  return readQuery as ReadQuery;
+}
+
+const TEST_BOOK_NAMES = {
+  JHN: ["John", "Jhn", "Jn"],
+  ACT: ["Acts", "Act", "Ac"],
+};
+
+const TEST_BACKBONE = {
+  version: "test",
+  books: {
+    JHN: { chapters: [51, 25, 36, 54, 47, 71, 53, 59, 41, 42, 57, 50, 38, 31, 27, 33, 26, 40, 42, 31, 25] },
+    ACT: { chapters: [26, 47, 26, 37, 42, 15, 60, 40, 43, 48, 30, 25, 52, 28, 41, 40, 34, 31, 41, 6, 40, 30, 35, 27, 27, 32, 44, 31] },
+  },
+};
+
+function statementText(reading: { statement: Array<{ text: string }> }): string {
+  return reading.statement.map((segment) => segment.text).join("");
+}
+
+test("the query's shape routes it — choosing a scope is no longer a prerequisite", async () => {
+  const readQuery = await loadReadQuery();
+  const route = (raw: string): ReturnType<ReadQuery> => readQuery(raw, TEST_BOOK_NAMES, TEST_BACKBONE);
+
+  const reference = route("Acts 19:13-16");
+  assert.equal(reference.shape, "reference");
+  assert.equal(reference.readings[0]?.tab, "scripture");
+  assert.deepEqual(reference.readings[0]?.passage, { book: "ACT", chapter: 19, verse: 13, endVerse: 16 });
+
+  const phrase = route('"love is patient"');
+  assert.equal(phrase.shape, "phrase");
+  assert.equal(phrase.term, "love is patient", "a quoted phrase is searched without its quotation marks");
+  assert.equal(phrase.readings[0]?.tab, "scripture");
+
+  const question = route("Who was Barnabas?");
+  assert.equal(question.shape, "question");
+  assert.equal(question.readings[0]?.tab, "intelligence");
+
+  const name = route("Barnabas");
+  assert.equal(name.shape, "name");
+  assert.equal(name.readings[0]?.tab, "names");
+
+  const anythingElse = route("tent making in the ancient world");
+  assert.equal(anythingElse.shape, "text");
+  assert.equal(anythingElse.readings[0]?.tab, "notes", "anything else belongs to the reader's own notes");
+});
+
+test("parsing states itself, lists every reading with its reason, and never corrects underneath the reader", async () => {
+  const readQuery = await loadReadQuery();
+  const route = (raw: string): ReturnType<ReadQuery> => readQuery(raw, TEST_BOOK_NAMES, TEST_BACKBONE);
+
+  const stated = statementText(route("Acts 19:13-16").readings[0]!);
+  assert.match(stated, /Read as/);
+  assert.match(stated, /Acts/);
+  assert.match(stated, /chapter/);
+  assert.match(stated, /19/);
+  assert.match(stated, /13–16/);
+
+  // Ambiguity: a bare book name that is also a capitalised noun has two
+  // readings, the likeliest first, and both say why.
+  const ambiguous = route("John");
+  assert.equal(ambiguous.readings.length, 2);
+  assert.equal(ambiguous.readings[0]?.tab, "scripture");
+  assert.equal(ambiguous.readings[1]?.tab, "names");
+  for (const reading of ambiguous.readings) {
+    assert.ok((reading.reason ?? "").length > 0, "every listed reading states its reason");
+  }
+
+  // An out-of-range verse is stated and offered, never applied.
+  const droppedVerse = route("John 3:99");
+  assert.equal(droppedVerse.readings[0]?.passage?.chapter, 3);
+  assert.equal(droppedVerse.readings[0]?.passage?.verse, undefined);
+  assert.match(droppedVerse.readings[0]?.reason ?? "", /36 verses/);
+  const verseFix = droppedVerse.corrections.find((item) => item.query);
+  assert.equal(verseFix?.query, "John 3:36", "the fix is a row the reader presses, not a rewrite");
+
+  // A failed reference falls through to the next scope instead of dead-ending.
+  const failed = route("John 25");
+  assert.notEqual(failed.shape, "reference");
+  assert.ok(failed.readings.length > 0, "a failed reference still lands in a scope");
+  assert.match(failed.fellThrough, /21 chapters/);
+  assert.equal(failed.corrections.find((item) => item.query)?.query, "John 21");
+});
+
+test("Intelligence is asked for explicitly, carries the slate mark, and is never a group in a local result set", () => {
+  const command = readFileSync(join(repoRoot, "src", "renderer", "components", "CommandPalette.tsx"), "utf8");
+  const palette = readFileSync(join(repoRoot, "src", "renderer", "styles", "search.css"), "utf8");
+
+  const elsewhere = command.slice(
+    command.indexOf("const elsewhereResults"),
+    command.indexOf("const results = useMemo"),
+  );
+  assert.ok(elsewhere.length > 0, "the out-of-scope count must exist");
+  assert.doesNotMatch(
+    elsewhere,
+    /tab: "intelligence"/,
+    "the only scope that leaves the device may not be counted inside a local result set",
+  );
+
+  assert.match(command, /kind: "intelligence"/);
+  assert.match(command, /export function intelligenceReadiness/);
+  assert.match(command, /Settings › Intelligence/);
+  assert.match(palette, /\.command-result-glyph\.is-intelligence::after[\s\S]{0,220}var\(--accent-machine\)/);
+});
+
+test("search surfaces use one loading device — a seal segment on a hairline, no spinners or skeletons", () => {
+  const command = readFileSync(join(repoRoot, "src", "renderer", "components", "CommandPalette.tsx"), "utf8");
+  const workspace = readFileSync(join(repoRoot, "src", "renderer", "components", "SearchView.tsx"), "utf8");
+  const partial = readFileSync(join(repoRoot, "src", "renderer", "styles", "search.css"), "utf8");
+
+  assert.match(command, /search-progress-hairline/);
+  assert.match(workspace, /search-progress-hairline/);
+  assert.doesNotMatch(workspace, /note-list-loading/);
+  assert.match(partial, /@keyframes search-progress-travel/);
+});
+
 test("command palette has four truthful high-traffic lenses", () => {
   const source = readFileSync(join(repoRoot, "src", "renderer", "components", "CommandPalette.tsx"), "utf8");
   for (const label of ["Intelligence", "Scripture", "My notes", "Names"]) {
@@ -99,8 +231,8 @@ test("every palette destination shares one approval-first single-flight boundary
   assert.match(command, /const activateResult = useCallback\(\(request: \(\) => Promise<boolean>\): void =>/);
   assert.equal(
     [...command.matchAll(/activate: \(\) => activateResult\(/g)].length,
-    7,
-    "exact, Scripture, note, entity, action, recent, and deep-search destinations must use the same gate",
+    8,
+    "exact, Scripture, note, entity, action, recent, deep-search, and the explicit Intelligence ask must use the same gate",
   );
   assert.doesNotMatch(command, /closeAnd/);
   assert.match(app, /const runCommandAction = \(id: string\): Promise<boolean> =>/);

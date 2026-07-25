@@ -126,18 +126,26 @@ test("Study opens a named research tab while entity drill and branch remain dist
   assert.equal(isExplicitEntityBranchGesture({ button: 1, metaKey: false, ctrlKey: false, shiftKey: false }), true);
 
   assert.match(margin, /export interface EntityResearchTarget \{[\s\S]{0,220}?displayName: string;[\s\S]{0,120}?kind: "person" \| "place" \| "other";/);
-  assert.match(margin, /aria-label=\{`Open research tab for \$\{entity\.displayName\}`\}/);
-  assert.match(margin, /<span className="intent-entity-open"[^>]*>Open research tab/);
+  // The entry's name line carries the destination as its accessible name; the
+  // caption that used to appear on hover is gone with the card.
+  assert.match(margin, /openLabel=\{`Open research tab for \$\{entity\.displayName\}`\}/);
+  assert.match(margin, /<button type="button" className="margin-entry-name-open" onClick=\{onOpen\} aria-label=\{openLabel\}>/);
   assert.match(margin, /onOpenEntity\?\.\(entityResearchTarget\(entity\)\)/);
 
   const relationshipsStart = margin.indexOf("function PersonRelationships");
-  const relationshipsEnd = margin.indexOf("function EntityMiniMap", relationshipsStart);
+  const relationshipsEnd = margin.indexOf("function PleiadesResearchSection", relationshipsStart);
+  assert.ok(relationshipsStart >= 0 && relationshipsEnd > relationshipsStart);
   const relationships = margin.slice(relationshipsStart, relationshipsEnd);
   assert.match(relationships, /onDrillEntity\?\.\(target\)/);
   assert.match(relationships, /void onBranchEntity\(target\)/);
-  assert.match(relationships, /onAuxClick=/);
+  // The aux gesture is still a modifier-click on the name, but the row now
+  // renders through the entry skeleton, so it arrives as a named handler.
+  assert.match(relationships, /onAuxActivate:/);
   assert.match(relationships, /isExplicitEntityBranchGesture\(event\)/);
-  assert.match(relationships, /aria-label=\{`Open \$\{relationship\.displayName\} in a new research tab/);
+  assert.match(relationships, /branchLabel: `Open \$\{relationship\.displayName\} in a new research tab/);
+  // Both verbs are named in the markup, never inferred from a modifier key.
+  assert.match(margin, /className="margin-entry-verb"[\s\S]{0,200}?Follow/);
+  assert.match(margin, /className="margin-entry-verb"[\s\S]{0,200}?Branch/);
 });
 
 test("entity references follow the current canvas and expose an explicit passage-tab branch", () => {
@@ -166,9 +174,32 @@ test("principal research stays compact and deep datasets share one More disclosu
   const sourcesStart = margin.indexOf("<MarginSourcesDisclosure", moreStart);
   assert.ok(viewStart >= 0 && moreStart > viewStart && sourcesStart > moreStart);
   const principal = margin.slice(viewStart, moreStart);
-  for (const marker of ["entity-research-identity", "EntityOpeningContextSection", "EntityMiniMap", "entity-research-capture"]) {
+  // C·2's six parts, in order, and nothing else. The 340×140 minimap that used
+  // to sit in the principal view is gone: at 380px it was a decorative smudge
+  // displacing the sentence that would have placed the reader. The bearing
+  // fact row is built from the same coordinates and says more in 40px.
+  for (const marker of [
+    "entity-research-identity",
+    "MarginEntryNameLine",
+    "MarginEntryKindLine",
+    "MarginEntryWhy",
+    "MarginEntryFacts",
+    "EntityOpeningContextSection",
+    "MarginEntryAppearsIn",
+    "MarginEntryRelated",
+    "entity-research-capture",
+  ]) {
     assert.ok(principal.includes(marker), `principal view missing ${marker}`);
   }
+  assert.ok(!margin.includes("EntityMiniMap"), "the minimap returned to the 380px pane");
+  assert.ok(
+    principal.indexOf("MarginEntryNameLine") < principal.indexOf("MarginEntryKindLine")
+      && principal.indexOf("MarginEntryKindLine") < principal.indexOf("MarginEntryWhy")
+      && principal.indexOf("MarginEntryWhy") < principal.indexOf("MarginEntryFacts")
+      && principal.indexOf("MarginEntryFacts") < principal.indexOf("MarginEntryAppearsIn")
+      && principal.indexOf("MarginEntryAppearsIn") < principal.indexOf("MarginEntryRelated"),
+    "the six parts render out of order",
+  );
   for (const marker of ["PersonRelationships", "PleiadesResearchSection", "entity-reference-list"]) {
     assert.ok(!principal.includes(marker), `${marker} escaped More`);
   }

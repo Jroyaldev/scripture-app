@@ -3,4 +3,606 @@
    Owned partial. Rules that belong to this surface live here rather than in
    styles.css, so this work can proceed without serialising on an 17k-line
    file. Anything that must CHANGE an existing rule in styles.css belongs in
-   styles.css — do not shadow it from here. */
+   styles.css — do not shadow it from here.
+
+   Note on order: partials are @imported at the top of styles.css, so they
+   load FIRST and cannot win a specificity tie by position. Where an entry
+   adopts a surface that styles.css already dresses, the selector here is
+   deliberately scoped through `.living-margin` so it wins on specificity
+   rather than on luck. Those are the rules in the last section.
+
+   ---------------------------------------------------------------------------
+   THEY ARE ENTRIES, NOT CARDS.
+
+   A card is a box that announces "I am a component", and a card with nothing
+   in its lower half reads as a loading failure. An entry is a hanging indent
+   and no box, so it can stop after three parts and read as an entry that had
+   nothing more to say. That is the discipline a card layout takes away from
+   you, and it is why nothing below draws a border, a fill or a radius.
+
+   Two planes only. The margin is paper, so a tinted entry background would be
+   a third plane. Entries are separated by interval — one reading band — never
+   by a rule. No mono anywhere: serif for content, Instrument Sans for
+   handles, which is what makes the margin read as more page than tool panel.
+   -------------------------------------------------------------------------- */
+
+.margin-entry {
+  --margin-entry-hang: 12px;
+  --margin-entry-label: 74px;
+  display: block;
+  padding-left: var(--margin-entry-hang, 12px);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+/* Interval, not lines. 32px is one reading line, the vertical unit the whole
+   app is measured in. */
+.margin-entry-list {
+  display: block;
+}
+
+.margin-entry-list > .margin-entry + .margin-entry {
+  margin-top: var(--band);
+}
+
+/* --- 1 · name line -------------------------------------------------------
+   A dictionary head, not a page title. It hangs left of everything below it,
+   which is the entire typographic device. */
+
+.margin-entry-name {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 8px;
+  margin-left: calc(var(--margin-entry-hang, 12px) * -1);
+  margin-bottom: 3px;
+}
+
+.margin-entry-name-text {
+  color: var(--text-primary);
+  font-family: var(--font-reading);
+  font-size: 1.375rem;   /* serif 22 */
+  font-weight: var(--fw-normal);
+  line-height: 1.18;
+  letter-spacing: -0.015em;
+}
+
+/* Present for the scholar, ignorable by everyone else. Italic serif because a
+   transliteration is a pronunciation, not an identifier. */
+.margin-entry-name-original {
+  color: var(--text-secondary);
+  font-family: var(--font-reading);
+  font-size: 0.9375rem;  /* 15 */
+  font-style: italic;
+  line-height: 1.3;
+}
+
+/* Name collisions are stated here, and the alternatives are never merged. */
+.margin-entry-name-collision {
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  font-weight: var(--fw-normal);
+  line-height: 1.3;
+}
+
+.margin-entry-name-collision::before {
+  content: "· ";
+}
+
+/* The lexicon key: a lookup for a book the reader does not have open. Its
+   space exists at rest, so arriving changes ink and nothing else. */
+.margin-entry-name-key {
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  font-size: 0.625rem;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.margin-entry:hover .margin-entry-name-key,
+.margin-entry:focus-within .margin-entry-name-key {
+  opacity: 1;
+}
+
+.margin-entry-name-open {
+  min-width: 0;
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.margin-entry-name-open:hover .margin-entry-name-text {
+  color: var(--accent-seal);
+}
+
+.margin-entry-name-open:focus-visible {
+  outline: 2px solid var(--study-gold-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-mark);
+}
+
+/* --- 2 · kind & situation ------------------------------------------------
+   One 11px line. It replaces an icon, a badge and a category chip with five
+   words, and it is the line that lets a reader skip an entry safely. All four
+   kinds — place, person, deity/other, group — differ here and nowhere else. */
+
+.margin-entry-kind {
+  margin: 0 0 8px;
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  font-weight: var(--fw-normal);
+  line-height: 1.35;
+}
+
+/* --- 3 · why it is here --------------------------------------------------
+   Serif, passage-relative, one or two sentences. Provenance rides in the
+   hanging indent: 4px slate dot = the app wrote this; 2px seal spine = you
+   wrote it; nothing at all = it is the edition. The mark is persistent — a
+   hover reveal only tells a reader what they already suspected. */
+
+.margin-entry-why {
+  position: relative;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.margin-entry-mark {
+  position: absolute;
+  left: calc(var(--margin-entry-hang, 12px) * -1);
+  display: block;
+}
+
+.margin-entry-mark.is-app {
+  top: 0.55em;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent-machine);
+}
+
+.margin-entry-mark.is-reader {
+  top: 0.2em;
+  bottom: 0.2em;
+  width: 2px;
+  border-radius: var(--radius-mark);
+  background: var(--accent-seal);
+}
+
+.margin-entry-why-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.margin-entry-why-text {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-reading);
+  font-size: 0.875rem;
+  line-height: 1.52;
+  text-wrap: pretty;
+}
+
+.margin-entry-why-date {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  font-size: 0.625rem;
+}
+
+/* --- 4 · facts — two to four rows ---------------------------------------
+   74px label column in ink-3, values in ink. Absent fields simply do not
+   render: no "Unknown", no empty row. Four is the ceiling; a fifth means
+   something belongs in Research. */
+
+.margin-entry-facts {
+  margin: 0 0 12px;
+  display: grid;
+  gap: 4px;
+}
+
+.margin-entry-fact {
+  display: grid;
+  grid-template-columns: var(--margin-entry-label, 74px) minmax(0, 1fr);
+  gap: 0 10px;
+  align-items: baseline;
+}
+
+.margin-entry-fact > dt,
+.margin-entry-fact > .lang-usage-label {
+  margin: 0;
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  font-weight: var(--fw-normal);
+  line-height: 1.45;
+}
+
+.margin-entry-fact > dd {
+  margin: 0;
+  min-width: 0;
+  color: var(--text-primary);
+  font-family: var(--font-reading);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+/* Direction belongs to the value, never to the row: the label column stays
+   left-aligned LTR, so a stack of facts still forms a column. Flipping the
+   whole row is the bug everyone ships first. */
+.margin-entry-fact > dd[dir="rtl"] {
+  text-align: right;
+}
+
+/* --- 5 · appears in — three, then a count -------------------------------- */
+
+.margin-entry-appears {
+  margin-bottom: 12px;
+}
+
+.margin-entry-part-label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  font-weight: var(--fw-medium);
+}
+
+.margin-entry-appears-list {
+  display: grid;
+  gap: 1px;
+}
+
+.margin-entry-appears-row {
+  width: calc(100% + 12px);
+  margin-inline: -6px;
+  padding: 4px 6px;
+  display: grid;
+  grid-template-columns: var(--margin-entry-label, 74px) minmax(0, 1fr);
+  gap: 0 10px;
+  align-items: baseline;
+  border: 0;
+  border-radius: var(--radius-mark);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.margin-entry-appears-row.is-static {
+  cursor: default;
+}
+
+.margin-entry-appears-ref {
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  line-height: 1.45;
+}
+
+/* A verse and a fragment of it — the same shape the cross-references use, so
+   the margin has one way of showing a reference. */
+.margin-entry-appears-preview {
+  min-width: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-reading);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.margin-entry-appears-row:hover .margin-entry-appears-ref,
+.margin-entry-appears-row:hover .margin-entry-appears-preview {
+  color: var(--text-primary);
+}
+
+.margin-entry-appears-row:focus-visible {
+  outline: 2px solid var(--study-gold-focus);
+  outline-offset: 1px;
+}
+
+/* "No other mention" is a fact worth stating: it stops the reader hunting for
+   a life story that does not exist. */
+.margin-entry-appears-empty {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-reading);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.margin-entry-appears-more {
+  justify-self: start;
+  margin-top: 2px;
+  padding: 2px 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.margin-entry-appears-more.is-static {
+  cursor: default;
+}
+
+.margin-entry-appears-more:hover {
+  color: var(--accent-seal);
+}
+
+.margin-entry-appears-more:focus-visible {
+  outline: 2px solid var(--study-gold-focus);
+  outline-offset: 2px;
+}
+
+/* --- 6 · related ---------------------------------------------------------
+   Two or three names. Hovering one reveals Follow and Branch in space that
+   already exists — the only two verbs, named, in the place where the decision
+   is made. Nothing moves; only ink changes. A reader should be able to
+   predict which one loses their place, and neither one does. */
+
+.margin-entry-related {
+  margin-bottom: 4px;
+}
+
+.margin-entry-related-list {
+  display: grid;
+  gap: 1px;
+}
+
+.margin-entry-relation {
+  min-height: 22px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0 10px;
+  align-items: baseline;
+}
+
+.margin-entry-relation-name {
+  min-width: 0;
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-reading);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  text-align: left;
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.margin-entry-relation.is-static .margin-entry-relation-name {
+  border-bottom-color: transparent;
+  cursor: default;
+}
+
+.margin-entry-relation-note {
+  min-width: 0;
+  grid-column: 1 / -1;
+  color: var(--text-tertiary);
+  font-family: var(--font-reading);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.margin-entry-relation-name:hover {
+  color: var(--accent-seal);
+  border-bottom-color: var(--accent-seal);
+}
+
+.margin-entry-relation-name:focus-visible {
+  outline: 2px solid var(--study-gold-focus);
+  outline-offset: 2px;
+}
+
+/* Reserved at rest: the verbs occupy their space whether or not they are
+   legible, so revealing them shifts nothing below. */
+.margin-entry-verbs {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.margin-entry-relation:hover .margin-entry-verbs,
+.margin-entry-relation:focus-within .margin-entry-verbs {
+  opacity: 1;
+}
+
+.margin-entry-verb {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.margin-entry-verb:hover {
+  color: var(--accent-seal);
+}
+
+.margin-entry-verb:focus-visible {
+  outline: 2px solid var(--study-gold-focus);
+  outline-offset: 2px;
+}
+
+/* --- Uncertainty is content, not an error state --------------------------
+   Italic serif means proposed, everywhere in the app: unidentified sites,
+   contested titles, manuscript variants, estimates. One convention, learned
+   once. It is never behind a tooltip — hiding it, or quietly picking a
+   reading, is the fastest way for a study app to lose a reader's trust. */
+
+.margin-entry .is-proposed,
+.margin-entry-name-text.is-proposed,
+.margin-entry-relation-name.is-proposed,
+.margin-entry-fact > dd.is-proposed {
+  font-family: var(--font-reading);
+  font-style: italic;
+}
+
+/* --- Scope certainty is carried by weight --------------------------------
+   A chosen range is ink; a followed verse is ink-2. The reader learns it in a
+   day and never reads the word "pinned" again. (The colour half of this rule
+   still lives in styles.css.) */
+
+.living-margin[data-margin-mode="selection"] .margin-frame-mode,
+.living-margin[data-margin-mode="kept"] .margin-frame-mode {
+  font-weight: var(--fw-semibold);
+}
+
+.living-margin[data-margin-mode="following"] .margin-frame-mode,
+.living-margin[data-margin-mode="chapter"] .margin-frame-mode {
+  color: var(--text-secondary);
+  font-weight: var(--fw-normal);
+}
+
+/* --- Surfaces adopting the skeleton --------------------------------------
+   These reach through `.living-margin` on purpose: the base rules they are
+   correcting live in styles.css, which loads after this file. Each one is a
+   surface that has joined the entry skeleton and therefore has to stop being
+   a card. */
+
+/* The TIPNR name entry was a tinted, bordered box — a third plane inside the
+   margin's paper, with a second per-kind fill on top of it. */
+.living-margin .lang-name-card.margin-entry,
+.living-margin .lang-name-card.margin-entry.kind-person,
+.living-margin .lang-name-card.margin-entry.kind-place {
+  margin: 16px 0 12px;
+  padding: 0 0 0 var(--margin-entry-hang, 12px);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.living-margin .lang-name-card.margin-entry .lang-name-title {
+  margin-bottom: 3px;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.living-margin .lang-name-card.margin-entry .lang-name-short {
+  margin: 4px 0 10px;
+  color: var(--text-secondary);
+  font-family: var(--font-reading);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+/* The research entry's name line takes the place of the old <h2>, and the
+   capture action still rides at the row's trailing edge. */
+.living-margin .entity-research-title-row > .margin-entry-name {
+  min-width: 0;
+  flex: 1;
+  margin-bottom: 0;
+}
+
+/* The word entry is the same six parts as a place or a person, so nothing new
+   has to be learned to read one. */
+.living-margin .lang-detail.margin-entry {
+  padding-left: var(--margin-entry-hang, 12px);
+}
+
+.living-margin .lang-detail-heading.margin-entry-name {
+  justify-content: flex-start;
+}
+
+.living-margin .lang-detail-heading .margin-capture-action {
+  margin-left: auto;
+}
+
+.living-margin .lang-detail-form.margin-entry-name-text {
+  flex: 0 1 auto;
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: var(--fw-normal);
+}
+
+.living-margin .lang-detail-gloss.margin-entry-why-text {
+  margin: 0 0 12px;
+  color: var(--text-primary);
+  font-family: var(--font-reading);
+  font-size: 0.875rem;
+  line-height: 1.52;
+}
+
+.living-margin .lang-usage.margin-entry-fact {
+  margin-top: 0;
+  margin-bottom: 10px;
+  display: grid;
+  grid-template-columns: var(--margin-entry-label, 74px) minmax(0, 1fr);
+  gap: 0 10px;
+  align-items: baseline;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+/* The value half of the frequency row is one sentence in three scales, so it
+   flows rather than stacking. */
+.living-margin .lang-usage.margin-entry-fact > :not(.lang-usage-label) {
+  grid-column: 2;
+  display: inline;
+  font-family: var(--font-reading);
+}
+
+/* The Overview lens's people & places: entries, and the hairlines that used
+   to fence each one off are replaced by the reading band. */
+.living-margin .margin-entry-list.intent-entity-list {
+  display: block;
+  padding-top: 4px;
+}
+
+/* Your library's leads carry the provenance mark instead of a mono kicker, so
+   they need the hanging indent the mark lives in. The rule that separated the
+   secondary lead becomes interval, like everywhere else in the margin. */
+.living-margin .intent-note-lead {
+  padding-left: calc(6px + var(--margin-entry-hang, 12px));
+}
+
+.living-margin .intent-note-lead.is-secondary {
+  margin-top: 10px;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.living-margin .intent-note-lead .margin-entry-why {
+  margin-bottom: 0;
+}
+
+.living-margin .intent-note-lead .margin-entry-why-copy > span {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  color: var(--text-secondary);
+  font-family: var(--font-reading);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}

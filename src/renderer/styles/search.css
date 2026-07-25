@@ -4,3 +4,341 @@
    styles.css, so this work can proceed without serialising on an 17k-line
    file. Anything that must CHANGE an existing rule in styles.css belongs in
    styles.css — do not shadow it from here. */
+
+/* ==========================================================================
+   The one loading device
+   --------------------------------------------------------------------------
+   A 1px seal segment travelling a hairline. No spinners, no skeletons — the
+   two things this replaces. Kept local to this partial so the search surfaces
+   are correct today; it wants promoting to a shared class once the other
+   surfaces stop drawing their own.
+   ========================================================================== */
+
+.search-progress-hairline {
+  position: relative;
+  display: block;
+  width: 116px;
+  height: 1px;
+  overflow: hidden;
+  background: var(--border-subtle);
+}
+
+.search-progress-hairline::after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 34%;
+  height: 1px;
+  background: var(--accent-seal);
+  content: "";
+  animation: search-progress-travel 1.6s linear infinite;
+}
+
+@keyframes search-progress-travel {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(394%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .search-progress-hairline::after {
+    width: 100%;
+    opacity: 0.5;
+    animation: none;
+  }
+}
+
+/* ==========================================================================
+   Palette — the scope line
+   --------------------------------------------------------------------------
+   One line stating what the palette did with what was typed. The four scopes
+   are still here, but as this line's *change* affordance: they sit in a cell
+   that is already their width at rest, so revealing them moves nothing.
+   ========================================================================== */
+
+.palette-scope {
+  display: grid;
+  min-height: 32px;
+  align-items: center;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 16px;
+  padding: 0 17px;
+}
+
+.palette-scope-statement {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font: 400 10.5px/1.4 var(--font-ui);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.palette-scope-statement em {
+  color: var(--text-primary);
+  font-style: normal;
+  font-weight: var(--fw-medium);
+}
+
+/* The reason the palette read it this way. Always present, never louder than
+   the reading itself, first to be clipped when the line runs out of room. */
+.palette-scope-reason {
+  color: var(--text-tertiary);
+  font: 400 9.5px/1.4 var(--font-mono);
+  opacity: 0.72;
+}
+
+.palette-scope-reason::before {
+  margin: 0 7px;
+  content: "·";
+}
+
+/* Both states occupy the same cell, so the wider one (the tabs) reserves the
+   space and the swap is opacity only. */
+.palette-scope-change {
+  display: grid;
+  align-items: center;
+  grid-template-areas: "scope-swap";
+  justify-items: end;
+}
+
+.palette-scope-rest,
+.palette-scope .palette-scope-tabs {
+  grid-area: scope-swap;
+  transition: opacity var(--transition-fast);
+}
+
+.palette-scope-rest {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-tertiary);
+  font: 400 9.5px/1 var(--font-mono);
+  letter-spacing: 0.04em;
+}
+
+.palette-scope-rest kbd {
+  display: inline-block;
+  min-width: 15px;
+  color: var(--text-tertiary);
+  font: 400 10px/1 var(--font-mono);
+  text-align: center;
+}
+
+.palette-scope .palette-scope-tabs {
+  display: flex;
+  min-height: 0;
+  align-items: center;
+  gap: 14px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.palette-scope .palette-scope-tabs button {
+  font: 500 10.5px/1 var(--font-ui);
+}
+
+.palette-scope:hover .palette-scope-rest,
+.palette-scope:focus-within .palette-scope-rest {
+  opacity: 0;
+}
+
+.palette-scope:hover .palette-scope-tabs,
+.palette-scope:focus-within .palette-scope-tabs {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .palette-scope-rest,
+  .palette-scope .palette-scope-tabs {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   Palette — states and provenance
+   ========================================================================== */
+
+.palette-progress {
+  display: flex;
+  min-height: 84px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 11px;
+  padding: 28px 17px;
+  color: var(--text-tertiary);
+  font: 400 10px/1.4 var(--font-mono);
+  letter-spacing: 0.04em;
+}
+
+/* A partial answer says what is missing rather than passing itself off as
+   complete. */
+.palette-partial {
+  margin: 0;
+  padding: 4px 17px 10px;
+  color: var(--text-tertiary);
+  font: 400 9.5px/1.5 var(--font-mono);
+}
+
+/* Slate is the provenance of anything that did not come from the reader or
+   the edition. Intelligence is the one scope that leaves the device, so it
+   carries the mark before it is committed to — not a fill, not a chip. */
+.command-result-glyph.is-intelligence {
+  border-color: transparent;
+}
+
+.command-result-glyph.is-intelligence svg {
+  display: none;
+}
+
+.command-result-glyph.is-intelligence::after {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent-machine);
+  content: "";
+}
+
+/* ==========================================================================
+   SearchView — the field, and the count beside it
+   --------------------------------------------------------------------------
+   The count used to sit inside the input with pointer events off, which read
+   as an editable value. It is a tally, so it belongs next to the field, and
+   it states a ratio: "12 of 147 notes".
+   ========================================================================== */
+
+.note-workspace-query {
+  display: grid;
+  flex-shrink: 0;
+  align-items: baseline;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 20px;
+}
+
+.note-workspace-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.note-workspace-field .control-input {
+  height: 42px;
+  padding: 0 42px 0 42px;
+  border-color: var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-reading);
+  box-shadow: var(--shadow-subtle);
+  font-size: 13px;
+}
+
+.note-workspace-field .control-input:focus-visible {
+  box-shadow: 0 0 0 2px var(--study-gold-focus);
+}
+
+.note-workspace-field .control-input::-webkit-search-cancel-button,
+.note-workspace-field .control-input::-webkit-search-decoration {
+  appearance: none;
+  display: none;
+}
+
+.note-workspace-field-icon {
+  position: absolute;
+  left: 14px;
+  z-index: 1;
+  display: grid;
+  width: 16px;
+  height: 16px;
+  place-items: center;
+  color: var(--text-tertiary);
+  pointer-events: none;
+}
+
+.note-workspace-field-icon svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.5;
+}
+
+/* Reserved at rest: the control is always in the layout, and only its ink
+   changes. Nothing moves when a query appears. */
+.note-workspace-field-clear {
+  position: absolute;
+  right: 9px;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: 15px;
+  line-height: 1;
+  opacity: 0;
+  place-items: center;
+  pointer-events: none;
+  transition: opacity var(--transition-fast);
+}
+
+.note-workspace-field-clear[data-shown="true"] {
+  cursor: pointer;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.note-workspace-field-clear[data-shown="true"]:hover {
+  color: var(--text-primary);
+}
+
+.note-workspace-query .note-workspace-count {
+  position: static;
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  margin: 0;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  pointer-events: auto;
+  white-space: nowrap;
+}
+
+/* The out-of-scope count. Zero notes is a dead end; "zero here, 27 in
+   Scripture" is the next step. */
+.note-workspace-count-beyond::before {
+  margin: 0 8px;
+  content: "·";
+}
+
+/* ==========================================================================
+   SearchView — loading
+   ========================================================================== */
+
+.note-list-progress {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 16px;
+  color: var(--text-tertiary);
+  font: 400 9.5px/1.4 var(--font-mono);
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 1100px) {
+  .note-workspace-query {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 8px;
+  }
+
+  .note-workspace-query .note-workspace-count {
+    justify-content: flex-start;
+  }
+}

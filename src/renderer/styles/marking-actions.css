@@ -1,6 +1,463 @@
-/* G·2 — the eleven actions, Connect's draft states, and the ten states
+/* G·2 — the action set, Connect's draft states, and the ten states
 
    Owned partial. Rules that belong to this surface live here rather than in
    styles.css, so this work can proceed without serialising on an 17k-line
    file. Anything that must CHANGE an existing rule in styles.css belongs in
-   styles.css — do not shadow it from here. */
+   styles.css — do not shadow it from here.
+
+   This file is @imported BEFORE the token block, so it can never win a
+   specificity tie by position. Every rule here that has to beat a base rule
+   does it by scoping to the host, never with !important. */
+
+/* ── The five hues ───────────────────────────────────────────────────────────
+   Five hues at matched lightness and chroma, so no colour reads as louder or
+   more important than another — a wash is a category, not a rank. Each hue
+   publishes two values: the WASH that fills the words and the LINE that
+   underscores them at exactly double the wash's chroma. That underline is the
+   colour-blindness accommodation: at 2px and double chroma it survives every
+   common deficiency, and it is therefore not optional. */
+:root,
+.theme-paper,
+.theme-slate {
+  --quire-hl-l: 0.62;
+  --quire-hl-c: 0.132;
+
+  --quire-hl-yellow-wash: oklch(0.93 0.066 85 / 0.42);
+  --quire-hl-yellow-line: oklch(var(--quire-hl-l) var(--quire-hl-c) 85);
+  --quire-hl-green-wash: oklch(0.93 0.066 148 / 0.42);
+  --quire-hl-green-line: oklch(var(--quire-hl-l) var(--quire-hl-c) 148);
+  --quire-hl-blue-wash: oklch(0.93 0.066 245 / 0.42);
+  --quire-hl-blue-line: oklch(var(--quire-hl-l) var(--quire-hl-c) 245);
+  --quire-hl-pink-wash: oklch(0.93 0.066 355 / 0.42);
+  --quire-hl-pink-line: oklch(var(--quire-hl-l) var(--quire-hl-c) 355);
+  --quire-hl-purple-wash: oklch(0.93 0.066 305 / 0.42);
+  --quire-hl-purple-line: oklch(var(--quire-hl-l) var(--quire-hl-c) 305);
+}
+
+/* Dark paper carries the same hues at the same chroma, lifted in lightness so
+   the pair keeps its contrast against ink rather than against white. */
+.dark,
+.dark.marking-floating-host,
+.dark .marking-dock-host {
+  --quire-hl-yellow-wash: oklch(0.36 0.058 85 / 0.62);
+  --quire-hl-yellow-line: oklch(0.74 var(--quire-hl-c) 85);
+  --quire-hl-green-wash: oklch(0.36 0.058 148 / 0.62);
+  --quire-hl-green-line: oklch(0.74 var(--quire-hl-c) 148);
+  --quire-hl-blue-wash: oklch(0.36 0.058 245 / 0.62);
+  --quire-hl-blue-line: oklch(0.74 var(--quire-hl-c) 245);
+  --quire-hl-pink-wash: oklch(0.36 0.058 355 / 0.62);
+  --quire-hl-pink-line: oklch(0.74 var(--quire-hl-c) 355);
+  --quire-hl-purple-wash: oklch(0.36 0.058 305 / 0.62);
+  --quire-hl-purple-line: oklch(0.74 var(--quire-hl-c) 305);
+}
+
+/* ── The bar ─────────────────────────────────────────────────────────────────
+   Five swatches, then Note · Connect · More, at every width and in every
+   state. Groups are separated by interval, never by a rule: 14px of the plane
+   already says "different kind of thing" more quietly than a line does. */
+.marking-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0;
+  background: none;
+}
+
+.marking-bar-swatches {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.marking-bar-swatch {
+  /* A reserved 3px gutter under every swatch. The active mark lives there at
+     rest, so choosing one changes ink, never geometry. */
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0 0 3px;
+  border: 0;
+  border-radius: var(--radius-sm, 6px);
+  background: transparent;
+  cursor: pointer;
+  transition: opacity 120ms linear;
+}
+
+.marking-bar-swatch::after {
+  content: "";
+  position: absolute;
+  left: 7px;
+  right: 7px;
+  bottom: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: transparent;
+  transition: background-color 120ms linear;
+}
+
+.marking-bar-swatch.active[data-pigment="yellow"]::after { background: var(--quire-hl-yellow-line); }
+.marking-bar-swatch.active[data-pigment="green"]::after { background: var(--quire-hl-green-line); }
+.marking-bar-swatch.active[data-pigment="blue"]::after { background: var(--quire-hl-blue-line); }
+.marking-bar-swatch.active[data-pigment="pink"]::after { background: var(--quire-hl-pink-line); }
+.marking-bar-swatch.active[data-pigment="purple"]::after { background: var(--quire-hl-purple-line); }
+
+/* The swatch is a miniature of the mark it lays: the wash, and the 2px
+   double-chroma line under it. Nothing here is a filled pill. */
+.marking-bar-swatch .marking-pigment {
+  width: 22px;
+  height: 16px;
+  border: 0;
+  border-radius: 3px;
+  box-shadow: none;
+}
+
+.marking-bar-swatch[data-pigment="yellow"] .marking-pigment {
+  background: var(--quire-hl-yellow-wash);
+  border-bottom: 2px solid var(--quire-hl-yellow-line);
+}
+.marking-bar-swatch[data-pigment="green"] .marking-pigment {
+  background: var(--quire-hl-green-wash);
+  border-bottom: 2px solid var(--quire-hl-green-line);
+}
+.marking-bar-swatch[data-pigment="blue"] .marking-pigment {
+  background: var(--quire-hl-blue-wash);
+  border-bottom: 2px solid var(--quire-hl-blue-line);
+}
+.marking-bar-swatch[data-pigment="pink"] .marking-pigment {
+  background: var(--quire-hl-pink-wash);
+  border-bottom: 2px solid var(--quire-hl-pink-line);
+}
+.marking-bar-swatch[data-pigment="purple"] .marking-pigment {
+  background: var(--quire-hl-purple-wash);
+  border-bottom: 2px solid var(--quire-hl-purple-line);
+}
+
+/* Nothing moves on hover: the reveal is ink and opacity only. */
+.marking-bar .marking-choice:hover,
+.marking-bar .marking-choice:active,
+.marking-bar-action:hover,
+.marking-bar-action:active {
+  transform: none;
+}
+
+.marking-bar-swatch:hover { opacity: 0.78; }
+.marking-bar-swatch:disabled { opacity: 0.4; cursor: default; }
+
+.marking-bar-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 8px 3px;
+  border: 0;
+  border-radius: var(--radius-sm, 6px);
+  background: transparent;
+  color: var(--text-secondary);
+  font: 500 0.75rem/1 var(--font-ui);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 120ms linear;
+}
+
+.marking-bar-action > svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.marking-bar-action:hover { color: var(--text-primary); background: transparent; }
+.marking-bar-action:disabled { color: var(--text-tertiary); cursor: default; }
+.marking-bar-action[aria-expanded="true"] { color: var(--text-primary); }
+
+/* ── More ────────────────────────────────────────────────────────────────────
+   A plain list, with the scope stated at the top so an action can never be
+   read against the wrong words. */
+.marking-more {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-reading);
+}
+
+.marking-more-scope {
+  margin: 0 0 6px;
+  color: var(--text-tertiary);
+  font: 400 0.6875rem/1.3 var(--font-ui);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.04em;
+}
+
+.marking-more-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.marking-more-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  padding: 5px 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font: 400 0.8125rem/1.35 var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+  transition: color 120ms linear;
+}
+
+.marking-more-item:hover { color: var(--study-gold); background: transparent; }
+
+/* An item that cannot act stays in place, greyed, and says why. It does not
+   vanish: a list that changes shape costs the reader the place they learned. */
+.marking-more-item:disabled {
+  color: var(--text-tertiary);
+  cursor: default;
+}
+
+.marking-more-reason {
+  color: var(--text-tertiary);
+  font: 400 0.75rem/1.35 var(--font-ui);
+}
+
+.marking-more-reason i { font-style: normal; padding-right: 2px; }
+
+/* ── Connect, as a workbench ────────────────────────────────────────────────
+   It replaces the bar rather than floating beside it, and it stays through the
+   write — including the write that fails. */
+.marking-connect-draft {
+  display: grid;
+  gap: 8px;
+  background: var(--bg-reading);
+}
+
+.marking-connect-anchors {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0 0 0 14px;
+  list-style: decimal;
+  color: var(--text-secondary);
+  font: 400 0.8125rem/1.45 var(--font-reading);
+}
+
+.marking-connect-anchors q { quotes: "\201C" "\201D"; }
+
+.marking-connect-kinds { display: block; }
+
+.marking-connect-field {
+  display: grid;
+  gap: 4px;
+}
+
+.marking-connect-field > span {
+  color: var(--text-tertiary);
+  font: 400 0.6875rem/1.3 var(--font-ui);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.04em;
+}
+
+.marking-connect-field textarea {
+  width: 100%;
+  padding: 4px 0;
+  border: 0;
+  border-bottom: 1px solid var(--border-subtle);
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font: italic 400 0.8125rem/1.5 var(--font-reading);
+  resize: none;
+  field-sizing: content;
+}
+
+.marking-connect-field textarea:focus { outline: none; border-bottom-color: var(--study-gold); }
+.marking-connect-field textarea[readonly] { color: var(--text-secondary); border-bottom-style: dashed; }
+
+.marking-connect-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.marking-connect-kept-text {
+  display: block;
+  color: var(--text-secondary);
+  font: italic 400 0.8125rem/1.5 var(--font-reading);
+}
+
+/* The kind row does not exist before a second anchor does, so there is nothing
+   to reserve space for and nothing to fade. */
+.marking-connect-draft[data-connect-state="one-anchor"] .marking-connect-kinds,
+.marking-connect-draft[data-connect-state="one-anchor"] .marking-connect-field { display: none; }
+
+.marking-connect-draft[data-connect-state="in-flight"] .marking-choice,
+.marking-connect-draft[data-connect-state="recovery"] .marking-choice { pointer-events: none; }
+
+/* ── The ten states ─────────────────────────────────────────────────────────
+   One loading device, never an illustration, name the thing and the reason,
+   never lose the reader's text, say whether it was local. */
+.surface-state {
+  display: grid;
+  gap: 6px;
+  padding: 6px 0;
+  background: none;
+}
+
+.surface-state-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
+  color: var(--text-primary);
+  font: 400 0.8125rem/1.45 var(--font-ui);
+}
+
+.surface-state-thing { color: var(--text-primary); }
+.surface-state-reason { color: var(--text-secondary); }
+.surface-state-locality { color: var(--text-tertiary); }
+
+.surface-state-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* State is a mark on a reserved gutter, never a fill. */
+.surface-state[data-surface-state="failed"] .surface-state-thing,
+.surface-state[data-surface-state="conflict"] .surface-state-thing {
+  box-shadow: inset 2px 0 0 var(--error);
+  padding-left: 8px;
+}
+
+.surface-state[data-surface-state="read-only"] .surface-state-thing,
+.surface-state[data-surface-state="offline"] .surface-state-thing {
+  box-shadow: inset 2px 0 0 var(--text-tertiary);
+  padding-left: 8px;
+}
+
+/* THE loading device, and the only one: a 1px seal segment travelling a
+   hairline. No spinners. No skeletons. Anywhere. */
+.seal-progress {
+  display: inline-flex;
+  align-items: center;
+  width: 72px;
+  height: 10px;
+}
+
+.seal-progress-hairline {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 1px;
+  overflow: hidden;
+  background: var(--border-subtle);
+}
+
+.seal-progress-segment {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 28%;
+  background: var(--study-gold);
+  animation: seal-progress-travel 1100ms linear infinite;
+}
+
+@keyframes seal-progress-travel {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(357%); }
+}
+
+/* ── Hosting the bar ────────────────────────────────────────────────────────
+   The palette never shrinks, scrolls, or re-orders to fit. If it does not fit
+   above it opens below; the one thing it may not do is become a smaller,
+   differently-ordered version of itself. */
+.marking-floating-host .marking-palette {
+  max-height: none;
+  overflow: visible;
+}
+
+.marking-floating-host .marking-palette-frame {
+  display: grid;
+  gap: 10px;
+  overflow: visible;
+}
+
+.marking-floating-host .marking-palette-header { padding-bottom: 0; }
+
+.marking-floating-host .marking-palette-session {
+  position: fixed;
+  left: var(--mark-stage-left);
+  top: calc(var(--mark-stage-top) + 8px);
+  width: min(430px, calc(var(--mark-stage-width) - 24px));
+}
+
+/* The dock is the same bar on a shelf. Its old three-column grid described a
+   mode group, a context pane and an action cluster; there is one working area
+   now, and one row in it. */
+.marking-dock-host .marking-dock {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  grid-template-columns: none;
+  grid-template-areas: none;
+}
+
+.marking-dock .marking-dock-context {
+  display: grid;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  grid-area: auto;
+}
+
+.marking-dock-host[data-dock-layout="stacked"] .marking-dock { flex-wrap: wrap; }
+
+.marking-dock .marking-bar { justify-content: flex-start; }
+
+/* ── Motion, and its absence ────────────────────────────────────────────────
+   120ms for a state change, 180ms for an entrance, 0ms for anything a reader
+   did not ask for. */
+.marking-more,
+.marking-connect-draft {
+  animation: marking-rise-in 180ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marking-bar-swatch,
+  .marking-bar-swatch::after,
+  .marking-bar-action,
+  .marking-more,
+  .marking-more-item,
+  .marking-connect-draft,
+  .seal-progress-segment {
+    animation: none !important;
+    transition: none !important;
+  }
+  /* Stillness must not mean silence: the segment holds at the start of its
+     hairline so the state is still legible as "in progress". */
+  .seal-progress-segment { transform: translateX(0); }
+}
+
+@media (forced-colors: active) {
+  .marking-bar-swatch .marking-pigment { forced-color-adjust: none; }
+  .marking-bar-swatch.active::after { background: Highlight; }
+  .marking-more-item:disabled { color: GrayText; }
+  .seal-progress-segment { background: Highlight; }
+  .surface-state[data-surface-state="failed"] .surface-state-thing,
+  .surface-state[data-surface-state="conflict"] .surface-state-thing,
+  .surface-state[data-surface-state="offline"] .surface-state-thing,
+  .surface-state[data-surface-state="read-only"] .surface-state-thing {
+    box-shadow: inset 2px 0 0 CanvasText;
+  }
+}

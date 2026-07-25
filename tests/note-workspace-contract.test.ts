@@ -66,3 +66,27 @@ test("full-text retrieval refuses stale responses and exposes designed outcomes"
   assert.match(workspace, /aria-label="Clear search"/);
   assert.doesNotMatch(workspace, /Search notes\.\.\. \(FTS5\)/);
 });
+
+test("the workspace never draws an absence, states a ratio beside its field, and reports what is out of scope", () => {
+  const workspace = read("src/renderer/components/SearchView.tsx");
+  const partial = read("src/renderer/styles/search.css");
+
+  // Never an illustration — the empty-state icon is gone, not restyled.
+  assert.doesNotMatch(workspace, /note-workspace-empty-icon/);
+  assert.doesNotMatch(workspace, /function NoteIcon/);
+
+  // The count is a tally beside the field, not a value sitting inside it.
+  assert.doesNotMatch(workspace, /className="note-workspace-search"/);
+  assert.match(workspace, /className="note-workspace-query"/);
+  assert.match(workspace, /of \$\{notes\.length\} notes/);
+  assert.doesNotMatch(partial, /\.note-workspace-query \.note-workspace-count\s*\{[^}]*pointer-events:\s*none/);
+
+  // The out-of-scope count turns a dead end into a next step.
+  assert.match(workspace, /interface OutOfScope/);
+  assert.match(workspace, /window\.api\.scripture\.search\(readingPackageId, trimmed, 24\)/);
+  assert.match(workspace, /in Scripture/);
+
+  // No sort control: order is the library's, and a second ordering would be a
+  // second thing to be wrong about.
+  assert.doesNotMatch(workspace, /Sort by|sortOrder|sortMode|SegmentedControl/);
+});

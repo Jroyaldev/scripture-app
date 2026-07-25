@@ -373,6 +373,34 @@ function findConnectionTickControl(connectionId: string): HTMLButtonElement | nu
       .includes(connectionId)) ?? null;
 }
 
+/* H·2 — the reading canvas' touch grammar.
+ *
+ * The reach test decides what needs a gesture at all: if reaching an element is
+ * the only way to do something, it is in the wrong place. Below 720px the
+ * chapter arrows are gone from the header, so the horizontal swipe is not a
+ * shortcut for them — it is the only way to move by chapter, and it has to be
+ * as dependable as the button was.
+ *
+ * None of these gestures is destructive. A swipe moves, scrolls or extends;
+ * nothing is deleted, dismissed or archived by dragging, and every removal
+ * stays an explicit tap on a named action. */
+
+/** A drag is horizontal only once it is unambiguously not a scroll. */
+const PAGE_SWIPE_AXIS_LOCK = 12;
+/** Travel that commits a chapter step: a deliberate throw, not a twitch. */
+const PAGE_SWIPE_COMMIT_TRAVEL = 56;
+/** Damping on the page's follow, and on the shorter one it gives at an edge. */
+const PAGE_SWIPE_FOLLOW_RATIO = 0.42;
+const PAGE_SWIPE_EDGE_RATIO = 0.16;
+const PAGE_SWIPE_EDGE_TRAVEL = 14;
+/**
+ * The OS back gesture owns the left 20px of the window, and that strip overlaps
+ * the 24px verse gutter. A drag beginning inside it belongs to the platform —
+ * taking it would make Back stop working, which is the one convention §3 says
+ * to match rather than override.
+ */
+const BACK_GESTURE_STRIP = 20;
+
 type MarginReloadOutcome =
   | { status: "applied"; value: QueryResult }
   | { status: Exclude<MarginReloadStatus, "applied"> };
@@ -833,6 +861,49 @@ export function ScripturePage({
   );
   const [retryToken, setRetryToken] = useState(0);
   const [scrolled, setScrolled] = useState(false);
+
+  // H·2 — the canvas answers a coarse pointer with gestures a thumb can reach.
+  // The test is the POINTER, not the window: a tablet held in two hands has the
+  // same problem a phone has, and a mouse on a narrow window does not.
+  const [coarsePointer, setCoarsePointer] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(any-pointer: coarse)").matches,
+  );
+  useEffect(() => {
+    const media = window.matchMedia("(any-pointer: coarse)");
+    const syncCanvasPointerMode = (): void => setCoarsePointer(media.matches);
+    syncCanvasPointerMode();
+    media.addEventListener("change", syncCanvasPointerMode);
+    return () => media.removeEventListener("change", syncCanvasPointerMode);
+  }, []);
+  // A horizontal page swipe and a horizontal text-selection drag want the same
+  // movement. The selection wins: once one exists the swipe is SUSPENDED until
+  // it clears, so dragging a platform handle can never carry the reader off the
+  // text they are selecting.
+  const pageSwipeRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    axis: "undecided" | "horizontal";
+    follow: boolean;
+  } | null>(null);
+  const pageSwipeSettleRef = useRef<number | null>(null);
+  const lastCanvasPointerTypeRef = useRef<string>("mouse");
+  // The gutter mark is the range control — dragging one of its two grips moves
+  // that edge by whole verses while the opposite edge stays the anchor.
+  const verseRangeDragRef = useRef<{ pointerId: number; fixedVerse: number } | null>(null);
+  // A long-press replaces the verse range with the platform's own word
+  // selection; clearing that selection restores the range it replaced. The two
+  // models never coexist, and neither silently eats the other.
+  const versesBeforeWordSelectionRef = useRef<Set<number> | null>(null);
+  const committedTouchSelectionRef = useRef<string | null>(null);
+  const selectedVersesRef = useRef(selectedVerses);
+  selectedVersesRef.current = selectedVerses;
+  const phraseSelectionRef = useRef(phraseSelection);
+  phraseSelectionRef.current = phraseSelection;
+  // Read by the grip drag, which must not be rebuilt mid-gesture by the very
+  // state it is changing.
+  const chapterDataRef = useRef(chapterData);
+  chapterDataRef.current = chapterData;
 
   const handleConnectionDraftExitControllerChange = useCallback((
     controller: ConnectionDraftExitController | null,
@@ -2218,6 +2289,8 @@ export function ScripturePage({
     const vals = [...selectedVerses];
     return { start: Math.min(...vals), end: Math.max(...vals) };
   }, [selectedVerses]);
+  const pinnedRangeRef = useRef(pinnedRange);
+  pinnedRangeRef.current = pinnedRange;
 
   useEffect(() => {
     onPinnedRangeChange?.(pinnedRange);
@@ -2512,6 +2585,206 @@ export function ScripturePage({
     };
   }, []);
 
+  // ── H·2 · horizontal·page — a swipe across the passage moves by chapter ──
+  //
+  // The page follows the finger while the gesture is live and settles in 180ms
+  // when it is let go, so a swipe that does not commit says so by returning the
+  // text rather than by doing nothing. The travel is damped and clamped: this
+  // is a hint that the page can move, not a carousel.
+  const clearPageSwipeTravel = useCallback((settle: boolean): void => {
+    const content = contentRef.current;
+    if (pageSwipeSettleRef.current != null) {
+      window.clearTimeout(pageSwipeSettleRef.current);
+      pageSwipeSettleRef.current = null;
+    }
+    if (!content) return;
+    content.style.setProperty("--page-swipe-dx", "0px");
+    if (!settle) {
+      delete content.dataset.pageSwipe;
+      return;
+    }
+    content.dataset.pageSwipe = "settling";
+    pageSwipeSettleRef.current = window.setTimeout(() => {
+      pageSwipeSettleRef.current = null;
+      const settled = contentRef.current;
+      if (settled) delete settled.dataset.pageSwipe;
+    }, 180);
+  }, []);
+
+  useEffect(() => () => {
+    if (pageSwipeSettleRef.current != null) {
+      window.clearTimeout(pageSwipeSettleRef.current);
+      pageSwipeSettleRef.current = null;
+    }
+  }, []);
+
+  // A committed swipe is a chapter change like any other, so the page it lands
+  // on must not still be carrying the last one's travel.
+  useEffect(() => {
+    pageSwipeRef.current = null;
+    clearPageSwipeTravel(false);
+  }, [book, chapter, clearPageSwipeTravel]);
+
+  const handlePagePointerDown = useCallback((event: React.PointerEvent<HTMLDivElement>): void => {
+    lastCanvasPointerTypeRef.current = event.pointerType;
+    if (event.pointerType !== "touch" || !event.isPrimary) return;
+    if (pageSwipeRef.current) return;
+    if (event.clientX <= BACK_GESTURE_STRIP) return;
+    const target = event.target instanceof Element ? event.target : null;
+    // Controls own their own gestures, and the gutter grips own the vertical
+    // one. Neither may be read as a page swipe that happened to start on them.
+    if (target?.closest("button, a, input, textarea, select, [data-verse-range-grip]")) return;
+    // Suspended while a word selection exists.
+    if (phraseSelection || !(window.getSelection()?.isCollapsed ?? true)) return;
+    pageSwipeRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      axis: "undecided",
+      follow: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    };
+  }, [phraseSelection]);
+
+  const handlePagePointerMove = useCallback((event: React.PointerEvent<HTMLDivElement>): void => {
+    const swipe = pageSwipeRef.current;
+    if (!swipe || swipe.pointerId !== event.pointerId) return;
+    const dx = event.clientX - swipe.startX;
+    const dy = event.clientY - swipe.startY;
+    if (swipe.axis === "undecided") {
+      // Vertical wins ties. Scrolling the passage is the commoner intent and
+      // the one the platform already owns; this handler never preventDefaults,
+      // so a scroll that starts here keeps working exactly as it did.
+      if (Math.abs(dy) >= PAGE_SWIPE_AXIS_LOCK && Math.abs(dy) >= Math.abs(dx)) {
+        pageSwipeRef.current = null;
+        return;
+      }
+      if (Math.abs(dx) < PAGE_SWIPE_AXIS_LOCK) return;
+      if (Math.abs(dx) <= Math.abs(dy)) {
+        pageSwipeRef.current = null;
+        return;
+      }
+      swipe.axis = "horizontal";
+    }
+    if (!swipe.follow) return;
+    const content = contentRef.current;
+    if (!content) return;
+    // At the first or last chapter there is nothing that way. The page still
+    // answers, with a shorter throw that snaps back — the honest way to say
+    // "nothing is over there" without refusing to move at all. Elsewhere the
+    // page reaches its full travel exactly as the gesture reaches the distance
+    // that would commit it, so the movement itself is the threshold.
+    const atEdge = (dx > 0 && chapter <= 1) || (dx < 0 && chapter >= chapterCount);
+    const travel = Math.sign(dx) * Math.min(
+      Math.abs(dx) * (atEdge ? PAGE_SWIPE_EDGE_RATIO : PAGE_SWIPE_FOLLOW_RATIO),
+      atEdge ? PAGE_SWIPE_EDGE_TRAVEL : PAGE_SWIPE_COMMIT_TRAVEL * PAGE_SWIPE_FOLLOW_RATIO,
+    );
+    content.dataset.pageSwipe = "tracking";
+    content.style.setProperty("--page-swipe-dx", `${travel.toFixed(2)}px`);
+  }, [chapter, chapterCount]);
+
+  const handlePagePointerUp = useCallback((event: React.PointerEvent<HTMLDivElement>): void => {
+    const swipe = pageSwipeRef.current;
+    if (!swipe || swipe.pointerId !== event.pointerId) return;
+    pageSwipeRef.current = null;
+    clearPageSwipeTravel(swipe.axis === "horizontal");
+    if (swipe.axis !== "horizontal") return;
+    const dx = event.clientX - swipe.startX;
+    if (Math.abs(dx) < PAGE_SWIPE_COMMIT_TRAVEL) return;
+    // The gesture may have produced a selection on its way; if it did, the
+    // selection owns it.
+    if (phraseSelection || !(window.getSelection()?.isCollapsed ?? true)) return;
+    if (!requireSafeConnectionNavigation()) return;
+    if (dx > 0) {
+      if (chapter > 1) void goTo(book, chapter - 1, undefined, { recordRecent: false });
+    } else if (chapter < chapterCount) {
+      void goTo(book, chapter + 1, undefined, { recordRecent: false });
+    }
+  }, [book, chapter, chapterCount, clearPageSwipeTravel, goTo, phraseSelection, requireSafeConnectionNavigation]);
+
+  const handlePagePointerCancel = useCallback((event: React.PointerEvent<HTMLDivElement>): void => {
+    const swipe = pageSwipeRef.current;
+    if (!swipe || swipe.pointerId !== event.pointerId) return;
+    pageSwipeRef.current = null;
+    clearPageSwipeTravel(true);
+  }, [clearPageSwipeTravel]);
+
+  // ── H·2 · vertical·gutter — the mark's two grips extend the verse range ──
+  //
+  // The indicator becomes the control: no new element appears, the existing
+  // 2px seal simply grows a grip at each end of the selected run. The grips
+  // start at x = 20 so the OS back-gesture strip keeps the first 20px of the
+  // gutter; the mark itself stays at x = 0, read and never grabbed.
+  const verseAtClientY = useCallback((clientY: number): number | null => {
+    let nearest: { verse: number; distance: number } | null = null;
+    for (const [verse, row] of verseRowRefs.current) {
+      const rect = row.getBoundingClientRect();
+      if (clientY >= rect.top && clientY <= rect.bottom) return verse;
+      const distance = clientY < rect.top ? rect.top - clientY : clientY - rect.bottom;
+      if (!nearest || distance < nearest.distance) nearest = { verse, distance };
+    }
+    return nearest?.verse ?? null;
+  }, []);
+
+  const [verseRangeDragging, setVerseRangeDragging] = useState(false);
+
+  const beginVerseRangeDrag = useCallback((
+    edge: "start" | "end",
+    event: React.PointerEvent<HTMLSpanElement>,
+  ): void => {
+    const range = pinnedRangeRef.current;
+    if (!range) return;
+    event.preventDefault();
+    event.stopPropagation();
+    verseRangeDragRef.current = {
+      pointerId: event.pointerId,
+      fixedVerse: edge === "start" ? range.end : range.start,
+    };
+    setVerseRangeDragging(true);
+  }, []);
+
+  // The gesture is tracked on the window rather than through pointer capture
+  // on the grip, because the grip MOVES: extending the range past a verse
+  // boundary re-renders it into a different row, and a captured element that
+  // unmounts drops the drag halfway.
+  useEffect(() => {
+    if (!verseRangeDragging) return;
+    const extend = (event: PointerEvent): void => {
+      const drag = verseRangeDragRef.current;
+      if (!drag || drag.pointerId !== event.pointerId) return;
+      const verse = verseAtClientY(event.clientY);
+      if (verse == null) return;
+      const first = Math.min(verse, drag.fixedVerse);
+      const last = Math.max(verse, drag.fixedVerse);
+      verseSelectionAnchorRef.current = drag.fixedVerse;
+      setSelectedVerses((current) => {
+        const next = new Set<number>();
+        for (const item of chapterDataRef.current?.verses ?? []) {
+          if (item.verse >= first && item.verse <= last) next.add(item.verse);
+        }
+        if (next.size === current.size && [...next].every((item) => current.has(item))) return current;
+        return next;
+      });
+    };
+    const finish = (event: PointerEvent): void => {
+      const drag = verseRangeDragRef.current;
+      if (!drag || drag.pointerId !== event.pointerId) return;
+      verseRangeDragRef.current = null;
+      setVerseRangeDragging(false);
+      // One generation per completed gesture: the range moved once, not once
+      // per frame, so the marking surfaces see a single settled selection.
+      advanceSelectionGeneration();
+      onEnsureMarginVisible?.();
+    };
+    window.addEventListener("pointermove", extend);
+    window.addEventListener("pointerup", finish);
+    window.addEventListener("pointercancel", finish);
+    return () => {
+      window.removeEventListener("pointermove", extend);
+      window.removeEventListener("pointerup", finish);
+      window.removeEventListener("pointercancel", finish);
+    };
+  }, [advanceSelectionGeneration, onEnsureMarginVisible, verseAtClientY, verseRangeDragging]);
+
   // Positions the floating highlight palette over the actual selection —
   // not a single clicked row's far edge, which is what this used to key off
   // (a verse row spans nearly the full reading column, so anchoring to its
@@ -2790,6 +3063,74 @@ export function ScripturePage({
     stageBounds.top,
     stageBounds.width,
   ]);
+
+  // ── H·2 · long-press — word selection is the platform's, the row is ours ──
+  //
+  // A long-press on touch produces a native selection with the platform's own
+  // handles, and §3 says to match that convention rather than this language:
+  // selection handles are muscle memory. So nothing here draws or moves a
+  // handle. What is missing on touch is the COMMIT — there is no mouseup that
+  // ends the gesture, because dragging a handle is not a drag of the mouse — so
+  // the settled selection is what commits, through the same path the pointer
+  // drag uses.
+  //
+  // The two selection models never coexist. A long-press inside a verse range
+  // replaces it (handleTextMouseUp empties `selectedVerses`), and clearing the
+  // word selection restores the range it replaced rather than leaving the
+  // reader with nothing selected at all.
+  useEffect(() => {
+    if (!coarsePointer) return;
+    let settleTimer = 0;
+    const commitSettledSelection = (): void => {
+      settleTimer = 0;
+      const container = verseTextRef.current;
+      const selection = window.getSelection();
+      const live = selection != null
+        && selection.rangeCount > 0
+        && !selection.isCollapsed
+        && container != null
+        && container.contains(selection.getRangeAt(0).commonAncestorContainer);
+
+      if (!live) {
+        const restored = versesBeforeWordSelectionRef.current;
+        versesBeforeWordSelectionRef.current = null;
+        committedTouchSelectionRef.current = null;
+        // Only the word model may hand the range back. If a tap has already
+        // taken ownership, its whole-verse selection is the current truth and
+        // restoring over it would undo the reader's last deliberate act.
+        if (!restored || restored.size === 0 || phraseSelectionRef.current == null) return;
+        setShowHighlightPalette(false);
+        setPhraseSelection(null);
+        setSelectedVerses(new Set(restored));
+        verseSelectionAnchorRef.current = Math.min(...restored);
+        advanceSelectionGeneration();
+        return;
+      }
+
+      // A pointer drag already commits through document mouseup. This path is
+      // for the gesture that has no mouseup of its own.
+      if (lastCanvasPointerTypeRef.current === "mouse") return;
+      const range = selection.getRangeAt(0);
+      const signature = `${range.startOffset}:${range.endOffset}:${selection.toString()}`;
+      if (committedTouchSelectionRef.current === signature) return;
+      committedTouchSelectionRef.current = signature;
+      if (versesBeforeWordSelectionRef.current == null) {
+        versesBeforeWordSelectionRef.current = new Set(selectedVersesRef.current);
+      }
+      void handleTextMouseUp();
+    };
+    // Dragging a handle fires this continuously. Only the settled selection is
+    // a decision; every frame before it is the reader still choosing.
+    const scheduleSelectionCommit = (): void => {
+      if (settleTimer) window.clearTimeout(settleTimer);
+      settleTimer = window.setTimeout(commitSettledSelection, 150);
+    };
+    document.addEventListener("selectionchange", scheduleSelectionCommit);
+    return () => {
+      document.removeEventListener("selectionchange", scheduleSelectionCommit);
+      if (settleTimer) window.clearTimeout(settleTimer);
+    };
+  }, [advanceSelectionGeneration, coarsePointer, handleTextMouseUp]);
 
   const undoHighlightChange = (changeId: string) => {
     void safeCall(() => window.api.library.undoHighlightChange(changeId)).then(async (result) => {
@@ -3209,6 +3550,11 @@ export function ScripturePage({
   const mixedSelectionColors = selectedHighlightColors.length > 1;
   const hasExistingHighlight = (selectedVerses.size > 0 || phraseSelection != null) && selectedHighlightRecords.length > 0;
   const multiVerseSelect = selectedVerses.size > 1;
+  // The grips exist only where a finger is the pointer, and only while the
+  // whole-verse model owns the selection. A word selection has the platform's
+  // own handles, and two sets of handles over one passage is how a reader stops
+  // trusting either.
+  const verseRangeGrips = coarsePointer && phraseSelection == null ? pinnedRange : null;
 
   const selectionRangeLabel = useMemo(() => {
     if (phraseSelection) {
@@ -4243,6 +4589,10 @@ export function ScripturePage({
     setNearVerse(null);
     marginActiveRef.current = false;
     suppressNextClickRef.current = false;
+    // A range captured before a long-press belongs to the text that was on
+    // screen. It cannot be handed back into a different chapter or edition.
+    versesBeforeWordSelectionRef.current = null;
+    committedTouchSelectionRef.current = null;
     setShowHighlightPalette(false);
     setAnimateIds(new Set());
     setFadingIds(new Set());
@@ -4657,7 +5007,14 @@ export function ScripturePage({
         data-study-canvas-owner={restoredSessionOwnerTabId === sessionOwnerTabId ? sessionOwnerTabId : undefined}
       >
       <div className="scripture-reading-stage" ref={stageRef}>
-      <div className="scripture-content" ref={contentRef}>
+      <div
+        className="scripture-content"
+        ref={contentRef}
+        onPointerDown={handlePagePointerDown}
+        onPointerMove={handlePagePointerMove}
+        onPointerUp={handlePagePointerUp}
+        onPointerCancel={handlePagePointerCancel}
+      >
         <article className="scripture-inner" aria-labelledby="reading-chapter-title">
           <div className="chapter-header">
             <h1 id="reading-chapter-title" className="chapter-title" ref={chapterHeadingRef} tabIndex={-1}>
@@ -4747,6 +5104,29 @@ export function ScripturePage({
                 >
                   <span className="verse-num">{v.verse}</span>
                   <span className={textClasses}>{v.text}</span>
+                  {/* The grips are the mark, grown. They are aria-hidden and
+                      unfocusable on purpose: they duplicate a path a keyboard
+                      already has (Shift with Enter or Space extends the range
+                      from the anchor), so exposing them would give a screen
+                      reader two controls for one act. */}
+                  {verseRangeGrips?.start === v.verse && (
+                    <span
+                      className="verse-range-grip"
+                      data-verse-range-grip="start"
+                      aria-hidden="true"
+                      onPointerDown={(e) => beginVerseRangeDrag("start", e)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  )}
+                  {verseRangeGrips?.end === v.verse && (
+                    <span
+                      className="verse-range-grip"
+                      data-verse-range-grip="end"
+                      aria-hidden="true"
+                      onPointerDown={(e) => beginVerseRangeDrag("end", e)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  )}
                 </div>
               );
               if (!fold) return row;

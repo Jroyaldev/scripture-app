@@ -818,15 +818,82 @@ test("production marking surfaces retain distinct grammar at the supported deskt
   const source = read("src", "renderer", "components", "MarkingSurface.tsx");
   const styles = read("src", "renderer", "styles.css");
   const paletteStart = source.indexOf('if (surface === "palette") {');
-  const chooseModeStart = source.indexOf("const chooseMode = (", paletteStart);
-  const palette = source.slice(paletteStart, chooseModeStart);
-  const dock = source.slice(chooseModeStart);
+  const dockStart = source.indexOf("const dockState = busy", paletteStart);
+  const palette = source.slice(paletteStart, dockStart);
+  const dock = source.slice(dockStart);
+  assert.ok(paletteStart >= 0 && dockStart > paletteStart, "both surface branches must remain locatable");
 
-  assert.match(source, /function PaletteVocabulary[\s\S]*RELATIONSHIPS\.map[\s\S]*PIGMENTS\.map/);
-  assert.match(source, /<PaletteVocabulary[\s\S]*selectedKind=\{currentKind\}[\s\S]*selectedWash=\{currentWash \?\? selectedWash\}/);
+  // --- One bar, and its contents do not move ---------------------------------
+  // Five swatches, then Note · Connect · More. Remove takes Note's slot when
+  // the selection already carries a mark, and nothing else moves — a bar whose
+  // contents shuffle cannot be used without looking at it first. Both surfaces
+  // render the SAME component, so the constancy is structural rather than a
+  // pair of layouts that happen to agree today.
+  assert.match(source, /function MarkingBar\(\{[\s\S]*PIGMENTS\.map/);
+  assert.equal([...source.matchAll(/<MarkingBar\b/g)].length, 1,
+    "one bar component, rendered once and shared by both surfaces");
+  assert.match(source, /const barNode = selection \? \(\s*<MarkingBar[\s\S]*selectedWash=\{currentWash \?\? selectedWash\}/);
+  assert.match(palette, /\{connectNode \?\? failureNode \?\? barNode\}/,
+    "the palette's working area holds exactly one thing at a time");
+  assert.match(dock, /\{connectNode \?\? failureNode \?\? barNode \?\?/,
+    "the dock's working area holds the same one thing, in the same order");
+  assert.match(source, /hasExistingHighlight \? \([\s\S]{0,400}data-bar-action="remove"[\s\S]*?\) : \([\s\S]{0,400}data-bar-action="note"/,
+    "Remove takes Note's slot; it never earns a sixth control of its own");
+  assert.deepEqual(
+    [...source.matchAll(/data-bar-action="([a-z-]+)"/g)].map(([, id]) => id),
+    ["highlight", "remove", "note", "connect", "more", "more"],
+    "the bar publishes exactly the five swatches and the three named slots",
+  );
   assert.match(source, /data-relationship-kind=\{option\.id\}/);
   assert.match(source, /data-pigment=\{option\.id\}/);
   assert.doesNotMatch(source, /progressivePalette/);
+
+  // --- Eleven actions, three kinds, one table -------------------------------
+  // The table is the only place that decides which action is immediate,
+  // deferred or modal, and which of them earns a permanent slot. A new action
+  // cannot award itself the bar by being written closer to the render.
+  const actionTable = source.slice(
+    source.indexOf("const MARKING_ACTIONS:"),
+    source.indexOf("] as const;", source.indexOf("const MARKING_ACTIONS:")),
+  );
+  assert.ok(actionTable.length > 0, "the action set must be declared as one table");
+  const declared = [...actionTable.matchAll(/id: "([a-z-]+)", kind: "(immediate|deferred|modal)", label: "[^"]+", home: "(bar|more)"/g)]
+    .map(([, id, kind, home]) => ({ id, kind, home }));
+  assert.deepEqual(
+    declared.filter(({ kind }) => kind === "immediate").map(({ id }) => id),
+    ["highlight", "remove"],
+    "immediate acts and finishes",
+  );
+  assert.deepEqual(
+    declared.filter(({ kind }) => kind === "modal").map(({ id }) => id).sort(),
+    ["connect", "pericope"],
+    "modal turns the surface into a workbench",
+  );
+  assert.deepEqual(
+    declared.filter(({ home }) => home === "bar").map(({ id }) => id),
+    ["highlight", "remove", "note", "connect"],
+    "only immediate belongs on the bar, plus Note on use and Connect as an entry point",
+  );
+  for (const { id, kind, home } of declared) {
+    if (home !== "bar") continue;
+    assert.ok(kind === "immediate" || id === "note" || id === "connect",
+      `${id} is ${kind} and may not hold a permanent slot`);
+  }
+
+  // --- More is a plain list that never changes shape -------------------------
+  assert.match(source, /function MoreList\(\{[\s\S]*className="marking-more-scope"/,
+    "More states the scope it will act on before it offers an action");
+  assert.match(source, /disabled=\{item\.blockedReason != null\}[\s\S]*item\.blockedReason && \(\s*<span className="marking-more-reason">\s*<i aria-hidden="true">—<\/i> \{item\.blockedReason\}/,
+    "an item that cannot act shows an em-dash and the reason rather than vanishing");
+  assert.doesNotMatch(
+    source,
+    /MORE_ACTIONS\.filter\(/,
+    "the More list is never filtered down; a shorter list is a moved list",
+  );
+  assert.match(source, /MORE_ACTIONS\.map\(/,
+    "every declared overflow action renders a row, able to act or not");
+  assert.match(source, /`“\$\{quote\}”\\n— \$\{reference\}`/,
+    "Copy always includes the reference");
 
   // --- Palette: a measured floating instrument for a pointer -----------------
   // Its whole grammar is that it comes to the words. It measures its own
@@ -848,12 +915,34 @@ test("production marking surfaces retain distinct grammar at the supported deskt
   assert.match(source, /const canOpenAbove = anchor\.top - gap - panelRect\.height >= effectiveStageBounds\.top \+ inset;/);
   assert.match(source, /const opensAbove = layout === "floating" && \(canOpenAbove \|\| !canOpenBelow\);/);
   assert.match(source, /const pointerX = Math\.min\(Math\.max\(anchorCenter - left, 16\), Math\.max\(16, width - 16\)\);/);
-  // A pointer surface must label its own vocabulary: the palette spells the
-  // relationship and wash names out, and advertises their shortcuts.
-  assert.match(palette, /<span className="marking-palette-shortcuts" aria-hidden="true"><kbd>1–6<\/kbd> connect <i>·<\/i> <kbd>⇧1–5<\/kbd> wash<\/span>/);
-  assert.match(palette, /aria-label="Add note"[\s\S]*aria-label="Close palette"/);
-  assert.match(palette, /className=\{`marking-palette-action marking-palette-pin\$\{keepActive \? " active" : ""\}`\}[\s\S]*aria-pressed=\{keepActive\}/);
-  assert.match(palette, /data-tool-armed=\{armedKey \?\? "false"\}/);
+  // 8px of clear air above the words, and never over them.
+  assert.match(source, /const gap = 8;/);
+  // It never shrinks to fit. The placement arithmetic uses the panel's own
+  // measured height, so a stage too short to hold it moves it rather than
+  // clamping it into a scroller.
+  assert.match(source, /const height = panelRect\.height;/);
+  assert.doesNotMatch(source, /const height = Math\.min\(panelRect\.height/);
+  // Scroll, outside click and Escape close it. A selection CHANGE does not:
+  // dragging to extend must keep it open and following the words, so an
+  // outside click that leaves live words selected is not a dismissal.
+  assert.match(
+    source,
+    /window\.addEventListener\("scroll", onScroll, true\);\s*document\.addEventListener\("click", onClick\);/,
+    "the palette closes on scroll and on a completed outside click",
+  );
+  assert.match(
+    source,
+    /const native = window\.getSelection\(\);\s*if \(native && !native\.isCollapsed && native\.toString\(\)\.trim\(\)\) return;/,
+    "an outside click that still holds words is a drag to extend, not a dismissal",
+  );
+  // A pointer surface advertises the shortcuts its bar answers to, and the
+  // legend must name the bindings that actually exist.
+  assert.match(palette, /<span className="marking-palette-shortcuts" aria-hidden="true"><kbd>1–5<\/kbd> colour <i>·<\/i> <kbd>0<\/kbd> remove <i>·<\/i> <kbd>⌘⇧M<\/kbd> note<\/span>/);
+  assert.match(source, /aria-label="Add note"/);
+  assert.match(palette, /aria-label="Close palette"/);
+  assert.doesNotMatch(source, /marking-palette-pin/,
+    "the bar is modal on a selection, so there is no tool to pin down between them");
+  assert.match(palette, /data-tool-armed=\{toolKey\}/);
   assert.match(palette, /<MarkingRestHint stageBounds=\{effectiveStageBounds\} theme=\{theme\} \/>/,
     "the quietest surface must still announce itself once to a first-run reader");
   // The palette is non-modal: the host lets the page through and the rest of
@@ -895,36 +984,54 @@ test("production marking surfaces retain distinct grammar at the supported deskt
   assert.match(source, /if \(event\.key !== "Escape" \|\| event\.defaultPrevented\) return;[\s\S]*onDismissSelection\(\)/);
   assert.match(source, /const dismissPalette = \(\): void => \{[\s\S]*onDismissSelection\(\);/);
   assert.match(source, /event\.key !== "Tab"[\s\S]*querySelectorAll<HTMLButtonElement>\(\s*"button:not\(:disabled\)",\s*\)/);
-  assert.match(source, /session\.anchors\.length >= 2 && \(!binary \|\| Boolean\(session\.feedback\)\)[\s\S]*\{session\.feedback \|\| binary \? "Retry" : "Save connection"\}/);
+  // --- Connect replaces the bar, and survives its own failure ---------------
+  // Four draft states, and the kind row does not exist before a second anchor
+  // does: asking what the relation IS before a relation exists is a question
+  // with no answer.
+  assert.match(source, /type ConnectDraftState = "one-anchor" \| "two-anchors" \| "in-flight" \| "recovery"/);
+  assert.match(
+    source,
+    /function connectDraftState\(session: ConnectionSession, busy: boolean\): ConnectDraftState \{\s*if \(session\.recoveryState\) return "recovery";\s*if \(busy\) return "in-flight";\s*return session\.anchors\.length >= 2 \? "two-anchors" : "one-anchor";/,
+    "one function decides the draft's state, so no branch can invent a fifth",
+  );
+  assert.match(source, /const readOnly = state === "in-flight" \|\| state === "recovery";/,
+    "an in-flight write freezes the fields it is writing; the bar itself stays");
+  assert.match(
+    source,
+    /\{session\.anchors\.length >= 2 && \(\s*<div className="marking-connect-kinds">/,
+    "the kind row appears with the second anchor, not before it",
+  );
+  assert.match(source, /readOnly=\{readOnly\}/, "in-flight fields are read-only, not unmounted");
+  assert.equal([...source.matchAll(/<textarea/g)].length, 1,
+    "label and observation are ONE field");
+  assert.match(source, /const splitDraftText = useCallback\([\s\S]*label: trimmed\.slice\(0, breakAt\)\.trim\(\),\s*observation: trimmed\.slice\(breakAt \+ 1\)\.trim\(\),/,
+    "the single field splits at its first newline into the record's two columns");
+  // Never dismissed optimistically. onMutationStateChange exists because this
+  // write can fail, and a vanished bar has nowhere to put the failure.
+  assert.match(source, /className="marking-session marking-connect-draft"/);
   assert.match(source, /const captureConnection[\s\S]*if \(busy \|\| session\?\.recoveryState\) return false;/,
     "an unconfirmed command must block new phrase capture until exact Retry");
   assert.doesNotMatch(source, /Use Retry or Cancel/,
     "recovery cannot offer cancellation after the commit boundary is ambiguous");
-  assert.match(source, /className="marking-armed-status"[\s\S]*>Put down<\/button>/);
+  assert.match(source, />Retry<\/button>\s*<button type="button" className="marking-session-action" onClick=\{onCopyText\}>/,
+    "recovery offers Retry and Copy text, so the reader's words survive the failure");
+  assert.doesNotMatch(source, /marking-armed-status/,
+    "there is no armed tool between selections, so there is no armed status to show");
 
-  // --- Dock: a persistent instrument shelf for a thumb -----------------------
+  // --- Dock: the same bar, on a shelf in reach of a thumb --------------------
   assert.match(dock, /data-marking-surface="dock"/);
   assert.doesNotMatch(dock, /createPortal/,
     "the dock belongs to the reading stage it reserves room inside");
-  assert.match(source, /const dockMode: DockModeId = session[\s\S]*\? tray[\s\S]*: tool\?\.type \?\? "read"/);
-  assert.match(source, /const dockModeIndex = Math\.max\(0, DOCK_MODES\.findIndex/);
   assert.match(source, /const dockLayout = effectiveStageBounds\.width <= 759 \? "stacked" : "shelf"/);
-  assert.match(source, /group\.getBoundingClientRect\(\)[\s\S]*active\.getBoundingClientRect\(\)[\s\S]*"--mark-dock-x"[\s\S]*"--mark-dock-width"/);
-  assert.match(source, /className="marking-dock-thumb" aria-hidden="true"/);
   assert.match(source, /className=\{`marking-dock\$\{dockEntranceComplete \? " is-entered" : ""\}`\}[\s\S]*event\.animationName === "marking-dock-in"[\s\S]*setDockEntranceComplete\(true\)/);
-  assert.match(source, /const subtypeClass = item\.id === "connect" && currentKind[\s\S]*item\.id === "wash" && currentWash/);
-  assert.match(source, /role="radiogroup" aria-label="Marking mode"/);
-  assert.match(source, /role="radio"[\s\S]*data-dock-tool=\{item\.id\}[\s\S]*aria-checked=\{active\}/);
-  assert.match(source, /data-dock-state=\{dockState\}[\s\S]*data-tool-armed=\{dockArmedKey\}/);
-  assert.match(source, /className="marking-dock-selection"[\s\S]*Mark selection[\s\S]*data-dock-intent="wash"[\s\S]*data-dock-intent="connect"[\s\S]*selection\.quote/);
-  assert.match(source, /const dockIntentRoving = useRovingFocus<HTMLButtonElement>\(2\)/);
-  assert.match(source, /data-dock-intent="wash"[\s\S]*tabIndex=\{dockIntentRoving\.activeIndex === 0 \? 0 : -1\}[\s\S]*dockIntentRoving\.onKeyDown\(event, 0\)/);
-  assert.match(source, /data-dock-intent="connect"[\s\S]*tabIndex=\{dockIntentRoving\.activeIndex === 1 \? 0 : -1\}[\s\S]*dockIntentRoving\.onKeyDown\(event, 1\)/);
-  assert.match(source, /data-dock-action="note"[\s\S]*applyDockSelectionAction\("note"\)[\s\S]*data-dock-action="erase"[\s\S]*applyDockSelectionAction\("erase"\)/);
-  assert.match(source, /selectionFailure\?\.nonce === selection\.nonce[\s\S]*data-dock-action="retry"[\s\S]*onClick=\{retryDockFailure\}/);
-  assert.match(source, /opener\?\.matches\("\[data-dock-intent\]"\)[\s\S]*data-dock-intent="\$\{openerMode\}"[\s\S]*aria-checked="true"/);
-  assert.match(source, /if \(id === "read"\) \{ putDownTool\(applyCurrentSelection\); return; \}/);
-  assert.match(source, /if \(!applyCurrentSelection\) \{[\s\S]*if \(selection\) processedSelection\.current = selection\.nonce;[\s\S]*setTool\(id === "note" \? \{ type: "note" \} : \{ type: "erase" \}\);[\s\S]*return;/);
+  assert.match(source, /data-dock-state=\{dockState\}[\s\S]*data-tool-armed=\{toolKey\}/);
+  assert.match(source, /data-dock-action="retry"[\s\S]*onClick=\{retryFailure\}/);
+  // The dock offers no mode group, no thumb and no per-surface intents: the
+  // constancy of the bar is the point, and a second vocabulary here would
+  // break it at exactly the width where the reader can least afford it.
+  for (const gone of [/DOCK_MODES/, /marking-dock-thumb/, /data-dock-tool=/, /data-dock-intent/, /marking-dock-selection/]) {
+    assert.doesNotMatch(source, gone, `the dock must not reintroduce ${gone.source}`);
+  }
   assert.match(source, /setSession\(next\);\s*setTray\(null\);\s*setTool\(\{ type: "connect", kind \}\)/);
   assert.match(styles, /\.marking-dock \{[\s\S]*?width:\s*min\(1120px, 100%\);[\s\S]*?grid-template-columns:\s*208px/);
   assert.match(styles, /\.marking-dock-modes \{[\s\S]*?position:\s*relative;[\s\S]*?grid-template-columns:\s*repeat\(5, 38px\)/);
@@ -973,51 +1080,64 @@ test("marking keyboard movement separates vocabulary focus from committed choice
   const source = read("src", "renderer", "components", "MarkingSurface.tsx");
   const rovingStart = source.indexOf("function useRovingFocus");
   const relationshipStart = source.indexOf("function RelationshipChoices", rovingStart);
-  const pigmentStart = source.indexOf("function PigmentChoices", relationshipStart);
-  const dockStart = source.indexOf("const chooseMode = (", pigmentStart);
   const roving = source.slice(rovingStart, relationshipStart);
-  const relationships = source.slice(relationshipStart, pigmentStart);
-  const pigments = source.slice(pigmentStart, source.indexOf("function SessionStatus", pigmentStart));
-  const dock = source.slice(dockStart);
+  const relationships = source.slice(relationshipStart, source.indexOf("interface PaletteHelp", relationshipStart));
 
   assert.doesNotMatch(roving, /onMove|onChoose/);
   assert.match(roving, /setActiveIndex\(normalized\);[\s\S]*refs\.current\[normalized\]\?\.focus\(\);[\s\S]*return normalized;/);
   assert.match(relationships, /useRovingFocus<HTMLButtonElement>\(RELATIONSHIPS\.length,/);
-  assert.match(pigments, /useRovingFocus<HTMLButtonElement>\(PIGMENTS\.length,/);
-  assert.equal([...`${relationships}\n${pigments}`.matchAll(/index === Math\.max\(0, selectedIndex\) && initialFocusRef/g)].length, 2);
+  assert.match(relationships, /index === Math\.max\(0, selectedIndex\) && initialFocusRef/);
   assert.match(relationships, /role=\{activateOnMove \? "radiogroup" : "group"\} aria-label="Connection type"/);
-  assert.match(pigments, /role=\{activateOnMove \? "radiogroup" : "group"\} aria-label="Highlight color"/);
   assert.match(relationships, /role=\{activateOnMove \? "radio" : undefined\}[\s\S]*aria-checked=\{activateOnMove \? selected === option\.id : undefined\}/);
-  assert.match(pigments, /role=\{activateOnMove \? "radio" : undefined\}[\s\S]*aria-checked=\{activateOnMove \? selected === option\.id : undefined\}/);
   assert.match(relationships, /if \(activateOnMove && next != null\) \(onMoveChoose \?\? onChoose\)\(RELATIONSHIPS\[next\]!\.id\)/);
-  assert.match(pigments, /if \(activateOnMove && next != null\) \(onMoveChoose \?\? onChoose\)\(PIGMENTS\[next\]!\.id\)/);
-  assert.equal([...`${relationships}\n${pigments}`.matchAll(/if \(!activateOnMove\) event\.preventDefault\(\)/g)].length, 2);
-  assert.equal([...`${relationships}\n${pigments}`.matchAll(/activateOnMove \? \(onMoveChoose \?\? onChoose\) : onChoose/g)].length, 2);
-  assert.equal([...source.matchAll(/activateOnMove=\{surface === "dock" && !selection\}/g)].length, 2);
+  assert.match(relationships, /if \(!activateOnMove\) event\.preventDefault\(\)/);
+  assert.match(relationships, /activateOnMove \? \(onMoveChoose \?\? onChoose\) : onChoose/);
   assert.match(source, /lastDockAutofocusedSelectionRef\.current === activeSelectionNonce[\s\S]*if \(tool \|\| tray != null \|\| session \|\| busy \|\| selectionFailure\?\.nonce === activeSelectionNonce\) return[\s\S]*lastDockAutofocusedSelectionRef\.current = activeSelectionNonce/);
   assert.match(source, /const timer = window\.setTimeout\(\(\) => \{[\s\S]*target\.focus\(\{ preventScroll: true \}\);[\s\S]*lastDockAutofocusedSelectionRef\.current = activeSelectionNonce;/);
   assert.match(source, /if \(surface !== "dock" \|\| busy \|\| !session\?\.feedback\) return;[\s\S]*\.marking-session-action\.primary:not\(:disabled\)[\s\S]*focus\(\{ preventScroll: true \}\)[\s\S]*\[busy, session\?\.feedback, surface\]/);
-  assert.match(source, /function PaletteVocabulary[\s\S]*const count = RELATIONSHIPS\.length \+ PIGMENTS\.length/);
-  assert.ok(source.includes('aria-keyshortcuts={`${index + 1}`}'));
-  assert.ok(source.includes('aria-keyshortcuts={`Shift+${pigmentIndex + 1}`}'));
-  assert.ok(source.includes('const match = /^Digit([1-6])$/.exec(event.code);'));
-  assert.match(dock, /const nextIndex = dockModeRoving\.onKeyDown\(event, index\);[\s\S]*if \(nextMode\) \{[\s\S]*chooseMode\(nextMode\.id, dockModeRoving\.refs\.current/);
+
+  // The bindings themselves. Bare digits are safe only because the bar is
+  // modal on a selection: with no words held these listeners do not exist, so
+  // the gate on `selection` is as much a part of the contract as the codes.
+  assert.match(source, /if \(focusMode \|\| !selection \|\| session \|\| busy\) return;[\s\S]*window\.addEventListener\("keydown", onKeyDown, true\)/,
+    "the digit bindings exist only while a selection makes them unambiguous");
+  assert.ok(source.includes('const digit = /^Digit([0-5])$/.exec(event.code);'));
+  assert.ok(source.includes('aria-keyshortcuts={`${index + 1}`}'), "each swatch advertises its own bare digit");
+  assert.match(source, /aria-keyshortcuts="0"/, "Remove advertises 0");
+  assert.match(source, /aria-keyshortcuts="Meta\+Shift\+M"/, "Note advertises ⌘⇧M");
+  assert.match(
+    source,
+    /if \(index === 0\) \{\s*if \(selection\.hasExistingHighlight\) chooseErase\(\);/,
+    "0 removes, and says so when there is nothing to remove",
+  );
+  assert.match(
+    source,
+    /if \(event\.shiftKey && \(event\.key === "ArrowUp" \|\| event\.key === "ArrowDown"\)\)[\s\S]*extendSelectionByVerse\(event\.key === "ArrowDown" \? 1 : -1\)/,
+    "⇧↑/↓ extends the selection by a whole verse",
+  );
+  assert.match(source, /const extendSelectionByVerse = useCallback\([\s\S]*\.verse-line\[data-verse\][\s\S]*\.verse-text-span/);
+  assert.match(
+    source,
+    /if \(target instanceof HTMLElement && \([\s\S]*target\.isContentEditable[\s\S]*input, textarea, select, \[role='textbox'\][\s\S]*\)\) return;/,
+    "a bare digit typed into the connection field is a digit, not a colour",
+  );
 });
 
-test("persistent trays close locally and restore their opener on Escape", () => {
+test("the More list closes locally and restores its opener on Escape", () => {
   const source = read("src", "renderer", "components", "MarkingSurface.tsx");
 
   assert.match(source, /const trayPanelRef = useRef<HTMLDivElement>\(null\)/);
   assert.match(source, /const trayOpenerRef = useRef<HTMLButtonElement>\(null\)/);
   assert.match(source, /const closeTray = useCallback\(\(restoreFocus: boolean\)[\s\S]*opener\?\.isConnected[\s\S]*focus\(\{ preventScroll: true \}\)/);
   assert.match(source, /const ownerContextKey = currentContextKey\.current;[\s\S]*currentContextKey\.current !== ownerContextKey/);
-  // The dock is the only persistent surface left, so its mode group is the
-  // one toolbar a lost opener can fall back into.
+  // The bar is the one toolbar a lost opener can fall back into, and More is
+  // the slot it came from — the bar's contents never move, so the fallback is
+  // always the same control in the same place.
   assert.match(source, /const toolbar = dockModesRef\.current;/);
-  assert.match(source, /const fallback = surface === "dock"\s*\?\s*toolbar\?\.querySelector<HTMLButtonElement>\('button\[role="radio"\]\[aria-checked="true"\]'\)/);
-  assert.match(source, /if \(!persistentSurface \|\| \(tray !== "connect" && tray !== "wash"\)\) return;[\s\S]*document\.addEventListener\("mousedown", onMouseDown\)/);
+  assert.match(source, /const fallback = toolbar\?\.querySelector<HTMLButtonElement>\('button\[data-bar-action="more"\]'\)/);
+  assert.match(source, /if \(tray !== "more"\) return;[\s\S]*document\.addEventListener\("mousedown", onMouseDown\)/);
   const escapeHandler = source.slice(source.indexOf("const onKeyDown = (event: KeyboardEvent)"), source.indexOf("window.addEventListener", source.indexOf("const onKeyDown = (event: KeyboardEvent)")));
-  assert.ok(escapeHandler.indexOf("closeTray(true)") < escapeHandler.indexOf("if (activeSelectionNonce != null)"), "Escape must close a persistent tray before dismissing the selection");
+  assert.ok(escapeHandler.indexOf("closeTray(true)") < escapeHandler.indexOf("if (activeSelectionNonce != null)"), "Escape must close the More list before dismissing the selection");
   assert.match(escapeHandler, /if \(activeSelectionNonce != null\)[\s\S]*clearPendingFocusRestore\(\)[\s\S]*onDismissSelection\(\)[\s\S]*onRequestReadingFocus\(selection \? selection\.paintAnchors : undefined\)/);
   assert.match(escapeHandler, /if \(tool\)[\s\S]*clearPendingFocusRestore\(\)[\s\S]*setTool\(null\)[\s\S]*onRequestReadingFocus\(\)/);
 });
@@ -1035,7 +1155,7 @@ test("marking Escape owns Focus-mode ordering while yielding to higher layers", 
     escapeHandler.indexOf("isTopLayer(layerRef.current)") < escapeHandler.indexOf("if (busy || activeOperation.current != null)"),
     "higher registry layers must retain the first Escape",
   );
-  assert.match(escapeHandler, /if \(persistentSurface && \(tray === "connect" \|\| tray === "wash"\)\)[\s\S]*event\.preventDefault\(\)[\s\S]*event\.stopImmediatePropagation\(\)[\s\S]*closeTray\(true\)/);
+  assert.match(escapeHandler, /if \(tray === "more"\)[\s\S]*event\.preventDefault\(\)[\s\S]*event\.stopImmediatePropagation\(\)[\s\S]*closeTray\(true\)/);
   assert.match(escapeHandler, /if \(activeSelectionNonce != null\)[\s\S]*event\.preventDefault\(\)[\s\S]*event\.stopImmediatePropagation\(\)[\s\S]*onDismissSelection\(\)/);
   assert.match(source, /window\.addEventListener\("keydown", onKeyDown, true\)[\s\S]*window\.removeEventListener\("keydown", onKeyDown, true\)/);
 });
@@ -1068,17 +1188,16 @@ test("outside dismissal still completes on the click, never on the pointer-down 
     + [...source.matchAll(/onMouseDown=\{\(event\) => \{ if \(!activateOnMove\) event\.preventDefault\(\); \}\}/g)].length;
   assert.equal(neutralised, pointerDownHandlers,
     "a marking control that handles mousedown must do nothing but neutralise it");
-  assert.ok(pointerDownHandlers >= 13, "the surviving surfaces still guard every press");
+  assert.ok(pointerDownHandlers >= 7, "the surviving surfaces still guard every press");
   assert.doesNotMatch(source, /onPointerDown=/,
     "no marking control may act on pointerdown");
 
-  // The dock's own outside-close is deliberately non-destructive: a press
-  // outside its tray closes only the tray, silently, and never consumes the
+  // The More list's own outside-close is deliberately non-destructive: a press
+  // outside it closes only the list, silently, and never consumes the
   // selection or restores focus behind the reader's back.
-  const trayOutside = source.slice(
-    source.indexOf("if (!persistentSurface || (tray !== \"connect\" && tray !== \"wash\")) return;"),
-    source.indexOf("const onKeyDown = (event: KeyboardEvent)"),
-  );
+  const trayOutsideStart = source.indexOf("if (tray !== \"more\") return;\n    const onMouseDown");
+  const trayOutside = source.slice(trayOutsideStart, source.indexOf("}, [closeTray, tray]);", trayOutsideStart));
+  assert.ok(trayOutsideStart >= 0 && trayOutside.length > 0, "missing the More list's outside-close handler");
   assert.match(trayOutside, /trayPanelRef\.current\?\.contains\(target\) \|\| trayOpenerRef\.current\?\.contains\(target\)/);
   assert.match(trayOutside, /closeTray\(false\)/);
   assert.doesNotMatch(trayOutside, /onDismissSelection|onClearSelection/);
@@ -1363,13 +1482,6 @@ test("marking surface guidance stays contextual and quiet", () => {
   assert.match(source, /const REST_GUIDANCE = "Select words, or choose a tool to keep in hand\.";/);
   assert.match(source, /useState\(REST_GUIDANCE\)/);
   assert.doesNotMatch(source, /Read tool active\./);
-  assert.equal(
-    [...source.matchAll(/>\{surface === "dock" && dockHelp \? dockHelp\.description :/g)].length,
-    1,
-    "the wash tray should show the contextual description once instead of repeating its label",
-  );
-  assert.match(source, /captureFeedback \?\? \(surface === "dock" && dockHelp \? dockHelp\.description/);
-  assert.equal(source.includes("${dockHelp.label} · ${dockHelp.description}"), false);
   // The Radial announced its own geometry ("Connections arc above…"), which is
   // a sentence only a wheel could say. What replaces it is guidance about the
   // work, not the widget — and each surface says it in exactly one place.
@@ -1377,14 +1489,11 @@ test("marking surface guidance stays contextual and quiet", () => {
     "guidance describes the marking, never the shape of the instrument");
   assert.match(
     source,
-    /\{keepActive\s*\? "The tool you choose will remain in your hand\."\s*: captureFeedback \?\? \(paletteHelp \? paletteHelp\.description\s*: selection\.mixedColors \? "Mixed washes selected — choose one to unify them\."\s*: "Connect the words — or lay a wash\."\)\}/,
-    "the palette's one live region answers keep-state, refusal, hover help, and mixed washes in that order",
+    /\{captureFeedback \?\? \(paletteHelp \? paletteHelp\.description\s*: selection\.mixedColors \? "Mixed washes selected — choose one to unify them\."\s*: "Highlight, note, or connect these words\."\)\}/,
+    "the palette's one live region answers refusal, hover help, and mixed washes in that order",
   );
   // Both surfaces read from the one `status` string, so guidance cannot drift
-  // between them, and the armed-tool sentences come from one shared describer.
-  assert.match(source, /function describeArmedTool\(armedTool: ToolMode \| null\)/);
-  assert.match(source, /<span className="marking-armed-copy">\{armedGuidance\}<\/span>/);
-  assert.match(source, /className="marking-dock-tool-status" role="status" aria-live="polite">[\s\S]*?<span>\{status\}<\/span>/);
+  // between them.
   assert.match(source, /className="marking-dock-resting"><span aria-hidden="true"><ToolGlyph tool="read" \/><\/span>\{status\}<\/span>/);
   assert.match(source, /<span className="sr-only" role="status" aria-live="polite">\{status\}<\/span>/,
     "the dock's status must also reach a screen reader that cannot see the shelf");
@@ -1440,15 +1549,20 @@ test("marking async outcomes stay truthful and return keyboard focus to Scriptur
   assert.match(source, /export interface ConnectionExtensionRequest \{[\s\S]*contextKey: string/);
   assert.match(source, /setSession\(\(current\) => current\?\.recoveryState \? current : null\)/,
     "chapter or package navigation must preserve the one stable recovery command");
-  assert.match(source, /session\.recoveryState \? \(\s*<span className="marking-session-recovery">Recovery required<\/span>/,
+  assert.match(source, /session\.recoveryState \? \(\s*<>\s*<span className="marking-session-recovery">Recovery required<\/span>/,
     "an ambiguous or committed-pending session must expose recovery as status, not a false cancel action");
+  // Recovery states the reason AND the consequence, says whether it was local,
+  // and keeps the reader's own words reachable. A failure that loses what the
+  // reader wrote is a second failure.
+  assert.match(source, /state="failed"\s*thing=\{session\.recoveryState === "committed-pending"[\s\S]*reason=\{session\.recoveryState === "committed-pending"[\s\S]*locality="local"/);
+  assert.match(source, /\{draft\.trim\(\) && <q className="marking-connect-kept-text">\{draft\}<\/q>\}/);
   assert.doesNotMatch(source, /disabled=\{busy \|\| Boolean\(session\.recoveryState\)\}/,
     "recovery status must not be rendered as a disabled action");
   assert.match(escape, /if \(session\?\.recoveryState\)[\s\S]*Recovery required[\s\S]*return;[\s\S]*if \(session\)/,
     "Escape must retain exact Retry before ordinary session cancellation");
   assert.match(read("src", "renderer", "components", "ScripturePage.tsx"), /setConnectionExtension\(\{[\s\S]*contextKey: currentMarkingContextKeyRef\.current/);
   assert.match(source, /busy[\s\S]*\? "Saving connection…"[\s\S]*: session\.feedback/);
-  assert.match(source, /className="marking-session"[\s\S]{0,180}aria-busy=\{busy\}/);
+  assert.match(source, /className="marking-session marking-connect-draft"[\s\S]{0,180}aria-busy=\{busy\}/);
   assert.ok(escape.indexOf("if (busy || activeOperation.current != null)") < escape.indexOf("if (session)"));
   assert.match(escape, /if \(busy \|\| activeOperation\.current != null\) \{[\s\S]*event\.stopImmediatePropagation\(\);[\s\S]*return;/);
   assert.match(source, /const activeSelectionNonce = selection\?\.nonce \?\? null/);
@@ -1474,8 +1588,12 @@ test("marking async outcomes stay truthful and return keyboard focus to Scriptur
   );
   assert.match(source, /const chooseWash[\s\S]*if \(!selection\) \{[\s\S]*onRequestReadingFocus\(\);[\s\S]*setConsumingSelectionNonce\(nonce\);[\s\S]*applyTool\(next, selection\)/);
   assert.match(source, /const chooseConnection[\s\S]*if \(!selection\) \{[\s\S]*onRequestReadingFocus\(\);[\s\S]*setConsumingSelectionNonce\(nonce\);[\s\S]*applyTool\(next, selection\)/);
-  // Putting a tool down is the explicit return to reading, on both surfaces.
+  // Putting a tool down is the explicit return to reading. The bar is modal on
+  // a selection, so closing it IS putting the tool down — one exit, not a
+  // separate control that has to be discovered beside the one that is there.
   assert.match(source, /const putDownTool = \(requestReadingFocus = true\): void => \{[\s\S]*?if \(requestReadingFocus\) onRequestReadingFocus\(\)/);
-  assert.equal([...source.matchAll(/>Put down<\/button>/g)].length, 2,
-    "each surviving surface offers one explicit way back to the text");
+  assert.match(source, /const dismissPalette = \(\): void => \{[\s\S]*if \(!session\) putDownTool\(false\);\s*onDismissSelection\(\);/,
+    "the palette's one exit puts down the tool and releases the words together");
+  assert.equal([...source.matchAll(/>Cancel draft<\/button>/g)].length, 1,
+    "a draft has exactly one explicit way out that is not the exit guard");
 });

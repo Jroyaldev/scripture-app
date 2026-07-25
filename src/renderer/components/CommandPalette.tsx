@@ -93,7 +93,16 @@ interface Props {
 
 type PaletteResult = {
   id: string;
-  kind: "scripture" | "note" | "person" | "place" | "action" | "recent" | "deep-search";
+  kind:
+    | "scripture"
+    | "note"
+    | "person"
+    | "place"
+    | "action"
+    | "recent"
+    | "deep-search"
+    | "intelligence"
+    | "correction";
   title: string;
   detail: string;
   meta: string;
@@ -124,6 +133,340 @@ const STUDY_OPEN_TABS: ReadonlyArray<CommandPaletteTabDefinition> = [
 
 export function commandPaletteTabs(mode: CommandPaletteMode): ReadonlyArray<CommandPaletteTabDefinition> {
   return mode === "open-study-tab" ? STUDY_OPEN_TABS : TABS;
+}
+
+/* ==========================================================================
+   Reading the query — the shape routes it, and the palette says so
+   --------------------------------------------------------------------------
+   Picking a scope stopped being a prerequisite. What the reader typed decides
+   where it goes: a reference to Scripture, a quotation to a phrase search, a
+   capitalised noun to Names, a question to Intelligence, anything else to
+   their own notes. Everything below is pure so the rule can be tested without
+   a DOM, and so the palette can state its reading instead of implying it.
+   ========================================================================== */
+
+export type QueryShape = "reference" | "phrase" | "question" | "name" | "text";
+
+/** A statement segment. `value` marks the part the palette actually decided. */
+export interface ReadingSegment {
+  text: string;
+  value?: boolean;
+}
+
+export interface ReadingPassage {
+  book: string;
+  chapter: number;
+  verse?: number;
+  endVerse?: number;
+}
+
+/** One way the query can be read. The first is pre-selected; the rest are offered. */
+export interface QueryReading {
+  id: string;
+  tab: CommandPaletteTab;
+  /** "Read as *Acts* · chapter *19* · verses *13–16*" */
+  statement: ReadingSegment[];
+  /** Why the palette believes this reading. Ambiguity is never silent. */
+  reason: string;
+  passage?: ReadingPassage;
+}
+
+/**
+ * A row the reader presses. Corrections are never applied underneath them —
+ * a mis-typed chapter stays exactly as typed until the reader chooses the fix.
+ */
+export interface QueryCorrection {
+  id: string;
+  label: string;
+  reason: string;
+  /** Rewrites the field. Absent when the correction only changes scope. */
+  query?: string;
+  /** Moves the scope. Absent when the correction only rewrites the field. */
+  tab?: CommandPaletteTab;
+}
+
+export interface QueryRouting {
+  shape: QueryShape;
+  /** The text actually searched — a quotation searches without its quotes. */
+  term: string;
+  readings: QueryReading[];
+  corrections: QueryCorrection[];
+  /** Set when a reference was attempted and failed; the query fell through. */
+  fellThrough: string;
+  /** True when the reader typed a chapter, which rules the query out as a name. */
+  explicitReference: boolean;
+}
+
+const QUOTED_QUERY = /^["“]([^"“”]+)["”]$/;
+const INTERROGATIVE = /^(who|whom|whose|what|when|where|why|how|which|did|does|do|is|are|was|were|can|could|should|would|will|has|have|had)\b/i;
+const CAPITALISED_NOUN = /^\p{Lu}[\p{L}\p{M}'’.-]*(?:\s+(?:of|the|of the|son of)?\s*\p{Lu}[\p{L}\p{M}'’.-]*)*$/u;
+const CHAPTER_VERSE = /^(\d+)(?:\s*:\s*(\d+)(?:\s*[-–—]\s*(\d+))?)?$/;
+
+type BookMatch = { code: string; name: string; length: number };
+
+/**
+ * Mirrors parsePassage's book matcher so this module can see *what the reader
+ * typed* as well as what parsed. parsePassage silently drops an out-of-range
+ * verse; the palette has to state that, so it needs both halves.
+ */
+function matchLeadingBook(input: string, bookNames: BookNameData): BookMatch | null {
+  const lower = input.toLocaleLowerCase();
+  let best: BookMatch | null = null;
+  for (const [code, names] of Object.entries(bookNames)) {
+    for (const name of names ?? []) {
+      const nameLower = name.toLocaleLowerCase();
+      if (!lower.startsWith(nameLower)) continue;
+      const next = input[name.length];
+      if (next !== undefined && next !== " " && next !== ":" && !/\d/.test(next)) continue;
+      if (!best || name.length > best.length) best = { code, name, length: name.length };
+    }
+  }
+  return best;
+}
+
+/** Books whose full name begins with a token the reader stopped short on. */
+function nearBooks(token: string, bookNames: BookNameData): Array<{ code: string; name: string }> {
+  const lower = token.trim().toLocaleLowerCase();
+  if (lower.length < 3) return [];
+  const found: Array<{ code: string; name: string }> = [];
+  for (const [code, names] of Object.entries(bookNames)) {
+    const primary = names?.[0];
+    if (!primary) continue;
+    if (primary.toLocaleLowerCase().startsWith(lower)) found.push({ code, name: primary });
+  }
+  return found;
+}
+
+function askedAsQuestion(text: string): string {
+  if (/\?\s*$/.test(text)) return "it ends with a question mark";
+  const lead = INTERROGATIVE.exec(text);
+  const words = text.split(/\s+/).filter(Boolean);
+  if (lead?.[1] && words.length >= 3) return `it begins with “${lead[1].toLocaleLowerCase()}”`;
+  return "";
+}
+
+function looksLikeName(text: string): boolean {
+  if (/\d/.test(text)) return false;
+  const words = text.split(/\s+/).filter(Boolean);
+  if (words.length === 0 || words.length > 4) return false;
+  return CAPITALISED_NOUN.test(text);
+}
+
+export function readQuery(raw: string, bookNames: BookNameData, backbone: BackboneData): QueryRouting {
+  const trimmed = raw.trim();
+  const nothing: QueryRouting = {
+    shape: "text",
+    term: trimmed,
+    readings: [],
+    corrections: [],
+    fellThrough: "",
+    explicitReference: false,
+  };
+  if (trimmed.length < 2) return nothing;
+
+  // 1 — Quotation marks are the reader saying "these exact words".
+  const quoted = QUOTED_QUERY.exec(trimmed);
+  const quotedTerm = quoted?.[1]?.trim();
+  if (quotedTerm) {
+    return {
+      shape: "phrase",
+      term: quotedTerm,
+      readings: [{
+        id: "read:phrase",
+        tab: "scripture",
+        statement: [{ text: "Read as a phrase · " }, { text: `“${quotedTerm}”`, value: true }],
+        reason: "you put it in quotation marks",
+      }],
+      corrections: [{
+        id: "fix:phrase-notes",
+        label: "Find that phrase in your notes",
+        reason: "a quoted phrase is often your own wording",
+        tab: "notes",
+      }],
+      fellThrough: "",
+      explicitReference: false,
+    };
+  }
+
+  // 2 — A reference. parsePassage owns the happy path; the range work here
+  // exists only so a dropped chapter or verse is stated rather than applied.
+  const parsed = parsePassage(trimmed, bookNames, backbone);
+  const readings: QueryReading[] = [];
+  const corrections: QueryCorrection[] = [];
+  let fellThrough = "";
+  let explicitReference = false;
+
+  const book = matchLeadingBook(trimmed, bookNames);
+  if (book) {
+    const label = bookNames[book.code]?.[0] ?? book.code;
+    const chapters = backbone.books[book.code]?.chapters ?? [];
+    const remainder = trimmed.slice(book.length).trim();
+    const typed = remainder === "" ? null : CHAPTER_VERSE.exec(remainder);
+
+    explicitReference = typed != null;
+    if (!parsed.ok) {
+      // The parser refuses it, so the palette does too — and says why, then
+      // falls through to the next scope instead of dead-ending on the error.
+      fellThrough = parsed.error;
+      const typedChapter = typed?.[1] ? Number.parseInt(typed[1], 10) : null;
+      if (typedChapter != null && chapters.length > 0 && typedChapter > chapters.length) {
+        corrections.push({
+          id: "fix:chapter",
+          label: `Read ${label} ${chapters.length}`,
+          reason: `${label} ends at chapter ${chapters.length}, and you typed ${typedChapter}`,
+          query: `${label} ${chapters.length}`,
+        });
+      }
+    } else {
+      const { chapter, verse, endVerse } = parsed.value;
+      const verseCount = chapters[chapter - 1] ?? 0;
+      const typedVerse = typed?.[2] ? Number.parseInt(typed[2], 10) : undefined;
+      const typedEnd = typed?.[3] ? Number.parseInt(typed[3], 10) : undefined;
+
+      const statement: ReadingSegment[] = [
+        { text: "Read as " },
+        { text: label, value: true },
+        { text: " · chapter " },
+        { text: String(chapter), value: true },
+      ];
+      if (verse != null) {
+        statement.push({ text: endVerse != null ? " · verses " : " · verse " });
+        statement.push({ text: endVerse != null ? `${verse}–${endVerse}` : String(verse), value: true });
+      }
+
+      let reason = typed
+        ? `${label} ${chapter} is a passage in this edition`
+        : "no chapter was given, so the book opens at its first";
+      // parsePassage drops an out-of-range verse silently. State the drop and
+      // offer the fix as a row; never rewrite the reader's reference for them.
+      if (typedVerse != null && verse == null) {
+        reason = `${label} ${chapter} has ${verseCount} verses, so verse ${typedVerse} was not read`;
+        corrections.push({
+          id: "fix:verse",
+          label: `Read ${label} ${chapter}:${verseCount}`,
+          reason: `${label} ${chapter} ends at verse ${verseCount}`,
+          query: `${label} ${chapter}:${verseCount}`,
+        });
+      } else if (typedEnd != null && endVerse == null && verse != null) {
+        reason = `${label} ${chapter} has ${verseCount} verses, so the range end was not read`;
+        corrections.push({
+          id: "fix:end-verse",
+          label: `Read ${label} ${chapter}:${verse}–${verseCount}`,
+          reason: `${label} ${chapter} ends at verse ${verseCount}`,
+          query: `${label} ${chapter}:${verse}-${verseCount}`,
+        });
+      }
+
+      const passage: ReadingPassage = { book: parsed.value.book, chapter };
+      if (verse != null) passage.verse = verse;
+      if (endVerse != null) passage.endVerse = endVerse;
+      readings.push({ id: "read:reference", tab: "scripture", statement, reason, passage });
+
+      // A bare book name that is also a capitalised noun is genuinely
+      // ambiguous. List both readings with their reasons rather than
+      // pretending the likeliest one is the only one.
+      if (!typed && looksLikeName(trimmed)) {
+        readings.push({
+          id: "read:reference-name",
+          tab: "names",
+          statement: [{ text: "Read as a name · " }, { text: trimmed, value: true }],
+          reason: "it is capitalised and you typed no chapter, so it may be a person or place",
+        });
+      }
+    }
+  } else {
+    // No book matched. If the reader stopped short of a book name, offer the
+    // completions as rows — never guess one on their behalf.
+    const nearMiss = /^([\p{L}\p{M}\s]{2,})\s+(\d+)(?:\s*:\s*\d+)?$/u.exec(trimmed);
+    const token = nearMiss?.[1];
+    if (token) {
+      const candidates = nearBooks(token, bookNames);
+      if (candidates.length > 0 && candidates.length <= 3) {
+        fellThrough = `no book is named “${token.trim()}”`;
+        for (const candidate of candidates) {
+          const rest = trimmed.slice(token.length).trim();
+          corrections.push({
+            id: `fix:book:${candidate.code}`,
+            label: `Read ${candidate.name} ${rest}`,
+            reason: `“${token.trim()}” is the start of ${candidate.name}`,
+            query: `${candidate.name} ${rest}`,
+          });
+        }
+      }
+    }
+  }
+
+  if (readings.length > 0) {
+    return { shape: "reference", term: trimmed, readings, corrections, fellThrough, explicitReference };
+  }
+
+  // 3 — A question. Intelligence is the only scope that leaves the device, so
+  // the palette names it and stops. Nothing is sent until the reader presses.
+  const question = askedAsQuestion(trimmed);
+  if (question) {
+    readings.push({
+      id: "read:question",
+      tab: "intelligence",
+      statement: [
+        { text: "Read as a question for " },
+        { text: "Intelligence", value: true },
+        { text: " — the only scope that leaves this device" },
+      ],
+      reason: question,
+    });
+    corrections.push(
+      {
+        id: "fix:question-scripture",
+        label: "Search Scripture for these words",
+        reason: "the answer may already be in the text, on this device",
+        tab: "scripture",
+      },
+      {
+        id: "fix:question-notes",
+        label: "Search your notes for these words",
+        reason: "you may have written about it already",
+        tab: "notes",
+      },
+    );
+    return { shape: "question", term: trimmed, readings, corrections, fellThrough, explicitReference };
+  }
+
+  // 4 — A capitalised noun carrying no numbers is a name.
+  if (looksLikeName(trimmed)) {
+    readings.push({
+      id: "read:name",
+      tab: "names",
+      statement: [{ text: "Read as a name · " }, { text: trimmed, value: true }],
+      reason: "it is capitalised and carries no chapter or verse",
+    });
+    corrections.push({
+      id: "fix:name-notes",
+      label: "Search your notes for it instead",
+      reason: "you may have written about this name",
+      tab: "notes",
+    });
+    return { shape: "name", term: trimmed, readings, corrections, fellThrough, explicitReference };
+  }
+
+  // 5 — Anything else is the reader's own writing.
+  readings.push({
+    id: "read:text",
+    tab: "notes",
+    statement: [
+      { text: "Searching " },
+      { text: "your notes", value: true },
+      { text: " for " },
+      { text: `“${trimmed}”`, value: true },
+    ],
+    reason: fellThrough || "no reference, quotation, question, or capitalised name in it",
+  });
+  corrections.push({
+    id: "fix:text-scripture",
+    label: "Search Scripture for these words",
+    reason: "the same words may be in the edition",
+    tab: "scripture",
+  });
+  return { shape: "text", term: trimmed, readings, corrections, fellThrough, explicitReference };
 }
 
 function SearchGlyph(): React.JSX.Element {
@@ -164,6 +507,16 @@ function ResultGlyph({ kind }: { kind: PaletteResult["kind"] }): React.JSX.Eleme
       </svg>
     );
   }
+  // Intelligence has no drawing. It carries the slate provenance dot, painted
+  // by .command-result-glyph.is-intelligence, because the mark is the message.
+  if (kind === "intelligence") return <svg viewBox="0 0 20 20" aria-hidden="true" />;
+  if (kind === "correction") {
+    return (
+      <svg viewBox="0 0 20 20" aria-hidden="true">
+        <path d="M15.5 8H7.2l2.6-2.6M4.5 12h8.3l-2.6 2.6" />
+      </svg>
+    );
+  }
   return (
     <svg viewBox="0 0 20 20" aria-hidden="true">
       <path d="M4 10h11M11 6l4 4-4 4" />
@@ -195,6 +548,21 @@ function matchesAction(action: CommandPaletteAction, query: string): boolean {
   return terms.every((term) => haystack.includes(term));
 }
 
+/**
+ * Why Intelligence cannot act yet, in the reader's terms. Every branch names
+ * the thing and the reason and points at the one surface that can change it —
+ * "something went wrong" would be an apology, not a state.
+ */
+export function intelligenceReadiness(
+  envelope: { backgroundAI: string; networkBackground: boolean } | null,
+): string {
+  if (!envelope) return "Intelligence limits could not be read · Settings › Intelligence";
+  if (envelope.backgroundAI === "off") return "Assistance is off · Settings › Intelligence";
+  if (!envelope.networkBackground) return "Background network is blocked · Settings › Intelligence";
+  if (envelope.backgroundAI === "local-only") return "Assistance is local-only · Settings › Intelligence";
+  return "No intelligence provider is connected · Settings › Intelligence";
+}
+
 export async function runApprovedPaletteActivation(
   inFlight: { current: boolean },
   request: () => Promise<boolean>,
@@ -217,7 +585,7 @@ export async function runApprovedPaletteActivation(
 
 export function CommandPalette({
   open,
-  initialTab = "intelligence",
+  initialTab,
   mode = "search",
   studyLabel = "this study",
   onClose,
@@ -238,9 +606,14 @@ export function CommandPalette({
   const visibleTabs = commandPaletteTabs(mode);
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState<CommandPaletteTab>("intelligence");
+  // The scope stops being a prerequisite: it follows the query's shape until
+  // the reader (or the caller) chooses one, and the choice is always undoable.
+  const [scopeChosen, setScopeChosen] = useState(false);
   const [status, setStatus] = useState<"idle" | "searching" | "ready" | "error">("idle");
+  const [failed, setFailed] = useState<string[]>([]);
   const [data, setData] = useState<SearchData>({ scripture: [], notes: [], entities: [], exact: null });
   const [recents, setRecents] = useState<RecentPassage[]>([]);
+  const [envelope, setEnvelope] = useState<{ backgroundAI: string; networkBackground: boolean } | null>(null);
   const [focusedResult, setFocusedResult] = useState(-1);
   const requestSeq = useRef(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -252,6 +625,19 @@ export function CommandPalette({
   const openRef = useRef(open);
   openRef.current = open;
   const layerRef = useLayer(open ? "dialog" : null);
+
+  const routing = useMemo(
+    () => readQuery(query, bookNames, backbone),
+    [backbone, bookNames, query],
+  );
+  const hasQuery = query.trim().length >= 2;
+  const routedTab = useMemo<CommandPaletteTab>(() => {
+    const wanted = routing.readings[0]?.tab ?? "notes";
+    if (visibleTabs.some((tab) => tab.id === wanted)) return wanted;
+    // open-study-tab has no notes destination, and asking Intelligence is not
+    // a thing you can add to a study. Passages is the honest fallback.
+    return "scripture";
+  }, [routing.readings, visibleTabs]);
 
   const dismissPalette = useCallback((): void => {
     paletteOwnerRef.current += 1;
@@ -277,7 +663,15 @@ export function CommandPalette({
     );
   }, [closeForDestination]);
 
+  const chooseScope = useCallback((tab: CommandPaletteTab): void => {
+    setScopeChosen(true);
+    setActiveTab(tab);
+    setFocusedResult(-1);
+    window.requestAnimationFrame(() => inputRef.current?.focus());
+  }, []);
+
   const chooseStudyLens = useCallback((tab: "scripture" | "names"): void => {
+    setScopeChosen(true);
     setActiveTab(tab);
     setFocusedResult(-1);
     window.requestAnimationFrame(() => inputRef.current?.focus());
@@ -296,11 +690,26 @@ export function CommandPalette({
     if (!open) return;
     returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     setQuery("");
-    setActiveTab(visibleTabs.some((tab) => tab.id === initialTab) ? initialTab : "intelligence");
+    // initialTab remains a caller override. "intelligence" is the neutral
+    // value every ordinary opener passes, and Intelligence is the one scope
+    // that must be asked for — so it is read as "no preference", not a forced
+    // off-device scope.
+    const override = initialTab && initialTab !== "intelligence" && visibleTabs.some((tab) => tab.id === initialTab)
+      ? initialTab
+      : null;
+    setScopeChosen(override != null);
+    setActiveTab(override ?? "intelligence");
     setStatus("idle");
+    setFailed([]);
     setFocusedResult(-1);
     void safeCall(() => window.api.settings.get()).then((result) => {
       if (result.ok) setRecents(normalizeRecents(result.value.recentPassages));
+    });
+    void safeCall(() => window.api.ai.getBudgetEnvelope()).then((result) => {
+      setEnvelope(result.ok && result.value ? {
+        backgroundAI: result.value.envelope.backgroundAI,
+        networkBackground: result.value.envelope.networkBackground,
+      } : null);
     });
     const timer = window.setTimeout(() => inputRef.current?.focus(), 30);
     return () => {
@@ -313,6 +722,12 @@ export function CommandPalette({
       }, 0);
     };
   }, [initialTab, mode, open]);
+
+  // The shape drives the scope until the reader takes it over.
+  useEffect(() => {
+    if (!open || scopeChosen) return;
+    setActiveTab(hasQuery ? routedTab : "intelligence");
+  }, [hasQuery, open, routedTab, scopeChosen]);
 
   useEffect(() => {
     if (!open) return;
@@ -329,6 +744,7 @@ export function CommandPalette({
       if (event.key !== "Tab" && (event.metaKey || event.ctrlKey || event.altKey)) return;
       event.preventDefault();
       event.stopPropagation();
+      setScopeChosen(true);
       setActiveTab((current) => {
         const currentIndex = Math.max(0, visibleTabs.findIndex((tab) => tab.id === current));
         const reverse = event.key === "ArrowLeft" || (event.key === "Tab" && event.shiftKey);
@@ -349,35 +765,45 @@ export function CommandPalette({
     if (trimmed.length < 2) {
       requestSeq.current += 1;
       setStatus("idle");
+      setFailed([]);
       setData({ scripture: [], notes: [], entities: [], exact: null });
       return;
     }
 
     const seq = ++requestSeq.current;
     setStatus("searching");
-    const parsed = parsePassage(trimmed, bookNames, backbone);
+    const term = routing.term;
+    const reference = routing.readings.find((reading) => reading.passage)?.passage ?? null;
     const timer = window.setTimeout(() => {
-      const exactPreview = parsed.ok
-        ? safeCall(() => window.api.scripture.getChapterText(context.packageId, parsed.value.book, parsed.value.chapter))
+      const exactPreview = reference
+        ? safeCall(() => window.api.scripture.getChapterText(context.packageId, reference.book, reference.chapter))
         : Promise.resolve({ ok: true as const, value: null });
       void Promise.all([
-        safeCall(() => window.api.scripture.search(context.packageId, trimmed, 24, {
+        safeCall(() => window.api.scripture.search(context.packageId, term, 24, {
           book: context.book,
           chapter: context.chapter,
         })),
-        safeCall(() => window.api.library.search(trimmed)),
-        safeCall(() => window.api.language.searchEntities(trimmed, 24)),
+        safeCall(() => window.api.library.search(term)),
+        safeCall(() => window.api.language.searchEntities(term, 24)),
         exactPreview,
       ]).then(([scriptureResult, notesResult, entitiesResult, previewResult]) => {
         if (requestSeq.current !== seq) return;
         if (!scriptureResult.ok && !notesResult.ok && !entitiesResult.ok && !previewResult.ok) {
+          setFailed(["Scripture", "your notes", "names"]);
           setStatus("error");
           return;
         }
+        // Name the index that failed. A partial answer that pretends to be
+        // complete is worse than a smaller answer that says what is missing.
+        setFailed([
+          !scriptureResult.ok || !previewResult.ok ? "Scripture" : "",
+          notesResult.ok ? "" : "your notes",
+          entitiesResult.ok ? "" : "names",
+        ].filter(Boolean));
 
         let exact: PaletteResult | null = null;
-        if (parsed.ok) {
-          const { book, chapter, verse, endVerse } = parsed.value;
+        if (reference) {
+          const { book, chapter, verse, endVerse } = reference;
           const refTitle = `${displayBook(bookNames, book)} ${chapter}${verse ? `:${verse}${endVerse ? `–${endVerse}` : ""}` : ""}`;
           const previewData = previewResult.ok ? previewResult.value : null;
           const preview = verse
@@ -403,16 +829,17 @@ export function CommandPalette({
         setData({
           scripture: scriptureResult.ok ? scriptureResult.value : [],
           notes: notesResult.ok ? notesResult.value : [],
-          // A parsed reference is already unambiguous. Do not let the book
-          // name also masquerade as a person query (John 3:16 → two Johns).
-          entities: !parsed.ok && entitiesResult.ok ? entitiesResult.value.entities : [],
+          // A reference the reader spelled out with a chapter is already
+          // unambiguous. Do not let the book name also masquerade as a person
+          // query (John 3:16 → two Johns).
+          entities: !routing.explicitReference && entitiesResult.ok ? entitiesResult.value.entities : [],
           exact,
         });
         setStatus("ready");
       });
     }, 120);
     return () => window.clearTimeout(timer);
-  }, [activateResult, backbone, bookNames, context.book, context.chapter, context.packageId, mode, onNavigate, onOpenPassage, open, query]);
+  }, [activateResult, bookNames, context.book, context.chapter, context.packageId, mode, onNavigate, onOpenPassage, open, query, routing]);
 
   const scriptureResults = useMemo<PaletteResult[]>(() => data.scripture
     .filter((hit) => data.exact?.id !== `exact:${hit.book}:${hit.chapter}:${hit.verse}:0`)
@@ -506,46 +933,165 @@ export function CommandPalette({
           : () => activateResult(onStartStudy),
   })), [activateResult, chooseStudyLens, onDuplicatePassage, onStartStudy, studyLabel]);
 
+  // Corrections and alternative readings are rows in the list, so the reader
+  // reaches them with the same arrow keys as everything else — and so a
+  // correction is only ever applied because they pressed it.
+  const correctionResults = useMemo<PaletteResult[]>(() => {
+    if (!hasQuery) return [];
+    const rows: PaletteResult[] = [];
+    for (const reading of routing.readings.slice(1)) {
+      rows.push({
+        id: `reading:${reading.id}`,
+        kind: "correction",
+        title: reading.statement.map((segment) => segment.text).join(""),
+        detail: reading.reason,
+        meta: "Other reading",
+        activate: () => chooseScope(reading.tab),
+      });
+    }
+    for (const correction of routing.corrections) {
+      if (correction.tab && correction.tab === activeTab) continue;
+      if (correction.tab && !visibleTabs.some((tab) => tab.id === correction.tab)) continue;
+      rows.push({
+        id: `correction:${correction.id}`,
+        kind: "correction",
+        title: correction.label,
+        detail: correction.reason,
+        meta: correction.query ? "Correction" : "Other scope",
+        activate: () => {
+          if (correction.query) {
+            setQuery(correction.query);
+            setScopeChosen(false);
+            setFocusedResult(-1);
+            window.requestAnimationFrame(() => inputRef.current?.focus());
+            return;
+          }
+          if (correction.tab) chooseScope(correction.tab);
+        },
+      });
+    }
+    if (scopeChosen) {
+      rows.push({
+        id: "correction:release-scope",
+        kind: "correction",
+        title: "Let the words choose the scope",
+        detail: "You picked this scope; hand it back to what you type",
+        meta: "Undo",
+        activate: () => {
+          setScopeChosen(false);
+          setFocusedResult(-1);
+          window.requestAnimationFrame(() => inputRef.current?.focus());
+        },
+      });
+    }
+    return rows;
+  }, [activeTab, chooseScope, hasQuery, routing.corrections, routing.readings, scopeChosen, visibleTabs]);
+
+  const intelligenceAsk = useMemo<PaletteResult>(() => ({
+    id: "intelligence:ask",
+    kind: "intelligence",
+    title: `Ask Intelligence about “${routing.term}”`,
+    detail: intelligenceReadiness(envelope),
+    meta: "—",
+    activate: () => activateResult(() => onRunAction("open-settings")),
+  }), [activateResult, envelope, onRunAction, routing.term]);
+
+  // The out-of-scope count. Intelligence is never counted here: it is the one
+  // scope that leaves the device, so it may not appear as a group inside a
+  // local result set — it has to be asked for.
+  const elsewhereResults = useMemo<PaletteResult[]>(() => {
+    if (!hasQuery || status !== "ready") return [];
+    const counts: Array<{ tab: CommandPaletteTab; label: string; count: number }> = [
+      { tab: "scripture", label: "Scripture", count: (data.exact ? 1 : 0) + data.scripture.length },
+      { tab: "notes", label: "your notes", count: data.notes.length },
+      { tab: "names", label: "names", count: data.entities.length },
+    ];
+    return counts
+      .filter((entry) => entry.tab !== activeTab && entry.count > 0)
+      .filter((entry) => visibleTabs.some((tab) => tab.id === entry.tab))
+      .map((entry) => ({
+        id: `elsewhere:${entry.tab}`,
+        kind: "correction" as const,
+        title: `${entry.count} in ${entry.label}`,
+        detail: `Searched on this device, outside the scope you are looking at`,
+        meta: "Elsewhere",
+        activate: () => chooseScope(entry.tab),
+      }));
+  }, [activeTab, chooseScope, data.entities.length, data.exact, data.notes.length, data.scripture.length, hasQuery, status, visibleTabs]);
+
   const results = useMemo<PaletteResult[]>(() => {
-    const hasQuery = query.trim().length >= 2;
     if (!hasQuery) {
       if (mode === "open-study-tab" && activeTab === "intelligence") return studyOpenResults;
-      if (activeTab === "intelligence") return [...recentResults, ...actionResults].slice(0, 7);
-      return [];
+      return [...recentResults, ...actionResults].slice(0, 7);
     }
-    if (activeTab === "scripture") return [data.exact, ...scriptureResults].filter((item): item is PaletteResult => item != null).slice(0, 24);
+    const head = preferredActionResults;
+    if (activeTab === "intelligence") {
+      return [...correctionResults, ...head, intelligenceAsk];
+    }
+    if (activeTab === "scripture") {
+      const found = [data.exact, ...scriptureResults].filter((item): item is PaletteResult => item != null);
+      return [...correctionResults, ...head, ...found.slice(0, 24), ...elsewhereResults];
+    }
     if (activeTab === "notes") {
       const deep: PaletteResult = {
         id: "deep-search:notes",
         kind: "deep-search",
-        title: `Search all notes for “${query.trim()}”`,
+        title: `Search all notes for “${routing.term}”`,
         detail: "Open the full note search workspace",
         meta: "Deep search",
-        activate: () => activateResult(() => onSearchNotes(query.trim())),
+        activate: () => activateResult(() => onSearchNotes(routing.term)),
       };
-      return [...noteResults, deep].slice(0, 24);
+      return [...correctionResults, ...head, ...noteResults.slice(0, 24), deep, ...elsewhereResults];
     }
-    if (activeTab === "names") return entityResults.slice(0, 24);
-    const remainingActions = actionResults.filter(
-      (action) => !preferredActionResults.some((preferred) => preferred.id === action.id),
-    );
-    return [
-      ...preferredActionResults,
-      ...(data.exact ? [data.exact] : []),
-      ...scriptureResults.slice(0, 2),
-      ...noteResults.slice(0, 1),
-      ...entityResults.slice(0, 2),
-      ...remainingActions.slice(0, 1),
-    ].slice(0, 7);
-  }, [activateResult, activeTab, actionResults, data.exact, entityResults, mode, noteResults, onSearchNotes, preferredActionResults, query, recentResults, scriptureResults, studyOpenResults]);
+    return [...correctionResults, ...head, ...entityResults.slice(0, 24), ...elsewhereResults];
+  }, [
+    actionResults,
+    activateResult,
+    activeTab,
+    correctionResults,
+    data.exact,
+    elsewhereResults,
+    entityResults,
+    hasQuery,
+    intelligenceAsk,
+    mode,
+    noteResults,
+    onSearchNotes,
+    preferredActionResults,
+    recentResults,
+    routing.term,
+    scriptureResults,
+    studyOpenResults,
+  ]);
+
+  const scopeStatement = useMemo<ReadingSegment[]>(() => {
+    if (!hasQuery) {
+      return [
+        { text: "Type to search · " },
+        { text: "the shape of what you type", value: true },
+        { text: " picks the scope" },
+      ];
+    }
+    const chosenLabel = visibleTabs.find((tab) => tab.id === activeTab)?.label ?? "";
+    if (scopeChosen) {
+      return [{ text: "Searching " }, { text: chosenLabel, value: true }, { text: " · you chose this scope" }];
+    }
+    return routing.readings[0]?.statement ?? [{ text: "Searching " }, { text: chosenLabel, value: true }];
+  }, [activeTab, hasQuery, routing.readings, scopeChosen, visibleTabs]);
+
+  const scopeReason = !hasQuery
+    ? "recent passages and the actions that fit — nothing has left this device"
+    : scopeChosen
+      ? routing.readings[0]?.reason ?? ""
+      : routing.readings[0]?.reason ?? "";
 
   const emptyCopy = activeTab === "scripture"
-    ? "Enter a reference, phrase, or natural-language question."
+    ? `Nothing in Scripture matches “${routing.term}”.`
     : activeTab === "notes"
-      ? "Search the titles and complete text of your local notes."
+      ? `Nothing in your notes matches “${routing.term}”.`
       : activeTab === "names"
-        ? "Find a person, place, or role such as apostle."
-        : "Search Scripture, your notes, names, places, and the actions that fit.";
+        ? `No indexed name matches “${routing.term}”.`
+        : "Ask a question and Intelligence will state what it would send.";
 
   const moveResultFocus = (index: number): void => {
     const bounded = Math.max(0, Math.min(results.length - 1, index));
@@ -563,6 +1109,7 @@ export function CommandPalette({
     event.preventDefault();
     const next = visibleTabs[nextIndex];
     if (!next) return;
+    setScopeChosen(true);
     setActiveTab(next.id);
     setFocusedResult(-1);
     tabRefs.current[nextIndex]?.focus();
@@ -612,7 +1159,7 @@ export function CommandPalette({
               }
             }}
             type="search"
-            placeholder={mode === "open-study-tab" ? "Find a passage, person, or place" : "Search Scripture, notes, people, or actions"}
+            placeholder={mode === "open-study-tab" ? "Find a passage, person, or place" : "A reference, a phrase, a name, a question, or your own words"}
             aria-label={mode === "open-study-tab" ? "Find a passage, person, or place to add" : "Search Scripture, notes, people, places, and actions"}
             autoComplete="off"
             spellCheck={false}
@@ -620,27 +1167,42 @@ export function CommandPalette({
           <kbd aria-label="Escape closes">esc</kbd>
         </div>
 
-        <div
-          className="command-palette-tabs"
-          role="tablist"
-          aria-label={mode === "open-study-tab" ? "Study tab destination" : "Search lens"}
-        >
-          {visibleTabs.map((tab, index) => (
-            <button
-              key={tab.id}
-              ref={(node) => { tabRefs.current[index] = node; }}
-              type="button"
-              role="tab"
-              id={`command-tab-${tab.id}`}
-              aria-selected={activeTab === tab.id}
-              aria-controls="command-results"
-              tabIndex={activeTab === tab.id ? 0 : -1}
-              onClick={() => { setActiveTab(tab.id); setFocusedResult(-1); }}
-              onKeyDown={(event) => handleTabKeyDown(event, index)}
+        {/* One scope line. It states what happened; the tabs are its *change*
+            affordance and occupy their space at rest, so nothing moves. */}
+        <div className="palette-scope" data-shape={hasQuery ? routing.shape : "resting"}>
+          <p className="palette-scope-statement" aria-live="polite">
+            {scopeStatement.map((segment, index) => (
+              segment.value
+                ? <em key={index}>{segment.text}</em>
+                : <span key={index}>{segment.text}</span>
+            ))}
+            {scopeReason && <span className="palette-scope-reason">{scopeReason}</span>}
+          </p>
+          <span className="palette-scope-change">
+            <span className="palette-scope-rest" aria-hidden="true">change<kbd>⇥</kbd></span>
+            <span
+              className="command-palette-tabs palette-scope-tabs"
+              role="tablist"
+              aria-label={mode === "open-study-tab" ? "Study tab destination" : "Search scope"}
             >
-              {tab.label}
-            </button>
-          ))}
+              {visibleTabs.map((tab, index) => (
+                <button
+                  key={tab.id}
+                  ref={(node) => { tabRefs.current[index] = node; }}
+                  type="button"
+                  role="tab"
+                  id={`command-tab-${tab.id}`}
+                  aria-selected={activeTab === tab.id}
+                  aria-controls="command-results"
+                  tabIndex={activeTab === tab.id ? 0 : -1}
+                  onClick={() => chooseScope(tab.id)}
+                  onKeyDown={(event) => handleTabKeyDown(event, index)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </span>
+          </span>
         </div>
 
         <div
@@ -650,12 +1212,22 @@ export function CommandPalette({
           aria-labelledby={`command-tab-${activeTab}`}
           aria-live="polite"
         >
-          {status === "searching" && query.trim().length >= 2 ? (
-            <div className="command-palette-state" role="status"><span />Searching local indexes…</div>
+          {status === "searching" && hasQuery ? (
+            <div className="palette-progress" role="status">
+              <i className="search-progress-hairline" aria-hidden="true" />
+              <span>Reading the indexes on this device</span>
+            </div>
           ) : status === "error" ? (
-            <div className="command-palette-state is-error">Search is temporarily unavailable.</div>
+            <div className="command-palette-state is-error">
+              {`${failed.join(", ")} could not be read on this device.`}
+            </div>
           ) : results.length > 0 ? (
             <div className="command-palette-result-list">
+              {failed.length > 0 && (
+                <p className="palette-partial" role="status">
+                  {`${failed.join(" and ")} could not be read, so these results are incomplete.`}
+                </p>
+              )}
               {results.map((result, index) => (
                 <button
                   key={result.id}

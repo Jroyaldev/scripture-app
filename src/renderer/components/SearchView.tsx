@@ -1,11 +1,20 @@
 import type React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { NoteSearchResult, ParsedNoteData } from "../api.js";
+import type { NoteSearchResult, ParsedNoteData, ScriptureSearchHitData } from "../api.js";
 import { Button, ControlInput } from "./Controls.js";
 import { useToast } from "./Toast.js";
 import { safeCall } from "../utils/safeCall.js";
 
 type WorkspaceMode = "notes" | "search";
+
+/**
+ * What the search found outside the scope it was told to look in. Zero notes
+ * is a dead end; "zero here, twenty-seven in Scripture" is a next step.
+ */
+interface OutOfScope {
+  count: number;
+  first: ScriptureSearchHitData | null;
+}
 
 interface Props {
   mode: WorkspaceMode;
@@ -41,15 +50,6 @@ function SearchIcon(): React.JSX.Element {
     <svg viewBox="0 0 20 20" aria-hidden="true">
       <circle cx="8.5" cy="8.5" r="5.25" />
       <path d="m12.4 12.4 4.1 4.1" />
-    </svg>
-  );
-}
-
-function NoteIcon(): React.JSX.Element {
-  return (
-    <svg viewBox="0 0 20 20" aria-hidden="true">
-      <path d="M4.5 3.5h8.3l2.7 2.8v10.2h-11z" />
-      <path d="M12.5 3.8v3h2.7M7 10h6M7 13h4.5" />
     </svg>
   );
 }
@@ -160,6 +160,10 @@ function NoteBody({ body, query }: { body: string; query: string }): React.JSX.E
   );
 }
 
+/**
+ * No illustration. The system never draws a picture of an absence — it names
+ * the thing and the reason, and offers the next step as a control.
+ */
 function EmptyState({
   title,
   body,
@@ -171,10 +175,19 @@ function EmptyState({
 }): React.JSX.Element {
   return (
     <div className="note-workspace-empty">
-      <span className="note-workspace-empty-icon"><NoteIcon /></span>
       <h2>{title}</h2>
       <p>{body}</p>
       {action}
+    </div>
+  );
+}
+
+/** The one loading device: a 1px seal segment travelling a hairline. */
+function Progress({ label }: { label: string }): React.JSX.Element {
+  return (
+    <div className="note-list-progress" role="status">
+      <i className="search-progress-hairline" aria-hidden="true" />
+      <span>{label}</span>
     </div>
   );
 }
@@ -195,6 +208,9 @@ export function SearchView({
   const [query, setQuery] = useState(initialQuery);
   const [searchState, setSearchState] = useState<SearchState>({ status: "idle" });
   const [searchNonce, setSearchNonce] = useState(0);
+  const [readingPackageId, setReadingPackageId] = useState<string | null>(null);
+  const [bookNames, setBookNames] = useState<Record<string, string[]>>({});
+  const [outOfScope, setOutOfScope] = useState<OutOfScope | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
@@ -212,6 +228,18 @@ export function SearchView({
     if (mode === "search") setQuery(initialQuery);
     if (initialNoteId) setSelectedId(initialNoteId);
   }, [initialNoteId, initialQuery, intentNonce, mode]);
+
+  // The edition the reader was last in. It is what makes the out-of-scope
+  // count answerable without a prop the caller would have to remember.
+  useEffect(() => {
+    if (mode !== "search") return;
+    void safeCall(() => window.api.settings.get()).then((result) => {
+      if (result.ok) setReadingPackageId(result.value.lastRead?.packageId ?? null);
+    });
+    void safeCall(() => window.api.scripture.getBookNames()).then((result) => {
+      if (result.ok) setBookNames(result.value);
+    });
+  }, [mode]);
 
   useEffect(() => {
     let cancelled = false;
@@ -247,6 +275,7 @@ export function SearchView({
     if (trimmed.length < 2) {
       requestSeq.current += 1;
       setSearchState({ status: "idle" });
+      setOutOfScope(null);
       setSelectedId(notes[0]?.id ?? null);
       return;
     }
@@ -254,8 +283,17 @@ export function SearchView({
     const seq = ++requestSeq.current;
     setSearchState({ status: "searching" });
     const timer = window.setTimeout(() => {
-      void safeCall(() => window.api.library.search(trimmed)).then((result) => {
+      const beyond = readingPackageId
+        ? safeCall(() => window.api.scripture.search(readingPackageId, trimmed, 24))
+        : Promise.resolve({ ok: false as const, error: "no edition" });
+      void Promise.all([
+        safeCall(() => window.api.library.search(trimmed)),
+        beyond,
+      ]).then(([result, scripture]) => {
         if (requestSeq.current !== seq) return;
+        setOutOfScope(scripture.ok
+          ? { count: scripture.value.length, first: scripture.value[0] ?? null }
+          : null);
         if (!result.ok) {
           setSearchState({ status: "error", error: result.error });
           setSelectedId(null);
@@ -269,7 +307,7 @@ export function SearchView({
     }, 180);
 
     return () => window.clearTimeout(timer);
-  }, [mode, notes, query, searchNonce]);
+  }, [mode, notes, query, readingPackageId, searchNonce]);
 
   const noteById = useMemo(() => new Map(notes.map((note) => [note.id, note])), [notes]);
   const normalizedQuery = query.trim().toLocaleLowerCase();
@@ -403,13 +441,22 @@ export function SearchView({
       : rows[0]?.id ?? null);
   }, [loadStatus, mode, rows]);
 
+  // A ratio, beside the field rather than inside it. A bare number sitting in
+  // the input with pointer events off looked like something you could edit.
   const resultCount = mode === "notes"
-    ? `${rows.length} ${rows.length === 1 ? "note" : "notes"}`
+    ? normalizedQuery
+      ? `${rows.length} of ${notes.length} notes`
+      : `${notes.length} ${notes.length === 1 ? "note" : "notes"}`
     : searchState.status === "ready"
-      ? `${searchState.results.length} ${searchState.results.length === 1 ? "result" : "results"}`
+      ? `${searchState.results.length} of ${notes.length} notes`
       : searchState.status === "searching"
-        ? "Searching…"
-        : `${notes.length} notes indexed`;
+        ? "Searching your notes"
+        : `${notes.length} ${notes.length === 1 ? "note" : "notes"}`;
+
+  const scriptureHit = outOfScope?.first ?? null;
+  const outOfScopeLabel = mode === "search" && outOfScope && outOfScope.count > 0
+    ? `${outOfScope.count} in Scripture`
+    : "";
 
   const handleReference = useCallback(async (reference: WorkspaceReference) => {
     const result = await safeCall(() => window.api.ref.parseBref(reference.bref));
@@ -468,28 +515,43 @@ export function SearchView({
         <Button variant="secondary" onClick={onWrite} disabled={editing}>New note</Button>
       </header>
 
-      <div className="note-workspace-search">
-        <span className="note-workspace-search-icon"><SearchIcon /></span>
-        <ControlInput
-          ref={searchInputRef}
-          type="search"
-          aria-label={mode === "notes" ? "Filter notes" : "Search note content"}
-          placeholder={mode === "notes" ? "Filter titles, text, or tags" : "Search every note"}
-          value={query}
-          disabled={editing}
-          onChange={(event) => setQuery(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === "Escape" && query) {
-              event.preventDefault();
-              clearQuery();
-            }
-          }}
-          autoFocus={mode === "search"}
-        />
-        {query && (
-          <button type="button" className="note-search-clear" onClick={clearQuery} aria-label="Clear search">×</button>
-        )}
-        <span className="note-workspace-count" role="status">{resultCount}</span>
+      <div className="note-workspace-query">
+        <div className="note-workspace-field">
+          <span className="note-workspace-field-icon"><SearchIcon /></span>
+          <ControlInput
+            ref={searchInputRef}
+            type="search"
+            aria-label={mode === "notes" ? "Filter notes" : "Search note content"}
+            placeholder={mode === "notes" ? "Filter titles, text, or tags" : "Search every note"}
+            value={query}
+            disabled={editing}
+            onChange={(event) => setQuery(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Escape" && query) {
+                event.preventDefault();
+                clearQuery();
+              }
+            }}
+            autoFocus={mode === "search"}
+          />
+          {/* Space for the clear control exists at rest, so revealing it
+              never moves the field's text. */}
+          <button
+            type="button"
+            className="note-workspace-field-clear"
+            onClick={clearQuery}
+            aria-label="Clear search"
+            aria-hidden={query ? undefined : true}
+            tabIndex={query ? 0 : -1}
+            data-shown={query ? "true" : "false"}
+          >
+            ×
+          </button>
+        </div>
+        <p className="note-workspace-count" role="status">
+          <span>{resultCount}</span>
+          {outOfScopeLabel && <span className="note-workspace-count-beyond">{outOfScopeLabel}</span>}
+        </p>
       </div>
 
       <div className="note-workspace-grid">
@@ -499,12 +561,7 @@ export function SearchView({
             <span>{rows.length}</span>
           </div>
 
-          {loadStatus === "loading" && (
-            <div className="note-list-loading" role="status">
-              <span /><span /><span />
-              <p>Opening your notebook…</p>
-            </div>
-          )}
+          {loadStatus === "loading" && <Progress label="Opening your notebook" />}
           {showListError && (
             <EmptyState
               title="Notes could not be opened"
@@ -513,10 +570,7 @@ export function SearchView({
             />
           )}
           {searchState.status === "searching" && mode === "search" && (
-            <div className="note-list-loading" role="status">
-              <span /><span /><span />
-              <p>Searching note text…</p>
-            </div>
+            <Progress label="Searching note text on this device" />
           )}
           {showSearchError && (
             <EmptyState
@@ -528,8 +582,14 @@ export function SearchView({
           {showSearchEmpty && (
             <EmptyState
               title="No matching notes"
-              body={`Nothing in your notes matches “${query.trim()}”.`}
-              action={<Button size="sm" variant="ghost" onClick={clearQuery}>Clear search</Button>}
+              body={outOfScope && outOfScope.count > 0
+                ? `Nothing in your ${notes.length} notes matches “${query.trim()}”, but Scripture has ${outOfScope.count}.`
+                : `Nothing in your ${notes.length} notes matches “${query.trim()}”.`}
+              action={scriptureHit ? (
+                <Button size="sm" onClick={() => onNavigate(scriptureHit.book, scriptureHit.chapter)}>
+                  {`Open ${bookNames[scriptureHit.book]?.[0] ?? scriptureHit.book} ${scriptureHit.chapter}:${scriptureHit.verse}`}
+                </Button>
+              ) : <Button size="sm" variant="ghost" onClick={clearQuery}>Clear search</Button>}
             />
           )}
           {showNotesEmpty && (
