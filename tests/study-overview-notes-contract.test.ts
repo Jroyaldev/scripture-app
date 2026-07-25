@@ -36,18 +36,55 @@ const marginCode = margin
   .replace(/\/\*[\s\S]*?\*\//g, "")
   .replace(/^\s*\/\/.*$/gm, "");
 
-/** The body of one CSS rule, by exact selector. */
+/**
+ * Every region slice in this file goes through here.
+ *
+ * An anchor that resolves to the wrong occurrence fails exactly like a
+ * selector that matches nothing: silently, and in the passing direction. This
+ * file has already been caught by it once — a `#B4AEA5` anchor meant for the
+ * count's own comment resolved to the atmosphere token block, and the marker
+ * guard reported success while reading a different agent's marker.
+ *
+ * `lastIndexOf` is deliberately not used anywhere: picking a match by position
+ * is not a uniqueness argument, it is the same bet taken from the other end.
+ * Where the last of several IS the intent, the count is asserted and the pick
+ * is made explicitly, so it reads as a stated fact rather than a coincidence.
+ */
+function between(source: string, start: string, end: string, label: string): string {
+  const starts = source.split(start).length - 1;
+  const ends = source.split(end).length - 1;
+  assert.equal(starts, 1, `${label}: start anchor ${JSON.stringify(start)} occurs ${starts}×, need exactly 1`);
+  assert.equal(ends, 1, `${label}: end anchor ${JSON.stringify(end)} occurs ${ends}×, need exactly 1`);
+  const from = source.indexOf(start);
+  const to = source.indexOf(end);
+  assert.ok(to > from, `${label}: anchors resolve out of order`);
+  return source.slice(from, to);
+}
+
+/** A region running from a unique anchor to the end of the source. */
+function after(source: string, start: string, label: string): string {
+  const count = source.split(start).length - 1;
+  assert.equal(count, 1, `${label}: anchor ${JSON.stringify(start)} occurs ${count}×, need exactly 1`);
+  return source.slice(source.indexOf(start));
+}
+
+/** The body of one CSS rule, by exact selector. Asserts the selector heads
+ *  exactly one rule — a name declared twice would silently yield the first. */
 function rule(selector: string): string {
-  const index = css.indexOf(`\n${selector} {`);
-  assert.ok(index >= 0, `expected a rule for ${selector}`);
-  const open = css.indexOf("{", index);
+  const head = `\n${selector} {`;
+  const count = css.split(head).length - 1;
+  assert.equal(count, 1, `expected exactly one rule for ${selector}, found ${count}`);
+  const open = css.indexOf(head) + head.length - 1;
   const close = css.indexOf("}", open);
+  assert.ok(close > open, `unterminated rule for ${selector}`);
   return css.slice(open + 1, close);
 }
 
-const overview = margin.slice(
-  margin.indexOf("function IntentOverview"),
-  margin.indexOf("export function LivingMargin"),
+const overview = between(
+  margin,
+  "function IntentOverview",
+  "export function LivingMargin",
+  "IntentOverview",
 );
 
 /* --- Cross-references ---------------------------------------------------- */
@@ -117,9 +154,11 @@ test("the entity list never re-ranks", () => {
   assert.doesNotMatch(overview, /\.sort\(/);
   assert.doesNotMatch(overview, /refCount\s*[-<>]/);
   const tipnr = read("src/core/language/tipnr.ts");
-  const forRange = tipnr.slice(
-    tipnr.indexOf("entitiesForRange("),
-    tipnr.indexOf("resolve(q: NameResolveQuery)"),
+  const forRange = between(
+    tipnr,
+    "entitiesForRange(",
+    "resolve(q: NameResolveQuery)",
+    "entitiesForRange",
   );
   assert.doesNotMatch(forRange, /\.sort\(/, "entitiesForRange must return text order");
 });
@@ -142,7 +181,7 @@ test("an entity is 16px serif in a fixed column, with the kind and the count on 
 
 test("Sources is the research pane's block, last, and names each corpus", () => {
   assert.match(overview, /<MarginSourcesDisclosure sources=\{sources\} \/>/);
-  const tail = overview.slice(overview.lastIndexOf("MarginSourcesDisclosure"));
+  const tail = after(overview, "<MarginSourcesDisclosure", "Sources");
   assert.doesNotMatch(tail, /<section/, "nothing may be drawn after Sources");
   // The same rows the research pane builds, with the same detail words, so a
   // reader who has learned the block on one surface has learned it here.
@@ -192,7 +231,13 @@ test("Add note lost its border and became a word", () => {
 /* --- Law 7 --------------------------------------------------------------- */
 
 test("Notes owes loading and failed, and draws them in the shipped state grammar", () => {
-  const notesPanel = margin.slice(margin.lastIndexOf('id="margin-notes-panel"'));
+  // Three scope states each draw a Notes panel; the pinned one is the third,
+  // and it is the one C4·3 draws. That is asserted rather than assumed: a
+  // `lastIndexOf` would keep working, on a different panel, if a fourth
+  // appeared or the order changed.
+  const notesPanels = [...margin.matchAll(/id="margin-notes-panel"/g)].map((m) => m.index!);
+  assert.equal(notesPanels.length, 3, "every scope state must draw the Notes tab");
+  const notesPanel = margin.slice(notesPanels[2]!);
   assert.match(notesPanel, /<SurfaceState\s+state="loading"/);
   assert.match(notesPanel, /state="failed"/);
   assert.match(notesPanel, /reason="The library could not be read\."/);
@@ -389,10 +434,8 @@ test("what the tours reach for beyond a class name still exists", () => {
   // Anchored on the section's own labelled id, not on `hasLibraryLead` — the
   // const is declared above the cross-reference rows, so slicing from it
   // swept them back in and the assertion failed for the wrong reason.
-  const libraryStart = overview.indexOf('aria-labelledby="intent-library-title"');
-  assert.ok(libraryStart > 0, "expected the library section to be present");
   assert.doesNotMatch(
-    overview.slice(libraryStart),
+    after(overview, 'aria-labelledby="intent-library-title"', "the library section"),
     /study-ref-row--compact/,
     "the library leads are entries, not compact rows",
   );

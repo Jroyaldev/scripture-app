@@ -2004,19 +2004,16 @@ export function App(): React.JSX.Element {
               className={`sidebar${collapsedRail ? " collapsed" : ""}`}
               aria-label="Primary navigation"
             >
-            {focusMode && (
-              /* All that remains of the rail: enough to be discoverable by a
-                 pointer, too little to be chrome. Hovering it floats the whole
-                 rail back over the page — over, never beside, so the measure
-                 does not move. */
-              <button
-                type="button"
-                className="rail-focus-handle"
-                onClick={toggleFocusMode}
-                aria-label="Bring the rail back (⌘\\)"
-                title="Bring the rail back (⌘\\)"
-              />
-            )}
+            {/* Rev 05 §05·5 retired the focus-mode grab handle. "No stub, no
+                handle. The rail returns on ⌘\ or on the pointer entering the
+                56px ground band; nothing is drawn to advertise it. An
+                affordance drawn permanently in the calmest mode is the one
+                thing focus cannot afford." The band is the affordance now, and
+                focus stays reachable by ⌘\, Escape, the header's FOCUS
+                instrument and the command palette — so nothing is stranded by
+                drawing nothing. The rows below stay mounted and simply go to
+                zero opacity, which is also what keeps a keyboard user's Tab
+                able to float the rail back through :focus-within. */}
               <div className="sidebar-header">
                 <div className="brand-row" aria-label="Pericope">
                   <div className="brand-mark">
