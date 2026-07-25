@@ -288,8 +288,14 @@
   cursor: pointer;
 }
 
-.crossref-row:focus-within,
-.note-crossref-row:focus-within {
+/* The row carries the ring on behalf of the button inside it, which is why
+   `.crossref-row-open:focus-visible` below gives its own outline away. Matched
+   with `:has(:focus-visible)` rather than `:focus-within`, because
+   `:focus-within` has no modality filter and this row's button navigates:
+   clicking a cross-reference took the reader somewhere else and left the row
+   outlined behind them for as long as the button kept focus. */
+.crossref-row:has(:focus-visible),
+.note-crossref-row:has(:focus-visible) {
   outline: 2px solid var(--study-gold-focus);
   outline-offset: 1px;
 }
@@ -1374,10 +1380,13 @@ html, body, #root {
     circle at 100% 0, transparent var(--radius-page), var(--bg-reading) 0);
 }
 
-/* When the active tab is first or last in the register it claims the page's
-   corner outright, so the fillet on that side would have nothing to join. */
-.scripture-workspace-bar[data-flush-start] .scripture-workspace-tab[aria-selected="true"]::before,
-.scripture-workspace-bar[data-flush-end] .scripture-workspace-tab[aria-selected="true"]::after {
+/* When the active tab is FIRST in the register it claims the page's top-left
+   corner outright, so the fillet on that side would have nothing to join.
+   There is deliberately no last-tab counterpart: flush-end was retired when the
+   owner ruled that the strip's controls may not relocate between selections, so
+   the last tab always has the actions cluster to its right and its right fillet
+   always has a page edge to sweep into. See src/renderer/styles/register.css. */
+.scripture-workspace-bar[data-flush-start] .scripture-workspace-tab[aria-selected="true"]::before {
   display: none;
 }
 
@@ -1672,6 +1681,18 @@ html, body, #root {
    cuts its own control apart is worse than no ring. */
 .scripture-workspace-group-tab:focus-visible {
   outline-offset: -1px;
+}
+
+/* The group popover opens with focus on its heading rather than on the rename
+   field, because a focused text input matches :focus-visible however focus
+   reached it and so painted a keyboard ring on a mouse click. The heading is a
+   tabindex="-1" landing spot, which means it rings only when the last
+   interaction was a keyboard one — and it must ring with the register's seal
+   rather than fall through to the platform's own rectangle, same as every other
+   control above. */
+.scripture-workspace-group-popover .scripture-workspace-popover-heading:focus-visible {
+  outline: 2px solid var(--study-gold);
+  outline-offset: 2px;
 }
 
 /* The active group popover is the fixed rail's only management surface. It
@@ -2357,7 +2378,8 @@ html, body, #root {
   .scripture-workspace-group-popover input:focus-visible,
   .scripture-workspace-overflow-popover input:focus-visible,
   .scripture-workspace-group-popover select:focus-visible,
-  .scripture-workspace-overflow-popover select:focus-visible {
+  .scripture-workspace-overflow-popover select:focus-visible,
+  .scripture-workspace-group-popover .scripture-workspace-popover-heading:focus-visible {
     outline: 2px solid Highlight;
     outline-offset: 2px;
   }
@@ -2765,85 +2787,115 @@ html, body, #root {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24);
 }
 
-/* paper 0-58% · seal 59-67% · canvas 68% — the swatch is the theme in
-   miniature: the two planes with the accent between them. */
-.theme-orb-light { background: linear-gradient(135deg, #FCFBF8 0 58%, #96684A 59% 67%, #F1EFEA 68%); }
-.theme-orb-dark { background: linear-gradient(135deg, #1D1B18 0 58%, #C99A6E 59% 67%, #141210 68%); border-color: rgba(237, 232, 224, 0.22); }
-.theme-orb-porcelain { background: linear-gradient(135deg, #FFFFFF 0 58%, #96684A 59% 67%, #F4F4F6 68%); border-color: rgba(0, 0, 0, 0.12); }
-.theme-orb-onyx { background: linear-gradient(135deg, #1C1C20 0 58%, #C99A6E 59% 67%, #131316 68%); border-color: rgba(233, 233, 236, 0.22); }
+/* The swatch used to be paper 0-58%, seal 59-67%, canvas 68% — the theme in
+   miniature, two planes with the accent between them. That reading requires
+   the eye to resolve the two planes, and at 16px it cannot: paper and canvas
+   are four or five points of luminance apart by design, so what actually
+   arrives is one flat field with a saturated bar struck corner to corner
+   across it. That is the international drawing for "no entry", which is a
+   remarkable thing to put on the control that changes the light.
+
+   The two-plane idea does not survive this size and is therefore dropped. The
+   seal stays, because the atmospheres are told apart by their paper and this
+   swatch is the first accent a reader ever meets, so it must show both. Each
+   swatch is now that theme's paper with its own seal turned down in one
+   corner, the way a page is marked. A corner has field on one side only, so
+   it cannot read as a bar across a disc however small it is drawn. */
+.theme-orb-light { background: linear-gradient(315deg, #96684A 0 22%, #FCFBF8 22%); }
+.theme-orb-dark { background: linear-gradient(315deg, #C99A6E 0 22%, #1D1B18 22%); border-color: rgba(237, 232, 224, 0.22); }
+.theme-orb-porcelain { background: linear-gradient(315deg, #96684A 0 22%, #FFFFFF 22%); border-color: rgba(0, 0, 0, 0.12); }
+.theme-orb-onyx { background: linear-gradient(315deg, #C99A6E 0 22%, #1C1C20 22%); border-color: rgba(233, 233, 236, 0.22); }
 
 /* Living Margin toggle — the word "Margin", third of the five instruments, so
    everything it looks like is .topbar-instrument and nothing is drawn here. */
 
-.passage-jump {
-  width: 190px;
-  height: 34px;
-  display: flex;
-  align-items: center;
+/* Search, in the instruments' voice, with its shortcut stated after it. The
+   190px field is gone: §E draws no field in this band, and the one that stood
+   here was its only four-sided border and its only third plane — a box in a
+   band that has no boxes, and a button dressed as an input besides.
+
+   These declarations are written under .scripture-topbar so they outrank
+   .command-palette-trigger, which is stated a few rules below and still
+   carries the old field's 30px/42px padding and its 12px UI face. Those rules
+   are the palette's and are not restyled from here. */
+.scripture-topbar .passage-jump {
   position: relative;
-  flex-shrink: 1;
-  min-width: 36px;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--bg-reading) 46%, transparent);
-  color: var(--text-tertiary);
-  transition: width var(--transition-normal), border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.passage-jump > svg {
-  position: absolute;
-  left: 9px;
-  pointer-events: none;
-}
-
-.passage-jump:hover {
-  border-color: var(--border-medium);
-  background: color-mix(in srgb, var(--bg-reading) 72%, transparent);
-}
-
-.passage-jump:focus-within {
-  border-color: var(--study-gold);
-  background: var(--bg-reading);
-  box-shadow: 0 0 0 2px var(--study-gold-focus);
-}
-
-.passage-jump-input {
-  width: 100%;
-  height: 100%;
-  min-width: 0;
-  font-family: var(--font-ui);
-  font-size: 12.5px;
-  padding: 0 46px 0 30px;
-  border: none;
-  border-radius: inherit;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-shrink: 0;
+  width: auto;
+  height: auto;
+  padding: 0 0 2px;
+  border: 0;
+  border-bottom: 1.5px solid transparent;
+  border-radius: 0;
   background: none;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+/* The same transparent extent the other instruments carry, so the thing you
+   press is the band's height rather than the 9.5px word's. */
+.scripture-topbar .passage-jump::before {
+  content: "";
+  position: absolute;
+  inset: -11px -8px -9px;
+}
+
+/* Ink on hover, and nothing else — the instruments' rule, now that there is no
+   border and no fill left to move. */
+.scripture-topbar .passage-jump:hover {
   color: var(--text-primary);
 }
 
-.passage-jump-input:focus {
-  outline: none;
+.passage-jump-label {
+  color: inherit;
 }
 
-.passage-jump:has(.passage-jump-input.error) {
-  border-color: var(--error);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--error) 24%, transparent);
-}
+/* The ring for this control is `.command-palette-trigger:focus-visible`, a few
+   rules below, and it is drawn there and nowhere else. It used to be drawn
+   here as well, on `:focus-within`, from the days when `.passage-jump` was a
+   wrapper div around a text input and the ring belonged to the field inside
+   it. The wrapper is the button itself now, so `:focus-within` had quietly
+   become a bare `:focus` with no modality filter: a mouse click painted the
+   ring, and because the command palette hands focus back to its trigger when
+   it closes, the ring returned on close and sat there until the reader
+   happened to click something else. Two rules painting one ring is also two
+   places to keep in step, and only one of them was right. */
 
+/* `.passage-jump-input`, its `:focus` reset, and the `:has(.error)` ring have
+   gone with the field. There has been no input under this class since the
+   field became a palette trigger, so all three were styling an element the
+   renderer no longer builds. */
+
+/* A hint, not a key cap. The border, the fill, the 4px radius and the absolute
+   seat inside the field went with the field; what is left is the shortcut
+   said once, in the ink this sheet already uses for a figure you read past. */
 .passage-jump-shortcut {
-  position: absolute;
-  right: 7px;
-  padding: 2px 4px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--bg-secondary) 80%, transparent);
-  color: var(--text-tertiary);
+  color: var(--text-verse-number);
   font-family: var(--font-mono);
   font-size: 9px;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.06em;
   line-height: 1;
   pointer-events: none;
 }
 
-.passage-jump:focus-within .passage-jump-shortcut {
+/* The hint yields to the ring: at rest the badge names the shortcut, and once
+   the control is keyboard-focused the reader has evidently found it by some
+   other route. Keyed on `:focus-visible` for the same reason the ring is —
+   under `:focus-within` a mouse click left the badge hidden for as long as the
+   button held focus, which outlasted the click by a long way. */
+.passage-jump:focus-visible .passage-jump-shortcut {
   opacity: 0;
 }
 
@@ -2871,21 +2923,10 @@ html, body, #root {
   box-shadow: 0 0 0 2px var(--study-gold-focus);
 }
 
-.passage-jump-error {
-  position: absolute;
-  top: calc(100% + 7px);
-  left: 0;
-  min-width: 224px;
-  padding: 7px 9px;
-  border: 1px solid color-mix(in srgb, var(--error) 38%, var(--border-subtle));
-  border-radius: var(--radius-sm);
-  background: var(--bg-reading);
-  color: var(--text-secondary);
-  font-size: 11px;
-  line-height: 1.35;
-  box-shadow: var(--shadow-medium);
-  z-index: 12;
-}
+/* `.passage-jump-error` was the "no such passage" note the old field dropped
+   below itself when parsing failed. Parsing moved into the command palette
+   with the field, and the palette reports its own misses, so the rule has been
+   styling nothing for as long as the trigger has been a button. */
 
 /* Row wrapper for the reading column + Living Margin, sitting below
    .scripture-topbar in .scripture-page's column flow — without this,
@@ -2956,14 +2997,13 @@ html, body, #root {
   scroll-padding-top: var(--band);
 }
 
-/* The first tab claims the page's top-left corner, the last its top-right.
-   Read off the register's index, so the shape holds still under scroll. */
+/* The first tab claims the page's top-left corner. Read off the register's
+   index, so the shape holds still under scroll. The top-right corner stays
+   rounded in every state — squaring it would require the last tab to reach it,
+   which the retired flush-end docking bought at the price of moving the strip's
+   controls between selections. */
 .scripture-workspace-bar[data-flush-start] ~ .scripture-body .scripture-content {
   border-top-left-radius: 0;
-}
-
-.scripture-workspace-bar[data-flush-end] ~ .scripture-body .scripture-content {
-  border-top-right-radius: 0;
 }
 
 /* Everything is border-box, so the inline padding has to be added back or it
@@ -13379,7 +13419,16 @@ button.lang-phrase-diagram-node:focus-visible {
 /* The 300px was there to stretch three pills across the column. There are no
    pills any more, so a fixed width would leave the words bunched at the left of
    an empty box while the select and the toggle beside them end at the right;
-   the control now shrinks to its words and shares their edge. */
+   the control now shrinks to its words and shares their edge.
+
+   The rule lives here, beside the row that owns the column, because everything
+   it says is about that column — the track it sits in and the edge it shares
+   with its neighbours. It is stated once. A second `.settings-segmented`
+   further down the sheet, in the UX-pass block beside `.rc-seg-letter`, used
+   to add `max-width: 320px`, which meant this control was declared in two
+   places and every edit to it reached only one of them. That 320px could never
+   bind: the widest of the three groups measures 166px, inside a 300px track,
+   with `justify-self: end` already collapsing the control to fit its words. */
 .settings-segmented { justify-self: end; }
 
 .settings-ai-summary {
@@ -13606,7 +13655,11 @@ button.lang-phrase-diagram-node:focus-visible {
 @media (max-width: 960px) {
   .settings-frame { padding-inline: 24px; }
   .settings-control-row { grid-template-columns: minmax(0, 1fr) 250px; gap: 20px; }
-  .settings-segmented,
+  /* The segmented control is deliberately not in this list. A fixed 250px is
+     the pill-era stretch coming back in through the narrow layout: it fills
+     the track and so cancels the `justify-self: end` above, bunching the three
+     words at the left of an empty box at exactly the widths where the column
+     is tightest. It shrinks to its words here as it does everywhere else. */
   .settings-inline-field { width: 250px; }
   .settings-select-control { width: 190px; }
   .settings-rail nav button { font-size: 11px; }
@@ -14062,13 +14115,15 @@ textarea:focus-visible,
 .rc-seg-letter.size-s { font-size: 11px; }
 .rc-seg-letter.size-m { font-size: 13px; }
 .rc-seg-letter.size-l { font-size: 15px; font-weight: var(--fw-semibold); }
-.settings-segmented {
-  max-width: 320px;
-}
 
 /* Desktop compaction at the supported 900px minimum. This is not the mobile
    layout: every topbar action remains available and keeps its desktop hit
-   target; only long labels and the dormant jump field yield space. */
+   target; only long labels and the search's shortcut hint yield space.
+
+   The jump field used to collapse to a 36px icon here and expand back to 176px
+   while it held focus. There is no field to collapse now — the trigger is the
+   word SEARCH, which is narrower at rest than the icon-only box ever was — so
+   what yields at this width is the ⌘K hint, and the word itself stays whole. */
 @media (max-width: 1120px) {
   .scripture-topbar {
     padding-inline: 14px;
@@ -14078,12 +14133,12 @@ textarea:focus-visible,
     max-width: 120px;
   }
 
-  .passage-jump {
-    width: 36px;
-  }
-
-  .passage-jump:focus-within {
-    width: 176px;
+  /* `.command-palette-trigger:focus-within`, just below, still sets the old
+     36px collapse and belongs to the palette's rules rather than to this
+     header, so it is answered here by specificity instead of being edited. A
+     36px width on a word only clips it. */
+  .scripture-topbar .passage-jump:focus-within {
+    width: auto;
   }
 
   .command-palette-trigger:focus-within {
@@ -14096,22 +14151,6 @@ textarea:focus-visible,
 
   .command-palette-trigger-label {
     display: none;
-  }
-
-  .passage-jump-input {
-    padding-right: 6px;
-  }
-
-  .passage-jump-input::placeholder {
-    color: transparent;
-  }
-
-  .passage-jump:focus-within .passage-jump-input {
-    padding-right: 10px;
-  }
-
-  .passage-jump:focus-within .passage-jump-input::placeholder {
-    color: var(--text-tertiary);
   }
 
   .passage-jump-shortcut {
@@ -15221,15 +15260,37 @@ button.lang-phrase-diagram-node:focus-visible,
   animation: commandScrimIn 130ms ease-out;
 }
 
+/* Depth says one thing at a time. Docked things wear a hairline and only
+   genuinely floating things cast a shadow — and this panel floats over
+   whatever you were reading. Wearing the border and the elevated shadow at
+   once claimed both, so the border goes and the shadow stays. The radius
+   drops to the page value the drawing gives it, which is the one number the
+   page, the tab and the fillet already agree on. */
 .command-palette-panel {
   position: relative;
   width: min(660px, calc(100vw - 48px));
   overflow: hidden;
-  border: 1px solid var(--border-medium);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-page);
   background: var(--bg-reading);
   box-shadow: var(--shadow-elevated);
   animation: commandPanelIn 150ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* The destination eyebrow, which only `open-study-tab` mode renders. A mode
+   is a different verb rather than a different layout, so the panel states
+   which study it is adding to and everything below it stays where it was.
+   This had no rule of any kind until now, which left the title sitting at the
+   panel's very top-left pixel with the corner radius cutting into its first
+   letters. It takes the palette's own 17px inset so it lines up with the
+   field and with every group label under it, and the panel's top interval
+   above it so it reads as a line inside the panel rather than a caption
+   stuck to its edge. */
+.command-palette-destination {
+  padding: 15px 17px 0;
+  color: var(--text-tertiary);
+  font: 400 9px/1.4 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 
@@ -15265,12 +15326,18 @@ button.lang-phrase-diagram-node:focus-visible,
   stroke-linecap: round;
 }
 
+/* The drawing puts a 1px seal caret after the query in all four palettes.
+   That mark is the field's own caret rather than a bar drawn beside it,
+   because a static seal rule sitting next to a live blinking caret would show
+   the reader two of them. The palette focuses this field the moment it opens,
+   so the caret the drawing shows is the caret that is actually there. */
 .command-palette-input-row input {
   width: 100%;
   min-width: 0;
   border: 0;
   outline: 0;
   background: transparent;
+  caret-color: var(--accent-seal);
   color: var(--text-primary);
   font: 400 15px/1.4 var(--font-ui);
 }
@@ -15286,58 +15353,19 @@ button.lang-phrase-diagram-node:focus-visible,
   appearance: none;
 }
 
-.command-palette-input-row kbd {
-  min-width: 29px;
-  padding: 3px 6px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 5px;
-  background: color-mix(in srgb, var(--bg-secondary) 58%, transparent);
-  color: var(--text-tertiary);
-  font: 500 9px/1 var(--font-ui);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.02em;
-  text-transform: lowercase;
-  text-align: center;
-}
+/* The bordered, tinted `esc` chip that used to sit at the end of the field is
+   gone. No drawing of this panel has one, and a chip is a fill standing in for
+   a key — the palette's own vocabulary for a key is the quiet mono hint the
+   result rows use. Escape still closes; it is advertised on the field's
+   `aria-keyshortcuts` instead of by a painted box.
 
-.command-palette-tabs {
-  display: flex;
-  gap: 20px;
-  min-height: 37px;
-  padding: 0 17px;
-  border-top: 1px solid var(--border-subtle);
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.command-palette-tabs button {
-  position: relative;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--text-tertiary);
-  font: 500 11px/37px var(--font-ui);
-  cursor: pointer;
-}
-
-.command-palette-tabs button:hover {
-  color: var(--text-secondary);
-}
-
-.command-palette-tabs button[aria-selected="true"] {
-  color: var(--text-primary);
-}
-
-.command-palette-tabs button[aria-selected="true"]::after {
-  position: absolute;
-  right: 0;
-  bottom: -1px;
-  left: 0;
-  height: 1px;
-  background: var(--study-gold);
-  content: "";
-}
-
-.command-palette-tabs button:focus-visible,
+   The strip that used to live here is gone too. `.command-palette-tabs` and
+   its descendants drew a four-tab scope strip this component has not rendered
+   for some time — the shipped scope line is `.palette-scope-tabs` in
+   styles/search.css, one quiet line at the right of the field rather than a
+   strip that asks which corpus before the reader has typed anything. Only the
+   result row's keyboard ring outlived them, so it is re-anchored to the one
+   selector that still exists. */
 .command-palette-result:focus-visible {
   outline: 2px solid var(--study-gold);
   outline-offset: -2px;
@@ -15393,10 +15421,29 @@ button.lang-phrase-diagram-node:focus-visible,
   content: "";
 }
 
-.command-palette-result:hover,
+/* Three laws used to meet in one declaration here, so it is split into the two
+   separate things it was doing. A tint of `--bg-secondary` under the row was a
+   third plane in a language that has two; it drew state as a fill in a
+   language where state is a mark; and it brightened under the pointer in a
+   language where nothing is revealed by getting lighter.
+
+   Hover is ink and only ink: the row's copy comes up to full ink and not one
+   other thing about the row changes. */
+.command-palette-result:hover {
+  background: transparent;
+  color: var(--text-primary);
+}
+
+/* State is the 2px seal in the gutter that `::before` reserves at every row,
+   focused or not. With the fill gone that mark is now the whole of the
+   focused state on the highest-traffic row in the app, so it may not be
+   softened, shortened or given a transition without leaving the reader with
+   no way to see which row Enter will take. Keyboard focus additionally draws
+   the inset ring above; the pointer gets the mark alone, which is the same
+   vocabulary the nav rail and the register use. */
 .command-palette-result.is-focused,
 .command-palette-result:focus-visible {
-  background: color-mix(in srgb, var(--bg-secondary) 58%, transparent);
+  background: transparent;
 }
 
 .command-palette-result.is-focused::before,
@@ -15404,14 +15451,18 @@ button.lang-phrase-diagram-node:focus-visible,
   background: var(--study-gold);
 }
 
+/* A bare glyph, not a glyph in a box. The drawing shows the mark itself with
+   nothing drawn around it; the outlined, rounded cell put a small container on
+   every row of the list and made the leading column read as a control. The
+   24px cell stays, because it is reserved space and the rows must keep their
+   left edge whatever kind of thing they point at — only the border and the
+   radius go. */
 .command-result-glyph {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 24px;
   height: 24px;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
   color: var(--text-tertiary);
 }
 
@@ -15425,9 +15476,9 @@ button.lang-phrase-diagram-node:focus-visible,
   stroke-linejoin: round;
 }
 
+/* Ink, not an outline — there is no border left to tint. */
 .command-palette-result.is-focused .command-result-glyph,
 .command-palette-result:focus-visible .command-result-glyph {
-  border-color: color-mix(in srgb, var(--study-gold) 34%, var(--border-subtle));
   color: var(--study-gold);
 }
 
@@ -15454,8 +15505,27 @@ button.lang-phrase-diagram-node:focus-visible,
   white-space: nowrap;
 }
 
+/* The row's trailing cell. Every palette in the drawing gives it one job — a
+   bare ↵ on the row that is current, in the same quiet mono grey as
+   everything else at this scale. Not the word "Open", which is what the row
+   already says it does, and not in seal, which would put a second state mark
+   opposite the first one.
+
+   The two inks share a single grid cell so the swap changes ink and nothing
+   else. Hiding the hint with `display: none` reserved no width at all, so the
+   column resized as the pointer moved down the list and the copy beside it
+   reflowed under it; the cell now holds the hint's own width at rest even on
+   rows that have no meta to show. */
+.command-result-tail {
+  display: grid;
+  min-width: 13px;
+  max-width: 126px;
+  justify-items: end;
+}
+
 .command-result-meta,
 .command-result-open {
+  grid-area: 1 / 1;
   max-width: 126px;
   overflow: hidden;
   color: var(--text-tertiary);
@@ -15464,21 +15534,21 @@ button.lang-phrase-diagram-node:focus-visible,
   text-align: right;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: opacity var(--transition-fast);
 }
 
 .command-result-open {
-  display: none;
-  color: var(--study-gold);
+  opacity: 0;
 }
 
 .command-palette-result.is-focused .command-result-meta,
 .command-palette-result:focus-visible .command-result-meta {
-  display: none;
+  opacity: 0;
 }
 
 .command-palette-result.is-focused .command-result-open,
 .command-palette-result:focus-visible .command-result-open {
-  display: block;
+  opacity: 1;
 }
 
 .command-palette-state,
@@ -15495,16 +15565,13 @@ button.lang-phrase-diagram-node:focus-visible,
   text-align: center;
 }
 
-.command-palette-state > span {
-  width: 15px;
-  height: 15px;
-  margin-bottom: 3px;
-  border: 1px solid var(--border-medium);
-  border-top-color: var(--study-gold);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
+/* The spinning ring that used to sit here is gone. This surface already has a
+   loading device — `.search-progress-hairline` in styles/search.css, a seal
+   segment travelling a hairline, whose own comment says it is the one device
+   and that spinners are among the two things it replaces. Two loading devices
+   on one surface is one too many, and this one had stopped being rendered at
+   all: the palette's searching state is `.palette-progress` and the hairline,
+   and `.command-palette-state` is only ever the error line. */
 .command-palette-state.is-error {
   color: var(--error);
 }
@@ -15523,9 +15590,13 @@ button.lang-phrase-diagram-node:focus-visible,
 
 @media (prefers-reduced-motion: reduce) {
   .command-palette-scrim,
-  .command-palette-panel,
-  .command-palette-state > span {
+  .command-palette-panel {
     animation: none;
+  }
+
+  .command-result-meta,
+  .command-result-open {
+    transition: none;
   }
 }
 

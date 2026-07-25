@@ -216,34 +216,80 @@ test("the fillets reserve their own 16px of footprint, dropped on the flush side
     registerSource,
     /\.scripture-workspace-viewport \.scripture-workspace-tab-wrap\.is-selected \{\s*margin-inline: var\(--radius-page\);\s*\}/,
   );
-  // At either end the tab becomes the page's corner, so that side has no fillet
-  // and reserves nothing for one.
+  // At the START the tab becomes the page's corner, so that side has no fillet
+  // and reserves nothing for one. There is no matching end-side rule, because
+  // the end side always keeps its fillet — see the retirement test below.
   assert.match(registerSource, /\[data-flush-start\][\s\S]{0,140}\.is-selected \{\s*margin-inline-start: 0;/);
-  assert.match(registerSource, /\[data-flush-end\][\s\S]{0,140}\.is-selected \{\s*margin-inline-end: 0;/);
+  assert.doesNotMatch(registerSource, /margin-inline-end: 0;/);
   // 104px min width leaves a flat run of 104 - 8 - 8 = 88px between the two top
   // curves, comfortably over the 40px floor the study sets.
   assert.match(stylesSource, /\.scripture-workspace-tab \{[\s\S]{0,420}min-width: 104px;/);
 });
 
-test("a flush-right tab docks the register so nothing sits between it and the page's corner", () => {
-  // B·2 case 3 left this open. A flush tab only claims the page's corner if it
-  // reaches it, so the register docks to the end that owns the corner and the
-  // controls take the space the run vacates — immediately left of the flush
-  // tab, which is also left of the first tab. Both of the study's phrasings.
-  assert.match(registerSource, /\.scripture-workspace-bar\[data-flush-end\] \{\s*justify-content: flex-end;\s*\}/);
-  assert.match(
-    registerSource,
-    /\.scripture-workspace-bar\[data-flush-end\] \.scripture-workspace-actions \{\s*order: -1;\s*\}/,
-  );
-  assert.match(componentSource, /const actionsPlacement = flushEnd \? "before-flush-tab" : "strip-end"/);
+test("flush-END is retired: the actions never move and the last tab keeps its right fillet", () => {
+  // This test used to assert the opposite, and it is rewritten rather than
+  // deleted because the behaviour it guarded was DECIDED against, not merely
+  // dropped. B·2 case 3 asked where + PASSAGE goes when the last tab claims the
+  // page's top-right corner. The register answered by docking right so the
+  // controls sat left of the flush tab. The owner ruled that out: Open, the
+  // search and the group control changed position every time the selection
+  // moved to or from the last tab, and controls that relocate between
+  // selections cost more than a squared corner is worth. "Right becomes an
+  // impossibility and that is okay." Flush-START is untouched and still liked.
+  //
+  // So the assertions below are deliberately negative. If flush-end is ever
+  // reintroduced, this test is where it will be caught, and the reason it was
+  // retired is written above so nobody has to reconstruct it.
+  assert.doesNotMatch(componentSource, /flushEnd/);
+  assert.doesNotMatch(componentSource, /data-flush-end/);
+  assert.doesNotMatch(componentSource, /before-flush-tab/);
+  assert.doesNotMatch(registerSource, /data-flush-end/);
+  assert.doesNotMatch(stylesSource, /data-flush-end/);
+
+  // The placement is a constant, and it is the strip's end in every selection.
+  assert.match(componentSource, /const actionsPlacement = "strip-end";/);
   assert.match(componentSource, /data-study-actions=\{actionsPlacement\}/);
-  // A single tab cannot supply both top corners; it takes the left one.
-  assert.match(componentSource, /activeRegisterIndex === registerTabIds\.length - 1\s*&& !flushStart/);
+  // Nothing in the register may reverse or re-dock the row to make room for a
+  // flush-right tab: those two declarations were the whole mechanism.
+  assert.doesNotMatch(registerSource, /justify-content: flex-end/);
+  assert.doesNotMatch(registerSource, /\.scripture-workspace-actions \{[^}]*order: -1/);
+
+  // Flush-START survives intact — it is the half of B·2 case 2 the ruling keeps.
+  assert.match(componentSource, /const flushStart = activeRegisterIndex === 0/);
+  assert.match(componentSource, /data-flush-start=\{flushStart \|\| undefined\}/);
+
   // Separate with interval, not with lines: the controls' keyline is gone.
   assert.match(
     registerSource,
     /\.scripture-workspace-bar \.scripture-workspace-actions \{[\s\S]{0,120}border-left: 0;/,
   );
+});
+
+test("the group popover opens on its heading, not inside the rename field", () => {
+  // The owner reported a focus ring drawn on the rename box the moment the
+  // "manage group" dropdown opens. The ring rule was already :focus-visible, so
+  // the selector was not the bug: a focused text input matches :focus-visible
+  // however focus arrived, which is the HTML spec's own heuristic for controls
+  // that accept keyboard input. The only way to stop painting a keyboard ring
+  // after a mouse click was to stop putting focus in the field.
+  //
+  // Focus still enters the dialog — it lands on the heading, which is not a
+  // text-entry control and therefore rings only when the last interaction
+  // really was a keyboard one. Removing the ring instead would have been an
+  // accessibility regression, so it is still declared, on the heading and on
+  // the field a Tab away.
+  assert.match(componentSource, /initialFocusRef=\{groupMenuHeadingRef\}/);
+  assert.doesNotMatch(componentSource, /initialFocusRef=\{groupRenameInputRef\}/);
+  assert.match(
+    componentSource,
+    /ref=\{groupMenuHeadingRef\}\s*className="scripture-workspace-popover-heading"\s*tabIndex=\{-1\}/,
+  );
+  assert.match(
+    stylesSource,
+    /\.scripture-workspace-group-popover \.scripture-workspace-popover-heading:focus-visible \{\s*outline: 2px solid var\(--study-gold\);/,
+  );
+  // The field's own ring is untouched: a Tab into it still rings.
+  assert.match(stylesSource, /\.scripture-workspace-group-popover input:focus-visible,/);
 });
 
 test("the bracket names its members' span from above and takes no width from the tab row", () => {

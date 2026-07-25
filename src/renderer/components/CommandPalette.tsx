@@ -991,7 +991,12 @@ export function CommandPalette({
     kind: "action",
     title: choice.title,
     detail: choice.detail,
-    meta: choice.id === "start-study" ? "New study" : "Current study",
+    // The trailing cell carries the ↵ hint, never a destination. The panel's
+    // eyebrow has already said which study these rows add to, and the one row
+    // that departs from it says so in its own title, so a scope repeated down
+    // the column is not information — it is the eyebrow said four more times
+    // in a colour that made it look like a different kind of thing.
+    meta: "",
     activate: choice.id === "open-passage"
       ? () => chooseStudyLens("scripture")
       : choice.id === "research-entity"
@@ -1304,6 +1309,12 @@ export function CommandPalette({
             type="search"
             placeholder={mode === "open-study-tab" ? "Find a passage, person, or place" : "A reference, a phrase, a name, a question, or your own words"}
             aria-label={mode === "open-study-tab" ? "Find a passage, person, or place to add" : "Search Scripture, notes, people, places, and actions"}
+            /* The bordered `esc` chip that used to sit at the end of this row
+               was the only place Escape was advertised, and no drawing of this
+               panel has one. It is announced here instead, on the element that
+               actually holds focus while the palette is open, so the
+               affordance survives the chip. */
+            aria-keyshortcuts="Escape"
             autoComplete="off"
             spellCheck={false}
           />
@@ -1347,7 +1358,6 @@ export function CommandPalette({
               change<span className="palette-scope-key" aria-hidden="true">⇥</span>
             </button>
           </span>
-          <kbd aria-label="Escape closes">esc</kbd>
           </span>
         </div>
 
@@ -1406,8 +1416,14 @@ export function CommandPalette({
                             <span><Wash text={result.detail} term={routing.term} /></span>
                           </span>
                         )}
-                        <span className="command-result-meta">{result.meta}</span>
-                        <span className="command-result-open" aria-hidden="true">Open&nbsp;↵</span>
+                        {/* One trailing cell, two inks. The meta rests there
+                            and the ↵ hint replaces it on the row that is
+                            current, so the column never changes width and the
+                            copy beside it never reflows. */}
+                        <span className="command-result-tail">
+                          <span className="command-result-meta">{result.meta}</span>
+                          <span className="command-result-open" aria-hidden="true">↵</span>
+                        </span>
                       </button>
                     );
                   })}

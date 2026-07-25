@@ -308,6 +308,9 @@ export function ScriptureWorkspaceTabs({
   const overflowSearchRef = useRef<HTMLInputElement>(null);
   const groupMenuButtonRef = useRef<HTMLButtonElement>(null);
   const groupRenameInputRef = useRef<HTMLInputElement>(null);
+  // Where the group popover puts focus when it opens. It is the heading and not
+  // the rename field on purpose — see the note on the Popover below.
+  const groupMenuHeadingRef = useRef<HTMLDivElement>(null);
   const contextTriggerRef = useRef<HTMLElement | null>(null);
   const tabRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const pendingWorkspaceIntentCountRef = useRef(0);
@@ -873,26 +876,24 @@ export function ScriptureWorkspaceTabs({
     : null;
 
   // The active tab flows into the page with a concave fillet, and claims the
-  // page's corner outright when it is first or last in the register. Which of
-  // those applies is computed from the tab's INDEX, never from scroll
-  // position — a shape that changes as you scroll stops reading as an object.
+  // page's top-LEFT corner outright when it is first in the register. That is
+  // computed from the tab's INDEX, never from scroll position — a shape that
+  // changes as you scroll stops reading as an object.
   const registerTabIds = groups.flatMap(({ visibleTabs }) => visibleTabs.map((tab) => tab.id));
   const activeRegisterIndex = registerTabIds.indexOf(workspace.activeTabId);
   const flushStart = activeRegisterIndex === 0;
-  // One tab is both first and last, and a 104px tab cannot supply both of the
-  // page's top corners. It takes the left one — case 2's payoff, with the other
-  // tabs merely absent — and its right fillet joins it to the page as usual.
-  const flushEnd = activeRegisterIndex >= 0 && activeRegisterIndex === registerTabIds.length - 1
-    && !flushStart;
 
-  // B·2 case 3 left this open: a flush-right tab claims the page's top-right
-  // corner, so nothing may sit to its right — and the study's own two answers
-  // ("left of the flush tab", "permanently left of the first tab") are the same
-  // answer once the register docks to the end that owns the corner. So when the
-  // last tab is active the whole run slides right to meet the page's edge and
-  // the controls take the space it leaves, immediately to its left. The other
-  // options each kill one of the two flush cases the study calls the payoff.
-  const actionsPlacement = flushEnd ? "before-flush-tab" : "strip-end";
+  // There is deliberately no flush-END counterpart, and this is a ruling rather
+  // than an omission. B·2 case 3 asked where the + PASSAGE affordance goes when
+  // the last tab claims the page's top-right corner. The only answer that saved
+  // the corner docked the whole register right and moved the actions cluster to
+  // the left of the flush tab — which meant Open, All-tabs and the group control
+  // changed position every time the selection moved to or from the last tab. The
+  // owner ruled that cost too high: the far-left tab keeps its flush treatment,
+  // the far-right case is given up, and the controls hold one position for every
+  // selection. So the placement is constant, and the attribute stays in the DOM
+  // to say out loud that it no longer varies.
+  const actionsPlacement = "strip-end";
 
   // "The rest": everything the strip is not showing — scrolled past the 36px
   // cut, or folded inside a collapsed study. The overflow control counts it.
@@ -907,7 +908,6 @@ export function ScriptureWorkspaceTabs({
       data-study-workspace-bar=""
       data-study-overflowing={hasMeasuredOverflow || undefined}
       data-flush-start={flushStart || undefined}
-      data-flush-end={flushEnd || undefined}
       data-study-actions={actionsPlacement}
       data-study-persistence={persistenceStatus.phase}
     >
@@ -1194,9 +1194,26 @@ export function ScriptureWorkspaceTabs({
           maxHeight={440}
           className="scripture-workspace-group-popover"
           ariaLabel={`Manage ${activeGroup.label}`}
-          initialFocusRef={groupRenameInputRef}
+          // Focus lands on the heading, not on the rename field. A text input
+          // matches :focus-visible however focus arrived — that is the HTML
+          // spec's own heuristic for keyboard-input controls, not a browser
+          // quirk — so pointing the popover's initial focus at the field drew a
+          // keyboard focus ring on a mouse click, which is precisely the one
+          // thing a keyboard focus ring is supposed to rule out. The heading is
+          // not a text-entry control, so it rings only when the last
+          // interaction really was a keyboard one. Focus still enters the
+          // dialog, so Escape and Tab behave, and the first Tab reaches the
+          // field with its own ring intact.
+          // Renaming from the context menu is an explicit rename intent and
+          // still focuses the field directly; opening the menu to look at it is
+          // not, and no longer does.
+          initialFocusRef={groupMenuHeadingRef}
         >
-          <div className="scripture-workspace-popover-heading">
+          <div
+            ref={groupMenuHeadingRef}
+            className="scripture-workspace-popover-heading"
+            tabIndex={-1}
+          >
             <div><strong>{activeGroup.label}</strong><span>{activeGroup.tabs.length} {activeGroup.tabs.length === 1 ? "tab" : "tabs"}</span></div>
             <span>Study group</span>
           </div>

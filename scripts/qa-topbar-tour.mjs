@@ -334,7 +334,12 @@ const minimum = await evaluate(`(() => {
 assert.ok(minimum.viewport <= 900);
 assert.ok(minimum.navRight <= minimum.toolsLeft, `minimum-width zones overlap: ${JSON.stringify(minimum)}`);
 assert.ok(minimum.toolsRight <= minimum.barRight + 0.5);
-assert.ok(minimum.jumpWidth <= 37, `dormant jump did not compact: ${minimum.jumpWidth}`);
+// The trigger was a 190px field that collapsed to a 36px icon at this width,
+// and this bound checked the collapse. §E draws no field in the band, so the
+// trigger is now the word SEARCH with its ⌘K hint dropped below 1120px. There
+// is nothing to collapse; what still has to hold is that the word stays a word
+// and never grows back into a box, which 72px states with room for the glyphs.
+assert.ok(minimum.jumpWidth <= 72, `search trigger is wearing a box again: ${minimum.jumpWidth}`);
 console.log("minimum", minimum);
 await screenshot("light-minimum-width");
 
@@ -352,7 +357,9 @@ const minimumFocused = await evaluate(`(() => {
     paletteRight: palette.right,
   };
 })()`);
-assert.ok(minimumFocused.jumpWidth <= 37);
+// Same bound with the palette open: the trigger used to expand to 176px while
+// it held focus, and a word has no reason to move when the palette opens over it.
+assert.ok(minimumFocused.jumpWidth <= 72);
 assert.ok(minimumFocused.navRight <= minimumFocused.toolsLeft, `focused minimum-width zones overlap: ${JSON.stringify(minimumFocused)}`);
 assert.ok(minimumFocused.paletteLeft >= 0 && minimumFocused.paletteRight <= 900);
 await screenshot("light-minimum-command-palette");

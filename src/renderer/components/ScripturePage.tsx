@@ -583,15 +583,6 @@ function ChapterArrowIcon({ direction }: { direction: "previous" | "next" }): Re
   );
 }
 
-function JumpIcon(): React.JSX.Element {
-  return (
-    <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="8.5" cy="8.5" r="5.25" />
-      <path d="m12.4 12.4 4.1 4.1" />
-    </svg>
-  );
-}
-
 function ReadingCanvasLoading({ passage }: { passage: string }): React.JSX.Element {
   return (
     <div className="reading-state reading-loading" role="status" aria-live="polite">
@@ -4933,6 +4924,19 @@ export function ScripturePage({
           )}
         </div>
 
+        {/* §E draws no field in this band at all — quire-f keeps a trigger for
+            the palette and nothing else — so the search is a word standing
+            beside the other words. What was here was a 190px box with a border
+            on all four sides and a tint of its own, which made it the only
+            enclosure and the only third plane in the one band that is supposed
+            to stay silent. It was also a button dressed as an input, promising
+            a cursor it never gave you.
+
+            The class list is deliberately unchanged: three contract tests name
+            `passage-jump command-palette-trigger` and the palette's own QA
+            tours click it by the second class. Only the drawing of it moves.
+            The label span is renamed because its old class belongs to the
+            palette's rules, which are not ours to restyle. */}
         <button
           type="button"
           className="passage-jump command-palette-trigger"
@@ -4940,8 +4944,7 @@ export function ScripturePage({
           aria-label="Search Scripture, notes, people, places, and actions"
           aria-haspopup="dialog"
         >
-          <JumpIcon />
-          <span className="command-palette-trigger-label">Search</span>
+          <span className="passage-jump-label">Search</span>
           <kbd className="passage-jump-shortcut" aria-hidden="true">⌘K</kbd>
         </button>
         </div>

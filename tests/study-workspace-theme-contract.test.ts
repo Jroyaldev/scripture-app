@@ -111,27 +111,32 @@ test("the active tab joins the page with two fillets, not with an underline", ()
   assert.doesNotMatch(workspaceStyles, /\[aria-selected="true"\]::after \{[^}]*height: 2px/);
   assert.doesNotMatch(workspaceStyles, /\[aria-selected="true"\]::(?:before|after) \{[^}]*background: var\(--study-gold\)/);
 
-  // When the active tab is first or last in the register it claims the page's
+  // When the active tab is FIRST in the register it claims the page's top-left
   // corner outright, so the fillet on that side has nothing to join. The state
   // is a data attribute on the strip, computed from the tab's index.
+  //
+  // There is deliberately no last-tab counterpart. This test used to assert one
+  // in the same breath as the first-tab rule; it is rewritten rather than
+  // deleted because flush-END was ruled against, not forgotten. Claiming the
+  // top-right corner meant relocating the strip's controls whenever the last
+  // tab was selected, and controls that move between selections are a worse
+  // experience than a rounded corner is a better one. The last tab therefore
+  // keeps its right fillet, and the page keeps its top-right radius, always.
   assert.match(
     workspaceStyles,
-    /\.scripture-workspace-bar\[data-flush-start\] \.scripture-workspace-tab\[aria-selected="true"\]::before,\s*\.scripture-workspace-bar\[data-flush-end\] \.scripture-workspace-tab\[aria-selected="true"\]::after \{\s*display: none;\s*\}/,
+    /\.scripture-workspace-bar\[data-flush-start\] \.scripture-workspace-tab\[aria-selected="true"\]::before \{\s*display: none;\s*\}/,
   );
-  // Same attribute squares the page's own corner underneath it, so the tab and
-  // the page stop being two rounded shapes stacked at the same point.
+  // The same attribute squares the page's own corner underneath it, so the tab
+  // and the page stop being two rounded shapes stacked at the same point.
   assert.match(
     styles,
     /\.scripture-workspace-bar\[data-flush-start\] ~ \.scripture-body \.scripture-content \{\s*border-top-left-radius: 0;\s*\}/,
   );
-  assert.match(
-    styles,
-    /\.scripture-workspace-bar\[data-flush-end\] ~ \.scripture-body \.scripture-content \{\s*border-top-right-radius: 0;\s*\}/,
-  );
+  assert.doesNotMatch(styles, /\.scripture-content \{\s*border-top-right-radius: 0;/);
   assert.match(component, /const flushStart = activeRegisterIndex === 0/);
-  assert.match(component, /const flushEnd = activeRegisterIndex >= 0 && activeRegisterIndex === registerTabIds\.length - 1/);
   assert.match(component, /data-flush-start=\{flushStart \|\| undefined\}/);
-  assert.match(component, /data-flush-end=\{flushEnd \|\| undefined\}/);
+  assert.doesNotMatch(styles, /data-flush-end/);
+  assert.doesNotMatch(component, /flushEnd|data-flush-end/);
 });
 
 test("workspace labels and controls stay readable without nested alpha masks", () => {

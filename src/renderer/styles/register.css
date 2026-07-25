@@ -17,19 +17,16 @@
    tab's label gutter, and the register loses the 16px of interval that makes
    the active tab read as a raised part of the page rather than a chip laid on
    top of the row. The margin is the fillet's reserved space, so it is carried
-   by the selected wrap and dropped on whichever side the tab is flush. */
+   by the selected wrap and dropped on the one side the tab can be flush. */
 .scripture-workspace-viewport .scripture-workspace-tab-wrap.is-selected {
   margin-inline: var(--radius-page);
 }
 
+/* Start only. The end side always keeps its fillet, and so always keeps the
+   8px the fillet needs — see the ruling below. */
 .scripture-workspace-bar[data-flush-start]
   .scripture-workspace-viewport .scripture-workspace-tab-wrap.is-selected {
   margin-inline-start: 0;
-}
-
-.scripture-workspace-bar[data-flush-end]
-  .scripture-workspace-viewport .scripture-workspace-tab-wrap.is-selected {
-  margin-inline-end: 0;
 }
 
 /* A study interval still has to clear the fillet: 12px of canvas between
@@ -41,39 +38,31 @@
 }
 
 
-/* ── Where + PASSAGE goes when the last tab is flush right ────────────────
+/* ── Where + PASSAGE goes: at the end of the strip, in every state ────────
 
    B·2 case 3 raised this and left it open: "the + PASSAGE affordance can no
    longer sit at the far right of the strip when the last tab is active. It
    moves to the left of the flush tab, or into the overflow control — worth
-   deciding before this ships." B·2·4 adds an instinct: "permanently left of
-   the first tab."
+   deciding before this ships."
 
-   Those read as two answers but they are one. A flush tab only claims the
-   page's corner if it actually reaches it, so the register has to dock to the
-   end that owns the corner: left-aligned normally (case 2's payoff — the first
-   tab supplies the page's top-left corner), right-aligned when the last tab is
-   active. Docked right, the controls sit immediately left of the flush tab AND
-   left of the first tab. Both of the study's phrasings are satisfied at once.
+   The register used to answer it by docking right whenever the last tab was
+   active, so the run met the page's edge and the controls took the space it
+   vacated. It worked as a shape and failed as a surface: Open, All-tabs and
+   the group control jumped from one end of the strip to the other every time
+   the selection moved to or from the last tab, so the three things you reach
+   for most changed position for a reason no one looking at the strip can see.
 
-   The alternatives each destroy one of the two cases the study's own header
-   calls "the detail that proves the whole idea": pinning the controls far right
-   means flush-end can never be true, and pinning them far left means
-   flush-start can never be true.
+   The owner ruled against it — the far-left tab is far left and "gets that
+   treatment", while the right "becomes an impossibility and that is okay". So
+   flush-END does not exist: the last tab keeps its right fillet and joins the
+   page like any other tab, the page keeps its top-right radius, and this file
+   holds no rule that moves the actions. Flush-START is untouched, because it
+   is the half of case 2 that costs nothing.
 
-   Instant, like the fill and the fillet — the silhouette resolves in one
-   frame rather than sliding into place. */
-.scripture-workspace-bar[data-flush-end] {
-  justify-content: flex-end;
-}
-
-.scripture-workspace-bar[data-flush-end] .scripture-workspace-viewport {
-  flex: 0 1 auto;
-}
-
-.scripture-workspace-bar[data-flush-end] .scripture-workspace-actions {
-  order: -1;
-}
+   Do not reintroduce a flush-end attribute rule here. A contract test in
+   tests/study-workspace-tabs-premium-contract.test.ts fails the moment that
+   attribute name appears anywhere in this file, the component, or styles.css —
+   which is also why the name is spelled without its prefix in these notes. */
 
 /* Separate with interval, not with lines. The controls' 1px keyline is the
    same third device B·2·4 retired from in front of the Research tabs — 14px of

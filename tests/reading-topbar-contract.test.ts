@@ -14,7 +14,14 @@ test("reading topbar has stable location and tool zones without margin-width cou
   assert.match(page, /className="topbar-tools"/);
   assert.doesNotMatch(page, /topbar-margin-slot/);
   assert.doesNotMatch(css, /\.topbar-margin-slot/);
-  assert.match(css, /@media \(max-width: 1120px\)[\s\S]*\.passage-jump\s*\{\s*width: 36px;/);
+  // This used to assert `.passage-jump { width: 36px }` — the jump field
+  // collapsing to an icon-only box as the header narrowed. §E draws no field in
+  // this band at all, so the trigger is now the word SEARCH and there is no box
+  // left to compact; the word is already narrower at rest than that icon was.
+  // The guarantee the assertion existed for — the search gets quieter as the
+  // header narrows, and never crowds the reference or the instruments — is
+  // re-stated here against the part that still yields, the ⌘K hint.
+  assert.match(css, /@media \(max-width: 1120px\)[\s\S]*\.passage-jump-shortcut\s*\{\s*display: none;/);
 });
 
 test("reading topbar exposes passage movement, picker state, and a discoverable jump shortcut", () => {

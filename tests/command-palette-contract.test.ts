@@ -160,6 +160,80 @@ test("search surfaces use one loading device — a seal segment on a hairline, n
   assert.match(partial, /@keyframes search-progress-travel/);
 });
 
+/** The declarations of the first rule in `css` whose selector list opens with `selector`. */
+function declarationsOf(css: string, selector: string): string {
+  const at = css.indexOf(`${selector} {`);
+  assert.ok(at >= 0, `styles.css must still carry a \`${selector}\` rule`);
+  const open = css.indexOf("{", at);
+  const close = css.indexOf("}", open);
+  assert.ok(close > open, `\`${selector}\` must be a closed rule`);
+  return css.slice(open + 1, close);
+}
+
+test("the palette's result row draws state as a mark and hover as ink, never as a fill", () => {
+  const css = readFileSync(join(repoRoot, "src", "renderer", "styles.css"), "utf8");
+
+  // One declaration used to tint the background for hover, for the roving
+  // `.is-focused` row and for keyboard focus all at once, and it broke three
+  // laws doing it: a sunk third plane in a language that has two, state drawn
+  // as a fill in a language where state is a mark, and a reveal that works by
+  // getting brighter. This is the highest-traffic row in the app, so the three
+  // are pinned apart rather than left to drift back together.
+  assert.match(
+    css,
+    /\.command-palette-result:hover \{[^}]*background: transparent;[^}]*color: var\(--text-primary\);[^}]*\}/,
+    "hover on a result row is ink only — the copy comes up to full ink and the row keeps its plane",
+  );
+  assert.match(
+    css,
+    /\.command-palette-result\.is-focused,\s*\.command-palette-result:focus-visible \{[^}]*background: transparent;[^}]*\}/,
+    "the current row keeps the paper it sits on; nothing about it is filled",
+  );
+
+  // With the fill gone, the 2px seal in the gutter is the whole of the focused
+  // state for a reader using the pointer. If it ever stops painting there is
+  // no visible current row left at all, so it is asserted here rather than
+  // assumed by whoever edits this block next.
+  assert.match(
+    css,
+    /\.command-palette-result\.is-focused::before,\s*\.command-palette-result:focus-visible::before \{[^}]*background: var\(--study-gold\);[^}]*\}/,
+    "the seal mark carries the state the fill used to carry",
+  );
+  assert.match(
+    declarationsOf(css, ".command-palette-result::before"),
+    /width: 2px;/,
+    "the mark's gutter is reserved on every row, marked or not, so becoming current moves nothing",
+  );
+
+  const rowRules = css.slice(
+    css.indexOf(".command-palette-result {"),
+    css.indexOf(".command-result-glyph {"),
+  );
+  assert.ok(rowRules.length > 0, "the result row's rules must still be a contiguous block");
+  assert.doesNotMatch(
+    rowRules,
+    /background:\s*color-mix\([^)]*--bg-secondary/,
+    "a tint of the secondary plane under the row is the third fill this language does not have",
+  );
+});
+
+test("the palette panel floats, so it casts a shadow and does not also wear a hairline", () => {
+  const css = readFileSync(join(repoRoot, "src", "renderer", "styles.css"), "utf8");
+  const panel = declarationsOf(css, ".command-palette-panel");
+
+  // Depth says one thing at a time: docked things wear a hairline, and only
+  // genuinely floating things cast a shadow. This panel floats over whatever
+  // was being read, so it takes the shadow — and wearing the border as well
+  // claimed both at once, which is the failure this guards.
+  assert.match(panel, /box-shadow: var\(--shadow-elevated\);/, "a floating panel casts the one shadow");
+  assert.doesNotMatch(panel, /\n\s*border:/, "a shadow and a hairline together say docked and floating at once");
+  assert.match(
+    panel,
+    /border-radius: var\(--radius-page\);/,
+    "the drawing gives the panel the page radius, and the band it sits in is token-only",
+  );
+});
+
 test("command palette has four truthful high-traffic lenses", () => {
   const source = readFileSync(join(repoRoot, "src", "renderer", "components", "CommandPalette.tsx"), "utf8");
   for (const label of ["Intelligence", "Scripture", "My notes", "Names"]) {
