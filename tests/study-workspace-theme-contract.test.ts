@@ -23,6 +23,30 @@ function declaredTokens(selector: string): Map<string, string> {
   return declared;
 }
 
+/**
+ * Every at-rule block whose prelude starts with `head`, cut by brace matching
+ * rather than by a trailing landmark. A landmark anchor is what let the compact
+ * -width scope below run to the end of the sheet once the comment it pointed at
+ * was deleted; braces cannot be renamed out from under the test.
+ */
+function mediaBlocks(head: string): string[] {
+  const blocks: string[] = [];
+  for (let at = styles.indexOf(head); at !== -1; at = styles.indexOf(head, at)) {
+    const open = styles.indexOf("{", at);
+    assert.ok(open > at, `${head} at ${at} opens no block`);
+    let depth = 0;
+    let end = open;
+    for (; end < styles.length; end++) {
+      if (styles[end] === "{") depth++;
+      else if (styles[end] === "}" && --depth === 0) { end++; break; }
+    }
+    assert.equal(depth, 0, `${head} at ${at} is never closed`);
+    blocks.push(styles.slice(at, end));
+    at = end;
+  }
+  return blocks;
+}
+
 /** Every flat rule block in the sheet, as [selector, body] pairs. */
 function ruleBlocks(): Array<[string, string]> {
   return [...styles.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((match) => [
@@ -177,9 +201,20 @@ test("forced colors, reduced motion, and desktop zoom keep the strip operable", 
   // and hiding it deleted the filleted tab, the scrolling strip and the +n
   // count, all of which were already built.
   assert.doesNotMatch(styles, /\.scripture-workspace-bar \{ display: none; \}/);
-  const compactWidthBlock = styles.slice(
-    styles.indexOf("@media (max-width: 979px) {"),
-    styles.indexOf("/* Do not mistake desktop zoom for a phone."),
-  );
-  assert.doesNotMatch(compactWidthBlock, /\.scripture-workspace-bar \{ display: none; \}/);
+  // This scope used to end at the comment "/* Do not mistake desktop zoom for a
+  // phone.", which was deleted along with the rule it introduced. `indexOf`
+  // returned -1, and `slice(start, -1)` runs to the end of the file rather than
+  // failing — so the "compact width block" was two thirds of styles.css and
+  // this assertion was a copy of the whole-sheet one above it. Brace-match the
+  // real blocks instead, state how many there are, and look for a hidden
+  // register in any formatting rather than in one exact string.
+  const compactBlocks = mediaBlocks("@media (max-width: 979px)");
+  assert.equal(compactBlocks.length, 3,
+    "styles.css declares three max-width:979px blocks — the compact margin split, the "
+    + "narrow shell, and the dynamic-type refinement. A different count means the narrow "
+    + "shell moved and this scope must be re-anchored before it is trusted.");
+  for (const block of compactBlocks) {
+    assert.doesNotMatch(block, /\.scripture-workspace-bar\b[^{}]*\{[^}]*display:\s*none/,
+      "a compact-width block hides the register — H makes it the narrow shell's signature");
+  }
 });

@@ -151,6 +151,13 @@ test("one vertical axis runs through every tile in the rail", () => {
   const switcher = ruleBlocks(css, ".library-switcher")[0]!;
   assert.match(switcher, /grid-template-columns: var\(--rail-tile\) minmax\(0, 1fr\) 14px;/);
   assert.match(switcher, /padding: 0;/);
+  // The switcher's row is one tile tall in both widths. Measured, the two-line
+  // library text is ~36px and sets the row's height if allowed to, which centres
+  // the avatar 2px high and lands the account tile's bottom edge at 26 from the
+  // window rather than the frame's 24. The tile owns the row; the second line is
+  // air either side of it.
+  assert.match(switcher, /grid-template-rows: var\(--rail-tile\);/);
+  assert.match(ruleBlocks(css, ".sidebar.collapsed .library-switcher")[0]!, /height: var\(--rail-tile\);/);
 
   // Collapsed, the label is zero-width but is still a flex item, so a surviving
   // gap after the tile drags the tile half of it off the axis. Both collapsed

@@ -3421,6 +3421,22 @@ html, body, #root {
   position: relative;
 }
 
+/* §05·3, frame table row one: "Page top · 54 · Invariant across modes." The
+   strip normally spends it — 24 of canvas over a 30px strip — so this rule is
+   silent whenever there is a strip. Focus does not render one (§05·5 thins the
+   shell to the text), and without this the page's top edge would rise to 0 in
+   the one mode whose whole claim is that "the rectangle does not change. Top
+   54, left 80, right and bottom 24 — identical to reading mode."
+
+   Keyed on the strip's ABSENCE rather than on focus-mode, because the row says
+   invariant across modes and not "across the two modes that exist today". The
+   54 stays as canvas, and canvas with nothing on it is exactly what focus
+   wants — the same argument §05·5 makes for the rail's 56px column, one axis
+   over. */
+.scripture-page:not(:has(> .scripture-workspace-bar)) > .scripture-body {
+  padding-top: var(--frame-top);
+}
+
 /* The stage IS the paper's box. It carries the frame's last row so that the
    page, its bottom fade, its container query and every surface measured
    against the stage are capped by one declaration rather than four. */
@@ -13818,6 +13834,12 @@ button.lang-phrase-diagram-node:focus-visible {
   min-width: 0;
   display: grid;
   grid-template-columns: var(--rail-tile) minmax(0, 1fr) 14px;
+  /* One tile tall, explicitly. The two-line library text measures ~36 and would
+     otherwise set the row's height, which centres the avatar 2px above the
+     footer's bottom padding and puts the account tile's bottom edge at 26 from
+     the window instead of the frame's 24. The tile owns the row; the second
+     line of text is air either side of it, not a box that can push it. */
+  grid-template-rows: var(--rail-tile);
   align-items: center;
   gap: 8px;
   padding: 0;
@@ -13842,10 +13864,15 @@ button.lang-phrase-diagram-node:focus-visible {
 }
 
 /* Same reason as the nav row: the text collapses to zero width but stays a
-   flex item, and the gap would push the tile off the axis. */
+   flex item, and the gap would push the tile off the axis. The height is the
+   tile's for the same reason the grid row is at full width — the text is 36px
+   tall even at zero width, and letting it set the row's height lifts the
+   account tile 2px off the frame's bottom edge. */
 .sidebar.collapsed .library-switcher {
   display: flex;
+  align-items: center;
   gap: 0;
+  height: var(--rail-tile);
 }
 
 .footer-avatar {
@@ -18899,9 +18926,14 @@ button.lang-phrase-diagram-node:focus-visible,
      where H's rules take over." This is that handover: 80px of page padding at
      390 is a fifth of the measure, so the narrow shell keeps the reading
      gutter it already had. The canon is untouched — the container query cannot
-     match a paper this narrow, so the page is already centred here. */
-  .scripture-inner {
-    padding-inline: var(--reading-inline-gutter);
+     match a paper this narrow, so the page is already centred here.
+
+     Stated as the DATUM rather than as the page's padding, so the concession
+     travels the one chain §05·2 asks for: --page-datum feeds the page's
+     --page-padding-inline, which feeds the topbar's --topbar-datum, so the
+     pager and the page body yield together and by construction. */
+  .scripture-reading-stage {
+    --page-datum: var(--reading-inline-gutter);
   }
 
   .scripture-workspace-bar {

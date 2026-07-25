@@ -259,14 +259,28 @@ test("no licensed prose is left in the edition's unmarked voice", () => {
   // `provenance="edition"`, which the component's own contract defines as
   // "unmarked = it is the edition". Two sentences by STEPBible were therefore
   // presented as the edition's own.
-  const editionBlocks = [...margin.matchAll(
-    /<MarginEntryWhy\s+provenance="edition"[\s\S]*?<\/MarginEntryWhy>/g,
-  )].map((match) => match[0]!);
+  // This used to match only `provenance="edition"` blocks. The margin now uses
+  // none — "edition" is still a legal member of MarginEntryProvenance, but no
+  // call site passes it — so the loop swept an empty list and asserted nothing
+  // while reading as though it had. Sweep every paired block instead and hold
+  // the broader form of the same rule: licensed prose belongs to the laurel
+  // voice and to no other, whether the block claims to be the edition, the
+  // reader, or the app.
+  const whyBlocks = [...margin.matchAll(
+    /<MarginEntryWhy\b([\s\S]*?)>([\s\S]*?)<\/MarginEntryWhy>/g,
+  )].map((match) => ({ props: match[1]!, body: match[2]! }));
+  assert.ok(whyBlocks.length >= 5,
+    `expected the margin's six why-blocks — one licensed, two reader, three app — got ${whyBlocks.length}. `
+    + "A collapse to zero means MarginEntryWhy stopped being written as a paired tag and this sweep is blind.");
 
-  for (const block of editionBlocks) {
-    assert.doesNotMatch(block, /\.brief\b/, "a licensed brief is drawn as the edition's own text");
-    assert.doesNotMatch(block, /\.short\b/, "a licensed gloss is drawn as the edition's own text");
-    assert.doesNotMatch(block, /\.description\b/, "a licensed description is drawn as the edition's own text");
+  const unmarked = whyBlocks.filter(({ props }) => !/provenance="licensed"/.test(props));
+  assert.ok(unmarked.length >= 4,
+    `expected several non-laurel why-blocks to police, got ${unmarked.length}`);
+  for (const { props, body } of unmarked) {
+    const voice = /provenance="([a-z]+)"/.exec(props)?.[1] ?? "dynamic";
+    assert.doesNotMatch(body, /\.brief\b/, `a licensed brief is drawn in the ${voice} voice`);
+    assert.doesNotMatch(body, /\.short\b/, `a licensed gloss is drawn in the ${voice} voice`);
+    assert.doesNotMatch(body, /\.description\b/, `a licensed description is drawn in the ${voice} voice`);
   }
 });
 
@@ -433,6 +447,14 @@ test("laurel prose is never edited in place", () => {
     const bindings = [...source.matchAll(
       /<(?:textarea|input|ControlTextarea|ControlInput)\b[\s\S]{0,400}?\/?>/gi,
     )];
+    // Neither file draws an editable control today, so the loop below sweeps
+    // nothing — which is the answer, but only if it is stated. Left unstated it
+    // was three assertions that could not fail. Say the number out loud: the
+    // day the margin grows a text field, this fails and sends the author to the
+    // loop underneath rather than letting it wave the new control through.
+    assert.equal(bindings.length, 0,
+      `${file} now draws ${bindings.length} editable control(s). That is not forbidden, but the `
+      + "licensed-prose check below has never run against one — review it, then raise this count.");
     for (const binding of bindings) {
       for (const field of [/\.brief\b/, /place\.description\b/, /\.short\b/]) {
         assert.doesNotMatch(

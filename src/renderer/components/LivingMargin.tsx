@@ -2540,9 +2540,15 @@ function ConnectionsPanel({
       )}
 
       {/* Verbs are words in a footer: no bordered buttons, no circular chips.
-          `Connect a phrase` names where a connection comes from; C·4 §6 leaves
-          the authoring surface undrawn and open, so nothing is faked behind it
-          and the phrase stays a statement rather than a control that lies. */}
+
+          @quire guessed · `Connect a phrase` is drawn and inert. C·4 §6 asks
+          the question itself — "Where does a connection get made? I have drawn
+          Connect a phrase in the footer and nothing behind it… Say the word" —
+          so the authoring surface is undrawn by the designer's own account,
+          not overlooked here. Rendering it as a control would mean inventing
+          that surface (select two phrases, choose a type, enforce the arity)
+          behind a word in a footer, and a verb that opens nothing is a control
+          that lies. It stays a statement until the word comes back. */}
       <div className="margin-connection-footer">
         <span className="margin-connection-verb">Connect a phrase</span>
         <span className="margin-connection-state">Threads shown</span>

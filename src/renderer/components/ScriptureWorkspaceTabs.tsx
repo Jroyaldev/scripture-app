@@ -879,9 +879,19 @@ export function ScriptureWorkspaceTabs({
   // page's top-LEFT corner outright when it is first in the register. That is
   // computed from the tab's INDEX, never from scroll position — a shape that
   // changes as you scroll stops reading as an object.
+  //
+  // Rev 05 §05·2 adds one condition, because it put a real object in front of
+  // the first tab. When the leading study is expanded its kicker takes the head
+  // of the strip, so the first TAB no longer starts at the strip's left edge and
+  // cannot supply the page's corner: squaring the corner anyway would leave the
+  // paper cut flat against a gap. The kicker is the only thing that can precede
+  // a tab, so the condition is exactly "no kicker in front of it", and the page
+  // keeps its 8px corner — which is what §05·6 draws in both polarities.
   const registerTabIds = groups.flatMap(({ visibleTabs }) => visibleTabs.map((tab) => tab.id));
   const activeRegisterIndex = registerTabIds.indexOf(workspace.activeTabId);
-  const flushStart = activeRegisterIndex === 0;
+  const leadGroup = groups.find(({ visibleTabs }) => visibleTabs.length > 0) ?? null;
+  const leadKickered = leadGroup ? !leadGroup.group.collapsed : false;
+  const flushStart = activeRegisterIndex === 0 && !leadKickered;
 
   // There is deliberately no flush-END counterpart, and this is a ruling rather
   // than an omission. B·2 case 3 asked where the + PASSAGE affordance goes when
@@ -969,6 +979,12 @@ export function ScriptureWorkspaceTabs({
                   you opened; the reader may rename it, and renaming an inference
                   does not make it an authored object. */}
               <span className="scripture-workspace-group-mark" aria-hidden="true" />
+              {/* @quire guessed · both §05·2 and §05·6 letter the kicker
+                  "EXOD 34 · STUDY", and the shipped group label is already a
+                  study's name ("Pastoral Romans study"), so appending the word
+                  would name the kind twice. Read as the drawing showing a
+                  reference that needs saying what it is, not as a fixed suffix.
+                  Reverses to `${groupLabel} · STUDY` in one line if wrong. */}
               <span>{groupLabel}</span>
             </button>
           </div>

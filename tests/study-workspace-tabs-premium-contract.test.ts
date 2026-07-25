@@ -298,7 +298,11 @@ test("flush-END is retired: the actions never move and the last tab keeps its ri
   assert.doesNotMatch(registerSource, /\.scripture-workspace-actions \{[^}]*order: -1/);
 
   // Flush-START survives intact — it is the half of B·2 case 2 the ruling keeps.
-  assert.match(componentSource, /const flushStart = activeRegisterIndex === 0/);
+  // Rev 05 §05·2 qualifies it rather than retiring it: the group's kicker is a
+  // real object at the head of the strip, so a first tab standing behind one
+  // does not reach the page's corner and may not square it.
+  assert.match(componentSource, /const flushStart = activeRegisterIndex === 0 && !leadKickered/);
+  assert.match(componentSource, /const leadKickered = leadGroup \? !leadGroup\.group\.collapsed : false/);
   assert.match(componentSource, /data-flush-start=\{flushStart \|\| undefined\}/);
 
   // Separate with interval, not with lines: the controls' keyline is gone.
