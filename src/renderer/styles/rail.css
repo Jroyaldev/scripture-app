@@ -100,7 +100,7 @@
 .sidebar.collapsed .nav-unread {
   position: absolute;
   top: 7px;
-  right: 12px;
+  right: var(--rail-tile-inset);
   margin: 0;
 }
 
@@ -123,13 +123,17 @@
    --------------------------------------------------------------------------
    When a write is in flight every row locks, and a rail full of greyed rows
    with no explanation is a bug report waiting to happen. The line sits on the
-   39px label column so it reads as a note under the rows it explains, and it
+   rail's label column so it reads as a note under the rows it explains, and it
    is slate because the hold belongs to the app's work, not to the reader's.
+
+   Rev 05 §05·3 moved that column from 39 to --rail-label-x: the icon is now
+   centred in a 32px tile instead of packed against the row's leading edge, so
+   the labels start after the tile rather than after the glyph.
    ========================================================================== */
 
 .rail-held {
   margin: 0;
-  padding: 14px 12px 0 39px;
+  padding: 14px var(--rail-tile-inset) 0 var(--rail-label-x);
   font-family: var(--font-mono);
   font-size: 9px;
   font-weight: var(--fw-normal);
@@ -170,7 +174,7 @@
 
 .rail-study-kicker {
   margin: 0;
-  padding: 0 12px 8px 39px;
+  padding: 0 var(--rail-tile-inset) 8px var(--rail-label-x);
   font-family: var(--font-mono);
   font-size: 9px;
   font-weight: var(--fw-normal);
@@ -185,7 +189,7 @@
 
 .rail-study-list {
   margin: 0;
-  padding: 0 12px 0 39px;
+  padding: 0 var(--rail-tile-inset) 0 var(--rail-label-x);
   list-style: none;
   display: flex;
   flex-direction: column;
@@ -328,7 +332,7 @@
 }
 
 .rail-focus-handle:focus-visible {
-  outline: 2px solid var(--study-gold-focus);
+  outline: 2px solid var(--accent-seal);
   outline-offset: 3px;
 }
 
@@ -342,7 +346,10 @@
   z-index: 40;
   width: var(--rail-w);
   margin-right: calc(12px - var(--rail-w));
-  padding-top: env(titlebar-area-height, 28px);
+  /* The floated rail returns to the frame's origin, not the window's: the
+     brand tile lands on the same 54 it occupies in reading mode, so floating
+     it back does not move the column it is restoring. */
+  padding-top: var(--frame-top);
   background: var(--bg-canvas);
   box-shadow: var(--shadow-float);
 }

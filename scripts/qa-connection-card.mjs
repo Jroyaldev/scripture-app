@@ -17,14 +17,19 @@ import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { createServer } from "node:net";
 import electronPath from "electron";
+import { waitForState } from "./qa-support/app-vocabulary.mjs";
 
 const WIDTHS = [640, 860, 1280];
-const THEMES = ["light", "dark", "glass", "dark-glass"];
+// Glass and Candlelight were never atmospheres: they are Paper and Ink with the
+// translucent material on, which Rev 04 makes a material class. Driving them
+// clicked a picker option that does not exist. The four real atmospheres are
+// temperature crossed with luminance. See scripts/qa-support/app-vocabulary.mjs.
+const THEMES = ["light", "dark", "porcelain", "onyx"];
 const THEME_LABELS = new Map([
   ["light", "Paper"],
   ["dark", "Ink"],
-  ["glass", "Glass"],
-  ["dark-glass", "Candlelight"],
+  ["porcelain", "Porcelain"],
+  ["onyx", "Onyx"],
 ]);
 const HEIGHT = 900;
 const GEOMETRY_EPSILON = 0.5;
@@ -139,13 +144,11 @@ function createDriver(cdp) {
     return response.result?.result?.value;
   };
 
+  // Vets the gate's vocabulary before waiting, so a condition the app can
+  // never satisfy fails at once instead of hanging and reading like a slow
+  // app. See scripts/qa-support/app-vocabulary.mjs.
   const waitFor = async (expression, timeout = 10_000) => {
-    const started = Date.now();
-    while (Date.now() - started < timeout) {
-      if (await evaluate(expression)) return;
-      await sleep(80);
-    }
-    throw new Error(`Timed out waiting for ${expression}`);
+    await waitForState(evaluate, sleep, expression, timeout);
   };
 
   return { evaluate, waitFor };

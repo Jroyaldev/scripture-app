@@ -12,6 +12,7 @@
  */
 
 import { mkdirSync, writeFileSync } from "node:fs";
+import { waitForState } from "./qa-support/app-vocabulary.mjs";
 
 const CDP_HTTP = "http://localhost:9222/json/list";
 const OUT_DIR = "docs/ui-audit/screens";
@@ -107,16 +108,32 @@ if (passage) {
     await sleep(600);
   }
 
-  // 2. Jump — requestSubmit (synthetic Enter does not submit React forms)
-  await evaluate(`(() => {
-    const inp = document.querySelector(".passage-jump-input");
-    if (!inp) throw new Error("no .passage-jump-input");
-    const set = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
-    set.call(inp, ${JSON.stringify(passage)});
-    inp.dispatchEvent(new Event("input", { bubbles: true }));
-    inp.closest("form").requestSubmit();
+  // 2. Jump — through the command palette. The 190px passage box is gone: it
+  // was a button dressed as an input, and Quire F replaced it with the word
+  // `Search`, which opens the palette. Open it, type the reference, take the
+  // reading it offers.
+  const paletteOpened = await evaluate(`(() => {
+    const trigger = document.querySelector(".command-palette-trigger");
+    if (!trigger) return false;
+    trigger.click();
+    return true;
   })()`);
-  await sleep(1200);
+  if (!paletteOpened) throw new Error("The command palette trigger is not in the header");
+  await waitForState(evaluate, sleep,
+    `Boolean(document.querySelector(".command-palette-panel .command-palette-input-row input"))`);
+  await evaluate(`(() => {
+    const input = document.querySelector(".command-palette-input-row input");
+    if (!input) return false;
+    const set = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
+    set?.call(input, ${JSON.stringify(passage)});
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    return true;
+  })()`);
+  await waitForState(evaluate, sleep, `document.querySelectorAll(".command-palette-result").length > 0`);
+  await evaluate(`document.querySelector(".command-palette-result")?.click()`);
+  await waitForState(evaluate, sleep, `!document.querySelector(".command-palette-root")`);
+  await waitForState(evaluate, sleep, `document.querySelectorAll(".verse-line").length > 0`);
+  await sleep(600);
 
   // A same-chapter jump (e.g. already in John 3, request John 3:16) does not
   // remount the chapter, so explicitly pin the requested verse after submit.
@@ -183,7 +200,11 @@ console.log("pills:", pills.join(" · "));
 const originalTheme = await evaluate(
   `document.querySelector(".app-shell")?.dataset.theme ?? "light"`,
 );
-const allThemes = ["light", "dark", "glass", "dark-glass"];
+// Glass and Candlelight were never atmospheres: they are Paper and Ink with the
+// translucent material on, which Rev 04 makes a material class. Driving them
+// clicked a picker option that does not exist. The four real atmospheres are
+// temperature crossed with luminance. See scripts/qa-support/app-vocabulary.mjs.
+const allThemes = ["light", "dark", "porcelain", "onyx"];
 const themes = [originalTheme, ...allThemes.filter((theme) => theme !== originalTheme)];
 
 async function clickPill(text) {

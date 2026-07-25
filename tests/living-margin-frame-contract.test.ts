@@ -910,3 +910,144 @@ test("the multi-verse Words chooser wraps APG arrows and keeps a stable focus ow
   assert.match(margin, /group\.querySelector<HTMLButtonElement>/);
   assert.doesNotMatch(margin, /window\.setTimeout\(\(\) => \{\s*\(event\.currentTarget\.querySelector/);
 });
+
+/* ---------------------------------------------------------------------------
+   §C4·6 · no mono on the margin
+--------------------------------------------------------------------------- */
+
+/** Every stylesheet the renderer bundle imports. The margin's families are
+ *  spread across styles.css and three sheets under `styles/`, so a sweep that
+ *  reads one of them proves nothing about the surface. */
+function stylesheets(): Array<[string, string]> {
+  const dir = join(repoRoot, "src", "renderer", "styles");
+  return [
+    ["styles.css", css],
+    ...readdirSync(dir)
+      .filter((name) => name.endsWith(".css"))
+      .map((name) => [`styles/${name}`, readFileSync(join(dir, name), "utf-8")] as [string, string]),
+  ];
+}
+
+/**
+ * The selector families that make up the margin surface. A rule belongs to the
+ * surface when any compound in its selector opens with one of these — which is
+ * how `.crossref-row:hover .crossref-open-affordance` is caught along with
+ * `.crossref-context`.
+ *
+ * `.connection-*` is deliberately absent. The connection draft-exit dialog is a
+ * scrim over the marking surface rather than anything in the margin column, and
+ * its eyebrow is the same uppercase kicker `.structure-modal-kicker`,
+ * `.workspace-decision-kicker` and `.shortcuts-overlay-kicker` all set in mono.
+ * Widening this list to reach it would be ruling on a surface C4·6 was not
+ * about.
+ */
+const MARGIN_FAMILIES = /(?:^|[\s,>+~])\.(?:margin|crossref|note-crossref|entity|intent|echo)-/;
+
+/**
+ * C4·6, restating C2·6: "No mono on this surface. `Related verses` and its
+ * subtitle come out of mono; tabular figures do the aligning." Rev 04 §8 puts
+ * it in the withdrawn column — mono survives only in header instruments, key
+ * hints and reference labels, none of which the margin has.
+ *
+ * The remedy the ruling states is a substitution, not a deletion: the UI sans
+ * plus `font-variant-numeric: tabular-nums` wherever the mono was doing the
+ * aligning. Dropping the declaration and letting a count fall back to
+ * proportional figures trades a loud defect for a quiet one — a number that
+ * changes width as it counts, in a column drawn to hold still.
+ *
+ * Six rules on this surface still set mono when the sweep ran.
+ * `.echo-provenance` was corrected; the other five — `.crossref-context`,
+ * `.crossref-total`, `.crossref-support`, `.crossref-kinds span` and
+ * `.crossref-open-affordance` — were deleted instead, because C·4 removed the
+ * markup that wore them and a corrected dead rule is still dead.
+ */
+test("§C4·6 · no rule on the margin's surfaces sets mono", () => {
+  const offenders: string[] = [];
+
+  // Empty, and every entry it could ever hold would have to name one of the
+  // three survivors §8 allows — a header instrument, a key hint, or a reference
+  // label — and say which. The margin has none of the three today.
+  const MONO_ON_THE_MARGIN_WITH_REASONS: Record<string, string> = {};
+
+  for (const [path, sheet] of stylesheets()) {
+    for (const [selector, body] of ruleBlocks(sheet)) {
+      if (!MARGIN_FAMILIES.test(` ${selector}`)) continue;
+      if (!/var\(--font-mono\)/.test(withoutComments(body))) continue;
+      if (selector in MONO_ON_THE_MARGIN_WITH_REASONS) continue;
+      offenders.push(`${path} · ${selector}`);
+    }
+  }
+
+  assert.deepEqual(
+    offenders,
+    [],
+    "§C4·6: no mono on this surface — tabular figures do the aligning. " +
+      `These still set it:\n  ${offenders.join("\n  ")}`,
+  );
+});
+
+test("§C4·6 · the rules C·4 stranded are deleted, not restyled", () => {
+  // Five `.crossref-*` rules lost their markup when C·4 moved cross-references
+  // out of the Connections tab and into IntentOverview's compact rows:
+  // `CrossReferenceRow`, `CrossRefsBlock` and `NoteCrossRefsBlock` all went
+  // with it. Restyling them would have made the sheet look swept.
+  //
+  // The rest of the family followed, and the list below is the whole of it.
+  // Those five were the mono ones, so the §C4·6 sweeps reached them; the other
+  // twenty-two rules were dead in exactly the same way but drew nothing a
+  // ruling names, and they survived a cycle longer because one contract test
+  // still asserted two of their selectors — `.crossref-row:has(:focus-visible)`
+  // and `.crossref-row-open:focus-visible`, which it asserted against the SHEET
+  // when there was no markup left to assert them against. That test now sweeps
+  // the row grammar that replaced this one; see
+  // tests/focus-ring-modality-contract.test.ts.
+  //
+  // The class names are checked against the whole renderer, markup and sheets
+  // alike, so this fails either way round — if the rules come back, or if the
+  // markup does without anyone noticing the drawings were retired.
+  const retired = [
+    "crossref-context",
+    "crossref-total",
+    "crossref-support",
+    "crossref-kinds",
+    "crossref-open-affordance",
+    "crossref-section",
+    "crossref-heading",
+    "crossref-title",
+    "crossref-list",
+    // Also covers `crossref-row-open`, `crossref-row-copy` and
+    // `note-crossref-row`, which contain it.
+    "crossref-row",
+    "crossref-reference",
+    "crossref-preview",
+    "crossref-attribution",
+    "note-crossref-section",
+    "note-crossref-reason",
+  ];
+  const sources: Array<[string, string]> = [
+    ...stylesheets().map(([path, sheet]) => [path, withoutComments(sheet)] as [string, string]),
+    ...rendererComponents().map(([path, source]) => [path, withoutComments(source)] as [string, string]),
+  ];
+  for (const name of retired) {
+    for (const [path, source] of sources) {
+      assert.ok(
+        !source.includes(name),
+        `${name} is a retired C·4 drawing and ${path} still refers to it`,
+      );
+    }
+  }
+
+  // And the live drawing that replaced them still aligns its count the way the
+  // ruling says to: sans, tabular figures, no mono.
+  assert.doesNotMatch(ruleBody(".intent-entity-count"), /var\(--font-mono\)/);
+});
+
+test("§C4·6 · the echo provenance line is a sentence, so it is not in mono", () => {
+  // "AI-inferred · anchoring is always your call" — prose, and the quire's own
+  // example of why the ruling exists: "a sentence in mono is the clearest case
+  // of why". No tabular figures go with the sans here because the line has no
+  // figures; the mono was doing voice, not alignment.
+  const body = ruleBody(".echo-provenance");
+  assert.match(body, /font-family: var\(--font-ui\)/);
+  assert.doesNotMatch(body, /var\(--font-mono\)/);
+});

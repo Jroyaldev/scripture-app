@@ -12,6 +12,7 @@ import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { createServer } from "node:net";
 import electronPath from "electron";
+import { waitForState } from "./qa-support/app-vocabulary.mjs";
 
 const sleep = (ms) => new Promise((resolvePromise) => setTimeout(resolvePromise, ms));
 
@@ -122,13 +123,11 @@ function createDriver(cdp) {
     }
     return response.result?.result?.value;
   };
+  // Vets the gate's vocabulary before waiting, so a condition the app can
+  // never satisfy fails at once instead of hanging and reading like a slow
+  // app. See scripts/qa-support/app-vocabulary.mjs.
   const waitFor = async (expression, timeout = 15_000) => {
-    const started = Date.now();
-    while (Date.now() - started < timeout) {
-      if (await evaluate(expression)) return;
-      await sleep(80);
-    }
-    throw new Error(`Timed out waiting for ${expression}`);
+    await waitForState(evaluate, sleep, expression, timeout);
   };
   return { evaluate, waitFor };
 }

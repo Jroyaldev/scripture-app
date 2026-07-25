@@ -21,6 +21,18 @@ const registerSource = readFileSync(
   "utf8",
 );
 
+/**
+ * These sheets record a retirement by quoting the rule that was retired, so a
+ * "this may not come back" assertion has to read declarations only — otherwise
+ * it fails on the very note that proves the device is gone.
+ */
+const declarationsOnly = (source: string): string => source.replace(/\/\*[\s\S]*?\*\//g, "");
+const stylesDeclarations = declarationsOnly(stylesSource);
+const registerDeclarations = declarationsOnly(registerSource);
+const componentStatements = componentSource
+  .replace(/\/\*[\s\S]*?\*\//g, "")
+  .replace(/^\s*\/\/.*$/gm, "");
+
 function section(source: string, start: string, end: string): string {
   const startIndex = source.indexOf(start);
   const endIndex = source.indexOf(end, startIndex + start.length);
@@ -49,11 +61,20 @@ test("one global APG tablist contains tabs and collapsed proxies with one roving
   assert.doesNotMatch(tablist, /role="button"|scripture-workspace-group-manage|scripture-workspace-open/);
   assert.match(tablist, /data-study-collapsed-proxy=/);
   assert.match(tablist, /const visibleLabel = collapsedProxy \? groupLabel : label/);
+  // This used to read:
+  //   assert.match(tablist, /const expandedGroupLabel = !collapsedProxy && tabIndex === 0 \? groupLabel : undefined/)
+  // — the bracket's label, computed inside the member loop because the bracket
+  // was anchored to the first member's wrap. Rev 05 §05·2 retires the bracket
+  // and makes the group a kicker that is its own element at the head of the
+  // members, so the label is decided once per group rather than once per tab.
+  // The guarantee is verbatim the same one and it is stated on the new shape.
   assert.match(
     tablist,
-    /const expandedGroupLabel = !collapsedProxy && tabIndex === 0\s*\? groupLabel\s*: undefined/,
+    /const kickered = !group\.collapsed && visibleTabs\.length > 0/,
     "every expanded study must expose its group identity before the first tab",
   );
+  assert.match(tablist, /const groupHead = kickered \?/);
+  assert.match(tablist, /return groupHead \? \[groupHead, \.\.\.members\] : members/);
   assert.match(tablist, /const closeAvailability = collapsedProxy/);
   assert.match(tablist, /const canClose = closeAvailability !== "unavailable"/);
   assert.match(tablist, /tabIndex=\{roving \? 0 : -1\}/);
@@ -153,17 +174,25 @@ test("rename, move, reorder, collapse, close, and recovery commit UI state only 
 test("the register is a strip of canvas the active page is pulled up through", () => {
   const rail = section(stylesSource, ".scripture-workspace-bar {", ".topbar-navigation,");
 
-  // 30px tab in a 34px strip, and the strip carries no fill of its own: it is
-  // the page's own canvas showing through. The 24px above the tabs is the page
-  // inset's top edge, doubling as the window drag region.
-  assert.match(rail, /\.scripture-workspace-bar \{[\s\S]{0,320}min-height: 34px;/);
+  // A 30px tab strip under 24px of canvas, and the strip carries no fill of its
+  // own: it is the page's own canvas showing through. The 24px above the tabs is
+  // the page inset's top edge, doubling as the window drag region.
+  //
+  // The first line used to read `min-height: 34px`. Rev 05 §05·2 replaces the
+  // floor with a stated height, because a floor is exactly what let the band
+  // grow: a 15px bracket band opened above the tabs whenever a study was on
+  // screen, so the page's top edge moved between 54 and 69 with the register's
+  // CONTENTS. The height is now the frame's own composition and the strip is
+  // half of it — see tests/quire-frame-top-edge-contract.test.ts for the sum.
+  assert.match(rail, /\.scripture-workspace-bar \{[\s\S]{0,320}height: var\(--frame-top\);/);
+  assert.doesNotMatch(rail, /\.scripture-workspace-bar \{[\s\S]{0,320}min-height:/);
   assert.match(rail, /\.scripture-workspace-bar \{[\s\S]{0,320}flex: 0 0 auto;/);
   assert.match(rail, /\.scripture-workspace-bar \{[\s\S]{0,320}padding: var\(--page-inset\) var\(--page-inset\) 0 0;/);
   assert.match(rail, /\.scripture-workspace-bar \{[\s\S]{0,320}background: transparent;/);
   // No border-bottom: a rule here would fight the fillet, which is the thing
   // actually joining the tab to the page.
   assert.doesNotMatch(rail.slice(0, rail.indexOf("\n}")), /border-bottom/);
-  assert.match(rail, /\.scripture-workspace-tab \{[\s\S]{0,420}height: 30px;/);
+  assert.match(rail, /\.scripture-workspace-tab \{[\s\S]{0,420}height: var\(--register-strip\);/);
 
   // The paper fill IS the mark. The tab is a piece of the page pulled up above
   // the register's baseline, so it takes paper, the page's radius, and no
@@ -191,10 +220,14 @@ test("the register is a strip of canvas the active page is pulled up through", (
   );
 
   assert.match(rail, /\.scripture-workspace-tab-label \{[\s\S]{0,180}opacity: 1/);
-  // The group is a bracket, not a chip: a rule over its members carrying a 9px
-  // mono label. Mono because a group id is chrome, not something you read.
+  // The group's name is set in 9px mono, and that survives every change of
+  // device: a study id is chrome, not something you read. The second line used
+  // to be `.scripture-workspace-group-tab::before { … height: 1px }` — the
+  // bracket's hairline over the first member — and Rev 05 §05·2 retires it, so
+  // the assertion is inverted rather than dropped: no pseudo-element of the
+  // group label may draw a rule again.
   assert.match(rail, /\.scripture-workspace-group-tab \{[\s\S]{0,320}font: 500 9px\/1 var\(--font-mono\)/);
-  assert.match(rail, /\.scripture-workspace-group-tab::before \{[\s\S]{0,220}height: 1px;/);
+  assert.doesNotMatch(rail, /\.scripture-workspace-group-tab::(?:before|after)\b/);
   assert.match(rail, /\.scripture-workspace-active-group small \{[\s\S]{0,260}font: 500 9px\/1 var\(--font-ui\);[\s\S]{0,80}font-variant-numeric: tabular-nums/);
   assert.match(rail, /min-width: 24px/);
   assert.match(rail, /min-height: 24px/);
@@ -302,48 +335,132 @@ test("the group popover opens on its heading, not inside the rename field", () =
   assert.match(stylesSource, /\.scripture-workspace-group-popover input:focus-visible,/);
 });
 
-test("the bracket names its members' span from above and takes no width from the tab row", () => {
+test("the group is a kicker at the head of its members, separated by canvas and never by a rule", () => {
   const rail = section(stylesSource, ".scripture-workspace-bar {", ".topbar-navigation,");
 
-  // B3: "1px over the members, ending at the last one." Over, not beside. The
-  // bracket used to be a 96px box in the tab row, which clipped the study name,
-  // shouldered a flush-start tab off the page corner it exists to supply, and
-  // at the far end arrived against the actions cluster the +n count is drawn
-  // in. It now lives in a 15px band above the members: 1px rule, 5px of air,
-  // a 9px label, reserved by padding on every member's wrap.
-  assert.match(
-    rail,
-    /\.scripture-workspace-tab-wrap\[data-study-group-bracket\] \{\s*padding-top: 15px;\s*\}/,
-  );
-  assert.match(rail, /\.scripture-workspace-group-tab \{[\s\S]{0,200}position: absolute;/);
-  assert.match(rail, /\.scripture-workspace-group-tab \{[\s\S]{0,320}height: 15px;/);
-  // Nothing that would put it back in the row, and no cap that would clip a
-  // name the bracket underneath it is wide enough to hold.
-  const bracketRule = rail.slice(
+  // WHAT THIS TEST USED TO ASSERT, and why it no longer may.
+  //
+  // It was named "the bracket names its members' span from above and takes no
+  // width from the tab row", and it pinned the device built earlier in this
+  // cycle: a 15px band above the tabs — `[data-study-group-bracket] {
+  // padding-top: 15px }` — holding an absolutely-positioned 15px label and a
+  // 1px `.scripture-workspace-group-rule` carried in segments by every member,
+  // trimmed at `[data-study-group-end]`. That was itself a correction of an
+  // earlier 96px box beside the first member, which clipped the study name and
+  // shouldered a flush-start tab off the page corner it exists to supply.
+  //
+  // Rev 05 §05·2 retires the whole device, and not because the band was wrong:
+  //
+  //   "A rule that brackets a group must end exactly where the group ends; this
+  //    one cannot, because tabs move. Spacing and one kicker say the same thing
+  //    and cannot drift."
+  //
+  // The band was also a second strip above the strip — "a label above the strip
+  // creates a second strip. It belongs in the strip, at the head of its
+  // members" — and the rule and the label were two of the four datums the
+  // section counts in the top 100px of the window (B, "a hairline that starts
+  // at the tabs' left and stops at no edge in the layout"; C, "the study siglum
+  // floats in the drag band, at a third x").
+  //
+  // So the assertions below are the same guarantee — a group is NAMED, and its
+  // name costs the tab row nothing — restated on the device that replaced it,
+  // plus negative assertions so the retired one cannot return.
+
+  // Nothing above the tab row. The reserved band and the rule are gone from the
+  // sheet, the component and the narrow shell alike.
+  assert.doesNotMatch(stylesDeclarations, /data-study-group-bracket/);
+  assert.doesNotMatch(stylesDeclarations, /data-study-group-end/);
+  assert.doesNotMatch(stylesDeclarations, /scripture-workspace-group-rule/);
+  assert.doesNotMatch(registerDeclarations, /scripture-workspace-group-rule/);
+  assert.doesNotMatch(componentStatements, /scripture-workspace-group-rule/);
+  assert.doesNotMatch(componentStatements, /data-study-group-bracket|data-study-group-end/);
+
+  // The kicker sits IN the strip, in the tab's own box, so it is on the row
+  // rather than above it — and its box is the strip token, not a loose 30.
+  assert.match(rail, /\.scripture-workspace-group-tab \{[\s\S]{0,320}height: var\(--register-strip\);/);
+  assert.match(rail, /\.scripture-workspace-group-tab \{[\s\S]{0,320}display: inline-flex;/);
+  const kickerRule = rail.slice(
     rail.indexOf(".scripture-workspace-group-tab {"),
     rail.indexOf("}", rail.indexOf(".scripture-workspace-group-tab {")),
   );
-  assert.doesNotMatch(bracketRule, /align-self|margin-right|max-width: 96px/);
+  assert.doesNotMatch(kickerRule, /position: absolute/, "the kicker is in the row, not over it");
+  // The 176px cap outlives the bracket that needed it: a study can be named
+  // anything, and an unbounded run of 9px caps across the strip is the defect
+  // the whole family of devices was drawn to replace.
+  assert.match(rail, /\.scripture-workspace-group-tab > span \{[\s\S]{0,200}max-width: 176px;/);
 
-  // The rule is carried by the members, so it ends where they do rather than
-  // where the label does. Members stay direct children of the strip: B5 keeps
-  // drag and drop in one flat index space.
-  assert.match(rail, /\.scripture-workspace-group-rule \{[\s\S]{0,240}height: 1px;/);
+  // Slate-marked. Law 2's mark at the smallest scale it appears — 2 × 11 — in
+  // Law 3's ink for something the app inferred.
   assert.match(
     rail,
-    /\.scripture-workspace-tab-wrap\[data-study-group-end\] \.scripture-workspace-group-rule \{\s*right: 0;\s*\}/,
+    /\.scripture-workspace-group-mark \{[\s\S]{0,220}width: 2px;\s*height: 11px;[\s\S]{0,220}background: var\(--accent-machine\);/,
   );
-  assert.match(componentSource, /const groupEnd = bracketed && tabIndex === visibleTabs\.length - 1/);
-  assert.match(componentSource, /<span className="scripture-workspace-group-rule" aria-hidden="true" \/>/);
-  assert.match(componentSource, /data-study-group-bracket=\{bracketed \|\| undefined\}/);
-  assert.match(componentSource, /data-study-group-end=\{groupEnd \|\| undefined\}/);
+  assert.match(componentSource, /<span className="scripture-workspace-group-mark" aria-hidden="true" \/>/);
 
-  // Both halves of the bracket recede together — B3 says "its rule and label",
-  // and a full-strength rule over a receded name is a bracket that half-belongs
-  // to the study it names.
+  // Separated by canvas, and by the strip's own number: "separated from the
+  // ungrouped tabs by 24px of canvas rather than by a rule — the same argument
+  // that removed the Research divider."
+  assert.match(
+    rail,
+    /\.scripture-workspace-tab-wrap\[data-study-group-start="true"\],\s*\.scripture-workspace-group-head\[data-study-group-start="true"\] \{\s*margin-left: var\(--page-inset\);/,
+  );
+  // The interval belongs to whichever element opens the run, so an expanded
+  // study cannot pay it twice.
+  assert.match(
+    componentSource,
+    /const groupStart = tabIndex === 0 && groupIndex > 0 && !kickered/,
+  );
+  assert.match(componentSource, /data-study-group-start=\{groupIndex > 0 \|\| undefined\}/);
+
+  // B3's recede survives the device it was written for. It used to be read off
+  // the member's wrap so the rule and the label could dim together; with the
+  // rule retired the kicker is the whole device and carries the flag itself.
+  assert.match(
+    rail,
+    /\.scripture-workspace-group-tab\[data-study-group-active="false"\] \{\s*opacity: 0\.72;\s*\}/,
+  );
+  assert.doesNotMatch(
+    registerDeclarations,
+    /\[data-study-group-active="false"\]/,
+  );
+});
+
+test("the strip's right-hand cluster sits on the strip's row, not centred in the band", () => {
+  const rail = section(stylesSource, ".scripture-workspace-bar {", ".topbar-navigation,");
+
+  // Rev 05 §05·2's one addition, and ruling 4·6 applied to the last place that
+  // was not obeying it: "The right-hand cluster in the strip — reference,
+  // count, + Open, overflow — sits on the tab strip's baseline datum, not its
+  // vertical centre… the strip is the last place still centring."
+  //
+  // The cluster used to be `align-items: center` with no height, so it centred
+  // 28px controls inside a band whose height moved with the register's
+  // contents. It now takes the strip's own row, and every control in it is one
+  // box of one height — which is the datum stated as geometry rather than as a
+  // nudge that can drift when a label's size changes.
+  assert.match(rail, /\.scripture-workspace-actions \{[\s\S]{0,420}height: var\(--register-strip\);/);
+  assert.match(rail, /\.scripture-workspace-actions \{[\s\S]{0,420}align-items: flex-end;/);
+  const actionsRule = rail.slice(
+    rail.indexOf(".scripture-workspace-actions {"),
+    rail.indexOf("}", rail.indexOf(".scripture-workspace-actions {")),
+  );
+  assert.doesNotMatch(actionsRule, /align-items: center/);
+  // No control may carry a height of its own again: a second height in the
+  // cluster is a second datum, which is the fault the whole section is about.
+  // 24px stays, because it is the pointer target rather than a shape.
+  const controls = /\.scripture-workspace-active-group,\s*\.scripture-workspace-open,\s*\.scripture-workspace-reopen,\s*\.scripture-workspace-overflow \{([^}]*)\}/
+    .exec(rail);
+  assert.ok(controls, "the cluster's controls must still be sized as one family");
+  assert.doesNotMatch(controls[1], /(?:^|[\s;])height\s*:/);
+  assert.match(controls[1], /min-height: 24px/);
+  // And the failure line joins the datum instead of nudging itself onto it.
   assert.match(
     registerSource,
-    /\[data-study-group-active="false"\][\s\S]{0,220}\.scripture-workspace-group-rule \{\s*opacity: 0\.72;/,
+    /\.scripture-workspace-persistence\.is-failed \{[\s\S]{0,160}align-items: baseline;/,
+  );
+  assert.doesNotMatch(
+    registerSource,
+    /\.scripture-workspace-persistence\.is-failed \{[\s\S]{0,160}padding-bottom:/,
   );
 });
 

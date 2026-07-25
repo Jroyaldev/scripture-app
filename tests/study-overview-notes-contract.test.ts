@@ -85,10 +85,21 @@ test("cross-reference rows use the shared row grammar and restate none of it", (
   assert.match(overview, /className="study-ref-row-text"/);
   assert.doesNotMatch(overview, /intent-ref-row|intent-ref-preview|intent-ref-title/);
   assert.doesNotMatch(css, /\.intent-ref-[a-z-]*\s*[,{]/);
-  // The clamp, the fade and the hover reveal are c4-foundation's. This surface
-  // may not grow a second copy of any of them under its own selectors — that
-  // is how one object came to have five drawings.
-  for (const [selector, body] of css.matchAll(/\n(\.(?:intent|margin-note)-[a-z-]+[^{\n]*)\{([^}]*)\}/g)) {
+  // Two rules in one sweep, over every selector this surface owns:
+  //   · no `mask-image` — the fade is c4-foundation's, and a second copy of it
+  //     is how one object came to have five drawings;
+  //   · no `-webkit-line-clamp` — it stamps a literal … at the cut, and C4·2
+  //     rules the ellipsis character off this surface entirely.
+  // NB this loop previously destructured `matchAll`'s result as [selector, body]
+  // — which is [fullMatch, group1], so it tested the SELECTOR for a clamp and
+  // passed unconditionally. Fixing the offset found a real ellipsis clamp on
+  // `.intent-note-lead`. Index deliberately, not positionally.
+  const ownedRules = [...css.matchAll(/\n(\.(?:intent|margin-note)-[a-z-]+[^{\n]*)\{([^}]*)\}/g)];
+  // A `doesNotMatch` loop over zero rules passes while proving nothing, so the
+  // sweep states how much it swept. If this selector ever stops matching, the
+  // count fails here rather than the guarantee quietly evaporating.
+  assert.ok(ownedRules.length >= 12, `expected to sweep this surface's rules, swept ${ownedRules.length}`);
+  for (const [, selector, body] of ownedRules) {
     assert.doesNotMatch(body!, /-webkit-line-clamp|mask-image/, `${selector!.trim()} restates the clamp`);
   }
   assert.doesNotMatch(
@@ -203,7 +214,9 @@ test("a compact row's wording describes its verb rather than naming it", () => {
   // Acts 11:15–17") and the wording arrives as the control's description. The
   // failure mode this guards is someone "restoring" the old name and thereby
   // saying the verse twice to a linear reader, in a button name with no bound.
-  for (const [, label] of margin.matchAll(/aria-label=\{`Open \$\{item\.targetDisplay\}([^`]*)`\}/g)) {
+  const openLabels = [...margin.matchAll(/aria-label=\{`Open \$\{item\.targetDisplay\}([^`]*)`\}/g)];
+  assert.ok(openLabels.length >= 2, `expected the Open labels to be present, found ${openLabels.length}`);
+  for (const [, label] of openLabels) {
     assert.doesNotMatch(label!, /item\.preview/, "the preview is back inside a verb's name");
   }
   assert.match(overview, /aria-describedby=\{previewId\}/);
@@ -224,11 +237,18 @@ test("a compact row's wording describes its verb rather than naming it", () => {
   );
   // Explicit ARIA comes after every spread, so a helper that grows an ARIA prop
   // cannot clobber a name or a description without anyone noticing.
-  for (const [, props] of overview.matchAll(/<button\b([\s\S]*?)>/g)) {
-    const lastSpread = props!.lastIndexOf("{...");
-    const firstAria = props!.indexOf("aria-label");
-    if (lastSpread < 0 || firstAria < 0) continue;
-    assert.ok(firstAria > lastSpread, "an ARIA prop is spread-clobberable");
+  const spreadButtons = [...overview.matchAll(/<button\b([\s\S]*?)>/g)]
+    .map(([, props]) => props!)
+    .filter((props) => props.includes("{...") && props.includes("aria-label"));
+  assert.ok(
+    spreadButtons.length >= 2,
+    `expected buttons that both spread and carry ARIA, found ${spreadButtons.length}`,
+  );
+  for (const props of spreadButtons) {
+    assert.ok(
+      props.indexOf("aria-label") > props.lastIndexOf("{..."),
+      "an ARIA prop is spread-clobberable",
+    );
   }
 });
 
@@ -249,8 +269,11 @@ test("a zero is never seal", () => {
   // reserves for the edition.
   const heads = [...margin.matchAll(/<StudySectionHead\b([\s\S]*?)\/>/g)].map((match) => match[1]!);
   assert.ok(heads.length >= 4, "expected the section heads to be present");
-  for (const props of heads) {
-    if (!/countIsYours/.test(props)) continue;
+  const sealHeads = heads.filter((props) => /countIsYours/.test(props));
+  // Counted, not just filtered: a `continue` that skips every head would leave
+  // the loop below asserting nothing while still reading as a guarantee.
+  assert.ok(sealHeads.length >= 4, `expected the seal heads to be present, found ${sealHeads.length}`);
+  for (const props of sealHeads) {
     assert.match(props, /countValue=\{/, "a seal count was given no value to check");
   }
 });
@@ -261,6 +284,118 @@ test("the Notes count is the reader's own notes and nothing else", () => {
   // only when the count is yours.
   assert.match(margin, /const notesCount = notesHere\.length;/);
   assert.doesNotMatch(margin, /notesCount[\s\S]{0,120}pinnedLibraryItemCount/);
+});
+
+/* --- The QA tours, which npm test cannot run ------------------------------
+   The Electron tours are repaired by source inspection and executed by hand,
+   rarely. Two whole classes of defect in them are statically decidable, so
+   they are decided here, in the gate that does run: a probe that queries a
+   class this surface never renders, and a regex over-escaped for a context it
+   is not in. Both failed silently in the tours' own terms — a `querySelector`
+   that finds nothing returns a falsy value a probe happily reports, and a
+   never-matching regex sits under a loop that never runs.
+   ------------------------------------------------------------------------ */
+
+// Every tour that probes this surface, not merely the ones this agent edited.
+// `qa-cross-reference-tour` queries `.intent-overview` and the compact row and
+// `qa-desktop-reading-control` drives `.margin-note-verb`; scoping the guards
+// to the files I happened to touch would have left both unchecked.
+const tours = [
+  "scripts/qa-living-margin-tour.mjs",
+  "scripts/qa-study-overlays-tour.mjs",
+  "scripts/qa-cross-reference-tour.mjs",
+  "scripts/qa-desktop-reading-control.mjs",
+].map((path) => ({ path, source: read(path) }));
+
+/** Class tokens this surface owns. Other agents' selectors are theirs to check. */
+const OWNED_CLASS = /^(?:intent-|margin-note|margin-notes|study-ref-row)/;
+
+test("every selector the tours query on this surface is one it renders", () => {
+  const rendered = new Set<string>();
+  for (const match of margin.matchAll(/className=(?:"([^"]*)"|\{`([^`]*)`\})/g)) {
+    for (const token of (match[1] ?? match[2] ?? "").split(/[\s${}?:()"'+]+/)) {
+      if (token) rendered.add(token.replace(/^\./, ""));
+    }
+  }
+  const queried = new Set<string>();
+  for (const { source } of tours) {
+    for (const match of source.matchAll(/\.([a-zA-Z][\w-]*)/g)) {
+      if (OWNED_CLASS.test(match[1]!)) queried.add(match[1]!);
+    }
+  }
+  assert.ok(queried.size >= 12, `expected the tours to probe this surface, found ${queried.size}`);
+  for (const token of queried) {
+    assert.ok(rendered.has(token), `the tours query .${token}, which LivingMargin never renders`);
+  }
+});
+
+test("no regex in the tours is escaped for the wrong context", () => {
+  // Inside an `evaluate()` template literal `\\s` is correct — the template is
+  // parsed once before the page sees it. In an outer-JS assert it means "a
+  // literal backslash", and the assertion can never match. Five of mine were
+  // wrong this way and every one would have thrown against a correct app.
+  // Template literals are stripped first so the legitimate uses are not flagged.
+  let checked = 0;
+  for (const { path, source } of tours) {
+    const outer = source.replace(/`(?:[^`\\]|\\[\s\S])*`/g, "``");
+    for (const line of outer.split("\n")) {
+      if (!/^\s*assert\./.test(line)) continue;
+      checked += 1;
+      assert.doesNotMatch(
+        line,
+        /\/[^/\n]*\\\\[sdwSDWbB.][^/\n]*\//,
+        `${path}: regex escaped for a template literal it is not inside — ${line.trim()}`,
+      );
+    }
+  }
+  assert.ok(checked >= 20, `expected to check the tours' assertions, checked ${checked}`);
+});
+
+test("what the tours reach for beyond a class name still exists", () => {
+  // A class-token check cannot see either of these, and both fail in the
+  // direction that reads as "the app is fine": a selector that matches nothing
+  // makes a `!querySelector(...)` wait succeed instantly, and a row count that
+  // silently widens reports a bigger number without failing.
+
+  // 1 · The attribute. Every "loading has finished" wait in the tours is
+  //     `.surface-state[data-surface-state="loading"]`. Rename that attribute
+  //     and the waits stop waiting — the tour races the panel and fails later,
+  //     somewhere unrelated to the cause.
+  const marking = read("src/renderer/components/MarkingSurface.tsx");
+  assert.match(marking, /data-surface-state=\{state\}/);
+  let loadingWaits = 0;
+  for (const { path, source } of tours) {
+    for (const match of source.matchAll(/\[data-surface-state="([a-z-]+)"\]/g)) {
+      loadingWaits += 1;
+      assert.match(
+        marking,
+        new RegExp(`"${match[1]!}"`),
+        `${path} waits on a surface state "${match[1]}" that SurfaceStateId does not define`,
+      );
+    }
+  }
+  assert.ok(loadingWaits >= 3, `expected the tours to wait on loading, found ${loadingWaits}`);
+
+  // 2 · The structural assumption. `.intent-overview .study-ref-row--compact`
+  //     counts cross-references by assuming they are the only compact rows on
+  //     the surface. The library leads are `.intent-note-lead` entries, which
+  //     is what keeps that true — if a second section ever grew compact rows,
+  //     the probe would fold them into the cross-reference count in silence.
+  assert.equal(
+    (overview.match(/className="study-ref-row-list"/g) ?? []).length,
+    1,
+    "a second compact-row list on this surface would silently widen the tours' count",
+  );
+  // Anchored on the section's own labelled id, not on `hasLibraryLead` — the
+  // const is declared above the cross-reference rows, so slicing from it
+  // swept them back in and the assertion failed for the wrong reason.
+  const libraryStart = overview.indexOf('aria-labelledby="intent-library-title"');
+  assert.ok(libraryStart > 0, "expected the library section to be present");
+  assert.doesNotMatch(
+    overview.slice(libraryStart),
+    /study-ref-row--compact/,
+    "the library leads are entries, not compact rows",
+  );
 });
 
 /* --- The mono sweep ------------------------------------------------------ */

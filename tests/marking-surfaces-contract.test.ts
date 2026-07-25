@@ -434,10 +434,19 @@ test("held authored connections use the quiet typeset Living Margin card", () =>
     "an authored row must hand both pointer and keyboard focus to the persistent inspector entry point before it unmounts");
   assert.match(margin, /lastConnectionInspectorFocusRequestRef[\s\S]*connectionInspectorFocusRequest[\s\S]*if \(!connectionInspectorOpen\) return;[\s\S]*frameTitleRef\.current\?\.focus\(\{ preventScroll: true \}\)/,
     "an explicit inspector-entry request must focus the persistent Study heading");
-  const inspectorOpenEffect = margin.slice(
-    margin.indexOf("const connectionInspectorWasOpenRef"),
-    margin.indexOf("const lastConnectionInspectorFocusRequestRef"),
-  );
+  // The start anchor was `const connectionInspectorWasOpenRef`, which the
+  // margin renamed to `connectionInspectorOpenRef`. `indexOf` returned -1 and
+  // `slice(-1, …)` is not an error, so this scope silently collapsed to the
+  // empty string and the `doesNotMatch` below passed unconditionally. Both ends
+  // are now checked before the cut, so a future rename fails loudly here rather
+  // than quietly retiring the assertion.
+  const inspectorOpenStart = margin.indexOf("const connectionInspectorOpenRef");
+  const inspectorOpenEnd = margin.indexOf("const lastConnectionInspectorFocusRequestRef");
+  assert.ok(inspectorOpenStart >= 0,
+    "the margin no longer declares connectionInspectorOpenRef — re-anchor this scope before trusting the assertion below");
+  assert.ok(inspectorOpenEnd > inspectorOpenStart,
+    "the explicit inspector-entry effect must follow the open-state ref; without that order this slice scopes nothing");
+  const inspectorOpenEffect = margin.slice(inspectorOpenStart, inspectorOpenEnd);
   assert.doesNotMatch(inspectorOpenEffect, /frameTitleRef\.current\?\.focus/,
     "opening from the reading canvas must not steal focus without an explicit inspector-entry request");
   // REWRITTEN by Quire §C4·1. This asserted `aria-describedby="living-margin-mode"`
@@ -1049,7 +1058,14 @@ test("production marking surfaces retain distinct grammar at the supported deskt
   assert.equal([...source.matchAll(/data-focus-ring=\{focusRingMode\}/g)].length, 2,
     "exactly two surfaces publish the focus-ring modality");
   assert.match(source, /window\.addEventListener\("pointerdown", markPointer, true\)[\s\S]*window\.addEventListener\("keydown", markKeyboard, true\)/);
-  assert.match(styles, /\[data-marking-surface\]\[data-focus-ring="keyboard"\] :is\([\s\S]*?\):focus-visible \{\s*outline: 2px solid var\(--study-gold-focus\)/);
+  // This used to read `outline: 2px solid var(--study-gold-focus)`. Ruling 4·4
+  // retires that: the wash composites to 1.60:1 on paper and 1.53:1 on the
+  // canvas, under Law 6's 3:1 floor for a wordless mark, and "a wash at .4
+  // cannot reach 3:1 and a keyboard user gets nothing". The assertion was the
+  // retired thing, not the CSS — this rule is the one place the marking
+  // surfaces state their keyboard ring, so pinning it to the wash was pinning
+  // the defect. Rev 04 §4's grammar, at full strength, is what it now asserts.
+  assert.match(styles, /\[data-marking-surface\]\[data-focus-ring="keyboard"\] :is\([\s\S]*?\):focus-visible \{\s*outline: 2px solid var\(--accent-seal\)/);
   assert.match(styles, /\[data-marking-surface\]\[data-focus-ring="pointer"\][\s\S]*:focus-visible \{[\s\S]*outline: none;/);
   assert.match(styles, /\[data-marking-surface="palette"\]\[data-focus-ring="keyboard"\] \.marking-palette \.marking-relationship:focus-visible/);
   assert.match(styles, /\[data-marking-surface="palette"\]\[data-focus-ring="keyboard"\] \.marking-armed-status button:focus-visible/);

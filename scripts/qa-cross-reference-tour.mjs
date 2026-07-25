@@ -1,4 +1,32 @@
-/** Self-driving desktop QA for ranked OpenBible cross-reference surfaces. */
+/**
+ * Self-driving desktop QA for ranked OpenBible cross-reference surfaces.
+ *
+ * SUPERSEDED — this tour has no subject left. Do not repair it in place; it
+ * needs a decision, not a patch.
+ *
+ * Every surface it drives was deleted by Quire C·4. `CrossReferenceRow`,
+ * `CrossRefsBlock` and `NoteCrossRefsBlock` were removed from LivingMargin,
+ * and `.crossref-row` / `.crossref-section` / `.crossref-reference` /
+ * `.crossref-context` / `.crossref-support` went with them — the CSS that
+ * outlived the markup has since been deleted too. The cause is in C·4: a
+ * connection is something the reader made, cross-references are the edition's,
+ * and putting the edition's list under the word Connections made third-party
+ * data wear the reader's own hand.
+ *
+ * The list did not go away with that tab. It is in Overview under its own
+ * name, marked as the edition's — and the coverage moved with it:
+ * `qa-living-margin-tour.mjs` now asserts the same three facts (the corpus,
+ * its licence, and that rows are actually drawn) against
+ * `.intent-overview .study-ref-row--compact` and the Sources block, in every
+ * atmosphere. That tour says so in as many words at its Overview step.
+ *
+ * It also navigated by typing into `.passage-jump-input`, which Quire F
+ * replaced with the word `Search` and the command palette.
+ *
+ * So the choice is to retire this file or to rewrite it as something that is
+ * not a duplicate of the margin tour's Overview coverage. That is a call for
+ * whoever owns the QA suite, and it wants someone who can run what they write.
+ */
 
 import { mkdirSync, writeFileSync } from "node:fs";
 

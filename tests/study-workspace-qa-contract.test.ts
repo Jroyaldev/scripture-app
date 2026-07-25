@@ -2,6 +2,12 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
+import {
+  ATMOSPHERES,
+  ATMOSPHERE_LABELS,
+  RETIRED_ATMOSPHERE_MATERIALS,
+} from "../scripts/qa-support/app-vocabulary.mjs";
+
 const readRepoFile = (path: string): string => readFileSync(path, "utf8");
 
 const packageJson = JSON.parse(readRepoFile("package.json")) as {
@@ -115,19 +121,60 @@ test("the request trace is an exact opt-in with no production-side behavior", ()
   assert.match(electronMain, /traceStudyWorkspaceQa\("entity"/);
 });
 
-test("workspace-bar QA captures one identical fixture across the six product themes", () => {
-  const expectedThemes = [
-    ["light", "paper.png"],
-    ["dark", "ink.png"],
-    ["glass", "glass.png"],
-    ["dark-glass", "candlelight.png"],
-    ["porcelain", "porcelain.png"],
-    ["onyx", "onyx.png"],
-  ] as const;
-  for (const [theme, file] of expectedThemes) {
-    assert.ok(workspaceBarQa.includes(`id: "${theme}"`), `missing theme ${theme}`);
-    assert.ok(workspaceBarQa.includes(`file: "${file}"`), `missing capture ${file}`);
+test("workspace-bar QA captures one identical fixture across four atmospheres and the material", () => {
+  /* This used to assert six themes by name — light, dark, glass, dark-glass,
+     porcelain, onyx — matched as `id: "..."` literals in the tour's source.
+     Rev 04 §6 retired that framing: Glass and Candlelight were never
+     atmospheres, they were Paper and Ink wearing the translucent material, and
+     carrying them as themes meant every colour decision was made six times
+     instead of four. There are four appearances and one switch over any of
+     them, so the capture matrix is four solid plus the two the retired ids
+     actually named.
+
+     It also used to keep its own copy of that list, which is why it went stale
+     the moment the tour was corrected: the tours are not in `npm test`, so
+     only the test half runs, and a disagreement resolves in favour of the
+     stale half by default. Both halves now import one constant, so there is
+     nothing left to drift. */
+  const expectedCaptures = [
+    ...ATMOSPHERES.map((id) => ({ id, material: "solid", file: `${ATMOSPHERE_LABELS[id]}.png` })),
+    ...RETIRED_ATMOSPHERE_MATERIALS.map(({ id, material }) => ({
+      id,
+      material,
+      file: `${ATMOSPHERE_LABELS[id]}-${material}.png`,
+    })),
+  ];
+  assert.equal(expectedCaptures.length, 6, "four atmospheres solid, plus the two that were Glass and Candlelight");
+
+  // The tour must derive its matrix from the shared constant, not restate it.
+  // A restated list is exactly what drifted, so its absence is the assertion.
+  assert.match(
+    workspaceBarQa,
+    /ATMOSPHERES,\s*\n\s*ATMOSPHERE_LABELS,\s*\n\s*RETIRED_ATMOSPHERE_MATERIALS,/,
+    "the workspace-bar tour must import the shared atmosphere constants",
+  );
+  assert.match(
+    workspaceBarQa,
+    /const THEMES = \[\s*\.\.\.ATMOSPHERES\.map/,
+    "the capture matrix must be derived from ATMOSPHERES, not hand-listed",
+  );
+  for (const atmosphere of [...ATMOSPHERES, "glass", "dark-glass"]) {
+    assert.ok(
+      !workspaceBarQa.includes(`id: "${atmosphere}"`),
+      `the tour hand-lists id: "${atmosphere}" — derive it from ATMOSPHERES instead`,
+    );
   }
+  // The tour drives both halves of the axis it now covers.
+  assert.ok(workspaceBarQa.includes('material: "solid"'), "solid captures are missing");
+  assert.ok(
+    workspaceBarQa.includes("material: ${JSON.stringify(theme.material)}"),
+    "the material must reach settings, or the translucent captures are solid ones twice",
+  );
+  assert.match(
+    workspaceBarQa,
+    /classList\.contains\("material-translucent"\) === \$\{JSON\.stringify\(theme\.material === "translucent"\)\}/,
+    "the tour must wait for the material it asked for, in both directions",
+  );
 
   for (const marker of [
     "output/playwright/study-workspace-bar",

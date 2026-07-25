@@ -96,6 +96,9 @@ import {
 } from "./utils/workspaceTransition.js";
 import "./styles.css";
 
+/** The narrow shell's breakpoint, matching styles.css's @media (max-width: 979px). */
+const NARROW_SHELL = "(max-width: 979px)";
+
 type View = "scripture" | "write" | "search" | "notes" | "settings";
 type AuthoredMutationState = "idle" | "in-flight" | "recovery";
 type LoadState =
@@ -278,7 +281,11 @@ function NavItem({
       aria-keyshortcuts={shortcut}
       aria-current={active ? "page" : undefined}
     >
-      {icon}
+      {/* Rev 05 §05·3 · the icon rides a 32px tile rather than sitting straight
+          in the row. The tile is what carries the rail's one vertical axis:
+          12px of inset, 32px of tile, and the same two numbers at 232 as at 56,
+          so collapsing the rail hides labels without moving a single icon. */}
+      <span className="nav-tile" aria-hidden="true">{icon}</span>
       <span className="nav-label">{label}</span>
       {unread ? (
         <span className="nav-unread" aria-hidden="true" />
@@ -414,6 +421,36 @@ export function App(): React.JSX.Element {
     return localStorage.getItem("marginVisible") !== "false";
   });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  /**
+   * The collapse is a desktop preference, and below the narrow shell's
+   * breakpoint it has no control that can undo it: the rail is a bottom bar
+   * there and `.sidebar-header` — which holds the only collapse button — is
+   * `display: none`. A reader who collapsed the rail on a desktop therefore
+   * opened the app on a phone to an unlabelled icon bar with no way back, which
+   * §H2 forbids in as many words: an unlabelled icon bar is a memory test.
+   *
+   * Three CSS rules also lost to `.sidebar.collapsed` on specificity inside the
+   * narrow-shell media query — the labels' `opacity`/`max-width`, the row's
+   * `gap`, and the unread dot's position — because specificity ignores media
+   * queries, so the narrow shell could not win them back from a cascade fight
+   * it was never in. Withholding the class is the fix for all three at once:
+   * there is nothing to out-specify.
+   *
+   * The SETTING is untouched, only its effect while there is no room to honour
+   * it — the same shape as MarkingSurface's narrow-shell override — so widening
+   * the window restores the reader's own choice.
+   */
+  const [narrowShell, setNarrowShell] = useState(
+    () => typeof window !== "undefined" && window.matchMedia(NARROW_SHELL).matches,
+  );
+  useEffect(() => {
+    const query = window.matchMedia(NARROW_SHELL);
+    const sync = (): void => setNarrowShell(query.matches);
+    sync();
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
+  }, []);
+  const collapsedRail = sidebarCollapsed && !narrowShell;
   const [theme, setTheme] = useState<AppSettings["theme"]>("light");
   const [material, setMaterial] = useState<AppSettings["material"]>("solid");
   const [markingSurface, setMarkingSurface] = useState<AppSettings["markingSurface"]>("palette");
@@ -1933,7 +1970,7 @@ export function App(): React.JSX.Element {
       >
         <div className={shellClass} data-theme={theme}>
           <nav
-              className={`sidebar${sidebarCollapsed ? " collapsed" : ""}`}
+              className={`sidebar${collapsedRail ? " collapsed" : ""}`}
               aria-label="Primary navigation"
             >
             {focusMode && (

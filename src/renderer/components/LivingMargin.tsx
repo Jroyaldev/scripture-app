@@ -37,7 +37,7 @@ import {
   type LaurelSource,
 } from "../utils/laurel.js";
 import { isTopLayer, layerStackIsEmpty, useLayer } from "../layerStack.js";
-import { phraseCount, RELATIONSHIP_LABELS } from "../utils/relationshipVocabulary.js";
+import { RELATIONSHIP_LABELS } from "../utils/relationshipVocabulary.js";
 import { passageTabOpenIntent } from "../utils/passageTabIntent.js";
 import { formatCanonicalRef } from "../utils/formatRef.js";
 import { LanguageWordsSection } from "./LanguageWordsSection.js";
@@ -2328,6 +2328,24 @@ function ConnectionBlock({
   const kindLabel = RELATIONSHIP_LABELS[connection.kind];
   const shown = members.slice(0, CONNECTION_MEMBERS_SHOWN);
   const overflow = members.length - shown.length;
+  // C·4 §3 draws `2 members` / `4 members` beside the type. The shared
+  // vocabulary helper counts a connection's parts as *phrases*, which is the
+  // word the inspector card and the canvas use; this panel is drawn with the
+  // other one. One binding either way, read by both the visible text and the
+  // accessible name, so the two can never come to disagree — the name replaces
+  // the children, so a different noun there silently overwrites this one.
+  const arity = `${members.length} ${members.length === 1 ? "member" : "members"}`;
+  // The role is carried by ink and by nothing else: Echo's source, a hinge's
+  // pivot against its span. Law 6 asks 3:1 of a mark that carries meaning
+  // without words, but a screen reader gets no ratio at all — so the name says
+  // the word the ink is standing in for, and says it only where there is a
+  // role to name.
+  const memberName = (member: ConnectionMemberView): string => {
+    const role = member.role === "member" ? "" : `${member.role}, `;
+    return member.quote
+      ? `${role}${member.position}. ${member.quote}`
+      : `${role}${member.position}`;
+  };
   // "A connection with no thread drawn is still listed, with its position
   // markers only — the gutter has finite room, the panel does not, and an
   // unrouted connection is not a missing one."
@@ -2343,14 +2361,17 @@ function ConnectionBlock({
       data-thread={drawn ? "drawn" : "undrawn"}
       data-thread-hover={threadHovered ? "" : undefined}
       aria-current={selected || undefined}
-      /* The block is one button, so its name replaces its contents for a screen
-         reader. The members' wording is the visible content and the reason the
-         row exists, so the name carries it rather than reading out positions
-         alone — a row whose name is a list of verse numbers tells a reader
-         nothing about what they are attending. */
-      aria-label={`${kindLabel}, ${phraseCount(members.length)}: ${members
-        .map((member) => (member.quote ? `${member.position}. ${member.quote}` : member.position))
-        .join(", ")}`}
+      /* The block is one button, so its name REPLACES its contents for a screen
+         reader — everything the children would have said has to be in here or
+         it is not said at all. That is the type, the arity in the same words the
+         row shows, and every member's position and wording, including the ones
+         `n more` hides: the cap is a space constraint, and a name has no space
+         constraint. Provenance is the one thing deliberately absent, and it is
+         absent because it does not vary here — every connection is authored, so
+         every connection is seal (Rev 04 §8) — and the region's own name says it
+         once for the whole list. A list whose provenance varies has to mark each
+         row; this one would only repeat itself. */
+      aria-label={`${kindLabel}, ${arity}: ${members.map(memberName).join(", ")}`}
       /* All three ways of attending are one behaviour, and the shared one
          scrolls the reading canvas the least distance that brings every member
          into view. The panel itself never scrolls: the reader's place is never
@@ -2365,9 +2386,7 @@ function ConnectionBlock({
       <span className="margin-connection-row-head">
         {/* The type is the heading, in seal, because you wrote it. */}
         <span className="margin-connection-type">{kindLabel}</span>
-        <span className="margin-connection-arity">
-          {members.length} {members.length === 1 ? "member" : "members"}
-        </span>
+        <span className="margin-connection-arity">{arity}</span>
       </span>
       {shown.map((member) => (
         <span

@@ -192,6 +192,21 @@
   /* --study-gold is the seal under its shipped name. Reserved for authorship
      and focus; never a categorical cross-reference claim. */
   --study-gold: #96684A;        /* 4.64:1 on paper */
+  /* NOT a focus ring, despite the name. Ruling 4·4 overrode the drawn wash and
+     the designer confirmed the override as the new drawing: "a wash at .4
+     cannot reach 3:1 and a keyboard user gets nothing." Measured, composited
+     against the plane it sits on, this token reaches 1.60:1 on paper and
+     1.53:1 on the canvas; its dark-atmosphere twin at .42 reaches 2.27:1. Every
+     one of the eight plane-and-atmosphere pairs is under Law 6's 3:1 floor for
+     a mark that carries meaning without words, so no reader ever saw a ring
+     drawn in it — 46 rules did, and now none do. Three of the 46 spelled the
+     wash as a hand-mixed `color-mix(var(--study-gold) 40%, transparent)`
+     instead of naming this token, which is the same paint with the token
+     stepped around; the sweep reads both forms. What survives is a soft halo
+     sitting outside a full-strength seal border and a hover tint, both of which
+     are fills that would lose nothing if deleted, which is Law 6's own wording
+     for "no floor". `tests/focus-ring-modality-contract.test.ts` names them and
+     fails on a forty-fifth. A ring is `var(--accent-seal)`, undiluted. */
   --study-gold-focus: rgba(150, 104, 74, 0.36);
   --study-hover-surface: transparent;
   --study-hover-line: rgba(50, 47, 43, 0.10);
@@ -259,10 +274,82 @@
   --page-inset: 24px;    /* paper's inset from the window, four sides */
   --page-gutter: 24px;
 
+  /* Rev 05 §05·3, row one of the frame table: "Page top · 54 · Window top:
+     24 canvas + 30 strip. Invariant across modes."
+
+     The number is COMPOSED rather than asserted, because §05·2's whole argument
+     is that the top band held four objects measured against four references.
+     There is one datum now and it is this sum: 24px of canvas — the drag band,
+     and nothing else — over a 30px tab strip. The rail's brand tile aligns its
+     top edge to --frame-top and the page grid derives its rectangle from it, so
+     the two halves may not be edited apart, and neither may be redeclared in a
+     mode block. tests/quire-frame-top-edge-contract.test.ts holds both facts. */
+  --register-strip: 30px;
+  --frame-top: calc(var(--page-inset) + var(--register-strip));  /* 54px */
+
+  /* Rev 05 §05·3: "Page padding · 40 / 24 · 40 left and right, 24 top and
+     bottom, inside the paper. 40 is the one left datum of §05·2." Inside the
+     page the pager, the title, the section rules and the margin's kickers all
+     begin at one x, and that x is this token. */
+  --page-padding-inline: 40px;
+  --page-padding-block: 24px;
+
+  /* Rev 05 §05·3, the last row of the frame table: "Paper max width · 1428 ·
+     Past it the frame grows, not the page. A 2000px window gets more canvas
+     and the same leaf." Read with §05·4's ceiling on trailing air; the cap
+     that actually ships is on .scripture-reading-stage, where the measure is
+     in scope. */
+  --page-max-width: 1428px;
+
+  /* Rev 05 §05·4 · the block, and the four numbers it is made of.
+     "The composition's datum is the spine — the 56px of air between margin and
+     text. Margin plus spine plus measure is one object, left-anchored at the
+     page's 40px padding."
+
+         40 padding + 320 margin + 56 spine = 416 from the paper's left edge,
+         plus the 32px verse gutter that hangs inside the measure.
+
+     The three shrink values are the shrink order, stated once and nowhere
+     else: "Trailing air to 40 · spine 56 → 40 · margin 320 → 240 · then the
+     margin closes." The measure is the last thing to yield and yields only
+     below 980, where H's rules take over. Trailing air's ceiling is not a
+     token because it is not a separate decision — it is the margin's own
+     width, and the paper's cap is what enforces it. */
+  --margin-column: 320px;      /* the reserve. Law 2: it exists at rest */
+  --margin-column-min: 240px;  /* third to yield, and the last before it closes */
+  --page-spine: 56px;          /* the datum */
+  --page-spine-min: 40px;      /* second to yield */
+  --trailing-air-min: 40px;    /* first to yield, and it yields to here */
+
   /* Layout metrics */
   --rail-w: 232px;
   --rail-w-collapsed: 56px;
-  --mark-w: 3px;             /* the state gutter, reserved at rest */
+
+  /* Rev 05 §05·3 · the rail's tile, and the reserve either side of it.
+     "A 32px tile in a 56px rail, 12 either side, and a 2px reserve at BOTH
+     edges inside that 12. The tile's centre is the rail's centre, and every
+     icon in the column sits on one vertical axis."
+
+     The mark is 2px, not 3: Law 2 says 2px, both of §05·3's drawings say 2px,
+     and the bottom bar's rule — and the test that guards it — already called
+     itself "the same 2px rule the rail uses" while the rail quietly used 3.
+     The reserve now exists at both edges rather than the leading one only,
+     which is the other half of why the icon column read off-centre.
+
+     The inset is DERIVED from the two widths above rather than written as 12,
+     because a 12 written by hand is a 12 that can drift away from the rail it
+     is supposed to halve. Every tile in the column — brand, nav, account —
+     takes --rail-tile at --rail-tile-inset, and that is what makes one axis a
+     fact rather than an arithmetic coincidence. */
+  --mark-w: 2px;             /* the state gutter, reserved at rest, both edges */
+  --rail-tile: 32px;         /* brand, nav icon, account: one size, one axis */
+  --rail-tile-inset: calc((var(--rail-w-collapsed) - var(--rail-tile)) / 2);
+  /* @quire derived · kin: the tile itself. Rev 05 draws only the 56px rail, so
+     the expanded rail's label column is derived rather than read off a drawing:
+     the tile's right edge plus 8. Every label in the column — brand word, nav
+     label, the held line, the study block, the library's name — starts here, and
+     it is the same 8 the tile uses as its flex gap. */
+  --rail-label-x: calc(var(--rail-tile-inset) + var(--rail-tile) + 8px);
   --margin-width: 380px;
   --reading-max-width: 660px;
   --verse-gutter: 32px;
@@ -344,42 +431,23 @@
 }
 
 /* Pericope desktop reconciliation: explicit capture/provenance and note
-   lifecycle controls, expressed only through the current semantic tokens. */
-.crossref-row,
-.note-crossref-row {
-  cursor: default;
-}
+   lifecycle controls, expressed only through the current semantic tokens.
 
-.crossref-row-open {
-  appearance: none;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-  flex: 1;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
+   Four rules stood at the head of this block, dressing the row-with-a-button
+   Quire C·4 deleted: the pair that made the row a plain surface, the inner
+   button's reset, the ring the row drew on that button's behalf through
+   `:has(:focus-visible)`, and the `outline: none` by which the button gave its
+   own ring up. The markup went with `CrossReferenceRow`, `CrossRefsBlock` and
+   `NoteCrossRefsBlock`.
 
-/* The row carries the ring on behalf of the button inside it, which is why
-   `.crossref-row-open:focus-visible` below gives its own outline away. Matched
-   with `:has(:focus-visible)` rather than `:focus-within`, because
-   `:focus-within` has no modality filter and this row's button navigates:
-   clicking a cross-reference took the reader somewhere else and left the row
-   outlined behind them for as long as the button kept focus. */
-.crossref-row:has(:focus-visible),
-.note-crossref-row:has(:focus-visible) {
-  outline: 2px solid var(--study-gold-focus);
-  outline-offset: 1px;
-}
-
-.crossref-row-open:focus-visible { outline: none; }
-
+   The handover they implemented was a real guarantee and it did not go with
+   them — `:has(:focus-visible)` rather than `:focus-within`, because a row that
+   rings for a control that NAVIGATES stays outlined behind the reader for as
+   long as that control keeps focus. Under §C4·2's row grammar nothing hands a
+   ring over any more: the compact row's verbs each ring themselves, and the
+   connection block is itself the button. That is asserted in
+   tests/focus-ring-modality-contract.test.ts, which used to assert these two
+   selectors and now sweeps the row families for the defect instead. */
 .margin-capture-action {
   flex: 0 0 auto;
   padding: 3px 0;
@@ -397,10 +465,10 @@
   transition: opacity var(--transition-fast), color var(--transition-fast);
 }
 
-.crossref-row:hover .margin-capture-action,
-.crossref-row:focus-within .margin-capture-action,
-.note-crossref-row:hover .margin-capture-action,
-.note-crossref-row:focus-within .margin-capture-action,
+/* The four row-scoped reveals that led this group — hover and `:focus-within`
+   on each of the two retired cross-reference rows — are dropped with the rows.
+   The verb's own hover and ring are what remain, and they are what its three
+   live sites use. */
 .margin-capture-action:hover,
 .margin-capture-action:focus-visible {
   opacity: 1;
@@ -408,7 +476,7 @@
 }
 
 .margin-capture-action:focus-visible {
-  outline: 2px solid var(--study-gold-focus);
+  outline: 2px solid var(--accent-seal);
   outline-offset: 2px;
 }
 
@@ -440,7 +508,7 @@
 }
 .margin-sources[open] summary::after { content: "−"; }
 .margin-sources summary:hover { color: var(--text-primary); }
-.margin-sources summary:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 2px; }
+.margin-sources summary:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: 2px; }
 
 /* Sources are entries of one kind in a list, so they are separated by interval
    and not by a rule apiece. The disclosure already opens on one rule, where the
@@ -470,7 +538,7 @@
   cursor: pointer;
 }
 .margin-source-cite:hover { background: var(--study-hover-surface); color: var(--text-primary); }
-.margin-source-cite:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 1px; }
+.margin-source-cite:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: 1px; }
 
 .entity-research-title-row,
 .lang-detail-heading,
@@ -514,7 +582,7 @@
 .note-detail-action:hover { background: var(--study-hover-surface); color: var(--text-primary); }
 .note-detail-action--danger:hover { color: var(--error); }
 .note-detail-action:disabled { cursor: default; opacity: 0.6; }
-.note-detail-action:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 1px; }
+.note-detail-action:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: 1px; }
 
 .note-edit { display: flex; flex-direction: column; min-height: 100%; }
 .note-edit-field { display: block; width: 100%; max-width: 720px; margin-inline: auto; }
@@ -997,7 +1065,23 @@ html, body, #root {
    with interval, which divides two planes better than a line does.
 
    232px expanded, 56px collapsed, nothing in between. An intermediate width
-   is a width nobody chose. */
+   is a width nobody chose.
+
+   Rev 05 §05·3 · THE RAIL JOINS THE FRAME. B·2 stopped the active row bleeding,
+   which was right, but it left the rail measured against the window while
+   everything else was measured against the page. So the rail's vertical origin
+   is now the page's: the brand tile's top edge is --frame-top, the same 54 the
+   paper starts at, and the account tile's bottom edge is the page's bottom
+   edge. The rail is bracketed by the same two lines as the paper.
+
+   The width stays 56 and stays flush to the window. The rail is ground, and
+   ground may touch the edge; only paper is inset. Insetting the rail would
+   make it a third plane, which Law 1 does not have.
+
+   env(titlebar-area-height) is gone from here on purpose. It was the rail's own
+   vertical origin — a second datum, answerable to the window rather than the
+   page — and 54 clears the hiddenInset traffic lights by a wider margin than
+   the 28px it replaces. */
 .sidebar {
   width: var(--rail-w);
   /* Flex items default to min-width:auto, which floors the used width at
@@ -1012,7 +1096,7 @@ html, body, #root {
   flex-direction: column;
   user-select: none;
   position: relative;
-  padding-top: env(titlebar-area-height, 28px);
+  padding-top: var(--frame-top);
   transition: width var(--transition-normal);
 }
 
@@ -1020,10 +1104,13 @@ html, body, #root {
   width: var(--rail-w-collapsed);
 }
 
+/* A tile like the rest: collapsed, it stands exactly where the brand tile
+   stands and swaps with it on hover, so the column's axis does not move
+   between the two states of one 32px square. */
 .sidebar-collapse-btn {
   -webkit-app-region: no-drag;
-  width: 30px;
-  height: 30px;
+  width: var(--rail-tile);
+  height: var(--rail-tile);
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;
@@ -1050,12 +1137,17 @@ html, body, #root {
   transform: scale(0.9);
 }
 
+/* Rev 05 §05·3 · the brand tile's top edge IS the page's top edge, 54, the same
+   number. The header therefore has no top padding of its own: the rail's
+   padding-top is the frame's, and a second origin stacked on top of it is
+   exactly the drift the section is about. 16 underneath puts the first nav
+   tile on the drawing's line. */
 .sidebar-header {
   -webkit-app-region: drag;
   display: flex;
   align-items: center;
   gap: var(--sp-sm);
-  padding: 16px 18px 18px;
+  padding: 0 var(--rail-tile-inset) 16px;
   position: relative;
 }
 
@@ -1064,18 +1156,21 @@ html, body, #root {
   margin-left: auto;
 }
 
+/* 8, so the brand word starts on --rail-label-x with every other label in the
+   column. The rail has one label column and one tile column, at both widths. */
 .brand-row {
   -webkit-app-region: no-drag;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
 }
 
+/* Collapsed needs no special centring any more: the tile inset is the same 12
+   at 56 as at 232, and 12 + 32 + 12 is the whole rail. */
 .sidebar.collapsed .sidebar-header {
-  justify-content: center;
-  padding-left: 17px;
-  padding-right: 17px;
+  padding-left: var(--rail-tile-inset);
+  padding-right: var(--rail-tile-inset);
 }
 
 .sidebar.collapsed .brand-row {
@@ -1085,8 +1180,8 @@ html, body, #root {
 
 .sidebar.collapsed .sidebar-header > .control-tooltip-anchor {
   position: absolute;
-  top: 16px;
-  left: 17px;
+  top: 0;
+  left: var(--rail-tile-inset);
   margin: 0;
   opacity: 0;
   transition: opacity var(--transition-fast);
@@ -1098,8 +1193,8 @@ html, body, #root {
 }
 
 .brand-mark {
-  width: 30px;
-  height: 30px;
+  width: var(--rail-tile);
+  height: var(--rail-tile);
   border-radius: var(--radius-sm);
   background: var(--accent-current);
   color: var(--text-on-accent);
@@ -1133,8 +1228,15 @@ html, body, #root {
   max-width: 0;
 }
 
-/* 32 + 2: one reading band per row, two of canvas between. Rows run the rail's
-   full width so the active one can end in its pebble at the rail's edge. */
+/* 32 + 2: one reading band per row, two of canvas between. Rows still run the
+   rail's full width, but nothing is painted across it any more — the row is a
+   hit area now, and what you see is the tile inside it.
+
+   @quire guessed · §05·6 draws the collapsed rail on a 40px pitch (32 + 8) while
+   this ships Study A's approved 32 + 2. §05·3's prose specifies the tile and its
+   reserve and says nothing about the interval, so the drawn pitch is read as
+   drawing convenience rather than a revision; if it is a revision, this gap and
+   the header's 16 below it are the two numbers that carry it. */
 .sidebar-nav {
   padding: 0;
   display: flex;
@@ -1153,19 +1255,23 @@ html, body, #root {
   margin: 12px 8px;
 }
 
-/* State is a mark on a reserved gutter, never a fill. Every row keeps 3px of
-   space at its leading edge whether or not it is carrying a mark, so nothing
-   moves when one appears. The active row is the one place paper appears in
-   the rail — three scales of one material: pebble 4, tab 8, page 8. */
+/* State is a mark on a reserved gutter, never a fill. Every row keeps the mark's
+   width of space at BOTH edges whether or not it is carrying a mark, so nothing
+   moves when one appears and nothing is pushed off centre by the reserve.
+   Rev 05 §05·3: 12 either side of a 32px tile, with the 2px reserve living
+   inside that 12.
+   The row's radius no longer ends a fill at the rail's edge — there is no fill —
+   so it is even on all four corners; the only thing it now shapes is the
+   focus ring, and a ring rounded on one side only is a leftover. */
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: 8px;
   width: 100%;
   min-height: var(--band);
-  padding: 0 12px 0 calc(var(--mark-w) + 9px);
+  padding: 0 var(--rail-tile-inset);
   border: none;
-  border-radius: 0 var(--radius-pebble) var(--radius-pebble) 0;
+  border-radius: var(--radius-pebble);
   background: none;
   color: var(--text-secondary);
   font-family: var(--font-ui);
@@ -1178,14 +1284,33 @@ html, body, #root {
 }
 
 /* The mark itself. It exists at rest and is simply transparent, which is what
-   makes the row hold still. Left edge, because that is the edge nearest the
-   content the row opens. */
+   makes the row hold still.
+
+   Rev 05 §05·3 · RIGHT edge, and Law 2 is the reason rather than taste: the mark
+   sits on the edge nearest the content it opens, the rail opens the page, and
+   the page is to its right. A's left-edge mark predates the inset page; with
+   24px of canvas between rail and paper a right-edge mark reads as pointing at
+   the leaf it opened, and it stops fighting the tile for the rail's left edge.
+   A correction to Study A, not a new device — same 2px, same seal, same reserve
+   at rest, and the edge is the only thing that changes. */
 .nav-item::before {
   content: "";
   position: absolute;
-  inset: 0 auto 0 0;
+  inset: 0 0 0 auto;
   width: var(--mark-w);
   background: transparent;
+}
+
+/* The tile. 32px in 56px of rail, and the icon is centred IN it rather than
+   packed against the row's leading edge — which is what puts brand, nav and
+   account on one vertical axis, and what stops that axis moving by 8px when
+   the rail expands to 232. */
+.nav-tile {
+  flex: 0 0 var(--rail-tile);
+  width: var(--rail-tile);
+  height: var(--rail-tile);
+  display: grid;
+  place-items: center;
 }
 
 .nav-item svg {
@@ -1199,9 +1324,24 @@ html, body, #root {
 }
 
 /* Instant, with no transition: this is the app answering "where am I", and an
-   animated answer feels like a delayed one. */
+   animated answer feels like a delayed one.
+
+   Ink and a mark, and NO fill. Law 2 is explicit that state is a mark and never
+   a fill, and Rev 05 §05·3 names the fill running out to the right as half the
+   cause of the off-centre reading — "by 2px of geometry and much more of
+   apparent weight". The paper that used to sit here was a filled row wearing
+   the page's colour, which is a tinted chip by another name.
+
+   @quire guessed · BOTH of §05·3's own drawings keep a fill on the corrected
+   tile — `#1B1815` on the 32px "Corrected" swatch, and paper (`#FCFBF8` light /
+   `#15120F` ink) on §05·6's active tile — so the drawings and Law 2 disagree
+   here, and ruling 4·1 says drawings beat prose. Law 2 is followed because the
+   section's own argument against the old fill is that a fill is what unbalanced
+   the row, and because §8 licensed the tab's paper on the grounds that a tab IS
+   the leaf's edge, which a rail row is not. If the tile is meant to keep paper,
+   it is one declaration here — `background: var(--bg-reading)` on .nav-tile,
+   NOT on the row — and the geometry above already holds it to 32px. */
 .nav-item.active {
-  background: var(--bg-reading);
   color: var(--text-primary);
   transition: none;
 }
@@ -1215,9 +1355,27 @@ html, body, #root {
   opacity: 0.5;
 }
 
+/* §4·4 · full-strength seal. This ring was `color-mix(var(--study-gold) 40%,
+   transparent)`, which composites to 1.69:1 over the ground the rail sits on —
+   under Law 6's 3:1 floor for a mark that carries meaning without words. It was
+   also the only mark a keyboard user got here, because `outline: none` cancels
+   the global `button:focus-visible` ring, so this row answered the keyboard
+   with something invisible.
+
+   @quire derived · like `.margin-tab`, the ring stays inset and the reason §4
+   gives for "never inset" is what licenses it. The row runs the full width of
+   the rail and sits flush against both its edges behind a 2px reserved state
+   gutter, so an outward ring would be clipped and would land on the gutter the
+   active mark owns. Full-strength seal holds its ratio where it lands — 3.85:1
+   on the ground the rail is — so nothing is lost by keeping the geometry.
+   Strength was the defect; the offset is not.
+
+   Rev 05 §05·3 removed the active row's paper fill, so the 4.64:1 this comment
+   used to quote for a ring on that fill no longer has a surface to describe;
+   every row is now ground behind the ring, at the one ratio above. */
 .nav-item:focus-visible {
   outline: none;
-  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--study-gold) 40%, transparent);
+  box-shadow: inset 0 0 0 2px var(--accent-seal);
 }
 
 /* Locked drops the icon to a 1px stroke — the single exception to constant
@@ -1231,9 +1389,12 @@ html, body, #root {
   stroke-width: 1;
 }
 
+/* Collapsed keeps the row's inset rather than zeroing it and re-centring: the
+   tile is at 12 by construction at both widths, so the axis is not something
+   `justify-content` has to reconstruct. The gap must go, though — the label is
+   collapsed to zero width but is still a flex item, and 8px of gap after the
+   tile would drag the tile 4px off the axis it is supposed to hold. */
 .sidebar.collapsed .nav-item {
-  justify-content: center;
-  padding: 0;
   gap: 0;
 }
 
@@ -1276,23 +1437,52 @@ html, body, #root {
 /* One band, 48px, inside the page. Reference left in reading serif,
    instruments right in mono. Because the right side is one flex row, a tool
    whose handler is absent simply does not render and leaves no gap — the
-   header loses instruments without losing shape. */
+   header loses instruments without losing shape.
+
+   Rev 05 §05·2's left datum, and it is the reason the padding is no longer the
+   page's own inset: "Inside the page, the pager, the title, the section rules
+   and the margin's kickers all begin at ONE x" — 40 from the page edge, which
+   is the frame table's page padding. The band used to start at 24, the same
+   number as the paper's inset from the window, which made the header's left
+   edge a fourth reference in the top 100px rather than the page's own. */
 .scripture-topbar {
+  /* One name for the band's left datum, so the pager, the title and the rule
+     under them cannot be moved apart. The narrow concessions below reassign
+     this, never the padding. */
+  --topbar-datum: var(--page-padding-inline);
   position: sticky;
   top: 0;
   /* Paper, because it is part of the page now, and the page's own top corners
      because it is the first thing in it. Sticky rather than fixed: the page is
      the scroll container, so the band holds while the verses move under it. */
   border-radius: var(--radius-page) var(--radius-page) 0 0;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 0;
   height: 48px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 0;
-  padding: 0 var(--page-inset);
+  padding: 0 var(--topbar-datum);
   background: var(--bg-reading);
   z-index: 8;
+}
+
+/* The hairline under the band is licensed — §E asks for it, and it is the one
+   place a change of kind is not already obvious from the type — but it begins
+   and ends at the same x as the pager above it. A full-bleed rule under a
+   40-inset pager is precisely the mismatch §05·2 is about: the rule would be
+   measured against the paper's edge while everything on it is measured against
+   the paper's padding. Drawn rather than bordered because a border-bottom
+   cannot be inset. */
+.scripture-topbar::after {
+  content: "";
+  position: absolute;
+  left: var(--topbar-datum);
+  right: var(--topbar-datum);
+  bottom: 0;
+  height: 1px;
+  background: var(--border-subtle);
+  pointer-events: none;
 }
 
 /* No shadow. The hairline below IS licensed — §E asks for it, and it is the
@@ -1313,9 +1503,19 @@ html, body, #root {
    one active-study control, and management that opens only on demand. Its
    surface is canvas, like every other piece of chrome: the page is the only
    object in the column, and the strip is part of the ground it sits on. */
-/* A register, not browser tabs: a 30px tab in a 34px strip, sitting on canvas.
-   The 24px of canvas above it is the page inset's top edge, and doubles as the
-   window drag region — which is why that number is 24 and not 8.
+/* A register, not browser tabs: one 30px tab strip under 24px of canvas, and
+   the sum of those two is the page's top edge.
+
+   Rev 05 §05·2 collapsed this band from four competing datums to one. It used
+   to be `min-height: 34px` with a 15px bracket band opening above the tabs
+   whenever a study was on screen, so the page's top edge moved between 54 and
+   69 depending on the register's CONTENTS — which is the drift the section was
+   written against. The height is now stated, not floored: 54px in every mode
+   and at every window size, composed as --page-inset + --register-strip.
+
+   The 24px above the strip is the drag band "and nothing else". Nothing may be
+   drawn in it: the group's rule and the study siglum both lived up there and
+   both are retired below.
 
    No border-bottom. The baseline seal is a failure state only (see the
    persistence rules below); a rule here would fight the fillet, which is the
@@ -1323,7 +1523,7 @@ html, body, #root {
 .scripture-workspace-bar {
   position: relative;
   z-index: 7;
-  min-height: 34px;
+  height: var(--frame-top);
   flex: 0 0 auto;
   display: flex;
   align-items: flex-end;
@@ -1419,9 +1619,20 @@ html, body, #root {
 }
 
 /* Separate with interval, not with lines. The vertical rule before a new group
-   is gone; 12px of canvas says the same thing without drawing anything. */
-.scripture-workspace-tab-wrap[data-study-group-start="true"] {
-  margin-left: 12px;
+   is gone; canvas says the same thing without drawing anything.
+
+   Rev 05 §05·2 raises the interval from 12px to 24px and gives it the whole job
+   the group's hairline used to share: "the group becomes a slate-marked kicker
+   at the head of its own members, separated from ungrouped tabs by 24px of
+   canvas rather than by a rule — the same argument that removed the Research
+   divider." 24 is also the strip's one inset, so the gap between two studies is
+   the same number as the gap between the page and the window.
+
+   The flag lands on whichever element opens the run: the kicker when a study is
+   expanded, the proxy tab's own wrap when it is collapsed. */
+.scripture-workspace-tab-wrap[data-study-group-start="true"],
+.scripture-workspace-group-head[data-study-group-start="true"] {
+  margin-left: var(--page-inset);
   padding-left: 0;
   border-left: 0;
 }
@@ -1459,10 +1670,14 @@ html, body, #root {
 }
 
 /* Minimum 104px so the flat run between the two top curves stays at least
-   40px — below that the tab reads as a lozenge instead of a tab. */
+   40px — below that the tab reads as a lozenge instead of a tab.
+
+   The tab's height IS the strip, and the strip is half of the page's top edge,
+   so it is declared through the token the frame is composed from rather than as
+   a loose 30. */
 .scripture-workspace-tab {
   position: relative;
-  height: 30px;
+  height: var(--register-strip);
   min-width: 104px;
   max-width: 176px;
   flex: 0 0 auto;
@@ -1694,25 +1909,49 @@ html, body, #root {
   opacity: 1;
 }
 
+/* Rev 05 §05·2's one addition. "The right-hand cluster in the strip —
+   reference, count, + Open, overflow — sits on the tab strip's BASELINE datum,
+   not its vertical centre, so it reads as part of the same row of type as the
+   tab labels. Baseline alignment is general in this language (ruling 4·6); the
+   strip is the last place still centring."
+
+   The cluster used to be a 28px object centred in itself and dropped to the
+   bottom of a band whose height varied with the register's contents — so it
+   floated near the row of type without belonging to it, and it moved 15px
+   whenever a study opened. It now takes the strip's own row, --register-strip,
+   and every control in it is one box of one height whose bottoms meet 4px above
+   the page's top edge. Equal boxes bottom-aligned in the strip's row is the
+   baseline datum stated as geometry: there is no per-control nudge to drift,
+   and the cluster cannot come loose from the row again.
+
+   @quire derived · kin: header instruments · the drawing sets the cluster in a
+   30px row with `align-items:flex-end` and bottom padding; 4 is taken over the
+   drawing's 7 because the controls carry a 24px pointer target and 30 − 24 = 6
+   is not on the 4px grid the same section holds everything else to. */
 .scripture-workspace-actions {
   position: relative;
   min-width: 0;
+  height: var(--register-strip);
   flex: 0 1 auto;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 2px;
   padding-left: 7px;
+  padding-bottom: 4px;
   border-left: 1px solid var(--border-subtle);
   background: transparent;
 }
 
+/* One box, one height, and it is the pointer target rather than a shape: 24px
+   is the floor a control may not go under, and it is also exactly what a single
+   line of chrome type needs, so the two stop competing. The old `height: 28px`
+   was neither — it was 4px of nothing above and below the word. */
 .scripture-workspace-active-group,
 .scripture-workspace-open,
 .scripture-workspace-reopen,
 .scripture-workspace-overflow {
   min-width: 24px;
   min-height: 24px;
-  height: 28px;
   flex: 0 0 auto;
   border-radius: var(--radius-sm);
   background: transparent;
@@ -2265,101 +2504,78 @@ html, body, #root {
 .scripture-workspace-empty strong { color: var(--text-secondary); font-size: 11px; font-weight: var(--fw-medium); }
 .scripture-workspace-empty span { font-size: 9.5px; }
 
-/* A group is a bracket, not a chip: a 1px rule over its members carrying a 9px
-   mono label, with ends that do not turn down. A turned-down end would draw a
-   box, and a box around tabs is a second kind of container.
+/* ── The group: a kicker in the strip, not a bracket over it ──────────────
 
-   "Over its members" is the load-bearing word, and the bracket used to sit
-   BESIDE the first member instead — a 96px box in the tab row. That cost three
-   separate defects: the study name was clipped to 92px of usable width, the
-   box shouldered the strip 104px to the right so a flush-start tab no longer
-   reached the page's corner it is supposed to supply, and at the far end it
-   arrived against the actions cluster where the +n count is drawn.
+   RETIRED, Rev 05 §05·2. What stood here was a bracket — a 1px rule over the
+   members in a 15px band above the tab row, carrying a 9px mono label — built
+   after the earlier device (a 96px box beside the first member) clipped the
+   study name and shouldered a flush-start tab off the page's corner. The
+   bracket fixed those, and the section retires the whole device anyway, for a
+   reason neither version could answer:
 
-   The bracket now occupies a 15px band above the tab row — 1px of rule, 5px of
-   air, a 9px label — which is the one place it can span its members without
-   competing with them for width. The band is reserved by padding on every
-   member's wrap, so the rule sits at the same height across the whole group
-   and the tabs stay on one baseline. */
-.scripture-workspace-tab-wrap[data-study-group-bracket] {
-  padding-top: 15px;
-}
+     "A rule that brackets a group must end exactly where the group ends; this
+      one cannot, because tabs move. Spacing and one kicker say the same thing
+      and cannot drift."
 
-/* The rule, carried by the members so that it ends where they do. A segment
-   overhangs its member by the 2px the strip puts between tabs plus the 8px a
-   selected member reserves for its fillets, because both of those gaps fall
-   INSIDE the bracket and a rule that stops at each of them is not one rule but
-   a row of dashes. Segments overlap; they are the same hairline, so it does
-   not show. */
-.scripture-workspace-group-rule {
-  position: absolute;
-  top: 0;
-  left: calc(-2px - var(--radius-page));
-  right: calc(-2px - var(--radius-page));
-  height: 1px;
-  background: var(--border-medium);
-  pointer-events: none;
-}
+   It was also two of the top band's four datums by itself: B, "a hairline that
+   starts at the tabs' left and stops at no edge in the layout", and C, "the
+   study siglum floats in the drag band, at a third x". And the band it stood in
+   was a second strip above the strip — "a label above the strip creates a
+   second strip. It belongs in the strip, at the head of its members."
 
-/* Trimmed at the one end the study says it must be trimmed at. */
-.scripture-workspace-tab-wrap[data-study-group-end] .scripture-workspace-group-rule {
-  right: 0;
-}
-
-.scripture-workspace-group-tab {
-  position: absolute;
-  z-index: 1;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 15px;
+   So: no rule, no band, no reserved padding on the members. The group is a
+   slate-marked kicker sitting in the tab row at the head of its own members,
+   and the only thing separating it from the run before it is 24px of canvas
+   (see [data-study-group-start] above) — the same argument that removed the
+   Research divider. */
+.scripture-workspace-group-head {
+  flex: 0 0 auto;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
+  min-width: 0;
+}
+
+/* One 30px box, the tab's own, so the kicker sits on the strip's row rather
+   than above it. 10px of trailing air is the tab's own leading padding, which
+   is what puts the kicker's name and its first member's name in one rhythm —
+   and it is more than the 8px a selected first member's fillet reaches back
+   for, so the fillet has room without a rule of its own. */
+.scripture-workspace-group-tab {
+  height: var(--register-strip);
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 10px 0 0;
   font: 500 9px/1 var(--font-mono);
-  letter-spacing: 0.1em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   border-radius: 0;
   background: transparent;
   color: var(--text-tertiary);
   cursor: pointer;
-  /* Absolute, so the label can never take a pixel of the tab row again. Its
-     box is the first member's width — that is what "left-aligned to the first
-     member" means — and the text is free to run on over the rest of its own
-     bracket, where there is nothing but the rule above it. */
-  overflow: visible;
   transition: color var(--transition-fast);
 }
 
-/* The rule above the first member belongs to the label, because the label is
-   anchored there; the continuation segments carry it across the rest. This one
-   starts flush at left:0 — it is the end of the bracket, and the study is
-   explicit that a bracket's ends do not turn down or run on. */
-.scripture-workspace-group-tab::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: calc(-2px - var(--radius-page));
-  height: 1px;
-  background: var(--border-medium);
-}
-
-.scripture-workspace-tab-wrap[data-study-group-end] .scripture-workspace-group-tab::before {
-  right: 0;
-}
-
-/* Indented to the tab's own text so the name reads as a heading for the column
-   of labels beneath it. `flex: 0 0 auto` because the label's box is only the
-   first member wide: left to shrink, a three-tab study's name would be clipped
-   to its first tab even though the bracket over it is three tabs long. Capped
-   at one whole tab instead — a bracket is at least one member wide and a member
-   is at most 176px, so that is the widest a label can be and still be answerable
-   to the rule above it. A study can be named anything, and an unbounded run of
-   9px caps across the strip is the defect this device was drawn to replace. */
-.scripture-workspace-group-tab > span {
+/* Law 2's mark at the smallest scale it appears: 2 × 11, on the edge nearest
+   what it names. Slate, because a study is a grouping the app inferred from
+   what you opened — Law 3's ink for that, and the one ink in the strip that is
+   not saying "selected". */
+.scripture-workspace-group-mark {
+  width: 2px;
+  height: 11px;
   flex: 0 0 auto;
+  border-radius: var(--radius-mark);
+  background: var(--accent-machine);
+}
+
+/* Capped at one tab's width. A study can be named anything, and an unbounded
+   run of 9px caps across the strip is the defect the retired bracket was drawn
+   to replace — the cap survives the device that needed it. */
+.scripture-workspace-group-tab > span {
+  min-width: 0;
+  flex: 0 1 auto;
   max-width: 176px;
-  padding-left: 10px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2368,6 +2584,13 @@ html, body, #root {
 .scripture-workspace-group-tab:hover {
   background: transparent;
   color: var(--text-secondary);
+}
+
+/* B3: "A group with no active tab drops its rule and label to 72% — present,
+   receded." There is no rule left to recede with it, so the flag moved from the
+   member's wrap onto the kicker itself, which is now the whole device. */
+.scripture-workspace-group-tab[data-study-group-active="false"] {
+  opacity: 0.72;
 }
 
 .scripture-workspace-tab-wrap.is-dragging {
@@ -2588,7 +2811,12 @@ html, body, #root {
   .scripture-workspace-tab-wrap[data-study-group-start="true"],
   .scripture-workspace-actions,
   .scripture-workspace-overflow-group > header { border-color: CanvasText; }
+  /* Slate is a hue, and forced colours have none: the kicker's mark is redrawn
+     in the system's own ink so the group still has a mark, and the receded
+     state stops being a 72% wash that this mode cannot render. */
+  .scripture-workspace-group-mark { background: CanvasText; forced-color-adjust: none; }
   .scripture-workspace-group-title > button,
+  .scripture-workspace-group-tab[data-study-group-active="false"],
   .scripture-workspace-row-tools { opacity: 1; }
 
   .scripture-workspace-tab:focus-visible,
@@ -3186,19 +3414,54 @@ html, body, #root {
   gap: var(--pane-gutter);
   padding: 0 var(--page-inset) var(--page-inset);
   overflow: hidden;
+  /* The positioning context for the study panel's closed bottom edge, which
+     hangs here rather than inside the panel for the same reason the page's
+     does: the panel is the scroll container, so anything inside it scrolls
+     away with the entries. See styles/canvas.css. */
+  position: relative;
 }
 
+/* The stage IS the paper's box. It carries the frame's last row so that the
+   page, its bottom fade, its container query and every surface measured
+   against the stage are capped by one declaration rather than four. */
 .scripture-reading-stage {
   --mdock-bottom-inset: 0px;
   --reading-inline-gutter: clamp(24px, 3.2vw, var(--page-gutter));
   /* Real routing air inside the reading canvas. It contracts with the page
      gutter and remains clipped by this stage before Living Margin begins. */
   --connection-loom-gutter: clamp(16px, calc(var(--reading-inline-gutter) - 8px), 40px);
+  /* The measure block: the 32px hanging gutter plus the measure, 692 at the
+     shipped comfort. Declared here rather than in :root because the comfort
+     setting rewrites --reading-max-width on .app-shell, and a custom property
+     substitutes against the element it is declared on. */
+  --measure-block: calc(var(--verse-gutter) + var(--reading-max-width));
+  /* The frame table's 40, carried under a second name one level above the page
+     so the page itself can re-state --page-padding-inline as "40, and where it
+     may yield" without reading its own declaration. Nothing else changes it. */
+  --page-datum: var(--page-padding-inline);
   position: relative;
   min-width: 0;
   flex: 1;
   display: flex;
   overflow: hidden;
+  /* §05·3, last row: paper max width 1428, "past it the frame grows, not the
+     page." The second term is the same table read backwards — 40 padding +
+     320 margin + 56 spine + the measure block + 320 of trailing air + 40
+     padding — and it is what holds §05·4's other bound: trailing air's
+     "ceiling is 320 — the margin's own width... so the two outer airs never
+     invert." At the shipped 660 measure it comes to 1468, so 1428 is what
+     binds and the table's number is the one that ships; at the small measure
+     it binds first, which is the only way the ceiling can be honoured without
+     stating it twice. */
+  max-width: min(
+    var(--page-max-width),
+    calc(
+      var(--measure-block)
+      + var(--page-padding-inline) * 2
+      + var(--margin-column) * 2
+      + var(--page-spine)
+    )
+  );
   container: reading-stage / inline-size;
 }
 
@@ -3235,6 +3498,25 @@ html, body, #root {
   background: var(--bg-reading);
   border-radius: var(--radius-page);
   scroll-padding-top: var(--band);
+  /* §05·2's one left datum, re-stated where it can yield. It is 40 at every
+     width the quire draws, and it is the SAME 40 for the pager, the title and
+     the page body — the topbar's --topbar-datum reads this token, and both
+     boxes resolve the percentage against this element.
+
+     It gives way only where 40 cannot be afforded. At 1200 with a 380 panel
+     the frame leaves the paper at 692, which is the measure block exactly, and
+     §05·4's shrink order ends "the measure is the last thing to yield and
+     yields only below 980." The page's own padding is air, air goes first, and
+     the datum is the last air there is.
+
+     @quire derived · kin: reading canvas · §05·7 logs the window at 1200–1279
+     with a panel as unmeasured and open. This is the least-wrong reading of
+     the order already stated, and it never bites above that band. */
+  --page-padding-inline: clamp(
+    0px,
+    (100% - var(--measure-block)) / 2,
+    var(--page-datum)
+  );
 }
 
 /* The first tab claims the page's top-left corner. Read off the register's
@@ -3246,15 +3528,135 @@ html, body, #root {
   border-top-left-radius: 0;
 }
 
-/* Everything is border-box, so the inline padding has to be added back or it
-   eats the measure. The block is measure + gutter; the reading gutter is the
-   air around it, not part of it. */
+/* ══ Rev 05 §05·4 · centre the block, never the measure ═════════════════════
+   What was here reserved a margin column and then centred the measure in
+   whatever was left, "so the measure's position is a residue of two other
+   decisions: how wide the margin is, and whether the panel is open. It lands
+   slightly right of the page's centre and slightly left of nothing at all —
+   and it moves. That is what the eye is objecting to. Not the asymmetry."
+
+   The datum is the SPINE — 56px of air between margin and text. Margin plus
+   spine plus measure is one object, left-anchored at the page's 40px padding,
+   and the leftover air falls to the RIGHT of the measure, where it reads as
+   the page's outer edge. The measure's left edge becomes a constant:
+
+       40 padding + 320 margin + 56 spine = 416 from the paper's left edge,
+       plus the 32px verse gutter that hangs inside the measure.
+
+   It does not move when the panel opens, when the margin fills, or when the
+   window resizes. Cost: one grid declaration, below. Held by
+   tests/quire-frame-canon-contract.test.ts.
+
+   §05·6: "There are exactly two canons and never a third."
+
+     block    0 · margin 320 · spine 56 · measure block · trailing air
+     centred  air · 0 · 0 · measure block · air
+
+   Both are five tracks and the measure block is column 4 in both, so the
+   passage's placement is one rule and the switch cannot land half-way. Every
+   position between the two is a position no rule chose, which is the whole
+   fault being fixed.
+
+   REJECTED, recorded here so nobody re-proposes it: drop the reserve and
+   centre the text always. "It breaks Law 2 — space for a mark exists at rest —
+   so margin material would have to arrive as an overlay and push the text
+   every time you select a verse."
+
+   Shrink order, when something must give: "Trailing air to 40 · spine 56 → 40
+   · margin 320 → 240 · then the margin closes and its entries move into the
+   study panel as a tab." The two clamps below ARE that order, read
+   continuously rather than in steps: at full width both sit on their upper
+   bound and the 1fr takes the rest; as the paper narrows the 1fr reaches its
+   40px floor first, then the spine's middle term falls below 56, then the
+   margin's below 320. Below the margin's 240 the block canon stops being
+   offered at all and the page switches canon — the margin closing, in one
+   place. The measure is the last thing to yield and yields only below 980,
+   where H's rules take over. */
 .scripture-inner {
-  max-width: calc(
-    var(--reading-max-width) + var(--verse-gutter) + var(--reading-inline-gutter) * 2
-  );
-  margin: 0 auto;
-  padding: var(--band) var(--reading-inline-gutter) 0;
+  /* Air, then the reserve closed to nothing, then the measure block, then
+     equal air. "Gutter and measure alone, centred in the paper." The measure
+     block yields here and only here, because a paper too narrow to hold it is
+     already H's problem. */
+  --canon-centred:
+    minmax(0, 1fr)
+    0
+    0
+    minmax(0, var(--measure-block))
+    minmax(0, 1fr);
+
+  /* The block. A zero leading track keeps the measure in column 4, so nothing
+     downstream has to know which canon is in force. */
+  --canon-block:
+    0
+    clamp(
+      var(--margin-column-min),
+      100% - var(--measure-block) - var(--page-spine-min) - var(--trailing-air-min),
+      var(--margin-column)
+    )
+    clamp(
+      var(--page-spine-min),
+      100% - var(--measure-block) - var(--margin-column) - var(--trailing-air-min),
+      var(--page-spine)
+    )
+    var(--measure-block)
+    minmax(var(--trailing-air-min), 1fr);
+
+  /* Centred is the resting canon: it is the one that survives every width, and
+     the block canon is switched ON below where there is room for it. A page
+     that had to be talked out of the block canon would be a page that flickers
+     through it on first paint. */
+  --page-canon: var(--canon-centred);
+
+  display: grid;
+  grid-template-columns: var(--page-canon);
+  /* The frame table's 40. "Inside the page, the pager, the title, the section
+     rules and the margin's kickers all begin at one x." The block padding is
+     the reading band, not the frame's 24 — the paper's top is spent by the
+     topbar, which is flush to it because it draws the page's own corners.
+     @quire guessed · the frame table's "24 top and bottom" has no unspent
+     edge to land on inside this page: the top is the topbar's band and the
+     bottom is the 80px of clearance the closed edge's 40px fade needs. */
+  padding: var(--band) var(--page-padding-inline) 0;
+}
+
+/* The passage sits in the measure block — column 4 in both canons. Columns 2
+   and 3 are reserve, and they are empty on purpose: Law 2 says the space for a
+   mark exists at rest, and §05·4·2's standing furniture "follows the geometry
+   rather than blocking it." */
+.scripture-inner > * {
+  grid-column: 4;
+  min-width: 0;
+}
+
+/* ── The switch ────────────────────────────────────────────────────────────
+   "One switch, no in-between positions, which is exactly what was missing."
+
+   It reads the PAPER, not the window, because the paper is what the canon has
+   to fit inside — so a study panel at 380 and a window too narrow for the
+   margin are the same question asked once, and neither needs its own rule.
+   The stage is the paper's box and already a size container.
+
+   The threshold is the measure block plus the block canon's own floor —
+   margin 240, spine 40, trailing air 40 — plus the page's 80 of padding, so
+   692 + 400 = 1092 at the shipped comfort. A container query cannot read a
+   custom property, so the sum is stated once per shipped measure and nothing
+   else about the canon varies with it. */
+@container reading-stage (min-width: 992px) {
+  .reading-size-s .scripture-inner { --page-canon: var(--canon-block); }
+}
+@container reading-stage (min-width: 1092px) {
+  .reading-size-m .scripture-inner { --page-canon: var(--canon-block); }
+}
+@container reading-stage (min-width: 1212px) {
+  .reading-size-l .scripture-inner { --page-canon: var(--canon-block); }
+}
+
+/* §05·5: "Only the canon changes. The margin column and its spine close;
+   gutter plus measure centre in the paper." Focus uses the centred canon at
+   every width, so this outranks the switch above rather than racing it —
+   .app-shell.focus-mode is one class more specific than .reading-size-*. */
+.app-shell.focus-mode .scripture-inner {
+  --page-canon: var(--canon-centred);
 }
 
 .chapter-header {
@@ -3851,7 +4253,7 @@ html, body, #root {
 .connection-tick:hover .connection-tick-overflow,
 .connection-tick.focused .connection-tick-overflow { opacity: 1; }
 .connection-tick.needs-space .connection-tick-dash { background: transparent; border-top: 1px dashed currentColor; }
-.connection-tick:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 1px; }
+.connection-tick:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: 1px; }
 
 /* A selected connection whose route cannot fit still says why, in one quiet
    line beside its tick, instead of failing silently. */
@@ -3953,7 +4355,7 @@ html, body, #root {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: var(--study-gold);
+  background: var(--accent-seal);
 }
 
 .margin-connection-list {
@@ -3990,14 +4392,28 @@ html, body, #root {
   transition: box-shadow var(--margin-connection-attend);
 }
 
+/* Left in the wash by the §4·4 sweep. This is the attend tint — hover, thread
+   hover, and the attended row — not a focus indicator, and the row draws its
+   own ring at full strength directly below. A keyboard user arriving here is
+   never relying on this line to find themselves.
+
+   It reads its alpha off the seal rather than out of `--study-gold-focus`,
+   which is a focus token by name and is being retired. Naming it here would
+   have made this rule look like the fourth surviving washed ring and got it
+   swept with them — and the sweep's answer for a real focus ring is full
+   strength, which would be wrong for a hover tint. C·4 §3 draws this mark at
+   `rgba(150,104,74,.3)`; 30% of the seal is that value, and it follows the
+   atmosphere the way a literal cannot. */
 .margin-connection-row:hover,
 .margin-connection-row[data-thread-hover],
 .margin-connection-row[aria-current="true"] {
-  box-shadow: inset 0 0 0 1.5px var(--study-gold-focus);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--accent-seal) 30%, transparent);
 }
 
+/* §4·4 · full-strength seal, 2px, outside the shape. No focus token: a focus
+   ring at reduced alpha is the defect the ruling names. */
 .margin-connection-row:focus-visible {
-  outline: 2px solid var(--study-gold);
+  outline: 2px solid var(--accent-seal);
   outline-offset: 2px;
 }
 
@@ -4011,7 +4427,7 @@ html, body, #root {
 /* Type is a word, never a colour: six kinds, one ink, and it is seal in every
    one of them because the reader is the author of all six. */
 .margin-connection-type {
-  color: var(--study-gold);
+  color: var(--accent-seal);
   font-family: var(--font-ui);
   font-size: 0.71875rem;
   font-weight: var(--fw-semibold);
@@ -4134,7 +4550,7 @@ html, body, #root {
 
 
 .connection-card:focus { outline: none; }
-.connection-card:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 2px; }
+.connection-card:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: 2px; }
 
 .connection-card-head {
   min-width: 0;
@@ -4235,7 +4651,7 @@ html, body, #root {
   cursor: pointer;
 }
 
-.connection-card button:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 1px; }
+.connection-card button:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: 1px; }
 .connection-card button:disabled { cursor: default; opacity: .5; }
 
 .connection-card-observation {
@@ -4270,7 +4686,7 @@ html, body, #root {
 }
 .connection-card-observation textarea:focus-visible {
   border-radius: 2px;
-  outline: 2px solid var(--study-gold-focus);
+  outline: 2px solid var(--accent-seal);
   outline-offset: 2px;
 }
 .connection-card-observation:focus-within { border-bottom-color: var(--border-medium); }
@@ -4693,11 +5109,25 @@ html, body, #root {
   min-width: 320px;
   max-width: 420px;
   flex-shrink: 0;
+  /* §05·3, frame table row four: the study panel's "own top, right and bottom
+     obey the frame exactly as the page does." The page is capped at 1428 and
+     the leftover falls to the canvas BETWEEN the two papers, so the panel has
+     to hold the frame's right edge itself rather than ride the page's width. */
+  margin-left: auto;
   background: var(--bg-reading);
   border-radius: var(--radius-page);
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 0 var(--sp-xl) var(--sp-3xl);
+  /* The frame's 24 at the bottom, plus the 40 the closed edge's fade occupies,
+     so the last entry clears the fade the way the last verse clears the
+     page's. The top is 0 for the same reason the page's is: the sticky frame
+     header is this panel's topbar and it is flush to the paper's own corners.
+     @quire guessed · Rev 05's footer supersedes "§C's padding: 48px 24px 0 0"
+     with the frame table's 40/24, but 40 inline inside a 380 panel leaves 300
+     of content and would strand §C4·1's -24 header and tab bleeds, which are
+     the Living Margin's rules and not this pass's. The inline value stays at
+     §C4·1's 24 and is reported. */
+  padding: 0 var(--sp-xl) calc(var(--page-padding-block) + 40px);
   scroll-padding-top: 78px;
 }
 
@@ -5055,11 +5485,18 @@ html, body, #root {
   color: var(--text-primary);
 }
 
+/* §C4·6 · "No mono on this surface." This one is a whole sentence — "AI-inferred
+   · anchoring is always your call" — which the quire calls the clearest case of
+   why the ruling exists, and Rev 04 §8 leaves mono only in header instruments,
+   key hints and reference labels. It is none of those. No `tabular-nums` goes
+   with the sans here, because this line has no figures to align: the mono was
+   doing voice, badly, rather than doing alignment, so there is nothing for the
+   substitution to carry over. */
 .echo-provenance {
   display: block;
   margin-top: 8px;
   color: var(--text-tertiary);
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 8px;
   letter-spacing: 0.04em;
 }
@@ -5073,224 +5510,38 @@ html, body, #root {
   vertical-align: middle;
 }
 
-/* Cross references — ranked source graph, visually distinct from note echoes. */
-.crossref-section {
-  padding-top: 2px;
-}
+/* Cross references — the ranked source graph, and its whole family, stood here
+   through the end of `.note-crossref-reason`: the section and its heading and
+   title, the list, both rows with their hover and `:focus-visible` states, the
+   row's copy column, its reference, its preview, its attribution line, and the
+   note-derived section with its reason. Twenty-two rules across three blocks of
+   this sheet, none of which any component rendered after Quire C·4 removed
+   `CrossReferenceRow`, `CrossRefsBlock` and `NoteCrossRefsBlock` from
+   LivingMargin.tsx.
 
-.crossref-heading {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--sp-md);
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--border-subtle);
-}
+   Two earlier sweeps had already deleted the nine mono rules from the family
+   (`§C4·6`), leaving the rest standing because one contract test still named
+   two of the selectors. It named them in the sheet only — there was no markup
+   left to name — so the test was green while guarding nothing. It has been
+   re-pointed at the row grammar that replaced this one, and the family goes.
 
-.crossref-title {
-  margin-bottom: 2px;
-  color: var(--text-secondary);
-}
+   The live drawings are IntentOverview's `Cross-references` section on §C4·2's
+   compact row (`.study-ref-row--compact`, with OpenBible named in Sources), and
+   the Connections tab's own blocks (`.margin-connection-row`). §C4·2 collapses
+   five reference-row treatments into two, and this was one of the five;
+   restoring any of it would ship a retired drawing back into a corrected
+   surface. */
 
-.crossref-context {
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
-  line-height: 1.25;
-  letter-spacing: 0.055em;
-  color: var(--text-tertiary);
-}
-
-.crossref-total {
-  min-width: 24px;
-  padding-top: 1px;
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-  color: var(--text-tertiary);
-}
-
-.crossref-total strong {
-  font-weight: var(--fw-medium);
-  color: var(--text-secondary);
-}
-
-.crossref-total span {
-  opacity: 0.78;
-}
-
-.crossref-list {
-  display: grid;
-  gap: 3px;
-  padding-top: 7px;
-}
-
-.crossref-row {
-  appearance: none;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: calc(100% + 16px);
-  margin-inline: -8px;
-  padding: 9px 8px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-lg);
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-  transition:
-    background-color 150ms ease,
-    border-color 150ms ease,
-    color 150ms ease;
-}
-
-.note-crossref-row {
-  appearance: none;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: calc(100% + 16px);
-  margin-inline: -8px;
-  padding: 9px 8px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-lg);
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-  transition: background-color 150ms ease, border-color 150ms ease;
-}
-
-.crossref-row:hover {
-  background: var(--study-hover-surface);
-  border-color: var(--study-hover-line);
-  color: var(--text-primary);
-}
-
-.note-crossref-row:hover {
-  background: var(--bg-secondary);
-  border-color: var(--border-subtle);
-}
-
-.crossref-row:focus-visible {
-  outline: 2px solid var(--study-gold-focus);
-  outline-offset: 1px;
-  background: var(--study-hover-surface);
-  border-color: var(--study-hover-line);
-  color: var(--text-primary);
-}
-
-.note-crossref-row:focus-visible {
-  outline: 2px solid var(--study-gold-focus);
-  outline-offset: 1px;
-  background: var(--bg-secondary);
-  border-color: var(--border-subtle);
-}
-
-.crossref-row-copy {
-  min-width: 0;
-  flex: 1;
-  display: grid;
-  gap: 2px;
-}
-
-.crossref-reference {
-  font-family: var(--font-ui);
-  font-size: 0.8125rem;
-  line-height: 1.3;
-  font-weight: var(--fw-medium);
-  color: var(--text-primary);
-}
-
-.crossref-preview {
-  display: block;
-  font-family: var(--font-reading);
-  font-size: 0.8125rem;
-  line-height: 1.45;
-  color: var(--text-secondary);
-}
-
-.crossref-support {
-  margin-top: 2px;
-  font-family: var(--font-mono);
-  font-size: 0.59375rem;
-  line-height: 1.25;
-  letter-spacing: 0.035em;
-  color: var(--text-tertiary);
-}
-
-.crossref-kinds {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 3px;
-}
-
-.crossref-kinds span {
-  padding: 2px 5px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-secondary);
-  font-family: var(--font-mono);
-  font-size: 0.5625rem;
-  line-height: 1.2;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-tertiary);
-}
-
-.crossref-open-affordance {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  opacity: 0;
-  transform: translateX(-3px);
-  font-family: var(--font-mono);
-  font-size: 0.59375rem;
-  line-height: 1;
-  letter-spacing: 0.04em;
-  color: var(--study-gold);
-  transition: opacity 150ms ease, transform 150ms ease;
-}
-
-.crossref-row:hover .crossref-open-affordance,
-.crossref-row:focus-visible .crossref-open-affordance,
-.note-crossref-row:hover .crossref-open-affordance,
-.note-crossref-row:focus-visible .crossref-open-affordance {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.crossref-attribution {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin-top: 11px;
-  font-family: var(--font-ui);
-  font-size: 0.59375rem;
-  line-height: 1.25;
-  letter-spacing: 0.025em;
-  color: var(--text-tertiary);
-  opacity: 0.82;
-}
-
-.note-crossref-section {
-  padding-top: 2px;
-}
-
-.note-crossref-reason {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  font-family: var(--font-reading);
-  font-size: 0.75rem;
-  line-height: 1.4;
-  color: var(--text-secondary);
-}
+/* Two §C4·6 notes stood inside the family, recording the nine mono rules the
+   earlier sweeps deleted from it — `.crossref-context`, `.crossref-total` and
+   its two children; `.crossref-support`, `.crossref-kinds` and its span, and
+   `.crossref-open-affordance` with its hover reveal. They go with the block
+   they annotated. One of the nine is worth carrying forward on the way out:
+   `.crossref-kinds span` was a tinted uppercase chip per kind, which Law 2 bans
+   outright and Rev 04 §5 bans twice over, since the kind vocabulary is "never
+   abbreviated, never iconified, never colour-coded". The names are held against
+   reintroduction by tests/living-margin-frame-contract.test.ts, which checks
+   them against the sheets and the components alike. */
 
 /* --- Writing, Notes, and Search workspace --- */
 
@@ -6861,7 +7112,20 @@ html, body, #root {
   background: var(--bg-reading);
 }
 
+/* Left in the wash by the §4·4 sweep, and deliberately. The mark a keyboard
+   user reads here is `border-color`, which goes to full-strength seal at 4.64:1
+   on paper; the 3px halo is a glow sitting outside it, and a glow that carries
+   no meaning of its own has no floor under Law 6. Swapping it to full strength
+   would draw a second ring, not a stronger one.
+
+   `outline: none` is load-bearing and is why this is the field's whole focus
+   style rather than an addition to the global `input:focus-visible` ring: with
+   the global outline left on, the control wears the field's seal border AND a
+   2px ring 2px outside it. This rule is declared once, here beside the other
+   `.control-input` rules, because the field is what it is about — the "Focus
+   visibility" section further down used to declare it a second time. */
 .control-input:focus-visible {
+  outline: none;
   border-color: var(--study-gold);
   box-shadow: 0 0 0 3px var(--study-gold-focus);
 }
@@ -7130,7 +7394,7 @@ html, body, #root {
 }
 
 .connection-word-chooser button:focus-visible {
-  outline: 2px solid var(--study-gold-focus);
+  outline: 2px solid var(--accent-seal);
   outline-offset: -2px;
 }
 
@@ -8104,11 +8368,15 @@ html, body, #root {
   line-height: 1.35;
 }
 
+/* Was `-webkit-line-clamp: 2`, which stamps a literal … at the cut. C4·2:
+   "clamped without an ellipsis character — the fade of a cut line is enough."
+   Height and overflow do the same clamping and leave the cut silent. The fade
+   itself is c4-foundation's, on `.study-ref-row--compact`, and is deliberately
+   not copied here: a lead is a margin entry, not a reference row, and one
+   object may not acquire a second drawing of the other's device. */
 .intent-note-lead > span:last-child {
-  display: -webkit-box;
+  max-height: calc(1lh * 2);
   overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
   color: var(--text-secondary);
   font-family: var(--font-reading);
   font-size: 0.75rem;
@@ -8284,7 +8552,7 @@ html, body, #root {
 }
 
 .entity-research-forward:focus-visible {
-  outline: 2px solid var(--study-gold-focus);
+  outline: 2px solid var(--accent-seal);
 }
 
 .entity-research-back:hover {
@@ -8293,7 +8561,7 @@ html, body, #root {
 }
 
 .entity-research-back:focus-visible {
-  outline: 2px solid var(--study-gold-focus);
+  outline: 2px solid var(--accent-seal);
 }
 
 .entity-research-return {
@@ -8316,7 +8584,7 @@ html, body, #root {
 }
 
 .entity-research-return:focus-visible {
-  outline: 2px solid var(--study-gold-focus);
+  outline: 2px solid var(--accent-seal);
   outline-offset: 1px;
 }
 
@@ -8331,7 +8599,7 @@ html, body, #root {
   cursor: pointer;
 }
 .entity-research-close:hover { color: var(--text-primary); }
-.entity-research-close:focus-visible { outline: 2px solid var(--study-gold-focus); }
+.entity-research-close:focus-visible { outline: 2px solid var(--accent-seal); }
 
 .entity-research-provenance {
   min-width: 0;
@@ -8398,7 +8666,7 @@ html, body, #root {
 }
 button.entity-research-breadcrumb { cursor: pointer; }
 button.entity-research-breadcrumb:hover { background: var(--study-hover-surface); color: var(--text-primary); }
-button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study-gold-focus); }
+button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--accent-seal); }
 .entity-research-breadcrumb.is-origin { flex: none; color: var(--text-secondary); }
 .entity-research-breadcrumb.is-current { color: var(--text-primary); font-weight: var(--fw-medium); }
 
@@ -8534,7 +8802,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 }
 
 .entity-photo-provenance summary:hover > span:first-child { color: var(--study-gold); }
-.entity-photo-provenance summary:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 2px; }
+.entity-photo-provenance summary:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: 2px; }
 
 .entity-photo-provenance dl {
   display: grid;
@@ -8575,7 +8843,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 }
 
 .entity-photo-provenance button:hover { color: var(--study-gold); }
-.entity-photo-provenance button:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 2px; }
+.entity-photo-provenance button:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: 2px; }
 
 .entity-photo-link-error {
   margin: 5px 0 6px;
@@ -8737,7 +9005,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 
 .entity-opening-context-refs button:hover svg,
 .entity-opening-context-refs button:focus-visible svg { opacity: 1; }
-.entity-opening-context-refs button:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 1px; }
+.entity-opening-context-refs button:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: 1px; }
 
 .entity-opening-context-refs > span {
   color: var(--text-tertiary);
@@ -8785,7 +9053,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 .entity-research-more > summary::after { content: "+"; color: var(--text-tertiary); }
 .entity-research-more[open] > summary::after { content: "−"; }
 .entity-research-more > summary:hover { color: var(--text-primary); }
-.entity-research-more > summary:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 2px; }
+.entity-research-more > summary:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: 2px; }
 .entity-research-more-content { padding: 10px 0 1px; }
 .entity-research-more-content > .entity-photo:first-child { margin-top: 0; }
 /* The expanded sentence now hangs off a laurel mark, so the interval that used
@@ -8897,7 +9165,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 }
 
 .entity-relationship-links button:focus-visible {
-  outline: 2px solid var(--study-gold-focus);
+  outline: 2px solid var(--accent-seal);
   outline-offset: 1px;
 }
 
@@ -9072,7 +9340,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 
 .entity-pleiades-lead > button svg { width: 10px; height: 10px; }
 .entity-pleiades-lead > button:hover { background: var(--study-hover-surface); color: var(--study-gold); }
-.entity-pleiades-lead > button:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 1px; }
+.entity-pleiades-lead > button:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: 1px; }
 
 /* The gazetteer's own sentence. It keeps its reading face and its measure; what
    changed is that it now hangs off a laurel spine with PLEIADES above it,
@@ -9179,7 +9447,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 
 .entity-pleiades-connections button svg { width: 10px; height: 10px; opacity: 0.3; }
 .entity-pleiades-connections button:hover { color: var(--study-gold); }
-.entity-pleiades-connections button:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: -2px; }
+.entity-pleiades-connections button:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: -2px; }
 .entity-pleiades-connections button:disabled { cursor: default; }
 
 .entity-pleiades-bibliography {
@@ -9203,7 +9471,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 .entity-pleiades-bibliography summary::-webkit-details-marker { display: none; }
 .entity-pleiades-bibliography summary > span:first-child { color: var(--text-secondary); }
 .entity-pleiades-bibliography summary:hover > span:first-child { color: var(--study-gold); }
-.entity-pleiades-bibliography summary:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 2px; }
+.entity-pleiades-bibliography summary:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: 2px; }
 
 /* The indent is what says these belong to the disclosure above them, and the
    indent alone does it — a drawn line down the side is a fence, and the only
@@ -9310,7 +9578,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 .entity-footprint-books button.is-current strong { color: var(--study-gold); }
 
 .entity-footprint-books button:focus-visible {
-  outline: 2px solid var(--study-gold-focus);
+  outline: 2px solid var(--accent-seal);
   outline-offset: -2px;
 }
 
@@ -9403,7 +9671,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 .entity-reference-grid button:focus-visible { color: var(--study-gold); }
 .entity-reference-grid button:hover svg,
 .entity-reference-grid button:focus-visible svg { color: var(--study-gold); opacity: 1; transform: translate(0, 0); }
-.entity-reference-grid button:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: -2px; }
+.entity-reference-grid button:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: -2px; }
 
 /* Research destinations have one calm default and one deliberately smaller
    branch action. The hierarchy stays textual and token-driven in every
@@ -9474,7 +9742,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 
 .entity-reference-open-tab:focus-visible,
 .entity-relationship-branch:focus-visible {
-  outline: 2px solid var(--study-gold-focus);
+  outline: 2px solid var(--accent-seal);
   outline-offset: 1px;
   opacity: 1;
 }
@@ -9491,7 +9759,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 }
 
 .entity-reference-more:hover { color: var(--study-gold); }
-.entity-reference-more:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 3px; }
+.entity-reference-more:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: 3px; }
 
 .entity-edition-notes {
   border-top: 1px solid var(--border-subtle);
@@ -9515,7 +9783,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 .entity-edition-notes summary > span:first-child { color: var(--text-secondary); }
 .entity-edition-notes summary > span:last-child { font-variant-numeric: tabular-nums; }
 .entity-edition-notes summary:hover > span:first-child { color: var(--study-gold); }
-.entity-edition-notes summary:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 3px; }
+.entity-edition-notes summary:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: 3px; }
 
 .entity-edition-notes > p {
   max-width: 34em;
@@ -13496,10 +13764,14 @@ button.lang-phrase-diagram-node:focus-visible {
 
 /* --- Sidebar footer --- */
 
+/* Rev 05 §05·3 · the account tile's bottom edge is the page's bottom edge —
+   --page-inset up from the window, the same 24 the paper stops at — so the rail
+   is bracketed by the same two lines as the paper. The side inset is the tile
+   inset, like every other row in the column. */
 .sidebar-footer {
   position: relative;
   overflow: hidden;
-  padding: 10px;
+  padding: 12px var(--rail-tile-inset) var(--page-inset);
   margin: 0;
   border-top: 1px solid var(--border-subtle);
   -webkit-app-region: no-drag;
@@ -13532,20 +13804,23 @@ button.lang-phrase-diagram-node:focus-visible {
   }
 }
 
+/* The inset is the same at both widths now, so collapsed only drops the line. */
 .sidebar.collapsed .sidebar-footer {
-  padding: 10px 8px;
-  margin: 0;
   border-top: none;
 }
 
+/* The tile column and the label column, the same two the nav rows use: the
+   avatar is --rail-tile and the library's name starts on --rail-label-x. The
+   switcher carries no inset of its own — the footer's is the rail's — so the
+   account tile cannot drift off the axis by way of a second padding. */
 .library-switcher {
   width: 100%;
   min-width: 0;
   display: grid;
-  grid-template-columns: 30px minmax(0, 1fr) 14px;
+  grid-template-columns: var(--rail-tile) minmax(0, 1fr) 14px;
   align-items: center;
-  gap: 9px;
-  padding: 8px;
+  gap: 8px;
+  padding: 0;
   border: 0;
   border-radius: var(--radius-md);
   background: transparent;
@@ -13566,15 +13841,16 @@ button.lang-phrase-diagram-node:focus-visible {
   transform: scale(0.985);
 }
 
+/* Same reason as the nav row: the text collapses to zero width but stays a
+   flex item, and the gap would push the tile off the axis. */
 .sidebar.collapsed .library-switcher {
   display: flex;
-  justify-content: center;
-  padding: 8px;
+  gap: 0;
 }
 
 .footer-avatar {
-  width: 30px;
-  height: 30px;
+  width: var(--rail-tile);
+  height: var(--rail-tile);
   border-radius: var(--radius-sm);
   background: var(--accent-current);
   color: var(--text-on-accent);
@@ -14612,19 +14888,31 @@ textarea:focus-visible,
   outline-offset: 2px;
 }
 
-/* Shared fields use one soft focus halo rather than stacking the global
-   outline over their own border. Buttons keep a compact halo; segmented
-   options retain a crisp inset-safe outline. */
-.control-input:focus-visible {
-  outline: none;
-  border-color: var(--study-gold);
-  box-shadow: 0 0 0 3px var(--study-gold-focus);
-}
+/* Two rules stood here and both are gone, for opposite reasons.
 
-.control-button:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px var(--study-gold-focus);
-}
+   `.control-input:focus-visible` was the sheet's SECOND declaration of that
+   selector — the first sits beside `.control-input` itself, where a rule about
+   the field belongs — so every edit to the field's focus style reached only
+   half of itself, which is the same defect `.settings-segmented` and
+   `.control-segmented` each carried. The two have been folded into the one
+   above, and the `outline: none` this copy contributed went with it: without
+   it the global `input:focus-visible` ring stacks on top of the field's own
+   seal border and the control wears two rings.
+
+   `.control-button:focus-visible` read `outline: none; box-shadow: 0 0 0 3px
+   var(--study-gold-focus)`, and it was the worst instance the §4·4 sweep found:
+   it cancelled the correct ring the global `button:focus-visible` above already
+   draws and put a .36 wash in its place. Composited on paper that wash lands at
+   1.60:1, and on the canvas the settings dialogs sit on, 1.53:1 — against Law
+   6's 3:1 floor for a mark that carries meaning without words. Nothing else in
+   the rule carried strength, so the halo was the whole indicator, which is
+   precisely "a wash at .4 cannot reach 3:1 and a keyboard user gets nothing".
+   Restated in §4's own words it became `outline: 2px solid var(--accent-seal);
+   outline-offset: 2px` — byte-for-byte what the global rule two rules up
+   already gives every `button`, and `.control-button` is only ever spelled on
+   one (Controls.tsx renders a `<button>`; nothing in the renderer puts the
+   class on an anchor). So the rule is deleted rather than kept: the ring it
+   was cancelling was the right ring all along. */
 
 /* The inset offset was drawn for a segment that was a 30px pill with room
    inside it. A segment is now the word itself, so an inset ring would strike
@@ -14870,8 +15158,10 @@ textarea:focus-visible,
    word SEARCH, which is narrower at rest than the icon-only box ever was — so
    what yields at this width is the ⌘K hint, and the word itself stays whole. */
 @media (max-width: 1120px) {
+  /* The datum yields, and the rule under the band yields with it — that is the
+     whole point of naming it once. */
   .scripture-topbar {
-    padding-inline: 14px;
+    --topbar-datum: 14px;
   }
 
   .passage-picker-book {
@@ -15917,33 +16207,12 @@ button.lang-phrase-diagram-node:focus-visible,
   background: transparent;
 }
 
-/* Cross-reference rows use one quiet list rhythm; OpenBible stays adjacent to
-   the scope instead of being discoverable only in a tooltip/footer. */
-.crossref-context {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 3px 5px;
-}
-
-.crossref-row,
-.note-crossref-row {
-  width: calc(100% + 12px);
-  margin-inline: -6px;
-  padding: 9px 6px;
-  border-radius: var(--radius-sm);
-}
-
-.crossref-row:hover,
-.crossref-row:focus-visible {
-  border-color: transparent;
-  background: var(--study-hover-surface);
-  color: var(--text-primary);
-}
-
-.crossref-open-affordance {
-  font-size: 8.5px;
-}
+/* The desktop reconciliation's two cross-reference overrides — the shared row
+   geometry, and the hover and ring the row drew over its base rule — stood
+   here. Both followed their base rules out of the sheet when the rows they
+   dressed left the tree with Quire C·4. The list rhythm they were reconciling
+   is now §C4·2's, stated once on `.study-ref-row*`, and the OpenBible
+   attribution they kept beside the scope is in IntentOverview's Sources block. */
 
 /* Passage capture now reads as the compact sibling of the full writing desk. */
 .note-capture-panel {
@@ -16424,7 +16693,7 @@ button.lang-phrase-diagram-node:focus-visible,
   .marking-session-action,
   .marking-dock button
 ):focus-visible {
-  outline: 2px solid var(--study-gold-focus);
+  outline: 2px solid var(--accent-seal);
   outline-offset: 2px;
 }
 
@@ -17062,7 +17331,7 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .marking-armed-status button:hover { background: var(--study-hover-surface); color: var(--text-primary); }
 [data-marking-surface="palette"][data-focus-ring="keyboard"] .marking-armed-status button:focus-visible {
-  outline: 2px solid var(--study-gold-focus);
+  outline: 2px solid var(--accent-seal);
   outline-offset: 2px;
 }
 
@@ -17157,7 +17426,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .connection-draft-exit-actions button:hover { background: var(--study-hover-surface); color: var(--text-primary); }
 .connection-draft-exit-actions button.primary { border-color: var(--border-medium); background: var(--text-primary); color: var(--bg-reading); }
 .connection-draft-exit-actions button.danger { margin-left: auto; color: var(--danger, #9f4d45); }
-.connection-draft-exit-actions button:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 2px; }
+.connection-draft-exit-actions button:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: 2px; }
 .marking-dock-mode:disabled { cursor: default; opacity: .42; }
 
 .marking-tool-tone { display: none; }
@@ -17852,7 +18121,7 @@ button.lang-phrase-diagram-node:focus-visible,
 }
 
 .marking-surface-choice:focus-visible {
-  outline: 2px solid var(--study-gold-focus);
+  outline: 2px solid var(--accent-seal);
   outline-offset: 2px;
 }
 
@@ -18116,7 +18385,7 @@ button.lang-phrase-diagram-node:focus-visible,
 }
 
 .shortcuts-overlay-close:focus-visible {
-  outline: 2px solid var(--study-gold-focus);
+  outline: 2px solid var(--accent-seal);
   outline-offset: 2px;
 }
 
@@ -18344,7 +18613,7 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .verse-peek-keep:focus-visible,
 .verse-peek-open:focus-visible {
-  outline: 2px solid var(--study-gold-focus);
+  outline: 2px solid var(--accent-seal);
   outline-offset: 3px;
 }
 
@@ -18465,7 +18734,7 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .trusted-resource-card button:hover { color: var(--study-gold); }
 .trusted-resource-card button:focus-visible {
-  outline: 2px solid var(--study-gold-focus);
+  outline: 2px solid var(--accent-seal);
   outline-offset: 3px;
 }
 
@@ -18547,8 +18816,13 @@ button.lang-phrase-diagram-node:focus-visible,
   transform: translateX(14px);
 }
 
+/* §4·4 · the same defect spelled the other way. A ring in `color-mix(...
+   var(--study-gold) 40%, transparent)` is the wash token by another name — it
+   composites to 1.69:1 on paper — and the sweep that reads the token by name
+   would have walked past it. The checked track's own inset line below stays
+   mixed, because that one is a fill and Law 6 sets no floor for a fill. */
 .material-switch input:focus-visible + .material-switch-track {
-  outline: 2px solid color-mix(in srgb, var(--study-gold) 40%, transparent);
+  outline: 2px solid var(--accent-seal);
   outline-offset: 2px;
 }
 
@@ -18618,6 +18892,16 @@ button.lang-phrase-diagram-node:focus-visible,
 
   .scripture-content {
     border-radius: 0;
+  }
+
+  /* The frame table's 40 is a desktop number, and §05·4's shrink order ends
+     with "the measure is the last thing to yield and yields only below 980,
+     where H's rules take over." This is that handover: 80px of page padding at
+     390 is a fifth of the measure, so the narrow shell keeps the reading
+     gutter it already had. The canon is untouched — the container query cannot
+     match a paper this narrow, so the page is already centred here. */
+  .scripture-inner {
+    padding-inline: var(--reading-inline-gutter);
   }
 
   .scripture-workspace-bar {
@@ -18729,18 +19013,20 @@ button.lang-phrase-diagram-node:focus-visible,
     display: none;
   }
 
-  /* Register keeps its tabs and loses its groups — a bracket needs horizontal
-     room the strip no longer has. Groups survive as labels in the overflow
-     list, which is the stated loss. The rule goes with the label: half a
-     bracket is a stray hairline, and the band it stood in is reclaimed for
-     the reading pane rather than left empty. */
-  .scripture-workspace-group-tab,
-  .scripture-workspace-group-rule {
-    display: none;
-  }
+  /* Register keeps its tabs and loses its groups. H's reason was that a bracket
+     needs horizontal room the strip no longer has; Rev 05's kicker is narrower
+     than the bracket was but it is still a whole name in a row that cannot
+     scroll far, so the concession stands unchanged. Groups survive as labels in
+     the overflow list, which is the stated loss. The 24px study interval closes
+     with the kicker it separated — with no group drawn there is nothing for it
+     to separate, and 24px of canvas mid-strip would read as a missing tab.
 
-  .scripture-workspace-tab-wrap[data-study-group-bracket] {
-    padding-top: 0;
+     The rule that used to be hidden alongside the label is not named here any
+     more: Rev 05 §05·2 retired the device outright, so there is nothing left to
+     hide, and the 15px band it reserved is gone from every width rather than
+     zeroed at this one. */
+  .scripture-workspace-group-head {
+    display: none;
   }
 
   .scripture-workspace-tab-wrap[data-study-group-start="true"] {
@@ -18778,7 +19064,7 @@ button.lang-phrase-diagram-node:focus-visible,
   }
 
   .scripture-topbar {
-    padding: 0 12px;
+    --topbar-datum: 12px;
     gap: 4px;
   }
 

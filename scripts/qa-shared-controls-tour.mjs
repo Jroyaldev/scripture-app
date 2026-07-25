@@ -3,20 +3,25 @@
  *
  * Requires Electron on --remote-debugging-port=9222. The tour exercises real
  * reading controls, popovers, keyboard tooltips, and the note-capture dialog in
- * Paper/Ink/Glass/Candlelight. It never saves notes or mutates highlights.
+ * Paper, Ink, Porcelain and Onyx. It never saves notes or mutates highlights.
  */
 
 import assert from "node:assert/strict";
 import { mkdirSync, writeFileSync } from "node:fs";
+import { waitForState } from "./qa-support/app-vocabulary.mjs";
 
 const CDP_HTTP = "http://localhost:9222/json/list";
 const OUT_DIR = "docs/ui-audit/shared-controls";
-const THEMES = ["light", "dark", "glass", "dark-glass"];
+// Glass and Candlelight were never atmospheres: they are Paper and Ink with the
+// translucent material on, which Rev 04 makes a material class. Driving them
+// clicked a picker option that does not exist. The four real atmospheres are
+// temperature crossed with luminance. See scripts/qa-support/app-vocabulary.mjs.
+const THEMES = ["light", "dark", "porcelain", "onyx"];
 const THEME_NAMES = {
   light: "paper",
   dark: "ink",
-  glass: "glass",
-  "dark-glass": "candlelight",
+  porcelain: "porcelain",
+  onyx: "onyx",
 };
 
 async function connect(url) {
@@ -60,12 +65,10 @@ async function evaluate(expression) {
 }
 
 async function waitFor(expression, timeout = 8_000) {
-  const started = Date.now();
-  while (Date.now() - started < timeout) {
-    if (await evaluate(expression)) return;
-    await sleep(90);
-  }
-  throw new Error(`Timed out waiting for ${expression}`);
+  // Vets the gate's vocabulary before waiting, so a condition the app can
+  // never satisfy fails at once instead of hanging and reading like a slow
+  // app. See scripts/qa-support/app-vocabulary.mjs.
+  await waitForState(evaluate, sleep, expression, timeout);
 }
 
 async function screenshot(name, selectors = []) {
@@ -195,16 +198,35 @@ async function setTranslation(code) {
   await sleep(280);
 }
 
+// The 190px passage box is gone. It was a button dressed as an input — the one
+// enclosure in a band that is meant to stay silent — and Quire F replaced it
+// with the word `Search`, which opens the command palette. Navigating by
+// writing into `.passage-jump-input` therefore threw on a missing element.
+// Navigate the way a reader does now: open the palette, type the reference,
+// take the reading it offers.
 async function navigatePassage(passage) {
+  const opened = await evaluate(`(() => {
+    const trigger = document.querySelector(".command-palette-trigger");
+    if (!trigger) return false;
+    trigger.click();
+    return true;
+  })()`);
+  if (!opened) throw new Error("The command palette trigger is not in the header");
+  await waitFor(`Boolean(document.querySelector(".command-palette-panel .command-palette-input-row input"))`);
   await evaluate(`(() => {
-    const input = document.querySelector(".passage-jump-input");
+    const input = document.querySelector(".command-palette-input-row input");
     if (!input) return false;
     const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
     setter?.call(input, ${JSON.stringify(passage)});
     input.dispatchEvent(new Event("input", { bubbles: true }));
-    input.closest("form")?.requestSubmit();
     return true;
   })()`);
+  // A reference-shaped query leads with the passage, so the lead row is the
+  // one a reader would take. Wait for the list rather than a fixed pause: the
+  // palette reads the indexes on this device and says so while it does.
+  await waitFor(`document.querySelectorAll(".command-palette-result").length > 0`);
+  await evaluate(`document.querySelector(".command-palette-result")?.click()`);
+  await waitFor(`!document.querySelector(".command-palette-root")`);
   await waitFor(`(() => {
     const title = document.querySelector(".chapter-title");
     return [title?.querySelector(".book-name")?.textContent, title?.querySelector(".chapter-number")?.textContent]

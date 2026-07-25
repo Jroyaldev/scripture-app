@@ -25,13 +25,18 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { spawn } from "node:child_process";
 import electronPath from "electron";
+import { waitForState } from "./qa-support/app-vocabulary.mjs";
 
-const THEMES = ["light", "dark", "glass", "dark-glass"];
+// Glass and Candlelight were never atmospheres: they are Paper and Ink with the
+// translucent material on, which Rev 04 makes a material class. Driving them
+// clicked a picker option that does not exist. The four real atmospheres are
+// temperature crossed with luminance. See scripts/qa-support/app-vocabulary.mjs.
+const THEMES = ["light", "dark", "porcelain", "onyx"];
 const THEME_LABELS = new Map([
   ["light", "Paper"],
   ["dark", "Ink"],
-  ["glass", "Glass"],
-  ["dark-glass", "Candlelight"],
+  ["porcelain", "Porcelain"],
+  ["onyx", "Onyx"],
 ]);
 const VIEWPORTS = [
   { width: 390, height: 900, label: "390x900" },
@@ -204,13 +209,11 @@ function createDriver(cdp) {
     }
     return response.result?.result?.value;
   };
+  // Vets the gate's vocabulary before waiting, so a condition the app can
+  // never satisfy fails at once instead of hanging and reading like a slow
+  // app. See scripts/qa-support/app-vocabulary.mjs.
   const waitFor = async (expression, timeout = 10_000) => {
-    const started = Date.now();
-    while (Date.now() - started < timeout) {
-      if (await evaluate(expression)) return;
-      await sleep(80);
-    }
-    throw new Error(`Timed out waiting for ${expression}`);
+    await waitForState(evaluate, sleep, expression, timeout);
   };
   return { evaluate, waitFor };
 }
@@ -557,11 +560,10 @@ function assertDockMatrixReport(report, theme, viewport) {
     assert.ok(Math.abs(report.leftInset) <= GEOMETRY_EPSILON, `${label}: stacked Dock missed the left edge`);
     assert.ok(Math.abs(report.rightInset) <= GEOMETRY_EPSILON, `${label}: stacked Dock missed the right edge`);
   }
-  if (theme === "glass" || theme === "dark-glass") {
-    assert.notEqual(report.backdrop, "none", `${label}: Glass Dock lost its backdrop material`);
-  } else {
-    assert.equal(report.backdrop, "none", `${label}: non-Glass Dock inherited a backdrop filter`);
-  }
+  // The backdrop follows the material, and all four atmospheres are solid
+  // unless the reader turns the material on. This tour never turns it on, so
+  // the Dock must not be carrying a backdrop filter in any of them.
+  assert.equal(report.backdrop, "none", `${label}: solid Dock inherited a backdrop filter`);
   assert.equal(report.thumbReady, "true", `${label}: measured thumb never became ready`);
   assert.notEqual(report.thumbDisplay, "none", `${label}: ordinary media hid the measured thumb`);
   assert.ok(report.thumbOpacity >= 0.99, `${label}: measured thumb remained transparent`);

@@ -12,8 +12,13 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { spawn } from "node:child_process";
 import electronPath from "electron";
+import { waitForState } from "./qa-support/app-vocabulary.mjs";
 
-const THEMES = ["porcelain", "light", "dark", "onyx", "glass", "dark-glass"];
+// Glass and Candlelight were never atmospheres: they are Paper and Ink with the
+// translucent material on, which Rev 04 makes a material class. Driving them
+// clicked a picker option that does not exist. The four real atmospheres are
+// temperature crossed with luminance. See scripts/qa-support/app-vocabulary.mjs.
+const THEMES = ["porcelain", "light", "dark", "onyx"];
 const EXPECTED_RESOURCE_SOURCES = ["bibleproject", "the-gospel-coalition", "working-preacher"];
 const sleep = (milliseconds) => new Promise((resolvePromise) => setTimeout(resolvePromise, milliseconds));
 
@@ -84,13 +89,11 @@ function createDriver(cdp) {
     }
     return response.result?.result?.value;
   };
+  // Vets the gate's vocabulary before waiting, so a condition the app can
+  // never satisfy fails at once instead of hanging and reading like a slow
+  // app. See scripts/qa-support/app-vocabulary.mjs.
   const waitFor = async (expression, timeout = 15_000) => {
-    const started = Date.now();
-    while (Date.now() - started < timeout) {
-      if (await evaluate(expression)) return;
-      await sleep(75);
-    }
-    throw new Error(`Timed out waiting for ${expression}`);
+    await waitForState(evaluate, sleep, expression, timeout);
   };
   return { evaluate, waitFor };
 }
@@ -203,7 +206,7 @@ try {
       dark: document.querySelector(".app-shell")?.classList.contains("dark"),
     }))()`);
     assert.equal(material.theme, theme);
-    assert.equal(material.dark, theme === "dark" || theme === "onyx" || theme === "dark-glass");
+    assert.equal(material.dark, theme === "dark" || theme === "onyx");
   }
 
   // A real reload proves persistence and the full successful-load splash.

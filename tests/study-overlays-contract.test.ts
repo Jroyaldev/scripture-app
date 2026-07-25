@@ -75,7 +75,15 @@ test("study surfaces share restrained material styling without malformed blur ex
   // rather than once per glass theme.
   assert.doesNotMatch(css, /\.theme-glass|\.theme-dark-glass/);
   assert.match(css, /\.material-translucent \{[\s\S]{0,400}--material-blur: 26px/);
-  assert.match(css, /\.crossref-row:hover,[\s\S]*background: var\(--study-hover-surface\)/);
+  // This line was `/\.crossref-row:hover,[\s\S]*background: var\(--study-hover-surface\)/`
+  // — the Connections tab's cross-reference row, which Quire C·4 deleted along
+  // with `CrossReferenceRow`, `CrossRefsBlock` and `NoteCrossRefsBlock`. It was
+  // also the loosest match in this file: `[\s\S]*` reaches the whole sheet, so
+  // it only ever proved that the two strings both occurred somewhere. The
+  // requirement is that a study list row's hover is the shared token rather
+  // than a fill of its own, so it is asserted on a live row, inside that row's
+  // own body.
+  assert.match(css, /\.note-row:hover \{[^}]*background: var\(--study-hover-surface\)/);
   assert.match(css, /\.note-capture-panel \{[\s\S]*backdrop-filter: blur\(var\(--material-blur\)\)/);
   assert.doesNotMatch(css, /calc\(var\(--material-blur\) \*/);
   // Retired HighlightToolbar vocabulary must not creep back into the stylesheet.

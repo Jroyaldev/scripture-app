@@ -8,10 +8,15 @@
 
 import assert from "node:assert/strict";
 import { mkdirSync, writeFileSync } from "node:fs";
+import { waitForState } from "./qa-support/app-vocabulary.mjs";
 
 const CDP_HTTP = "http://localhost:9222/json/list";
 const OUT_DIR = "docs/ui-audit/sidebar";
-const THEMES = ["light", "dark", "glass", "dark-glass"];
+// Glass and Candlelight were never atmospheres: they are Paper and Ink with the
+// translucent material on, which Rev 04 makes a material class. Driving them
+// clicked a picker option that does not exist. The four real atmospheres are
+// temperature crossed with luminance. See scripts/qa-support/app-vocabulary.mjs.
+const THEMES = ["light", "dark", "porcelain", "onyx"];
 const leaveThemeArg = process.argv.find((arg) => arg.startsWith("--leave="))?.slice("--leave=".length);
 const leaveTheme = leaveThemeArg && THEMES.includes(leaveThemeArg) ? leaveThemeArg : null;
 
@@ -56,12 +61,10 @@ async function evaluate(expression) {
 }
 
 async function waitFor(expression, timeout = 8_000) {
-  const started = Date.now();
-  while (Date.now() - started < timeout) {
-    if (await evaluate(expression)) return;
-    await sleep(100);
-  }
-  throw new Error(`Timed out waiting for ${expression}`);
+  // Vets the gate's vocabulary before waiting, so a condition the app can
+  // never satisfy fails at once instead of hanging and reading like a slow
+  // app. See scripts/qa-support/app-vocabulary.mjs.
+  await waitForState(evaluate, sleep, expression, timeout);
 }
 
 async function screenshot(name) {
@@ -253,10 +256,12 @@ assert.equal(await evaluate(`document.querySelector(".library-switcher")?.getAtt
 await screenshot("light-library-menu");
 await pressEscape();
 
-await setTheme("dark-glass");
+// Candlelight was Ink with the material on, so the atmosphere this step wanted
+// a dark ground from is Ink itself.
+await setTheme("dark");
 await evaluate(`document.querySelector(".library-switcher")?.click()`);
 await waitFor(`Boolean(document.querySelector(".library-popover"))`);
-await screenshot("dark-glass-library-menu");
+await screenshot("dark-library-menu");
 await pressEscape();
 
 await setTheme(leaveTheme ?? original.theme);

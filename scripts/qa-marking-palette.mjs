@@ -14,13 +14,18 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { spawn } from "node:child_process";
 import electronPath from "electron";
+import { waitForState } from "./qa-support/app-vocabulary.mjs";
 
-const THEMES = ["light", "dark", "glass", "dark-glass"];
+// Glass and Candlelight were never atmospheres: they are Paper and Ink with the
+// translucent material on, which Rev 04 makes a material class. Driving them
+// clicked a picker option that does not exist. The four real atmospheres are
+// temperature crossed with luminance. See scripts/qa-support/app-vocabulary.mjs.
+const THEMES = ["light", "dark", "porcelain", "onyx"];
 const THEME_LABELS = new Map([
   ["light", "Paper"],
   ["dark", "Ink"],
-  ["glass", "Glass"],
-  ["dark-glass", "Candlelight"],
+  ["porcelain", "Porcelain"],
+  ["onyx", "Onyx"],
 ]);
 const VIEWPORTS = [
   { width: 390, height: 900, label: "390x900" },
@@ -109,13 +114,11 @@ function createDriver(cdp) {
     return response.result?.result?.value;
   };
 
+  // Vets the gate's vocabulary before waiting, so a condition the app can
+  // never satisfy fails at once instead of hanging and reading like a slow
+  // app. See scripts/qa-support/app-vocabulary.mjs.
   const waitFor = async (expression, timeout = 10_000) => {
-    const started = Date.now();
-    while (Date.now() - started < timeout) {
-      if (await evaluate(expression)) return;
-      await sleep(80);
-    }
-    throw new Error(`Timed out waiting for ${expression}`);
+    await waitForState(evaluate, sleep, expression, timeout);
   };
 
   return { evaluate, waitFor };
@@ -627,6 +630,13 @@ async function assertReducedMotion(driver, cdp) {
     };
   })()`);
   assert.equal(report.active, true, "reduced-motion emulation did not reach the Palette");
+  // The targets are the Palette itself plus its actions and choices, so this is
+  // never legitimately empty. Sweeping an empty list would report that reduced
+  // motion was honoured everywhere, having looked nowhere.
+  assert.ok(
+    report.durations.length > 0,
+    "reduced-motion measured no Palette targets, so honouring it was never actually checked",
+  );
   for (const [index, durations] of report.durations.entries()) {
     assert.equal(allZeroDurations(durations.animation), true, `reduced-motion target ${index} retained animation ${durations.animation}`);
     assert.equal(allZeroDurations(durations.transition), true, `reduced-motion target ${index} retained transition ${durations.transition}`);

@@ -141,7 +141,7 @@
 }
 
 .margin-entry-name-open:focus-visible {
-  outline: 2px solid var(--study-gold-focus);
+  outline: 2px solid var(--accent-seal);
   outline-offset: 2px;
   border-radius: var(--radius-mark);
 }
@@ -448,7 +448,7 @@
 }
 
 .margin-entry-appears-row:focus-visible {
-  outline: 2px solid var(--study-gold-focus);
+  outline: 2px solid var(--accent-seal);
   outline-offset: 1px;
 }
 
@@ -484,7 +484,7 @@
 }
 
 .margin-entry-appears-more:focus-visible {
-  outline: 2px solid var(--study-gold-focus);
+  outline: 2px solid var(--accent-seal);
   outline-offset: 2px;
 }
 
@@ -559,7 +559,7 @@
 }
 
 .margin-entry-relation-name:focus-visible {
-  outline: 2px solid var(--study-gold-focus);
+  outline: 2px solid var(--accent-seal);
   outline-offset: 2px;
 }
 
@@ -602,7 +602,7 @@
 }
 
 .margin-entry-verb:focus-visible {
-  outline: 2px solid var(--study-gold-focus);
+  outline: 2px solid var(--accent-seal);
   outline-offset: 2px;
 }
 

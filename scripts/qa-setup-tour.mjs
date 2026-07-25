@@ -14,15 +14,20 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { spawn } from "node:child_process";
 import electronPath from "electron";
+import { waitForState } from "./qa-support/app-vocabulary.mjs";
 
 const PRIMARY_CDP = "http://localhost:9222/json/list";
 const OUT_DIR = "docs/ui-audit/setup";
-const THEMES = ["light", "dark", "glass", "dark-glass"];
+// Glass and Candlelight were never atmospheres: they are Paper and Ink with the
+// translucent material on, which Rev 04 makes a material class. Driving them
+// clicked a picker option that does not exist. The four real atmospheres are
+// temperature crossed with luminance. See scripts/qa-support/app-vocabulary.mjs.
+const THEMES = ["light", "dark", "porcelain", "onyx"];
 const THEME_NAMES = {
   light: "paper",
   dark: "ink",
-  glass: "glass",
-  "dark-glass": "candlelight",
+  porcelain: "porcelain",
+  onyx: "onyx",
 };
 const SECTIONS = ["Library", "Reading", "Intelligence", "Import", "About"];
 const sleep = (ms) => new Promise((resolvePromise) => setTimeout(resolvePromise, ms));
@@ -81,13 +86,11 @@ function createDriver(cdp) {
     return response.result?.result?.value;
   };
 
+  // Vets the gate's vocabulary before waiting, so a condition the app can
+  // never satisfy fails at once instead of hanging and reading like a slow
+  // app. See scripts/qa-support/app-vocabulary.mjs.
   const waitFor = async (expression, timeout = 8_000) => {
-    const started = Date.now();
-    while (Date.now() - started < timeout) {
-      if (await evaluate(expression)) return;
-      await sleep(90);
-    }
-    throw new Error(`Timed out waiting for ${expression}`);
+    await waitForState(evaluate, sleep, expression, timeout);
   };
 
   const screenshot = async (name) => {
@@ -254,9 +257,9 @@ try {
     await onboarding.evaluate(`(() => {
       const shell = document.querySelector(".app-shell");
       if (!shell) return false;
-      shell.classList.remove("theme-light", "theme-dark", "theme-glass", "theme-dark-glass", "dark");
+      shell.classList.remove("theme-light", "theme-dark", "theme-porcelain", "theme-onyx", "dark");
       shell.classList.add(${JSON.stringify(`theme-${theme}`)});
-      if (${JSON.stringify(theme === "dark" || theme === "dark-glass")}) shell.classList.add("dark");
+      if (${JSON.stringify(theme === "dark" || theme === "onyx")}) shell.classList.add("dark");
       shell.dataset.theme = ${JSON.stringify(theme)};
       return true;
     })()`);

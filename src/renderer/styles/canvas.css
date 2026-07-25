@@ -133,3 +133,52 @@
     border-radius: 0;
   }
 }
+
+/* ══ Rev 05 §05·1 / §05·3 · the study panel gets the same closed edge ═══════
+   §05·1 names three things that are already right and must not be loosened,
+   and the third is the closed bottom edge: "The passage scrolls under the leaf
+   inside its own radii. This is the detail that makes it modern rather than
+   merely tidy, and it is the one the study panel is currently breaking."
+
+   The frame table says the same thing from the other side — the panel's "own
+   top, right and bottom obey the frame exactly as the page does. Today it runs
+   off the bottom of the window, which breaks the one edge you like most."
+
+   So: the same 24 (paid by .scripture-body's padding), the same 8px corners
+   (the panel's own --radius-page), and the same fade — 40px of paper-to-
+   transparent, inside the radii, no shadow and no line.
+
+   It hangs on .scripture-body for exactly the reason the page's hangs on the
+   stage: the panel IS a scroll container, so a ::after inside it would scroll
+   away with the entries. This is the panel's stage. It is drawn only when
+   there is a panel to close, and it is sized off the frame's own two numbers
+   rather than measured, so it cannot drift from the pane it belongs to.
+
+   z-index 1 matches the page's fade: above the entries, below the marking
+   dock and the floating palette. */
+.scripture-body:has(> .living-margin)::after {
+  content: '';
+  position: absolute;
+  right: var(--page-inset);
+  bottom: var(--page-inset);
+  width: var(--margin-width);
+  height: 40px;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: 0 0 var(--radius-page) var(--radius-page);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--bg-reading) 0%, transparent),
+    var(--bg-reading)
+  );
+}
+
+/* The narrow shell puts the panel in the column's lower half with its own
+   shadow and its own two sizes, and squares the page off underneath it. There
+   is no bottom edge of the frame down there for this to close, and drawing one
+   would put a band of paper across the dock. */
+@media (max-width: 979px) {
+  .scripture-body:has(> .living-margin)::after {
+    content: none;
+  }
+}

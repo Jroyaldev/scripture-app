@@ -14,14 +14,37 @@ import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { createServer } from "node:net";
 import electronPath from "electron";
+import {
+  ATMOSPHERES,
+  ATMOSPHERE_LABELS,
+  RETIRED_ATMOSPHERE_MATERIALS,
+  waitForState,
+} from "./qa-support/app-vocabulary.mjs";
 
+// Six rows, but not six atmospheres. Writing the retired Glass id into settings
+// no longer produces a `theme-glass` shell — main.ts migrates the legacy id into
+// (light, translucent) — so the wait below on `.theme-glass` could never come
+// true and this tour hung at its third capture. Glass and Candlelight were the
+// material, so the material is the axis: the four appearances solid, then the
+// two the retired ids actually named.
+//
+// Derived, never hand-listed. This tour and tests/study-workspace-qa-contract
+// once kept separate copies of the theme list and drifted apart, which is the
+// same asymmetry that let the tours rot: only the test half ever runs. Both
+// now read the one exported constant.
 const THEMES = [
-  { id: "light", file: "paper.png" },
-  { id: "dark", file: "ink.png" },
-  { id: "glass", file: "glass.png" },
-  { id: "dark-glass", file: "candlelight.png" },
-  { id: "porcelain", file: "porcelain.png" },
-  { id: "onyx", file: "onyx.png" },
+  ...ATMOSPHERES.map((id) => ({
+    id,
+    material: "solid",
+    label: ATMOSPHERE_LABELS[id],
+    file: `${ATMOSPHERE_LABELS[id]}.png`,
+  })),
+  ...RETIRED_ATMOSPHERE_MATERIALS.map(({ id, material }) => ({
+    id,
+    material,
+    label: `${ATMOSPHERE_LABELS[id]}-${material}`,
+    file: `${ATMOSPHERE_LABELS[id]}-${material}.png`,
+  })),
 ];
 const OUTPUT_DIR = resolve("output/playwright/study-workspace-bar");
 const VIEWPORT = { width: 1180, height: 900, deviceScaleFactor: 1, mobile: false };
@@ -106,13 +129,11 @@ function createDriver(cdp) {
     }
     return response.result?.result?.value;
   };
+  // Vets the gate's vocabulary before waiting, so a condition the app can
+  // never satisfy fails at once instead of hanging and reading like a slow
+  // app. See scripts/qa-support/app-vocabulary.mjs.
   const waitFor = async (expression, timeout = 15_000) => {
-    const started = Date.now();
-    while (Date.now() - started < timeout) {
-      if (await evaluate(expression)) return;
-      await sleep(75);
-    }
-    throw new Error(`Timed out waiting for ${expression}`);
+    await waitForState(evaluate, sleep, expression, timeout);
   };
   return { evaluate, waitFor };
 }
@@ -431,10 +452,12 @@ function assertNormalMetrics(theme, metrics, fixtureSignature) {
   assert.equal(metrics.popoverOpacity, 1, `${theme.id}: All Tabs capture did not reach settled opacity`);
   assert.equal(metrics.labelOpacity, 1, `${theme.id}: active label opacity is not 1`);
   assert.ok(metrics.railHeight >= 36 && metrics.railHeight <= 40, `${theme.id}: rail is ${metrics.railHeight}px`);
-  const blurCorrect = theme.id === "glass" || theme.id === "dark-glass"
+  // The blur belongs to the material, not the atmosphere — that was the whole
+  // reason Glass and Candlelight stopped being themes.
+  const blurCorrect = theme.material === "translucent"
     ? metrics.backdropFilter.includes("blur(") && !metrics.backdropFilter.includes("blur(0px)")
     : metrics.backdropFilter === "none" || metrics.backdropFilter.includes("blur(0px)");
-  assert.equal(blurCorrect, true, `${theme.id}: unexpected blur ${metrics.backdropFilter}`);
+  assert.equal(blurCorrect, true, `${theme.label}: unexpected blur ${metrics.backdropFilter}`);
   assert.equal(metrics.actionLayerCount, 1, `${theme.id}: a second action layer is visible`);
   assert.equal(metrics.actionLayerAlpha, 0, `${theme.id}: action toolbar paints a second material`);
   assert.equal(metrics.hitTarget, true, `${theme.id}: active tab center is intercepted`);
@@ -515,6 +538,7 @@ try {
   for (const theme of THEMES) {
     await driver.evaluate(`window.api.settings.set({
       theme: ${JSON.stringify(theme.id)},
+      material: ${JSON.stringify(theme.material)},
       studyWorkspace: ${JSON.stringify(fixture)},
       sidebarCollapsed: true,
       marginVisible: true,
@@ -522,6 +546,7 @@ try {
     })`);
     await cdp.send("Page.reload", { ignoreCache: true });
     await driver.waitFor(`document.querySelector(".app-shell")?.classList.contains(${JSON.stringify(`theme-${theme.id}`)})
+      && document.querySelector(".app-shell")?.classList.contains("material-translucent") === ${JSON.stringify(theme.material === "translucent")}
       && document.querySelector('[data-study-tab-id="active-entity"]')?.getAttribute("aria-selected") === "true"
       && document.querySelector('[data-study-group-id="collapsed-study"] [data-study-collapsed-proxy="true"]')
       && document.querySelector("#entity-research-title")?.textContent?.includes("Priscilla")`, 20_000);
@@ -778,6 +803,13 @@ try {
   assert.equal(forcedMetrics.zeroDuration, true, "reduced motion left a Study transition or animation running");
 
   mkdirSync(OUTPUT_DIR, { recursive: true });
+  // One capture per row of the matrix. Writing an empty list would leave the
+  // PASS line below claiming captures that were never taken.
+  assert.equal(
+    pendingScreenshots.length,
+    THEMES.length,
+    `expected one capture per atmosphere/material row, got ${pendingScreenshots.length} of ${THEMES.length}`,
+  );
   for (const capture of pendingScreenshots) {
     writeFileSync(join(OUTPUT_DIR, capture.file), capture.bytes);
   }

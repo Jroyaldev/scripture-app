@@ -167,7 +167,13 @@ test("the in-strip group label is a real collapse control with a group context m
   assert.match(tablist, /className="scripture-workspace-group-tab"/);
   assert.match(tablist, /await toggleGroup\(group\.id, true, event\.currentTarget\)/);
   assert.match(tablist, /openContextMenu\(\{ kind: "group", groupId: group\.id \}, event\)/);
-  assert.match(tablist, /title=\{expandedGroupLabel\}/);
+  // The last line used to read `title={expandedGroupLabel}`, naming the local
+  // that existed only while the group label was a bracket anchored to the first
+  // member's wrap. Rev 05 §05·2 makes the label a kicker of its own at the head
+  // of the members, so the label it titles itself with is the group's, full
+  // stop. What the test protects — that the in-strip label is a real control
+  // with a real name, not decoration — is unchanged.
+  assert.match(tablist, /title=\{groupLabel\}/);
 });
 
 test("the All Tabs popover lists every retained recently-closed item with a reopen action", () => {

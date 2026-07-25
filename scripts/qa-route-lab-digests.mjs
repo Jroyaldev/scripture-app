@@ -15,6 +15,7 @@ import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { extname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { waitForState } from "./qa-support/app-vocabulary.mjs";
 
 const EXPECTED = Object.freeze({
   c03Projection: "8b2dcd67ecc6cdbee5ebabf05810ae4f55ba2e321d7000719fc1f9012b1ca1cb",
@@ -182,13 +183,11 @@ function driverFor(cdp) {
     }
     return response.result?.result?.value;
   };
+  // Vets the gate's vocabulary before waiting, so a condition the app can
+  // never satisfy fails at once instead of hanging and reading like a slow
+  // app. See scripts/qa-support/app-vocabulary.mjs.
   const waitFor = async (expression, timeout = 30_000) => {
-    const started = Date.now();
-    while (Date.now() - started < timeout) {
-      if (await evaluate(expression)) return;
-      await sleep(100);
-    }
-    throw new Error(`Timed out waiting for ${expression}.`);
+    await waitForState(evaluate, sleep, expression, timeout);
   };
   return { evaluate, waitFor };
 }

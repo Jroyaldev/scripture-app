@@ -10,6 +10,7 @@
 
 import assert from "node:assert/strict";
 import { mkdirSync, writeFileSync } from "node:fs";
+import { waitForState } from "./qa-support/app-vocabulary.mjs";
 
 const CDP_HTTP = `http://localhost:${process.env.CDP_PORT ?? "9222"}/json/list`;
 const OUT_DIR = "docs/ui-audit/living-margin";
@@ -79,12 +80,10 @@ async function evaluate(expression) {
 }
 
 async function waitFor(expression, timeout = 8_000) {
-  const started = Date.now();
-  while (Date.now() - started < timeout) {
-    if (await evaluate(expression)) return;
-    await sleep(100);
-  }
-  throw new Error(`Timed out waiting for ${expression}`);
+  // Vets the gate's vocabulary before waiting, so a condition the app can
+  // never satisfy fails at once instead of hanging and reading like a slow
+  // app. See scripts/qa-support/app-vocabulary.mjs.
+  await waitForState(evaluate, sleep, expression, timeout);
 }
 
 async function screenshot(name, selector = null) {
@@ -392,13 +391,13 @@ const overviewState = await evaluate(`(() => {
   };
 }) ()`);
 assert.equal(overviewState.crossRefHead, "Cross-references");
-assert.match(overviewState.crossRefCount ?? "", /^\\d[\\d,]*\\s·\\sedition$/);
+assert.match(overviewState.crossRefCount ?? "", /^\d[\d,]*\s·\sedition$/);
 // Three rows at every scope: "a section never changes its shape because the
 // scope changed size."
 assert.ok(overviewState.crossRefRows > 0 && overviewState.crossRefRows <= 3);
-assert.match(overviewState.crossRefAll ?? "", /All \\d/);
+assert.match(overviewState.crossRefAll ?? "", /All \d/);
 assert.equal(overviewState.entityHead, "People & places");
-assert.match(overviewState.entityCount ?? "", /^\\d[\\d,]*\\shere$/);
+assert.match(overviewState.entityCount ?? "", /^\d[\d,]*\shere$/);
 assert.ok(overviewState.entities > 0 && overviewState.entities <= 4);
 assert.equal(overviewState.entityNameSize, "16px");
 // The edition's cross-references and TIPNR's identities are both named, in
@@ -683,23 +682,55 @@ const connectionsTruth = await evaluate(`(() => ({
   label: document.querySelector(".margin-connections")?.getAttribute("aria-label"),
   head: document.querySelector(".margin-connection-head h3")?.textContent?.trim(),
   count: document.querySelector(".margin-connection-count")?.textContent?.replace(/\\s+/g, " ").trim(),
-  rows: document.querySelectorAll(".margin-connection-row").length,
+  // Scoped to the in-passage list: an empty scope inside a chapter that has
+  // connections also draws an "Elsewhere in this chapter" list of real rows,
+  // so a bare .margin-connection-row count conflates the two.
+  rows: document.querySelectorAll(".margin-connections > .margin-connection-list .margin-connection-row").length,
+  elsewhereRows: document.querySelectorAll(".margin-connection-elsewhere .margin-connection-row").length,
   types: [...document.querySelectorAll(".margin-connection-type")].map((node) => node.textContent?.trim()),
   crossRefs: document.querySelectorAll(".margin-connections .crossref-row, .margin-connections .note-crossref-row").length,
+  absent: document.querySelector(".margin-connection-absent")?.textContent?.trim(),
   verb: document.querySelector(".margin-connection-verb")?.textContent?.trim(),
   state: document.querySelector(".margin-connection-state")?.textContent?.trim(),
 }))()`);
 assert.equal(connectionsTruth.label, "Your connections");
 assert.equal(connectionsTruth.head, "In this passage");
 assert.match(connectionsTruth.count ?? "", /·\s*yours$/);
+// The finding's own guard, and the one assertion that is meaningful in either
+// state: nothing the edition wrote, and nothing the app inferred, under the
+// reader's own word.
 assert.equal(connectionsTruth.crossRefs, 0);
 assert.equal(connectionsTruth.verb, "Connect a phrase");
 assert.equal(connectionsTruth.state, "Threads shown");
+// This tour seeds no connections, so the rows are empty here today — and a
+// `for (const type of [])` proves nothing while looking like it proves
+// something, which is the failure mode this tour has already been bitten by
+// once. So the panel is required to be in exactly one of its two truthful
+// states, and whichever it is in is asserted: types drawn from the closed
+// vocabulary, or §C4·6's "empty is never blank" — one sentence naming what is
+// absent. Seeding a connection here later upgrades the check for free.
+assert.equal(
+  connectionsTruth.types.length,
+  connectionsTruth.rows + connectionsTruth.elsewhereRows,
+  "every connection block states its type, in either list",
+);
 for (const type of connectionsTruth.types) {
   assert.ok(
     ["Parallelism", "Echo", "Series", "Contrast", "Mirror", "Hinge"].includes(type),
     `unexpected connection type ${type}`,
   );
+}
+if (connectionsTruth.rows > 0) {
+  assert.equal(connectionsTruth.absent, undefined,
+    "a panel with connections in scope must not also say there are none");
+  assert.equal(connectionsTruth.elsewhereRows, 0,
+    "the nearest-true-thing list is the empty state's, not a second list beneath a full one");
+} else {
+  // Empty is never blank: one sentence naming what is absent, then the nearest
+  // true thing. The second half is only drawn when the chapter has connections
+  // outside this scope, so it is asserted as an allowed state rather than a
+  // required one.
+  assert.match(connectionsTruth.absent ?? "", /^You have not connected any phrases here\.$/);
 }
 console.log("connections", connectionsTruth);
 await evaluate(`(() => {
@@ -726,26 +757,50 @@ await waitFor(
 );
 await evaluate(`document.querySelector(".living-margin").scrollTop = 0`);
 await screenshot("paper-notes-margin", ".living-margin");
-const notesDeepDive = await evaluate(`(() => ({
-  cards: document.querySelectorAll(".deep-note-card").length,
-  collapsedGate: Boolean(document.querySelector(".margin-disclosure-toggle")),
-  insightSource: document.querySelector(".ai-insight-source")?.textContent?.trim(),
-  // C4·6: the bordered Add note is gone and the verb is a word.
-  borderedAction: document.querySelectorAll(".margin-view-action").length,
-  footerVerb: document.querySelector(".margin-note-footer .margin-note-verb")?.textContent?.trim(),
-  // Empty is never blank: one sentence, then the notes written elsewhere.
-  emptySentences: [...document.querySelectorAll(".margin-notes-empty-sentence")]
-    .map((node) => node.textContent?.trim()),
-  elsewhere: document.querySelectorAll(".margin-note-elsewhere .margin-note-row").length,
-}))()`);
+const notesDeepDive = await evaluate(`(() => {
+  const empty = document.querySelector(".margin-notes-empty");
+  const full = document.querySelector(".deep-note-card, .notes-deep-dive, .ai-insight-block");
+  return {
+    // Law 7: the tab owes five states, loading is already waited out above, and
+    // failed would have drawn a surface-state. So it is full or it is empty,
+    // and "neither" is the answer this probe exists to refuse.
+    mode: empty ? "empty" : full ? "full" : "neither",
+    cards: document.querySelectorAll(".deep-note-card").length,
+    collapsedGate: Boolean(document.querySelector(".margin-disclosure-toggle")),
+    insightSource: document.querySelector(".ai-insight-source")?.textContent?.trim(),
+    // C4·6: the bordered Add note is gone and the verb is a word.
+    borderedAction: document.querySelectorAll(".margin-view-action").length,
+    footerVerb: document.querySelector(".margin-note-footer .margin-note-verb")?.textContent?.trim(),
+    inlineVerb: document.querySelector(".margin-note-verbs .margin-note-verb")?.textContent?.trim(),
+    // Empty is never blank: one sentence, then the notes written elsewhere.
+    emptySentences: [...document.querySelectorAll(".margin-notes-empty-sentence")]
+      .map((node) => node.textContent?.trim()),
+    elsewhereLists: document.querySelectorAll(".margin-note-elsewhere").length,
+    elsewhereRows: document.querySelectorAll(".margin-note-elsewhere .margin-note-row").length,
+  };
+})()`);
+// Invariants, whichever state the panel is in.
 assert.equal(notesDeepDive.collapsedGate, false);
 assert.equal(notesDeepDive.borderedAction, 0);
-for (const sentence of notesDeepDive.emptySentences) {
-  assert.match(sentence ?? "", /^You have not written anything .*\\.$/);
-}
-if (notesDeepDive.cards > 0) {
-  assert.equal(notesDeepDive.insightSource, "From your notes");
+assert.notEqual(notesDeepDive.mode, "neither", "Notes drew neither its full nor its empty state");
+// The nearest-true-thing list belongs to the empty state and may never sit
+// beneath a full one — otherwise "elsewhere" is being drawn next to "here".
+if (notesDeepDive.mode === "full") {
+  assert.equal(notesDeepDive.elsewhereLists, 0);
+  assert.ok(notesDeepDive.cards > 0);
   assert.equal(notesDeepDive.footerVerb, "Write a note");
+  if (notesDeepDive.insightSource !== undefined) {
+    assert.equal(notesDeepDive.insightSource, "From your notes");
+  }
+} else {
+  // One sentence instead of three, and it is the sentence — asserted on the
+  // count as well as the shape, because "no sentences" would satisfy a bare
+  // per-item loop while proving nothing.
+  assert.equal(notesDeepDive.emptySentences.length, 1);
+  assert.match(notesDeepDive.emptySentences[0] ?? "", /^You have not written anything .+\.$/);
+  assert.equal(notesDeepDive.inlineVerb, "Write a note");
+  assert.ok(notesDeepDive.elsewhereLists <= 1);
+  if (notesDeepDive.elsewhereLists === 1) assert.ok(notesDeepDive.elsewhereRows > 0);
 }
 console.log("note evidence", notesDeepDive);
 if (notesDeepDive.cards > 0) {

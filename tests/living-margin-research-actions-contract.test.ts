@@ -38,5 +38,11 @@ test("research drill and branch actions have a deliberate primary-secondary hier
   assert.match(css, /\.entity-reference-grid \.entity-reference-actions > \.entity-reference-open-tab\s*\{[\s\S]{0,500}?min-height: 22px;[\s\S]{0,300}?color: var\(--text-tertiary\);[\s\S]{0,300}?font-family: var\(--font-ui\);/);
   assert.match(css, /\.entity-relationship-links \.entity-relationship-branch\s*\{[\s\S]{0,500}?min-height: 22px;[\s\S]{0,300}?color: var\(--text-tertiary\);[\s\S]{0,300}?font-family: var\(--font-ui\);/);
   assert.match(css, /\.entity-reference-open-tab:hover,\s*\.entity-relationship-branch:hover\s*\{[\s\S]{0,220}?background: color-mix\(in srgb, var\(--study-hover-surface\)/);
-  assert.match(css, /\.entity-reference-open-tab:focus-visible,\s*\.entity-relationship-branch:focus-visible\s*\{[\s\S]{0,160}?outline: 2px solid var\(--study-gold-focus\);/);
+  // The ring was asserted as `var(--study-gold-focus)` until ruling 4·4 struck
+  // the washed ring outright. These two handles sit on the margin's paper,
+  // where the wash measured 1.60:1 — a ring a keyboard user cannot find on the
+  // one surface that is nothing but handles. Full-strength seal reaches 4.64:1
+  // there. Only the paint moved; the offset and the hierarchy above are
+  // untouched.
+  assert.match(css, /\.entity-reference-open-tab:focus-visible,\s*\.entity-relationship-branch:focus-visible\s*\{[\s\S]{0,160}?outline: 2px solid var\(--accent-seal\);/);
 });

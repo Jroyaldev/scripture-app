@@ -163,7 +163,7 @@ test("the durable token artifact matches the rendered desktop system", () => {
   assert.doesNotMatch(css, /\.theme-glass\b|\.theme-dark-glass\b/);
 });
 
-test("the nav rail is canvas, and its active row is the only paper in it", () => {
+test("the nav rail is canvas, and no row in it is ever a fill", () => {
   const css = read("src/renderer/styles.css");
 
   // The rail IS canvas. Not a tinted panel beside the page: no fill of its own
@@ -185,23 +185,48 @@ test("the nav rail is canvas, and its active row is the only paper in it", () =>
   assert.match(css, /\.sidebar \{[\s\S]{0,120}width: var\(--rail-w\);/);
   assert.match(css, /\.sidebar\.collapsed \{\s*width: var\(--rail-w-collapsed\);\s*\}/);
 
-  // State is a mark on a reserved gutter, never a fill. Every row keeps 3px at
-  // its leading edge whether or not it is carrying a mark, so nothing moves
-  // when one appears — the mark exists at rest and is simply transparent.
-  assert.match(css, /--mark-w: 3px;/);
-  assert.match(css, /\.nav-item \{[\s\S]{0,420}padding: 0 12px 0 calc\(var\(--mark-w\) \+ 9px\);/);
+  // State is a mark on a reserved gutter, never a fill. Every row keeps the
+  // mark's width of space at BOTH edges whether or not it is carrying a mark,
+  // so nothing moves when one appears and nothing is pushed off the rail's
+  // centre by the reserve — the mark exists at rest and is simply transparent.
+  //
+  // REV 05 §05·3 REVISED STUDY A HERE, in two ways this test used to pin the
+  // other side of:
+  //
+  //   1. The mark is 2px and reserved at both edges, not 3px at the leading one.
+  //      Law 2 says 2px, both of §05·3's drawings say 2px, and the bottom bar's
+  //      own test below already described itself as "the same 2px rule the rail
+  //      uses" while the rail quietly used 3.
+  //   2. The mark sits on the RIGHT edge. Law 2 puts it on the edge nearest the
+  //      content it opens; the rail opens the page and the page is to its right.
+  //      A's left-edge mark predates B·2's inset page — with 24px of canvas
+  //      between rail and paper, a left-edge mark points away from the leaf it
+  //      opened and fights the tile for the rail's left edge.
+  //
+  // The geometry is the section's, exactly: a 32px tile in a 56px rail, 12
+  // either side, 2px of that 12 reserved at each edge. The inset is derived
+  // from the two rail widths rather than written as 12, so it cannot drift.
+  assert.match(css, /--mark-w: 2px;/);
+  assert.match(css, /--rail-tile: 32px;/);
+  assert.match(css, /--rail-tile-inset: calc\(\(var\(--rail-w-collapsed\) - var\(--rail-tile\)\) \/ 2\);/);
+  assert.match(css, /\.nav-item \{[\s\S]{0,420}padding: 0 var\(--rail-tile-inset\);/);
   assert.match(css, /\.nav-item \{[\s\S]{0,420}min-height: var\(--band\);/);
+  assert.match(css, /\.nav-item::before \{[\s\S]{0,240}inset: 0 0 0 auto;/);
   assert.match(css, /\.nav-item::before \{[\s\S]{0,240}width: var\(--mark-w\);[\s\S]{0,120}background: transparent;/);
   assert.match(css, /\.nav-item::before \{[\s\S]{0,240}background: transparent;/);
   assert.match(css, /\.nav-item\.active::before \{\s*background: var\(--study-gold\);\s*\}/);
-  // Rows run the rail's full width so the active one can end in its pebble at
-  // the rail's edge — three scales of one material: pebble 4, tab 8, page 8.
-  assert.match(css, /\.nav-item \{[\s\S]{0,420}border-radius: 0 var\(--radius-pebble\) var\(--radius-pebble\) 0;/);
+  // The row's radius no longer ends a fill at the rail's edge, because there is
+  // no fill; it is even on all four corners, and the only thing it still shapes
+  // is the focus ring. A ring rounded on one side only is a leftover.
+  assert.match(css, /\.nav-item \{[\s\S]{0,420}border-radius: var\(--radius-pebble\);/);
   // Nothing moves on hover: ink changes, geometry does not.
   assert.match(css, /\.nav-item:hover \{\s*background: none;\s*color: var\(--text-primary\);\s*\}/);
-  // The active fill is instant on purpose — it is the app answering "where am
-  // I", and an animated answer feels like a delayed one.
-  assert.match(css, /\.nav-item\.active \{\s*background: var\(--bg-reading\);\s*color: var\(--text-primary\);\s*transition: none;\s*\}/);
+  // Active is instant on purpose — it is the app answering "where am I", and an
+  // animated answer feels like a delayed one. It is ink and a mark and NOTHING
+  // else: the paper that used to fill this row was a filled row wearing the
+  // page's colour, which Law 2 bans by name, and §05·3 names it as half the
+  // cause of the icon column reading off-centre.
+  assert.match(css, /\.nav-item\.active \{\s*color: var\(--text-primary\);\s*transition: none;\s*\}/);
 
   // Work the app is doing is not a property of who you are, and a pulsing
   // identity cannot say what it is working on.

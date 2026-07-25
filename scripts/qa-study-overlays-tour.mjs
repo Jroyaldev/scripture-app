@@ -3,21 +3,26 @@
  *
  * Requires Electron on --remote-debugging-port=9222. Exercises language word
  * maps, Structure, highlight selection, passage-note capture, and OpenBible
- * previews in Paper/Ink/Glass/Candlelight. It never saves notes or applies,
+ * previews in Paper, Ink, Porcelain and Onyx. It never saves notes or applies,
  * recolors, or removes highlights.
  */
 
 import assert from "node:assert/strict";
 import { mkdirSync, writeFileSync } from "node:fs";
+import { waitForState } from "./qa-support/app-vocabulary.mjs";
 
 const CDP_HTTP = "http://localhost:9222/json/list";
 const OUT_DIR = "docs/ui-audit/study-overlays";
-const THEMES = ["light", "dark", "glass", "dark-glass"];
+// Glass and Candlelight were never atmospheres: they are Paper and Ink with the
+// translucent material on, which Rev 04 makes a material class. Driving them
+// clicked a picker option that does not exist. The four real atmospheres are
+// temperature crossed with luminance. See scripts/qa-support/app-vocabulary.mjs.
+const THEMES = ["light", "dark", "porcelain", "onyx"];
 const THEME_NAMES = {
   light: "paper",
   dark: "ink",
-  glass: "glass",
-  "dark-glass": "candlelight",
+  porcelain: "porcelain",
+  onyx: "onyx",
 };
 
 async function connect(url) {
@@ -61,12 +66,10 @@ async function evaluate(expression) {
 }
 
 async function waitFor(expression, timeout = 10_000) {
-  const started = Date.now();
-  while (Date.now() - started < timeout) {
-    if (await evaluate(expression)) return;
-    await sleep(90);
-  }
-  throw new Error(`Timed out waiting for ${expression}`);
+  // Vets the gate's vocabulary before waiting, so a condition the app can
+  // never satisfy fails at once instead of hanging and reading like a slow
+  // app. See scripts/qa-support/app-vocabulary.mjs.
+  await waitForState(evaluate, sleep, expression, timeout);
 }
 
 async function settleFiniteAnimations(selector = null) {
@@ -200,16 +203,35 @@ async function setFocusMode(active) {
   await sleep(240);
 }
 
+// The 190px passage box is gone. It was a button dressed as an input — the one
+// enclosure in a band that is meant to stay silent — and Quire F replaced it
+// with the word `Search`, which opens the command palette. Navigating by
+// writing into `.passage-jump-input` therefore threw on a missing element.
+// Navigate the way a reader does now: open the palette, type the reference,
+// take the reading it offers.
 async function navigatePassage(passage) {
+  const opened = await evaluate(`(() => {
+    const trigger = document.querySelector(".command-palette-trigger");
+    if (!trigger) return false;
+    trigger.click();
+    return true;
+  })()`);
+  if (!opened) throw new Error("The command palette trigger is not in the header");
+  await waitFor(`Boolean(document.querySelector(".command-palette-panel .command-palette-input-row input"))`);
   await evaluate(`(() => {
-    const input = document.querySelector(".passage-jump-input");
+    const input = document.querySelector(".command-palette-input-row input");
     if (!input) return false;
     const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
     setter?.call(input, ${JSON.stringify(passage)});
     input.dispatchEvent(new Event("input", { bubbles: true }));
-    input.closest("form")?.requestSubmit();
     return true;
   })()`);
+  // A reference-shaped query leads with the passage, so the lead row is the
+  // one a reader would take. Wait for the list rather than a fixed pause: the
+  // palette reads the indexes on this device and says so while it does.
+  await waitFor(`document.querySelectorAll(".command-palette-result").length > 0`);
+  await evaluate(`document.querySelector(".command-palette-result")?.click()`);
+  await waitFor(`!document.querySelector(".command-palette-root")`);
   await waitFor(`(() => {
     const title = document.querySelector(".chapter-title");
     return [title?.querySelector(".book-name")?.textContent, title?.querySelector(".chapter-number")?.textContent]
@@ -425,7 +447,7 @@ try {
       };
     })()`);
     assert.equal(structureState.theme, true, `Structure must mirror theme-${theme}`);
-    assert.equal(structureState.dark, theme === "dark" || theme === "dark-glass");
+    assert.equal(structureState.dark, theme === "dark" || theme === "onyx");
     assert.equal(structureState.floating, "dialog");
     assert.equal(structureState.role, "dialog");
     assert.equal(structureState.title, "Sentence structure");
@@ -447,17 +469,39 @@ try {
     const connectionsState = await evaluate(`(() => ({
       label: document.querySelector(".margin-connections")?.getAttribute("aria-label"),
       crossRefs: document.querySelectorAll(".margin-connections .crossref-row, .margin-connections .note-crossref-row").length,
+      // Scoped to the in-passage list: the empty state also draws an
+      // "Elsewhere in this chapter" list of real rows, so a bare count
+      // conflates the two.
+      rows: document.querySelectorAll(".margin-connections > .margin-connection-list .margin-connection-row").length,
+      elsewhereRows: document.querySelectorAll(".margin-connection-elsewhere .margin-connection-row").length,
       types: [...document.querySelectorAll(".margin-connection-type")].map((node) => node.textContent?.trim()),
+      absent: document.querySelector(".margin-connection-absent")?.textContent?.trim(),
       verb: document.querySelector(".margin-connection-verb")?.textContent?.trim(),
     }))()`);
     assert.equal(connectionsState.label, "Your connections");
     assert.equal(connectionsState.crossRefs, 0);
     assert.equal(connectionsState.verb, "Connect a phrase");
+    // Two truthful states, and one of them must hold — a bare loop over an
+    // empty `types` proves nothing while reading as though it does. Say how
+    // many were swept before sweeping them, so the loop cannot fail open.
+    // See the same guard in qa-living-margin-tour.mjs.
+    assert.equal(
+      connectionsState.types.length,
+      connectionsState.rows + connectionsState.elsewhereRows,
+      "every connection block states its type, in either list",
+    );
     for (const type of connectionsState.types) {
       assert.ok(
         ["Parallelism", "Echo", "Series", "Contrast", "Mirror", "Hinge"].includes(type),
         `unexpected connection type ${type}`,
       );
+    }
+    if (connectionsState.rows > 0) {
+      assert.equal(connectionsState.absent, undefined);
+      assert.equal(connectionsState.elsewhereRows, 0,
+        "the nearest-true-thing list is the empty state's, not a second list beneath a full one");
+    } else {
+      assert.match(connectionsState.absent ?? "", /^You have not connected any phrases here\.$/);
     }
     await screenshot(`${name}-connections-preview`, [".living-margin"]);
 
@@ -484,7 +528,7 @@ try {
       };
     })()`);
     assert.equal(crossRefState.head, "Cross-references");
-    assert.match(crossRefState.count ?? "", /·\\s*edition$/);
+    assert.match(crossRefState.count ?? "", /·\s*edition$/);
     assert.ok(crossRefState.rows > 0 && crossRefState.rows <= 3);
     assert.match(crossRefState.sources ?? "", /OpenBible/i);
     assert.match(crossRefState.sources ?? "", /CC[- ]BY/i);

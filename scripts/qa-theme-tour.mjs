@@ -1,16 +1,25 @@
 /**
- * Desktop-only visual QA for the six reading atmospheres.
+ * Desktop-only visual QA for the four reading atmospheres and the one material.
  *
  * Requires Electron on --remote-debugging-port=9222. Captures each complete
  * shell plus the atmosphere picker, verifies the selected theme reached the
- * shell, and restores the user's original choice.
+ * shell, exercises the translucent material over Paper, and restores the
+ * reader's original choice.
+ *
+ * There were never six atmospheres. Glass and Candlelight were Paper and Ink
+ * wearing the translucent material, so the picker offers four appearances and
+ * one switch — see scripts/qa-support/app-vocabulary.mjs.
  */
 
 import { mkdirSync, writeFileSync } from "node:fs";
 
 const CDP_HTTP = "http://localhost:9222/json/list";
 const OUT_DIR = "docs/ui-audit/theme";
-const THEMES = ["porcelain", "light", "dark", "onyx", "glass", "dark-glass"];
+// Glass and Candlelight were never atmospheres: they are Paper and Ink with the
+// translucent material on, which Rev 04 makes a material class. Driving them
+// clicked a picker option that does not exist. The four real atmospheres are
+// temperature crossed with luminance. See scripts/qa-support/app-vocabulary.mjs.
+const THEMES = ["porcelain", "light", "dark", "onyx"];
 
 async function connect(url) {
   const ws = new WebSocket(url);
@@ -83,6 +92,11 @@ async function setTheme(theme) {
 }
 
 const originalTheme = await evaluate(`document.querySelector(".app-shell")?.dataset.theme ?? "light"`);
+// The material is a preference of the reader's like any other, so record it
+// before the tour drives it and hand it back at the end.
+const originalTranslucent = await evaluate(
+  `document.querySelector(".app-shell")?.classList.contains("material-translucent") === true`,
+);
 
 for (const theme of THEMES) {
   await setTheme(theme);
@@ -111,19 +125,44 @@ await setTheme("light");
 await evaluate(`document.querySelector('[aria-label="Settings (5)"]')?.click()`);
 await sleep(420);
 await screenshot("light-settings");
-await evaluate(`(() => {
-  const heading = [...document.querySelectorAll(".settings-section-title")]
-    .find((element) => element.textContent?.trim() === "Appearance");
-  heading?.closest(".settings-section")?.scrollIntoView({ block: "start" });
+// There is no "Appearance" section, and the class this hunted for it by is
+// gone too. The atmospheres live under Reading, which carries a stable id —
+// so ask for the section rather than matching a heading's prose.
+const appearanceFound = await evaluate(`(() => {
+  const section = document.querySelector("#settings-reading");
+  if (!section) return false;
+  section.scrollIntoView({ block: "start" });
+  return true;
 })()`);
+if (!appearanceFound) throw new Error("Settings has no #settings-reading section to show the atmospheres in");
 await sleep(260);
 await screenshot("light-appearance");
-await evaluate(`document.querySelector('[data-theme-id="glass"]')?.click()`);
+// Glass is a material, not an atmosphere: the same Paper with the ground
+// softened. Drive the switch that actually exists rather than a fifth option
+// in a list of four.
+const materialToggled = await evaluate(`(() => {
+  const toggle = document.querySelector('.material-switch input[role="switch"]');
+  if (!toggle) return false;
+  if (!toggle.checked) toggle.click();
+  return true;
+})()`);
+if (!materialToggled) throw new Error("The translucent material switch is not in Settings");
 await sleep(480);
-await screenshot("glass-appearance");
+const translucentApplied = await evaluate(
+  `document.querySelector(".app-shell")?.classList.contains("material-translucent") === true`,
+);
+if (!translucentApplied) throw new Error("Translucent was chosen but the shell did not take the material");
+await screenshot("light-translucent-appearance");
 await evaluate(`document.querySelector(".settings-page")?.scrollTo({ top: 0 })`);
 await sleep(220);
-await screenshot("glass-settings");
+await screenshot("light-translucent-settings");
+// Put the material back before the theme, so the restore below is measured
+// against the same surface the tour found.
+await evaluate(`(() => {
+  const toggle = document.querySelector('.material-switch input[role="switch"]');
+  if (toggle && toggle.checked !== ${JSON.stringify(originalTranslucent)}) toggle.click();
+})()`);
+await sleep(280);
 await evaluate(`document.querySelector(${JSON.stringify(`[data-theme-id="${originalTheme}"]`)})?.click()`);
 await sleep(480);
 await evaluate(`document.querySelector('[aria-label="Read (1)"]')?.click()`);

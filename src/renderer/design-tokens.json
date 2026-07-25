@@ -299,7 +299,8 @@
   "layout": {
     "--rail-w": "232px",
     "--rail-w-collapsed": "56px",
-    "--mark-w": "3px",
+    "--mark-w": "2px",
+    "--rail-tile": "32px",
     "--margin-width": "380px",
     "--reading-max-width": "660px",
     "--verse-gutter": "32px",

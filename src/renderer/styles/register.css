@@ -29,13 +29,21 @@
   margin-inline-start: 0;
 }
 
-/* A study interval still has to clear the fillet: 12px of canvas between
+/* The rule that stood here read:
+
+     .scripture-workspace-viewport
+       .scripture-workspace-tab-wrap.is-selected[data-study-group-start="true"]
+       { margin-inline-start: 14px; }
+
+   "A study interval still has to clear the fillet: 12px of canvas between
    groups is less than the 16px the shape needs, so a selected first-of-group
-   tab keeps the larger of the two. */
-.scripture-workspace-viewport
-  .scripture-workspace-tab-wrap.is-selected[data-study-group-start="true"] {
-  margin-inline-start: 14px;
-}
+   tab keeps the larger of the two."
+
+   Rev 05 §05·2 raises the study interval to 24px of canvas, which already
+   clears the fillet's 16 with room to spare, so the exception has nothing left
+   to correct. It is deleted rather than kept at a larger number: a rule that
+   picks the larger of two spacings is a second spacing system, and the section
+   is about having one. */
 
 
 /* ── Where + PASSAGE goes: at the end of the strip, in every state ────────
@@ -62,7 +70,14 @@
    Do not reintroduce a flush-end attribute rule here. A contract test in
    tests/study-workspace-tabs-premium-contract.test.ts fails the moment that
    attribute name appears anywhere in this file, the component, or styles.css —
-   which is also why the name is spelled without its prefix in these notes. */
+   which is also why the name is spelled without its prefix in these notes.
+
+   And nothing about the top band is open any more. Rev 05's footer states it
+   outright — "Supersedes: … B·2's open question about the top band's contents"
+   — and §05·2 settles the contents by subtraction: 24px of canvas that is the
+   drag region and nothing else, a 30px strip holding the tabs, the group's
+   kicker and the actions cluster, and no third object above or between them.
+   The phrase "left it open" above is history, not a live question. */
 
 /* Separate with interval, not with lines. The controls' 1px keyline is the
    same third device B·2·4 retired from in front of the Research tabs — 14px of
@@ -103,11 +118,16 @@
    ink, the retry in page ink over a 1px seal rule so it is the only thing that
    looks pressable. No error fill, no icon — a failure to save the workspace
    must never look like a failure to open a passage. */
+/* On the strip's datum with everything else in the cluster. The 1px of bottom
+   padding that used to sit here was a nudge against the old arrangement, where
+   the cluster was centred in a band whose height changed with the register's
+   contents; Rev 05 §05·2 puts the cluster in the strip's own row, so the reason
+   for the nudge is gone and a leftover pixel would be the only thing in the
+   cluster not answering to the datum. */
 .scripture-workspace-bar .scripture-workspace-persistence.is-failed {
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   gap: 10px;
-  padding-bottom: 1px;
 }
 
 .scripture-workspace-persistence-reason {
@@ -176,24 +196,28 @@
 }
 
 
-/* ── Group brackets ───────────────────────────────────────────────────────
+/* ── The group kicker, receded ─────────────────────────────────────────────
 
    B3: "A group with no active tab drops its rule and label to 72% — present,
-   receded." Opacity, not a second ink: the bracket is already the quietest
-   thing in the strip and a paler grey would put it below the canvas.
+   receded." Opacity, not a second ink: the kicker is already the quietest thing
+   in the strip and a paler grey would put it below the canvas.
 
-   The study says "its rule AND label", so the flag is read off the member's
-   wrap and both halves of the bracket recede together. Reading it off the
-   label alone left a full-strength rule stretched over a receded name, which
-   is a bracket that half-belongs to the study it names. */
-.scripture-workspace-viewport
-  .scripture-workspace-tab-wrap[data-study-group-active="false"]
-  .scripture-workspace-group-tab,
-.scripture-workspace-viewport
-  .scripture-workspace-tab-wrap[data-study-group-active="false"]
-  .scripture-workspace-group-rule {
-  opacity: 0.72;
-}
+   What stood here read the flag off the MEMBER'S WRAP and receded two elements
+   together:
+
+     .scripture-workspace-viewport
+       .scripture-workspace-tab-wrap[data-study-group-active="false"]
+       .scripture-workspace-group-tab,
+     …the same wrap's .scripture-workspace-group-rule { opacity: 0.72; }
+
+   — because B3 says "its rule AND label", and a full-strength rule stretched
+   over a receded name is a bracket that half-belongs to the study it names.
+   Rev 05 §05·2 retires the rule, so there is only the label left to recede and
+   nothing for it to fall out of step with. The flag moves onto the kicker
+   itself, where it is one attribute on one element; the base declaration lives
+   beside the kicker in styles.css and this file no longer needs to shadow it.
+   The mark recedes with the name because it is the kicker's own child — a mark
+   at full strength over a receded name is the same defect in miniature. */
 
 
 /* ── Drag and drop ────────────────────────────────────────────────────────

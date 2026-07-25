@@ -243,6 +243,26 @@ test("a member quotes its own wording, and an unrouted connection keeps its posi
   assert.doesNotMatch(css.slice(css.indexOf(".margin-connections {"), css.indexOf(".connection-card {")), /overflow: hidden|text-overflow/);
 });
 
+test("the block's accessible name says everything the ink and the cap leave out", () => {
+  // The row is one button, so `aria-label` overrides its children — anything
+  // the name omits is not merely quieter, it is gone. Nothing in this block
+  // carries an sr-only mark that the name could silently swallow, and that is
+  // asserted rather than assumed: a provenance span added inside the button
+  // later would be suppressed by the label without any visible symptom.
+  assert.doesNotMatch(panelSource, /sr-only|MarginEntryWhy/);
+
+  // Provenance is stated once, by the region, because it does not vary here:
+  // "every connection is authored, so every connection is seal" (Rev 04 §8).
+  // A list whose provenance varied would have to mark every row.
+  assert.match(panelSource, /<section className="margin-connections" aria-label="Your connections">/);
+  assert.match(panelSource, /\{connections\.length\} · yours/);
+
+  // The name lists every member, not just the CONNECTION_MEMBERS_SHOWN the
+  // panel draws: `n more` is a space constraint, and a name has no space.
+  assert.match(panelSource, /members\.map\(memberName\)/);
+  assert.doesNotMatch(panelSource, /shown\.map\(memberName\)/);
+});
+
 test("a connection carries no sentence of its own, and its type is a word rather than a hue", () => {
   // The type and the members are the whole claim; prose about a connection is
   // a note, so neither the authored label nor its observation renders here.
@@ -251,7 +271,7 @@ test("a connection carries no sentence of its own, and its type is a word rather
   assert.match(panelSource, /RELATIONSHIP_LABELS\[connection\.kind\]/);
   // Six kinds, one ink. No stylesheet rule may key colour off the kind.
   assert.doesNotMatch(css, /\[data-connection-kind=/);
-  assert.match(css, /\.margin-connection-type \{[^}]*color: var\(--study-gold\)/);
+  assert.match(css, /\.margin-connection-type \{[^}]*color: var\(--accent-seal\)/);
 });
 
 test("the panel row's outline is inset, never a border, so no row reflows on hover", () => {
@@ -259,11 +279,25 @@ test("the panel row's outline is inset, never a border, so no row reflows on hov
   assert.match(row, /box-shadow: inset 0 0 0 1\.5px transparent;/);
   assert.match(row, /border: 0;/);
   assert.match(row, /\.margin-connection-row:hover,\s*\.margin-connection-row\[data-thread-hover\]/);
-  assert.match(row, /box-shadow: inset 0 0 0 1\.5px var\(--study-gold-focus\)/);
+  // The attend tint reads its alpha off the seal rather than out of
+  // `--study-gold-focus`. That token is a focus token by name and is being
+  // retired; this rule is a hover mark, not a focus indicator, so naming it
+  // here would have got the rule swept with the real washed rings — and the
+  // sweep's answer, full strength, is wrong for a tint. C·4 §3 draws it at
+  // rgba(150,104,74,.3), which is 30% of the seal, and which follows the
+  // atmosphere where a literal could not.
+  assert.match(row, /box-shadow: inset 0 0 0 1\.5px color-mix\(in srgb, var\(--accent-seal\) 30%, transparent\)/);
+  assert.doesNotMatch(row, /--study-gold-focus\)/);
   // Padding is unconditional: the hover state adds ink, never geometry.
   assert.doesNotMatch(row, /:hover \{[^}]*padding/);
   // Rev 04 §4: focus is full-strength seal outside the shape.
-  assert.match(row, /:focus-visible \{\s*outline: 2px solid var\(--study-gold\);\s*outline-offset: 2px;/);
+  // §4·4 · full strength, outside the shape, and no focus token at all: a
+  // focus ring at reduced alpha is the defect the ruling names.
+  assert.match(row, /:focus-visible \{\s*outline: 2px solid var\(--accent-seal\);\s*outline-offset: 2px;/);
+  // Nothing in this panel may depend on the retiring token, in either form.
+  const block = css.slice(css.indexOf(".margin-connections {"), css.indexOf(".connection-card {"))
+    .replace(/\/\*[\s\S]*?\*\//g, " ");
+  assert.doesNotMatch(block, /var\(--study-gold[a-z-]*\)/);
 });
 
 test("no mono on this surface — tabular figures do the aligning", () => {
@@ -311,4 +345,110 @@ test("the panel and the thread are one object, tied without redrawing the thread
   assert.match(panelSource, /setProperty\("--connection-route-selected-width"/);
   assert.match(panelSource, /removeProperty\("--connection-route-selected-width"\)/);
   assert.match(margin, /const CONNECTION_THREAD_HOVER_STROKE = CONNECTION_ROUTE_SELECTED_STROKE \+ 1/);
+});
+
+/* --- The QA tours, which npm test cannot run -------------------------------
+
+   The Electron tours are repaired by source inspection and executed by hand,
+   so anything statically decidable about them belongs in the gate that does
+   run. Two whole classes of tour defect fail *silently* in the tours' own
+   terms — a `querySelector` that matches nothing returns a falsy value the
+   probe cheerfully reports, and a never-matching regex sits under a loop that
+   never runs — and both are decidable from source.
+
+   c4-overview built the first two of these for the notes and overview
+   surfaces, deliberately scoped to the class tokens they own. These are the
+   same guards over the connections panel, plus two the class check cannot
+   see: this panel's probes carry a child combinator and an attribute
+   selector, and a correct class token in the wrong shape is exactly the
+   residual the tours were meant to catch.
+--------------------------------------------------------------------------- */
+
+const tours = [
+  "scripts/qa-living-margin-tour.mjs",
+  "scripts/qa-study-overlays-tour.mjs",
+  // The third tour is the one that seeds real connections, so it is the only
+  // one whose connections probes can return a non-empty result today.
+  "scripts/qa-desktop-reading-control.mjs",
+].map((path) => ({ path, source: read(path) }));
+
+/** Class tokens this panel owns. Other agents' selectors are theirs to check. */
+const OWNED_CLASS = /^margin-connections?(?:-|$)/;
+
+test("every selector the tours query on the connections panel is one it renders", () => {
+  const rendered = new Set<string>();
+  for (const match of margin.matchAll(/className=(?:"([^"]*)"|\{`([^`]*)`\})/g)) {
+    for (const token of (match[1] ?? match[2] ?? "").split(/[\s${}?:()"'+]+/)) {
+      if (token) rendered.add(token.replace(/^\./, ""));
+    }
+  }
+  const queried = new Set<string>();
+  for (const { source } of tours) {
+    for (const match of source.matchAll(/\.([a-zA-Z][\w-]*)/g)) {
+      if (OWNED_CLASS.test(match[1]!)) queried.add(match[1]!);
+    }
+  }
+  // A floor, so the sweep cannot pass by finding nothing to sweep.
+  assert.ok(queried.size >= 8, `expected the tours to probe this panel, found ${queried.size}`);
+  for (const token of queried) {
+    assert.ok(rendered.has(token), `the tours query .${token}, which LivingMargin never renders`);
+  }
+});
+
+test("the tours' structural and attribute probes match the shape the panel renders", () => {
+  // A class-token check cannot see either of these, and both fail silently:
+  // the probe returns zero and the tour reports "no rows" rather than "wrong
+  // selector". They are the residual the tours exist to catch, so the half
+  // that is decidable from source is decided here.
+
+  // 1 · The child combinator. `rows` counts the in-passage list only, by
+  // relying on the elsewhere list being wrapped a level deeper. If that
+  // wrapper ever goes, `.margin-connections > .margin-connection-list` starts
+  // silently including the chapter's other connections in the scope count.
+  assert.ok(
+    tours.some(({ source }) => source.includes(".margin-connections > .margin-connection-list")),
+    "no tour probes the in-passage list, so this guard has nothing to protect",
+  );
+  const lists = [...panelSource.matchAll(/className="margin-connection-list"/g)];
+  assert.equal(lists.length, 2, "one list in passage, one elsewhere — a third breaks the row counts");
+  assert.match(
+    panelSource,
+    /<div className="margin-connection-elsewhere">[\s\S]*?<div className="margin-connection-list">/,
+    "the elsewhere list must stay wrapped, or the in-passage probe absorbs it",
+  );
+  assert.ok(
+    panelSource.indexOf('className="margin-connection-list"')
+      < panelSource.indexOf('className="margin-connection-elsewhere"'),
+    "the in-passage list is drawn first; the tours read the first one as the scope's",
+  );
+
+  // 2 · The attribute selector. The identity-ordering probe clicks
+  // `.margin-connection-row[data-connection-id="…"]`, which is the assertion
+  // that survives the panel no longer drawing a connection's label.
+  assert.ok(
+    tours.some(({ source }) => /\.margin-connection-row\[data-connection-id=/.test(source)),
+    "no tour drives a connection row by identity",
+  );
+  assert.match(panelSource, /data-connection-id=\{connection\.id\}/);
+});
+
+test("no regex in the tours is escaped for the wrong context", () => {
+  // `\\s` is correct inside an `evaluate()` template and broken in an outer-JS
+  // regex literal, where it demands a literal backslash. Such a regex can
+  // never match, and it sits under a loop that therefore never runs. Strip the
+  // templates, then refuse the escape anywhere an assertion could use it.
+  let checked = 0;
+  for (const { path, source } of tours) {
+    const outer = source.replace(/`(?:[^`\\]|\\[\s\S])*`/g, " ");
+    for (const line of outer.split("\n")) {
+      if (!line.includes("assert.")) continue;
+      checked += 1;
+      assert.doesNotMatch(
+        line,
+        /\/[^/\n]*\\\\[sdwSDWbB.][^/\n]*\//,
+        `${path} has a regex escaped for the template context: ${line.trim()}`,
+      );
+    }
+  }
+  assert.ok(checked >= 20, `expected to check the tours' assertions, checked ${checked}`);
 });

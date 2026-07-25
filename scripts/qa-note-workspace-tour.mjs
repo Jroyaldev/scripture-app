@@ -9,15 +9,20 @@
 
 import assert from "node:assert/strict";
 import { mkdirSync, writeFileSync } from "node:fs";
+import { waitForState } from "./qa-support/app-vocabulary.mjs";
 
 const CDP_ENDPOINT = "http://localhost:9222/json/list";
 const OUT_DIR = "docs/ui-audit/note-workspace";
-const THEMES = ["light", "dark", "glass", "dark-glass"];
+// Glass and Candlelight were never atmospheres: they are Paper and Ink with the
+// translucent material on, which Rev 04 makes a material class. Driving them
+// clicked a picker option that does not exist. The four real atmospheres are
+// temperature crossed with luminance. See scripts/qa-support/app-vocabulary.mjs.
+const THEMES = ["light", "dark", "porcelain", "onyx"];
 const THEME_NAMES = {
   light: "paper",
   dark: "ink",
-  glass: "glass",
-  "dark-glass": "candlelight",
+  porcelain: "porcelain",
+  onyx: "onyx",
 };
 const DRAFT_TITLE = "The Spirit and faithful ministry";
 const DRAFT_BODY = "The Spirit is not an accessory to the church’s life. Luke’s language keeps divine agency at the center of faithful ministry.";
@@ -58,13 +63,11 @@ function createDriver(cdp) {
     return response.result?.result?.value;
   };
 
+  // Vets the gate's vocabulary before waiting, so a condition the app can
+  // never satisfy fails at once instead of hanging and reading like a slow
+  // app. See scripts/qa-support/app-vocabulary.mjs.
   const waitFor = async (expression, timeout = 8_000) => {
-    const started = Date.now();
-    while (Date.now() - started < timeout) {
-      if (await evaluate(expression)) return;
-      await sleep(80);
-    }
-    throw new Error(`Timed out waiting for ${expression}`);
+    await waitForState(evaluate, sleep, expression, timeout);
   };
 
   const screenshot = async (name) => {

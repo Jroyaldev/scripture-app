@@ -71,9 +71,19 @@ test("accessible reading and related-verse names include visible content", () =>
   // Description ids are per-instance, so two margins cannot cross-wire one
   // row's verse onto another row's verb.
   assert.match(margin, /const rowIdBase = useId\(\);/);
-  // A connection block IS one button, so its name must carry its members'
-  // wording — the visible content, and the reason the row exists.
-  assert.match(margin, /member\.quote \? `\$\{member\.position\}\. \$\{member\.quote\}` : member\.position/);
+  // A connection block IS one button, so its name must carry everything its
+  // children would have said — the label overrides them. Three things follow,
+  // and the last two were found by applying that rule back to this block:
+  //   · the members' wording, which is the reason the row exists;
+  //   · the arity in the row's own words, bound once so the visible text and
+  //     the name cannot drift onto different nouns;
+  //   · the member's role, which is otherwise carried by ink alone (Echo's
+  //     source, a hinge's pivot against its span) and so is inaudible.
+  assert.match(margin, /member\.quote\s*\n?\s*\? `\$\{role\}\$\{member\.position\}\. \$\{member\.quote\}`/);
+  assert.match(margin, /const role = member\.role === "member" \? "" : `\$\{member\.role\}, `/);
+  assert.match(margin, /const arity = `\$\{members\.length\} \$\{members\.length === 1 \? "member" : "members"\}`/);
+  assert.match(margin, /aria-label=\{`\$\{kindLabel\}, \$\{arity\}: \$\{members\.map\(memberName\)\.join\(", "\)\}`\}/);
+  assert.match(margin, /<span className="margin-connection-arity">\{arity\}<\/span>/);
   assert.match(appSource(), /target\?\.isConnected/);
   assert.match(appSource(), /#living-margin-title/);
 });

@@ -16,7 +16,9 @@
  * modal, and restores the original theme. PNGs -> docs/ui-audit/structure/.
  */
 
+import assert from "node:assert/strict";
 import { mkdirSync, writeFileSync } from "node:fs";
+import { waitForState } from "./qa-support/app-vocabulary.mjs";
 
 const CDP_HTTP = "http://localhost:9222/json/list";
 const OUT_DIR = "docs/ui-audit/structure";
@@ -138,15 +140,32 @@ if (!/BSB/i.test(version)) {
   await sleep(600);
 }
 
-await evaluate(`(() => {
-  const input = document.querySelector(".passage-jump-input");
-  if (!input) throw new Error("Passage jump input not found");
-  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set;
-  setter.call(input, ${JSON.stringify(passage)});
-  input.dispatchEvent(new Event("input", { bubbles: true }));
-  input.closest("form")?.requestSubmit();
+// The 190px passage box is gone. It was a button dressed as an input, and
+// Quire F replaced it with the word `Search`, which opens the command palette.
+// Navigate the way a reader does now: open it, type the reference, take the
+// reading it offers.
+const paletteOpened = await evaluate(`(() => {
+  const trigger = document.querySelector(".command-palette-trigger");
+  if (!trigger) return false;
+  trigger.click();
+  return true;
 })()`);
-await sleep(1000);
+if (!paletteOpened) throw new Error("The command palette trigger is not in the header");
+await waitForState(evaluate, sleep,
+  `Boolean(document.querySelector(".command-palette-panel .command-palette-input-row input"))`);
+await evaluate(`(() => {
+  const input = document.querySelector(".command-palette-input-row input");
+  if (!input) return false;
+  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+  setter?.call(input, ${JSON.stringify(passage)});
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+  return true;
+})()`);
+await waitForState(evaluate, sleep, `document.querySelectorAll(".command-palette-result").length > 0`);
+await evaluate(`document.querySelector(".command-palette-result")?.click()`);
+await waitForState(evaluate, sleep, `!document.querySelector(".command-palette-root")`);
+await waitForState(evaluate, sleep, `document.querySelectorAll(".verse-line").length > 0`);
+await sleep(600);
 
 const requestedVerse = passage.match(/:(\d+)\s*$/)?.[1];
 if (requestedVerse) {
@@ -202,8 +221,16 @@ for (let themeIndex = 0; themeIndex < themes.length; themeIndex += 1) {
       .map((button) => button.textContent?.trim())
       .filter(Boolean)
   `);
-  const modes = modeLabels.length ? modeLabels : ["Clause"];
-  for (const mode of modes) {
+  // `modeLabels.length ? modeLabels : ["Clause"]` stood here. When Structure
+  // drew no mode buttons the fallback invented one, the click below found
+  // nothing to click, and the tour still wrote a screenshot named for a mode
+  // it never entered — a pass for the wrong reason, which is worse than a
+  // failure. Say how many were expected, then sweep them.
+  assert.ok(
+    modeLabels.length > 0,
+    "Structure drew no syntax modes, so there is nothing to capture — a fabricated mode would prove nothing",
+  );
+  for (const mode of modeLabels) {
     await cdp.send("Page.bringToFront");
     await evaluate(`
       [...document.querySelectorAll(".lang-syntax-mode")]

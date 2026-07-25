@@ -5,10 +5,15 @@
 
 import assert from "node:assert/strict";
 import { mkdirSync, writeFileSync } from "node:fs";
+import { waitForState } from "./qa-support/app-vocabulary.mjs";
 
 const CDP_HTTP = `http://localhost:${process.env.CDP_PORT ?? "9222"}/json/list`;
 const OUT_DIR = "docs/ui-audit/command-palette";
-const THEMES = ["light", "dark", "glass", "dark-glass"];
+// Glass and Candlelight were never atmospheres: they are Paper and Ink with the
+// translucent material on, which Rev 04 makes a material class. Driving them
+// clicked a picker option that does not exist. The four real atmospheres are
+// temperature crossed with luminance. See scripts/qa-support/app-vocabulary.mjs.
+const THEMES = ["light", "dark", "porcelain", "onyx"];
 const CAPTURE_SCREENSHOTS = !process.argv.includes("--no-screenshots");
 
 async function connect(url) {
@@ -52,12 +57,10 @@ async function evaluate(expression) {
 }
 
 async function waitFor(expression, timeout = 12_000) {
-  const started = Date.now();
-  while (Date.now() - started < timeout) {
-    if (await evaluate(expression)) return Date.now() - started;
-    await sleep(80);
-  }
-  throw new Error(`Timed out waiting for ${expression}`);
+  // Vets the gate's vocabulary before waiting, so a condition the app can
+  // never satisfy fails at once instead of hanging and reading like a slow
+  // app. See scripts/qa-support/app-vocabulary.mjs.
+  await waitForState(evaluate, sleep, expression, timeout);
 }
 
 async function screenshot(name) {

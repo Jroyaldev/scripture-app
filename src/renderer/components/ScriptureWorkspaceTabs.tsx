@@ -923,7 +923,57 @@ export function ScriptureWorkspaceTabs({
         onDoubleClick={handleViewportDoubleClick}
         onContextMenu={handleViewportContextMenu}
       >
-        {groups.flatMap(({ group, label: groupLabel, visibleTabs }, groupIndex) => visibleTabs.map((tab, tabIndex) => {
+        {groups.flatMap(({ group, label: groupLabel, visibleTabs }, groupIndex) => {
+        // Rev 05 §05·2 retires the group bracket. What a study gets instead is a
+        // slate-marked kicker at the head of its own members, IN the strip: "a
+        // label above the strip creates a second strip. It belongs in the strip,
+        // at the head of its members." The rule that used to span the members is
+        // gone with it — "a rule that brackets a group must end exactly where the
+        // group ends; this one cannot, because tabs move" — and 24px of canvas
+        // does the separating, the same argument that removed the Research
+        // divider.
+        //
+        // A collapsed study gets no kicker: its proxy tab already carries the
+        // study's name, and a kicker beside it would say it twice. So the 24px
+        // interval falls on whichever element actually opens the run.
+        const kickered = !group.collapsed && visibleTabs.length > 0;
+        const groupHead = kickered ? (
+          <div
+            className="scripture-workspace-group-head"
+            role="presentation"
+            key={`study-group-head-${group.id}`}
+            data-study-group-head=""
+            data-study-group-id={group.id}
+            data-study-group-start={groupIndex > 0 || undefined}
+          >
+            <button
+              type="button"
+              className="scripture-workspace-group-tab"
+              data-study-group-tab=""
+              data-study-group-id={group.id}
+              // B3: a study with no active tab recedes to 72% — present, never a
+              // second ink. The flag used to sit on the first member's wrap so
+              // the rule and the label could recede together; with the rule
+              // retired the kicker IS the device, and the flag belongs on it.
+              data-study-group-active={activeGroup?.group.id === group.id}
+              tabIndex={-1}
+              title={groupLabel}
+              aria-label={`Collapse study ${groupLabel}`}
+              onMouseDown={deferMouseFocus}
+              onClick={async (event) => { await toggleGroup(group.id, true, event.currentTarget); }}
+              onContextMenu={(event) => openContextMenu({ kind: "group", groupId: group.id }, event)}
+            >
+              {/* Law 2's mark at the smallest scale it appears, on the edge
+                  nearest what it names. @quire derived · kin: margin entry ·
+                  slate because a study is a grouping the app inferred from what
+                  you opened; the reader may rename it, and renaming an inference
+                  does not make it an authored object. */}
+              <span className="scripture-workspace-group-mark" aria-hidden="true" />
+              <span>{groupLabel}</span>
+            </button>
+          </div>
+        ) : null;
+        const members = visibleTabs.map((tab, tabIndex) => {
           const label = studyWorkspaceTabLabel(workspace, tab, bookNames);
           const labelParts = studyWorkspaceTabLabelParts(workspace, tab, bookNames);
           const selected = workspace.activeTabId === tab.id;
@@ -938,18 +988,10 @@ export function ScriptureWorkspaceTabs({
             collapsedProxy ? `study ${groupLabel}` : label,
             closeAvailability,
           );
-          const groupStart = tabIndex === 0 && groupIndex > 0;
-          const expandedGroupLabel = !collapsedProxy && tabIndex === 0
-            ? groupLabel
-            : undefined;
-          // B3: the bracket is "1px over the members, ending at the last one".
-          // A rule that spans several members cannot belong to any one of them,
-          // and the members have to stay direct children of the strip so drag
-          // and drop keeps one flat index space — so each member carries its own
-          // segment and the group's span is the sum of them. The last member is
-          // marked because that is the only place the rule is allowed to stop.
-          const bracketed = !collapsedProxy;
-          const groupEnd = bracketed && tabIndex === visibleTabs.length - 1;
+          // The interval belongs to the run, not to the tab: when a study is
+          // expanded the kicker opens it and carries the 24px, so a member that
+          // carried it too would double the gap.
+          const groupStart = tabIndex === 0 && groupIndex > 0 && !kickered;
           const dragging = dragState?.tabId === tab.id;
           const dropBefore = dragState?.groupId === group.id && dragState.insertionIndex === tabIndex;
           const dropAfter = dragState?.groupId === group.id
@@ -962,33 +1004,8 @@ export function ScriptureWorkspaceTabs({
               key={tab.id}
               data-study-group-id={group.id}
               data-study-group-start={groupStart || undefined}
-              data-study-group-bracket={bracketed || undefined}
-              data-study-group-end={groupEnd || undefined}
-              // B3: a study with no active tab drops its bracket to 72% —
-              // present, receded. Never a second ink, only less of the one. The
-              // flag sits on the wrap because the rule and the label are two
-              // elements and they have to recede together.
-              data-study-group-active={bracketed ? activeGroup?.group.id === group.id : undefined}
               data-study-drop={dropBefore ? "before" : dropAfter ? "after" : undefined}
             >
-              {bracketed && tabIndex > 0 && (
-                <span className="scripture-workspace-group-rule" aria-hidden="true" />
-              )}
-              {expandedGroupLabel !== undefined && (
-                <button
-                  type="button"
-                  className="scripture-workspace-group-tab"
-                  data-study-group-tab=""
-                  data-study-group-id={group.id}
-                  data-study-group-active={activeGroup?.group.id === group.id}
-                  tabIndex={-1}
-                  title={expandedGroupLabel}
-                  aria-label={`Collapse study ${expandedGroupLabel}`}
-                  onMouseDown={deferMouseFocus}
-                  onClick={async (event) => { await toggleGroup(group.id, true, event.currentTarget); }}
-                  onContextMenu={(event) => openContextMenu({ kind: "group", groupId: group.id }, event)}
-                ><span>{expandedGroupLabel}</span></button>
-              )}
               <button
                 ref={(node) => {
                   if (node) tabRefs.current.set(tab.id, node);
@@ -1064,7 +1081,14 @@ export function ScriptureWorkspaceTabs({
               </button>
             </div>
           );
-        }))}
+        });
+        // The kicker is a sibling of its members, not a child of the first one:
+        // the members have to stay direct children of the strip so drag and drop
+        // keeps one flat index space, and a kicker inside the first member's
+        // wrap would be shoved by the 8px that wrap reserves for the fillet
+        // whenever that member is the selected tab.
+        return groupHead ? [groupHead, ...members] : members;
+        })}
         {exitingTabs.map((ghost) => (
           <div
             key={`exit-${ghost.id}`}

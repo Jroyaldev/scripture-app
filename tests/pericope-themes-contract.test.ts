@@ -631,9 +631,13 @@ test("the narrow shell's dynamic-type gutter is declared exactly once", () => {
 test("the bottom bar's mark sits on the edge nearest the page", () => {
   // H names this as one of the three things that survive every width without
   // amendment: the mark is always on the edge facing the content it opens. In
-  // the rail that is the left edge; once the rail is a bottom bar the page is
-  // above it, so the same 2px seal moves to the top. It is the same rule, so
-  // it must not be re-derived as a new one.
+  // the rail that is the RIGHT edge — Rev 05 §05·3 revised Study A there, since
+  // the rail opens the page and B·2's inset put the page unambiguously to the
+  // rail's right — and once the rail is a bottom bar the page is above it, so
+  // the same 2px seal moves to the top. One rule, three shells; it must not be
+  // re-derived as a new one at any of them. (The 2px below is now literally the
+  // rail's own number as well: §05·3 took the rail's reserve from 3 to 2, which
+  // is what this comment always claimed it was.)
   const narrow = narrowShellBlock(read(STYLES));
   const mark = ruleBlocks(narrow, ".nav-item::before").join("\n");
   assert.match(mark, /inset: 0 0 auto 0;/, "the mark spans the top edge");
