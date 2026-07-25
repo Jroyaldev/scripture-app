@@ -1932,11 +1932,23 @@ export function App(): React.JSX.Element {
         onShowToastReady={registerWorkspaceShowToast}
       >
         <div className={shellClass} data-theme={theme}>
-          {!focusMode && (
-            <nav
+          <nav
               className={`sidebar${sidebarCollapsed ? " collapsed" : ""}`}
               aria-label="Primary navigation"
             >
+            {focusMode && (
+              /* All that remains of the rail: enough to be discoverable by a
+                 pointer, too little to be chrome. Hovering it floats the whole
+                 rail back over the page — over, never beside, so the measure
+                 does not move. */
+              <button
+                type="button"
+                className="rail-focus-handle"
+                onClick={toggleFocusMode}
+                aria-label="Bring the rail back (⌘\\)"
+                title="Bring the rail back (⌘\\)"
+              />
+            )}
               <div className="sidebar-header">
                 <div className="brand-row" aria-label="Pericope">
                   <div className="brand-mark">
@@ -2022,8 +2034,7 @@ export function App(): React.JSX.Element {
                 </button>
               </div>
               {libraryPopover}
-            </nav>
-          )}
+          </nav>
           <div className="main-content">
             {view === "scripture" && (
               <ScripturePage
@@ -2135,16 +2146,6 @@ export function App(): React.JSX.Element {
               />
             )}
           </div>
-          {focusMode && (
-            <button
-              type="button"
-              className="focus-exit-chip"
-              onClick={toggleFocusMode}
-              title="Exit focus mode (Esc or F)"
-            >
-              Exit focus
-            </button>
-          )}
           <CommandPalette
             open={commandOpen}
             initialTab={commandInitialTab}

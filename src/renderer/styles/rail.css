@@ -282,3 +282,97 @@
     margin: 0;
   }
 }
+
+/* ─── Focus mode (A4) ─────────────────────────────────────────────────────
+   "A 12px canvas strip with a 2px grab handle is all that remains — enough to
+   be discoverable by pointer, too little to be chrome. Hovering it slides the
+   full rail over the page as a float; moving away dismisses it. The page does
+   not reflow, ever."
+
+   That last clause is why the rail stays mounted and narrows rather than
+   unmounting: a reading column that changes width when you hide the chrome is
+   a different column, and focus mode exists to leave the column alone. */
+.app-shell.focus-mode > .sidebar,
+.app-shell.focus-mode > .sidebar.collapsed {
+  width: 12px;
+  min-width: 12px;
+  padding-top: 0;
+  overflow: visible;
+}
+
+.app-shell.focus-mode > .sidebar > *:not(.rail-focus-handle) {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-fast);
+}
+
+/* The 2px handle, centred in the strip. */
+.rail-focus-handle {
+  position: absolute;
+  top: 50%;
+  left: 5px;
+  width: 2px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-mark);
+  background: var(--border-medium);
+  transform: translateY(-50%);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.rail-focus-handle:hover,
+.rail-focus-handle:focus-visible {
+  background: var(--study-gold);
+}
+
+.rail-focus-handle:focus-visible {
+  outline: 2px solid var(--study-gold-focus);
+  outline-offset: 3px;
+}
+
+/* Hovering the strip floats the whole rail back OVER the page — the one
+   shadow, because this is the one time the rail genuinely floats. The page
+   keeps its 12px offset throughout, so nothing reflows. */
+.app-shell.focus-mode > .sidebar:hover,
+.app-shell.focus-mode > .sidebar:focus-within,
+.app-shell.focus-mode > .sidebar.collapsed:hover,
+.app-shell.focus-mode > .sidebar.collapsed:focus-within {
+  z-index: 40;
+  width: var(--rail-w);
+  margin-right: calc(12px - var(--rail-w));
+  padding-top: env(titlebar-area-height, 28px);
+  background: var(--bg-canvas);
+  box-shadow: var(--shadow-float);
+}
+
+.app-shell.focus-mode > .sidebar:hover > *:not(.rail-focus-handle),
+.app-shell.focus-mode > .sidebar:focus-within > *:not(.rail-focus-handle) {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.app-shell.focus-mode > .sidebar:hover .rail-focus-handle,
+.app-shell.focus-mode > .sidebar:focus-within .rail-focus-handle {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* The strip is a pointer affordance. On touch there is no hover to float it
+   with, so focus mode keeps the bottom bar instead. */
+@media (max-width: 979px) {
+  .app-shell.focus-mode > .sidebar {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .app-shell.focus-mode > .sidebar > *:not(.rail-focus-handle) {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .rail-focus-handle {
+    display: none;
+  }
+}
