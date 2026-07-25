@@ -73,6 +73,7 @@ import {
 } from "../core/search/scripture-search.js";
 import { toFts5PlainQuery } from "../core/search/note-search-query.js";
 import { PlaceResearchLoader } from "../host/place-research-loader.js";
+import { namedLicensedSource } from "../core/entities/licensed-source.js";
 import type {
   ConnectionRecord,
   CreateConnectionInput,
@@ -203,6 +204,13 @@ const ALLOWED_RESEARCH_LINK_HOSTS = new Set([
   "www.nationalarchives.gov.uk",
   "artlibre.org",
   "pleiades.stoa.org",
+  // Quire Rev 04 §4 makes the laurel siglum the one clickable provenance mark,
+  // "because it is the only one with somewhere to go". TIPNR's somewhere is the
+  // corpus home page LICENSES.md already credits; without this entry the TIPNR
+  // siglum would render as a button that always refuses, which is worse than a
+  // siglum with no destination at all. Only build-time constants from the
+  // licensed-source registry reach here — no URL from the artifacts themselves.
+  "www.stepbible.org",
 ]);
 
 const ALLOWED_TRUSTED_RESOURCE_HOSTS = new Set([
@@ -1668,8 +1676,11 @@ function createWindow(): void {
     win = new BrowserWindow({
       // Canvas. Without it Chromium paints its default white before the
       // renderer's first frame, so every cold start flashes white into an app
-      // whose ground is #F1EFEA.
-      backgroundColor: "#F1EFEA",
+      // whose ground is #E9E6E0. Rev 04 §4 moved the ground down to what had
+      // been the sunk plane; this literal is the one copy of --bg-canvas that
+      // lives outside the stylesheet, so it has to move with it or every cold
+      // start flashes the old ground instead of the new one.
+      backgroundColor: "#E9E6E0",
       width: hasSaneBounds ? savedBounds.width : 1400,
       height: hasSaneBounds ? savedBounds.height : 900,
       ...(hasSaneBounds && savedBounds.x != null && savedBounds.y != null
@@ -2682,6 +2693,9 @@ function registerIpcHandlers(): void {
       return {
         entities: index.entitiesForRange(opts.book, opts.chapter, opts.startVerse, opts.endVerse),
         attribution: { name: index.source, license: index.license },
+        // These entities carry TIPNR's briefs into the margin's overview, so the
+        // overview needs the source's siglum in hand, not just its long name.
+        licensed: namedLicensedSource(index.source, index.license),
       };
     },
   );
@@ -2701,13 +2715,23 @@ function registerIpcHandlers(): void {
     "language-entity-research",
     (_event, entityId: string) => {
       traceStudyWorkspaceQa("entity", { entityId });
-      const entity = getSharedTipnrIndex().get(entityId);
+      const tipnr = getSharedTipnrIndex();
+      const entity = tipnr.get(entityId);
       if (!entity) return null;
-      return placeResearch?.research(entity) ?? {
+      // The index declares its own corpus and license; that declaration is what
+      // earns the brief a laurel siglum downstream. Passing it here rather than
+      // hardcoding "TIPNR" in the renderer is what makes "if you cannot name the
+      // source you may not use the ink" a condition the data can actually fail.
+      const corpus = { name: tipnr.source, license: tipnr.license };
+      return placeResearch?.research(entity, corpus) ?? {
         entity,
         place: null,
         pleiades: null,
         imageDataUrl: null,
+        licensed: {
+          entity: namedLicensedSource(corpus.name, corpus.license),
+          pleiades: null,
+        },
       };
     },
   );

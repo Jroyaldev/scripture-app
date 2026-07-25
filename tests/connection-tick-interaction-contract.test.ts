@@ -33,10 +33,15 @@ test("an aggregate tick reports chooser state rather than selected-member state"
 });
 
 test("tick activation only opens or reaffirms; the labelled card action owns Release", () => {
+  // The end marker used to be the tick's single `<span className=
+  // "connection-tick-dash" …/>`, because a tick was one mark. Rev 04 §5 gives
+  // the language "the gutter tick stack", where the count of connections over
+  // a phrase lives — "three ticks, then +n" — so the row now maps its members
+  // to marks and the closing tag is the stable marker instead.
   const activation = sourceBetween(
     underlay,
     "onClick={(event) => {",
-    "            >\n              <span className=\"connection-tick-dash\" aria-hidden=\"true\" />",
+    "              {stackedItems.map((member, index) => <span",
   );
   assert.match(activation, /onSelectConnection\(item\.connection\.durableRecord, event\.detail === 0\)/);
   assert.match(activation, /remains selected\. Connection details are open in Study/);

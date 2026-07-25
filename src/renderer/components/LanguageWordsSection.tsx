@@ -23,6 +23,7 @@ import type {
 } from "../api.js";
 import { formatCanonicalRef } from "../utils/formatRef.js";
 import { safeCall } from "../utils/safeCall.js";
+import { laurelInk, laurelMarkLabel } from "../utils/laurel.js";
 import {
   RenderingOrbitView,
   SenseOutlineView,
@@ -324,6 +325,13 @@ function MorphFormBlock({
           {/* STEP first — easier to notice (esp. OT composites after normalize). */}
           {stepMorph && (stepMorph.explanation?.trim() || stepMorph.phrase?.trim()) ? (
             <div className="lang-step-overlay">
+              {/* Owed, not decided: STEPBible TEGMC/TEHMC wrote these sentences
+                  verbatim and licensed them CC BY 4.0, so they are laurel by
+                  Law 3·3 exactly as TIPNR's brief was. `stepMorph.source` is
+                  already in scope here, and the kicker below reads "Form in
+                  plain English", which is the app's voice over another author's
+                  prose. Left unmigrated only because this corpus is outside the
+                  pass ruling 4·5 authorised (TIPNR and Pleiades). */}
               <div className="lang-step-kicker">Form in plain English</div>
               {stepMorph.phrase?.trim() ? (
                 <p className="lang-step-phrase">{stepMorph.phrase.trim()}</p>
@@ -748,6 +756,19 @@ function NameEntityCard({ hit, bookNames }: { hit: LanguageNameEntityHit; bookNa
     ? { index: collisionIndex, total: sameName.length }
     : null;
   const otherNames = sameName.filter((candidate) => candidate.id !== e.id);
+  // Rev 04 §3·3 · every sentence on this card — the brief, the expanded gloss,
+  // and the one-line note beside each same-named alternative — was written by
+  // the name index, not by the edition and not by us. One card is one corpus,
+  // so one siglum names all of it.
+  //
+  // @quire derived · kin: margin entry · a single kicker serves the card rather
+  // than repeating on the alternatives list, because the ink is the class and
+  // the class does not change halfway down a card.
+  //
+  // §4's fallback is the important branch: if the index cannot name itself,
+  // every one of those sentences disappears. Nothing here degrades to unmarked
+  // prose, because unmarked would say the edition wrote it.
+  const laurel = laurelInk(hit.licensed);
 
   return (
     <div className={`lang-name-card margin-entry kind-${e.kind}`}>
@@ -767,9 +788,23 @@ function NameEntityCard({ hit, bookNames }: { hit: LanguageNameEntityHit; bookNa
           e.refCount === 1 ? "named once" : `named ${e.refCount.toLocaleString()} times`,
         ].filter(Boolean).join(" · ")}
       </p>
-      <p className="lang-name-brief margin-entry-why-text">{e.brief}</p>
-      {e.short && e.short !== e.brief && (
-        <p className="lang-name-short">{e.short}</p>
+      {laurel && (
+        <div className="margin-entry-why is-licensed laurel-prose lang-name-licensed">
+          <span className="margin-entry-mark is-licensed">
+            <span className="sr-only">{laurelMarkLabel(laurel)}</span>
+          </span>
+          <div className="margin-entry-why-copy">
+            {/* No handler: this card has no external-link plumbing of its own,
+                so the siglum names the source without pretending to lead
+                anywhere. §4 allows the ink only with a siglum; it does not
+                require the siglum to be a button. */}
+            <span className="margin-entry-siglum is-static">{laurel.siglum}</span>
+            <p className="lang-name-brief margin-entry-why-text">{e.brief}</p>
+            {e.short && e.short !== e.brief && (
+              <p className="lang-name-short">{e.short}</p>
+            )}
+          </div>
+        </div>
       )}
       {otherNames.length > 0 && (
         // Alternatives are never merged. They are listed as themselves.
@@ -778,8 +813,12 @@ function NameEntityCard({ hit, bookNames }: { hit: LanguageNameEntityHit; bookNa
           <div className="margin-entry-related-list">
             {otherNames.map((alternative) => (
               <span className="margin-entry-relation is-static" key={alternative.id}>
+                {/* The name is a label and stays whatever happens. The note
+                    beside it is the index's prose, so it goes when the index
+                    cannot be named — an alternative listed without its gloss
+                    is still listed, which is the point of listing it. */}
                 <span className="margin-entry-relation-name">{prettyName(alternative.displayName)}</span>
-                <span className="margin-entry-relation-note">{alternative.brief}</span>
+                {laurel && <span className="margin-entry-relation-note">{alternative.brief}</span>}
               </span>
             ))}
           </div>

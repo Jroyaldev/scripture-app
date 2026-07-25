@@ -1,5 +1,5 @@
 import type React from "react";
-import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   type ConnectionKind,
   type ConnectionRecord,
@@ -22,9 +22,7 @@ import {
   type RouteStrandClaim,
 } from "../../core/annotations/route-engine.js";
 import {
-  CONNECTION_ROUTE_QUIET_STROKE,
   CONNECTION_ROUTE_SELECTED_STROKE,
-  CONNECTION_UNDERLINE_QUIET_STROKE,
   CONNECTION_UNDERLINE_SELECTED_STROKE,
   clearConnectionFontMetricCache,
   connectionInkSlackFor,
@@ -45,7 +43,7 @@ import {
 } from "../utils/connectionRowLayout.js";
 import { isTopLayer, useLayer } from "../layerStack.js";
 import { locateTextOffset } from "../utils/textOffsets.js";
-import { phraseCount } from "../utils/relationshipVocabulary.js";
+import { phraseCount, relationshipLabel } from "../utils/relationshipVocabulary.js";
 import { useUnderlayMeasurementLifecycle } from "../utils/useUnderlayMeasurementLifecycle.js";
 
 interface PaintedUnderline {
@@ -59,9 +57,20 @@ interface PaintedUnderline {
 
 interface PaintedEmphasis {
   path: string;
-  routePath: string;
   bands: LineRect[];
   anchorIndex: number;
+}
+
+/**
+ * Where the engine put the spine's head. Rev 04 §5: "The kind is the only word
+ * a route carries — one word in seal small caps at the spine's head." The
+ * coordinate is read off the plan and never adjusted here: the engine owns
+ * "where the spine sits in real gutter air", and the language owns only the
+ * word that sits on it.
+ */
+interface PaintedSpineHead {
+  x: number;
+  y: number;
 }
 
 interface PaintedConnection {
@@ -69,6 +78,7 @@ interface PaintedConnection {
   valid: boolean;
   reason: string | null;
   routePath: string;
+  spineHead: PaintedSpineHead | null;
   underlines: PaintedUnderline[];
   emphases: PaintedEmphasis[];
   contacts: RoutePoint[];
@@ -213,6 +223,13 @@ const EMPHASIS_PAD_Y = 0.35;
 const EMPHASIS_RADIUS = 2.5;
 const PREVIEW_ENTER_MS = 140;
 const PREVIEW_LEAVE_MS = 140;
+/** Rev 04 §5: "three ticks, then `+n`". */
+const TICK_STACK_LIMIT = 3;
+/* @quire guessed · kind word sits 4px clear of the spine's head — the spine's
+   own y is engine-owned and untouched, and 4 is the first step on §9's space
+   scale. The word is centred on the spine's x for the same reason: choosing a
+   left or right anchor would be choosing gutter air, which is the engine's. */
+const SPINE_KIND_GAP = 4;
 const CONNECTION_AUTHORING_DRAFT_ID = "__connection-authoring-draft__";
 const MARKING_SELECTION_EMPHASIS_PREFIX = "__marking-selection-emphasis__:";
 
@@ -432,12 +449,11 @@ function mergeUnderlineFragments(
 
 function emphasisPaintForFragments(
   fragments: readonly MeasuredAnchorFragment[],
-  coordinateFrame: "emphasis" | "route",
 ): { path: string; bands: LineRect[] } {
   const exactRects: LineRect[] = fragments
     .filter((fragment) => fragment.exact)
     .map((fragment) => {
-      const rect = coordinateFrame === "emphasis" ? fragment.emphasisRect : fragment.rawRect;
+      const rect = fragment.emphasisRect;
       return {
         x0: rect.left - EMPHASIS_PAD_X,
         y0: rect.top - EMPHASIS_PAD_Y,
@@ -457,59 +473,101 @@ function emphasisPaintForFragments(
   };
 }
 
-interface SharedEmphasisPaint {
+/** One run of glyph ink carrying exactly one underline, and who owns it. */
+export interface MergedUnderline {
   key: string;
   path: string;
+  centerY: number;
+  left: number;
+  right: number;
+  attended: boolean;
+  memberIds: string[];
 }
 
-function sharedEmphasisPaint(painted: readonly PaintedConnection[]): SharedEmphasisPaint[] {
-  const shared: SharedEmphasisPaint[] = [];
-  for (let leftIndex = 0; leftIndex < painted.length; leftIndex++) {
-    const left = painted[leftIndex]!;
-    const leftBands = left.emphases.flatMap((emphasis) => emphasis.bands);
-    if (leftBands.length === 0) continue;
-    for (let rightIndex = leftIndex + 1; rightIndex < painted.length; rightIndex++) {
-      const right = painted[rightIndex]!;
-      const rightBands = right.emphases.flatMap((emphasis) => emphasis.bands);
-      const intersections: LineRect[] = [];
-      for (const leftBand of leftBands) {
-        for (const rightBand of rightBands) {
-          const x0 = Math.max(leftBand.x0, rightBand.x0);
-          const x1 = Math.min(leftBand.x1, rightBand.x1);
-          const y0 = Math.max(leftBand.y0, rightBand.y0);
-          const y1 = Math.min(leftBand.y1, rightBand.y1);
-          if (x1 - x0 > 1 && y1 - y0 > 2) intersections.push({ x0, y0, x1, y1 });
+interface UnderlineSpan {
+  left: number;
+  right: number;
+  connectionId: string;
+}
+
+/**
+ * Rev 04 §5: "Underlines never stack. A phrase in three connections has one
+ * underline; the count lives in the gutter tick stack — three ticks, then +n."
+ *
+ * Every member's underline is flattened onto one plane and cut wherever
+ * membership changes, so each run of ink carries exactly one 1.5px stroke on
+ * the one fixed centre datum. A run is seal when the attended connection is
+ * among its owners and ink-faint otherwise; nothing is ever offset off the
+ * datum to make room for a second line, and nothing dims to let a third read.
+ *
+ * This replaces D·2b's level offset (each companion pushed 3px clear of the
+ * attended line) and D·2's shared-overlap wash (a grey second fill under words
+ * two connections both claimed). Rev 04 withdraws both: overlap is a count,
+ * and a count belongs in the gutter.
+ */
+export function mergeUnderlineLayer(
+  painted: readonly {
+    connection: { id: string };
+    underlines: readonly PaintedUnderline[];
+  }[],
+  attendedId: string | null,
+): MergedUnderline[] {
+  const lines: Array<{ centerY: number; spans: UnderlineSpan[] }> = [];
+  for (const item of painted) {
+    for (const underline of item.underlines) {
+      if (underline.right - underline.left <= 0.01) continue;
+      const line = lines.find((candidate) => Math.abs(candidate.centerY - underline.centerY) < 2.5);
+      const span: UnderlineSpan = {
+        left: underline.left,
+        right: underline.right,
+        connectionId: item.connection.id,
+      };
+      if (line) line.spans.push(span);
+      else lines.push({ centerY: underline.centerY, spans: [span] });
+    }
+  }
+
+  const merged: MergedUnderline[] = [];
+  for (const line of lines.sort((left, right) => left.centerY - right.centerY)) {
+    // Cut at every span endpoint, so each elementary interval is covered by a
+    // fixed set of connections and can be stroked exactly once.
+    const cuts = [...new Set(line.spans.flatMap((span) => [span.left, span.right]))]
+      .sort((left, right) => left - right);
+    const runs: Array<{ left: number; right: number; memberIds: string[]; attended: boolean }> = [];
+    for (let index = 0; index < cuts.length - 1; index += 1) {
+      const left = cuts[index]!;
+      const right = cuts[index + 1]!;
+      if (right - left <= 0.01) continue;
+      const memberIds = line.spans
+        .filter((span) => span.left <= left + 0.01 && span.right >= right - 0.01)
+        .map((span) => span.connectionId);
+      if (memberIds.length === 0) continue;
+      const attended = attendedId != null && memberIds.includes(attendedId);
+      const previous = runs[runs.length - 1];
+      // Abutting runs that carry the same ink are one stroke, so a seam only
+      // ever falls where faint meets seal.
+      if (previous && previous.attended === attended && Math.abs(previous.right - left) <= 0.01) {
+        previous.right = right;
+        for (const memberId of memberIds) {
+          if (!previous.memberIds.includes(memberId)) previous.memberIds.push(memberId);
         }
+        continue;
       }
-      const bands = mergeHighlightLineRects(intersections, 2);
-      if (bands.length === 0) continue;
-      const runs: LineRect[][] = [];
-      for (const band of bands) {
-        const run = runs[runs.length - 1];
-        const previous = run?.[run.length - 1];
-        const sameLine = previous != null
-          && Math.abs((previous.y0 + previous.y1) / 2 - (band.y0 + band.y1) / 2) < 2.5;
-        const connected = previous != null && (
-          (!sameLine && band.y0 - previous.y1 < 8)
-          || (sameLine && band.x0 <= previous.x1 + 2)
-        );
-        if (!run || !connected) runs.push([{ ...band }]);
-        else run.push({ ...band });
-      }
-      runs.forEach((run, runIndex) => {
-        for (let index = 0; index < run.length - 1; index++) {
-          const seam = (run[index]!.y1 + run[index + 1]!.y0) / 2;
-          run[index]!.y1 = seam;
-          run[index + 1]!.y0 = seam;
-        }
-        shared.push({
-          key: `${left.connection.id}:${right.connection.id}:${runIndex}`,
-          path: buildHighlightPath(run, EMPHASIS_RADIUS, { junctionRadius: 1.5 }),
-        });
+      runs.push({ left, right, memberIds: [...new Set(memberIds)], attended });
+    }
+    for (const run of runs) {
+      merged.push({
+        key: `${line.centerY.toFixed(2)}:${run.left.toFixed(2)}:${run.right.toFixed(2)}`,
+        path: `M ${run.left.toFixed(2)} ${line.centerY.toFixed(2)} H ${run.right.toFixed(2)}`,
+        centerY: line.centerY,
+        left: run.left,
+        right: run.right,
+        attended: run.attended,
+        memberIds: [...run.memberIds].sort(),
       });
     }
   }
-  return [...new Map(shared.map((item) => [item.path, item])).values()];
+  return merged;
 }
 
 function segmentPath(segments: RouteSegment[]): string {
@@ -550,12 +608,16 @@ function sameUnderlines(left: PaintedUnderline[], right: PaintedUnderline[]): bo
   });
 }
 
+function sameSpineHead(left: PaintedSpineHead | null, right: PaintedSpineHead | null): boolean {
+  if (left == null || right == null) return left === right;
+  return left.x === right.x && left.y === right.y;
+}
+
 function sameEmphases(left: PaintedEmphasis[], right: PaintedEmphasis[]): boolean {
   return left.length === right.length && left.every((emphasis, index) => {
     const candidate = right[index];
     return candidate != null
       && emphasis.path === candidate.path
-      && emphasis.routePath === candidate.routePath
       && emphasis.bands.length === candidate.bands.length
       && emphasis.bands.every((band, bandIndex) => {
         const next = candidate.bands[bandIndex];
@@ -575,6 +637,7 @@ function samePaintedConnections(left: PaintedConnection[], right: PaintedConnect
       && item.valid === candidate.valid
       && item.reason === candidate.reason
       && item.routePath === candidate.routePath
+      && sameSpineHead(item.spineHead, candidate.spineHead)
       && sameUnderlines(item.underlines, candidate.underlines)
       && sameEmphases(item.emphases, candidate.emphases)
       && samePoints(item.contacts, candidate.contacts)
@@ -763,7 +826,6 @@ export function ConnectionUnderlay({
     !focusMode && previewConnectionId != null && selectedConnectionId == null ? "preview" : null,
   );
   const [readyRouteId, setReadyRouteId] = useState<string | null>(null);
-  const [veilReady, setVeilReady] = useState(false);
   const [rovingTickId, setRovingTickId] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState("");
   const [coarsePointer, setCoarsePointer] = useState(false);
@@ -774,11 +836,7 @@ export function ConnectionUnderlay({
   const previewEnterTimerRef = useRef<number | null>(null);
   const previewLeaveTimerRef = useRef<number | null>(null);
   const focusFrameRef = useRef<number | null>(null);
-  const veilFrameRef = useRef<number | null>(null);
   const tickRefs = useRef(new Map<string, HTMLButtonElement>());
-  const rawMaskId = useId();
-  const focusMaskId = `connection-focus-${rawMaskId.replace(/:/g, "")}`;
-  const sharedMaskId = `connection-shared-${rawMaskId.replace(/:/g, "")}`;
   // Preview is an invitation, not a selection: it may wake the exact words
   // and tick, but only an explicitly selected id is allowed to bloom route
   // ink, contacts, a hit target, or the focus veil.
@@ -1066,11 +1124,9 @@ export function ConnectionUnderlay({
         mergeUnderlineFragments(anchor.measuredFragments, anchor.anchorIndex));
       const emphases = anchors
         .map((anchor) => {
-          const emphasisPaint = emphasisPaintForFragments(anchor.measuredFragments, "emphasis");
-          const routePaint = emphasisPaintForFragments(anchor.measuredFragments, "route");
+          const emphasisPaint = emphasisPaintForFragments(anchor.measuredFragments);
           return {
             path: emphasisPaint.path,
-            routePath: routePaint.path,
             bands: emphasisPaint.bands,
             anchorIndex: anchor.anchorIndex,
           };
@@ -1080,11 +1136,14 @@ export function ConnectionUnderlay({
       const fragmentCenters = anchors.flatMap((anchor) => anchor.fragments.map((fragment) => (fragment.top + fragment.bottom) / 2));
       const fallbackFocusY = fragmentCenters.reduce((sum, value) => sum + value, 0) / fragmentCenters.length;
       if (!focused) {
+        // Rev 04 §5: "At rest… No routes are drawn." A member at rest is its
+        // underline and its gutter tick, and nothing else.
         result.push({
           connection,
           valid: true,
           reason: null,
           routePath: "",
+          spineHead: null,
           underlines,
           emphases,
           contacts: [],
@@ -1117,6 +1176,7 @@ export function ConnectionUnderlay({
           valid: false,
           reason: "engine-error",
           routePath: "",
+          spineHead: null,
           underlines,
           emphases,
           contacts: [],
@@ -1137,6 +1197,11 @@ export function ConnectionUnderlay({
           valid: true,
           reason: null,
           routePath: segmentPath(plan.centerline),
+          // Read, never adjusted. The engine owns where the spine sits in real
+          // gutter air; the language owns only the one word set on its head.
+          spineHead: plan.spine
+            ? { x: plan.spine.x, y: plan.spine.top - SPINE_KIND_GAP }
+            : null,
           underlines,
           emphases,
           contacts: plan.contacts,
@@ -1149,6 +1214,7 @@ export function ConnectionUnderlay({
           valid: false,
           reason: plan.reason,
           routePath: "",
+          spineHead: null,
           underlines,
           emphases,
           contacts: [],
@@ -1270,30 +1336,10 @@ export function ConnectionUnderlay({
     };
   }, [selectedConnectionId]);
 
-  const hasSelectedRoute = selectedConnectionId != null;
-  useEffect(() => {
-    if (veilFrameRef.current != null) window.cancelAnimationFrame(veilFrameRef.current);
-    if (!hasSelectedRoute) {
-      setVeilReady(false);
-      return undefined;
-    }
-    // A -> B changes the mask holes without pulsing the entire reading field
-    // off and on. Only the null -> selected transition fades the veil in.
-    veilFrameRef.current = window.requestAnimationFrame(() => {
-      veilFrameRef.current = null;
-      setVeilReady(true);
-    });
-    return () => {
-      if (veilFrameRef.current != null) window.cancelAnimationFrame(veilFrameRef.current);
-      veilFrameRef.current = null;
-    };
-  }, [hasSelectedRoute]);
-
   useEffect(() => () => {
     cancelPreviewTimer(previewEnterTimerRef);
     cancelPreviewTimer(previewLeaveTimerRef);
     if (focusFrameRef.current != null) window.cancelAnimationFrame(focusFrameRef.current);
-    if (veilFrameRef.current != null) window.cancelAnimationFrame(veilFrameRef.current);
   }, [cancelPreviewTimer]);
 
   const hasActiveConnections = paintRecords.some((connection) =>
@@ -1314,9 +1360,9 @@ export function ConnectionUnderlay({
     visiblePainted.filter((item) => isDurablePaintRecord(item.connection)),
   );
   const tickPaintedById = new Map(tickPainted.map((item) => [item.connection.id, item]));
-  // Coarse input uses one uncompressed 38x44 hit target per physical control. When
-  // that cannot fit, the lane planner returns a neutral aggregate whose
-  // members remain individually available through the existing chooser.
+  // Rev 04 §5 gives the language "the gutter tick stack and its 32 x 20px hit
+  // row", so a fine-pointer row needs 21px of lane to clear its neighbour.
+  // Coarse input still gets one uncompressed 38x44 target per row.
   const tickLanes = planConnectionTickLanes(
     tickPainted.map((item) => ({
       id: item.connection.id,
@@ -1324,7 +1370,7 @@ export function ConnectionUnderlay({
       focusY: item.focusY,
     })),
     size.height,
-    coarsePointer ? 45 : 25,
+    coarsePointer ? 45 : 21,
     coarsePointer ? 10 : 2,
   );
   const tickControlKeys = tickLanes.map((lane) => lane.key);
@@ -1334,22 +1380,41 @@ export function ConnectionUnderlay({
   const effectiveRovingTickId = rovingTickId != null && tickControlKeys.includes(rovingTickId)
     ? rovingTickId
     : selectedTickControlKey ?? tickControlKeys[0] ?? null;
+  // One weight, in both states. Rev 04 §5 sets a resting member at 1.5px and
+  // attends it "at the same weight", so the quiet strokes D·2b needed have no
+  // consumer left; the constants stay in connectionGeometry.ts, which is not
+  // this study's file to edit, but nothing is fed from them.
   const overlayStyle = {
-    "--connection-underline-quiet-width": `${CONNECTION_UNDERLINE_QUIET_STROKE}px`,
     "--connection-underline-selected-width": `${CONNECTION_UNDERLINE_SELECTED_STROKE}px`,
-    "--connection-route-quiet-width": `${CONNECTION_ROUTE_QUIET_STROKE}px`,
     "--connection-route-selected-width": `${CONNECTION_ROUTE_SELECTED_STROKE}px`,
   } as React.CSSProperties;
-  const focusItem = visiblePainted.find((item) => item.connection.id === selectedConnectionId) ?? null;
-  const focusHasExactPaint = (focusItem?.emphases.length ?? 0) > 0;
-  const sharedPaint = sharedEmphasisPaint(
+  // One plane, one stroke per run of ink, both states. Rest and attend differ
+  // by ink alone, so the layer is built once and read by both.
+  const underlineLayer = mergeUnderlineLayer(
     visiblePainted.filter((item) => isDurablePaintRecord(item.connection)),
+    selectedConnectionId,
   );
   return (
     <>
+      {/* Law 5, as Rev 04 states it: "Wash marks, rules relate. A wash says
+          *this text is marked*; a rule says *this text is connected to that
+          text*." A connection is a relation, so no durable connection may put
+          a wash on this plane in any of its states — that is what the 1.5px
+          underline on the plane below now does, at rest and attended alike.
+
+          What survives here is the two transient states that are not
+          relations at all: the phrase the reader is dragging out right now
+          (`authoring`) and the live marking selection standing in for a
+          connection that does not exist yet (`selection`). Both are a live
+          selection in the sense `::selection` is one — they mark text, they
+          do not relate it, and they vanish the moment the pointer settles.
+
+          The plane still measures for everyone: `emphases` bands are the
+          connected-word hit test's geometry, and are computed whether or not
+          anything is painted from them. */}
       <svg
         ref={emphasisRef}
-        className={`connection-emphasis-underlay${visualFocusId ? " is-awake" : ""}`}
+        className="connection-emphasis-underlay"
         width="100%"
         height="100%"
         viewBox={size.width > 0 && size.height > 0 ? `0 0 ${size.width} ${size.height}` : undefined}
@@ -1359,32 +1424,10 @@ export function ConnectionUnderlay({
         data-coordinate-frame="self"
         aria-hidden="true"
       >
-        {sharedPaint.length > 0 && <defs>
-          <mask
-            id={sharedMaskId}
-            className="connection-shared-mask"
-            x="0"
-            y="0"
-            width={size.width}
-            height={size.height}
-            maskUnits="userSpaceOnUse"
-          >
-            <rect x="0" y="0" width={size.width} height={size.height} fill="white" />
-            {sharedPaint.map((shared) => <path key={shared.key} d={shared.path} fill="black" />)}
-          </mask>
-        </defs>}
-        {visiblePainted.map((item) => {
-          const focused = item.connection.id === selectedConnectionId;
-          const previewed = !focusMode && selectedConnectionId == null && item.connection.id === previewConnectionId;
-          const userHeld = heldConnectionIds.includes(item.connection.id);
-          const companion = userHeld && !focused;
+        {visiblePainted.filter((item) => !isDurablePaintRecord(item.connection)).map((item) => {
           const authoring = item.connection.source === "authoring";
           const markingSelection = item.connection.source === "selection";
-          const paintState = markingSelection ? "selection"
-            : authoring ? "authoring"
-              : focused ? (item.valid ? "selected" : "needs-space")
-                : previewed ? "preview"
-                  : companion ? "companion" : "dormant";
+          const paintState = markingSelection ? "selection" : "authoring";
           return (
             <g
               key={item.connection.id}
@@ -1394,9 +1437,6 @@ export function ConnectionUnderlay({
               data-marking-selection-emphasis={markingSelection ? "" : undefined}
               data-paint-state={paintState}
               data-anchor-resolution={item.emphases.length > 0 ? "exact" : "passage"}
-              style={paintState === "dormant" && sharedPaint.length > 0
-                ? { mask: `url(#${sharedMaskId})` }
-                : undefined}
             >
               {item.emphases.map((emphasis) => <path
                 key={`e-${emphasis.anchorIndex}`}
@@ -1408,12 +1448,6 @@ export function ConnectionUnderlay({
             </g>
           );
         })}
-        {sharedPaint.map((shared) => <path
-          key={`shared-${shared.key}`}
-          className="connection-emphasis-shared"
-          d={shared.path}
-          data-shared-connection-emphasis=""
-        />)}
       </svg>
       <svg
         ref={overlayRef}
@@ -1428,89 +1462,58 @@ export function ConnectionUnderlay({
         data-coordinate-frame="self"
         aria-hidden="true"
       >
-        {selectedConnectionId && focusHasExactPaint && <defs>
-          <mask
-            id={focusMaskId}
-            className="connection-focus-mask"
-            x="0"
-            y="0"
-            width={size.width}
-            height={size.height}
-            maskUnits="userSpaceOnUse"
-          >
-            <rect x="0" y="0" width={size.width} height={size.height} fill="white" />
-            {visiblePainted
-              .filter((item) => heldConnectionIds.includes(item.connection.id) && item.connection.id !== selectedConnectionId)
-              .flatMap((item) => item.emphases.map((emphasis) => <path
-                key={`held-hole-${item.connection.id}-${emphasis.anchorIndex}`}
-                d={emphasis.routePath}
-                fill="rgb(164 164 164)"
-              />))}
-            {focusItem?.emphases.map((emphasis) => <path
-              key={`focus-hole-${emphasis.anchorIndex}`}
-              d={emphasis.routePath}
-              fill="black"
-            />)}
-          </mask>
-        </defs>}
-        {selectedConnectionId && focusHasExactPaint && <rect
-          className={`connection-focus-veil${veilReady ? " is-ready" : ""}`}
-          x="0"
-          y="0"
-          width={size.width}
-          height={size.height}
-          mask={`url(#${focusMaskId})`}
-          data-connection-focus-veil=""
-        />}
+        {/* Rev 04 §5: every member is a 1.5px underline at rest, and
+            "underlines never stack". One flattened layer, cut wherever
+            membership changes, so a phrase in three connections carries one
+            stroke rather than three at three offsets. Attending re-inks the
+            runs the attended connection owns; every other run stays ink-faint
+            and does not dim. */}
+        <g className="connection-underline-layer" data-connection-underline-layer="">
+          {underlineLayer.map((underline) => <path
+            key={underline.key}
+            className={`connection-underline${underline.attended ? " attended" : ""}`}
+            d={underline.path}
+            data-anchor-underline=""
+            data-underline-ink={underline.attended ? "seal" : "faint"}
+            data-underline-members={underline.memberIds.length}
+            data-underline-center={underline.centerY.toFixed(2)}
+          />)}
+        </g>
         {visiblePainted.filter((item) =>
           selectedConnectionId != null
           && isDurablePaintRecord(item.connection)
-          && (item.connection.id === selectedConnectionId || heldConnectionIds.includes(item.connection.id))).map((item) => {
-          const focused = item.connection.id === selectedConnectionId;
-          const selected = item.connection.id === selectedConnectionId;
+          && item.connection.id === selectedConnectionId).map((item) => {
           const userHeld = heldConnectionIds.includes(item.connection.id);
-          const companion = userHeld && !focused;
-          const ready = focused && readyRouteId === item.connection.id;
-          const paintState = focused ? (item.valid ? "selected" : "needs-space") : "companion";
-          const companionLevel = companion
-            ? Math.max(1, heldConnectionIds.filter((id) => id !== visualFocusId).indexOf(item.connection.id) + 1)
-            : 0;
+          const ready = readyRouteId === item.connection.id;
+          const paintState = item.valid ? "selected" : "needs-space";
           return (
             <g
               key={item.connection.id}
-              className={`connection-mark connection-kind-${item.connection.kind.replace("link:", "")}${focused ? " focused" : ""}${selected ? " selected" : ""}${companion ? " companion" : ""}${userHeld ? " user-held" : ""}${ready ? " route-ready" : ""}${focused && !item.valid ? " held" : ""}`}
+              className={`connection-mark connection-kind-${item.connection.kind.replace("link:", "")} focused selected${userHeld ? " user-held" : ""}${ready ? " route-ready" : ""}${!item.valid ? " held" : ""}`}
               data-connection-id={item.connection.id}
               data-user-held={userHeld ? "" : undefined}
               data-paint-state={paintState}
-              data-route={focused && !item.valid ? item.reason ?? "needs-space" : item.side ?? "local"}
+              data-route={!item.valid ? item.reason ?? "needs-space" : item.side ?? "local"}
               data-anchor-resolution={item.emphases.length > 0 ? "exact" : "passage"}
             >
-              {item.underlines.map((underline) => {
-                const overlapsFocus = companion && focusItem?.underlines.some((focusUnderline) =>
-                  Math.abs(focusUnderline.centerY - underline.centerY) < 2.5
-                  && focusUnderline.left < underline.right
-                  && focusUnderline.right > underline.left) === true;
-                const offsetY = overlapsFocus ? -3 * companionLevel : 0;
-                return <path
-                  key={`u-${underline.anchorIndex}-${underline.lineIndex}`}
-                  className="connection-underline"
-                  d={underline.path}
-                  pathLength="1"
-                  transform={offsetY === 0 ? undefined : `translate(0 ${offsetY})`}
-                  data-anchor-underline=""
-                  data-anchor-index={underline.anchorIndex}
-                  data-line-index={underline.lineIndex}
-                  data-underline-level={overlapsFocus ? companionLevel : 0}
-                  data-underline-center={(underline.centerY + offsetY).toFixed(2)}
-                />;
-              })}
-              {focused && item.valid && item.routePath && <path
+              {item.valid && item.routePath && <path
                 className="connection-route"
                 data-route-centerline=""
                 d={item.routePath}
                 pathLength="1"
               />}
-              {focused && item.valid && item.routePath && <path
+              {/* "The kind is the only word a route carries — one word in seal
+                  small caps at the spine's head." Never abbreviated, never
+                  iconified, never colour-coded: it is the label straight off
+                  the shared vocabulary table, set in the UI sans. */}
+              {item.valid && item.spineHead && <text
+                className="connection-route-kind"
+                data-route-kind={item.connection.kind}
+                x={item.spineHead.x}
+                y={item.spineHead.y}
+                textAnchor="middle"
+              >{relationshipLabel(item.connection.kind)}</text>}
+              {item.valid && item.routePath && <path
                 className="connection-route-hit"
                 d={item.routePath}
                 onClick={(event) => {
@@ -1525,7 +1528,7 @@ export function ConnectionUnderlay({
                   setAnnouncement(`${item.connection.label} focus dismissed. It remains held for comparison.`);
                 }}
               />}
-              {focused && item.valid && item.contacts.map((point, index) => <circle
+              {item.valid && item.contacts.map((point, index) => <circle
                 key={`c-${index}`}
                 className="connection-contact"
                 cx={point.x}
@@ -1571,6 +1574,11 @@ export function ConnectionUnderlay({
             ? " connection-tick-aggregate"
             : ` connection-kind-${item.connection.kind.replace("link:", "")}`;
           const aggregateLabel = `${memberItems.length} relationships near this reading position. Open relationship chooser.`;
+          // Rev 04 §5: the count of connections over a phrase lives here, as
+          // "three ticks, then +n" — never as a second underline, and never
+          // as a shared wash under the words.
+          const stackedItems = memberItems.slice(0, TICK_STACK_LIMIT);
+          const overflowCount = memberItems.length - stackedItems.length;
           return (
             <button
               key={lane.key}
@@ -1647,8 +1655,16 @@ export function ConnectionUnderlay({
                   : `${item.connection.label} selected. ${phraseCount(item.connection.anchors.length)}. Connection details opened in Study.`);
               }}
             >
-              <span className="connection-tick-dash" aria-hidden="true" />
-              {aggregate && <span className="connection-tick-dash" aria-hidden="true" />}
+              {stackedItems.map((member, index) => <span
+                key={`tick-${member.connection.id}`}
+                className={`connection-tick-dash${
+                  visualFocusId != null && member.connection.id === visualFocusId ? " attended" : ""}`}
+                data-tick-index={index}
+                aria-hidden="true"
+              />)}
+              {overflowCount > 0 && (
+                <span className="connection-tick-overflow" aria-hidden="true">+{overflowCount}</span>
+              )}
               {needsSpace && selected && (
                 <span className="connection-tick-note" aria-hidden="true">Line hidden at this width</span>
               )}

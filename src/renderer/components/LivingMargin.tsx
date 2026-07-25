@@ -21,6 +21,13 @@ import {
 } from "../../core/integrations/shepherdly-resource-node.js";
 import { compareConnectionsCanonical } from "../../core/annotations/connection-order.js";
 import { safeCall } from "../utils/safeCall.js";
+import {
+  laurelInk,
+  laurelMarkLabel,
+  laurelSiglumRole,
+  type LaurelCandidate,
+  type LaurelSource,
+} from "../utils/laurel.js";
 import { isTopLayer, layerStackIsEmpty, useLayer } from "../layerStack.js";
 import { phraseCount } from "../utils/relationshipVocabulary.js";
 import { passageTabOpenIntent } from "../utils/passageTabIntent.js";
@@ -551,9 +558,17 @@ function crossRefBranchHandlers(
    ------------------------------------------------------------------------- */
 
 /** 4px slate dot = the app wrote this sentence. 2px seal spine + a date = you
- *  wrote it. Unmarked = it is the edition. The mark is persistent, never a
- *  hover reveal — provenance you have to already suspect is not provenance. */
-export type MarginEntryProvenance = "app" | "reader" | "edition";
+ *  wrote it. 2px laurel spine + a siglum = a named third party wrote it and we
+ *  licensed it. Unmarked = it is the edition, and nothing else may go unmarked.
+ *  The mark is persistent, never a hover reveal — provenance you have to
+ *  already suspect is not provenance.
+ *
+ *  @quire derived · kin: margin entry · laurel takes a 2px spine like seal
+ *  rather than a dot like slate, because the spine already means "a person
+ *  wrote this sentence" and the dot already means "this was computed". Laurel
+ *  is authorship by someone else, so it belongs on the spine side of that
+ *  distinction; the ink and the kicker carry the difference from seal. */
+export type MarginEntryProvenance = "app" | "reader" | "edition" | "licensed";
 
 export interface MarginEntryFact {
   label: string;
@@ -641,15 +656,75 @@ function MarginEntryKindLine({ parts }: { parts: Array<string | null | undefined
   return <p className="margin-entry-kind">{kept.join(" · ")}</p>;
 }
 
+/**
+ * Open a laurel siglum's destination from a surface that has no error slot of
+ * its own. The Research view has `openMediaLink`, which can show the host's
+ * refusal beside the photo credits it belongs to; the overview has nowhere to
+ * put that sentence, and inventing a slot for it would be a fourth thing on a
+ * surface whose job is to be skimmable. A refused link is silent here on
+ * purpose — the sources disclosure still names the corpus in full.
+ */
+function openLicensedSourceUrl(url: string): void {
+  void safeCall(() => window.api.system.openExternalResearchUrl(url));
+}
+
+/**
+ * The siglum: laurel's kicker, and the only clickable provenance mark in the
+ * language. Seal and slate marks are inert spans — they have nowhere to go, so
+ * making them buttons would promise a destination that does not exist. This
+ * one does have somewhere to go, which is the whole reason §4 singles it out.
+ *
+ * When the source has no permalink the siglum still has to be drawn — the ink
+ * may not appear without it — so it degrades to static text rather than to a
+ * button that does nothing when pressed.
+ */
+function MarginEntrySiglum({
+  source,
+  onOpenSource,
+}: {
+  source: LaurelSource;
+  onOpenSource?: (url: string) => void;
+}): React.JSX.Element {
+  const href = source.href;
+  if (laurelSiglumRole(source, onOpenSource != null) === "static" || !href || !onOpenSource) {
+    return <span className="margin-entry-siglum is-static">{source.siglum}</span>;
+  }
+  return (
+    <button
+      type="button"
+      className="margin-entry-siglum"
+      onClick={() => onOpenSource(href)}
+      aria-label={`Open the ${source.siglum} record for this entry`}
+    >
+      {source.siglum}
+    </button>
+  );
+}
+
 function MarginEntryWhy({
   provenance,
   writtenOn,
+  licensed,
+  onOpenSource,
   children,
 }: {
   provenance: MarginEntryProvenance;
   writtenOn?: string;
+  /** Required when `provenance` is "licensed", and ignored otherwise. */
+  licensed?: LaurelCandidate;
+  onOpenSource?: (url: string) => void;
   children: React.ReactNode;
-}): React.JSX.Element {
+}): React.JSX.Element | null {
+  const laurel = provenance === "licensed" ? laurelInk(licensed) : null;
+
+  // Rev 04 §4: "If you cannot name the source you may not use the ink: fall
+  // back to unmarked *and do not show the prose*." The fallback is to hide the
+  // sentence, not to print it in the edition's unmarked voice — printing it is
+  // how a Pleiades brief came to claim it was scripture in the first place. So
+  // an unnameable licensed source removes the whole block, and the entry simply
+  // continues at its next part, which the C·2 skeleton already allows.
+  if (provenance === "licensed" && !laurel) return null;
+
   return (
     <div className={`margin-entry-why is-${provenance}`}>
       {provenance === "app" && (
@@ -662,11 +737,55 @@ function MarginEntryWhy({
           <span className="sr-only">Written by you</span>
         </span>
       )}
+      {laurel && (
+        <span className="margin-entry-mark is-licensed">
+          <span className="sr-only">{laurelMarkLabel(laurel)}</span>
+        </span>
+      )}
       <div className="margin-entry-why-copy">
+        {/* The kicker comes before the sentence it names, because a reader who
+            is going to skip licensed prose should be able to skip it without
+            reading it first. */}
+        {laurel && <MarginEntrySiglum source={laurel} onOpenSource={onOpenSource} />}
         {children}
         {provenance === "reader" && writtenOn && (
           <span className="margin-entry-why-date">{writtenOn}</span>
         )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Licensed prose that is not a margin entry's "why" — the gazetteer's own
+ * description inside a Research section, for instance. Same law, same failure
+ * mode: no siglum, no prose.
+ *
+ * @quire derived · kin: margin entry · a laurel paragraph outside the entry
+ * skeleton keeps the entry's mark and kicker so the ink means one thing
+ * everywhere, and takes its own class only for the surrounding type.
+ */
+function LaurelProse({
+  licensed,
+  onOpenSource,
+  className,
+  children,
+}: {
+  licensed: LaurelCandidate;
+  onOpenSource?: (url: string) => void;
+  className?: string;
+  children: React.ReactNode;
+}): React.JSX.Element | null {
+  const laurel = laurelInk(licensed);
+  if (!laurel) return null;
+  return (
+    <div className={`margin-entry-why is-licensed laurel-prose${className ? ` ${className}` : ""}`}>
+      <span className="margin-entry-mark is-licensed">
+        <span className="sr-only">{laurelMarkLabel(laurel)}</span>
+      </span>
+      <div className="margin-entry-why-copy">
+        <MarginEntrySiglum source={laurel} onOpenSource={onOpenSource} />
+        {children}
       </div>
     </div>
   );
@@ -926,6 +1045,17 @@ function entityCaptureSources(data: EntityResearchData): MarginCitationSource[] 
   ];
 }
 
+/**
+ * Rev 04 §4: "Laurel prose is never edited in place — editing it makes it yours,
+ * and it becomes a seal entry quoting a laurel one."
+ *
+ * This is that second clause, and it is why capture is legal where an inline
+ * edit would not be. Nothing here writes back to the entity; the brief is copied
+ * into a new note the reader authors, alongside `sourceAttribution`, and the
+ * laurel entry it came from is untouched and still laurel. The margin renders
+ * licensed prose as text nodes only — there is no field, no caret, and no path
+ * that mutates a TIPNR or Pleiades string on the surface it is drawn on.
+ */
 export function buildEntityResearchCapture(
   data: EntityResearchData,
   origin: NonNullable<Props["entityIntent"]>["origin"],
@@ -1288,9 +1418,13 @@ function PersonRelationships({
 
 function PleiadesResearchSection({
   data,
+  licensed,
   openResearchLink,
 }: {
   data: NonNullable<EntityResearchData["pleiades"]>;
+  /** Names `place.description`. Null hides that paragraph and nothing else —
+   *  the names, connections and bibliography below are records, not prose. */
+  licensed: LaurelCandidate;
   openResearchLink: (url: string) => void;
 }): React.JSX.Element {
   const { place } = data;
@@ -1322,7 +1456,20 @@ function PleiadesResearchSection({
           Open record <CrossReferenceArrow />
         </button>
       </div>
-      {place.description && <p className="entity-pleiades-description">{place.description}</p>}
+      {/* The gazetteer's own sentence about this place. It sat unmarked in
+          --text-secondary, which is the edition's voice — so a Pleiades brief
+          was claiming to be scripture, which is the defect ruling 4·5 names.
+          The siglum here carries the per-place permalink, so it lands on the
+          record the reader is reading rather than on a gazetteer front door. */}
+      {place.description && (
+        <LaurelProse
+          licensed={licensed}
+          onOpenSource={openResearchLink}
+          className="entity-pleiades-prose"
+        >
+          <p className="entity-pleiades-description">{place.description}</p>
+        </LaurelProse>
+      )}
       {names.length > 0 && (
         <div className="entity-pleiades-names" aria-label="Attested and historical names">
           <span>Names</span>
@@ -1526,6 +1673,14 @@ function EntityResearchView({
       };
     });
 
+  /* @quire guessed · provenance · the image caption is a third party's sentence
+     too — OpenBible curated it from the file's own description — but it is left
+     off the ink. A caption names its source three lines below itself, in the
+     credit and the license, and a laurel spine beside a photograph reads as a
+     mark on the picture rather than on the words. The judgement is that a
+     figcaption is its own kin, not a margin entry, and that its credit already
+     does what a siglum does. If that is wrong, the fix is a laurel block around
+     `.entity-photo-caption` and nothing else changes. */
   const photo = data.imageDataUrl && place?.image ? (
     <figure className="entity-photo">
       <img src={data.imageDataUrl} alt={place.image.alt} />
@@ -1575,8 +1730,15 @@ function EntityResearchView({
         {/* 2 · kind & situation — one line, and the difference between the
             four kinds lives here rather than in four layouts */}
         <MarginEntryKindLine parts={kindLineParts} />
-        {/* 3 · why it is here */}
-        <MarginEntryWhy provenance="edition">
+        {/* 3 · why it is here. TIPNR wrote this sentence, not the edition, so
+            it is laurel with a siglum — ruling 4·5. If the index cannot name
+            its corpus the whole block disappears and the entry runs on to its
+            facts, because unattributable licensed prose may not be shown. */}
+        <MarginEntryWhy
+          provenance="licensed"
+          licensed={data.licensed?.entity}
+          onOpenSource={openMediaLink}
+        >
           <p className="margin-entry-why-text">{data.entity.brief}</p>
         </MarginEntryWhy>
         {/* 4 · facts — the bearing is the map's replacement at this width */}
@@ -1611,8 +1773,15 @@ function EntityResearchView({
         <summary>More</summary>
         <div className="entity-research-more-content">
           {photo}
+          {/* The expanded sentence is the same corpus's prose as the brief, so
+              it carries the same ink. It was set unmarked, which said "the
+              edition wrote this" about a sentence TIPNR wrote. */}
           {data.entity.short && data.entity.short !== data.entity.brief && (
-            <p className="entity-research-expanded">{data.entity.short}</p>
+            <LaurelProse licensed={data.licensed?.entity} onOpenSource={openMediaLink}>
+              {/* Keeps its own inherited face. The laurel block adds a mark and
+                  a kicker; it is not licence to restyle the sentence. */}
+              <p className="entity-research-expanded">{data.entity.short}</p>
+            </LaurelProse>
           )}
           <PersonRelationships
             data={data}
@@ -1651,7 +1820,13 @@ function EntityResearchView({
             </section>
           )}
 
-      {data.pleiades && <PleiadesResearchSection data={data.pleiades} openResearchLink={openMediaLink} />}
+      {data.pleiades && (
+        <PleiadesResearchSection
+          data={data.pleiades}
+          licensed={data.licensed?.pleiades}
+          openResearchLink={openMediaLink}
+        />
+      )}
 
       <section className="entity-research-section" aria-labelledby="entity-scripture-title">
         <div className="entity-research-section-head">
@@ -2118,7 +2293,14 @@ function IntentOverview({
                     entity.refCount === 1 ? "named once" : `named ${entity.refCount.toLocaleString()} times`,
                   ]}
                 />
-                <MarginEntryWhy provenance="edition">
+                {/* TIPNR's brief, not the edition's. Laurel with a siglum, and
+                    nothing at all if the index cannot name itself — an entry
+                    that stops after its kind line is finished, not broken. */}
+                <MarginEntryWhy
+                  provenance="licensed"
+                  licensed={entityResult.licensed}
+                  onOpenSource={openLicensedSourceUrl}
+                >
                   <p className="margin-entry-why-text">{entity.brief}</p>
                 </MarginEntryWhy>
               </article>

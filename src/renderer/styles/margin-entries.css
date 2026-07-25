@@ -170,8 +170,10 @@
 /* --- 3 · why it is here --------------------------------------------------
    Serif, passage-relative, one or two sentences. Provenance rides in the
    hanging indent: 4px slate dot = the app wrote this; 2px seal spine = you
-   wrote it; nothing at all = it is the edition. The mark is persistent — a
-   hover reveal only tells a reader what they already suspected. */
+   wrote it; 2px laurel spine + a siglum = a named third party wrote it and we
+   licensed it; nothing at all = it is the edition, and nothing else may go
+   unmarked. The mark is persistent — a hover reveal only tells a reader what
+   they already suspected. */
 
 .margin-entry-why {
   position: relative;
@@ -201,10 +203,94 @@
   background: var(--accent-seal);
 }
 
+/* Laurel — a named third party wrote it and we licensed it. It takes the same
+   2px spine as seal because the spine already means "a person wrote this
+   sentence"; the dot is reserved for the app's inferences, and a licensed brief
+   is not an inference. The hue is the whole difference, and the siglum below
+   says which person. Rev 04 §4: 5.02:1 on paper, and the ink never appears
+   without the kicker — the component returns nothing at all rather than draw
+   this mark beside an unattributable sentence.
+
+   @quire derived · kin: margin entry · seal's geometry, laurel's ink. */
+.margin-entry-mark.is-licensed {
+  top: 0.2em;
+  bottom: 0.2em;
+  width: 2px;
+  border-radius: var(--radius-mark);
+  background: var(--accent-laurel);
+}
+
+/* Rev 04 §4 makes the siglum "the only clickable provenance mark, because it is
+   the only one with somewhere to go". Seal and slate marks have nowhere, so
+   they must not even absorb a press — inside a clickable lead row a bare span
+   would still swallow the pointer and read as a target. This is the rule stated
+   in CSS so it cannot drift back. */
+.margin-entry-mark.is-app,
+.margin-entry-mark.is-reader {
+  pointer-events: none;
+}
+
 .margin-entry-why-copy {
   min-width: 0;
   display: grid;
   gap: 2px;
+}
+
+/* The kicker. It is the name the ink stands for, so it sets like the other
+   handles in the entry — UI sans, 10px, the margin's own label size — rather
+   than in the chrome's mono. §8 keeps mono for reference labels, but the
+   margin gave up mono entirely, and a siglum inside an entry belongs to the
+   entry's voice before it belongs to the sigla convention.
+
+   @quire derived · kin: margin entry · siglum sets as `.margin-entry-part-label`
+   does, in laurel, in caps, with the tracking a three-to-eight letter all-caps
+   token needs to stop reading as a shout. */
+.margin-entry-siglum {
+  justify-self: start;
+  margin-bottom: 1px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent-laurel);
+  font-family: var(--font-ui);
+  font-size: 0.625rem;
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.06em;
+  line-height: 1.35;
+  text-align: left;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+/* A siglum whose corpus publishes no permalink still has to be drawn — the ink
+   may not appear without it — but it must not look pressable. */
+.margin-entry-siglum.is-static {
+  cursor: default;
+}
+
+/* Ink only, never geometry: the siglum already sits in the accent, so hover
+   spends the one step it has left. */
+.margin-entry-siglum:not(.is-static):hover {
+  color: var(--text-primary);
+}
+
+.margin-entry-siglum:focus-visible {
+  outline: 2px solid var(--accent-seal);
+  outline-offset: 2px;
+  border-radius: var(--radius-mark);
+}
+
+/* Licensed prose outside the entry skeleton — a gazetteer paragraph inside a
+   Research section, the expanded sentence under More. Same mark, same kicker,
+   same hanging indent, so the ink means one thing on every surface. */
+.laurel-prose {
+  position: relative;
+  padding-left: var(--margin-entry-hang, 12px);
+}
+
+.laurel-prose > .margin-entry-mark {
+  left: 0;
 }
 
 /* 15/1.6 across a 336px measure gives about 46 characters. Short for prose,

@@ -58,10 +58,17 @@ test("coarse and hybrid pointers receive nonoverlapping 38x44 tick targets with 
   assert.match(underlay, /window\.matchMedia\("\(any-pointer: coarse\)"\)/);
   assert.match(underlay, /media\.addEventListener\("change", syncPointerMode\)/);
   assert.match(underlay, /media\.removeEventListener\("change", syncPointerMode\)/);
-  assert.match(underlay, /planConnectionTickLanes\([\s\S]{0,420}coarsePointer \? 45 : 25,[\s\S]{0,80}coarsePointer \? 10 : 2/);
+  // The fine-pointer lane pitch was 25px, for a 24 x 24 tick. Rev 04 §5 gives
+  // the language "the gutter tick stack and its 32 x 20px hit row", so the row
+  // is 20 tall and 21px of lane clears its neighbour. The coarse target is
+  // unchanged at 38 x 44 — this test's actual subject — but the inset that
+  // produces it moved with the row it grows from: 32+3+3 = 38, 20+12+12 = 44,
+  // where it used to be 24+7+7 = 38, 24+10+10 = 44.
+  assert.match(underlay, /planConnectionTickLanes\([\s\S]{0,420}coarsePointer \? 45 : 21,[\s\S]{0,80}coarsePointer \? 10 : 2/);
+  assert.match(css, /\.connection-tick \{[\s\S]{0,200}width: 32px;\s*height: 20px;/);
   assert.match(underlay, /data-connection-tick-aggregate=\{aggregate \? "" : undefined\}/);
   assert.match(underlay, /aria-haspopup=\{aggregate \? "dialog" : undefined\}/);
-  assert.match(css, /@media \(any-pointer: coarse\) \{\s*\.connection-tick::before \{\s*position: absolute;\s*inset: -10px -7px;/);
+  assert.match(css, /@media \(any-pointer: coarse\) \{\s*\.connection-tick::before \{\s*position: absolute;\s*inset: -12px -3px;/);
 });
 
 test("a verse click consumes drag residue, resolves exact connection hits, then falls back to Study with marking closed", () => {
@@ -168,10 +175,13 @@ test("dismissing connection focus preserves held comparisons and refresh preserv
 });
 
 test("the selected route toggles focus off without releasing the hold", () => {
+  // The end marker lost its `focused &&` guard: only the attended connection
+  // reaches this group at all now, because Rev 04 §5 draws "exactly ONE route"
+  // and the held companions that used to be painted here alongside it are not.
   const routeHit = sourceBetween(
     underlay,
     "className=\"connection-route-hit\"",
-    "              {focused && item.valid && item.contacts.map",
+    "              {item.valid && item.contacts.map",
   );
 
   assert.match(routeHit, /if \(!isDurablePaintRecord\(item\.connection\)\) return/);

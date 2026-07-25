@@ -57,6 +57,7 @@ import {
 } from "./ConnectionUnderlay.js";
 import { ConnectionCard, type ConnectionCardRecovery } from "./ConnectionCard.js";
 import { isTopLayer, layerStackIsEmpty, useLayer } from "../layerStack.js";
+import { leastScrollForMembers, memberSpan } from "../utils/connectionAttendScroll.js";
 import { phraseCount, relationshipLabel } from "../utils/relationshipVocabulary.js";
 import { ReadingComfort, type ReadingPrefs } from "./ReadingComfort.js";
 import { ThemePicker } from "./ThemePicker.js";
@@ -4010,6 +4011,54 @@ export function ScripturePage({
     return true;
   }, []);
 
+  /**
+   * Rev 04 §5: "Attending happens three ways and is one behaviour: clicking a
+   * member, its gutter tick, or its row in the Connections tab. All three
+   * scroll the least distance that brings every member into view."
+   *
+   * So the scroll lives here, in the one function all three paths already call,
+   * rather than beside any one of them. The Connections tab used to own a
+   * bespoke version that centred the single member nearest the eye-line, which
+   * was neither least-distance nor shared; it is gone.
+   */
+  const scrollAttendedConnectionIntoView = useCallback((
+    connection: ConnectionRecord,
+    ownerContextKey: string | null,
+  ): void => {
+    const verses = new Set<number>();
+    for (const anchor of canonicalConnectionAnchors(connection)) {
+      if (anchor.book !== book || anchor.chapter !== chapter) continue;
+      for (let verse = anchor.verse_start; verse <= anchor.verse_end; verse += 1) verses.add(verse);
+    }
+    if (verses.size === 0) return;
+    window.requestAnimationFrame(() => {
+      if (currentMarkingContextKeyRef.current !== ownerContextKey) return;
+      const root = contentRef.current;
+      if (!root) return;
+      const rootRect = root.getBoundingClientRect();
+      const span = memberSpan([...verses].flatMap((verse) => {
+        const row = verseRowRefs.current.get(verse);
+        if (!row) return [];
+        const rect = row.getBoundingClientRect();
+        return [{
+          top: rect.top - rootRect.top + root.scrollTop,
+          bottom: rect.bottom - rootRect.top + root.scrollTop,
+        }];
+      }));
+      if (!span) return;
+      const next = leastScrollForMembers({
+        scrollTop: root.scrollTop,
+        viewportHeight: root.clientHeight,
+        spanTop: span.top,
+        spanBottom: span.bottom,
+        maxScrollTop: root.scrollHeight - root.clientHeight,
+      });
+      if (Math.abs(next - root.scrollTop) < 1) return;
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      root.scrollTo({ top: next, behavior: reducedMotion ? "auto" : "smooth" });
+    });
+  }, [book, chapter]);
+
   const handleSelectConnection = useCallback(async (
     connection: ConnectionRecord | null,
     focusInspector = false,
@@ -4042,6 +4091,7 @@ export function ScripturePage({
         setConnectionInspectorFocusRequest((request) => request + 1);
       }
       onEnsureMarginVisible?.();
+      scrollAttendedConnectionIntoView(visibleConnection, ownerContextKey);
     } else if (selectedConnectionId) {
       releaseHeldConnection(selectedConnectionId);
     }
@@ -4050,45 +4100,16 @@ export function ScripturePage({
     verseSelectionAnchorRef.current = null;
     setShowHighlightPalette(false);
     return true;
-  }, [advanceSelectionGeneration, closeConnectionWordChooser, onEnsureMarginVisible, releaseHeldConnection, replaceHeldConnectionIds, requestScriptureWorkspaceAttention, requireSafeConnectionNavigation, selectedConnectionId]);
+  }, [advanceSelectionGeneration, closeConnectionWordChooser, onEnsureMarginVisible, releaseHeldConnection, replaceHeldConnectionIds, requestScriptureWorkspaceAttention, requireSafeConnectionNavigation, scrollAttendedConnectionIntoView, selectedConnectionId]);
 
+  // The Connections tab's row is the third way to attend, and Rev 04 makes the
+  // three one behaviour — so this is now nothing but the shared one.
   const handleSelectAuthoredConnection = useCallback(async (
     connection: ConnectionRecord,
     focusInspector = false,
   ): Promise<void> => {
-    const ownerContextKey = currentMarkingContextKeyRef.current;
-    if (!await handleSelectConnection(connection, focusInspector)) return;
-    if (currentMarkingContextKeyRef.current !== ownerContextKey) return;
-    const localAnchors = canonicalConnectionAnchors(connection).filter((anchor) => (
-      anchor.book === book && anchor.chapter === chapter
-    ));
-    const eyeLine = settledNearVerse ?? 1;
-    const attentionAnchor = [...localAnchors].sort((left, right) => {
-      const leftVerse = connection.format_version === 2
-        ? connection.anchors.find((anchor) => anchor === left)?.exact.occurrences[0]?.verse ?? left.verse_start
-        : left.verse_start;
-      const rightVerse = connection.format_version === 2
-        ? connection.anchors.find((anchor) => anchor === right)?.exact.occurrences[0]?.verse ?? right.verse_start
-        : right.verse_start;
-      return Math.abs(leftVerse - eyeLine) - Math.abs(rightVerse - eyeLine);
-    })[0];
-    if (!attentionAnchor) return;
-    const targetVerse = connection.format_version === 2
-      ? connection.anchors.find((anchor) => anchor === attentionAnchor)?.exact.occurrences[0]?.verse
-        ?? attentionAnchor.verse_start
-      : attentionAnchor.verse_start;
-    window.requestAnimationFrame(() => {
-      if (currentMarkingContextKeyRef.current !== ownerContextKey) return;
-      const row = verseRowRefs.current.get(targetVerse);
-      if (!row) return;
-      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      row.scrollIntoView({
-        block: "center",
-        inline: "nearest",
-        behavior: reducedMotion ? "auto" : "smooth",
-      });
-    });
-  }, [book, chapter, handleSelectConnection, settledNearVerse]);
+    await handleSelectConnection(connection, focusInspector);
+  }, [handleSelectConnection]);
 
   const handleChooseConnections = useCallback(async (
     connections: readonly ConnectionRecord[],

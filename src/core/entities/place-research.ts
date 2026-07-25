@@ -8,6 +8,7 @@
 
 import type { TipnrEntity } from "../language/tipnr.js";
 import type { PleiadesEntityResearch } from "./pleiades-research.js";
+import type { LicensedSource } from "./licensed-source.js";
 
 export type PlaceImageKind = "site" | "context" | "artifact" | "reception";
 
@@ -98,11 +99,32 @@ export type MiniMapData = {
   bounds: { west: number; south: number; east: number; north: number };
 };
 
+/**
+ * Who wrote the prose in this payload, resolved once by the host rather than
+ * guessed at each render site.
+ *
+ * Rev 04 §4 requires that laurel prose be able to name its source *where it is
+ * drawn*; before this field the renderer only knew the source by inference —
+ * "this is a `TipnrEntity`, therefore TIPNR wrote the brief" — which is a fact
+ * about our type names, not a fact the data ever asserted. A null here is a
+ * real answer and not a missing one: it means the artifact declared a corpus we
+ * cannot name, and the prose it carries must not render.
+ */
+export type EntityResearchLicensing = {
+  /** Names `entity.brief` and `entity.short`. */
+  entity: LicensedSource | null;
+  /** Names `pleiades.place.description`. Per-record, so the siglum can link to
+   *  the very place being read rather than to the gazetteer's front door. */
+  pleiades: LicensedSource | null;
+};
+
 export type EntityResearchData = {
   entity: TipnrEntity;
   place: PlaceResearchRecord | null;
   pleiades: PleiadesEntityResearch | null;
   imageDataUrl: string | null;
+  /** Provenance for the licensed prose above. See `EntityResearchLicensing`. */
+  licensed: EntityResearchLicensing;
 };
 
 type Position = [number, number];

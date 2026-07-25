@@ -233,7 +233,19 @@ test("desktop integration owns one draft rail, exit controller, attention scroll
   assert.match(marking, />Cancel draft<\/button>/);
   assert.match(marking, /requestDraftExit\("escape"\)/);
   assert.doesNotMatch(marking, /inactivity|countdown|auto.?save/i);
-  assert.match(scripture, /scrollIntoView\(\{[\s\S]{0,180}block: "center"/);
+  // This used to assert `scrollIntoView({ … block: "center" … })`, which was
+  // the Connections tab's own attention scroll: it centred the ONE member
+  // nearest the reading eye-line, and only the tab did it — a tick click and a
+  // member click scrolled nothing at all. Rev 04 §5 withdraws both halves:
+  // "Attending happens three ways and is one behaviour: clicking a member, its
+  // gutter tick, or its row in the Connections tab. All three scroll the least
+  // distance that brings every member into view." So the scroll moved into the
+  // one function all three paths call, and centring is gone — least distance
+  // means a connection already on screen does not move the page at all.
+  assert.match(scripture, /scrollAttendedConnectionIntoView\(visibleConnection, ownerContextKey\)/);
+  assert.match(scripture, /leastScrollForMembers\(\{[\s\S]{0,320}spanTop: span\.top,[\s\S]{0,120}spanBottom: span\.bottom/);
+  assert.doesNotMatch(scripture, /scrollIntoView\(\{[\s\S]{0,180}block: "center"/,
+    "attending centres nothing; it closes the smallest gap that shows every member");
   assert.match(scripture, /onSelectAuthoredConnection=\{handleSelectAuthoredConnection\}/);
   assert.match(app, /runWorkspaceTransition\("view-change"/);
   assert.match(app, /runWorkspaceTransition\("library-change"/);

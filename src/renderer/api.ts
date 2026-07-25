@@ -20,7 +20,8 @@ import type {
 } from "../core/resources/trusted-resources.js";
 import type { StudyWorkspaceStateV2 } from "./utils/studyWorkspace.js";
 export type { RankedTrustedResource } from "../core/resources/trusted-resources.js";
-export type { EntityResearchData } from "../core/entities/place-research.js";
+export type { EntityResearchData, EntityResearchLicensing } from "../core/entities/place-research.js";
+export type { LicensedSource } from "../core/entities/licensed-source.js";
 export type { ConnectionAnchor, ConnectionKind, ConnectionRecord } from "../core/annotations/types.js";
 
 export type AppWindowCloseRequest = { requestId: string; source: "window" | "quit" };
@@ -738,6 +739,22 @@ export type LanguageNameEntityHit = {
   entity: LanguageNameEntity;
   match: "ref+strong" | "ref" | "strong+name" | "strong";
   alternatives: LanguageNameEntity[];
+  /**
+   * Who wrote `entity.brief` / `entity.short`. The words panel renders that
+   * prose, and Rev 04 §4 forbids drawing licensed prose that cannot name its
+   * source — so this travels with the hit rather than being assumed from the
+   * shape of the type. Optional because an older host build may not send it,
+   * and "absent" has to mean "unnameable", not "crash".
+   */
+  licensed?: LicensedSourceData | null;
+};
+
+/** Mirror of `LicensedSource` as it crosses IPC. */
+export type LicensedSourceData = {
+  siglum: string;
+  name: string;
+  license: string;
+  href: string | null;
 };
 
 export type LanguageEntityRangeResult = {
@@ -746,6 +763,9 @@ export type LanguageEntityRangeResult = {
     name: string;
     license: string;
   };
+  /** Names the `brief` on every entity above. Absent/null means the corpus
+   *  could not be named, and Rev 04 §4 then forbids drawing that prose. */
+  licensed?: LicensedSourceData | null;
 };
 
 export type LanguageEntitySearchResult = {

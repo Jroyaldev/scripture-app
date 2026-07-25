@@ -167,6 +167,233 @@ test("the quiet ink clears AA in every atmosphere, under both of its names", () 
   }
 });
 
+/**
+ * The paper each atmosphere measures its own ink against. Law 6 is a statement
+ * about a token *on its own ground*, so there is no global answer: the same
+ * seal is 4.64:1 on Paper and 6.82:1 in Ink.
+ */
+const PAPER = {
+  ":root": "#FCFBF8",
+  ".dark": "#1D1B18",
+  ".theme-porcelain": "#FFFFFF",
+  ".theme-onyx": "#1C1C20",
+} as const;
+
+/**
+ * Law 6's three floors, assigned once per token rather than argued at each
+ * call site.
+ *
+ *   4.5 — ink that carries meaning, AT EVERY SIZE. This language has no
+ *         large-text exemption, because its chrome sets at 8–10px.
+ *   3   — a mark that carries meaning without words.
+ *   0   — is not a floor and is not offered here. A token that would "lose
+ *         nothing if deleted" still has to say so in the sheet; see below.
+ *
+ * `onSeal` marks the one token whose ground is not paper: --text-on-accent is
+ * whatever sits on the seal, so measuring it against paper would score a
+ * legible chip as a failure and an illegible one as a pass.
+ */
+const LAW6: Record<string, { floor: number; onSeal?: true }> = {
+  "--text-primary": { floor: 4.5 },
+  "--text-secondary": { floor: 4.5 },
+  "--text-tertiary": { floor: 4.5 },
+  "--text-verse-number": { floor: 4.5 },
+  "--text-link": { floor: 4.5 },
+  "--text-link-hover": { floor: 4.5 },
+  "--text-on-accent": { floor: 4.5, onSeal: true },
+  "--accent-seal": { floor: 4.5 },
+  "--accent-seal-strong": { floor: 4.5 },
+  "--accent-machine": { floor: 4.5 },
+  "--accent-laurel": { floor: 4.5 },
+  "--accent-warm": { floor: 4.5 },
+  "--accent-warm-light": { floor: 4.5 },
+  "--accent-user": { floor: 4.5 },
+  "--accent-source": { floor: 4.5 },
+  "--accent-ai": { floor: 4.5 },
+  "--accent-xref": { floor: 4.5 },
+  "--accent-current": { floor: 4.5 },
+  "--study-gold": { floor: 4.5 },
+  // Usually drawn as a mark rather than words, so 3:1 is the operative floor;
+  // where they set text — a failed job's status line, a discard label — 4.5:1
+  // is. All three clear the higher of the two in all four atmospheres, so the
+  // higher one is what is asserted and the distinction never has to be
+  // adjudicated per call site.
+  "--healthy": { floor: 4.5 },
+  "--warning": { floor: 4.5 },
+  "--error": { floor: 4.5 },
+  // Rules. §4 marks the hairline "exempt, separates only"; the other two are
+  // the same object at two weights. They are given the mark floor rather than
+  // no floor, so that the exemption has to be *written* rather than assumed.
+  "--border-subtle": { floor: 3 },
+  "--border-medium": { floor: 3 },
+  "--border-strong": { floor: 3 },
+};
+
+test("Law 6 · every ink states its ratio, and the ratio it states is true", () => {
+  const css = read(STYLES);
+
+  // The novel half of Law 6, and the reason it is a law rather than a habit:
+  // "Every token states its ratio in the token file as a comment; an unstated
+  // ratio is a defect." A comment is only worth writing if it cannot go stale,
+  // so this recomputes each one from the declared hex and the atmosphere's own
+  // paper and requires the sheet's own number to match. A token that fails its
+  // floor is allowed through only by an explicit written excuse — `exempt:`
+  // with a reason, or a `@quire trigger` saying the palette has no value to
+  // move it to. What is forbidden is silence.
+  let checked = 0;
+  for (const [scope, paper] of Object.entries(PAPER)) {
+    const block = themeBlock(css, scope);
+    const declared = inkDeclarations(block);
+    const seal = declared.get("--accent-seal")?.value;
+    assert.ok(seal, `${scope} must declare --accent-seal`);
+
+    for (const [name, rule] of Object.entries(LAW6)) {
+      const decl = declared.get(name);
+      assert.ok(decl, `${scope} must declare ${name}`);
+      const ground = rule.onSeal ? seal : paper;
+      const actual = contrastRatio(decl.value, ground);
+
+      const stated = decl.comment.match(/(\d+(?:\.\d+)?):1/);
+      assert.ok(stated,
+        `${scope}: ${name} states no ratio — Law 6 calls an unstated ratio a defect`);
+      assert.ok(Math.abs(Number(stated[1]) - actual) < 0.006,
+        `${scope}: ${name} states ${stated[1]}:1 but ${decl.value} on ${ground} measures ` +
+        `${actual.toFixed(3)}:1 — a wrong ratio is worse than none, because it is trusted`);
+
+      if (actual >= rule.floor) {
+        checked += 1;
+        continue;
+      }
+      assert.match(decl.comment, /(?:^|·\s*)exempt:\s*\S|@quire trigger/,
+        `${scope}: ${name} is ${actual.toFixed(2)}:1, under its ${rule.floor}:1 floor, and says ` +
+        `nothing about why — write "exempt: <reason>" or mark it "@quire trigger"`);
+      checked += 1;
+    }
+  }
+  assert.equal(checked, Object.keys(LAW6).length * 4);
+});
+
+test("Law 6 · a new ink cannot enter an atmosphere without stating its ratio", () => {
+  const css = read(STYLES);
+
+  // The generalisation. The table above is a list, and a list is only as good
+  // as the thing that stops people adding around it: without this, a
+  // `--accent-whatever` added next month would be measured by nobody, which is
+  // precisely how the palette accumulated a 2.44:1 warning and a 3.22:1 ink-3
+  // in the first place. Every --text-* and --accent-* the four blocks declare
+  // must appear in LAW6, and every entry in LAW6 must be declared in all four
+  // — so the two lists cannot drift, in either direction.
+  for (const scope of Object.keys(PAPER)) {
+    const inks = [...inkDeclarations(themeBlock(css, scope)).keys()]
+      .filter((name) => name.startsWith("--text-") || name.startsWith("--accent-"))
+      .sort();
+    const governed = Object.keys(LAW6)
+      .filter((name) => name.startsWith("--text-") || name.startsWith("--accent-"))
+      .sort();
+    assert.deepEqual(inks, governed,
+      `${scope}: every ink in an atmosphere is governed by Law 6, and nothing else is`);
+  }
+});
+
+test("Law 6 · the exemptions are the ones the palette actually licenses", () => {
+  const css = read(STYLES);
+
+  // An exemption that nobody re-reads becomes a way to opt out of the law, so
+  // the set of tokens claiming one is pinned. Two kinds are licensed here and
+  // they are not the same kind of thing:
+  //
+  //   exempt — §4's own word for the hairline, "exempt, separates only": it
+  //            carries no meaning a reader could lose. --accent-warm and
+  //            --accent-warm-light join it on the law's other clause, "no
+  //            floor for fills that would lose nothing if deleted" — they have
+  //            zero var() references in the bundle, so deleting them would
+  //            lose exactly nothing. They are reported for removal.
+  //
+  //   trigger — NOT an exemption. --text-verse-number is text, at 9–10px, at
+  //            2.13–2.30:1, and §4 has no row to move it to: its faintest ink
+  //            is ink-faint, marked "non-text only". §9's first trigger is
+  //            "you need a colour that is not in the palette", answered the
+  //            same week and never batched. It is marked rather than restyled
+  //            because choosing the value is the designer's decision, not this
+  //            block's — but it may not pass quietly while it waits.
+  const excused = { exempt: new Set<string>(), trigger: new Set<string>() };
+  for (const scope of Object.keys(PAPER)) {
+    for (const [name, decl] of inkDeclarations(themeBlock(css, scope))) {
+      if (!(name in LAW6)) continue;
+      if (/(?:^|·\s*)exempt:\s*\S/.test(decl.comment)) excused.exempt.add(name);
+      if (decl.comment.includes("@quire trigger")) excused.trigger.add(name);
+    }
+  }
+  assert.deepEqual([...excused.exempt].sort(), [
+    "--accent-warm", "--accent-warm-light",
+    "--border-medium", "--border-strong", "--border-subtle",
+  ]);
+  assert.deepEqual([...excused.trigger].sort(), ["--text-verse-number"]);
+});
+
+test("the semantic hues carry their polarity into the token artifact too", () => {
+  const css = read(STYLES);
+  const tokens = JSON.parse(read("src/renderer/design-tokens.json")) as {
+    status: Record<string, string>;
+    semantic: Record<string, Record<string, string>>;
+  };
+
+  // design-tokens.json is a hand-maintained mirror, and the consolidation
+  // contract that checks it reads `status` as a flat :root-only table — which
+  // is exactly the shape that lost the polarity in the first place. So the
+  // artifact keeps `status` for that reader and gains `semantic` per scope for
+  // this one, and both are checked, or the mirror gains a blind spot precisely
+  // where the defect was.
+  for (const [scope, table] of Object.entries(tokens.semantic)) {
+    if (scope.startsWith("$")) continue;
+    const block = themeBlock(css, scope);
+    for (const [name, value] of Object.entries(table)) {
+      assert.equal(declaration(block, name), value,
+        `${scope} { ${name} } drifted between styles.css and design-tokens.json`);
+    }
+  }
+  assert.deepEqual(tokens.status, tokens.semantic[":root"],
+    "the flat status table is the light polarity under its old name");
+
+  // Polarity, stated as the thing it is: the two light atmospheres share a set
+  // and the two dark ones share a different set, and the two sets differ.
+  for (const name of ["--healthy", "--warning", "--error"] as const) {
+    assert.equal(tokens.semantic[".theme-porcelain"]![name], tokens.semantic[":root"]![name]);
+    assert.equal(tokens.semantic[".theme-onyx"]![name], tokens.semantic[".dark"]![name]);
+    assert.notEqual(tokens.semantic[".dark"]![name], tokens.semantic[":root"]![name],
+      `${name} without a polarity is the defect Rev 04 §4 corrected`);
+  }
+});
+
+test("laurel is declared in every atmosphere, at two values and not four", () => {
+  const css = read(STYLES);
+
+  // Law 3 gained a third ink: "Laurel — a named third party wrote it and we
+  // licensed it." Declaring it is all that happens here. Migrating the TIPNR
+  // and Pleiades strings onto it is ruling 4·5's own pass over the margin and
+  // entity rules, which this block does not own.
+  //
+  // It arrives under the rule the seal and the machine hue already live by:
+  // two values chosen by polarity, never four chosen by temperature. A laurel
+  // tuned "to Porcelain's temperature" would be the amber mistake a third
+  // time, and the ink would start saying which theme you are in rather than
+  // who wrote the sentence.
+  for (const [light, dark] of [[":root", ".dark"], [".theme-porcelain", ".theme-onyx"]] as const) {
+    assert.equal(declaration(themeBlock(css, light), "--accent-laurel"), "#5F6B52");
+    assert.equal(declaration(themeBlock(css, dark), "--accent-laurel"), "#9DAA8A");
+  }
+
+  // And it is genuinely a third ink, not a renaming of one of the two. If
+  // laurel ever collided with seal or slate, "we licensed this" and "you wrote
+  // this" would become the same claim on screen.
+  for (const scope of Object.keys(PAPER)) {
+    const block = themeBlock(css, scope);
+    const laurel = declaration(block, "--accent-laurel")!;
+    assert.notEqual(laurel, declaration(block, "--accent-seal"));
+    assert.notEqual(laurel, declaration(block, "--accent-machine"));
+  }
+});
+
 test("paper is the brightest plane in every atmosphere, including both darks", () => {
   const css = read("src/renderer/styles.css");
 
@@ -178,15 +405,38 @@ test("paper is the brightest plane in every atmosphere, including both darks", (
     const block = themeBlock(css, scope);
     const paper = declaration(block, "--paper-solid")!;
     const canvas = declaration(block, "--canvas-solid")!;
-    const sunk = declaration(block, "--bg-secondary")!;
     assert.ok(relativeLuminance(paper) > relativeLuminance(canvas),
       `${scope}: paper ${paper} must be lighter than canvas ${canvas}`);
-    assert.ok(relativeLuminance(canvas) > relativeLuminance(sunk),
-      `${scope}: canvas ${canvas} must be lighter than the sunk plane ${sunk}`);
     // Paper and canvas must also be the same declaration as the plane they
     // stand for, or the material cannot derive the ground from the palette.
     assert.equal(declaration(block, "--bg-reading"), paper, `${scope}: --bg-reading is paper`);
     assert.equal(declaration(block, "--bg-canvas"), canvas, `${scope}: --bg-canvas is canvas`);
+  }
+});
+
+test("the sunk plane is retired: there is no third fill left to paint with", () => {
+  const css = read("src/renderer/styles.css");
+
+  // This assertion used to say the opposite. It required
+  // `luminance(canvas) > luminance(sunk)` — that is, it required a THIRD plane
+  // to exist and to be correctly ordered beneath the ground, which is Law 1
+  // read as "two planes and a basement". Rev 04 §4 lists paper, canvas,
+  // hairline and the inks and nothing else, and the value it now calls canvas
+  // (#E9E6E0) is the value this sheet used to call sunk. So the third plane is
+  // not merely discouraged, it is absent from the palette.
+  //
+  // --bg-secondary is not deleted here: ~83 rules read it, none of them owned
+  // by this block, and deleting the token would break all of them in a pass
+  // that is meant to be visually neutral. It is pinned to the ground instead,
+  // so it can no longer paint a plane of its own no matter who reads it, and
+  // the removal becomes one scheduled sweep rather than 83 breakages.
+  for (const scope of [":root", ".dark", ".theme-porcelain", ".theme-onyx"]) {
+    const block = themeBlock(css, scope);
+    const canvas = declaration(block, "--canvas-solid")!;
+    assert.equal(declaration(block, "--bg-secondary"), canvas,
+      `${scope}: the sunk plane is retired, so --bg-secondary must be the ground itself`);
+    assert.match(block, /--bg-secondary: [^;]+;\/\* = --bg-canvas; awaiting removal \*\//,
+      `${scope}: --bg-secondary must record that it is retired, or it reads as a live third plane`);
   }
 });
 
@@ -288,8 +538,12 @@ test("the four atmospheres are the palette I·2 draws", () => {
   // from the verses. Ink's hairline is deliberately the faintest of the four —
   // that is drawn, not drifted, and the assertion exists so nobody "corrects"
   // it toward Paper's ratio later.
+  // Paper's ground is Rev 04 §4's, not I·2's: #F1EFEA moved down to #E9E6E0
+  // when the sunk plane was withdrawn and its value became the ground. The
+  // other three grounds are unchanged — §4 gives one ground for the warm light
+  // atmosphere and none for the rest, and Law 6 asks nothing of a fill.
   for (const [scope, paper, canvas, hairline] of [
-    [":root", "#FCFBF8", "#F1EFEA", "#E2DED6"],
+    [":root", "#FCFBF8", "#E9E6E0", "#E2DED6"],
     [".theme-porcelain", "#FFFFFF", "#F4F4F6", "#E4E4E8"],
     [".dark", "#1D1B18", "#141210", "#2A2723"],
     [".theme-onyx", "#1C1C20", "#131316", "#2C2C32"],
@@ -345,13 +599,15 @@ test("the destructive labels resolve through the palette, in all four", () => {
   // The alias is repeated per scope on purpose: a custom property substitutes
   // its var() at the element that declares it, so an alias living only on
   // :root would freeze the root's --error and silently ignore a dark polarity
-  // added later. If --error ever gains one, this test fails until the alias
-  // follows it into the same scope.
+  // added later. That "later" is now — Rev 04 §4 gave the semantic hues a
+  // polarity — so the guard flips from "no scope may declare --error yet" to
+  // "every scope declares one, and the alias is present in each of them to
+  // re-resolve against it". Had the alias lived only on :root, Ink and Onyx
+  // would have gone on rendering the light red on a dark ground: 3.24:1, the
+  // exact failure the polarity exists to prevent.
   for (const scope of [":root", ".dark", ".theme-porcelain", ".theme-onyx"]) {
-    if (scope !== ":root") {
-      assert.equal(declaration(themeBlock(css, scope), "--error"), null,
-        `${scope} declares --error; the danger aliases must be re-checked against it`);
-    }
+    assert.ok(declaration(themeBlock(css, scope), "--error"),
+      `${scope} must declare --error, or the danger aliases resolve to another atmosphere's red`);
     assert.ok(themes.includes(scope), `themes.css must alias the danger tokens in ${scope}`);
   }
   assert.match(themes, /--text-danger: var\(--error\);/);
@@ -398,6 +654,22 @@ function themeBlock(css: string, scope: string): string {
 
 function declaration(block: string, name: string): string | null {
   return block.match(new RegExp(`${name}:\\s*([^;]+);`))?.[1]?.trim() ?? null;
+}
+
+/**
+ * Every declaration in a token block that names a literal colour, paired with
+ * the comment on its own line. Law 6 puts the ratio *beside* the value on
+ * purpose — a ratio in a paragraph above drifts silently when one line in the
+ * group changes — so the comment is read from the same line and nowhere else.
+ */
+function inkDeclarations(block: string): Map<string, { value: string; comment: string }> {
+  const found = new Map<string, { value: string; comment: string }>();
+  for (const line of block.split("\n")) {
+    const match = line.match(/^\s*(--[\w-]+):\s*(#[0-9A-Fa-f]{6});\s*(?:\/\*(.*?)\*\/)?/);
+    if (!match) continue;
+    found.set(match[1]!, { value: match[2]!, comment: (match[3] ?? "").trim() });
+  }
+  return found;
 }
 
 /** Every rule whose selector list mentions `needle`, body only, braces balanced. */

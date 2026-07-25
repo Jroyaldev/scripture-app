@@ -40,6 +40,10 @@ import {
   type RenderingOrbit,
 } from "../core/language/rendering-orbit.js";
 import { getSharedHebrewOrbitIndex } from "../core/language/hebrew-orbit-index.js";
+import {
+  namedLicensedSource,
+  type LicensedSource,
+} from "../core/entities/licensed-source.js";
 import type { ReverseIndexLoader } from "./reverse-index-loader.js";
 import { resolveReverseIndexPackage } from "../core/language/reverse-index.js";
 
@@ -93,6 +97,13 @@ export type TokenCardDto = {
     entity: TipnrEntity;
     match: NameResolveHit["match"];
     alternatives: TipnrEntity[];
+    /**
+     * Who wrote `entity.brief` / `entity.short`. The words panel draws that
+     * prose, so under Rev 04 §4 it needs the source's name in hand at the
+     * render site — null means the index declared a corpus we cannot name and
+     * the prose must not be shown.
+     */
+    licensed: LicensedSource | null;
   } | null;
   /**
    * Rendering Orbit — how this lemma is glossed across the package corpus.
@@ -620,6 +631,7 @@ export class TokenPackageLoader {
             entity: hit.entity,
             match: hit.match,
             alternatives: hit.alternatives.slice(0, 4),
+            licensed: namedLicensedSource(tipnr.source, tipnr.license),
           };
         }
       }

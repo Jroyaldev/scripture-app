@@ -178,7 +178,17 @@ test("the register is a strip of canvas the active page is pulled up through", (
   assert.match(rail, /\.scripture-workspace-tab:hover \{\s*background: transparent;/);
   // Gold survives in the register as ink and as the focus ring, never as a fill.
   assert.doesNotMatch(rail, /background:\s*(?:var\(--study-gold\)|color-mix\([^;]*--study-gold)/);
-  assert.match(rail, /\.scripture-workspace-tab\[aria-selected="true"\] \.scripture-workspace-tab-mark \{\s*color: var\(--study-gold\);/);
+  // This line used to read:
+  //   assert.match(rail, /\.scripture-workspace-tab\[aria-selected="true"\] \.scripture-workspace-tab-mark \{\s*color: var\(--study-gold\);/);
+  // Rev 04 §8 retires that mark — "the gold underline on the active tab; the
+  // paper fill is the mark." The tab already answers "where am I" by being a
+  // piece of the page; a seal glyph that lit only while the tab was selected
+  // stated the same thing twice, in the ink Law 3 reserves for authorship. The
+  // assertion is inverted rather than deleted so the mark cannot come back.
+  assert.doesNotMatch(
+    rail,
+    /\.scripture-workspace-tab\[aria-selected="true"\][^{}]*\.scripture-workspace-tab-mark\b/,
+  );
 
   assert.match(rail, /\.scripture-workspace-tab-label \{[\s\S]{0,180}opacity: 1/);
   // The group is a bracket, not a chip: a rule over its members carrying a 9px
@@ -372,19 +382,27 @@ test("a derived tab wears the machine hue whether or not you are reading it", ()
 
   // Provenance: B1 calls the two kinds of tab apart by who made them — a
   // passage is one you chose, a Research tab is one "the app derived — slate
-  // mark". Selection repainted every mark seal, which said a person opened
-  // Apollos the moment you looked at it. The machine hue is stated after the
-  // selected rule so it outranks it on source order at equal specificity.
+  // mark". This mark is NOT retired: Rev 04 §8 struck the gold STATE mark on
+  // the active tab, and slate is a PROVENANCE signal that Law 3 requires.
   const machineIndex = rail.indexOf(".scripture-workspace-tab .scripture-workspace-tab-mark.is-person,");
-  const selectedIndex = rail.indexOf('.scripture-workspace-tab[aria-selected="true"] .scripture-workspace-tab-mark {');
   assert.ok(machineIndex > 0, "a derived tab's mark must name the machine hue");
-  assert.ok(
-    machineIndex > selectedIndex,
-    "the machine hue must be declared after the selected mark or selection will repaint it seal",
-  );
   assert.match(
     rail.slice(machineIndex, rail.indexOf("}", machineIndex)),
     /\.scripture-workspace-tab-mark\.is-place \{\s*color: var\(--accent-machine\);/,
+  );
+
+  // These two lines used to read:
+  //   const selectedIndex = rail.indexOf('.scripture-workspace-tab[aria-selected="true"] .scripture-workspace-tab-mark {');
+  //   assert.ok(machineIndex > selectedIndex, "the machine hue must be declared after the selected mark or selection will repaint it seal");
+  // They policed source order between slate and a seal-on-selected rule. With
+  // that rule retired there is no order left to police, and an index-vs-(-1)
+  // comparison would pass for the wrong reason forever. What the check is
+  // really for — selection must not repaint provenance — is now stated as the
+  // absence of any selected-tab rule that reaches the glyph at all.
+  assert.equal(
+    rail.indexOf('.scripture-workspace-tab[aria-selected="true"] .scripture-workspace-tab-mark'),
+    -1,
+    "selection must not reach the provenance glyph: the paper fill is the mark",
   );
 });
 

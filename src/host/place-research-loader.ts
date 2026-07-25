@@ -10,7 +10,16 @@ import {
   comparePleiadesCoordinates,
   PleiadesResearchIndex,
 } from "../core/entities/pleiades-research.js";
+import { namedLicensedSource } from "../core/entities/licensed-source.js";
 import type { TipnrEntity } from "../core/language/tipnr.js";
+
+/**
+ * What the TIPNR index declares about itself. The caller passes it because the
+ * index and this loader are separate singletons; the point is that the siglum
+ * is resolved from the artifact's own declaration rather than from the fact
+ * that the parameter happens to be typed `TipnrEntity`.
+ */
+export type DeclaredCorpus = { name: string; license: string };
 
 export class PlaceResearchLoader {
   private readonly index = new PlaceResearchIndex();
@@ -37,7 +46,7 @@ export class PlaceResearchLoader {
     return count;
   }
 
-  research(entity: TipnrEntity): EntityResearchData {
+  research(entity: TipnrEntity, entityCorpus?: DeclaredCorpus | null): EntityResearchData {
     const place = entity.kind === "place" ? this.index.get(entity.id) : null;
     const pleiadesPlace = place?.linkedData.pleiadesId
       ? this.pleiades.get(place.linkedData.pleiadesId)
@@ -59,6 +68,26 @@ export class PlaceResearchLoader {
         imageDataUrl = `data:${place.image.mimeType};base64,${readFileSync(path).toString("base64")}`;
       }
     }
-    return { entity, place, pleiades, imageDataUrl };
+    // Resolve the sigla here, once, from what each artifact declares about
+    // itself. If the Pleiades artifact is not loaded there is no meta to read,
+    // so `pleiades` names nothing — and a `pleiades` block without a name is
+    // exactly the case §4 sends to "do not show the prose".
+    const pleiadesMeta = this.pleiades.meta;
+    return {
+      entity,
+      place,
+      pleiades,
+      imageDataUrl,
+      licensed: {
+        entity: namedLicensedSource(entityCorpus?.name, entityCorpus?.license),
+        pleiades: pleiadesPlace
+          ? namedLicensedSource(
+              pleiadesMeta?.name,
+              pleiadesMeta?.license,
+              pleiadesPlace.sourceUrl,
+            )
+          : null,
+      },
+    };
   }
 }

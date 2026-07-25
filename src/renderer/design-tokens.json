@@ -1,5 +1,7 @@
 {
   "$note": "Hand-maintained mirror of the custom properties src/renderer/styles.css actually declares. tests/desktop-consolidation-contract.test.ts asserts every entry below against the stylesheet, so a value here that drifts from the CSS is a test failure, not documentation rot. Keys are the CSS custom property names on purpose.",
+  "$law6": "Ratios are not mirrored here. Law 6 says every token states its ratio in the token file as a comment, and the token file is the stylesheet — a ratio copied into this artifact would be a second place for it to go stale. tests/pericope-themes-contract.test.ts recomputes each comment from the declared hex against that atmosphere's own paper.",
+  "$retired": "--bg-secondary is retired by Rev 04 §4 and is held equal to --bg-canvas in all four atmospheres. It is listed under `plane` only so the scheduled removal has something to check against; it is not a third plane and must never be given a value of its own again.",
   "atmospheres": {
     "light": {
       "name": "Paper",
@@ -38,11 +40,11 @@
   },
   "plane": {
     ":root": {
-      "--canvas-solid": "#F1EFEA",
+      "--canvas-solid": "#E9E6E0",
       "--paper-solid": "#FCFBF8",
-      "--bg-canvas": "#F1EFEA",
+      "--bg-canvas": "#E9E6E0",
       "--bg-reading": "#FCFBF8",
-      "--bg-primary": "#F1EFEA",
+      "--bg-primary": "#E9E6E0",
       "--bg-secondary": "#E9E6E0",
       "--bg-float": "#FCFBF8"
     },
@@ -52,7 +54,7 @@
       "--bg-canvas": "#141210",
       "--bg-reading": "#1D1B18",
       "--bg-primary": "#141210",
-      "--bg-secondary": "#100E0C",
+      "--bg-secondary": "#141210",
       "--bg-float": "#1D1B18"
     },
     ".theme-porcelain": {
@@ -61,7 +63,7 @@
       "--bg-canvas": "#F4F4F6",
       "--bg-reading": "#FFFFFF",
       "--bg-primary": "#F4F4F6",
-      "--bg-secondary": "#EBEBEF",
+      "--bg-secondary": "#F4F4F6",
       "--bg-float": "#FFFFFF"
     },
     ".theme-onyx": {
@@ -70,7 +72,7 @@
       "--bg-canvas": "#131316",
       "--bg-reading": "#1C1C20",
       "--bg-primary": "#131316",
-      "--bg-secondary": "#0F0F12",
+      "--bg-secondary": "#131316",
       "--bg-float": "#1C1C20"
     },
     ".material-translucent": {
@@ -83,7 +85,7 @@
     ":root": {
       "--text-primary": "#322F2B",
       "--text-secondary": "#6B6660",
-      "--text-tertiary": "#77726A",
+      "--text-tertiary": "#787269",
       "--text-verse-number": "#B4AEA5",
       "--text-link": "#96684A",
       "--text-link-hover": "#7A5238",
@@ -143,13 +145,14 @@
     ":root": {
       "--accent-seal": "#96684A",
       "--accent-seal-strong": "#7A5238",
-      "--accent-machine": "#5A6A7E",
+      "--accent-machine": "#4E6A85",
+      "--accent-laurel": "#5F6B52",
       "--accent-warm": "#96684A",
       "--accent-warm-light": "#A87A58",
       "--accent-user": "#96684A",
-      "--accent-source": "#5A6A7E",
-      "--accent-ai": "#5A6A7E",
-      "--accent-xref": "#77726A",
+      "--accent-source": "#4E6A85",
+      "--accent-ai": "#4E6A85",
+      "--accent-xref": "#787269",
       "--accent-current": "#96684A",
       "--study-gold": "#96684A",
       "--study-gold-focus": "rgba(150, 104, 74, 0.36)"
@@ -158,6 +161,7 @@
       "--accent-seal": "#C99A6E",
       "--accent-seal-strong": "#DDB289",
       "--accent-machine": "#8FA3B8",
+      "--accent-laurel": "#9DAA8A",
       "--accent-warm": "#C99A6E",
       "--accent-warm-light": "#DDB289",
       "--accent-user": "#C99A6E",
@@ -171,12 +175,13 @@
     ".theme-porcelain": {
       "--accent-seal": "#96684A",
       "--accent-seal-strong": "#7A5238",
-      "--accent-machine": "#5A6A7E",
+      "--accent-machine": "#4E6A85",
+      "--accent-laurel": "#5F6B52",
       "--accent-warm": "#96684A",
       "--accent-warm-light": "#A87A58",
       "--accent-user": "#96684A",
-      "--accent-source": "#5A6A7E",
-      "--accent-ai": "#5A6A7E",
+      "--accent-source": "#4E6A85",
+      "--accent-ai": "#4E6A85",
       "--accent-xref": "#74747C",
       "--accent-current": "#96684A",
       "--study-gold": "#96684A",
@@ -186,6 +191,7 @@
       "--accent-seal": "#C99A6E",
       "--accent-seal-strong": "#DDB289",
       "--accent-machine": "#8FA3B8",
+      "--accent-laurel": "#9DAA8A",
       "--accent-warm": "#C99A6E",
       "--accent-warm-light": "#DDB289",
       "--accent-user": "#C99A6E",
@@ -341,8 +347,31 @@
     }
   },
   "status": {
-    "--healthy": "#4A9A4A",
-    "--warning": "#C0A030",
-    "--error": "#C05A5A"
+    "--healthy": "#4E7A55",
+    "--warning": "#8A6412",
+    "--error": "#9C3B2E"
+  },
+  "semantic": {
+    "$note": "The same three hues as `status`, but per scope, because Rev 04 §4 gave them a polarity they did not have. `status` stays flat and :root-only for the consolidation contract that reads it; this table is what the themes contract reads, so neither can drift alone. Light polarity for the two light atmospheres, dark for the two dark ones — decided by polarity, never by temperature.",
+    ":root": {
+      "--healthy": "#4E7A55",
+      "--warning": "#8A6412",
+      "--error": "#9C3B2E"
+    },
+    ".dark": {
+      "--healthy": "#7FB489",
+      "--warning": "#D3A548",
+      "--error": "#D68374"
+    },
+    ".theme-porcelain": {
+      "--healthy": "#4E7A55",
+      "--warning": "#8A6412",
+      "--error": "#9C3B2E"
+    },
+    ".theme-onyx": {
+      "--healthy": "#7FB489",
+      "--warning": "#D3A548",
+      "--error": "#D68374"
+    }
   }
 }

@@ -15,7 +15,7 @@ import {
   type ConnectionMutationUiOutcome,
 } from "../utils/connectionMutationReconciliation.js";
 import type { ConnectionPaintAnchor } from "../utils/connectionPaint.js";
-import { phraseCount, RELATIONSHIP_LABELS } from "../utils/relationshipVocabulary.js";
+import { phraseCount, RELATIONSHIP_LABELS, RELATIONSHIPS } from "../utils/relationshipVocabulary.js";
 import type {
   WorkspaceExitController,
   WorkspaceTransitionReason,
@@ -115,6 +115,22 @@ function momentPhrase(
     : "Exact wording unavailable in this translation";
 }
 
+/* @quire trigger · taxonomy · Rev 04 §8 withdraws the departure row and states
+   that "members never leave the unit" — but the durable store already holds
+   connections whose anchors do, and this function is how the inspector shows
+   them. Nothing renders beneath the passage for them (that row was never
+   built, and is not being built), and no canvas ink is spent on them: the
+   underlay filters anchors to the current book and chapter before it measures.
+   What is left is this list marking such a member "above"/"below" and dimming
+   its row, which is the only place a reader can see that the member exists at
+   all.
+
+   Deleting it would widen the nearest slot in the wrong direction — it would
+   make out-of-unit members invisible rather than impossible, and §9 is
+   explicit that widening a slot is how a taxonomy quietly acquires the thing
+   it was written to exclude. Retained pending one answer: are out-of-unit
+   anchors now invalid (in which case they need a migration, not a hidden
+   list), or merely undrawn? */
 function relativePosition(anchor: ConnectionAnchor, book: string, chapter: number): MomentPosition {
   if (anchor.book === book) return anchor.chapter < chapter ? "above" : "below";
   const anchorRank = CANONICAL_BOOK_RANK.get(anchor.book) ?? Number.MAX_SAFE_INTEGER;
@@ -772,6 +788,31 @@ export function ConnectionCard({
     });
   }, [ambiguousMutation, busy, conflictReview, connection.activeEventId, connectionVersion]);
 
+  /**
+   * Rev 04 §5: "Arity is not decoration: it decides whether *Add a phrase* is
+   * offered at all. The inspector reads it off the kind and greys the exact-2
+   * kinds while a 3-member connection is attended."
+   *
+   * Both halves are the same fact read twice. Contrast, Mirror and Hinge take
+   * exactly two phrases, so a connection already holding three cannot become
+   * one — the durable validator rejects it at the boundary, and a control that
+   * offers a move the store will refuse is a control that lies. Greying is the
+   * honest form of that refusal, and it is the only reason this list is here.
+   */
+  const changeKind = async (kind: ConnectionRecord["kind"]): Promise<void> => {
+    if (
+      requestInFlightRef.current
+      || ambiguousMutation != null
+      || connection.format_version !== 2
+      || kind === connection.kind
+    ) return;
+    if (isBinaryConnectionKind(kind) && connection.anchors.length !== 2) return;
+    const label = connection.label.startsWith(titlePrefix)
+      ? `${KIND_LABELS[kind]} · ${connection.label.slice(titlePrefix.length)}`
+      : connection.label;
+    await commit({ ...connection, kind, label });
+  };
+
   const removeAnchor = async (index: number): Promise<void> => {
     if (
       requestInFlightRef.current
@@ -1089,6 +1130,38 @@ export function ConnectionCard({
       <p className="connection-card-kind">
         {kindLabel} · {phrases}{otherHeldCount > 0 ? ` · ${otherHeldCount}\u00a0more\u00a0held` : ""}
       </p>
+
+      {connection.format_version === 2 && (
+        <div
+          className="connection-card-kinds"
+          role="radiogroup"
+          aria-label="Connection kind"
+        >
+          {RELATIONSHIPS.map((option) => {
+            // Read off the kind, exactly as §5 says: a kind that takes exactly
+            // two phrases is unavailable to a connection that holds more.
+            const arityBlocked = isBinaryConnectionKind(option.id)
+              && connection.anchors.length !== 2;
+            const current = option.id === connection.kind;
+            return (
+              <button
+                key={option.id}
+                type="button"
+                role="radio"
+                className="connection-card-kind-option"
+                data-connection-kind={option.id}
+                data-arity-blocked={arityBlocked ? "" : undefined}
+                aria-checked={current}
+                aria-label={arityBlocked
+                  ? `${option.label}. Joins exactly two phrases, so it is unavailable to a connection of ${connection.anchors.length}.`
+                  : `${option.label}. ${option.description}`}
+                disabled={mutationLocked || arityBlocked}
+                onClick={() => { if (!mutationLocked && !arityBlocked) void changeKind(option.id); }}
+              >{option.label}</button>
+            );
+          })}
+        </div>
+      )}
 
       {connection.format_version === 2 ? (
         <label className="connection-card-observation" data-dirty={observationChanged}>

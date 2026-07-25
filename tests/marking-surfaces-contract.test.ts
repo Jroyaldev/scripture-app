@@ -5,9 +5,11 @@ import { test } from "node:test";
 import type { ConnectionRecord } from "../src/core/annotations/types.js";
 import {
   connectionLayoutSignature,
+  mergeUnderlineLayer,
   orderActiveConnections,
   orderConnectionTicks,
 } from "../src/renderer/components/ConnectionUnderlay.js";
+import { leastScrollForMembers } from "../src/renderer/utils/connectionAttendScroll.js";
 import {
   MAX_STACK,
   RULE,
@@ -599,7 +601,21 @@ test("connection underline pins cancel measured font slack on one 1.5px datum", 
   assert.doesNotMatch(source, /underlineDy:\s*0/);
   assert.doesNotMatch(source, /bottom:\s*rect\.bottom - base\.top - 2\.25/);
   assert.match(styles, /--connection-underline-selected-width, 1\.5px/);
-  assert.match(styles, /--connection-route-quiet-width, 1\.25px/);
+  // This used to assert the quiet stroke widths were the ones in use — 1px for
+  // a resting underline, 1.25px for a quiet route — because D·2b drew rest and
+  // attend at two weights. Rev 04 §5 states one weight twice: at rest "a member
+  // is a **1.5px** underline in ink-faint", and attended it is "one route, in
+  // seal at 1.5px, with its members' underlines going seal **at the same
+  // weight**". So attention changes ink and nothing else, and there is no
+  // quiet width left to reach for. The constants still exist in
+  // connectionGeometry.ts (not this study's file to edit) and are still fed to
+  // the overlay as custom properties; no rule consumes them.
+  assert.doesNotMatch(styles, /stroke-width: var\(--connection-underline-quiet-width/,
+    "a resting underline is 1.5px, the same weight it attends at");
+  assert.doesNotMatch(styles, /stroke-width: var\(--connection-route-quiet-width/,
+    "no route is drawn at rest, so no route has a quiet weight");
+  assert.match(styles, /\.connection-underline \{[\s\S]{0,600}stroke-width: var\(--connection-underline-selected-width, 1\.5px\)/);
+  assert.match(styles, /\.connection-route \{[\s\S]{0,400}stroke-width: var\(--connection-route-selected-width, 1\.5px\)/);
   assert.doesNotMatch(styles, /\.connection-mark\.held \.connection-underline \{[^}]*stroke-dasharray/);
 });
 
@@ -680,18 +696,46 @@ test("congested connection traces prioritize selected and ordered held routes wi
   assert.match(source, /const active = orderActiveConnections\(paintRecords, book, chapter, visualFocusId, heldConnectionIds\)/);
   assert.match(source, /const focused = selectedConnectionId === connection\.id/);
   assert.match(source, /if \(!focused\) \{[\s\S]*routePath: ""[\s\S]*continue;/);
-  assert.match(source, /selectedConnectionId && focusHasExactPaint && <rect/);
-  assert.match(source, /item\.connection\.id === selectedConnectionId \|\| heldConnectionIds\.includes/);
-  assert.doesNotMatch(source, /item\.connection\.id === visualFocusId \|\| heldConnectionIds\.includes/);
-  assert.match(source, /focused && item\.valid && item\.routePath && <path[\s\S]*className="connection-route-hit"/);
+  // These three used to pin the focus veil (a full-page rect masked around the
+  // attended connection) and the companion route group (every held connection
+  // painting alongside the selected one). Rev 04 §5 replaces both with one
+  // sentence: "Attended, exactly ONE route is drawn… Every other member stays
+  // ink-faint and does not dim." So the rect is deleted at the source rather
+  // than held inert in CSS, and the route group filters to the selected id
+  // alone — held companions keep their underline on the merged layer like any
+  // other member, and nothing else of theirs is painted.
+  assert.doesNotMatch(source, /focusHasExactPaint|connection-focus-veil|connection-focus-mask/,
+    "the veil is gone, not neutralised");
+  assert.match(
+    source,
+    /selectedConnectionId != null\s*&& isDurablePaintRecord\(item\.connection\)\s*&& item\.connection\.id === selectedConnectionId/,
+    "exactly one route is drawn, and it is the attended one",
+  );
+  assert.match(source, /item\.valid && item\.routePath && <path[\s\S]*className="connection-route-hit"/);
   assert.match(source, /data-paint-state=\{paintState\}/);
+  // The wash survives on this plane for the two transient live-selection
+  // states and for nothing else — see the Law 5 rewrite below.
   assert.match(source, /className="connection-emphasis-wash"/);
   assert.match(source, /data-line-count=\{emphasis\.bands\.length\}/);
-  assert.match(source, /className="connection-emphasis-shared"/);
   assert.match(source, /const renderedFragments = mergeRenderedLines\(fragments\.map[\s\S]*fragments: renderedFragments/);
   assert.match(source, /const sides: RouteSide\[\] = block\.preferredMargin === "right"[\s\S]*\["right", "left"\][\s\S]*\["left", "right"\]/);
-  assert.match(source, /data-line-index=\{underline\.lineIndex\}/);
-  assert.match(source, /data-underline-level=\{overlapsFocus \? companionLevel : 0\}/);
+  // These two used to require the stacking they were named for: `lineIndex`
+  // identified one connection's own underline fragments, and `underline-level`
+  // recorded how many 3px steps a held companion had been pushed clear of the
+  // attended line so both could be seen at once. Rev 04 §5 forbids exactly
+  // that: "Underlines never stack. A phrase in three connections has ONE
+  // underline; the count lives in the gutter tick stack — three ticks, then
+  // +n." So the per-connection underline set is flattened into one layer, cut
+  // wherever membership changes, and the level is gone because there are no
+  // levels. What replaces them says the new invariant instead: every run is on
+  // the datum, carries one ink, and knows how many members it serves.
+  assert.doesNotMatch(source, /data-underline-level|companionLevel|CONNECTION_UNDERLINE_LEVEL_GAP/,
+    "an underline is never offset to make room for another");
+  assert.doesNotMatch(source, /transform=\{offsetY/, "no underline moves off the centre datum");
+  assert.match(source, /const underlineLayer = mergeUnderlineLayer\(\s*visiblePainted\.filter\(\(item\) => isDurablePaintRecord\(item\.connection\)\),\s*selectedConnectionId,/);
+  assert.match(source, /data-underline-ink=\{underline\.attended \? "seal" : "faint"\}/);
+  assert.match(source, /data-underline-members=\{underline\.memberIds\.length\}/);
+  assert.match(source, /data-underline-center=\{underline\.centerY\.toFixed\(2\)\}/);
   assert.match(source, /const tickPainted = orderConnectionTicks\([\s\S]*isDurablePaintRecord\(item\.connection\)/);
   assert.match(source, /const claimPriority = new Map\(active\.map/);
 });
@@ -786,12 +830,26 @@ test("connection authoring holds exact phrases without creating a route or durab
   assert.doesNotMatch(underlay, /format_version: CONNECTION_FORMAT_VERSION|renderer-authoring-draft/);
   assert.match(underlay, /const visiblePainted = painted\.filter\(\(item\) => \{/);
   assert.match(underlay, /const tickPainted = orderConnectionTicks\([\s\S]*isDurablePaintRecord\(item\.connection\)/);
-  assert.match(underlay, /const sharedPaint = sharedEmphasisPaint\([\s\S]*isDurablePaintRecord\(item\.connection\)/);
-  assert.match(underlay, /isDurablePaintRecord\(item\.connection\)[\s\S]*item\.connection\.id === selectedConnectionId \|\| heldConnectionIds\.includes/);
+  // `sharedEmphasisPaint` computed the intersection of every pair of
+  // connections and painted a second grey wash under the words both claimed,
+  // so overlap was said by adding ink to the page. Rev 04 §5 moves that
+  // statement into the gutter — "the count lives in the gutter tick stack" —
+  // and Law 5 forbids the wash itself, since an overlap of two relations is
+  // still a relation. The whole function is gone with it.
+  assert.doesNotMatch(underlay, /sharedEmphasisPaint|connection-emphasis-shared|sharedMaskId/,
+    "overlap is a count in the gutter, not a second wash under the words");
+  assert.match(underlay, /isDurablePaintRecord\(item\.connection\)\s*&& item\.connection\.id === selectedConnectionId/);
   assert.match(underlay, /onSelectConnection\(item\.connection\.durableRecord, event\.detail === 0\)/);
   assert.doesNotMatch(underlay, /onSelectConnection\(selected \? null/,
     "tick activation reaffirms focus; only the labelled card action releases a hold");
-  assert.match(underlay, /authoring \? "authoring"/);
+  // The paint-state ladder used to run six deep on this plane — selection,
+  // authoring, selected, needs-space, preview, companion, dormant — because
+  // every one of them washed. Rev 04's Law 5 leaves the plane with only the
+  // two that are a live selection rather than a relation, so the ternary
+  // collapsed to a pair and the durable states are filtered out before it.
+  assert.match(underlay, /const paintState = markingSelection \? "selection" : "authoring"/);
+  assert.match(underlay, /visiblePainted\.filter\(\(item\) => !isDurablePaintRecord\(item\.connection\)\)/,
+    "no durable connection paints a wash in any state");
   assert.match(underlay, /data-authoring-draft=\{authoring \? "" : undefined\}/);
   assert.match(styles, /\[data-paint-state="authoring"\] \.connection-emphasis-wash \{[\s\S]*fill-opacity: \.16;[\s\S]*connection-authoring-emphasis-in/);
   assert.match(styles, /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*\.connection-emphasis-wash,[\s\S]*animation: none !important;/);
@@ -1792,4 +1850,175 @@ test("every state in these surfaces uses the one loading device and names what h
   assert.doesNotMatch(css2, /\.marking-(?:selection|connect)-ref[^{]*\{[^}]*text-overflow/);
   assert.match(marking, /export function clipQuotation\(quotation: string/,
     "the parameter is named for the one thing it may accept");
+});
+
+/* ------------------------------------------------------------------------ *
+ * Rev 04 §5 — the connection language, rebuilt. D·2 and D·2b are withdrawn
+ * in their entirety (§8); nothing below reasons from either.
+ * ------------------------------------------------------------------------ */
+
+test("a phrase in three connections carries one underline, not three", () => {
+  // "Underlines never stack. A phrase in three connections has ONE underline;
+  // the count lives in the gutter tick stack — three ticks, then +n."
+  const member = (id: string, left: number, right: number, centerY = 40) => ({
+    connection: { id },
+    underlines: [{
+      path: "",
+      anchorIndex: 0,
+      lineIndex: 0,
+      centerY,
+      left,
+      right,
+    }],
+  });
+
+  // Three connections over exactly the same phrase.
+  const identical = mergeUnderlineLayer(
+    [member("a", 10, 90), member("b", 10, 90), member("c", 10, 90)],
+    null,
+  );
+  assert.equal(identical.length, 1, "three members over one phrase is one stroke");
+  assert.deepEqual(identical[0]!.memberIds, ["a", "b", "c"]);
+  assert.equal(identical[0]!.attended, false);
+  assert.equal(identical[0]!.centerY, 40, "and it sits on the one centre datum");
+
+  // Attending one of them re-inks that single stroke rather than adding one.
+  const attended = mergeUnderlineLayer(
+    [member("a", 10, 90), member("b", 10, 90), member("c", 10, 90)],
+    "b",
+  );
+  assert.equal(attended.length, 1);
+  assert.equal(attended[0]!.attended, true);
+
+  // Partial overlap cuts at the boundary so each run of ink is stroked once,
+  // and only the run the attended connection actually covers goes seal.
+  const overlapping = mergeUnderlineLayer([member("a", 10, 50), member("b", 30, 90)], "a");
+  assert.deepEqual(
+    overlapping.map(({ left, right, attended: seal, memberIds }) => ({ left, right, seal, memberIds })),
+    [
+      { left: 10, right: 50, seal: true, memberIds: ["a", "b"] },
+      { left: 50, right: 90, seal: false, memberIds: ["b"] },
+    ],
+    "runs abut on the datum; nothing is offset and nothing is drawn twice",
+  );
+  for (let index = 0; index < overlapping.length - 1; index += 1) {
+    assert.equal(overlapping[index]!.right, overlapping[index + 1]!.left,
+      "a seam is exact, so butt caps read as one continuous rule");
+  }
+
+  // A member on another line keeps its own datum.
+  const twoLines = mergeUnderlineLayer([member("a", 10, 90, 40), member("b", 10, 90, 68)], null);
+  assert.deepEqual(twoLines.map((run) => run.centerY), [40, 68]);
+});
+
+test("attending scrolls the least distance that brings every member into view", () => {
+  // "All three scroll the least distance that brings every member into view."
+  const viewport = { viewportHeight: 600, maxScrollTop: 4000, margin: 24 };
+
+  // Already whole on screen: attending must not move the page under the eye.
+  assert.equal(
+    leastScrollForMembers({ ...viewport, scrollTop: 1000, spanTop: 1100, spanBottom: 1400 }),
+    1000,
+    "a connection you can already see does not scroll at all",
+  );
+
+  // Below the fold: come up by the smallest delta that lands the last member
+  // inside, not to a centre and not to an eye-line.
+  assert.equal(
+    leastScrollForMembers({ ...viewport, scrollTop: 1000, spanTop: 1300, spanBottom: 1700 }),
+    1124,
+    "the bottom member arrives one margin inside the fold, and no further",
+  );
+
+  // Above: the same rule in the other direction.
+  assert.equal(
+    leastScrollForMembers({ ...viewport, scrollTop: 1000, spanTop: 900, spanBottom: 1200 }),
+    876,
+  );
+
+  // Taller than the viewport — no offset shows every member, so show the
+  // first and let the reader scroll on.
+  assert.equal(
+    leastScrollForMembers({ ...viewport, scrollTop: 3000, spanTop: 1000, spanBottom: 2400 }),
+    976,
+  );
+
+  // Never past either end of the scroll range.
+  assert.equal(
+    leastScrollForMembers({ ...viewport, scrollTop: 300, spanTop: 10, spanBottom: 60 }),
+    0,
+  );
+  assert.equal(
+    leastScrollForMembers({ ...viewport, scrollTop: 0, spanTop: 9000, spanBottom: 9100, maxScrollTop: 4000 }),
+    4000,
+  );
+});
+
+test("arity is read off the kind, and decides the affordance and the greying", () => {
+  // "Arity is not decoration: it decides whether *Add a phrase* is offered at
+  // all. The inspector reads it off the kind and greys the exact-2 kinds while
+  // a 3-member connection is attended." Both halves, both directions.
+  const card = read("src", "renderer", "components", "ConnectionCard.tsx");
+  const styles = read("src", "renderer", "styles.css");
+
+  // The affordance: Add a phrase is not offered for an exact-2 kind.
+  assert.match(card, /!isBinaryConnectionKind\(connection\.kind\) && \(\s*<button[\s\S]{0,320}>Add phrase<\/button>/);
+
+  // The greying: an exact-2 kind is disabled, and stays visible while it is.
+  assert.match(card, /const arityBlocked = isBinaryConnectionKind\(option\.id\)\s*&& connection\.anchors\.length !== 2/);
+  assert.match(card, /disabled=\{mutationLocked \|\| arityBlocked\}/);
+  assert.match(card, /data-arity-blocked=\{arityBlocked \? "" : undefined\}/);
+  assert.match(styles, /\.connection-card-kind-option\[data-arity-blocked\] \{[\s\S]{0,160}opacity: \.38;/);
+  assert.doesNotMatch(card, /arityBlocked \?\?? null|!arityBlocked && <button/,
+    "a blocked kind is greyed, not removed: the reader must see that it exists");
+
+  // A blocked kind cannot be committed even if the control is reached anyway,
+  // because the durable validator would reject it at the boundary.
+  assert.match(card, /if \(isBinaryConnectionKind\(kind\) && connection\.anchors\.length !== 2\) return;/);
+
+  // The six kinds are words, in the UI sans, and never a colour or a glyph.
+  assert.match(card, /RELATIONSHIPS\.map\(\(option\)/);
+  assert.match(styles, /\.connection-card-kind-option \{[\s\S]{0,320}font: 500 [\d.]+rem\/[\d.]+ var\(--font-ui\)/);
+});
+
+test("the kind is the only word a route carries, and it sits on the engine's spine", () => {
+  // "The kind is the only word a route carries — one word in seal small caps
+  // at the spine's head."
+  const source = read("src", "renderer", "components", "ConnectionUnderlay.tsx");
+  const styles = read("src", "renderer", "styles.css");
+
+  assert.match(source, /className="connection-route-kind"/);
+  assert.match(source, />\{relationshipLabel\(item\.connection\.kind\)\}<\/text>/,
+    "the label comes off the one shared vocabulary table, unabbreviated");
+  // The coordinate is read off the plan, never recomputed: the engine owns
+  // "where the spine sits in real gutter air".
+  assert.match(source, /spineHead: plan\.spine\s*\? \{ x: plan\.spine\.x, y: plan\.spine\.top - SPINE_KIND_GAP \}/);
+  assert.match(styles, /\.connection-route-kind \{[\s\S]{0,400}font-variant-caps: all-small-caps;/);
+  assert.match(styles, /\.connection-route-kind \{[\s\S]{0,400}fill: var\(--study-gold\)/);
+  assert.match(styles, /\.connection-route-kind \{[\s\S]{0,400}font-family: var\(--font-ui\)/);
+});
+
+test("a connection is a relation, so no durable connection washes", () => {
+  // Law 5: "Wash marks, rules relate. A wash says *this text is marked*; a
+  // rule says *this text is connected to that text*."
+  const styles = read("src", "renderer", "styles.css");
+  const washStates = new Set<string>();
+  for (const match of styles.matchAll(
+    /\[data-paint-state="([a-z-]+)"\][^{]*\.connection-emphasis-wash[^{]*\{([^}]*)\}/g,
+  )) {
+    const opacity = [...match[2]!.matchAll(/fill-opacity:\s*([\d.]+)/g)].pop()?.[1];
+    if (opacity && Number.parseFloat(opacity) > 0) washStates.add(match[1]!);
+  }
+  assert.deepEqual([...washStates].sort(), ["authoring", "selection"],
+    "only a live selection may wash; dormant, companion, preview and selected are relations");
+  assert.doesNotMatch(styles, /connection-emphasis-shared/,
+    "and an overlap of two relations is still a relation");
+
+  // The rule's own default no longer paints, so a state added later has to
+  // argue for its wash rather than inherit one.
+  assert.match(styles, /\.connection-emphasis-wash \{[\s\S]{0,200}fill-opacity: 0;/);
+
+  // What says "connected" instead is a rule, at the one weight, in two inks.
+  assert.match(styles, /\.connection-underline \{[\s\S]{0,600}stroke: var\(--ink-faint, #C8C2B8\)/);
+  assert.match(styles, /\.connection-underline\.attended \{\s*stroke: var\(--study-gold\);\s*\}/);
 });
