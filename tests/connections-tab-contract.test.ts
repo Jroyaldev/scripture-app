@@ -510,6 +510,14 @@ test("every region this file reads is sliced through a uniqueness-checked anchor
 
   assert.equal([...body.matchAll(RAW_SLICE)].length, 0,
     "a region is sliced on a raw indexOf, which cannot know it resolved correctly");
+  // This ban is blanket, and deliberately broader than the region-slice rule
+  // above. It is NOT an oversight to be narrowed to "lastIndexOf that chooses a
+  // region": the hazard also arrives in two statements — `const i =
+  // x.lastIndexOf(a)` on one line and `x.slice(i, j)` on the next — which no
+  // slice-shaped pattern can see. This file has no legitimate positional pick,
+  // so a blanket ban costs nothing here and catches the split form. A file that
+  // does have one should assert the occurrence count and take the index
+  // explicitly rather than relax this.
   assert.equal([...body.matchAll(POSITIONAL)].length, 0,
     "lastIndexOf picks a match by position, which is not a uniqueness argument");
 
