@@ -145,14 +145,41 @@ test("rename, move, reorder, collapse, close, and recovery commit UI state only 
   assert.match(componentSource, /scheduleCommittedTabFocus\(null, true\)/);
 });
 
-test("the rail remains premium, opaque, zoom-safe, and accessible across themes", () => {
+test("the register is a strip of canvas the active page is pulled up through", () => {
   const rail = section(stylesSource, ".scripture-workspace-bar {", ".topbar-navigation,");
-  assert.match(rail, /min-height: 38px/);
-  assert.match(rail, /flex: 0 0 38px/);
-  assert.match(rail, /background: var\(--workspace-bar-bg\)/);
+
+  // 30px tab in a 34px strip, and the strip carries no fill of its own: it is
+  // the page's own canvas showing through. The 24px above the tabs is the page
+  // inset's top edge, doubling as the window drag region.
+  assert.match(rail, /\.scripture-workspace-bar \{[\s\S]{0,320}min-height: 34px;/);
+  assert.match(rail, /\.scripture-workspace-bar \{[\s\S]{0,320}flex: 0 0 auto;/);
+  assert.match(rail, /\.scripture-workspace-bar \{[\s\S]{0,320}padding: var\(--page-inset\) var\(--page-inset\) 0 0;/);
+  assert.match(rail, /\.scripture-workspace-bar \{[\s\S]{0,320}background: transparent;/);
+  // No border-bottom: a rule here would fight the fillet, which is the thing
+  // actually joining the tab to the page.
+  assert.doesNotMatch(rail.slice(0, rail.indexOf("\n}")), /border-bottom/);
+  assert.match(rail, /\.scripture-workspace-tab \{[\s\S]{0,420}height: 30px;/);
+
+  // The paper fill IS the mark. The tab is a piece of the page pulled up above
+  // the register's baseline, so it takes paper, the page's radius, and no
+  // second indicator — instant, because this is the app answering "where am I".
+  assert.match(rail, /\.scripture-workspace-tab \{[\s\S]{0,420}border-radius: var\(--radius-page\) var\(--radius-page\) 0 0;/);
+  assert.match(
+    rail,
+    /\.scripture-workspace-tab\[aria-selected="true"\] \{\s*background: var\(--bg-reading\);\s*color: var\(--text-primary\);\s*transition: none;\s*\}/,
+  );
+  // An inactive tab gets no shape and no hover fill, ever — a hovered shape is
+  // a third fill, and re-creates the mush the two-plane rule exists to prevent.
+  assert.match(rail, /\.scripture-workspace-tab:hover \{\s*background: transparent;/);
+  // Gold survives in the register as ink and as the focus ring, never as a fill.
+  assert.doesNotMatch(rail, /background:\s*(?:var\(--study-gold\)|color-mix\([^;]*--study-gold)/);
+  assert.match(rail, /\.scripture-workspace-tab\[aria-selected="true"\] \.scripture-workspace-tab-mark \{\s*color: var\(--study-gold\);/);
+
   assert.match(rail, /\.scripture-workspace-tab-label \{[\s\S]{0,180}opacity: 1/);
-  // Invented weights are snapped to the 500/600 rhythm.
-  assert.match(rail, /\.scripture-workspace-group-tab \{[\s\S]{0,320}font: 500 10px\/1 var\(--font-ui\)/);
+  // The group is a bracket, not a chip: a rule over its members carrying a 9px
+  // mono label. Mono because a group id is chrome, not something you read.
+  assert.match(rail, /\.scripture-workspace-group-tab \{[\s\S]{0,320}font: 500 9px\/1 var\(--font-mono\)/);
+  assert.match(rail, /\.scripture-workspace-group-tab::before \{[\s\S]{0,220}height: 1px;/);
   assert.match(rail, /\.scripture-workspace-active-group small \{[\s\S]{0,260}font: 500 9px\/1 var\(--font-ui\);[\s\S]{0,80}font-variant-numeric: tabular-nums/);
   assert.match(rail, /min-width: 24px/);
   assert.match(rail, /min-height: 24px/);
@@ -160,17 +187,18 @@ test("the rail remains premium, opaque, zoom-safe, and accessible across themes"
   assert.match(rail, /overscroll-behavior-inline: contain/);
   assert.match(rail, /scroll-padding-inline/);
   // Workspace popovers inherit the shared --bg-float material (no fill override).
-  assert.doesNotMatch(
+  assert.match(
     rail,
-    /\.popover-panel\.scripture-workspace-group-popover,\s*\.popover-panel\.scripture-workspace-overflow-popover \{[\s\S]{0,180}background: var\(--workspace-active-bg\)/,
+    /\.popover-panel\.scripture-workspace-group-popover,\s*\.popover-panel\.scripture-workspace-overflow-popover \{[\s\S]{0,180}background: rgb\(from var\(--bg-float\) r g b \/ 1\);/,
   );
   assert.match(rail, /\.scripture-workspace-overflow-popover \{[\s\S]{0,220}display: grid;[\s\S]{0,180}grid-template-rows: auto auto minmax\(0, 1fr\)/);
   assert.match(rail, /\.scripture-workspace-overflow-list \{[\s\S]{0,220}min-height: 0;[\s\S]{0,120}overflow-y: auto;[\s\S]{0,120}overscroll-behavior: contain;/);
   // Scroll-edge indicators are clean mask fades, never a blurred inset shadow.
   assert.match(rail, /\.scripture-workspace-viewport\.is-scrollable-left \{[\s\S]{0,160}mask-image: linear-gradient/);
   assert.doesNotMatch(rail, /is-scrollable-left \{[\s\S]{0,120}box-shadow/);
-  // Gold is reserved for selection: the 2px indicator tints --study-gold.
-  assert.match(rail, /\.scripture-workspace-tab\[aria-selected="true"\]::after \{[\s\S]{0,200}background: var\(--study-gold\)/);
+  // The viewport may only clip on the x-axis: overflow:hidden would shear the
+  // fillets flush against the tab and read as a rendering bug.
+  assert.match(rail, /\.scripture-workspace-viewport \{[\s\S]{0,320}overflow-x: auto;\s*overflow-y: visible;/);
   assert.match(rail, /@media \(forced-colors: active\)/);
   assert.match(rail, /@media \(prefers-reduced-motion: reduce\)/);
 });

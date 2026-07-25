@@ -236,8 +236,12 @@ test("held authored connections use the quiet typeset Living Margin card", () =>
   assert.match(margin, /aria-describedby="living-margin-mode"/);
   assert.match(margin, /id="living-margin-mode"[\s\S]*aria-live="polite"/);
   assert.match(styles, /\.connection-card \{[\s\S]*width: min\(340px, 100%\);[\s\S]*max-height: none;[\s\S]*overflow: visible;/);
-  assert.match(styles, /\.connection-card \{[\s\S]*padding: 12px 14px 10px;[\s\S]*border: 1px solid var\(--border-subtle\);[\s\S]*border-radius: var\(--radius-md\);[\s\S]*background: var\(--bg-surface\);[\s\S]*box-shadow: none;/);
-  assert.match(styles, /\.theme-glass \.connection-card,[\s\S]*background: color-mix[\s\S]*backdrop-filter: none;/);
+  assert.match(styles, /\.connection-card \{[\s\S]*padding: 12px 14px 10px;[\s\S]*border: 1px solid var\(--border-subtle\);[\s\S]*border-radius: var\(--radius-md\);[\s\S]*background: var\(--bg-reading\);[\s\S]*box-shadow: none;/);
+  // Material applies to canvas, never to paper. The connection card is
+  // floating paper, so it keeps one opaque fill in every atmosphere rather
+  // than a per-theme translucent variant.
+  assert.doesNotMatch(styles, /\.theme-glass \.connection-card|\.theme-dark-glass \.connection-card/);
+  assert.doesNotMatch(styles, /\.material-translucent[^{]*\.connection-card[^{]*\{[^}]*background:/);
   assert.match(styles, /\.connection-card-kind-mark \{[\s\S]*width: 12px;[\s\S]*height: 2px;[\s\S]*border-radius: 999px;[\s\S]*background: var\(--connection-ink\);[\s\S]*box-shadow: none;/,
     "the card's sole hue mark must remain a line-vocabulary tick, never a generic status dot");
   assert.match(styles, /\.connection-card-observation \{[\s\S]*border-bottom: 1px solid var\(--border-subtle\);[\s\S]*\.connection-card-observation textarea \{[\s\S]*field-sizing: content;[\s\S]*font: italic 400 0\.78rem\/1\.5 var\(--font-reading\);/,
@@ -920,22 +924,26 @@ test("marking materials stay neutral, shared, and accessibility-safe", () => {
     ".marking-rail-status",
     ".marking-dock",
   ]) {
-    assert.match(ruleBlock(selector), /background:\s*var\(--bg-surface\);/, `${selector} must use a flat neutral base material`);
+    assert.match(ruleBlock(selector), /background:\s*var\(--bg-reading\);/, `${selector} must use a flat neutral base material`);
   }
   assert.match(ruleBlock(".marking-radial-scrim"), /radial-gradient/, "the Radial focus field must keep its focal gradient");
   assert.match(ruleBlock(".marking-radial-disc"), /radial-gradient/, "the Radial disc must keep its depth gradient");
   assert.match(
     marking,
-    /data-radial-layout="sheet"\] \.marking-radial \{[^}]*background:\s*var\(--bg-surface\);/,
+    /data-radial-layout="sheet"\] \.marking-radial \{[^}]*background:\s*var\(--bg-reading\);/,
     "the Radial sheet must use the same flat neutral material",
   );
-  for (const selector of [".theme-glass .marking-rail", ".theme-glass .marking-radial-hub", ".theme-glass .marking-dock"]) {
-    assert.ok(marking.includes(selector), `${selector} must share the Glass material treatment`);
+  // Every marking surface is floating paper, and material never applies to
+  // paper — so none of them carries a translucent variant. A palette you can
+  // see the verse through is a palette you cannot read a swatch on.
+  for (const selector of [".marking-rail", ".marking-radial-hub", ".marking-dock", ".marking-palette"]) {
+    assert.doesNotMatch(
+      marking,
+      new RegExp(`\\.material-translucent[^{]*\\${selector}[^{]*\\{[^}]*(background|backdrop-filter):`),
+      `${selector} must stay opaque paper under the translucent material`,
+    );
   }
-  const glassPaletteStart = marking.indexOf(".theme-glass .marking-palette,");
-  const glassPalette = marking.slice(glassPaletteStart, marking.indexOf("}", glassPaletteStart) + 1);
-  assert.match(glassPalette, /background:\s*color-mix\(in srgb, var\(--bg-surface\) 84%, transparent\);/);
-  assert.match(glassPalette, /backdrop-filter:\s*blur\(18px\) saturate\(1\.12\);/);
+  assert.doesNotMatch(marking, /\.theme-glass|\.theme-dark-glass/);
   assert.doesNotMatch(marking, /\.marking-icon-action\.danger:hover\s*\{[^}]*var\(--error\)/);
   const shortcutKeys = ruleBlock(".marking-palette-shortcuts kbd");
   assert.match(shortcutKeys, /border:\s*0;/);
@@ -943,16 +951,12 @@ test("marking materials stay neutral, shared, and accessibility-safe", () => {
   assert.match(shortcutKeys, /box-shadow:\s*none;/);
   for (const color of ["yellow", "green", "blue", "pink", "purple"]) {
     assert.ok(
-      marking.includes(`.marking-palette .marking-pigment-${color} { background: color-mix(in srgb, var(--hl-${color}-mark) 46%, var(--bg-surface)); }`),
+      marking.includes(`.marking-palette .marking-pigment-${color} { background: color-mix(in srgb, var(--hl-${color}-mark) 46%, var(--bg-reading)); }`),
       `Palette ${color} pigment must reuse the calibrated flat Rail mix`,
     );
   }
   assert.match(ruleBlock(".marking-palette .marking-pigment"), /box-shadow:\s*none;/);
   assert.match(ruleBlock(".marking-dock .marking-pigment"), /box-shadow:\s*none;/);
-  assert.match(
-    marking,
-    /\.theme-glass \.marking-palette::after,\s*\.theme-dark-glass \.marking-palette::after \{\s*background: color-mix\(in srgb, var\(--bg-surface\) 84%, transparent\);\s*\}/,
-  );
   assert.match(marking, /\.marking-palette\.is-placed \{\s*--mark-palette-enter-y: 4px;\s*--mark-palette-enter-scale: \.955;\s*animation: marking-palette-in var\(--mark-dur-enter\) var\(--mark-spring\);/);
   assert.match(marking, /@keyframes marking-palette-in \{\s*from \{\s*opacity: 0;\s*transform: translateY\(var\(--mark-palette-enter-y\)\) scale\(var\(--mark-palette-enter-scale\)\);/);
   assert.match(marking, /\.marking-palette\.flipped\.is-placed \{ --mark-palette-enter-y: -4px; \}/);
@@ -971,7 +975,7 @@ test("marking materials stay neutral, shared, and accessibility-safe", () => {
   const thumbStart = marking.indexOf(".marking-dock-thumb {");
   const thumbEnd = marking.indexOf("}", thumbStart);
   const thumb = marking.slice(thumbStart, thumbEnd);
-  assert.match(thumb, /background:\s*color-mix\([^;]*var\(--bg-surface\)\)/);
+  assert.match(thumb, /background:\s*color-mix\([^;]*var\(--bg-reading\)\)/);
   assert.doesNotMatch(thumb, /--mark-(?:parallel|contrast|echo|mirror|series|hinge)|--hl-/);
 
   const reducedStart = marking.indexOf("@media (prefers-reduced-motion: reduce)");

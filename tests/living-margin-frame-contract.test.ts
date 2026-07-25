@@ -8,6 +8,36 @@ const margin = readFileSync(join(repoRoot, "src", "renderer", "components", "Liv
 const page = readFileSync(join(repoRoot, "src", "renderer", "components", "ScripturePage.tsx"), "utf-8");
 const css = readFileSync(join(repoRoot, "src", "renderer", "styles.css"), "utf-8");
 
+/** Every flat rule block in the sheet, as [selector, body] pairs. */
+function ruleBlocks(): Array<[string, string]> {
+  return [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((match) => [
+    match[1]!.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/\s+/g, " ").trim(),
+    match[2]!,
+  ]);
+}
+
+test("the margin is paper across a gutter, not a tool panel bolted to the page's edge", () => {
+  // One plane, the page's own radius, and no hairline: 24px of canvas divides
+  // two panes better than a border does, which is what killed the border-left.
+  assert.match(css, /\.living-margin\s*\{[\s\S]*?background: var\(--bg-reading\);/);
+  assert.match(css, /\.living-margin\s*\{[\s\S]*?border-radius: var\(--radius-page\);/);
+  // The sticky header and the lens rail scroll content underneath them, so they
+  // have to be opaque — but opaque as paper, never as a third tinted band.
+  assert.match(css, /\.margin-frame-header\s*\{[\s\S]*?background: var\(--bg-reading\);/);
+  assert.match(css, /\.margin-tabs\s*\{[\s\S]*?background: var\(--bg-reading\);/);
+
+  for (const [selector, body] of ruleBlocks()) {
+    if (/\.living-margin\b/.test(selector)) {
+      assert.doesNotMatch(body, /border-left/, `${selector} reinstates the margin's border-left`);
+    }
+    // Mono is the chrome voice. The margin is a workbench you read and write
+    // in, so nothing inside it is set in the instrument face.
+    if (/\.margin-[\w-]/.test(selector)) {
+      assert.doesNotMatch(body, /--font-mono/, `${selector} sets margin copy in the chrome voice`);
+    }
+  }
+});
+
 test("Living Margin is one labelled frame with truthful chapter, reading, and selected modes", () => {
   assert.match(margin, /aria-labelledby="living-margin-title"/);
   assert.match(margin, /const marginMode = connectionInspectorOpen[\s\S]{0,220}?isNear && ambientKept[\s\S]{0,100}?"kept"[\s\S]{0,100}?"following"/);
@@ -31,7 +61,7 @@ test("authored connection inspection is a contextual margin view, not a replacem
   assert.match(margin, /margin-study-content\$\{connectionInspectorOpen \? " has-connection-inspector" : ""\}/);
   assert.doesNotMatch(margin, /margin-study-content" hidden=\{connectionInspectorOpen\}/);
   assert.match(margin, /const connectionCount = \(crossRefs\?\.items\.length \?\? 0\) \+ noteConnectionCount/);
-  assert.match(margin, /\{ id: "connections", label: "Related", accessibleLabel: "Related verses" \}/);
+  assert.match(margin, /\{ id: "connections", label: "Connections", accessibleLabel: "Connections" \}/);
   assert.doesNotMatch(margin, /connectionCount[\s\S]{0,100}marginData\.connections/);
   assert.match(css, /\.margin-study-content\.has-connection-inspector[\s\S]*padding-top: var\(--sp-xl\)/);
   assert.doesNotMatch(css, /\.margin-study-content\[hidden\]/);
@@ -39,7 +69,11 @@ test("authored connection inspection is a contextual margin view, not a replacem
 
 test("Overview is the quiet default, with stable keyboard deep-dive tabs over the current scope", () => {
   assert.match(margin, /type MarginTab = "overview" \| "connections" \| "passage" \| "notes"/);
-  assert.match(margin, /const MARGIN_TABS[\s\S]*\{ id: "overview", label: "Overview"[\s\S]*\{ id: "connections", label: "Related"/);
+  assert.match(
+    margin,
+    /const MARGIN_TABS[\s\S]*\{ id: "overview", label: "Overview"[\s\S]*\{ id: "notes", label: "Notes"[\s\S]*\{ id: "connections", label: "Connections"[\s\S]*\{ id: "passage", label: "Words"/,
+    "Overview leads, then the reader's own material, then the app's — the rail is ordered by whose work it is",
+  );
   assert.match(margin, /const activeTab = marginSession\.activeTab/);
   assert.doesNotMatch(margin, /internalActiveTab|controlledActiveTab/);
   assert.match(margin, /role="tablist" aria-label="Study views" aria-orientation="horizontal"/);

@@ -56,9 +56,11 @@ test("study surfaces share restrained material styling without malformed blur ex
   const css = read("src/renderer/styles.css");
 
   assert.match(css, /Study overlays — one restrained material and interaction contract/);
-  assert.match(css, /\.structure-modal-root\.theme-glass \.structure-modal-panel/);
-  assert.match(css, /\.theme-dark-glass \.lang-sense-outline/);
-  assert.match(css, /\.theme-dark-glass \.margin-frame-header/);
+  // Glass and Candlelight retired as themes; the material is now one class
+  // applied over any of the four appearances, so overlays opt into it once
+  // rather than once per glass theme.
+  assert.doesNotMatch(css, /\.theme-glass|\.theme-dark-glass/);
+  assert.match(css, /\.material-translucent \{[\s\S]{0,400}--material-blur: 26px/);
   assert.match(css, /\.crossref-row:hover,[\s\S]*background: var\(--study-hover-surface\)/);
   assert.match(css, /\.note-capture-panel \{[\s\S]*backdrop-filter: blur\(var\(--material-blur\)\)/);
   assert.doesNotMatch(css, /calc\(var\(--material-blur\) \*/);

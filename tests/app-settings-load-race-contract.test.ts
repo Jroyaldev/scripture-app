@@ -30,7 +30,7 @@ test("App's settings-load effect does not clobber a setting the user already tog
   assert.notEqual(dirtyRefDecl, -1, "expected a userDirtySettings ref to exist");
   assert.match(
     source,
-    /userDirtySettings\s*=\s*useRef\(\{\s*sidebarCollapsed:\s*false,\s*marginVisible:\s*false,\s*theme:\s*false,\s*markingSurface:\s*false\s*\}\)/,
+    /userDirtySettings\s*=\s*useRef\(\{\s*sidebarCollapsed:\s*false,\s*marginVisible:\s*false,\s*theme:\s*false,\s*material:\s*false,\s*markingSurface:\s*false\s*\}\)/,
   );
 
   // The settings-load effect (mount effect calling settings.get()) must gate
@@ -91,10 +91,10 @@ test("App's settings-load effect does not clobber a setting the user already tog
   // invariant — don't write back defaults before real settings arrive —
   // must be preserved by the fix).
   const persistGuards = source.match(/if \(!settingsLoaded\.current\) return;/g) ?? [];
-  // sidebarCollapsed, marginVisible, theme, markingSurface, and reading
-  // preferences. Research and kept scope now persist inside the authoritative
-  // V2 workspace rather than through separate legacy settings effects.
-  assert.equal(persistGuards.length, 5, "expected all settings persist effects to still guard on settingsLoaded");
+  // sidebarCollapsed, marginVisible, theme, material, markingSurface, and
+  // reading preferences. Research and kept scope now persist inside the
+  // authoritative V2 workspace rather than through separate legacy effects.
+  assert.equal(persistGuards.length, 6, "expected all settings persist effects to still guard on settingsLoaded");
   assert.match(source, /const \[settingsReady, setSettingsReady\] = useState\(false\)/);
   assert.match(source, /settingsLoaded\.current = true;[\s\S]*setSettingsReady\(true\)/);
   for (const dependency of ["sidebarCollapsed", "marginVisible", "theme", "markingSurface"] as const) {

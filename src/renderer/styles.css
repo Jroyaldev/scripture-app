@@ -1094,8 +1094,8 @@ html, body, #root {
 /* Desktop Study workspaces sit directly below Scripture's primary toolbar.
    The rail is navigation, not a second command bar: one continuous tablist,
    one active-study control, and management that opens only on demand. Its
-   surface is a deliberate derivative of the toolbar token (--bg-topbar) so the
-   two read as one continuous chrome, separated only by a hairline border. */
+   surface is canvas, like every other piece of chrome: the page is the only
+   object in the column, and the strip is part of the ground it sits on. */
 /* A register, not browser tabs: a 30px tab in a 34px strip, sitting on canvas.
    The 24px of canvas above it is the page inset's top edge, and doubles as the
    window drag region — which is why that number is 24 and not 8.
@@ -2586,12 +2586,12 @@ html, body, #root {
   box-shadow: 0 0 0 3px var(--study-gold-focus), inset 0 0 0 1px rgba(255, 255, 255, 0.25);
 }
 
-.theme-orb-light { background: linear-gradient(135deg, #FAF6EC 0 58%, #B8854A 59% 67%, #E8DDCA 68%); }
-.theme-orb-dark { background: linear-gradient(135deg, #181511 0 58%, #C6935C 59% 67%, #44382D 68%); border-color: rgba(243, 237, 224, 0.25); }
-.theme-orb-porcelain { background: linear-gradient(135deg, #FFFFFF 0 58%, #E8A33D 59% 67%, #F5F5F7 68%); border-color: rgba(0, 0, 0, 0.12); }
-.theme-orb-onyx { background: linear-gradient(135deg, #1D1D1F 0 58%, #E8A33D 59% 67%, #3A3A3E 68%); border-color: rgba(255, 255, 255, 0.22); }
-.theme-orb-glass { background: linear-gradient(135deg, rgba(255,255,255,.92), rgba(221,199,164,.62) 58%, #B8854A 59% 67%, rgba(255,255,255,.56) 68%); }
-.theme-orb-dark-glass { background: linear-gradient(135deg, rgba(54,45,38,.9), rgba(14,12,10,.92) 58%, #C6935C 59% 67%, rgba(83,59,40,.78) 68%); border-color: rgba(243, 237, 224, 0.25); }
+/* paper 0-58% · seal 59-67% · canvas 68% — the swatch is the theme in
+   miniature: the two planes with the accent between them. */
+.theme-orb-light { background: linear-gradient(135deg, #FCFBF8 0 58%, #96684A 59% 67%, #F1EFEA 68%); }
+.theme-orb-dark { background: linear-gradient(135deg, #1D1B18 0 58%, #C99A6E 59% 67%, #141210 68%); border-color: rgba(237, 232, 224, 0.22); }
+.theme-orb-porcelain { background: linear-gradient(135deg, #FFFFFF 0 58%, #7C5B44 59% 67%, #F2F2F4 68%); border-color: rgba(0, 0, 0, 0.12); }
+.theme-orb-onyx { background: linear-gradient(135deg, #1D1D20 0 58%, #C0997E 59% 67%, #151517 68%); border-color: rgba(233, 233, 236, 0.22); }
 
 /* Living Margin toggle (topbar, sibling of theme toggle) */
 
@@ -3001,10 +3001,6 @@ html, body, #root {
   min-width: 0;
   cursor: text;
   user-select: text;
-}
-
-.scripture-content ::selection {
-  background: color-mix(in srgb, var(--study-gold) 24%, transparent);
 }
 
 /*
@@ -12661,11 +12657,6 @@ button.lang-phrase-diagram-node:focus-visible {
   display: none;
 }
 
-@keyframes footer-ai-dot-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.3); }
-}
-
 /* --- Library popover --- */
 
 .library-popover {
@@ -13533,21 +13524,10 @@ button.lang-phrase-diagram-node:focus-visible {
   border-radius: var(--radius-sm);
 }
 
-.theme-preview-light { background: #F3EDE0; }
-.theme-preview-dark { background: #0D0B09; border-color: rgba(243, 237, 224, 0.15); }
-.theme-preview-porcelain { background: #F5F5F7; border-color: rgba(0, 0, 0, 0.10); }
-.theme-preview-onyx { background: #131315; border-color: rgba(255, 255, 255, 0.16); }
-.theme-preview-glass {
-  background:
-    radial-gradient(circle at 70% 10%, rgba(255,255,255,.8), transparent 45%),
-    linear-gradient(140deg, #E9DFCF, #C9A979);
-}
-.theme-preview-dark-glass {
-  background:
-    radial-gradient(circle at 76% 16%, rgba(198,147,92,.35), transparent 40%),
-    linear-gradient(140deg, #241D18, #0D0B09);
-  border-color: rgba(243, 237, 224, 0.15);
-}
+.theme-preview-light { background: #F1EFEA; }
+.theme-preview-dark { background: #141210; border-color: rgba(237, 232, 224, 0.14); }
+.theme-preview-porcelain { background: #F2F2F4; border-color: rgba(0, 0, 0, 0.10); }
+.theme-preview-onyx { background: #151517; border-color: rgba(233, 233, 236, 0.14); }
 
 .theme-preview-rail,
 .theme-preview-page,
@@ -13570,14 +13550,10 @@ button.lang-phrase-diagram-node:focus-visible {
 }
 
 .theme-preview-dark .theme-preview-rail,
-.theme-preview-dark-glass .theme-preview-rail,
-.theme-preview-onyx .theme-preview-rail { background: rgba(243, 237, 224, 0.06); border-color: rgba(243, 237, 224, 0.08); }
+.theme-preview-onyx .theme-preview-rail { background: rgba(237, 232, 224, 0.06); border-color: rgba(237, 232, 224, 0.08); }
 .theme-preview-dark .theme-preview-page,
-.theme-preview-dark-glass .theme-preview-page { background: rgba(56, 47, 39, 0.78); }
 .theme-preview-onyx .theme-preview-page { background: rgba(255, 255, 255, 0.09); }
 .theme-preview-porcelain .theme-preview-page { background: #FFFFFF; border: 1px solid rgba(0, 0, 0, 0.08); }
-.theme-preview-glass .theme-preview-page { background: rgba(255, 252, 246, 0.56); backdrop-filter: blur(3px); }
-.theme-preview-dark-glass .theme-preview-page { background: rgba(55, 44, 35, 0.54); backdrop-filter: blur(3px); }
 
 .theme-preview-line {
   left: 37%;
@@ -13589,8 +13565,7 @@ button.lang-phrase-diagram-node:focus-visible {
 .theme-preview-line.line-one { top: 36%; }
 .theme-preview-line.line-two { top: 55%; right: 28%; }
 .theme-preview-dark .theme-preview-line,
-.theme-preview-dark-glass .theme-preview-line,
-.theme-preview-onyx .theme-preview-line { background: rgba(243, 237, 224, 0.38); }
+.theme-preview-onyx .theme-preview-line { background: rgba(237, 232, 224, 0.38); }
 
 .theme-choice-copy {
   display: flex;
@@ -13969,7 +13944,7 @@ textarea:focus-visible,
   width: 3.5px;
 }
 .verse-line.selected.multi-select {
-  background: color-mix(in srgb, var(--text-secondary) 6%, transparent);
+  background: transparent;
 }
 .verse-line.selected.multi-select.hl-yellow,
 .verse-line.selected.multi-select.hl-green,
@@ -18337,7 +18312,7 @@ button.lang-phrase-diagram-node:focus-visible,
   position: relative;
   width: 34px;
   height: 20px;
-  border-radius: 10px;
+  border-radius: 999px;
   background: var(--bg-secondary);
   box-shadow: inset 0 0 0 1px var(--border-subtle);
 }
@@ -18349,7 +18324,7 @@ button.lang-phrase-diagram-node:focus-visible,
   left: 3px;
   width: 14px;
   height: 14px;
-  border-radius: 7px;
+  border-radius: 50%;
   background: var(--text-tertiary);
   transition: transform var(--transition-fast), background-color var(--transition-fast);
 }
