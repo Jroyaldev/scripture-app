@@ -56,22 +56,22 @@
       "--bg-float": "#1D1B18"
     },
     ".theme-porcelain": {
-      "--canvas-solid": "#F2F2F4",
+      "--canvas-solid": "#F4F4F6",
       "--paper-solid": "#FFFFFF",
-      "--bg-canvas": "#F2F2F4",
+      "--bg-canvas": "#F4F4F6",
       "--bg-reading": "#FFFFFF",
-      "--bg-primary": "#F2F2F4",
-      "--bg-secondary": "#E8E8EB",
+      "--bg-primary": "#F4F4F6",
+      "--bg-secondary": "#EBEBEF",
       "--bg-float": "#FFFFFF"
     },
     ".theme-onyx": {
-      "--canvas-solid": "#151517",
-      "--paper-solid": "#1D1D20",
-      "--bg-canvas": "#151517",
-      "--bg-reading": "#1D1D20",
-      "--bg-primary": "#151517",
-      "--bg-secondary": "#101012",
-      "--bg-float": "#1D1D20"
+      "--canvas-solid": "#131316",
+      "--paper-solid": "#1C1C20",
+      "--bg-canvas": "#131316",
+      "--bg-reading": "#1C1C20",
+      "--bg-primary": "#131316",
+      "--bg-secondary": "#0F0F12",
+      "--bg-float": "#1C1C20"
     },
     ".material-translucent": {
       "--bg-canvas": "color-mix(in srgb, var(--canvas-solid) 42%, transparent)",
@@ -99,22 +99,22 @@
       "--text-on-accent": "#1D1B18"
     },
     ".theme-porcelain": {
-      "--text-primary": "#2B2B2E",
-      "--text-secondary": "#63636A",
+      "--text-primary": "#2E2E33",
+      "--text-secondary": "#66666E",
       "--text-tertiary": "#8A8A92",
-      "--text-verse-number": "#AEAEB6",
-      "--text-link": "#4A6A88",
-      "--text-link-hover": "#35516B",
+      "--text-verse-number": "#ADADB6",
+      "--text-link": "#96684A",
+      "--text-link-hover": "#7A5238",
       "--text-on-accent": "#FFFFFF"
     },
     ".theme-onyx": {
       "--text-primary": "#E9E9EC",
-      "--text-secondary": "#A3A3AA",
+      "--text-secondary": "#A0A0A8",
       "--text-tertiary": "#76767D",
-      "--text-verse-number": "#55555C",
-      "--text-link": "#9DB3CC",
-      "--text-link-hover": "#B8C8DC",
-      "--text-on-accent": "#1D1D20"
+      "--text-verse-number": "#55555E",
+      "--text-link": "#C99A6E",
+      "--text-link-hover": "#DDB289",
+      "--text-on-accent": "#1C1C20"
     }
   },
   "hairline": {
@@ -129,14 +129,14 @@
       "--border-strong": "#58524C"
     },
     ".theme-porcelain": {
-      "--border-subtle": "#E3E3E7",
+      "--border-subtle": "#E4E4E8",
       "--border-medium": "#D2D2D8",
-      "--border-strong": "#AEAEB6"
+      "--border-strong": "#ADADB6"
     },
     ".theme-onyx": {
-      "--border-subtle": "#2A2A2E",
+      "--border-subtle": "#2C2C32",
       "--border-medium": "#3A3A3F",
-      "--border-strong": "#55555C"
+      "--border-strong": "#55555E"
     }
   },
   "accent": {
@@ -169,32 +169,32 @@
       "--study-gold-focus": "rgba(201, 154, 110, 0.42)"
     },
     ".theme-porcelain": {
-      "--accent-seal": "#7C5B44",
-      "--accent-seal-strong": "#5F4433",
-      "--accent-machine": "#52627A",
-      "--accent-warm": "#7C5B44",
-      "--accent-warm-light": "#96725A",
-      "--accent-user": "#7C5B44",
-      "--accent-source": "#52627A",
-      "--accent-ai": "#52627A",
+      "--accent-seal": "#96684A",
+      "--accent-seal-strong": "#7A5238",
+      "--accent-machine": "#5A6A7E",
+      "--accent-warm": "#96684A",
+      "--accent-warm-light": "#A87A58",
+      "--accent-user": "#96684A",
+      "--accent-source": "#5A6A7E",
+      "--accent-ai": "#5A6A7E",
       "--accent-xref": "#8A8A92",
-      "--accent-current": "#7C5B44",
-      "--study-gold": "#7C5B44",
-      "--study-gold-focus": "rgba(124, 91, 68, 0.34)"
+      "--accent-current": "#96684A",
+      "--study-gold": "#96684A",
+      "--study-gold-focus": "rgba(150, 104, 74, 0.36)"
     },
     ".theme-onyx": {
-      "--accent-seal": "#C0997E",
-      "--accent-seal-strong": "#D6B29A",
-      "--accent-machine": "#93A6BC",
-      "--accent-warm": "#C0997E",
-      "--accent-warm-light": "#D6B29A",
-      "--accent-user": "#C0997E",
-      "--accent-source": "#93A6BC",
-      "--accent-ai": "#93A6BC",
+      "--accent-seal": "#C99A6E",
+      "--accent-seal-strong": "#DDB289",
+      "--accent-machine": "#8FA3B8",
+      "--accent-warm": "#C99A6E",
+      "--accent-warm-light": "#DDB289",
+      "--accent-user": "#C99A6E",
+      "--accent-source": "#8FA3B8",
+      "--accent-ai": "#8FA3B8",
       "--accent-xref": "#76767D",
-      "--accent-current": "#C0997E",
-      "--study-gold": "#C0997E",
-      "--study-gold-focus": "rgba(192, 153, 126, 0.42)"
+      "--accent-current": "#C99A6E",
+      "--study-gold": "#C99A6E",
+      "--study-gold-focus": "rgba(201, 154, 110, 0.42)"
     }
   },
   "shadow": {
@@ -254,7 +254,7 @@
     },
     ".material-translucent": {
       "--material-blur": "26px",
-      "--material-saturate": "1.12"
+      "--material-saturate": "1.28"
     }
   },
   "typography": {

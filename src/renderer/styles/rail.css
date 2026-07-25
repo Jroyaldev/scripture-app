@@ -1,4 +1,284 @@
 /* Quire study audit — rail
 
    Owned partial. New rules for this surface live here; anything that must
-   CHANGE an existing rule in styles.css is reported, not shadowed. */
+   CHANGE an existing rule in styles.css is reported, not shadowed.
+
+   Every value below is read off QuireANavRail.dc.html's rendered examples —
+   the inline styles in that document are the drawing, and where the drawing
+   and the handoff summary disagree the drawing wins. */
+
+/* ==========================================================================
+   Pressed, on a row you are not already on
+   --------------------------------------------------------------------------
+   The mark gutter is where state lives, so pressed borrows it at 40% before
+   active claims it fully. styles.css dims the mark on press — which is the
+   whole story for the active row, and no story at all for the other four:
+   their mark is transparent at rest, and dimming transparent is still
+   transparent, so pressing them shows nothing.
+
+   This supplies the half the base rule cannot express. It is not a
+   disagreement with it: the base rule handles the active row's press, this
+   handles every other row's, and neither touches the other.
+   ========================================================================== */
+
+.sidebar .nav-item:not(.active):not(:disabled):active::before {
+  background: var(--study-gold);
+  opacity: 0.4;
+  transition: opacity var(--transition-fast);
+}
+
+/* ==========================================================================
+   The right column — counts, unread, shortcut hints
+   --------------------------------------------------------------------------
+   One slot, three possible occupants, never two at once. A count and an
+   unread dot in the same row is two numbers in one row, which is a dashboard,
+   not a rail — so the dot REPLACES the count rather than joining it, and the
+   shortcut hint only appears where there is no figure to show.
+
+   Faint measures 2.1:1 on canvas, below AA. That is why it is only ever a
+   count or a shortcut hint here: never a label, never the only copy of a piece
+   of information. The tooltip and the accessible name carry the same two
+   pieces the expanded row shows, so nothing is lost when the rail collapses.
+   ========================================================================== */
+
+/* Tabular mono figures, right-aligned to the 220px line — the rail's 232 less
+   its 12px right padding — so the digits form a column no matter the
+   magnitude. The count never shrinks and never wraps: the count is not allowed
+   to push the label, the label ellipses instead. */
+.sidebar .nav-count {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: var(--fw-normal);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  text-align: right;
+  white-space: nowrap;
+  color: var(--text-verse-number);
+  transition: color var(--transition-fast);
+}
+
+/* Colour is the only thing that moves. The figure steps faint → ink-3 with the
+   row's ink, on the same 120ms as the label and the icon, because a count that
+   held still while its row lit up would read as belonging to something else. */
+.sidebar .nav-item:hover .nav-count,
+.sidebar .nav-item:focus-visible .nav-count,
+.sidebar .nav-item.active .nav-count {
+  color: var(--text-tertiary);
+}
+
+/* Locked steps the figure one further out of the page. The icon has already
+   dropped to 1px, so disabled is never carried by colour alone. */
+.sidebar .nav-item:disabled .nav-count,
+.sidebar .nav-item:disabled:hover .nav-count {
+  color: color-mix(in srgb, var(--text-verse-number) 70%, var(--bg-canvas));
+}
+
+/* Unread is a 5px seal dot standing exactly where the figure would have been,
+   so a row that gains one does not change shape. */
+.sidebar .nav-unread {
+  margin-left: auto;
+  flex-shrink: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--study-gold);
+}
+
+.sidebar .nav-item:disabled .nav-unread {
+  background: var(--text-verse-number);
+}
+
+/* Collapsed keeps the dot and drops the figure: at 56px the figure has nowhere
+   to be right-aligned to, but "something happened here" still has to survive
+   the collapse. It rides the icon's top-right corner. */
+.sidebar.collapsed .nav-count {
+  display: none;
+}
+
+.sidebar.collapsed .nav-unread {
+  position: absolute;
+  top: 7px;
+  right: 12px;
+  margin: 0;
+}
+
+/* ==========================================================================
+   Labels never wrap
+   --------------------------------------------------------------------------
+   Single line, ellipsis, never wrap: a two-line nav row destroys the 32px
+   rhythm the whole rail depends on. 232 and 56 are the only two widths in the
+   rail, so a label that will not fit is clipped — the rail never grows to
+   accommodate a translation. (The other half of the study's locale rule — a
+   locale that cannot fit at 13px collapses to 56px rather than widening —
+   needs a UI-locale signal the app does not have yet; see the report.) */
+.sidebar .nav-item .nav-label {
+  min-width: 0;
+  text-overflow: ellipsis;
+}
+
+/* ==========================================================================
+   Navigation held
+   --------------------------------------------------------------------------
+   When a write is in flight every row locks, and a rail full of greyed rows
+   with no explanation is a bug report waiting to happen. The line sits on the
+   39px label column so it reads as a note under the rows it explains, and it
+   is slate because the hold belongs to the app's work, not to the reader's.
+   ========================================================================== */
+
+.rail-held {
+  margin: 0;
+  padding: 14px 12px 0 39px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: var(--fw-normal);
+  letter-spacing: 0.08em;
+  line-height: 1.45;
+  text-transform: uppercase;
+  color: var(--accent-machine);
+  -webkit-app-region: no-drag;
+}
+
+.sidebar.collapsed .rail-held {
+  display: none;
+}
+
+/* ==========================================================================
+   The study block
+   --------------------------------------------------------------------------
+   The "sidebar that feels smart" part, and the trap is obvious: it becomes a
+   dashboard. Two constraints keep it honest — it may only show what is already
+   open, and it may not be a second way to navigate. Nothing in here is a
+   button, nothing has a hover state, nothing can be reordered or closed.
+
+   Typographically it is deliberately NOT nav: mono references, no icons, no
+   mark gutter, 5px rows instead of 8. It reads as a note about the session
+   rather than a menu. It appears at two open passages (one passage is not a
+   study), caps at six lines, and never scrolls independently.
+
+   Explicitly rejected upstream, and not to be added back: reading streaks,
+   weekly note totals, suggested passages. Those measure the reader instead of
+   serving them.
+   ========================================================================== */
+
+/* Separated by interval, not by a line — 24px of canvas, the rail's one gap. */
+.rail-study {
+  margin-top: 24px;
+  -webkit-app-region: no-drag;
+}
+
+.rail-study-kicker {
+  margin: 0;
+  padding: 0 12px 8px 39px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: var(--fw-normal);
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--text-verse-number);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rail-study-list {
+  margin: 0;
+  padding: 0 12px 0 39px;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 5px rows, baseline-aligned. The mono reference and the sans detail have
+   different cap heights; aligning their baselines is what stops the column
+   from looking like two lists side by side. */
+.rail-study-line {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  padding: 5px 0;
+}
+
+/* A fixed 58px column so every reference starts and ends on the same two
+   edges — the detail lines up down the block regardless of book name length. */
+.rail-study-ref {
+  flex-shrink: 0;
+  width: 58px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.2;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The passage you are actually in takes full ink. It is the only distinction
+   the block draws, and it is a colour step, not a mark: a mark here would make
+   the line look like a nav row. */
+.rail-study-line.is-current .rail-study-ref {
+  color: var(--text-primary);
+}
+
+/* The study's second column — "3 notes", "1 note", "unread", "—": the one
+   number that says whether you have worked on this passage. Nothing renders it
+   yet, and deliberately so: the renderer has no per-passage annotation count,
+   and the only total the shell can reach (library.getSummary) materialises
+   every note, anchor, highlight and fact in the library to count them, which
+   is not a price a nav rail may charge. Rendering "—" on every line instead
+   would not be honest — "no work here" and "not counted" are different claims.
+   The rule stays because the measurement is the deliverable: when a cheap
+   count(*) lands, the column is already drawn. */
+.rail-study-detail {
+  min-width: 0;
+  font-size: 11.5px;
+  line-height: 1.2;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Six lines, then the remainder as a count. It never scrolls: a scroller in
+   the rail is a second content area, and the rail is not a content area. */
+.rail-study-more {
+  padding: 7px 0;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+/* At 56px there is no label column for the block to sit on, and it has no icon
+   form — it is prose about the session, so it goes rather than shrinks. */
+.sidebar.collapsed .rail-study {
+  display: none;
+}
+
+/* ==========================================================================
+   The bottom bar
+   --------------------------------------------------------------------------
+   Under 980px the rail becomes a bottom bar and stops being a rail: no header,
+   no footer, no spacer. The block and the held line are prose in a strip that
+   has room only for verbs, so they go with them. The unread dot stays — it is
+   the one thing in the right column that still has somewhere to be.
+   ========================================================================== */
+
+@media (max-width: 979px) {
+  .rail-study,
+  .rail-held,
+  .sidebar .nav-count {
+    display: none;
+  }
+
+  .sidebar .nav-unread {
+    position: absolute;
+    top: 8px;
+    right: calc(50% - 14px);
+    margin: 0;
+  }
+}

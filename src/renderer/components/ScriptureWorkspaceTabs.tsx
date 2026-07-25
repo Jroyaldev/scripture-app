@@ -6,9 +6,11 @@ import {
   STUDY_WORKSPACE_TAB_LIMIT,
   studyWorkspaceGroupCloseAvailability,
   studyWorkspaceGroupLabel,
+  studyWorkspaceRegisterTabIds,
   studyWorkspaceTabCloseAvailability,
   studyWorkspaceTabLabel,
   studyWorkspaceTabLabelParts,
+  studyWorkspaceTabOrdinal,
   studyWorkspaceTabType,
   visibleStudyWorkspaceTabIds,
   type StudyWorkspaceGroup,
@@ -101,6 +103,30 @@ export function studyWorkspaceSearchMatches(query: string, ...terms: string[]): 
   if (tokens.length === 0) return true;
   const haystack = terms.join(" ").toLocaleLowerCase();
   return tokens.every((token) => haystack.includes(token));
+}
+
+/**
+ * Why the workspace could not be saved, in four words.
+ *
+ * A persistence failure is stated, never dramatised: nothing closes, nothing
+ * greys out, and the strip's baseline turns seal across its whole width. The
+ * copy is capped at four words because a sentence here reads as an apology for
+ * the passage you are looking at — and a failure to save the workspace must
+ * never look like a failure to open a passage.
+ */
+const PERSISTENCE_FAILURE_REASONS: ReadonlyArray<{ match: RegExp; reason: string }> = [
+  { match: /read[-\s]?only|EROFS|EACCES|EPERM/iu, reason: "Library is read only" },
+  { match: /ENOSPC|no space|disk full|quota/iu, reason: "Disk has no room" },
+  { match: /newer|conflict|revision|stale/iu, reason: "Another window saved first" },
+  { match: /ENOENT|missing|not found/iu, reason: "Library file went missing" },
+];
+
+const PERSISTENCE_FAILURE_FALLBACK = "Library did not answer";
+
+export function studyWorkspacePersistenceReason(error?: string): string {
+  if (!error) return PERSISTENCE_FAILURE_FALLBACK;
+  return PERSISTENCE_FAILURE_REASONS.find(({ match }) => match.test(error))?.reason
+    ?? PERSISTENCE_FAILURE_FALLBACK;
 }
 
 export function studyWorkspaceCloseActionCopy(
@@ -267,6 +293,10 @@ export function ScriptureWorkspaceTabs({
   const [renameGroupId, setRenameGroupId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
   const [hasMeasuredOverflow, setHasMeasuredOverflow] = useState(false);
+  // How many tabs are wholly inside the strip right now. Everything else in the
+  // register — scrolled past the cut, or folded inside a collapsed study — is
+  // "the rest", and the overflow control counts it as +n.
+  const [tabsInStrip, setTabsInStrip] = useState<number | null>(null);
   const [scrollEdges, setScrollEdges] = useState({ left: false, right: false });
   const [focusedTabId, setFocusedTabId] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<WorkspaceContextMenu | null>(null);
@@ -461,6 +491,15 @@ export function ScriptureWorkspaceTabs({
         left: viewport.scrollLeft > 2,
         right: viewport.scrollLeft + viewport.clientWidth < viewport.scrollWidth - 2,
       });
+      const box = viewport.getBoundingClientRect();
+      let shown = 0;
+      for (const node of tabRefs.current.values()) {
+        if (!node.isConnected) continue;
+        const rect = node.getBoundingClientRect();
+        // A tab clipped by the 36px edge fade is not readable, so it is not shown.
+        if (rect.left >= box.left - 1 && rect.right <= box.right + 1) shown += 1;
+      }
+      setTabsInStrip(shown);
     };
     measure();
     const observer = new ResizeObserver(measure);
@@ -840,7 +879,26 @@ export function ScriptureWorkspaceTabs({
   const registerTabIds = groups.flatMap(({ visibleTabs }) => visibleTabs.map((tab) => tab.id));
   const activeRegisterIndex = registerTabIds.indexOf(workspace.activeTabId);
   const flushStart = activeRegisterIndex === 0;
-  const flushEnd = activeRegisterIndex >= 0 && activeRegisterIndex === registerTabIds.length - 1;
+  // One tab is both first and last, and a 104px tab cannot supply both of the
+  // page's top corners. It takes the left one — case 2's payoff, with the other
+  // tabs merely absent — and its right fillet joins it to the page as usual.
+  const flushEnd = activeRegisterIndex >= 0 && activeRegisterIndex === registerTabIds.length - 1
+    && !flushStart;
+
+  // B·2 case 3 left this open: a flush-right tab claims the page's top-right
+  // corner, so nothing may sit to its right — and the study's own two answers
+  // ("left of the flush tab", "permanently left of the first tab") are the same
+  // answer once the register docks to the end that owns the corner. So when the
+  // last tab is active the whole run slides right to meet the page's edge and
+  // the controls take the space it leaves, immediately to its left. The other
+  // options each kill one of the two flush cases the study calls the payoff.
+  const actionsPlacement = flushEnd ? "before-flush-tab" : "strip-end";
+
+  // "The rest": everything the strip is not showing — scrolled past the 36px
+  // cut, or folded inside a collapsed study. The overflow control counts it.
+  const registerSize = studyWorkspaceRegisterTabIds(workspace).length;
+  const hiddenTabCount = tabsInStrip === null ? 0 : Math.max(0, registerSize - tabsInStrip);
+  const persistenceReason = studyWorkspacePersistenceReason(persistenceStatus.error);
 
   return (
     <nav
@@ -850,6 +908,8 @@ export function ScriptureWorkspaceTabs({
       data-study-overflowing={hasMeasuredOverflow || undefined}
       data-flush-start={flushStart || undefined}
       data-flush-end={flushEnd || undefined}
+      data-study-actions={actionsPlacement}
+      data-study-persistence={persistenceStatus.phase}
     >
       <div
         ref={viewportRef}
@@ -902,6 +962,9 @@ export function ScriptureWorkspaceTabs({
                   className="scripture-workspace-group-tab"
                   data-study-group-tab=""
                   data-study-group-id={group.id}
+                  // B3: a study with no active tab drops its bracket to 72% —
+                  // present, receded. Never a second ink, only less of the one.
+                  data-study-group-active={activeGroup?.group.id === group.id}
                   tabIndex={-1}
                   title={expandedGroupLabel}
                   aria-label={`Collapse study ${expandedGroupLabel}`}
@@ -1012,9 +1075,21 @@ export function ScriptureWorkspaceTabs({
           aria-live="polite"
         >
           {persistenceStatus.phase === "saving" ? "Saving…" : persistenceStatus.phase === "failed" ? (
-            <button type="button" onClick={() => { void onRetryPersistence(); }}>
-              Retry saving tabs
-            </button>
+            <>
+              {/* Four words for the reason, then the retry beside it. Nothing
+                  closes and nothing greys out: the seal baseline under the whole
+                  strip already says the workspace did not save. */}
+              <span className="scripture-workspace-persistence-reason" data-study-persistence-reason="">
+                {persistenceReason}
+              </span>
+              <button
+                type="button"
+                aria-label={`Retry saving tabs — ${persistenceReason}`}
+                onClick={() => { void onRetryPersistence(); }}
+              >
+                Retry
+              </button>
+            </>
           ) : <span className="sr-only">Tabs saved</span>}
         </span>
         {activeGroup && (
@@ -1076,10 +1151,21 @@ export function ScriptureWorkspaceTabs({
                 setOverflowAnchor(overflowButtonRef.current?.getBoundingClientRect() ?? null);
                 setOverflowOpen(true);
               }}
-              aria-label={`Show all ${totalTabs} study tabs`}
+              aria-label={hiddenTabCount > 0
+                ? `Show all ${totalTabs} study tabs — ${hiddenTabCount} not in the strip`
+                : `Show all ${totalTabs} study tabs`}
               aria-haspopup="dialog"
               aria-expanded={overflowOpen}
-            ><span aria-hidden="true"><OverflowGlyph /></span></button>
+            >
+              {/* Never squeeze: the strip scrolls and the remainder is counted.
+                  A count you can act on beats an icon that only means "more". */}
+              {hiddenTabCount > 0 ? (
+                <>
+                  <span className="scripture-workspace-overflow-count">{`+${hiddenTabCount}`}</span>
+                  <span aria-hidden="true"><CaretGlyph /></span>
+                </>
+              ) : <span aria-hidden="true"><OverflowGlyph /></span>}
+            </button>
           </Tooltip>
         )}
       </div>
@@ -1293,6 +1379,10 @@ export function ScriptureWorkspaceTabs({
                       const tabCloseAvailability = studyWorkspaceTabCloseAvailability(workspace, tab.id);
                       const canClose = tabCloseAvailability !== "unavailable";
                       const tabCloseCopy = studyWorkspaceCloseActionCopy(tabLabel, tabCloseAvailability);
+                      // ⌘1–9 counts across the whole register including collapsed
+                      // studies, and the numbers live here — never on the tabs. A
+                      // strip of shortcut hints is chrome about chrome.
+                      const ordinal = studyWorkspaceTabOrdinal(workspace, tab.id);
                       return (
                         <div className="scripture-workspace-overflow-row" data-study-all-tabs-row="" data-study-tab-id={tab.id} key={tab.id}>
                           <button
@@ -1302,6 +1392,12 @@ export function ScriptureWorkspaceTabs({
                           >
                             <TabMark tab={tab} /><span>{tabLabel}</span>
                             {workspace.activeTabId === tab.id && <small>Current</small>}
+                            {ordinal !== null && (
+                              <kbd
+                                className="scripture-workspace-overflow-shortcut"
+                                data-study-tab-ordinal={ordinal}
+                              >{`⌘${ordinal}`}</kbd>
+                            )}
                           </button>
                           <div className="scripture-workspace-row-tools">
                             <button

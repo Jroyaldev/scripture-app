@@ -1905,6 +1905,56 @@ export function visibleStudyWorkspaceTabIds(
   });
 }
 
+/**
+ * Every tab in the register, in register order, INCLUDING the members of
+ * collapsed studies.
+ *
+ * This is deliberately not `visibleStudyWorkspaceTabIds`: that list drops a
+ * collapsed study to its single APG proxy, which is right for roving focus and
+ * wrong for ordinals. ⌘1–9 counts across the whole register so the number under
+ * a tab never changes because a group folded — a shortcut that renumbers itself
+ * when you collapse a study is a shortcut you stop trusting.
+ */
+export function studyWorkspaceRegisterTabIds(
+  state: StudyWorkspaceStateV2,
+): string[] {
+  return state.groups.flatMap((group) => group.tabIds.filter(
+    (tabId) => state.tabsById[tabId]?.groupId === group.id,
+  ));
+}
+
+/** How many register ordinals the keyboard exposes: ⌘1 … ⌘9. */
+export const STUDY_WORKSPACE_ORDINAL_LIMIT = 9;
+
+/**
+ * The tab a 1-based register ordinal addresses, or `null` when the register is
+ * shorter than the ordinal. Only the first nine are addressable; a tenth
+ * shortcut is a shortcut nobody counts to.
+ */
+export function studyWorkspaceOrdinalTabId(
+  state: StudyWorkspaceStateV2,
+  ordinal: number,
+): string | null {
+  if (!Number.isInteger(ordinal) || ordinal < 1 || ordinal > STUDY_WORKSPACE_ORDINAL_LIMIT) {
+    return null;
+  }
+  return studyWorkspaceRegisterTabIds(state)[ordinal - 1] ?? null;
+}
+
+/**
+ * The ordinal shown beside a tab in the All Tabs list, or `null` when the tab
+ * sits past ⌘9. Numbers appear in that list and never on the tabs themselves —
+ * a strip of shortcut hints is chrome about chrome.
+ */
+export function studyWorkspaceTabOrdinal(
+  state: StudyWorkspaceStateV2,
+  tabId: string,
+): number | null {
+  const index = studyWorkspaceRegisterTabIds(state).indexOf(tabId);
+  if (index < 0 || index >= STUDY_WORKSPACE_ORDINAL_LIMIT) return null;
+  return index + 1;
+}
+
 function referenceLabel(
   reference: { book: string; chapter: number },
   bookNames?: StudyWorkspaceBookNames,
@@ -1957,6 +2007,36 @@ export function studyWorkspaceTabLabel(
 }
 
 /**
+ * The longest abbreviation the register prints: `1 THESS`. The table is fixed,
+ * so this is a check on the table rather than a truncation — if a book has no
+ * alias this short the label falls back to the shortest one it does have.
+ */
+const REGISTER_BOOK_ABBREVIATION_MAX = 7;
+
+/**
+ * Pick the register's fixed abbreviation for a book.
+ *
+ * Abbreviate only where abbreviating buys something: ACTS, MARK, LUKE and JOHN
+ * are already as short as their abbreviations, and clipping them to ACT or JOH
+ * makes the register harder to read for no width at all. Where the full name is
+ * long, take the first alias that fits — `1 Thessalonians` → `1 THESS`,
+ * `Philemon` → `PHLM`, and `Song of Solomon` → `SONG` rather than the
+ * next alias in the table, `Song of Songs`, which is longer than a tab.
+ */
+function registerBookAbbreviation(
+  names: readonly string[] | undefined,
+  fallback: string,
+): string {
+  const full = names?.[0];
+  if (!full) return fallback.toUpperCase();
+  if (full.length <= 5) return full.toUpperCase();
+  const fitted = names.find((name, index) => index > 0 && name.length <= REGISTER_BOOK_ABBREVIATION_MAX);
+  if (fitted) return fitted.toUpperCase();
+  const shortest = names.reduce((best, name) => (name.length < best.length ? name : best), full);
+  return shortest.toUpperCase();
+}
+
+/**
  * A register tab is a chapter, and it says so in two voices: the book in mono
  * caps, the chapter in serif numerals. The abbreviation is a fixed string from
  * the book-name table (`1 THESS`, `PHLM`), never a truncation computed at
@@ -1969,15 +2049,8 @@ export function studyWorkspaceTabLabelParts(
 ): { book: string; chapter: string; qualifier?: string } | null {
   if (tab.kind !== "passage") return null;
   const reference = tab.session.current;
-  const names = bookNames?.[reference.book];
-  const full = names?.[0];
-  // Abbreviate only where abbreviating buys something. ACTS, MARK and JOHN are
-  // already as short as their abbreviations; clipping them to ACT and JOH just
-  // makes the register harder to read for no width at all.
-  const book = (full && full.length <= 5 ? full : names?.[1] ?? full ?? reference.book)
-    .toUpperCase();
   return {
-    book,
+    book: registerBookAbbreviation(bookNames?.[reference.book], reference.book),
     chapter: String(reference.chapter),
     ...(studyWorkspaceTranslationCollisionTabIds(state).includes(tab.id)
       ? { qualifier: reference.packageId }

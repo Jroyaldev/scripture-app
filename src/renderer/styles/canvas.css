@@ -2,3 +2,134 @@
 
    Owned partial. New rules for this surface live here; anything that must
    CHANGE an existing rule in styles.css is reported, not shadowed. */
+
+/* ══ D2 · What the gutter carries ═══════════════════════════════════════════
+   The study names six states, one 32px column, zero effect on the prose:
+
+     faint      · the resting number, .38
+     hovered    · .8
+     selected   · a 2px seal mark, the number to ink, 8px of indent
+     has a note · a 4px seal dot
+     hidden     · hover-only mode; the number goes, the space stays
+     loading    · a 14px seal rule where the number goes
+
+   Four of those are built in styles.css. The two below are the ones that were
+   missing. Both are absolutely positioned inside the row's reserved gutter
+   track: out of flow, so they are not grid items, so turning either of them on
+   cannot widen the gutter or move a single word of the passage. That is the
+   whole contract — "switching visibility modes never reflows the passage
+   because the gutter's width is fixed."
+
+   Both sit on the centre line of the verse's FIRST line box, which is the same
+   line the selection mark spans. A psalm and a narrative chapter put their mark
+   in the same place, and so do these. */
+
+/* ── Has your note · a 4px dot ─────────────────────────────────────────────
+   The dot, not a chip and not a tint: the reader's own writing is the one
+   thing on this page the app did not put there, and it is announced in the
+   gutter like everything else. Seal, because a note is a human act. */
+.verse-note-dot {
+  position: absolute;
+  left: 0;
+  top: calc((var(--fs-reading) * var(--lh-reading) - 4px) / 2);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--study-gold);
+  pointer-events: none;
+}
+
+/* A verse can carry a note AND be selected. The mark owns lane 0–2 in that
+   case, so the dot steps clear of it by the study's own 4px gap rather than
+   printing on top of it. Instant: this is a state change, not a hover, and
+   nothing on this canvas animates its position. */
+.verse-line.selected .verse-note-dot {
+  left: 6px;
+}
+
+/* ── Loading this verse's apparatus · a 14px seal rule ─────────────────────
+   The chapter text and the chapter's apparatus (notes, anchors, highlights,
+   connections) are two queries from two effects, and the text routinely lands
+   first — so a rendered verse can genuinely not know yet whether it has a
+   note. The gutter says exactly that, in the same seal, with a rule where the
+   number would be.
+
+   The rule aligns its right edge to the number's, 12px off the measure, so the
+   placeholder occupies the number's optical position and not merely its lane.
+   Its width yields at the 24px gutter so it never reaches the mark's lane. */
+.verse-apparatus-tick {
+  position: absolute;
+  right: calc(100% - var(--verse-gutter) + 12px);
+  top: calc((var(--fs-reading) * var(--lh-reading) - 1px) / 2);
+  width: min(14px, calc(var(--verse-gutter) - 16px));
+  height: 1px;
+  background: var(--study-gold);
+  pointer-events: none;
+  /* 260ms is a threshold, not motion: how long the apparatus may take before
+     the gutter admits it is waiting. It holds back the ordinary sub-frame gap
+     between the two queries so it never blinks — `both` keeps the rule at zero
+     through the delay, so a fast load shows nothing at all. */
+  animation: verse-apparatus-tick-in var(--transition-fast) 260ms both;
+}
+
+@keyframes verse-apparatus-tick-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* The digits go on the same threshold, so the swap is one event rather than
+   two. `visibility` and not `opacity`: it holds the box, the line box and the
+   baseline exactly, which is what keeps the gutter — and therefore the measure
+   — from moving. No other rule in the sheet sets it on .verse-num, so there is
+   no cascade to fight; when the class comes off, the number is back instantly. */
+.verse-line.apparatus-loading .verse-num {
+  visibility: hidden;
+  transition: visibility 0s linear 260ms;
+}
+
+/* Reduced motion keeps the threshold and drops the fade. Removing the
+   animation outright would put the rule on screen at frame zero — the flash
+   the delay exists to prevent. */
+@media (prefers-reduced-motion: reduce) {
+  .verse-apparatus-tick {
+    animation-duration: 1ms;
+  }
+}
+
+/* ══ D5 · The fade is paper, not shadow ════════════════════════════════════
+   40px of paper-to-transparent, inside the radii, no shadow and no line. A
+   shadow there would read as a second plane; the point is that the text
+   continues under the leaf's own edge.
+
+   It hangs on the stage rather than inside the scroller, because the page IS
+   the scroll container — anything inside .scripture-content scrolls away with
+   the verses. The stage's box and the page's box are the same box: the Living
+   Margin is the stage's sibling, not its child.
+
+   z-index 1 clears the passage (positioned, z-index auto) and stays under the
+   marking dock at 10 and the floating palette's host at 120 — the toolbar is
+   the only floating element on this canvas and it stays on top of the leaf. */
+.scripture-reading-stage::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 40px;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: 0 0 var(--radius-page) var(--radius-page);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--bg-reading) 0%, transparent),
+    var(--bg-reading)
+  );
+}
+
+/* The narrow shell squares the page off; the fade follows it rather than
+   holding a corner the paper underneath no longer has. */
+@media (max-width: 979px) {
+  .scripture-reading-stage::after {
+    border-radius: 0;
+  }
+}

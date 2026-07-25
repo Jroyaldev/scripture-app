@@ -574,7 +574,7 @@
   --bg-primary: var(--canvas-solid);
   --bg-float: color-mix(in srgb, var(--paper-solid) 94%, transparent);
   --material-blur: 26px;
-  --material-saturate: 1.12;
+  --material-saturate: 1.28;
   --workspace-bar-bg: transparent;
 }
 
@@ -594,48 +594,57 @@
 /* Porcelain — true white surfaces and neutral ink. Bright brand gold remains
    a fill; thin non-text accents use a 3:1-safe deeper gold on white. */
 .theme-porcelain {
-  --canvas-solid: #F2F2F4;
+  --canvas-solid: #F4F4F6;
   --paper-solid: #FFFFFF;
-  --bg-canvas: #F2F2F4;
+  --bg-canvas: #F4F4F6;
   --bg-reading: #FFFFFF;
-  --bg-primary: #F2F2F4;
-  --bg-secondary: #E8E8EB;
+  --bg-primary: #F4F4F6;
+  --bg-secondary: #EBEBEF;
   --bg-float: #FFFFFF;
 
-  --text-primary: #2B2B2E;
-  --text-secondary: #63636A;
+  --text-primary: #2E2E33;
+  --text-secondary: #66666E;
   --text-tertiary: #8A8A92;
-  --text-verse-number: #AEAEB6;
-  --text-link: #4A6A88;
-  --text-link-hover: #35516B;
+  --text-verse-number: #ADADB6;
+  /* A link is the seal under a third name, exactly as it is on Paper and in
+     Ink. Porcelain had it as a slate blue, which said "machine wrote this"
+     about the one thing on screen the reader is meant to act on. */
+  --text-link: #96684A;
+  --text-link-hover: #7A5238;
   --text-on-accent: #FFFFFF;
 
-  --border-subtle: #E3E3E7;
+  --border-subtle: #E4E4E8;
   --border-medium: #D2D2D8;
-  --border-strong: #AEAEB6;
+  --border-strong: #ADADB6;
 
   /* Porcelain loses its bright amber. That value was saying "this is the crisp
      theme" instead of "you wrote this" — the accent's job is authorship, not
-     theme identity. Same two accents as Paper, at Porcelain's temperature. */
-  --accent-seal: #7C5B44;
-  --accent-seal-strong: #5F4433;
-  --accent-machine: #52627A;
-  --accent-warm: #7C5B44;
-  --accent-warm-light: #96725A;
-  --accent-source: #52627A;
-  --accent-ai: #52627A;
+     theme identity.
+
+     It does not get a *replacement* of its own either: two accent values, not
+     four. One brand hue at two lightnesses, chosen by the contrast requirement
+     rather than by theme, so Porcelain carries Paper's seal unchanged (4.80:1
+     on white) and Paper's machine hue unchanged. A third gold tuned "to
+     Porcelain's temperature" is the same mistake as the amber, quieter. */
+  --accent-seal: #96684A;
+  --accent-seal-strong: #7A5238;
+  --accent-machine: #5A6A7E;
+  --accent-warm: #96684A;
+  --accent-warm-light: #A87A58;
+  --accent-source: #5A6A7E;
+  --accent-ai: #5A6A7E;
   --accent-xref: #8A8A92;
-  --accent-current: #7C5B44;
-  --accent-user: #7C5B44;
-  --study-gold: #7C5B44;
-  --study-gold-focus: rgba(124, 91, 68, 0.34);
-  --study-hover-surface: #E8E8EB;
-  --study-hover-line: rgba(43, 43, 46, 0.10);
+  --accent-current: #96684A;
+  --accent-user: #96684A;
+  --study-gold: #96684A;
+  --study-gold-focus: rgba(150, 104, 74, 0.36);
+  --study-hover-surface: #EBEBEF;
+  --study-hover-line: rgba(46, 46, 51, 0.10);
   --workspace-bar-bg: var(--bg-canvas);
   --workspace-active-bg: var(--bg-reading);
 
   --map-water: #E9EEF2;
-  --map-land: #F2F2F4;
+  --map-land: #F4F4F6;
   --map-land-line: #C7C7CC;
   --map-grid: rgba(0, 0, 0, 0.07);
   --map-alternative: #74747A;
@@ -651,40 +660,50 @@
 /* Onyx — neutral blacks with the same bright gold ember. The shell also
    carries .dark, so all dark-only Shape and portal contracts participate. */
 .theme-onyx {
-  --canvas-solid: #151517;
-  --paper-solid: #1D1D20;
-  --bg-canvas: #151517;
-  --bg-reading: #1D1D20;
-  --bg-primary: #151517;
-  --bg-secondary: #101012;
-  --bg-float: #1D1D20;
+  /* The dark pair separates its two planes harder than the light pair does —
+     dark neutrals pull apart better at low luminance than light ones do at
+     high — so Onyx sinks its canvas rather than lifting its paper. Paper is
+     still the brightest plane; the gap is 4.0% OKLCH L, matching Ink's. */
+  --canvas-solid: #131316;
+  --paper-solid: #1C1C20;
+  --bg-canvas: #131316;
+  --bg-reading: #1C1C20;
+  --bg-primary: #131316;
+  --bg-secondary: #0F0F12;
+  --bg-float: #1C1C20;
 
+  /* Never pure white: 0.94 OKLCH lightness is the ceiling for dark-theme text
+     or the serif hums. Onyx's primary is Ink's #EDE8E0 at the cool hue and the
+     same lightness, not a brighter one. */
   --text-primary: #E9E9EC;
-  --text-secondary: #A3A3AA;
+  --text-secondary: #A0A0A8;
   --text-tertiary: #76767D;
-  --text-verse-number: #55555C;
-  --text-link: #9DB3CC;
-  --text-link-hover: #B8C8DC;
-  --text-on-accent: #1D1D20;
+  --text-verse-number: #55555E;
+  --text-link: #C99A6E;
+  --text-link-hover: #DDB289;
+  --text-on-accent: #1C1C20;
 
-  --border-subtle: #2A2A2E;
+  --border-subtle: #2C2C32;
   --border-medium: #3A3A3F;
-  --border-strong: #55555C;
+  --border-strong: #55555E;
 
-  /* Onyx loses its bright amber for the same reason Porcelain does. */
-  --accent-seal: #C0997E;
-  --accent-seal-strong: #D6B29A;
-  --accent-machine: #93A6BC;
-  --accent-warm: #C0997E;
-  --accent-warm-light: #D6B29A;
-  --accent-source: #93A6BC;
-  --accent-ai: #93A6BC;
+  /* Onyx loses its bright amber for the same reason Porcelain does — and, for
+     the same reason, does not get a replacement of its own. Two accent values
+     in the whole app: Ink's seal and machine hue carry into Onyx unchanged
+     (6.74:1 on Onyx paper). */
+  --accent-seal: #C99A6E;
+  --accent-seal-strong: #DDB289;
+  --accent-machine: #8FA3B8;
+  --accent-warm: #C99A6E;
+  --accent-warm-light: #DDB289;
+  --accent-source: #8FA3B8;
+  --accent-ai: #8FA3B8;
   --accent-xref: #76767D;
-  --accent-current: #C0997E;
-  --accent-user: #C0997E;
-  --study-gold: #C0997E;
-  --study-gold-focus: rgba(192, 153, 126, 0.42);
-  --study-hover-surface: #2A2A2E;
+  --accent-current: #C99A6E;
+  --accent-user: #C99A6E;
+  --study-gold: #C99A6E;
+  --study-gold-focus: rgba(201, 154, 110, 0.42);
+  --study-hover-surface: #2C2C32;
   --study-hover-line: rgba(233, 233, 236, 0.14);
   --workspace-bar-bg: var(--bg-canvas);
   --workspace-active-bg: var(--bg-reading);
@@ -964,7 +983,7 @@ html, body, #root {
   gap: 11px;
   width: 100%;
   min-height: var(--band);
-  padding: 0 12px 0 calc(var(--mark-w) + 12px);
+  padding: 0 12px 0 calc(var(--mark-w) + 9px);
   border: none;
   border-radius: 0 var(--radius-pebble) var(--radius-pebble) 0;
   background: none;
@@ -985,8 +1004,7 @@ html, body, #root {
   content: "";
   position: absolute;
   inset: 0 auto 0 0;
-  width: 2px;
-  border-radius: 0 var(--radius-mark) var(--radius-mark) 0;
+  width: var(--mark-w);
   background: transparent;
 }
 
@@ -2603,8 +2621,8 @@ html, body, #root {
    miniature: the two planes with the accent between them. */
 .theme-orb-light { background: linear-gradient(135deg, #FCFBF8 0 58%, #96684A 59% 67%, #F1EFEA 68%); }
 .theme-orb-dark { background: linear-gradient(135deg, #1D1B18 0 58%, #C99A6E 59% 67%, #141210 68%); border-color: rgba(237, 232, 224, 0.22); }
-.theme-orb-porcelain { background: linear-gradient(135deg, #FFFFFF 0 58%, #7C5B44 59% 67%, #F2F2F4 68%); border-color: rgba(0, 0, 0, 0.12); }
-.theme-orb-onyx { background: linear-gradient(135deg, #1D1D20 0 58%, #C0997E 59% 67%, #151517 68%); border-color: rgba(233, 233, 236, 0.22); }
+.theme-orb-porcelain { background: linear-gradient(135deg, #FFFFFF 0 58%, #96684A 59% 67%, #F4F4F6 68%); border-color: rgba(0, 0, 0, 0.12); }
+.theme-orb-onyx { background: linear-gradient(135deg, #1C1C20 0 58%, #C99A6E 59% 67%, #131316 68%); border-color: rgba(233, 233, 236, 0.22); }
 
 /* Living Margin toggle (topbar, sibling of theme toggle) */
 
@@ -2820,12 +2838,17 @@ html, body, #root {
 }
 
 .scripture-inner {
-  max-width: var(--reading-max-width);
+  max-width: calc(var(--reading-max-width) + var(--verse-gutter));
   margin: 0 auto;
 }
 
 .chapter-header {
-  margin-bottom: 26px;
+  /* The title belongs to the TEXT, so it sits on the measure's left edge. The
+     pericope break belongs to the PAGE and sits on the gutter's. That is the
+     whole distinction: one names what you are reading, the other marks where
+     the page folds. */
+  padding-left: var(--verse-gutter);
+  margin-bottom: var(--band);
 }
 
 .chapter-title {
@@ -2833,10 +2856,10 @@ html, body, #root {
   align-items: baseline;
   gap: 10px;
   font-family: var(--font-reading);
-  font-size: clamp(2.25rem, 1.9rem + 0.8vw, 2.75rem);
-  font-weight: var(--fw-semibold);
-  line-height: 1.08;
-  letter-spacing: -0.025em;
+  font-size: 38px;
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
   color: var(--text-primary);
 }
 
@@ -2876,7 +2899,7 @@ html, body, #root {
   grid-template-columns: var(--verse-gutter) minmax(0, 1fr);
   align-items: baseline;
   column-gap: 0;
-  margin-bottom: 2px;
+  margin-bottom: 14px;
   position: relative;
   /* Lift the row above the SVG highlight underlay (which sits at z-index 0
      inside the .verse-text stacking context). */
@@ -2934,7 +2957,6 @@ html, body, #root {
 .verse-line.selected .verse-num {
   color: var(--text-primary);
   opacity: 1;
-  padding-left: 8px;
 }
 
 .scripture-content .verse-line:focus {
@@ -12551,6 +12573,7 @@ button.lang-phrase-diagram-node:focus-visible {
 
 .sidebar-footer {
   position: relative;
+  overflow: hidden;
   padding: 10px;
   margin: 0;
   border-top: 1px solid var(--border-subtle);
@@ -12573,7 +12596,7 @@ button.lang-phrase-diagram-node:focus-visible {
 
 @keyframes rail-progress {
   from { transform: translateX(-100%); }
-  to { transform: translateX(394%); }
+  to { transform: translateX(294%); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -13586,8 +13609,8 @@ button.lang-phrase-diagram-node:focus-visible {
 
 .theme-preview-light { background: #F1EFEA; }
 .theme-preview-dark { background: #141210; border-color: rgba(237, 232, 224, 0.14); }
-.theme-preview-porcelain { background: #F2F2F4; border-color: rgba(0, 0, 0, 0.10); }
-.theme-preview-onyx { background: #151517; border-color: rgba(233, 233, 236, 0.14); }
+.theme-preview-porcelain { background: #F4F4F6; border-color: rgba(0, 0, 0, 0.10); }
+.theme-preview-onyx { background: #131316; border-color: rgba(233, 233, 236, 0.14); }
 
 .theme-preview-rail,
 .theme-preview-page,
@@ -13716,7 +13739,7 @@ textarea:focus-visible,
 }
 
 .app-shell.verse-nums-faint .verse-num {
-  color: color-mix(in srgb, var(--text-verse-number) 55%, transparent);
+  opacity: 0.38;
   font-weight: var(--fw-medium);
 }
 .app-shell.verse-nums-hover .verse-num {
@@ -17591,27 +17614,25 @@ button.lang-phrase-diagram-node:focus-visible,
    Same skeleton in poetry as in prose, so a psalm and a narrative chapter put
    their mark in exactly the same place. */
 .pericope-fold {
-  display: grid;
-  grid-template-columns: var(--verse-gutter) minmax(0, 1fr);
-  align-items: baseline;
-  margin: var(--band) 0 calc(var(--band) / 2);
+  display: block;
+  margin: var(--band) 0 24px;
 }
 
 /* On the gutter line, where the selection mark and the verse numbers already
    live — the page's structural column. 24 of the gutter's 32px. */
 .pericope-fold-rule {
-  align-self: center;
+  display: block;
   width: 24px;
-  height: 1px;
+  height: 1.5px;
   background: var(--study-gold);
 }
 
 /* Quieter than the scripture it introduces. It is an h3 for screen-reader
    navigation: visually recessive, structurally a heading. */
 .pericope-fold-title {
-  margin: 0;
+  margin: 10px 0 0;
   font: 500 11.5px/1.3 var(--font-ui);
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-tertiary);
 }
@@ -17656,6 +17677,13 @@ button.lang-phrase-diagram-node:focus-visible,
      number gets less room, the mark's lane does not move. */
   .app-shell {
     --verse-gutter: 24px;
+  }
+
+  /* Psalm 119:176 is three digits at mono 10px — about 18px — and the narrow
+     gutter leaves only 12px after the trailing gap, so the number overflowed
+     leftward into the selection mark's lane. */
+  .verse-num {
+    padding-right: 6px;
   }
 
   /* Nav becomes a bottom bar. The shell turns into a column and the rail takes

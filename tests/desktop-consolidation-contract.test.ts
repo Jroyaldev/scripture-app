@@ -189,10 +189,10 @@ test("the nav rail is canvas, and its active row is the only paper in it", () =>
   // its leading edge whether or not it is carrying a mark, so nothing moves
   // when one appears — the mark exists at rest and is simply transparent.
   assert.match(css, /--mark-w: 3px;/);
-  assert.match(css, /\.nav-item \{[\s\S]{0,420}padding: 0 12px 0 calc\(var\(--mark-w\) \+ 12px\);/);
+  assert.match(css, /\.nav-item \{[\s\S]{0,420}padding: 0 12px 0 calc\(var\(--mark-w\) \+ 9px\);/);
   assert.match(css, /\.nav-item \{[\s\S]{0,420}min-height: var\(--band\);/);
-  assert.match(css, /\.nav-item::before \{[\s\S]{0,240}width: 2px;[\s\S]{0,120}background: transparent;/);
-  assert.match(css, /\.nav-item::before \{[\s\S]{0,240}border-radius: 0 var\(--radius-mark\) var\(--radius-mark\) 0;/);
+  assert.match(css, /\.nav-item::before \{[\s\S]{0,240}width: var\(--mark-w\);[\s\S]{0,120}background: transparent;/);
+  assert.match(css, /\.nav-item::before \{[\s\S]{0,240}background: transparent;/);
   assert.match(css, /\.nav-item\.active::before \{\s*background: var\(--study-gold\);\s*\}/);
   // Rows run the rail's full width so the active one can end in its pebble at
   // the rail's edge — three scales of one material: pebble 4, tab 8, page 8.

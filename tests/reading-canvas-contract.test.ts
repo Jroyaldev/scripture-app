@@ -6,6 +6,7 @@ import { test } from "node:test";
 const repoRoot = resolve(import.meta.dirname, "..");
 const page = readFileSync(join(repoRoot, "src", "renderer", "components", "ScripturePage.tsx"), "utf-8");
 const css = readFileSync(join(repoRoot, "src", "renderer", "styles.css"), "utf-8");
+const canvas = readFileSync(join(repoRoot, "src", "renderer", "styles", "canvas.css"), "utf-8");
 
 test("reading canvas is a semantic chapter article without ambient AI tags", () => {
   assert.match(page, /<article className="scripture-inner" aria-labelledby="reading-chapter-title">/);
@@ -75,6 +76,45 @@ test("verse rows use quiet material states and keyboard spatial navigation", () 
   for (const hue of ["yellow", "green", "blue", "pink", "purple"]) {
     assert.match(css, new RegExp(`\\.verse-line\\.selected\\.hl-${hue}::before \\{ background: var\\(--hl-${hue}-mark\\); \\}`));
   }
+});
+
+test("the gutter carries a note dot and a loading rule, and neither is a grid item", () => {
+  // Two of the six states the gutter carries. "Has your note" is a 4px seal
+  // dot; "loading this verse's apparatus" is a 14px seal rule where the number
+  // goes. Both are announced in the gutter and nowhere else.
+  assert.match(page, /hasNote && <span className="verse-note-dot" aria-hidden="true" \/>/);
+  assert.match(page, /apparatusLoading && <span className="verse-apparatus-tick" aria-hidden="true" \/>/);
+  assert.match(canvas, /\.verse-note-dot\s*\{[\s\S]*width: 4px;\s*height: 4px;\s*border-radius: 50%;\s*background: var\(--study-gold\);/);
+  assert.match(canvas, /\.verse-apparatus-tick\s*\{[\s\S]*height: 1px;\s*background: var\(--study-gold\);/);
+
+  // The load of the whole thing: both marks are OUT OF FLOW. A grid item in the
+  // gutter track could widen it, and a wider gutter reflows the passage — which
+  // is the one thing the reserved gutter exists to make impossible.
+  for (const mark of ["\\.verse-note-dot", "\\.verse-apparatus-tick"]) {
+    assert.match(canvas, new RegExp(`${mark}\\s*\\{[\\s\\S]*?position: absolute;[\\s\\S]*?\\}`));
+  }
+
+  // The number's box survives the loading swap. `visibility` holds the box, the
+  // line box and the baseline; `opacity` or `display` would not.
+  assert.match(canvas, /\.verse-line\.apparatus-loading \.verse-num\s*\{\s*visibility: hidden;/);
+
+  // A threshold, not motion: the apparatus query normally beats a frame, and a
+  // rule that appeared instantly would blink on every navigation.
+  assert.match(canvas, /animation: verse-apparatus-tick-in var\(--transition-fast\) 260ms both;/);
+  assert.match(canvas, /@media \(prefers-reduced-motion: reduce\)\s*\{\s*\.verse-apparatus-tick\s*\{\s*animation-duration: 1ms;/);
+});
+
+test("the page's own bottom is 40px of paper, not a shadow and not a line", () => {
+  // The text continues under the leaf's edge. A shadow there would read as a
+  // second plane, and a rule would draw a boundary the page does not have.
+  // It hangs on the stage, not inside .scripture-content: the page IS the
+  // scroll container, so anything inside it scrolls away with the verses.
+  const fade = canvas.match(/\.scripture-reading-stage::after\s*\{([^}]*)\}/)?.[1];
+  assert.ok(fade, "the reading stage carries the page's bottom fade");
+  assert.match(fade, /height: 40px;/);
+  assert.match(fade, /border-radius: 0 0 var\(--radius-page\) var\(--radius-page\);/);
+  assert.match(fade, /background: linear-gradient\(/);
+  assert.doesNotMatch(fade, /box-shadow|border(?!-radius)/);
 });
 
 test("no verse row state ever washes the measure", () => {

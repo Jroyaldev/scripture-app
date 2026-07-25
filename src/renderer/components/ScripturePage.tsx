@@ -1374,6 +1374,37 @@ export function ScripturePage({
     highlights: normalizedHighlights,
   }), [normalizedHighlights, visibleMarginData]);
 
+  /**
+   * Verses this reader has written a note against — the gutter's "has your
+   * note" state, said with a 4px dot and nothing else.
+   *
+   * The predicate is the Living Margin's own (findNoteForRange): an anchor in
+   * this chapter whose span covers the verse, AND a note record actually
+   * present for it. Anchors alone would let a dangling anchor claim a note the
+   * reader cannot open.
+   */
+  const versesWithNotes = useMemo<ReadonlySet<number>>(() => {
+    const noteIds = new Set(visibleMarginData.notes.map((note) => note.id));
+    const verses = new Set<number>();
+    for (const anchor of visibleMarginData.anchors) {
+      if (anchor.chapter !== chapter || !noteIds.has(anchor.note_id)) continue;
+      for (let verse = anchor.verse_start; verse <= anchor.verse_end; verse += 1) verses.add(verse);
+    }
+    return verses;
+  }, [chapter, visibleMarginData.anchors, visibleMarginData.notes]);
+
+  /**
+   * True while this chapter's apparatus — notes, anchors, highlights,
+   * connections — is still in flight. The chapter text and the apparatus are
+   * two separate queries fired from two separate effects, and the text
+   * routinely lands first, so there is a real window in which a rendered verse
+   * cannot yet say whether it carries a note.
+   *
+   * The gutter says so: a 14px seal rule where the number goes. The CSS holds
+   * it back for 260ms so the usual sub-frame gap never blinks.
+   */
+  const apparatusLoading = marginDataChapterKey !== `${sessionOwnerTabId}:${book}:${chapter}`;
+
   const selectedConnection = useMemo(() => {
     if (connectionCardRecovery) {
       const commandConnection = connectionCardRecovery.kind === "update"
@@ -5070,6 +5101,7 @@ export function ScripturePage({
               const contAbove = !!prevV && verseBridges.has(prevV.verse);
               const contBelow = verseBridges.has(v.verse);
               const isSelected = selectedVerses.has(v.verse);
+              const hasNote = versesWithNotes.has(v.verse);
               const rowClasses = [
                 "verse-line",
                 isSelected ? "selected" : "",
@@ -5078,6 +5110,8 @@ export function ScripturePage({
                 getHighlightClass(v.verse),
                 contAbove ? "cont-above" : "",
                 contBelow ? "cont-below" : "",
+                hasNote ? "has-note" : "",
+                apparatusLoading ? "apparatus-loading" : "",
               ].filter(Boolean).join(" ");
               const textClasses = [
                 "verse-text-span",
@@ -5102,6 +5136,12 @@ export function ScripturePage({
                     else verseRowRefs.current.delete(v.verse);
                   }}
                 >
+                  {/* The gutter's two remaining states. Both are absolutely
+                      positioned inside the reserved 32px track, so neither can
+                      widen it and neither is a grid item — the passage cannot
+                      reflow when either turns on. */}
+                  {hasNote && <span className="verse-note-dot" aria-hidden="true" />}
+                  {apparatusLoading && <span className="verse-apparatus-tick" aria-hidden="true" />}
                   <span className="verse-num">{v.verse}</span>
                   <span className={textClasses}>{v.text}</span>
                   {/* The grips are the mark, grown. They are aria-hidden and

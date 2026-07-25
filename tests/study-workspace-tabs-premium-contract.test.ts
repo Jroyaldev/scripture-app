@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { test } from "node:test";
 import {
+  studyWorkspacePersistenceReason,
   studyWorkspaceSearchMatches,
   studyWorkspaceRovingTabId,
 } from "../src/renderer/components/ScriptureWorkspaceTabs.js";
@@ -13,6 +14,10 @@ const componentSource = readFileSync(
 );
 const stylesSource = readFileSync(
   resolve(import.meta.dirname, "../src/renderer/styles.css"),
+  "utf8",
+);
+const registerSource = readFileSync(
+  resolve(import.meta.dirname, "../src/renderer/styles/register.css"),
   "utf8",
 );
 
@@ -201,4 +206,91 @@ test("the register is a strip of canvas the active page is pulled up through", (
   assert.match(rail, /\.scripture-workspace-viewport \{[\s\S]{0,320}overflow-x: auto;\s*overflow-y: visible;/);
   assert.match(rail, /@media \(forced-colors: active\)/);
   assert.match(rail, /@media \(prefers-reduced-motion: reduce\)/);
+});
+
+test("the fillets reserve their own 16px of footprint, dropped on the flush side", () => {
+  // B·2 case 1: "The 8px fillets add 16px to the tab's footprint, which is why
+  // the neighbouring tabs sit 8px further out." Without the margin the fillets
+  // paint over the neighbouring tab instead of pushing it clear.
+  assert.match(
+    registerSource,
+    /\.scripture-workspace-viewport \.scripture-workspace-tab-wrap\.is-selected \{\s*margin-inline: var\(--radius-page\);\s*\}/,
+  );
+  // At either end the tab becomes the page's corner, so that side has no fillet
+  // and reserves nothing for one.
+  assert.match(registerSource, /\[data-flush-start\][\s\S]{0,140}\.is-selected \{\s*margin-inline-start: 0;/);
+  assert.match(registerSource, /\[data-flush-end\][\s\S]{0,140}\.is-selected \{\s*margin-inline-end: 0;/);
+  // 104px min width leaves a flat run of 104 - 8 - 8 = 88px between the two top
+  // curves, comfortably over the 40px floor the study sets.
+  assert.match(stylesSource, /\.scripture-workspace-tab \{[\s\S]{0,420}min-width: 104px;/);
+});
+
+test("a flush-right tab docks the register so nothing sits between it and the page's corner", () => {
+  // B·2 case 3 left this open. A flush tab only claims the page's corner if it
+  // reaches it, so the register docks to the end that owns the corner and the
+  // controls take the space the run vacates — immediately left of the flush
+  // tab, which is also left of the first tab. Both of the study's phrasings.
+  assert.match(registerSource, /\.scripture-workspace-bar\[data-flush-end\] \{\s*justify-content: flex-end;\s*\}/);
+  assert.match(
+    registerSource,
+    /\.scripture-workspace-bar\[data-flush-end\] \.scripture-workspace-actions \{\s*order: -1;\s*\}/,
+  );
+  assert.match(componentSource, /const actionsPlacement = flushEnd \? "before-flush-tab" : "strip-end"/);
+  assert.match(componentSource, /data-study-actions=\{actionsPlacement\}/);
+  // A single tab cannot supply both top corners; it takes the left one.
+  assert.match(componentSource, /activeRegisterIndex === registerTabIds\.length - 1\s*&& !flushStart/);
+  // Separate with interval, not with lines: the controls' keyline is gone.
+  assert.match(
+    registerSource,
+    /\.scripture-workspace-bar \.scripture-workspace-actions \{[\s\S]{0,120}border-left: 0;/,
+  );
+});
+
+test("a persistence failure seals the strip's baseline and states four words beside the retry", () => {
+  // B4: nothing closes, nothing greys out — the baseline turns seal across the
+  // page's width and the reason is four words. A failure to save the workspace
+  // must never look like a failure to open a passage.
+  assert.match(componentSource, /data-study-persistence=\{persistenceStatus\.phase\}/);
+  assert.match(
+    registerSource,
+    /\.scripture-workspace-bar\[data-study-persistence="failed"\]::after \{[\s\S]{0,260}background: var\(--study-gold\);/,
+  );
+  assert.match(
+    registerSource,
+    /\.scripture-workspace-bar\[data-study-persistence="failed"\]::after \{[\s\S]{0,260}height: 1px;/,
+  );
+  // The baseline is the page's top edge, so it stops where the page stops.
+  assert.match(registerSource, /left: var\(--page-inset\);\s*right: var\(--page-inset\);/);
+  assert.match(componentSource, /data-study-persistence-reason=""/);
+  assert.match(componentSource, /<span className="scripture-workspace-persistence-reason"/);
+
+  for (const [error, reason] of [
+    ["EACCES: permission denied", "Library is read only"],
+    ["the library is read-only", "Library is read only"],
+    ["ENOSPC: no space left on device", "Disk has no room"],
+    ["refused: newer version on disk", "Another window saved first"],
+    ["ENOENT: no such file", "Library file went missing"],
+    [undefined, "Library did not answer"],
+    ["something nobody mapped", "Library did not answer"],
+  ] as ReadonlyArray<[string | undefined, string]>) {
+    assert.equal(studyWorkspacePersistenceReason(error), reason);
+    assert.equal(
+      studyWorkspacePersistenceReason(error).split(" ").length,
+      4,
+      `"${studyWorkspacePersistenceReason(error)}" is not four words`,
+    );
+  }
+});
+
+test("overflow counts the rest and the register's ordinals live in that list", () => {
+  // B4: "a +7 count opens the rest as a list" — the count is the part you can
+  // act on. And B5: numbers appear in the overflow list, never on the tabs.
+  assert.match(componentSource, /const hiddenTabCount = tabsInStrip === null \? 0 : Math\.max\(0, registerSize - tabsInStrip\)/);
+  assert.match(componentSource, /className="scripture-workspace-overflow-count">\{`\+\$\{hiddenTabCount\}`\}/);
+  assert.match(componentSource, /const ordinal = studyWorkspaceTabOrdinal\(workspace, tab\.id\)/);
+  assert.match(componentSource, /className="scripture-workspace-overflow-shortcut"/);
+  assert.match(componentSource, /data-study-tab-ordinal=\{ordinal\}/);
+  // The tabs themselves stay clean: no shortcut hint is rendered in the strip.
+  const tablist = section(componentSource, 'role="tablist"', '<div className="scripture-workspace-actions"');
+  assert.doesNotMatch(tablist, /⌘/);
 });

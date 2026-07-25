@@ -54,6 +54,7 @@ import {
   moveStudyWorkspaceTab,
   openEntityWorkspaceTab,
   openPassageWorkspaceTab,
+  orderedStudyWorkspaceTabs,
   reopenClosedStudyItem,
   reopenClosedStudyItemAt,
   renameStudyWorkspaceGroup,
@@ -63,7 +64,9 @@ import {
   returnEntityWorkspaceToOrigin,
   selectStudyWorkspaceTab,
   studyWorkspaceGroupLabel,
+  studyWorkspaceOrdinalTabId,
   studyWorkspaceTabCloseAvailability,
+  studyWorkspaceTabLabelParts,
   toggleStudyWorkspaceGroup,
   truncateEntityResearchTrail,
   updateActiveStudyCanvasSession,
@@ -206,6 +209,23 @@ function SettingsIcon(): React.JSX.Element {
   );
 }
 
+/** Six lines, then the remainder as a count. The block never scrolls. */
+const STUDY_BLOCK_LINE_CAP = 6;
+
+/**
+ * The rail's right-hand figure. Tabular mono with the locale's own thousands
+ * separator, and a hard ceiling: past 9,999 the exact number stops being
+ * something a rail can usefully carry, so it says "9,999+" and the column
+ * keeps one width. Right-aligned to the 220px line, so the digits stack into a
+ * column no matter the magnitude — the count is never allowed to push the
+ * label, the label ellipses instead.
+ */
+function formatNavCount(count: number): string {
+  if (!Number.isFinite(count) || count <= 0) return "0";
+  const whole = Math.floor(count);
+  return whole > 9999 ? `${(9999).toLocaleString()}+` : whole.toLocaleString();
+}
+
 interface NavItemProps {
   active: boolean;
   onClick: () => void;
@@ -214,10 +234,40 @@ interface NavItemProps {
   icon: React.JSX.Element;
   /** Keyboard digit shown in tooltip, e.g. "1" → "Read (1)" */
   shortcut?: string;
+  /**
+   * The row's figure. A row without one leaves the column empty rather than
+   * showing a zero: "nothing here yet" and "I have not counted" are different
+   * statements, and only the first is worth a glyph.
+   */
+  count?: number;
+  /**
+   * A 5px seal dot that REPLACES the count — never joins it. Two numbers in
+   * one row is a dashboard, not a rail.
+   */
+  unread?: boolean;
 }
 
-function NavItem({ active, onClick, disabled = false, label, icon, shortcut }: NavItemProps): React.JSX.Element {
-  const tip = shortcut ? `${label} (${shortcut})` : label;
+function NavItem({
+  active,
+  onClick,
+  disabled = false,
+  label,
+  icon,
+  shortcut,
+  count,
+  unread = false,
+}: NavItemProps): React.JSX.Element {
+  const figure = unread ? null : count === undefined ? null : formatNavCount(count);
+  // Collapsed, the row is an icon and a tooltip. The tooltip carries the label
+  // AND its figure — the same two pieces the expanded row shows — so nothing
+  // is lost by collapsing. aria-label overrides the row's own children for the
+  // accessible name, so the figure has to be spelled out here or it is silent.
+  const tip = [
+    shortcut ? `${label} (${shortcut})` : label,
+    unread ? "unread" : figure,
+  ]
+    .filter((part): part is string => Boolean(part))
+    .join(" · ");
   return (
     <button
       className={`nav-item${active ? " active" : ""}`}
@@ -230,7 +280,13 @@ function NavItem({ active, onClick, disabled = false, label, icon, shortcut }: N
     >
       {icon}
       <span className="nav-label">{label}</span>
-      {shortcut && <span className="nav-shortcut" aria-hidden="true">{shortcut}</span>}
+      {unread ? (
+        <span className="nav-unread" aria-hidden="true" />
+      ) : figure !== null ? (
+        <span className="nav-count" aria-hidden="true">{figure}</span>
+      ) : shortcut ? (
+        <span className="nav-shortcut" aria-hidden="true">{shortcut}</span>
+      ) : null}
     </button>
   );
 }
@@ -1379,6 +1435,21 @@ export function App(): React.JSX.Element {
         return;
       }
 
+      // Command-digit jumps to a tab by its place in the register. The ordinal
+      // counts across the WHOLE register including collapsed studies, so
+      // folding one does not silently renumber every shortcut after it.
+      if (event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey
+        && /^[1-9]$/u.test(event.key)) {
+        const tabId = studyWorkspaceOrdinalTabId(current, Number(event.key));
+        if (!tabId) return;
+        event.preventDefault();
+        event.stopPropagation();
+        void selectWorkspaceTab(tabId).then((approved) => {
+          if (approved) focusWorkspaceTabAfterCommit(tabId);
+        });
+        return;
+      }
+
       if (!(event.metaKey || event.ctrlKey) || event.altKey) return;
       const key = event.key.toLocaleLowerCase();
       if (key === "w" && !event.shiftKey) {
@@ -1705,6 +1776,36 @@ export function App(): React.JSX.Element {
   const activeStudyLabel = activeStudyGroup
     ? studyWorkspaceGroupLabel(studyWorkspace, activeStudyGroup, bookNames)
     : "Current study";
+
+  // The rail's study block. It may only show what is already open, and it may
+  // not be a second way to navigate — so it reads the register it is
+  // describing and renders it as prose: no buttons, no hover, no reordering,
+  // no close affordances. Passages only; an entity tab is a research detour,
+  // not a passage in the study.
+  //
+  // One passage open is not a study, so the block does not render at all until
+  // there are two. Six lines, then the remainder as a count; it never scrolls.
+  const studyBlockPassages = activeStudyGroup
+    ? orderedStudyWorkspaceTabs(studyWorkspace, activeStudyGroup.id).filter(
+        (tab) => tab.kind === "passage",
+      )
+    : [];
+  // Named groups lend the block their name; an automatic group has no name of
+  // its own to lend, only the reference of its home tab, which is already on
+  // screen in the register and would read here as a duplicate.
+  const studyBlockKicker = activeStudyGroup?.label.kind === "custom"
+    ? activeStudyGroup.label.value
+    : "This study";
+  const studyBlockLines = studyBlockPassages.slice(0, STUDY_BLOCK_LINE_CAP).map((tab) => {
+    const parts = studyWorkspaceTabLabelParts(studyWorkspace, tab, bookNames);
+    return {
+      id: tab.id,
+      reference: parts ? `${parts.book} ${parts.chapter}` : tab.id,
+      current: tab.id === studyWorkspace.activeTabId,
+    };
+  });
+  const studyBlockOverflow = studyBlockPassages.length - studyBlockLines.length;
+
   const commandActions: CommandPaletteAction[] = [
     {
       id: "new-note",
@@ -1860,9 +1961,39 @@ export function App(): React.JSX.Element {
                 <NavItem active={view === "write"} onClick={() => { void changeView("write"); }} disabled={authoredMutationState !== "idle"} label="Write" icon={<WriteIcon />} shortcut="2" />
                 <NavItem active={view === "notes"} onClick={() => { void changeView("notes"); }} disabled={authoredMutationState !== "idle"} label="My notes" icon={<NotesIcon />} shortcut="3" />
                 <NavItem active={view === "search"} onClick={() => { void changeView("search"); }} disabled={authoredMutationState !== "idle"} label="Search" icon={<SearchIcon />} shortcut="4" />
-                <div className="nav-divider" />
+                {/* Five rows, one uninterrupted run on the 32+2 rhythm. The
+                    divider that used to sit here was a line doing a job the
+                    system does with interval, and it cost 29px that landed on
+                    no row boundary — the one thing the rail's grid cannot
+                    absorb. Settings reads as the last row because it is last,
+                    which is how the other four read as an order too. */}
                 <NavItem active={view === "settings"} onClick={() => { void changeView("settings"); }} disabled={authoredMutationState !== "idle"} label="Settings" icon={<SettingsIcon />} shortcut="5" />
               </div>
+              {authoredMutationState !== "idle" && (
+                <p className="rail-held" role="status">
+                  {authoredMutationState === "recovery"
+                    ? "Recovering a write · navigation held"
+                    : "Writing a connection · navigation held"}
+                </p>
+              )}
+              {studyBlockPassages.length >= 2 && (
+                <section className="rail-study" aria-label={studyBlockKicker}>
+                  <p className="rail-study-kicker">{studyBlockKicker}</p>
+                  <ul className="rail-study-list">
+                    {studyBlockLines.map((line) => (
+                      <li
+                        key={line.id}
+                        className={`rail-study-line${line.current ? " is-current" : ""}`}
+                      >
+                        <span className="rail-study-ref">{line.reference}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {studyBlockOverflow > 0 && (
+                    <p className="rail-study-more">{`+${studyBlockOverflow} more`}</p>
+                  )}
+                </section>
+              )}
               <div className="sidebar-spacer" />
               <div className="sidebar-footer">
                 <button

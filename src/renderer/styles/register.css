@@ -1,4 +1,221 @@
 /* Quire study audit — register
 
    Owned partial. New rules for this surface live here; anything that must
-   CHANGE an existing rule in styles.css is reported, not shadowed. */
+   CHANGE an existing rule in styles.css is reported, not shadowed. Every
+   selector below is scoped tightly enough to win on specificity rather than on
+   source order — @import puts this file BEFORE the token block, so a bare
+   class here would lose every tie. */
+
+
+/* ── The fillet's footprint ───────────────────────────────────────────────
+
+   B·2 case 1: "The 8px fillets add 16px to the tab's footprint, which is why
+   the neighbouring tabs sit 8px further out."
+
+   The fillets are the tab's own pseudo-elements, drawn OUTSIDE its box at
+   left/right -8px. Without a matching margin they paint over the neighbouring
+   tab's label gutter, and the register loses the 16px of interval that makes
+   the active tab read as a raised part of the page rather than a chip laid on
+   top of the row. The margin is the fillet's reserved space, so it is carried
+   by the selected wrap and dropped on whichever side the tab is flush. */
+.scripture-workspace-viewport .scripture-workspace-tab-wrap.is-selected {
+  margin-inline: var(--radius-page);
+}
+
+.scripture-workspace-bar[data-flush-start]
+  .scripture-workspace-viewport .scripture-workspace-tab-wrap.is-selected {
+  margin-inline-start: 0;
+}
+
+.scripture-workspace-bar[data-flush-end]
+  .scripture-workspace-viewport .scripture-workspace-tab-wrap.is-selected {
+  margin-inline-end: 0;
+}
+
+/* A study interval still has to clear the fillet: 12px of canvas between
+   groups is less than the 16px the shape needs, so a selected first-of-group
+   tab keeps the larger of the two. */
+.scripture-workspace-viewport
+  .scripture-workspace-tab-wrap.is-selected[data-study-group-start="true"] {
+  margin-inline-start: 14px;
+}
+
+
+/* ── Where + PASSAGE goes when the last tab is flush right ────────────────
+
+   B·2 case 3 raised this and left it open: "the + PASSAGE affordance can no
+   longer sit at the far right of the strip when the last tab is active. It
+   moves to the left of the flush tab, or into the overflow control — worth
+   deciding before this ships." B·2·4 adds an instinct: "permanently left of
+   the first tab."
+
+   Those read as two answers but they are one. A flush tab only claims the
+   page's corner if it actually reaches it, so the register has to dock to the
+   end that owns the corner: left-aligned normally (case 2's payoff — the first
+   tab supplies the page's top-left corner), right-aligned when the last tab is
+   active. Docked right, the controls sit immediately left of the flush tab AND
+   left of the first tab. Both of the study's phrasings are satisfied at once.
+
+   The alternatives each destroy one of the two cases the study's own header
+   calls "the detail that proves the whole idea": pinning the controls far right
+   means flush-end can never be true, and pinning them far left means
+   flush-start can never be true.
+
+   Instant, like the fill and the fillet — the silhouette resolves in one
+   frame rather than sliding into place. */
+.scripture-workspace-bar[data-flush-end] {
+  justify-content: flex-end;
+}
+
+.scripture-workspace-bar[data-flush-end] .scripture-workspace-viewport {
+  flex: 0 1 auto;
+}
+
+.scripture-workspace-bar[data-flush-end] .scripture-workspace-actions {
+  order: -1;
+}
+
+/* Separate with interval, not with lines. The controls' 1px keyline is the
+   same third device B·2·4 retired from in front of the Research tabs — 14px of
+   canvas says it without drawing anything. */
+.scripture-workspace-bar .scripture-workspace-actions {
+  padding-left: 14px;
+  border-left: 0;
+}
+
+
+/* ── Persistence failed ───────────────────────────────────────────────────
+
+   B4: "The strip's baseline — normally invisible because the active tab is
+   continuous with the page — turns seal across its whole width. Nothing
+   closes, nothing greys out, and the reason is stated in four words beside the
+   retry."
+
+   The baseline is the page's top edge, so it runs the page's width and not the
+   window's: it starts where the first tab starts and stops where the page
+   stops, which is the far side of the gutter when the margin is open. */
+.scripture-workspace-bar[data-study-persistence="failed"]::after {
+  content: "";
+  position: absolute;
+  left: var(--page-inset);
+  right: var(--page-inset);
+  bottom: 0;
+  height: 1px;
+  background: var(--study-gold);
+  pointer-events: none;
+}
+
+.scripture-page:has(.living-margin)
+  .scripture-workspace-bar[data-study-persistence="failed"]::after {
+  right: calc(var(--margin-width) + var(--pane-gutter) + var(--page-inset));
+}
+
+/* Reason and retry read as one line of chrome: mono caps, the reason in seal
+   ink, the retry in page ink over a 1px seal rule so it is the only thing that
+   looks pressable. No error fill, no icon — a failure to save the workspace
+   must never look like a failure to open a passage. */
+.scripture-workspace-bar .scripture-workspace-persistence.is-failed {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 1px;
+}
+
+.scripture-workspace-persistence-reason {
+  color: var(--study-gold);
+  font: 500 9.5px/1 var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.scripture-workspace-bar .scripture-workspace-persistence.is-failed button {
+  min-height: 24px;
+  padding: 0 1px 2px;
+  border-radius: 0;
+  border-bottom: 1px solid var(--study-gold);
+  background: transparent;
+  color: var(--text-primary);
+  font: 500 9.5px/1 var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+
+/* ── Overflow: a count, not an icon ───────────────────────────────────────
+
+   B4: "a +7 count opens the rest as a list." The count is the part you can act
+   on; three dots only say "more". Mono, because it is a quantity of chrome. */
+.scripture-workspace-bar .scripture-workspace-overflow {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 6px;
+}
+
+.scripture-workspace-overflow-count {
+  color: var(--text-primary);
+  font: 500 10px/1 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+
+/* ── The overflow list ────────────────────────────────────────────────────
+
+   B4: "Selection uses the same 2px seal mark as the nav rail and the command
+   palette." A row is marked on a reserved gutter, never filled: the 2px rule
+   sits in space every row already carries, so nothing reflows when selection
+   moves. */
+.scripture-workspace-overflow-list .scripture-workspace-overflow-row > button {
+  border-left: 2px solid transparent;
+}
+
+.scripture-workspace-overflow-list .scripture-workspace-overflow-row > button.is-active {
+  border-left-color: var(--study-gold);
+}
+
+/* ⌘1–9 counts across the whole register including collapsed studies, and the
+   numbers live here rather than on the tabs. Tertiary ink: a hint you can find
+   when you look for it and never read by accident. */
+.scripture-workspace-overflow-shortcut {
+  margin-left: auto;
+  flex: 0 0 auto;
+  color: var(--text-tertiary);
+  font: 500 9px/1 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+
+/* ── Group brackets ───────────────────────────────────────────────────────
+
+   B3: "A group with no active tab drops its rule and label to 72% — present,
+   receded." Opacity, not a second ink: the bracket is already the quietest
+   thing in the strip and a paler grey would put it below the canvas. */
+.scripture-workspace-viewport .scripture-workspace-group-tab[data-study-group-active="false"] {
+  opacity: 0.72;
+}
+
+
+/* ── Drag and drop ────────────────────────────────────────────────────────
+
+   B2 rules: "the drop point is a 2px seal insertion rule", faded in over
+   120ms. It is seal because it is a mark the app is making on your behalf, in
+   the same ink as every other selection mark in the app. */
+.scripture-workspace-viewport .scripture-workspace-tab-wrap[data-study-drop="before"]::before,
+.scripture-workspace-viewport .scripture-workspace-tab-wrap[data-study-drop="after"]::after {
+  background: var(--study-gold);
+  animation: scripture-workspace-insertion-in 120ms ease;
+}
+
+@keyframes scripture-workspace-insertion-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scripture-workspace-viewport .scripture-workspace-tab-wrap[data-study-drop="before"]::before,
+  .scripture-workspace-viewport .scripture-workspace-tab-wrap[data-study-drop="after"]::after {
+    animation: none;
+  }
+}

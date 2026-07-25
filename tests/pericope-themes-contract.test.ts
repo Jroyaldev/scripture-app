@@ -62,9 +62,46 @@ test("no atmosphere carries a bright amber, because the accent means authorship"
     assert.ok(declaration(block, "--accent-machine"), `${scope} must declare --accent-machine`);
   }
 
+  // Two accent values, not four. Deleting the ambers was only half the fix:
+  // giving Porcelain and Onyx a *quieter* gold of their own is the same
+  // mistake at lower volume, because the value still changes when the theme
+  // changes and therefore still reads as theme identity. One brand hue at two
+  // lightnesses, chosen by the contrast requirement rather than by
+  // temperature — so the light pair share a seal and the dark pair share one,
+  // and the same holds for the machine hue.
+  for (const [light, dark] of [[":root", ".dark"], [".theme-porcelain", ".theme-onyx"]] as const) {
+    for (const name of ["--accent-seal", "--accent-seal-strong", "--accent-machine"] as const) {
+      assert.equal(
+        declaration(themeBlock(css, ".theme-porcelain"), name),
+        declaration(themeBlock(css, ":root"), name),
+        `Porcelain must carry Paper's ${name}: an accent that changes with the theme is theme identity`,
+      );
+      assert.equal(
+        declaration(themeBlock(css, ".theme-onyx"), name),
+        declaration(themeBlock(css, ".dark"), name),
+        `Onyx must carry Ink's ${name}: an accent that changes with the theme is theme identity`,
+      );
+    }
+    // And the two polarities must genuinely differ, or "two values" is one.
+    assert.notEqual(
+      declaration(themeBlock(css, light), "--accent-seal"),
+      declaration(themeBlock(css, dark), "--accent-seal"),
+    );
+  }
+
+  // A link is the seal under a third name in every atmosphere. Porcelain and
+  // Onyx had it as slate, which says "the app inferred this" about the one
+  // thing on the page the reader is meant to act on.
+  for (const scope of [":root", ".dark", ".theme-porcelain", ".theme-onyx"]) {
+    const block = themeBlock(css, scope);
+    assert.equal(declaration(block, "--text-link"), declaration(block, "--accent-seal"),
+      `${scope}: a link is the seal, never the machine hue`);
+  }
+
   // The seal must clear 3:1 against its own paper, so a 2px mark is legible.
   for (const [scope, paper] of [
     [":root", "#FCFBF8"], [".theme-porcelain", "#FFFFFF"],
+    [".dark", "#1D1B18"], [".theme-onyx", "#1C1C20"],
   ] as const) {
     const seal = declaration(themeBlock(css, scope), "--accent-seal")!;
     assert.ok(contrastRatio(seal, paper) >= 3,
@@ -72,6 +109,29 @@ test("no atmosphere carries a bright amber, because the accent means authorship"
   }
 
   assert.match(css, /\.connection-kind-parallel\s*\{\s*--connection-ink:\s*var\(--mark-parallel\)/);
+});
+
+test("paper is the brightest plane in every atmosphere, including both darks", () => {
+  const css = read("src/renderer/styles.css");
+
+  // The law nobody wrote down, now written down. In all four atmospheres the
+  // reading surface is lighter than the ground behind it — in the dark pair
+  // that inverts the usual instinct, and it is why the app stops glowing at
+  // night: chrome is the darkest plane, not the brightest.
+  for (const scope of [":root", ".dark", ".theme-porcelain", ".theme-onyx"]) {
+    const block = themeBlock(css, scope);
+    const paper = declaration(block, "--paper-solid")!;
+    const canvas = declaration(block, "--canvas-solid")!;
+    const sunk = declaration(block, "--bg-secondary")!;
+    assert.ok(relativeLuminance(paper) > relativeLuminance(canvas),
+      `${scope}: paper ${paper} must be lighter than canvas ${canvas}`);
+    assert.ok(relativeLuminance(canvas) > relativeLuminance(sunk),
+      `${scope}: canvas ${canvas} must be lighter than the sunk plane ${sunk}`);
+    // Paper and canvas must also be the same declaration as the plane they
+    // stand for, or the material cannot derive the ground from the palette.
+    assert.equal(declaration(block, "--bg-reading"), paper, `${scope}: --bg-reading is paper`);
+    assert.equal(declaration(block, "--bg-canvas"), canvas, `${scope}: --bg-canvas is canvas`);
+  }
 });
 
 test("the material is a class over any atmosphere, never a theme of its own", () => {
@@ -103,13 +163,14 @@ function declaration(block: string, name: string): string | null {
   return block.match(new RegExp(`${name}:\\s*([^;]+);`))?.[1]?.trim() ?? null;
 }
 
+function relativeLuminance(hex: string): number {
+  const channels = [1, 3, 5].map((offset) => Number.parseInt(hex.slice(offset, offset + 2), 16) / 255);
+  const linear = channels.map((value) => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
+  return 0.2126 * linear[0]! + 0.7152 * linear[1]! + 0.0722 * linear[2]!;
+}
+
 function contrastRatio(left: string, right: string): number {
-  const luminance = (hex: string): number => {
-    const channels = [1, 3, 5].map((offset) => Number.parseInt(hex.slice(offset, offset + 2), 16) / 255);
-    const linear = channels.map((value) => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
-    return 0.2126 * linear[0]! + 0.7152 * linear[1]! + 0.0722 * linear[2]!;
-  };
-  const high = Math.max(luminance(left), luminance(right));
-  const low = Math.min(luminance(left), luminance(right));
+  const high = Math.max(relativeLuminance(left), relativeLuminance(right));
+  const low = Math.min(relativeLuminance(left), relativeLuminance(right));
   return (high + 0.05) / (low + 0.05);
 }
