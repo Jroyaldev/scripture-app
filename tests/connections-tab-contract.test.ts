@@ -31,11 +31,47 @@ const margin = read("src/renderer/components/LivingMargin.tsx");
 const page = read("src/renderer/components/ScripturePage.tsx");
 const css = read("src/renderer/styles.css");
 
+/**
+ * A slice between two anchors, each of which must occur EXACTLY ONCE.
+ *
+ * Every assertion in this file that reads a region rather than the whole file
+ * depends on its anchors resolving where it thinks they do, and a wrong anchor
+ * fails in the passing direction: `indexOf` silently takes the first match, so
+ * the slice quietly becomes some other agent's code and the assertions inside
+ * it go on succeeding — or, worse, succeed against a neighbour's work.
+ *
+ * This file has already been bitten twice by that family. `</header>` occurs
+ * four times in LivingMargin, and an early version of the tab-row guard sliced
+ * from `TrustedResourcesBlock`'s header rather than the margin frame's; and a
+ * `.connection-card {` end anchor occurs twice in the stylesheet. Both happened
+ * to resolve correctly, which is exactly the problem — they were right by
+ * luck and nothing would have said when the luck ran out.
+ *
+ * So uniqueness is asserted at every call site, and the last test in this file
+ * refuses any region slice that does not come through here.
+ */
+function between(source: string, start: string, end: string, label: string): string {
+  const startCount = source.split(start).length - 1;
+  const endCount = source.split(end).length - 1;
+  assert.equal(startCount, 1, `${label}: start anchor ${JSON.stringify(start)} occurs ${startCount}×, not once`);
+  assert.equal(endCount, 1, `${label}: end anchor ${JSON.stringify(end)} occurs ${endCount}×, not once`);
+  const from = source.indexOf(start);
+  const to = source.indexOf(end);
+  assert.ok(to > from, `${label}: anchors resolve out of order`);
+  return source.slice(from, to);
+}
+
 /** The panel's own source, from its first component to the next surface. */
-const panelSource = margin.slice(
-  margin.indexOf("function ConnectionBlock("),
-  margin.indexOf("function IntentOverview("),
+const panelSource = between(
+  margin,
+  "function ConnectionBlock(",
+  "function IntentOverview(",
+  "the connections panel",
 );
+
+/** The panel's own rules. The end anchor takes a newline: `.connection-card {`
+ *  alone also matches a descendant selector later in the sheet. */
+const panelCss = between(css, ".margin-connections {", "\n.connection-card {", "the connections panel's rules");
 
 function anchor(chapter: number, verse: number, position = 1): ConnectionRecordV2["anchors"][number] {
   return {
@@ -78,10 +114,7 @@ test("the Connections tab's count is authored connections and cannot include cro
   // The whole derivation, not just its last line: the scope, the filter and the
   // sort must all read off authored connections, with no cross-reference list
   // anywhere between them.
-  const derivation = margin.slice(
-    margin.indexOf("const passageConnectionScope"),
-    margin.indexOf("const connectionCount"),
-  );
+  const derivation = between(margin, "const passageConnectionScope", "const connectionCount", "the count's derivation");
   assert.ok(derivation.length > 0, "the authored-connection derivation is missing");
   assert.match(derivation, /authoredConnections/);
   assert.doesNotMatch(derivation, /crossRefs/);
@@ -89,7 +122,7 @@ test("the Connections tab's count is authored connections and cannot include cro
 
   // And the tab reads that count and no other. Quire C·4: counts are "seal when
   // the count is yours" — every connection is authored, so this one always is.
-  const tabCount = margin.slice(margin.indexOf("const tabCount ="), margin.indexOf("const clearSelection"));
+  const tabCount = between(margin, "const tabCount =", "const clearSelection", "the tab count");
   const connectionsCount = tabCount.match(/^.*tab === "connections".*$/m)?.[0] ?? "";
   assert.match(connectionsCount, /connectionCount/);
   assert.doesNotMatch(connectionsCount, /crossRef/i);
@@ -134,11 +167,14 @@ test("the reader's connections are listed in exactly one place, and it does not 
 
   // Nothing renders between the frame header and the study content, so the tab
   // row's y cannot depend on how much of the reader's own work a chapter holds.
-  const betweenHeaderAndContent = margin
-    .slice(
-      margin.lastIndexOf("</header>"),
-      margin.indexOf("<div className={`margin-study-content"),
-    )
+  // `</header>` occurs four times, so the region is anchored on the unique
+  // node that opens it instead of on the frame header's closing tag.
+  const betweenHeaderAndContent = between(
+    margin,
+    "{connectionInspectorOpen && (",
+    "<div className={`margin-study-content",
+    "between the scope bar and the tab row",
+  )
     // The record of why the strip went names it, so read the markup, not the note.
     .replace(/\{\/\*[\s\S]*?\*\/\}/g, " ");
   assert.ok(betweenHeaderAndContent.length > 0, "the frame header and study content are not where expected");
@@ -240,7 +276,7 @@ test("a member quotes its own wording, and an unrouted connection keeps its posi
   // the border box, which lifts it clear of the phrase beside it (ruling 4·6).
   assert.match(css, /\.margin-connection-row \{[^}]*grid-template-columns: minmax\(26px, auto\) minmax\(0, 1fr\)/);
   assert.match(css, /\.margin-connection-list \.margin-connection-member \{[^}]*grid-template-columns: subgrid/);
-  assert.doesNotMatch(css.slice(css.indexOf(".margin-connections {"), css.indexOf(".connection-card {")), /overflow: hidden|text-overflow/);
+  assert.doesNotMatch(panelCss, /overflow: hidden|text-overflow/);
 });
 
 test("the block's accessible name says everything the ink and the cap leave out", () => {
@@ -275,7 +311,7 @@ test("a connection carries no sentence of its own, and its type is a word rather
 });
 
 test("the panel row's outline is inset, never a border, so no row reflows on hover", () => {
-  const row = css.slice(css.indexOf(".margin-connection-row {"), css.indexOf(".margin-connection-row-head"));
+  const row = between(css, ".margin-connection-row {", ".margin-connection-row-head", "the panel row's rules");
   assert.match(row, /box-shadow: inset 0 0 0 1\.5px transparent;/);
   assert.match(row, /border: 0;/);
   assert.match(row, /\.margin-connection-row:hover,\s*\.margin-connection-row\[data-thread-hover\]/);
@@ -295,13 +331,12 @@ test("the panel row's outline is inset, never a border, so no row reflows on hov
   // focus ring at reduced alpha is the defect the ruling names.
   assert.match(row, /:focus-visible \{\s*outline: 2px solid var\(--accent-seal\);\s*outline-offset: 2px;/);
   // Nothing in this panel may depend on the retiring token, in either form.
-  const block = css.slice(css.indexOf(".margin-connections {"), css.indexOf(".connection-card {"))
-    .replace(/\/\*[\s\S]*?\*\//g, " ");
+  const block = panelCss.replace(/\/\*[\s\S]*?\*\//g, " ");
   assert.doesNotMatch(block, /var\(--study-gold[a-z-]*\)/);
 });
 
 test("no mono on this surface — tabular figures do the aligning", () => {
-  const block = css.slice(css.indexOf(".margin-connections {"), css.indexOf(".connection-card {"));
+  const block = panelCss;
   assert.ok(block.length > 0, "the connections panel rules are missing");
   assert.doesNotMatch(block, /--font-mono|monospace/);
   assert.match(block, /\.margin-connection-position \.study-ref-row-ref \{[^}]*font-variant-numeric: tabular-nums/);
@@ -313,7 +348,7 @@ test("verbs are words in a footer, and empty is never blank", () => {
   assert.match(panelSource, /className="margin-connection-footer"/);
   assert.match(panelSource, /Connect a phrase/);
   assert.match(panelSource, /Threads shown/);
-  const footer = css.slice(css.indexOf(".margin-connection-footer {"), css.indexOf(".connection-card {"));
+  const footer = between(css, ".margin-connection-footer {", "\n.connection-card {", "the panel footer's rules");
   assert.doesNotMatch(footer, /border-radius/);
   assert.doesNotMatch(footer, /border: 1px/);
   // One sentence naming what is absent, then the nearest true thing.
@@ -327,10 +362,7 @@ test("attending from a panel row reuses the one shared least-distance scroll", (
   // Connections tab is one behaviour. The panel must not grow a second one.
   assert.doesNotMatch(panelSource, /scrollIntoView|scrollTo\(/);
   assert.match(page, /const handleSelectAuthoredConnection[\s\S]{0,320}?await handleSelectConnection\(connection, focusInspector\)/);
-  const sharedScroll = page.slice(
-    page.indexOf("const scrollAttendedConnectionIntoView"),
-    page.indexOf("const handleSelectConnection"),
-  );
+  const sharedScroll = between(page, "const scrollAttendedConnectionIntoView", "const handleSelectConnection", "the shared attend scroll");
   assert.ok(sharedScroll.length > 0, "the shared attend scroll is missing");
   assert.match(sharedScroll, /leastScrollForMembers\(\{/);
 });
@@ -451,4 +483,32 @@ test("no regex in the tours is escaped for the wrong context", () => {
     }
   }
   assert.ok(checked >= 20, `expected to check the tours' assertions, checked ${checked}`);
+});
+
+test("every region this file reads is sliced through a uniqueness-checked anchor", () => {
+  // The clause this whole file's guards keep re-learning: an assertion whose
+  // passing condition is "found something" needs a second assertion that it
+  // looked in the RIGHT place. A wrong anchor and an empty result fail
+  // identically — silently, in the passing direction — so `between()` refuses
+  // an anchor that occurs more than once, and this test refuses a slice that
+  // bypasses `between()`.
+  const self = read("tests/connections-tab-contract.test.ts");
+  // Everything above this test. Its own patterns name the things it forbids, so
+  // sweeping itself would be a self-match — it currently escapes one only
+  // because `\\(` is not `(`, which is luck rather than a guarantee, and luck
+  // of exactly the kind this file exists to stop relying on.
+  const marker = "test(\"every region this file reads is sliced through";
+  assert.equal(self.split(marker).length - 1, 1, "the self-check's own boundary marker must be unique");
+  const body = self.slice(0, self.indexOf(marker))
+    .replace(/\/\*[\s\S]*?\*\//g, " ")
+    .replace(/^\s*\/\/.*$/gm, " ");
+
+  const raw = [...body.matchAll(/\.slice\(\s*\w+\.(?:last)?[iI]ndexOf\(/g)];
+  assert.equal(raw.length, 0, "a region is sliced on a raw indexOf, which cannot know it resolved correctly");
+  assert.doesNotMatch(body, /\.lastIndexOf\(/, "lastIndexOf picks a match by position, which is not a uniqueness argument");
+
+  // And a floor, so this cannot pass by there being no regions to check —
+  // which would be the very failure it exists to catch.
+  const checked = [...body.matchAll(/\bbetween\(/g)].length;
+  assert.ok(checked >= 8, `expected this file to slice through between(), found ${checked}`);
 });

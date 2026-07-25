@@ -115,6 +115,20 @@ test("the top edge does not vary by mode, by width, or by atmosphere", () => {
   // The strip's half of the sum is the tab, and the tab reads the token rather
   // than restating 30 — the two cannot drift apart while that holds.
   assert.match(styles, /\.scripture-workspace-tab \{[\s\S]{0,460}height: var\(--register-strip\);/);
+
+  // And where there is no strip, the 54 is reserved anyway. Focus does not
+  // render a register, so without this the page's top edge would rise to 0 in
+  // the one mode whose whole claim is that "the rectangle does not change. Top
+  // 54, left 80, right and bottom 24 — identical to reading mode." The rule is
+  // rev05-canon's and lives on the page grid; it is pinned here because this is
+  // where the invariant is stated, and because it is keyed on the STRIP's
+  // absence rather than on focus-mode — the row says "invariant across modes",
+  // not "across the two modes that exist today".
+  assert.match(
+    styles,
+    /\.scripture-page:not\(:has\(> \.scripture-workspace-bar\)\) > \.scripture-body \{\s*padding-top: var\(--frame-top\);\s*\}/,
+    "a mode that drops the register must still reserve the frame's top edge",
+  );
 });
 
 test("the drag band is 24 and nothing else", () => {

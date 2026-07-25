@@ -1445,10 +1445,34 @@ html, body, #root {
    is the frame table's page padding. The band used to start at 24, the same
    number as the paper's inset from the window, which made the header's left
    edge a fourth reference in the top 100px rather than the page's own. */
+/* @quire trigger · drawings vs an approved number · the band's BLOCK padding.
+   The frame table's page padding is "40 / 24 — 40 left and right, 24 top and
+   bottom, inside the paper", and §05·6 draws the inside of the paper as 24 of
+   air, a 26px pager row, 16 of air, then the hairline at 66. The band ships at
+   48 with no top air, because §E and §F approved 48 and §05·1 protects the page
+   corner this band draws. So the inline half of that cell is applied here and
+   the block half is not, and the two are in genuine conflict:
+
+     · Ruling 4·1 is "drawings beat prose", confirmed, which points at 66/72.
+     · §05·7's build ledger lists "left datum to 40" and does not list the
+       band's height; Rev 05's footer supersedes exactly two things and §E's 48
+       is not one of them.
+     · The two ways to spend the 24 both cost something not on offer. Putting
+       it on this band makes it 72 and changes an approved number. Putting it on
+       the page's own top padding leaves the sticky band 24px down the
+       scrollport, so verses scroll through a 24px strip ABOVE it — or the band
+       stops being sticky, which §05·1 does not permit.
+
+   Held at the ruling rather than invented past it, per §9's third trigger: a
+   taxonomy I was given has no slot for this, and widening the nearest slot is
+   the named thing not to do. rev05-canon reached the same conclusion from the
+   grid's side and has left --page-padding-block declared and unapplied.
+   One sentence decides it. */
 .scripture-topbar {
   /* One name for the band's left datum, so the pager, the title and the rule
-     under them cannot be moved apart. The narrow concessions below reassign
-     this, never the padding. */
+     under them cannot be moved apart. The narrow concessions are stated one
+     link up the chain, on --page-datum, so the page body yields with the band
+     rather than against it — this is only ever an alias. */
   --topbar-datum: var(--page-padding-inline);
   position: sticky;
   top: 0;
