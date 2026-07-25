@@ -40,15 +40,20 @@ const css = read("src/renderer/styles.css");
  * the slice quietly becomes some other agent's code and the assertions inside
  * it go on succeeding — or, worse, succeed against a neighbour's work.
  *
- * This file has already been bitten twice by that family. `</header>` occurs
- * four times in LivingMargin, and an early version of the tab-row guard sliced
- * from `TrustedResourcesBlock`'s header rather than the margin frame's; and a
- * `.connection-card {` end anchor occurs twice in the stylesheet. Both happened
- * to resolve correctly, which is exactly the problem — they were right by
- * luck and nothing would have said when the luck ran out.
+ * This file was bitten twice by that family. An early tab-row guard anchored on
+ * `</header>`, which is not unique in LivingMargin, and sliced from
+ * `TrustedResourcesBlock`'s header rather than the margin frame's; and an end
+ * anchor of `.connection-card {` was not unique in the stylesheet. Both
+ * resolved correctly at the time, which is the whole problem — right by luck,
+ * with nothing to say when the luck ran out.
  *
- * So uniqueness is asserted at every call site, and the last test in this file
- * refuses any region slice that does not come through here.
+ * Those sentences are deliberately in the past tense and carry no counts. An
+ * earlier draft of this comment stated how many times each anchor occurred and
+ * claimed the guard below was "the last test in this file". Both were live
+ * claims about files four agents are editing, and a comment is an assertion
+ * with no test, so it fails silently by default: the counts would have rotted
+ * without a symptom, and the positional claim was false the moment anything was
+ * appended. The invariant is asserted below instead of described here.
  */
 function between(source: string, start: string, end: string, label: string): string {
   const startCount = source.split(start).length - 1;
@@ -493,19 +498,20 @@ test("every region this file reads is sliced through a uniqueness-checked anchor
   // an anchor that occurs more than once, and this test refuses a slice that
   // bypasses `between()`.
   const self = read("tests/connections-tab-contract.test.ts");
-  // Everything above this test. Its own patterns name the things it forbids, so
-  // sweeping itself would be a self-match — it currently escapes one only
-  // because `\\(` is not `(`, which is luck rather than a guarantee, and luck
-  // of exactly the kind this file exists to stop relying on.
-  const marker = "test(\"every region this file reads is sliced through";
-  assert.equal(self.split(marker).length - 1, 1, "the self-check's own boundary marker must be unique");
-  const body = self.slice(0, self.indexOf(marker))
-    .replace(/\/\*[\s\S]*?\*\//g, " ")
-    .replace(/^\s*\/\/.*$/gm, " ");
+  // The whole file, not the part above this test. An earlier draft swept only
+  // what preceded itself, to dodge a self-match — and that scoping was itself
+  // a hole: a raw slice added BELOW this test escaped the guard entirely, which
+  // a mutation confirmed before this was rewritten. The patterns are built from
+  // fragments instead, so the literals they forbid never appear in this file
+  // and the sweep can cover all of it without excluding anything by position.
+  const body = self.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/^\s*\/\/.*$/gm, " ");
+  const RAW_SLICE = new RegExp("\\.slice\\(\\s*\\w+\\." + "(?:last)?" + "[iI]ndexOf" + "\\(", "g");
+  const POSITIONAL = new RegExp("\\." + "last" + "[iI]ndexOf" + "\\(", "g");
 
-  const raw = [...body.matchAll(/\.slice\(\s*\w+\.(?:last)?[iI]ndexOf\(/g)];
-  assert.equal(raw.length, 0, "a region is sliced on a raw indexOf, which cannot know it resolved correctly");
-  assert.doesNotMatch(body, /\.lastIndexOf\(/, "lastIndexOf picks a match by position, which is not a uniqueness argument");
+  assert.equal([...body.matchAll(RAW_SLICE)].length, 0,
+    "a region is sliced on a raw indexOf, which cannot know it resolved correctly");
+  assert.equal([...body.matchAll(POSITIONAL)].length, 0,
+    "lastIndexOf picks a match by position, which is not a uniqueness argument");
 
   // And a floor, so this cannot pass by there being no regions to check —
   // which would be the very failure it exists to catch.

@@ -50,14 +50,17 @@ const marginCode = margin
  * Where the last of several IS the intent, the count is asserted and the pick
  * is made explicitly, so it reads as a stated fact rather than a coincidence.
  *
- * It is still used twice, and both are scans from an already-fixed point
- * rather than choices between candidates: `lastIndexOf("{...")` finds the last
- * spread inside one button's props, and `lastIndexOf("/*", at)` finds the
+ * Where it does appear it scans from an already-fixed point rather than
+ * choosing between candidates — the last spread inside one button's props, the
  * comment enclosing a located anchor. Neither picks WHICH thing is under
- * inspection. (This sentence exists because the comment above it read "not
- * used anywhere" while the file used it twice — a claim that was true when
- * written and quietly stopped being true, which is the failure this whole
- * file is about.)
+ * inspection, and both live inside a named helper below, which the last test
+ * in this file enforces.
+ *
+ * No count is given here on purpose. An earlier draft said "not used anywhere"
+ * while the file used it twice, and its replacement said "used twice" — a live
+ * number about a file under edit, with nothing to catch it going stale. A
+ * comment is an assertion with no test, so it fails silently by default; the
+ * only honest fix was to move the claim into the test and stop numbering it.
  */
 function between(source: string, start: string, end: string, label: string): string {
   const starts = source.split(start).length - 1;
@@ -87,6 +90,44 @@ function rule(selector: string): string {
   const close = css.indexOf("}", open);
   assert.ok(close > open, `unterminated rule for ${selector}`);
   return css.slice(open + 1, close);
+}
+
+/**
+ * The comment an explanation actually lives in — not a window around it. A
+ * ±700-character slice once passed this file's marker guard while the marker
+ * was deleted, because the window reached a neighbouring rule's marker.
+ */
+function enclosingComment(source: string, anchor: string): string {
+  const count = source.split(anchor).length - 1;
+  assert.equal(count, 1, `${JSON.stringify(anchor)} occurs ${count}x, need exactly 1`);
+  const at = source.indexOf(anchor);
+  const open = source.lastIndexOf("/*", at);
+  const close = source.indexOf("*/", at);
+  assert.ok(open >= 0 && close > open, `${JSON.stringify(anchor)} is not inside a comment`);
+  return source.slice(open, close);
+}
+
+/**
+ * A top-level function's source, start to matching brace. Brace matching
+ * rather than an end anchor, because the obvious end anchor ("\n}\n") is not
+ * unique — `between()` refused it, which is the guard catching the guard.
+ */
+function functionBody(source: string, name: string): string {
+  const signature = `function ${name}(`;
+  const count = source.split(signature).length - 1;
+  assert.equal(count, 1, `expected exactly one ${name}() helper, found ${count}`);
+  let depth = 0;
+  let started = false;
+  const from = source.indexOf(signature);
+  for (let at = from; at < source.length; at += 1) {
+    const ch = source[at];
+    if (ch === "{") { depth += 1; started = true; }
+    else if (ch === "}") {
+      depth -= 1;
+      if (started && depth === 0) return source.slice(from, at + 1);
+    }
+  }
+  throw new Error(`unterminated ${name}()`);
 }
 
 const overview = between(
@@ -476,19 +517,6 @@ test("every departure from the drawing is findable by the sweep, not just explai
       `the anchor for ${what} is not unique — it could resolve to another rule's comment`,
     );
   }
-  // Scoped to the comment the explanation actually lives in, not a window
-  // around it. A ±700-character slice passed this test while the marker was
-  // deleted, because it reached a neighbouring rule's marker — "found a
-  // marker" is not "found THIS one's marker", which is the same defect this
-  // whole file keeps circling.
-  const enclosingComment = (source: string, anchor: string): string => {
-    const at = source.indexOf(anchor);
-    assert.ok(at > 0, `expected to find ${JSON.stringify(anchor)}`);
-    const open = source.lastIndexOf("/*", at);
-    const close = source.indexOf("*/", at);
-    assert.ok(open >= 0 && close > open, `${JSON.stringify(anchor)} is not inside a comment`);
-    return source.slice(open, close);
-  };
   for (const [what, anchor] of departures) {
     assert.match(
       enclosingComment(css, anchor),
@@ -527,4 +555,47 @@ test("Law 2: no pill, no tinted chip, no filled row on these surfaces", () => {
   const tag = rule(".margin-tag");
   assert.doesNotMatch(tag, /border-radius: 99px/);
   assert.doesNotMatch(tag, /background:/);
+});
+
+/* --- The guard on the guards ---------------------------------------------
+   Every region in this file is chosen by a named helper that asserts its
+   anchors are unique. Nothing enforced that, so the discipline held only as
+   long as whoever edited next happened to know it.
+
+   This sweep covers the WHOLE file. It does not exclude itself by position:
+   a self-check scoped to "everything above me" leaves everything below it
+   unguarded, which is the same positional bet the helpers exist to refuse.
+   Instead the forbidden names are assembled from fragments, so they never
+   appear contiguously in this source and the sweep cannot match itself.
+   ------------------------------------------------------------------------ */
+
+test("no region in this file is chosen by a raw, unasserted anchor", () => {
+  const self = read("tests/study-overview-notes-contract.test.ts");
+  // Assembled, never written whole — see above.
+  const SCAN = ["index" + "Of", "last" + "Index" + "Of", "sl" + "ice"];
+  const HELPERS = ["between", "after", "rule", "enclosingComment", "functionBody"];
+
+  // Excise each helper by its own unique signature, so the check is anchored
+  // by name rather than by position.
+  let rest = self;
+  for (const name of HELPERS) {
+    rest = rest.split(functionBody(self, name)).join("");
+  }
+
+  const offenders: string[] = [];
+  for (const line of rest.split("\n")) {
+    if (SCAN.some((name) => line.includes(`.${name}(`))) offenders.push(line.trim());
+  }
+  assert.deepEqual(
+    offenders,
+    [],
+    "a region is chosen outside the guarded helpers — use between() or after()",
+  );
+
+  // And the sweep must actually have something to sweep: if the helpers stop
+  // matching, `rest` collapses and this passes by finding nothing.
+  assert.ok(
+    rest.length > self.length * 0.5,
+    "the helper excision removed too much — the sweep would pass by emptiness",
+  );
 });

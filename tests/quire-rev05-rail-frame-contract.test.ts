@@ -119,6 +119,47 @@ test("the rail is bracketed by the same two lines as the paper", () => {
     assert.doesNotMatch(body, /margin-left|margin-inline-start|inset-inline-start/,
       "the rail may not be inset from the window — that makes it a third plane");
   }
+
+  // LEFT, in focus mode, which is the fourth edge and was the last wrong one.
+  // Rev 05 §05·5: "The rectangle does not change. Top 54, left 80, right and
+  // bottom 24 — identical to reading mode. The rail's 56px column stays as
+  // canvas; it was ground all along, and ground with nothing on it is exactly
+  // what focus wants." A4's 12px strip measured page-left at 36 — the same
+  // complaint §05·5 opens with ("a 2px stub of the hidden rail is left on the
+  // window's edge"), six times the size. The column stays; only its contents go.
+  const rail = read(RAIL);
+  const focusBand = ruleBlocks(
+    rail,
+    ".app-shell.focus-mode > .sidebar, .app-shell.focus-mode > .sidebar.collapsed",
+  )[0]!;
+  assert.match(focusBand, /width: var\(--rail-w-collapsed\);/,
+    "focus must keep the rail's 56px column, or the page's left edge moves off 80");
+  assert.match(focusBand, /min-width: var\(--rail-w-collapsed\);/);
+  assert.doesNotMatch(focusBand, /12px/, "the 12px stub is retired");
+  // padding-top is deliberately NOT reset here: the rectangle does not change,
+  // so the tiles come back on the same 54 they left.
+  assert.doesNotMatch(focusBand, /padding-top/,
+    "focus must not give the rail a second vertical origin");
+
+  // "No stub, no handle… nothing is drawn to advertise it. An affordance drawn
+  // permanently in the calmest mode is the one thing focus cannot afford."
+  // Focus stays reachable by ⌘\, Escape, the header's FOCUS instrument and the
+  // command palette, so drawing nothing strands nobody.
+  for (const [file, source] of [[RAIL, rail], [STYLES, css], [APP, read(APP)]] as const) {
+    assert.doesNotMatch(source, /rail-focus-handle/,
+      `${file}: §05·5 retired the focus grab handle; the 56px band is the affordance`);
+  }
+
+  // And the float back keeps the page still: the offset it gives back is the
+  // band's own width, so the measure does not reflow when the rail returns.
+  const floated = ruleBlocks(
+    rail,
+    ".app-shell.focus-mode > .sidebar:hover, .app-shell.focus-mode > .sidebar:focus-within, .app-shell.focus-mode > .sidebar.collapsed:hover, .app-shell.focus-mode > .sidebar.collapsed:focus-within",
+  )[0]!;
+  assert.match(floated, /margin-right: calc\(var\(--rail-w-collapsed\) - var\(--rail-w\)\);/,
+    "the floated rail must give back exactly the band it covers, or the page reflows");
+  assert.match(floated, /padding-top: var\(--frame-top\);/,
+    "the floated rail returns to the frame's origin, not the window's");
 });
 
 test("one vertical axis runs through every tile in the rail", () => {

@@ -1465,16 +1465,32 @@ html, body, #root {
 
    Held at the ruling rather than invented past it, per §9's third trigger: a
    taxonomy I was given has no slot for this, and widening the nearest slot is
-   the named thing not to do. One sentence decides it.
+   the named thing not to do.
 
-   THIS QUESTION IS MARKED TWICE, deliberately, and this is the marker that
-   carries it. rev05-canon reached the same conclusion from the grid's side,
-   left --page-padding-block declared and unapplied, and marked its half
-   `@quire guessed` on .scripture-inner. Under §9 a `guessed` is batched into
-   the next quire and a `trigger` is answered the same week and never batched —
-   so if the two were left at different severities and a reader landed on the
-   guessed one first, the question would be batched by accident. It is one
-   question, escalated once, and either marker should lead to the other. */
+   THE THREE BULLETS ABOVE ARE THE CELL'S TOP HALF ONLY. The frame table says
+   "24 top AND bottom", and the bottom is a separate spend against a separate
+   obstacle, marked by rev05-canon on .scripture-inner in styles.css: the page
+   ends on 80px — the closed edge's 40px fade plus 40 of air, so the last verse
+   clears the leaf as §05·1 requires — and reading the frame's 24 into that
+   either puts text under the fade or adds 24 to a number stated TWICE, here and
+   in the marking dock's `calc(80px + var(--mdock-bottom-inset))`, which
+   tests/marking-surfaces-contract.test.ts pins verbatim as dock-internal
+   arithmetic. So the bottom edge is not merely occupied, it is occupied by
+   something carrying its own contract. Answering the top half without the
+   bottom answers half a cell.
+
+   THE QUESTION IS THEREFORE MARKED TWICE, in two files, at one severity. Both
+   markers are `@quire trigger · drawings vs an approved number`: two severities
+   on one question would mean whichever marker a reader met first decided how it
+   got handled, which is a defect in the marking however the merits fall. §9
+   batches a `guessed` into the next quire and answers a `trigger` the same week
+   and never batches it. One question, escalated once; either marker leads to
+   the other, and one sentence closes both.
+
+   For the record, --page-padding-block is NOT theoretical. It is applied once,
+   where the cell had an unspent edge to land on: the study panel's bottom
+   inset, `calc(var(--page-padding-block) + 40px)` on .living-margin — the
+   frame's 24 plus the 40 that panel's own fade occupies. */
 .scripture-topbar {
   /* One name for the band's left datum, so the pager, the title and the rule
      under them cannot be moved apart. The narrow concessions are stated one
@@ -3660,9 +3676,29 @@ html, body, #root {
      rules and the margin's kickers all begin at one x." The block padding is
      the reading band, not the frame's 24 — the paper's top is spent by the
      topbar, which is flush to it because it draws the page's own corners.
-     @quire guessed · the frame table's "24 top and bottom" has no unspent
-     edge to land on inside this page: the top is the topbar's band and the
-     bottom is the 80px of clearance the closed edge's 40px fade needs. */
+
+     @quire trigger · drawings vs an approved number · the frame table's "24 top
+     and bottom" has no unspent edge to land on inside this page. Raised from
+     `guessed` to match the marker on .scripture-topbar: it is ONE question, and
+     under §9 a `guessed` is batched into the next quire while a `trigger` is
+     answered the same week, so two severities on one question means whichever
+     marker a reader meets first decides how it is handled. That marker carries
+     the argument and the TOP half — §05·6's 66/72 against §E's approved 48, and
+     why neither way of spending the 24 is on offer.
+
+     This marker carries the BOTTOM half, which that one does not. The page's
+     bottom is already spent: .scripture-content ends on 80px, which is the
+     closed edge's 40px fade plus 40 of air, so the last verse clears the leaf
+     the way §05·1 requires. Reading the frame's 24 into it either puts text
+     under the fade or adds 24 to a number that is stated twice — here, and in
+     the dock's own `calc(80px + var(--mdock-bottom-inset))`, which
+     tests/marking-surfaces-contract.test.ts pins verbatim as dock-internal
+     arithmetic. So the bottom is not merely occupied, it is occupied by
+     something with its own contract, and the 24 cannot be added without a
+     ruling on which of the two the reader is owed.
+
+     --page-padding-block therefore ships applied only where it is unambiguous:
+     the study panel's bottom inset, below. One sentence decides the rest. */
   padding: var(--band) var(--page-padding-inline) 0;
 }
 
