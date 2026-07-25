@@ -43,10 +43,6 @@ export interface MarkingSelectionModel {
     y: number;
     flipped: boolean;
     anchorBox: { top: number; bottom: number; left: number; right: number };
-    /** The final painted fragment, used for close collision placement. */
-    focusBox: { top: number; bottom: number; left: number; right: number };
-    /** The actual prose sheet, so the Radial can prefer its quiet side air. */
-    proseBox: { top: number; bottom: number; left: number; right: number };
   };
   capture: MarkingSelectionCapture;
   /** Package-local exact fragments used only while the gesture is in flight. */
@@ -706,7 +702,6 @@ export function MarkingSurface({
   const dockRef = useRef<HTMLDivElement>(null);
   const dockModesRef = useRef<HTMLDivElement>(null);
   const exitGuardRef = useRef<HTMLDivElement>(null);
-  const railRoving = useRovingFocus<HTMLButtonElement>(4);
   const dockModeRoving = useRovingFocus<HTMLButtonElement>(DOCK_MODES.length);
   const dockIntentRoving = useRovingFocus<HTMLButtonElement>(2);
 
@@ -1404,7 +1399,6 @@ export function MarkingSurface({
 
   useEffect(() => {
     setPaletteHelp(null);
-    railRoving.setActiveIndex(0);
     setDockHelp(null);
     dockIntentRoving.setActiveIndex(0);
   }, [selection?.nonce, surface]);

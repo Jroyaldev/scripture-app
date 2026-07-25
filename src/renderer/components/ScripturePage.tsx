@@ -793,8 +793,6 @@ export function ScripturePage({
     y: 0,
     flipped: false,
     anchorBox: { top: 0, bottom: 0, left: 0, right: 0 },
-    focusBox: { top: 0, bottom: 0, left: 0, right: 0 },
-    proseBox: { top: 0, bottom: 0, left: 0, right: 0 },
   });
   // Record ids of a just-created highlight — drives the left-to-right sweep-in
   // animation on the new blob. Keyed by highlight id (not verse number) so a
@@ -880,7 +878,7 @@ export function ScripturePage({
   const advanceSelectionGeneration = useCallback((): void => {
     // A newly explicit selection supersedes any deferred focus return owned by
     // the selection that just closed. Without cancelling this frame, a resize
-    // or side-Rail placement pass can let the stale callback run after the new
+    // or a stale placement pass can let the old callback run after the new
     // tray opens and steal focus back from its first command.
     if (readingFocusFrameRef.current != null) {
       window.cancelAnimationFrame(readingFocusFrameRef.current);
@@ -2387,7 +2385,7 @@ export function ScripturePage({
       const target = e.target as Node | null;
       if (!target) return;
       const el = target instanceof Element ? target : target.parentElement;
-      if (el?.closest(".marking-floating-host, .marking-rail-host, .marking-dock-host")) return;
+      if (el?.closest(".marking-floating-host, .marking-dock-host")) return;
       // The version picker changes how this same canonical selection is
       // rendered; opening or choosing from it must not behave like clicking
       // away from the selection. Its panel is portaled to document.body, so
@@ -2527,23 +2525,16 @@ export function ScripturePage({
   // isn't room above.
   const positionPaletteForBox = useCallback((
     box: { top: number; bottom: number; left: number; right: number },
-    focusBox = box,
   ) => {
     const centerX = (box.left + box.right) / 2;
-    const proseRect = verseTextRef.current?.getBoundingClientRect();
-    const proseBox = proseRect && proseRect.width > 0 && proseRect.height > 0
-      ? { top: proseRect.top, bottom: proseRect.bottom, left: proseRect.left, right: proseRect.right }
-      : { ...box };
-    // Each presentation receives source geometry only. Palette and Radial
-    // measure their own rendered footprint against the reading stage instead
-    // of relying on a second set of synthetic size estimates here.
+    // The surface receives source geometry only, and measures its own rendered
+    // footprint against the reading stage. A second set of synthetic size
+    // estimates here would be a guess competing with a measurement.
     const next = {
       x: centerX,
       y: box.top - 10,
       flipped: false,
       anchorBox: { ...box },
-      focusBox: { ...focusBox },
-      proseBox,
     };
     setPalettePos((current) => {
       const close = (a: number, b: number): boolean => Math.abs(a - b) < 0.1;
@@ -2555,8 +2546,6 @@ export function ScripturePage({
         && close(current.y, next.y)
         && current.flipped === next.flipped
         && sameBox(current.anchorBox, next.anchorBox)
-        && sameBox(current.focusBox, next.focusBox)
-        && sameBox(current.proseBox, next.proseBox)
         ? current
         : next;
     });
@@ -2574,13 +2563,12 @@ export function ScripturePage({
       .filter((el): el is HTMLDivElement => !!el)
       .map((el) => el.getBoundingClientRect());
     if (rects.length === 0) return;
-    const focusRect = rects[rects.length - 1];
     positionPaletteForBox({
       top: Math.min(...rects.map((r) => r.top)),
       bottom: Math.max(...rects.map((r) => r.bottom)),
       left: Math.min(...rects.map((r) => r.left)),
       right: Math.max(...rects.map((r) => r.right)),
-    }, focusRect ? { top: focusRect.top, bottom: focusRect.bottom, left: focusRect.left, right: focusRect.right } : undefined);
+    });
   }, [positionPaletteForBox]);
 
   // Locate the DOM node + offset for a character offset into a verse span,
@@ -2617,13 +2605,12 @@ export function ScripturePage({
   const positionPaletteForRange = useCallback((range: Range) => {
     const rects = Array.from(range.getClientRects());
     if (rects.length === 0) return;
-    const focusRect = rects[rects.length - 1];
     positionPaletteForBox({
       top: Math.min(...rects.map((r) => r.top)),
       bottom: Math.max(...rects.map((r) => r.bottom)),
       left: Math.min(...rects.map((r) => r.left)),
       right: Math.max(...rects.map((r) => r.right)),
-    }, focusRect ? { top: focusRect.top, bottom: focusRect.bottom, left: focusRect.left, right: focusRect.right } : undefined);
+    });
   }, [positionPaletteForBox]);
 
   const verseSpanForNode = useCallback((node: Node, container: HTMLElement): HTMLElement | null => {
@@ -2683,7 +2670,6 @@ export function ScripturePage({
     // Snapshot native geometry before any marking mutation changes selection.
     const rangeRects = Array.from(range.getClientRects());
     if (rangeRects.length === 0) return;
-    const focusRect = rangeRects[rangeRects.length - 1];
     const phraseSelection = { verseStart, verseEnd, charStart, charEnd };
     const paletteBox = {
       top: Math.min(...rangeRects.map((rect) => rect.top)),
@@ -2691,9 +2677,6 @@ export function ScripturePage({
       left: Math.min(...rangeRects.map((rect) => rect.left)),
       right: Math.max(...rangeRects.map((rect) => rect.right)),
     };
-    const paletteFocusBox = focusRect
-      ? { top: focusRect.top, bottom: focusRect.bottom, left: focusRect.left, right: focusRect.right }
-      : undefined;
 
     // Suppression must be armed synchronously during mouseup: the native click
     // follows immediately and belongs to this drag, not a whole-verse action.
@@ -2714,7 +2697,7 @@ export function ScripturePage({
     setSelectedVerses(new Set());
     setPhraseSelection(phraseSelection);
     advanceSelectionGeneration();
-    positionPaletteForBox(paletteBox, paletteFocusBox);
+    positionPaletteForBox(paletteBox);
     setShowHighlightPalette(true);
   }, [advanceSelectionGeneration, closeConnectionWordChooser, positionPaletteForBox, requireSafeConnectionNavigation, suppressTrailingDragClick, verseNumberForSpan, verseSpanForNode]);
 
@@ -2834,7 +2817,7 @@ export function ScripturePage({
     ) return;
     // A failed async marking write returns ownership to the restored surface.
     // Cancel the reading-focus frame requested while the selection was hidden,
-    // otherwise a throttled rAF can land after the Radial has restored its
+    // otherwise a throttled rAF can land after the surface has restored its
     // first command and steal focus back to the verse.
     if (readingFocusFrameRef.current != null) {
       window.cancelAnimationFrame(readingFocusFrameRef.current);
@@ -3942,7 +3925,7 @@ export function ScripturePage({
 
     // M is the deliberate keyboard equivalent of dragging a whole verse.
     // Enter/Space remain the ordinary Study action and can never trigger a
-    // carried Rail/Dock authoring tool.
+    // carried dock authoring tool.
     if (!event.metaKey && !event.ctrlKey && !event.altKey && event.key.toLowerCase() === "m") {
       event.preventDefault();
       const ownerContextKey = currentMarkingContextKeyRef.current;
@@ -3987,8 +3970,7 @@ export function ScripturePage({
         "[data-connection-tick]",
         ".connection-word-chooser",
         ".marking-floating-host",
-        ".marking-rail-host",
-        ".marking-dock-host",
+            ".marking-dock-host",
         "[data-study-workspace-bar]",
         "[data-floating-layer]",
         ".popover-scrim",

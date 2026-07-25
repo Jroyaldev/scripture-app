@@ -24,7 +24,7 @@ export type LayerKind =
   | "popover"
   /** Verse preview panels. */
   | "peek"
-  /** Marking floating chrome: selection palette, radial, rail/dock trays. */
+  /** Marking floating chrome: the selection palette and the dock's trays. */
   | "toolbar"
   /** Hover preview wash for a connection. */
   | "preview"

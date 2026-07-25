@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { join, relative, resolve } from "node:path";
 import { test } from "node:test";
 import type { ConnectionRecord } from "../src/core/annotations/types.js";
 import {
@@ -21,13 +21,65 @@ import {
 const repoRoot = resolve(import.meta.dirname, "..");
 const read = (...parts: string[]): string => readFileSync(join(repoRoot, ...parts), "utf8");
 
-test("all four production marking surfaces share one explicit mutation controller", () => {
+/** Every renderer source file, so a retirement can be proved and not asserted. */
+const rendererSources = (): { path: string; text: string }[] => {
+  const out: { path: string; text: string }[] = [];
+  const walk = (dir: string): void => {
+    for (const entry of readdirSync(dir).sort()) {
+      const full = join(dir, entry);
+      if (statSync(full).isDirectory()) { walk(full); continue; }
+      if (!/\.(?:ts|tsx|css)$/.test(entry)) continue;
+      out.push({ path: relative(repoRoot, full), text: readFileSync(full, "utf8") });
+    }
+  };
+  walk(join(repoRoot, "src", "renderer"));
+  return out;
+};
+
+/**
+ * Blank out comments while preserving line numbers, so a claim about code can
+ * be made about code alone. The design rationale for the retirement is prose
+ * and is allowed to survive; a `railRoving` is not.
+ */
+const withoutComments = (text: string): string => text
+  .replace(/\/\*[\s\S]*?\*\//g, (block) => block.replace(/[^\n]/g, " "))
+  .replace(/(^|[^:\\/])\/\/[^\n]*/g, (line, keep: string) => keep + " ".repeat(line.length - keep.length));
+
+/**
+ * Every leaf rule in a stylesheet, as the cascade sees it: comments removed, so
+ * a commented-out rule is absent, and nested inside at-rules, so a container or
+ * media query cannot hide a declaration from inspection.
+ */
+const cssRules = (css: string): { selector: string; body: string }[] => (
+  [...withoutComments(css).matchAll(/([^{}]*)\{([^{}]*)\}/g)].map((match) => ({
+    selector: match[1]!.trim().replace(/\s+/g, " "),
+    body: match[2]!.trim().replace(/\s+/g, " "),
+  }))
+);
+
+const commentsOf = (text: string): { line: number; body: string }[] => (
+  [...text.matchAll(/\/\*[\s\S]*?\*\/|(?:^|[^:\w/])\/\/[^\n]*/g)].map((match) => ({
+    line: text.slice(0, match.index).split("\n").length,
+    body: match[0].replace(/\s+/g, " ").trim(),
+  }))
+);
+
+test("both production marking surfaces share one explicit mutation controller", () => {
   const source = read("src", "renderer", "components", "MarkingSurface.tsx");
 
-  for (const surface of ["palette", "radial", "rail"] as const) {
-    assert.match(source, new RegExp(`surface === "${surface}"`));
+  // Two surfaces, and one component owns both: the floating palette for a
+  // pointer, the bottom dock for a thumb. The count is part of the contract —
+  // a third rendered surface must fail here before it can reach a reader.
+  for (const surface of ["palette", "dock"] as const) {
+    assert.match(source, new RegExp(`data-marking-surface="${surface}"`));
   }
-  assert.match(source, /data-marking-surface="dock"/);
+  assert.equal(
+    [...new Set([...source.matchAll(/data-marking-surface="([a-z-]+)"/g)].map(([, id]) => id))].sort().join(","),
+    "dock,palette",
+    "MarkingSurface must render exactly the two surviving surfaces",
+  );
+  assert.match(source, /if \(surface === "palette"\) \{/);
+  assert.match(source, /const persistentSurface = surface === "dock";/);
   assert.match(source, /onSetColor: \(color: string\) => Promise<boolean>/);
   assert.match(source, /onCreateConnection:/);
   assert.match(source, /onUpdateConnection:/);
@@ -51,6 +103,137 @@ test("all four production marking surfaces share one explicit mutation controlle
   }
 });
 
+/**
+ * The retirement itself, held as a contract. Two surfaces is not a default that
+ * a later change may quietly widen back to three: the union, the settings
+ * boundary, the migration, the picker, and the renderer sources all have to
+ * agree, and the two retired ids must be unreachable rather than merely unused.
+ */
+test("the retired marking surfaces leave no reachable trace", () => {
+  const api = read("src", "renderer", "api.ts");
+  const main = read("src", "electron", "main.ts");
+  const settings = read("src", "renderer", "components", "SettingsPage.tsx");
+
+  // 1. The union is exactly two members, in both declarations of it.
+  assert.match(api, /export type MarkingSurface = "palette" \| "dock";/);
+  assert.match(main, /markingSurface: "palette" \| "dock";/);
+  const unions: [string, RegExp, string][] = [
+    ["renderer api", /export type MarkingSurface = ("[a-z]+"(?: \| "[a-z]+")*);/, api],
+    ["electron schema", /\n {2}markingSurface: ("[a-z]+"(?: \| "[a-z]+")*);/, main],
+  ];
+  for (const [label, pattern, source] of unions) {
+    const union = pattern.exec(source);
+    assert.ok(union, `${label} must declare the marking-surface union inline`);
+    assert.deepEqual(
+      union[1]!.split(" | ").map((member) => member.replace(/"/g, "")).sort(),
+      ["dock", "palette"],
+      `${label} must accept exactly two marking surfaces`,
+    );
+  }
+
+  // 2. The settings boundary knows two ids, migrates the two retired ones
+  //    rather than resetting them, and falls back to the palette.
+  assert.match(main, /const MARKING_SURFACE_IDS = new Set<AppSettingsSchema\["markingSurface"\]>\(\[\s*"palette",\s*"dock",\s*\]\);/);
+  assert.match(
+    main,
+    /const LEGACY_MARKING_SURFACE: Record<string, AppSettingsSchema\["markingSurface"\]> = \{\s*rail: "dock",\s*radial: "palette",\s*\};/,
+    "a stored rail keeps a persistent surface and a stored radial keeps a floating one",
+  );
+  assert.match(main, /if \(typeof value === "string" && LEGACY_MARKING_SURFACE\[value\]\) \{\s*return LEGACY_MARKING_SURFACE\[value\]!;/);
+  assert.match(main, /: "palette";\s*\}/, "an unknown stored id must land on the palette");
+  assert.equal(
+    [...main.matchAll(/normalizeMarkingSurface\(/g)].length,
+    4,
+    "the migration must run at its definition and at all three settings boundaries: legacy adoption, load, and set",
+  );
+
+  // 3. The picker offers two, and describes each by the pointer it is for.
+  const pickerStart = settings.indexOf("const MARKING_SURFACES:");
+  const picker = settings.slice(pickerStart, settings.indexOf("];", pickerStart));
+  assert.ok(pickerStart >= 0, "the settings picker must still enumerate the surfaces it offers");
+  assert.match(picker, /\{ id: "palette",[\s\S]*?For a pointer\./);
+  assert.match(picker, /\{ id: "dock",[\s\S]*?in reach of a thumb\./);
+  assert.equal(
+    [...picker.matchAll(/\{ id: "([a-z]+)"/g)].map(([, id]) => id).sort().join(","),
+    "dock,palette",
+    "the settings picker must not offer a surface the union no longer has",
+  );
+
+  // 4. The retired QA tours went with the surfaces they drove.
+  for (const script of ["qa-marking-rail.mjs", "qa-marking-radial.mjs"]) {
+    assert.equal(existsSync(join(repoRoot, "scripts", script)), false, `${script} must be gone`);
+  }
+  const pkg = read("package.json");
+  assert.doesNotMatch(pkg, /qa:marking-(?:rail|radial)/);
+  assert.match(pkg, /"qa:marking-palette"/);
+  assert.match(pkg, /"qa:marking-dock"/);
+
+  // 5. Nothing in the renderer may still reach for a retired surface. Comments
+  //    are excluded here on purpose — the rationale for the retirement is
+  //    prose, and prose is checked separately below.
+  const retiredCode: { pattern: RegExp; why: string }[] = [
+    { pattern: /data-marking-surface="(?:rail|radial)"/, why: "renders a retired surface" },
+    { pattern: /surface\s*[!=]==\s*"(?:rail|radial)"/, why: "branches on a retired surface" },
+    { pattern: /marking-(?:rail|radial)[a-z-]*/, why: "names a retired surface's class or host" },
+    { pattern: /data-(?:rail|radial)-[a-z-]+/, why: "publishes a retired surface's state attribute" },
+    { pattern: /\b(?:rail|radial)[A-Z]\w*/, why: "keeps a retired surface's state, ref, or helper" },
+    { pattern: /\b(?:Rail|Radial)[A-Za-z]*\b/, why: "keeps a retired surface's identifier" },
+    { pattern: /(?<![\w-])(?:"rail"|"radial"|'rail'|'radial')/, why: "keeps a retired surface id as a literal" },
+  ];
+  const leftovers: string[] = [];
+  for (const { path, text } of rendererSources()) {
+    withoutComments(text).split("\n").forEach((line, index) => {
+      for (const { pattern, why } of retiredCode) {
+        const hit = pattern.exec(line);
+        if (!hit) continue;
+        leftovers.push(`[code]  ${path}:${index + 1}  ${why}: ${hit[0]}  —  ${line.trim().slice(0, 96)}`);
+        return;
+      }
+    });
+  }
+
+  // 6. Nor may the renderer still describe itself as having four surfaces. The
+  //    one exception is api.ts, which documents why there are now two — the
+  //    reasoning is worth keeping, and it is the only place that keeps it.
+  const retiredProse: RegExp[] = [
+    /\bPen Rail\b/,
+    /\bRail\b/,
+    /\bRadial\b/,
+    /\brail·|\bradial·/,
+    /\bradial\b(?!-gradient)(?=[\s\S]*?(?:palette|dock|tray|petal|surface))/i,
+    /\bfour (?:physical |production )?(?:marking|surfaces|presentations|systems)\b/i,
+  ];
+  for (const { path, text } of rendererSources()) {
+    if (path === join("src", "renderer", "api.ts")) continue;
+    for (const { line, body } of commentsOf(text)) {
+      if (!retiredProse.some((pattern) => pattern.test(body))) continue;
+      leftovers.push(`[prose] ${path}:${line}  ${body.slice(0, 104)}`);
+    }
+  }
+
+  // 7. The selection model may not keep measuring geometry for a surface that
+  //    no longer exists. `proseBox` existed so the Radial could prefer the
+  //    page's quiet side air, and `focusBox` so it could dodge the last
+  //    painted fragment; both are measured on every selection change and must
+  //    now be read by a surviving surface or not measured at all.
+  const marking = read("src", "renderer", "components", "MarkingSurface.tsx");
+  const positionType = marking.slice(
+    marking.indexOf("  position: {"),
+    marking.indexOf("  capture: MarkingSelectionCapture;"),
+  );
+  assert.match(positionType, /anchorBox:/, "the selection model must still describe its anchor geometry");
+  for (const [, name] of positionType.matchAll(/^\s{4}(\w+Box):/gm)) {
+    if (new RegExp(`position\\.${name}\\b`).test(marking)) continue;
+    leftovers.push(`[dead]  src/renderer/components/MarkingSurface.tsx  position.${name} is measured for every selection and read by nobody`);
+  }
+
+  assert.deepEqual(
+    leftovers,
+    [],
+    `the retired marking surfaces left ${leftovers.length} trace(s) behind:\n${leftovers.join("\n")}`,
+  );
+});
+
 test("relationship extension preserves the existing identity and tray opening does not consume a selection", () => {
   const source = read("src", "renderer", "components", "MarkingSurface.tsx");
 
@@ -71,7 +254,7 @@ test("relationship extension preserves the existing identity and tray opening do
   );
 });
 
-test("reading canvas mounts routed connections, one shared margin inspector, and stage-responsive surfaces", () => {
+test("reading canvas mounts routed connections, one shared margin inspector, and two stage-responsive surfaces", () => {
   const page = read("src", "renderer", "components", "ScripturePage.tsx");
   const styles = read("src", "renderer", "styles.css");
 
@@ -88,11 +271,20 @@ test("reading canvas mounts routed connections, one shared margin inspector, and
   assert.match(styles, /container:\s*reading-stage\s*\/\s*inline-size/);
   assert.match(styles, /\.marking-dock-host\[data-dock-layout="stacked"\]/);
   assert.match(styles, /--mark-stage-width/);
-  assert.match(styles, /\.marking-radial-scrim/);
-  assert.match(styles, /\.marking-dock-host/);
-  assert.match(styles, /\.marking-rail-host/);
-  assert.match(page, /anchorBox: \{ \.\.\.box \},[\s\S]*focusBox: \{ \.\.\.focusBox \},[\s\S]*proseBox/);
-  assert.match(page, /const proseRect = verseTextRef\.current\?\.getBoundingClientRect\(\)/);
+  // Exactly two hosts, one per surviving surface, and they respond to the
+  // stage in two different registers: the palette is a fixed floating layer
+  // that lets the page through, the dock is a shelf the stage itself owns.
+  assert.match(styles, /\.marking-floating-host \{[\s\S]*?position: fixed;[\s\S]*?pointer-events: none;/);
+  assert.match(styles, /\.marking-dock-host \{[\s\S]*?position: absolute;/);
+  assert.match(styles, /\.marking-floating-host\[data-palette-layout="sheet"\] \.marking-palette \{/);
+  assert.deepEqual(
+    [...new Set([...styles.matchAll(/\.marking-[a-z-]*?-host\b/g)].map(([match]) => match))].sort(),
+    [".marking-dock-host", ".marking-floating-host"],
+    "the retired rail and radial hosts must leave no stage-responsive rules behind",
+  );
+  // Source geometry only. The surviving palette measures its own rendered
+  // footprint against the stage rather than trusting a synthetic estimate.
+  assert.match(page, /anchorBox: \{ \.\.\.box \},/);
   assert.match(page, /document\.fonts\?\.addEventListener\("loadingdone", schedule\)/);
   assert.doesNotMatch(page, /HALF_WIDTH_ESTIMATE|SURFACE_HEIGHT_ESTIMATE/);
 });
@@ -625,9 +817,10 @@ test("Electron rejects unknown marking-surface values at the settings boundary",
 test("production marking surfaces retain distinct grammar at the supported desktop width", () => {
   const source = read("src", "renderer", "components", "MarkingSurface.tsx");
   const styles = read("src", "renderer", "styles.css");
-  const railStart = source.indexOf('if (surface === "rail")');
-  const dockStart = source.indexOf("const chooseMode = (", railStart);
-  const rail = source.slice(railStart, dockStart);
+  const paletteStart = source.indexOf('if (surface === "palette") {');
+  const chooseModeStart = source.indexOf("const chooseMode = (", paletteStart);
+  const palette = source.slice(paletteStart, chooseModeStart);
+  const dock = source.slice(chooseModeStart);
 
   assert.match(source, /function PaletteVocabulary[\s\S]*RELATIONSHIPS\.map[\s\S]*PIGMENTS\.map/);
   assert.match(source, /<PaletteVocabulary[\s\S]*selectedKind=\{currentKind\}[\s\S]*selectedWash=\{currentWash \?\? selectedWash\}/);
@@ -635,107 +828,84 @@ test("production marking surfaces retain distinct grammar at the supported deskt
   assert.match(source, /data-pigment=\{option\.id\}/);
   assert.doesNotMatch(source, /progressivePalette/);
 
-  assert.match(source, /const radialLayoutHint = effectiveStageBounds\.width <= 640 \|\| effectiveStageBounds\.height <= 420 \? "sheet" : "wheel"/);
-  assert.match(source, /data-radial-layout=\{radialLayout\}/);
-  assert.match(source, /data-marking-surface="radial"/);
-  assert.equal([...source.matchAll(/data-focus-ring=\{focusRingMode\}/g)].length, 4);
+  // --- Palette: a measured floating instrument for a pointer -----------------
+  // Its whole grammar is that it comes to the words. It measures its own
+  // rendered footprint, points at the anchor, flips, and falls back to a sheet
+  // only when the stage cannot hold a floating panel — and it never touches
+  // the page's own geometry to do any of it.
+  assert.match(source, /const paletteLayoutHint = effectiveStageBounds\.width < 480 \|\| effectiveStageBounds\.height < 360 \? "sheet" : "floating"/);
+  assert.match(palette, /data-palette-layout=\{paletteLayout\}/);
+  assert.match(palette, /data-marking-surface="palette"/);
+  assert.match(palette, /data-floating-layer="toolbar"/);
+  assert.match(palette, /role="toolbar"\s*\n\s*aria-label="Mark selected text"/);
+  assert.match(palette, /return createPortal\(content, document\.body\);/,
+    "the palette is desk chrome above the page, not a member of the reading stage");
+  assert.match(palette, /const placement = selection && palettePlacement\?\.nonce === selection\.nonce \? palettePlacement : null;/);
+  assert.match(palette, /const paletteLayout = placement\?\.layout \?\? paletteLayoutHint;/);
+  assert.match(palette, /marking-palette\$\{placement\?\.flipped \? " flipped" : ""\}\$\{placement \? " is-placed" : " is-measuring"\}/);
+  assert.match(palette, /visibility: placement \? "visible" : "hidden"/,
+    "an unmeasured palette must not paint in the wrong place first");
+  assert.match(source, /const canOpenAbove = anchor\.top - gap - panelRect\.height >= effectiveStageBounds\.top \+ inset;/);
+  assert.match(source, /const opensAbove = layout === "floating" && \(canOpenAbove \|\| !canOpenBelow\);/);
+  assert.match(source, /const pointerX = Math\.min\(Math\.max\(anchorCenter - left, 16\), Math\.max\(16, width - 16\)\);/);
+  // A pointer surface must label its own vocabulary: the palette spells the
+  // relationship and wash names out, and advertises their shortcuts.
+  assert.match(palette, /<span className="marking-palette-shortcuts" aria-hidden="true"><kbd>1–6<\/kbd> connect <i>·<\/i> <kbd>⇧1–5<\/kbd> wash<\/span>/);
+  assert.match(palette, /aria-label="Add note"[\s\S]*aria-label="Close palette"/);
+  assert.match(palette, /className=\{`marking-palette-action marking-palette-pin\$\{keepActive \? " active" : ""\}`\}[\s\S]*aria-pressed=\{keepActive\}/);
+  assert.match(palette, /data-tool-armed=\{armedKey \?\? "false"\}/);
+  assert.match(palette, /<MarkingRestHint stageBounds=\{effectiveStageBounds\} theme=\{theme\} \/>/,
+    "the quietest surface must still announce itself once to a first-run reader");
+  // The palette is non-modal: the host lets the page through and the rest of
+  // the desk stays live, so it must never claim modality.
+  assert.doesNotMatch(palette, /aria-modal/);
+  assert.match(source, /id="marking-palette-help" className="marking-palette-help" aria-live="polite"/);
+  assert.match(source, /onMouseEnter=\{\(\) => onHelpChange\?\.\(option\)\}/);
+  assert.match(source, /captureFeedback \?\? \(paletteHelp \? paletteHelp\.description/);
+  assert.doesNotMatch(source, /paletteHelp \? `\$\{paletteHelp\.label\} · \$\{paletteHelp\.description\}`/);
+  assert.match(
+    source,
+    /if \(activeSelectionNonce == null \|\| persistentSurface \|\| tool\) return;\s*if \(surface === "palette" && palettePlacement\?\.nonce !== activeSelectionNonce\) return;[\s\S]*?firstChoiceRef\.current\?\.focus\(\{ preventScroll: true \}\);[\s\S]*?\}, \[activeSelectionNonce, palettePlacement\?\.nonce, persistentSurface, surface, tool\]\);/,
+    "palette autofocus must be keyed by selection nonce so exact-capture updates cannot steal moved focus",
+  );
+  assert.match(styles, /\.marking-palette \{[\s\S]*?position: fixed;[\s\S]*?width: min\(430px, calc\(var\(--mark-stage-width\) - 24px\)\);[\s\S]*?max-height: var\(--mark-palette-max-height\);/);
+  assert.match(styles, /\.marking-palette::after \{[\s\S]*?left: var\(--mark-pointer-x\);[\s\S]*?transform: translateX\(-50%\) rotate\(45deg\);/);
+  assert.match(styles, /\.marking-palette\.flipped \{ transform-origin: center top; \}/);
+  assert.match(styles, /\.marking-floating-host\[data-palette-layout="sheet"\] \.marking-palette::after \{ display: none; \}/,
+    "a sheet does not point at anything, so it must drop the pointer");
+  assert.match(styles, /\.marking-floating-host\[data-stage-size="narrow"\] \.marking-palette-shortcuts \{ display: none; \}/);
+
+  // --- Shared: one focus-ring modality across both surfaces ------------------
+  assert.equal([...source.matchAll(/data-focus-ring=\{focusRingMode\}/g)].length, 2,
+    "exactly two surfaces publish the focus-ring modality");
   assert.match(source, /window\.addEventListener\("pointerdown", markPointer, true\)[\s\S]*window\.addEventListener\("keydown", markKeyboard, true\)/);
   assert.match(styles, /\[data-marking-surface\]\[data-focus-ring="keyboard"\] :is\([\s\S]*?\):focus-visible \{\s*outline: 2px solid var\(--study-gold-focus\)/);
   assert.match(styles, /\[data-marking-surface\]\[data-focus-ring="pointer"\][\s\S]*:focus-visible \{[\s\S]*outline: none;/);
   assert.match(styles, /\[data-marking-surface="palette"\]\[data-focus-ring="keyboard"\] \.marking-palette \.marking-relationship:focus-visible/);
-  assert.match(styles, /\[data-marking-surface="radial"\]\[data-focus-ring="keyboard"\] \.marking-radial-petal:focus-visible/);
-  assert.match(styles, /\[data-marking-surface="rail"\]\[data-focus-ring="keyboard"\] \.marking-rail-intents \.marking-intent:focus-visible/);
+  assert.match(styles, /\[data-marking-surface="palette"\]\[data-focus-ring="keyboard"\] \.marking-armed-status button:focus-visible/);
   assert.match(styles, /\[data-marking-surface="dock"\]\[data-focus-ring="keyboard"\] \.marking-dock-context \.marking-relationship:focus-visible/);
-  assert.doesNotMatch(styles, /\.marking-(?:palette|rail-tray|dock-context)[^\n]*:is\(:hover, :focus-visible, \.active\)/);
-  assert.match(source, /captureFeedback \?\? \(paletteHelp \? paletteHelp\.description/);
-  assert.doesNotMatch(source, /paletteHelp \? `\$\{paletteHelp\.label\} · \$\{paletteHelp\.description\}`/);
-  assert.match(source, /data-tool-armed=\{radialArmedKey \?\? "false"\}/);
-  assert.match(source, /const radialPetalRadius = 124/);
-  assert.match(source, /const radialRef = useRef<HTMLDivElement>\(null\)/);
-  assert.match(source, /const radialHelpCardRef = useRef<HTMLElement>\(null\)/);
-  assert.match(source, /observer\.observe\(wheel\);[\s\S]*observer\.observe\(helpCard\)/);
-  // The radial is a non-modal surface: its scrim covers only the stage and
-  // the rest of the desk stays interactive, so it must not claim modality.
-  const radialStart = source.indexOf('if (surface === "radial") {\n    if (!selection');
-  const radialSource = source.slice(radialStart, source.indexOf('if (surface === "rail")', radialStart));
-  assert.doesNotMatch(radialSource, /aria-modal="true"/);
-  assert.match(source, /event\.key === "Escape"[\s\S]*onDismissSelection\(\)/);
-  assert.match(source, /event\.key !== "Tab"[\s\S]*querySelectorAll<HTMLButtonElement>\("button:not\(\[disabled\]\)"\)/);
-  assert.match(source, /className=\{`marking-radial-keep[\s\S]*onMouseDown=\{\(event\) => event\.preventDefault\(\)\}/);
+  assert.deepEqual(
+    [...new Set([...styles.matchAll(/\[data-marking-surface="([a-z-]+)"\]/g)].map(([, id]) => id))].sort(),
+    ["dock", "palette"],
+    "no stylesheet rule may address a retired surface id",
+  );
+  assert.doesNotMatch(styles, /\.marking-(?:palette|dock-context)[^\n]*:is\(:hover, :focus-visible, \.active\)/);
+  // Escape dismisses the selection from one capture-phase owner, and the
+  // palette's own close control routes through the same single exit.
+  assert.match(source, /if \(event\.key !== "Escape" \|\| event\.defaultPrevented\) return;[\s\S]*onDismissSelection\(\)/);
+  assert.match(source, /const dismissPalette = \(\): void => \{[\s\S]*onDismissSelection\(\);/);
+  assert.match(source, /event\.key !== "Tab"[\s\S]*querySelectorAll<HTMLButtonElement>\(\s*"button:not\(:disabled\)",\s*\)/);
   assert.match(source, /session\.anchors\.length >= 2 && \(!binary \|\| Boolean\(session\.feedback\)\)[\s\S]*\{session\.feedback \|\| binary \? "Retry" : "Save connection"\}/);
   assert.match(source, /const captureConnection[\s\S]*if \(busy \|\| session\?\.recoveryState\) return false;/,
     "an unconfirmed command must block new phrase capture until exact Retry");
   assert.doesNotMatch(source, /Use Retry or Cancel/,
     "recovery cannot offer cancellation after the commit boundary is ambiguous");
   assert.match(source, /className="marking-armed-status"[\s\S]*>Put down<\/button>/);
-  assert.match(source, /id="marking-radial-help" className=\{`marking-radial-help/);
-  assert.doesNotMatch(source, /className="marking-radial-help" aria-live=/);
-  assert.match(source, /onMouseEnter=\{\(\) => setRadialHelp\(option\)\}/);
-  assert.match(source, /const radialRoving = useRovingFocus<HTMLButtonElement>\(RELATIONSHIPS\.length \+ PIGMENTS\.length\)/);
-  assert.match(source, /onKeyDown=\{\(event\) => \{ radialRoving\.onKeyDown\(event, radialIndex\); \}\}/);
-  assert.match(
-    source,
-    /if \(activeSelectionNonce == null \|\| persistentSurface \|\| tool\) return;[\s\S]*?firstChoiceRef\.current\?\.focus\(\{ preventScroll: true \}\);[\s\S]*?\}, \[activeSelectionNonce, palettePlacement\?\.nonce, persistentSurface, surface, tool\]\);/,
-    "Radial autofocus must be keyed by selection nonce so exact-capture updates cannot steal moved focus",
-  );
-  assert.match(styles, /\.marking-radial \{[\s\S]*?width:\s*320px;[\s\S]*?height:\s*320px;[\s\S]*?border-radius:\s*50%;/);
-  assert.match(styles, /\.marking-radial-disc \{[\s\S]*?inset:\s*2px;/);
-  assert.match(styles, /\.marking-radial-petal \{[\s\S]*?color:\s*var\(--text-tertiary\)/);
-  assert.match(styles, /\.marking-radial-connections \{ grid-template-columns: repeat\(6, 46px\)/);
-  assert.match(styles, /\[data-radial-layout="sheet"\] \.marking-radial \{/);
-  assert.doesNotMatch(styles, /\[data-stage-size="compact"\] \.marking-radial/);
-  assert.match(styles, /@media \(forced-colors: active\) \{[\s\S]*\.marking-radial-keep,[\s\S]*\.marking-radial-card-actions button \{ border: 1px solid ButtonText !important; \}/);
 
-  assert.match(source, /const railLayout = effectiveStageBounds\.width < 600 \|\| effectiveStageBounds\.height < 520 \? "bottom" : "side"/);
-  assert.match(source, /const railIntentFocusReady = railTrayPlacement != null/);
-  assert.match(
-    source,
-    /surface !== "rail" \|\| activeSelectionNonce == null \|\| tool \|\| tray != null \|\| !railIntentFocusReady[\s\S]*firstChoiceRef\.current\?\.focus[\s\S]*\[activeSelectionNonce, railIntentFocusReady, surface, tool, tray\]/,
-    "side-Rail intent focus must wait for its measured tray commit",
-  );
-  assert.match(source, /const railTrayShouldRender = surface === "rail" && \([\s\S]*Boolean\(selection && !tool\)/);
-  assert.match(source, /const panel = railTrayRef\.current;[\s\S]*panel\.getBoundingClientRect\(\);[\s\S]*railNode\.getBoundingClientRect\(\)/);
-  assert.match(source, /selection\?\.position\.anchorBox \?\? openerRect \?\? railRect/);
-  assert.match(source, /nativeSelection\?\.rangeCount[\s\S]*getRangeAt\(0\)\.getBoundingClientRect\(\)[\s\S]*hasLiveRange \? nativeRangeRect!/);
-  assert.match(source, /anchorBox\.bottom[\s\S]*anchorBox\.left[\s\S]*anchorBox\.right[\s\S]*anchorBox\.top/);
-  assert.match(source, /!intersects\(box, avoidBox\) && !intersects\(box, railBox\)/);
-  assert.match(source, /data-rail-tray-placement=\{railTrayPlacement\?\.placement\}/);
-  assert.match(rail, /const railTrayOpen = railTrayShouldRender/);
-  assert.match(rail, /const railStatusVisible = !railTrayOpen && Boolean\(tool\) && !session/);
-  assert.match(rail, /\{sessionNode\}[\s\S]*\{exitGuardNode\}/);
-  assert.match(rail, /data-rail-layout=\{railLayout\}/);
-  assert.equal([...rail.matchAll(/data-rail-tool=/g)].length, 4);
-  assert.doesNotMatch(rail, /ToolGlyph tool="read"/);
-  assert.match(rail, /aria-controls="marking-rail-tray"/);
-  assert.match(rail, /id="marking-rail-tray"[\s\S]*ref=\{railTrayRef\}[\s\S]*<q title=\{selection\.quote\}>/);
-  assert.match(rail, /marking-rail-intents[\s\S]*<strong>Wash<\/strong>[\s\S]*<strong>Connect<\/strong>/);
-  assert.match(rail, /id="marking-rail-help"[\s\S]*railHelp\?\.description \?\?/);
-  assert.match(
-    source,
-    /useEffect\(\(\) => \{[\s\S]*setRailHelp\(null\);\s*setRailTrayPlacement\(null\);\s*railRoving\.setActiveIndex\(0\);[\s\S]*\}, \[selection\?\.nonce, surface\]\);/,
-    "a fresh selection must restore Highlight as the Rail's single roving toolbar stop",
-  );
-  assert.match(rail, /\{railTrayOpen && \([\s\S]*marking-rail-tray[\s\S]*\{railStatusVisible && \([\s\S]*marking-rail-status/);
-  assert.match(rail, />Put down<\/button>/);
-  assert.match(styles, /\.scripture-reading-stage:has\(\.marking-rail-host\[data-rail-layout="side"\]\) \.scripture-content \{[\s\S]*padding-left:/);
-  assert.match(styles, /\.marking-rail-host\[data-rail-layout="bottom"\] \.marking-rail \{[\s\S]*bottom:\s*10px;/);
-  assert.match(styles, /\.marking-rail-tray \{[\s\S]*animation:\s*marking-rail-in var\(--mark-dur-enter\)/);
-  assert.match(
-    styles,
-    /\.marking-rail button\[data-tooltip\]::after \{[\s\S]*left: 50%;[\s\S]*width: max-content;[\s\S]*max-width: 100%;[\s\S]*overflow: hidden;/,
-    "a dormant side-Rail tooltip must not enlarge the instrument's scroll geometry",
-  );
-  assert.match(
-    styles,
-    /\.marking-rail button\[data-tooltip\]:hover::after,\s*\[data-marking-surface="rail"\]\[data-focus-ring="keyboard"\] \.marking-rail button\[data-tooltip\]:focus-visible::after \{[\s\S]*left: calc\(100% \+ 9px\);[\s\S]*max-width: 190px;/,
-    "the Rail tooltip may leave the shell only while visibly requested",
-  );
-  const bottomTrayStart = styles.indexOf('.marking-rail-host[data-rail-layout="bottom"] .marking-rail-tray {');
-  const bottomTrayEnd = styles.indexOf("}", bottomTrayStart);
-  assert.doesNotMatch(styles.slice(bottomTrayStart, bottomTrayEnd), /animation(?:-name)?:/);
-  assert.match(styles, /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*\.marking-rail-tray,[\s\S]*animation:\s*none !important;/);
-  assert.match(styles, /\[data-marking-surface="rail"\]\[data-focus-ring="keyboard"\] \.marking-rail button\.active:focus-visible \{ outline: 3px double Highlight; outline-offset: 2px; \}/);
-
+  // --- Dock: a persistent instrument shelf for a thumb -----------------------
+  assert.match(dock, /data-marking-surface="dock"/);
+  assert.doesNotMatch(dock, /createPortal/,
+    "the dock belongs to the reading stage it reserves room inside");
   assert.match(source, /const dockMode: DockModeId = session[\s\S]*\? tray[\s\S]*: tool\?\.type \?\? "read"/);
   assert.match(source, /const dockModeIndex = Math\.max\(0, DOCK_MODES\.findIndex/);
   assert.match(source, /const dockLayout = effectiveStageBounds\.width <= 759 \? "stacked" : "shelf"/);
@@ -764,14 +934,16 @@ test("production marking surfaces retain distinct grammar at the supported deskt
   assert.match(styles, /\.marking-dock-actions:empty \{ display: none; \}/);
   assert.match(styles, /\.marking-dock-mode\.active\.marking-kind-parallel > svg \{ color: var\(--mark-parallel\); \}/);
   assert.match(styles, /\.marking-dock-host\[data-dock-layout="stacked"\] \.marking-dock \{[\s\S]*?grid-template-areas:\s*"context actions" "modes modes"/);
-  assert.match(styles, /\.scripture-reading-stage:has\(\.marking-dock-host\[data-dock-layout="stacked"\]\) \{\s*--marking-bottom-inset:\s*120px;/);
+  assert.match(styles, /\.scripture-reading-stage:has\(\.marking-dock-host\[data-dock-layout="stacked"\]\) \{\s*--mdock-bottom-inset:\s*120px;/);
   assert.match(styles, /\.marking-dock-host\[data-dock-layout="stacked"\] \.marking-dock:has\(> \.marking-dock-actions:empty\) \{[\s\S]*?grid-template-columns:\s*minmax\(0, 1fr\);[\s\S]*?grid-template-areas:\s*"context" "modes";[\s\S]*?column-gap:\s*0;/);
   assert.match(styles, /\.marking-dock-host\[data-dock-layout="stacked"\] \.marking-dock-context \.marking-session \{[\s\S]*?display:\s*grid;[\s\S]*?grid-template-columns:\s*auto minmax\(0, 1fr\) auto auto/);
   assert.match(styles, /@container reading-stage \(max-width: 430px\) \{[\s\S]*?\.marking-dock-hit \{ display: none; \}[\s\S]*?\.marking-dock-host\[data-dock-layout="stacked"\] \.marking-dock \{ column-gap: 8px; \}[\s\S]*?width:\s*220px;/);
   assert.match(styles, /@media \(any-pointer: coarse\) \{[\s\S]*?\.marking-dock-modes \{ width: 238px; grid-template-columns: repeat\(5, 44px\); \}[\s\S]*?data-dock-layout="stacked"\] \.marking-dock-modes \{ width: 228px; gap: 2px; \}/);
   assert.match(styles, /\.app-shell:has\(\.marking-dock-host\[data-dock-layout="shelf"\]\) \+ \.toast-container \{[\s\S]*?bottom:\s*calc\(104px/);
   assert.match(styles, /\.app-shell:has\(\.marking-dock-host\[data-dock-layout="stacked"\]\) \+ \.toast-container \{[\s\S]*?bottom:\s*calc\(144px/);
-  assert.match(styles, /@media \(max-width: 760px\) \{[\s\S]*?\.scripture-body \{[\s\S]*?flex-direction:\s*column;[\s\S]*?\.scripture-body > \.scripture-reading-stage \{[\s\S]*?min-height:\s*0;[\s\S]*?\.scripture-body > \.living-margin \{[\s\S]*?position:\s*static;[\s\S]*?width:\s*100%;[\s\S]*?max-height:\s*clamp\(144px, 34vh, 320px\)/);
+  assert.match(styles, /@media \(max-width: 760px\) \{[\s\S]*?\.scripture-body \{[\s\S]*?flex-direction:\s*column;[\s\S]*?\.scripture-body > \.scripture-reading-stage \{[\s\S]*?min-height:\s*0;[\s\S]*?\.scripture-body > \.living-margin \{[\s\S]*?position:\s*static;[\s\S]*?width:\s*100%;[\s\S]*?max-height:\s*calc\(var\(--margin-header-h\) \+ 44px\)/);
+  assert.match(styles, /\.scripture-body > \.living-margin\[data-compact-expanded="true"\] \{[\s\S]*?max-height:\s*min\(58vh, 520px\)/,
+    "the compact Study pane offers a second calm size instead of one cramped strip");
   assert.doesNotMatch(styles, /\.scripture-body > \.living-margin \{[^}]*position:\s*absolute/);
 });
 
@@ -839,7 +1011,10 @@ test("persistent trays close locally and restore their opener on Escape", () => 
   assert.match(source, /const trayOpenerRef = useRef<HTMLButtonElement>\(null\)/);
   assert.match(source, /const closeTray = useCallback\(\(restoreFocus: boolean\)[\s\S]*opener\?\.isConnected[\s\S]*focus\(\{ preventScroll: true \}\)/);
   assert.match(source, /const ownerContextKey = currentContextKey\.current;[\s\S]*currentContextKey\.current !== ownerContextKey/);
-  assert.match(source, /const toolbar = surface === "rail" \? railRef\.current : dockModesRef\.current/);
+  // The dock is the only persistent surface left, so its mode group is the
+  // one toolbar a lost opener can fall back into.
+  assert.match(source, /const toolbar = dockModesRef\.current;/);
+  assert.match(source, /const fallback = surface === "dock"\s*\?\s*toolbar\?\.querySelector<HTMLButtonElement>\('button\[role="radio"\]\[aria-checked="true"\]'\)/);
   assert.match(source, /if \(!persistentSurface \|\| \(tray !== "connect" && tray !== "wash"\)\) return;[\s\S]*document\.addEventListener\("mousedown", onMouseDown\)/);
   const escapeHandler = source.slice(source.indexOf("const onKeyDown = (event: KeyboardEvent)"), source.indexOf("window.addEventListener", source.indexOf("const onKeyDown = (event: KeyboardEvent)")));
   assert.ok(escapeHandler.indexOf("closeTray(true)") < escapeHandler.indexOf("if (activeSelectionNonce != null)"), "Escape must close a persistent tray before dismissing the selection");
@@ -865,19 +1040,65 @@ test("marking Escape owns Focus-mode ordering while yielding to higher layers", 
   assert.match(source, /window\.addEventListener\("keydown", onKeyDown, true\)[\s\S]*window\.removeEventListener\("keydown", onKeyDown, true\)/);
 });
 
-test("Radial keeps its outside-dismiss shield through the completing click", () => {
+// The Radial's scrim used to own this invariant, and the invariant outlived
+// the surface: a gesture that ends outside a marking surface may only be acted
+// on by the completed click, never by the pointer-down half — pointer-down is
+// exactly when the browser would collapse the native selection the surface is
+// still holding. Retiring the scrim does not retire the rule; it moves it.
+test("outside dismissal still completes on the click, never on the pointer-down half", () => {
   const source = read("src", "renderer", "components", "MarkingSurface.tsx");
-  const scrimStart = source.indexOf('<div className="marking-radial-scrim"');
-  const radialPanelStart = source.indexOf("ref={radialRef}", scrimStart);
-  const scrim = source.slice(scrimStart, radialPanelStart);
+  const page = read("src", "renderer", "components", "ScripturePage.tsx");
 
-  assert.ok(scrimStart >= 0 && radialPanelStart > scrimStart);
-  assert.match(scrim, /onPointerDown=\{\(event\) => \{[\s\S]*event\.target !== event\.currentTarget[\s\S]*event\.preventDefault\(\)[\s\S]*event\.stopPropagation\(\)/);
-  assert.match(scrim, /onClick=\{\(event\) => \{[\s\S]*event\.target !== event\.currentTarget[\s\S]*event\.preventDefault\(\)[\s\S]*event\.stopPropagation\(\)[\s\S]*onDismissSelection\(\)/);
-  assert.doesNotMatch(scrim, /onMouseDown=/, "mousedown must not unmount the shield before the gesture completes");
+  // Neither surviving surface raises a shield at all, so there is nothing left
+  // that could swallow a completing click: the palette host is a fixed layer
+  // the page shows through, and the dock is a shelf beneath the measure.
+  assert.doesNotMatch(source, /marking-[a-z-]*scrim/,
+    "no surviving marking surface may interpose a shield between reader and words");
+  const styles = read("src", "renderer", "styles.css");
+  assert.match(styles, /\.marking-floating-host \{[\s\S]*?pointer-events: none;/);
+  assert.match(styles, /\.marking-palette \{[\s\S]*?pointer-events: auto;/,
+    "only the panel itself takes the pointer; the stage around it stays live");
+  assert.match(styles, /\.marking-dock \{[\s\S]*?pointer-events: auto;/);
+
+  // Every pointer-down handler in the component exists for one reason: to stop
+  // the press half of a gesture from collapsing the held selection. The action
+  // itself always waits for the click.
+  const pointerDownHandlers = [...source.matchAll(/onMouseDown=\{/g)].length;
+  const neutralised = [...source.matchAll(/onMouseDown=\{\(event\) => event\.preventDefault\(\)\}/g)].length
+    + [...source.matchAll(/onMouseDown=\{\(event\) => \{ if \(!activateOnMove\) event\.preventDefault\(\); \}\}/g)].length;
+  assert.equal(neutralised, pointerDownHandlers,
+    "a marking control that handles mousedown must do nothing but neutralise it");
+  assert.ok(pointerDownHandlers >= 13, "the surviving surfaces still guard every press");
+  assert.doesNotMatch(source, /onPointerDown=/,
+    "no marking control may act on pointerdown");
+
+  // The dock's own outside-close is deliberately non-destructive: a press
+  // outside its tray closes only the tray, silently, and never consumes the
+  // selection or restores focus behind the reader's back.
+  const trayOutside = source.slice(
+    source.indexOf("if (!persistentSurface || (tray !== \"connect\" && tray !== \"wash\")) return;"),
+    source.indexOf("const onKeyDown = (event: KeyboardEvent)"),
+  );
+  assert.match(trayOutside, /trayPanelRef\.current\?\.contains\(target\) \|\| trayOpenerRef\.current\?\.contains\(target\)/);
+  assert.match(trayOutside, /closeTray\(false\)/);
+  assert.doesNotMatch(trayOutside, /onDismissSelection|onClearSelection/);
+
+  // The destructive outside dismissal — releasing authored focus — is the one
+  // that must survive the completing click, and it does: it listens for
+  // "click", shields both surviving hosts, and stands down for a dirty card or
+  // any higher floating layer.
+  const outsideStart = page.indexOf('.connection-card[data-dirty="true"]');
+  const outsideEnd = page.indexOf('document.addEventListener("click", handleOutsideClick)', outsideStart);
+  const outside = page.slice(outsideStart, outsideEnd);
+  assert.ok(outsideStart >= 0 && outsideEnd > outsideStart, "missing the authored outside-dismiss handler");
+  assert.match(page, /document\.addEventListener\("click", handleOutsideClick\)/,
+    "authored focus may only be released by a completed click");
+  assert.match(outside, /"\.marking-floating-host",/);
+  assert.match(outside, /"\.marking-dock-host",/);
+  assert.match(outside, /\[data-floating-layer="dialog"\], \[data-floating-layer="popover"\]/);
   assert.ok(
-    scrim.indexOf("onClick=") < scrim.indexOf("onDismissSelection()"),
-    "outside dismissal must occur from the completed click, not pointerdown",
+    outside.indexOf('.connection-card[data-dirty="true"]') < outside.indexOf("handleDismissConnectionFocus()"),
+    "a dirty card owns its own exit decision before any outside click can dismiss it",
   );
 });
 
@@ -918,25 +1139,19 @@ test("marking materials stay neutral, shared, and accessibility-safe", () => {
   assert.doesNotMatch(marking, /--mark-lens\s*:|background:\s*var\(--mark-lens\)/);
   for (const selector of [
     ".marking-palette",
-    ".marking-radial-hub",
-    ".marking-rail",
-    ".marking-rail-tray",
-    ".marking-rail-status",
     ".marking-dock",
   ]) {
     assert.match(ruleBlock(selector), /background:\s*var\(--bg-reading\);/, `${selector} must use a flat neutral base material`);
   }
-  assert.match(ruleBlock(".marking-radial-scrim"), /radial-gradient/, "the Radial focus field must keep its focal gradient");
-  assert.match(ruleBlock(".marking-radial-disc"), /radial-gradient/, "the Radial disc must keep its depth gradient");
-  assert.match(
-    marking,
-    /data-radial-layout="sheet"\] \.marking-radial \{[^}]*background:\s*var\(--bg-reading\);/,
-    "the Radial sheet must use the same flat neutral material",
-  );
+  // Two surfaces, one material. Retiring the Radial retired the only gradient
+  // any marking surface ever carried, so the section must now be gradient-free
+  // apart from the palette's calibrated pigment mixes.
+  assert.doesNotMatch(marking, /radial-gradient|linear-gradient\((?!100deg, var\(--hl-)/,
+    "the surviving surfaces are flat neutral paper, not lit discs");
   // Every marking surface is floating paper, and material never applies to
-  // paper — so none of them carries a translucent variant. A palette you can
-  // see the verse through is a palette you cannot read a swatch on.
-  for (const selector of [".marking-rail", ".marking-radial-hub", ".marking-dock", ".marking-palette"]) {
+  // paper — so neither carries a translucent variant. A palette you can see
+  // the verse through is a palette you cannot read a swatch on.
+  for (const selector of [".marking-dock", ".marking-palette"]) {
     assert.doesNotMatch(
       marking,
       new RegExp(`\\.material-translucent[^{]*\\${selector}[^{]*\\{[^}]*(background|backdrop-filter):`),
@@ -952,7 +1167,7 @@ test("marking materials stay neutral, shared, and accessibility-safe", () => {
   for (const color of ["yellow", "green", "blue", "pink", "purple"]) {
     assert.ok(
       marking.includes(`.marking-palette .marking-pigment-${color} { background: color-mix(in srgb, var(--hl-${color}-mark) 46%, var(--bg-reading)); }`),
-      `Palette ${color} pigment must reuse the calibrated flat Rail mix`,
+      `Palette ${color} pigment must reuse the calibrated flat 46% mix`,
     );
   }
   assert.match(ruleBlock(".marking-palette .marking-pigment"), /box-shadow:\s*none;/);
@@ -964,13 +1179,28 @@ test("marking materials stay neutral, shared, and accessibility-safe", () => {
   assert.doesNotMatch(marking, /animation-name:\s*marking-palette|@keyframes marking-palette-(?:in-below|sheet-in)/);
   assert.equal([...marking.matchAll(/animation:\s*marking-palette-[\w-]+/g)].length, 1, "Palette variants must never introduce a second animation assignment");
   assert.equal([...marking.matchAll(/@keyframes marking-palette-in\s*\{/g)].length, 1, "Palette placement variants must share one entrance animation name");
-  assert.match(marking, /@keyframes marking-radial-item-in \{ from \{ opacity: 0; scale: \.9; \} \}/);
-  assert.doesNotMatch(marking, /\.marking-radial-disc::(?:before|after)/);
-  assert.match(marking, /data-radial-layout="wheel"[^}]*\.marking-radial-petal \{\s*box-shadow:\s*none;/);
   assert.match(marking, /data-dock-layout="stacked"[^}]*grid-template-areas:\s*"context actions" "modes modes"/);
   assert.match(marking, /data-dock-layout="stacked"[^}]*\.marking-dock-context \{[^}]*border-bottom:\s*1px solid var\(--border-subtle\)/);
-  assert.match(marking, /data-radial-layout="sheet"[^}]*\.marking-radial-hub \{[^}]*border:\s*0;[^}]*background:\s*transparent;[^}]*box-shadow:\s*none;[^}]*backdrop-filter:\s*none;/);
-  assert.match(marking, /data-radial-layout="sheet"[^}]*\.marking-radial-help-card \{[^}]*border:\s*0;[^}]*border-bottom:\s*1px solid var\(--border-subtle\);[^}]*background:\s*transparent;[^}]*box-shadow:\s*none;/);
+  // Seven keyframes went out with the two surfaces. What is left is an exact
+  // list, and every name on it is still animated by a live rule — a retired
+  // surface must not leave an orphaned @keyframes behind for nobody.
+  const keyframeNames = [...new Set([...marking.matchAll(/@keyframes ([\w-]+)/g)].map(([, name]) => name))].sort();
+  assert.deepEqual(keyframeNames, [
+    "marking-armed-in",
+    "marking-dock-context-in",
+    "marking-dock-in",
+    "marking-dock-spin",
+    "marking-palette-in",
+    "marking-rest-hint-in",
+    "marking-rise-in",
+  ], "the marking section must declare one keyframe set, sized to two surfaces");
+  for (const name of keyframeNames) {
+    assert.match(
+      marking,
+      new RegExp(`animation(?:-name)?:[^;]*\\b${name}\\b`),
+      `@keyframes ${name} is declared but nothing animates with it`,
+    );
+  }
 
   const thumbStart = marking.indexOf(".marking-dock-thumb {");
   const thumbEnd = marking.indexOf("}", thumbStart);
@@ -981,9 +1211,11 @@ test("marking materials stay neutral, shared, and accessibility-safe", () => {
   const reducedStart = marking.indexOf("@media (prefers-reduced-motion: reduce)");
   const forcedStart = marking.indexOf("@media (forced-colors: active)", reducedStart);
   const reduced = marking.slice(reducedStart, forcedStart);
-  for (const selector of [".marking-palette", ".marking-radial-petal", ".marking-rail-tray", ".marking-dock-thumb"]) {
+  for (const selector of [".marking-palette", ".marking-armed-status", ".marking-dock", ".marking-dock-thumb", ".marking-dock-mode"]) {
     assert.ok(reduced.includes(selector), `${selector} must honor reduced motion`);
   }
+  assert.match(marking, /@media \(prefers-reduced-motion: reduce\) \{\s*\.marking-rest-hint \{ animation: none; \}/,
+    "the first-run hint must not animate for a reader who asked for stillness");
   assert.match(reduced, /animation:\s*none !important/);
   assert.match(reduced, /transition:\s*none !important/);
 
@@ -991,6 +1223,138 @@ test("marking materials stay neutral, shared, and accessibility-safe", () => {
   assert.match(forced, /\.marking-pigment::after[^}]*content:\s*attr\(data-forced-code\)/);
   assert.match(forced, /\.marking-dock-thumb \{[^}]*display:\s*none/);
   assert.match(forced, /\[data-marking-surface="dock"\]\[data-focus-ring="keyboard"\] \.marking-dock-mode\.active:focus-visible \{ outline: 3px double Highlight/);
+});
+
+/**
+ * The reason rail·side was disqualified, held as structure rather than as a
+ * memory. It padded `.scripture-content` by 92px, so the reading measure MOVED
+ * when a tool appeared — and the measure is the one thing that must hold still.
+ * No surviving surface may reach the inline axis of the page, and the dock's
+ * bottom inset is the dock's own layout arithmetic, not a token a theme or any
+ * other surface may read.
+ */
+test("no marking surface may move the reading measure, and the dock's inset stays dock-internal", () => {
+  const styles = read("src", "renderer", "styles.css");
+  const rules = cssRules(styles);
+  const marked = /\.marking-[a-z-]*host|\[data-marking-surface|\[data-(?:dock|palette)-layout|\[data-dock-state/;
+  const measureTarget = /\.scripture-(?:content|inner|body|page)\b|\.verse-text\b/;
+
+  // Anything on the inline axis moves the measure. Block-axis room below the
+  // last verse does not: the line length is unchanged, so the words stay put.
+  const inlineAxis = /(?:^|;)\s*(?:padding|margin|inset|border-width)\s*:|(?:^|;)\s*(?:padding|margin|inset|border)-(?:left|right|inline)(?:-start|-end)?(?:-width)?\s*:|(?:^|;)\s*(?:min-|max-)?width\s*:|(?:^|;)\s*(?:left|right|transform|translate|columns|column-width|--reading-inline-gutter|--reading-max-width|--page-gutter|--page-inset)\s*:/;
+  const movesMeasure = rules
+    .filter(({ selector }) => marked.test(selector) && measureTarget.test(selector))
+    .filter(({ body }) => inlineAxis.test(body))
+    .map(({ selector, body }) => `${selector}  {  ${body.slice(0, 120)}  }`);
+  assert.deepEqual(
+    movesMeasure,
+    [],
+    `a marking surface still moves the reading measure:\n${movesMeasure.join("\n")}`,
+  );
+  assert.doesNotMatch(
+    styles,
+    /\.scripture-content \{[^}]*padding-left:\s*92px|padding-left:\s*92px/,
+    "the 92px side-Rail gutter must never come back",
+  );
+
+  // Exactly one marking-conditioned rule reaches the page at all, and it only
+  // makes room below the words for the shelf that sits over them.
+  const pageRules = rules.filter(({ selector }) => marked.test(selector) && /\.scripture-content\b/.test(selector));
+  assert.equal(pageRules.length, 1, "only the dock may reserve room inside the page");
+  assert.match(pageRules[0]!.selector, /^\.scripture-reading-stage:has\(\.marking-dock-host\) \.scripture-content$/);
+  assert.match(pageRules[0]!.body, /^padding-bottom: calc\(80px \+ var\(--mdock-bottom-inset\)\); scroll-padding-bottom: calc\(24px \+ var\(--mdock-bottom-inset\)\);$/);
+
+  // The inset is dock-internal: renamed off the theme-token surface, declared
+  // only on the stage that hosts a dock, and read by that one rule alone.
+  assert.doesNotMatch(styles, /--marking-bottom-inset/,
+    "the dock's layout arithmetic must not read as a theme token");
+  const insetDeclarations = rules.filter(({ body }) => /--mdock-bottom-inset\s*:/.test(body));
+  assert.equal(insetDeclarations.length, 4, "one zero default plus one value per dock state");
+  for (const { selector, body } of insetDeclarations) {
+    const value = /--mdock-bottom-inset:\s*([^;]+);/.exec(body)?.[1]?.trim();
+    if (selector === ".scripture-reading-stage") {
+      assert.equal(value, "0px", "a stage with no dock in it must reserve nothing");
+      continue;
+    }
+    assert.match(
+      selector,
+      /^\.scripture-reading-stage:has\(\.marking-dock-host[^)]*\)$/,
+      `--mdock-bottom-inset may only take a value under a dock selector (${selector})`,
+    );
+    assert.notEqual(value, "0px");
+  }
+  const insetReaders = rules.filter(({ body }) => /var\(--mdock-bottom-inset/.test(body)).map(({ selector }) => selector);
+  assert.deepEqual(
+    insetReaders,
+    [".scripture-reading-stage:has(.marking-dock-host) .scripture-content"],
+    "nothing outside the dock's own room-making rule may read the dock's inset",
+  );
+
+  // Nor may any marking selector redefine the measure itself.
+  const measureTokens = rules
+    .filter(({ selector, body }) => marked.test(selector) && /--reading-(?:max-width|inline-gutter)\s*:/.test(body))
+    .map(({ selector }) => selector);
+  assert.deepEqual(measureTokens, [], `a marking selector redefines the measure: ${measureTokens.join(", ")}`);
+});
+
+/**
+ * A deletion this size is done with an editor, and an editor can leave a rule
+ * inside a comment or a selector with its head cut off. Text assertions cannot
+ * see the difference — `assert.match(styles, /…/)` passes on a rule that the
+ * cascade never reaches — so the structure has to be checked directly.
+ */
+test("the marking stylesheet is live CSS: no rule trapped in a comment, no orphaned selector", () => {
+  const styles = read("src", "renderer", "styles.css");
+
+  const trapped: string[] = [];
+  let cursor = 0;
+  for (;;) {
+    const open = styles.indexOf("/*", cursor);
+    if (open === -1) break;
+    const close = styles.indexOf("*/", open + 2);
+    const line = styles.slice(0, open).split("\n").length;
+    assert.notEqual(close, -1, `unterminated CSS comment opened at src/renderer/styles.css:${line}`);
+    for (const [, rule] of styles.slice(open + 2, close).matchAll(/^[ \t]*([.#[@][^{}\n]*\{)/gm)) {
+      trapped.push(`src/renderer/styles.css:${line}  swallowed by this comment: ${rule.trim().slice(0, 88)}`);
+    }
+    cursor = close + 2;
+  }
+  assert.deepEqual(
+    trapped,
+    [],
+    `${trapped.length} CSS rule(s) are commented out and will never reach the cascade:\n${trapped.join("\n")}`,
+  );
+
+  // A selector whose parentheses do not balance is a selector the browser
+  // discards whole — exactly what a half-deleted `:is(…)` list leaves behind.
+  const orphaned: string[] = [];
+  const stripped = withoutComments(styles);
+  for (const match of stripped.matchAll(/([^{}]*)\{/g)) {
+    const selector = match[1]!.trim().replace(/\s+/g, " ");
+    if (!selector || selector.startsWith("@")) continue;
+    const opens = (selector.match(/\(/g) ?? []).length;
+    const closes = (selector.match(/\)/g) ?? []).length;
+    if (opens === closes) continue;
+    orphaned.push(`src/renderer/styles.css:${stripped.slice(0, match.index).split("\n").length}  ${selector.slice(0, 96)}`);
+  }
+  assert.deepEqual(
+    orphaned,
+    [],
+    `${orphaned.length} selector(s) have unbalanced parentheses and are discarded whole:\n${orphaned.join("\n")}`,
+  );
+
+  // And the dock's own hue vocabulary must actually be live, not merely
+  // present in the file: these are the rules that colour the active tool.
+  const live = cssRules(styles).map(({ selector }) => selector);
+  for (const selector of [
+    ".marking-dock-mode:disabled",
+    ".marking-dock-mode.active.marking-kind-parallel > svg",
+    ".marking-dock-mode.active.marking-kind-hinge > svg",
+    ".marking-dock-mode.active.tone-yellow > svg",
+    ".marking-choice-panel",
+  ]) {
+    assert.ok(live.includes(selector), `${selector} is not a live rule in the cascade`);
+  }
 });
 
 test("marking surface guidance stays contextual and quiet", () => {
@@ -1006,10 +1370,27 @@ test("marking surface guidance stays contextual and quiet", () => {
   );
   assert.match(source, /captureFeedback \?\? \(surface === "dock" && dockHelp \? dockHelp\.description/);
   assert.equal(source.includes("${dockHelp.label} · ${dockHelp.description}"), false);
+  // The Radial announced its own geometry ("Connections arc above…"), which is
+  // a sentence only a wheel could say. What replaces it is guidance about the
+  // work, not the widget — and each surface says it in exactly one place.
+  assert.doesNotMatch(source, /arc above|settle below/,
+    "guidance describes the marking, never the shape of the instrument");
   assert.match(
     source,
-    /radialLayout === "wheel"\s*\? "Connections arc above\. Quiet pigments settle below\."\s*: "Choose a relationship or a quiet wash\."/,
+    /\{keepActive\s*\? "The tool you choose will remain in your hand\."\s*: captureFeedback \?\? \(paletteHelp \? paletteHelp\.description\s*: selection\.mixedColors \? "Mixed washes selected — choose one to unify them\."\s*: "Connect the words — or lay a wash\."\)\}/,
+    "the palette's one live region answers keep-state, refusal, hover help, and mixed washes in that order",
   );
+  // Both surfaces read from the one `status` string, so guidance cannot drift
+  // between them, and the armed-tool sentences come from one shared describer.
+  assert.match(source, /function describeArmedTool\(armedTool: ToolMode \| null\)/);
+  assert.match(source, /<span className="marking-armed-copy">\{armedGuidance\}<\/span>/);
+  assert.match(source, /className="marking-dock-tool-status" role="status" aria-live="polite">[\s\S]*?<span>\{status\}<\/span>/);
+  assert.match(source, /className="marking-dock-resting"><span aria-hidden="true"><ToolGlyph tool="read" \/><\/span>\{status\}<\/span>/);
+  assert.match(source, /<span className="sr-only" role="status" aria-live="polite">\{status\}<\/span>/,
+    "the dock's status must also reach a screen reader that cannot see the shelf");
+  // Guidance may never name an instrument a reader can no longer choose.
+  assert.doesNotMatch(source, /"[^"\n]*\b(?:Rail|Radial|petal|wheel)\b[^"\n]*"/,
+    "no user-visible string may mention a retired surface or its parts");
 });
 
 test("a connection selection is marked processed only after capture accepts it", () => {
@@ -1033,7 +1414,11 @@ test("a connection selection is marked processed only after capture accepts it",
   );
 });
 
-test("Pen Rail keeps async outcomes truthful and returns keyboard focus to Scripture", () => {
+// The Pen Rail owned this invariant, and the invariant is about the broker, not
+// the instrument: an async marking write must report exactly what happened, and
+// a keyboard reader must be handed back to Scripture afterwards. Both surviving
+// surfaces share the one controller that does it, so both must honour it.
+test("marking async outcomes stay truthful and return keyboard focus to Scripture", () => {
   const source = read("src", "renderer", "components", "MarkingSurface.tsx");
   const finishStart = source.indexOf("const finishConnection");
   const captureStart = source.indexOf("const captureConnection", finishStart);
@@ -1067,9 +1452,30 @@ test("Pen Rail keeps async outcomes truthful and returns keyboard focus to Scrip
   assert.ok(escape.indexOf("if (busy || activeOperation.current != null)") < escape.indexOf("if (session)"));
   assert.match(escape, /if \(busy \|\| activeOperation\.current != null\) \{[\s\S]*event\.stopImmediatePropagation\(\);[\s\S]*return;/);
   assert.match(source, /const activeSelectionNonce = selection\?\.nonce \?\? null/);
-  assert.match(source, /if \(surface !== "rail" \|\| activeSelectionNonce == null \|\| tool \|\| tray != null \|\| !railIntentFocusReady\) return;/);
-  assert.match(source, /\}, \[activeSelectionNonce, railIntentFocusReady, surface, tool, tray\]\);/);
+  // Each surface gates its own keyboard entry on the thing that actually
+  // settles: the palette on its measured placement, the dock on a mode group
+  // that is already mounted and not busy. Neither may grab focus from a
+  // pointer or screen-reader user.
+  assert.match(
+    source,
+    /if \(activeSelectionNonce == null \|\| persistentSurface \|\| tool\) return;\s*if \(surface === "palette" && palettePlacement\?\.nonce !== activeSelectionNonce\) return;/,
+    "palette intent focus must wait for its measured placement commit",
+  );
+  assert.match(source, /\}, \[activeSelectionNonce, palettePlacement\?\.nonce, persistentSurface, surface, tool\]\);/);
+  assert.match(
+    source,
+    /if \(surface !== "dock" \|\| activeSelectionNonce == null\) return;\s*if \(lastDockAutofocusedSelectionRef\.current === activeSelectionNonce\) return;[\s\S]*?if \(lastInputModality\(\) !== "keyboard"\) return;/,
+    "dock intent focus must move once per selection, and only for a keyboard reader",
+  );
+  assert.equal(
+    [...source.matchAll(/lastInputModality\(\) [!=]== "keyboard"/g)].length,
+    2,
+    "both surfaces consult the same input-modality gate before moving focus, and nothing else does",
+  );
   assert.match(source, /const chooseWash[\s\S]*if \(!selection\) \{[\s\S]*onRequestReadingFocus\(\);[\s\S]*setConsumingSelectionNonce\(nonce\);[\s\S]*applyTool\(next, selection\)/);
   assert.match(source, /const chooseConnection[\s\S]*if \(!selection\) \{[\s\S]*onRequestReadingFocus\(\);[\s\S]*setConsumingSelectionNonce\(nonce\);[\s\S]*applyTool\(next, selection\)/);
-  assert.match(source, /marking-rail-status-copy">\{status \|\| railToolGuidance\}/);
+  // Putting a tool down is the explicit return to reading, on both surfaces.
+  assert.match(source, /const putDownTool = \(requestReadingFocus = true\): void => \{[\s\S]*?if \(requestReadingFocus\) onRequestReadingFocus\(\)/);
+  assert.equal([...source.matchAll(/>Put down<\/button>/g)].length, 2,
+    "each surviving surface offers one explicit way back to the text");
 });

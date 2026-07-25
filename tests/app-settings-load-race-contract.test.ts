@@ -111,11 +111,25 @@ test("markingSurface persists as a stable production setting with a palette fall
   const apiSource = readFileSync(join(repoRoot, "src", "renderer", "api.ts"), "utf-8");
   const mainSource = readFileSync(join(repoRoot, "src", "electron", "main.ts"), "utf-8");
 
-  const stableSurfaceIds = /"palette"\s*\|\s*"rail"\s*\|\s*"radial"\s*\|\s*"dock"/;
-  assert.match(apiSource, /export type MarkingSurface\s*=\s*"palette"\s*\|\s*"rail"\s*\|\s*"radial"\s*\|\s*"dock"/, "renderer API must expose the four durable marking-surface ids");
+  // Two durable ids, not four: the rail and the radial retired because two of
+  // their layouts WERE the dock and the other two could not work where they
+  // were offered. A third surface reappearing here is a regression.
+  const stableSurfaceIds = /"palette"\s*\|\s*"dock"/;
+  assert.match(apiSource, /export type MarkingSurface\s*=\s*"palette"\s*\|\s*"dock"/, "renderer API must expose exactly the two durable marking-surface ids");
   assert.match(apiSource, /markingSurface:\s*MarkingSurface/, "AppSettings must use the shared marking-surface type");
-  assert.match(mainSource, stableSurfaceIds, "Electron settings schema must accept the same four durable ids");
+  assert.match(mainSource, stableSurfaceIds, "Electron settings schema must accept the same two durable ids");
   assert.match(mainSource, /markingSurface:\s*"palette"/, "new profiles must default to the palette surface");
+
+  // A reader who chose a retired surface keeps the KIND they chose: the rail
+  // was persistent like the dock, the radial floating like the palette.
+  assert.match(mainSource, /rail:\s*"dock"/, "a stored rail preference must migrate to the dock");
+  assert.match(mainSource, /radial:\s*"palette"/, "a stored radial preference must migrate to the palette");
+  for (const retired of ['"rail"', '"radial"']) {
+    assert.ok(
+      !apiSource.includes(`MarkingSurface = ${retired}`),
+      `${retired} must not return to the surface union`,
+    );
+  }
 
   assert.match(
     appSource,

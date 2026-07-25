@@ -62,7 +62,11 @@ test("drag marking snapshots its native range and commits in the active canvas",
   assert.match(drag, /const rangeRects = Array\.from\(range\.getClientRects\(\)\);/);
   assert.match(drag, /const phraseSelection = \{ verseStart, verseEnd, charStart, charEnd \};/);
   assert.match(drag, /const paletteBox = \{/);
-  assert.match(drag, /const paletteFocusBox = focusRect/);
+  // paletteFocusBox is gone: it fed the radial's spotlight and the radial has
+  // retired, so it was being measured on every drag and read by nobody. The
+  // surviving surfaces measure their own footprint against the reading stage.
+  assert.doesNotMatch(drag, /paletteFocusBox|focusRect/);
+  assert.match(drag, /positionPaletteForBox\(paletteBox\);/);
 
   const suppression = drag.indexOf("suppressTrailingDragClick();");
   assert.ok(suppression >= 0, "the trailing native click must be suppressed");
@@ -74,7 +78,7 @@ test("drag marking snapshots its native range and commits in the active canvas",
     "setSelectedVerses(new Set())",
     "setPhraseSelection(phraseSelection)",
     "advanceSelectionGeneration()",
-    "positionPaletteForBox(paletteBox, paletteFocusBox)",
+    "positionPaletteForBox(paletteBox)",
     "setShowHighlightPalette(true)",
   ]) {
     assert.ok(drag.indexOf(mutation) > suppression, `${mutation} ran before drag suppression`);

@@ -15373,8 +15373,8 @@ button.lang-phrase-diagram-node:focus-visible,
 }
 
 /* --- Production marking surfaces -----------------------------------------
- * Palette, Pen Rail, Radial, and Dock are four physical presentations over
- * one marking controller. Semantic color remains inside relationship glyphs
+ * Palette and Dock are two physical presentations over one marking
+ * controller — one for a pointer, one for a thumb. Semantic color remains inside relationship glyphs
  * and pigment samples; active chrome is neutral and gold is focus-only.
  */
 
@@ -16167,9 +16167,6 @@ button.lang-phrase-diagram-node:focus-visible,
 .connection-draft-exit-actions button.primary { border-color: var(--border-medium); background: var(--text-primary); color: var(--bg-reading); }
 .connection-draft-exit-actions button.danger { margin-left: auto; color: var(--danger, #9f4d45); }
 .connection-draft-exit-actions button:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 2px; }
-/* Petal glyphs stay quiet for precise pointers, where the help card and
-   tooltips name them;
-
 .marking-dock-mode:disabled { cursor: default; opacity: .42; }
 
 .marking-tool-tone { display: none; }
@@ -16200,10 +16197,6 @@ button.lang-phrase-diagram-node:focus-visible,
 .marking-dock-mode.active.marking-kind-series > svg { color: var(--mark-series); }
 
 .marking-dock-mode.active.marking-kind-hinge > svg { color: var(--mark-hinge); }
-
-.active) .marking-choice-glyph {
-  color: var(--mark-kind-tone);
-}
 
 .marking-choice-panel { display: grid; gap: 8px; }
 
@@ -16823,7 +16816,7 @@ button.lang-phrase-diagram-node:focus-visible,
   .marking-palette-pin.active { outline: 1px solid CanvasText; outline-offset: -3px; }
 }
 
-/* Settings preview cards for the four physical marking systems. */
+/* Settings preview cards for the two marking surfaces. */
 .marking-surface-choice-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
