@@ -450,6 +450,37 @@ export function App(): React.JSX.Element {
     query.addEventListener("change", sync);
     return () => query.removeEventListener("change", sync);
   }, []);
+  /*
+   * @quire trigger · taxonomy · which reserve closes when the rail and the panel
+   * cannot both be paid for.
+   *
+   * rev05-canon measured the built sheet at both rail widths: page top 54 in all
+   * 28 combinations, page left 80 collapsed and 256 expanded, measure block 416
+   * wherever the block canon holds. The frame table needs no row for the expanded
+   * rail — the switch reads the paper through a container query, so rail width
+   * just narrows the paper the way the panel does. Both widths stay: Rev 04 §6
+   * prints "Collapsed 56px, expanded 232px" as approved, §8 does not supersede
+   * it, and Rev 05's footer supersedes exactly two things, neither of them this.
+   *
+   * The cost lands here rather than on the grid. Expanded rail AND panel open
+   * gives the paper 516 / 596 / 644 at 1200 / 1280 / 1328 against a 692 measure
+   * block, so the measure yields to 484 / 564 / 612. The page's own padding
+   * yields first and reaches 0 before the measure gives, so that is the floor of
+   * the stated order — §05·4's ladder has no rung left, the margin has already
+   * closed into the panel, and the next concession is H's at 980.
+   *
+   * NOT ANSWERED HERE, deliberately. 280px of rail plus two 380 reserves does not
+   * fit a 1328 window, and the language does not say which reserve should have
+   * closed. Choosing one is widening the nearest slot, which §9 names as the
+   * thing not to do. The two candidate answers — auto-collapse the rail while
+   * both reserves are open below ~1440, or fold this into §05·7's already-open
+   * 1200–1279 question — are one expression apart, and this is the expression:
+   * the rail already knows `marginVisible`, so the guard would read
+   * `sidebarCollapsed || (marginVisible && bothReservesDoNotFit)` on the same
+   * shape as the narrow-shell override above, leaving the setting untouched.
+   * Until it is ruled on, the shipped behaviour is the stated order's own
+   * outcome: the measure yields, and nothing collapses under the reader.
+   */
   const collapsedRail = sidebarCollapsed && !narrowShell;
   const [theme, setTheme] = useState<AppSettings["theme"]>("light");
   const [material, setMaterial] = useState<AppSettings["material"]>("solid");

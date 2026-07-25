@@ -8259,10 +8259,14 @@ html, body, #root {
   border-top: 1px solid var(--border-subtle);
 }
 
-/* Law 3, and the smallest mark in the language: seal says you wrote it. C·2
-   gave the dot to the app and the spine to the reader; Rev 04 puts provenance
-   in the INK, and C4·3 draws a seal dot on the reader's own rows. Later study
-   wins (ruling 4·2), and the ink is doing the saying either way. */
+/* Law 3, and the smallest mark in the language: seal says you wrote it.
+
+   @quire derived · provenance · C·2 gave the dot to the app and the spine to
+   the reader, so a seal DOT is a shape C·2 does not have a slot for. Resolved
+   by Law 3 — "provenance is carried by ink" — plus ruling 4·2's later-study-
+   wins, since C4·3 draws exactly this: a 4px seal dot on the reader's own
+   rows. The ink does the saying either way, and the shape distinction was a
+   C·2 elaboration rather than a law. Say if the spine was meant to survive. */
 .margin-note-mark {
   flex: none;
   align-self: center;
@@ -8322,7 +8326,13 @@ html, body, #root {
 
 /* The count states whose it is, so it is read, so it clears 4.5:1. The study
    sets #B4AEA5 here — the pre-Rev-03 tertiary the handoff §4 records as a
-   shipped defect at 3.22:1. Law 6 has no small-text exemption. */
+   shipped defect at 3.22:1. Law 6 has no small-text exemption.
+
+   @quire derived · colour · the drawing's count ink is not used · this is the
+   one place the panel departs from an exact inline style, and it departs
+   because the handoff supersedes the drawing on this specific value: §4 lists
+   #B4AEA5 as the shipped defect that --text-tertiary #847D74 replaced. If the
+   drawing is meant to win here instead, this is the line to change. */
 .intent-section-count {
   flex: none;
   color: var(--text-tertiary);
@@ -15186,9 +15196,27 @@ textarea:focus-visible,
    what yields at this width is the ⌘K hint, and the word itself stays whole. */
 @media (max-width: 1120px) {
   /* The datum yields, and the rule under the band yields with it — that is the
-     whole point of naming it once. */
-  .scripture-topbar {
-    --topbar-datum: 14px;
+     whole point of naming it once.
+
+     Declared on the STAGE rather than on the band. It was `--topbar-datum: 14px`
+     on .scripture-topbar, which yielded the pager and its hairline together but
+     stopped there: --topbar-datum is the last link in the chain, so a value set
+     on it cannot reach the page's own padding, and below 979 it actively
+     shadowed the narrow shell's concession — the page body went to the reading
+     gutter while the band stayed pinned at 14. Two values for one datum at one
+     width is the §05·2 fault in miniature, so the concession is stated at the
+     head of the chain and every link downstream of it yields by construction:
+     --page-datum → the page's --page-padding-inline → the band's
+     --topbar-datum. The narrow shell's own rule is later in this sheet and
+     still wins below 979, which is the order it should be in.
+
+     The number stays 14 because the constraint at this width is the header's,
+     not the page's: what yields here is the ⌘K hint. The page body is in the
+     centred canon with ~148px of real air either side, so its padding is not
+     load-bearing at this width and follows the band rather than arguing with
+     it. */
+  .scripture-reading-stage {
+    --page-datum: 14px;
   }
 
   .passage-picker-book {
@@ -19095,8 +19123,14 @@ button.lang-phrase-diagram-node:focus-visible,
     display: none;
   }
 
+  /* Same move as the 1120 concession above, and for the same reason: stated at
+     the head of the chain so the pager, the band's hairline and the page body
+     hold one datum at this width too. */
+  .scripture-reading-stage {
+    --page-datum: 12px;
+  }
+
   .scripture-topbar {
-    --topbar-datum: 12px;
     gap: 4px;
   }
 

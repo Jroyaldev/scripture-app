@@ -4489,7 +4489,15 @@ export function LivingMargin({
               tab was for, and the button was the only bordered control in the
               panel. What replaced them is one sentence when there is nothing,
               a section head with a seal count when there is, and the verbs as
-              words at the foot. */}
+              words at the foot.
+
+              @quire derived · kin: the Connections tab · C4·3 draws Notes in
+              its EMPTY state only, so the head this tab wears when it does
+              have notes is underived from any drawing. Taken from the nearest
+              drawn sibling in the same panel — Connections' "In this passage"
+              with "3 · yours" — rather than invented, since both are lists of
+              the reader's own material at the same scope. If Notes-full is
+              ever drawn, this is the line it replaces. */}
           {notesHere.length > 0 && (
             <section className="margin-section margin-note-section">
               <StudySectionHead

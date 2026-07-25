@@ -398,6 +398,60 @@ test("what the tours reach for beyond a class name still exists", () => {
   );
 });
 
+test("every departure from the drawing is findable by the sweep, not just explained", () => {
+  // §9's markers exist so guesses can be collected mechanically — `derived`
+  // needs no reply, `guessed` is batched into the next quire, `trigger` is
+  // answered the same week. A guess reasoned out in prose and left unmarked is
+  // not marked, it is merely explained to whoever happens to read that
+  // function, and it never reaches the batch. These are the three places this
+  // surface knowingly departs from C·4's drawings or resolves a conflict
+  // between two studies; each must carry a marker, not just an argument.
+  // Anchors must be unique to the comment being checked. "#B4AEA5" alone is
+  // not: the atmosphere tokens name the same colour, with their own marker,
+  // and this guard passed on THEIR marker while its own was deleted. An
+  // anchor that resolves to the wrong place fails exactly like a selector
+  // that matches nothing — silently, and in the passing direction.
+  const departures: Array<[string, string]> = [
+    // The drawing's count ink is #B4AEA5; the handoff calls it a shipped defect.
+    ["the count's ink", "sets #B4AEA5 here"],
+    // C·2 gives the dot to the app; C4·3 draws a seal dot for the reader.
+    ["the note row's seal dot", "C·2 gave the dot to the app"],
+  ];
+  for (const [what, anchor] of departures) {
+    assert.equal(
+      css.split(anchor).length - 1,
+      1,
+      `the anchor for ${what} is not unique — it could resolve to another rule's comment`,
+    );
+  }
+  // Scoped to the comment the explanation actually lives in, not a window
+  // around it. A ±700-character slice passed this test while the marker was
+  // deleted, because it reached a neighbouring rule's marker — "found a
+  // marker" is not "found THIS one's marker", which is the same defect this
+  // whole file keeps circling.
+  const enclosingComment = (source: string, anchor: string): string => {
+    const at = source.indexOf(anchor);
+    assert.ok(at > 0, `expected to find ${JSON.stringify(anchor)}`);
+    const open = source.lastIndexOf("/*", at);
+    const close = source.indexOf("*/", at);
+    assert.ok(open >= 0 && close > open, `${JSON.stringify(anchor)} is not inside a comment`);
+    return source.slice(open, close);
+  };
+  for (const [what, anchor] of departures) {
+    assert.match(
+      enclosingComment(css, anchor),
+      /@quire (derived|guessed|trigger)/,
+      `${what} is explained but unmarked — the sweep will never see it`,
+    );
+  }
+  // Notes is drawn empty only, so its full-state head is derived.
+  assert.match(
+    enclosingComment(margin, "the head this tab wears when it does"),
+    /@quire derived/,
+    "the Notes full-state head is undrawn and must say so",
+  );
+});
+
 /* --- The mono sweep ------------------------------------------------------ */
 
 test("no mono survives on the Overview or Notes surfaces", () => {
