@@ -160,6 +160,9 @@ const PIGMENTS: readonly PigmentOption[] = [
 
 const BINARY_KINDS = new Set<ConnectionKind>(["link:contrast", "mirror", "hinge"]);
 
+/** The narrow shell's breakpoint, matching styles.css's @media (max-width: 979px). */
+const NARROW_SHELL = "(max-width: 979px)";
+
 const DOCK_MODES = [
   { id: "read", label: "Read" },
   { id: "wash", label: "Wash" },
@@ -742,11 +745,26 @@ export function MarkingSurface({
   /**
    * Below the narrow breakpoint the surface is the dock, whatever the reader
    * chose. A floating palette needs somewhere to float that is not over the
-   * words it is about, and at this width there is nowhere — it would either
+   * words it is about, and at that width there is nowhere — it would either
    * cover the passage or collide with the sheet. The preference is not
    * overwritten, only overridden while there is no room to honour it.
+   *
+   * The test is the SHELL's width, not the reading stage's. At a 1440px window
+   * the stage is only ~756px once the rail, the insets and the margin are
+   * subtracted, so measuring the stage would put a desktop into the narrow
+   * shell — which is the whole reason this reads a media query instead.
    */
-  const surface: MarkingSurfaceId = effectiveStageBounds.width <= 979 ? "dock" : surfaceSetting;
+  const [isNarrowShell, setIsNarrowShell] = useState(
+    () => typeof window !== "undefined" && window.matchMedia(NARROW_SHELL).matches,
+  );
+  useEffect(() => {
+    const query = window.matchMedia(NARROW_SHELL);
+    const sync = (): void => setIsNarrowShell(query.matches);
+    sync();
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
+  }, []);
+  const surface: MarkingSurfaceId = isNarrowShell ? "dock" : surfaceSetting;
   const persistentSurface = surface === "dock";
   // Escape ownership rank in the shared layer registry. An open tray or an
   // in-progress session is deliberate work and cancels before a passive

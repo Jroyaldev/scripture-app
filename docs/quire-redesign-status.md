@@ -16,12 +16,16 @@ built, and where the build deliberately departs from the handoff.
 | 3 | B·2 — fillet, page inset | `feat: fuse the active tab into the page with a concave fillet` |
 | 4 | A — nav rail, B — register | `feat: make the rail canvas and the register a register` |
 | 5 | D — canvas, C — margin | `feat: leave the text block alone and flatten the margin` |
+| 5 | D — pericope fold | `feat: retire two marking surfaces, and give the canvas its pericope fold` |
+| 5 | C·2 — word distribution | `feat: replace the word-distribution donut with three ranked rows` |
 | 6 | E — passage header | `feat: quiet the passage header into one 48px band` |
+| 7 | G — two surfaces | `feat: retire two marking surfaces, …` |
+| 8 | H — narrow shell | `feat: build the narrow shell (H)` |
 | 9 | I, I·2 — themes + material | `feat: collapse six themes into four appearances and one material` |
 
-Suite is green — 1006 passing, 0 failing, `npm run lint` clean. The design
-contracts now assert the Quire rules rather than the ones it replaced, so a
-regression toward the old system fails a test rather than passing quietly.
+`npm run lint` is clean and the design contracts assert the Quire rules rather
+than the ones they replaced, so a regression toward the old system fails a test
+instead of passing quietly.
 
 ## Not done
 
@@ -30,18 +34,26 @@ regression toward the old system fails a test rather than passing quietly.
   fixes (drop the 34px empty-state icon, move the count out of the field, add
   the out-of-scope count, no sort control). The header half of phase 6 landed;
   this half did not.
-- **G, G·2 — marking.** `MarkingSurface` still ships all four surfaces
-  (`"palette" | "rail" | "radial" | "dock"`). Retiring rail and radial, folding
-  stacked in as a dock state, the fixed bar contents, the eleven actions in
-  three kinds, and the ten states as shared components are all outstanding.
-  `--marking-bottom-inset` still needs its component prefix (repo-patch §3).
-- **H, H·2 — narrow shell and mobile.** Untouched.
-- **Pericope folds.** §D describes a fold that does not exist in the codebase at
-  all — `PericopeMark.tsx` is the brand logo, not a text-structure mark. This is
-  new feature work, not restyling.
-- **C·2 — the entry skeleton.** Entries are still rows rather than the six-part
-  hanging-indent skeleton, the bearing line is not built, and the word panel
-  keeps its donut instead of three ranked rows with a 3px proportion rule.
+- **G·2 — the full action set.** The surfaces are down to two, but the bar's
+  fixed contents (five swatches, then Note · Connect · More, with Remove taking
+  Note's slot), the eleven actions in three kinds, Connect replacing the bar
+  with its four draft states, and the ten states as shared components are all
+  outstanding. So is one loading device everywhere: `.marking-*` still has
+  spinner-shaped affordances the state study bans.
+- **H·2 — mobile behaviour.** The narrow *shell* is built; the gesture grammar
+  is not. Missing: horizontal page swipe for chapters, long-press on Read for
+  the register list, tap-to-select-verse with 10px grips on the gutter mark,
+  the peek↔dock cross-fade at 120ms, nav hiding past the half stop, and drag
+  between the three sheet stops. The bottom-edge budget is also unresolved —
+  nav, dock and sheet peek can currently coexist, which is the 25%-of-screen
+  problem H·2 names.
+- **C·2 — the entry skeleton.** Margin entries are still rows rather than the
+  six-part hanging-indent skeleton, and the bearing line ("1,050 km NW of
+  Jerusalem") is not built.
+- **Stated losses are not stated.** H requires the narrow shell to *say* what it
+  gives up — compare re-labelling to "Compare in a tab", connection threads
+  announcing that tracing needs the sheet, groups surviving as overflow labels.
+  The concessions are made; the sentences are missing.
 - **Connections.** Correctly untouched — §7.3 parks both attempts.
 
 ## Departures from the handoff, and why
@@ -55,6 +67,9 @@ under the reading family's own name with an explicit `unicode-range` — Noto
 Serif for Greek, Noto Serif Hebrew for the niqqud — so each script resolves to
 exactly one face. See `scripts/vendor-fonts.mjs`.
 
+**The register's abbreviations are derived, not authored** — see below. Two
+further departures worth recording:
+
 **`--bg-secondary` survives as "sunk".** The two-plane rule would retire it, but
 it has ~100 consumers and collapsing them all onto canvas in one pass could not
 be verified surface by surface. It now holds the sunk value rather than a third
@@ -65,6 +80,18 @@ asks for a fixed abbreviation table. Rather than author 66 new strings, the
 label uses the existing `data/scripture/book-names-en.json` short forms, keeping
 the full name where it is already five characters or fewer so that ACTS, MARK
 and JOHN are not clipped to ACT, MAR and JOH for no width at all.
+
+**Marking becomes the dock below 979px regardless of preference.** H's table
+says narrow uses the dock, but does not say what happens to a reader who chose
+the palette. Overriding while overwriting nothing seemed the honest reading: a
+floating palette at 390px has nowhere to float that is not over the words it is
+about.
+
+**Pericope folds admit only `kind === "section"`.** The data carries four other
+kinds. Acrostics are letter glyphs rather than titles, and in Psalm 119 each
+stanza emits both the Hebrew letter and its transliteration at the same verse —
+admitting them would stack duplicate folds down the whole psalm. Superscriptions
+belong to the text and major sections are a scale above the fold.
 
 ## Pre-existing bug found on the way
 
