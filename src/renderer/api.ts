@@ -1,4 +1,4 @@
-import type { AppTheme } from "./theme.js";
+import type { AppMaterial, AppTheme } from "./theme.js";
 import type { EntityResearchData } from "../core/entities/place-research.js";
 import type {
   ConnectionAnchorV2,
@@ -212,6 +212,8 @@ export interface RecentPassageSetting {
 
 export interface AppSettings {
   theme: AppTheme;
+  /** Material is orthogonal to the atmosphere: any theme, translucent or not. */
+  material: AppMaterial;
   markingSurface: MarkingSurface;
   sidebarCollapsed: boolean;
   marginVisible: boolean;

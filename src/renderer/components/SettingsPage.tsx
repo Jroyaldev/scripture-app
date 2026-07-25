@@ -9,7 +9,7 @@ import type {
   ReadingWidth,
   VerseNumberMode,
 } from "../api.js";
-import type { AppTheme } from "../theme.js";
+import type { AppMaterial, AppTheme } from "../theme.js";
 import { safeCall } from "../utils/safeCall.js";
 import { Button, ControlInput, SegmentedControl } from "./Controls.js";
 import { ImportPage } from "./ImportPage.js";
@@ -28,6 +28,8 @@ interface Props {
   }) => void;
   theme: AppTheme;
   onThemeChange: (theme: AppTheme) => void;
+  material: AppMaterial;
+  onMaterialChange: (material: AppMaterial) => void;
   markingSurface: MarkingSurface;
   onMarkingSurfaceChange: (surface: MarkingSurface) => void;
 }
@@ -178,6 +180,8 @@ export function SettingsPage({
   onReadingPrefsChange,
   theme,
   onThemeChange,
+  material,
+  onMaterialChange,
   markingSurface,
   onMarkingSurfaceChange,
 }: Props): React.JSX.Element {
@@ -456,7 +460,12 @@ export function SettingsPage({
                 <label>Reading atmosphere</label>
                 <p>Material changes. Meaning does not.</p>
               </div>
-              <ThemeChoiceGrid theme={theme} onChange={onThemeChange} />
+              <ThemeChoiceGrid
+                theme={theme}
+                onChange={onThemeChange}
+                material={material}
+                onMaterialChange={onMaterialChange}
+              />
             </div>
             <div className="settings-field">
               <div className="settings-field-heading">

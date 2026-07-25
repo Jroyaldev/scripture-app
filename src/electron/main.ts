@@ -219,7 +219,8 @@ interface WindowBounds {
 }
 
 interface AppSettingsSchema {
-  theme: "light" | "dark" | "glass" | "dark-glass" | "porcelain" | "onyx";
+  theme: "light" | "dark" | "porcelain" | "onyx";
+  material: "solid" | "translucent";
   markingSurface: "palette" | "rail" | "radial" | "dock";
   sidebarCollapsed: boolean;
   marginVisible: boolean;
@@ -310,16 +311,33 @@ const MARKING_SURFACE_IDS = new Set<AppSettingsSchema["markingSurface"]>([
 const THEME_IDS = new Set<AppSettingsSchema["theme"]>([
   "light",
   "dark",
-  "glass",
-  "dark-glass",
   "porcelain",
   "onyx",
 ]);
 
+// Glass and Candlelight were never separate atmospheres — they were Paper and
+// Ink with the material on. A reader who picked one did express a preference,
+// so migrate it into (theme, material) rather than resetting them to Paper.
+const LEGACY_THEME_MIGRATION: Record<string, { theme: AppSettingsSchema["theme"]; material: AppSettingsSchema["material"] }> = {
+  "glass": { theme: "light", material: "translucent" },
+  "dark-glass": { theme: "dark", material: "translucent" },
+};
+
 function normalizeTheme(value: unknown): AppSettingsSchema["theme"] {
-  return typeof value === "string" && THEME_IDS.has(value as AppSettingsSchema["theme"])
+  if (typeof value !== "string") return "light";
+  const migrated = LEGACY_THEME_MIGRATION[value];
+  if (migrated) return migrated.theme;
+  return THEME_IDS.has(value as AppSettingsSchema["theme"])
     ? value as AppSettingsSchema["theme"]
     : "light";
+}
+
+function normalizeMaterial(value: unknown, rawTheme: unknown): AppSettingsSchema["material"] {
+  if (value === "translucent" || value === "solid") return value;
+  if (typeof rawTheme === "string" && LEGACY_THEME_MIGRATION[rawTheme]) {
+    return LEGACY_THEME_MIGRATION[rawTheme].material;
+  }
+  return "solid";
 }
 
 function normalizeMarkingSurface(value: unknown): AppSettingsSchema["markingSurface"] {
@@ -487,6 +505,7 @@ const legacySettingsAdoption = readLegacySettingsForAdoption();
 const store = new Store<AppSettingsSchema>({
   defaults: {
     theme: nativeTheme.shouldUseDarkColors ? "dark" : "light",
+    material: "solid",
     markingSurface: "palette",
     sidebarCollapsed: false,
     marginVisible: true,
@@ -504,7 +523,18 @@ const store = new Store<AppSettingsSchema>({
 });
 
 if (legacySettingsAdoption.status === "adopt") {
-  store.store = { ...store.store, ...legacySettingsAdoption.settings };
+  // The legacy store can still name Glass or Candlelight. Those were never
+  // separate atmospheres, so adopt them as the theme they always were plus
+  // the material switch they actually meant.
+  const { theme: legacyTheme, ...adopted } = legacySettingsAdoption.settings;
+  store.store = {
+    ...store.store,
+    ...adopted,
+    ...(legacyTheme === undefined ? {} : {
+      theme: normalizeTheme(legacyTheme),
+      material: normalizeMaterial(undefined, legacyTheme),
+    }),
+  };
 }
 logLifecycle("legacy-settings-adoption", {
   status: legacySettingsAdoption.status,
@@ -3284,6 +3314,7 @@ function registerIpcHandlers(): void {
     return {
       ...settled,
       theme: normalizeTheme(settled.theme),
+      material: normalizeMaterial(settled.material, settled.theme),
       markingSurface: normalizeMarkingSurface(settled.markingSurface),
       lastRead: normalizeLastRead(settled.lastRead),
       researchSession: normalizeResearchSession(settled.researchSession),
@@ -3319,6 +3350,10 @@ function registerIpcHandlers(): void {
       ...store.store,
       ...sanitizedPartial,
       theme: normalizeTheme(partial.theme ?? store.store.theme),
+      material: normalizeMaterial(
+        partial.material ?? store.store.material,
+        partial.theme ?? store.store.theme,
+      ),
       markingSurface: normalizeMarkingSurface(partial.markingSurface ?? store.store.markingSurface),
       lastRead: normalizeLastRead(hasLastRead ? partial.lastRead : store.store.lastRead),
       researchSession: normalizeResearchSession(

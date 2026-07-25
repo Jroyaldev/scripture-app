@@ -2,16 +2,25 @@ import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { Popover } from "./Popover.js";
 import { Tooltip } from "./Tooltip.js";
-import { THEME_OPTIONS, themeLabel, type AppTheme } from "../theme.js";
+import { THEME_OPTIONS, themeLabel, type AppMaterial, type AppTheme } from "../theme.js";
 
 interface ThemeChoiceGridProps {
   theme: AppTheme;
   onChange: (theme: AppTheme) => void;
+  material?: AppMaterial;
+  onMaterialChange?: (material: AppMaterial) => void;
   compact?: boolean;
 }
 
-export function ThemeChoiceGrid({ theme, onChange, compact = false }: ThemeChoiceGridProps): React.JSX.Element {
+export function ThemeChoiceGrid({
+  theme,
+  onChange,
+  material,
+  onMaterialChange,
+  compact = false,
+}: ThemeChoiceGridProps): React.JSX.Element {
   return (
+    <>
     <div className={`theme-choice-grid${compact ? " compact" : ""}`} role="radiogroup" aria-label="Reading atmosphere">
       {THEME_OPTIONS.map((option) => (
         <button
@@ -37,15 +46,36 @@ export function ThemeChoiceGrid({ theme, onChange, compact = false }: ThemeChoic
         </button>
       ))}
     </div>
+    {onMaterialChange && (
+      /* The only genuinely binary preference in the app, and therefore the
+         only thing drawn as a switch. Four appearances and one switch — not
+         six atmospheres, two of which were secretly the other four. */
+      <label className="material-switch">
+        <span className="material-switch-copy">
+          <strong>Translucent</strong>
+          <small>The ground softens and the page lifts off it.</small>
+        </span>
+        <input
+          type="checkbox"
+          role="switch"
+          checked={material === "translucent"}
+          onChange={(event) => onMaterialChange(event.target.checked ? "translucent" : "solid")}
+        />
+        <span className="material-switch-track" aria-hidden="true" />
+      </label>
+    )}
+    </>
   );
 }
 
 interface ThemePickerProps {
   theme: AppTheme;
   onChange: (theme: AppTheme) => void;
+  material?: AppMaterial;
+  onMaterialChange?: (material: AppMaterial) => void;
 }
 
-export function ThemePicker({ theme, onChange }: ThemePickerProps): React.JSX.Element {
+export function ThemePicker({ theme, onChange, material, onMaterialChange }: ThemePickerProps): React.JSX.Element {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const shouldReturnFocus = useRef(false);
   const [open, setOpen] = useState(false);
@@ -97,6 +127,8 @@ export function ThemePicker({ theme, onChange }: ThemePickerProps): React.JSX.El
           <ThemeChoiceGrid
             theme={theme}
             compact
+            material={material}
+            {...(onMaterialChange ? { onMaterialChange } : {})}
             onChange={(next) => {
               onChange(next);
               close();

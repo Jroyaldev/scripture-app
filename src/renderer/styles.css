@@ -13,6 +13,8 @@
 
      Chroma drops from ~.030 to ~.005 against the old warm set: that set read
      as parchment skin, this reads as paper. */
+  --canvas-solid: #F1EFEA;
+  --paper-solid: #FCFBF8;
   --bg-canvas: #F1EFEA;   /* the ground — rails, bars, gutters, the shell */
   --bg-reading: #FCFBF8;  /* paper — the brightest plane in the app */
   --bg-primary: #F1EFEA;  /* shell behind everything; canvas by definition */
@@ -436,6 +438,8 @@
 .dark {
   /* Ink. Same two planes, same brightness law: paper is still the brightest
      thing on screen and the ground still recedes behind it. */
+  --canvas-solid: #141210;
+  --paper-solid: #1D1B18;
   --bg-canvas: #141210;
   --bg-reading: #1D1B18;
   --bg-primary: #141210;
@@ -543,46 +547,42 @@
 
 /* Glass and Candlelight change material only. Geometry, type roles, and
    semantic colors remain identical to Paper and Ink. */
-.theme-glass {
-  --bg-primary: #EEE6D8;
-  --bg-secondary: rgba(246, 239, 227, 0.58);
-  --bg-canvas: rgba(247, 240, 228, 0.50);
-  --bg-reading: rgba(255, 252, 246, 0.58);
-  --bg-float: rgba(255, 252, 246, 0.94);
-  --border-subtle: rgba(76, 61, 42, 0.10);
-  --border-medium: rgba(76, 61, 42, 0.17);
-  --border-strong: rgba(76, 61, 42, 0.28);
-  --shadow-subtle: 0 1px 2px rgba(62, 45, 25, 0.05);
-  --shadow-medium: 0 10px 30px rgba(62, 45, 25, 0.10);
-  --shadow-elevated: 0 24px 64px rgba(58, 40, 20, 0.18);
+/* Material — not a theme. Glass and Candlelight were Paper and Ink with this
+   switch on; the bundle said so itself ("Glass and Candlelight change material
+   only. Geometry, type roles, and semantic colors remain identical"). Carried
+   as themes they forced every colour decision to be made six times.
+
+   Material applies to CANVAS, never to paper. Five alphas between .48 and .58
+   collapse to one: the ground goes to 42% and blurs, --bg-reading stays fully
+   opaque in every theme, and the page gains the one shadow — because with the
+   ground translucent there is now genuinely something behind it to see. */
+.material-translucent {
+  --bg-canvas: color-mix(in srgb, var(--canvas-solid) 42%, transparent);
+  --bg-primary: var(--canvas-solid);
+  --bg-float: color-mix(in srgb, var(--paper-solid) 94%, transparent);
   --material-blur: 26px;
-  --material-saturate: 1.28;
-  --workspace-bar-bg: color-mix(in srgb, rgb(from var(--bg-canvas) r g b / 1) 96%, #000);
-  --workspace-active-bg: #FFF9F0;
+  --material-saturate: 1.12;
+  --workspace-bar-bg: transparent;
 }
 
-.theme-dark-glass {
-  --bg-primary: #191714;
-  --bg-secondary: rgba(37, 31, 26, 0.54);
-  --bg-canvas: rgba(24, 20, 17, 0.52);
-  --bg-reading: rgba(29, 24, 20, 0.56);
-  --bg-float: rgba(31, 26, 22, 0.95);
-  --border-subtle: rgba(245, 237, 224, 0.09);
-  --border-medium: rgba(245, 237, 224, 0.15);
-  --border-strong: rgba(245, 237, 224, 0.24);
-  --study-hover-surface: rgba(71, 57, 44, 0.62);
-  --shadow-subtle: 0 1px 2px rgba(0, 0, 0, 0.18);
-  --shadow-medium: 0 10px 32px rgba(0, 0, 0, 0.24);
-  --shadow-elevated: 0 24px 70px rgba(0, 0, 0, 0.42);
-  --material-blur: 26px;
-  --material-saturate: 1.24;
-  --workspace-bar-bg: color-mix(in srgb, rgb(from var(--bg-canvas) r g b / 1) 96%, #000);
-  --workspace-active-bg: #2D251F;
+.material-translucent .scripture-content,
+.material-translucent .living-margin {
+  box-shadow: var(--shadow-float);
+}
+
+.material-translucent .sidebar,
+.material-translucent .scripture-topbar,
+.material-translucent .scripture-page,
+.material-translucent .app-shell {
+  -webkit-backdrop-filter: blur(var(--material-blur)) saturate(var(--material-saturate));
+  backdrop-filter: blur(var(--material-blur)) saturate(var(--material-saturate));
 }
 
 /* Porcelain — true white surfaces and neutral ink. Bright brand gold remains
    a fill; thin non-text accents use a 3:1-safe deeper gold on white. */
 .theme-porcelain {
+  --canvas-solid: #F2F2F4;
+  --paper-solid: #FFFFFF;
   --bg-canvas: #F2F2F4;
   --bg-reading: #FFFFFF;
   --bg-primary: #F2F2F4;
@@ -638,6 +638,8 @@
 /* Onyx — neutral blacks with the same bright gold ember. The shell also
    carries .dark, so all dark-only Shape and portal contracts participate. */
 .theme-onyx {
+  --canvas-solid: #151517;
+  --paper-solid: #1D1D20;
   --bg-canvas: #151517;
   --bg-reading: #1D1D20;
   --bg-primary: #151517;
@@ -770,49 +772,13 @@ html, body, #root {
   transition: background-color var(--transition-slow), color var(--transition-normal);
 }
 
-.app-shell.theme-glass {
-  background-color: #EEE6D8;
-  background-image:
-    radial-gradient(circle at 78% 9%, rgba(255, 255, 255, 0.42), transparent 38%),
-    linear-gradient(135deg, rgba(243, 235, 220, 0.34), rgba(214, 192, 157, 0.13)),
-    url("./assets/glass-light.png");
-  background-size: cover;
-  background-position: center;
-}
 
-.app-shell.theme-dark-glass {
-  background-color: #191714;
-  background-image:
-    radial-gradient(circle at 76% 7%, rgba(210, 163, 110, 0.12), transparent 36%),
-    linear-gradient(135deg, rgba(17, 14, 12, 0.16), rgba(0, 0, 0, 0.34)),
-    url("./assets/glass-dark.png");
-  background-size: cover;
-  background-position: center;
-}
 
-.theme-glass .sidebar,
-.theme-glass .scripture-topbar,
-.theme-glass .scripture-content,
-.theme-glass .living-margin,
-.theme-dark-glass .sidebar,
-.theme-dark-glass .scripture-topbar,
-.theme-dark-glass .scripture-content,
-.theme-dark-glass .living-margin {
-  backdrop-filter: blur(var(--material-blur)) saturate(var(--material-saturate));
-}
 
 /* Chromium can flatten fixed popover contents when backdrop-filter and an
    overflow clip share the same composited layer. A floating layer should be
    more opaque than the canvas anyway, so keep it crisp above glass. */
-.theme-glass .popover-panel,
-.popover-panel.theme-glass {
-  background: var(--bg-float);
-}
 
-.theme-dark-glass .popover-panel,
-.popover-panel.theme-dark-glass {
-  background: var(--bg-float);
-}
 
 /* The rail IS canvas. Not a tinted panel beside the page — no fill of its own
    and no right border, because the page's 24px inset already separates them
@@ -1158,11 +1124,6 @@ html, body, #root {
   padding-right: calc(var(--margin-width) + var(--pane-gutter) + var(--page-inset));
 }
 
-.theme-glass .scripture-workspace-bar,
-.theme-dark-glass .scripture-workspace-bar {
-  -webkit-backdrop-filter: blur(var(--material-blur)) saturate(var(--material-saturate));
-  backdrop-filter: blur(var(--material-blur)) saturate(var(--material-saturate));
-}
 
 /* Overflow scrolls, it never squeezes — a register whose tabs shrink stops
    being readable exactly when you have most need of it.
@@ -3104,8 +3065,6 @@ html, body, #root {
   --connection-focus-veil-color: var(--bg-reading);
   z-index: 4;
 }
-.theme-glass .connection-underlay,
-.theme-dark-glass .connection-underlay { --connection-focus-veil-color: var(--bg-reading); }
 
 .connection-mark,
 .connection-emphasis-mark {
@@ -3418,13 +3377,6 @@ html, body, #root {
   font-family: var(--font-ui);
 }
 
-.theme-glass .connection-card,
-.theme-dark-glass .connection-card {
-  background: color-mix(in srgb, var(--bg-reading) 78%, transparent);
-  /* Living Margin already owns the atmosphere blur. A second filtered
-     scroller retained costly compositing layers during repeated inspection. */
-  backdrop-filter: none;
-}
 
 .connection-card:focus { outline: none; }
 .connection-card:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 2px; }
@@ -12830,11 +12782,6 @@ button.lang-phrase-diagram-node:focus-visible {
 .settings-page,
 .settings-page * { box-sizing: border-box; }
 
-.theme-glass .settings-page,
-.theme-dark-glass .settings-page {
-  background: color-mix(in srgb, var(--bg-reading) 88%, transparent);
-  backdrop-filter: blur(24px) saturate(1.1);
-}
 
 .settings-frame {
   display: grid;
@@ -14799,25 +14746,11 @@ textarea:focus-visible,
   box-shadow: none;
 }
 
-.theme-glass .lang-orbit,
-.theme-glass .lang-sense-outline,
-.theme-dark-glass .lang-orbit,
-.theme-dark-glass .lang-sense-outline {
-  background: color-mix(in srgb, var(--bg-reading) 64%, transparent);
-  backdrop-filter: blur(12px) saturate(var(--material-saturate));
-  -webkit-backdrop-filter: blur(12px) saturate(var(--material-saturate));
-}
 
 /* The sticky study header sits over scrolling content. Glass canvas tokens
    are intentionally translucent, so use the atmosphere's opaque base here
    to prevent labels from ghosting through the title while retaining blur at
    the edge. */
-.theme-glass .margin-frame-header,
-.theme-dark-glass .margin-frame-header,
-.theme-glass .margin-tabs,
-.theme-dark-glass .margin-tabs {
-  background: var(--bg-primary);
-}
 
 .lang-orbit {
   padding: 11px 10px 9px;
@@ -14891,11 +14824,6 @@ textarea:focus-visible,
   box-shadow: var(--shadow-elevated);
 }
 
-.structure-modal-root.theme-glass .structure-modal-panel,
-.structure-modal-root.theme-dark-glass .structure-modal-panel {
-  backdrop-filter: blur(var(--material-blur)) saturate(var(--material-saturate));
-  -webkit-backdrop-filter: blur(var(--material-blur)) saturate(var(--material-saturate));
-}
 
 .structure-modal-header {
   padding: 19px 22px 15px;
@@ -15132,11 +15060,6 @@ button.lang-phrase-diagram-node:focus-visible,
   animation: commandPanelIn 150ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.command-palette-root.theme-glass .command-palette-panel,
-.command-palette-root.theme-dark-glass .command-palette-panel {
-  backdrop-filter: blur(var(--material-blur)) saturate(var(--material-saturate));
-  -webkit-backdrop-filter: blur(var(--material-blur)) saturate(var(--material-saturate));
-}
 
 @keyframes commandScrimIn {
   from { opacity: 0; }
@@ -15763,39 +15686,9 @@ button.lang-phrase-diagram-node:focus-visible,
   border-radius: inherit;
 }
 
-.theme-glass .marking-palette,
-.theme-dark-glass .marking-palette,
-.theme-glass.marking-floating-host .marking-palette,
-.theme-dark-glass.marking-floating-host .marking-palette {
-  background: color-mix(in srgb, var(--bg-reading) 84%, transparent);
-  -webkit-backdrop-filter: blur(18px) saturate(1.12);
-  backdrop-filter: blur(18px) saturate(1.12);
-}
 
-.theme-glass .marking-dock,
-.theme-dark-glass .marking-dock,
-.theme-glass .marking-radial-hub,
-.theme-dark-glass .marking-radial-hub,
-.theme-glass .marking-radial-help-card,
-.theme-dark-glass .marking-radial-help-card {
-  background: color-mix(in srgb, var(--bg-reading) 84%, transparent);
-  -webkit-backdrop-filter: blur(18px) saturate(1.12);
-  backdrop-filter: blur(18px) saturate(1.12);
-}
 
-.theme-glass .marking-rail,
-.theme-dark-glass .marking-rail,
-.theme-glass .marking-rail-tray,
-.theme-dark-glass .marking-rail-tray,
-.theme-glass .marking-rail-status,
-.theme-dark-glass .marking-rail-status {
-  background: color-mix(in srgb, var(--bg-reading) 84%, transparent);
-  -webkit-backdrop-filter: blur(18px) saturate(1.12);
-  backdrop-filter: blur(18px) saturate(1.12);
-}
 
-.theme-glass .marking-radial-disc,
-.theme-dark-glass .marking-radial-disc { background: color-mix(in srgb, var(--bg-reading) 28%, transparent); }
 
 .marking-palette::after {
   position: absolute;
@@ -15819,10 +15712,6 @@ button.lang-phrase-diagram-node:focus-visible,
   border-left: 1px solid color-mix(in srgb, var(--border-medium) 76%, transparent);
 }
 
-.theme-glass .marking-palette::after,
-.theme-dark-glass .marking-palette::after {
-  background: color-mix(in srgb, var(--bg-reading) 84%, transparent);
-}
 
 @keyframes marking-palette-in {
   from {
@@ -17512,12 +17401,6 @@ button.lang-phrase-diagram-node:focus-visible,
   translate: -50% 0;
 }
 
-.theme-glass.marking-floating-host[data-radial-layout="sheet"] .marking-radial,
-.theme-dark-glass.marking-floating-host[data-radial-layout="sheet"] .marking-radial {
-  background: color-mix(in srgb, var(--bg-reading) 84%, transparent);
-  -webkit-backdrop-filter: blur(18px) saturate(1.1);
-  backdrop-filter: blur(18px) saturate(1.1);
-}
 
 .marking-floating-host[data-radial-layout="sheet"] .marking-radial-disc { display: none; }
 
@@ -18408,4 +18291,80 @@ button.lang-phrase-diagram-node:focus-visible,
   .trusted-resource-card::before { background: CanvasText; }
   .trusted-resource-source { color: CanvasText; }
   .trusted-resource-card button:focus-visible { outline-color: Highlight; }
+}
+
+/* The material switch. Four appearances and one switch: this is the only
+   genuinely binary preference in the app, and therefore the only thing drawn
+   as a switch. Everything else that looks binary is really a choice among
+   named options, and gets a radio. */
+.material-switch {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 34px;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+  cursor: pointer;
+}
+
+.material-switch-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.material-switch-copy strong {
+  font: 500 13px var(--font-ui);
+  color: var(--text-primary);
+}
+
+.material-switch-copy small {
+  font: 400 11.5px/1.4 var(--font-ui);
+  color: var(--text-tertiary);
+}
+
+.material-switch input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.material-switch-track {
+  position: relative;
+  width: 34px;
+  height: 20px;
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
+}
+
+.material-switch-track::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 7px;
+  background: var(--text-tertiary);
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
+}
+
+.material-switch input:checked + .material-switch-track {
+  background: color-mix(in srgb, var(--study-gold) 22%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--study-gold) 40%, transparent);
+}
+
+.material-switch input:checked + .material-switch-track::after {
+  background: var(--study-gold);
+  transform: translateX(14px);
+}
+
+.material-switch input:focus-visible + .material-switch-track {
+  outline: 2px solid color-mix(in srgb, var(--study-gold) 40%, transparent);
+  outline-offset: 2px;
 }

@@ -359,6 +359,7 @@ export function App(): React.JSX.Element {
   });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [theme, setTheme] = useState<AppSettings["theme"]>("light");
+  const [material, setMaterial] = useState<AppSettings["material"]>("solid");
   const [markingSurface, setMarkingSurface] = useState<AppSettings["markingSurface"]>("palette");
   const [readingSize, setReadingSize] = useState<ReadingSize>("m");
   const [readingWidth, setReadingWidth] = useState<ReadingWidth>("medium");
@@ -392,7 +393,7 @@ export function App(): React.JSX.Element {
   // before the initial settings.get() resolved. The load effect must not
   // clobber a setting the user has touched in the interim (see the
   // settings-load effect below for the race this guards against).
-  const userDirtySettings = useRef({ sidebarCollapsed: false, marginVisible: false, theme: false, markingSurface: false });
+  const userDirtySettings = useRef({ sidebarCollapsed: false, marginVisible: false, theme: false, material: false, markingSurface: false });
 
   const captureCurrentStudyWorkspace = useCallback((): boolean => {
     const workspaceBeforeFlush = studyWorkspaceRef.current;
@@ -637,6 +638,7 @@ export function App(): React.JSX.Element {
         }
         if (!userDirtySettings.current.theme) {
           setTheme(res.value.theme);
+          setMaterial(res.value.material ?? "solid");
         }
         if (!userDirtySettings.current.markingSurface) {
           setMarkingSurface(res.value.markingSurface ?? "palette");
@@ -673,6 +675,11 @@ export function App(): React.JSX.Element {
     if (!settingsLoaded.current) return;
     void safeCall(() => window.api.settings.set({ theme }));
   }, [settingsReady, theme]);
+
+  useEffect(() => {
+    if (!settingsLoaded.current) return;
+    void safeCall(() => window.api.settings.set({ material }));
+  }, [settingsReady, material]);
 
   useEffect(() => {
     if (!settingsLoaded.current) return;
@@ -1487,6 +1494,11 @@ export function App(): React.JSX.Element {
     setTheme(() => nextTheme);
   };
 
+  const changeMaterial = (next: AppSettings["material"]) => {
+    userDirtySettings.current.material = true;
+    setMaterial(() => next);
+  };
+
   const changeMarkingSurface = (nextSurface: AppSettings["markingSurface"]): void => {
     userDirtySettings.current.markingSurface = true;
     setMarkingSurface(nextSurface);
@@ -1616,6 +1628,7 @@ export function App(): React.JSX.Element {
     "app-shell",
     `theme-${theme}`,
     isDarkTheme(theme) ? "dark" : "",
+    material === "translucent" ? "material-translucent" : "",
     focusMode ? "focus-mode" : "",
     `reading-size-${readingSize}`,
     `reading-width-${readingWidth}`,
@@ -1626,6 +1639,7 @@ export function App(): React.JSX.Element {
   const floatingMaterialClass = [
     `theme-${theme}`,
     isDarkTheme(theme) ? "dark" : "",
+    material === "translucent" ? "material-translucent" : "",
   ].filter(Boolean).join(" ");
 
   if (studyWorkspaceRefusal === "newer-version") {
@@ -1900,6 +1914,8 @@ export function App(): React.JSX.Element {
                 onAiBusyChange={setAiBusy}
                 theme={theme}
                 onThemeChange={toggleTheme}
+                material={material}
+                onMaterialChange={changeMaterial}
                 markingSurface={markingSurface}
                 onToggleMargin={toggleMargin}
                 onEnsureMarginVisible={ensureMarginVisible}
@@ -1981,6 +1997,8 @@ export function App(): React.JSX.Element {
                 onReadingPrefsChange={handleReadingPrefsChange}
                 theme={theme}
                 onThemeChange={toggleTheme}
+                material={material}
+                onMaterialChange={changeMaterial}
                 markingSurface={markingSurface}
                 onMarkingSurfaceChange={changeMarkingSurface}
               />

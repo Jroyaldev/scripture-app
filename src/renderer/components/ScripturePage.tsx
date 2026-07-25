@@ -61,7 +61,7 @@ import { phraseCount, relationshipLabel } from "../utils/relationshipVocabulary.
 import { ReadingComfort, type ReadingPrefs } from "./ReadingComfort.js";
 import { ThemePicker } from "./ThemePicker.js";
 import { Tooltip } from "./Tooltip.js";
-import type { AppTheme } from "../theme.js";
+import type { AppMaterial, AppTheme } from "../theme.js";
 import { NoteCapture, type NoteCaptureDraft } from "./NoteCapture.js";
 import type { PeekTarget, VersePeekOpenOptions } from "./VersePeek.js";
 import {
@@ -426,6 +426,8 @@ interface Props {
   /** Lifted to App, consistent with marginVisible; ScripturePage never owns theme state itself. */
   theme?: AppTheme;
   onThemeChange?: (theme: AppTheme) => void;
+  material?: AppMaterial;
+  onMaterialChange?: (material: AppMaterial) => void;
   markingSurface?: MarkingSurfaceId;
   /** Lifted to App, same pattern as onThemeChange; ScripturePage never owns marginVisible itself. */
   onToggleMargin?: () => void;
@@ -650,6 +652,8 @@ export function ScripturePage({
   onAiBusyChange,
   theme = "light",
   onThemeChange,
+  material,
+  onMaterialChange,
   markingSurface = "palette",
   onToggleMargin,
   onEnsureMarginVisible,
@@ -4591,7 +4595,14 @@ export function ScripturePage({
             </Tooltip>
           )}
 
-          {onThemeChange && <ThemePicker theme={theme} onChange={onThemeChange} />}
+          {onThemeChange && (
+            <ThemePicker
+              theme={theme}
+              onChange={onThemeChange}
+              material={material}
+              {...(onMaterialChange ? { onMaterialChange } : {})}
+            />
+          )}
         </div>
       </header>
 
