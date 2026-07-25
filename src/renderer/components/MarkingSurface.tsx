@@ -645,7 +645,7 @@ function SessionStatus({
 }
 
 export function MarkingSurface({
-  surface,
+  surface: surfaceSetting,
   theme,
   focusMode,
   contextKey,
@@ -739,6 +739,14 @@ export function MarkingSurface({
   }, []);
 
   const effectiveStageBounds = stageBounds;
+  /**
+   * Below the narrow breakpoint the surface is the dock, whatever the reader
+   * chose. A floating palette needs somewhere to float that is not over the
+   * words it is about, and at this width there is nowhere — it would either
+   * cover the passage or collide with the sheet. The preference is not
+   * overwritten, only overridden while there is no room to honour it.
+   */
+  const surface: MarkingSurfaceId = effectiveStageBounds.width <= 979 ? "dock" : surfaceSetting;
   const persistentSurface = surface === "dock";
   // Escape ownership rank in the shared layer registry. An open tray or an
   // in-progress session is deliberate work and cancels before a passive

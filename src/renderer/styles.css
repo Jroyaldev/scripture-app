@@ -3946,14 +3946,16 @@ html, body, #root {
     min-width: 0;
     max-width: none;
     min-height: 0;
-    flex: 0 0 clamp(144px, 34vh, 320px);
-    max-height: clamp(144px, 34vh, 320px);
-    padding: 0 12px 14px;
+    flex: 0 0 calc(var(--margin-header-h) + 44px);
+    max-height: calc(var(--margin-header-h) + 44px);
+    padding: 0 var(--sp-lg) var(--sp-lg);
     border: 0;
-    border-top: 1px solid var(--border-medium);
-    border-radius: 0;
-    background: var(--bg-canvas);
-    box-shadow: 0 -1px 0 color-mix(in srgb, var(--bg-reading) 76%, transparent);
+    border-radius: var(--radius-page) var(--radius-page) 0 0;
+    /* Paper, like the margin at every other width. It is the same workbench;
+       only its position on screen is a concession. */
+    background: var(--bg-reading);
+    /* It floats over the page here, so it earns the one shadow. */
+    box-shadow: var(--shadow-float);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
     overscroll-behavior: contain;
@@ -3963,8 +3965,8 @@ html, body, #root {
   /* The compact pane offers two calm sizes instead of one cramped strip:
      the reader can give Study most of the screen without losing the text. */
   .scripture-body > .living-margin[data-compact-expanded="true"] {
-    flex-basis: clamp(280px, 72vh, 640px);
-    max-height: clamp(280px, 72vh, 640px);
+    flex-basis: min(58vh, 520px);
+    max-height: min(58vh, 520px);
   }
 
   .margin-compact-size-toggle {
@@ -17550,4 +17552,157 @@ button.lang-phrase-diagram-node:focus-visible,
 .chapter-header + .pericope-fold,
 .scripture-inner > .pericope-fold:first-of-type {
   margin-top: calc(var(--band) / 2);
+}
+
+/* ─── Narrow shell (H) ────────────────────────────────────────────────────
+   Three things are constant at every width: two planes, the seal mark on the
+   edge nearest the content it opens, and the reserved gutter. Everything below
+   is a concession, and each one is stated rather than silently degraded.
+
+   The breakpoint is 979px because that is where a 232px rail, two 24px insets,
+   a 24px gutter and a 380px margin stop leaving a readable measure. */
+@media (max-width: 979px) {
+  /* Page inset goes to 24px TOP ONLY. At 390px wide, 48px of horizontal inset
+     is 12% of the measure — a cost the reading line cannot absorb. The top
+     strip stays so the filleted tab still fuses with the page and the first
+     tab still claims its corner. */
+  .scripture-body {
+    padding: 0;
+    gap: 0;
+  }
+
+  .scripture-content {
+    border-radius: 0;
+  }
+
+  .scripture-workspace-bar {
+    padding-right: 0;
+  }
+
+  .scripture-page:has(.living-margin) .scripture-workspace-bar {
+    padding-right: 0;
+  }
+
+  /* The verse gutter contracts to 24px. Still fixed, still reserved: the
+     number gets less room, the mark's lane does not move. */
+  .app-shell {
+    --verse-gutter: 24px;
+  }
+
+  /* Nav becomes a bottom bar. The shell turns into a column and the rail takes
+     the last row — content above, navigation under the thumb. */
+  .app-shell {
+    flex-direction: column;
+  }
+
+  .sidebar,
+  .sidebar.collapsed {
+    order: 2;
+    width: 100%;
+    height: 56px;
+    min-height: 56px;
+    flex-direction: row;
+    padding-top: 0;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  /* A bottom bar is navigation only. The brand lockup, the collapse control and
+     the library switcher are not verbs and do not belong under the thumb. */
+  .sidebar-header,
+  .sidebar-spacer,
+  .sidebar-footer,
+  .nav-divider {
+    display: none;
+  }
+
+  .sidebar-nav {
+    flex: 1;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0;
+  }
+
+  .nav-item {
+    flex: 1 1 0;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    min-height: 56px;
+    padding: 0;
+    border-radius: 0;
+    font-size: 10.5px;
+    text-align: center;
+  }
+
+  /* Same rule, not a new one: the mark sits on the edge nearest the content it
+     opens. In a rail that is the left edge; in a bottom bar it is the top. */
+  .nav-item::before {
+    inset: 0 0 auto 0;
+    width: auto;
+    height: 2px;
+    border-radius: 0 0 var(--radius-mark) var(--radius-mark);
+  }
+
+  .nav-item .nav-label {
+    opacity: 1;
+    max-width: none;
+  }
+
+  .nav-shortcut {
+    display: none;
+  }
+
+  /* Register keeps its tabs and loses its groups — a bracket needs horizontal
+     room the strip no longer has. Groups survive as labels in the overflow
+     list, which is the stated loss. */
+  .scripture-workspace-group-tab {
+    display: none;
+  }
+
+  .scripture-workspace-tab-wrap[data-study-group-start="true"] {
+    margin-left: 2px;
+  }
+}
+
+/* At the widths where a bottom bar is reached with a thumb, dynamic type grows
+   the bar rather than dropping the labels. A label is what makes a bottom bar
+   legible to somebody who has enlarged their type precisely because icons
+   alone are not enough. */
+@media (max-width: 979px) and (min-resolution: 0.001dppx) {
+  .app-shell.reading-size-l .sidebar,
+  .app-shell.reading-size-l .sidebar.collapsed {
+    height: 72px;
+    min-height: 72px;
+  }
+
+  .app-shell.reading-size-l .nav-item {
+    min-height: 72px;
+    font-size: 11.5px;
+    line-height: 1.2;
+  }
+
+  .app-shell.reading-size-l .nav-item .nav-label {
+    white-space: normal;
+  }
+}
+
+/* Narrow header: the reference and the instruments, nothing between them. */
+@media (max-width: 720px) {
+  .canvas-history-arrows,
+  .chapter-nav-arrows {
+    display: none;
+  }
+
+  .scripture-topbar {
+    padding: 0 12px;
+    gap: 4px;
+  }
+
+  .topbar-spacer {
+    min-width: 4px;
+  }
+
+  .passage-picker-book {
+    max-width: 118px;
+  }
 }
