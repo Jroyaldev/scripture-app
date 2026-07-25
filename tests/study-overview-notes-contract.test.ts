@@ -196,6 +196,26 @@ test("Notes owes loading and failed, and draws them in the shipped state grammar
 
 /* --- Counts and provenance ----------------------------------------------- */
 
+test("a compact row's wording describes its verb rather than naming it", () => {
+  // The retired one-button row carried the preview in its accessible NAME,
+  // because a single control had nowhere else to put it. A compact row has two
+  // verbs and visible sibling text, so the name stays short and true ("Open
+  // Acts 11:15–17") and the wording arrives as the control's description. The
+  // failure mode this guards is someone "restoring" the old name and thereby
+  // saying the verse twice to a linear reader, in a button name with no bound.
+  for (const [, label] of margin.matchAll(/aria-label=\{`Open \$\{item\.targetDisplay\}([^`]*)`\}/g)) {
+    assert.doesNotMatch(label!, /item\.preview/, "the preview is back inside a verb's name");
+  }
+  assert.match(overview, /aria-describedby=\{previewId\}/);
+  assert.match(overview, /<p className="study-ref-row-text" id=\{previewId\}>/);
+  // Both verbs on the row point at the same description; neither is left mute.
+  assert.equal(
+    (overview.match(/aria-describedby=\{previewId\}/g) ?? []).length,
+    2,
+    "Open and Tab must both be described by the row's wording",
+  );
+});
+
 test("a zero is never seal", () => {
   // Seal is a mark of authorship, and a count of nothing of yours is not
   // authorship. §C4·1 draws the same Notes tab as `Notes 0` faint at verse

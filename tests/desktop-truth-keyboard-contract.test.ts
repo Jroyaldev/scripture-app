@@ -54,11 +54,21 @@ test("accessible reading and related-verse names include visible content", () =>
   // shows connections now, and Overview re-drew the edition's list on C4·2's
   // compact row (Quire C·4). Two rows carry the requirement instead.
   //
-  // Overview's row is a div, not a button, so the preview stays visible sibling
-  // content that a screen reader reaches by reading the row, and the verb names
-  // its target.
+  // Overview's row is a div, not a button, so the preview is visible sibling
+  // content rather than part of a single control's name. The verb names its
+  // target and is DESCRIBED by the wording, so a reader moving button-to-button
+  // still hears the verse — without it being said twice to anyone reading the
+  // row through, and without an unbounded fade-cut fragment inside a button's
+  // name. (This line first asserted the bare `<p>`, before the description was
+  // wired; the requirement is the tie, not the paragraph.)
   assert.match(margin, /aria-label=\{`Open \$\{item\.targetDisplay\}`\}/);
-  assert.match(margin, /\{item\.preview && <p className="study-ref-row-text">\{item\.preview\}<\/p>\}/);
+  assert.match(margin, /aria-describedby=\{previewId\}/);
+  assert.match(margin, /<p className="study-ref-row-text" id=\{previewId\}>\{item\.preview\}<\/p>/);
+  // Same tie on the reader's own notes, where the wording is the whole point.
+  assert.match(margin, /aria-label=\{`Go to \$\{entry\.reference\}`\}\s*\n\s*aria-describedby=\{noteId\}/);
+  // Description ids are per-instance, so two margins cannot cross-wire one
+  // row's verse onto another row's verb.
+  assert.match(margin, /const rowIdBase = useId\(\);/);
   // A connection block IS one button, so its name must carry its members'
   // wording — the visible content, and the reason the row exists.
   assert.match(margin, /member\.quote \? `\$\{member\.position\}\. \$\{member\.quote\}` : member\.position/);

@@ -1,5 +1,5 @@
 import type React from "react";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type {
   AnchorRecord,
   BookNameData,
@@ -999,29 +999,40 @@ function MarginNoteRows({
   entries: readonly StudyNoteEntry[];
   onNavigate?: (ref: string) => void;
 }): React.JSX.Element {
+  const rowIdBase = useId();
   return (
     <div className="study-ref-row-list">
-      {entries.map((entry) => (
-        <div className="study-ref-row study-ref-row--compact margin-note-row" key={entry.note.id}>
-          <div className="study-ref-row-head">
-            <span className="margin-note-mark" aria-hidden="true" />
-            <span className="sr-only">Written by you.</span>
-            <span className="study-ref-row-ref">{entry.reference}</span>
-            <span className="study-ref-row-verbs">
-              <button
-                type="button"
-                className="study-ref-row-verb"
-                onClick={() => onNavigate?.(entry.reference)}
-                aria-label={`Go to ${entry.reference}`}
-              >
-                Open
-              </button>
-            </span>
-            <span className="margin-note-when">{formatRelativeDay(entry.note.modified)}</span>
+      {entries.map((entry, index) => {
+        // Your own words are the reason this row is here, so the verb is
+        // described by them rather than named with them: "Go to Acts 19:11",
+        // then the note. Naming with them would repeat the note to anyone
+        // reading the row through, and a note has no length limit.
+        const noteId = `${rowIdBase}-note-${index}`;
+        return (
+          <div className="study-ref-row study-ref-row--compact margin-note-row" key={entry.note.id}>
+            <div className="study-ref-row-head">
+              <span className="margin-note-mark" aria-hidden="true" />
+              <span className="sr-only">Written by you.</span>
+              <span className="study-ref-row-ref">{entry.reference}</span>
+              <span className="study-ref-row-verbs">
+                <button
+                  type="button"
+                  className="study-ref-row-verb"
+                  onClick={() => onNavigate?.(entry.reference)}
+                  aria-label={`Go to ${entry.reference}`}
+                  aria-describedby={noteId}
+                >
+                  Open
+                </button>
+              </span>
+              <span className="margin-note-when">{formatRelativeDay(entry.note.modified)}</span>
+            </div>
+            <p className="study-ref-row-text" id={noteId}>
+              {entry.note.title || entry.note.body_text}
+            </p>
           </div>
-          <p className="study-ref-row-text">{entry.note.title || entry.note.body_text}</p>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -2603,6 +2614,9 @@ function IntentOverview({
 }): React.JSX.Element {
   const [showAllCrossRefs, setShowAllCrossRefs] = useState(false);
   const [showAllEntities, setShowAllEntities] = useState(false);
+  /** Per-instance, so two margins on screen cannot mint the same description
+   *  id and cross-wire one row's verse onto another row's verb. */
+  const rowIdBase = useId();
   const crossRefItems = crossRefs?.items ?? [];
   const crossRefTotal = crossRefs?.totalCount ?? crossRefItems.length;
   // §C4·5: "Same three rows and an All 64. A section never changes its shape
@@ -2664,8 +2678,16 @@ function IntentOverview({
               clamp, the fade, the reserved verb slot and the hover reveal all
               live in its rules, and none of them are restated here. */}
           <div className="study-ref-row-list">
-            {crossRefRows.map((item) => {
+            {crossRefRows.map((item, index) => {
               const target = parsePeekRef(item.targetBref, item.targetDisplay);
+              // The wording is the row's, not the verb's. A reader moving by
+              // button hears "Open Acts 11:15–17" and then the verse as the
+              // control's description; a reader moving through the row hears
+              // the verse once, as text. Folding the preview into the name
+              // instead would say it twice to anyone reading linearly, and
+              // would put an unbounded, fade-cut fragment inside a button's
+              // name — the retired one-button row had no way to do better.
+              const previewId = item.preview ? `${rowIdBase}-xref-${index}` : undefined;
               return (
                 <div className="study-ref-row study-ref-row--compact" key={item.targetBref}>
                   <div className="study-ref-row-head">
@@ -2676,6 +2698,7 @@ function IntentOverview({
                         className="study-ref-row-verb"
                         {...crossRefBranchHandlers(item.targetBref, target, onNavigate, onOpenPassageTab)}
                         aria-label={`Open ${item.targetDisplay}`}
+                        aria-describedby={previewId}
                         {...(target ? peekTriggerProps(target) : {})}
                       >
                         Open
@@ -2686,13 +2709,16 @@ function IntentOverview({
                           className="study-ref-row-verb is-secondary"
                           onClick={() => void onOpenPassageTab(target)}
                           aria-label={`Open ${item.targetDisplay} in a new passage tab`}
+                          aria-describedby={previewId}
                         >
                           Tab
                         </button>
                       )}
                     </span>
                   </div>
-                  {item.preview && <p className="study-ref-row-text">{item.preview}</p>}
+                  {item.preview && (
+                    <p className="study-ref-row-text" id={previewId}>{item.preview}</p>
+                  )}
                 </div>
               );
             })}

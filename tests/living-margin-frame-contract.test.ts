@@ -834,6 +834,24 @@ test("§C4·2 · a verse-with-a-fragment is one object with two drawings", () =>
   assert.doesNotMatch(quotedText, /max-height|overflow: hidden|mask-image/);
   assert.match(ruleBody(".study-ref-row--quoted .study-ref-row-verbs"), /display: none;/);
 
+  // A reference never establishes a scroll container — not in my rules and not
+  // in a panel's override. A flex or grid item with a non-visible overflow has
+  // its baseline synthesised from its border box, which lifts the reference
+  // clear of everything sharing its line: the state word in the scope bar, and
+  // the verb slot, provenance mark and date on a row's head. Ruling 4·6 makes
+  // baseline alignment general, so this is checked wherever the selector is
+  // reached rather than only where it is declared. `white-space: nowrap` is
+  // the whole of the treatment; a reference that will not fit is a shorter
+  // book name's job (see formatResearchRef), never a clip's.
+  for (const [selector, body] of ruleBlocks()) {
+    if (!/\.(study-ref-row-ref|margin-frame-ref)\b/.test(selector)) continue;
+    assert.doesNotMatch(
+      withoutComments(body),
+      /(^|[;{\s])(overflow|overflow-x|overflow-y|text-overflow)\s*:/,
+      `${selector} clips the reference and loses its baseline`,
+    );
+  }
+
   // §4·2 · rows are closed by air. A list of one kind of row carries no rules
   // between its items.
   const list = ruleBody(".study-ref-row-list");
