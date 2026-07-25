@@ -1,5 +1,14 @@
 @import "./fonts.css";
 
+/* Per-surface partials. @import must precede every rule, so these load before
+   the token block — which means they cannot rely on source order to win a
+   specificity tie. That is deliberate: a partial should scope its selectors
+   properly rather than shadow a base rule from a later position. */
+@import "./styles/search.css";
+@import "./styles/marking-actions.css";
+@import "./styles/mobile.css";
+@import "./styles/margin-entries.css";
+
 /* Design tokens → CSS custom properties */
 :root {
   /* Paper — the default reading atmosphere.

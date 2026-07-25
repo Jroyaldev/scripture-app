@@ -1,0 +1,6 @@
+/* H·2 — mobile gesture grammar and the bottom-edge budget
+
+   Owned partial. Rules that belong to this surface live here rather than in
+   styles.css, so this work can proceed without serialising on an 17k-line
+   file. Anything that must CHANGE an existing rule in styles.css belongs in
+   styles.css — do not shadow it from here. */
