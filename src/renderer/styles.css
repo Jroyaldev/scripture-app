@@ -8,6 +8,10 @@
 @import "./styles/marking-actions.css";
 @import "./styles/mobile.css";
 @import "./styles/margin-entries.css";
+@import "./styles/rail.css";
+@import "./styles/register.css";
+@import "./styles/canvas.css";
+@import "./styles/themes.css";
 
 /* Design tokens → CSS custom properties */
 :root {
