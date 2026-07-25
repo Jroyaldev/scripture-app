@@ -2,16 +2,22 @@
 
 /* Design tokens → CSS custom properties */
 :root {
-  /* Paper — the default reading atmosphere. Warmth belongs to the material;
-     semantic color remains reserved for highlights and diagrams. */
-  --bg-primary: #F3EDE0;
-  --bg-secondary: #EEE6D8;
-  --bg-surface: #FAF6EC;
-  --bg-canvas: #F6F0E5;
-  --bg-sidebar: #EFE7D8;
-  --bg-reading: #FAF6EC;
-  --bg-topbar: rgba(250, 246, 236, 0.96);
-  --bg-float: #FAF6EC;
+  /* Paper — the default reading atmosphere.
+
+     Two planes, and only two. PAPER is anything you read or work in; CANVAS is
+     everything else. The reading page is the brightest plane in the app and
+     all chrome recedes into the ground behind it — rails and bars stop being
+     tinted objects sitting beside the text and become the empty field the text
+     floats on. If a new surface seems to need a third fill, it is either paper
+     or ground and the choice has not been made yet.
+
+     Chroma drops from ~.030 to ~.005 against the old warm set: that set read
+     as parchment skin, this reads as paper. */
+  --bg-canvas: #F1EFEA;   /* the ground — rails, bars, gutters, the shell */
+  --bg-reading: #FCFBF8;  /* paper — the brightest plane in the app */
+  --bg-primary: #F1EFEA;  /* shell behind everything; canvas by definition */
+  --bg-secondary: #E9E6E0;/* sunk — the desk behind a window, nothing else */
+  --bg-float: #FCFBF8;    /* floating paper: popovers, palette, tooltips */
   --hl-yellow: rgba(245, 213, 115, 0.28);
   --hl-green: rgba(110, 195, 120, 0.22);
   --hl-blue: rgba(110, 165, 225, 0.22);
@@ -56,35 +62,47 @@
   --hl-pink-mark: rgb(194, 87, 138);
   --hl-purple-mark: rgb(124, 92, 176);
 
-  --text-primary: #181511;
-  --text-secondary: #4D463C;
-  --text-tertiary: #6B6254;
-  --text-verse-number: #776C5D;
-  --text-link: #8B5D30;
-  --text-link-hover: #6F4725;
-  --text-on-accent: #FFFDF8;
+  /* Ink — four steps, not a gradient. */
+  --text-primary: #322F2B;
+  --text-secondary: #6B6660;
+  --text-tertiary: #928C84;
+  --text-verse-number: #B4AEA5;
+  --text-link: #96684A;
+  --text-link-hover: #7A5238;
+  --text-on-accent: #FCFBF8;
 
-  --border-subtle: #E4DAC9;
-  --border-medium: #D3C5AF;
-  --border-strong: #B7A78E;
+  /* Hairline. Separation is done with interval, not with lines — 24px of
+     canvas divides two panes better than a border does. A rule appears only
+     where a change of kind is not already obvious from the type. */
+  --border-subtle: #E2DED6;
+  --border-medium: #D5D0C6;
+  --border-strong: #B4AEA5;
 
-  --accent-warm: #97683A;
-  --accent-warm-light: #B8854A;
-  --accent-user: #97683A;
-  --accent-source: #5A8A5A;
-  --accent-ai: #5A6B7F;
-  --accent-xref: #7A7A7A;
+  /* Two accent values, not four. One brand hue at two lightnesses, chosen by
+     contrast requirement rather than by theme, plus one machine hue.
 
-  --accent-current: #97683A;
+     SEAL says a human wrote this. SLATE says the app inferred it. Unmarked
+     means it is the edition. Every generated thing carries its provenance. */
+  --accent-seal: #96684A;
+  --accent-seal-strong: #7A5238;
+  --accent-machine: #5A6A7E;
 
-  /* Shepherdly identity bridge — gold is reserved for interaction/focus,
-     never used as a categorical cross-reference claim. */
-  --study-gold: #97683A;
-  --study-gold-focus: rgba(151, 104, 58, 0.36);
-  --study-hover-surface: #F0E4D2;
-  --study-hover-line: rgba(24, 21, 17, 0.13);
-  --workspace-bar-bg: color-mix(in srgb, rgb(from var(--bg-topbar) r g b / 1) 96%, #000);
-  --workspace-active-bg: #FCF8EF;
+  --accent-warm: #96684A;
+  --accent-warm-light: #A87A58;
+  --accent-user: #96684A;
+  --accent-source: #5A6A7E;
+  --accent-ai: #5A6A7E;
+  --accent-xref: #928C84;
+  --accent-current: #96684A;
+
+  /* --study-gold is the seal under its shipped name. Reserved for authorship
+     and focus; never a categorical cross-reference claim. */
+  --study-gold: #96684A;
+  --study-gold-focus: rgba(150, 104, 74, 0.36);
+  --study-hover-surface: #E9E6E0;
+  --study-hover-line: rgba(50, 47, 43, 0.10);
+  --workspace-bar-bg: var(--bg-canvas);
+  --workspace-active-bg: var(--bg-reading);
   --map-water: #DCE3DE;
   --map-land: #EEE3D0;
   --map-land-line: #B7AA94;
@@ -115,16 +133,18 @@
   --fs-2xl: 1.75rem;
   --fs-3xl: 2.25rem;
 
-  --lh-tight: 1.3;
-  --lh-normal: 1.5;
-  --lh-reading: 1.8;
-  --lh-relaxed: 1.9;
+  --lh-tight: 1.3;      /* @kind other */
+  --lh-normal: 1.5;     /* @kind other */
+  --lh-reading: 1.62;   /* @kind other — 19 × 1.62 ≈ 31, the 32px band */
+  --lh-relaxed: 1.9;    /* @kind other */
 
-  --fw-normal: 400;
-  --fw-medium: 500;
-  --fw-semibold: 600;
+  --fw-normal: 400;     /* @kind other */
+  --fw-medium: 500;     /* @kind other */
+  --fw-semibold: 600;   /* @kind other */
 
-  /* Spacing */
+  /* Spacing. A 4px grid, but the vertical rhythm belongs to the reading line:
+     19 × 1.62 ≈ 31, so the band is 32. Those two numbers — 32 and the 24px
+     pane gutter — carry most of the app. */
   --sp-xs: 0.25rem;
   --sp-sm: 0.5rem;
   --sp-md: 0.75rem;
@@ -132,27 +152,57 @@
   --sp-xl: 1.5rem;
   --sp-2xl: 2rem;
   --sp-3xl: 3rem;
-  --page-gutter: 3rem;
-  --margin-width: 340px;
-  --reading-max-width: 680px;
+  --band: 32px;          /* one reading line, the vertical unit */
+  --pane-gutter: 24px;   /* canvas between two panes; replaces a border */
+  --page-inset: 24px;    /* paper's inset from the window, four sides */
+  --page-gutter: 24px;
 
-  /* Misc */
-  /* One geometry register across every look: controls / panels / cards. */
-  --radius-sm: 6px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
-  --shadow-subtle: 0 1px 2px rgba(56, 43, 27, 0.05);
-  --shadow-medium: 0 8px 24px rgba(56, 43, 27, 0.07);
-  --shadow-elevated: 0 18px 48px rgba(48, 35, 20, 0.13);
-  --shadow-topbar: 0 8px 20px rgba(45, 35, 23, 0.055);
-  --shadow-sidecar: -12px 0 36px rgba(48, 35, 20, 0.10);
-  --scrim-subtle: rgba(18, 20, 24, 0.24);
-  --scrim-strong: rgba(21, 17, 13, 0.48);
-  --transition-fast: 150ms ease;
-  --transition-normal: 150ms ease;
-  --transition-slow: 240ms ease;
-  --material-blur: 0px;
-  --material-saturate: 1;
+  /* Layout metrics */
+  --rail-w: 232px;
+  --rail-w-collapsed: 56px;
+  --mark-w: 3px;             /* the state gutter, reserved at rest */
+  --margin-width: 380px;
+  --reading-max-width: 660px;
+  --verse-gutter: 32px;
+
+  /* Radius ≈ 0.22 × the element's shorter dimension, rounded even, capped at
+     8. Not concentric: strict concentricity would put the window at 32px, and
+     above ~16px of separation the eye stops pairing curves anyway.
+
+     One documented exception — the tab derives 6 but takes 8, because it must
+     equal the page and its own fillet. Equality is what reads as "the same
+     angle"; if those three drift apart the fillet stops being a joint. */
+  --radius-mark: 2px;     /* marks, seals */
+  --radius-pebble: 4px;   /* nav icons, swatches, the active-row pebble */
+  --radius-sm: 6px;       /* avatar, mini toolbar, tooltip */
+  --radius-page: 8px;     /* page, tab, fillet, popover — one value, three places */
+  --radius-md: 8px;       /* panels and cards land on the page radius */
+  --radius-window: 10px;  /* OS shape, deliberately less than the modal */
+  --radius-lg: 12px;      /* modal */
+  --radius-modal: 12px;
+
+  /* Docked things use a hairline. Only floating things cast a shadow, and
+     there is exactly one. The page gains it only while material is on. */
+  --shadow-subtle: none;
+  --shadow-medium: none;
+  --shadow-elevated: 0 1px 2px rgba(50, 47, 43, 0.06), 0 8px 28px rgba(50, 47, 43, 0.08);
+  --shadow-float: 0 1px 2px rgba(50, 47, 43, 0.06), 0 8px 28px rgba(50, 47, 43, 0.08);
+  --shadow-topbar: none;
+  --shadow-sidecar: none;
+  --scrim-subtle: rgba(50, 47, 43, 0.24);
+  --scrim-strong: rgba(50, 47, 43, 0.48);
+
+  /* Motion. Ink moves in 120, panes move in 180, and everything else does not
+     move at all. The active fill is instant on purpose: it is the app
+     answering "where am I", and an animated answer feels like a delayed one.
+     The tab fillet and the connection tie are instant for the same reason —
+     a shape that grows into place stops reading as an object. */
+  --transition-fast: 120ms cubic-bezier(.2, 0, .2, 1);    /* @kind other — ink, opacity */
+  --transition-normal: 180ms cubic-bezier(.32, .72, 0, 1);/* @kind other — pane, transform */
+  --transition-slow: 0ms;                                  /* @kind other — anything else */
+  --transition-instant: 0ms;                               /* @kind other — active fill, fillet, tie */
+  --material-blur: 0px;   /* @kind other */
+  --material-saturate: 1; /* @kind other */
 
   /* .toast overlay tints (light) — toast bg/fg are text-primary/bg-surface
      swapped, so these are white-based to sit on the dark toast surface;
@@ -365,7 +415,7 @@
   padding: 9px 12px;
   border: 1px solid color-mix(in srgb, var(--error) 32%, transparent);
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--error) 7%, var(--bg-surface));
+  background: color-mix(in srgb, var(--error) 7%, var(--bg-reading));
   color: var(--text-secondary);
   font-size: 12.5px;
 }
@@ -381,43 +431,54 @@
  * the main workspace and every portal-carried floating layer.
  */
 .dark {
-  --bg-primary: #0D0B09;
-  --bg-secondary: #15120F;
-  --bg-surface: #181511;
-  --bg-canvas: #110F0D;
-  --bg-sidebar: #12100D;
-  --bg-reading: #15120F;
-  --bg-topbar: rgba(21, 18, 15, 0.96);
-  --bg-float: #181511;
+  /* Ink. Same two planes, same brightness law: paper is still the brightest
+     thing on screen and the ground still recedes behind it. */
+  --bg-canvas: #141210;
+  --bg-reading: #1D1B18;
+  --bg-primary: #141210;
+  --bg-secondary: #100E0C;
+  --bg-float: #1D1B18;
 
-  --text-primary: #F3EDE0;
-  --text-secondary: #C9BCAA;
-  --text-tertiary: #9C8F7D;
-  --text-verse-number: #A89B89;
-  --text-link: #D2A36E;
-  --text-link-hover: #E2BC8E;
+  --text-primary: #EDE8E0;
+  --text-secondary: #A8A19A;
+  --text-tertiary: #7A736C;
+  --text-verse-number: #58524C;
+  --text-link: #C99A6E;
+  --text-link-hover: #DDB289;
 
-  --border-subtle: #29241E;
-  --border-medium: #3A322A;
-  --border-strong: #55483B;
-  --text-on-accent: #FFFDF8;
+  --border-subtle: #2A2723;
+  --border-medium: #3A3630;
+  --border-strong: #58524C;
+  --text-on-accent: #1D1B18;
 
-  --accent-current: #C6935C;
-  --accent-user: #C6935C;
+  --accent-seal: #C99A6E;
+  --accent-seal-strong: #DDB289;
+  --accent-machine: #8FA3B8;
+  --accent-warm: #C99A6E;
+  --accent-warm-light: #DDB289;
+  --accent-source: #8FA3B8;
+  --accent-ai: #8FA3B8;
+  --accent-xref: #7A736C;
+  --accent-current: #C99A6E;
+  --accent-user: #C99A6E;
 
-  --study-gold: #C6935C;
-  --study-gold-focus: rgba(198, 147, 92, 0.42);
-  --study-hover-surface: #29241E;
-  --study-hover-line: rgba(243, 237, 224, 0.16);
-  --workspace-bar-bg: color-mix(in srgb, rgb(from var(--bg-topbar) r g b / 1) 96%, #000);
-  --workspace-active-bg: #1D1915;
+  --study-gold: #C99A6E;
+  --study-gold-focus: rgba(201, 154, 110, 0.42);
+  --study-hover-surface: #2A2723;
+  --study-hover-line: rgba(237, 232, 224, 0.14);
+  --workspace-bar-bg: var(--bg-canvas);
+  --workspace-active-bg: var(--bg-reading);
   --map-water: #161B1A;
   --map-land: #292821;
   --map-land-line: #625A4B;
   --map-grid: rgba(207, 216, 209, 0.10);
   --map-alternative: #8E887C;
-  --shadow-topbar: 0 8px 24px rgba(0, 0, 0, 0.20);
-  --shadow-sidecar: -12px 0 42px rgba(0, 0, 0, 0.30);
+  --shadow-subtle: none;
+  --shadow-medium: none;
+  --shadow-elevated: 0 1px 2px rgba(0, 0, 0, 0.28), 0 8px 28px rgba(0, 0, 0, 0.34);
+  --shadow-float: 0 1px 2px rgba(0, 0, 0, 0.28), 0 8px 28px rgba(0, 0, 0, 0.34);
+  --shadow-topbar: none;
+  --shadow-sidecar: none;
   --scrim-subtle: rgba(0, 0, 0, 0.45);
   --scrim-strong: rgba(0, 0, 0, 0.66);
 
@@ -482,11 +543,8 @@
 .theme-glass {
   --bg-primary: #EEE6D8;
   --bg-secondary: rgba(246, 239, 227, 0.58);
-  --bg-surface: rgba(255, 252, 246, 0.66);
   --bg-canvas: rgba(247, 240, 228, 0.50);
-  --bg-sidebar: rgba(246, 239, 228, 0.54);
   --bg-reading: rgba(255, 252, 246, 0.58);
-  --bg-topbar: rgba(255, 252, 246, 0.48);
   --bg-float: rgba(255, 252, 246, 0.94);
   --border-subtle: rgba(76, 61, 42, 0.10);
   --border-medium: rgba(76, 61, 42, 0.17);
@@ -496,18 +554,15 @@
   --shadow-elevated: 0 24px 64px rgba(58, 40, 20, 0.18);
   --material-blur: 26px;
   --material-saturate: 1.28;
-  --workspace-bar-bg: color-mix(in srgb, rgb(from var(--bg-topbar) r g b / 1) 96%, #000);
+  --workspace-bar-bg: color-mix(in srgb, rgb(from var(--bg-canvas) r g b / 1) 96%, #000);
   --workspace-active-bg: #FFF9F0;
 }
 
 .theme-dark-glass {
   --bg-primary: #191714;
   --bg-secondary: rgba(37, 31, 26, 0.54);
-  --bg-surface: rgba(42, 35, 29, 0.58);
   --bg-canvas: rgba(24, 20, 17, 0.52);
-  --bg-sidebar: rgba(26, 22, 18, 0.57);
   --bg-reading: rgba(29, 24, 20, 0.56);
-  --bg-topbar: rgba(29, 24, 20, 0.48);
   --bg-float: rgba(31, 26, 22, 0.95);
   --border-subtle: rgba(245, 237, 224, 0.09);
   --border-medium: rgba(245, 237, 224, 0.15);
@@ -518,44 +573,50 @@
   --shadow-elevated: 0 24px 70px rgba(0, 0, 0, 0.42);
   --material-blur: 26px;
   --material-saturate: 1.24;
-  --workspace-bar-bg: color-mix(in srgb, rgb(from var(--bg-topbar) r g b / 1) 96%, #000);
+  --workspace-bar-bg: color-mix(in srgb, rgb(from var(--bg-canvas) r g b / 1) 96%, #000);
   --workspace-active-bg: #2D251F;
 }
 
 /* Porcelain — true white surfaces and neutral ink. Bright brand gold remains
    a fill; thin non-text accents use a 3:1-safe deeper gold on white. */
 .theme-porcelain {
-  --bg-primary: #F5F5F7;
-  --bg-secondary: #EFEFF2;
-  --bg-surface: #FFFFFF;
-  --bg-canvas: #FBFBFD;
-  --bg-sidebar: #F5F5F7;
+  --bg-canvas: #F2F2F4;
   --bg-reading: #FFFFFF;
-  --bg-topbar: rgba(255, 255, 255, 0.88);
+  --bg-primary: #F2F2F4;
+  --bg-secondary: #E8E8EB;
   --bg-float: #FFFFFF;
 
-  --text-primary: #1D1D1F;
-  --text-secondary: #4B4B50;
-  --text-tertiary: #68686E;
-  --text-verse-number: #727278;
-  --text-link: #0071E3;
-  --text-link-hover: #0058B0;
-  --text-on-accent: #1D1D1F;
+  --text-primary: #2B2B2E;
+  --text-secondary: #63636A;
+  --text-tertiary: #8A8A92;
+  --text-verse-number: #AEAEB6;
+  --text-link: #4A6A88;
+  --text-link-hover: #35516B;
+  --text-on-accent: #FFFFFF;
 
-  --border-subtle: rgba(0, 0, 0, 0.06);
-  --border-medium: rgba(0, 0, 0, 0.10);
-  --border-strong: rgba(0, 0, 0, 0.18);
+  --border-subtle: #E3E3E7;
+  --border-medium: #D2D2D8;
+  --border-strong: #AEAEB6;
 
-  --accent-warm: #E8A33D;
-  --accent-warm-light: #F0B45A;
-  --accent-current: #E8A33D;
-  --accent-user: #E8A33D;
-  --study-gold: #B87D1C;
-  --study-gold-focus: rgba(184, 125, 28, 0.36);
-  --study-hover-surface: rgba(232, 163, 61, 0.10);
-  --study-hover-line: rgba(29, 29, 31, 0.10);
-  --workspace-bar-bg: color-mix(in srgb, rgb(from var(--bg-topbar) r g b / 1) 96%, #000);
-  --workspace-active-bg: #FFFFFF;
+  /* Porcelain loses its bright amber. That value was saying "this is the crisp
+     theme" instead of "you wrote this" — the accent's job is authorship, not
+     theme identity. Same two accents as Paper, at Porcelain's temperature. */
+  --accent-seal: #7C5B44;
+  --accent-seal-strong: #5F4433;
+  --accent-machine: #52627A;
+  --accent-warm: #7C5B44;
+  --accent-warm-light: #96725A;
+  --accent-source: #52627A;
+  --accent-ai: #52627A;
+  --accent-xref: #8A8A92;
+  --accent-current: #7C5B44;
+  --accent-user: #7C5B44;
+  --study-gold: #7C5B44;
+  --study-gold-focus: rgba(124, 91, 68, 0.34);
+  --study-hover-surface: #E8E8EB;
+  --study-hover-line: rgba(43, 43, 46, 0.10);
+  --workspace-bar-bg: var(--bg-canvas);
+  --workspace-active-bg: var(--bg-reading);
 
   --map-water: #E9EEF2;
   --map-land: #F2F2F4;
@@ -563,45 +624,52 @@
   --map-grid: rgba(0, 0, 0, 0.07);
   --map-alternative: #74747A;
 
-  --shadow-subtle: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-medium: 0 8px 24px rgba(0, 0, 0, 0.06);
-  --shadow-elevated: 0 18px 48px rgba(0, 0, 0, 0.12);
-  --shadow-topbar: 0 8px 20px rgba(0, 0, 0, 0.05);
-  --shadow-sidecar: -12px 0 36px rgba(0, 0, 0, 0.09);
+  --shadow-subtle: none;
+  --shadow-medium: none;
+  --shadow-elevated: 0 1px 2px rgba(20, 20, 24, 0.05), 0 8px 28px rgba(20, 20, 24, 0.07);
+  --shadow-float: 0 1px 2px rgba(20, 20, 24, 0.05), 0 8px 28px rgba(20, 20, 24, 0.07);
+  --shadow-topbar: none;
+  --shadow-sidecar: none;
 }
 
 /* Onyx — neutral blacks with the same bright gold ember. The shell also
    carries .dark, so all dark-only Shape and portal contracts participate. */
 .theme-onyx {
-  --bg-primary: #131315;
-  --bg-secondary: #1A1A1D;
-  --bg-surface: #1D1D1F;
-  --bg-canvas: #17171A;
-  --bg-sidebar: #161618;
-  --bg-reading: #1A1A1D;
-  --bg-topbar: rgba(29, 29, 31, 0.92);
-  --bg-float: #1D1D1F;
+  --bg-canvas: #151517;
+  --bg-reading: #1D1D20;
+  --bg-primary: #151517;
+  --bg-secondary: #101012;
+  --bg-float: #1D1D20;
 
-  --text-primary: #F5F5F7;
-  --text-secondary: #C7C7CC;
-  --text-tertiary: #98989D;
-  --text-verse-number: #A5A5AA;
-  --text-link: #4C9AFF;
-  --text-link-hover: #74B2FF;
-  --text-on-accent: #1D1D1F;
+  --text-primary: #E9E9EC;
+  --text-secondary: #A3A3AA;
+  --text-tertiary: #76767D;
+  --text-verse-number: #55555C;
+  --text-link: #9DB3CC;
+  --text-link-hover: #B8C8DC;
+  --text-on-accent: #1D1D20;
 
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-medium: rgba(255, 255, 255, 0.13);
-  --border-strong: rgba(255, 255, 255, 0.22);
+  --border-subtle: #2A2A2E;
+  --border-medium: #3A3A3F;
+  --border-strong: #55555C;
 
-  --accent-current: #E8A33D;
-  --accent-user: #E8A33D;
-  --study-gold: #E8A33D;
-  --study-gold-focus: rgba(232, 163, 61, 0.42);
-  --study-hover-surface: rgba(232, 163, 61, 0.14);
-  --study-hover-line: rgba(245, 245, 247, 0.14);
-  --workspace-bar-bg: color-mix(in srgb, rgb(from var(--bg-topbar) r g b / 1) 96%, #000);
-  --workspace-active-bg: #232326;
+  /* Onyx loses its bright amber for the same reason Porcelain does. */
+  --accent-seal: #C0997E;
+  --accent-seal-strong: #D6B29A;
+  --accent-machine: #93A6BC;
+  --accent-warm: #C0997E;
+  --accent-warm-light: #D6B29A;
+  --accent-source: #93A6BC;
+  --accent-ai: #93A6BC;
+  --accent-xref: #76767D;
+  --accent-current: #C0997E;
+  --accent-user: #C0997E;
+  --study-gold: #C0997E;
+  --study-gold-focus: rgba(192, 153, 126, 0.42);
+  --study-hover-surface: #2A2A2E;
+  --study-hover-line: rgba(233, 233, 236, 0.14);
+  --workspace-bar-bg: var(--bg-canvas);
+  --workspace-active-bg: var(--bg-reading);
 
   --map-water: #17181C;
   --map-land: #222226;
@@ -752,7 +820,7 @@ html, body, #root {
      min-width:0 removes that automatic floor. */
   min-width: 0;
   flex-shrink: 0;
-  background: var(--bg-sidebar);
+  background: var(--bg-canvas);
   border-right: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
@@ -931,7 +999,7 @@ html, body, #root {
 }
 
 .nav-item.active {
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   color: var(--text-primary);
   box-shadow: inset 0 0 0 1px var(--border-subtle);
 }
@@ -988,7 +1056,7 @@ html, body, #root {
   align-items: center;
   gap: 0;
   padding: 0 20px;
-  background: var(--bg-topbar);
+  background: var(--bg-canvas);
   border-bottom: 1px solid var(--border-subtle);
   position: relative;
   z-index: 8;
@@ -2096,7 +2164,7 @@ html, body, #root {
 
 .passage-picker-btn:hover,
 .passage-picker-btn.open {
-  background: var(--bg-surface);
+  background: var(--bg-reading);
 }
 
 .passage-picker-btn svg {
@@ -2448,7 +2516,7 @@ html, body, #root {
   min-width: 36px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--bg-surface) 46%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 46%, transparent);
   color: var(--text-tertiary);
   transition: width var(--transition-normal), border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
 }
@@ -2461,12 +2529,12 @@ html, body, #root {
 
 .passage-jump:hover {
   border-color: var(--border-medium);
-  background: color-mix(in srgb, var(--bg-surface) 72%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 72%, transparent);
 }
 
 .passage-jump:focus-within {
   border-color: var(--study-gold);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   box-shadow: 0 0 0 2px var(--study-gold-focus);
 }
 
@@ -2530,7 +2598,7 @@ html, body, #root {
 .command-palette-trigger:focus-visible {
   outline: none;
   border-color: var(--study-gold);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   box-shadow: 0 0 0 2px var(--study-gold-focus);
 }
 
@@ -2542,7 +2610,7 @@ html, body, #root {
   padding: 7px 9px;
   border: 1px solid color-mix(in srgb, var(--error) 38%, var(--border-subtle));
   border-radius: var(--radius-sm);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   color: var(--text-secondary);
   font-size: 11px;
   line-height: 1.35;
@@ -3156,7 +3224,7 @@ html, body, #root {
   padding: 12px 14px 10px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   box-shadow: none;
   color: var(--text-primary);
   font-family: var(--font-ui);
@@ -3164,7 +3232,7 @@ html, body, #root {
 
 .theme-glass .connection-card,
 .theme-dark-glass .connection-card {
-  background: color-mix(in srgb, var(--bg-surface) 78%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 78%, transparent);
   /* Living Margin already owns the atmosphere blur. A second filtered
      scroller retained costly compositing layers during repeated inspection. */
   backdrop-filter: none;
@@ -3553,7 +3621,7 @@ html, body, #root {
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   background: var(--text-primary);
-  color: var(--bg-surface);
+  color: var(--bg-reading);
   font-family: var(--font-ui);
   font-size: 12px;
   font-weight: var(--fw-medium);
@@ -3926,7 +3994,7 @@ html, body, #root {
   padding: 12px 14px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   box-shadow: var(--shadow-subtle);
   animation: echo-in 220ms ease-out;
 }
@@ -4398,7 +4466,7 @@ html, body, #root {
   overflow: hidden;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   box-shadow: var(--shadow-subtle);
 }
 
@@ -4567,7 +4635,7 @@ html, body, #root {
   padding: 0 150px 0 42px;
   border-color: var(--border-subtle);
   border-radius: var(--radius-md);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   box-shadow: var(--shadow-subtle);
   font-size: 13px;
 }
@@ -4638,7 +4706,7 @@ html, body, #root {
   overflow: hidden;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   box-shadow: var(--shadow-subtle);
 }
 
@@ -5101,7 +5169,7 @@ html, body, #root {
   align-items: center;
   gap: var(--sp-sm);
   padding: var(--sp-sm) var(--sp-lg);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   border-bottom: 1px solid var(--border-subtle);
 }
 
@@ -5109,7 +5177,7 @@ html, body, #root {
   padding: var(--sp-xs) var(--sp-md);
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-sm);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   color: var(--text-secondary);
   font-family: var(--font-ui);
   font-size: var(--fs-xs);
@@ -5131,7 +5199,7 @@ html, body, #root {
   padding: 18px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--bg-surface) 58%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 58%, transparent);
 }
 
 .import-source-mark {
@@ -5532,7 +5600,7 @@ html, body, #root {
   gap: 9px;
   min-width: 0;
   padding: 12px;
-  background: color-mix(in srgb, var(--bg-surface) 86%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 86%, transparent);
 }
 
 .welcome-trust-grid svg,
@@ -5601,7 +5669,7 @@ html, body, #root {
   padding: 14px;
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--bg-surface) 74%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 74%, transparent);
   box-shadow: var(--shadow-subtle);
 }
 
@@ -5762,7 +5830,7 @@ html, body, #root {
 .btn-primary {
   background: var(--text-primary);
   border-color: var(--text-primary);
-  color: var(--bg-surface);
+  color: var(--bg-reading);
   box-shadow: var(--shadow-subtle);
 }
 
@@ -5775,7 +5843,7 @@ html, body, #root {
 .control-button--secondary,
 .btn-secondary {
   border: 1px solid var(--border-medium);
-  background: color-mix(in srgb, var(--bg-surface) 82%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 82%, transparent);
   color: var(--text-secondary);
   box-shadow: var(--shadow-subtle);
 }
@@ -5848,7 +5916,7 @@ html, body, #root {
   padding: 8px 10px;
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--bg-surface) 86%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 86%, transparent);
   color: var(--text-primary);
   box-shadow: var(--shadow-subtle);
   font: 13px/1.45 var(--font-ui);
@@ -5858,7 +5926,7 @@ html, body, #root {
 
 .control-input:hover:not(:disabled) {
   border-color: var(--border-strong);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
 }
 
 .control-input:focus-visible {
@@ -5889,7 +5957,7 @@ html, body, #root {
 .control-card {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--bg-surface) 74%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 74%, transparent);
   box-shadow: var(--shadow-subtle);
 }
 
@@ -5923,7 +5991,7 @@ html, body, #root {
 
 .control-segment.active,
 .control-segment[aria-checked="true"] {
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   color: var(--text-primary);
   box-shadow: var(--shadow-subtle), inset 0 -2px var(--study-gold);
 }
@@ -5963,7 +6031,7 @@ html, body, #root {
 }
 
 .floating-dialog-surface {
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   color: var(--text-primary);
   border: 1px solid var(--border-subtle);
   box-shadow: var(--shadow-elevated);
@@ -5989,10 +6057,10 @@ html, body, #root {
   gap: 7px;
   max-width: min(260px, calc(100vw - 16px));
   padding: 6px 8px;
-  border: 1px solid color-mix(in srgb, var(--bg-surface) 13%, transparent);
+  border: 1px solid color-mix(in srgb, var(--bg-reading) 13%, transparent);
   border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--text-primary) 96%, transparent);
-  color: var(--bg-surface);
+  color: var(--bg-reading);
   box-shadow: var(--shadow-medium);
   font: var(--fw-medium) 11px/1.25 var(--font-ui);
   letter-spacing: 0.005em;
@@ -6005,7 +6073,7 @@ html, body, #root {
 }
 
 .control-tooltip kbd {
-  color: color-mix(in srgb, var(--bg-surface) 68%, transparent);
+  color: color-mix(in srgb, var(--bg-reading) 68%, transparent);
   font: 500 9px/1 var(--font-ui);
   font-variant-numeric: tabular-nums;
 }
@@ -6216,7 +6284,7 @@ html, body, #root {
   padding: 9px 8px 9px 11px;
   border: 1px solid color-mix(in srgb, var(--border-medium) 74%, transparent);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--bg-surface) 95%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 95%, transparent);
   color: var(--text-primary);
   box-shadow: var(--shadow-medium);
   backdrop-filter: blur(18px) saturate(1.1);
@@ -6397,7 +6465,7 @@ html, body, #root {
 }
 
 .nav-arrow:hover:not(:disabled) {
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   color: var(--text-primary);
 }
 
@@ -6892,7 +6960,7 @@ html, body, #root {
   place-items: center;
   border: 1px solid var(--border-subtle);
   border-radius: 50%;
-  background: color-mix(in srgb, var(--bg-surface) 62%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 62%, transparent);
   color: var(--text-tertiary);
 }
 
@@ -7225,7 +7293,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 .entity-photo figcaption {
   display: block;
   padding: 9px 10px 6px;
-  background: color-mix(in srgb, var(--bg-surface) 91%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 91%, transparent);
   color: var(--text-tertiary);
   font-family: var(--font-ui);
   font-size: 0.53125rem;
@@ -7703,12 +7771,12 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 .entity-map-grid path { fill: none; stroke: var(--map-grid); stroke-width: 0.6; stroke-dasharray: 2 4; }
 .entity-map-land path { fill: var(--map-land); stroke: var(--map-land-line); stroke-width: 0.55; vector-effect: non-scaling-stroke; }
 .entity-map-alternatives circle { fill: var(--map-alternative); stroke: var(--map-water); stroke-width: 1; }
-.entity-map-alternatives text { fill: var(--bg-surface); font-family: var(--font-mono); font-size: 4.8px; font-weight: var(--fw-semibold); }
-.entity-map-pleiades circle:first-child { fill: color-mix(in srgb, var(--bg-surface) 72%, transparent); stroke: var(--text-secondary); stroke-width: 1.1; }
+.entity-map-alternatives text { fill: var(--bg-reading); font-family: var(--font-mono); font-size: 4.8px; font-weight: var(--fw-semibold); }
+.entity-map-pleiades circle:first-child { fill: color-mix(in srgb, var(--bg-reading) 72%, transparent); stroke: var(--text-secondary); stroke-width: 1.1; }
 .entity-map-pleiades circle:last-child { fill: var(--text-secondary); }
 .entity-map-pulse { fill: color-mix(in srgb, var(--study-gold) 8%, transparent); stroke: color-mix(in srgb, var(--study-gold) 24%, transparent); stroke-width: 0.7; }
 .entity-map-halo { fill: color-mix(in srgb, var(--study-gold) 17%, transparent); }
-.entity-map-dot { fill: var(--study-gold); stroke: var(--bg-surface); stroke-width: 1.15; }
+.entity-map-dot { fill: var(--study-gold); stroke: var(--bg-reading); stroke-width: 1.15; }
 
 .entity-minimap figcaption {
   min-height: 33px;
@@ -7718,7 +7786,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   gap: 8px;
   padding: 0 10px;
   border-top: 1px solid var(--border-subtle);
-  background: color-mix(in srgb, var(--bg-surface) 88%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 88%, transparent);
   color: var(--text-secondary);
   font-family: var(--font-ui);
   font-size: 0.5625rem;
@@ -7737,7 +7805,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   flex-wrap: wrap;
   gap: 5px 12px;
   padding: 0 10px 5px;
-  background: color-mix(in srgb, var(--bg-surface) 88%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 88%, transparent);
   color: var(--text-tertiary);
   font-family: var(--font-ui);
   font-size: 0.5rem;
@@ -9031,7 +9099,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 
 .lang-strong-peek-close:hover {
   color: var(--text-primary);
-  background: color-mix(in srgb, var(--bg-surface) 60%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 60%, transparent);
 }
 
 /* Strong's definition expander — same quiet row pattern as form chips */
@@ -9496,7 +9564,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   font-weight: 500;
   padding: 2px 8px;
   border-radius: 999px;
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   border: 1px solid var(--border-medium);
   color: var(--text-secondary);
 }
@@ -9562,7 +9630,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 }
 
 .lang-orbit-hub {
-  fill: var(--bg-surface);
+  fill: var(--bg-reading);
   stroke: var(--border-medium);
   stroke-width: 1;
 }
@@ -9587,7 +9655,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 
 .lang-orbit-seg.is-current {
   filter: brightness(1.08);
-  stroke: var(--bg-surface);
+  stroke: var(--bg-reading);
   stroke-width: 1.25;
 }
 
@@ -9877,7 +9945,7 @@ button.lang-sense-branch-row:hover {
   padding: 1px 5px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--bg-surface) 55%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 55%, transparent);
   color: var(--text-tertiary);
   font-size: 9px;
   font-weight: 650;
@@ -9969,7 +10037,7 @@ button.lang-sense-branch-row:hover {
 .lang-syntax-toggle:hover,
 .lang-syntax-toggle.is-open {
   border-color: var(--border-medium);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   color: var(--text-primary);
 }
 
@@ -10013,7 +10081,7 @@ button.lang-sense-branch-row:hover {
   flex-direction: column;
   width: min(1100px, calc(100vw - 32px));
   max-height: calc(100vh - 40px);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-elevated);
@@ -10227,7 +10295,7 @@ button.lang-sense-branch-row:hover {
 
 .lang-syntax-mode {
   border: 1px solid var(--border-subtle);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   color: var(--text-secondary);
   font-family: var(--font-ui);
   font-size: 10.5px;
@@ -10240,7 +10308,7 @@ button.lang-sense-branch-row:hover {
 .lang-syntax-mode.is-active {
   border-color: color-mix(in srgb, var(--accent-current) 45%, var(--border-medium));
   color: var(--text-primary);
-  background: color-mix(in srgb, var(--accent-current) 12%, var(--bg-surface));
+  background: color-mix(in srgb, var(--accent-current) 12%, var(--bg-reading));
 }
 
 .lang-syntax-meta {
@@ -10280,10 +10348,10 @@ button.lang-sense-branch-row:hover {
   /* Scroll-edge affordance: covers slide with the content (attachment:
      local) and reveal soft shadows pinned to the edges when there is more
      chart offscreen — the visual cue that the tree pans. */
-  background-color: var(--bg-surface);
+  background-color: var(--bg-reading);
   background-image:
-    linear-gradient(90deg, var(--bg-surface) 35%, transparent),
-    linear-gradient(-90deg, var(--bg-surface) 35%, transparent),
+    linear-gradient(90deg, var(--bg-reading) 35%, transparent),
+    linear-gradient(-90deg, var(--bg-reading) 35%, transparent),
     radial-gradient(farthest-side at 0 50%, color-mix(in srgb, var(--text-primary) 14%, transparent), transparent),
     radial-gradient(farthest-side at 100% 50%, color-mix(in srgb, var(--text-primary) 14%, transparent), transparent);
   background-position: left center, right center, left center, right center;
@@ -10317,13 +10385,13 @@ button.lang-sense-branch-row:hover {
 }
 
 .lang-tree-leaf-bg {
-  fill: var(--bg-surface);
+  fill: var(--bg-reading);
   stroke: var(--border-medium);
   stroke-width: 1.25;
 }
 
 .lang-tree-leaf.is-focus .lang-tree-leaf-bg {
-  fill: color-mix(in srgb, var(--accent-current) 14%, var(--bg-surface));
+  fill: color-mix(in srgb, var(--accent-current) 14%, var(--bg-reading));
   stroke: var(--accent-current);
   stroke-width: 2;
 }
@@ -10402,7 +10470,7 @@ button.lang-sense-branch-row:hover {
 .lang-flow-clause {
   border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   padding: 10px 12px 12px;
 }
 
@@ -10462,12 +10530,12 @@ button.lang-sense-branch-row:hover {
 .lang-flow-card:hover,
 .lang-flow-card.is-hover {
   border-color: var(--border-medium);
-  background: color-mix(in srgb, var(--bg-surface) 40%, var(--bg-secondary));
+  background: color-mix(in srgb, var(--bg-reading) 40%, var(--bg-secondary));
 }
 
 .lang-flow-card.is-focus {
   border-color: var(--accent-current);
-  background: color-mix(in srgb, var(--accent-current) 12%, var(--bg-surface));
+  background: color-mix(in srgb, var(--accent-current) 12%, var(--bg-reading));
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-current) 22%, transparent);
 }
 
@@ -10607,7 +10675,7 @@ button.lang-sense-branch-row:hover {
   overflow-y: auto;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
 }
 
 .lang-syntax-clause {
@@ -10726,7 +10794,7 @@ button.lang-sense-branch-row:hover {
   padding: 8px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   max-height: 200px;
   overflow-y: auto;
 }
@@ -10745,7 +10813,7 @@ button.lang-sense-branch-row:hover {
 
 .lang-syntax-chip.is-focus {
   border-color: var(--accent-current);
-  background: color-mix(in srgb, var(--accent-current) 12%, var(--bg-surface));
+  background: color-mix(in srgb, var(--accent-current) 12%, var(--bg-reading));
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-current) 25%, transparent);
 }
 
@@ -10868,7 +10936,7 @@ button.lang-sense-branch-row:hover {
   flex: 0 0 auto;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--bg-secondary) 68%, var(--bg-surface));
+  background: color-mix(in srgb, var(--bg-secondary) 68%, var(--bg-reading));
   overflow: hidden;
 }
 
@@ -10988,7 +11056,7 @@ button.lang-sense-branch-row:hover {
   padding: 4px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--bg-secondary) 72%, var(--bg-surface));
+  background: color-mix(in srgb, var(--bg-secondary) 72%, var(--bg-reading));
 }
 
 .lang-study-nav-step {
@@ -11018,7 +11086,7 @@ button.lang-sense-branch-row:hover {
 
 .lang-study-nav-step:hover:not([aria-disabled="true"]) {
   border-color: var(--border-subtle);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   color: var(--text-primary);
 }
 
@@ -11101,7 +11169,7 @@ button.lang-sense-branch-row:hover {
 }
 
 .lang-study-nav-return:hover {
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   color: var(--text-primary);
 }
 
@@ -11112,7 +11180,7 @@ button.lang-sense-branch-row:hover {
   max-height: min(540px, calc(100vh - 300px));
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   overflow: hidden;
 }
 
@@ -11121,10 +11189,10 @@ button.lang-sense-branch-row:hover {
   min-height: 310px;
   padding: 18px 20px 22px;
   border: none;
-  background-color: var(--bg-surface);
+  background-color: var(--bg-reading);
   background-image:
-    linear-gradient(90deg, var(--bg-surface) 42%, transparent),
-    linear-gradient(-90deg, var(--bg-surface) 42%, transparent),
+    linear-gradient(90deg, var(--bg-reading) 42%, transparent),
+    linear-gradient(-90deg, var(--bg-reading) 42%, transparent),
     radial-gradient(farthest-side at 0 50%, color-mix(in srgb, var(--text-primary) 12%, transparent), transparent),
     radial-gradient(farthest-side at 100% 50%, color-mix(in srgb, var(--text-primary) 12%, transparent), transparent);
   background-position: left center, right center, left center, right center;
@@ -11150,7 +11218,7 @@ button.lang-sense-branch-row:hover {
 }
 
 .lang-syntax--modal .lang-tree-branch.is-focus .lang-tree-branch-bg {
-  fill: color-mix(in srgb, var(--accent-current) 10%, var(--bg-surface));
+  fill: color-mix(in srgb, var(--accent-current) 10%, var(--bg-reading));
   stroke: color-mix(in srgb, var(--accent-current) 58%, var(--border-medium));
 }
 
@@ -11163,7 +11231,7 @@ button.lang-sense-branch-row:hover {
 }
 
 .lang-syntax--modal .lang-tree-leaf-bg {
-  fill: var(--bg-surface);
+  fill: var(--bg-reading);
   stroke: var(--border-subtle);
   stroke-width: 1;
 }
@@ -11174,7 +11242,7 @@ button.lang-sense-branch-row:hover {
 }
 
 .lang-syntax--modal .lang-tree-leaf.is-focus .lang-tree-leaf-bg {
-  fill: color-mix(in srgb, var(--accent-current) 10%, var(--bg-surface));
+  fill: color-mix(in srgb, var(--accent-current) 10%, var(--bg-reading));
   stroke: var(--accent-current);
   stroke-width: 2;
 }
@@ -11195,7 +11263,7 @@ button.lang-sense-branch-row:hover {
 .lang-syntax--modal .lang-flow {
   padding: 14px;
   overflow: auto;
-  background: var(--bg-surface);
+  background: var(--bg-reading);
 }
 
 .lang-syntax--modal .lang-flow-clause {
@@ -11257,7 +11325,7 @@ button.lang-sense-branch-row:hover {
   padding: 9px 11px 10px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--bg-secondary) 70%, var(--bg-surface));
+  background: color-mix(in srgb, var(--bg-secondary) 70%, var(--bg-reading));
   text-align: start;
 }
 
@@ -11287,13 +11355,13 @@ button.lang-flow-group {
 
 .lang-flow-group.is-detail-open {
   border-color: var(--border-medium);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   box-shadow: none;
 }
 
 .lang-flow-group.is-focus {
   border-color: color-mix(in srgb, var(--text-secondary) 52%, var(--border-medium));
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   box-shadow: none;
 }
 
@@ -11454,7 +11522,7 @@ button.lang-flow-group {
 }
 
 .lang-phrase-detail-views button.is-active {
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   color: var(--text-primary);
   box-shadow: none;
   outline: 1px solid var(--border-medium);
@@ -11541,7 +11609,7 @@ button.lang-flow-group {
   padding: 8px 10px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   color: inherit;
   font: inherit;
   text-align: start;
@@ -11750,7 +11818,7 @@ button.lang-phrase-diagram-node:focus-visible {
 
 .lang-phrase-tree-item.kind-phrase > .lang-phrase-node {
   border-color: var(--border-subtle);
-  background: color-mix(in srgb, var(--bg-secondary) 76%, var(--bg-surface));
+  background: color-mix(in srgb, var(--bg-secondary) 76%, var(--bg-reading));
 }
 
 .lang-phrase-tree-item.kind-clause > .lang-phrase-node {
@@ -11793,7 +11861,7 @@ button.lang-phrase-diagram-node:focus-visible {
   padding: 1px 5px;
   border: 1px solid var(--border-subtle);
   border-radius: 999px;
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   color: var(--text-secondary);
   font-size: 8.5px;
   font-weight: 650;
@@ -11890,7 +11958,7 @@ button.lang-phrase-diagram-node:focus-visible {
 .lang-outline {
   overflow: auto;
   padding: 10px;
-  background: var(--bg-surface);
+  background: var(--bg-reading);
 }
 
 .lang-outline-list {
@@ -11931,7 +11999,7 @@ button.lang-phrase-diagram-node:focus-visible {
 }
 
 .lang-outline-clause.is-focus {
-  background: color-mix(in srgb, var(--text-primary) 3%, var(--bg-surface));
+  background: color-mix(in srgb, var(--text-primary) 3%, var(--bg-reading));
 }
 
 .lang-outline-clause:hover {
@@ -12751,7 +12819,7 @@ button.lang-phrase-diagram-node:focus-visible {
   padding: 14px;
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--bg-surface) 72%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 72%, transparent);
   box-shadow: var(--shadow-subtle);
 }
 
@@ -12762,7 +12830,7 @@ button.lang-phrase-diagram-node:focus-visible {
   height: 40px;
   border-radius: var(--radius-sm);
   background: var(--text-primary);
-  color: var(--bg-surface);
+  color: var(--bg-reading);
 }
 
 .settings-library-copy {
@@ -13241,7 +13309,7 @@ button.lang-phrase-diagram-node:focus-visible {
   min-width: 0;
   padding: 10px;
   color: var(--text-primary);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   font: inherit;
@@ -13510,7 +13578,7 @@ textarea:focus-visible,
   padding: 8px 16px;
   border-radius: 999px;
   border: 1px solid var(--border-medium);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   color: var(--text-secondary);
   font-family: var(--font-ui);
   font-size: 12px;
@@ -13625,7 +13693,7 @@ textarea:focus-visible,
 .rc-seg.active,
 .control-segment.active,
 .control-segment[aria-checked="true"] {
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   color: var(--text-primary);
   box-shadow: var(--shadow-subtle), inset 0 -2px var(--study-gold);
 }
@@ -13799,7 +13867,7 @@ textarea:focus-visible,
   opacity: 0.72;
 }
 .margin-hl-swatch.mixed-context.active {
-  box-shadow: 0 0 0 2px var(--bg-surface), 0 0 0 3.5px var(--text-primary);
+  box-shadow: 0 0 0 2px var(--bg-reading), 0 0 0 3.5px var(--text-primary);
 }
 
 .ai-insight-loading {
@@ -13889,7 +13957,7 @@ textarea:focus-visible,
 .picker-recents {
   padding: 10px 12px 8px;
   border-bottom: 1px solid var(--border-subtle);
-  background: color-mix(in srgb, var(--bg-secondary) 70%, var(--bg-surface));
+  background: color-mix(in srgb, var(--bg-secondary) 70%, var(--bg-reading));
 }
 
 .picker-recents-head {
@@ -13930,7 +13998,7 @@ textarea:focus-visible,
   padding: 5px 22px 5px 9px;
   border: 1px solid var(--border-subtle);
   border-radius: 999px;
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   color: var(--text-primary);
   font-family: var(--font-ui);
   font-size: 12px;
@@ -14151,7 +14219,7 @@ textarea:focus-visible,
   position: relative;
   width: min(420px, 100vw);
   height: 100%;
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   border-left: 1px solid var(--border-subtle);
   box-shadow: var(--shadow-sidecar);
   display: flex;
@@ -14253,7 +14321,7 @@ textarea:focus-visible,
   width: 100%;
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--bg-surface) 82%, var(--bg-primary));
+  background: color-mix(in srgb, var(--bg-reading) 82%, var(--bg-primary));
   color: var(--text-primary);
   font-family: var(--font-reading);
   font-size: 16px;
@@ -14308,7 +14376,7 @@ textarea:focus-visible,
   resize: none;
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--bg-surface) 82%, var(--bg-primary));
+  background: color-mix(in srgb, var(--bg-reading) 82%, var(--bg-primary));
   color: var(--text-primary);
   font-family: var(--font-ui);
   font-size: 14px;
@@ -14326,7 +14394,7 @@ textarea:focus-visible,
 .note-capture-footer {
   padding: 12px 20px 18px;
   border-top: 1px solid var(--border-subtle);
-  background: color-mix(in srgb, var(--bg-secondary) 50%, var(--bg-surface));
+  background: color-mix(in srgb, var(--bg-secondary) 50%, var(--bg-reading));
 }
 
 .note-capture-error {
@@ -14401,7 +14469,7 @@ textarea:focus-visible,
 }
 
 .lang-word.is-active {
-  background: color-mix(in srgb, var(--bg-surface) 72%, var(--study-hover-surface));
+  background: color-mix(in srgb, var(--bg-reading) 72%, var(--study-hover-surface));
   box-shadow:
     inset 0 0 0 1px var(--border-subtle),
     inset 0 -2px var(--study-gold);
@@ -14493,7 +14561,7 @@ textarea:focus-visible,
 .theme-glass .lang-sense-outline,
 .theme-dark-glass .lang-orbit,
 .theme-dark-glass .lang-sense-outline {
-  background: color-mix(in srgb, var(--bg-surface) 64%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 64%, transparent);
   backdrop-filter: blur(12px) saturate(var(--material-saturate));
   -webkit-backdrop-filter: blur(12px) saturate(var(--material-saturate));
 }
@@ -14577,7 +14645,7 @@ textarea:focus-visible,
   width: min(1160px, calc(100vw - 48px));
   max-height: calc(100vh - 48px);
   border-radius: var(--radius-lg);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   box-shadow: var(--shadow-elevated);
 }
 
@@ -14737,7 +14805,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .note-capture-panel {
   width: min(440px, 100vw);
   border-left-color: var(--border-medium);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   box-shadow: var(--shadow-sidecar);
   backdrop-filter: blur(var(--material-blur)) saturate(var(--material-saturate));
   -webkit-backdrop-filter: blur(var(--material-blur)) saturate(var(--material-saturate));
@@ -14775,7 +14843,7 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .note-capture-footer {
   padding: 12px 22px 18px;
-  background: color-mix(in srgb, var(--bg-secondary) 38%, var(--bg-surface));
+  background: color-mix(in srgb, var(--bg-secondary) 38%, var(--bg-reading));
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -14817,7 +14885,7 @@ button.lang-phrase-diagram-node:focus-visible,
   overflow: hidden;
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-lg);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   box-shadow: var(--shadow-elevated);
   animation: commandPanelIn 150ms cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -15373,11 +15441,11 @@ button.lang-phrase-diagram-node:focus-visible,
   box-shadow: none;
 }
 
-.marking-palette .marking-pigment-yellow { background: color-mix(in srgb, var(--hl-yellow-mark) 46%, var(--bg-surface)); }
-.marking-palette .marking-pigment-green { background: color-mix(in srgb, var(--hl-green-mark) 46%, var(--bg-surface)); }
-.marking-palette .marking-pigment-blue { background: color-mix(in srgb, var(--hl-blue-mark) 46%, var(--bg-surface)); }
-.marking-palette .marking-pigment-pink { background: color-mix(in srgb, var(--hl-pink-mark) 46%, var(--bg-surface)); }
-.marking-palette .marking-pigment-purple { background: color-mix(in srgb, var(--hl-purple-mark) 46%, var(--bg-surface)); }
+.marking-palette .marking-pigment-yellow { background: color-mix(in srgb, var(--hl-yellow-mark) 46%, var(--bg-reading)); }
+.marking-palette .marking-pigment-green { background: color-mix(in srgb, var(--hl-green-mark) 46%, var(--bg-reading)); }
+.marking-palette .marking-pigment-blue { background: color-mix(in srgb, var(--hl-blue-mark) 46%, var(--bg-reading)); }
+.marking-palette .marking-pigment-pink { background: color-mix(in srgb, var(--hl-pink-mark) 46%, var(--bg-reading)); }
+.marking-palette .marking-pigment-purple { background: color-mix(in srgb, var(--hl-purple-mark) 46%, var(--bg-reading)); }
 
 
 .marking-floating-host {
@@ -15395,7 +15463,7 @@ button.lang-phrase-diagram-node:focus-visible,
   max-height: var(--mark-palette-max-height);
   border: 1px solid color-mix(in srgb, var(--border-medium) 76%, transparent);
   border-radius: var(--radius-md);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   box-shadow: var(--mark-e2), var(--mark-rim);
   pointer-events: auto;
   transform-origin: center bottom;
@@ -15413,7 +15481,7 @@ button.lang-phrase-diagram-node:focus-visible,
   padding: 6px 12px;
   border: 1px solid var(--border-subtle);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--bg-surface) 94%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 94%, transparent);
   box-shadow: 0 1px 3px color-mix(in srgb, #2f261d 8%, transparent);
   color: var(--text-tertiary);
   font-family: var(--font-ui);
@@ -15457,7 +15525,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .theme-dark-glass .marking-palette,
 .theme-glass.marking-floating-host .marking-palette,
 .theme-dark-glass.marking-floating-host .marking-palette {
-  background: color-mix(in srgb, var(--bg-surface) 84%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 84%, transparent);
   -webkit-backdrop-filter: blur(18px) saturate(1.12);
   backdrop-filter: blur(18px) saturate(1.12);
 }
@@ -15468,7 +15536,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .theme-dark-glass .marking-radial-hub,
 .theme-glass .marking-radial-help-card,
 .theme-dark-glass .marking-radial-help-card {
-  background: color-mix(in srgb, var(--bg-surface) 84%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 84%, transparent);
   -webkit-backdrop-filter: blur(18px) saturate(1.12);
   backdrop-filter: blur(18px) saturate(1.12);
 }
@@ -15479,13 +15547,13 @@ button.lang-phrase-diagram-node:focus-visible,
 .theme-dark-glass .marking-rail-tray,
 .theme-glass .marking-rail-status,
 .theme-dark-glass .marking-rail-status {
-  background: color-mix(in srgb, var(--bg-surface) 84%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 84%, transparent);
   -webkit-backdrop-filter: blur(18px) saturate(1.12);
   backdrop-filter: blur(18px) saturate(1.12);
 }
 
 .theme-glass .marking-radial-disc,
-.theme-dark-glass .marking-radial-disc { background: color-mix(in srgb, var(--bg-surface) 28%, transparent); }
+.theme-dark-glass .marking-radial-disc { background: color-mix(in srgb, var(--bg-reading) 28%, transparent); }
 
 .marking-palette::after {
   position: absolute;
@@ -15496,7 +15564,7 @@ button.lang-phrase-diagram-node:focus-visible,
   height: 9px;
   border-right: 1px solid color-mix(in srgb, var(--border-medium) 76%, transparent);
   border-bottom: 1px solid color-mix(in srgb, var(--border-medium) 76%, transparent);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   content: "";
   transform: translateX(-50%) rotate(45deg);
 }
@@ -15511,7 +15579,7 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .theme-glass .marking-palette::after,
 .theme-dark-glass .marking-palette::after {
-  background: color-mix(in srgb, var(--bg-surface) 84%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 84%, transparent);
 }
 
 @keyframes marking-palette-in {
@@ -15823,7 +15891,7 @@ button.lang-phrase-diagram-node:focus-visible,
   padding: 6px;
   border: 1px solid color-mix(in srgb, var(--border-medium) 76%, transparent);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--bg-surface) 96%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 96%, transparent);
   box-shadow: var(--mark-e1);
   pointer-events: auto;
   animation: marking-armed-in var(--mark-dur-fast) ease-out;
@@ -15882,7 +15950,7 @@ button.lang-phrase-diagram-node:focus-visible,
   padding: 8px 10px;
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--bg-surface) 96%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 96%, transparent);
   box-shadow: var(--mark-e1), var(--mark-rim);
   color: var(--text-primary);
   font-family: var(--font-ui);
@@ -15933,7 +16001,7 @@ button.lang-phrase-diagram-node:focus-visible,
   padding: 22px;
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-lg);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   box-shadow: var(--mark-e3);
 }
 
@@ -15958,7 +16026,7 @@ button.lang-phrase-diagram-node:focus-visible,
   font: 500 0.6875rem/1 var(--font-ui);
 }
 .connection-draft-exit-actions button:hover { background: var(--study-hover-surface); color: var(--text-primary); }
-.connection-draft-exit-actions button.primary { border-color: var(--border-medium); background: var(--text-primary); color: var(--bg-surface); }
+.connection-draft-exit-actions button.primary { border-color: var(--border-medium); background: var(--text-primary); color: var(--bg-reading); }
 .connection-draft-exit-actions button.danger { margin-left: auto; color: var(--danger, #9f4d45); }
 .connection-draft-exit-actions button:focus-visible { outline: 2px solid var(--study-gold-focus); outline-offset: 2px; }
 
@@ -16000,8 +16068,8 @@ button.lang-phrase-diagram-node:focus-visible,
     radial-gradient(circle at 44% 38%, color-mix(in srgb, white 12%, transparent), transparent 48%),
     radial-gradient(
       circle,
-      color-mix(in srgb, var(--bg-surface) 40%, transparent) 0 36%,
-      color-mix(in srgb, var(--bg-surface) 15%, transparent) 60%,
+      color-mix(in srgb, var(--bg-reading) 40%, transparent) 0 36%,
+      color-mix(in srgb, var(--bg-reading) 15%, transparent) 60%,
       transparent 76%
     );
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border-subtle) 46%, transparent);
@@ -16034,7 +16102,7 @@ button.lang-phrase-diagram-node:focus-visible,
   padding: 4px;
   border: 1px solid color-mix(in srgb, var(--border-medium) 82%, transparent) !important;
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--bg-surface) 94%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 94%, transparent);
   box-shadow: var(--mark-e1);
   color: var(--text-tertiary);
   pointer-events: auto;
@@ -16047,7 +16115,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .marking-radial-petal.active,
 [data-marking-surface="radial"][data-focus-ring="keyboard"] .marking-radial-petal:focus-visible {
   border-color: var(--border-strong) !important;
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   box-shadow: var(--mark-e2);
   color: var(--mark-kind-tone, var(--text-primary));
 }
@@ -16087,11 +16155,11 @@ button.lang-phrase-diagram-node:focus-visible,
   }
 }
 .marking-radial-wash .marking-pigment { width: 23px; height: 16px; box-shadow: none; }
-.marking-radial .marking-pigment-yellow { background: color-mix(in srgb, var(--hl-yellow-mid) 76%, var(--bg-surface)); }
-.marking-radial .marking-pigment-green { background: color-mix(in srgb, var(--hl-green-mid) 76%, var(--bg-surface)); }
-.marking-radial .marking-pigment-blue { background: color-mix(in srgb, var(--hl-blue-mid) 76%, var(--bg-surface)); }
-.marking-radial .marking-pigment-pink { background: color-mix(in srgb, var(--hl-pink-mid) 76%, var(--bg-surface)); }
-.marking-radial .marking-pigment-purple { background: color-mix(in srgb, var(--hl-purple-mid) 76%, var(--bg-surface)); }
+.marking-radial .marking-pigment-yellow { background: color-mix(in srgb, var(--hl-yellow-mid) 76%, var(--bg-reading)); }
+.marking-radial .marking-pigment-green { background: color-mix(in srgb, var(--hl-green-mid) 76%, var(--bg-reading)); }
+.marking-radial .marking-pigment-blue { background: color-mix(in srgb, var(--hl-blue-mid) 76%, var(--bg-reading)); }
+.marking-radial .marking-pigment-pink { background: color-mix(in srgb, var(--hl-pink-mid) 76%, var(--bg-reading)); }
+.marking-radial .marking-pigment-purple { background: color-mix(in srgb, var(--hl-purple-mid) 76%, var(--bg-reading)); }
 
 .marking-radial-hub {
   position: absolute;
@@ -16107,7 +16175,7 @@ button.lang-phrase-diagram-node:focus-visible,
   padding: 8px;
   border: 1px solid var(--border-medium);
   border-radius: 50%;
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   box-shadow: var(--mark-e2), var(--mark-rim);
   color: var(--text-secondary);
   font: 650 9px/1 var(--font-ui);
@@ -16157,7 +16225,7 @@ button.lang-phrase-diagram-node:focus-visible,
   padding: 9px;
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--bg-surface) 96%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 96%, transparent);
   box-shadow: var(--mark-e1), var(--mark-rim);
   animation: marking-radial-detail-in 200ms 95ms both var(--mark-spring-soft);
 }
@@ -16232,14 +16300,14 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .dark .marking-radial-petal {
   border-color: color-mix(in srgb, var(--border-strong) 78%, transparent) !important;
-  background: color-mix(in srgb, var(--bg-surface) 94%, var(--bg-reading));
+  background: color-mix(in srgb, var(--bg-reading) 94%, var(--bg-reading));
   color: var(--text-secondary);
 }
 
 .dark .marking-radial-hub,
 .dark .marking-radial-help-card {
   border-color: color-mix(in srgb, var(--border-strong) 78%, transparent);
-  background-color: color-mix(in srgb, var(--bg-surface) 96%, var(--bg-reading));
+  background-color: color-mix(in srgb, var(--bg-reading) 96%, var(--bg-reading));
 }
 
 @keyframes marking-radial-scrim-in { from { opacity: 0; } }
@@ -16270,7 +16338,7 @@ button.lang-phrase-diagram-node:focus-visible,
   padding: 6px;
   border: 1px solid color-mix(in srgb, var(--border-medium) 76%, transparent);
   border-radius: var(--mark-rail-shell-radius);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   box-shadow: var(--mark-e2), var(--mark-rim);
   pointer-events: auto;
   transform: translateY(-50%);
@@ -16296,7 +16364,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .marking-dock-mode:disabled { cursor: default; opacity: .42; }
 .marking-rail button[aria-pressed="true"]:disabled { opacity: 1; }
 .marking-rail button.active {
-  background: color-mix(in srgb, var(--bg-secondary) 88%, var(--bg-surface));
+  background: color-mix(in srgb, var(--bg-secondary) 88%, var(--bg-reading));
   color: var(--text-primary);
   box-shadow: inset 0 1px 2px color-mix(in srgb, var(--text-primary) 9%, transparent), var(--mark-rim);
 }
@@ -16314,7 +16382,7 @@ button.lang-phrase-diagram-node:focus-visible,
   padding: 5px 7px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--bg-surface) 96%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 96%, transparent);
   box-shadow: var(--mark-e1);
   color: var(--text-secondary);
   content: attr(data-tooltip);
@@ -16379,7 +16447,7 @@ button.lang-phrase-diagram-node:focus-visible,
   padding: 0;
   border: 1px solid color-mix(in srgb, var(--border-medium) 76%, transparent);
   border-radius: var(--radius-md);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   box-shadow: var(--mark-e2), var(--mark-rim);
   pointer-events: auto;
   animation: marking-rail-in var(--mark-dur-enter) var(--mark-rail-enter);
@@ -16492,11 +16560,11 @@ button.lang-phrase-diagram-node:focus-visible,
   gap: 5px;
   padding: 5px 2px;
 }
-.marking-rail-tray .marking-pigment-yellow { background: color-mix(in srgb, var(--hl-yellow-mark) 46%, var(--bg-surface)); }
-.marking-rail-tray .marking-pigment-green { background: color-mix(in srgb, var(--hl-green-mark) 46%, var(--bg-surface)); }
-.marking-rail-tray .marking-pigment-blue { background: color-mix(in srgb, var(--hl-blue-mark) 46%, var(--bg-surface)); }
-.marking-rail-tray .marking-pigment-pink { background: color-mix(in srgb, var(--hl-pink-mark) 46%, var(--bg-surface)); }
-.marking-rail-tray .marking-pigment-purple { background: color-mix(in srgb, var(--hl-purple-mark) 46%, var(--bg-surface)); }
+.marking-rail-tray .marking-pigment-yellow { background: color-mix(in srgb, var(--hl-yellow-mark) 46%, var(--bg-reading)); }
+.marking-rail-tray .marking-pigment-green { background: color-mix(in srgb, var(--hl-green-mark) 46%, var(--bg-reading)); }
+.marking-rail-tray .marking-pigment-blue { background: color-mix(in srgb, var(--hl-blue-mark) 46%, var(--bg-reading)); }
+.marking-rail-tray .marking-pigment-pink { background: color-mix(in srgb, var(--hl-pink-mark) 46%, var(--bg-reading)); }
+.marking-rail-tray .marking-pigment-purple { background: color-mix(in srgb, var(--hl-purple-mark) 46%, var(--bg-reading)); }
 
 .marking-rail-intents {
   display: grid;
@@ -16554,7 +16622,7 @@ button.lang-phrase-diagram-node:focus-visible,
   padding: 6px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   box-shadow: var(--mark-e1), var(--mark-rim);
   color: var(--text-tertiary);
   font-size: 10px;
@@ -16636,7 +16704,7 @@ button.lang-phrase-diagram-node:focus-visible,
   padding: 7px 8px;
   border: 1px solid color-mix(in srgb, var(--border-medium) 76%, transparent);
   border-radius: var(--radius-md);
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   box-shadow: var(--mark-e3), var(--mark-rim);
   pointer-events: auto;
 }
@@ -16663,7 +16731,7 @@ button.lang-phrase-diagram-node:focus-visible,
   height: 38px;
   border: 1px solid color-mix(in srgb, var(--border-medium) 78%, transparent);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--bg-secondary) 82%, var(--bg-surface));
+  background: color-mix(in srgb, var(--bg-secondary) 82%, var(--bg-reading));
   box-shadow: var(--mark-rim);
   opacity: 0;
   pointer-events: none;
@@ -16720,7 +16788,7 @@ button.lang-phrase-diagram-node:focus-visible,
   padding: 5px 7px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--bg-surface) 97%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 97%, transparent);
   box-shadow: var(--mark-e1);
   color: var(--text-secondary);
   content: attr(data-tooltip);
@@ -16813,7 +16881,7 @@ button.lang-phrase-diagram-node:focus-visible,
   height: 13px;
   border-color: color-mix(in srgb, var(--mark-dock-pigment) 44%, var(--border-medium));
   border-radius: 4px;
-  background: color-mix(in srgb, var(--mark-dock-pigment) 64%, var(--bg-surface));
+  background: color-mix(in srgb, var(--mark-dock-pigment) 64%, var(--bg-reading));
   box-shadow: none;
 }
 .marking-dock .marking-pigment-yellow { --mark-dock-pigment: var(--hl-yellow-mark); }
@@ -16975,7 +17043,7 @@ button.lang-phrase-diagram-node:focus-visible,
   padding: 5px 7px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--bg-surface) 97%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 97%, transparent);
   box-shadow: var(--mark-e1);
   color: var(--text-secondary);
   content: attr(data-tooltip);
@@ -17196,7 +17264,7 @@ button.lang-phrase-diagram-node:focus-visible,
   border: 1px solid var(--border-medium);
   border-bottom: 0;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   box-shadow: 0 -12px 34px color-mix(in srgb, #2f261d 10%, transparent), var(--mark-rim);
   overflow-y: auto;
   translate: -50% 0;
@@ -17204,7 +17272,7 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .theme-glass.marking-floating-host[data-radial-layout="sheet"] .marking-radial,
 .theme-dark-glass.marking-floating-host[data-radial-layout="sheet"] .marking-radial {
-  background: color-mix(in srgb, var(--bg-surface) 84%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 84%, transparent);
   -webkit-backdrop-filter: blur(18px) saturate(1.1);
   backdrop-filter: blur(18px) saturate(1.1);
 }
@@ -17472,7 +17540,7 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .marking-surface-choice.active {
   border-color: var(--border-strong);
-  background: color-mix(in srgb, var(--text-primary) 5%, var(--bg-surface));
+  background: color-mix(in srgb, var(--text-primary) 5%, var(--bg-reading));
   box-shadow: inset 0 0 0 1px color-mix(in srgb, white 12%, transparent), var(--shadow-subtle);
 }
 
@@ -17524,7 +17592,7 @@ button.lang-phrase-diagram-node:focus-visible,
   position: absolute;
   inset: 7px 10px;
   border-radius: 3px;
-  background: color-mix(in srgb, var(--bg-surface) 82%, transparent);
+  background: color-mix(in srgb, var(--bg-reading) 82%, transparent);
 }
 
 .marking-preview-line {
@@ -17544,7 +17612,7 @@ button.lang-phrase-diagram-node:focus-visible,
   height: 7px;
   border: 1px solid var(--border-medium);
   border-radius: 2px;
-  background: var(--bg-surface);
+  background: var(--bg-reading);
 }
 
 .preview-palette .marking-preview-tool.tool-one { left: 31px; top: 5px; width: 29px; height: 10px; border-radius: 4px; }
@@ -17836,7 +17904,7 @@ button.lang-phrase-diagram-node:focus-visible,
   padding: 2px 7px;
   border: 1px solid var(--border-subtle);
   border-radius: 999px;
-  background: var(--bg-surface);
+  background: var(--bg-reading);
   color: var(--text-secondary);
   font: var(--fw-medium) 0.65625rem/1 var(--font-ui);
   font-variant-numeric: tabular-nums;
