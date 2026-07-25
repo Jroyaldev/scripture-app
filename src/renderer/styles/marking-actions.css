@@ -181,6 +181,24 @@
   border-bottom: 2px solid var(--quire-hl-purple-line);
 }
 
+/* On a shelf the same bar sits under a thumb, so the TARGET grows and nothing
+   else does: G1's 28px swatch on a 44px row, at the 0.22 rule's 6px radius
+   (28 × 0.22 = 6.16). The contents, their order and their labels are identical
+   to the palette's — that constancy is the entire reason there is one bar and
+   not two. 35px of width keeps the drawn 7px between swatches. */
+.marking-dock .marking-bar-swatch {
+  width: 35px;
+  height: 44px;
+}
+
+.marking-dock .marking-bar-swatch .marking-pigment {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+
+.marking-dock .marking-bar-action { height: 44px; }
+
 /* Nothing moves on hover: the reveal is ink and opacity only. */
 .marking-bar .marking-choice:hover,
 .marking-bar .marking-choice:active,
@@ -221,6 +239,29 @@
 .marking-bar-action:hover { color: var(--text-primary); background: transparent; }
 .marking-bar-action:disabled { color: var(--text-tertiary); cursor: default; }
 .marking-bar-action[aria-expanded="true"] { color: var(--text-primary); }
+
+/* ── What may be clipped, and what may not ──────────────────────────────────
+   A quotation may be clipped: what is left is an excerpt. A reference, a
+   date, a count or an identifier may not: what is left is a lie. So the two
+   are separated structurally rather than by remembering — the quotation is
+   the only thing here that can run out of room. */
+.marking-selection-line {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.marking-selection-line .marking-selection-quote { flex: 1 1 auto; }
+
+.marking-selection-ref,
+.marking-connect-ref {
+  flex: 0 0 auto;
+  color: var(--text-primary);
+  font: 600 10px/1.25 var(--font-ui);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
 
 /* ── More ────────────────────────────────────────────────────────────────────
    A plain list, with the scope stated at the top so an action can never be
@@ -284,6 +325,37 @@
   display: grid;
   gap: 8px;
   background: var(--bg-reading);
+}
+
+/* The draft is IN the palette, not floating beside it. `.marking-session`
+   still carries the free-floating geometry of the surface this one replaced
+   (styles.css:16059 — position: fixed, a border, a radius and a shadow, off
+   --mark-session-top/left/width, three custom properties that no longer exist
+   anywhere in the bundle), so each host has to plant it. The dock already
+   does, at styles.css:16452; the palette had nowhere that said so, which left
+   a fixed, shadowed card out of the frame's flow and above its own footer.
+   This is the palette's half of that rule, not a change to it. */
+.marking-floating-host .marking-palette-frame .marking-session {
+  position: relative;
+  width: 100%;
+  min-height: 0;
+  padding: 0 0 0 10px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* The seal spine: authored, in progress, and not yet saved — the same mark
+   the margin puts beside your own notes. A mark on a reserved lane, never a
+   fill. */
+.marking-floating-host .marking-connect-draft::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 2px;
+  background: var(--study-gold);
 }
 
 .marking-connect-anchors {

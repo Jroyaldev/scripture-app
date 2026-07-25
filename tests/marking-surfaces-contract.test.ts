@@ -1710,6 +1710,12 @@ test("the underlay paints flat ink with no blend mode, and states a count in the
   assert.match(source, /span\.getBoundingClientRect\(\)\.left - cRect\.left - COUNT_INSET/,
     "the gutter lane is measured off the text, so the count holds at both gutter widths");
 
+  // One bar, two target sizes. The dock is the touch case, so G1's 44px row
+  // and 28px swatch apply there and the contents stay identical.
+  assert.match(css, /\.marking-dock \.marking-bar-swatch \{\s*width: 35px;\s*height: 44px;\s*\}/);
+  assert.match(css, /\.marking-dock \.marking-bar-swatch \.marking-pigment \{[^}]*width: 28px;[^}]*border-radius: 6px;/);
+  assert.match(css, /\.marking-dock \.marking-bar-action \{ height: 44px; \}/);
+
   // Motion budget: 180ms to arrive, 120ms to leave, and nothing moves.
   assert.match(css, /@keyframes quire-hl-in \{ from \{ opacity: 0; \} to \{ opacity: 1; \} \}/);
   assert.match(css, /animation: quire-hl-in 180ms linear;/);
@@ -1775,8 +1781,15 @@ test("every state in these surfaces uses the one loading device and names what h
   const clipped = [...marking.matchAll(/clipQuotation\(([^,]+),/g)]
     .map(([, argument]) => argument.trim())
     .filter((argument) => argument !== "quotation: string"); // the declaration itself
-  assert.deepEqual(clipped.sort(), ["label", "selection.quote"],
+  assert.deepEqual(clipped.sort(), ["selection.quote"],
     "only quotations are clipped — a truncated reference is a lie");
+  // The reference is structurally out of the clipping element's reach in both
+  // places one is shown, rather than merely short enough today.
+  assert.match(marking, /<b className="marking-selection-ref">\{selection\.rangeLabel\}<\/b>/);
+  assert.match(marking, /<b className="marking-connect-ref">\{reference\}<\/b>/);
+  const css2 = read("src", "renderer", "styles", "marking-actions.css");
+  assert.match(css2, /\.marking-selection-ref,\s*\.marking-connect-ref \{[^}]*white-space: nowrap;/);
+  assert.doesNotMatch(css2, /\.marking-(?:selection|connect)-ref[^{]*\{[^}]*text-overflow/);
   assert.match(marking, /export function clipQuotation\(quotation: string/,
     "the parameter is named for the one thing it may accept");
 });

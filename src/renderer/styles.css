@@ -114,7 +114,7 @@
      and focus; never a categorical cross-reference claim. */
   --study-gold: #96684A;
   --study-gold-focus: rgba(150, 104, 74, 0.36);
-  --study-hover-surface: #E9E6E0;
+  --study-hover-surface: transparent;
   --study-hover-line: rgba(50, 47, 43, 0.10);
   --workspace-bar-bg: var(--bg-canvas);
   --workspace-active-bg: var(--bg-reading);
@@ -484,7 +484,7 @@
 
   --study-gold: #C99A6E;
   --study-gold-focus: rgba(201, 154, 110, 0.42);
-  --study-hover-surface: #2A2723;
+  --study-hover-surface: transparent;
   --study-hover-line: rgba(237, 232, 224, 0.14);
   --workspace-bar-bg: var(--bg-canvas);
   --workspace-active-bg: var(--bg-reading);
@@ -638,7 +638,7 @@
   --accent-user: #96684A;
   --study-gold: #96684A;
   --study-gold-focus: rgba(150, 104, 74, 0.36);
-  --study-hover-surface: #EBEBEF;
+  --study-hover-surface: transparent;
   --study-hover-line: rgba(46, 46, 51, 0.10);
   --workspace-bar-bg: var(--bg-canvas);
   --workspace-active-bg: var(--bg-reading);
@@ -703,7 +703,7 @@
   --accent-user: #C99A6E;
   --study-gold: #C99A6E;
   --study-gold-focus: rgba(201, 154, 110, 0.42);
-  --study-hover-surface: #2C2C32;
+  --study-hover-surface: transparent;
   --study-hover-line: rgba(233, 233, 236, 0.14);
   --workspace-bar-bg: var(--bg-canvas);
   --workspace-active-bg: var(--bg-reading);
@@ -2529,6 +2529,7 @@ html, body, #root {
 
 .version-picker-item.active {
   background: var(--study-hover-surface);
+  color: var(--text-primary);
 }
 
 .version-picker-item svg {
@@ -3897,24 +3898,12 @@ html, body, #root {
    color against the near-black dark canvas (--bg-canvas) drives it toward
    black instead of toward the highlight color, which would make highlights
    harder to see, not more special. */
-.app-shell:not(.dark) .hl-blob {
-  mix-blend-mode: multiply;
-}
-
 /*
  * Sweep-in: a freshly created highlight reveals left-to-right like a marker
  * swipe. Implemented as a clip-path inset that animates from fully clipped
  * (right side shut) to fully open. Honors prefers-reduced-motion (instant
  * fallback). The flag is cleared by HighlightUnderlay after the animation.
  */
-@keyframes hl-sweep {
-  from { clip-path: inset(0 100% 0 0); }
-  to   { clip-path: inset(0 0 0 0); }
-}
-.hl-blob.hl-sweep {
-  animation: hl-sweep 450ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
 /*
  * Fade-out: the mirror of the sweep, played while a highlight is mid-
  * deletion. ScripturePage keeps the highlight in local data for FADE_MS
@@ -3922,14 +3911,6 @@ html, body, #root {
  * to animate — without that, the blob's data would already be gone and
  * there'd be nothing left to fade.
  */
-@keyframes hl-fade-out {
-  from { opacity: 1; }
-  to   { opacity: 0; }
-}
-.hl-blob.hl-fade-out {
-  animation: hl-fade-out 320ms ease-in forwards;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .hl-blob.hl-sweep {
     animation: none;
@@ -4255,6 +4236,7 @@ html, body, #root {
 .echo-pill:hover {
   border-color: var(--border-strong);
   background: var(--study-hover-surface);
+  color: var(--text-primary);
 }
 
 .echo-pill.healed {
@@ -4424,6 +4406,7 @@ html, body, #root {
 .crossref-row:hover {
   background: var(--study-hover-surface);
   border-color: var(--study-hover-line);
+  color: var(--text-primary);
 }
 
 .note-crossref-row:hover {
@@ -4436,6 +4419,7 @@ html, body, #root {
   outline-offset: 1px;
   background: var(--study-hover-surface);
   border-color: var(--study-hover-line);
+  color: var(--text-primary);
 }
 
 .note-crossref-row:focus-visible {
@@ -4978,10 +4962,12 @@ html, body, #root {
 
 .note-row:hover {
   background: var(--study-hover-surface);
+  color: var(--text-primary);
 }
 
 .note-row.selected {
   background: color-mix(in srgb, var(--study-hover-surface) 74%, transparent);
+  color: var(--text-primary);
 }
 
 .note-row.selected::before {
@@ -6381,6 +6367,7 @@ html, body, #root {
 
 .connection-word-choice:hover {
   background: var(--study-hover-surface);
+  color: var(--text-primary);
 }
 
 .connection-word-choice[aria-pressed="true"] {
@@ -6544,6 +6531,7 @@ html, body, #root {
 .toast-action:hover {
   background: var(--study-hover-surface);
   border-color: var(--border-strong);
+  color: var(--text-primary);
 }
 
 .toast-action:active {
@@ -7009,6 +6997,7 @@ html, body, #root {
 .intent-note-lead:hover,
 .intent-note-lead:focus-visible {
   background: var(--study-hover-surface);
+  color: var(--text-primary);
 }
 
 .intent-ref-row-open:focus-visible,
@@ -12559,6 +12548,7 @@ button.lang-phrase-diagram-node:focus-visible {
 .library-switcher:hover,
 .library-switcher[aria-expanded="true"] {
   background: var(--study-hover-surface);
+  color: var(--text-primary);
 }
 
 .library-switcher:active {
@@ -13513,6 +13503,7 @@ button.lang-phrase-diagram-node:focus-visible {
   background: var(--study-hover-surface);
   border-color: transparent;
   box-shadow: none;
+  color: var(--text-primary);
 }
 
 .theme-preview {
@@ -13971,14 +13962,6 @@ textarea:focus-visible,
 }
 
 /* Dim highlights outside the pin */
-.hl-blob.hl-dimmed {
-  opacity: 0.28;
-  transition: opacity 180ms ease;
-}
-.hl-blob:not(.hl-dimmed) {
-  transition: opacity 180ms ease;
-}
-
 /* --- Living Margin polish --- */
 
 .margin-invite {
@@ -14649,10 +14632,12 @@ textarea:focus-visible,
 
 .lang-word:hover {
   background: var(--study-hover-surface);
+  color: var(--text-primary);
 }
 
 .dark .lang-word:hover {
   background: var(--study-hover-surface);
+  color: var(--text-primary);
 }
 
 .lang-word.is-active {
@@ -14660,6 +14645,7 @@ textarea:focus-visible,
   box-shadow:
     inset 0 0 0 1px var(--border-subtle),
     inset 0 -2px var(--study-gold);
+  color: var(--text-primary);
 }
 
 .lang-word.is-active .lang-word-form {
@@ -14771,6 +14757,7 @@ textarea:focus-visible,
 
 .lang-sense-primary.is-current > .lang-sense-primary-row {
   background: color-mix(in srgb, var(--study-hover-surface) 58%, transparent);
+  color: var(--text-primary);
 }
 
 .lang-syntax-toggle {
@@ -14784,6 +14771,7 @@ textarea:focus-visible,
 .lang-syntax-toggle.is-open {
   background: var(--study-hover-surface);
   border-color: var(--study-hover-line);
+  color: var(--text-primary);
 }
 
 .lang-syntax-toggle-hint {
@@ -14959,6 +14947,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .crossref-row:focus-visible {
   border-color: transparent;
   background: var(--study-hover-surface);
+  color: var(--text-primary);
 }
 
 .crossref-open-affordance {
@@ -15841,6 +15830,7 @@ button.lang-phrase-diagram-node:focus-visible,
   border-color: var(--border-medium);
   background: var(--study-hover-surface);
   transform: translateY(-1px);
+  color: var(--text-primary);
 }
 
 .marking-intent:active { transform: translateY(0); }
@@ -16368,7 +16358,9 @@ button.lang-phrase-diagram-node:focus-visible,
     color var(--mark-dur-fast) ease,
     transform var(--mark-dur-fast) var(--mark-spring-soft);
 }
-.marking-dock-context .marking-choice:hover { background: var(--study-hover-surface); transform: translateY(-1px); }
+.marking-dock-context .marking-choice:hover { background: var(--study-hover-surface); transform: translateY(-1px);
+  color: var(--text-primary);
+}
 .marking-dock-context .marking-choice:active { transform: translateY(0) scale(.98); }
 .marking-dock-context .marking-choice.active { border: 0; background: color-mix(in srgb, var(--text-primary) 7%, transparent); box-shadow: none; }
 .marking-dock-context .marking-choice-label { overflow: visible; text-overflow: clip; }
@@ -16490,7 +16482,9 @@ button.lang-phrase-diagram-node:focus-visible,
   font-size: 9.5px;
   font-weight: var(--fw-semibold);
 }
-.marking-dock-retry:hover { background: var(--study-hover-surface); }
+.marking-dock-retry:hover { background: var(--study-hover-surface);
+  color: var(--text-primary);
+}
 .marking-dock-tool-tag { flex: 0 0 auto; padding: 4px 7px; border-radius: 999px; background: color-mix(in srgb, var(--text-primary) 6%, transparent); color: var(--text-primary); font-size: 9px; font-weight: var(--fw-semibold); }
 .marking-dock-put-down { flex: 0 0 auto; padding: 5px 7px; border-radius: var(--radius-sm); background: transparent; color: var(--text-tertiary); font-size: 9px; }
 .marking-dock-put-down:hover { background: var(--study-hover-surface); color: var(--text-primary); }
@@ -16828,6 +16822,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .marking-surface-choice:hover {
   border-color: var(--border-medium);
   background: var(--study-hover-surface);
+  color: var(--text-primary);
 }
 
 .marking-surface-choice.active {

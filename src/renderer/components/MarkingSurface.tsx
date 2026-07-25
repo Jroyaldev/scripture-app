@@ -749,7 +749,6 @@ function ConnectDraft({
   const state = connectDraftState(session, busy);
   const readOnly = state === "in-flight" || state === "recovery";
   const phraseLabel = `${session.anchors.length} phrase${session.anchors.length === 1 ? "" : "s"}`;
-  const heldQuotes = session.labels.map((label) => clipQuotation(label, 40));
   return (
     <div
       className="marking-session marking-connect-draft"
@@ -770,9 +769,15 @@ function ConnectDraft({
         {session.kindChosen && <RelationshipGlyph kind={session.kind} />}
         {session.kindChosen ? `${relationshipLabel(session.kind)} · ${phraseLabel}` : phraseLabel}
       </span>
+      {/* The anchors are stated as REFERENCES, whole. A connection is between
+          passages, so the passage is the thing the reader has to be able to
+          check — and a reference is an identifier, which means it is never
+          clipped and never dressed as a quotation. */}
       <ol className="marking-connect-anchors">
-        {heldQuotes.map((quote, index) => (
-          <li key={`${quote}:${index}`}><q>{quote}</q></li>
+        {session.labels.map((reference, index) => (
+          <li key={`${reference}:${index}`}>
+            <b className="marking-connect-ref">{reference}</b>
+          </li>
         ))}
       </ol>
       <span
@@ -1641,11 +1646,13 @@ export function MarkingSurface({
       kindChosen: true,
       anchors: connection.anchors,
       paintAnchors: [...extensionRequest.paintAnchors],
-      labels: connection.anchors.map((anchor, index) => {
-        const projected = extensionRequest.paintAnchors[index];
-        const quote = projected?.fragments.map((fragment) => fragment.quote).join(" ").trim();
-        return quote || `${anchor.book} ${anchor.chapter}:${anchor.verse_start}${anchor.verse_end === anchor.verse_start ? "" : `–${anchor.verse_end}`}`;
-      }),
+      // One vocabulary for both paths: an anchor is named by its reference,
+      // never by the words inside it. A held quotation would have to be
+      // clipped to fit the draft, and clipping an anchor's name is exactly
+      // what the truncation rule forbids.
+      labels: connection.anchors.map((anchor) => (
+        `${anchor.book} ${anchor.chapter}:${anchor.verse_start}${anchor.verse_end === anchor.verse_start ? "" : `–${anchor.verse_end}`}`
+      )),
       label: connection.label,
       observation: connection.observation,
     });
@@ -2241,9 +2248,19 @@ export function MarkingSurface({
           >
             <div className="marking-palette-frame">
               <header className="marking-palette-header">
+                {/* Truncation clips QUOTATION only. The reference sits in its
+                    own element that never shrinks and never ellipsises — a
+                    truncated quotation is an excerpt, a truncated reference is
+                    a lie — and the eyebrow above it is the only thing in this
+                    header allowed to run out of room. */}
                 <div className="marking-palette-title">
-                  <span>Mark selection <i aria-hidden="true">·</i> {selection.rangeLabel}</span>
-                  <q className="marking-selection-quote" title={selection.quote}>“{paletteQuote || selection.rangeLabel}”</q>
+                  <span>Mark selection</span>
+                  <div className="marking-selection-line">
+                    {paletteQuote && (
+                      <q className="marking-selection-quote" title={selection.quote}>“{paletteQuote}”</q>
+                    )}
+                    <b className="marking-selection-ref">{selection.rangeLabel}</b>
+                  </div>
                 </div>
                 <div className="marking-palette-header-actions">
                   <button type="button" className="marking-palette-action" aria-label="Close palette" title="Close palette" onMouseDown={(event) => event.preventDefault()} onClick={dismissPalette}><PaletteHeaderGlyph icon="close" /></button>
