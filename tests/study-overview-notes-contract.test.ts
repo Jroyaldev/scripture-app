@@ -130,6 +130,24 @@ function functionBody(source: string, name: string): string {
   throw new Error(`unterminated ${name}()`);
 }
 
+/**
+ * The nth occurrence onward, with the total asserted first. Where the last of
+ * several IS the intent — the pinned Notes panel is the third of three — this
+ * makes it a stated fact instead of a `lastIndexOf` that would keep working,
+ * on a different panel, if a fourth appeared.
+ */
+function nthOccurrence(
+  source: string,
+  anchor: string,
+  index: number,
+  expectedTotal: number,
+  label: string,
+): string {
+  const found = [...source.matchAll(new RegExp(anchor.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"))];
+  assert.equal(found.length, expectedTotal, `${label}: expected ${expectedTotal} of ${JSON.stringify(anchor)}, found ${found.length}`);
+  return source.slice(found[index]!.index!);
+}
+
 const overview = between(
   margin,
   "function IntentOverview",
@@ -285,9 +303,7 @@ test("Notes owes loading and failed, and draws them in the shipped state grammar
   // and it is the one C4·3 draws. That is asserted rather than assumed: a
   // `lastIndexOf` would keep working, on a different panel, if a fourth
   // appeared or the order changed.
-  const notesPanels = [...margin.matchAll(/id="margin-notes-panel"/g)].map((m) => m.index!);
-  assert.equal(notesPanels.length, 3, "every scope state must draw the Notes tab");
-  const notesPanel = margin.slice(notesPanels[2]!);
+  const notesPanel = nthOccurrence(margin, 'id="margin-notes-panel"', 2, 3, "the pinned Notes panel");
   assert.match(notesPanel, /<SurfaceState\s+state="loading"/);
   assert.match(notesPanel, /state="failed"/);
   assert.match(notesPanel, /reason="The library could not be read\."/);
@@ -571,9 +587,13 @@ test("Law 2: no pill, no tinted chip, no filled row on these surfaces", () => {
 
 test("no region in this file is chosen by a raw, unasserted anchor", () => {
   const self = read("tests/study-overview-notes-contract.test.ts");
-  // Assembled, never written whole — see above.
-  const SCAN = ["index" + "Of", "last" + "Index" + "Of", "sl" + "ice"];
-  const HELPERS = ["between", "after", "rule", "enclosingComment", "functionBody"];
+  // The hazard is choosing a REGION by an unasserted anchor, and a region is
+  // chosen with one method. Position comparison — `props.indexOf(a) >
+  // props.lastIndexOf(b)` inside an already-extracted string — selects nothing
+  // and cannot mis-select, so it is not swept. Assembled, never written whole,
+  // so this sweep cannot match itself and need not dodge itself by position.
+  const SCAN = ["sl" + "ice"];
+  const HELPERS = ["between", "after", "rule", "enclosingComment", "functionBody", "nthOccurrence"];
 
   // Excise each helper by its own unique signature, so the check is anchored
   // by name rather than by position.
