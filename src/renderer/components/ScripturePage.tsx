@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from "react";
+import { Fragment, useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from "react";
 import type {
   BackboneData,
   BookNameData,
@@ -1397,6 +1397,36 @@ export function ScripturePage({
   // 0), and collapsing the row gap between them would visually press two
   // distinct, separately-rounded shapes together — the same class of bug the
   // isAdjacent fix above was for, one layer up in the CSS.
+  /**
+   * The pericope folds for this chapter, keyed by the verse each one opens.
+   *
+   * A pericope is a fold, not a heading — it marks where the editors judged
+   * one unit of thought to end and the next to begin. Four things get filtered
+   * out, each for its own reason:
+   *
+   * - `beforeVerse === 1` is a chapter-opening title, not an internal break.
+   *   A fold there would collide with the chapter head above it.
+   * - `acrostic` is a Hebrew letter glyph, not a title. In Psalm 119 every
+   *   stanza emits both the letter and its transliteration at the same verse,
+   *   so admitting them would stack duplicate folds down the whole psalm.
+   * - `description` is a psalm superscription and belongs to the text.
+   * - `major-section` is a book-level division, above this scale entirely.
+   *
+   * Where a level-1 and a level-2 heading land on the same verse (Genesis 1
+   * nests "The First Day" under "The Creation"), the shallower one wins: one
+   * fold per break, because the mark says "a seam is here", not how deep it is.
+   */
+  const pericopeFolds = useMemo<Map<number, string>>(() => {
+    const folds = new Map<number, { level: number; text: string }>();
+    for (const heading of chapterData?.headings ?? []) {
+      if (heading.kind !== "section" || heading.beforeVerse <= 1) continue;
+      const existing = folds.get(heading.beforeVerse);
+      if (existing && existing.level <= heading.level) continue;
+      folds.set(heading.beforeVerse, { level: heading.level, text: heading.text });
+    }
+    return new Map([...folds].map(([verse, fold]) => [verse, fold.text]));
+  }, [chapterData]);
+
   const verseBridges = useMemo<Set<number>>(() => {
     const bridges = new Set<number>();
     const activeHere = normalizedHighlights.filter(
@@ -4715,7 +4745,8 @@ export function ScripturePage({
                 contAbove ? "cont-above" : "",
                 contBelow ? "cont-below" : "",
               ].filter(Boolean).join(" ");
-              return (
+              const fold = pericopeFolds.get(v.verse);
+              const row = (
                 <div
                   key={v.verse}
                   data-verse={v.verse}
@@ -4735,6 +4766,20 @@ export function ScripturePage({
                   <span className="verse-num">{v.verse}</span>
                   <span className={textClasses}>{v.text}</span>
                 </div>
+              );
+              if (!fold) return row;
+              // The fold is a sibling row, deliberately NOT registered in
+              // verseRowRefs: the highlight and connection underlays measure
+              // off that map, and a non-verse row in it would shift their
+              // geometry.
+              return (
+                <Fragment key={`fold-${v.verse}`}>
+                  <div className="pericope-fold">
+                    <span className="pericope-fold-rule" aria-hidden="true" />
+                    <h3 className="pericope-fold-title">{fold}</h3>
+                  </div>
+                  {row}
+                </Fragment>
               );
             })}
 

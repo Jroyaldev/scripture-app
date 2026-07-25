@@ -2309,7 +2309,7 @@ async function dockExistingHighlightGeometry(driver) {
       hitColor: actions?.querySelector(".marking-dock-hit")?.getAttribute("data-highlight-color") ?? null,
       hitVisible: actions?.querySelector(".marking-dock-hit") ? getComputedStyle(actions.querySelector(".marking-dock-hit")).display !== "none" : null,
       dockHeight: dockRect?.height ?? null,
-      markingBottomInset: stageStyle ? Number.parseFloat(stageStyle.getPropertyValue("--marking-bottom-inset")) : null,
+      markingBottomInset: stageStyle ? Number.parseFloat(stageStyle.getPropertyValue("--mdock-bottom-inset")) : null,
       contentPaddingBottom: contentStyle ? Number.parseFloat(contentStyle.paddingBottom) : null,
       contentScrollPaddingBottom: contentStyle ? Number.parseFloat(contentStyle.scrollPaddingBottom) : null,
       contained: {
@@ -2405,7 +2405,7 @@ async function dockSessionActionGeometry(driver) {
       labels: actions.map((action) => action.textContent?.trim()),
       sizes: boxes.map(({ width, height }) => ({ width, height })),
       dockHeight: dockRect?.height ?? null,
-      markingBottomInset: stageStyle ? Number.parseFloat(stageStyle.getPropertyValue("--marking-bottom-inset")) : null,
+      markingBottomInset: stageStyle ? Number.parseFloat(stageStyle.getPropertyValue("--mdock-bottom-inset")) : null,
       contentPaddingBottom: contentStyle ? Number.parseFloat(contentStyle.paddingBottom) : null,
       contentScrollPaddingBottom: contentStyle ? Number.parseFloat(contentStyle.scrollPaddingBottom) : null,
       lastVerseClearance: dockRect && lastVerseRect ? dockRect.top - lastVerseRect.bottom : null,

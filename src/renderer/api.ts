@@ -199,7 +199,18 @@ declare global {
 export type ReadingSize = "s" | "m" | "l";
 export type ReadingWidth = "narrow" | "medium" | "wide";
 export type VerseNumberMode = "always" | "faint" | "hover";
-export type MarkingSurface = "palette" | "rail" | "radial" | "dock";
+/**
+ * Two surfaces, not four. Of the eight configurations the four surfaces
+ * produced, two were re-implementations of the dock (rail·bottom shares the
+ * dock's own bottom-inset rule; radial·sheet is a 2x46px grid with a help
+ * card, which is the dock) and two could not work where they were offered:
+ * rail·side padded the reading content by 92px, so the measure moved when a
+ * tool appeared, and radial·wheel only labels its petals under a coarse
+ * pointer — unlabelled on exactly the pointer devices that were offered it.
+ *
+ * Pointer gets the floating palette. Touch gets the bottom dock.
+ */
+export type MarkingSurface = "palette" | "dock";
 
 /** One stop in the passage-picker recents list. */
 export interface RecentPassageSetting {
@@ -304,8 +315,25 @@ export interface QueryResult {
   notes: NoteRecord[];
 }
 
+/** A noncanonical display heading: the editors' own subdivision of a chapter. */
+export type ScriptureHeadingKind =
+  | "section" | "major-section" | "description" | "speaker" | "acrostic";
+
+export interface ScriptureHeading {
+  /** The first canonical verse this heading governs. */
+  beforeVerse: number;
+  kind: ScriptureHeadingKind;
+  level: number;
+  text: string;
+}
+
 export interface ChapterData {
   verses: Array<{ verse: number; text: string }>;
+  /**
+   * Present where the package's source carried them — today BSB only, from
+   * USFM \s/\ms/\d/\sp/\qa markers. Absent is normal, not an error.
+   */
+  headings?: ScriptureHeading[];
 }
 
 export interface ScriptureSearchHitData {

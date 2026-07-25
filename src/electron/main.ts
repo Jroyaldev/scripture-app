@@ -221,7 +221,7 @@ interface WindowBounds {
 interface AppSettingsSchema {
   theme: "light" | "dark" | "porcelain" | "onyx";
   material: "solid" | "translucent";
-  markingSurface: "palette" | "rail" | "radial" | "dock";
+  markingSurface: "palette" | "dock";
   sidebarCollapsed: boolean;
   marginVisible: boolean;
   readingSize: "s" | "m" | "l";
@@ -304,10 +304,16 @@ function readLegacySettingsForAdoption(): LegacySettingsAdoption {
 
 const MARKING_SURFACE_IDS = new Set<AppSettingsSchema["markingSurface"]>([
   "palette",
-  "rail",
-  "radial",
   "dock",
 ]);
+
+// The retired surfaces map to the one that replaced them: the rail was a
+// persistent toolbar like the dock, and the radial was a floating one like
+// the palette. Neither reader loses the kind of surface they chose.
+const LEGACY_MARKING_SURFACE: Record<string, AppSettingsSchema["markingSurface"]> = {
+  rail: "dock",
+  radial: "palette",
+};
 const THEME_IDS = new Set<AppSettingsSchema["theme"]>([
   "light",
   "dark",
@@ -341,6 +347,9 @@ function normalizeMaterial(value: unknown, rawTheme: unknown): AppSettingsSchema
 }
 
 function normalizeMarkingSurface(value: unknown): AppSettingsSchema["markingSurface"] {
+  if (typeof value === "string" && LEGACY_MARKING_SURFACE[value]) {
+    return LEGACY_MARKING_SURFACE[value]!;
+  }
   return typeof value === "string"
     && MARKING_SURFACE_IDS.has(value as AppSettingsSchema["markingSurface"])
     ? value as AppSettingsSchema["markingSurface"]
@@ -526,10 +535,17 @@ if (legacySettingsAdoption.status === "adopt") {
   // The legacy store can still name Glass or Candlelight. Those were never
   // separate atmospheres, so adopt them as the theme they always were plus
   // the material switch they actually meant.
-  const { theme: legacyTheme, ...adopted } = legacySettingsAdoption.settings;
+  const {
+    theme: legacyTheme,
+    markingSurface: legacySurface,
+    ...adopted
+  } = legacySettingsAdoption.settings;
   store.store = {
     ...store.store,
     ...adopted,
+    ...(legacySurface === undefined
+      ? {}
+      : { markingSurface: normalizeMarkingSurface(legacySurface) }),
     ...(legacyTheme === undefined ? {} : {
       theme: normalizeTheme(legacyTheme),
       material: normalizeMaterial(undefined, legacyTheme),
@@ -1041,6 +1057,13 @@ async function retireRuntime(runtime: EngineRuntime, reason: string): Promise<vo
 
 type ScriptureChapterFile = {
   verses: Array<{ verse: number; text: string }>;
+  /** Editors' section headings; BSB carries them, the other packages do not. */
+  headings?: Array<{
+    beforeVerse: number;
+    kind: "section" | "major-section" | "description" | "speaker" | "acrostic";
+    level: number;
+    text: string;
+  }>;
 };
 
 const scriptureChapterCache = new Map<string, ScriptureChapterFile | null>();

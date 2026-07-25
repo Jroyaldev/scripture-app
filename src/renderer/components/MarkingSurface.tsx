@@ -159,8 +159,6 @@ const PIGMENTS: readonly PigmentOption[] = [
 ] as const;
 
 const BINARY_KINDS = new Set<ConnectionKind>(["link:contrast", "mirror", "hinge"]);
-const RADIAL_RELATION_DELAYS = [48, 32, 16, 16, 32, 48] as const;
-const RADIAL_PIGMENT_DELAYS = [40, 24, 8, 24, 40] as const;
 
 const DOCK_MODES = [
   { id: "read", label: "Read" },
@@ -454,22 +452,6 @@ interface PalettePlacement {
   layout: "floating" | "sheet";
 }
 
-interface RailTrayPlacement {
-  left: number;
-  top: number;
-  maxHeight: number;
-  height?: number;
-  placement: "rail" | "above" | "below" | "right" | "left";
-}
-
-interface RadialPlacement {
-  nonce: number;
-  layout: "wheel" | "sheet";
-  centerX: number;
-  centerY: number;
-  panelSide: "top" | "right" | "bottom" | "left";
-}
-
 function PaletteHeaderGlyph({ icon }: { icon: "note" | "erase" | "pin" | "close" }): React.JSX.Element {
   if (icon === "note") return <ToolGlyph tool="note" />;
   if (icon === "erase") return <ToolGlyph tool="erase" />;
@@ -692,12 +674,8 @@ export function MarkingSurface({
   const [paletteHelp, setPaletteHelp] = useState<PaletteHelp | null>(null);
   const [palettePlacement, setPalettePlacement] = useState<PalettePlacement | null>(null);
   const [consumingSelectionNonce, setConsumingSelectionNonce] = useState<number | null>(null);
-  const [radialHelp, setRadialHelp] = useState<{ label: string; description: string } | null>(null);
-  const [radialPlacement, setRadialPlacement] = useState<RadialPlacement | null>(null);
-  const [railHelp, setRailHelp] = useState<PaletteHelp | null>(null);
   const [dockHelp, setDockHelp] = useState<PaletteHelp | null>(null);
   const [dockEntranceComplete, setDockEntranceComplete] = useState(false);
-  const [railTrayPlacement, setRailTrayPlacement] = useState<RailTrayPlacement | null>(null);
   const [focusRingMode, setFocusRingMode] = useState<"pointer" | "keyboard">("pointer");
   const [exitGuardReason, setExitGuardReason] = useState<ConnectionDraftExitReason | null>(null);
   const sessionRef = useRef<ConnectionSession | null>(session);
@@ -715,10 +693,6 @@ export function MarkingSurface({
   currentContextKey.current = contextKey;
   const firstChoiceRef = useRef<HTMLButtonElement>(null);
   const paletteRef = useRef<HTMLDivElement>(null);
-  const radialRef = useRef<HTMLDivElement>(null);
-  const radialHelpCardRef = useRef<HTMLElement>(null);
-  const railRef = useRef<HTMLDivElement>(null);
-  const railTrayRef = useRef<HTMLDivElement>(null);
   const trayPanelRef = useRef<HTMLDivElement>(null);
   const trayOpenerRef = useRef<HTMLButtonElement>(null);
   const trayOpenerModeRef = useRef<"wash" | "connect" | null>(null);
@@ -732,12 +706,6 @@ export function MarkingSurface({
   const railRoving = useRovingFocus<HTMLButtonElement>(4);
   const dockModeRoving = useRovingFocus<HTMLButtonElement>(DOCK_MODES.length);
   const dockIntentRoving = useRovingFocus<HTMLButtonElement>(2);
-  const radialRoving = useRovingFocus<HTMLButtonElement>(RELATIONSHIPS.length + PIGMENTS.length);
-  const radialButtons = useMemo(() => {
-    const relationAngles = RELATIONSHIPS.map((option, index) => ({ option, angle: 200 + index * 28 }));
-    const pigmentAngles = PIGMENTS.map((option, index) => ({ option, angle: 20 + index * 35 }));
-    return { relationAngles, pigmentAngles };
-  }, []);
 
   const clearPendingFocusRestore = useCallback((): void => {
     if (focusRestoreTimerRef.current == null) return;
@@ -771,7 +739,7 @@ export function MarkingSurface({
   }, []);
 
   const effectiveStageBounds = stageBounds;
-  const persistentSurface = surface === "rail" || surface === "dock";
+  const persistentSurface = surface === "dock";
   // Escape ownership rank in the shared layer registry. An open tray or an
   // in-progress session is deliberate work and cancels before a passive
   // connection card; a plain text selection yields to it. Focus mode hides
@@ -789,10 +757,6 @@ export function MarkingSurface({
   const exitGuardLayerRef = useLayer(exitGuardReason ? "dialog" : null);
   const stageClass = effectiveStageBounds.width < 480 ? "narrow" : effectiveStageBounds.width < 760 || effectiveStageBounds.height < 480 ? "compact" : "wide";
   const paletteLayoutHint = effectiveStageBounds.width < 480 || effectiveStageBounds.height < 360 ? "sheet" : "floating";
-  const radialLayoutHint = effectiveStageBounds.width <= 640 || effectiveStageBounds.height <= 420 ? "sheet" : "wheel";
-  const radialLayout = selection && radialPlacement?.nonce === selection.nonce ? radialPlacement.layout : radialLayoutHint;
-  const railLayout = effectiveStageBounds.width < 600 || effectiveStageBounds.height < 520 ? "bottom" : "side";
-  const railIntentFocusReady = railTrayPlacement != null;
   const floatingStageStyle = {
     "--mark-stage-left": `${effectiveStageBounds.left}px`,
     "--mark-stage-top": `${effectiveStageBounds.top}px`,
@@ -815,9 +779,6 @@ export function MarkingSurface({
       : tool?.type ?? "read";
   const dockModeIndex = Math.max(0, DOCK_MODES.findIndex((item) => item.id === dockMode));
   const dockLayout = effectiveStageBounds.width <= 759 ? "stacked" : "shelf";
-  const railTrayShouldRender = surface === "rail" && (
-    tray === "connect" || tray === "wash" || Boolean(selection && !tool)
-  );
   const connectionDraft = useMemo<ConnectionDraftModel | null>(() => {
     if (!session || session.contextKey !== contextKey) return null;
     // Durable anchors preserve the canonical authored relationship; these
@@ -836,7 +797,6 @@ export function MarkingSurface({
     consumingSelectionNonce === selection.nonce
     || (tool && !busy && processedSelection.current !== selection.nonce)
   ));
-  const radialPetalRadius = 124;
 
   useLayoutEffect(() => {
     onConnectionDraftChange(connectionDraft);
@@ -1018,389 +978,7 @@ export function MarkingSurface({
     surface,
   ]);
 
-  useLayoutEffect(() => {
-    if (surface !== "radial" || !selection || suppressPaletteForAutoApply) {
-      setRadialPlacement(null);
-      return;
-    }
-    const wheel = radialRef.current;
-    const helpCard = radialHelpCardRef.current;
-    if (!wheel || !helpCard) return;
-    let frame = 0;
-    let cancelled = false;
-    const place = (): void => {
-      if (cancelled) return;
-      const stage = {
-        left: effectiveStageBounds.left,
-        top: effectiveStageBounds.top,
-        right: effectiveStageBounds.left + effectiveStageBounds.width,
-        bottom: effectiveStageBounds.bottom,
-      };
-      const centerX = stage.left + effectiveStageBounds.width / 2;
-      const centerY = stage.top + effectiveStageBounds.height / 2;
-      if (radialLayoutHint === "sheet") {
-        const next: RadialPlacement = { nonce: selection.nonce, layout: "sheet", centerX, centerY, panelSide: "bottom" };
-        setRadialPlacement((current) => current
-          && current.nonce === next.nonce
-          && current.layout === next.layout
-          ? current
-          : next);
-        return;
-      }
 
-      // Measure the rendered instrument. When reopening from its sheet layout,
-      // use the approved wheel footprint for the one frame needed to restore
-      // the wheel; its ResizeObserver immediately verifies the live dimensions.
-      const wheelRect = wheel.getBoundingClientRect();
-      const panelRect = helpCard.getBoundingClientRect();
-      const wheelWidth = radialLayout === "wheel" && wheelRect.width > 0 ? wheel.offsetWidth : 320;
-      const wheelHeight = radialLayout === "wheel" && wheelRect.height > 0 ? wheel.offsetHeight : 320;
-      const panelWidth = radialLayout === "wheel" && panelRect.width > 0 ? helpCard.offsetWidth : 216;
-      const panelHeight = radialLayout === "wheel" && panelRect.height > 0
-        ? helpCard.offsetHeight
-        : window.matchMedia("(any-pointer: coarse)").matches ? 150 : 104;
-      const halfW = wheelWidth / 2;
-      const halfH = wheelHeight / 2;
-      const inset = 8;
-      const gap = 12;
-      const prose = selection.position.proseBox;
-      const anchor = selection.position.anchorBox;
-      const focus = selection.position.focusBox;
-      const proseUsable = prose.right > prose.left && prose.bottom > prose.top;
-      const focusCenterX = (focus.left + focus.right) / 2;
-      const focusCenterY = (focus.top + focus.bottom) / 2;
-      const clampedWheelX = Math.min(Math.max(focusCenterX, stage.left + inset + halfW), stage.right - inset - halfW);
-      const clampedWheelY = Math.min(Math.max(focusCenterY, stage.top + inset + halfH), stage.bottom - inset - halfH);
-      const centers = [
-        ...(proseUsable ? [
-          { x: prose.right + gap + halfW, y: clampedWheelY, priority: 0 },
-          { x: prose.left - gap - halfW, y: clampedWheelY, priority: 1 },
-        ] : []),
-        { x: clampedWheelX, y: focus.top - gap - halfH, priority: 2 },
-        { x: clampedWheelX, y: focus.bottom + gap + halfH, priority: 3 },
-        { x: stage.right - inset - halfW, y: centerY, priority: 4 },
-        { x: stage.left + inset + halfW, y: centerY, priority: 5 },
-      ];
-      const expandedAnchor = {
-        left: anchor.left - gap,
-        right: anchor.right + gap,
-        top: anchor.top - gap,
-        bottom: anchor.bottom + gap,
-      };
-      const intersects = (
-        a: { left: number; right: number; top: number; bottom: number },
-        b: { left: number; right: number; top: number; bottom: number },
-      ): boolean => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
-      const withinStage = (box: { left: number; right: number; top: number; bottom: number }): boolean => (
-        box.left >= stage.left + inset
-        && box.right <= stage.right - inset
-        && box.top >= stage.top + inset
-        && box.bottom <= stage.bottom - inset
-      );
-      const panelSides: readonly RadialPlacement["panelSide"][] = ["right", "left", "bottom", "top"];
-      const candidates: Array<RadialPlacement & { score: number }> = [];
-      for (const candidate of centers) {
-        const wheelBox = {
-          left: candidate.x - halfW,
-          right: candidate.x + halfW,
-          top: candidate.y - halfH,
-          bottom: candidate.y + halfH,
-        };
-        if (!withinStage(wheelBox) || intersects(wheelBox, expandedAnchor)) continue;
-        panelSides.forEach((panelSide, panelPriority) => {
-          const panelBox = panelSide === "right" ? {
-            left: wheelBox.right + gap,
-            right: wheelBox.right + gap + panelWidth,
-            top: candidate.y - panelHeight / 2,
-            bottom: candidate.y + panelHeight / 2,
-          } : panelSide === "left" ? {
-            left: wheelBox.left - gap - panelWidth,
-            right: wheelBox.left - gap,
-            top: candidate.y - panelHeight / 2,
-            bottom: candidate.y + panelHeight / 2,
-          } : panelSide === "bottom" ? {
-            left: candidate.x - panelWidth / 2,
-            right: candidate.x + panelWidth / 2,
-            top: wheelBox.bottom + gap,
-            bottom: wheelBox.bottom + gap + panelHeight,
-          } : {
-            left: candidate.x - panelWidth / 2,
-            right: candidate.x + panelWidth / 2,
-            top: wheelBox.top - gap - panelHeight,
-            bottom: wheelBox.top - gap,
-          };
-          if (!withinStage(panelBox) || intersects(panelBox, expandedAnchor)) return;
-          candidates.push({
-            nonce: selection.nonce,
-            layout: "wheel",
-            centerX: candidate.x,
-            centerY: candidate.y,
-            panelSide,
-            score: candidate.priority * 100 + panelPriority * 10
-              + Math.abs(candidate.x - focusCenterX) / Math.max(1, effectiveStageBounds.width),
-          });
-        });
-      }
-      candidates.sort((a, b) => a.score - b.score);
-      const winner = candidates[0];
-      const next: RadialPlacement = winner
-        ? {
-            nonce: winner.nonce,
-            layout: winner.layout,
-            centerX: winner.centerX,
-            centerY: winner.centerY,
-            panelSide: winner.panelSide,
-          }
-        : { nonce: selection.nonce, layout: "sheet", centerX, centerY, panelSide: "bottom" };
-      setRadialPlacement((current) => current
-        && current.nonce === next.nonce
-        && current.layout === next.layout
-        && current.panelSide === next.panelSide
-        && Math.abs(current.centerX - next.centerX) < 0.1
-        && Math.abs(current.centerY - next.centerY) < 0.1
-        ? current
-        : next);
-    };
-    const schedule = (): void => {
-      if (frame) return;
-      frame = window.requestAnimationFrame(() => {
-        frame = 0;
-        place();
-      });
-    };
-    place();
-    const observer = new ResizeObserver(schedule);
-    observer.observe(wheel);
-    observer.observe(helpCard);
-    void document.fonts?.ready.then(schedule);
-    document.fonts?.addEventListener("loadingdone", schedule);
-    return () => {
-      cancelled = true;
-      observer.disconnect();
-      document.fonts?.removeEventListener("loadingdone", schedule);
-      if (frame) window.cancelAnimationFrame(frame);
-    };
-  }, [
-    effectiveStageBounds.bottom,
-    effectiveStageBounds.height,
-    effectiveStageBounds.left,
-    effectiveStageBounds.top,
-    effectiveStageBounds.width,
-    radialLayout,
-    radialLayoutHint,
-    selection,
-    suppressPaletteForAutoApply,
-    surface,
-  ]);
-
-  useLayoutEffect(() => {
-    if (surface !== "rail" || !railTrayShouldRender) {
-      setRailTrayPlacement(null);
-      return;
-    }
-    const panel = railTrayRef.current;
-    const railNode = railRef.current;
-    if (!panel || !railNode) return;
-    let frame = 0;
-    let cancelled = false;
-    const place = (): void => {
-      if (cancelled) return;
-      const panelRect = panel.getBoundingClientRect();
-      const railRect = railNode.getBoundingClientRect();
-      if (panelRect.width <= 0 || panelRect.height <= 0 || railRect.width <= 0) return;
-      const inset = 8;
-      const header = panel.querySelector<HTMLElement>(".marking-rail-tray-header");
-      const body = panel.querySelector<HTMLElement>(".marking-rail-tray-body");
-      const footer = panel.querySelector<HTMLElement>(".marking-rail-tray-help");
-      const naturalPanelHeight = Math.min(
-        effectiveStageBounds.height - inset * 2,
-        Math.max(
-          panelRect.height,
-          (header?.offsetHeight ?? 0) + (body?.scrollHeight ?? 0) + (footer?.offsetHeight ?? 0) + 2,
-        ),
-      );
-      const nativeSelection = window.getSelection();
-      const nativeRangeRect = selection && nativeSelection?.rangeCount
-        ? nativeSelection.getRangeAt(0).getBoundingClientRect()
-        : null;
-      const hasLiveRange = Boolean(nativeRangeRect && nativeRangeRect.width > 0 && nativeRangeRect.height > 0);
-      // Prefer the browser's live Range because it includes font/theme pixels
-      // that are deliberately absent from the painted-fragment union. The
-      // stored box remains the durable fallback after native selection loss.
-      // Keep a generous instrument-to-prose buffer. Focus transfer can shift
-      // the browser Range by a few pixels after the first placement frame;
-      // 28px leaves the promised 12px quiet zone intact after that movement.
-      const phraseGap = 28;
-      const railGap = 4;
-      const openerRect = trayOpenerRef.current?.getBoundingClientRect();
-      const anchorRect = hasLiveRange ? nativeRangeRect! : selection?.position.anchorBox ?? openerRect ?? railRect;
-      const anchor = {
-        left: anchorRect.left - effectiveStageBounds.left,
-        top: anchorRect.top - effectiveStageBounds.top,
-        right: anchorRect.right - effectiveStageBounds.left,
-        bottom: anchorRect.bottom - effectiveStageBounds.top,
-      };
-      const railBox = {
-        left: railRect.left - effectiveStageBounds.left - railGap,
-        top: railRect.top - effectiveStageBounds.top - railGap,
-        right: railRect.right - effectiveStageBounds.left + railGap,
-        bottom: railRect.bottom - effectiveStageBounds.top + railGap,
-      };
-      const avoidBox = {
-        left: anchor.left - phraseGap,
-        top: anchor.top - phraseGap,
-        right: anchor.right + phraseGap,
-        bottom: anchor.bottom + phraseGap,
-      };
-      const maxLeft = Math.max(inset, effectiveStageBounds.width - panelRect.width - inset);
-      const maxTop = Math.max(inset, effectiveStageBounds.height - naturalPanelHeight - inset);
-      const clamp = (value: number, minimum: number, maximum: number): number => Math.min(Math.max(value, minimum), maximum);
-      const intersects = (
-        box: { left: number; top: number; right: number; bottom: number },
-        obstacle: { left: number; top: number; right: number; bottom: number },
-      ): boolean => box.left < obstacle.right
-        && box.right > obstacle.left
-        && box.top < obstacle.bottom
-        && box.bottom > obstacle.top;
-      const centerX = (anchor.left + anchor.right) / 2;
-      const centerY = (anchor.top + anchor.bottom) / 2;
-      type Candidate = Pick<RailTrayPlacement, "left" | "top" | "placement"> & { priority: number };
-      const rawCandidates: Candidate[] = [
-        railLayout === "side"
-          ? {
-              placement: "rail",
-              left: railRect.right - effectiveStageBounds.left + 8,
-              top: anchor.top - 8,
-              priority: 0,
-            }
-          : {
-              placement: "rail",
-              left: centerX - panelRect.width / 2,
-              top: railRect.top - effectiveStageBounds.top - phraseGap - naturalPanelHeight,
-              priority: 0,
-            },
-        {
-          placement: "above",
-          left: centerX - panelRect.width / 2,
-          top: anchor.top - phraseGap - naturalPanelHeight,
-          priority: 1,
-        },
-        {
-          placement: "below",
-          left: centerX - panelRect.width / 2,
-          top: anchor.bottom + phraseGap,
-          priority: 2,
-        },
-        {
-          placement: "right",
-          left: anchor.right + phraseGap,
-          top: centerY - naturalPanelHeight / 2,
-          priority: 3,
-        },
-        {
-          placement: "left",
-          left: anchor.left - phraseGap - panelRect.width,
-          top: centerY - naturalPanelHeight / 2,
-          priority: 4,
-        },
-      ];
-      const candidates = rawCandidates.map((candidate) => ({
-        ...candidate,
-        left: clamp(candidate.left, inset, maxLeft),
-        top: clamp(candidate.top, inset, maxTop),
-      }));
-      const legal = candidates.filter((candidate) => {
-        const box = {
-          left: candidate.left,
-          top: candidate.top,
-          right: candidate.left + panelRect.width,
-          bottom: candidate.top + naturalPanelHeight,
-        };
-        return !intersects(box, avoidBox) && !intersects(box, railBox);
-      });
-      const winner = legal.sort((left, right) => {
-        if (left.priority !== right.priority) return left.priority - right.priority;
-        const leftDistance = (left.left + panelRect.width / 2 - centerX) ** 2
-          + (left.top + naturalPanelHeight / 2 - centerY) ** 2;
-        const rightDistance = (right.left + panelRect.width / 2 - centerX) ** 2
-          + (right.top + naturalPanelHeight / 2 - centerY) ** 2;
-        return leftDistance - rightDistance;
-      })[0];
-      let next: RailTrayPlacement;
-      if (winner) {
-        next = {
-          left: winner.left,
-          top: winner.top,
-          // This is an upper bound, not the tray's current measured height.
-          // Intent, pigment, and relationship contents have different natural
-          // heights; capping to the first one creates a self-locking ResizeObserver
-          // loop where later content can never grow enough to be measured.
-          maxHeight: Math.max(1, effectiveStageBounds.height - inset * 2),
-          height: undefined,
-          placement: winner.placement,
-        };
-      } else {
-        // When the full tray cannot fit beside a phrase, keep the phrase clear
-        // and let the existing tray body scroll inside the larger free region.
-        const usableBottom = railLayout === "bottom"
-          ? Math.min(effectiveStageBounds.height - inset, railBox.top)
-          : effectiveStageBounds.height - inset;
-        const aboveSpace = Math.max(0, anchor.top - phraseGap - inset);
-        const belowSpace = Math.max(0, usableBottom - anchor.bottom - phraseGap);
-        const placement = belowSpace > aboveSpace ? "below" : "above";
-        const maxHeight = Math.max(1, Math.min(naturalPanelHeight, Math.max(aboveSpace, belowSpace)));
-        next = {
-          left: clamp(centerX - panelRect.width / 2, inset, maxLeft),
-          top: placement === "below" ? anchor.bottom + phraseGap : anchor.top - phraseGap - maxHeight,
-          maxHeight,
-          height: maxHeight,
-          placement,
-        };
-      }
-      setRailTrayPlacement((current) => current
-        && Math.abs(current.left - next.left) < 0.1
-        && Math.abs(current.top - next.top) < 0.1
-        && Math.abs(current.maxHeight - next.maxHeight) < 0.1
-        && Math.abs((current.height ?? 0) - (next.height ?? 0)) < 0.1
-        && current.placement === next.placement
-        ? current
-        : next);
-    };
-    const schedule = (): void => {
-      if (frame) return;
-      frame = window.requestAnimationFrame(() => {
-        frame = 0;
-        place();
-      });
-    };
-    place();
-    const observer = new ResizeObserver(schedule);
-    observer.observe(panel);
-    observer.observe(railNode);
-    panel.addEventListener("focusin", schedule);
-    void document.fonts?.ready.then(schedule);
-    schedule();
-    return () => {
-      cancelled = true;
-      observer.disconnect();
-      panel.removeEventListener("focusin", schedule);
-      if (frame) window.cancelAnimationFrame(frame);
-    };
-  }, [
-    effectiveStageBounds.height,
-    effectiveStageBounds.left,
-    effectiveStageBounds.top,
-    effectiveStageBounds.width,
-    railLayout,
-    railTrayShouldRender,
-    selection?.nonce,
-    selection?.position.anchorBox.bottom,
-    selection?.position.anchorBox.left,
-    selection?.position.anchorBox.right,
-    selection?.position.anchorBox.top,
-    surface,
-    tray,
-  ]);
 
   const openTray = (next: "wash" | "connect", opener: HTMLButtonElement, focusChoices = true): void => {
     clearPendingFocusRestore();
@@ -1408,8 +986,6 @@ export function MarkingSurface({
     trayOpenerModeRef.current = next;
     trayShouldFocusRef.current = focusChoices;
     setSelectionFailure(null);
-    setRailHelp(null);
-    setRailTrayPlacement(null);
     setDockHelp(null);
     setTray(next);
   };
@@ -1418,8 +994,6 @@ export function MarkingSurface({
     const opener = trayOpenerRef.current;
     const openerMode = trayOpenerModeRef.current;
     setTray(null);
-    setRailHelp(null);
-    setRailTrayPlacement(null);
     setDockHelp(null);
     if (tool?.type === "wash") setStatus("Select words to lay this wash.");
     else if (tool?.type === "connect") setStatus("Select words to add the next relationship phrase.");
@@ -1442,7 +1016,7 @@ export function MarkingSurface({
         opener.focus({ preventScroll: true });
         return;
       }
-      const toolbar = surface === "rail" ? railRef.current : dockModesRef.current;
+      const toolbar = dockModesRef.current;
       const fallback = surface === "dock"
         ? toolbar?.querySelector<HTMLButtonElement>('button[role="radio"][aria-checked="true"]')
         : [...(toolbar?.querySelectorAll<HTMLButtonElement>("button") ?? [])]
@@ -1798,21 +1372,12 @@ export function MarkingSurface({
     setPaletteHelp(null);
     setPalettePlacement(null);
     setConsumingSelectionNonce(null);
-    setRadialHelp(null);
-    setRadialPlacement(null);
-    radialRoving.setActiveIndex(0);
-    setRailHelp(null);
-    setRailTrayPlacement(null);
     setDockHelp(null);
     setStatus(REST_GUIDANCE);
   }, [contextKey]);
 
   useEffect(() => {
     setPaletteHelp(null);
-    setRadialHelp(null);
-    radialRoving.setActiveIndex(0);
-    setRailHelp(null);
-    setRailTrayPlacement(null);
     railRoving.setActiveIndex(0);
     setDockHelp(null);
     dockIntentRoving.setActiveIndex(0);
@@ -1898,10 +1463,6 @@ export function MarkingSurface({
     if (activeSelectionNonce == null || persistentSurface || tool) return;
     if (surface === "palette" && palettePlacement?.nonce !== activeSelectionNonce) return;
     const timer = window.setTimeout(() => {
-      if (surface === "radial") {
-        radialRoving.setActiveIndex(0);
-        setRadialHelp(RELATIONSHIPS[0] ?? null);
-      }
       // Focus transfers into the toolbar only for keyboard users; for pointer
       // and screen-reader users the jump would yank them out of the text.
       if (lastInputModality() === "keyboard") {
@@ -1911,12 +1472,6 @@ export function MarkingSurface({
     return () => window.clearTimeout(timer);
   }, [activeSelectionNonce, palettePlacement?.nonce, persistentSurface, surface, tool]);
 
-  useEffect(() => {
-    if (surface !== "rail" || activeSelectionNonce == null || tool || tray != null || !railIntentFocusReady) return;
-    if (lastInputModality() !== "keyboard") return;
-    const timer = window.setTimeout(() => firstChoiceRef.current?.focus({ preventScroll: true }), 0);
-    return () => window.clearTimeout(timer);
-  }, [activeSelectionNonce, railIntentFocusReady, surface, tool, tray]);
 
   useEffect(() => {
     if (surface !== "dock" || activeSelectionNonce == null) return;
@@ -1955,7 +1510,7 @@ export function MarkingSurface({
     const onMouseDown = (event: MouseEvent): void => {
       const target = event.target;
       if (!(target instanceof Node)) return;
-      if (railTrayRef.current?.contains(target) || trayPanelRef.current?.contains(target) || trayOpenerRef.current?.contains(target)) return;
+      if (trayPanelRef.current?.contains(target) || trayOpenerRef.current?.contains(target)) return;
       closeTray(false);
     };
     document.addEventListener("mousedown", onMouseDown);
@@ -2385,432 +1940,6 @@ export function MarkingSurface({
       </div>
     );
     return createPortal(content, document.body);
-  }
-
-  if (surface === "radial") {
-    if (!selection && !session && !tool && !busy) return null;
-    const materialClass = `${isDarkTheme(theme) ? "dark " : ""}theme-${theme}`;
-    const visibleSelection = selection && !suppressPaletteForAutoApply ? selection : null;
-    const placement = visibleSelection && radialPlacement?.nonce === visibleSelection.nonce ? radialPlacement : null;
-    const radialCenterX = placement?.centerX ?? effectiveStageBounds.left + effectiveStageBounds.width / 2;
-    const radialCenterY = placement?.centerY ?? effectiveStageBounds.top + effectiveStageBounds.height / 2;
-    // The spotlight belongs to the whole selected phrase. `focusBox` is the
-    // final painted fragment and remains useful for collision placement, but
-    // centering atmosphere on it visibly misses wrapped selections.
-    const radialFocusBox = visibleSelection?.position.anchorBox;
-    const radialFocusX = radialFocusBox
-      ? (radialFocusBox.left + radialFocusBox.right) / 2
-      : radialCenterX;
-    const radialFocusY = radialFocusBox
-      ? (radialFocusBox.top + radialFocusBox.bottom) / 2
-      : radialCenterY;
-    const radialArmedTool = keepActive ? tool : null;
-    const { key: radialArmedKey, label: radialArmedLabel, guidance: radialArmedGuidance } = describeArmedTool(radialArmedTool);
-    const radialFeedback = captureFeedback
-      ?? (status.includes("could not") || status.includes("Finishing") || status.includes("restored")
-        ? status
-        : null);
-    const radialHelpCopy = radialFeedback
-      ?? (keepActive
-        ? "The next wash or connection you choose will remain in hand."
-        : radialHelp?.description
-          ?? (visibleSelection?.mixedColors
-            ? "Mixed washes selected — choose one to unify them."
-            : radialLayout === "wheel"
-              ? "Connections arc above. Quiet pigments settle below."
-              : "Choose a relationship or a quiet wash."));
-    const handleRadialKeyDown = (event: React.KeyboardEvent<HTMLDivElement>): void => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        event.stopPropagation();
-        if (busy || activeOperation.current != null) {
-          setStatus("Finishing the current change · your selected words remain held.");
-          return;
-        }
-        onDismissSelection();
-        return;
-      }
-      if (event.key !== "Tab") return;
-      const buttons = [...(radialRef.current?.querySelectorAll<HTMLButtonElement>("button:not([disabled])") ?? [])]
-        .filter((button) => button.tabIndex >= 0 && button.getClientRects().length > 0);
-      if (buttons.length === 0) return;
-      const first = buttons[0];
-      const last = buttons[buttons.length - 1];
-      const active = document.activeElement;
-      if (event.shiftKey && (active === first || !radialRef.current?.contains(active))) {
-        event.preventDefault();
-        last?.focus({ preventScroll: true });
-      } else if (!event.shiftKey && active === last) {
-        event.preventDefault();
-        first?.focus({ preventScroll: true });
-      }
-    };
-    const radial = (
-      <div
-        className={`marking-floating-host ${materialClass}`}
-        data-marking-surface="radial"
-        data-focus-ring={focusRingMode}
-        data-stage-size={stageClass}
-        data-radial-layout={radialLayout}
-        data-selection-capture={selection?.capture.status ?? "none"}
-        data-radial-compact={effectiveStageBounds.width < 352 ? "true" : "false"}
-        data-radial-ultra-compact={effectiveStageBounds.width < 240 ? "true" : "false"}
-        data-tool-armed={radialArmedKey ?? "false"}
-        data-floating-layer="toolbar"
-        style={{
-          ...floatingStageStyle,
-          "--mark-radial-cx": `${radialCenterX - effectiveStageBounds.left}px`,
-          "--mark-radial-cy": `${radialCenterY - effectiveStageBounds.top}px`,
-          "--mark-radial-focus-x": `${radialFocusX - effectiveStageBounds.left}px`,
-          "--mark-radial-focus-y": `${radialFocusY - effectiveStageBounds.top}px`,
-        } as React.CSSProperties}
-      >
-        {visibleSelection && (
-          <div className="marking-radial-scrim" role="presentation" onPointerDown={(event) => {
-            if (event.target !== event.currentTarget) return;
-            // Keep the scrim mounted through pointerup/click so this gesture
-            // cannot retarget the Scripture underneath as Radial disappears.
-            event.preventDefault();
-            event.stopPropagation();
-          }} onClick={(event) => {
-            if (event.target !== event.currentTarget) return;
-            event.preventDefault();
-            event.stopPropagation();
-            if (busy || activeOperation.current != null) {
-              setStatus("Finishing the current change · your selected words remain held.");
-              return;
-            }
-            onDismissSelection();
-          }}>
-            <div
-              key={visibleSelection.nonce}
-              ref={radialRef}
-              className={`marking-radial${placement ? " is-placed" : " is-measuring"}`}
-              role="dialog"
-              aria-busy={busy}
-              aria-label="Radial marking menu"
-              data-panel-side={placement?.panelSide ?? "right"}
-              onKeyDown={handleRadialKeyDown}
-              style={{
-                left: radialCenterX,
-                top: radialCenterY,
-                visibility: radialLayout === "sheet" || placement ? "visible" : "hidden",
-              }}
-            >
-              <div className="marking-radial-disc" aria-hidden="true" />
-              <div className="marking-radial-group marking-radial-connections" role="group" aria-label="Connections">
-                <span className="marking-radial-group-label">Connections</span>
-                {radialButtons.relationAngles.map(({ option, angle }, index) => {
-                  const radians = angle * Math.PI / 180;
-                  const style = {
-                    left: `calc(50% + ${Math.cos(radians) * radialPetalRadius}px)`,
-                    top: `calc(50% + ${Math.sin(radians) * radialPetalRadius}px)`,
-                    "--mark-delay": `${RADIAL_RELATION_DELAYS[index]}ms`,
-                  } as React.CSSProperties;
-                  return (
-                    <button
-                      key={option.id}
-                      ref={(node) => {
-                        radialRoving.refs.current[index] = node;
-                        if (index === 0) firstChoiceRef.current = node;
-                      }}
-                      type="button"
-                      className={`marking-radial-petal marking-kind-${option.id.replace("link:", "")}${currentKind === option.id ? " active" : ""}`}
-                      style={style}
-                      data-relationship-kind={option.id}
-                      aria-label={option.label}
-                      aria-describedby="marking-radial-help"
-                      aria-pressed={currentKind === option.id}
-                      title={option.description}
-                      disabled={busy}
-                      tabIndex={radialRoving.activeIndex === index ? 0 : -1}
-                      onMouseDown={(event) => event.preventDefault()}
-                      onMouseEnter={() => setRadialHelp(option)}
-                      onMouseLeave={(event) => {
-                        if (document.activeElement !== event.currentTarget) setRadialHelp(null);
-                      }}
-                      onFocus={() => {
-                        radialRoving.setActiveIndex(index);
-                        setRadialHelp(option);
-                      }}
-                      onBlur={(event) => {
-                        if (!event.currentTarget.matches(":hover")) setRadialHelp(null);
-                      }}
-                      onKeyDown={(event) => { radialRoving.onKeyDown(event, index); }}
-                      onClick={() => chooseConnection(option.id)}
-                    ><RelationshipGlyph kind={option.id} /><span className="marking-radial-petal-label" aria-hidden="true">{option.label}</span></button>
-                  );
-                })}
-              </div>
-              <div className="marking-radial-group marking-radial-highlights" role="group" aria-label="Highlights">
-                <span className="marking-radial-group-label">Highlights</span>
-                {radialButtons.pigmentAngles.map(({ option, angle }, index) => {
-                  const radialIndex = RELATIONSHIPS.length + index;
-                  const radians = angle * Math.PI / 180;
-                  const style = {
-                    left: `calc(50% + ${Math.cos(radians) * radialPetalRadius}px)`,
-                    top: `calc(50% + ${Math.sin(radians) * radialPetalRadius}px)`,
-                    "--mark-delay": `${RADIAL_PIGMENT_DELAYS[index]}ms`,
-                  } as React.CSSProperties;
-                  const active = (currentWash ?? selectedWash) === option.id;
-                  return (
-                    <button
-                      key={option.id}
-                      ref={(node) => { radialRoving.refs.current[radialIndex] = node; }}
-                      type="button"
-                      className={`marking-radial-petal marking-radial-wash${active ? " active" : ""}`}
-                      style={style}
-                      data-pigment={option.id}
-                      aria-label={`${option.label} wash`}
-                      aria-describedby="marking-radial-help"
-                      aria-pressed={active}
-                      title={option.description}
-                      disabled={busy}
-                      tabIndex={radialRoving.activeIndex === radialIndex ? 0 : -1}
-                      onMouseDown={(event) => event.preventDefault()}
-                      onMouseEnter={() => setRadialHelp(option)}
-                      onMouseLeave={(event) => {
-                        if (document.activeElement !== event.currentTarget) setRadialHelp(null);
-                      }}
-                      onFocus={() => {
-                        radialRoving.setActiveIndex(radialIndex);
-                        setRadialHelp(option);
-                      }}
-                      onBlur={(event) => {
-                        if (!event.currentTarget.matches(":hover")) setRadialHelp(null);
-                      }}
-                      onKeyDown={(event) => { radialRoving.onKeyDown(event, radialIndex); }}
-                      onClick={() => chooseWash(option.id)}
-                    ><PigmentSwatch color={option.id} /><span className="marking-radial-petal-label" aria-hidden="true">{option.label}</span></button>
-                  );
-                })}
-              </div>
-              <div className="marking-radial-hub">
-                <span aria-hidden="true">Mark</span>
-                <button
-                  type="button"
-                  className={`marking-radial-keep${keepActive ? " active" : ""}`}
-                  aria-label={keepActive ? "Tool will stay active" : "Keep next wash or connection active"}
-                  title={keepActive ? "Tool will stay active" : "Keep next wash or connection active"}
-                  aria-pressed={keepActive}
-                  disabled={busy}
-                  onMouseDown={(event) => event.preventDefault()}
-                  onClick={() => { setKeepActive((current) => !current); setRadialHelp(null); }}
-                ><PaletteHeaderGlyph icon="pin" /></button>
-              </div>
-              <aside ref={radialHelpCardRef} className="marking-radial-help-card">
-                <div className="marking-radial-context">
-                  <span className="marking-radial-range">{visibleSelection.rangeLabel}</span>
-                  <q title={visibleSelection.quote}>“{visibleSelection.quote}”</q>
-                </div>
-                <span id="marking-radial-help" className={`marking-radial-help${radialFeedback ? " feedback" : ""}`}>
-                  <strong>{radialFeedback ? "Selection held" : radialHelp?.label ?? "Mark selection"}</strong>
-                  <small>{radialHelpCopy}</small>
-                </span>
-                <div className="marking-radial-card-actions">
-                  <button type="button" aria-label="Add note" title="Add note" disabled={busy} onMouseDown={(event) => event.preventDefault()} onClick={chooseNote}><PaletteHeaderGlyph icon="note" /></button>
-                  {visibleSelection.hasExistingHighlight && <button type="button" aria-label={visibleSelection.phraseMode ? "Remove selected text from wash" : "Remove wash"} title="Remove wash" disabled={busy} onMouseDown={(event) => event.preventDefault()} onClick={chooseErase}><PaletteHeaderGlyph icon="erase" /></button>}
-                  <button type="button" className="marking-radial-close" aria-label="Close radial menu" title="Close" disabled={busy} onMouseDown={(event) => event.preventDefault()} onClick={onDismissSelection}><PaletteHeaderGlyph icon="close" /></button>
-                </div>
-              </aside>
-            </div>
-          </div>
-        )}
-        {sessionNode}
-        {exitGuardNode}
-        {!visibleSelection && !session && radialArmedTool && (
-          <div className="marking-armed-status" role="status" aria-live="polite" data-tool-armed={radialArmedKey}>
-            <span className="marking-armed-tag">{radialArmedLabel}</span>
-            <span className="marking-armed-copy">{radialArmedGuidance}</span>
-            <button type="button" onClick={() => putDownTool()}>Put down</button>
-          </div>
-        )}
-        {!visibleSelection && !session && !radialArmedTool && busy && (
-          <div className="marking-armed-status" role="status" aria-live="polite" aria-busy="true">
-            <span className="marking-armed-tag">Saving mark</span>
-            <span className="marking-armed-copy">{status}</span>
-          </div>
-        )}
-      </div>
-    );
-    return createPortal(radial, document.body);
-  }
-
-  if (surface === "rail") {
-    const railTrayOpen = railTrayShouldRender;
-    const railStatusVisible = !railTrayOpen && Boolean(tool) && !session;
-    // Keep the full selected quotation in the document. CSS may ellipsize the
-    // single-line preview, but the accessible text and title must never lose
-    // words from the user's exact selection.
-    const railQuote = selection?.quote ?? "";
-    const railTrayTitle = tray === "wash" ? "Wash" : tray === "connect" ? "Connect" : "Mark selection";
-    const railTraySubtitle = selection
-      ? railQuote
-      : tray === "wash" || tray === "connect" ? "Choose the tool to carry" : "";
-    const railDefaultHelp = tray === "wash"
-      ? "Choose a quiet wash."
-      : tray === "connect" ? "Choose how these words relate." : "Choose a path for these words.";
-    const railRetryFeedback = status.endsWith("Selection restored for retry.") ? status : null;
-    const railTrayStyle = {
-      left: railTrayPlacement?.left ?? 8,
-      top: railTrayPlacement?.top ?? 8,
-      bottom: "auto",
-      height: railTrayPlacement?.height,
-      maxHeight: railTrayPlacement?.maxHeight,
-      transform: "none",
-      visibility: railTrayPlacement ? "visible" : "hidden",
-    } as React.CSSProperties;
-    const railToolLabel = tool?.type === "wash" ? `${pigmentLabel(tool.color)} wash`
-      : tool?.type === "connect" ? relationshipLabel(tool.kind)
-        : tool?.type === "note" ? "Note" : tool?.type === "erase" ? "Erase" : "";
-    const railToolGuidance = tool?.type === "connect"
-      ? "Select words to add the next relationship phrase."
-      : tool?.type === "wash" ? "Select words to lay this wash."
-        : tool?.type === "note" ? "Select a passage to open a note."
-          : "Select a passage with a wash to remove its mark.";
-    const railArmedKey = tool?.type === "wash" ? `wash:${tool.color}`
-      : tool?.type === "connect" ? `connect:${tool.kind}`
-        : tool?.type ?? "false";
-    const closeRailPanel = (): void => {
-      if (tray === "wash" || tray === "connect") {
-        closeTray(true);
-        return;
-      }
-      onDismissSelection();
-    };
-    return (
-      <div className="marking-rail-host" data-marking-surface="rail" data-focus-ring={focusRingMode} data-rail-layout={railLayout} data-selection-capture={selection?.capture.status ?? "none"} data-tool-armed={railArmedKey}>
-        {sessionNode}
-        {exitGuardNode}
-        <div ref={railRef} className="marking-rail" role="toolbar" aria-label="Pen Rail" aria-orientation={railLayout === "side" ? "vertical" : "horizontal"}>
-          <button
-            ref={(node) => { railRoving.refs.current[0] = node; }}
-            type="button"
-            disabled={busy || !!session}
-            className={tool?.type === "wash" ? "active" : ""}
-            aria-label={currentWash ? `Wash: ${pigmentLabel(currentWash)}` : "Wash"}
-            aria-pressed={tool?.type === "wash"}
-            aria-haspopup="dialog"
-            aria-expanded={tray === "wash"}
-            aria-controls="marking-rail-tray"
-            data-rail-tool="wash"
-            data-tooltip={currentWash ? `Highlight · ${pigmentLabel(currentWash)}` : "Highlight"}
-            tabIndex={railRoving.activeIndex === 0 ? 0 : -1}
-            onFocus={() => railRoving.setActiveIndex(0)}
-            onKeyDown={(event) => railRoving.onKeyDown(event, 0)}
-            onClick={(event) => { if (tray === "wash") closeTray(false); else openTray("wash", event.currentTarget); }}
-          ><ToolGlyph tool="wash" /><span className={`marking-tool-tone tone-${currentWash ?? "yellow"}`} /></button>
-          <button
-            ref={(node) => { railRoving.refs.current[1] = node; }}
-            type="button"
-            disabled={busy || !!session}
-            className={`${tool?.type === "connect" ? "active" : ""}${currentKind ? ` marking-kind-${currentKind.replace("link:", "")}` : ""}`}
-            aria-label={currentKind ? `Connect: ${relationshipLabel(currentKind)}` : "Connect"}
-            aria-pressed={tool?.type === "connect"}
-            aria-haspopup="dialog"
-            aria-expanded={tray === "connect"}
-            aria-controls="marking-rail-tray"
-            data-rail-tool="connect"
-            data-tooltip={currentKind ? `Connect · ${relationshipLabel(currentKind)}` : "Connect"}
-            tabIndex={railRoving.activeIndex === 1 ? 0 : -1}
-            onFocus={() => railRoving.setActiveIndex(1)}
-            onKeyDown={(event) => railRoving.onKeyDown(event, 1)}
-            onClick={(event) => { if (tray === "connect") closeTray(false); else openTray("connect", event.currentTarget); }}
-          ><ToolGlyph tool="connect" /></button>
-          <button
-            ref={(node) => { railRoving.refs.current[2] = node; }}
-            type="button"
-            disabled={busy || !!session}
-            className={tool?.type === "note" ? "active" : ""}
-            aria-label="Note"
-            aria-pressed={tool?.type === "note"}
-            data-rail-tool="note"
-            data-tooltip="Note"
-            tabIndex={railRoving.activeIndex === 2 ? 0 : -1}
-            onFocus={() => railRoving.setActiveIndex(2)}
-            onKeyDown={(event) => railRoving.onKeyDown(event, 2)}
-            onClick={() => { if (tool?.type === "note") putDownTool(); else chooseNote(); }}
-          ><ToolGlyph tool="note" /></button>
-          <span className="marking-rail-divider" aria-hidden="true" />
-          <button
-            ref={(node) => { railRoving.refs.current[3] = node; }}
-            type="button"
-            disabled={busy || !!session}
-            className={tool?.type === "erase" ? "active marking-rail-erase" : "marking-rail-erase"}
-            aria-label="Erase"
-            aria-pressed={tool?.type === "erase"}
-            data-rail-tool="erase"
-            data-tooltip="Erase"
-            tabIndex={railRoving.activeIndex === 3 ? 0 : -1}
-            onFocus={() => railRoving.setActiveIndex(3)}
-            onKeyDown={(event) => railRoving.onKeyDown(event, 3)}
-            onClick={() => { if (tool?.type === "erase") putDownTool(); else chooseErase(); }}
-          ><ToolGlyph tool="erase" /></button>
-        </div>
-        {railTrayOpen && (
-          <div
-            id="marking-rail-tray"
-            ref={railTrayRef}
-            className={`marking-rail-tray${railTrayPlacement ? " is-placed" : ""}`}
-            role="dialog"
-            aria-label={tray === "wash" ? "Choose a wash" : tray === "connect" ? "Choose a connection" : "Mark selected text"}
-            data-rail-tray-mode={tray ?? "intent"}
-            data-rail-tray-placement={railTrayPlacement?.placement}
-            style={railTrayStyle}
-          >
-            <header className="marking-rail-tray-header">
-              <div className="marking-rail-tray-copy">
-                <span>{railTrayTitle}{selection ? <><i aria-hidden="true"> · </i>{selection.rangeLabel}</> : null}</span>
-                {selection
-                  ? <q title={selection.quote}>“{railTraySubtitle}”</q>
-                  : <small>{railTraySubtitle}</small>}
-              </div>
-              <button type="button" className="marking-rail-tray-close" aria-label="Close Pen Rail tray" onClick={closeRailPanel}><PaletteHeaderGlyph icon="close" /></button>
-            </header>
-            <div ref={trayPanelRef} className="marking-rail-tray-body">
-              {tray === "connect" ? (
-                <RelationshipChoices
-                  selected={currentKind}
-                  onChoose={chooseConnection}
-                  initialFocusRef={firstChoiceRef}
-                  onHelpChange={setRailHelp}
-                  helpId="marking-rail-help"
-                />
-              ) : tray === "wash" ? (
-                <PigmentChoices
-                  selected={currentWash ?? selectedWash}
-                  onChoose={chooseWash}
-                  initialFocusRef={firstChoiceRef}
-                  onHelpChange={setRailHelp}
-                  helpId="marking-rail-help"
-                />
-              ) : (
-                <div className="marking-rail-intents">
-                  <button ref={firstChoiceRef} type="button" className="marking-intent" onMouseDown={(event) => event.preventDefault()} onClick={(event) => openTray("wash", event.currentTarget)}>
-                    <ToolGlyph tool="wash" /><span><strong>Wash</strong><small>Lay a quiet wash</small></span>
-                  </button>
-                  <button type="button" className="marking-intent" onMouseDown={(event) => event.preventDefault()} onClick={(event) => openTray("connect", event.currentTarget)}>
-                    <ToolGlyph tool="connect" /><span><strong>Connect</strong><small>Relate these words</small></span>
-                  </button>
-                </div>
-              )}
-            </div>
-            <footer id="marking-rail-help" className="marking-rail-tray-help" aria-live="polite">
-              {captureFeedback ?? railHelp?.description ?? railRetryFeedback ?? railDefaultHelp}
-            </footer>
-          </div>
-        )}
-        {railStatusVisible && (
-          <div className="marking-rail-status" role="status" aria-live="polite">
-            <>
-              <span className="marking-rail-status-tag">{railToolLabel}</span>
-              <span className="marking-rail-status-copy">{status || railToolGuidance}</span>
-              <button type="button" className="marking-rail-put-down" onClick={() => putDownTool()}>Put down</button>
-            </>
-          </div>
-        )}
-      </div>
-    );
   }
 
   const chooseMode = (

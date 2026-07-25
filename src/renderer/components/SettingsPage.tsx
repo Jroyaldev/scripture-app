@@ -57,10 +57,8 @@ const MARKING_SURFACES: ReadonlyArray<{
   label: string;
   description: string;
 }> = [
-  { id: "palette", label: "Palette", description: "Appears beside the words you select." },
-  { id: "rail", label: "Pen Rail", description: "Keeps a compact tool strip beside the page." },
-  { id: "radial", label: "Radial", description: "Surrounds a selection with a focused marking wheel." },
-  { id: "dock", label: "Dock", description: "Keeps modes and context along the reading edge." },
+  { id: "palette", label: "Palette", description: "Floats beside the words you select. For a pointer." },
+  { id: "dock", label: "Dock", description: "Rests along the reading edge, in reach of a thumb." },
 ];
 
 function MarkingSurfacePreview({ surface }: { surface: MarkingSurface }): React.JSX.Element {
