@@ -6680,9 +6680,12 @@ html, body, #root {
   text-transform: uppercase;
 }
 
+/* Scope certainty is weight, not hue: a chosen range is ink, a followed verse
+   is ink-2. Gold is the seal and means "you wrote this"; spending it here
+   would make the accent mean two different things on one surface. */
 .living-margin[data-margin-mode="selection"] .margin-frame-mode,
 .living-margin[data-margin-mode="kept"] .margin-frame-mode {
-  color: var(--study-gold);
+  color: var(--text-primary);
 }
 
 .margin-frame-action {
@@ -7387,7 +7390,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 
 .entity-research-mode {
   color: var(--text-tertiary);
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 0.5625rem;
   letter-spacing: 0.065em;
   text-transform: uppercase;
@@ -7461,7 +7464,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 
 .entity-photo-caption > span {
   color: var(--text-tertiary);
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 0.46875rem;
   letter-spacing: 0.035em;
   text-transform: uppercase;
@@ -7530,7 +7533,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 
 .entity-photo-provenance dt {
   color: var(--text-tertiary);
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 0.46875rem;
   letter-spacing: 0.025em;
   text-transform: uppercase;
@@ -7575,7 +7578,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   gap: 6px;
   margin-bottom: 5px;
   color: var(--text-tertiary);
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 0.53125rem;
   letter-spacing: 0.055em;
   text-transform: uppercase;
@@ -7645,7 +7648,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 .entity-opening-context-head h3 {
   margin: 0;
   color: var(--text-tertiary);
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 0.5rem;
   font-weight: var(--fw-medium);
   letter-spacing: 0.045em;
@@ -7694,7 +7697,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 .entity-opening-context blockquote > span {
   padding-top: 2px;
   color: color-mix(in srgb, var(--study-gold) 76%, var(--text-tertiary));
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 0.5rem;
   font-variant-numeric: tabular-nums;
 }
@@ -7747,7 +7750,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 
 .entity-opening-context-refs > span {
   color: var(--text-tertiary);
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 0.46875rem;
 }
 
@@ -7828,7 +7831,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 .entity-relationship-label {
   padding-top: 6px;
   color: var(--text-tertiary);
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 0.5rem;
   letter-spacing: 0.025em;
   text-transform: uppercase;
@@ -7898,7 +7901,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 
 .entity-relationship-uncertain {
   color: var(--text-tertiary);
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 0.5rem;
 }
 
@@ -7921,7 +7924,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 .entity-map-grid path { fill: none; stroke: var(--map-grid); stroke-width: 0.6; stroke-dasharray: 2 4; }
 .entity-map-land path { fill: var(--map-land); stroke: var(--map-land-line); stroke-width: 0.55; vector-effect: non-scaling-stroke; }
 .entity-map-alternatives circle { fill: var(--map-alternative); stroke: var(--map-water); stroke-width: 1; }
-.entity-map-alternatives text { fill: var(--bg-reading); font-family: var(--font-mono); font-size: 4.8px; font-weight: var(--fw-semibold); }
+.entity-map-alternatives text { fill: var(--bg-reading); font-family: var(--font-ui); font-size: 4.8px; font-weight: var(--fw-semibold); }
 .entity-map-pleiades circle:first-child { fill: color-mix(in srgb, var(--bg-reading) 72%, transparent); stroke: var(--text-secondary); stroke-width: 1.1; }
 .entity-map-pleiades circle:last-child { fill: var(--text-secondary); }
 .entity-map-pulse { fill: color-mix(in srgb, var(--study-gold) 8%, transparent); stroke: color-mix(in srgb, var(--study-gold) 24%, transparent); stroke-width: 0.7; }
@@ -7944,7 +7947,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 
 .entity-minimap figcaption span:last-child {
   color: var(--text-tertiary);
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 0.5rem;
 }
 
@@ -8030,7 +8033,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   border-radius: 50%;
   background: color-mix(in srgb, var(--map-alternative) 16%, transparent);
   color: var(--text-tertiary);
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 0.46875rem;
   font-style: normal;
 }
@@ -8103,7 +8106,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 
 .entity-pleiades-lead > div > span {
   color: var(--text-tertiary);
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 0.5rem;
   font-variant-numeric: tabular-nums;
 }
@@ -8147,7 +8150,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 .entity-pleiades-connections > span {
   padding-top: 5px;
   color: var(--text-tertiary);
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 0.46875rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -8327,7 +8330,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 .entity-footprint-books button strong {
   flex: none;
   color: var(--text-tertiary);
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 0.5rem;
   font-weight: var(--fw-normal);
   font-variant-numeric: tabular-nums;
@@ -8382,7 +8385,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 }
 
 .entity-reference-group-head > span:last-child {
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-variant-numeric: tabular-nums;
 }
 
@@ -8461,7 +8464,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   border-radius: 0;
   background: transparent;
   color: var(--text-tertiary);
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 0.46875rem;
   font-weight: var(--fw-medium);
   letter-spacing: 0.025em;
@@ -8477,7 +8480,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   border-radius: 0;
   background: transparent;
   color: var(--text-tertiary);
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 0.4375rem;
   font-weight: var(--fw-medium);
   letter-spacing: 0.02em;
@@ -8493,7 +8496,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
   border-radius: 0;
   background: transparent;
   color: var(--text-tertiary);
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 0.4375rem;
   font-weight: var(--fw-medium);
   letter-spacing: 0.02em;
@@ -9408,7 +9411,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 }
 
 .lang-chip-id {
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-weight: 400;
   font-size: 10.5px;
   color: var(--text-tertiary);
@@ -9483,7 +9486,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 }
 
 .lang-form-code span {
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 11px;
   color: var(--text-tertiary);
 }
@@ -9532,7 +9535,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 }
 
 .lang-step-missing code {
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 10.5px;
   font-style: normal;
   color: var(--text-secondary);
@@ -9644,7 +9647,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 }
 
 .lang-name-strong {
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 10.5px;
 }
 
@@ -9837,7 +9840,7 @@ button.entity-research-breadcrumb:focus-visible { outline: 2px solid var(--study
 }
 
 .lang-orbit-hub-meta {
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 10px;
   fill: var(--text-tertiary);
 }
@@ -9992,7 +9995,7 @@ button.lang-sense-branch-row {
   border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--sense-color) 14%, transparent);
   color: color-mix(in srgb, var(--sense-color) 70%, var(--text-primary));
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 10.5px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -10687,7 +10690,7 @@ button.lang-sense-branch-row:hover {
 }
 
 .lang-flow-clause-rule {
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 10px;
   color: var(--text-tertiary);
   opacity: 0.75;
@@ -10894,7 +10897,7 @@ button.lang-sense-branch-row:hover {
 }
 
 .lang-syntax-clause-rule {
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 9px;
   color: var(--text-tertiary);
   opacity: 0.7;
@@ -13713,8 +13716,15 @@ textarea:focus-visible,
   font-weight: var(--fw-medium);
 }
 .app-shell.verse-nums-hover .verse-num {
-  opacity: 0;
   transition: opacity var(--transition-fast), color var(--transition-fast);
+}
+
+/* Only where a hover actually exists. On touch this mode would otherwise hide
+   the verse numbers permanently, with no gesture able to bring them back. */
+@media (any-pointer: fine) {
+  .app-shell.verse-nums-hover .verse-num {
+    opacity: 0;
+  }
 }
 .app-shell.verse-nums-hover .verse-line:hover .verse-num,
 .app-shell.verse-nums-hover .verse-line.selected .verse-num,
@@ -14271,6 +14281,14 @@ textarea:focus-visible,
   transition: opacity var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
 }
 
+/* Same rule: a touch reader has no hover, so the remove control has to rest
+   visible rather than waiting for a gesture their device cannot make. */
+@media (any-pointer: coarse) {
+  .picker-recent-dismiss {
+    opacity: 1;
+  }
+}
+
 .picker-recent-chip-wrap:hover .picker-recent-dismiss,
 .picker-recent-chip-wrap:focus-within .picker-recent-dismiss {
   opacity: 1;
@@ -14757,7 +14775,7 @@ textarea:focus-visible,
 
 .lang-orbit-mode-meta {
   padding: 0 2px 1px 8px;
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 9px;
   letter-spacing: 0.015em;
 }
@@ -14818,7 +14836,7 @@ textarea:focus-visible,
 
 .lang-syntax-toggle-hint {
   margin-left: 2px;
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 8.5px;
   font-weight: var(--fw-medium);
   text-transform: lowercase;
@@ -15638,10 +15656,12 @@ button.lang-phrase-diagram-node:focus-visible,
   font-family: var(--font-ui);
 }
 
+/* No max-height: the palette never shrinks, scrolls, or re-orders to fit. If
+   it does not fit above the selection it opens below; the one thing it may not
+   do is become a smaller, differently-ordered version of itself. */
 .marking-palette {
   position: fixed;
   width: min(430px, calc(var(--mark-stage-width) - 24px));
-  max-height: var(--mark-palette-max-height);
   border: 1px solid color-mix(in srgb, var(--border-medium) 76%, transparent);
   border-radius: var(--radius-md);
   background: var(--bg-reading);
@@ -16223,13 +16243,16 @@ button.lang-phrase-diagram-node:focus-visible,
   pointer-events: none;
 }
 
+/* One row, not three columns. The old grid described a mode group, a context
+   pane and an action cluster; the dock now carries the same single bar the
+   palette does, so a layout that reserves lanes for parts that no longer
+   exist would leave holes in it. */
 .marking-dock {
   width: min(1120px, 100%);
   min-height: 60px;
-  display: grid;
-  grid-template-columns: 208px minmax(180px, 1fr) auto;
+  display: flex;
   align-items: center;
-  gap: 0;
+  gap: 14px;
   padding: 7px 8px;
   border: 1px solid color-mix(in srgb, var(--border-medium) 76%, transparent);
   border-radius: var(--radius-md);

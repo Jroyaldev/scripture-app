@@ -380,11 +380,6 @@
    The palette never shrinks, scrolls, or re-orders to fit. If it does not fit
    above it opens below; the one thing it may not do is become a smaller,
    differently-ordered version of itself. */
-.marking-floating-host .marking-palette {
-  max-height: none;
-  overflow: visible;
-}
-
 .marking-floating-host .marking-palette-frame {
   display: grid;
   gap: 10px;
@@ -403,14 +398,6 @@
 /* The dock is the same bar on a shelf. Its old three-column grid described a
    mode group, a context pane and an action cluster; there is one working area
    now, and one row in it. */
-.marking-dock-host .marking-dock {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  grid-template-columns: none;
-  grid-template-areas: none;
-}
-
 .marking-dock .marking-dock-context {
   display: grid;
   gap: 8px;

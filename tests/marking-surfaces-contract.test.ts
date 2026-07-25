@@ -1033,7 +1033,7 @@ test("production marking surfaces retain distinct grammar at the supported deskt
     assert.doesNotMatch(source, gone, `the dock must not reintroduce ${gone.source}`);
   }
   assert.match(source, /setSession\(next\);\s*setTray\(null\);\s*setTool\(\{ type: "connect", kind \}\)/);
-  assert.match(styles, /\.marking-dock \{[\s\S]*?width:\s*min\(1120px, 100%\);[\s\S]*?grid-template-columns:\s*208px/);
+  assert.match(styles, /\.marking-dock \{[\s\S]*?width:\s*min\(1120px, 100%\);[\s\S]*?display:\s*flex;/);
   assert.match(styles, /\.marking-dock-modes \{[\s\S]*?position:\s*relative;[\s\S]*?grid-template-columns:\s*repeat\(5, 38px\)/);
   assert.match(styles, /\.marking-dock-thumb \{[\s\S]*?width:\s*var\(--mark-dock-width, 38px\);[\s\S]*?transform:\s*translateX\(var\(--mark-dock-x, 0px\)\)/);
   assert.match(styles, /\.marking-dock:not\(\.is-entered\) \{ animation: marking-dock-in 200ms both var\(--mark-spring-soft\); \}/);
