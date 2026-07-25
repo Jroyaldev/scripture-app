@@ -79,7 +79,10 @@
     "qa:notebook": "node scripts/qa-note-workspace-tour.mjs",
     "qa:command": "node scripts/qa-command-palette-tour.mjs",
     "qa:entities": "node scripts/qa-entity-research-tour.mjs",
-    "qa:desktop": "node scripts/qa-desktop-regression.mjs"
+    "qa:desktop": "node scripts/qa-desktop-regression.mjs",
+    "verify:alignment-freshness": "node scripts/verify-alignment-freshness.mjs",
+    "verify:alignment-conformance": "node scripts/verify-alignment-conformance.mjs",
+    "verify:alignment": "npm run verify:alignment-freshness && npm run verify:alignment-conformance"
   },
   "main": "dist/electron/main.cjs",
   "bin": {
