@@ -2697,9 +2697,14 @@ function IntentOverview({
                         type="button"
                         className="study-ref-row-verb"
                         {...crossRefBranchHandlers(item.targetBref, target, onNavigate, onOpenPassageTab)}
+                        {...(target ? peekTriggerProps(target) : {})}
+                        // Both spreads first, so the row's own name and
+                        // description are authoritative. `VersePeekTriggerProps`
+                        // carries no ARIA but `aria-haspopup`/`aria-expanded`
+                        // today; if it ever grows a describedby, a spread that
+                        // came last would clobber the tie to the verse silently.
                         aria-label={`Open ${item.targetDisplay}`}
                         aria-describedby={previewId}
-                        {...(target ? peekTriggerProps(target) : {})}
                       >
                         Open
                       </button>
@@ -2847,8 +2852,17 @@ function IntentOverview({
                   type="button"
                   className="intent-note-lead is-secondary"
                   {...crossRefBranchHandlers(item.targetBref, target, onNavigate, onOpenPassageTab)}
-                  aria-label={`Open ${item.targetDisplay}`}
                   {...(target ? peekTriggerProps(target) : {})}
+                  // Spreads first — see the cross-reference row. This row IS one
+                  // control, so its name has to carry everything its content
+                  // would have said: an aria-label overrides the button's
+                  // children, which includes `MarginEntryWhy`'s own sr-only
+                  // provenance. A bare "Open {ref}" here dropped both the
+                  // sentence and the fact that the app wrote it — Law 3 in the
+                  // accessibility tree, where unmarked means the edition.
+                  // Action and target first, then the mark before the prose it
+                  // marks, so it can be skipped the way the visual mark can.
+                  aria-label={`Open ${item.targetDisplay}. Written by the app. ${item.reason}`}
                 >
                   <MarginEntryWhy provenance="app">
                     <strong>{item.targetDisplay}</strong>

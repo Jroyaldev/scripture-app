@@ -65,7 +65,9 @@ test("accessible reading and related-verse names include visible content", () =>
   assert.match(margin, /aria-describedby=\{previewId\}/);
   assert.match(margin, /<p className="study-ref-row-text" id=\{previewId\}>\{item\.preview\}<\/p>/);
   // Same tie on the reader's own notes, where the wording is the whole point.
-  assert.match(margin, /aria-label=\{`Go to \$\{entry\.reference\}`\}\s*\n\s*aria-describedby=\{noteId\}/);
+  // Deliberately not pinned to adjacent lines: reordering JSX props changes no
+  // behaviour, and a test that fails on a reformat teaches people to distrust it.
+  assert.match(margin, /aria-label=\{`Go to \$\{entry\.reference\}`\}[\s\S]{0,160}?aria-describedby=\{noteId\}/);
   // Description ids are per-instance, so two margins cannot cross-wire one
   // row's verse onto another row's verb.
   assert.match(margin, /const rowIdBase = useId\(\);/);

@@ -214,6 +214,22 @@ test("a compact row's wording describes its verb rather than naming it", () => {
     2,
     "Open and Tab must both be described by the row's wording",
   );
+  // A row that IS one control is the other case, and it inverts: an aria-label
+  // overrides the button's children, so the name must carry what the children
+  // would have said — including `MarginEntryWhy`'s sr-only provenance. Law 3
+  // reserves unmarked for the edition, in the accessibility tree too.
+  assert.match(
+    overview,
+    /aria-label=\{`Open \$\{item\.targetDisplay\}\. Written by the app\. \$\{item\.reason\}`\}/,
+  );
+  // Explicit ARIA comes after every spread, so a helper that grows an ARIA prop
+  // cannot clobber a name or a description without anyone noticing.
+  for (const [, props] of overview.matchAll(/<button\b([\s\S]*?)>/g)) {
+    const lastSpread = props!.lastIndexOf("{...");
+    const firstAria = props!.indexOf("aria-label");
+    if (lastSpread < 0 || firstAria < 0) continue;
+    assert.ok(firstAria > lastSpread, "an ARIA prop is spread-clobberable");
+  }
 });
 
 test("a zero is never seal", () => {

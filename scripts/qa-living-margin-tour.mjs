@@ -310,24 +310,44 @@ await navigatePassage("Acts 19");
 
 await setReadingScroll(0);
 await evaluate(`document.querySelector(".living-margin").scrollTop = 0`);
-await waitFor(`document.querySelector(".living-margin")?.dataset.marginMode === "chapter"`);
+// This gate waited on `dataset.marginMode === "chapter"`, which the component
+// cannot emit and never could since the modes were renamed. `waitFor` does not
+// fail on an impossible condition — it hangs — so the tour stopped dead here and
+// EVERY step below it silently never ran, including the §C4·1 tab-row
+// measurement added to prove the row does not move. A tour that hangs reads
+// exactly like a tour that is slow, which is why this survived so long.
+//
+// It is not a rename. `data-margin-mode` no longer separates chapter scope from
+// reading scope — both resolve to `following` — so there is no mode token that
+// means "chapter". The attribute that still draws that distinction is
+// `data-margin-view`, which the very next assertion already reads. Gate on the
+// attribute that can answer the question.
+await waitFor(`document.querySelector("[data-margin-view]")?.getAttribute("data-margin-view") === "chapter"`);
 const chapterState = await evaluate(`(() => ({
-  title: document.querySelector("#living-margin-title")?.textContent?.trim(),
+  ref: document.querySelector(".margin-frame-ref")?.textContent?.trim(),
   mode: document.querySelector(".margin-frame-mode")?.textContent?.trim(),
   view: document.querySelector("[data-margin-view]")?.getAttribute("data-margin-view"),
-  done: Boolean(document.querySelector(".margin-frame-action")),
+  clear: Boolean(document.querySelector(".margin-frame-action")),
+  verbSlot: Boolean(document.querySelector(".margin-frame-verb")),
   tabs: [...document.querySelectorAll(".margin-tab")].map((tab) => tab.textContent?.trim()),
   activeTab: document.querySelector('.margin-tab[aria-selected="true"]')?.id,
 }))()`);
-assert.equal(chapterState.title, "Study");
-assert.equal(chapterState.mode, "Chapter");
+// C·4 §1 deleted the "Study" title — "a title that never changes and never
+// distinguishes anything is a 34px band spent on nothing" — so the scope line
+// itself is now the heading, and it reads as a sentence: serif reference, sans
+// state word.
+assert.match(chapterState.ref ?? "", /^Acts 19$/);
+assert.equal(chapterState.mode, "following your reading");
 assert.equal(chapterState.view, "chapter");
-assert.equal(chapterState.done, false);
+// Chapter scope has nothing to clear, but the slot stays rendered so the tab row
+// cannot shift by a pixel between the two scopes. Absent verb, present slot.
+assert.equal(chapterState.clear, false);
+assert.equal(chapterState.verbSlot, true);
 assert.equal(chapterState.tabs.length, 4);
 assert.match(chapterState.tabs[0] ?? "", /^Overview/);
-assert.match(chapterState.tabs[1] ?? "", /^Refs/);
-assert.match(chapterState.tabs[2] ?? "", /^Passage/);
-assert.match(chapterState.tabs[3] ?? "", /^Notes/);
+assert.match(chapterState.tabs[1] ?? "", /^Notes/);
+assert.match(chapterState.tabs[2] ?? "", /^Connections/);
+assert.match(chapterState.tabs[3] ?? "", /^Words/);
 assert.equal(chapterState.activeTab, "margin-overview-tab");
 console.log("chapter", chapterState);
 // The cross-reference tour lives here now. It used to run on the Connections
@@ -390,14 +410,14 @@ await screenshot("paper-chapter-overview-margin", ".living-margin");
 
 await parkPointerOverReading();
 await setReadingScroll(300);
-await waitFor(`document.querySelector(".living-margin")?.dataset.marginMode === "in-view"`);
+await waitFor(`document.querySelector("[data-margin-view]")?.getAttribute("data-margin-view") === "reading"`);
 const readingState = await evaluate(`(() => ({
   mode: document.querySelector(".margin-frame-mode")?.textContent?.trim(),
   view: document.querySelector("[data-margin-view]")?.getAttribute("data-margin-view"),
   reference: document.querySelector(".margin-frame-ref")?.textContent?.trim(),
   done: Boolean(document.querySelector(".margin-frame-verb .margin-frame-action")),
 }))()`);
-assert.equal(readingState.mode, "In view");
+assert.equal(readingState.mode, "following your reading");
 assert.equal(readingState.view, "reading");
 assert.match(readingState.reference ?? "", /^Acts 19:\d+$/);
 assert.equal(readingState.done, false);
@@ -405,7 +425,7 @@ console.log("reading", readingState);
 await screenshot("paper-reading-eye-line-margin", ".living-margin");
 
 await setReadingScroll(0);
-await waitFor(`document.querySelector(".living-margin")?.dataset.marginMode === "chapter"`);
+await waitFor(`document.querySelector("[data-margin-view]")?.getAttribute("data-margin-view") === "chapter"`);
 // §C4·1 · the tab row must sit at exactly the same y before and after a verse
 // is chosen. That is the section's whole claim — shipped, selecting a verse
 // pushed the row down roughly 300px — so the tour measures it rather than
@@ -416,7 +436,7 @@ await waitFor(`document.querySelectorAll('.verse-line[aria-pressed="true"]').len
 await evaluate(`document.querySelector('.verse-line[data-verse="7"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true, shiftKey: true }))`);
 await waitFor(`document.querySelectorAll('.verse-line[aria-pressed="true"]').length === 7`);
 await waitFor(`!document.querySelector(${JSON.stringify(MARKING_SELECTION_CHROME_SELECTOR)})`);
-await waitFor(`document.querySelector(".living-margin")?.dataset.marginMode === "selected"`);
+await waitFor(`document.querySelector("[data-margin-view]")?.getAttribute("data-margin-view") === "selected"`);
 const tabRowAfterSelection = await evaluate(`document.querySelector(".margin-tabs")?.getBoundingClientRect().top ?? null`);
 assert.equal(tabRowAfterSelection, tabRowBeforeSelection,
   "the tab row moved when a verse was chosen — §C4·1 says it never does");
@@ -430,10 +450,10 @@ const selectedState = await evaluate(`(() => ({
   activePanel: document.querySelector('.margin-tab-panel:not([hidden])')?.id,
 }))()`);
 assert.deepEqual(selectedState, {
-  mode: "Selected",
+  mode: "selected",
   view: "selected",
   reference: "Acts 19:1–7",
-  done: "Done",
+  done: "Clear",
   swatches: 5,
   activeTab: "margin-passage-tab",
   activePanel: "margin-passage-panel",
@@ -675,7 +695,7 @@ await sleep(260);
 await screenshot("paper-notes-deep-margin", ".living-margin");
 
 await evaluate(`document.querySelector(".margin-frame-action")?.click()`);
-await waitFor(`document.querySelector(".living-margin")?.dataset.marginMode !== "selected"`);
+await waitFor(`document.querySelector("[data-margin-view]")?.getAttribute("data-margin-view") !== "selected"`);
 await waitFor(`document.activeElement?.id === "living-margin-title"`);
 assert.equal(await evaluate(`document.querySelectorAll('.verse-line[aria-pressed="true"]').length`), 0);
 assert.equal(
