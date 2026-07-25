@@ -45,10 +45,19 @@ const marginCode = margin
  * count's own comment resolved to the atmosphere token block, and the marker
  * guard reported success while reading a different agent's marker.
  *
- * `lastIndexOf` is deliberately not used anywhere: picking a match by position
+ * `lastIndexOf` is never used to CHOOSE a region: picking a match by position
  * is not a uniqueness argument, it is the same bet taken from the other end.
  * Where the last of several IS the intent, the count is asserted and the pick
  * is made explicitly, so it reads as a stated fact rather than a coincidence.
+ *
+ * It is still used twice, and both are scans from an already-fixed point
+ * rather than choices between candidates: `lastIndexOf("{...")` finds the last
+ * spread inside one button's props, and `lastIndexOf("/*", at)` finds the
+ * comment enclosing a located anchor. Neither picks WHICH thing is under
+ * inspection. (This sentence exists because the comment above it read "not
+ * used anywhere" while the file used it twice — a claim that was true when
+ * written and quietly stopped being true, which is the failure this whole
+ * file is about.)
  */
 function between(source: string, start: string, end: string, label: string): string {
   const starts = source.split(start).length - 1;

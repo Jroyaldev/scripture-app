@@ -1465,9 +1465,16 @@ html, body, #root {
 
    Held at the ruling rather than invented past it, per §9's third trigger: a
    taxonomy I was given has no slot for this, and widening the nearest slot is
-   the named thing not to do. rev05-canon reached the same conclusion from the
-   grid's side and has left --page-padding-block declared and unapplied.
-   One sentence decides it. */
+   the named thing not to do. One sentence decides it.
+
+   THIS QUESTION IS MARKED TWICE, deliberately, and this is the marker that
+   carries it. rev05-canon reached the same conclusion from the grid's side,
+   left --page-padding-block declared and unapplied, and marked its half
+   `@quire guessed` on .scripture-inner. Under §9 a `guessed` is batched into
+   the next quire and a `trigger` is answered the same week and never batched —
+   so if the two were left at different severities and a reader landed on the
+   guessed one first, the question would be batched by accident. It is one
+   question, escalated once, and either marker should lead to the other. */
 .scripture-topbar {
   /* One name for the band's left datum, so the pager, the title and the rule
      under them cannot be moved apart. The narrow concessions are stated one
@@ -15234,11 +15241,27 @@ textarea:focus-visible,
      --topbar-datum. The narrow shell's own rule is later in this sheet and
      still wins below 979, which is the order it should be in.
 
-     The number stays 14 because the constraint at this width is the header's,
-     not the page's: what yields here is the ⌘K hint. The page body is in the
-     centred canon with ~148px of real air either side, so its padding is not
-     load-bearing at this width and follows the band rather than arguing with
-     it. */
+     The number stays 14 rather than being made to match the narrow shell's 24,
+     and the reason is NOT that one of them matters less. The two numbers answer
+     different questions in different regimes. Here the page is in the centred
+     canon, the title is on the measure per §05·4, and the datum's only visible
+     carriers are the pager and the band's hairline — so what binds is the
+     header's compaction, and what yields is the ⌘K hint. Below 979 the page is
+     full-bleed and the datum IS the reading gutter, which §H fixes at 24.
+     Forcing them equal would subordinate one study's number to the other's for
+     nothing a reader can see.
+
+     A reader meeting 14 above 979 and 24 below it will think this is a bug. It
+     is not, and the measurement is worth recording: what a reader sees is the
+     distance from the WINDOW to the pager, and that is monotonic — 120 at 1200,
+     94 here, 24 at 979, 19 at 721, 12 at 720, 0 at 600. It never increases. The
+     token can jump upward at 979 without the pager moving outward because the
+     24 of canvas and the 56 of rail that the token sits INSIDE both vanish at
+     that same breakpoint. The apparent inversion is an artifact of measuring
+     the padding instead of the position.
+     (Measured by rev05-canon in a real window against the built sheet, along
+     with the fact this rule exists to guarantee: the page's padding and the
+     band's padding are byte-identical at every width from 1200 down to 390.) */
   .scripture-reading-stage {
     --page-datum: 14px;
   }
