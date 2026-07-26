@@ -3741,15 +3741,29 @@ html, body, #root {
    692 + 400 = 1092 at the shipped comfort. A container query cannot read a
    custom property, so the sum is stated once per shipped measure and nothing
    else about the canon varies with it. */
-@container reading-stage (min-width: 992px) {
-  .reading-size-s .scripture-inner { --page-canon: var(--canon-block); }
-}
-@container reading-stage (min-width: 1092px) {
-  .reading-size-m .scripture-inner { --page-canon: var(--canon-block); }
-}
-@container reading-stage (min-width: 1212px) {
-  .reading-size-l .scripture-inner { --page-canon: var(--canon-block); }
-}
+/* The three container queries that switched to the block canon at 992 / 1092 /
+   1212 stood here, and they are gone. The centred canon is the default above,
+   so the measure now centres in whatever room the paper has, at every width,
+   in every combination of rail and panel.
+
+   Why: the block canon reserves 320 of margin and 56 of spine to the LEFT of
+   the measure, and nothing in this app has ever rendered there. Measured at
+   1428 of paper it put the text 448 from the left and 200 from the right — 248
+   off centre — and shrinking the reserve does not help, because the paper's own
+   max-width is computed from it, so 320 and 160 are identically 248 off. The
+   asymmetry was not a value that needed tuning; it was a column held open for
+   furniture that does not exist.
+
+   §05·4 reserves that column deliberately, and its reasoning is sound the day
+   something occupies it: margin material arriving as an overlay would push the
+   text every time you selected a verse. That objection needs something able to
+   appear in the column. Nothing can. So `--canon-block` is kept, defined and
+   unused, and restoring these three rules is what turns it back on the day the
+   standing furniture lands.
+
+   Measured after: 340 left, 308 right at the same 1428 of paper — the 32 is the
+   verse-number gutter hanging inside the measure. The paper does not narrow and
+   the measure does not change; only the empty reserve goes. */
 
 /* §05·5: "Only the canon changes. The margin column and its spine close;
    gutter plus measure centre in the paper." Focus uses the centred canon at
