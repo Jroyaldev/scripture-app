@@ -185,14 +185,17 @@ test("collapsing a study in the strip has an inverse in the strip", () => {
   const literalCollapses = [...tablist.matchAll(/toggleGroup\(group\.id, true\b/g)];
   assert.equal(literalCollapses.length, 1,
     "only the already-selected tab may collapse in a fixed direction");
-  // The guard was `group.tabIds.length > 1` alone, which excluded a study the
-  // reader named that happens to hold one tab — and that one does fold visibly,
-  // to the name they gave it. What stays excluded is the lone tab under an
-  // automatic label, where the group's label is derived from the passage the tab
-  // already shows, so the press would appear to do nothing.
-  assert.match(tablist, /const foldIsVisible = group\.tabIds\.length > 1 \|\| group\.label\.kind === "custom";/);
-  assert.match(tablist, /if \(selected && foldIsVisible\) \{\s*await toggleGroup\(group\.id, true,/,
-    "pressing the active tab folds its study only where the fold is visible");
+  // Unconditional, and two earlier attempts to condition it are recorded here
+  // because the pattern is the lesson. First `group.tabIds.length > 1`, then
+  // `|| group.label.kind === "custom"` — each an attempt to predict which folds
+  // would look worth doing. Both made one gesture behave differently depending
+  // on state the reader is not thinking about, which is a worse defect than a
+  // fold that happens to be subtle. A gesture that works sometimes reads as
+  // broken; a subtle one only reads as subtle.
+  assert.match(tablist, /if \(selected\) \{\s*await toggleGroup\(group\.id, true,/,
+    "pressing the active tab folds its study, with no qualifying condition");
+  assert.doesNotMatch(tablist, /selected && (group\.tabIds\.length|foldIsVisible|group\.label)/,
+    "conditioning the fold on group shape is what made it feel unreliable");
   // The trigger is handed over only for keyboard activation, for the same
   // reason the selection's focus move is: focusing it after a pointer press is
   // what drew a ring the reader never asked for.

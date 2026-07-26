@@ -1107,17 +1107,19 @@ export function ScriptureWorkspaceTabs({
                   // where you are, and its siblings hide; press it again, now a
                   // proxy, and they come back.
                   //
-                  // Only when the fold would show. Two cases qualify and the
-                  // first guard missed one of them: a study with siblings to
-                  // hide, and a study the reader NAMED, which folds to that name
-                  // even holding a single tab. What is excluded is the lone tab
-                  // under an automatic label — there the group's label is derived
-                  // from the passage the tab already shows, so collapsing swaps a
-                  // reference for very nearly itself and the press reads as
-                  // broken. A double click self-corrects: the second press lands
-                  // on the proxy and expands again.
-                  const foldIsVisible = group.tabIds.length > 1 || group.label.kind === "custom";
-                  if (selected && foldIsVisible) {
+                  // Every study folds, with no qualifying condition. Two earlier
+                  // guards tried to predict which folds would "look right" —
+                  // first a sibling count, then a named label — and both were
+                  // wrong in the same way: they made one gesture behave
+                  // differently depending on state the reader is not thinking
+                  // about, which is worse than a fold that happens to be subtle.
+                  //
+                  // The premise behind both was wrong anyway. A lone tab still
+                  // has a kicker, so collapsing removes it, and the tab's own
+                  // label goes from split book-and-chapter parts to the study's
+                  // name as one string. The fold shows. A double click
+                  // self-corrects, since the second press lands on the proxy.
+                  if (selected) {
                     await toggleGroup(group.id, true, byKeyboard ? trigger : undefined);
                     return;
                   }
