@@ -424,22 +424,32 @@ test("immutable ticket election produces exactly one first winner across 100 con
         // has to survive the next occurrence rather than being reconstructed
         // from a duration.
         //
-        // Two winners is a genuine election defect; zero is a worker that never
-        // got to race. Naming which, and the round, is the whole diagnosis — the
-        // payload alone was already here and was not enough, because nobody
-        // captured it and the shape it describes was never stated.
+        // The payload discriminates THREE outcomes, not two, and worker death is
+        // not among them: `raceWorkerRound` awaits `Promise.all(done)` with no
+        // timeout, so a worker that dies makes this HANG rather than fail fast.
+        // A sub-second failure therefore means both workers replied.
+        //
+        //   two ok:true   — a real election defect; both writers believed they won
+        //   two ok:false  — both threw. Module-import-under-load is the leading
+        //                   environmental candidate, and it would fail at round 0,
+        //                   which matches the sub-second timing exactly. So the
+        //                   ROUND INDEX discriminates the two leading hypotheses
+        //                   without anyone having to read a payload.
+        //   one ok:true,
+        //   wrong message — a third, separate bug that looks identical outside.
         const won = results.filter((result) => result.ok).length;
         const shape = won > 1
-          ? `ELECTION DEFECT: ${won} winners — two processes both believed they appended`
+          ? `ELECTION DEFECT: ${won} winners — both writers believed they appended`
           : won === 0
-            ? "NO WINNER: neither worker completed; suspect spawn or IPC rather than the election"
-            : "";
-        const detail = `round ${round} of 100 · ${shape || "one winner"} · ${JSON.stringify(results)}`;
+            ? "BOTH THREW: not worker death, which would hang here. Round 0 points at module import under load; a later round does not."
+            : "one winner";
+        const detail = `round ${round} of 100 · ${shape} · ${JSON.stringify(results)}`;
         assert.equal(won, 1, detail);
         assert.equal(results.filter((result) => !result.ok).length, 1, detail);
         assert.match(
           results.find((result) => !result.ok)?.message ?? "",
           /append conflict|Another Scripture Library process/,
+          `${detail} · THIRD SHAPE: one winner, but the loser threw something other than an append conflict — a separate defect that looks identical from outside`,
         );
         const lines = readFileSync(logPath(roundRoot), "utf8").split("\n").filter(Boolean);
         assert.equal(lines.length, 1);
