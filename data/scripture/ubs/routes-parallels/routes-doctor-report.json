@@ -1,0 +1,263 @@
+{
+  "status": "healthy",
+  "generatedAt": "2026-07-26T14:25:12.796Z",
+  "source": {
+    "geoJsonDir": "GeoJsonRoutes",
+    "svgDir": "SVG-Routes",
+    "metadataFile": "metadata.csv",
+    "metadataBytes": 16457,
+    "metadataSha256": "d207bf8f931dcf6bb17d89f824a921fc844ad2992e97be3aec8a4be2d8b593d7",
+    "license": "CC BY-SA 4.0",
+    "attribution": "(© United Bible Societies 2023)",
+    "creatorCredit": "These routes are part of a collection of data created for UBS by Dr. Leen Ritmeyer."
+  },
+  "coverage": {
+    "geoJsonFileCount": 179,
+    "svgFileCount": 179,
+    "pairedByFileName": 178,
+    "geoJsonOnly": [
+      "100"
+    ],
+    "svgOnly": [
+      "213. Seven Churches of Revelation"
+    ],
+    "featureCount": 508,
+    "vertexCount": 23951,
+    "geometryTypes": {
+      "LineString": 508
+    },
+    "emptyFeatureCount": 1,
+    "topLevelTypes": {
+      "Feature": 82,
+      "FeatureCollection": 97
+    }
+  },
+  "coordinateReferenceSystem": {
+    "declared": null,
+    "assumed": "OGC:CRS84 (WGS 84 longitude/latitude)",
+    "reason": "RFC 7946 §4 fixes the CRS and removes the crs member; no route file declares one",
+    "filesDeclaringCrs": 0,
+    "lonRange": [
+      12.417111413,
+      48.108944891
+    ],
+    "latRange": [
+      12.663731956,
+      41.878210427
+    ]
+  },
+  "gazetteerJoin": {
+    "note": "There is no identifier to join on. Feature properties are empty across the corpus, so the only possible join is coordinate proximity, and only route ENDPOINTS are candidate places — interior vertices are path-tracing samples.",
+    "acceptedIdentifierKeyCount": 21,
+    "placeIdentifiersFound": 0,
+    "propertyKeysPresent": {
+      "name": 3
+    },
+    "identifierJoinRate": 0,
+    "gazetteerPointCount": 2242,
+    "endpointCount": 1016,
+    "endpointsWithinKm": {
+      "1": 336,
+      "2": 602,
+      "5": 846,
+      "10": 933,
+      "25": 995
+    },
+    "endpointsWithTwoOrMoreCandidatesWithin2Km": 474,
+    "endpointExamples": [
+      {
+        "route": "001. Abram's Journey to Haran",
+        "lon": 39.003810846,
+        "lat": 36.959594438,
+        "nearest": "Aram-naharaim",
+        "km": 10.89
+      },
+      {
+        "route": "001. Abram's Journey to Haran",
+        "lon": 46.122951461,
+        "lat": 30.959759443,
+        "nearest": "Chaldea",
+        "km": 1.79
+      },
+      {
+        "route": "002. Abram's Journey to Damascus",
+        "lon": 39.03402326,
+        "lat": 36.959594443,
+        "nearest": "Aram-naharaim",
+        "km": 10.58
+      },
+      {
+        "route": "002. Abram's Journey to Damascus",
+        "lon": 36.320400213,
+        "lat": 33.54235775,
+        "nearest": "Pharpar",
+        "km": 3.03
+      },
+      {
+        "route": "003. Abram's Journey to Shechem",
+        "lon": 35.29201993,
+        "lat": 32.229599111,
+        "nearest": "Sychar",
+        "km": 1.35
+      },
+      {
+        "route": "003. Abram's Journey to Shechem",
+        "lon": 36.283536034,
+        "lat": 33.505284271,
+        "nearest": "Abana",
+        "km": 2.19
+      },
+      {
+        "route": "004. Abram's Journey from the Negev to Egypt",
+        "lon": 31.306514705,
+        "lat": 30.134844025,
+        "nearest": "Egypt",
+        "km": 0.61
+      },
+      {
+        "route": "004. Abram's Journey from the Negev to Egypt",
+        "lon": 34.77819436,
+        "lat": 31.236689517,
+        "nearest": "Beersheba 1",
+        "km": 1.42
+      },
+      {
+        "route": "005. Abram's Journey to Egypt",
+        "lon": 31.314754425,
+        "lat": 30.13840702,
+        "nearest": "Egypt",
+        "km": 1.22
+      },
+      {
+        "route": "005. Abram's Journey to Egypt",
+        "lon": 34.78849405,
+        "lat": 31.250191957,
+        "nearest": "Beersheba 1",
+        "km": 1.51
+      }
+    ]
+  },
+  "svgVersusGeoJson": {
+    "note": "The SVG is a derived crop, not an alternative dataset. Predicted aspect is the GeoJSON bbox plotted equirectangular with longitude scaled by cos(mid latitude). The anchor comparison is the decisive one: one on-curve SVG anchor per GeoJSON vertex means the same polyline. Off-line verification also fitted a per-axis affine to the anchors: it reproduced every anchor within 1.5 SVG units for 158 of 176 routes, and the fitted x/y scale ratio divided by cos(mid latitude) was 1.0000 at the median and within 2% of 1.0 for 174 of 176.",
+    "routesPairedWithAnSvg": 178,
+    "anchorCountEqualsVertexCount": 176,
+    "anchorCountMismatches": 2,
+    "anchorMismatchDetail": [
+      {
+        "fileName": "001. Abram's Journey to Haran",
+        "anchors": 92,
+        "vertices": 90
+      },
+      {
+        "fileName": "095. David's Kingdom_6",
+        "anchors": 234,
+        "vertices": 252
+      }
+    ],
+    "svgFilesWithViewBox": 163,
+    "svgFilesWithoutViewBox": 16,
+    "pairsTested": 163,
+    "aspectMatchesWithin2Percent": 148,
+    "aspectMismatches": 15,
+    "mismatchDetail": [
+      {
+        "fileName": "023. Beersheba to Haran",
+        "predicted": 0.588,
+        "actual": 1
+      },
+      {
+        "fileName": "059. Deception of The Gibeonites",
+        "predicted": 7.541,
+        "actual": 7.2727
+      },
+      {
+        "fileName": "107a. Rehoboam to Shechem",
+        "predicted": 0.9694,
+        "actual": 1
+      },
+      {
+        "fileName": "114. Ministry of Elijah",
+        "predicted": 0.4341,
+        "actual": 0.45
+      },
+      {
+        "fileName": "151. Gedaliah",
+        "predicted": 2.9308,
+        "actual": 2.6667
+      },
+      {
+        "fileName": "152. Nazareth to Hebron",
+        "predicted": 0.3819,
+        "actual": 1
+      },
+      {
+        "fileName": "163. Samaria to Nazareth",
+        "predicted": 0.2487,
+        "actual": 0.2545
+      },
+      {
+        "fileName": "165. Nazareth to Capernaum",
+        "predicted": 1.3588,
+        "actual": 1
+      },
+      {
+        "fileName": "166. Fishermen disciples",
+        "predicted": 1.9697,
+        "actual": 1
+      },
+      {
+        "fileName": "176. Dedication",
+        "predicted": 2.6439,
+        "actual": 2.7917
+      },
+      {
+        "fileName": "178. Ephraim",
+        "predicted": 0.3724,
+        "actual": 1.25
+      },
+      {
+        "fileName": "192. Road to Emmaus",
+        "predicted": 0.0976,
+        "actual": 0.48
+      },
+      {
+        "fileName": "197. Philip in Samaria",
+        "predicted": 0.1834,
+        "actual": 0.3333
+      },
+      {
+        "fileName": "198. Philip and the Ethiopian Eunuch",
+        "predicted": 0.6924,
+        "actual": 0.9219
+      },
+      {
+        "fileName": "200. Paul’s journey from Tarsus to Antioch",
+        "predicted": 0.3406,
+        "actual": 0.3333
+      }
+    ],
+    "viewBoxOriginAlwaysZero": true
+  },
+  "metadataCsv": {
+    "rowCount": 257,
+    "columnCount": 4,
+    "separator": "tab",
+    "hasHeaderRow": false,
+    "storyCount": 139,
+    "distinctImageFiles": 228,
+    "carriesScriptureReference": false,
+    "imageStemsMatchingARouteFileName": 168,
+    "imageStemMatchRate": 0.7368
+  },
+  "checks": {
+    "routesParsed": true,
+    "geometryNonEmpty": true,
+    "identifierProbeLookedForKnownKeys": true,
+    "noPlaceIdentifiers": true,
+    "noCrsMember": true,
+    "svgDerivationTested": true,
+    "svgAnchorsMatchGeoJsonVertices": true,
+    "metadataParsed": true,
+    "gazetteerNonEmpty": true
+  }
+}

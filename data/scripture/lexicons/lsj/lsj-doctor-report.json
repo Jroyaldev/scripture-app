@@ -1,0 +1,93 @@
+{
+  "status": "healthy",
+  "source": {
+    "name": "STEPBible TFLSJ",
+    "url": "https://github.com/STEPBible/STEPBible-Data",
+    "directory": "Lexicons/",
+    "license": "CC BY 4.0",
+    "attribution": "STEPBible TFLSJ, CC BY 4.0, stepbible.org.",
+    "snapshotDate": "2026-07-26",
+    "files": [
+      {
+        "path": "TFLSJ-STEPBible-CC-BY.txt",
+        "upstreamName": "TFLSJ  0-5624 - Translators Formatted full LSJ Bible lexicon - STEPBible.org CC BY.txt",
+        "bytes": 23831837,
+        "sha256": "fcc2845412132a7bb91fc3dbb5a544c807daf57e4791c4d9af61efe209e97691",
+        "rowCount": 5709
+      },
+      {
+        "path": "TFLSJ-extra-STEPBible-CC-BY.txt",
+        "upstreamName": "TFLSJ extra - Translators Formatted full LSJ Bible lexicon - STEPBible.org CC BY.txt",
+        "bytes": 8377070,
+        "sha256": "fdb2840067faa11301b208a343a9453fbe40b367e94eac981071261626201bc2",
+        "rowCount": 5325
+      }
+    ]
+  },
+  "coverage": {
+    "entryCount": 11034,
+    "rowsScanned": 11034,
+    "perFileRowCounts": [
+      5709,
+      5325
+    ],
+    "distinctBases": 10846,
+    "splitBases": 109,
+    "shardCount": 12,
+    "meaningChars": 27368537,
+    "meanMeaningChars": 2480.38,
+    "citations": 121856,
+    "bracketedCitations": 121824,
+    "unbracketedCitations": 32,
+    "inlineCitations": 3,
+    "suspectCitations": 1,
+    "senseMarkers": 33592,
+    "scriptureRefs": 13314,
+    "provenance": {
+      "lsj": 10260,
+      "abbott-smith-fallback": 543,
+      "not-in-lsj": 121,
+      "middle-liddell": 33,
+      "empty": 77
+    },
+    "relations": {
+      "": 10450,
+      "the Greek of": 184,
+      "a Name of": 64,
+      "a Meaning of": 72,
+      "a Form of": 90,
+      "a Part of": 8,
+      "a Group member of": 37,
+      "a Combination of": 55,
+      "a Spelling of": 74
+    },
+    "sliceReadsVerified": 11034
+  },
+  "checks": {
+    "bothFilesPresent": true,
+    "headerFoundInEveryFile": true,
+    "rowCountsMatchExpected": true,
+    "sha256MatchesPinnedSnapshot": true,
+    "byteCountsMatchPinnedSnapshot": true,
+    "entryCountNonZero": true,
+    "entryCountIs11034": true,
+    "noDuplicateKeys": true,
+    "everyKeyShardable": true,
+    "shardsCoverEveryEntry": true,
+    "everySliceRereadsItsOwnRow": true,
+    "citationsNonZero": true,
+    "citationCountIs121856": true,
+    "citationsMostlyBracketed": true,
+    "senseMarkersNonZero": true,
+    "scriptureRefsNonZero": true,
+    "provenanceCoversEveryRow": true,
+    "abbottSmithFallbackIsNotEmpty": true,
+    "onlyExtraFileHasEmptyMeanings": true,
+    "licenceLineIntact": true
+  },
+  "review": {
+    "duplicateKeys": [],
+    "unshardableKeys": [],
+    "sliceReadFailures": []
+  }
+}

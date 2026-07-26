@@ -1,0 +1,461 @@
+{
+  "status": "healthy",
+  "generatedAt": "2026-07-26T14:25:12.795Z",
+  "source": {
+    "fileName": "ParallelPassages.xml",
+    "bytes": 336250,
+    "sha256": "d43e7554556c1a1c5e2464e6b5ad8a4ab9118ada11060bf6b200abf3d0d0a394",
+    "license": "CC BY-SA 4.0",
+    "attribution": "(UBS Parallel Passage Database, © 2023 United Bible Societies.)"
+  },
+  "coverage": {
+    "rawPassageElements": 2193,
+    "rawVerseElements": 5266,
+    "groupCount": 2193,
+    "memberCount": 5266,
+    "canonicalMemberCount": 4929,
+    "groupSizeDistribution": {
+      "2": 1699,
+      "3": 323,
+      "4": 110,
+      "5": 19,
+      "6": 12,
+      "7": 13,
+      "8": 6,
+      "9": 2,
+      "10": 2,
+      "11": 1,
+      "12": 4,
+      "17": 1,
+      "39": 1
+    },
+    "languageMix": {
+      "HEB": 1184,
+      "GRK+HEB": 249,
+      "GRK": 760
+    },
+    "distinctReferenceStrings": 5012
+  },
+  "versification": {
+    "note": "Hebrew members are numbered in BHS; our backbone is English-Protestant. A reference is only canonical when the WLC and backbone verse counts for its chapter agree.",
+    "otChaptersWhereWlcAndBackboneDisagree": 137,
+    "divergentChaptersByBook": {
+      "PSA": 62,
+      "DEU": 6,
+      "HOS": 6,
+      "NEH": 5,
+      "NUM": 5,
+      "2CH": 4,
+      "DAN": 4,
+      "EXO": 4,
+      "1CH": 3,
+      "1KI": 3,
+      "1SA": 3,
+      "ISA": 3,
+      "2KI": 2,
+      "2SA": 2,
+      "ECC": 2,
+      "EZK": 2,
+      "GEN": 2,
+      "JER": 2,
+      "JOB": 2,
+      "JOL": 2,
+      "JON": 2,
+      "LEV": 2,
+      "MIC": 2,
+      "NAH": 2,
+      "SNG": 2,
+      "ZEC": 2,
+      "MAL": 1
+    },
+    "divergentMembersByReason": {
+      "chapter-verse-count-differs": 323,
+      "out-of-backbone-range": 14,
+      "source-verse-count-unknown": 0,
+      "unknown-book": 0
+    },
+    "divergentMemberTotal": 337,
+    "unparsableMemberCount": 0,
+    "passagePairsSkipped": 493,
+    "rejectedReferences": [
+      {
+        "raw": "1CH 6:1",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "NEH 9:6",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "NEH 9:6",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "EXO 21:2",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "EXO 21:3",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "EXO 21:5-6",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "EXO 21:24",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "EXO 22:27",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 68:2",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "NUM 16:20",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "NUM 16:5",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "NUM 17:9",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "NUM 29:16",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "NUM 29:25",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "NUM 29:18",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "NUM 29:21",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "NUM 29:24",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "NUM 29:27",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "NUM 29:30",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "NUM 29:33",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "NUM 29:28",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "NUM 29:38",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:1",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:2-3",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:4",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:5",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:6",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:7",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:8",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:9",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:10",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:11",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:12",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:13",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:14",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:15",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:16",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:17",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:18",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:19",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:20",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:21",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:22",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:23",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:24",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:25",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:26",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:27",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:28",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:29",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:30",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:31",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:32",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:33",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:34",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:35",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:36",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:37",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:38",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      },
+      {
+        "raw": "PSA 18:39",
+        "kind": "divergent",
+        "reason": "chapter-verse-count-differs"
+      }
+    ]
+  },
+  "wordAlignment": {
+    "digitHistogram": {
+      "0": 27966,
+      "1": 13178,
+      "2": 45842,
+      "3": 1758,
+      "4": 1070,
+      "5": 3605
+    },
+    "documentedButUnusedDigits": [
+      "6",
+      "7",
+      "8"
+    ],
+    "total": 93419,
+    "full": 49447,
+    "partial": 14248,
+    "none": 29724,
+    "withLineBreak": 6433
+  },
+  "comparisonWithOpenBible": {
+    "openBibleEdgeCount": 344799,
+    "openBibleDistinctVersePairs": 555513,
+    "ubsVersePairs": 6661,
+    "ubsVersePairsAlsoInOpenBible": 4369,
+    "ubsVersePairsNetNew": 2292,
+    "ubsPassagePairs": 4842,
+    "ubsPassagePairsCorroborated": 3327,
+    "ubsPassagePairsNetNew": 1515,
+    "corroboratedExamples": [
+      "GEN 1:27 <-> GEN 5:2",
+      "GEN 1:27 <-> MAT 19:4",
+      "GEN 1:27 <-> MRK 10:6",
+      "GEN 5:2 <-> MAT 19:4",
+      "GEN 5:2 <-> MRK 10:6",
+      "GEN 2:2 <-> HEB 4:4",
+      "GEN 2:7 <-> 1CO 15:45",
+      "GEN 2:24 <-> MAT 19:5",
+      "GEN 2:24 <-> MRK 10:7-8",
+      "GEN 2:24 <-> 1CO 6:16",
+      "GEN 2:24 <-> EPH 5:31",
+      "MAT 19:5 <-> MRK 10:7-8"
+    ],
+    "netNewExamples": [
+      "MAT 19:4 <-> MRK 10:6",
+      "GEN 10:4 <-> 1CH 1:7",
+      "GEN 10:7 <-> 1CH 1:9",
+      "GEN 10:16 <-> 1CH 1:14",
+      "GEN 10:17 <-> 1CH 1:15",
+      "GEN 10:18 <-> 1CH 1:16",
+      "GEN 14:20 <-> HEB 7:2",
+      "ROM 4:9 <-> ROM 4:22",
+      "ROM 4:9 <-> JAS 2:23",
+      "GEN 17:5 <-> ROM 4:18",
+      "GEN 25:4 <-> 1CH 1:33",
+      "GEN 25:14 <-> 1CH 1:30",
+      "GEN 25:15 <-> 1CH 1:31",
+      "GEN 35:24-26 <-> 1CH 2:2",
+      "GEN 36:33 <-> 1CH 1:44",
+      "GEN 36:34 <-> 1CH 1:45",
+      "GEN 36:35 <-> 1CH 1:46",
+      "GEN 36:38 <-> 1CH 1:49",
+      "GEN 36:41 <-> 1CH 1:52",
+      "GEN 36:42 <-> 1CH 1:53",
+      "GEN 41:1 <-> GEN 41:17",
+      "GEN 41:2 <-> GEN 41:18",
+      "GEN 41:3 <-> GEN 41:19",
+      "GEN 41:4 <-> GEN 41:20"
+    ]
+  },
+  "checks": {
+    "everyVerseElementParsed": true,
+    "everyPassageElementParsed": true,
+    "coverageFloor": true,
+    "digitsAllDecodable": true,
+    "versificationHazardMeasured": true,
+    "openBibleComparisonRan": true
+  }
+}

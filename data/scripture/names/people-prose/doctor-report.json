@@ -1,0 +1,138 @@
+{
+  "generatedAt": "2026-07-26T14:25:10.852Z",
+  "tipnr": {
+    "source": "STEPBible TIPNR",
+    "license": "CC BY 4.0",
+    "sourceSha256": "1a3b7d7df5cfa1e96eefa07dec92900bea278370c6788fadb5d036f3223b637c",
+    "entityCount": 4259
+  },
+  "sources": {
+    "unfoldingword-tw": {
+      "file": "unfoldingword-tw.json",
+      "bytes": 430147,
+      "counts": {
+        "namesFiles": 355,
+        "ktFiles": 190,
+        "ktImported": 13,
+        "parsed": 368,
+        "unparsedFiles": 0,
+        "matchedTipnr": 319,
+        "personScoped": 195,
+        "nameScoped": 173,
+        "selfDeclaredMultiPerson": 31,
+        "selfDeclaredMultiPersonThatAlsoMeasureMulti": 30,
+        "strongsTokens": 762,
+        "strongsHebrew": 475,
+        "strongsGreek": 287,
+        "strongsGreekWithVariant": 0,
+        "unparsedStrongsTokens": 0,
+        "ambiguousNames": 124,
+        "mostAmbiguousBearerCount": 19
+      },
+      "nameKeys": 173,
+      "entityIds": 195,
+      "provenance": {
+        "upstream": "https://git.door43.org/unfoldingWord/en_tw",
+        "rawFile": "sources/en_tw.zip",
+        "sourceSha256": "d1467f779551e7e7409f91b90783ef1a65f932f2dcf058507fa75e0279651408",
+        "upstreamVersion": "master @ 71985910318bc7b3d551d40d76df41901319108d (2026-07-16), manifest version 89, issued 2026-06-24",
+        "retrievedAt": "2026-07-26"
+      },
+      "attribution": {
+        "name": "unfoldingWord® Translation Words",
+        "date": "2026",
+        "license": "CC BY-SA 4.0",
+        "attributionText": "The original work by unfoldingWord is available from unfoldingword.org/utw",
+        "riderCount": 2
+      }
+    },
+    "hitchcock": {
+      "file": "hitchcock.json",
+      "bytes": 901460,
+      "counts": {
+        "swordRecords": 2616,
+        "definitionBlocks": 2625,
+        "distinctKeys": 2619,
+        "duplicatedKeys": 6,
+        "recoveredHeadwords": 7,
+        "editorialTextStripped": 1,
+        "matchedTipnr": 1875,
+        "nameScoped": 2625,
+        "personScoped": 0,
+        "malformedRecords": 0
+      },
+      "nameKeys": 2619,
+      "entityIds": 0,
+      "provenance": {
+        "upstream": "https://www.crosswire.org/ftpmirror/pub/sword/packages/rawzip/Hitchcock.zip",
+        "rawFile": "sources/Hitchcock.zip",
+        "sourceSha256": "1c22a6482246274f463a5365232de8f79b445971f2de336b670a9b4d73fc74e4",
+        "upstreamVersion": "CrossWire Sword module \"Hitchcock\" Version=2.0, History_2.0 \"(2022-06-04) New build from CCEL text (2022)\"",
+        "intermediateSha256": "972dfa0f9319ce10fe358d161f19a923b703b6f6b9741aa1fa25527ff6ff82e9",
+        "about": "HITCHCOCK'S BIBLE NAMES DICTIONARY\\par\\par This dictionary is from \"Hitchcock's New and Complete Analysis of the Holy Bible,\" published in the late 1800s.  It contains well over 2,500 Bible and Bible-related proper names and their meanings which you can search using a word processor. Some Hebrew words of uncertain meaning have been left out.  It is out of copyright, so feel free to copy and distribute it. I pray it will help in your study of God's Word.\\par\\par -- BRH",
+        "retrievedAt": "2026-07-26"
+      },
+      "attribution": {
+        "name": "Hitchcock's Bible Names Dictionary",
+        "date": "1874",
+        "license": "Public Domain",
+        "attributionText": "Hitchcock's Bible Names Dictionary, from \"Hitchcock's New and Complete Analysis of the Holy Bible\" (late 1800s). Public domain. CrossWire Sword module \"Hitchcock\" version 2.0, text source CCEL.",
+        "riderCount": 2
+      }
+    },
+    "isbe": {
+      "file": "isbe.json",
+      "bytes": 7995446,
+      "counts": {
+        "swordRecords": 9380,
+        "malformedRecords": 0,
+        "headwordsWithOrdinalSuffix": 278,
+        "importedEntries": 2591,
+        "articleRecords": 2591,
+        "rosterEntries": 606,
+        "rosterSegments": 2066,
+        "segmentsBoundToOnePerson": 1265,
+        "segmentsCoveringManyIndividuals": 11,
+        "segmentsWithoutReferenceEvidence": 346,
+        "segmentsMatchingNoBearer": 232,
+        "segmentsMatchingManyBearers": 90,
+        "segmentsDemotedByBearerCollision": 122,
+        "entitiesContestedByManySubEntries": 56,
+        "distinctPersonsBound": 1265,
+        "nameScoped": 3392,
+        "personScoped": 1265,
+        "osisRefsResolved": 31749
+      },
+      "nameKeys": 2455,
+      "entityIds": 1265,
+      "provenance": {
+        "upstream": "https://www.crosswire.org/ftpmirror/pub/sword/packages/rawzip/ISBE.zip",
+        "rawFile": "sources/ISBE.zip",
+        "sourceSha256": "4de747545d9c349ab724bc1708b01df5481e3b93e5e51077f859dd8a32023a32",
+        "upstreamVersion": "CrossWire Sword module \"ISBE\" Version=2.2, SwordVersionDate=2009-09-07",
+        "intermediateSha256": "c6a4cd3e7bd271a7b133154c5c89c460bd899ffc65dec998f994a2304baba29a",
+        "about": "THE INTERNATIONAL STANDARD BIBLE ENCYCLOPEDIA\\par James Orr, M.A., D.D. General Editor\\par John L. Nuelsen, D.D., LL.D. Edgar Y. Mullins, D.D., LL.D. Assistant Editors\\par Morris O. Evans, D.D., PhD. Managing Editor\\par Melvin Grove Kyle, D.D., JJ.D. Revising Editor\\par 1844-1913 ed.",
+        "retrievedAt": "2026-07-26"
+      },
+      "attribution": {
+        "name": "International Standard Bible Encyclopedia",
+        "date": "1915",
+        "license": "Public Domain",
+        "attributionText": "International Standard Bible Encyclopedia (1915), James Orr, General Editor. Public domain. CrossWire Sword module \"ISBE\" version 2.2 (2009-09-07).",
+        "riderCount": 2
+      }
+    }
+  },
+  "checks": {
+    "unfoldingword-tw:granularityAuditClean": true,
+    "unfoldingword-tw:hasNameScopedProse": true,
+    "unfoldingword-tw:attributionNonEmpty": true,
+    "hitchcock:granularityAuditClean": true,
+    "hitchcock:hasNameScopedProse": true,
+    "hitchcock:attributionNonEmpty": true,
+    "isbe:granularityAuditClean": true,
+    "isbe:hasNameScopedProse": true,
+    "isbe:attributionNonEmpty": true
+  },
+  "status": "healthy"
+}

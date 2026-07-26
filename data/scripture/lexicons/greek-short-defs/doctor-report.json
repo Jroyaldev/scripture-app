@@ -1,0 +1,491 @@
+{
+  "status": "healthy",
+  "sources": {
+    "mounce": {
+      "name": "Mounce Concise Greek-English Dictionary",
+      "url": "https://github.com/jcuenod/dictionary → dictionary.txt",
+      "license": "Attribution-NonCommercial — free for non-commercial, non-revenue-bearing use",
+      "requiredAttribution": "Mounce Concise Greek-English Dictionary\nCopyright 1993 All Rights Reserved\nwww.teknia.com/greek-dictionary",
+      "snapshotDate": "2026-07-26",
+      "rawSha256": "760b5431c3710fe6770f668440fd5506b71086f0d9e12381f26732b015fceb89",
+      "rawBytes": 1041936
+    },
+    "tbesg": {
+      "name": "STEPBible TBESG (Abbott-Smith / Middle Liddell / STEPBible)",
+      "url": "https://github.com/STEPBible/STEPBible-Data → Lexicons/TBESG - Translators Brief lexicon of Extended Strongs for Greek - STEPBible.org CC BY.txt",
+      "license": "CC BY 4.0",
+      "requiredAttribution": "Data created by www.STEPBible.org based on work at  Tyndale House Cambridge (CC BY 4.0)",
+      "rider": "* Refer others to github.com/STEPBible as the source of the data. Please do not redistribute it yourself.",
+      "snapshotDate": "2026-07-26",
+      "rawSha256": "312f723d7b8ef263bbdfb0451c9b8057125804dfff390b6f8544cff2a84b57f4",
+      "rawBytes": 4736912
+    }
+  },
+  "coverage": {
+    "entryCount": 11157,
+    "mounceKeyCount": 5626,
+    "tbesgKeyCount": 11035,
+    "bothKeyCount": 5504,
+    "splitBases": 109,
+    "cardGloss": {
+      "budgetWords": 25,
+      "bySource": {
+        "mounce-definition": 4383,
+        "tbesg-gloss": 6773
+      },
+      "missing": 1,
+      "overBudget": 3,
+      "baseSense": 241
+    },
+    "mounceEntriesParsed": 5389,
+    "mounceEntriesWithoutStrongs": 3,
+    "mounceRejections": 0,
+    "tbesgRowsParsed": 11035,
+    "tbesgRejections": 0,
+    "mounceOnlyBases": 1,
+    "tbesgOnlyBases": 5514,
+    "mounceAttachedAtBaseLevel": 404,
+    "mounceExtensionLetterKeys": 121,
+    "sharedMeaningSplitBases": 108,
+    "identicalMeaningSplitBases": 105,
+    "byTbesgAttribution": {
+      "abbott-smith": 5708,
+      "middle-liddell": 2305,
+      "stepbible": 3022
+    },
+    "mounceParse": {
+      "lines": 16318,
+      "headers": 5389,
+      "entriesWithStrongs": 5386,
+      "gkOnlyEntries": 3,
+      "strongsTokens": 5481,
+      "distinctStrongsKeys": 5446,
+      "extensionLetterTokens": 123,
+      "piMarkedTokens": 16,
+      "expositoryCrossReferences": 1085,
+      "alphabetDividers": 24,
+      "wordStudyLines": 9
+    },
+    "tbesgParse": {
+      "dataRows": 11035,
+      "distinctDStrong": 11035,
+      "distinctBases": 10847,
+      "suffixedDStrong": 295,
+      "meaningNonEmpty": 11035,
+      "byRelation": {
+        "": 10451,
+        "the Greek of": 184,
+        "a Name of": 64,
+        "a Meaning of": 72,
+        "a Form of": 90,
+        "a Part of": 8,
+        "a Group member of": 37,
+        "a Combination of": 55,
+        "a Spelling of": 74
+      },
+      "combinationUStrong": 54
+    }
+  },
+  "checks": {
+    "mounceEntriesExact": true,
+    "mounceHasNoRejections": true,
+    "tbesgRowsExact": true,
+    "tbesgHasNoRejections": true,
+    "entriesNonZero": true,
+    "mounceKeysNonZero": true,
+    "tbesgKeysNonZero": true,
+    "bothKeysNonZero": true,
+    "overlapIsSubstantial": true,
+    "tbesgReachesBeyondMounce": true,
+    "everyEntryKeyMatchesItsRecord": true,
+    "everyMounceHalfIsAttributed": true,
+    "everyTbesgHalfIsAttributed": true,
+    "everyAttributionResolves": true,
+    "everySourceHasRequiredAttribution": true,
+    "mounceAttributionVerbatim": true,
+    "tbesgAttributionVerbatim": true,
+    "tbesgRiderRecorded": true,
+    "baseLevelMounceIsFlagged": true,
+    "baseLevelAttachmentsHappened": true,
+    "mounceExtensionKeysExist": true,
+    "mounceExtensionKeysHaveNoTbesg": true,
+    "inputsHashed": true,
+    "sharedMeaningDetected": true,
+    "tbesgAttributionSplitIsReal": true,
+    "cardGlossUsesMounce": true,
+    "cardGlossUsesTbesgGloss": true,
+    "cardGlossGapsAccountedFor": true,
+    "cardGlossOverBudgetOnlyWhenUnavoidable": true,
+    "cardGlossOverBudgetCountPinned": true,
+    "mounceBytesPinned": true,
+    "tbesgBytesPinned": true,
+    "mounceSha256Pinned": true,
+    "tbesgSha256Pinned": true
+  },
+  "samples": [
+    {
+      "key": "G749",
+      "greek": "ἀρχιερεύς",
+      "tbesgGloss": "high-priest",
+      "tbesgMeaningChars": 458,
+      "tbesgMeaningWords": 53,
+      "tbesgMeaningSharedAcrossSenses": false,
+      "tbesgAttribution": "tbesg-abbott-smith",
+      "mounceDefinition": "a high-priest, chief-priest",
+      "mounceWords": 3,
+      "mounceAppliesToWholeBase": false,
+      "cardGloss": {
+        "text": "a high-priest, chief-priest",
+        "attribution": "mounce",
+        "sense": "this-sense",
+        "field": "mounce-definition",
+        "wordCount": 3
+      }
+    },
+    {
+      "key": "G4245G",
+      "greek": "πρεσβύτερος",
+      "tbesgGloss": "elder: Elder",
+      "tbesgMeaningChars": 2173,
+      "tbesgMeaningWords": 235,
+      "tbesgMeaningSharedAcrossSenses": true,
+      "tbesgAttribution": "tbesg-abbott-smith",
+      "mounceDefinition": "elder, senior; older, more advanced in years, Lk. 15:25; Jn. 8:9; Acts 2:17; an elder in respect of age, person advanced in years, 1 Tim. 5:1, 2; pl. spc. ancients, ancestors, fathers, Mt. 15:2; Heb. 11:2; as an appellation of dignity, an elder, local dignitary, Lk. 7:3; an elder, member of the Jewish Sanhedrin, Mt. 16:21; 21:23; 26:3, 47, 57, 59; an elder or presbyter of the Christian church, Acts 11:30; 14:23, et al. freq.",
+      "mounceWords": 75,
+      "mounceAppliesToWholeBase": true,
+      "cardGloss": {
+        "text": "elder: Elder",
+        "attribution": "tbesg-abbott-smith",
+        "sense": "this-sense",
+        "field": "tbesg-gloss",
+        "wordCount": 2
+      }
+    },
+    {
+      "key": "G4245H",
+      "greek": "πρεσβύτερος",
+      "tbesgGloss": "elder: old",
+      "tbesgMeaningChars": 2173,
+      "tbesgMeaningWords": 235,
+      "tbesgMeaningSharedAcrossSenses": true,
+      "tbesgAttribution": "tbesg-abbott-smith",
+      "mounceDefinition": "elder, senior; older, more advanced in years, Lk. 15:25; Jn. 8:9; Acts 2:17; an elder in respect of age, person advanced in years, 1 Tim. 5:1, 2; pl. spc. ancients, ancestors, fathers, Mt. 15:2; Heb. 11:2; as an appellation of dignity, an elder, local dignitary, Lk. 7:3; an elder, member of the Jewish Sanhedrin, Mt. 16:21; 21:23; 26:3, 47, 57, 59; an elder or presbyter of the Christian church, Acts 11:30; 14:23, et al. freq.",
+      "mounceWords": 75,
+      "mounceAppliesToWholeBase": true,
+      "cardGloss": {
+        "text": "elder: old",
+        "attribution": "tbesg-abbott-smith",
+        "sense": "this-sense",
+        "field": "tbesg-gloss",
+        "wordCount": 2
+      }
+    },
+    {
+      "key": "G2673",
+      "greek": "καταργέω",
+      "tbesgGloss": "to abate",
+      "tbesgMeaningChars": 1034,
+      "tbesgMeaningWords": 92,
+      "tbesgMeaningSharedAcrossSenses": false,
+      "tbesgAttribution": "tbesg-abbott-smith",
+      "mounceDefinition": "to render useless or unproductive, occupy unprofitable, Lk. 13:7; to render powerless, Rom. 6:6; to make empty and unmeaning, Rom. 4:14; to render null, to abrogate, cancel, Rom. 3:3, 31; Eph. 2:15; to bring to an end, 1 Cor. 2:6; 13:8; 15:24, 26; 2 Cor. 3:7; to destroy, annihilate, 2 Thess. 2:8; Heb. 2:14; to free from, dissever from, Rom. 7:2, 6; Gal. 5:4",
+      "mounceWords": 64,
+      "mounceAppliesToWholeBase": false,
+      "cardGloss": {
+        "text": "to abate",
+        "attribution": "tbesg-abbott-smith",
+        "sense": "this-sense",
+        "field": "tbesg-gloss",
+        "wordCount": 2
+      }
+    },
+    {
+      "key": "G26",
+      "greek": "ἀγάπη",
+      "tbesgGloss": "love",
+      "tbesgMeaningChars": 1571,
+      "tbesgMeaningWords": 230,
+      "tbesgMeaningSharedAcrossSenses": false,
+      "tbesgAttribution": "tbesg-abbott-smith",
+      "mounceDefinition": "love, generosity, kindly concern, devotedness; pl. love-feasts, Jude 12",
+      "mounceWords": 9,
+      "mounceAppliesToWholeBase": false,
+      "cardGloss": {
+        "text": "love, generosity, kindly concern, devotedness; pl. love-feasts, Jude 12",
+        "attribution": "mounce",
+        "sense": "this-sense",
+        "field": "mounce-definition",
+        "wordCount": 9
+      }
+    }
+  ],
+  "review": {
+    "mounceRejections": [],
+    "tbesgRejections": [],
+    "collidingMounceStrongsKeys": [
+      {
+        "key": "G1003",
+        "lemmas": [
+          "Βόες",
+          "Βόος"
+        ]
+      },
+      {
+        "key": "G1061",
+        "lemmas": [
+          "γαμίζω",
+          "γαμίσκω"
+        ]
+      },
+      {
+        "key": "G1166",
+        "lemmas": [
+          "δείκνυμι",
+          "δεικνύω"
+        ]
+      },
+      {
+        "key": "G1326a",
+        "lemmas": [
+          "διενθυμέομαι",
+          "διόρθωμα"
+        ]
+      },
+      {
+        "key": "G1632",
+        "lemmas": [
+          "ἐκχέω",
+          "ἐκχύννομαι"
+        ]
+      },
+      {
+        "key": "G1752",
+        "lemmas": [
+          "εἵνεκεν",
+          "ἕνεκεν"
+        ]
+      },
+      {
+        "key": "G1883a",
+        "lemmas": [
+          "ἐπάρατος",
+          "ἐπεισέρχομαι"
+        ]
+      },
+      {
+        "key": "G2310",
+        "lemmas": [
+          "θεμέλιον",
+          "θεμέλιος"
+        ]
+      },
+      {
+        "key": "G2327",
+        "lemmas": [
+          "θεριστής",
+          "θέρμη"
+        ]
+      },
+      {
+        "key": "G2469",
+        "lemmas": [
+          "Ἰσκαριώθ",
+          "Ἰσκαριώτης"
+        ]
+      },
+      {
+        "key": "G2736",
+        "lemmas": [
+          "κάτω",
+          "κατωτέρω"
+        ]
+      },
+      {
+        "key": "G2874",
+        "lemmas": [
+          "κοπρία",
+          "κόπριον"
+        ]
+      },
+      {
+        "key": "G2878",
+        "lemmas": [
+          "κορβᾶν",
+          "κορβανᾶς"
+        ]
+      },
+      {
+        "key": "G293",
+        "lemmas": [
+          "ἀμφιβάλλω",
+          "ἀμφίβληστρον"
+        ]
+      },
+      {
+        "key": "G30",
+        "lemmas": [
+          "ἀγγεῖον",
+          "ἄγγος"
+        ]
+      },
+      {
+        "key": "G3137",
+        "lemmas": [
+          "Μαρία",
+          "Μαριάμ"
+        ]
+      },
+      {
+        "key": "G3304",
+        "lemmas": [
+          "μενοῦν",
+          "μενοῦνγε"
+        ]
+      },
+      {
+        "key": "G3331",
+        "lemmas": [
+          "μετάθεσις",
+          "μόνον"
+        ]
+      },
+      {
+        "key": "G3332",
+        "lemmas": [
+          "μεταίρω",
+          "μόνος"
+        ]
+      },
+      {
+        "key": "G3463",
+        "lemmas": [
+          "μύριοι",
+          "μυρίος"
+        ]
+      },
+      {
+        "key": "G3478",
+        "lemmas": [
+          "Ναζαρά",
+          "Ναζαρέθ",
+          "Ναζαρέτ"
+        ]
+      },
+      {
+        "key": "G3762",
+        "lemmas": [
+          "οὐδείς",
+          "οὐθείς"
+        ]
+      },
+      {
+        "key": "G4486",
+        "lemmas": [
+          "ῥήγνυμι",
+          "ῥήσσω"
+        ]
+      },
+      {
+        "key": "G4529",
+        "lemmas": [
+          "Σαλαμίς",
+          "Σαλείμ"
+        ]
+      },
+      {
+        "key": "G4851",
+        "lemmas": [
+          "συμφέρω",
+          "σύμφορος"
+        ]
+      },
+      {
+        "key": "G4894",
+        "lemmas": [
+          "σύνοιδα",
+          "συνοράω"
+        ]
+      },
+      {
+        "key": "G5117",
+        "lemmas": [
+          "Πόντος",
+          "τόπος"
+        ]
+      },
+      {
+        "key": "G5154",
+        "lemmas": [
+          "τρίτον",
+          "τρίτος"
+        ]
+      },
+      {
+        "key": "G5179",
+        "lemmas": [
+          "τυπικῶς",
+          "τύπος"
+        ]
+      },
+      {
+        "key": "G5392",
+        "lemmas": [
+          "κημόω",
+          "φιμόω"
+        ]
+      },
+      {
+        "key": "G561",
+        "lemmas": [
+          "ἀπεῖπον",
+          "ἀπέναντι"
+        ]
+      },
+      {
+        "key": "G837",
+        "lemmas": [
+          "αὐξάνω",
+          "αὔξω"
+        ]
+      },
+      {
+        "key": "G906",
+        "lemmas": [
+          "ἀμφιβάλλω",
+          "βάλλω"
+        ]
+      }
+    ],
+    "cardGlossMissingKeys": [
+      {
+        "key": "G21370",
+        "greek": "πλάνης",
+        "why": "TBESG Gloss (col 7) is empty and there is no Mounce entry"
+      }
+    ],
+    "cardGlossOverBudgetKeys": [
+      {
+        "key": "G2492a",
+        "words": 89,
+        "hadTbesgAlternative": false,
+        "mounceExtensionLetter": "a"
+      },
+      {
+        "key": "G3608a",
+        "words": 40,
+        "hadTbesgAlternative": false,
+        "mounceExtensionLetter": "a"
+      },
+      {
+        "key": "G4091a",
+        "words": 40,
+        "hadTbesgAlternative": false,
+        "mounceExtensionLetter": "a"
+      }
+    ]
+  },
+  "artifact": {
+    "formatVersion": 1,
+    "normalizedSha256": "a372cd861240d1f3bf37fd75deefb313300db064cdde7f2c4915f595a15f767b"
+  }
+}

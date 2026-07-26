@@ -1,0 +1,55 @@
+NOTICES FOR THE FILES IN THIS DIRECTORY
+=======================================
+
+This file exists because neither source ships its own notice inside its data
+file. If these bytes are ever copied somewhere else, this file must go with
+them, or the required attribution does not travel with the data.
+
+
+Mounce-Concise-Greek-English-Dictionary-teknia.com-NC.txt
+---------------------------------------------------------
+
+The licensor requires the following notice to be made publicly visible. It is
+reproduced here verbatim:
+
+    Mounce Concise Greek-English Dictionary Copyright 1993 All Rights Reserved www.teknia.com/greek-dictionary
+
+Permission: the material may be freely used in non-commercial, non-revenue
+bearing projects, provided attribution is made public.
+
+  * Obtained from https://github.com/jcuenod/dictionary
+  * NON-COMMERCIAL ONLY. This is a condition on the project, not a footnote.
+    Pericope is free and non-commercial, which is the only reason this source
+    is usable here. If Pericope ever takes revenue, this file and everything
+    derived from it must be REMOVED from the shipped data — re-crediting it
+    would not cure the breach.
+  * The notice above appears nowhere in the .txt itself (grep for "teknia"
+    returns 0), which is why it is recorded here.
+
+
+TBESG-STEPBible-CC-BY.txt
+-------------------------
+
+CC BY 4.0. Credit "STEP Bible" linked to www.STEPBible.org. The file carries
+its own licence header; see LICENSES.md for the verbatim required line and for
+the two riders that header states:
+
+  * "Refer others to github.com/STEPBible as the source of the data. Please do
+    not redistribute it yourself." CC BY 4.0 permits redistribution, so this is
+    a request rather than a condition — but it is the licensor's stated wish and
+    we are shipping the raw text.
+  * Changes to the data must be recorded and made available to subsequent users.
+    We do not modify it; the derived index is generated alongside it.
+
+Column 8's authorship is NOT uniform: a single "Abbott-Smith" credit would
+misattribute 5,327 of 11,035 rows. Per-row attribution is carried through to
+greek-short-defs-index.json and must be shown per entry, never blanket.
+
+
+greek-short-defs-index.json
+---------------------------
+
+Generated from both sources above by scripts/import-greek-short-defs.ts. It
+keeps the two sources in separate fields and never blends their prose into one
+string, so each entry can name whose lexicon it is quoting. Both notices above
+apply to it.
