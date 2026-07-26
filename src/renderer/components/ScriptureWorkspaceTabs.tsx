@@ -1107,12 +1107,17 @@ export function ScriptureWorkspaceTabs({
                   // where you are, and its siblings hide; press it again, now a
                   // proxy, and they come back.
                   //
-                  // Only when the study has siblings to hide. A lone tab is its
-                  // own implicit group, and collapsing it would swap its
-                  // reference for a study name and look like a bug rather than a
-                  // fold. A double click self-corrects: the second press lands on
-                  // the proxy and expands again.
-                  if (selected && group.tabIds.length > 1) {
+                  // Only when the fold would show. Two cases qualify and the
+                  // first guard missed one of them: a study with siblings to
+                  // hide, and a study the reader NAMED, which folds to that name
+                  // even holding a single tab. What is excluded is the lone tab
+                  // under an automatic label — there the group's label is derived
+                  // from the passage the tab already shows, so collapsing swaps a
+                  // reference for very nearly itself and the press reads as
+                  // broken. A double click self-corrects: the second press lands
+                  // on the proxy and expands again.
+                  const foldIsVisible = group.tabIds.length > 1 || group.label.kind === "custom";
+                  if (selected && foldIsVisible) {
                     await toggleGroup(group.id, true, byKeyboard ? trigger : undefined);
                     return;
                   }

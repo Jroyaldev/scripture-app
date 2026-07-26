@@ -185,8 +185,14 @@ test("collapsing a study in the strip has an inverse in the strip", () => {
   const literalCollapses = [...tablist.matchAll(/toggleGroup\(group\.id, true\b/g)];
   assert.equal(literalCollapses.length, 1,
     "only the already-selected tab may collapse in a fixed direction");
-  assert.match(tablist, /if \(selected && group\.tabIds\.length > 1\) \{\s*await toggleGroup\(group\.id, true,/,
-    "and only when the study has siblings to hide — a lone tab would swap its reference for a study name");
+  // The guard was `group.tabIds.length > 1` alone, which excluded a study the
+  // reader named that happens to hold one tab — and that one does fold visibly,
+  // to the name they gave it. What stays excluded is the lone tab under an
+  // automatic label, where the group's label is derived from the passage the tab
+  // already shows, so the press would appear to do nothing.
+  assert.match(tablist, /const foldIsVisible = group\.tabIds\.length > 1 \|\| group\.label\.kind === "custom";/);
+  assert.match(tablist, /if \(selected && foldIsVisible\) \{\s*await toggleGroup\(group\.id, true,/,
+    "pressing the active tab folds its study only where the fold is visible");
   // The trigger is handed over only for keyboard activation, for the same
   // reason the selection's focus move is: focusing it after a pointer press is
   // what drew a ring the reader never asked for.
