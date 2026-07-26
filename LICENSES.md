@@ -231,7 +231,15 @@ Data created by www.STEPBible.org based on work at Tyndale House Cambridge (CC B
   Both are upstream. The double-space form above is the one to render (2 of the 3 STEPBible
   files we ship); this note exists so that a future byte-equality test on the extra file does
   not read as a corruption.
-- **RIDER — redistribution, and it bites harder here than anywhere else in this document.** The same "Please do not redistribute it yourself" request applies (quoted in full under TBESG). It matters more for TFLSJ because **the shipped raw text IS the payload, not provenance**: `lsj-slices-*.json` stores `{file, offset, length}` byte ranges into these two `.txt` files, so the app reads LSJ prose out of them at run time. Dropping the raw files to honour the request would require re-materialising 27,368,537 characters of prose into the shards. **Owner decision required.**
+- **RIDER — redistribution, and it bites harder here than anywhere else in this document.** The same "Please do not redistribute it yourself" request applies (quoted in full under TBESG). It matters more for TFLSJ because **the shipped raw text IS the payload, not provenance**: `lsj-slices-*.json` stores `{file, offset, length}` byte ranges into these two `.txt` files, so the app reads LSJ prose out of them at run time. Dropping the raw files to honour the request would require re-materialising 27,368,537 characters of prose into the shards.
+
+  **OWNER DECISION, 2026-07-26 — SETTLED. The raw files stay and the shards are NOT rebuilt.**
+  The licence is CC BY 4.0, which permits redistribution; the "please do not redistribute"
+  line is the licensor's preference, not a condition, and the owner is seeking honorary
+  permission from STEPBible directly. **Do not "fix" this by re-materialising the prose into
+  the shards** — that would be undoing a deliberate decision, and it would triple the derived
+  weight to avoid an obligation that does not exist. If STEPBible ever declines, revisit;
+  until then this is closed.
 - **Importer:** `src/core/language/lsj.ts` + `npm run import:lsj`
 - **Use:** 11,034 entries, 27,368,537 chars of formatted LSJ prose (mean 2,480), 121,856 citations, 33,592 sense markers. The classical-lexicon block on the Greek word card (parity field 18).
 - **Note:** `lsj-index.json` records the upstream file names, which contain a **double space** after `TFLSJ` — the upstream URL 404s without it.
@@ -475,9 +483,17 @@ These routes are part of a collection of data created for UBS by Dr. Leen Ritmey
 
 ## ShareAlike (CC BY-SA) obligations — read before pooling any dataset
 
-Five shipped sources are **CC BY-SA 4.0**, which is stricter than every licence this document
-carried before this batch. ShareAlike is contagious: a derived dataset that mixes in any of
-these is itself CC BY-SA on redistribution.
+**In plain terms, first.** "Attribution" (CC BY) means: use it, credit it, done — whatever you
+build with it stays yours to license as you like. "ShareAlike" (CC BY-SA) adds one condition:
+anything you *build out of it* has to carry the same licence. So the danger is never in
+*showing* two datasets together — it is in *merging* them into one new file. Display two
+corpora side by side and nothing happens. Combine them into a single derived dataset and the
+whole combined thing, including the permissively-licensed half and your own work inside it,
+inherits ShareAlike.
+
+**Six** shipped sources are **CC BY-SA 4.0**, which is stricter than every licence this
+document carried before this batch. ShareAlike is contagious: a derived dataset that mixes in
+any of these is itself CC BY-SA on redistribution.
 
 | source | section |
 |---|---|
