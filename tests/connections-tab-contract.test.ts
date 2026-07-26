@@ -490,39 +490,55 @@ test("no regex in the tours is escaped for the wrong context", () => {
   assert.ok(checked >= 20, `expected to check the tours' assertions, checked ${checked}`);
 });
 
-test("every region this file reads is sliced through a uniqueness-checked anchor", () => {
-  // The clause this whole file's guards keep re-learning: an assertion whose
-  // passing condition is "found something" needs a second assertion that it
-  // looked in the RIGHT place. A wrong anchor and an empty result fail
-  // identically — silently, in the passing direction — so `between()` refuses
-  // an anchor that occurs more than once, and this test refuses a slice that
-  // bypasses `between()`.
+test("no file under test is cut except through the uniqueness-checked helper", () => {
+  // The clause this file keeps re-learning: an assertion whose passing
+  // condition is "found something" needs a second assertion that it looked in
+  // the RIGHT place, and the proof must not inherit the assumption it tests.
+  //
+  // This rule has been wrong twice, and each correction narrowed it toward the
+  // hazard rather than toward the syntax:
+  //
+  //   · It first banned one cutting method (`.slice`) fed by one locating
+  //     method. c4-overview tested that shape and found three ways past it —
+  //     `.substring(x.indexOf(a))`, `.substr(...)`, `.split(a)[1]` — and a
+  //     mutation confirmed all three escaped here too.
+  //   · It then banned cutting outright, outside the sanctioned helper. That
+  //     fired on this guard's OWN scope-building cuts: a third self-match, and
+  //     a sign the rule was still describing syntax.
+  //
+  // The hazard was never "a cut". It is cutting a FILE UNDER TEST on anchors
+  // nobody checked — a wrong anchor silently yields another agent's code and
+  // the assertions inside go on passing. So the rule names the sources: nothing
+  // may cut `margin`, `page`, `css`, `panelSource` or `panelCss` except
+  // `between()`, which cuts its own `source` parameter after asserting both
+  // anchors are unique. That needs no exclusion list and no brace matching —
+  // the helper is outside the rule by virtue of what it operates on.
+  //
+  // It also covers the two-statement form (`const i = margin.indexOf(a)` then
+  // `margin.slice(i, j)`), because the cut names its source either way.
   const self = read("tests/connections-tab-contract.test.ts");
-  // The whole file, not the part above this test. An earlier draft swept only
-  // what preceded itself, to dodge a self-match — and that scoping was itself
-  // a hole: a raw slice added BELOW this test escaped the guard entirely, which
-  // a mutation confirmed before this was rewritten. The patterns are built from
-  // fragments instead, so the literals they forbid never appear in this file
-  // and the sweep can cover all of it without excluding anything by position.
+  // Comments are stripped first: prose necessarily names the constructs it
+  // forbids, and fragment-building only stops the PATTERNS self-matching.
   const body = self.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/^\s*\/\/.*$/gm, " ");
-  const RAW_SLICE = new RegExp("\\.slice\\(\\s*\\w+\\." + "(?:last)?" + "[iI]ndexOf" + "\\(", "g");
-  const POSITIONAL = new RegExp("\\." + "last" + "[iI]ndexOf" + "\\(", "g");
 
-  assert.equal([...body.matchAll(RAW_SLICE)].length, 0,
-    "a region is sliced on a raw indexOf, which cannot know it resolved correctly");
-  // This ban is blanket, and deliberately broader than the region-slice rule
-  // above. It is NOT an oversight to be narrowed to "lastIndexOf that chooses a
-  // region": the hazard also arrives in two statements — `const i =
-  // x.lastIndexOf(a)` on one line and `x.slice(i, j)` on the next — which no
-  // slice-shaped pattern can see. This file has no legitimate positional pick,
-  // so a blanket ban costs nothing here and catches the split form. A file that
-  // does have one should assert the occurrence count and take the index
-  // explicitly rather than relax this.
-  assert.equal([...body.matchAll(POSITIONAL)].length, 0,
+  const SOURCES = "(?:margin|page|css|panelSource|panelCss)";
+  const CUT = new RegExp(SOURCES + "\\.(?:" + "slice" + "|" + "substring" + "|" + "substr" + ")\\(", "g");
+  const SPLIT_PICK = new RegExp(SOURCES + "\\." + "split" + "\\([^)]*\\)\\s*\\[", "g");
+  const LOCATE = new RegExp("\\." + "last" + "[iI]ndexOf" + "\\(", "g");
+
+  assert.equal([...body.matchAll(CUT)].length, 0,
+    "a file under test is cut outside between(), so nothing checked its anchors resolved");
+  assert.equal([...body.matchAll(SPLIT_PICK)].length, 0,
+    "a subscripted split picks a region by position; counting with .split(x).length is fine");
+  // Blanket, and deliberately broader than the cut rule: this bans the
+  // LOCATING, so it catches a position captured from any string and cut
+  // elsewhere. This file has no legitimate positional pick, so the ban costs
+  // nothing here. A file that needs one should assert the occurrence total and
+  // take the index explicitly rather than relax this.
+  assert.equal([...body.matchAll(LOCATE)].length, 0,
     "lastIndexOf picks a match by position, which is not a uniqueness argument");
 
-  // And a floor, so this cannot pass by there being no regions to check —
-  // which would be the very failure it exists to catch.
-  const checked = [...body.matchAll(/\bbetween\(/g)].length;
-  assert.ok(checked >= 8, `expected this file to slice through between(), found ${checked}`);
+  // A floor, so the sweep cannot pass by there being nothing to sweep.
+  assert.ok([...body.matchAll(new RegExp("\\b" + "between" + "\\(", "g"))].length >= 8,
+    "expected this file to cut its regions through between()");
 });

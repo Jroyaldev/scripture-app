@@ -319,6 +319,23 @@ test("the page has exactly two canons, one grid declaration, and no in-between p
 
   // Focus keeps the rectangle and changes only the canon (§05·5), and it must
   // outrank the switch rather than race it.
+  //
+  // THIS IS THE ONLY FOCUS CLAIM THIS FILE HOLDS, and it is not the rectangle.
+  // §05·5's rectangle is four edges — "Top 54, left 80, right and bottom 24 —
+  // identical to reading mode" — and focus was breaking two of them from two
+  // different causes: the top rose to 0 for want of a register strip, the left
+  // fell to 36 on A4's 12px rail stub. Neither fix reaches the rectangle alone,
+  // and the two assertions live apart:
+  //
+  //   top 54   tests/quire-frame-top-edge-contract.test.ts
+  //   left 80  the rail's own contract, over styles/rail.css
+  //
+  // A reader who finds only one of the three will believe focus is guarded when
+  // a third of it is. What none of them can assert is the composite: a
+  // source-reading test cannot see a used layout, so "the focus rectangle
+  // equals the reading rectangle" was established by probing a real browser
+  // (identical at 1280/1328/1600, zero overflow) and is held by these three
+  // halves plus this note, not by an assertion.
   const focus = assignments.find(([selector]) => /focus-mode/.test(selector));
   assert.ok(focus, "focus mode does not choose a canon");
   assert.equal(focus![1], "var(--canon-centred)");
