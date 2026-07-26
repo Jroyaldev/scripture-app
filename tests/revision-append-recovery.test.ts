@@ -415,14 +415,28 @@ test("immutable ticket election produces exactly one first winner across 100 con
         ] as const;
         const results = await raceWorkerRound(workers, round, roundRoot, appends);
         // This test has been seen to fail in a full suite run three times and has
-        // never reproduced in isolation — including four copies run concurrently
-        // on purpose, which made it 4x slower and never made it fail. Two of the
-        // three failures were sub-second, and this assertion sits INSIDE the
-        // hundred-round loop, so a sub-second failure means it broke in the first
-        // rounds rather than timing out. That is a real possibility about
-        // election logic in a revision store, not a slow machine, so the message
-        // has to survive the next occurrence rather than being reconstructed
-        // from a duration.
+        // never reproduced in isolation. Two of the three failures were
+        // sub-second, and this assertion sits INSIDE the hundred-round loop, so a
+        // sub-second failure means it broke in the first rounds rather than
+        // timing out — it was FASTER than any passing run (0.77s and 0.87s
+        // against 6-27s). That is a real possibility about election logic in a
+        // revision store, not a slow machine.
+        //
+        // On "load": four copies run concurrently on purpose made it 4x slower
+        // and never made it fail — but that was four copies of ONE test file.
+        // The observed failures happened while Electron builds, two tsc projects
+        // and Vite were running. So homogeneous self-contention is ruled out and
+        // HETEROGENEOUS BUILD LOAD IS UNTESTED. Withdrawing an unsupported cause
+        // and establishing its absence are different claims, and only the first
+        // has been done here.
+        //
+        // A free diagnostic that was destroyed twice before anyone noticed it:
+        // these workers are spawned with stderr INHERITED, so the leading
+        // environmental hypothesis — module import failing under load — predicts
+        // a visible child stderr trace in the surrounding output. Both
+        // investigations grepped for the test name and the duration, and threw
+        // that away. Next occurrence, read the output around the failure before
+        // anything else.
         //
         // The payload discriminates THREE outcomes, not two, and worker death is
         // not among them: `raceWorkerRound` awaits `Promise.all(done)` with no
