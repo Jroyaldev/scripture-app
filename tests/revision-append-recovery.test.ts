@@ -438,10 +438,14 @@ test("immutable ticket election produces exactly one first winner across 100 con
         // that away. Next occurrence, read the output around the failure before
         // anything else.
         //
-        // The payload discriminates THREE outcomes, not two, and worker death is
-        // not among them: `raceWorkerRound` awaits `Promise.all(done)` with no
-        // timeout, so a worker that dies makes this HANG rather than fail fast.
-        // A sub-second failure therefore means both workers replied.
+        // The payload discriminates THREE outcomes below. Worker death is not
+        // among them, but only for a SILENT exit: `raceWorkerRound` awaits
+        // `Promise.all(done)` with no timeout, so a worker that dies quietly
+        // makes this HANG rather than fail fast. `waitForWorkerReply` does also
+        // register an `error` handler that rejects — a fast-failure path that
+        // bypasses every assertion here. So a failure arriving with NONE of the
+        // diagnostics below is not a broken diagnostic; it is the fourth signal,
+        // and it means the child errored rather than answered.
         //
         //   two ok:true   — a real election defect; both writers believed they won
         //   two ok:false  — both threw. Module-import-under-load is the leading
