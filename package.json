@@ -16,7 +16,7 @@
     "typecheck": "tsc --noEmit",
     "typecheck:renderer": "tsc --noEmit -p tsconfig.renderer.json",
     "test": "node --import tsx --test tests/**/*.test.ts",
-    "test:connections:native": "env ELECTRON_RUN_AS_NODE=1 electron --import tsx --test tests/authored-connection-broker.test.ts tests/connection-mutation-reconciliation.test.ts tests/connection-persistence.test.ts tests/revision-append-recovery.test.ts tests/git-revision-store-lazy.test.ts tests/snapshot-revision-store.test.ts tests/electron-lifecycle-contract.test.ts tests/marking-surfaces-contract.test.ts",
+    "test:connections:native": "env ELECTRON_RUN_AS_NODE=1 electron --import tsx --test tests/authored-connection-broker.test.ts tests/connection-mutation-reconciliation.test.ts tests/connection-persistence.test.ts tests/connection-retired-selection-shape.test.ts tests/revision-append-recovery.test.ts tests/git-revision-store-lazy.test.ts tests/snapshot-revision-store.test.ts tests/electron-lifecycle-contract.test.ts tests/marking-surfaces-contract.test.ts",
     "library": "node --import tsx src/cli/index.ts",
     "electron": "env -u ELECTRON_RUN_AS_NODE electron dist/electron/main.cjs",
     "rebuild:node": "npm rebuild better-sqlite3",

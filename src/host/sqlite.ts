@@ -36,6 +36,7 @@ import {
   BACKBONE_TOKEN_LAYER,
   MAX_BACKBONE_TOKEN_OCCURRENCES_PER_ANCHOR,
 } from "../core/annotations/backbone-token-anchor.js";
+import { migrateRetiredV2AnchorFields } from "../core/annotations/retired-anchor-fields.js";
 import { isValidBookCode } from "../core/reference/backbone.js";
 import { compareConnectionsCanonical } from "../core/annotations/connection-order.js";
 
@@ -875,7 +876,17 @@ function hydrateExactConnectionAnchor(
   if (row.anchor_json === null) {
     throw new Error(`Derived v2 connection ${connectionId} anchor ${row.ordinal} is missing lossless anchor JSON.`);
   }
-  const parsed = parseAnchorJson(connectionId, row);
+  // The projection stores each anchor's lossless JSON verbatim, so a row
+  // derived from history written by an older build still carries the retired
+  // `selection_shape` sidecar and would fail the closed shape check below.
+  // This is the SECOND read path for that field — the annotations reader
+  // (validateConnectionRecord) is the first — and both share the one named
+  // enumeration in ../core/annotations/retired-anchor-fields.js so the set of
+  // retired fields cannot drift between them. The check below stays closed:
+  // only enumerated fields are removed, and any other unknown key still fails.
+  const stored = parseAnchorJson(connectionId, row);
+  const migrated = migrateRetiredV2AnchorFields(stored);
+  const parsed = isRecord(migrated) ? migrated : stored;
   if (!hasExactKeys(parsed, ["book", "chapter", "verse_start", "verse_end", "exact"])) {
     throw new Error(`Derived v2 connection ${connectionId} anchor ${row.ordinal} has a mixed or open JSON shape.`);
   }

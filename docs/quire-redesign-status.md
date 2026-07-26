@@ -93,22 +93,47 @@ stanza emits both the Hebrew letter and its transliteration at the same verse �
 admitting them would stack duplicate folds down the whole psalm. Superscriptions
 belong to the text and major sections are a scale above the fold.
 
-## Pre-existing bug found on the way
+## Pre-existing bug found on the way — FIXED
 
-Cold-starting a library rebuilds the SQLite projection, and the rebuild
-validates every connection anchor. Two anchor shapes in the store fail that
-validation:
+Cold-starting a library validates every connection anchor and refused to boot
+with `"Canonical token anchor must contain only its passage and exact
+selector"`. Unrelated to the redesign.
 
-- 62 anchors carry `selection_shape`, a field **no code in `src/` writes or
-  accepts** — it was removed without a migration.
-- 20 anchors carry `render_locator`, the v1 shape
-  (`src/core/annotations/index.ts:48`), which the newer canonical-token
-  validator (`src/core/annotations/backbone-token-anchor.ts:97`) rejects.
+**This section previously named two failing shapes and got both numbers and one
+of the diagnoses wrong.** Corrected by cross-tabbing anchor shape against
+`format_version` over all anchors in the log:
 
-The result is `"Canonical token anchor must contain only its passage and exact
-selector"` and a refused startup. It stays hidden while an instance is already
-running, because the projection is only re-derived on a cold start. This needs
-an anchor migration; it is unrelated to the redesign.
+- **64** anchors carry `selection_shape` on `format_version: 2` records. This
+  was the entire defect. The field was removed from the writer without a
+  migration, and `validateBackboneTokenAnchor`'s `ANCHOR_KEYS`
+  (`src/core/annotations/backbone-token-anchor.ts:97`) is deliberately closed,
+  so every one of them was refused.
+- 20 anchors carry `render_locator`, but those are `format_version: 1` records
+  and **were never a defect** — `validateConnectionRecord` dispatches on
+  `format_version`, and `parseConnectionV1` / `parseLegacyAnchor` accept that
+  shape correctly.
+
+It stayed hidden while an instance was already running because the projection is
+only re-derived on a cold start.
+
+The fix is a read-time migration
+(`src/core/annotations/retired-anchor-fields.ts`) that strips retired fields
+**by name** — never a blanket "ignore unknown keys" — applied on the two read
+paths only: the annotations reader (`validateConnectionRecord`) and the SQLite
+projection's `hydrateExactConnectionAnchor` (`src/host/sqlite.ts`). The
+authoring path (`validateNewConnectionRecord`) applies none of them, so a
+retired field cannot re-enter the log.
+
+The log is never rewritten. That matters: of the 64, 50 carried nothing `exact`
+did not already say, but **14 disagreed** — `selection_shape` recorded which
+selected tokens were content words versus function words, and `exact` is the
+wider set. Anchor identity is untouched (`exact` passes through byte for byte),
+and the content/function split stays on disk, recoverable by a future feature.
+Promoting `content_occurrences` into `exact` would have minted a narrower, wrong
+identity for exactly those 14.
+
+Because a projection whose marker matches the log is never rebuilt, the SQLite
+tolerance is permanent for existing libraries, not transitional.
 
 ## Running it
 

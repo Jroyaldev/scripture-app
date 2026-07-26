@@ -6,6 +6,7 @@ import {
 import type {
   BackboneTokenCatalog,
 } from "./backbone-token-anchor.js";
+import { migrateRetiredV2AnchorFields } from "./retired-anchor-fields.js";
 import {
   CONNECTION_FORMAT_VERSION,
   CONNECTION_FORMAT_VERSION_V1,
@@ -55,6 +56,16 @@ type ValidEnvelope = {
   formatVersion: number;
 };
 
+/**
+ * Which side of the durability boundary a v2 parse is standing on.
+ *
+ * "existing-history" reads bytes that are already committed to the append-only
+ * log, so it applies the named retired-field migrations first. "new-authoring"
+ * is the create/update path and applies none of them, so a field retired from
+ * the format can never re-enter the log through a new record.
+ */
+type ConnectionV2ParseOrigin = "existing-history" | "new-authoring";
+
 type ParsedCommonFields = {
   id: string;
   kind: ConnectionKind;
@@ -87,7 +98,7 @@ export function validateConnectionRecord(
     case CONNECTION_FORMAT_VERSION_V1:
       return parseConnectionV1(envelope.value, backbone);
     case CONNECTION_FORMAT_VERSION_V2:
-      return parseConnectionV2(envelope.value, backbone, tokenCatalog);
+      return parseConnectionV2(envelope.value, backbone, tokenCatalog, "existing-history");
     default:
       return unsupportedVersion(envelope.value.id, envelope.value.formatVersion);
   }
@@ -109,6 +120,11 @@ export function validateLegacyConnectionRecord(
 /**
  * Explicit new-create path. New authored connections require v2 and a usable
  * immutable token catalog; this helper never falls back to v1.
+ *
+ * It also never applies the retired-field migrations in
+ * ./retired-anchor-fields.js. A newly authored anchor carrying a retired field
+ * such as `selection_shape` is refused here, so those migrations stay scoped to
+ * history that already exists.
  */
 export function validateNewConnectionRecord(
   input: unknown,
@@ -120,7 +136,7 @@ export function validateNewConnectionRecord(
   if (envelope.value.formatVersion !== CONNECTION_FORMAT_VERSION_V2) {
     return unsupportedVersion(envelope.value.id, envelope.value.formatVersion);
   }
-  return parseConnectionV2(envelope.value, backbone, tokenCatalog);
+  return parseConnectionV2(envelope.value, backbone, tokenCatalog, "new-authoring");
 }
 
 function parseConnectionV1(
@@ -157,7 +173,8 @@ function parseConnectionV1(
 function parseConnectionV2(
   envelope: ValidEnvelope,
   backbone: BackboneData,
-  tokenCatalog?: BackboneTokenCatalog | null,
+  tokenCatalog: BackboneTokenCatalog | null | undefined,
+  origin: ConnectionV2ParseOrigin,
 ): ConnectionValidationResultV2 {
   const common = parseCommonFields(envelope, CONTENT_V2_KEYS);
   if (!common.ok) return common;
@@ -175,8 +192,15 @@ function parseConnectionV2(
 
   const anchors: ConnectionAnchorV2[] = [];
   for (let ordinal = 0; ordinal < common.value.rawAnchors.length; ordinal++) {
+    // Committed history may still carry fields that were retired from the v2
+    // anchor shape without a migration. Strip those enumerated names here, on
+    // the read path only, so validateBackboneTokenAnchor stays closed for
+    // everything that constitutes durable identity. New authoring skips this.
+    const rawAnchor = origin === "existing-history"
+      ? migrateRetiredV2AnchorFields(common.value.rawAnchors[ordinal])
+      : common.value.rawAnchors[ordinal];
     const parsed = validateBackboneTokenAnchor(
-      common.value.rawAnchors[ordinal],
+      rawAnchor,
       backbone,
       tokenCatalog,
     );
@@ -451,6 +475,13 @@ function hasEveryKey(value: Record<string, unknown>, required: readonly string[]
 function hasExactKeys(value: Record<string, unknown>, expected: readonly string[]): boolean {
   return Object.keys(value).length === expected.length && hasEveryKey(value, expected);
 }
+
+export {
+  RETIRED_CONNECTION_ANCHOR_FIELDS,
+  migrateRetiredV2AnchorFields,
+} from "./retired-anchor-fields.js";
+
+export type { RetiredConnectionAnchorField } from "./retired-anchor-fields.js";
 
 export {
   CONNECTION_FORMAT_VERSION,
