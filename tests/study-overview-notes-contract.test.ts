@@ -592,11 +592,20 @@ test("no region in this file is chosen by a raw, unasserted anchor", () => {
   // bypassed by `substring`, `substr` and `split(x)[n]` — c4-connections
   // predicted a gap in the narrow form and was right, though not by the
   // mechanism proposed: the split-across-two-statements case IS caught here,
-  // because the cutting line is flagged wherever its bounds came from. Position comparison — `props.indexOf(a) >
+  // because the cutting line is flagged wherever its bounds came from.
+  //
+  // KNOWN INCOMPLETE, and the incompleteness is structural. A deny-list of
+  // cutting constructs can always be out-run by another one — `.replace()`
+  // stripping an anchored prefix still escapes this, and I have left it rather
+  // than pretend the list is closed. The shape that would actually close it is
+  // c4-connections': name the HAZARD, not the construct — allow-list the safe
+  // consumers of the files under test (the helpers, whole-string assertions,
+  // counting) and flag everything else. That is the right rule; this is the
+  // cheap one, and the difference is recorded so nobody mistakes it for done. Position comparison — `props.indexOf(a) >
   // props.lastIndexOf(b)` inside an already-extracted string — selects nothing
   // and cannot mis-select, so it is not swept. Assembled, never written whole,
   // so this sweep cannot match itself and need not dodge itself by position.
-  const SCAN = ["sl" + "ice", "sub" + "string", "sub" + "str"];
+  const SCAN = ["sl" + "ice", "sub" + "string", "sub" + "str", "ex" + "ec"];
   const HELPERS = ["between", "after", "rule", "enclosingComment", "functionBody", "nthOccurrence"];
 
   // Excise each helper by its own unique signature, so the check is anchored
@@ -615,9 +624,11 @@ test("no region in this file is chosen by a raw, unasserted anchor", () => {
   const offenders: string[] = [];
   for (const line of code.split("\n")) {
     if (SCAN.some((name) => line.includes(`.${name}(`))) offenders.push(line.trim());
-    // `.split(x)[n]` selects a region too — the subscript is the tell. Counting
-    // with `.split(x).length` does not, and is used throughout this file.
-    if (line.includes("." + "split" + "(") && line.includes(")[")) offenders.push(line.trim());
+    // Subscripting a call result selects a region too, and the subscript is the
+    // tell whatever produced it — `split(a)[1]`, `match(re)![0]`, `exec(re)[0]`
+    // are one hazard in three spellings. Counting with `.split(x).length` and
+    // `.matchAll(...)` iteration do not subscript, and are used throughout.
+    if (/\)!?\[/.test(line)) offenders.push(line.trim());
   }
   assert.deepEqual(
     offenders,

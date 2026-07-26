@@ -15111,9 +15111,22 @@ textarea:focus-visible,
 
 /* --- Focus mode --- */
 
-.app-shell.focus-mode .main-content {
-  width: 100%;
-}
+/* `.app-shell.focus-mode .main-content { width: 100% }` stood here and never did
+   anything. `.main-content` is `flex: 1` — shorthand for `flex: 1 1 0%` — inside
+   a row flex container, so flex-basis wins the main size and `width` never
+   enters the calculation. Below 979px the shell turns column, where `width`
+   would be the cross size, but `align-items: stretch` already gives 100%. Proven
+   twice: analytically, and by overriding it to 1px, 3000px and `auto` — each
+   `!important` — with `.main-content` measuring 1224px beside a 56px rail in
+   every case. That `!important` cannot rescue it is the decisive part: the
+   declaration does not lose a cascade fight, it never competes.
+
+   Removed rather than left because it was a live tripwire. During Rev 05 §05·5
+   it was twice reported as the cause of page-left measuring 36px instead of 80,
+   and two agents had to reason it out before ruling it out. The real cause was
+   Study A4's 12px stub in rail.css, since fixed. A dead rule in a section §05·5
+   makes load-bearing — "the rectangle does not change" — costs more than it
+   saves. */
 .focus-exit-chip {
   position: fixed;
   bottom: var(--sp-xl);
