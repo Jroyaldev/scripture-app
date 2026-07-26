@@ -970,7 +970,17 @@ export function ScriptureWorkspaceTabs({
               title={groupLabel}
               aria-label={`Collapse study ${groupLabel}`}
               onMouseDown={deferMouseFocus}
-              onClick={async (event) => { await toggleGroup(group.id, true, event.currentTarget); }}
+              onClick={async (event) => {
+                // `!group.collapsed` rather than a literal `true`. It resolves to
+                // the same value today, because the kicker only renders while the
+                // study is expanded — but a hardcoded `true` states an assumption
+                // about the render condition instead of reading it, and if that
+                // condition ever widens the button would silently collapse an
+                // already-collapsed study. That is how the missing inverse got
+                // here: this was a real toggle until it was pinned to one
+                // direction.
+                await toggleGroup(group.id, !group.collapsed, event.currentTarget);
+              }}
               onContextMenu={(event) => openContextMenu({ kind: "group", groupId: group.id }, event)}
             >
               {/* Law 2's mark at the smallest scale it appears, on the edge
@@ -1048,6 +1058,7 @@ export function ScriptureWorkspaceTabs({
                 onPointerUp={(event) => handleTabPointerUp(event, tab.id, group.id)}
                 onPointerCancel={handleTabPointerCancel}
                 onClick={async (event) => {
+                  const trigger = event.currentTarget;
                   if (suppressTabClickRef.current) {
                     suppressTabClickRef.current = false;
                     return;
@@ -1057,6 +1068,17 @@ export function ScriptureWorkspaceTabs({
                     else await handleCloseTab(tab.id, { moveFocus: true });
                     return;
                   }
+                  // Press-to-collapse had no inverse. The kicker that collapses a
+                  // study only renders while the study is expanded, so once
+                  // collapsed there was nothing in the strip left to press — and
+                  // this proxy, the one element standing for the whole group,
+                  // only selected. Expanding was reachable solely from the
+                  // group menu's "Expand tabs", which is a long way to undo a
+                  // press. Expand first, then select, so the reader lands on the
+                  // tab the proxy named with the rest of the study beside it —
+                  // which is also what the proxy's own label promises when it
+                  // says it opens that tab.
+                  if (collapsedProxy) await toggleGroup(group.id, false, trigger);
                   await handleSelectTab(tab.id, { moveFocus: true });
                 }}
                 onAuxClick={(event) => handleTabAuxClick(event, tab.id, canClose, collapsedProxy)}

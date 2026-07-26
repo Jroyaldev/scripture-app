@@ -162,10 +162,22 @@ test("the strip owns wheel panning, double-click new tab, and pointer context me
   assert.match(source, />Reopen closed tab</);
 });
 
-test("the in-strip group label is a real collapse control with a group context menu", () => {
+test("collapsing a study in the strip has an inverse in the strip", () => {
   const tablist = section('role="tablist"', '<div className="scripture-workspace-actions"');
   assert.match(tablist, /className="scripture-workspace-group-tab"/);
-  assert.match(tablist, /await toggleGroup\(group\.id, true, event\.currentTarget\)/);
+  // This used to assert `await toggleGroup(group.id, true, event.currentTarget)`
+  // — the literal `true` that made the kicker collapse-only. That was the whole
+  // defect: the kicker renders only while a study is expanded, so once collapsed
+  // there was nothing left in the strip to press, and expanding was reachable
+  // only from the group menu. A press had no inverse.
+  //
+  // Two assertions replace it, and neither is the old one weakened. The kicker
+  // reads the state rather than assuming it, and the collapsed proxy — the one
+  // element standing for a collapsed study — expands before it selects.
+  assert.match(tablist, /await toggleGroup\(group\.id, !group\.collapsed, event\.currentTarget\)/);
+  assert.doesNotMatch(tablist, /toggleGroup\(group\.id, true\b/,
+    "a hardcoded direction is how the inverse went missing; read the state instead");
+  assert.match(tablist, /if \(collapsedProxy\) await toggleGroup\(group\.id, false, trigger\);/);
   assert.match(tablist, /openContextMenu\(\{ kind: "group", groupId: group\.id \}, event\)/);
   // The last line used to read `title={expandedGroupLabel}`, naming the local
   // that existed only while the group label was a bracket anchored to the first
