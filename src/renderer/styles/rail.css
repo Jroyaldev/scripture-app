@@ -368,8 +368,68 @@
 /* And the page takes its own inset back on the left, because there is no longer
    a rail to meet. Every edge is the same 24 in focus — the repetition §05·1
    protects, restored in the one mode that can afford it. */
+/* Rev 05 §05·5 asks for "one 180ms exchange, and the passage settles rather
+   than the app re-laying out". This is that exchange, and it is an ANIMATION
+   rather than a transition for a reason worth writing down, because the obvious
+   fix here is wrong and looks right.
+
+   Both of the page's moving edges are compensations for something that
+   disappears in the SAME frame. On the left, the rail leaves the flex flow
+   (`position: absolute` above) and takes its 56 — or 232 — with it; this
+   rule puts 24 back. On top, the register strip unmounts and takes --frame-top's
+   54; the `:not(:has(> .scripture-workspace-bar))` rule in styles.css puts 24
+   back. Neither removal is animatable: `position` is a discrete property, and
+   the strip is a React unmount.
+
+   So `transition: padding-left …, padding-top …` on this rule eases the wrong
+   half. It interpolates from the value the page had BEFORE the class landed —
+   0 and 0 — while the reserve those zeroes were paired with has already gone,
+   which puts the paper's corner on the window's own corner for a frame and then
+   slides it 24 back in. Measured as arithmetic: page-left 56 → 0 → 24 instead
+   of today's single 56 → 24. That is a bigger step than the one it was meant to
+   remove, in the opposite direction, and it lands paper on the window edge,
+   which Law 1 does not have.
+
+   A one-shot animation can say the thing a transition cannot: START where the
+   rail and the strip left the page. `from` names the two reserves by their own
+   tokens, the implicit `to` is this rule's 24 and styles.css's 24, and the page
+   walks 56 → 24 and 54 → 24 without a step at either end.
+
+   Coming BACK out needs nothing at all, which is why there is no transition on
+   the base rule either: the rail returns to the flow at the 24px width it is
+   standing at and eases to 56 on its own `transition: width`, and this padding
+   drops to 0 in the same frame — 24 + 0, then 56 + 0. The sum never jumps. The
+   top edge is the one place the exchange is still a step: the strip remounts at
+   its full 54 and no CSS can start a mounted box at 24 without animating every
+   mount, including the app's first paint. Reported, not fixed.
+
+   Not `transition: all` anywhere in here, and not `all` in the keyframe either:
+   the two properties are named so that the next declaration added to this rule
+   joins the layout and not the movement. */
 .app-shell.focus-mode .scripture-body {
   padding-left: var(--page-inset);
+  /* --transition-normal is 180ms on the pane curve — §9's "panes move in 180",
+     the same token and the same easing the rail's own width runs on, so the
+     band narrowing and the page settling are one movement rather than two. */
+  animation: focus-frame-settle var(--transition-normal);
+}
+
+/* The two reserves, named by the tokens that define them. No `to`: the implicit
+   one is the pair of 24s the cascade already resolves, so the destination
+   cannot drift away from the resting frame by being written twice. */
+@keyframes focus-frame-settle {
+  from {
+    padding-left: var(--rail-flow-w);
+    padding-top: var(--frame-top);
+  }
+}
+
+/* §9 asks for this and the sheet keeps it: the mode change still happens, it
+   simply happens at once. */
+@media (prefers-reduced-motion: reduce) {
+  .app-shell.focus-mode .scripture-body {
+    animation: none;
+  }
 }
 
 /* The column stays; only its contents go. padding-top is deliberately NOT
@@ -420,5 +480,13 @@
   .app-shell.focus-mode > .sidebar > * {
     opacity: 1;
     pointer-events: auto;
+  }
+
+  /* The exchange above walks the page off the rail's left edge. Below 979 the
+     rail is a bottom bar, so there is no left edge to walk off and
+     --rail-flow-w describes a column that is not there. Stated as a concession
+     like the rest of H's rules rather than left to misfire. */
+  .app-shell.focus-mode .scripture-body {
+    animation: none;
   }
 }

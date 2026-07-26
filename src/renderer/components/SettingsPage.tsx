@@ -6,7 +6,6 @@ import type {
   LibrarySummary,
   MarkingSurface,
   ReadingSize,
-  ReadingWidth,
   VerseNumberMode,
 } from "../api.js";
 import type { AppMaterial, AppTheme } from "../theme.js";
@@ -19,11 +18,9 @@ import { useToast } from "./Toast.js";
 interface Props {
   libraryPath: string;
   readingSize?: ReadingSize;
-  readingWidth?: ReadingWidth;
   verseNumbers?: VerseNumberMode;
   onReadingPrefsChange?: (partial: {
     readingSize?: ReadingSize;
-    readingWidth?: ReadingWidth;
     verseNumbers?: VerseNumberMode;
   }) => void;
   theme: AppTheme;
@@ -173,7 +170,6 @@ function statusLabel(status: string): string {
 export function SettingsPage({
   libraryPath,
   readingSize = "m",
-  readingWidth = "medium",
   verseNumbers = "always",
   onReadingPrefsChange,
   theme,
@@ -484,20 +480,6 @@ export function SettingsPage({
                     { value: "l", content: "Large" },
                   ]}
                   onChange={(value) => onReadingPrefsChange?.({ readingSize: value })}
-                  className="settings-segmented"
-                />
-              </div>
-              <div className="settings-control-row">
-                <div><label>Reading measure</label><p>Keep long-form reading comfortable for your window.</p></div>
-                <SegmentedControl
-                  label="Reading measure"
-                  value={readingWidth}
-                  options={[
-                    { value: "narrow", content: "Narrow" },
-                    { value: "medium", content: "Medium" },
-                    { value: "wide", content: "Wide" },
-                  ]}
-                  onChange={(value) => onReadingPrefsChange?.({ readingWidth: value })}
                   className="settings-segmented"
                 />
               </div>

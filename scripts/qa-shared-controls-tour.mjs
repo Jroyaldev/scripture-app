@@ -287,7 +287,6 @@ const original = await evaluate(`(() => ({
       .filter(Boolean).join(" ") || "Genesis 1";
   })(),
   readingSize: [...document.querySelector(".app-shell")?.classList ?? []].find((name) => name.startsWith("reading-size-"))?.slice(13) ?? "m",
-  readingWidth: [...document.querySelector(".app-shell")?.classList ?? []].find((name) => name.startsWith("reading-width-"))?.slice(14) ?? "medium",
   verseNumbers: [...document.querySelector(".app-shell")?.classList ?? []].find((name) => name.startsWith("verse-nums-"))?.slice(11) ?? "always",
 }))()`);
 
@@ -321,9 +320,12 @@ for (const theme of THEMES) {
     role: "dialog",
     label: "Reading layout",
     floating: "popover",
-    radios: 9,
-    checked: 3,
-    tabbable: 3,
+    // Two radiogroups of three, not three: type size and verse numbers. The
+    // Narrow/Medium/Wide group that made this 9 is gone, because reading size
+    // sets the measure and that group set nothing at all.
+    radios: 6,
+    checked: 2,
+    tabbable: 2,
     focusInside: true,
     scrim: "rgba(0, 0, 0, 0)",
   });
@@ -427,8 +429,7 @@ for (const theme of THEMES) {
 await setTheme(original.theme);
 await openReadingLayout();
 await chooseReadingPreference(0, original.readingSize);
-await chooseReadingPreference(1, original.readingWidth);
-await chooseReadingPreference(2, original.verseNumbers);
+await chooseReadingPreference(1, original.verseNumbers);
 await pressEscape();
 await navigatePassage(original.passage);
 await setTranslation(original.packageId);

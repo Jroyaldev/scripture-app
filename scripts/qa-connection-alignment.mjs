@@ -420,7 +420,6 @@ try {
     }
     await window.api.settings.set({
       theme: "light",
-      readingWidth: "wide",
       sidebarCollapsed: true,
       marginVisible: true,
       lastRead: { book: "ACT", chapter: 19, packageId: "bsb" },

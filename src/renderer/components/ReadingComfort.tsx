@@ -1,12 +1,11 @@
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
-import type { ReadingSize, ReadingWidth, VerseNumberMode } from "../api.js";
+import type { ReadingSize, VerseNumberMode } from "../api.js";
 import { SegmentedControl, type SegmentedOption } from "./Controls.js";
 import { Popover } from "./Popover.js";
 
 export interface ReadingPrefs {
   readingSize: ReadingSize;
-  readingWidth: ReadingWidth;
   verseNumbers: VerseNumberMode;
 }
 
@@ -21,12 +20,6 @@ const SIZES: SegmentedOption<ReadingSize>[] = [
   { value: "l", content: <span className="rc-seg-letter size-l">L</span>, accessibleLabel: "Large type" },
 ];
 
-const WIDTHS: SegmentedOption<ReadingWidth>[] = [
-  { value: "narrow", content: "Narrow" },
-  { value: "medium", content: "Medium" },
-  { value: "wide", content: "Wide" },
-];
-
 const VERSE_MODES: SegmentedOption<VerseNumberMode>[] = [
   { value: "always", content: "Always", accessibleLabel: "Always show verse numbers" },
   { value: "faint", content: "Faint", accessibleLabel: "Show quiet verse numbers" },
@@ -35,7 +28,13 @@ const VERSE_MODES: SegmentedOption<VerseNumberMode>[] = [
 
 /**
  * The header's second instrument: the word "Comfort", and the popover behind
- * it holding size, measure and verse-number density.
+ * it holding type size and verse-number density.
+ *
+ * There is no separate measure control, and that is deliberate rather than an
+ * omission: size and measure couple in the stylesheet, so the size segment is
+ * already the control that widens the column. A Narrow/Medium/Wide switch sat
+ * here until the coupling landed, and for one commit it survived its own CSS —
+ * it wrote `reading-width-*` onto the shell and no rule anywhere read it.
  *
  * Focus used to live here as a sibling button, and it does not any more —
  * §E fixes the instrument order as translation, comfort, margin, focus, theme,
@@ -102,16 +101,6 @@ export function ReadingComfort({ prefs, onChange }: Props): React.JSX.Element {
               value={prefs.readingSize}
               options={SIZES}
               onChange={(readingSize) => onChange({ readingSize })}
-            />
-          </div>
-
-          <div className="rc-section">
-            <div className="rc-label">Column width</div>
-            <SegmentedControl
-              label="Column width"
-              value={prefs.readingWidth}
-              options={WIDTHS}
-              onChange={(readingWidth) => onChange({ readingWidth })}
             />
           </div>
 

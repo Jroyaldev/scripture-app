@@ -233,7 +233,6 @@ interface AppSettingsSchema {
   sidebarCollapsed: boolean;
   marginVisible: boolean;
   readingSize: "s" | "m" | "l";
-  readingWidth: "narrow" | "medium" | "wide";
   verseNumbers: "always" | "faint" | "hover";
   recentPassages: Array<{
     book: string;
@@ -527,7 +526,6 @@ const store = new Store<AppSettingsSchema>({
     sidebarCollapsed: false,
     marginVisible: true,
     readingSize: "m",
-    readingWidth: "medium",
     verseNumbers: "always",
     recentPassages: [],
     lastRead: null,

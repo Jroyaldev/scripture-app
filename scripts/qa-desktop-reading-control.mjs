@@ -298,7 +298,6 @@ try {
     const ordered = await window.api.library.queryRange("ACT", 19, 1, "ACT", 19, 28);
     await window.api.settings.set({
       theme: "light",
-      readingWidth: "wide",
       sidebarCollapsed: true,
       marginVisible: true,
       markingSurface: "palette",

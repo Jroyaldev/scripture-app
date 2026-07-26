@@ -1059,7 +1059,6 @@ try {
     }
     await window.api.settings.set({
       theme: "light",
-      readingWidth: "wide",
       sidebarCollapsed: true,
       marginVisible: false,
       markingSurface: "palette",

@@ -1104,6 +1104,20 @@ html, body, #root {
   width: var(--rail-w-collapsed);
 }
 
+/* Whichever of the rail's two widths it is actually standing at. Nothing here
+   reads it; the focus exchange in styles/rail.css does, because that exchange
+   has to start the page's left edge where the rail left it, and the rail's own
+   `width` is invisible from the page's side of the shell. Written as a choice
+   between the two width tokens rather than as a hand-set 56, because a reader
+   with the rail open is the case a hand-set 56 gets wrong by 176px. */
+.app-shell {
+  --rail-flow-w: var(--rail-w);
+}
+
+.app-shell:has(> .sidebar.collapsed) {
+  --rail-flow-w: var(--rail-w-collapsed);
+}
+
 /* A tile like the rest: collapsed, it stands exactly where the brand tile
    stands and swaps with it on hover, so the column's axis does not move
    between the two states of one 32px square. */
@@ -3288,38 +3302,51 @@ html, body, #root {
 /* Theme toggle */
 
 /* The orb's button is the fifth instrument, so it is .topbar-instrument like
-   the other four and has no chrome of its own. Only the swatch is drawn here.
+   the other four and has no chrome of its own. Only the mark is drawn here.
 
-   §E draws a squircle, not a dot: 16px square on a 6px radius. The radius names
-   --radius-sm rather than the literal 6px because every radius in the 6-20px
-   band has to name a token, or the family drifts one swatch at a time. */
+   Three devices used to share this 16px square: a hard-stop diagonal that put
+   the theme's seal in one corner, a hairline border, and a 1px inset ring.
+   Each was a separate attempt at the same job — make the swatch findable —
+   and at 16px they do not resolve into one object, so the control that
+   changes the light was the one thing in the header that looked broken. It
+   had already been repaired once, from a 135deg band that read as a "no
+   entry" sign, which is the tell: the drawing was not wrong at some angle, it
+   was wrong in kind.
+
+   A swatch cannot work in this band, and the reason is arithmetic rather than
+   taste. The header is paper, so a chip painted in the atmosphere's own paper
+   is 1.00:1 against the surface it lies on, and one painted in its canvas is
+   1.20:1 in Paper and 1.09:1 in Ink. Law 6 asks 3:1 of a mark that carries
+   meaning without words, so neither plane can carry anything here — the two
+   planes are four or five points of luminance apart BY DESIGN, and that is
+   precisely what makes them undrawable at this size. Temperature is further
+   out of reach still: Paper's #FCFBF8 against Porcelain's #FFFFFF is 1.03:1,
+   Ink's #1D1B18 against Onyx's #1C1C20 is 1.01:1, and each pair shares one
+   seal, so nothing drawn at 16px can tell the warm atmosphere from the cool
+   one without lying about the palette.
+
+   What is left, and what clears the law, is ink. The mark is the atmosphere's
+   own ink at swatch size, taken through currentColor so that it is the
+   instrument's ink and not a value of its own: ink-3 at rest beside the four
+   words, ink-1 on hover and while the popover is open, which is 4.60:1 and
+   12.87:1 on paper in the weakest of the four atmospheres. It reports the one
+   thing a 16px object can report truthfully — dark ink on a bright page in
+   Paper and Porcelain, bright ink on a dark one in Ink and Onyx. The name is
+   written where it always was, in the tooltip and the accessible name, and
+   the tick in the popover says which of the four is on.
+
+   The radius derives rather than declares: §9 gives 0.22 × 16 = 3.52, rounded
+   even, so 4 — which is also the number §4 lists for a swatch. The 6px it
+   used to take was --radius-sm, a token for objects two and three times this
+   size, and 4 sits below the 6–20px band where §4 lets a mark keep its own
+   number. */
 .theme-orb {
   width: 16px;
   height: 16px;
   display: block;
-  border-radius: var(--radius-sm);
-  border: 1px solid rgba(24, 21, 17, 0.19);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24);
+  border-radius: 4px;
+  background: currentColor;
 }
-
-/* The swatch used to be paper 0-58%, seal 59-67%, canvas 68% — the theme in
-   miniature, two planes with the accent between them. That reading requires
-   the eye to resolve the two planes, and at 16px it cannot: paper and canvas
-   are four or five points of luminance apart by design, so what actually
-   arrives is one flat field with a saturated bar struck corner to corner
-   across it. That is the international drawing for "no entry", which is a
-   remarkable thing to put on the control that changes the light.
-
-   The two-plane idea does not survive this size and is therefore dropped. The
-   seal stays, because the atmospheres are told apart by their paper and this
-   swatch is the first accent a reader ever meets, so it must show both. Each
-   swatch is now that theme's paper with its own seal turned down in one
-   corner, the way a page is marked. A corner has field on one side only, so
-   it cannot read as a bar across a disc however small it is drawn. */
-.theme-orb-light { background: linear-gradient(315deg, #96684A 0 22%, #FCFBF8 22%); }
-.theme-orb-dark { background: linear-gradient(315deg, #C99A6E 0 22%, #1D1B18 22%); border-color: rgba(237, 232, 224, 0.22); }
-.theme-orb-porcelain { background: linear-gradient(315deg, #96684A 0 22%, #FFFFFF 22%); border-color: rgba(0, 0, 0, 0.12); }
-.theme-orb-onyx { background: linear-gradient(315deg, #C99A6E 0 22%, #1C1C20 22%); border-color: rgba(233, 233, 236, 0.22); }
 
 /* Living Margin toggle — the word "Margin", third of the five instruments, so
    everything it looks like is .topbar-instrument and nothing is drawn here. */
@@ -14841,31 +14868,23 @@ button.lang-phrase-diagram-node:focus-visible {
 
 /* --- Reading atmosphere picker --- */
 
+/* The popover was 328×366 and spent most of it explaining. Every option drew a
+   miniature of the whole app — a rail, a page and two lines — under a name,
+   under a sentence of description, beside a tick; four times over, plus a
+   heading with a second voice of its own. Choosing an atmosphere is not a
+   reading task, and a picture of the app is the least useful thing to put in
+   front of somebody who is looking straight at the app.
+
+   What is left is the picker the app already owns. The heading is
+   .picker-menu-heading, the same object the translation menu two instruments
+   along uses, so the two popovers are one idiom rather than two designs; the
+   rows keep the atmosphere's name and the mark that says which one is on, and
+   nothing else. The sentences are not deleted — they move to the only surface
+   with room to read them, the settings page, which is what `compact` now
+   distinguishes: the popover NAMES, the settings page EXPLAINS. */
+
 .theme-picker-popover {
   padding: 8px;
-}
-
-.theme-picker-heading {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 10px 10px 9px;
-}
-
-.theme-picker-heading > span {
-  font-family: var(--font-reading);
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-
-.theme-picker-heading small {
-  color: var(--text-tertiary);
-  font-family: var(--font-mono);
-  font-size: 9px;
-  font-weight: 500;
-  letter-spacing: 0.045em;
-  text-transform: uppercase;
 }
 
 .theme-choice-grid {
@@ -14874,10 +14893,15 @@ button.lang-phrase-diagram-node:focus-visible {
   gap: 10px;
 }
 
+/* No gap: a row is a 16px swatch between 8px of padding, so it stands exactly
+   32px — the band the reading line gives the rest of the app — and four of them
+   stack into the same rhythm the verses have. An interval between them would be
+   a fifth thing to look at in a list of four, and the 2px that used to sit here
+   was not a step on §9's scale in any case. */
 .theme-choice-grid.compact {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0;
 }
 
 .theme-choice {
@@ -14899,13 +14923,19 @@ button.lang-phrase-diagram-node:focus-visible {
   transition: background var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
 }
 
+/* A row in the popover is a menu row, so it is built like one: a 16px swatch,
+   the name, and a 16px gutter held open for the mark whether or not the mark
+   is there. Reserve, at the smallest scale it appears — nothing moves when the
+   reader changes atmosphere. */
 .theme-choice-grid.compact .theme-choice {
-  grid-template-columns: 48px minmax(0, 1fr) 18px;
+  grid-template-columns: 16px minmax(0, 1fr) 16px;
   padding: 8px;
+  color: var(--text-secondary);
   background: transparent;
   border-color: transparent;
   border-radius: var(--radius-sm);
   box-shadow: none;
+  transition: color var(--transition-fast);
 }
 
 .theme-choice:hover {
@@ -14913,8 +14943,15 @@ button.lang-phrase-diagram-node:focus-visible {
   box-shadow: var(--shadow-medium);
 }
 
-.theme-choice-grid.compact .theme-choice:hover {
-  background: var(--bg-secondary);
+/* The compact row's hover used to be --bg-secondary, which is the canvas: a
+   second plane laid inside the paper popover for as long as the pointer was
+   still. Hover is ink here, the same answer .control-menu-item and the five
+   instruments give — ink-2 at rest, ink-1 under the pointer, geometry
+   untouched. */
+.theme-choice-grid.compact .theme-choice:hover,
+.theme-choice-grid.compact .theme-choice:focus-visible {
+  color: var(--text-primary);
+  background: transparent;
   border-color: transparent;
   box-shadow: none;
 }
@@ -14924,13 +14961,53 @@ button.lang-phrase-diagram-node:focus-visible {
   box-shadow: 0 0 0 1px var(--study-gold-focus), var(--shadow-medium);
 }
 
+/* Law 2: state is a mark on a reserved gutter, never a fill. The tick in the
+   third column is that mark, and it is now the only one — the card border, the
+   seal halo outside it and the wash under the row were the same sentence said
+   three more times. The row's own ink does not move either, because a name
+   that darkens when you select it would be a fourth telling. */
 .theme-choice-grid.compact .theme-choice.active {
-  background: var(--study-hover-surface);
+  background: transparent;
   border-color: transparent;
   box-shadow: none;
-  color: var(--text-primary);
 }
 
+/* The swatch a popover can draw is not the swatch the toolbar can, and the
+   difference is which ground each one lies on. The orb lies ON the atmosphere
+   it names, so that atmosphere's paper is the surface under it and only ink is
+   left to draw with. These four lie on ONE atmosphere while naming all four,
+   so the plane is drawable here: the two of the opposite polarity show
+   themselves at 16.41:1 to 17.18:1, and the one the reader is in is the paper
+   they are already looking at, which is the truth. A swatch can only draw what
+   its ground is not.
+
+   Each is painted out of the values its own atmosphere declares — that theme's
+   paper, ringed in that theme's ink-3 — which is what keeps the picker honest
+   as the palette moves, and is asserted as such in the consolidation contract.
+   The ring is what answers Law 6, since the fill cannot: across all sixteen
+   pairings of swatch and current paper the weakest is Onyx's #85858C on
+   Paper's #FCFBF8 at 3.54:1, clear of the 3:1 a wordless mark owes.
+
+   16px, and therefore radius 4 by §9's 0.22 × 16 = 3.52 rounded even: the same
+   square the reader just pressed to get here, so the trigger and the four
+   things it offers are one size and one shape. */
+.theme-swatch {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+}
+
+.theme-swatch-light { background: #FCFBF8; border-color: #787269; }
+.theme-swatch-dark { background: #1D1B18; border-color: #8B837C; }
+.theme-swatch-porcelain { background: #FFFFFF; border-color: #74747C; }
+.theme-swatch-onyx { background: #1C1C20; border-color: #85858C; }
+
+/* The preview below is the settings page's alone now. It draws the app in
+   miniature — rail, page, two lines — which is worth the fourteen rules on a
+   surface a reader has navigated to in order to compare, and worth none of
+   them in a popover hanging over the app it is a picture of. */
 .theme-preview {
   position: relative;
   display: block;
@@ -14940,12 +15017,6 @@ button.lang-phrase-diagram-node:focus-visible {
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-subtle);
-}
-
-.theme-choice-grid.compact .theme-preview {
-  width: 48px;
-  height: 32px;
-  border-radius: var(--radius-sm);
 }
 
 .theme-preview-light { background: #F1EFEA; }
@@ -15011,18 +15082,28 @@ button.lang-phrase-diagram-node:focus-visible {
   line-height: 1.35;
 }
 
+/* In the popover the name is the row, so it is set in the row's own voice
+   rather than in the reading face: 12px Instrument Sans, on the scale, level
+   with the translation menu beside it. The settings card keeps the serif above
+   its sentence, where the pair reads as a heading and a description. */
+.theme-choice-grid.compact .theme-choice-copy strong {
+  font: var(--fw-medium) var(--fs-xs)/1.35 var(--font-ui);
+  letter-spacing: 0;
+}
+
+/* The tick used to scale in from 0.72 over 120ms. §4 puts the active mark at
+   0ms on purpose — it is the app answering "where am I", and an animated
+   answer feels like a delayed one — so it now simply is or is not there. The
+   gutter holds its width either way, so nothing moves. */
 .theme-choice-check {
   color: var(--study-gold);
   font-size: 13px;
   font-weight: 600;
   opacity: 0;
-  transform: scale(0.72);
-  transition: opacity var(--transition-fast), transform var(--transition-fast);
 }
 
 .theme-choice.active .theme-choice-check {
   opacity: 1;
-  transform: scale(1);
 }
 
 /* --- Focus visibility --- */
@@ -15075,13 +15156,18 @@ textarea:focus-visible,
    UX pass — reading comfort, mini toolbar, focus, ambient polish
    ========================================================================== */
 
-/* --- Reading size / width / verse numbers (applied on .app-shell) --- */
+/* --- Reading size / verse numbers (applied on .app-shell) --- */
 
 /* Reading size and measure COUPLE: 17/560, 19/660, 22/780, each landing near
-   68 characters. Left independent, the two settings permit a 22px column at
-   560px — 42 characters, a width nobody would choose on purpose but which the
-   controls happily allow. The line-height is constant at 1.62 because the
-   32px band is derived from it. */
+   68 characters. They were two independent settings once, and independence
+   permitted a 22px column at 560px — 42 characters, a width nobody would
+   choose on purpose but which the controls happily allowed. Coupling them
+   deleted `.app-shell.reading-width-narrow|medium|wide` (560/680/820) and left
+   the Narrow/Medium/Wide switch itself standing in the Comfort popover and in
+   Settings, writing a class onto the shell that no rule read. That switch is
+   gone now, so this is the only place the measure is set and nothing is left
+   to disagree with it. The line-height is constant at 1.62 because the 32px
+   band is derived from it. */
 .app-shell.reading-size-s {
   --fs-reading: 1.0625rem;
   --reading-max-width: 560px;
@@ -18943,14 +19029,17 @@ button.lang-phrase-diagram-node:focus-visible,
 /* The material switch. Four appearances and one switch: this is the only
    genuinely binary preference in the app, and therefore the only thing drawn
    as a switch. Everything else that looks binary is really a choice among
-   named options, and gets a radio. */
+   named options, and gets a radio.
+
+   The 14px above and below the rule was not a step on any scale; §9 puts space
+   in multiples of 4, so it is 16. */
 .material-switch {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 34px;
   align-items: center;
   gap: 12px;
-  margin-top: 14px;
-  padding-top: 14px;
+  margin-top: 16px;
+  padding-top: 16px;
   border-top: 1px solid var(--border-subtle);
   cursor: pointer;
 }

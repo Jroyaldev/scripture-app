@@ -177,16 +177,20 @@ for (const theme of THEMES) {
 }
 
 await clickSection(primary, "Reading");
-const originalMeasure = await primary.evaluate(`document.querySelector('[aria-label="Reading measure"] [aria-checked="true"]')?.getAttribute("data-value")`);
+// Driven through "Reading text size" rather than the "Reading measure" row
+// this used to use. That row is gone: it wrote a class no stylesheet read, and
+// reading size is what moves the measure now. The keyboard behaviour under
+// test is the segmented control's, so any live segment proves it.
+const originalMeasure = await primary.evaluate(`document.querySelector('[aria-label="Reading text size"] [aria-checked="true"]')?.getAttribute("data-value")`);
 assert.ok(originalMeasure);
-await primary.evaluate(`document.querySelector('[aria-label="Reading measure"] [aria-checked="true"]')?.focus()`);
+await primary.evaluate(`document.querySelector('[aria-label="Reading text size"] [aria-checked="true"]')?.focus()`);
 await primaryCdp.send("Input.dispatchKeyEvent", { type: "keyDown", key: "ArrowRight", code: "ArrowRight" });
 await primaryCdp.send("Input.dispatchKeyEvent", { type: "keyUp", key: "ArrowRight", code: "ArrowRight" });
 await sleep(180);
-const movedMeasure = await primary.evaluate(`document.querySelector('[aria-label="Reading measure"] [aria-checked="true"]')?.getAttribute("data-value")`);
-assert.notEqual(movedMeasure, originalMeasure, "Reading measure did not respond to ArrowRight");
+const movedMeasure = await primary.evaluate(`document.querySelector('[aria-label="Reading text size"] [aria-checked="true"]')?.getAttribute("data-value")`);
+assert.notEqual(movedMeasure, originalMeasure, "Reading text size did not respond to ArrowRight");
 await primary.screenshot("keyboard-reading-measure");
-await primary.evaluate(`document.querySelector(${JSON.stringify(`[aria-label="Reading measure"] [data-value="${originalMeasure}"]`)})?.click()`);
+await primary.evaluate(`document.querySelector(${JSON.stringify(`[aria-label="Reading text size"] [data-value="${originalMeasure}"]`)})?.click()`);
 await primary.evaluate(`document.activeElement instanceof HTMLElement && document.activeElement.blur()`);
 await sleep(180);
 

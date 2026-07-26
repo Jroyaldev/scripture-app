@@ -2054,9 +2054,13 @@ async function assertCompletedConnection(driver, cdp, connectionsLog, successFra
    *                                     stage 1192px -> needs-space
    *                                     stage 1392px -> needs-space
    *                                     stage 1428px -> needs-space
-   *   readingWidth narrow / medium / wide all held the column at 724px and all
-   *   reported needs-space, so the gutter is ~350px per side at the widest
-   *   probe and the engine still declines to route.
+   *   The Narrow / Medium / Wide setting held the column at 724px on all three
+   *   values and reported needs-space on all three — but that leg proved
+   *   nothing about the measure. The control was writing a class no stylesheet
+   *   read, which is exactly why the column never moved; it has since been
+   *   removed, and the measure now travels with reading size (560/660/780).
+   *   The stage sweep above stands on its own: at the widest probe the gutter
+   *   is ~350px per side and the engine still declines to route.
    *
    * So this is NOT the documented "too narrow to draw a line" case, and it is
    * not something a wider window fixes. Either the route engine is refusing a
@@ -2493,7 +2497,6 @@ try {
     }
     await window.api.settings.set({
       theme: "light",
-      readingWidth: "wide",
       sidebarCollapsed: true,
       marginVisible: false,
       markingSurface: "dock",

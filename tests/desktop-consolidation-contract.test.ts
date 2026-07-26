@@ -259,25 +259,55 @@ test("the deleted bright ambers survive nowhere, including the swatches that adv
 
   // Every swatch has to be painted out of the values its theme really declares,
   // which is the only thing that keeps the picker honest as the palette moves.
-  const orbs = css.slice(css.indexOf(".theme-orb-light"), css.indexOf("/* Living Margin toggle"));
+  //
+  // This loop used to read `.theme-orb-{id}`, four one-line rules that each
+  // struck that atmosphere's paper with that atmosphere's seal across one
+  // corner. Both halves of that requirement have been retired, for the reason
+  // the paragraph above gives about the ambers. The orb sits in a band that is
+  // paper, so a chip of the current paper is 1.00:1 against the surface under
+  // it and a chip of the current canvas is between 1.09:1 and 1.20:1 — no
+  // plane it could show clears Law 6's 3:1 for a wordless mark — and the seal
+  // it used to carry was
+  // the authorship colour doing theme identity, which is precisely the job the
+  // ambers were deleted for. The orb is now the instrument's own ink through
+  // currentColor and names no value at all, which is asserted below instead.
+  //
+  // The swatches that DO paint an atmosphere they are not standing in are the
+  // four in the picker, and the guarantee moves to them unchanged in kind: that
+  // theme's paper, ringed in that theme's own ink-3, both read off the artifact
+  // so neither can drift when the palette moves.
   for (const [id, atmosphere] of Object.entries(tokens.atmospheres)) {
-    const selector = `.theme-orb-${id}`;
-    const at = orbs.indexOf(selector);
+    const selector = `.theme-swatch-${id}`;
+    const at = css.indexOf(selector);
     assert.ok(at >= 0, `${selector} is missing`);
-    const rule = orbs.slice(at, orbs.indexOf("\n", at));
-    const seal = tokens.accent[atmosphere.scope]!["--accent-seal"]!;
+    const rule = css.slice(at, css.indexOf("\n", at));
     const paper = tokens.plane[atmosphere.scope]!["--paper-solid"]!;
-    assert.ok(
-      rule.toUpperCase().includes(seal.toUpperCase()),
-      `${selector} must be struck with that theme's seal (${seal}), not a colour of its own`,
-    );
+    const ink = tokens.ink[atmosphere.scope]!["--text-tertiary"]!;
     assert.ok(
       rule.toUpperCase().includes(paper.toUpperCase()),
       `${selector} must show that theme's paper (${paper})`,
     );
+    assert.ok(
+      rule.toUpperCase().includes(ink.toUpperCase()),
+      `${selector} must be ringed in that theme's own ink-3 (${ink}), which is what carries Law 6 ` +
+        `here: the fill cannot, because a paper swatch on paper is 1.00:1`,
+    );
   }
+
+  // The orb, stated as the absence it now is. A hex or an accent token
+  // reappearing in this rule is the swatch idea coming back, and the swatch
+  // idea is what read as broken at 16px.
+  const orb = css.slice(css.indexOf(".theme-orb {"), css.indexOf("/* Living Margin toggle"));
+  assert.match(orb, /background: currentColor/,
+    "the orb is the instrument's own ink, so that it rests and hovers with the four words beside it");
+  assert.doesNotMatch(orb, /#[0-9A-Fa-f]{3}|--accent-|--study-gold|linear-gradient/,
+    "the orb may not name a colour of its own, and may not go back to a two-tone corner");
+
   // No swatch may survive for an atmosphere the app no longer offers.
-  assert.doesNotMatch(css, /\.theme-orb-glass|\.theme-orb-dark-glass|\.theme-preview-glass|\.theme-preview-dark-glass/);
+  assert.doesNotMatch(
+    css,
+    /\.theme-orb-glass|\.theme-orb-dark-glass|\.theme-swatch-glass|\.theme-swatch-dark-glass|\.theme-preview-glass|\.theme-preview-dark-glass/,
+  );
 });
 
 test("desktop components keep only data-driven inline styles and no native dialogs", () => {

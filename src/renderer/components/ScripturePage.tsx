@@ -9,7 +9,6 @@ import type {
   MarkingSurface as MarkingSurfaceId,
   QueryResult,
   ReadingSize,
-  ReadingWidth,
   SemanticMarginResult,
   VerseNumberMode,
 } from "../api.js";
@@ -465,7 +464,6 @@ interface Props {
   /** Fired whenever the pinned (selected) verse range changes; null when nothing is selected. */
   onPinnedRangeChange?: (range: PinnedRange | null) => void;
   readingSize?: ReadingSize;
-  readingWidth?: ReadingWidth;
   verseNumbers?: VerseNumberMode;
   onReadingPrefsChange?: (partial: Partial<ReadingPrefs>) => void;
   focusMode?: boolean;
@@ -666,7 +664,6 @@ export function ScripturePage({
   onEnsureMarginVisible,
   onPinnedRangeChange,
   readingSize = "m",
-  readingWidth = "medium",
   verseNumbers = "always",
   onReadingPrefsChange,
   focusMode = false,
@@ -5047,7 +5044,7 @@ export function ScripturePage({
 
           {onReadingPrefsChange && (
             <ReadingComfort
-              prefs={{ readingSize, readingWidth, verseNumbers }}
+              prefs={{ readingSize, verseNumbers }}
               onChange={onReadingPrefsChange}
             />
           )}

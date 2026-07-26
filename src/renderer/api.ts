@@ -197,8 +197,11 @@ declare global {
   }
 }
 
+/** Type size, and with it the measure: the stylesheet couples 17/560, 19/660
+ * and 22/780 so a size is always read at roughly 68 characters. A separate
+ * `ReadingWidth` of narrow/medium/wide stood beside this until the coupling
+ * took its CSS away and left it setting nothing. */
 export type ReadingSize = "s" | "m" | "l";
-export type ReadingWidth = "narrow" | "medium" | "wide";
 export type VerseNumberMode = "always" | "faint" | "hover";
 /**
  * Two surfaces, not four. Of the eight configurations the four surfaces
@@ -230,7 +233,6 @@ export interface AppSettings {
   sidebarCollapsed: boolean;
   marginVisible: boolean;
   readingSize: ReadingSize;
-  readingWidth: ReadingWidth;
   verseNumbers: VerseNumberMode;
   recentPassages: RecentPassageSetting[];
   /** Where the reader last was — restored on launch. */

@@ -874,7 +874,6 @@ try {
     if (!third.ok || !third.connection) throw new Error(third.error ?? "third connection failed");
     await window.api.settings.set({
       theme: "light",
-      readingWidth: "wide",
       sidebarCollapsed: true,
       marginVisible: true,
       lastRead: { book: "ACT", chapter: 19, packageId: "bsb" },

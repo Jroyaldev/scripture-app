@@ -632,7 +632,6 @@ async function ensureCellReady(driver, cdp, surface, width, fixture) {
   await setViewport(cdp, width);
   await driver.evaluate(`window.api.settings.set({
     theme: "light",
-    readingWidth: "wide",
     sidebarCollapsed: true,
     marginVisible: true,
     markingSurface: ${JSON.stringify(surface.id)},
@@ -1552,7 +1551,6 @@ try {
     }
     await window.api.settings.set({
       theme: "light",
-      readingWidth: "wide",
       sidebarCollapsed: true,
       marginVisible: true,
       markingSurface: "palette",

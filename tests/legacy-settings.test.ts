@@ -4,6 +4,12 @@ import { resolve } from "node:path";
 import test from "node:test";
 import { sanitizeLegacySettings } from "../src/electron/legacy-settings.js";
 
+// This used to assert that `readingWidth: "wide"` came through the sanitizer
+// untouched, alongside readingSize and verseNumbers. That was correct while a
+// Narrow/Medium/Wide control existed. Reading size has since absorbed the
+// measure, the width preference is gone from the schema, and a migration that
+// still adopted it would write a key no code reads. So the key now leaves by
+// the same door as `unknown`, and the input keeps it precisely to prove that.
 test("legacy settings adopt only validated Pericope-owned values", () => {
   assert.deepEqual(sanitizeLegacySettings({
     theme: "dark-glass",
@@ -21,10 +27,16 @@ test("legacy settings adopt only validated Pericope-owned values", () => {
     sidebarCollapsed: true,
     marginVisible: false,
     readingSize: "l",
-    readingWidth: "wide",
     verseNumbers: "faint",
     libraryPath: "/tmp/Library",
   });
+});
+
+// The retired preference must not be able to prove Pericope identity on its
+// own either. A store holding nothing but a theme and a readingWidth is not
+// recognizably ours any more, and adopting it would resurrect a dead key.
+test("legacy settings no longer treat the retired reading width as a signal", () => {
+  assert.equal(sanitizeLegacySettings({ theme: "light", readingWidth: "wide" }), null);
 });
 
 test("legacy settings refuse unrelated and corrupt Electron profiles", () => {

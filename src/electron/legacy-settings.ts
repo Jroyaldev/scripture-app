@@ -7,7 +7,6 @@ export interface AdoptableLegacySettings {
   sidebarCollapsed?: boolean;
   marginVisible?: boolean;
   readingSize?: "s" | "m" | "l";
-  readingWidth?: "narrow" | "medium" | "wide";
   verseNumbers?: "always" | "faint" | "hover";
   recentPassages?: Array<{
     book: string;
@@ -24,7 +23,6 @@ export interface AdoptableLegacySettings {
 const THEMES = new Set<LegacyTheme>(["light", "dark", "glass", "dark-glass", "porcelain", "onyx"]);
 const MARKING_SURFACES = new Set<LegacyMarkingSurface>(["palette", "rail", "radial", "dock"]);
 const READING_SIZES = new Set(["s", "m", "l"] as const);
-const READING_WIDTHS = new Set(["narrow", "medium", "wide"] as const);
 const VERSE_NUMBER_MODES = new Set(["always", "faint", "hover"] as const);
 
 /** Refuse generic Electron profiles and retain only validated app-owned keys. */
@@ -56,11 +54,13 @@ export function sanitizeLegacySettings(input: unknown): AdoptableLegacySettings 
     recognized += 1;
     strongSignal = true;
   }
-  if (typeof input["readingWidth"] === "string" && READING_WIDTHS.has(input["readingWidth"] as "narrow" | "medium" | "wide")) {
-    result.readingWidth = input["readingWidth"] as "narrow" | "medium" | "wide";
-    recognized += 1;
-    strongSignal = true;
-  }
+  // A legacy store can still carry `readingWidth`, and it is deliberately not
+  // read here. The preference no longer exists — reading size took the measure
+  // over — so adopting it would write a key into the new store that nothing
+  // consumes, which is how the retired setting survived its own deletion the
+  // first time. Identity detection does not suffer: the same stores that hold
+  // readingWidth hold readingSize beside it, because the two were always
+  // persisted in one call.
   if (typeof input["verseNumbers"] === "string" && VERSE_NUMBER_MODES.has(input["verseNumbers"] as "always" | "faint" | "hover")) {
     result.verseNumbers = input["verseNumbers"] as "always" | "faint" | "hover";
     recognized += 1;

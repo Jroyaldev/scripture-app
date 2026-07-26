@@ -466,8 +466,11 @@ test("an atmosphere sets tokens and nothing else", () => {
     const css = read(source);
     for (const scope of [".theme-porcelain", ".theme-onyx"]) {
       // The first lookahead keeps `.theme-preview-porcelain` and
-      // `.theme-orb-porcelain` out of it — those are swatches that legitimately
-      // paint an atmosphere they are not currently in. The second allows the
+      // `.theme-swatch-porcelain` out of it — those are swatches that
+      // legitimately paint an atmosphere they are not currently in. (It also
+      // used to name `.theme-orb-porcelain`, which no longer exists: the orb
+      // sits inside the atmosphere it names and so paints none.) The second
+      // allows the
       // only two things that may follow the class: its own opening brace, and a
       // comma joining it to another scope in the same token block.
       const pattern = new RegExp(`\\${scope}(?![\\w-])(?!\\s*[{,])[^\\n]{0,48}`, "g");

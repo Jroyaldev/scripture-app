@@ -5,7 +5,6 @@ import type {
   BackboneData,
   BookNameData,
   ReadingSize,
-  ReadingWidth,
   VerseNumberMode,
 } from "./api.js";
 import {
@@ -486,7 +485,6 @@ export function App(): React.JSX.Element {
   const [material, setMaterial] = useState<AppSettings["material"]>("solid");
   const [markingSurface, setMarkingSurface] = useState<AppSettings["markingSurface"]>("palette");
   const [readingSize, setReadingSize] = useState<ReadingSize>("m");
-  const [readingWidth, setReadingWidth] = useState<ReadingWidth>("medium");
   const [verseNumbers, setVerseNumbers] = useState<VerseNumberMode>("always");
   const [focusMode, setFocusMode] = useState(false);
   const [authoredMutationState, setAuthoredMutationState] = useState<AuthoredMutationState>("idle");
@@ -768,7 +766,6 @@ export function App(): React.JSX.Element {
           setMarkingSurface(res.value.markingSurface ?? "palette");
         }
         if (res.value.readingSize) setReadingSize(res.value.readingSize);
-        if (res.value.readingWidth) setReadingWidth(res.value.readingWidth);
         if (res.value.verseNumbers) setVerseNumbers(res.value.verseNumbers);
       }
       // A setting changed while the IPC read was in flight has already run
@@ -812,8 +809,8 @@ export function App(): React.JSX.Element {
 
   useEffect(() => {
     if (!settingsLoaded.current) return;
-    void safeCall(() => window.api.settings.set({ readingSize, readingWidth, verseNumbers }));
-  }, [settingsReady, readingSize, readingWidth, verseNumbers]);
+    void safeCall(() => window.api.settings.set({ readingSize, verseNumbers }));
+  }, [settingsReady, readingSize, verseNumbers]);
 
   const changeKeptContext = useCallback((next: KeptMarginReference | null): void => {
     commitStudyWorkspace((current) => {
@@ -1645,7 +1642,6 @@ export function App(): React.JSX.Element {
 
   const handleReadingPrefsChange = useCallback((partial: Partial<ReadingPrefs>) => {
     if (partial.readingSize) setReadingSize(partial.readingSize);
-    if (partial.readingWidth) setReadingWidth(partial.readingWidth);
     if (partial.verseNumbers) setVerseNumbers(partial.verseNumbers);
   }, []);
 
@@ -1770,7 +1766,6 @@ export function App(): React.JSX.Element {
     material === "translucent" ? "material-translucent" : "",
     focusMode ? "focus-mode" : "",
     `reading-size-${readingSize}`,
-    `reading-width-${readingWidth}`,
     `verse-nums-${verseNumbers}`,
   ]
     .filter(Boolean)
@@ -2127,7 +2122,6 @@ export function App(): React.JSX.Element {
                 onToggleMargin={toggleMargin}
                 onEnsureMarginVisible={ensureMarginVisible}
                 readingSize={readingSize}
-                readingWidth={readingWidth}
                 verseNumbers={verseNumbers}
                 onReadingPrefsChange={handleReadingPrefsChange}
                 focusMode={focusMode}
@@ -2199,7 +2193,6 @@ export function App(): React.JSX.Element {
               <SettingsPage
                 libraryPath={libraryPath}
                 readingSize={readingSize}
-                readingWidth={readingWidth}
                 verseNumbers={verseNumbers}
                 onReadingPrefsChange={handleReadingPrefsChange}
                 theme={theme}
