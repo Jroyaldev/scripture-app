@@ -587,12 +587,16 @@ test("Law 2: no pill, no tinted chip, no filled row on these surfaces", () => {
 
 test("no region in this file is chosen by a raw, unasserted anchor", () => {
   const self = read("tests/study-overview-notes-contract.test.ts");
-  // The hazard is choosing a REGION by an unasserted anchor, and a region is
-  // chosen with one method. Position comparison — `props.indexOf(a) >
+  // The hazard is choosing a REGION by an unasserted anchor. There is more than
+  // one way to cut a string, and a rule naming only `slice` was empirically
+  // bypassed by `substring`, `substr` and `split(x)[n]` — c4-connections
+  // predicted a gap in the narrow form and was right, though not by the
+  // mechanism proposed: the split-across-two-statements case IS caught here,
+  // because the cutting line is flagged wherever its bounds came from. Position comparison — `props.indexOf(a) >
   // props.lastIndexOf(b)` inside an already-extracted string — selects nothing
   // and cannot mis-select, so it is not swept. Assembled, never written whole,
   // so this sweep cannot match itself and need not dodge itself by position.
-  const SCAN = ["sl" + "ice"];
+  const SCAN = ["sl" + "ice", "sub" + "string", "sub" + "str"];
   const HELPERS = ["between", "after", "rule", "enclosingComment", "functionBody", "nthOccurrence"];
 
   // Excise each helper by its own unique signature, so the check is anchored
@@ -602,9 +606,18 @@ test("no region in this file is chosen by a raw, unasserted anchor", () => {
     rest = rest.split(functionBody(self, name)).join("");
   }
 
+  // Prose cannot select a region, and this sweep's own explanation names the
+  // constructs it forbids — it flagged itself until comments were stripped.
+  // Fragment-building stops the PATTERNS self-matching; this stops the PROSE.
+  const code = rest
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/^\s*\/\/.*$/gm, "");
   const offenders: string[] = [];
-  for (const line of rest.split("\n")) {
+  for (const line of code.split("\n")) {
     if (SCAN.some((name) => line.includes(`.${name}(`))) offenders.push(line.trim());
+    // `.split(x)[n]` selects a region too — the subscript is the tell. Counting
+    // with `.split(x).length` does not, and is used throughout this file.
+    if (line.includes("." + "split" + "(") && line.includes(")[")) offenders.push(line.trim());
   }
   assert.deepEqual(
     offenders,
@@ -615,7 +628,7 @@ test("no region in this file is chosen by a raw, unasserted anchor", () => {
   // And the sweep must actually have something to sweep: if the helpers stop
   // matching, `rest` collapses and this passes by finding nothing.
   assert.ok(
-    rest.length > self.length * 0.5,
+    code.length > self.length * 0.3,
     "the helper excision removed too much — the sweep would pass by emptiness",
   );
 });

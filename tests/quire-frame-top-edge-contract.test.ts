@@ -129,6 +129,23 @@ test("the top edge does not vary by mode, by width, or by atmosphere", () => {
     /\.scripture-page:not\(:has\(> \.scripture-workspace-bar\)\) > \.scripture-body \{\s*padding-top: var\(--frame-top\);\s*\}/,
     "a mode that drops the register must still reserve the frame's top edge",
   );
+
+  // THIS IS HALF OF ONE CLAIM, and the other half is in
+  // tests/quire-rev05-rail-frame-contract.test.ts. §05·5's rectangle is four
+  // edges, and focus was breaking two of them independently: the top rose to 0
+  // because no register was rendered (the rule above), and the left fell to 36
+  // because `.app-shell.focus-mode > .sidebar` was A4's 12px stub, since
+  // restored to var(--rail-w-collapsed). Neither fix reaches the rectangle
+  // alone — one restores 54, the other restores 80 — so a reader who finds only
+  // one of these two assertions will think the invariant is guarded when half
+  // of it is. Measured together in a real window at 1280/1328/1600, focus and
+  // reading now agree on all four edges with zero overflow, which is the only
+  // claim in Rev 05 that needed two regions to land before it became true.
+  //
+  // Not asserted as one thing here on purpose: a source-reading test cannot see
+  // a used layout, and the composite was established by probing a real browser.
+  // What is guarded is each half at the place it is declared, plus this note so
+  // the halves are discoverable from each other.
 });
 
 test("the drag band is 24 and nothing else", () => {
