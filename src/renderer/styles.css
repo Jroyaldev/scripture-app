@@ -3497,8 +3497,19 @@ html, body, #root {
    54 stays as canvas, and canvas with nothing on it is exactly what focus
    wants — the same argument §05·5 makes for the rail's 56px column, one axis
    over. */
+/* ...and that reserve is now the page's own inset, not the strip's 54. Same
+   correction as the rail band one axis over, and the third time this shape has
+   come up: 54 is 24 of canvas plus a 30px register strip, so reserving it where
+   no strip renders holds space for something that is not there. It made focus's
+   top edge 54 against 24 on the other three.
+
+   §05·5's "the rectangle does not change" is what argued for keeping it, and
+   that reading is sound while the page is inset on every side by the same
+   number — 54 top and 24 elsewhere is then frame either way. The page fills to
+   its inset now, so the mismatch is visible rather than structural. Every edge
+   in focus is one number. */
 .scripture-page:not(:has(> .scripture-workspace-bar)) > .scripture-body {
-  padding-top: var(--frame-top);
+  padding-top: var(--page-inset);
 }
 
 /* The stage IS the paper's box. It carries the frame's last row so that the

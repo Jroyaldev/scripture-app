@@ -124,10 +124,22 @@ test("the top edge does not vary by mode, by width, or by atmosphere", () => {
   // where the invariant is stated, and because it is keyed on the STRIP's
   // absence rather than on focus-mode — the row says "invariant across modes",
   // not "across the two modes that exist today".
+  // This required `padding-top: var(--frame-top)` — "a mode that drops the
+  // register must still reserve the frame's top edge." The reserve was right
+  // when the page was inset by a different number on every side, because 54 top
+  // and 24 elsewhere is frame either way. The page fills to its own inset now,
+  // so 54 against 24 is a visible mismatch rather than a structural one, and it
+  // was reported as one.
+  //
+  // 54 is 24 of canvas plus a 30px register strip. Where no strip renders there
+  // is nothing for the 30 to hold, and what remains is the page's own inset —
+  // the same correction already made for the rail's band on the other axis, and
+  // the third time this shape appeared: space reserved for a thing that mode
+  // does not draw.
   assert.match(
     styles,
-    /\.scripture-page:not\(:has\(> \.scripture-workspace-bar\)\) > \.scripture-body \{\s*padding-top: var\(--frame-top\);\s*\}/,
-    "a mode that drops the register must still reserve the frame's top edge",
+    /\.scripture-page:not\(:has\(> \.scripture-workspace-bar\)\) > \.scripture-body \{\s*padding-top: var\(--page-inset\);\s*\}/,
+    "a mode that drops the register reserves the page's own inset, not the strip's",
   );
 
   // THIS IS HALF OF ONE CLAIM, and the other half is in

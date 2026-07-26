@@ -331,10 +331,38 @@
 .app-shell.focus-mode > .sidebar.collapsed {
   position: absolute;
   inset: 0 auto 0 0;
+  /* The band is exactly the canvas the page leaves bare, and no wider. At 56 it
+     spanned 0-56 while the page starts at 24, so it lay over the page's left
+     32px carrying the translucent material's `backdrop-filter: blur(26px)
+     saturate(1.28)`. That blurred strip is both reported symptoms at once: the
+     blur itself, and a left margin that looked larger than the right, because
+     32px of differently-rendered page reads as page that has not started. The
+     paper measured 24/24 throughout — the asymmetry was painted, not laid out.
+
+     Sizing it to `--page-inset` ends the overlap rather than hiding it. Putting
+     it BEHIND the page (z-index: -1) also stops the blur, and was the first fix
+     here, but it left the band unreachable by pointer at every x — verified,
+     `elementFromPoint(10, …)` returned the page — which silently kills the one
+     job §05·5 gives it: "the rail returns on ⌘\ or on the pointer entering the
+     ground band." A return path nothing can reach is worse than a blur.
+
+     Verified in focus at 1656: band 0-24, page 24/24, no blur, x=10 hits the
+     band and x=40 hits the page. The hover rule below still widens it to the
+     full rail and raises it to z-index 40; its `margin-right` is inert on an
+     absolutely-positioned box and is left alone rather than pruned blind.
+
+     §05·5 says a 56px ground band. This is 24, because that is what the page
+     leaves once it fills to its own inset — the band cannot be wider than the
+     canvas without lying on top of the page it is meant to sit beside. */
   z-index: 5;
-  width: var(--rail-w-collapsed);
-  min-width: var(--rail-w-collapsed);
+  width: var(--page-inset);
+  min-width: var(--page-inset);
   overflow: visible;
+  /* It shows nothing at rest, so it must not RENDER anything either. The
+     material is a property of surfaces the reader can see. */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: transparent;
 }
 
 /* And the page takes its own inset back on the left, because there is no longer

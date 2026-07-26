@@ -132,9 +132,24 @@ test("the rail is bracketed by the same two lines as the paper", () => {
     rail,
     ".app-shell.focus-mode > .sidebar, .app-shell.focus-mode > .sidebar.collapsed",
   )[0]!;
-  assert.match(focusBand, /width: var\(--rail-w-collapsed\);/,
-    "focus must keep the rail's 56px column, or the page's left edge moves off 80");
-  assert.match(focusBand, /min-width: var\(--rail-w-collapsed\);/);
+  // This required `width: var(--rail-w-collapsed)` — the band keeping the rail's
+  // full 56px column, "or the page's left edge moves off 80". That reasoning
+  // died with the owner override that anchors the paper to the rail: the page's
+  // left edge is not 80 any more, and in focus the page fills to its own inset,
+  // so a 56px band lay over the page's left 32px carrying the translucent
+  // material's blur. It painted an asymmetry the layout did not have.
+  //
+  // The band is the canvas the page leaves bare, and no wider. Behind the page
+  // was tried first and is worse: it stops the blur and also makes the band
+  // unreachable at every x, which silently kills the pointer return §05·5 gives
+  // it as its only job.
+  assert.match(focusBand, /width: var\(--page-inset\);/,
+    "the band is exactly the bare canvas; wider and it lies on top of the page it sits beside");
+  assert.match(focusBand, /min-width: var\(--page-inset\);/);
+  assert.match(focusBand, /backdrop-filter: none;/,
+    "it shows nothing at rest, so it must render nothing — the material is for surfaces a reader can see");
+  assert.doesNotMatch(focusBand, /z-index: -1;/,
+    "behind the page it cannot be hovered, and the pointer return is the band's reason to exist");
   assert.doesNotMatch(focusBand, /12px/, "the 12px stub is retired");
   // padding-top is deliberately NOT reset here: the rectangle does not change,
   // so the tiles come back on the same 54 they left.
