@@ -416,25 +416,38 @@ test("the study panel closes its bottom edge the way the page does", () => {
   );
 });
 
-test("the paper's cap grows the frame rather than the page, and holds trailing air under its ceiling", () => {
-  // "Paper max width 1428. Past it the frame grows, not the page. A 2000px
-  // window gets more canvas and the same leaf."
+test("the paper fills the frame, because a cap on a left-anchored page is a gap on one side", () => {
+  // This asserted `max-width: min(var(--page-max-width), …)` — §05·3's last row,
+  // "paper max width 1428. Past it the frame grows, not the page."
+  //
+  // That reads correctly while the paper is inset on BOTH sides, because the
+  // frame then grows evenly and the cap buys symmetry. The paper is
+  // left-anchored now, by the owner override that put it against the rail, so
+  // everything past the cap landed on one side: measured 172px of bare canvas
+  // right of the paper in a 1656 window, the same in focus and with the margin
+  // closed. A frame growing evenly is a frame. A frame growing only right is a
+  // gap, and it was reported as one.
+  //
+  // The second term went with it. It existed to hold §05·4's trailing-air
+  // ceiling for the block canon, and the block canon is retired — its three
+  // container queries are gone and `--canon-block` is defined and unused.
   const stage = cssRules(css).find(({ selector }) => selector === ".scripture-reading-stage");
   assert.ok(stage, ".scripture-reading-stage is declared");
-  assert.match(stage!.body, /max-width: min\( var\(--page-max-width\)/,
-    "the paper's cap is the frame table's number");
+  // Anchored to a declaration boundary, not the bare word: the stage also
+  // declares `--measure-block: calc(… + var(--reading-max-width))`, and a plain
+  // /max-width/ matches that substring and reports a cap that is not there.
+  assert.doesNotMatch(stage!.body, /(?:^|;)\s*max-width\s*:/,
+    "the paper takes the room between the rail and the page inset; a cap on one anchored edge is a gap on the other");
+  assert.match(stage!.body, /--reading-max-width/,
+    "and the near-miss the assertion above must not fire on is genuinely present");
 
-  // The second term of that min() is what holds §05·4's other bound: trailing
-  // air's "ceiling is 320 — the margin's own width... so the two outer airs
-  // never invert." At the small measure the paper caps before 1428 and the
-  // ceiling is met exactly; at the shipped one 1428 binds first.
-  const capped = (measureBlock: number) => Math.min(1428, measureBlock + 40 * 2 + 320 * 2 + 56);
-  for (const measureBlock of [592, 692, 812]) {
-    const canon = blockCanon(capped(measureBlock), measureBlock);
-    assert.ok(canon.trailingAir <= 320,
-      `a ${measureBlock}px measure block leaves ${canon.trailingAir} of trailing air, past the margin's own width`);
-    assert.equal(canon.measureLeft, 416,
-      `a ${measureBlock}px measure block moves the measure's left edge to ${canon.measureLeft}`);
-  }
-  assert.equal(capped(692), 1428, "at the shipped measure the table's own number is what binds");
+  // The token survives its own rule, like `--canon-block`: restoring the
+  // declaration is what brings the cap back, and it should come back the day
+  // the paper is inset on both sides again.
+  assert.equal(px("--page-max-width"), 1428, "the frame table's number is still stated, and still means 1428");
+
+  // What replaces the cap as the guarantee: a wider window buys white page, not
+  // longer lines. The measure is capped independently, so the reading
+  // experience is unchanged by any of this.
+  assert.equal(px("--reading-max-width"), 660, "the measure is what a cap protects, and it still has one");
 });

@@ -309,11 +309,39 @@
    unmounting: the page does not reflow, ever. A reading column that changes
    width when you hide the chrome is a different column, and focus mode exists
    to leave the column alone. */
+/* The band is TAKEN OUT OF FLOW rather than merely emptied. It kept its 56px
+   column before, which is §05·5's own instruction — "the rail's 56px column
+   stays as canvas" — and that reads correctly while the paper is inset on both
+   sides, because 56 of ground and 24 of inset are both frame. The paper meets
+   the rail now, by the owner override in styles.css, so in focus the page began
+   24 from the right and 56 from the left: laid out around a sidebar that is not
+   there, which is exactly how it was reported.
+
+   Out of flow the band reserves nothing and still does its one job — §05·5 gives
+   it a job, so it cannot simply be removed: "the rail returns on ⌘\ or on the
+   pointer entering the 56px ground band; nothing is drawn to advertise it." It
+   is still 56px, still hoverable, still the return path. It just stops pushing
+   the page.
+
+   A4's "the page does not reflow, ever" is about the reading COLUMN, and the
+   column does not move: the measure is centred in the paper and capped at 660,
+   so widening the paper by 32 leaves the line length untouched. Measured in
+   focus at 1656: page 24 left and 24 right, text 430/398. */
 .app-shell.focus-mode > .sidebar,
 .app-shell.focus-mode > .sidebar.collapsed {
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: 5;
   width: var(--rail-w-collapsed);
   min-width: var(--rail-w-collapsed);
   overflow: visible;
+}
+
+/* And the page takes its own inset back on the left, because there is no longer
+   a rail to meet. Every edge is the same 24 in focus — the repetition §05·1
+   protects, restored in the one mode that can afford it. */
+.app-shell.focus-mode .scripture-body {
+  padding-left: var(--page-inset);
 }
 
 /* The column stays; only its contents go. padding-top is deliberately NOT

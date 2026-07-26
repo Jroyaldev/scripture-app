@@ -3524,24 +3524,26 @@ html, body, #root {
   flex: 1;
   display: flex;
   overflow: hidden;
-  /* §05·3, last row: paper max width 1428, "past it the frame grows, not the
-     page." The second term is the same table read backwards — 40 padding +
-     320 margin + 56 spine + the measure block + 320 of trailing air + 40
-     padding — and it is what holds §05·4's other bound: trailing air's
-     "ceiling is 320 — the margin's own width... so the two outer airs never
-     invert." At the shipped 660 measure it comes to 1468, so 1428 is what
-     binds and the table's number is the one that ships; at the small measure
-     it binds first, which is the only way the ceiling can be honoured without
-     stating it twice. */
-  max-width: min(
-    var(--page-max-width),
-    calc(
-      var(--measure-block)
-      + var(--page-padding-inline) * 2
-      + var(--margin-column) * 2
-      + var(--page-spine)
-    )
-  );
+  /* The paper had `max-width: min(--page-max-width, …)` here — §05·3's last row,
+     "paper max width 1428, past it the frame grows, not the page." That reads
+     correctly when the paper is inset on both sides, because the frame then
+     grows evenly. It is left-anchored now, by the owner override two rules
+     above, so everything past the cap fell on ONE side: measured 172px of bare
+     canvas to the right of the paper in a 1656 window, identical in focus and
+     with the margin closed. A frame growing evenly is a frame; a frame growing
+     only right is a gap.
+
+     So the paper fills the space between the rail and the page inset, and the
+     cap comes off. The second term went with it: it existed to hold §05·4's
+     trailing-air ceiling for the block canon, which is retired below.
+
+     The reading experience does not change — the measure is capped at 780 and
+     the text centres in whatever paper there is, so a wider window buys white
+     page, not longer lines. `--page-max-width` stays declared and unused, like
+     `--canon-block`, and restoring this declaration is what brings the cap back.
+
+     Measured after, margin closed at 1656: paper 1576, canvas right 24, text
+     414/382. At 2000 the paper follows the window and the measure holds. */
   container: reading-stage / inline-size;
 }
 
