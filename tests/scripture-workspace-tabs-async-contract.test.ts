@@ -79,7 +79,21 @@ test("desktop pointer actions defer browser focus until their intent is approved
     [...source.matchAll(/onMouseDown=\{deferMouseFocus\}/g)].length >= 4,
     "tab and group mutation controls must suppress optimistic mouse focus",
   );
-  assert.match(source, /handleSelectTab\(tab\.id, \{ moveFocus: true \}\)/);
+  // This used to require `handleSelectTab(tab.id, { moveFocus: true })` — an
+  // unconditional programmatic focus, which defeated the deferral this test is
+  // named for. `deferMouseFocus` cancels the browser's own mousedown focus, so
+  // that call was the FIRST focus the tab received, and Chromium marks a
+  // programmatic focus `:focus-visible` when no pointer focus preceded it. A
+  // pointer press drew a keyboard ring.
+  //
+  // Deferring focus and then taking it a frame later is not deferring it. The
+  // keyboard still needs focus to travel, so it is gated on activation: a
+  // pointer click reports a click count, Enter and Space synthesise one with
+  // none.
+  assert.match(source, /const byKeyboard = event\.detail === 0;/);
+  assert.match(source, /handleSelectTab\(tab\.id, \{ moveFocus: byKeyboard \}\)/);
+  assert.doesNotMatch(source, /handleSelectTab\(tab\.id, \{ moveFocus: true \}\)/,
+    "an unconditional focus move is the ring this test exists to prevent");
   assert.match(source, /toggleGroup\(group\.id, !group\.collapsed, event\.currentTarget\)/);
 });
 

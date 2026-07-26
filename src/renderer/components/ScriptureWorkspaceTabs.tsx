@@ -1059,6 +1059,21 @@ export function ScriptureWorkspaceTabs({
                 onPointerCancel={handleTabPointerCancel}
                 onClick={async (event) => {
                   const trigger = event.currentTarget;
+                  // A pointer press must not draw a focus ring, and this one did.
+                  // `deferMouseFocus` cancels the browser's own mousedown focus,
+                  // so the programmatic focus below is the FIRST focus the tab
+                  // ever receives — and Chromium marks a programmatic focus
+                  // `:focus-visible` when no pointer focus preceded it. The ring
+                  // was therefore correct CSS answering a wrong question.
+                  //
+                  // `event.detail === 0` is keyboard activation: Enter and Space
+                  // synthesise a click with no click count, a pointer reports at
+                  // least one. So focus travels for the keyboard, which needs it
+                  // to keep the roving tabindex coherent, and stays where the
+                  // reader put it for the pointer, which does not. Scrolling the
+                  // tab into view is unconditional either way — that happens in
+                  // `scheduleCommittedTabFocus` before the focus call it gates.
+                  const byKeyboard = event.detail === 0;
                   if (suppressTabClickRef.current) {
                     suppressTabClickRef.current = false;
                     return;
@@ -1078,8 +1093,30 @@ export function ScriptureWorkspaceTabs({
                   // tab the proxy named with the rest of the study beside it —
                   // which is also what the proxy's own label promises when it
                   // says it opens that tab.
-                  if (collapsedProxy) await toggleGroup(group.id, false, trigger);
-                  await handleSelectTab(tab.id, { moveFocus: true });
+                  if (collapsedProxy) {
+                    await toggleGroup(group.id, false, byKeyboard ? trigger : undefined);
+                    await handleSelectTab(tab.id, { moveFocus: byKeyboard });
+                    return;
+                  }
+                  // Pressing the tab you are already on collapses its study.
+                  // That press had no effect at all before — the one click in
+                  // the strip that did nothing — and it is the click readers
+                  // reach for when they want the study out of the way, which is
+                  // the only evidence available and better than a guess. It also
+                  // gives the toggle one shape: press the thing that stands for
+                  // where you are, and its siblings hide; press it again, now a
+                  // proxy, and they come back.
+                  //
+                  // Only when the study has siblings to hide. A lone tab is its
+                  // own implicit group, and collapsing it would swap its
+                  // reference for a study name and look like a bug rather than a
+                  // fold. A double click self-corrects: the second press lands on
+                  // the proxy and expands again.
+                  if (selected && group.tabIds.length > 1) {
+                    await toggleGroup(group.id, true, byKeyboard ? trigger : undefined);
+                    return;
+                  }
+                  await handleSelectTab(tab.id, { moveFocus: byKeyboard });
                 }}
                 onAuxClick={(event) => handleTabAuxClick(event, tab.id, canClose, collapsedProxy)}
                 onContextMenu={(event) => openContextMenu(

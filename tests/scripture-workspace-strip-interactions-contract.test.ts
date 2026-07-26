@@ -175,9 +175,22 @@ test("collapsing a study in the strip has an inverse in the strip", () => {
   // reads the state rather than assuming it, and the collapsed proxy — the one
   // element standing for a collapsed study — expands before it selects.
   assert.match(tablist, /await toggleGroup\(group\.id, !group\.collapsed, event\.currentTarget\)/);
-  assert.doesNotMatch(tablist, /toggleGroup\(group\.id, true\b/,
-    "a hardcoded direction is how the inverse went missing; read the state instead");
-  assert.match(tablist, /if \(collapsedProxy\) await toggleGroup\(group\.id, false, trigger\);/);
+  // The blanket ban on a literal `true` that stood here was too broad, and this
+  // is the distinction it was missing. A hardcoded direction is a defect on a
+  // control whose direction depends on state — the kicker — and is correct on
+  // one that only ever goes one way. Pressing the tab you are already on always
+  // collapses; its inverse is pressing the proxy that replaces it. So the
+  // literal is allowed exactly once, and only behind the `selected` guard that
+  // makes it one-way.
+  const literalCollapses = [...tablist.matchAll(/toggleGroup\(group\.id, true\b/g)];
+  assert.equal(literalCollapses.length, 1,
+    "only the already-selected tab may collapse in a fixed direction");
+  assert.match(tablist, /if \(selected && group\.tabIds\.length > 1\) \{\s*await toggleGroup\(group\.id, true,/,
+    "and only when the study has siblings to hide — a lone tab would swap its reference for a study name");
+  // The trigger is handed over only for keyboard activation, for the same
+  // reason the selection's focus move is: focusing it after a pointer press is
+  // what drew a ring the reader never asked for.
+  assert.match(tablist, /if \(collapsedProxy\) \{\s*await toggleGroup\(group\.id, false, byKeyboard \? trigger : undefined\);/);
   assert.match(tablist, /openContextMenu\(\{ kind: "group", groupId: group\.id \}, event\)/);
   // The last line used to read `title={expandedGroupLabel}`, naming the local
   // that existed only while the group label was a bracket anchored to the first
