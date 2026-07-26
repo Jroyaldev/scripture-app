@@ -66,6 +66,21 @@ function between(source: string, start: string, end: string, label: string): str
   return source.slice(from, to);
 }
 
+/**
+ * The one line matching `pattern`, where "one" is asserted rather than assumed.
+ *
+ * `source.match(re)?.[0]` silently takes the FIRST match, which is the anchor
+ * collision in another spelling — and it was sitting on the highest-stakes
+ * assertion in this file, the count itself. A second `const connectionCount`
+ * appearing anywhere would have been picked up or ignored at random, and the
+ * guard for the defect this whole file exists for would have gone on passing.
+ */
+function soleMatch(source: string, pattern: RegExp, label: string): string {
+  const found = [...source.matchAll(new RegExp(pattern.source, `${pattern.flags.replace("g", "")}g`))];
+  assert.equal(found.length, 1, `${label}: matched ${found.length}×, not once`);
+  return found[0]![0];
+}
+
 /** The panel's own source, from its first component to the next surface. */
 const panelSource = between(
   margin,
@@ -111,7 +126,7 @@ function connection(
 
 test("the Connections tab's count is authored connections and cannot include cross-references", () => {
   // Was: `const connectionCount = (crossRefs?.items.length ?? 0) + noteConnectionCount;`
-  const countLine = margin.match(/^\s*const connectionCount = .*$/m)?.[0] ?? "";
+  const countLine = soleMatch(margin, /^\s*const connectionCount = .*$/m, "the count's declaration");
   assert.match(countLine, /passageConnections\.length/);
   assert.doesNotMatch(countLine, /crossRef/i);
   assert.doesNotMatch(margin, /const noteConnectionCount/);
@@ -530,6 +545,21 @@ test("no file under test is cut except through the uniqueness-checked helper", (
     "a file under test is cut outside between(), so nothing checked its anchors resolved");
   assert.equal([...body.matchAll(SPLIT_PICK)].length, 0,
     "a subscripted split picks a region by position; counting with .split(x).length is fine");
+  // Subscripting a call result is the same hazard in three more spellings —
+  // `margin.match(re)![0]`, `re.exec(margin)![0]`, `margin.match(re)?.[0]` —
+  // and the tell does not care which produced it. Scoped to the RAW files:
+  // `panelSource` and `panelCss` are regions `between()` already verified, so
+  // working inside them is not the hazard. `soleMatch()` is the sanctioned
+  // form, and it asserts its count.
+  const RAW = "(?:margin|page|css)";
+  const SUBSCRIPT = new RegExp(RAW + "\\.\\w+\\([^;]*?\\)\\s*(?:!|\\?\\.)?\\[", "g");
+  const argSubscript = new RegExp("\\(\\s*" + RAW + "\\s*\\)\\s*(?:!|\\?\\.)?\\[", "g");
+  const subscripts = [...body.matchAll(SUBSCRIPT), ...body.matchAll(argSubscript)]
+    // `[...x.matchAll(re)]` spreads into an array literal; the `[` opens the
+    // spread, it does not index the result. Counting and iteration are safe.
+    .filter((match) => !/\.\s*matchAll\s*\(/.test(match[0]));
+  assert.equal(subscripts.length, 0,
+    `a result derived from a raw file is subscripted by position: ${subscripts.map((m) => m[0]).join(", ")}`);
   // Blanket, and deliberately broader than the cut rule: this bans the
   // LOCATING, so it catches a position captured from any string and cut
   // elsewhere. This file has no legitimate positional pick, so the ban costs
@@ -538,6 +568,17 @@ test("no file under test is cut except through the uniqueness-checked helper", (
   assert.equal([...body.matchAll(LOCATE)].length, 0,
     "lastIndexOf picks a match by position, which is not a uniqueness argument");
 
+  // KNOWN INCOMPLETE, and deliberately so. `margin.replace(/^[\s\S]*?anchor/, "")`
+  // strips an anchored prefix and is a region pick that this sweep does not
+  // catch. `.replace(` is not added to the rule because it has legitimate uses
+  // here — stripping comments before a scan — so banning it would need an
+  // exception list, and exception lists rot silently. A deny-list of cutting
+  // constructs can always be out-run by one more construct; this is the current
+  // proof, and it is cheaper to state the limit than to hide it behind a rule
+  // that looks total and is not. The shape that would close it is an allow-list
+  // of sanctioned consumers of the raw files, which is a bigger change than the
+  // remaining risk in this file justifies.
+  //
   // A floor, so the sweep cannot pass by there being nothing to sweep.
   assert.ok([...body.matchAll(new RegExp("\\b" + "between" + "\\(", "g"))].length >= 8,
     "expected this file to cut its regions through between()");
