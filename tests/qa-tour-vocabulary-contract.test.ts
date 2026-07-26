@@ -58,16 +58,22 @@ function tourFiles(): string[] {
  * against the surface that exists now, by someone who can run it.
  */
 const KNOWN_UNREACHABLE: ReadonlySet<string> = new Set([
-  // The Dock was rebuilt as a single context area that swaps its contents.
-  // `data-dock-state` has no "armed": the states are busy / session / feedback
-  // / choices / selection / rest. Nine gates wait for a tenth that never comes.
-  'qa-marking-dock.mjs :: data-dock-state="armed"',
-  // `data-dock-action` is emitted once, on the failure state's Retry button.
-  // There is no erase or note action carrying it any more.
-  'qa-marking-dock.mjs :: data-dock-action="erase"',
-  'qa-marking-dock.mjs :: data-dock-action="note"',
+  // qa-marking-dock.mjs was rebuilt against a live Electron build and its four
+  // entries are gone. What each one turned out to be, so the next rewrite does
+  // not have to re-derive it:
+  //   data-dock-state="armed"   — there is no armed state and no mode row. What
+  //     the reader carries is `data-tool-armed` on the host, which is
+  //     "false" | "wash:<pigment>" | "connect:<kind>".
+  //   data-dock-action="erase"  — now [data-bar-action="remove"], and it shares
+  //   data-dock-action="note"   — a slot with [data-bar-action="note"]: Remove
+  //     replaces Note exactly when the selection already carries a wash.
+  //   data-paint-state="dormant" — a SAVED connection is a durable paint
+  //     record, and ConnectionUnderlay renders .connection-emphasis-mark only
+  //     for records that are not durable. A resting saved connection therefore
+  //     has no emphasis element at all; its presence is one margin tick. The
+  //     old gate read an attribute off a node that could never exist.
   // ConnectionUnderlay emits selection / authoring / selected / needs-space.
-  'qa-marking-dock.mjs :: data-paint-state="dormant"',
+  // These three belong to a tour nobody has been able to run yet.
   'qa-connection-paint.mjs :: data-paint-state="dormant"',
   'qa-connection-paint.mjs :: data-paint-state="preview"',
   'qa-connection-paint.mjs :: data-paint-state="companion"',

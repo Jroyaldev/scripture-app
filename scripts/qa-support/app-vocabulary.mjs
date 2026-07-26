@@ -112,6 +112,35 @@ export const ATTRIBUTE_VOCABULARY = Object.freeze({
     source: "src/renderer/components/MarkingSurface.tsx · the failure state's only action",
     values: ["retry"],
   },
+  // The Dock's selection state is a bar of commands, not a set of modes. These
+  // five ids are what replaced the retired `data-dock-tool` / `data-dock-intent`
+  // pair: there is no mode to enter and no intent to declare, only an act to
+  // perform on the words already selected. `remove` and `note` share one slot —
+  // Remove appears only when there is already a wash under the selection — so a
+  // tour must never expect both at once.
+  "data-bar-action": {
+    source: "src/renderer/components/MarkingSurface.tsx · MarkingBar",
+    values: ["highlight", "remove", "note", "connect", "more"],
+  },
+  "data-more-action": {
+    source: "src/renderer/components/MarkingSurface.tsx · MARKING_ACTIONS where home === \"more\"",
+    values: ["capture", "study-verse", "keep-comparison", "open-in-tab", "copy-reference", "pericope"],
+  },
+  "data-action-kind": {
+    source: "src/renderer/components/MarkingSurface.tsx · MarkingActionKind",
+    values: ["immediate", "deferred", "modal"],
+  },
+  // The connection draft's own four-state machine, distinct from the Dock's.
+  // The relationship chooser and the text field exist only from "two-anchors":
+  // asking what the relation IS before a relation exists has no answer.
+  "data-connect-state": {
+    source: "src/renderer/components/MarkingSurface.tsx · connectDraftState",
+    values: ["one-anchor", "two-anchors", "in-flight", "recovery"],
+  },
+  "data-focus-ring": {
+    source: "src/renderer/components/MarkingSurface.tsx · focusRingMode",
+    values: ["pointer", "keyboard"],
+  },
   "data-marking-surface": {
     source: "src/renderer/components/MarkingSurface.tsx · the palette host and the dock host",
     values: ["palette", "dock"],
@@ -160,6 +189,57 @@ export const ATTRIBUTE_VOCABULARY = Object.freeze({
       ...CONNECTION_KINDS.map((kind) => `connect:${kind}`),
     ],
   },
+});
+
+/**
+ * What is actually inside the Dock, mapped live against a running build.
+ *
+ * The Dock is one host, one toolbar, and ONE context area whose contents are
+ * swapped — `connectNode ?? failureNode ?? barNode ?? resting`, plus the More
+ * popover when it is open. It is not a set of panels that can be addressed
+ * independently, which is what the retired `[data-dock-context="wash|connect|
+ * intent"]` selectors assumed. There is no mode row, no measured thumb, no
+ * intent group and no quotation inside the Dock; a tour that looks for any of
+ * them is reading a surface that was replaced.
+ *
+ * Recorded here so the next hand does not have to drive Electron to learn it.
+ */
+export const DOCK_ANATOMY = Object.freeze({
+  host: ".marking-dock-host",
+  hostSelector: '[data-marking-surface="dock"]',
+  toolbar: ".marking-dock",
+  toolbarRole: "toolbar",
+  toolbarLabel: "Marking Dock",
+  context: ".marking-dock-context",
+  /** data-dock-state → the element that must be inside the context area. */
+  contents: Object.freeze({
+    rest: ".marking-dock-resting",
+    selection: ".marking-bar",
+    choices: ".marking-more",
+    session: ".marking-connect-draft",
+    feedback: ".surface-state",
+    // "busy" keeps whichever content it entered from and sets aria-busy.
+    busy: null,
+  }),
+  /** Every class the Dock can render. Anything else is a stale selector. */
+  classes: Object.freeze([
+    "marking-dock-host", "marking-dock", "is-entered", "marking-dock-context",
+    "marking-dock-resting", "marking-bar", "marking-bar-swatches",
+    "marking-bar-swatch", "marking-bar-action", "marking-choice", "marking-wash",
+    "marking-pigment", "marking-more", "marking-more-scope", "marking-more-list",
+    "marking-more-row", "marking-more-item", "marking-more-label",
+    "marking-more-reason", "marking-session", "marking-connect-draft",
+    "marking-connect-progress", "marking-session-kind", "marking-connect-anchors",
+    "marking-connect-ref", "marking-session-copy", "marking-connect-kinds",
+    "marking-choice-grid", "marking-relationship-grid", "marking-relationship",
+    "marking-choice-glyph", "marking-choice-label", "marking-connect-field",
+    "marking-session-recovery", "marking-connect-kept-text",
+    "marking-connect-actions", "marking-session-action", "surface-state",
+    "surface-state-line", "surface-state-thing", "surface-state-reason",
+    "surface-state-locality", "surface-state-actions", "sr-only",
+  ]),
+  /** Forced-colors codes on the pigment swatches, in bar order. */
+  forcedCodes: Object.freeze(["Amber", "Sage", "Sky", "Rose", "Violet"]),
 });
 
 /**

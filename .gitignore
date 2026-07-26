@@ -15,3 +15,4 @@ ds-bundle/
 # Alignment lab working tree: 2.5 GB of downloads and regenerable intermediates.
 # Deliverables and reports live here but are not source of truth for the app.
 lab/spine-v1/
+output/
