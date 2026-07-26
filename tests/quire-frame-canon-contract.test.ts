@@ -55,7 +55,9 @@ const px = (property: string): number => {
    Rev 05 §05·3 · the frame, stated once · desktop ≥ 1200
 
      Page top        54     24 canvas + 30 strip. Invariant across modes.
-     Page left       80     56 rail + 24 canvas. Also invariant.
+     Page left       56     OWNER OVERRIDE. The table says 80 — 56 rail + 24
+                            canvas — and calls it invariant. The paper meets the
+                            rail instead, and the measure gains the 24.
      Page right/bot  24     window edge, or the study panel's near edge.
      Study panel    380     its top, right and bottom obey the frame.
      Page padding  40/24    inside the paper.
@@ -161,10 +163,15 @@ test("the measure's left edge is 416, and is the same number in every state the 
   // section names are three paper widths, and at any width the block canon is
   // whole the answer is the same number.
   //
-  //   margin open, no panel, 1328px window   paper = 1328 - 80 - 24      = 1224
-  //   margin filled to the brim, same window                            = 1224
-  //   the study panel open, 1920px window    paper = 1920 - 80 - 24 - 404 = 1412
+  //   margin open, no panel, 1328px window   paper = 1328 - 56 - 24      = 1248
+  //   margin filled to the brim, same window                            = 1248
+  //   the study panel open, 1920px window    paper = 1920 - 56 - 24 - 404 = 1436
   //   a 2000px window, panel open            paper capped at             = 1428
+  //
+  // The subtrahend is 56 rather than the table's 80 because of the owner
+  // override recorded at the top of this file: the paper meets the rail. Note
+  // the third row now exceeds the cap, so 1428 binds one window earlier than it
+  // used to — which is the cap doing its job, not a new bound.
   //
   // The margin's contents do not appear because they cannot: the reserve is a
   // grid track, and Law 2 says the space for a mark exists at rest. That is

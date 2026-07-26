@@ -3459,7 +3459,24 @@ html, body, #root {
   flex: 1;
   display: flex;
   gap: var(--pane-gutter);
-  padding: 0 var(--page-inset) var(--page-inset);
+  /* OWNER OVERRIDE of Rev 05 §05·3, chosen against two alternatives seen side
+     by side in the running app. The frame table gives page-left 80 — 56 rail +
+     24 canvas — and calls it invariant; the paper now meets the rail at 56 and
+     the measure gains that 24.
+
+     What it costs, stated because §05·1 protects it: this was one declaration
+     spending `--page-inset` three times, and the repetition — 24 right, 24
+     under, 24 above the tab — is what §05·1 calls one of three reasons the
+     shell reads as decided. Left is now the only edge without it. The two
+     alternatives kept the repetition and were rejected on looking: shrinking
+     the inset everywhere to 16 (which also pulls the top band to 46, since
+     --frame-top is composed from this token) and leaving the frame alone while
+     the rail's mark moved off its own edge to hug the tile.
+
+     The rail is ground and ground may touch the edge — that part is §05·3's own
+     argument, and it is why the paper meeting it does not make a third plane.
+     Reverses by restoring the three-value shorthand. */
+  padding: 0 var(--page-inset) var(--page-inset) 0;
   overflow: hidden;
   /* The positioning context for the study panel's closed bottom edge, which
      hangs here rather than inside the panel for the same reason the page's
