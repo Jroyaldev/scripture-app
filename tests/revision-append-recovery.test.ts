@@ -414,8 +414,29 @@ test("immutable ticket election produces exactly one first winner across 100 con
           fixture(`stress-${round}-candidate-b`, "f"),
         ] as const;
         const results = await raceWorkerRound(workers, round, roundRoot, appends);
-        assert.equal(results.filter((result) => result.ok).length, 1, JSON.stringify(results));
-        assert.equal(results.filter((result) => !result.ok).length, 1, JSON.stringify(results));
+        // This test has been seen to fail in a full suite run three times and has
+        // never reproduced in isolation — including four copies run concurrently
+        // on purpose, which made it 4x slower and never made it fail. Two of the
+        // three failures were sub-second, and this assertion sits INSIDE the
+        // hundred-round loop, so a sub-second failure means it broke in the first
+        // rounds rather than timing out. That is a real possibility about
+        // election logic in a revision store, not a slow machine, so the message
+        // has to survive the next occurrence rather than being reconstructed
+        // from a duration.
+        //
+        // Two winners is a genuine election defect; zero is a worker that never
+        // got to race. Naming which, and the round, is the whole diagnosis — the
+        // payload alone was already here and was not enough, because nobody
+        // captured it and the shape it describes was never stated.
+        const won = results.filter((result) => result.ok).length;
+        const shape = won > 1
+          ? `ELECTION DEFECT: ${won} winners — two processes both believed they appended`
+          : won === 0
+            ? "NO WINNER: neither worker completed; suspect spawn or IPC rather than the election"
+            : "";
+        const detail = `round ${round} of 100 · ${shape || "one winner"} · ${JSON.stringify(results)}`;
+        assert.equal(won, 1, detail);
+        assert.equal(results.filter((result) => !result.ok).length, 1, detail);
         assert.match(
           results.find((result) => !result.ok)?.message ?? "",
           /append conflict|Another Scripture Library process/,
