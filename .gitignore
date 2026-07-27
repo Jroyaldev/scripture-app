@@ -16,3 +16,4 @@ ds-bundle/
 # Deliverables and reports live here but are not source of truth for the app.
 lab/spine-v1/
 output/
+enrichment/
