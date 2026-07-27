@@ -82,6 +82,7 @@
     "qa:notebook": "node scripts/qa-note-workspace-tour.mjs",
     "qa:command": "node scripts/qa-command-palette-tour.mjs",
     "qa:entities": "node scripts/qa-entity-research-tour.mjs",
+    "qa:player": "node scripts/qa-podcast-player.mjs",
     "qa:desktop": "node scripts/qa-desktop-regression.mjs",
     "verify:alignment-freshness": "node scripts/verify-alignment-freshness.mjs",
     "verify:alignment-conformance": "node scripts/verify-alignment-conformance.mjs",
