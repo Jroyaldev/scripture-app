@@ -19271,6 +19271,9 @@ button.lang-phrase-diagram-node:focus-visible,
 /* The count a publisher's chip carries when it has more than one answer, and
    the count on All. Set in mono so it reads as a tally rather than a word. */
 .trusted-resource-imprint-count {
+  /* The lockup name is a pseudo-element at order 1, so an unordered count sits
+     ahead of it and reads "4 Naked Bible". The tally goes last, always. */
+  order: 2;
   margin-left: 7px;
   padding: 1px 5px;
   border-radius: 5px;
@@ -19407,6 +19410,15 @@ button.lang-phrase-diagram-node:focus-visible,
   background: transparent;
   box-shadow: inset 0 0 0 1.5px var(--border-medium);
 }
+
+/* Installed but silent on this passage: still switchable, still identifiable,
+   just not claiming to offer anything here. Dimmed rather than hidden, because
+   a control that appears and disappears with the passage is not a setting. */
+.trusted-resource-pill[data-here="no"] { opacity: 0.58; }
+.trusted-resource-pill[data-here="no"]:hover { opacity: 1; }
+
+.trusted-resource-pill-icon { flex: none; opacity: 0.85; }
+.trusted-resource-pill[aria-pressed="false"] .trusted-resource-pill-icon { opacity: 0.6; }
 
 .trusted-resource-pill:hover { border-color: var(--resource-source, var(--border-strong)); }
 .trusted-resource-pill:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: 2px; }

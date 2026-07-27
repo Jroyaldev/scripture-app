@@ -2411,10 +2411,20 @@ function registerIpcHandlers(): void {
     return { ok: true, ...matches };
   });
 
+  /* Everything installed, not everything that matched: a publisher silent on
+     this passage still has to be switchable, or a reader can only turn off what
+     is currently in front of them. */
   registerRuntimeReadIpc("trusted-resources-catalogue", () => {
     const loaded = loadCurrentTrustedResourceManifests();
     if (!loaded.ok) return loaded;
-    const hidden = new Set(store.get("hiddenResourceSources") ?? []);
+    const hiddenSources = new Set(store.get("hiddenResourceSources") ?? []);
+    const hiddenKinds = new Set(store.get("hiddenResourceKinds") ?? []);
+    const kindTotals = new Map<string, number>();
+    for (const entry of loaded.manifests) {
+      for (const record of entry.manifest.records) {
+        kindTotals.set(record.kind, (kindTotals.get(record.kind) ?? 0) + 1);
+      }
+    }
     return {
       ok: true as const,
       sources: loaded.manifests.map((entry) => ({
@@ -2422,8 +2432,11 @@ function registerIpcHandlers(): void {
         name: entry.manifest.source.name,
         homepageUrl: entry.manifest.source.homepageUrl,
         records: entry.manifest.records.length,
-        hidden: hidden.has(entry.manifest.source.id),
+        hidden: hiddenSources.has(entry.manifest.source.id),
       })),
+      kinds: [...kindTotals.entries()]
+        .map(([kind, records]) => ({ kind, records, hidden: hiddenKinds.has(kind) }))
+        .sort((left, right) => right.records - left.records || left.kind.localeCompare(right.kind)),
     };
   });
 

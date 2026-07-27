@@ -114,7 +114,11 @@ declare global {
           | { ok: false; refusal: TrustedResourceRefusal }
         >;
         catalogue(): Promise<
-          | { ok: true; sources: TrustedResourceCatalogueEntry[] }
+          | {
+              ok: true;
+              sources: TrustedResourceCatalogueEntry[];
+              kinds: Array<{ kind: string; records: number; hidden: boolean }>;
+            }
           | { ok: false; refusal: TrustedResourceRefusal }
         >;
         openOfficial(sourceId: string, resourceId: string, url: string): Promise<{ ok: true }>;
