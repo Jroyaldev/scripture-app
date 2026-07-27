@@ -120,6 +120,13 @@ function titleKeys(title: string): string[] {
   if (withoutSuffix) keys.add(fold(withoutSuffix));
   const withoutPrefix = title.replace(/^.{0,60}?\b(?:E\d+|Part\s+\d+|Q\s*[+&]\s*R)\s*[:–—-]\s*/i, "").trim();
   if (withoutPrefix) keys.add(fold(withoutPrefix));
+  /* And a bare series prefix with no number in it — the feed writes "Jude: A
+     Family Legacy and a Short Letter" where the page writes "The Letter of Jude
+     E1: A Family Legacy and a Short Letter", so neither rule above reaches it.
+     Held to twenty characters of remainder, because a short tail after a colon
+     is a fragment and fragments collide. */
+  const bare = fold(title.replace(/^[^:]{1,40}:\s*/, "").trim());
+  if (bare.length >= 20) keys.add(bare);
   return [...keys].filter(Boolean);
 }
 
@@ -154,6 +161,7 @@ type FeedFacts = {
   chapters: Array<{ label: string; start: string; end: string }>;
 };
 const byTitle = new Map<string, FeedFacts>();
+const ambiguous = new Set<string>();
 
 for (const block of feedItems) {
   const title = decode(tagOf(block, "title"));
@@ -185,11 +193,17 @@ for (const block of feedItems) {
     summary: prose.split(/\bCHAPTERS\b/)[0]?.slice(0, 600).trim() ?? "",
     chapters,
   };
-  /* First writer wins: the full title is the exact name and is registered
-     first, so a suffix-stripped key can never displace a real match. */
-  for (const key of titleKeys(title)) if (!byTitle.has(key)) byTitle.set(key, facts);
+  /* First writer wins, and a key two episodes both answer to answers for
+     neither. Loosening the match is how the join grew; poisoning what it made
+     ambiguous is what stops it attaching one episode's audio to another. A
+     missing duration is a blank on a card. Wrong audio is a card that lies. */
+  for (const key of titleKeys(title)) {
+    if (byTitle.has(key)) { if (byTitle.get(key) !== facts) ambiguous.add(key); continue; }
+    byTitle.set(key, facts);
+  }
 }
-console.log(`  feed:    ${feedItems.length} episodes joined on title`);
+for (const key of ambiguous) byTitle.delete(key);
+console.log(`  feed:    ${feedItems.length} episodes indexed, ${ambiguous.size} name(s) too ambiguous to join on`);
 
 /* ── pages ───────────────────────────────────────────────────────────────── */
 
@@ -226,7 +240,7 @@ async function pull(url: string): Promise<void> {
     url,
     stated,
     brefs,
-    ...(titleKeys(title).map((key) => byTitle.get(key)).find(Boolean) ?? {}),
+    ...(titleKeys(title).filter((key) => !ambiguous.has(key)).map((key) => byTitle.get(key)).find(Boolean) ?? {}),
   });
   done += 1;
   if (done % 25 === 0) process.stdout.write(`\r  pages:   ${done}/${wanted.length}`);
