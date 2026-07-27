@@ -279,9 +279,20 @@ function selectCards(
     return !language || language === query.preferLanguage ? 0 : 1;
   };
 
+  /* Recency is the last thing that should decide a card and the first thing a
+     reader notices among equals. It ranks below evidence, specificity and
+     language — a newer commentary on the wrong verses is still wrong — but
+     above the ids, which order by nothing at all. Working Preacher lists seven
+     scholars on Psalm 111 and puts the newest first; sorting on ids put a 2020
+     entry above a 2022 one for no reason a reader could see. Records with no
+     date sort last rather than first, so a missing field cannot outrank a
+     stated one. */
+  const writtenAt = (entry: RankedTrustedResource): string => entry.record.metadata?.publishedAt ?? "";
+
   const ordered = [...ranked].sort((left, right) => right.score - left.score
     || matchedSpan(left.matchedBref) - matchedSpan(right.matchedBref)
     || wrongLanguage(left) - wrongLanguage(right)
+    || writtenAt(right).localeCompare(writtenAt(left))
     || left.source.id.localeCompare(right.source.id)
     || left.record.id.localeCompare(right.record.id));
 
@@ -292,9 +303,14 @@ function selectCards(
     return true;
   });
 
+  /* A second card from one source must say something the first did not. What
+     counts as "something new" is the whole question, and the key below answers
+     it: same passage, same kind, same author is one commentary — its Spanish
+     edition is not a second opinion. A different scholar is. */
   const spoken = new Set(firstPerSource.map(restatementKey));
+  const first = new Set(firstPerSource);
   const remainder = ordered.filter((entry) => {
-    if (firstPerSource.includes(entry)) return false;
+    if (first.has(entry)) return false;
     const key = restatementKey(entry);
     if (spoken.has(key)) return false;
     spoken.add(key);
@@ -308,13 +324,22 @@ function selectCards(
  * What would make a second card from one source a restatement of the first.
  *
  * Coordinates and kind, deliberately not title: the Spanish edition of a
- * commentary is titled differently and is still the same commentary, and two of
- * one publisher's commentaries on identical verses are two answers to a question
- * the reader has already been given an answer to. Either may be the better card
- * — but the slot it would take is the only one another publisher could have had.
+ * commentary is titled differently and is still the same commentary.
+ *
+ * And the author, because without it this key could not tell those two apart
+ * from two different scholars. Working Preacher has twelve commentaries on
+ * Psalm 111 written by seven people — Gafney, Norton, Bellinger, Hannan,
+ * Jacobson, deClaissé-Walford, Bouzard — and calling those one answer restated
+ * eleven times is simply false. Seven voices on a psalm is what the publisher
+ * has, and a reader who asks them for it should get it.
+ *
+ * Sources that name no author are unchanged: they share the empty author and
+ * collapse exactly as before, which is the right default for a catalogue that
+ * cannot tell us who is speaking.
  */
 function restatementKey(entry: RankedTrustedResource): string {
-  return `${entry.source.id}|${entry.matchedBref}|${entry.record.kind}`;
+  const author = entry.record.metadata?.author ?? "";
+  return `${entry.source.id}|${entry.matchedBref}|${entry.record.kind}|${author}`;
 }
 
 /**

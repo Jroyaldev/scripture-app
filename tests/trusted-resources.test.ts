@@ -326,3 +326,47 @@ test("resource runtime is read-only and network-free", () => {
   assert.doesNotMatch(loader, /fetch\(|https?:|writeFile|appendFile|mkdir|unlink/);
   assert.match(loader, /invalid-installed-manifest/);
 });
+
+/**
+ * Breadth before depth was written to stop one publisher taking every slot in a
+ * margin that shows three. It was doing more than that: it deleted the extra
+ * cards outright, so a reader who opened Working Preacher and asked for
+ * everything it had on Psalm 111 was shown one commentary of the twelve it has
+ * written — and told the total was one.
+ */
+test("a publisher's second answer is demoted, never dropped", () => {
+  const commentary = (id: string) => ({
+    id, sourceId: "working-preacher", kind: "commentary" as const,
+    title: `Commentary on Psalm 111 (${id})`,
+    officialUrl: `https://www.workingpreacher.org/${id}`,
+    brefs: ["bref:v1/PSA.111.1-PSA.111.10"], matchBasis: "publisher-title" as const,
+    metadata: { author: id, language: "en" },
+  });
+  const wp: TrustedResourceManifestV1 = {
+    schema: "pericope.trusted-resource-manifest", version: 1,
+    source: { id: "working-preacher", name: "Working Preacher", homepageUrl: "https://www.workingpreacher.org/", officialHosts: ["www.workingpreacher.org"] },
+    provenance: { publisher: "Luther Seminary", reviewedAt: "2026-07-27", coverage: "reviewed-sample", permissions: "outbound-link-only" },
+    capabilities: ["outbound-link"],
+    records: [commentary("gafney"), commentary("norton"), commentary("bellinger"), commentary("hannan")],
+  };
+  const other: TrustedResourceManifestV1 = {
+    ...wp,
+    source: { id: "bibleproject", name: "BibleProject", homepageUrl: "https://bibleproject.com/", officialHosts: ["bibleproject.com"] },
+    records: [{ ...commentary("bp-one"), sourceId: "bibleproject", kind: "podcast" as const, officialUrl: "https://bibleproject.com/podcasts/x/" }],
+  };
+
+  const deep = matchTrustedResources([wp, other], { bref: "bref:v1/PSA.111.1-PSA.111.10", limit: 50 });
+  assert.equal(deep.total, 5, "every commentary must be counted, or 'see all' lies about what exists");
+  assert.equal(deep.resources.filter((entry) => entry.source.id === "working-preacher").length, 4,
+    "opening a publisher must reach every card it has for the passage");
+
+  /* And the reason the guard exists still holds: with a margin's worth of room,
+     each publisher is heard before either is heard twice. */
+  const margin = matchTrustedResources([wp, other], { bref: "bref:v1/PSA.111.1-PSA.111.10", limit: 2 });
+  assert.deepEqual(margin.resources.map((entry) => entry.source.id), ["bibleproject", "working-preacher"]);
+
+  // Demoted, not merely present: the repeats sort below anything novel.
+  const order = deep.resources.map((entry) => entry.source.id);
+  assert.equal(order.slice(0, 2).includes("bibleproject"), true,
+    "a second card from one source must not outrank another source's first");
+});

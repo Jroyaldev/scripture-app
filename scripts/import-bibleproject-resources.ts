@@ -142,7 +142,6 @@ type FeedFacts = {
   feedTitle: string;
   publishedAt?: string;
   durationMinutes?: number;
-  audioUrl?: string;
   summary: string;
   chapters: Array<{ label: string; start: string; end: string }>;
 };
@@ -169,13 +168,8 @@ for (const block of feedItems) {
     ? Math.round(parts.reduce((total, part) => total * 60 + part, 0) / 60)
     : 0;
 
-  const enclosure = /<enclosure[^>]*\burl="([^"]+)"/.exec(block)?.[1];
-  const audio = enclosure ? decode(enclosure) : "";
-  let audioHost = ""; try { audioHost = new URL(audio).hostname; } catch { audioHost = ""; }
-
   const facts: FeedFacts = {
     feedTitle: title,
-    ...(audioHost === MEDIA_HOST ? { audioUrl: audio } : {}),
     ...(date && !Number.isNaN(date.getTime()) ? { publishedAt: date.toISOString().slice(0, 10) } : {}),
     ...(minutes > 0 ? { durationMinutes: minutes } : {}),
     summary: prose.split(/\bCHAPTERS\b/)[0]?.slice(0, 600).trim() ?? "",
@@ -204,6 +198,20 @@ const OG_TITLE = /<meta[^>]+property="og:title"[^>]+content="([^"]*)"/;
    but prose rather than a tag — so it is read only when the tag block is empty,
    and it is recorded as the weaker claim it is. */
 const META_DESCRIPTION = /<meta[^>]+name="description"[^>]+content="([^"]*)"/;
+/**
+ * The publisher's own download button, and the end of a long detour.
+ *
+ * Audio used to be joined from the feed by matching titles, which meant every
+ * loosening of that match risked handing one episode another's recording — and
+ * three times it did. None of that was necessary: the episode's page carries
+ * its own file. A page cannot be wrong about which recording is its own, so the
+ * whole class of mistake stops existing rather than being defended against.
+ *
+ * The feed is still read, for the date, the duration and the chapter markers it
+ * alone holds. Being wrong about those is a blemish on a card, not a lie about
+ * what a reader is listening to.
+ */
+const DOWNLOAD = /<a\b[^>]*data-testid="podcast-episode-download"[^>]*>/;
 
 type Episode = {
   id: string;
@@ -212,6 +220,7 @@ type Episode = {
   stated: string[];
   brefs: string[];
   basis: TrustedResourceMatchBasis;
+  audioUrl?: string;
 } & Partial<FeedFacts>;
 
 const episodes: Episode[] = [];
@@ -235,6 +244,11 @@ async function pull(url: string): Promise<void> {
   const slug = new URL(url).pathname.split("/").filter(Boolean)[1] ?? "";
   const title = episodeTitle(decode(OG_TITLE.exec(html)?.[1] ?? ""), slug);
   const stated = [...html.matchAll(REFERENCE)].map((match) => decode(match[1]!)).filter(Boolean);
+
+  const anchor = DOWNLOAD.exec(html)?.[0] ?? "";
+  const href = decode(/href="([^"]+)"/.exec(anchor)?.[1] ?? "");
+  let mediaHost = ""; try { mediaHost = new URL(href).hostname; } catch { mediaHost = ""; }
+  const audioUrl = mediaHost === MEDIA_HOST ? href : undefined;
   /* Each tag is parsed on its own. A publisher's list is not a sentence, and
      joining it into one would let a stray number bridge two entries. */
   let brefs = [...new Set(stated.flatMap((one) => extractStatedReferences(one, bookNames, backbone)))];
@@ -252,6 +266,7 @@ async function pull(url: string): Promise<void> {
     stated,
     brefs,
     basis,
+    ...(audioUrl ? { audioUrl } : {}),
     ...(titleKeys(title).filter((key) => !ambiguous.has(key)).map((key) => byTitle.get(key)).find(Boolean)
       ?? fuzzyMatch(title, feedCandidates) ?? {}),
   });
@@ -285,7 +300,34 @@ const queue = fromPacket ? [] : [...wanted];
 await Promise.all(Array.from({ length: concurrency }, async () => {
   for (let next = queue.shift(); next; next = queue.shift()) await pull(next);
 }));
-process.stdout.write(`\r  pages:   ${done}/${wanted.length}\n`);
+if (!fromPacket) process.stdout.write(`\r  pages:   ${done}/${wanted.length}\n`);
+
+/* A page that lists scripture references is an episode page, and every episode
+   page this publisher serves carries a download button — 528 of 531 of them do.
+   So references without audio is not a fact about the publisher, it is a fact
+   about one request: three pages came back that way in a single crawl and were
+   fine on every retry. Left alone it is invisible, because a silent record and
+   a record whose publisher offers no audio look identical from here.
+
+   Only the anomalies are asked for again, once, unhurried. */
+if (!fromPacket) {
+  const suspect = episodes.filter((episode) => episode.stated.length > 0 && !episode.audioUrl);
+  if (suspect.length > 0) {
+    console.log(`  retry:   ${suspect.length} page(s) listed references but no audio`);
+    let recovered = 0;
+    for (const episode of suspect) {
+      await new Promise((wake) => setTimeout(wake, 500));
+      try {
+        const html = await get(episode.url);
+        const anchor = DOWNLOAD.exec(html)?.[0] ?? "";
+        const href = decode(/href="([^"]+)"/.exec(anchor)?.[1] ?? "");
+        let host = ""; try { host = new URL(href).hostname; } catch { host = ""; }
+        if (host === MEDIA_HOST) { episode.audioUrl = href; recovered += 1; }
+      } catch { /* reported below by the count that did not move */ }
+    }
+    console.log(`           ${recovered} recovered, ${suspect.length - recovered} genuinely carry none`);
+  }
+}
 if (failures.length > 0) console.log(`  ! ${failures.length} page(s) could not be read`);
 
 /* ── manifest ────────────────────────────────────────────────────────────── */
@@ -327,8 +369,8 @@ const agreement = (episode: Episode): number => {
 
 const claimants = new Map<string, Episode[]>();
 for (const episode of episodes) {
-  if (!episode.audioUrl) continue;
-  claimants.set(episode.audioUrl, [...(claimants.get(episode.audioUrl) ?? []), episode]);
+  if (!episode.feedTitle) continue;
+  claimants.set(episode.feedTitle, [...(claimants.get(episode.feedTitle) ?? []), episode]);
 }
 let disowned = 0;
 for (const contested of claimants.values()) {
@@ -424,7 +466,7 @@ console.log(`\n  linked:    ${records.length} episodes, ${records.reduce((n, r) 
 console.log(`             ${tagged} from the publisher's scripture tags, ${records.length - tagged} from their prose`);
 console.log(`  unlinked:  ${episodes.length - records.length} left for review`);
 console.log(`  joined:    ${joined} matched a feed episode for date and duration`);
-console.log(`  disowned:  ${disowned} contested match(es) refused as not the same episode`);
+console.log(`  disowned:  ${disowned} contested feed match(es) refused (date and duration only)`);
 console.log(`  chapters:  ${chapterCount} across ${withChapters} episodes`);
 console.log(`  written:   ${outPath}${arg("out") ? "" : `  (library from ${target.from})`}`);
 console.log(`  packet:    ${join(packetDir, "episodes.jsonl")}`);
