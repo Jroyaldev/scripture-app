@@ -6,6 +6,7 @@ import type { BackboneData, BookNameMap } from "../src/core/reference/types.js";
 import {
   extractWorkingPreacherAuthorFromHtml,
   extractWorkingPreacherTitlePassages,
+  namesBookOutsideBackbone,
   normalizeWorkingPreacherRecord,
   rankWorkingPreacherResources,
 } from "../src/core/resources/working-preacher.js";
@@ -51,4 +52,24 @@ test("Working Preacher normalization is strict and ranking deterministic", () =>
 test("Working Preacher byline extraction keeps no page body", () => {
   const html = '<div class="card--author-small"><div class="card__title"><h4>Carolyn B. Helsel</h4></div></div>';
   assert.equal(extractWorkingPreacherAuthorFromHtml(html), "Carolyn B. Helsel");
+});
+
+test("a title naming a book outside the backbone is skipped, never given its lectionary day's other readings", () => {
+  /* Regression: working-preacher:commentary:28957, "Commentary on Sirach
+     35:12-17", shipped carrying seven brefs — Jeremiah, Joel, 2 Timothy, Luke,
+     Psalm 84 — the rest of its lectionary day. The commentary is about none of
+     them. The fallback that rescues a title naming no passage must not fire for
+     a title that names one we cannot express. */
+  assert.equal(namesBookOutsideBackbone("Commentary on Sirach 35:12-17"), true);
+  assert.equal(extractWorkingPreacherTitlePassages("Commentary on Sirach 35:12-17", bookNames, backbone).ok, false);
+
+  for (const title of ["Commentary on Wisdom of Solomon 3:1-9", "Commentary on Baruch 5:1-9", "Commentary on Tobit 4:5-11", "Commentary on 1 Maccabees 4:36-59", "Commentary on Ecclesiasticus 15:15-20"]) {
+    assert.equal(namesBookOutsideBackbone(title), true, title);
+  }
+
+  /* And it stays out of the way of the canon it resembles. "O.T. Wisdom and
+     Poetry" is a real series over Proverbs and Ecclesiastes. */
+  for (const title of ["NL183: Preaching Series on O.T. Wisdom and Poetry", "Commentary on Ecclesiastes 3:1-13", "Commentary on Judges 4:1-7", "Commentary on Proverbs 8:1-11"]) {
+    assert.equal(namesBookOutsideBackbone(title), false, title);
+  }
 });

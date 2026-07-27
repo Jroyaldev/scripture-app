@@ -447,14 +447,19 @@ test("laurel prose is never edited in place", () => {
     const bindings = [...source.matchAll(
       /<(?:textarea|input|ControlTextarea|ControlInput)\b[\s\S]{0,400}?\/?>/gi,
     )];
-    // Neither file draws an editable control today, so the loop below sweeps
-    // nothing — which is the answer, but only if it is stated. Left unstated it
-    // was three assertions that could not fail. Say the number out loud: the
-    // day the margin grows a text field, this fails and sends the author to the
-    // loop underneath rather than letting it wave the new control through.
-    assert.equal(bindings.length, 0,
-      `${file} now draws ${bindings.length} editable control(s). That is not forbidden, but the `
-      + "licensed-prose check below has never run against one — review it, then raise this count.");
+    // Say the number out loud, so a new control cannot arrive unexamined: the
+    // day the margin grows one, this fails and sends the author to the loop
+    // underneath rather than letting it wave the control through.
+    //
+    // LivingMargin draws exactly one — the podcast scrub, an <input type=range>
+    // bound to playback position. It was reviewed against the loop below when it
+    // landed: a seek bar edits a number of seconds, and there is no path from it
+    // to a licensed string. Raise this only after the same review.
+    const allowed = file === "LivingMargin.tsx" ? 1 : 0;
+    assert.equal(bindings.length, allowed,
+      `${file} now draws ${bindings.length} editable control(s), expected ${allowed}. That is not `
+      + "forbidden, but the licensed-prose check below has not run against the new one — review it, "
+      + "then raise this count.");
     for (const binding of bindings) {
       for (const field of [/\.brief\b/, /place\.description\b/, /\.short\b/]) {
         assert.doesNotMatch(

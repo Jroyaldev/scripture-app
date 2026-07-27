@@ -22,7 +22,7 @@
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { extractWorkingPreacherTitlePassages } from "../src/core/resources/working-preacher.js";
+import { extractWorkingPreacherTitlePassages, namesBookOutsideBackbone } from "../src/core/resources/working-preacher.js";
 import { validateTrustedResourceManifest } from "../src/core/resources/trusted-resources.js";
 import { resolveManifestPath } from "./resource-import-target.js";
 import type {
@@ -98,6 +98,7 @@ const brefsFromTitle = (title: string): string[] => {
   return parsed.ok ? parsed.value.brefs : [];
 };
 
+
 /* ── the lectionary join ─────────────────────────────────────────────────── */
 
 console.log(`Importing from ${HOST}`);
@@ -137,7 +138,7 @@ if (requestedTypes.includes("podcast")) {
 
 const records: TrustedResourceRecordV1[] = [];
 const seen = new Set<string>();
-const skipped = { noPassage: 0, offHost: 0, noDay: 0 };
+const skipped = { noPassage: 0, offHost: 0, noDay: 0, outsideBackbone: 0 };
 let viaLectionary = 0;
 
 if (requestedTypes.includes("commentary")) {
@@ -150,6 +151,12 @@ if (requestedTypes.includes("commentary")) {
     if (host !== HOST) { skipped.offHost += 1; continue; }
 
     let brefs = brefsFromTitle(title);
+    if (brefs.length === 0 && namesBookOutsideBackbone(title)) {
+      // The title named its passage and we cannot hold it. Borrowing the rest of
+      // the day's readings would answer a question nobody asked.
+      skipped.outsideBackbone += 1;
+      continue;
+    }
     if (brefs.length === 0) {
       // A title we cannot parse still has a lectionary day, and the day knows.
       const info = row.acf?.["lectionary_info"] as { lectionary_day?: number; lectionary_year?: number } | undefined;
@@ -255,5 +262,5 @@ writeFileSync(outPath, `${JSON.stringify(validated.value, null, 2)}\n`);
 
 console.log(`\n  records:          ${records.length}`);
 console.log(`  via lectionary:   ${viaLectionary}`);
-console.log(`  skipped:          ${skipped.noPassage} no passage, ${skipped.noDay} no lectionary day, ${skipped.offHost} off-host`);
+console.log(`  skipped:          ${skipped.noPassage} no passage, ${skipped.noDay} no lectionary day, ${skipped.offHost} off-host, ${skipped.outsideBackbone} outside the backbone`);
 console.log(`  written:          ${outPath}${arg("out") ? "" : `  (library from ${target.from})`}`);

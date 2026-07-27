@@ -228,6 +228,19 @@ function matchBooks(value: string, bookNames: BookNameMap): Array<{ code: BookCo
   return matches;
 }
 
+/**
+ * Does this title name a book the lectionary reads and our versification lacks?
+ *
+ * The distinction is load-bearing wherever a lectionary day is used to rescue a
+ * title that yielded no coordinates. "Commentary on Sirach 35:12-17" states its
+ * passage as plainly as any other title — we simply cannot express the answer.
+ * A title that names nothing may borrow its day's readings; a title that names
+ * Sirach may not, because the day's other readings are not what it is about.
+ */
+export function namesBookOutsideBackbone(title: string): boolean {
+  return /\b(?:Sirach|Ecclesiasticus|Wisdom of Solomon|Baruch|Tobit|Judith|(?:[1-4]|I{1,3}|IV)\s*Maccabees|Susanna|Bel and the Dragon|Prayer of Azariah|(?:[12]|I{1,2})\s*Esdras|Prayer of Manasseh)\b/i.test(title);
+}
+
 function validateResource(input: unknown): ParseResult<WorkingPreacherResource> {
   const keys = ["id", "source", "sourceRecordId", "kind", "title", "url", "publishedAt", "modifiedAt", "language", "availability", "passageLabel", "brefs", "matchBasis", "lectionary", "description", "readMinutes", "artworkUrl", "author"];
   if (!isRecord(input) || !hasOnlyKeys(input, keys) || typeof input["id"] !== "string" || input["source"] !== "working-preacher" || !Number.isInteger(input["sourceRecordId"]) || input["kind"] !== "commentary" || typeof input["title"] !== "string" || typeof input["url"] !== "string" || typeof input["publishedAt"] !== "string" || !["en", "es", "unknown"].includes(String(input["language"])) || !["available", "forthcoming"].includes(String(input["availability"])) || typeof input["passageLabel"] !== "string" || input["matchBasis"] !== "publisher-title" || !Array.isArray(input["brefs"]) || input["brefs"].length === 0) return { ok: false, error: "Working Preacher resource has invalid required fields" };
