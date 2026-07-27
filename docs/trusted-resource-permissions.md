@@ -104,9 +104,10 @@ approval recorded 2026-07-26.
 
 ## Importing
 
-`scripts/import-tgc-resources.ts` builds a manifest from The Gospel Coalition's
-public WordPress REST catalogue. Three things about how it behaves, because they
-are the parts a publisher would care about:
+Two importers build manifests from publishers' public WordPress REST
+catalogues: `scripts/import-tgc-resources.ts` and
+`scripts/import-working-preacher-resources.ts`. Three things about how they
+behave, because they are the parts a publisher would care about:
 
 - It runs **offline, by hand**. Nothing in the app fetches a publisher at
   runtime, and D5's no-network guardrail is unchanged. The import produces a
@@ -120,11 +121,20 @@ are the parts a publisher would care about:
   manifest it writes is validated before it is saved, so an import cannot
   produce a file the app would refuse.
 
-Passage evidence comes from TGC's `scripture` taxonomy, which is hierarchical
-and chapter-level, so a record's coordinates are the publisher's own claim
-rather than something parsed out of a title. Book-level tags become whole-book
-coordinates, which rank last on specificity — correctly, since that is exactly
-how much the tag actually said.
+Passage evidence differs by publisher, and the manifest records which was used:
+
+- **TGC** — its `scripture` taxonomy, hierarchical and chapter-level, so a
+  record's coordinates are the publisher's own claim rather than something
+  parsed out of a title (`publisher-scripture-tag`). Book-level tags become
+  whole-book coordinates, which rank last on specificity — correctly, since
+  that is exactly how much the tag actually said.
+- **Working Preacher commentaries** — parsed from publisher titles
+  (`publisher-title`), using the normalizer the C1 prototype validated.
+- **Working Preacher podcasts** — an episode titled "Eleventh Sunday after
+  Pentecost" names a day, not a passage. The lectionary day the publisher
+  assigned carries its readings, and those are passages, so the coordinates come
+  from the publisher's own lectionary rather than from our reading of a title
+  (`publisher-catalog`).
 
 ## Deferred work
 
