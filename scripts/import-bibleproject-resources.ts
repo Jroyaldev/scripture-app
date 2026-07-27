@@ -42,10 +42,12 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { extractStatedReferences } from "../src/core/resources/scripture-scan.js";
+import { fuzzyMatch, significantWords, titleKeys } from "../src/core/resources/episode-title.js";
 import { validateTrustedResourceManifest } from "../src/core/resources/trusted-resources.js";
 import { resolveManifestPath } from "./resource-import-target.js";
 import type {
   TrustedResourceManifestV1,
+  TrustedResourceMatchBasis,
   TrustedResourceRecordV1,
 } from "../src/core/resources/trusted-resources.js";
 import type { BackboneData, BookNameMap } from "../src/core/reference/types.js";
@@ -53,7 +55,15 @@ import type { BackboneData, BookNameMap } from "../src/core/reference/types.js";
 const ROOT = resolve(import.meta.dirname, "..");
 const HOST = "bibleproject.com";
 const SITEMAP = `https://${HOST}/en/sitemap.xml`;
-const FEED = "https://feeds.simplecast.com/3NVmUWZO";
+/* Two shows, not one. The main podcast is the one anybody means by
+   "BibleProject", but Tim Mackie's older teaching show is where the remastered
+   Jonah, Hebrews and Heaven-and-Hell episodes come from, and its 122 episodes
+   are otherwise pages we can link and never play. Same audio host, so it costs
+   no new permission. */
+const FEEDS = [
+  "https://feeds.simplecast.com/3NVmUWZO", // BibleProject
+  "https://feeds.simplecast.com/zovPCGLI", // Exploring My Strange Bible
+];
 /* Where their audio actually is. Not bibleproject.com — every one of the 534
    enclosures is an audio/mpeg on Simplecast's CDN, so linking and playing are
    two different permissions here in a way they were not for Naked Bible. */
@@ -68,9 +78,11 @@ function arg(name: string): string | undefined {
 const target = resolveManifestPath("bibleproject");
 const outPath = arg("out") ?? target.path;
 const packetDir = arg("packet") ?? join(ROOT, "enrichment", "bibleproject");
-const feedSource = arg("feed") ?? FEED;
+const feedSources = arg("feed")?.split(",").map((one) => one.trim()).filter(Boolean) ?? FEEDS;
 const limit = Number(arg("limit") ?? "0") || 0;
 const concurrency = Math.max(1, Number(arg("concurrency") ?? "6"));
+/* Re-derive records from the last crawl instead of crawling again. */
+const fromPacket = process.argv.includes("--from-packet");
 
 const backbone = JSON.parse(readFileSync(join(ROOT, "data/scripture/backbone.json"), "utf8")) as BackboneData;
 const bookNames = JSON.parse(readFileSync(join(ROOT, "data/scripture/book-names-en.json"), "utf8")) as BookNameMap;
@@ -98,43 +110,13 @@ async function get(url: string): Promise<string> {
   return response.text();
 }
 
-/** Titles are compared, never displayed, so punctuation and case are noise. */
-const fold = (value: string): string =>
-  value.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, " ").trim();
 
-/**
- * The two catalogues name the same episode differently, systematically, and in
- * opposite directions. The feed appends the series and its number; the page
- * puts the same thing in front:
- *
- *   feed  "A Cup of Wrath? – Character of God E8"
- *   page  "The Letter of Jude E1: A Family Legacy and a Short Letter"
- *
- * So both sides are reduced to the bare episode name and matched on that.
- * Stripping only the suffix matched 81 episodes of 535; stripping only what the
- * feed does misses every page in a numbered series, which is most of them.
- */
-function titleKeys(title: string): string[] {
-  const keys = new Set([fold(title)]);
-  const withoutSuffix = title.replace(/\s+[–—-]\s+[^–—]*\bE\d+\s*$/i, "").trim();
-  if (withoutSuffix) keys.add(fold(withoutSuffix));
-  const withoutPrefix = title.replace(/^.{0,60}?\b(?:E\d+|Part\s+\d+|Q\s*[+&]\s*R)\s*[:–—-]\s*/i, "").trim();
-  if (withoutPrefix) keys.add(fold(withoutPrefix));
-  /* And a bare series prefix with no number in it — the feed writes "Jude: A
-     Family Legacy and a Short Letter" where the page writes "The Letter of Jude
-     E1: A Family Legacy and a Short Letter", so neither rule above reaches it.
-     Held to twenty characters of remainder, because a short tail after a colon
-     is a fragment and fragments collide. */
-  const bare = fold(title.replace(/^[^:]{1,40}:\s*/, "").trim());
-  if (bare.length >= 20) keys.add(bare);
-  return [...keys].filter(Boolean);
-}
 
 /* ── the episodes the publisher publishes ────────────────────────────────── */
 
 console.log(`Importing from ${HOST}`);
 
-const sitemap = await get(SITEMAP);
+const sitemap = fromPacket ? "" : await get(SITEMAP);
 const episodeUrls = [...new Set(
   [...sitemap.matchAll(/<loc>(https:\/\/bibleproject\.com\/podcasts\/[a-z0-9-]+\/?)<\/loc>/g)]
     .map((match) => match[1]!)
@@ -143,12 +125,15 @@ const episodeUrls = [...new Set(
     .filter((url) => new URL(url).pathname.split("/").filter(Boolean).length === 2),
 )];
 const wanted = limit ? episodeUrls.slice(0, limit) : episodeUrls;
-console.log(`  sitemap: ${episodeUrls.length} episode pages${limit ? `, taking ${wanted.length}` : ""}`);
+if (!fromPacket) console.log(`  sitemap: ${episodeUrls.length} episode pages${limit ? `, taking ${wanted.length}` : ""}`);
 
 /* ── the feed, for what only it holds ────────────────────────────────────── */
 
-const feedXml = /^https?:/.test(feedSource) ? await get(feedSource) : readFileSync(feedSource, "utf8");
-const feedItems = feedXml.match(/<item>[\s\S]*?<\/item>/g) ?? [];
+const feedItems: string[] = [];
+for (const source of feedSources) {
+  const xml = /^https?:/.test(source) ? await get(source) : readFileSync(source, "utf8");
+  feedItems.push(...(xml.match(/<item>[\s\S]*?<\/item>/g) ?? []));
+}
 
 /** "<li>Intro (0:00-1:23)</li>" — the publisher's own segmentation. */
 const CHAPTER = /<li>\s*([\s\S]*?)\s*\(\s*(\d{1,2}:\d{2}(?::\d{2})?)\s*[-–]\s*(\d{1,2}:\d{2}(?::\d{2})?)\s*\)\s*<\/li>/g;
@@ -162,6 +147,7 @@ type FeedFacts = {
 };
 const byTitle = new Map<string, FeedFacts>();
 const ambiguous = new Set<string>();
+const feedCandidates: Array<{ words: Set<string>; facts: FeedFacts }> = [];
 
 for (const block of feedItems) {
   const title = decode(tagOf(block, "title"));
@@ -201,15 +187,21 @@ for (const block of feedItems) {
     if (byTitle.has(key)) { if (byTitle.get(key) !== facts) ambiguous.add(key); continue; }
     byTitle.set(key, facts);
   }
+  feedCandidates.push({ words: significantWords(title), facts });
 }
 for (const key of ambiguous) byTitle.delete(key);
-console.log(`  feed:    ${feedItems.length} episodes indexed, ${ambiguous.size} name(s) too ambiguous to join on`);
+console.log(`  feeds:   ${feedSources.length} shows, ${feedItems.length} episodes indexed, ${ambiguous.size} name(s) too ambiguous to join on`);
 
 /* ── pages ───────────────────────────────────────────────────────────────── */
 
 /** One tagged anchor per passage, which is the publisher stating a coordinate. */
 const REFERENCE = /data-testid="podcast-episode-scripture-reference"[^>]*>([^<]+)</g;
 const OG_TITLE = /<meta[^>]+property="og:title"[^>]+content="([^"]*)"/;
+/* Where the publisher tagged nothing, they often still say it plainly: "In this
+   message, Tim teaches from Jonah 2". Their own words about their own episode,
+   but prose rather than a tag — so it is read only when the tag block is empty,
+   and it is recorded as the weaker claim it is. */
+const META_DESCRIPTION = /<meta[^>]+name="description"[^>]+content="([^"]*)"/;
 
 type Episode = {
   id: string;
@@ -217,6 +209,7 @@ type Episode = {
   url: string;
   stated: string[];
   brefs: string[];
+  basis: TrustedResourceMatchBasis;
 } & Partial<FeedFacts>;
 
 const episodes: Episode[] = [];
@@ -232,7 +225,13 @@ async function pull(url: string): Promise<void> {
   const stated = [...html.matchAll(REFERENCE)].map((match) => decode(match[1]!)).filter(Boolean);
   /* Each tag is parsed on its own. A publisher's list is not a sentence, and
      joining it into one would let a stray number bridge two entries. */
-  const brefs = [...new Set(stated.flatMap((one) => extractStatedReferences(one, bookNames, backbone)))];
+  let brefs = [...new Set(stated.flatMap((one) => extractStatedReferences(one, bookNames, backbone)))];
+  let basis: TrustedResourceMatchBasis = "publisher-scripture-tag";
+  if (brefs.length === 0) {
+    const described = decode(META_DESCRIPTION.exec(html)?.[1] ?? "");
+    const fromProse = extractStatedReferences(described, bookNames, backbone);
+    if (fromProse.length > 0) { brefs = fromProse; basis = "publisher-catalog"; }
+  }
 
   episodes.push({
     id: `bibleproject:podcast:${slug}`,
@@ -240,13 +239,35 @@ async function pull(url: string): Promise<void> {
     url,
     stated,
     brefs,
-    ...(titleKeys(title).filter((key) => !ambiguous.has(key)).map((key) => byTitle.get(key)).find(Boolean) ?? {}),
+    basis,
+    ...(titleKeys(title).filter((key) => !ambiguous.has(key)).map((key) => byTitle.get(key)).find(Boolean)
+      ?? fuzzyMatch(title, feedCandidates) ?? {}),
   });
   done += 1;
   if (done % 25 === 0) process.stdout.write(`\r  pages:   ${done}/${wanted.length}`);
 }
 
-const queue = [...wanted];
+/* Rebuilding from the packet re-reads pages we already read. The join has been
+   revised several times and each revision used to mean 652 more requests at the
+   publisher; their server started refusing, which was fair. The packet already
+   holds every title and every reference, so the only thing a re-crawl adds is
+   load on somebody else's machine. */
+const packetPath = join(packetDir, "episodes.jsonl");
+if (fromPacket) {
+  const cached = readFileSync(packetPath, "utf8").trim().split("\n").filter(Boolean);
+  for (const line of cached) {
+    const saved = JSON.parse(line) as Episode;
+    episodes.push({
+      ...saved,
+      ...(titleKeys(saved.title).filter((key) => !ambiguous.has(key)).map((key) => byTitle.get(key)).find(Boolean)
+        ?? fuzzyMatch(saved.title, feedCandidates) ?? {}),
+    });
+  }
+  done = episodes.length;
+  console.log(`  pages:   ${done} replayed from ${packetPath} (no requests made)`);
+}
+
+const queue = fromPacket ? [] : [...wanted];
 await Promise.all(Array.from({ length: concurrency }, async () => {
   for (let next = queue.shift(); next; next = queue.shift()) await pull(next);
 }));
@@ -268,7 +289,7 @@ for (const episode of episodes) {
     brefs: episode.brefs,
     /* The publisher tagged their own episode with these coordinates. That is
        their claim, not our reading of a headline. */
-    matchBasis: "publisher-scripture-tag",
+    matchBasis: episode.basis,
     ...(episode.audioUrl ? { audioUrl: episode.audioUrl } : {}),
     metadata: {
       ...(episode.publishedAt ? { publishedAt: episode.publishedAt } : {}),
@@ -325,8 +346,8 @@ writeFileSync(outPath, `${JSON.stringify(validated.value, null, 2)}\n`);
    not in the manifest — nothing renders them yet, and the schema should grow
    when there is something to show, not in advance of it. */
 mkdirSync(packetDir, { recursive: true });
-writeFileSync(
-  join(packetDir, "episodes.jsonl"),
+if (!fromPacket) writeFileSync(
+  packetPath,
   `${episodes.map((episode) => JSON.stringify(episode)).join("\n")}\n`,
 );
 
@@ -334,7 +355,9 @@ const chapterCount = episodes.reduce((total, episode) => total + (episode.chapte
 const withChapters = episodes.filter((episode) => (episode.chapters?.length ?? 0) > 0).length;
 const joined = episodes.filter((episode) => episode.durationMinutes != null).length;
 
+const tagged = records.filter((record) => record.matchBasis === "publisher-scripture-tag").length;
 console.log(`\n  linked:    ${records.length} episodes, ${records.reduce((n, r) => n + r.brefs.length, 0)} references`);
+console.log(`             ${tagged} from the publisher's scripture tags, ${records.length - tagged} from their prose`);
 console.log(`  unlinked:  ${episodes.length - records.length} left for review`);
 console.log(`  joined:    ${joined} matched a feed episode for date and duration`);
 console.log(`  chapters:  ${chapterCount} across ${withChapters} episodes`);
