@@ -1551,7 +1551,16 @@ export function App(): React.JSX.Element {
     setLibraryPopoverOpen(false);
   };
 
+  /* The margin can send a reader straight to the publishers it is showing them,
+     which is the only settings page that answers the question the chips raise. */
+  const [settingsSection, setSettingsSection] = useState<"library" | "resources">("library");
+  const openResourceSettings = () => {
+    setSettingsSection("resources");
+    void changeView("settings");
+  };
+
   const handleManageInSettings = () => {
+    setSettingsSection("library");
     void changeView("settings", () => {
       setLibraryPopoverOpen(false);
     });
@@ -2098,6 +2107,7 @@ export function App(): React.JSX.Element {
           <div className="main-content">
             {view === "scripture" && (
               <ScripturePage
+                onOpenResourceSettings={openResourceSettings}
                 backbone={backbone}
                 bookNames={bookNames}
                 navigateRef={navigateRef}
@@ -2191,6 +2201,8 @@ export function App(): React.JSX.Element {
             )}
             {view === "settings" && (
               <SettingsPage
+                initialSection={settingsSection}
+                key={settingsSection}
                 libraryPath={libraryPath}
                 readingSize={readingSize}
                 verseNumbers={verseNumbers}

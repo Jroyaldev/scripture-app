@@ -429,6 +429,7 @@ interface Props {
   ) => void;
   onSessionEntryChange: (ownerTabId: string, entry: PassageViewState) => void;
   onOpenCommandPalette?: () => void;
+  onOpenResourceSettings?: () => void;
   onOpenResearchPalette?: () => void;
   onOpenPassageTab?: (target: {
     book: string;
@@ -649,6 +650,7 @@ export function ScripturePage({
   sessionEntry,
   onSessionEntryChange,
   onOpenCommandPalette,
+  onOpenResourceSettings,
   onOpenResearchPalette,
   onOpenPassageTab,
   onReadingContextChange,
@@ -5355,6 +5357,7 @@ export function ScripturePage({
 
       {marginVisible && !focusMode && (
         <LivingMargin
+          onOpenResourceSettings={onOpenResourceSettings}
           key={sessionOwnerTabId}
           book={marginSubject.book}
           chapter={marginSubject.chapter}

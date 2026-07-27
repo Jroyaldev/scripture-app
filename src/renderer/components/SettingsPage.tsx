@@ -30,6 +30,8 @@ interface Props {
   onMaterialChange: (material: AppMaterial) => void;
   markingSurface: MarkingSurface;
   onMarkingSurfaceChange: (surface: MarkingSurface) => void;
+  /** Which section to land on. Set when opened from somewhere specific. */
+  initialSection?: SettingsSectionId;
 }
 
 type SettingsSectionId = "library" | "reading" | "resources" | "intelligence" | "import" | "about";
@@ -180,10 +182,11 @@ export function SettingsPage({
   onMaterialChange,
   markingSurface,
   onMarkingSurfaceChange,
+  initialSection,
 }: Props): React.JSX.Element {
   const { showToast } = useToast();
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [activeSection, setActiveSection] = useState<SettingsSectionId>("library");
+  const [activeSection, setActiveSection] = useState<SettingsSectionId>(initialSection ?? "library");
   const [summary, setSummary] = useState<LibrarySummary | null>(null);
   const [envelope, setEnvelope] = useState<BudgetEnvelopeData | null>(null);
   const [usage, setUsage] = useState<{ date: string; tokensUsed: number; spendUsd: number } | null>(null);

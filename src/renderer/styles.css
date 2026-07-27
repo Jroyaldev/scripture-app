@@ -19019,7 +19019,8 @@ button.lang-phrase-diagram-node:focus-visible,
 }
 
 .trusted-resource-card[data-source="working-preacher"],
-.trusted-resource-imprint[data-source="working-preacher"] {
+.trusted-resource-imprint[data-source="working-preacher"],
+.resource-source[data-source="working-preacher"] {
   --resource-source: #9d2235;
   --resource-ink: #fbf1ea;
   --resource-ink-soft: rgb(251 241 234 / 0.78);
@@ -19032,7 +19033,8 @@ button.lang-phrase-diagram-node:focus-visible,
 }
 
 .trusted-resource-card[data-source="bibleproject"],
-.trusted-resource-imprint[data-source="bibleproject"] {
+.trusted-resource-imprint[data-source="bibleproject"],
+.resource-source[data-source="bibleproject"] {
   --resource-source: #00b3e5;
   --resource-ink: #05303f;
   --resource-ink-soft: rgb(5 48 63 / 0.76);
@@ -19049,7 +19051,8 @@ button.lang-phrase-diagram-node:focus-visible,
    yellow. No mark ships until the source is approved; until then the name
    carries it, in the ink the surface was designed for. */
 .trusted-resource-card[data-source="enter-the-bible"],
-.trusted-resource-imprint[data-source="enter-the-bible"] {
+.trusted-resource-imprint[data-source="enter-the-bible"],
+.resource-source[data-source="enter-the-bible"] {
   --resource-source: #fed141;
   --resource-ink: #1c1a12;
   --resource-ink-soft: rgb(28 26 18 / 0.72);
@@ -19067,7 +19070,8 @@ button.lang-phrase-diagram-node:focus-visible,
    size and no better larger. Their emblem carries the identity instead, and a
    name follows it — an emblem alone at 19px identifies nobody. */
 .trusted-resource-card[data-source="naked-bible"],
-.trusted-resource-imprint[data-source="naked-bible"] {
+.trusted-resource-imprint[data-source="naked-bible"],
+.resource-source[data-source="naked-bible"] {
   --resource-source: #2f3437;
   --resource-ink: #e7eaea;
   --resource-ink-soft: rgb(231 234 234 / 0.74);
@@ -19080,7 +19084,8 @@ button.lang-phrase-diagram-node:focus-visible,
 }
 
 .trusted-resource-card[data-source="the-gospel-coalition"],
-.trusted-resource-imprint[data-source="the-gospel-coalition"] {
+.trusted-resource-imprint[data-source="the-gospel-coalition"],
+.resource-source[data-source="the-gospel-coalition"] {
   --resource-source: #79ae4a;
   --resource-ink: #1b2a0d;
   --resource-ink-soft: rgb(27 42 13 / 0.76);
@@ -19291,6 +19296,30 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint.is-all[aria-expanded="true"] {
   box-shadow: inset 0 0 0 1.5px var(--accent-seal);
   color: var(--text-primary);
+}
+
+/* Settings is the quietest chip in the row: same height and radius, no fill,
+   no count. It is a way out of the group rather than a way into it. */
+.trusted-resource-imprint.is-settings {
+  padding: 0 9px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
+  color: var(--text-tertiary);
+}
+
+.trusted-resource-imprint.is-settings:hover {
+  box-shadow: inset 0 0 0 1px var(--border-medium);
+  color: var(--text-secondary);
+}
+
+.trusted-resource-imprint.is-settings .trusted-resource-source {
+  display: inline-flex;
+  align-items: center;
+  overflow: visible;
+  height: auto;
+  aspect-ratio: auto;
+  background: none;
+  text-indent: 0;
 }
 
 /* Opened, the cards stack under the row they came from. */

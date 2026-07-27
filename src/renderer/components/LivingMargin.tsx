@@ -301,6 +301,7 @@ interface Props {
   } | null;
   /** Study content opens a new Research tab. */
   onOpenEntity?: (target: EntityResearchTarget) => Promise<boolean>;
+  onOpenResourceSettings?: () => void;
   /** Research content follows a related identity in the active Research tab. */
   onDrillEntity?: (target: EntityResearchTarget, options?: EntityResearchOpenOptions) => Promise<boolean>;
   /** Explicitly branch a related identity into a second Research tab. */
@@ -389,12 +390,14 @@ function TrustedResourcesBlock({
   refusal,
   total,
   hiddenCount,
+  onOpenSettings,
 }: {
   resources: readonly RankedTrustedResource[];
   loading: boolean;
   refusal: string | null;
   total: number;
   hiddenCount: number;
+  onOpenSettings?: (() => void) | undefined;
 }): React.JSX.Element {
   const { showToast } = useToast();
   /* A chip is a publisher, not a record. Three chips used to mean three cards,
@@ -487,6 +490,33 @@ function TrustedResourcesBlock({
               >
                 <span className="trusted-resource-source">All</span>
                 <span className="trusted-resource-imprint-count">{total}</span>
+              </button>
+            )}
+            {/* The row raises the question of who these publishers are, and the
+                answer lives in settings — so the way there is a chip in the
+                same row rather than a hunt through a menu. */}
+            {onOpenSettings && (
+              <button
+                aria-label="Choose which publishers appear here"
+                className="trusted-resource-imprint is-settings"
+                key="settings"
+                onClick={onOpenSettings}
+                title="Choose which publishers appear here"
+                type="button"
+              >
+                <span className="trusted-resource-source" aria-hidden="true">
+                  {/* Sliders, not a cog: at 13px a cog's teeth close up into a
+                      sun. Three rows with a knob each also happens to be what
+                      the panel behind it actually is. */}
+                  <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+                    <g fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.4">
+                      <path d="M2.2 4.2h11.6M2.2 8h11.6M2.2 11.8h11.6" />
+                      <circle cx="5.6" cy="4.2" r="1.6" fill="var(--bg-reading)" />
+                      <circle cx="10.4" cy="8" r="1.6" fill="var(--bg-reading)" />
+                      <circle cx="6.6" cy="11.8" r="1.6" fill="var(--bg-reading)" />
+                    </g>
+                  </svg>
+                </span>
               </button>
             )}
           </div>
@@ -3101,6 +3131,7 @@ export function LivingMargin({
   onEntityResearchFocusRequestHandled,
   entityIntent,
   onOpenEntity,
+  onOpenResourceSettings,
   onDrillEntity,
   onBranchEntity,
   onReturnEntityOrigin,
@@ -4270,7 +4301,7 @@ export function LivingMargin({
               onOpenTab={activateTab}
               onOpenEntity={onOpenEntity}
             />
-            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} />
+            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} onOpenSettings={onOpenResourceSettings} />
           </section>
 
           <section
@@ -4385,7 +4416,7 @@ export function LivingMargin({
               onOpenTab={activateTab}
               onOpenEntity={onOpenEntity}
             />
-            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} />
+            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} onOpenSettings={onOpenResourceSettings} />
           </section>
 
           <section
@@ -4503,7 +4534,7 @@ export function LivingMargin({
               onOpenTab={activateTab}
               onOpenEntity={onOpenEntity}
             />
-            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} />
+            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} onOpenSettings={onOpenResourceSettings} />
           </section>
 
           <section
