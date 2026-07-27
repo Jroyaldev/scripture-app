@@ -20,12 +20,33 @@ import {
 } from "../core/resources/trusted-resources.js";
 import type { BackboneData } from "../core/reference/types.js";
 
-export const TRUSTED_RESOURCE_SOURCE_IDS = [
-  "working-preacher",
-  "bibleproject",
-  "the-gospel-coalition",
-  "enter-the-bible",
+/**
+ * The registry: which sources exist, and which hosts each may send a reader to.
+ *
+ * The hosts are stated here rather than trusted from the manifest, because a
+ * manifest in `.artifacts` is a file on disk that anything can write. Opening a
+ * link therefore has to satisfy two independent gates — the manifest's own
+ * `officialHosts`, and this list — and only this one ships in the binary.
+ *
+ * It lives beside the ids because the two were previously apart, one here and
+ * one in the main process, and a source registered in only one place looked
+ * perfectly healthy until a reader clicked its card and was told the link could
+ * not be opened.
+ */
+export const TRUSTED_RESOURCE_SOURCES = [
+  { id: "working-preacher", officialHosts: ["www.workingpreacher.org"] },
+  { id: "bibleproject", officialHosts: ["bibleproject.com"] },
+  { id: "the-gospel-coalition", officialHosts: ["www.thegospelcoalition.org"] },
+  { id: "enter-the-bible", officialHosts: ["enterthebible.org"] },
+  { id: "naked-bible", officialHosts: ["nakedbiblepodcast.com"] },
 ] as const;
+
+export const TRUSTED_RESOURCE_SOURCE_IDS = TRUSTED_RESOURCE_SOURCES.map((source) => source.id);
+
+/** Every host any registered source is allowed to open. */
+export function allowedTrustedResourceHosts(): Set<string> {
+  return new Set(TRUSTED_RESOURCE_SOURCES.flatMap((source) => [...source.officialHosts]));
+}
 
 export type TrustedResourceManifestOrigin = "installed" | "bundled";
 export type LoadedTrustedResourceManifest = {

@@ -101,7 +101,7 @@ import {
   rankTrustedResources,
   validateTrustedResourceQuery,
 } from "../core/resources/trusted-resources.js";
-import { loadTrustedResourceManifests } from "../host/trusted-resource-loader.js";
+import { allowedTrustedResourceHosts, loadTrustedResourceManifests } from "../host/trusted-resource-loader.js";
 
 const DATA_DIR = resolve(__dirname, "../../data/scripture");
 const CROSS_REF_DIR = resolve(__dirname, "../../data/cross-references");
@@ -213,11 +213,9 @@ const ALLOWED_RESEARCH_LINK_HOSTS = new Set([
   "www.stepbible.org",
 ]);
 
-const ALLOWED_TRUSTED_RESOURCE_HOSTS = new Set([
-  "www.workingpreacher.org",
-  "bibleproject.com",
-  "www.thegospelcoalition.org",
-]);
+/* Built from the source registry rather than restated here: the two lists were
+   separate, and a source added to one but not the other opened nothing. */
+const ALLOWED_TRUSTED_RESOURCE_HOSTS = allowedTrustedResourceHosts();
 
 interface WindowBounds {
   x?: number;

@@ -19056,6 +19056,27 @@ button.lang-phrase-diagram-node:focus-visible,
   --resource-line: rgb(28 26 18 / 0.26);
   --resource-pill-bg: #fa4616;
   --resource-pill-ink: #ffffff;
+  /* Their own colour artwork, unmodified: the tile's yellow is this surface, so
+     what reads is the black book and the orange BIBLE. No reverse to commission. */
+  --resource-mark: url("./assets/brand/etb-main-logo-colour.svg");
+  --resource-mark-height: 22px;
+  --resource-mark-ratio: 2.914;
+}
+
+/* The Naked Bible wordmark is one hairline of small caps, illegible at chip
+   size and no better larger. Their emblem carries the identity instead, and a
+   name follows it — an emblem alone at 19px identifies nobody. */
+.trusted-resource-card[data-source="naked-bible"],
+.trusted-resource-imprint[data-source="naked-bible"] {
+  --resource-source: #2f3437;
+  --resource-ink: #e7eaea;
+  --resource-ink-soft: rgb(231 234 234 / 0.74);
+  --resource-line: rgb(231 234 234 / 0.28);
+  --resource-pill-bg: #d9a441;
+  --resource-pill-ink: #23272a;
+  --resource-mark: url("./assets/brand/naked-bible-emblem-white.png");
+  --resource-mark-height: 19px;
+  --resource-mark-ratio: 1.583;
 }
 
 .trusted-resource-card[data-source="the-gospel-coalition"],
@@ -19108,6 +19129,10 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-card.is-featured[data-source="working-preacher"] .trusted-resource-source,
 .trusted-resource-card.is-featured[data-source="bibleproject"] .trusted-resource-source,
 .trusted-resource-card.is-featured[data-source="the-gospel-coalition"] .trusted-resource-source,
+.trusted-resource-card.is-featured[data-source="enter-the-bible"] .trusted-resource-source,
+.trusted-resource-card.is-featured[data-source="naked-bible"] .trusted-resource-source,
+.trusted-resource-imprint[data-source="enter-the-bible"] .trusted-resource-source,
+.trusted-resource-imprint[data-source="naked-bible"] .trusted-resource-source,
 .trusted-resource-imprint[data-source="working-preacher"] .trusted-resource-source,
 .trusted-resource-imprint[data-source="bibleproject"] .trusted-resource-source,
 .trusted-resource-imprint[data-source="the-gospel-coalition"] .trusted-resource-source {
@@ -19180,6 +19205,25 @@ button.lang-phrase-diagram-node:focus-visible,
   border-style: dashed;
   color: var(--resource-ink-soft);
 }
+
+/* An emblem with no wordmark needs its name beside it. Written here rather than
+   in the markup because which marks need a name is a fact about the artwork. */
+.trusted-resource-imprint[data-source="naked-bible"]::after,
+.trusted-resource-card.is-featured[data-source="naked-bible"] .trusted-resource-head::after {
+  order: 1;
+  margin-right: auto;
+  color: var(--resource-ink);
+  content: "Naked Bible";
+  font: var(--fw-semibold) 0.8125rem/1 var(--font-reading);
+  letter-spacing: -0.008em;
+  white-space: nowrap;
+}
+
+.trusted-resource-imprint[data-source="naked-bible"] { gap: 9px; }
+.trusted-resource-card.is-featured[data-source="naked-bible"] .trusted-resource-head { gap: 9px; }
+.trusted-resource-card.is-featured[data-source="naked-bible"] .trusted-resource-head::after { font-size: 0.9375rem; }
+.trusted-resource-card.is-featured[data-source="naked-bible"] .trusted-resource-source { order: 0; }
+.trusted-resource-card.is-featured[data-source="naked-bible"] .trusted-resource-kind { order: 2; }
 
 .trusted-resource-actions { display: flex; align-items: center; }
 

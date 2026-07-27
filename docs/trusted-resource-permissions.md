@@ -1,7 +1,7 @@
 # Trusted resource permissions boundary
 
 Reviewed: 2026-07-20
-Mark approval recorded: 2026-07-26
+Mark approval recorded: 2026-07-26 (three sources), 2026-07-27 (Enter the Bible, Naked Bible)
 
 This is a product-engineering boundary, not a grant of rights or a substitute
 for legal review. Re-check the live publisher terms before expanding any source
@@ -9,20 +9,31 @@ beyond the capabilities recorded in its versioned manifest.
 
 ## Approved sources
 
-Marks are approved for the three sources shipped here, and for no others:
+Marks are approved for the sources listed here, and for no others:
 
 | Source | Mark | Brand surface |
 |---|---|---|
 | Working Preacher | `wp-stacked-white.svg` | `#9D2235` |
 | BibleProject | `bp-mono-wht.png` | `#00B3E5` |
 | The Gospel Coalition | `tgc-mark-wht.svg` | `#79AE4A` |
+| Enter the Bible | `etb-main-logo-colour.svg` | `#FED141` |
+| Naked Bible Podcast | `naked-bible-emblem-white.png` | `#2F3437` |
 
 The 2026-07-20 review below records what each publisher *publishes* about reuse.
 It was never a finding that these marks could not be shown — only that the
-milestone held no approval to show them. Approval for these three was recorded
-on 2026-07-26 and the marks now ship.
+milestone held no approval to show them. Approval was recorded on 2026-07-26 for
+the first three and on 2026-07-27 for Enter the Bible and the Naked Bible
+Podcast, and the marks now ship.
 
-Approval is per source. A fourth source shows its name in type until it is
+Two of these ship artwork that needed handling rather than dropping in. Enter
+the Bible's logo is built for a light ground — a yellow tile, orange "BIBLE",
+black type — so its card is light, the surface is that tile's own yellow, and
+the logo ships unmodified. The Naked Bible Podcast publishes a wordmark that is
+a single hairline of small caps, illegible at card size; its emblem was lifted
+from the 2000px cover art, reversed to one ink, and is locked up with the show's
+name, since an emblem alone identifies nobody.
+
+Approval is per source. An unapproved source shows its name in type until it is
 approved in its own right, and the renderer enforces that rather than trusting
 it: the mark is attached by an explicit per-source rule, never by a default, so
 an unapproved source cannot inherit one. Marks ship as bundled local assets in
@@ -104,10 +115,11 @@ approval recorded 2026-07-26.
 
 ## Importing
 
-Two importers build manifests from publishers' public WordPress REST
-catalogues: `scripts/import-tgc-resources.ts` and
-`scripts/import-working-preacher-resources.ts`. Three things about how they
-behave, because they are the parts a publisher would care about:
+Four importers build manifests from publishers' public WordPress REST
+catalogues — `import-tgc-resources.ts`, `import-working-preacher-resources.ts`,
+`import-enter-the-bible-resources.ts` and `import-naked-bible-resources.ts`, all
+in `scripts/`. Three things about how they behave, because they are the parts a
+publisher would care about:
 
 - It runs **offline, by hand**. Nothing in the app fetches a publisher at
   runtime, and D5's no-network guardrail is unchanged. The import produces a
@@ -135,10 +147,19 @@ Passage evidence differs by publisher, and the manifest records which was used:
   assigned carries its readings, and those are passages, so the coordinates come
   from the publisher's own lectionary rather than from our reading of a title
   (`publisher-catalog`).
+- **Enter the Bible** — each passage record carries a `verse` field the
+  publisher fills in (`publisher-scripture-tag`). Their audio, video, glossary,
+  map and time-period records are tagged by book alone and are not imported:
+  whole-book coordinates rank below every chapter-level card and would never
+  surface.
+- **Naked Bible** — parsed from episode titles (`publisher-title`), which name
+  the passage the episode works through. Roughly half the catalogue names no
+  passage — Q&As, interviews, tributes — and those are omitted rather than
+  guessed at.
 
 ## Deferred work
 
-- marks for any source beyond the three approved above;
+- marks for any source beyond those approved above;
 - publisher artwork and cover thumbnails;
 - article/commentary descriptions, excerpts, or bodies;
 - embedded playback or remote thumbnails;

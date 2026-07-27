@@ -6,8 +6,11 @@ import { test } from "node:test";
 const root = resolve(import.meta.dirname, "..");
 const read = (path: string): string => readFileSync(resolve(root, path), "utf8");
 
-/** Approved for their official marks on 2026-07-26. No other source is. */
+/** Approved for their official marks. No other source is. */
 const APPROVED_MARK_SOURCES = ["working-preacher", "bibleproject", "the-gospel-coalition"];
+/** Approved 2026-07-27, and shipping without a bundled sample manifest. */
+const APPROVED_MARK_SOURCES_IMPORTED = ["enter-the-bible", "naked-bible"];
+const ALL_APPROVED_MARK_SOURCES = [...APPROVED_MARK_SOURCES, ...APPROVED_MARK_SOURCES_IMPORTED];
 
 test("reviewed manifests and cards retain the common link-only permission boundary", () => {
   for (const source of APPROVED_MARK_SOURCES) {
@@ -34,7 +37,7 @@ test("reviewed manifests and cards retain the common link-only permission bounda
 test("official marks ship only for approved sources, from bundled local assets", () => {
   const css = read("src/renderer/styles.css");
   const markRules = css.match(/--resource-mark:\s*url\("[^"]+"\)/g) ?? [];
-  assert.equal(markRules.length, APPROVED_MARK_SOURCES.length);
+  assert.equal(markRules.length, ALL_APPROVED_MARK_SOURCES.length);
 
   for (const rule of markRules) {
     const url = /url\("([^"]+)"\)/.exec(rule)?.[1] ?? "";
@@ -42,7 +45,7 @@ test("official marks ship only for approved sources, from bundled local assets",
     assert.ok(existsSync(resolve(root, "src/renderer", url)), `missing bundled mark: ${url}`);
   }
 
-  for (const source of APPROVED_MARK_SOURCES) {
+  for (const source of ALL_APPROVED_MARK_SOURCES) {
     const declaration = new RegExp(
       String.raw`\.trusted-resource-card\[data-source="${source}"\][^}]*--resource-mark:\s*url\(`,
     );
@@ -55,11 +58,12 @@ test("official marks ship only for approved sources, from bundled local assets",
 test("permission review records the mark approval, its date, and its limits", () => {
   const review = read("docs/trusted-resource-permissions.md");
   assert.match(review, /Mark approval recorded: 2026-07-26/);
+  assert.match(review, /2026-07-27 \(Enter the Bible, Naked Bible\)/);
   assert.match(review, /Approval is per source/);
-  for (const source of ["Working Preacher", "BibleProject", "The Gospel Coalition"]) {
+  for (const source of ["Working Preacher", "BibleProject", "The Gospel Coalition", "Enter the Bible", "Naked Bible Podcast"]) {
     assert.match(review, new RegExp(String.raw`\| ${source} \|`));
   }
-  assert.match(review, /marks for any source beyond the three approved above/);
+  assert.match(review, /marks for any source beyond those approved above/);
 });
 
 test("permission review records current official sources and deferred capabilities", () => {

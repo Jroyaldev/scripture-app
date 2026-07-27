@@ -11,8 +11,10 @@ import {
   type TrustedResourceManifestV1,
 } from "../src/core/resources/trusted-resources.js";
 import {
+  allowedTrustedResourceHosts,
   clearTrustedResourceManifestCache,
   loadTrustedResourceManifests,
+  TRUSTED_RESOURCE_SOURCES,
 } from "../src/host/trusted-resource-loader.js";
 
 const root = resolve(import.meta.dirname, "..");
@@ -172,6 +174,36 @@ test("a reader's language breaks ties, and a source may not restate itself", () 
   assert.equal(validateTrustedResourceQuery({ ...query, preferLanguage: "en" }, backbone).ok, true);
   assert.equal(validateTrustedResourceQuery({ ...query, preferLanguage: "english" }, backbone).ok, false);
   assert.equal(validateTrustedResourceQuery({ ...query, preferLanguage: 7 }, backbone).ok, false);
+});
+
+/**
+ * Registering a source used to mean editing two lists in two files. Edit one
+ * and the source loads, ranks, and renders a card whose link refuses to open —
+ * a failure no test saw and no log mentioned, because everything else worked.
+ */
+test("a registered source can open its own links", () => {
+  const main = readFileSync(join(root, "src/electron/main.ts"), "utf8");
+  assert.match(main, /const ALLOWED_TRUSTED_RESOURCE_HOSTS = allowedTrustedResourceHosts\(\)/);
+  assert.doesNotMatch(
+    main,
+    /ALLOWED_TRUSTED_RESOURCE_HOSTS = new Set\(\[/,
+    "the runtime allowlist must come from the registry, not a second copy",
+  );
+
+  const hosts = allowedTrustedResourceHosts();
+  for (const source of TRUSTED_RESOURCE_SOURCES) {
+    for (const host of source.officialHosts) {
+      assert.ok(hosts.has(host), `${source.id} may not open ${host}`);
+    }
+  }
+
+  // Where a bundled manifest exists, its hosts must be ones the runtime allows.
+  for (const sourceId of sourceIds) {
+    const manifest = readManifest(sourceId) as TrustedResourceManifestV1;
+    for (const host of manifest.source.officialHosts) {
+      assert.ok(hosts.has(host), `bundled ${sourceId} declares unopenable host ${host}`);
+    }
+  }
 });
 
 test("resource runtime is read-only and network-free", () => {
