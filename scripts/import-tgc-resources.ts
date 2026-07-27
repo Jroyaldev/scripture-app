@@ -19,6 +19,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { validateTrustedResourceManifest } from "../src/core/resources/trusted-resources.js";
+import { resolveManifestPath } from "./resource-import-target.js";
 import type {
   TrustedResourceKind,
   TrustedResourceManifestV1,
@@ -46,8 +47,8 @@ function arg(name: string): string | undefined {
 const requestedTypes = (arg("types") ?? "sermon,commentary,tgc-podcast").split(",").map((t) => t.trim());
 const limitPages = Number(arg("limit-pages") ?? "0") || 0;
 const delayMs = Number(arg("delay-ms") ?? "150");
-const outPath = arg("out")
-  ?? join(process.env["HOME"] ?? "", "Documents/ScriptureLibrary/.artifacts/resources/the-gospel-coalition/manifest.json");
+const target = resolveManifestPath("the-gospel-coalition");
+const outPath = arg("out") ?? target.path;
 
 const backbone = JSON.parse(readFileSync(join(ROOT, "data/scripture/backbone.json"), "utf8")) as BackboneData;
 const bookNames = JSON.parse(readFileSync(join(ROOT, "data/scripture/book-names-en.json"), "utf8")) as Record<string, string[]>;
@@ -226,4 +227,4 @@ writeFileSync(outPath, `${JSON.stringify(validated.value, null, 2)}\n`);
 console.log(`\n  records:        ${records.length}`);
 console.log(`  skipped:        ${skipped.noTag} untagged, ${skipped.unmappedTag} unmappable tag, ${skipped.offHost} off-host`);
 console.log(`  unmapped terms: ${unmappedTerms}`);
-console.log(`  written:        ${outPath}`);
+console.log(`  written:        ${outPath}${arg("out") ? "" : `  (library from ${target.from})`}`);

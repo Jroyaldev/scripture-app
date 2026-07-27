@@ -24,6 +24,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { extractWorkingPreacherTitlePassages } from "../src/core/resources/working-preacher.js";
 import { validateTrustedResourceManifest } from "../src/core/resources/trusted-resources.js";
+import { resolveManifestPath } from "./resource-import-target.js";
 import type {
   TrustedResourceManifestV1,
   TrustedResourceRecordV1,
@@ -43,8 +44,8 @@ function arg(name: string): string | undefined {
 const requestedTypes = (arg("types") ?? "commentary,podcast").split(",").map((t) => t.trim());
 const limitPages = Number(arg("limit-pages") ?? "0") || 0;
 const delayMs = Number(arg("delay-ms") ?? "150");
-const outPath = arg("out")
-  ?? join(process.env["HOME"] ?? "", "Documents/ScriptureLibrary/.artifacts/resources/working-preacher/manifest.json");
+const target = resolveManifestPath("working-preacher");
+const outPath = arg("out") ?? target.path;
 
 const backbone = JSON.parse(readFileSync(join(ROOT, "data/scripture/backbone.json"), "utf8")) as BackboneData;
 const bookNames = JSON.parse(readFileSync(join(ROOT, "data/scripture/book-names-en.json"), "utf8")) as BookNameMap;
@@ -255,4 +256,4 @@ writeFileSync(outPath, `${JSON.stringify(validated.value, null, 2)}\n`);
 console.log(`\n  records:          ${records.length}`);
 console.log(`  via lectionary:   ${viaLectionary}`);
 console.log(`  skipped:          ${skipped.noPassage} no passage, ${skipped.noDay} no lectionary day, ${skipped.offHost} off-host`);
-console.log(`  written:          ${outPath}`);
+console.log(`  written:          ${outPath}${arg("out") ? "" : `  (library from ${target.from})`}`);
