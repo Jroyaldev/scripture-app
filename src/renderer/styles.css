@@ -19225,6 +19225,80 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-card.is-featured[data-source="naked-bible"] .trusted-resource-source { order: 0; }
 .trusted-resource-card.is-featured[data-source="naked-bible"] .trusted-resource-kind { order: 2; }
 
+/* Inside an opened group: one item per row, divided by the publisher's own
+   hairline rather than by another surface. The mark is above them all. */
+.trusted-resource-items {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trusted-resource-item {
+  padding: 13px 0 14px;
+  border-top: 1px solid var(--resource-line);
+}
+
+.trusted-resource-item:first-child { padding-top: 2px; border-top: 0; }
+.trusted-resource-item:last-child { padding-bottom: 2px; }
+
+.trusted-resource-item-kind {
+  margin: 0 0 4px;
+  color: var(--resource-ink-soft);
+  font: var(--fw-medium) 0.59375rem/1.2 var(--font-mono);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.trusted-resource-item .trusted-resource-title { font-size: 0.9375rem; }
+.trusted-resource-item .trusted-resource-chips { margin-bottom: 10px; }
+
+/* The count a publisher's chip carries when it has more than one answer, and
+   the count on All. Set in mono so it reads as a tally rather than a word. */
+.trusted-resource-imprint-count {
+  margin-left: 7px;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: rgb(0 0 0 / 0.16);
+  color: inherit;
+  font: var(--fw-medium) 0.625rem/1.4 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.trusted-resource-imprint.is-all .trusted-resource-imprint-count { background: rgb(0 0 0 / 0.1); }
+
+/* All is a chip of the same size and shape, in the margin's own ink rather than
+   a publisher's colour — it belongs to the reader, not to a brand. */
+.trusted-resource-imprint.is-all {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--border-medium);
+  color: var(--text-secondary);
+}
+
+.trusted-resource-imprint.is-all:hover {
+  box-shadow: inset 0 0 0 1px var(--text-tertiary);
+  color: var(--text-primary);
+}
+
+.trusted-resource-imprint.is-all .trusted-resource-source {
+  overflow: visible;
+  color: inherit;
+  font: var(--fw-semibold) 0.8125rem/1 var(--font-ui);
+  letter-spacing: 0.01em;
+  text-indent: 0;
+}
+
+.trusted-resource-imprint.is-all[aria-expanded="true"] {
+  box-shadow: inset 0 0 0 1.5px var(--accent-seal);
+  color: var(--text-primary);
+}
+
+/* Opened, the cards stack under the row they came from. */
+.trusted-resource-panel:not(:empty) {
+  display: grid;
+  gap: 10px;
+}
+
 /* The count line. It is the only place the group admits it is a selection, so
    it says the number rather than gesturing at "more". */
 .trusted-resource-more {

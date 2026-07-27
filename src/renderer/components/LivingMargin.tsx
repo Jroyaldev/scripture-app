@@ -397,11 +397,44 @@ function TrustedResourcesBlock({
   hiddenCount: number;
 }): React.JSX.Element {
   const { showToast } = useToast();
-  const [openedId, setOpenedId] = useState<string | null>(null);
-  /* Three is the group's shape, not the passage's. Being shown three of ninety
-     is fine; being unable to find out it was ninety is not. */
-  const [showingAll, setShowingAll] = useState(false);
-  const shown = showingAll ? resources : resources.slice(0, 3);
+  /* A chip is a publisher, not a record. Three chips used to mean three cards,
+     so a publisher with two good answers took two chips and looked like two
+     publishers. One chip each, and opening one shows everything that publisher
+     has for this passage — in the order the ranking already put them. */
+  const [openedSource, setOpenedSource] = useState<string | null>(null);
+
+  const sources = useMemo(() => {
+    const order: Array<{ id: string; name: string; count: number }> = [];
+    const seen = new Map<string, { id: string; name: string; count: number }>();
+    for (const resource of resources) {
+      const existing = seen.get(resource.source.id);
+      if (existing) { existing.count += 1; continue; }
+      const entry = { id: resource.source.id, name: resource.source.name, count: 1 };
+      seen.set(resource.source.id, entry);
+      order.push(entry);
+    }
+    return order;
+  }, [resources]);
+
+  const ALL = "*";
+  /* Opening keeps the ranking's order — within a publisher and between them —
+     so what a reader sees first is still what the evidence put first. */
+  const groups = useMemo(() => {
+    const opened = openedSource === ALL
+      ? resources
+      : resources.filter((resource) => resource.source.id === openedSource);
+    const order: Array<{ id: string; name: string; items: RankedTrustedResource[] }> = [];
+    const seen = new Map<string, { id: string; name: string; items: RankedTrustedResource[] }>();
+    for (const resource of opened) {
+      const existing = seen.get(resource.source.id);
+      if (existing) { existing.items.push(resource); continue; }
+      const entry = { id: resource.source.id, name: resource.source.name, items: [resource] };
+      seen.set(resource.source.id, entry);
+      order.push(entry);
+    }
+    return order;
+  }, [openedSource, resources]);
+
   const openResource = async (resource: RankedTrustedResource): Promise<void> => {
     const result = await safeCall(() => window.api.trustedResources.openOfficial(
       resource.source.id,
@@ -425,88 +458,98 @@ function TrustedResourcesBlock({
               colour is held to the size of a mark until a reader asks for one.
               Opened, that source's card takes the full brand surface. */}
           <div className="trusted-resource-imprints">
-            {shown.map((resource) => {
-              const id = `${resource.source.id}:${resource.record.id}`;
-              const opened = openedId === id;
-              return (
-                <button
-                  aria-controls={`trusted-resource-panel-${resource.source.id}`}
-                  aria-expanded={opened}
-                  aria-label={`${resource.source.name} — ${resource.record.kind}: ${resource.record.title}`}
-                  className="trusted-resource-imprint"
-                  data-kind={resource.record.kind}
-                  data-source={resource.source.id}
-                  key={id}
-                  onClick={() => setOpenedId(opened ? null : id)}
-                  type="button"
-                >
-                  <span className="trusted-resource-source">{resource.source.name}</span>
-                </button>
-              );
-            })}
+            {sources.map((source) => (
+              <button
+                aria-controls="trusted-resource-panel"
+                aria-expanded={openedSource === source.id}
+                aria-label={`${source.name} — ${source.count} ${source.count === 1 ? "card" : "cards"} for this passage`}
+                className="trusted-resource-imprint"
+                data-source={source.id}
+                key={source.id}
+                onClick={() => setOpenedSource(openedSource === source.id ? null : source.id)}
+                type="button"
+              >
+                <span className="trusted-resource-source">{source.name}</span>
+                {source.count > 1 && <span className="trusted-resource-imprint-count">{source.count}</span>}
+              </button>
+            ))}
+            {/* All is a chip too, because it is the same kind of choice: it just
+                names every publisher at once. */}
+            {sources.length > 1 && (
+              <button
+                aria-controls="trusted-resource-panel"
+                aria-expanded={openedSource === ALL}
+                aria-label={`All ${total} cards for this passage`}
+                className="trusted-resource-imprint is-all"
+                key="all"
+                onClick={() => setOpenedSource(openedSource === ALL ? null : ALL)}
+                type="button"
+              >
+                <span className="trusted-resource-source">All</span>
+                <span className="trusted-resource-imprint-count">{total}</span>
+              </button>
+            )}
           </div>
 
-          {shown.map((resource) => {
-            const id = `${resource.source.id}:${resource.record.id}`;
-            if (openedId !== id) return <></>;
-            const metadata = resource.record.metadata;
-            const byline = [
-              metadata?.author,
-              metadata?.publishedAt,
-              metadata?.durationMinutes ? `${metadata.durationMinutes} min` : undefined,
-              metadata?.series,
-            ].filter(Boolean).join(" · ");
-            const verb = resourceVerb(resource.record.kind);
-            return (
-              <article
-                className="trusted-resource-card is-featured"
-                data-kind={resource.record.kind}
-                data-source={resource.source.id}
-                id={`trusted-resource-panel-${resource.source.id}`}
-                key={id}
-              >
-                <header className="trusted-resource-head">
-                  <span className="trusted-resource-source">{resource.source.name}</span>
-                  <span className="trusted-resource-kind">{resource.record.kind}</span>
-                </header>
-                <h4 className="trusted-resource-title">{resource.record.title}</h4>
-                {byline && <p className="trusted-resource-meta">{byline}</p>}
-                <ul className="trusted-resource-chips">
-                  <li className="trusted-resource-chip is-bref">{resourcePassageLabel(resource.matchedBref)}</li>
-                  <li className="trusted-resource-chip is-match">{resource.match.replaceAll("-", " ")}</li>
-                  <li className="trusted-resource-chip is-basis">reviewed sample</li>
-                </ul>
-                <div className="trusted-resource-actions">
-                  <button
-                    className="trusted-resource-act"
-                    type="button"
-                    onClick={() => void openResource(resource)}
-                    aria-label={`${verb} ${resource.record.title} on ${resource.source.name} — opens the official page`}
-                  >
-                    {verb} at {resource.source.name} <span aria-hidden="true">↗</span>
-                  </button>
-                </div>
-              </article>
-            );
-          })}
-
-          {(total > 3 || hiddenCount > 0) && (
-            <div className="trusted-resource-more">
-              {total > 3 && (
-                <button
-                  aria-expanded={showingAll}
-                  className="trusted-resource-more-toggle"
-                  onClick={() => { setShowingAll(!showingAll); setOpenedId(null); }}
-                  type="button"
-                >
-                  {showingAll ? "Show fewer" : `See all ${total}`}
-                </button>
-              )}
-              {hiddenCount > 0 && (
-                <span className="trusted-resource-more-hidden">
-                  {hiddenCount} hidden by your settings
+          <div className="trusted-resource-panel" id="trusted-resource-panel">
+          {groups.map((group) => (
+            <article
+              className="trusted-resource-card is-featured"
+              data-source={group.id}
+              key={group.id}
+            >
+              {/* The imprint is stated once for the group. Thirteen cards from
+                  one publisher repeated its mark thirteen times and turned a
+                  margin into a wall of one colour. */}
+              <header className="trusted-resource-head">
+                <span className="trusted-resource-source">{group.name}</span>
+                <span className="trusted-resource-kind">
+                  {group.items.length} {group.items.length === 1 ? "card" : "cards"}
                 </span>
-              )}
+              </header>
+              <ul className="trusted-resource-items">
+                {group.items.map((resource) => {
+                  const metadata = resource.record.metadata;
+                  const byline = [
+                    metadata?.author,
+                    metadata?.publishedAt,
+                    metadata?.durationMinutes ? `${metadata.durationMinutes} min` : undefined,
+                    metadata?.series,
+                  ].filter(Boolean).join(" · ");
+                  const verb = resourceVerb(resource.record.kind);
+                  return (
+                    <li className="trusted-resource-item" key={`${resource.source.id}:${resource.record.id}`}>
+                      <p className="trusted-resource-item-kind">{resource.record.kind}</p>
+                      <h4 className="trusted-resource-title">{resource.record.title}</h4>
+                      {byline && <p className="trusted-resource-meta">{byline}</p>}
+                      <ul className="trusted-resource-chips">
+                        <li className="trusted-resource-chip is-bref">{resourcePassageLabel(resource.matchedBref)}</li>
+                        <li className="trusted-resource-chip is-match">{resource.match.replaceAll("-", " ")}</li>
+                      </ul>
+                      <div className="trusted-resource-actions">
+                        <button
+                          className="trusted-resource-act"
+                          type="button"
+                          onClick={() => void openResource(resource)}
+                          aria-label={`${verb} ${resource.record.title} on ${resource.source.name} — opens the official page`}
+                        >
+                          {verb} at {resource.source.name} <span aria-hidden="true">↗</span>
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </article>
+          ))}
+
+          </div>
+
+          {hiddenCount > 0 && (
+            <div className="trusted-resource-more">
+              <span className="trusted-resource-more-hidden">
+                {hiddenCount} hidden by your settings
+              </span>
             </div>
           )}
         </div>
@@ -3454,9 +3497,9 @@ export function LivingMargin({
     setTrustedResourcesRefusal(null);
     safeCall(() => window.api.trustedResources.query({
       bref: trustedResourceBref,
-      /* Fetch what "see all" needs and show three: the ranking pass is the same
-         either way, only the slice differs. */
-      limit: 20,
+      /* Fetch what "All" would need. The ranking pass is the same either way;
+         only how much of it crosses the wire differs. */
+      limit: 100,
       // Working Preacher publishes Spanish editions alongside English ones, and
       // without a stated preference a tie hands the reader whichever sorted
       // first. Stated here rather than assumed in core, so that when the app

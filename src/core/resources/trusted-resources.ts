@@ -124,8 +124,12 @@ export function validateTrustedResourceQuery(
   if (!valid.ok) return valid;
   if (parsed.value.tokenNarrowing) return { ok: false, error: "Resource queries must use verse-level brefs" };
   const limit = input["limit"];
-  if (limit != null && (!Number.isInteger(limit) || (limit as number) < 1 || (limit as number) > 20)) {
-    return { ok: false, error: "Query limit must be an integer from 1 to 20" };
+  /* 20 was a margin's worth. "All" has to be able to mean all, and Romans 8
+     alone selects 22, so the ceiling is the ranking's own: enough that a reader
+     asking for everything gets everything, bounded so a query cannot be asked
+     to render a book. */
+  if (limit != null && (!Number.isInteger(limit) || (limit as number) < 1 || (limit as number) > 100)) {
+    return { ok: false, error: "Query limit must be an integer from 1 to 100" };
   }
   const preferLanguage = input["preferLanguage"];
   if (preferLanguage != null && (typeof preferLanguage !== "string" || !/^[a-z]{2,3}$/.test(preferLanguage))) {
