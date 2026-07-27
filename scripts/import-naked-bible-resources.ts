@@ -64,6 +64,17 @@ async function getAll(path: string, fields: string, label: string): Promise<unkn
   return all;
 }
 
+/** "43:54" or "1:00:13" -> whole minutes. Factual catalogue metadata, and the
+ *  card already has somewhere to put it. */
+function durationMinutes(value: unknown): number | undefined {
+  if (typeof value !== "string") return undefined;
+  const parts = value.split(":").map((part) => Number(part));
+  if (parts.some((part) => !Number.isFinite(part))) return undefined;
+  const seconds = parts.reduce((total, part) => total * 60 + part, 0);
+  const minutes = Math.round(seconds / 60);
+  return minutes > 0 ? minutes : undefined;
+}
+
 const decode = (value: string): string =>
   value
     .replace(/&#(\d+);/g, (_, code: string) => String.fromCharCode(Number(code)))
@@ -90,14 +101,14 @@ function referencePart(title: string): string {
 
 console.log(`Importing from ${HOST}`);
 
-const rows = await getAll("podcast", "id,link,title,date,series", "episodes");
+const rows = await getAll("podcast", "id,link,title,date,meta", "episodes");
 
 const records: TrustedResourceRecordV1[] = [];
 const seen = new Set<string>();
 const skipped = { noPassage: 0, offHost: 0 };
 
 for (const raw of rows) {
-  const row = raw as { id: number; link: string; title?: { rendered?: string }; date?: string };
+  const row = raw as { id: number; link: string; title?: { rendered?: string }; date?: string; meta?: Record<string, unknown> };
   const title = decode(row.title?.rendered ?? "");
   if (!title) continue;
   let host = ""; try { host = new URL(row.link).hostname; } catch { host = ""; }
@@ -120,6 +131,10 @@ for (const raw of rows) {
     matchBasis: "publisher-title",
     metadata: {
       ...(row.date ? { publishedAt: row.date.slice(0, 10) } : {}),
+      ...((): { durationMinutes?: number } => {
+        const minutes = durationMinutes(row.meta?.["duration"]);
+        return minutes ? { durationMinutes: minutes } : {};
+      })(),
       language: "en",
     },
   });
