@@ -19012,6 +19012,10 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-card,
 .trusted-resource-imprint {
   --resource-source: var(--study-gold);
+  /* A surface colour and a 3px rail are not the same job. Most brands survive
+     both; a near-black one does not, so the accent can be lifted away from the
+     surface where it has to hold its own against two grounds. */
+  --resource-accent: var(--resource-source);
   --resource-mark: none;
   --resource-mark-height: 18px;
   --resource-mark-ratio: 4;
@@ -19081,6 +19085,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint[data-source="naked-bible"],
 .resource-source[data-source="naked-bible"],
 .resource-matrix-row[data-source="naked-bible"] {
+  --resource-accent: #6e7a80;
   --resource-source: #2f3437;
   --resource-ink: #e7eaea;
   --resource-ink-soft: rgb(231 234 234 / 0.74);
@@ -19402,7 +19407,7 @@ button.lang-phrase-diagram-node:focus-visible,
   align-self: stretch;
   min-height: 15px;
   border-radius: 2px;
-  background: var(--resource-source, var(--border-medium));
+  background: var(--resource-accent, var(--resource-source, var(--border-medium)));
   transition: background-color 160ms ease;
 }
 
