@@ -139,6 +139,7 @@ const api = {
   },
   trustedResources: {
     query: (query: TrustedResourceQuery) => ipcRenderer.invoke("trusted-resources-query", query),
+    catalogue: () => ipcRenderer.invoke("trusted-resources-catalogue"),
     openOfficial: (sourceId: string, resourceId: string, url: string) =>
       ipcRenderer.invoke("trusted-resource-open", { sourceId, resourceId, url }),
   },

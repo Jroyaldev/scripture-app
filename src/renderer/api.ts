@@ -20,6 +20,15 @@ import type {
 } from "../core/resources/trusted-resources.js";
 import type { StudyWorkspaceStateV2 } from "./utils/studyWorkspace.js";
 export type { RankedTrustedResource } from "../core/resources/trusted-resources.js";
+
+/** One publisher as settings sees it: what it is, how much it has, is it on. */
+export interface TrustedResourceCatalogueEntry {
+  id: string;
+  name: string;
+  homepageUrl: string;
+  records: number;
+  hidden: boolean;
+}
 export type { EntityResearchData, EntityResearchLicensing } from "../core/entities/place-research.js";
 export type { LicensedSource } from "../core/entities/licensed-source.js";
 export type { ConnectionAnchor, ConnectionKind, ConnectionRecord } from "../core/annotations/types.js";
@@ -94,7 +103,17 @@ declare global {
       };
       trustedResources: {
         query(query: TrustedResourceQuery): Promise<
-          | { ok: true; resources: RankedTrustedResource[] }
+          | {
+              ok: true;
+              resources: RankedTrustedResource[];
+              total: number;
+              hiddenCount: number;
+              bySource: Array<{ sourceId: string; name: string; count: number; hidden: boolean }>;
+            }
+          | { ok: false; refusal: TrustedResourceRefusal }
+        >;
+        catalogue(): Promise<
+          | { ok: true; sources: TrustedResourceCatalogueEntry[] }
           | { ok: false; refusal: TrustedResourceRefusal }
         >;
         openOfficial(sourceId: string, resourceId: string, url: string): Promise<{ ok: true }>;
@@ -234,6 +253,8 @@ export interface AppSettings {
   marginVisible: boolean;
   readingSize: ReadingSize;
   verseNumbers: VerseNumberMode;
+  /** Publishers the reader switched off. The main process applies this. */
+  hiddenResourceSources: string[];
   recentPassages: RecentPassageSetting[];
   /** Where the reader last was — restored on launch. */
   lastRead: {

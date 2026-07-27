@@ -7,6 +7,7 @@ import type {
   MarkingSurface,
   ReadingSize,
   VerseNumberMode,
+  TrustedResourceCatalogueEntry,
 } from "../api.js";
 import type { AppMaterial, AppTheme } from "../theme.js";
 import { safeCall } from "../utils/safeCall.js";
@@ -31,11 +32,12 @@ interface Props {
   onMarkingSurfaceChange: (surface: MarkingSurface) => void;
 }
 
-type SettingsSectionId = "library" | "reading" | "intelligence" | "import" | "about";
+type SettingsSectionId = "library" | "reading" | "resources" | "intelligence" | "import" | "about";
 
 const SETTINGS_SECTIONS: ReadonlyArray<{ id: SettingsSectionId; label: string }> = [
   { id: "library", label: "Library" },
   { id: "reading", label: "Reading" },
+  { id: "resources", label: "Resources" },
   { id: "intelligence", label: "Intelligence" },
   { id: "import", label: "Import" },
   { id: "about", label: "About" },
@@ -193,8 +195,29 @@ export function SettingsPage({
   const [revealing, setRevealing] = useState(false);
   const [switching, setSwitching] = useState(false);
   const [rebuilding, setRebuilding] = useState(false);
+  const [resourceSources, setResourceSources] = useState<TrustedResourceCatalogueEntry[] | null>(null);
+  const [resourceError, setResourceError] = useState<string | null>(null);
 
   const libraryName = libraryPath.split(/[\\/]/).filter(Boolean).pop() ?? "Pericope";
+
+  const loadResourceSources = useCallback(async () => {
+    const result = await safeCall(() => window.api.trustedResources.catalogue());
+    if (!result.ok) { setResourceError(result.error); return; }
+    if (!result.value.ok) { setResourceError(result.value.refusal.message); return; }
+    setResourceError(null);
+    setResourceSources(result.value.sources);
+  }, []);
+
+  useEffect(() => { void loadResourceSources(); }, [loadResourceSources]);
+
+  /* Written straight to settings rather than held in component state: the main
+     process applies this to every query, so it is the one place that decides. */
+  const toggleResourceSource = useCallback(async (id: string, hidden: boolean) => {
+    const next = (resourceSources ?? []).filter((s) => (s.id === id ? hidden : s.hidden)).map((s) => s.id);
+    const saved = await safeCall(() => window.api.settings.set({ hiddenResourceSources: next }));
+    if (!saved.ok) { showToast("That setting could not be saved.", undefined, undefined, { tone: "error" }); return; }
+    setResourceSources((current) => current?.map((s) => (s.id === id ? { ...s, hidden } : s)) ?? null);
+  }, [resourceSources, showToast]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -497,6 +520,43 @@ export function SettingsPage({
                   className="settings-segmented"
                 />
               </div>
+            </div>
+          </section>
+
+          <section id="settings-resources" className="settings-section" aria-labelledby="resources-heading">
+            <SectionHeading
+              id="resources"
+              title="Trusted resources"
+              description="Which publishers may offer you something beside the passage you are reading. Everything here links out; nothing is fetched while you read."
+            />
+            <div className="settings-field">
+              <div className="settings-field-heading">
+                <label>Publishers</label>
+                <p>Switching one off hides its cards everywhere. Its catalogue stays installed, and the margin still tells you how many it held back.</p>
+              </div>
+              {resourceError && <p className="settings-note is-error">{resourceError}</p>}
+              {!resourceError && resourceSources === null && <p className="settings-note">Reading local manifests…</p>}
+              {resourceSources?.length === 0 && <p className="settings-note">No resource manifests are installed.</p>}
+              <ul className="resource-source-list">
+                {resourceSources?.map((source) => (
+                  <li className="resource-source" data-source={source.id} key={source.id}>
+                    <span className="resource-source-mark" data-source={source.id} aria-hidden="true" />
+                    <span className="resource-source-copy">
+                      <strong>{source.name}</strong>
+                      <span>{source.records.toLocaleString()} {source.records === 1 ? "record" : "records"}</span>
+                    </span>
+                    <label className="resource-source-switch">
+                      <input
+                        checked={!source.hidden}
+                        onChange={(event) => void toggleResourceSource(source.id, !event.target.checked)}
+                        type="checkbox"
+                      />
+                      <span className="resource-source-switch-track" aria-hidden="true" />
+                      <span className="resource-source-switch-label">{source.hidden ? "Hidden" : "Shown"}</span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
             </div>
           </section>
 

@@ -64,6 +64,24 @@ export interface TrustedResourceQuery {
   limit?: number;
   /** The language the reader is reading in. Only ever breaks a tie. */
   preferLanguage?: string;
+  /** Sources the reader has turned off. Their matches are counted, not shown. */
+  hiddenSourceIds?: string[];
+}
+
+/**
+ * Everything the passage matched, and what was actually handed back.
+ *
+ * The group shows three cards, so without a total a reader cannot tell a
+ * passage with three answers from one with ninety, and "see all" has nothing
+ * honest to put on it. Hidden sources are counted separately: a reader who
+ * turned a publisher off should be able to see that they did, rather than
+ * wonder why a passage went quiet.
+ */
+export interface TrustedResourceMatches {
+  resources: RankedTrustedResource[];
+  total: number;
+  hiddenCount: number;
+  bySource: Array<{ sourceId: string; name: string; count: number; hidden: boolean }>;
 }
 
 export interface RankedTrustedResource {
@@ -96,7 +114,7 @@ export function validateTrustedResourceQuery(
   input: unknown,
   backbone: BackboneData,
 ): ParseResult<TrustedResourceQuery> {
-  if (!isRecord(input) || !hasOnlyKeys(input, ["bref", "limit", "preferLanguage"])) {
+  if (!isRecord(input) || !hasOnlyKeys(input, ["bref", "limit", "preferLanguage", "hiddenSourceIds"])) {
     return { ok: false, error: "Trusted-resource query has unknown or missing fields" };
   }
   if (typeof input["bref"] !== "string") return { ok: false, error: "Query bref must be a string" };
@@ -113,12 +131,19 @@ export function validateTrustedResourceQuery(
   if (preferLanguage != null && (typeof preferLanguage !== "string" || !/^[a-z]{2,3}$/.test(preferLanguage))) {
     return { ok: false, error: "Query preferLanguage must be a short language code" };
   }
+  const hiddenSourceIds = input["hiddenSourceIds"];
+  if (hiddenSourceIds != null) {
+    if (!Array.isArray(hiddenSourceIds) || hiddenSourceIds.some((id) => typeof id !== "string" || !id.trim())) {
+      return { ok: false, error: "Query hiddenSourceIds must be source id strings" };
+    }
+  }
   return {
     ok: true,
     value: {
       bref: input["bref"],
       ...(limit == null ? {} : { limit: limit as number }),
       ...(preferLanguage == null ? {} : { preferLanguage: preferLanguage as string }),
+      ...(hiddenSourceIds == null ? {} : { hiddenSourceIds: hiddenSourceIds as string[] }),
     },
   };
 }
@@ -167,9 +192,17 @@ export function rankTrustedResources(
   manifests: readonly TrustedResourceManifestV1[],
   query: TrustedResourceQuery,
 ): RankedTrustedResource[] {
+  return matchTrustedResources(manifests, query).resources;
+}
+
+export function matchTrustedResources(
+  manifests: readonly TrustedResourceManifestV1[],
+  query: TrustedResourceQuery,
+): TrustedResourceMatches {
+  const empty: TrustedResourceMatches = { resources: [], total: 0, hiddenCount: 0, bySource: [] };
   const parsedQuery = parseBref(query.bref);
-  if (!parsedQuery.ok) return [];
-  const ranked: RankedTrustedResource[] = [];
+  if (!parsedQuery.ok) return empty;
+  let ranked: RankedTrustedResource[] = [];
   for (const manifest of manifests) {
     for (const record of manifest.records) {
       let best: { match: TrustedResourceMatch; score: number; matchedBref: string } | null = null;
@@ -180,31 +213,57 @@ export function rankTrustedResources(
       if (best) ranked.push({ source: manifest.source, provenance: manifest.provenance, record, ...best });
     }
   }
-  /* A language the reader cannot read is not evidence about this passage, it is
-     a second copy of it. Working Preacher publishes ~14% of its commentaries in
-     Spanish, always alongside an English edition and never instead of one — so
-     with ties broken on record id, roughly half of those passages showed the
-     Spanish card to an English reader, and some showed both. Language sorts
-     below every evidence test, so it can only ever choose between equals, and
-     a record that declares no language is never demoted. */
+  const hiddenIds = new Set(query.hiddenSourceIds ?? []);
+
+  /* Selection runs twice — over everything, and over what the reader left on —
+     so "see all 16" and "96 hidden" are never quoted in different units. Both
+     count cards the group could actually show, after the restatement guard has
+     dropped a publisher's second copy of one answer. */
+  const selectableAll = selectCards(ranked, query);
+  const visible = hiddenIds.size === 0
+    ? selectableAll
+    : selectCards(ranked.filter((entry) => !hiddenIds.has(entry.source.id)), query);
+
+  const counts = new Map<string, { sourceId: string; name: string; count: number; hidden: boolean }>();
+  for (const entry of selectableAll) {
+    const seen = counts.get(entry.source.id)
+      ?? { sourceId: entry.source.id, name: entry.source.name, count: 0, hidden: hiddenIds.has(entry.source.id) };
+    seen.count += 1;
+    counts.set(entry.source.id, seen);
+  }
+
+  return {
+    resources: visible.slice(0, query.limit ?? 3),
+    total: visible.length,
+    hiddenCount: selectableAll.length - visible.length,
+    bySource: [...counts.values()].sort((left, right) => right.count - left.count
+      || left.name.localeCompare(right.name)),
+  };
+}
+
+/**
+ * The cards a set of matches could put on screen, in order.
+ *
+ * Evidence first, then specificity, then the reader's language, then stable
+ * ids. Breadth before depth: each source puts its best card forward before any
+ * source takes a second, and a second slot must say something the first did not.
+ */
+function selectCards(
+  ranked: readonly RankedTrustedResource[],
+  query: TrustedResourceQuery,
+): RankedTrustedResource[] {
   const wrongLanguage = (entry: RankedTrustedResource): number => {
     if (!query.preferLanguage) return 0;
     const language = entry.record.metadata?.language;
     return !language || language === query.preferLanguage ? 0 : 1;
   };
 
-  const ordered = ranked.sort((left, right) => right.score - left.score
+  const ordered = [...ranked].sort((left, right) => right.score - left.score
     || matchedSpan(left.matchedBref) - matchedSpan(right.matchedBref)
     || wrongLanguage(left) - wrongLanguage(right)
     || left.source.id.localeCompare(right.source.id)
     || left.record.id.localeCompare(right.record.id));
 
-  /* Breadth before depth. A publisher with a deep lectionary catalogue would
-     otherwise take every slot in the group on evidence alone, and the reader
-     would never learn that the other two had anything on this passage. Each
-     source puts its best card forward first; only then does a source get a
-     second slot. Order within each pass is untouched, so this re-seats cards
-     without ever promoting weaker evidence above stronger. */
   const seen = new Set<string>();
   const firstPerSource = ordered.filter((entry) => {
     if (seen.has(entry.source.id)) return false;
@@ -212,9 +271,6 @@ export function rankTrustedResources(
     return true;
   });
 
-  /* A second slot for a source has to earn it by saying something different.
-     The same publisher's translation of the card above it, or its second
-     commentary under an identical title, spends a slot to repeat one. */
   const spoken = new Set(firstPerSource.map(restatementKey));
   const remainder = ordered.filter((entry) => {
     if (firstPerSource.includes(entry)) return false;
@@ -223,8 +279,9 @@ export function rankTrustedResources(
     spoken.add(key);
     return true;
   });
-  return [...firstPerSource, ...remainder].slice(0, query.limit ?? 3);
+  return [...firstPerSource, ...remainder];
 }
+
 
 /**
  * What would make a second card from one source a restatement of the first.

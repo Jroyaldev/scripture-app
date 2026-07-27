@@ -387,13 +387,21 @@ function TrustedResourcesBlock({
   resources,
   loading,
   refusal,
+  total,
+  hiddenCount,
 }: {
   resources: readonly RankedTrustedResource[];
   loading: boolean;
   refusal: string | null;
+  total: number;
+  hiddenCount: number;
 }): React.JSX.Element {
   const { showToast } = useToast();
   const [openedId, setOpenedId] = useState<string | null>(null);
+  /* Three is the group's shape, not the passage's. Being shown three of ninety
+     is fine; being unable to find out it was ninety is not. */
+  const [showingAll, setShowingAll] = useState(false);
+  const shown = showingAll ? resources : resources.slice(0, 3);
   const openResource = async (resource: RankedTrustedResource): Promise<void> => {
     const result = await safeCall(() => window.api.trustedResources.openOfficial(
       resource.source.id,
@@ -402,7 +410,7 @@ function TrustedResourcesBlock({
     ));
     if (!result.ok) showToast("That official resource link could not be opened.", undefined, undefined, { tone: "error" });
   };
-  if (!loading && !refusal && resources.length === 0) return <></>;
+  if (!loading && !refusal && resources.length === 0 && hiddenCount === 0) return <></>;
   return (
     <section className="trusted-resources" aria-labelledby="trusted-resources-title">
       <header className="trusted-resources-masthead">
@@ -417,7 +425,7 @@ function TrustedResourcesBlock({
               colour is held to the size of a mark until a reader asks for one.
               Opened, that source's card takes the full brand surface. */}
           <div className="trusted-resource-imprints">
-            {resources.slice(0, 3).map((resource) => {
+            {shown.map((resource) => {
               const id = `${resource.source.id}:${resource.record.id}`;
               const opened = openedId === id;
               return (
@@ -438,7 +446,7 @@ function TrustedResourcesBlock({
             })}
           </div>
 
-          {resources.slice(0, 3).map((resource) => {
+          {shown.map((resource) => {
             const id = `${resource.source.id}:${resource.record.id}`;
             if (openedId !== id) return <></>;
             const metadata = resource.record.metadata;
@@ -481,7 +489,32 @@ function TrustedResourcesBlock({
               </article>
             );
           })}
+
+          {(total > 3 || hiddenCount > 0) && (
+            <div className="trusted-resource-more">
+              {total > 3 && (
+                <button
+                  aria-expanded={showingAll}
+                  className="trusted-resource-more-toggle"
+                  onClick={() => { setShowingAll(!showingAll); setOpenedId(null); }}
+                  type="button"
+                >
+                  {showingAll ? "Show fewer" : `See all ${total}`}
+                </button>
+              )}
+              {hiddenCount > 0 && (
+                <span className="trusted-resource-more-hidden">
+                  {hiddenCount} hidden by your settings
+                </span>
+              )}
+            </div>
+          )}
         </div>
+      )}
+      {!loading && !refusal && resources.length === 0 && hiddenCount > 0 && (
+        <p className="trusted-resources-status" role="status">
+          Every source that matches this passage is switched off in settings.
+        </p>
       )}
     </section>
   );
@@ -3070,6 +3103,8 @@ export function LivingMargin({
    *  message, not a state. */
   const [deepNotesAttempt, setDeepNotesAttempt] = useState(0);
   const [trustedResources, setTrustedResources] = useState<RankedTrustedResource[]>([]);
+  const [trustedResourceTotal, setTrustedResourceTotal] = useState(0);
+  const [trustedResourcesHidden, setTrustedResourcesHidden] = useState(0);
   const [trustedResourcesLoading, setTrustedResourcesLoading] = useState(false);
   const [trustedResourcesRefusal, setTrustedResourcesRefusal] = useState<string | null>(null);
   const frameTitleRef = useRef<HTMLHeadingElement>(null);
@@ -3419,7 +3454,9 @@ export function LivingMargin({
     setTrustedResourcesRefusal(null);
     safeCall(() => window.api.trustedResources.query({
       bref: trustedResourceBref,
-      limit: 3,
+      /* Fetch what "see all" needs and show three: the ranking pass is the same
+         either way, only the slice differs. */
+      limit: 20,
       // Working Preacher publishes Spanish editions alongside English ones, and
       // without a stated preference a tie hands the reader whichever sorted
       // first. Stated here rather than assumed in core, so that when the app
@@ -3440,6 +3477,8 @@ export function LivingMargin({
           return;
         }
         setTrustedResources(result.value.resources);
+        setTrustedResourceTotal(result.value.total);
+        setTrustedResourcesHidden(result.value.hiddenCount);
       });
     return () => { cancelled = true; };
   }, [trustedResourceBref]);
@@ -4188,7 +4227,7 @@ export function LivingMargin({
               onOpenTab={activateTab}
               onOpenEntity={onOpenEntity}
             />
-            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} />
+            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} />
           </section>
 
           <section
@@ -4303,7 +4342,7 @@ export function LivingMargin({
               onOpenTab={activateTab}
               onOpenEntity={onOpenEntity}
             />
-            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} />
+            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} />
           </section>
 
           <section
@@ -4421,7 +4460,7 @@ export function LivingMargin({
               onOpenTab={activateTab}
               onOpenEntity={onOpenEntity}
             />
-            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} />
+            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} />
           </section>
 
           <section

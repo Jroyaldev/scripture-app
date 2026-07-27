@@ -19225,6 +19225,119 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-card.is-featured[data-source="naked-bible"] .trusted-resource-source { order: 0; }
 .trusted-resource-card.is-featured[data-source="naked-bible"] .trusted-resource-kind { order: 2; }
 
+/* The count line. It is the only place the group admits it is a selection, so
+   it says the number rather than gesturing at "more". */
+.trusted-resource-more {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 2px;
+}
+
+.trusted-resource-more-toggle {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-secondary);
+  font: var(--fw-semibold) 0.6875rem/1.4 var(--font-ui);
+  letter-spacing: 0.01em;
+  cursor: pointer;
+}
+
+.trusted-resource-more-toggle:hover { color: var(--study-gold); }
+.trusted-resource-more-toggle:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: 3px; }
+
+.trusted-resource-more-hidden {
+  color: var(--text-tertiary);
+  font: 0.6875rem/1.4 var(--font-ui);
+}
+
+/* Settings — one row per publisher, wearing its own colour so the list reads
+   as the same objects the margin shows. */
+.resource-source-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.resource-source {
+  display: grid;
+  grid-template-columns: 4px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: var(--bg-float);
+}
+
+.resource-source-mark {
+  align-self: stretch;
+  min-height: 26px;
+  border-radius: 2px;
+  background: var(--resource-source, var(--border-medium));
+}
+
+.resource-source-copy { display: grid; gap: 2px; min-width: 0; }
+.resource-source-copy strong { font: var(--fw-semibold) 0.8125rem/1.3 var(--font-ui); }
+.resource-source-copy span { color: var(--text-tertiary); font: 0.6875rem/1.3 var(--font-mono); }
+
+.resource-source-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+}
+
+.resource-source-switch input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.resource-source-switch-track {
+  position: relative;
+  width: 34px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--border-medium);
+  transition: background-color 160ms ease;
+}
+
+.resource-source-switch-track::after {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--bg-float);
+  content: "";
+  transition: transform 160ms ease;
+}
+
+.resource-source-switch input:checked + .resource-source-switch-track { background: var(--accent-seal); }
+.resource-source-switch input:checked + .resource-source-switch-track::after { transform: translateX(14px); }
+.resource-source-switch input:focus-visible + .resource-source-switch-track {
+  outline: 2px solid var(--accent-seal);
+  outline-offset: 2px;
+}
+
+.resource-source-switch-label {
+  min-width: 46px;
+  color: var(--text-tertiary);
+  font: var(--fw-medium) 0.6875rem/1 var(--font-ui);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .resource-source-switch-track,
+  .resource-source-switch-track::after { transition: none; }
+}
+
 .trusted-resource-actions { display: flex; align-items: center; }
 
 .trusted-resource-act {

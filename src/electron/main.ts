@@ -98,7 +98,7 @@ import {
   type UserConnectionMutationAction,
 } from "../host/user-mutation-broker.js";
 import {
-  rankTrustedResources,
+  matchTrustedResources,
   validateTrustedResourceQuery,
 } from "../core/resources/trusted-resources.js";
 import { allowedTrustedResourceHosts, loadTrustedResourceManifests } from "../host/trusted-resource-loader.js";
@@ -232,6 +232,8 @@ interface AppSettingsSchema {
   marginVisible: boolean;
   readingSize: "s" | "m" | "l";
   verseNumbers: "always" | "faint" | "hover";
+  /** Sources the reader has switched off in settings. Ids, never names. */
+  hiddenResourceSources: string[];
   recentPassages: Array<{
     book: string;
     chapter: number;
@@ -525,6 +527,7 @@ const store = new Store<AppSettingsSchema>({
     marginVisible: true,
     readingSize: "m",
     verseNumbers: "always",
+    hiddenResourceSources: [],
     recentPassages: [],
     lastRead: null,
     researchSession: null,
@@ -2393,9 +2396,30 @@ function registerIpcHandlers(): void {
     if (!query.ok) return { ok: false, refusal: { code: "invalid-query", message: query.error } };
     const loaded = loadCurrentTrustedResourceManifests();
     if (!loaded.ok) return loaded;
+    /* The stored setting is applied here rather than trusted from the caller:
+       a window that forgot to send it would quietly show a reader the very
+       publishers they switched off. */
+    const hiddenSourceIds = store.get("hiddenResourceSources") ?? [];
+    const matches = matchTrustedResources(
+      loaded.manifests.map((entry) => entry.manifest),
+      { ...query.value, hiddenSourceIds },
+    );
+    return { ok: true, ...matches };
+  });
+
+  registerRuntimeReadIpc("trusted-resources-catalogue", () => {
+    const loaded = loadCurrentTrustedResourceManifests();
+    if (!loaded.ok) return loaded;
+    const hidden = new Set(store.get("hiddenResourceSources") ?? []);
     return {
-      ok: true,
-      resources: rankTrustedResources(loaded.manifests.map((entry) => entry.manifest), query.value),
+      ok: true as const,
+      sources: loaded.manifests.map((entry) => ({
+        id: entry.manifest.source.id,
+        name: entry.manifest.source.name,
+        homepageUrl: entry.manifest.source.homepageUrl,
+        records: entry.manifest.records.length,
+        hidden: hidden.has(entry.manifest.source.id),
+      })),
     };
   });
 
