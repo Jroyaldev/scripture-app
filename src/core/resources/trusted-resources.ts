@@ -62,6 +62,8 @@ export interface TrustedResourceManifestV1 {
 export interface TrustedResourceQuery {
   bref: string;
   limit?: number;
+  /** The language the reader is reading in. Only ever breaks a tie. */
+  preferLanguage?: string;
 }
 
 export interface RankedTrustedResource {
@@ -94,7 +96,7 @@ export function validateTrustedResourceQuery(
   input: unknown,
   backbone: BackboneData,
 ): ParseResult<TrustedResourceQuery> {
-  if (!isRecord(input) || !hasOnlyKeys(input, ["bref", "limit"])) {
+  if (!isRecord(input) || !hasOnlyKeys(input, ["bref", "limit", "preferLanguage"])) {
     return { ok: false, error: "Trusted-resource query has unknown or missing fields" };
   }
   if (typeof input["bref"] !== "string") return { ok: false, error: "Query bref must be a string" };
@@ -107,7 +109,18 @@ export function validateTrustedResourceQuery(
   if (limit != null && (!Number.isInteger(limit) || (limit as number) < 1 || (limit as number) > 20)) {
     return { ok: false, error: "Query limit must be an integer from 1 to 20" };
   }
-  return { ok: true, value: { bref: input["bref"], ...(limit == null ? {} : { limit: limit as number }) } };
+  const preferLanguage = input["preferLanguage"];
+  if (preferLanguage != null && (typeof preferLanguage !== "string" || !/^[a-z]{2,3}$/.test(preferLanguage))) {
+    return { ok: false, error: "Query preferLanguage must be a short language code" };
+  }
+  return {
+    ok: true,
+    value: {
+      bref: input["bref"],
+      ...(limit == null ? {} : { limit: limit as number }),
+      ...(preferLanguage == null ? {} : { preferLanguage: preferLanguage as string }),
+    },
+  };
 }
 
 export function validateTrustedResourceManifest(
@@ -167,8 +180,22 @@ export function rankTrustedResources(
       if (best) ranked.push({ source: manifest.source, provenance: manifest.provenance, record, ...best });
     }
   }
+  /* A language the reader cannot read is not evidence about this passage, it is
+     a second copy of it. Working Preacher publishes ~14% of its commentaries in
+     Spanish, always alongside an English edition and never instead of one — so
+     with ties broken on record id, roughly half of those passages showed the
+     Spanish card to an English reader, and some showed both. Language sorts
+     below every evidence test, so it can only ever choose between equals, and
+     a record that declares no language is never demoted. */
+  const wrongLanguage = (entry: RankedTrustedResource): number => {
+    if (!query.preferLanguage) return 0;
+    const language = entry.record.metadata?.language;
+    return !language || language === query.preferLanguage ? 0 : 1;
+  };
+
   const ordered = ranked.sort((left, right) => right.score - left.score
     || matchedSpan(left.matchedBref) - matchedSpan(right.matchedBref)
+    || wrongLanguage(left) - wrongLanguage(right)
     || left.source.id.localeCompare(right.source.id)
     || left.record.id.localeCompare(right.record.id));
 
@@ -184,8 +211,32 @@ export function rankTrustedResources(
     seen.add(entry.source.id);
     return true;
   });
-  const remainder = ordered.filter((entry) => !firstPerSource.includes(entry));
+
+  /* A second slot for a source has to earn it by saying something different.
+     The same publisher's translation of the card above it, or its second
+     commentary under an identical title, spends a slot to repeat one. */
+  const spoken = new Set(firstPerSource.map(restatementKey));
+  const remainder = ordered.filter((entry) => {
+    if (firstPerSource.includes(entry)) return false;
+    const key = restatementKey(entry);
+    if (spoken.has(key)) return false;
+    spoken.add(key);
+    return true;
+  });
   return [...firstPerSource, ...remainder].slice(0, query.limit ?? 3);
+}
+
+/**
+ * What would make a second card from one source a restatement of the first.
+ *
+ * Coordinates and kind, deliberately not title: the Spanish edition of a
+ * commentary is titled differently and is still the same commentary, and two of
+ * one publisher's commentaries on identical verses are two answers to a question
+ * the reader has already been given an answer to. Either may be the better card
+ * — but the slot it would take is the only one another publisher could have had.
+ */
+function restatementKey(entry: RankedTrustedResource): string {
+  return `${entry.source.id}|${entry.matchedBref}|${entry.record.kind}`;
 }
 
 /**

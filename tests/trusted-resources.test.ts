@@ -131,6 +131,49 @@ test("a validated manifest is reused until its file changes", () => {
   assert.equal(load()?.records.length, original.records.length);
 });
 
+/**
+ * Working Preacher publishes ~14% of its commentaries in Spanish, always beside
+ * an English edition and never instead of one. Ranking them as equals handed an
+ * English reader the translation about half the time, and both copies the rest.
+ */
+test("a reader's language breaks ties, and a source may not restate itself", () => {
+  const record = (id: string, over: Partial<TrustedResourceManifestV1["records"][number]>) => ({
+    id, sourceId: "working-preacher", kind: "commentary" as const,
+    title: id, officialUrl: `https://www.workingpreacher.org/${id}`,
+    brefs: ["bref:v1/ROM.8.1-ROM.8.11"], matchBasis: "publisher-title" as const, ...over,
+  });
+  const manifest: TrustedResourceManifestV1 = {
+    schema: "pericope.trusted-resource-manifest",
+    version: 1,
+    source: { id: "working-preacher", name: "Working Preacher", homepageUrl: "https://www.workingpreacher.org/", officialHosts: ["www.workingpreacher.org"] },
+    provenance: { publisher: "Luther Seminary", reviewedAt: "2026-07-27", coverage: "reviewed-sample", permissions: "outbound-link-only" },
+    capabilities: ["outbound-link"],
+    records: [
+      // The Spanish id sorts first, so without a preference it wins the tie.
+      record("aa-spanish", { metadata: { language: "es" } }),
+      record("bb-english", { metadata: { language: "en" } }),
+      record("cc-unlabelled", {}),
+    ],
+  };
+  const query = { bref: "bref:v1/ROM.8.1-ROM.8.11", limit: 3 };
+
+  assert.equal(rankTrustedResources([manifest], query)[0]?.record.id, "aa-spanish");
+  const preferred = rankTrustedResources([manifest], { ...query, preferLanguage: "en" });
+  assert.equal(preferred[0]?.record.id, "bb-english", "the reader's language wins a tie");
+  assert.equal(preferred.length, 1, "the same source at the same coordinates may not take a second slot");
+
+  // A record that declares no language is never demoted for it.
+  const unlabelledOnly: TrustedResourceManifestV1 = { ...manifest, records: [manifest.records[0] as never, manifest.records[2] as never] };
+  assert.equal(
+    rankTrustedResources([unlabelledOnly], { ...query, preferLanguage: "en" })[0]?.record.id,
+    "cc-unlabelled",
+  );
+
+  assert.equal(validateTrustedResourceQuery({ ...query, preferLanguage: "en" }, backbone).ok, true);
+  assert.equal(validateTrustedResourceQuery({ ...query, preferLanguage: "english" }, backbone).ok, false);
+  assert.equal(validateTrustedResourceQuery({ ...query, preferLanguage: 7 }, backbone).ok, false);
+});
+
 test("resource runtime is read-only and network-free", () => {
   const core = readFileSync(join(root, "src/core/resources/trusted-resources.ts"), "utf8");
   const loader = readFileSync(join(root, "src/host/trusted-resource-loader.ts"), "utf8");

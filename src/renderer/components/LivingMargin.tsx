@@ -3417,7 +3417,15 @@ export function LivingMargin({
     let cancelled = false;
     setTrustedResourcesLoading(true);
     setTrustedResourcesRefusal(null);
-    safeCall(() => window.api.trustedResources.query({ bref: trustedResourceBref, limit: 3 }))
+    safeCall(() => window.api.trustedResources.query({
+      bref: trustedResourceBref,
+      limit: 3,
+      // Working Preacher publishes Spanish editions alongside English ones, and
+      // without a stated preference a tie hands the reader whichever sorted
+      // first. Stated here rather than assumed in core, so that when the app
+      // grows a reading-language setting there is one place to read it from.
+      preferLanguage: "en",
+    }))
       .then((result) => {
         if (cancelled) return;
         setTrustedResourcesLoading(false);
