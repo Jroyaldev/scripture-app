@@ -101,7 +101,11 @@ import {
   matchTrustedResources,
   validateTrustedResourceQuery,
 } from "../core/resources/trusted-resources.js";
-import { allowedTrustedResourceHosts, loadTrustedResourceManifests } from "../host/trusted-resource-loader.js";
+import {
+  allowedTrustedResourceHosts,
+  loadTrustedResourceManifests,
+  TRUSTED_RESOURCE_SOURCE_IDS,
+} from "../host/trusted-resource-loader.js";
 
 const DATA_DIR = resolve(__dirname, "../../data/scripture");
 const CROSS_REF_DIR = resolve(__dirname, "../../data/cross-references");
@@ -232,9 +236,14 @@ interface AppSettingsSchema {
   marginVisible: boolean;
   readingSize: "s" | "m" | "l";
   verseNumbers: "always" | "faint" | "hover";
-  /** Sources the reader has switched off in settings. Ids, never names. */
+  /**
+   * What the reader has muted, permanently and library-wide. Entries are either
+   * `publisher` or `publisher:kind`. The two earlier keys are migrated into it.
+   */
+  resourceMutes: string[];
+  /** @deprecated Migrated into resourceMutes on launch. */
   hiddenResourceSources: string[];
-  /** Kinds the reader has switched off — podcasts, sermons, and so on. */
+  /** @deprecated Migrated into resourceMutes on launch. */
   hiddenResourceKinds: string[];
   recentPassages: Array<{
     book: string;
@@ -529,6 +538,7 @@ const store = new Store<AppSettingsSchema>({
     marginVisible: true,
     readingSize: "m",
     verseNumbers: "always",
+    resourceMutes: [],
     hiddenResourceSources: [],
     hiddenResourceKinds: [],
     recentPassages: [],
@@ -562,6 +572,34 @@ if (legacySettingsAdoption.status === "adopt") {
     }),
   };
 }
+/* The two earlier keys become mute rules. A muted publisher is already a rule
+   of the same shape; a muted kind was global, and the honest translation is one
+   rule per publisher, because that is what "no podcasts" meant when there was
+   nowhere to say which publisher's. Folded once and the old keys emptied, so
+   this cannot run twice or fight a later edit. */
+{
+  const legacySources = store.get("hiddenResourceSources") ?? [];
+  const legacyKinds = store.get("hiddenResourceKinds") ?? [];
+  if (legacySources.length > 0 || legacyKinds.length > 0) {
+    const merged = new Set(store.get("resourceMutes") ?? []);
+    for (const sourceId of legacySources) merged.add(sourceId);
+    if (legacyKinds.length > 0) {
+      const loaded = loadTrustedResourceManifests({
+        bundledRoot: TRUSTED_RESOURCE_DIR,
+        backbone: JSON.parse(readFileSync(join(DATA_DIR, "backbone.json"), "utf8")) as BackboneData,
+      });
+      const sourceIds = loaded.ok
+        ? loaded.manifests.map((entry) => entry.manifest.source.id)
+        : [...TRUSTED_RESOURCE_SOURCE_IDS];
+      for (const kind of legacyKinds) for (const sourceId of sourceIds) merged.add(`${sourceId}:${kind}`);
+    }
+    store.set("resourceMutes", [...merged]);
+    store.set("hiddenResourceSources", []);
+    store.set("hiddenResourceKinds", []);
+    logLifecycle("resource-mutes-migration", { rules: merged.size });
+  }
+}
+
 logLifecycle("legacy-settings-adoption", {
   status: legacySettingsAdoption.status,
   adoptedKeys: legacySettingsAdoption.status === "adopt"
@@ -2402,41 +2440,44 @@ function registerIpcHandlers(): void {
     /* The stored setting is applied here rather than trusted from the caller:
        a window that forgot to send it would quietly show a reader the very
        publishers they switched off. */
-    const hiddenSourceIds = store.get("hiddenResourceSources") ?? [];
-    const hiddenKinds = store.get("hiddenResourceKinds") ?? [];
     const matches = matchTrustedResources(
       loaded.manifests.map((entry) => entry.manifest),
-      { ...query.value, hiddenSourceIds, hiddenKinds },
+      { ...query.value, mutes: store.get("resourceMutes") ?? [] },
     );
     return { ok: true, ...matches };
   });
 
-  /* Everything installed, not everything that matched: a publisher silent on
-     this passage still has to be switchable, or a reader can only turn off what
-     is currently in front of them. */
+  /* Everything installed, and for each publisher the kinds it actually holds:
+     the matrix is publisher x kind, but only the cells that exist. Passage
+     counts are deliberately absent — this is what the library contains, not
+     what the chapter in front of the reader happens to offer. */
   registerRuntimeReadIpc("trusted-resources-catalogue", () => {
     const loaded = loadCurrentTrustedResourceManifests();
     if (!loaded.ok) return loaded;
-    const hiddenSources = new Set(store.get("hiddenResourceSources") ?? []);
-    const hiddenKinds = new Set(store.get("hiddenResourceKinds") ?? []);
-    const kindTotals = new Map<string, number>();
-    for (const entry of loaded.manifests) {
-      for (const record of entry.manifest.records) {
-        kindTotals.set(record.kind, (kindTotals.get(record.kind) ?? 0) + 1);
-      }
-    }
+    const mutes = new Set(store.get("resourceMutes") ?? []);
     return {
       ok: true as const,
-      sources: loaded.manifests.map((entry) => ({
-        id: entry.manifest.source.id,
-        name: entry.manifest.source.name,
-        homepageUrl: entry.manifest.source.homepageUrl,
-        records: entry.manifest.records.length,
-        hidden: hiddenSources.has(entry.manifest.source.id),
-      })),
-      kinds: [...kindTotals.entries()]
-        .map(([kind, records]) => ({ kind, records, hidden: hiddenKinds.has(kind) }))
-        .sort((left, right) => right.records - left.records || left.kind.localeCompare(right.kind)),
+      mutes: [...mutes],
+      sources: loaded.manifests.map((entry) => {
+        const kinds = new Map<string, number>();
+        for (const record of entry.manifest.records) {
+          kinds.set(record.kind, (kinds.get(record.kind) ?? 0) + 1);
+        }
+        return {
+          id: entry.manifest.source.id,
+          name: entry.manifest.source.name,
+          homepageUrl: entry.manifest.source.homepageUrl,
+          records: entry.manifest.records.length,
+          muted: mutes.has(entry.manifest.source.id),
+          kinds: [...kinds.entries()]
+            .map(([kind, records]) => ({
+              kind,
+              records,
+              muted: mutes.has(entry.manifest.source.id) || mutes.has(`${entry.manifest.source.id}:${kind}`),
+            }))
+            .sort((left, right) => right.records - left.records || left.kind.localeCompare(right.kind)),
+        };
+      }),
     };
   });
 

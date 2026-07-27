@@ -19026,7 +19026,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-card[data-source="working-preacher"],
 .trusted-resource-imprint[data-source="working-preacher"],
 .resource-source[data-source="working-preacher"],
-.trusted-resource-pill[data-source="working-preacher"] {
+.resource-matrix-row[data-source="working-preacher"] {
   --resource-source: #9d2235;
   --resource-ink: #fbf1ea;
   --resource-ink-soft: rgb(251 241 234 / 0.78);
@@ -19041,7 +19041,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-card[data-source="bibleproject"],
 .trusted-resource-imprint[data-source="bibleproject"],
 .resource-source[data-source="bibleproject"],
-.trusted-resource-pill[data-source="bibleproject"] {
+.resource-matrix-row[data-source="bibleproject"] {
   --resource-source: #00b3e5;
   --resource-ink: #05303f;
   --resource-ink-soft: rgb(5 48 63 / 0.76);
@@ -19060,7 +19060,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-card[data-source="enter-the-bible"],
 .trusted-resource-imprint[data-source="enter-the-bible"],
 .resource-source[data-source="enter-the-bible"],
-.trusted-resource-pill[data-source="enter-the-bible"] {
+.resource-matrix-row[data-source="enter-the-bible"] {
   --resource-source: #fed141;
   --resource-ink: #1c1a12;
   --resource-ink-soft: rgb(28 26 18 / 0.72);
@@ -19080,7 +19080,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-card[data-source="naked-bible"],
 .trusted-resource-imprint[data-source="naked-bible"],
 .resource-source[data-source="naked-bible"],
-.trusted-resource-pill[data-source="naked-bible"] {
+.resource-matrix-row[data-source="naked-bible"] {
   --resource-source: #2f3437;
   --resource-ink: #e7eaea;
   --resource-ink-soft: rgb(231 234 234 / 0.74);
@@ -19095,7 +19095,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-card[data-source="the-gospel-coalition"],
 .trusted-resource-imprint[data-source="the-gospel-coalition"],
 .resource-source[data-source="the-gospel-coalition"],
-.trusted-resource-pill[data-source="the-gospel-coalition"] {
+.resource-matrix-row[data-source="the-gospel-coalition"] {
   --resource-source: #79ae4a;
   --resource-ink: #1b2a0d;
   --resource-ink-soft: rgb(27 42 13 / 0.76);
@@ -19335,10 +19335,10 @@ button.lang-phrase-diagram-node:focus-visible,
   text-indent: 0;
 }
 
-/* The filter panel opens where a card would, so the row's own geometry holds:
-   same width, same corner, the margin's paper rather than a publisher's colour,
-   because these choices are the reader's. */
-.trusted-resource-filters {
+/* The library panel. It opens where a card opens but must not read as one:
+   cards are what this passage offers, and this is what the reader keeps. Paper,
+   a hairline, and no brand colour of its own. */
+.trusted-resource-library {
   display: grid;
   gap: 14px;
   padding: 14px 15px 15px;
@@ -19347,84 +19347,14 @@ button.lang-phrase-diagram-node:focus-visible,
   background: var(--bg-float);
 }
 
-.trusted-resource-filters-lead {
+.trusted-resource-library-lead {
   margin: 0;
   color: var(--text-tertiary);
   font: 0.6875rem/1.5 var(--font-ui);
 }
 
-.trusted-resource-facet {
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.trusted-resource-facet legend {
-  padding: 0 0 7px;
-  color: var(--text-tertiary);
-  font: var(--fw-semibold) 0.5625rem/1.2 var(--font-mono);
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-}
-
-.trusted-resource-pills { display: flex; flex-wrap: wrap; gap: 6px; }
-
-/* A pill wears its publisher's colour, so the thing being switched looks like
-   the thing it switches. Off, the colour drains to an outline — the identity
-   stays legible, the state does not have to be read to be seen. */
-.trusted-resource-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 5px 10px 5px 8px;
-  border: 1px solid transparent;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--resource-source, var(--text-tertiary)) 16%, transparent);
-  color: var(--text-primary);
-  font: var(--fw-medium) 0.71875rem/1.2 var(--font-ui);
-  cursor: pointer;
-  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
-}
-
-.trusted-resource-pill-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--resource-source, var(--text-tertiary));
-  transition: background-color 150ms ease, box-shadow 150ms ease;
-}
-
-.trusted-resource-pill-count {
-  color: var(--text-tertiary);
-  font: var(--fw-medium) 0.625rem/1 var(--font-mono);
-  font-variant-numeric: tabular-nums;
-}
-
-.trusted-resource-pill[aria-pressed="false"] {
-  border-color: var(--border-medium);
-  background: transparent;
-  color: var(--text-tertiary);
-}
-
-.trusted-resource-pill[aria-pressed="false"] .trusted-resource-pill-dot {
-  background: transparent;
-  box-shadow: inset 0 0 0 1.5px var(--border-medium);
-}
-
-/* Installed but silent on this passage: still switchable, still identifiable,
-   just not claiming to offer anything here. Dimmed rather than hidden, because
-   a control that appears and disappears with the passage is not a setting. */
-.trusted-resource-pill[data-here="no"] { opacity: 0.58; }
-.trusted-resource-pill[data-here="no"]:hover { opacity: 1; }
-
-.trusted-resource-pill-icon { flex: none; opacity: 0.85; }
-.trusted-resource-pill[aria-pressed="false"] .trusted-resource-pill-icon { opacity: 0.6; }
-
-.trusted-resource-pill:hover { border-color: var(--resource-source, var(--border-strong)); }
-.trusted-resource-pill:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: 2px; }
-.trusted-resource-pill.is-kind { text-transform: capitalize; }
-
-.trusted-resource-filters-more {
+.trusted-resource-library-more,
+.resource-matrix-reset {
   justify-self: start;
   padding: 0;
   border: 0;
@@ -19434,12 +19364,162 @@ button.lang-phrase-diagram-node:focus-visible,
   cursor: pointer;
 }
 
-.trusted-resource-filters-more:hover { color: var(--study-gold); }
-.trusted-resource-filters-more:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: 3px; }
+.trusted-resource-library-more:hover,
+.resource-matrix-reset:hover { color: var(--study-gold); }
+.trusted-resource-library-more:focus-visible,
+.resource-matrix-reset:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: 3px; }
+
+/* The matrix: one row per publisher, and inside it only the kinds that
+   publisher actually holds. A full grid would be thirty cells with a dozen
+   filled, and drawing emptiness is not rigour. */
+.resource-matrix { display: grid; gap: 10px; }
+.resource-matrix-status { margin: 0; color: var(--text-tertiary); font: 0.6875rem/1.5 var(--font-ui); }
+
+.resource-matrix-row {
+  display: grid;
+  gap: 7px;
+  padding: 10px 11px 11px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: var(--bg-reading);
+  transition: opacity 160ms ease;
+}
+
+.resource-matrix-row[data-muted="true"] { opacity: 0.55; }
+.resource-matrix-row[data-muted="true"]:hover { opacity: 0.85; }
+
+.resource-matrix-publisher {
+  display: grid;
+  grid-template-columns: 3px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.resource-matrix-rail {
+  align-self: stretch;
+  min-height: 15px;
+  border-radius: 2px;
+  background: var(--resource-source, var(--border-medium));
+  transition: background-color 160ms ease;
+}
+
+.resource-matrix-publisher[aria-pressed="false"] .resource-matrix-rail { background: var(--border-medium); }
+
+.resource-matrix-name {
+  font: var(--fw-semibold) 0.8125rem/1.3 var(--font-ui);
+  letter-spacing: -0.005em;
+}
+
+/* The library total, and only ever the library total: a passage count here is
+   what made this panel read as a filter for the chapter in front of you. */
+.resource-matrix-total {
+  color: var(--text-tertiary);
+  font: 0.625rem/1 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.resource-matrix-kinds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding-left: 12px;
+}
+
+.resource-matrix-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px 3px 6px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--resource-source, var(--text-tertiary)) 15%, transparent);
+  color: var(--text-primary);
+  font: var(--fw-medium) 0.6875rem/1.2 var(--font-ui);
+  text-transform: capitalize;
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.resource-matrix-kind[aria-pressed="false"] {
+  border-color: var(--border-medium);
+  background: transparent;
+  color: var(--text-tertiary);
+}
+
+.resource-matrix-kind[aria-pressed="false"] .resource-kind-icon { opacity: 0.55; }
+.resource-matrix-kind:hover { border-color: var(--resource-source, var(--border-strong)); }
+.resource-matrix-kind:focus-visible,
+.resource-matrix-publisher:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: 2px; }
+
+.resource-matrix-kind-count {
+  color: var(--text-tertiary);
+  font: 0.5625rem/1 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.resource-kind-icon { flex: none; }
+
+/* The lens: what the reader is looking at this second. Lighter than anything
+   that persists, and it carries no colour, because it owns nothing. */
+.trusted-resource-lens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.trusted-resource-lens-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-tertiary);
+  font: var(--fw-medium) 0.6875rem/1.3 var(--font-ui);
+  text-transform: capitalize;
+  cursor: pointer;
+  transition: color 140ms ease, border-color 140ms ease, background-color 140ms ease;
+}
+
+.trusted-resource-lens-chip:hover { color: var(--text-primary); border-color: var(--border-medium); }
+
+.trusted-resource-lens-chip[aria-pressed="true"] {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--accent-seal) 16%, transparent);
+  color: var(--text-primary);
+}
+
+.trusted-resource-lens-chip:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: 2px; }
+.trusted-resource-lens-count { font: 0.5625rem/1 var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* Something is muted, and the row must say so even when the panel is shut —
+   otherwise a quiet chapter next Tuesday is indistinguishable from a chapter
+   with nothing in it. */
+.trusted-resource-imprint.is-settings[data-muted="true"]::after {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-seal);
+  content: "";
+}
+
+.trusted-resource-imprint.is-settings { position: relative; }
 
 @media (prefers-reduced-motion: reduce) {
-  .trusted-resource-pill,
-  .trusted-resource-pill-dot { transition: none; }
+  .resource-matrix-row,
+  .resource-matrix-kind,
+  .resource-matrix-rail,
+  .trusted-resource-lens-chip { transition: none; }
 }
 
 /* Opened, the cards stack under the row they came from. */

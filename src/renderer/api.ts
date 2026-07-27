@@ -21,13 +21,14 @@ import type {
 import type { StudyWorkspaceStateV2 } from "./utils/studyWorkspace.js";
 export type { RankedTrustedResource } from "../core/resources/trusted-resources.js";
 
-/** One publisher as settings sees it: what it is, how much it has, is it on. */
+/** One publisher as the library matrix sees it, with the kinds it holds. */
 export interface TrustedResourceCatalogueEntry {
   id: string;
   name: string;
   homepageUrl: string;
   records: number;
-  hidden: boolean;
+  muted: boolean;
+  kinds: Array<{ kind: string; records: number; muted: boolean }>;
 }
 export type { EntityResearchData, EntityResearchLicensing } from "../core/entities/place-research.js";
 export type { LicensedSource } from "../core/entities/licensed-source.js";
@@ -108,17 +109,11 @@ declare global {
               resources: RankedTrustedResource[];
               total: number;
               hiddenCount: number;
-              bySource: Array<{ sourceId: string; name: string; count: number; hidden: boolean }>;
-              byKind: Array<{ kind: string; count: number; hidden: boolean }>;
             }
           | { ok: false; refusal: TrustedResourceRefusal }
         >;
         catalogue(): Promise<
-          | {
-              ok: true;
-              sources: TrustedResourceCatalogueEntry[];
-              kinds: Array<{ kind: string; records: number; hidden: boolean }>;
-            }
+          | { ok: true; sources: TrustedResourceCatalogueEntry[]; mutes: string[] }
           | { ok: false; refusal: TrustedResourceRefusal }
         >;
         openOfficial(sourceId: string, resourceId: string, url: string): Promise<{ ok: true }>;
@@ -258,10 +253,11 @@ export interface AppSettings {
   marginVisible: boolean;
   readingSize: ReadingSize;
   verseNumbers: VerseNumberMode;
-  /** Publishers the reader switched off. The main process applies this. */
-  hiddenResourceSources: string[];
-  /** Kinds the reader switched off. The main process applies this too. */
-  hiddenResourceKinds: string[];
+  /**
+   * What the reader muted, permanently: `publisher` or `publisher:kind`.
+   * The main process applies it to every query.
+   */
+  resourceMutes: string[];
   recentPassages: RecentPassageSetting[];
   /** Where the reader last was — restored on launch. */
   lastRead: {

@@ -30,6 +30,11 @@ import type {
 } from "../utils/connectionPaint.js";
 import { safeCall } from "../utils/safeCall.js";
 import {
+  ResourceKindIcon,
+  ResourceLibraryMatrix,
+  type ResourceLibraryCatalogue,
+} from "./ResourceLibraryMatrix.js";
+import {
   laurelInk,
   laurelMarkLabel,
   laurelSiglumRole,
@@ -384,32 +389,12 @@ function resourcePassageLabel(bref: string): string {
   return end.verse && end.verse !== start.verse ? `${head}–${end.verse}` : head;
 }
 
-/** A mark per kind. Line art at 12px, because a filled glyph at this size is a blob. */
-function ResourceKindIcon({ kind }: { kind: string }): React.JSX.Element {
-  const common = { fill: "none", stroke: "currentColor", strokeLinecap: "round" as const, strokeLinejoin: "round" as const, strokeWidth: 1.4 };
-  const paths: Record<string, React.JSX.Element> = {
-    podcast: <g {...common}><rect x="5.6" y="1.6" width="4.8" height="8" rx="2.4" /><path d="M3.2 7.2a4.8 4.8 0 0 0 9.6 0M8 11.6v2.8" /></g>,
-    video: <g {...common}><rect x="1.6" y="3.2" width="12.8" height="9.6" rx="2" /><path d="M6.6 6.4 10 8l-3.4 1.6z" /></g>,
-    article: <g {...common}><rect x="2.8" y="1.8" width="10.4" height="12.4" rx="1.6" /><path d="M5.4 5.4h5.2M5.4 8h5.2M5.4 10.6h3.2" /></g>,
-    commentary: <g {...common}><path d="M8 4.2S6.4 2.6 4 2.6c-1 0-1.6.2-1.6.2v9s.6-.2 1.6-.2c2.4 0 4 1.6 4 1.6s1.6-1.6 4-1.6c1 0 1.6.2 1.6.2v-9s-.6-.2-1.6-.2c-2.4 0-4 1.6-4 1.6zM8 4.2v9.2" /></g>,
-    sermon: <g {...common}><path d="M4 13.4h8M8 13.4V6M4.4 6h7.2L8 2.2z" /></g>,
-    guide: <g {...common}><path d="M2.6 3.4 6 2.2l4 1.4 3.4-1.2v10L10 13.6 6 12.2l-3.4 1.2z" /><path d="M6 2.2v10M10 3.6v10" /></g>,
-  };
-  return (
-    <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" className="trusted-resource-pill-icon">
-      {paths[kind] ?? <g {...common}><circle cx="8" cy="8" r="5.4" /></g>}
-    </svg>
-  );
-}
-
 function TrustedResourcesBlock({
   resources,
   loading,
   refusal,
   total,
   hiddenCount,
-  bySource,
-  byKind,
   catalogue,
   onOpenSettings,
   onFiltersChanged,
@@ -419,12 +404,7 @@ function TrustedResourcesBlock({
   refusal: string | null;
   total: number;
   hiddenCount: number;
-  bySource: ReadonlyArray<{ sourceId: string; name: string; count: number; hidden: boolean }>;
-  byKind: ReadonlyArray<{ kind: string; count: number; hidden: boolean }>;
-  catalogue: {
-    sources: ReadonlyArray<{ id: string; name: string; records: number; hidden: boolean }>;
-    kinds: ReadonlyArray<{ kind: string; records: number; hidden: boolean }>;
-  } | null;
+  catalogue: ResourceLibraryCatalogue | null;
   onOpenSettings?: (() => void) | undefined;
   onFiltersChanged?: (() => void) | undefined;
 }): React.JSX.Element {
@@ -434,6 +414,10 @@ function TrustedResourcesBlock({
      publishers. One chip each, and opening one shows everything that publisher
      has for this passage — in the order the ranking already put them. */
   const [openedSource, setOpenedSource] = useState<string | null>(null);
+  /* The lens: what the reader is looking at right now. Deliberately component
+     state and nothing more — it dies with the passage, because "just show me
+     the commentaries" is a glance, not a preference. */
+  const [lensKind, setLensKind] = useState<string | null>(null);
 
   const sources = useMemo(() => {
     const order: Array<{ id: string; name: string; count: number }> = [];
@@ -451,33 +435,24 @@ function TrustedResourcesBlock({
   const ALL = "*";
   const FILTERS = "~filters";
 
-  /* The library is the list; this passage only supplies the counts. A publisher
-     silent on Romans 8 is still installed, and still has to be switchable. */
-  const here = new Map(bySource.map((entry) => [entry.sourceId, entry.count]));
-  const hereKinds = new Map(byKind.map((entry) => [entry.kind, entry.count]));
-  const publisherFacets = (catalogue?.sources ?? bySource.map((entry) => ({
-    id: entry.sourceId, name: entry.name, records: entry.count, hidden: entry.hidden,
-  }))).map((source) => ({ ...source, count: here.get(source.id) ?? 0 }));
-  const kindFacets = (catalogue?.kinds ?? byKind.map((entry) => ({
-    kind: entry.kind, records: entry.count, hidden: entry.hidden,
-  }))).map((kind) => ({ ...kind, count: hereKinds.get(kind.kind) ?? 0 }));
-
-  /* Saved through settings so the main process stays the one authority, then
-     the group refetches — the panel never keeps its own idea of what is on. */
-  const setHidden = async (key: "hiddenResourceSources" | "hiddenResourceKinds", ids: string[]): Promise<void> => {
-    const saved = await safeCall(() => window.api.settings.set({ [key]: ids }));
-    if (!saved.ok) {
-      showToast("That preference could not be saved.", undefined, undefined, { tone: "error" });
-      return;
-    }
-    onFiltersChanged?.();
-  };
   /* Opening keeps the ranking's order — within a publisher and between them —
      so what a reader sees first is still what the evidence put first. */
-  const groups = useMemo(() => {
-    const opened = openedSource === ALL
+  const lensKinds = useMemo(() => {
+    const chosen = openedSource === ALL
       ? resources
       : resources.filter((resource) => resource.source.id === openedSource);
+    const counts = new Map<string, number>();
+    for (const resource of chosen) counts.set(resource.record.kind, (counts.get(resource.record.kind) ?? 0) + 1);
+    return [...counts.entries()]
+      .map(([kind, count]) => ({ kind, count }))
+      .sort((left, right) => right.count - left.count || left.kind.localeCompare(right.kind));
+  }, [openedSource, resources]);
+
+  const groups = useMemo(() => {
+    const chosen = openedSource === ALL
+      ? resources
+      : resources.filter((resource) => resource.source.id === openedSource);
+    const opened = lensKind ? chosen.filter((resource) => resource.record.kind === lensKind) : chosen;
     const order: Array<{ id: string; name: string; items: RankedTrustedResource[] }> = [];
     const seen = new Map<string, { id: string; name: string; items: RankedTrustedResource[] }>();
     for (const resource of opened) {
@@ -488,7 +463,7 @@ function TrustedResourcesBlock({
       order.push(entry);
     }
     return order;
-  }, [openedSource, resources]);
+  }, [openedSource, resources, lensKind]);
 
   const openResource = async (resource: RankedTrustedResource): Promise<void> => {
     const result = await safeCall(() => window.api.trustedResources.openOfficial(
@@ -550,11 +525,16 @@ function TrustedResourcesBlock({
             <button
                 aria-controls="trusted-resource-panel"
                 aria-expanded={openedSource === FILTERS}
-                aria-label="Choose which publishers and kinds appear here"
+                aria-label={(catalogue?.mutes.length ?? 0) > 0
+                  ? `Your library — ${catalogue?.mutes.length} muted`
+                  : "Choose what your library offers"}
                 className="trusted-resource-imprint is-settings"
+                data-muted={(catalogue?.mutes.length ?? 0) > 0}
                 key="settings"
                 onClick={() => setOpenedSource(openedSource === FILTERS ? null : FILTERS)}
-                title="Choose which publishers and kinds appear here"
+                title={(catalogue?.mutes.length ?? 0) > 0
+                  ? `Your library — ${catalogue?.mutes.length} muted`
+                  : "Choose what your library offers"}
                 type="button"
               >
                 <span className="trusted-resource-source" aria-hidden="true">
@@ -575,75 +555,50 @@ function TrustedResourcesBlock({
 
           <div className="trusted-resource-panel" id="trusted-resource-panel">
           {openedSource === FILTERS && (
-            <div className="trusted-resource-filters">
-              <p className="trusted-resource-filters-lead">
-                Everything here links out to the publisher. Nothing is fetched while you read.
+            <div className="trusted-resource-library">
+              <p className="trusted-resource-library-lead">
+                Your library, everywhere — not just this passage. Everything links out to the
+                publisher; nothing is fetched while you read.
               </p>
-
-              <fieldset className="trusted-resource-facet">
-                <legend>Publishers</legend>
-                <div className="trusted-resource-pills">
-                  {publisherFacets.map((source) => (
-                    <button
-                      aria-pressed={!source.hidden}
-                      className="trusted-resource-pill"
-                      data-here={source.count > 0 ? "yes" : "no"}
-                      data-source={source.id}
-                      key={source.id}
-                      onClick={() => void setHidden(
-                        "hiddenResourceSources",
-                        source.hidden
-                          ? publisherFacets.filter((s) => s.hidden && s.id !== source.id).map((s) => s.id)
-                          : [...publisherFacets.filter((s) => s.hidden).map((s) => s.id), source.id],
-                      )}
-                      title={source.count > 0
-                        ? `${source.count} here · ${source.records.toLocaleString()} in your library`
-                        : `Nothing for this passage · ${source.records.toLocaleString()} in your library`}
-                      type="button"
-                    >
-                      <span className="trusted-resource-pill-dot" aria-hidden="true" />
-                      {source.name}
-                      {source.count > 0 && <span className="trusted-resource-pill-count">{source.count}</span>}
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
-
-              {kindFacets.length > 1 && (
-                <fieldset className="trusted-resource-facet">
-                  <legend>Kinds</legend>
-                  <div className="trusted-resource-pills">
-                    {kindFacets.map((kind) => (
-                      <button
-                        aria-pressed={!kind.hidden}
-                        className="trusted-resource-pill is-kind"
-                        data-here={kind.count > 0 ? "yes" : "no"}
-                        key={kind.kind}
-                        onClick={() => void setHidden(
-                          "hiddenResourceKinds",
-                          kind.hidden
-                            ? kindFacets.filter((k) => k.hidden && k.kind !== kind.kind).map((k) => k.kind)
-                            : [...kindFacets.filter((k) => k.hidden).map((k) => k.kind), kind.kind],
-                        )}
-                        title={kind.count > 0
-                          ? `${kind.count} here · ${kind.records.toLocaleString()} in your library`
-                          : `None for this passage · ${kind.records.toLocaleString()} in your library`}
-                        type="button"
-                      >
-                        <ResourceKindIcon kind={kind.kind} />
-                        {kind.kind}
-                        {kind.count > 0 && <span className="trusted-resource-pill-count">{kind.count}</span>}
-                      </button>
-                    ))}
-                  </div>
-                </fieldset>
-              )}
-
+              <ResourceLibraryMatrix
+                catalogue={catalogue}
+                onChanged={() => onFiltersChanged?.()}
+                onFailed={(message) => showToast(message, undefined, undefined, { tone: "error" })}
+              />
               {onOpenSettings && (
-                <button className="trusted-resource-filters-more" onClick={onOpenSettings} type="button">
-                  All resource settings <span aria-hidden="true">→</span>
+                <button className="trusted-resource-library-more" onClick={onOpenSettings} type="button">
+                  Open in settings <span aria-hidden="true">→</span>
                 </button>
               )}
+            </div>
+          )}
+
+          {openedSource !== null && openedSource !== FILTERS && lensKinds.length > 1 && (
+            /* Narrowing what is open, not what exists. It resets whenever the
+               reader opens something else, because a glance should not outlive
+               the glance. */
+            <div className="trusted-resource-lens" role="group" aria-label="Narrow what is shown">
+              <button
+                aria-pressed={lensKind === null}
+                className="trusted-resource-lens-chip"
+                onClick={() => setLensKind(null)}
+                type="button"
+              >
+                Everything
+              </button>
+              {lensKinds.map((kind) => (
+                <button
+                  aria-pressed={lensKind === kind.kind}
+                  className="trusted-resource-lens-chip"
+                  key={kind.kind}
+                  onClick={() => setLensKind(lensKind === kind.kind ? null : kind.kind)}
+                  type="button"
+                >
+                  <ResourceKindIcon kind={kind.kind} />
+                  {kind.kind}
+                  <span className="trusted-resource-lens-count">{kind.count}</span>
+                </button>
+              ))}
             </div>
           )}
 
@@ -3304,19 +3259,10 @@ export function LivingMargin({
   const [trustedResources, setTrustedResources] = useState<RankedTrustedResource[]>([]);
   const [trustedResourceTotal, setTrustedResourceTotal] = useState(0);
   const [trustedResourcesHidden, setTrustedResourcesHidden] = useState(0);
-  const [trustedResourceBySource, setTrustedResourceBySource] = useState<
-    Array<{ sourceId: string; name: string; count: number; hidden: boolean }>
-  >([]);
-  const [trustedResourceByKind, setTrustedResourceByKind] = useState<
-    Array<{ kind: string; count: number; hidden: boolean }>
-  >([]);
   /* Bumped when the reader changes a filter, so the effect refetches: the
      answer lives in the main process, not in this component. */
   const [trustedResourceFilterVersion, setTrustedResourceFilterVersion] = useState(0);
-  const [trustedResourceCatalogue, setTrustedResourceCatalogue] = useState<{
-    sources: Array<{ id: string; name: string; records: number; hidden: boolean }>;
-    kinds: Array<{ kind: string; records: number; hidden: boolean }>;
-  } | null>(null);
+  const [trustedResourceCatalogue, setTrustedResourceCatalogue] = useState<ResourceLibraryCatalogue | null>(null);
 
   /* Read once per filter change rather than per passage: what is installed does
      not depend on where the reader is. */
@@ -3324,7 +3270,7 @@ export function LivingMargin({
     let cancelled = false;
     safeCall(() => window.api.trustedResources.catalogue()).then((result) => {
       if (cancelled || !result.ok || !result.value.ok) return;
-      setTrustedResourceCatalogue({ sources: result.value.sources, kinds: result.value.kinds });
+      setTrustedResourceCatalogue({ sources: result.value.sources, mutes: result.value.mutes });
     });
     return () => { cancelled = true; };
   }, [trustedResourceFilterVersion]);
@@ -3702,8 +3648,6 @@ export function LivingMargin({
         setTrustedResources(result.value.resources);
         setTrustedResourceTotal(result.value.total);
         setTrustedResourcesHidden(result.value.hiddenCount);
-        setTrustedResourceBySource(result.value.bySource);
-        setTrustedResourceByKind(result.value.byKind);
       });
     return () => { cancelled = true; };
   }, [trustedResourceBref, trustedResourceFilterVersion]);
@@ -4452,7 +4396,7 @@ export function LivingMargin({
               onOpenTab={activateTab}
               onOpenEntity={onOpenEntity}
             />
-            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} bySource={trustedResourceBySource} byKind={trustedResourceByKind} catalogue={trustedResourceCatalogue} onOpenSettings={onOpenResourceSettings} onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)} />
+            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} catalogue={trustedResourceCatalogue} onOpenSettings={onOpenResourceSettings} onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)} />
           </section>
 
           <section
@@ -4567,7 +4511,7 @@ export function LivingMargin({
               onOpenTab={activateTab}
               onOpenEntity={onOpenEntity}
             />
-            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} bySource={trustedResourceBySource} byKind={trustedResourceByKind} catalogue={trustedResourceCatalogue} onOpenSettings={onOpenResourceSettings} onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)} />
+            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} catalogue={trustedResourceCatalogue} onOpenSettings={onOpenResourceSettings} onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)} />
           </section>
 
           <section
@@ -4685,7 +4629,7 @@ export function LivingMargin({
               onOpenTab={activateTab}
               onOpenEntity={onOpenEntity}
             />
-            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} bySource={trustedResourceBySource} byKind={trustedResourceByKind} catalogue={trustedResourceCatalogue} onOpenSettings={onOpenResourceSettings} onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)} />
+            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} catalogue={trustedResourceCatalogue} onOpenSettings={onOpenResourceSettings} onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)} />
           </section>
 
           <section

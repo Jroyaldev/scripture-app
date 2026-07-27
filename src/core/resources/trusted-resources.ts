@@ -64,10 +64,15 @@ export interface TrustedResourceQuery {
   limit?: number;
   /** The language the reader is reading in. Only ever breaks a tie. */
   preferLanguage?: string;
-  /** Sources the reader has turned off. Their matches are counted, not shown. */
-  hiddenSourceIds?: string[];
-  /** Kinds the reader has turned off — "no podcasts" is a different axis. */
-  hiddenKinds?: string[];
+  /**
+   * What the reader has muted in their library, permanently.
+   *
+   * One list, two forms: `publisher` silences a publisher entirely, and
+   * `publisher:kind` silences one kind from one publisher. Two separate lists
+   * could not say "Working Preacher's commentaries but not its podcasts", and
+   * a reader who wants that is not asking for something exotic.
+   */
+  mutes?: string[];
 }
 
 /**
@@ -83,9 +88,6 @@ export interface TrustedResourceMatches {
   resources: RankedTrustedResource[];
   total: number;
   hiddenCount: number;
-  bySource: Array<{ sourceId: string; name: string; count: number; hidden: boolean }>;
-  /** Kinds this passage actually offers, so a filter never lists an empty one. */
-  byKind: Array<{ kind: TrustedResourceKind; count: number; hidden: boolean }>;
 }
 
 export interface RankedTrustedResource {
@@ -118,7 +120,7 @@ export function validateTrustedResourceQuery(
   input: unknown,
   backbone: BackboneData,
 ): ParseResult<TrustedResourceQuery> {
-  if (!isRecord(input) || !hasOnlyKeys(input, ["bref", "limit", "preferLanguage", "hiddenSourceIds", "hiddenKinds"])) {
+  if (!isRecord(input) || !hasOnlyKeys(input, ["bref", "limit", "preferLanguage", "mutes"])) {
     return { ok: false, error: "Trusted-resource query has unknown or missing fields" };
   }
   if (typeof input["bref"] !== "string") return { ok: false, error: "Query bref must be a string" };
@@ -139,17 +141,15 @@ export function validateTrustedResourceQuery(
   if (preferLanguage != null && (typeof preferLanguage !== "string" || !/^[a-z]{2,3}$/.test(preferLanguage))) {
     return { ok: false, error: "Query preferLanguage must be a short language code" };
   }
-  const hiddenSourceIds = input["hiddenSourceIds"];
-  if (hiddenSourceIds != null) {
-    if (!Array.isArray(hiddenSourceIds) || hiddenSourceIds.some((id) => typeof id !== "string" || !id.trim())) {
-      return { ok: false, error: "Query hiddenSourceIds must be source id strings" };
-    }
-  }
-  const hiddenKinds = input["hiddenKinds"];
-  if (hiddenKinds != null) {
-    if (!Array.isArray(hiddenKinds) || hiddenKinds.some((kind) => !KINDS.has(kind as TrustedResourceKind))) {
-      return { ok: false, error: "Query hiddenKinds must be known resource kinds" };
-    }
+  const mutes = input["mutes"];
+  if (mutes != null) {
+    const wellFormed = Array.isArray(mutes) && mutes.every((rule) => {
+      if (typeof rule !== "string" || !rule.trim()) return false;
+      const [sourceId, kind, ...rest] = rule.split(":");
+      if (rest.length > 0 || !sourceId) return false;
+      return kind == null || KINDS.has(kind as TrustedResourceKind);
+    });
+    if (!wellFormed) return { ok: false, error: "Query mutes must be source ids or source:kind rules" };
   }
   return {
     ok: true,
@@ -157,8 +157,7 @@ export function validateTrustedResourceQuery(
       bref: input["bref"],
       ...(limit == null ? {} : { limit: limit as number }),
       ...(preferLanguage == null ? {} : { preferLanguage: preferLanguage as string }),
-      ...(hiddenSourceIds == null ? {} : { hiddenSourceIds: hiddenSourceIds as string[] }),
-      ...(hiddenKinds == null ? {} : { hiddenKinds: hiddenKinds as string[] }),
+      ...(mutes == null ? {} : { mutes: mutes as string[] }),
     },
   };
 }
@@ -214,7 +213,7 @@ export function matchTrustedResources(
   manifests: readonly TrustedResourceManifestV1[],
   query: TrustedResourceQuery,
 ): TrustedResourceMatches {
-  const empty: TrustedResourceMatches = { resources: [], total: 0, hiddenCount: 0, bySource: [], byKind: [] };
+  const empty: TrustedResourceMatches = { resources: [], total: 0, hiddenCount: 0 };
   const parsedQuery = parseBref(query.bref);
   if (!parsedQuery.ok) return empty;
   let ranked: RankedTrustedResource[] = [];
@@ -228,44 +227,25 @@ export function matchTrustedResources(
       if (best) ranked.push({ source: manifest.source, provenance: manifest.provenance, record, ...best });
     }
   }
-  const hiddenIds = new Set(query.hiddenSourceIds ?? []);
-  const hiddenKinds = new Set(query.hiddenKinds ?? []);
+  const mutes = new Set(query.mutes ?? []);
+  const isMuted = (sourceId: string, kind: string): boolean =>
+    mutes.has(sourceId) || mutes.has(`${sourceId}:${kind}`);
   const isHidden = (entry: RankedTrustedResource): boolean =>
-    hiddenIds.has(entry.source.id) || hiddenKinds.has(entry.record.kind);
+    isMuted(entry.source.id, entry.record.kind);
 
   /* Selection runs twice — over everything, and over what the reader left on —
      so "see all 16" and "96 hidden" are never quoted in different units. Both
      count cards the group could actually show, after the restatement guard has
      dropped a publisher's second copy of one answer. */
   const selectableAll = selectCards(ranked, query);
-  const visible = hiddenIds.size === 0 && hiddenKinds.size === 0
+  const visible = mutes.size === 0
     ? selectableAll
     : selectCards(ranked.filter((entry) => !isHidden(entry)), query);
-
-  const counts = new Map<string, { sourceId: string; name: string; count: number; hidden: boolean }>();
-  for (const entry of selectableAll) {
-    const seen = counts.get(entry.source.id)
-      ?? { sourceId: entry.source.id, name: entry.source.name, count: 0, hidden: hiddenIds.has(entry.source.id) };
-    seen.count += 1;
-    counts.set(entry.source.id, seen);
-  }
-
-  const kinds = new Map<TrustedResourceKind, { kind: TrustedResourceKind; count: number; hidden: boolean }>();
-  for (const entry of selectableAll) {
-    const seen = kinds.get(entry.record.kind)
-      ?? { kind: entry.record.kind, count: 0, hidden: hiddenKinds.has(entry.record.kind) };
-    seen.count += 1;
-    kinds.set(entry.record.kind, seen);
-  }
 
   return {
     resources: visible.slice(0, query.limit ?? 3),
     total: visible.length,
     hiddenCount: selectableAll.length - visible.length,
-    bySource: [...counts.values()].sort((left, right) => right.count - left.count
-      || left.name.localeCompare(right.name)),
-    byKind: [...kinds.values()].sort((left, right) => right.count - left.count
-      || left.kind.localeCompare(right.kind)),
   };
 }
 

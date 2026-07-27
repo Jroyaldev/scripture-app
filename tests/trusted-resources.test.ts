@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { test } from "node:test";
 import type { BackboneData } from "../src/core/reference/types.js";
 import {
+  matchTrustedResources,
   rankTrustedResources,
   validateTrustedResourceManifest,
   validateTrustedResourceQuery,
@@ -204,6 +205,48 @@ test("a registered source can open its own links", () => {
       assert.ok(hosts.has(host), `bundled ${sourceId} declares unopenable host ${host}`);
     }
   }
+});
+
+/**
+ * Muting is a preference, so it has to be expressible at the grain a reader
+ * actually holds an opinion at: a whole publisher, or one kind from one
+ * publisher. Two flat lists could not say the second.
+ */
+test("mutes silence a publisher, or one kind of one publisher", () => {
+  const record = (id: string, kind: "commentary" | "podcast") => ({
+    id, sourceId: "working-preacher", kind,
+    title: id, officialUrl: `https://www.workingpreacher.org/${id}`,
+    brefs: ["bref:v1/ROM.8.1-ROM.8.11"], matchBasis: "publisher-title" as const,
+  });
+  const manifest: TrustedResourceManifestV1 = {
+    schema: "pericope.trusted-resource-manifest",
+    version: 1,
+    source: { id: "working-preacher", name: "Working Preacher", homepageUrl: "https://www.workingpreacher.org/", officialHosts: ["www.workingpreacher.org"] },
+    provenance: { publisher: "Luther Seminary", reviewedAt: "2026-07-27", coverage: "reviewed-sample", permissions: "outbound-link-only" },
+    capabilities: ["outbound-link"],
+    records: [record("a-commentary", "commentary"), record("b-podcast", "podcast")],
+  };
+  const ask = (mutes?: string[]) => rankTrustedResources([manifest], {
+    bref: "bref:v1/ROM.8.1-ROM.8.11", limit: 5, ...(mutes ? { mutes } : {}),
+  }).map((entry) => entry.record.id);
+
+  assert.deepEqual(ask().sort(), ["a-commentary", "b-podcast"]);
+  assert.deepEqual(ask(["working-preacher:podcast"]), ["a-commentary"]);
+  assert.deepEqual(ask(["working-preacher"]), []);
+
+  // hiddenCount speaks in cards, the same unit as total.
+  const muted = matchTrustedResources([manifest], {
+    bref: "bref:v1/ROM.8.1-ROM.8.11", limit: 5, mutes: ["working-preacher:podcast"],
+  });
+  assert.equal(muted.total, 1);
+  assert.equal(muted.hiddenCount, 1);
+
+  const q = { bref: "bref:v1/ROM.8.1-ROM.8.11" };
+  assert.equal(validateTrustedResourceQuery({ ...q, mutes: ["working-preacher"] }, backbone).ok, true);
+  assert.equal(validateTrustedResourceQuery({ ...q, mutes: ["working-preacher:podcast"] }, backbone).ok, true);
+  assert.equal(validateTrustedResourceQuery({ ...q, mutes: ["working-preacher:nonsense"] }, backbone).ok, false);
+  assert.equal(validateTrustedResourceQuery({ ...q, mutes: ["a:b:c"] }, backbone).ok, false);
+  assert.equal(validateTrustedResourceQuery({ ...q, mutes: [""] }, backbone).ok, false);
 });
 
 test("resource runtime is read-only and network-free", () => {
