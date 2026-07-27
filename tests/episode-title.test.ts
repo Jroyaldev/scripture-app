@@ -27,6 +27,8 @@ test("the same episode is found across the three ways the catalogues disagree", 
   // Trailing series tag, numbered as a part — this one cost 33 episodes.
   assert.ok(matches("Weeds and Wheat", "Weeds and Wheat - Gospel of Matthew Part 21"));
   assert.ok(matches("Storms & Swine", "Storms and Swine - Gospel of Matthew Part 14"));
+  // Series tag run straight on with no separator, after the question mark.
+  assert.ok(matches("Is the Gospel an Apocalypse?", "Is the Gospel an Apocalypse? Apocalyptic E3"));
   // Leading series tag on the page instead.
   assert.ok(matches(
     "The Letter of Jude E1: A Family Legacy and a Short Letter",
@@ -90,4 +92,16 @@ test("folding is about comparison, and never invents a difference", () => {
   assert.equal(fold("Story: God & Money"), fold("Story: God and Money"));
   assert.equal(fold("God Vs. Kings"), fold("god vs kings"));
   assert.equal(fold("Humans are... Trees?"), fold("Humans Are Trees"));
+});
+
+test("the run-on rule only eats a series tag, never a title that ends in a number", () => {
+  /* "Is the Gospel an Apocalypse? Apocalyptic E3" appends its series with no
+     separator at all, so the tag has to be recognised by shape rather than by
+     punctuation — which makes over-reach the risk. It is anchored to the end of
+     a sentence, so a title that merely finishes with a number keeps it. */
+  assert.deepEqual(titleKeys("What Does the Number 7 Mean in the Bible?"),
+    [fold("What Does the Number 7 Mean in the Bible?")],
+    "a title ending in a question keeps all of itself when no series follows");
+  assert.ok(!titleKeys("Psalm 119").includes(fold("Psalm")));
+  assert.ok(!titleKeys("Genesis 1").includes(fold("Genesis")));
 });

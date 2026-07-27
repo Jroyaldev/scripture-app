@@ -139,6 +139,7 @@ for (const source of feedSources) {
 const CHAPTER = /<li>\s*([\s\S]*?)\s*\(\s*(\d{1,2}:\d{2}(?::\d{2})?)\s*[-–]\s*(\d{1,2}:\d{2}(?::\d{2})?)\s*\)\s*<\/li>/g;
 
 type FeedFacts = {
+  feedTitle: string;
   publishedAt?: string;
   durationMinutes?: number;
   audioUrl?: string;
@@ -173,6 +174,7 @@ for (const block of feedItems) {
   let audioHost = ""; try { audioHost = new URL(audio).hostname; } catch { audioHost = ""; }
 
   const facts: FeedFacts = {
+    feedTitle: title,
     ...(audioHost === MEDIA_HOST ? { audioUrl: audio } : {}),
     ...(date && !Number.isNaN(date.getTime()) ? { publishedAt: date.toISOString().slice(0, 10) } : {}),
     ...(minutes > 0 ? { durationMinutes: minutes } : {}),
@@ -216,12 +218,22 @@ const episodes: Episode[] = [];
 const failures: string[] = [];
 let done = 0;
 
+/**
+ * Some pages fall back to the SEO title, which carries the site name: "What
+ * Does the Number 7 Mean in the Bible? | BibleProject™". That is not part of
+ * the episode's name. It would be printed on the card, and it breaks every
+ * comparison against a feed that never says it.
+ */
+function episodeTitle(raw: string, slug: string): string {
+  return raw.replace(/\s*[|–—-]\s*BibleProject\b.*$/i, "").trim() || slug;
+}
+
 async function pull(url: string): Promise<void> {
   let html: string;
   try { html = await get(url); } catch (error) { failures.push(`${url}: ${(error as Error).message}`); return; }
 
   const slug = new URL(url).pathname.split("/").filter(Boolean)[1] ?? "";
-  const title = decode(OG_TITLE.exec(html)?.[1] ?? "") || slug;
+  const title = episodeTitle(decode(OG_TITLE.exec(html)?.[1] ?? ""), slug);
   const stated = [...html.matchAll(REFERENCE)].map((match) => decode(match[1]!)).filter(Boolean);
   /* Each tag is parsed on its own. A publisher's list is not a sentence, and
      joining it into one would let a stray number bridge two entries. */
@@ -257,10 +269,12 @@ if (fromPacket) {
   const cached = readFileSync(packetPath, "utf8").trim().split("\n").filter(Boolean);
   for (const line of cached) {
     const saved = JSON.parse(line) as Episode;
+    const title = episodeTitle(saved.title, saved.id.split(":").pop() ?? saved.title);
     episodes.push({
       ...saved,
-      ...(titleKeys(saved.title).filter((key) => !ambiguous.has(key)).map((key) => byTitle.get(key)).find(Boolean)
-        ?? fuzzyMatch(saved.title, feedCandidates) ?? {}),
+      title,
+      ...(titleKeys(title).filter((key) => !ambiguous.has(key)).map((key) => byTitle.get(key)).find(Boolean)
+        ?? fuzzyMatch(title, feedCandidates) ?? {}),
     });
   }
   done = episodes.length;
@@ -277,6 +291,56 @@ if (failures.length > 0) console.log(`  ! ${failures.length} page(s) could not b
 /* ── manifest ────────────────────────────────────────────────────────────── */
 
 episodes.sort((left, right) => left.id.localeCompare(right.id));
+/**
+ * Every join rule here is a loosening, and a loosening is how one episode ends
+ * up playing another's recording. Two have slipped through already: a generic
+ * key gave "Numbers: Question and Response" the Holy Spirit episode's audio,
+ * and a fuzzy pass gave a Redemption episode's audio to a page about the number
+ * seven. Both were caught by eye, in the app, by the maintainer.
+ *
+ * So the last word does not belong to any rule. Whatever route a page took to a
+ * feed episode, it must end up somewhere that still looks like the same episode
+ * — and only where two pages claim one recording, because that is the shape
+ * every one of these errors has taken. Genuine re-releases pass: they name the
+ * same episode twice, so both sides score well.
+ */
+/* An absolute score cannot decide this. "What Does the Number 7 Mean in the
+   Bible?" agrees 0.80 with "What Does Redemption Mean in the Bible?", because
+   formulaic titles share everything but their subject — while the genuine
+   re-release "God as the Generous Host" agrees only 0.67 with its own feed
+   entry. Any cutoff that rejects the first accepts the second.
+
+   What separates them is the company they keep. Where a recording is contested,
+   the rightful claimant is not merely good but clearly better than the rival:
+   the Redemption page agrees 1.00 against the number-seven page's 0.80, while
+   two names for one re-release sit close together. So the margin decides, and a
+   near-tie is left alone, because a near-tie is what a re-release looks like. */
+const MIN_MARGIN_TO_DISOWN = 0.15;
+const agreement = (episode: Episode): number => {
+  const mine = significantWords(episode.title);
+  const theirs = significantWords(episode.feedTitle ?? "");
+  if (mine.size === 0 || theirs.size === 0) return 1;
+  let shared = 0;
+  for (const word of mine) if (theirs.has(word)) shared += 1;
+  return shared / Math.max(mine.size, theirs.size);
+};
+
+const claimants = new Map<string, Episode[]>();
+for (const episode of episodes) {
+  if (!episode.audioUrl) continue;
+  claimants.set(episode.audioUrl, [...(claimants.get(episode.audioUrl) ?? []), episode]);
+}
+let disowned = 0;
+for (const contested of claimants.values()) {
+  if (contested.length < 2) continue;
+  const best = Math.max(...contested.map(agreement));
+  for (const episode of contested) {
+    if (best - agreement(episode) < MIN_MARGIN_TO_DISOWN) continue;
+    delete episode.audioUrl; delete episode.durationMinutes; delete episode.publishedAt;
+    disowned += 1;
+  }
+}
+
 const records: TrustedResourceRecordV1[] = [];
 for (const episode of episodes) {
   if (episode.brefs.length === 0) continue;
@@ -360,6 +424,7 @@ console.log(`\n  linked:    ${records.length} episodes, ${records.reduce((n, r) 
 console.log(`             ${tagged} from the publisher's scripture tags, ${records.length - tagged} from their prose`);
 console.log(`  unlinked:  ${episodes.length - records.length} left for review`);
 console.log(`  joined:    ${joined} matched a feed episode for date and duration`);
+console.log(`  disowned:  ${disowned} contested match(es) refused as not the same episode`);
 console.log(`  chapters:  ${chapterCount} across ${withChapters} episodes`);
 console.log(`  written:   ${outPath}${arg("out") ? "" : `  (library from ${target.from})`}`);
 console.log(`  packet:    ${join(packetDir, "episodes.jsonl")}`);

@@ -45,6 +45,11 @@ export function titleKeys(title: string): string[] {
     .replace(/\s+[–—-]\s+[^–—-]{0,60}?\b(?:E\d+|Part\s+\d+|Series|Top\s+\d+)\b[^–—-]{0,30}$/i, "")
     .trim();
   if (withoutSuffix) keys.add(fold(withoutSuffix));
+  /* And the same tag with no separator at all: "Is the Gospel an Apocalypse?
+     Apocalyptic E3" runs the series straight on after the question mark. Anchored
+     to a sentence end so it cannot eat a title that merely ends in a number. */
+  const withoutRunOn = title.replace(/(?<=[?!.”"'’])\s+\S[^?!.]{0,40}?\b(?:E\d+|Part\s+\d+|Q\s*[+&]\s*R\s*\d*)\s*$/i, "").trim();
+  if (withoutRunOn && withoutRunOn !== title) keys.add(fold(withoutRunOn));
   const withoutPrefix = title.replace(/^.{0,60}?\b(?:E\d+|Part\s+\d+|Q\s*[+&]\s*R|Series)\s*[:–—-]\s*/i, "").trim();
   if (withoutPrefix) keys.add(fold(withoutPrefix));
   /* And a bare series prefix with no number in it — the feed writes "Jude: A
