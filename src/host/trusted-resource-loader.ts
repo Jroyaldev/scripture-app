@@ -24,6 +24,7 @@ export const TRUSTED_RESOURCE_SOURCE_IDS = [
   "working-preacher",
   "bibleproject",
   "the-gospel-coalition",
+  "enter-the-bible",
 ] as const;
 
 export type TrustedResourceManifestOrigin = "installed" | "bundled";

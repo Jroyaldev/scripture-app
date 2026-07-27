@@ -19044,6 +19044,20 @@ button.lang-phrase-diagram-node:focus-visible,
   --resource-mark-ratio: 4.353;
 }
 
+/* Enter the Bible's mark is built for a light ground — a yellow tile, orange
+   "BIBLE", black type — so its card is light and the surface is that tile's own
+   yellow. No mark ships until the source is approved; until then the name
+   carries it, in the ink the surface was designed for. */
+.trusted-resource-card[data-source="enter-the-bible"],
+.trusted-resource-imprint[data-source="enter-the-bible"] {
+  --resource-source: #fed141;
+  --resource-ink: #1c1a12;
+  --resource-ink-soft: rgb(28 26 18 / 0.72);
+  --resource-line: rgb(28 26 18 / 0.26);
+  --resource-pill-bg: #fa4616;
+  --resource-pill-ink: #ffffff;
+}
+
 .trusted-resource-card[data-source="the-gospel-coalition"],
 .trusted-resource-imprint[data-source="the-gospel-coalition"] {
   --resource-source: #79ae4a;
@@ -19199,12 +19213,16 @@ button.lang-phrase-diagram-node:focus-visible,
    variant per publisher and a colour decision per theme, four times over. The
    drawer pays for the colour in area instead — three chips closed, one card
    open — so the group stops competing with the reading it sits beside. */
+/* A source with no approved mark keeps its name, and the name is set as a
+   wordmark rather than a label so the row does not look half-built. The rule
+   that swaps in a mark is scoped per source, so this is what an unapproved
+   source falls back to — never a blank chip. */
 .trusted-resource-imprint .trusted-resource-source {
-  height: var(--resource-mark-height);
-  aspect-ratio: var(--resource-mark-ratio);
   overflow: hidden;
-  background: var(--resource-mark) left center / contain no-repeat;
-  text-indent: -200vw;
+  font: var(--fw-semibold) 0.8125rem/1 var(--font-reading);
+  letter-spacing: -0.008em;
+  text-transform: none;
+  white-space: nowrap;
 }
 
 @media (prefers-reduced-motion: reduce) {
