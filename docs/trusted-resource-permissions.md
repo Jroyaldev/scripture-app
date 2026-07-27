@@ -56,8 +56,7 @@ The current resource cards may show:
 - one validated outbound link to the publisher's official HTTPS host.
 
 The current runtime must not show or store publisher artwork, thumbnails,
-descriptions, article/commentary bodies, excerpts, audio/video, remote media,
-or embedded playback. It must not crawl, refresh, or fetch source content at
+descriptions, article/commentary bodies, excerpts, or embedded playback. It must not crawl, refresh, or fetch source content at
 runtime. Those capabilities are blocked on a data shape rather than on
 approval: the V1 manifest has no artwork or excerpt field, and adding one has
 to settle where the asset is stored and how it is removed, because a remote
@@ -112,6 +111,37 @@ Decision: factual cards carrying the approved TGC mark and one official link.
 Do not exercise the broader excerpt/embed permission until a separate feature
 defines attribution, exceptions, media hosting, and removal handling. Mark
 approval recorded 2026-07-26.
+
+## Playing audio — amended 2026-07-27
+
+A card may play a source's own audio file, and nothing else about media has
+moved. What makes this narrower than the "no audio" it replaces:
+
+- **The publisher declares where its media lives.** A record may carry
+  `audioUrl` only if its source declares `mediaHosts`, and the URL must be
+  HTTPS on one of them. Permission to publish a link was never permission to
+  fetch a file, and the schema now keeps those apart. A source with no
+  `mediaHosts` cannot hold audio at all — the manifest refuses to load.
+- **Only on press.** The element carries `preload="none"`, so nothing is
+  requested until a reader presses play. Without that the app would call the
+  publisher's server the moment a card rendered, which would tell them what a
+  reader is reading — the same objection that keeps remote artwork out.
+- **Unmodified, unstored, un-rehosted.** The publisher's file, streamed from
+  the publisher, kept nowhere. No download, no cache, no copy.
+- **The link stays.** Play sits beside the outbound verb rather than replacing
+  it; the card still says where the episode lives.
+
+The renderer's content-security policy names the one approved host rather than
+widening to a scheme, so an audio URL that slipped past validation still could
+not load.
+
+Approved for the Naked Bible Podcast on 2026-07-27, whose audio is served from
+its own domain. TGC's audio sits on a CDN and Working Preacher's behind a player
+page; neither is enabled, and each would need its own decision.
+
+Transcripts are a separate question and remain out. The Naked Bible Podcast
+publishes transcript PDFs, and indexing their URLs would be catalogue metadata,
+but storing or displaying the text is storing a publisher's body.
 
 ## Importing
 

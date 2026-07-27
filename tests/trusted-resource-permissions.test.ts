@@ -25,7 +25,15 @@ test("reviewed manifests and cards retain the common link-only permission bounda
   const end = margin.indexOf("function DeepNoteCard", start);
   const block = margin.slice(start, end);
   assert.match(block, /openOfficial/);
-  assert.doesNotMatch(block, /<img|<iframe|<video|<audio|fetch\(|>Save/);
+  /* Audio is now permitted, for a source that declared where its media lives,
+     played only when a reader presses play. Everything else the boundary
+     refused is still refused, and the one permission granted is held to its
+     terms: `preload="none"` is what makes "on press" true rather than merely
+     intended — without it the element fetches from the publisher the moment a
+     card renders, which is the surveillance the boundary exists to prevent. */
+  assert.doesNotMatch(block, /<img|<iframe|<video|fetch\(|>Save/);
+  assert.match(block, /<audio/);
+  assert.match(block, /preload="none"/);
 });
 
 /**

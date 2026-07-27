@@ -366,6 +366,18 @@ function MarginEmptyView({
   );
 }
 
+/** Seconds to m:ss, or h:mm:ss past the hour. */
+function formatClock(seconds: number): string {
+  if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
+  const whole = Math.floor(seconds);
+  const hours = Math.floor(whole / 3600);
+  const minutes = Math.floor((whole % 3600) / 60);
+  const rest = whole % 60;
+  return hours > 0
+    ? `${hours}:${String(minutes).padStart(2, "0")}:${String(rest).padStart(2, "0")}`
+    : `${minutes}:${String(rest).padStart(2, "0")}`;
+}
+
 /** One verb per card, chosen by kind. Every verb leaves for the official page. */
 function resourceVerb(kind: string): string {
   if (kind === "video") return "Watch";
@@ -418,6 +430,33 @@ function TrustedResourcesBlock({
      state and nothing more — it dies with the passage, because "just show me
      the commentaries" is a glance, not a preference. */
   const [lensKind, setLensKind] = useState<string | null>(null);
+
+  /* One element for the whole group: two players running at once is never what
+     anyone meant, and a per-card element would make that the default. */
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [playingId, setPlayingId] = useState<string | null>(null);
+  const [played, setPlayed] = useState({ at: 0, of: 0 });
+
+  const togglePlay = (id: string, url: string): void => {
+    const element = audioRef.current;
+    if (!element) return;
+    if (playingId === id) {
+      if (element.paused) void element.play().catch(() => setPlayingId(null));
+      else { element.pause(); setPlayingId(null); }
+      return;
+    }
+    element.src = url;
+    setPlayed({ at: 0, of: 0 });
+    setPlayingId(id);
+    void element.play().catch(() => {
+      showToast("That episode could not be played.", undefined, undefined, { tone: "error" });
+      setPlayingId(null);
+    });
+  };
+
+  /* Leaving the passage stops the audio: a player that outlives the reason it
+     was opened is a player nobody can find to switch off. */
+  useEffect(() => () => { audioRef.current?.pause(); }, []);
 
   const sources = useMemo(() => {
     const order: Array<{ id: string; name: string; count: number }> = [];
@@ -636,6 +675,25 @@ function TrustedResourcesBlock({
                         <li className="trusted-resource-chip is-match">{resource.match.replaceAll("-", " ")}</li>
                       </ul>
                       <div className="trusted-resource-actions">
+                        {resource.record.audioUrl && (
+                          <button
+                            aria-label={`${playingId === `${resource.source.id}:${resource.record.id}` ? "Pause" : "Play"} ${resource.record.title}`}
+                            aria-pressed={playingId === `${resource.source.id}:${resource.record.id}`}
+                            className="trusted-resource-play"
+                            onClick={() => togglePlay(`${resource.source.id}:${resource.record.id}`, resource.record.audioUrl as string)}
+                            type="button"
+                          >
+                            {playingId === `${resource.source.id}:${resource.record.id}` ? (
+                              <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
+                                <path d="M5 3h2.2v10H5zM8.8 3H11v10H8.8z" fill="currentColor" />
+                              </svg>
+                            ) : (
+                              <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
+                                <path d="M4.6 2.8 12.6 8l-8 5.2z" fill="currentColor" />
+                              </svg>
+                            )}
+                          </button>
+                        )}
                         <button
                           className="trusted-resource-act"
                           type="button"
@@ -645,6 +703,25 @@ function TrustedResourcesBlock({
                           {verb} at {resource.source.name} <span aria-hidden="true">↗</span>
                         </button>
                       </div>
+                      {playingId === `${resource.source.id}:${resource.record.id}` && (
+                        <div className="trusted-resource-scrub">
+                          <input
+                            aria-label="Seek"
+                            className="trusted-resource-scrub-range"
+                            max={Math.max(1, Math.floor(played.of))}
+                            min={0}
+                            onChange={(event) => {
+                              const element = audioRef.current;
+                              if (element) element.currentTime = Number(event.target.value);
+                            }}
+                            type="range"
+                            value={Math.floor(played.at)}
+                          />
+                          <span className="trusted-resource-scrub-time">
+                            {formatClock(played.at)} / {formatClock(played.of)}
+                          </span>
+                        </div>
+                      )}
                     </li>
                   );
                 })}
@@ -663,6 +740,14 @@ function TrustedResourcesBlock({
           )}
         </div>
       )}
+      <audio
+        onEnded={() => setPlayingId(null)}
+        onLoadedMetadata={(event) => setPlayed({ at: 0, of: event.currentTarget.duration || 0 })}
+        onPause={() => setPlayingId((current) => (audioRef.current?.ended ? null : current))}
+        onTimeUpdate={(event) => setPlayed({ at: event.currentTarget.currentTime, of: event.currentTarget.duration || 0 })}
+        preload="none"
+        ref={audioRef}
+      />
       {!loading && !refusal && resources.length === 0 && hiddenCount > 0 && (
         <p className="trusted-resources-status" role="status">
           Every source that matches this passage is switched off in settings.

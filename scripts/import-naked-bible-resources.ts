@@ -121,6 +121,8 @@ for (const raw of rows) {
   const id = `naked-bible:podcast:${row.id}`;
   if (seen.has(id)) continue;
   seen.add(id);
+  const audio = typeof row.meta?.["audio_file"] === "string" ? (row.meta["audio_file"] as string) : "";
+  let audioHost = ""; try { audioHost = new URL(audio).hostname; } catch { audioHost = ""; }
   records.push({
     id,
     sourceId: "naked-bible",
@@ -129,6 +131,7 @@ for (const raw of rows) {
     officialUrl: row.link,
     brefs: parsed.value.brefs,
     matchBasis: "publisher-title",
+    ...(audio && audioHost === HOST ? { audioUrl: audio } : {}),
     metadata: {
       ...(row.date ? { publishedAt: row.date.slice(0, 10) } : {}),
       ...((): { durationMinutes?: number } => {
@@ -148,6 +151,9 @@ const manifest: TrustedResourceManifestV1 = {
     name: "Naked Bible Podcast",
     homepageUrl: "https://nakedbiblepodcast.com/",
     officialHosts: [HOST],
+    /* Their audio is served from the same host as their pages. Declared even so,
+       because permission to link is not permission to fetch. */
+    mediaHosts: [HOST],
   },
   provenance: {
     publisher: "Naked Bible Podcast",

@@ -21,6 +21,13 @@ export interface TrustedResourceSourceV1 {
   name: string;
   homepageUrl: string;
   officialHosts: string[];
+  /**
+   * Hosts this source may stream audio from, when that is not where its pages
+   * live — a podcast is usually served from a CDN. Stated separately from
+   * officialHosts so that permission to publish a link never silently becomes
+   * permission to fetch a file.
+   */
+  mediaHosts?: string[];
 }
 
 export interface TrustedResourceProvenanceV1 {
@@ -48,6 +55,12 @@ export interface TrustedResourceRecordV1 {
   brefs: string[];
   matchBasis: TrustedResourceMatchBasis;
   metadata?: TrustedResourceFactualMetadataV1;
+  /**
+   * The publisher's own audio file, played unmodified and only when a reader
+   * presses play. Not stored, not cached, not re-hosted. Absent unless the
+   * source is approved for it — see docs/trusted-resource-permissions.md.
+   */
+  audioUrl?: string;
 }
 
 export interface TrustedResourceManifestV1 {
@@ -105,9 +118,9 @@ export interface TrustedResourceRefusal {
   message: string;
 }
 
-const SOURCE_KEYS = ["id", "name", "homepageUrl", "officialHosts"] as const;
+const SOURCE_KEYS = ["id", "name", "homepageUrl", "officialHosts", "mediaHosts"] as const;
 const PROVENANCE_KEYS = ["publisher", "reviewedAt", "coverage", "permissions", "note"] as const;
-const RECORD_KEYS = ["id", "sourceId", "kind", "title", "officialUrl", "brefs", "matchBasis", "metadata"] as const;
+const RECORD_KEYS = ["id", "sourceId", "kind", "title", "officialUrl", "brefs", "matchBasis", "metadata", "audioUrl"] as const;
 const METADATA_KEYS = ["author", "publishedAt", "durationMinutes", "language", "series"] as const;
 const KINDS = new Set<TrustedResourceKind>(["article", "commentary", "guide", "podcast", "sermon", "video"]);
 const MATCH_BASES = new Set<TrustedResourceMatchBasis>([
@@ -388,7 +401,20 @@ function readSource(input: unknown): ParseResult<TrustedResourceSourceV1> {
   const officialHosts = input["officialHosts"].map((host) => typeof host === "string" ? host.trim().toLowerCase() : "");
   if (officialHosts.some((host) => !host || host.includes("/") || host.includes(":"))) return { ok: false, error: "Invalid official host" };
   if (!isOfficialTrustedResourceUrl(homepageUrl.value, officialHosts)) return { ok: false, error: "Source homepage must use an official HTTPS host" };
-  return { ok: true, value: { id: id.value, name: name.value, homepageUrl: homepageUrl.value, officialHosts } };
+  const rawMediaHosts = input["mediaHosts"];
+  let mediaHosts: string[] | undefined;
+  if (rawMediaHosts != null) {
+    if (!Array.isArray(rawMediaHosts) || rawMediaHosts.length === 0) return { ok: false, error: "source.mediaHosts must not be empty" };
+    mediaHosts = rawMediaHosts.map((host) => typeof host === "string" ? host.trim().toLowerCase() : "");
+    if (mediaHosts.some((host) => !host || host.includes("/") || host.includes(":"))) return { ok: false, error: "Invalid media host" };
+  }
+  return {
+    ok: true,
+    value: {
+      id: id.value, name: name.value, homepageUrl: homepageUrl.value, officialHosts,
+      ...(mediaHosts ? { mediaHosts } : {}),
+    },
+  };
 }
 
 function readProvenance(input: unknown): ParseResult<TrustedResourceProvenanceV1> {
@@ -422,7 +448,18 @@ function readRecord(input: unknown, source: TrustedResourceSourceV1, backbone: B
     brefs.push(value);
   }
   const metadata = readMetadata(input["metadata"]); if (!metadata.ok) return metadata;
-  return { ok: true, value: { id: id.value, sourceId: source.id, kind: input["kind"] as TrustedResourceKind, title: title.value, officialUrl: officialUrl.value, brefs, matchBasis: input["matchBasis"] as TrustedResourceMatchBasis, ...(metadata.value ? { metadata: metadata.value } : {}) } };
+  const rawAudio = input["audioUrl"];
+  let audioUrl: string | undefined;
+  if (rawAudio != null) {
+    const parsed = optionalString(rawAudio, "record.audioUrl"); if (!parsed.ok) return parsed;
+    audioUrl = parsed.value;
+    /* Media hosts, not official hosts: a source that has not declared where its
+       audio lives cannot carry any. */
+    if (audioUrl && !isOfficialTrustedResourceUrl(audioUrl, source.mediaHosts ?? [])) {
+      return { ok: false, error: `Record ${id.value} audio is not on a declared media host` };
+    }
+  }
+  return { ok: true, value: { id: id.value, sourceId: source.id, kind: input["kind"] as TrustedResourceKind, title: title.value, officialUrl: officialUrl.value, brefs, matchBasis: input["matchBasis"] as TrustedResourceMatchBasis, ...(metadata.value ? { metadata: metadata.value } : {}), ...(audioUrl ? { audioUrl } : {}) } };
 }
 
 function readMetadata(input: unknown): ParseResult<TrustedResourceFactualMetadataV1 | undefined> {

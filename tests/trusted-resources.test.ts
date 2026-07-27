@@ -249,6 +249,76 @@ test("mutes silence a publisher, or one kind of one publisher", () => {
   assert.equal(validateTrustedResourceQuery({ ...q, mutes: [""] }, backbone).ok, false);
 });
 
+/**
+ * Permission to publish a link is not permission to fetch a file, so audio is
+ * gated on the source declaring where its media lives — not on the URL merely
+ * looking plausible.
+ */
+test("audio is refused unless its source declared a media host", () => {
+  const make = (source: Record<string, unknown>, audioUrl: string): unknown => ({
+    schema: "pericope.trusted-resource-manifest",
+    version: 1,
+    source: { id: "naked-bible", name: "Naked Bible Podcast", homepageUrl: "https://nakedbiblepodcast.com/", officialHosts: ["nakedbiblepodcast.com"], ...source },
+    provenance: { publisher: "Naked Bible Podcast", reviewedAt: "2026-07-27", coverage: "reviewed-sample", permissions: "outbound-link-only" },
+    capabilities: ["outbound-link"],
+    records: [{
+      id: "naked-bible:podcast:1", sourceId: "naked-bible", kind: "podcast", title: "An episode",
+      officialUrl: "https://nakedbiblepodcast.com/podcast/one/", brefs: ["bref:v1/ROM.8.1"],
+      matchBasis: "publisher-title", audioUrl,
+    }],
+  });
+  assert.equal(
+    validateTrustedResourceManifest(make({}, "https://nakedbiblepodcast.com/a.mp3"), backbone).ok,
+    false,
+    "no mediaHosts means no audio",
+  );
+  assert.equal(
+    validateTrustedResourceManifest(make({ mediaHosts: ["nakedbiblepodcast.com"] }, "https://nakedbiblepodcast.com/a.mp3"), backbone).ok,
+    true,
+  );
+  assert.equal(
+    validateTrustedResourceManifest(make({ mediaHosts: ["nakedbiblepodcast.com"] }, "https://cdn.example.com/a.mp3"), backbone).ok,
+    false,
+    "a declared media host does not license every host",
+  );
+  assert.equal(
+    validateTrustedResourceManifest(make({ mediaHosts: ["nakedbiblepodcast.com"] }, "http://nakedbiblepodcast.com/a.mp3"), backbone).ok,
+    false,
+    "audio must be https",
+  );
+});
+
+/**
+ * The content-security policy is written twice — once in the page the dev server
+ * serves, once in the template the production build emits — and only the second
+ * ships. A media host added to one and not the other looks right everywhere
+ * except in the app.
+ */
+test("the shipped policy matches the served one, and names the audio host", () => {
+  const page = readFileSync(join(root, "src/renderer/index.html"), "utf8");
+  const builder = readFileSync(join(root, "scripts/build-renderer.mjs"), "utf8");
+  const all = (text: string): string[] =>
+    [...text.matchAll(/content="(default-src[^"]+)"/g)].map((match) => match[1] as string);
+  const served = all(page);
+  assert.equal(served.length, 1, "src/renderer/index.html should declare one policy");
+  /* The builder emits two documents — the embedding host and the renderer — so
+     the renderer's is identified by matching the served one rather than by
+     position. The embedding host has its own policy and no business with media. */
+  const shipped = all(builder);
+  assert.ok(shipped.length >= 2, "expected the builder to emit both documents");
+  assert.ok(
+    shipped.includes(served[0] as string),
+    "the renderer policy the build ships has drifted from the one the dev server serves",
+  );
+  const renderer = served[0] as string;
+  assert.match(renderer, /media-src 'self' https:\/\/nakedbiblepodcast\.com/);
+  assert.doesNotMatch(renderer, /media-src[^;]*\*/, "the media host must be named, never a wildcard");
+  for (const policy of shipped) {
+    if (policy === renderer) continue;
+    assert.doesNotMatch(policy, /media-src/, "only the renderer needs a media host");
+  }
+});
+
 test("resource runtime is read-only and network-free", () => {
   const core = readFileSync(join(root, "src/core/resources/trusted-resources.ts"), "utf8");
   const loader = readFileSync(join(root, "src/host/trusted-resource-loader.ts"), "utf8");

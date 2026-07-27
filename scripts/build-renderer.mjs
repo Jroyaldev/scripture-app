@@ -84,6 +84,10 @@ if (!jsFile) {
 const assetPath = (file) => `./${relative(outDir, file).replaceAll("\\", "/")}`;
 const cssTag = cssFile ? `  <link rel="stylesheet" href="${assetPath(cssFile)}">\n` : "";
 
+/* This policy is also written in src/renderer/index.html, which is what the dev
+   server serves. Two copies, and the one that ships is this one — a media host
+   added only to the other looks correct and silently blocks. A test holds them
+   equal. */
 await writeFile(
   `${outDir}/index.html`,
   `<!DOCTYPE html>
@@ -91,7 +95,7 @@ await writeFile(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; media-src 'self' https://nakedbiblepodcast.com">
   <title>Pericope</title>
 ${cssTag}</head>
 <body>
