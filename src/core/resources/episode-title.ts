@@ -18,6 +18,12 @@ export const fold = (value: string): string =>
        those two words apart, and with only "story" and "money" between them
        there was nothing distinctive enough for the fuzzy pass to rescue. */
     .replace(/&/g, " and ")
+    /* An apostrophe joins a word, it does not break one. Turning it into a
+       space made "God's Hot Nose" into "god s hot nose", whose only word long
+       enough to count was "nose" — so a title as distinctive as that one was
+       filed as too generic to match on, along with Ruakh, Firstborn and the
+       rest of the possessives. */
+    .replace(/['’\u2019]/g, "")
     .replace(/\bquestions?\s*(?:and|&|\+)\s*responses?\b/g, " qanda ")
     .replace(/\bq\s*(?:and|&|\+)\s*r\b/g, " qanda ")
     .replace(/[^a-z0-9]+/g, " ")
