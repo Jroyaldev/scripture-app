@@ -10,7 +10,10 @@ import {
   validateTrustedResourceQuery,
   type TrustedResourceManifestV1,
 } from "../src/core/resources/trusted-resources.js";
-import { loadTrustedResourceManifests } from "../src/host/trusted-resource-loader.js";
+import {
+  clearTrustedResourceManifestCache,
+  loadTrustedResourceManifests,
+} from "../src/host/trusted-resource-loader.js";
 
 const root = resolve(import.meta.dirname, "..");
 const backbone = JSON.parse(readFileSync(join(root, "data/scripture/backbone.json"), "utf8")) as BackboneData;
@@ -80,6 +83,52 @@ test("installed manifest wins, while a present invalid installed manifest refuse
   const refused = loadTrustedResourceManifests({ installedRoot, bundledRoot: join(root, "data/resources"), backbone, sourceIds: ["working-preacher"] });
   assert.equal(refused.ok, false);
   if (!refused.ok) assert.equal(refused.refusal.code, "invalid-installed-manifest");
+});
+
+/**
+ * The query IPC loads per call, so an imported catalogue would otherwise be
+ * revalidated on every pin and hover. What matters is that the saving is real
+ * (the same validated object comes back) and that it never costs correctness
+ * (a changed file is picked up without a restart).
+ */
+test("a validated manifest is reused until its file changes", () => {
+  clearTrustedResourceManifestCache();
+  const temp = mkdtempSync(join(tmpdir(), "pericope-resource-cache-"));
+  const installedRoot = join(temp, ".artifacts/resources");
+  const sourceRoot = join(installedRoot, "working-preacher");
+  mkdirSync(sourceRoot, { recursive: true });
+  const manifestPath = join(sourceRoot, "manifest.json");
+  const original = readManifest("working-preacher") as TrustedResourceManifestV1;
+  writeFileSync(manifestPath, JSON.stringify(original, null, 2));
+
+  const load = (): TrustedResourceManifestV1 | undefined => {
+    const result = loadTrustedResourceManifests({
+      installedRoot, bundledRoot: join(root, "data/resources"), backbone, sourceIds: ["working-preacher"],
+    });
+    assert.equal(result.ok, true);
+    return result.ok ? result.manifests[0]?.manifest : undefined;
+  };
+
+  const first = load();
+  const second = load();
+  assert.ok(first);
+  assert.equal(first, second, "an unchanged manifest must not be reparsed");
+
+  // A record dropped changes the file size, so the stamp cannot match.
+  const trimmed: TrustedResourceManifestV1 = { ...original, records: original.records.slice(0, 1) };
+  writeFileSync(manifestPath, JSON.stringify(trimmed, null, 2));
+  const third = load();
+  assert.notEqual(third, first, "a changed manifest must be reloaded");
+  assert.equal(third?.records.length, 1);
+
+  // A refusal must not be cached, or the fix would never be seen.
+  writeFileSync(manifestPath, JSON.stringify({ version: 999 }));
+  const refused = loadTrustedResourceManifests({
+    installedRoot, bundledRoot: join(root, "data/resources"), backbone, sourceIds: ["working-preacher"],
+  });
+  assert.equal(refused.ok, false);
+  writeFileSync(manifestPath, JSON.stringify(original, null, 2));
+  assert.equal(load()?.records.length, original.records.length);
 });
 
 test("resource runtime is read-only and network-free", () => {

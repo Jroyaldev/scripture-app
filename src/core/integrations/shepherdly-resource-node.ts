@@ -94,7 +94,9 @@ export type ShepherdlyExternalResourceNodeV2 = {
     sourceId: string;
     resourceId: string;
     title: string;
-    resourceKind: "article" | "commentary" | "guide" | "podcast" | "video";
+    /** Mirrors TrustedResourceKind. Widening it is a V2-compatible addition
+     *  only while no receiver exists; once one does, this needs a version. */
+    resourceKind: "article" | "commentary" | "guide" | "podcast" | "sermon" | "video";
     officialUrl: string;
     canonicalAnchors: string[];
   };
@@ -448,7 +450,7 @@ function validateShepherdlyExternalResourceNodeV2(input: unknown): ParseResult<S
   const resourceId = readNonEmptyString(resource["resourceId"], "resource.resourceId"); if (!resourceId.ok) return resourceId;
   const title = readNonEmptyString(resource["title"], "resource.title"); if (!title.ok) return title;
   const resourceKind = resource["resourceKind"];
-  if (!["article", "commentary", "guide", "podcast", "video"].includes(String(resourceKind))) return { ok: false, error: "Unsupported external resource kind" };
+  if (!["article", "commentary", "guide", "podcast", "sermon", "video"].includes(String(resourceKind))) return { ok: false, error: "Unsupported external resource kind" };
   const officialUrl = readHttpsUrl(resource["officialUrl"], "resource.officialUrl"); if (!officialUrl.ok) return officialUrl;
   const canonicalAnchors = readBrefs(resource["canonicalAnchors"], "resource.canonicalAnchors"); if (!canonicalAnchors.ok || canonicalAnchors.value.length === 0) return canonicalAnchors.ok ? { ok: false, error: "External resource requires canonical anchors" } : canonicalAnchors;
   const context = input["context"];

@@ -102,6 +102,30 @@ Do not exercise the broader excerpt/embed permission until a separate feature
 defines attribution, exceptions, media hosting, and removal handling. Mark
 approval recorded 2026-07-26.
 
+## Importing
+
+`scripts/import-tgc-resources.ts` builds a manifest from The Gospel Coalition's
+public WordPress REST catalogue. Three things about how it behaves, because they
+are the parts a publisher would care about:
+
+- It runs **offline, by hand**. Nothing in the app fetches a publisher at
+  runtime, and D5's no-network guardrail is unchanged. The import produces a
+  file; the app only ever reads files.
+- It **identifies itself**: `Pericope/0.1 (+https://marktheword.com;
+  trusted-resource importer)`. Node sends no user agent and TGC refuses that,
+  and the answer to being refused is not to impersonate a browser. A publisher
+  reading their logs can see what asked and who to contact.
+- It takes **catalogue metadata only** — id, title, link, date, and the
+  publisher's own `scripture` terms. No bodies, no excerpts, no media. The
+  manifest it writes is validated before it is saved, so an import cannot
+  produce a file the app would refuse.
+
+Passage evidence comes from TGC's `scripture` taxonomy, which is hierarchical
+and chapter-level, so a record's coordinates are the publisher's own claim
+rather than something parsed out of a title. Book-level tags become whole-book
+coordinates, which rank last on specificity — correctly, since that is exactly
+how much the tag actually said.
+
 ## Deferred work
 
 - marks for any source beyond the three approved above;

@@ -12,7 +12,7 @@ import type { BackboneData, CanonicalRef } from "../reference/types.js";
 export const TRUSTED_RESOURCE_MANIFEST_SCHEMA = "pericope.trusted-resource-manifest" as const;
 export const TRUSTED_RESOURCE_MANIFEST_VERSION = 1 as const;
 
-export type TrustedResourceKind = "article" | "commentary" | "guide" | "podcast" | "video";
+export type TrustedResourceKind = "article" | "commentary" | "guide" | "podcast" | "sermon" | "video";
 export type TrustedResourceMatchBasis = "publisher-catalog" | "publisher-scripture-tag" | "publisher-title";
 export type TrustedResourceMatch = "exact-passage" | "overlap" | "same-chapter";
 
@@ -83,7 +83,7 @@ const SOURCE_KEYS = ["id", "name", "homepageUrl", "officialHosts"] as const;
 const PROVENANCE_KEYS = ["publisher", "reviewedAt", "coverage", "permissions", "note"] as const;
 const RECORD_KEYS = ["id", "sourceId", "kind", "title", "officialUrl", "brefs", "matchBasis", "metadata"] as const;
 const METADATA_KEYS = ["author", "publishedAt", "durationMinutes", "language", "series"] as const;
-const KINDS = new Set<TrustedResourceKind>(["article", "commentary", "guide", "podcast", "video"]);
+const KINDS = new Set<TrustedResourceKind>(["article", "commentary", "guide", "podcast", "sermon", "video"]);
 const MATCH_BASES = new Set<TrustedResourceMatchBasis>([
   "publisher-catalog",
   "publisher-scripture-tag",
@@ -160,10 +160,8 @@ export function rankTrustedResources(
   for (const manifest of manifests) {
     for (const record of manifest.records) {
       let best: { match: TrustedResourceMatch; score: number; matchedBref: string } | null = null;
-      for (const bref of record.brefs) {
-        const candidate = parseBref(bref);
-        if (!candidate.ok) continue;
-        const match = passageMatch(parsedQuery.value, candidate.value);
+      for (const { bref, ref } of parsedBrefsOf(record)) {
+        const match = passageMatch(parsedQuery.value, ref);
         if (match && (!best || match.score > best.score)) best = { ...match, matchedBref: bref };
       }
       if (best) ranked.push({ source: manifest.source, provenance: manifest.provenance, record, ...best });
@@ -188,6 +186,29 @@ export function rankTrustedResources(
   });
   const remainder = ordered.filter((entry) => !firstPerSource.includes(entry));
   return [...firstPerSource, ...remainder].slice(0, query.limit ?? 3);
+}
+
+/**
+ * A record's brefs, parsed once.
+ *
+ * The coordinates are already validated at load, so reparsing them on every
+ * query is pure repetition — and it is repetition per record, which is the one
+ * axis that grows without limit as catalogues are imported. Keyed on the record
+ * object, so a manifest the host has cached keeps its parse, and a manifest
+ * reloaded from a changed file gets fresh objects and parses again.
+ */
+const parsedBrefs = new WeakMap<TrustedResourceRecordV1, { bref: string; ref: CanonicalRef }[]>();
+
+function parsedBrefsOf(record: TrustedResourceRecordV1): { bref: string; ref: CanonicalRef }[] {
+  const hit = parsedBrefs.get(record);
+  if (hit) return hit;
+  const parsed: { bref: string; ref: CanonicalRef }[] = [];
+  for (const bref of record.brefs) {
+    const candidate = parseBref(bref);
+    if (candidate.ok) parsed.push({ bref, ref: candidate.value });
+  }
+  parsedBrefs.set(record, parsed);
+  return parsed;
 }
 
 /**
