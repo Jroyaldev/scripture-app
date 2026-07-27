@@ -109,6 +109,7 @@ declare global {
               total: number;
               hiddenCount: number;
               bySource: Array<{ sourceId: string; name: string; count: number; hidden: boolean }>;
+              byKind: Array<{ kind: string; count: number; hidden: boolean }>;
             }
           | { ok: false; refusal: TrustedResourceRefusal }
         >;
@@ -255,6 +256,8 @@ export interface AppSettings {
   verseNumbers: VerseNumberMode;
   /** Publishers the reader switched off. The main process applies this. */
   hiddenResourceSources: string[];
+  /** Kinds the reader switched off. The main process applies this too. */
+  hiddenResourceKinds: string[];
   recentPassages: RecentPassageSetting[];
   /** Where the reader last was — restored on launch. */
   lastRead: {

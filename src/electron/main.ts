@@ -234,6 +234,8 @@ interface AppSettingsSchema {
   verseNumbers: "always" | "faint" | "hover";
   /** Sources the reader has switched off in settings. Ids, never names. */
   hiddenResourceSources: string[];
+  /** Kinds the reader has switched off — podcasts, sermons, and so on. */
+  hiddenResourceKinds: string[];
   recentPassages: Array<{
     book: string;
     chapter: number;
@@ -528,6 +530,7 @@ const store = new Store<AppSettingsSchema>({
     readingSize: "m",
     verseNumbers: "always",
     hiddenResourceSources: [],
+    hiddenResourceKinds: [],
     recentPassages: [],
     lastRead: null,
     researchSession: null,
@@ -2400,9 +2403,10 @@ function registerIpcHandlers(): void {
        a window that forgot to send it would quietly show a reader the very
        publishers they switched off. */
     const hiddenSourceIds = store.get("hiddenResourceSources") ?? [];
+    const hiddenKinds = store.get("hiddenResourceKinds") ?? [];
     const matches = matchTrustedResources(
       loaded.manifests.map((entry) => entry.manifest),
-      { ...query.value, hiddenSourceIds },
+      { ...query.value, hiddenSourceIds, hiddenKinds },
     );
     return { ok: true, ...matches };
   });

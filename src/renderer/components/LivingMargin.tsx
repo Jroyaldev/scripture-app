@@ -390,14 +390,20 @@ function TrustedResourcesBlock({
   refusal,
   total,
   hiddenCount,
+  bySource,
+  byKind,
   onOpenSettings,
+  onFiltersChanged,
 }: {
   resources: readonly RankedTrustedResource[];
   loading: boolean;
   refusal: string | null;
   total: number;
   hiddenCount: number;
+  bySource: ReadonlyArray<{ sourceId: string; name: string; count: number; hidden: boolean }>;
+  byKind: ReadonlyArray<{ kind: string; count: number; hidden: boolean }>;
   onOpenSettings?: (() => void) | undefined;
+  onFiltersChanged?: (() => void) | undefined;
 }): React.JSX.Element {
   const { showToast } = useToast();
   /* A chip is a publisher, not a record. Three chips used to mean three cards,
@@ -420,6 +426,18 @@ function TrustedResourcesBlock({
   }, [resources]);
 
   const ALL = "*";
+  const FILTERS = "~filters";
+
+  /* Saved through settings so the main process stays the one authority, then
+     the group refetches — the panel never keeps its own idea of what is on. */
+  const setHidden = async (key: "hiddenResourceSources" | "hiddenResourceKinds", ids: string[]): Promise<void> => {
+    const saved = await safeCall(() => window.api.settings.set({ [key]: ids }));
+    if (!saved.ok) {
+      showToast("That preference could not be saved.", undefined, undefined, { tone: "error" });
+      return;
+    }
+    onFiltersChanged?.();
+  };
   /* Opening keeps the ranking's order — within a publisher and between them —
      so what a reader sees first is still what the evidence put first. */
   const groups = useMemo(() => {
@@ -495,13 +513,14 @@ function TrustedResourcesBlock({
             {/* The row raises the question of who these publishers are, and the
                 answer lives in settings — so the way there is a chip in the
                 same row rather than a hunt through a menu. */}
-            {onOpenSettings && (
-              <button
-                aria-label="Choose which publishers appear here"
+            <button
+                aria-controls="trusted-resource-panel"
+                aria-expanded={openedSource === FILTERS}
+                aria-label="Choose which publishers and kinds appear here"
                 className="trusted-resource-imprint is-settings"
                 key="settings"
-                onClick={onOpenSettings}
-                title="Choose which publishers appear here"
+                onClick={() => setOpenedSource(openedSource === FILTERS ? null : FILTERS)}
+                title="Choose which publishers and kinds appear here"
                 type="button"
               >
                 <span className="trusted-resource-source" aria-hidden="true">
@@ -518,10 +537,74 @@ function TrustedResourcesBlock({
                   </svg>
                 </span>
               </button>
-            )}
           </div>
 
           <div className="trusted-resource-panel" id="trusted-resource-panel">
+          {openedSource === FILTERS && (
+            <div className="trusted-resource-filters">
+              <p className="trusted-resource-filters-lead">
+                Everything here links out to the publisher. Nothing is fetched while you read.
+              </p>
+
+              <fieldset className="trusted-resource-facet">
+                <legend>Publishers</legend>
+                <div className="trusted-resource-pills">
+                  {bySource.map((source) => (
+                    <button
+                      aria-pressed={!source.hidden}
+                      className="trusted-resource-pill"
+                      data-source={source.sourceId}
+                      key={source.sourceId}
+                      onClick={() => void setHidden(
+                        "hiddenResourceSources",
+                        source.hidden
+                          ? bySource.filter((s) => s.hidden && s.sourceId !== source.sourceId).map((s) => s.sourceId)
+                          : [...bySource.filter((s) => s.hidden).map((s) => s.sourceId), source.sourceId],
+                      )}
+                      type="button"
+                    >
+                      <span className="trusted-resource-pill-dot" aria-hidden="true" />
+                      {source.name}
+                      <span className="trusted-resource-pill-count">{source.count}</span>
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+
+              {byKind.length > 1 && (
+                <fieldset className="trusted-resource-facet">
+                  <legend>Kinds</legend>
+                  <div className="trusted-resource-pills">
+                    {byKind.map((kind) => (
+                      <button
+                        aria-pressed={!kind.hidden}
+                        className="trusted-resource-pill is-kind"
+                        key={kind.kind}
+                        onClick={() => void setHidden(
+                          "hiddenResourceKinds",
+                          kind.hidden
+                            ? byKind.filter((k) => k.hidden && k.kind !== kind.kind).map((k) => k.kind)
+                            : [...byKind.filter((k) => k.hidden).map((k) => k.kind), kind.kind],
+                        )}
+                        type="button"
+                      >
+                        <span className="trusted-resource-pill-dot" aria-hidden="true" />
+                        {kind.kind}
+                        <span className="trusted-resource-pill-count">{kind.count}</span>
+                      </button>
+                    ))}
+                  </div>
+                </fieldset>
+              )}
+
+              {onOpenSettings && (
+                <button className="trusted-resource-filters-more" onClick={onOpenSettings} type="button">
+                  All resource settings <span aria-hidden="true">→</span>
+                </button>
+              )}
+            </div>
+          )}
+
           {groups.map((group) => (
             <article
               className="trusted-resource-card is-featured"
@@ -3179,6 +3262,15 @@ export function LivingMargin({
   const [trustedResources, setTrustedResources] = useState<RankedTrustedResource[]>([]);
   const [trustedResourceTotal, setTrustedResourceTotal] = useState(0);
   const [trustedResourcesHidden, setTrustedResourcesHidden] = useState(0);
+  const [trustedResourceBySource, setTrustedResourceBySource] = useState<
+    Array<{ sourceId: string; name: string; count: number; hidden: boolean }>
+  >([]);
+  const [trustedResourceByKind, setTrustedResourceByKind] = useState<
+    Array<{ kind: string; count: number; hidden: boolean }>
+  >([]);
+  /* Bumped when the reader changes a filter, so the effect refetches: the
+     answer lives in the main process, not in this component. */
+  const [trustedResourceFilterVersion, setTrustedResourceFilterVersion] = useState(0);
   const [trustedResourcesLoading, setTrustedResourcesLoading] = useState(false);
   const [trustedResourcesRefusal, setTrustedResourcesRefusal] = useState<string | null>(null);
   const frameTitleRef = useRef<HTMLHeadingElement>(null);
@@ -3553,9 +3645,11 @@ export function LivingMargin({
         setTrustedResources(result.value.resources);
         setTrustedResourceTotal(result.value.total);
         setTrustedResourcesHidden(result.value.hiddenCount);
+        setTrustedResourceBySource(result.value.bySource);
+        setTrustedResourceByKind(result.value.byKind);
       });
     return () => { cancelled = true; };
-  }, [trustedResourceBref]);
+  }, [trustedResourceBref, trustedResourceFilterVersion]);
   const marginMode = connectionInspectorOpen
     ? "connection"
     : isPinned
@@ -4301,7 +4395,7 @@ export function LivingMargin({
               onOpenTab={activateTab}
               onOpenEntity={onOpenEntity}
             />
-            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} onOpenSettings={onOpenResourceSettings} />
+            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} bySource={trustedResourceBySource} byKind={trustedResourceByKind} onOpenSettings={onOpenResourceSettings} onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)} />
           </section>
 
           <section
@@ -4416,7 +4510,7 @@ export function LivingMargin({
               onOpenTab={activateTab}
               onOpenEntity={onOpenEntity}
             />
-            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} onOpenSettings={onOpenResourceSettings} />
+            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} bySource={trustedResourceBySource} byKind={trustedResourceByKind} onOpenSettings={onOpenResourceSettings} onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)} />
           </section>
 
           <section
@@ -4534,7 +4628,7 @@ export function LivingMargin({
               onOpenTab={activateTab}
               onOpenEntity={onOpenEntity}
             />
-            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} onOpenSettings={onOpenResourceSettings} />
+            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} bySource={trustedResourceBySource} byKind={trustedResourceByKind} onOpenSettings={onOpenResourceSettings} onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)} />
           </section>
 
           <section
