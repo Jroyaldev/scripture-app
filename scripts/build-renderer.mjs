@@ -23,6 +23,10 @@ const result = await build({
   loader: {
     ".json": "json",
     ".png": "file",
+    // Publisher marks are bundled the same way faces are: emitted next to the
+    // renderer, never fetched from the publisher. See
+    // docs/trusted-resource-permissions.md.
+    ".svg": "file",
     // Brand faces are vendored, not fetched — see scripts/vendor-fonts.mjs.
     ".woff2": "file",
   },

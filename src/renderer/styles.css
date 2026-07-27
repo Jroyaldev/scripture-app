@@ -18952,78 +18952,288 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .trusted-resources-status.is-refusal { color: var(--error); }
 
-.trusted-resource-list { display: grid; }
-
-.trusted-resource-card {
-  --resource-source: var(--study-gold);
-  position: relative;
+.trusted-resource-drawer {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px 12px;
-  padding: 11px 0 11px 10px;
-  border-bottom: 1px solid var(--border-subtle);
+  gap: 10px;
+  padding-top: 12px;
 }
 
-.trusted-resource-card::before {
-  position: absolute;
-  inset: 10px auto 10px 0;
-  width: 3px;
-  background: var(--resource-source);
-  content: "";
+.trusted-resource-imprints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
-.trusted-resource-card[data-source="working-preacher"] { --resource-source: #a95d36; }
-.trusted-resource-card[data-source="bibleproject"] { --resource-source: #d29a24; }
-.trusted-resource-card[data-source="the-gospel-coalition"] { --resource-source: #547694; }
-
-.trusted-resource-source {
-  grid-column: 1 / -1;
-  color: var(--resource-source);
-  font: var(--fw-bold) 0.5625rem/1.2 var(--font-ui);
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-}
-
-.trusted-resource-copy { min-width: 0; }
-
-.trusted-resource-copy h4 {
-  margin: 0;
-  color: var(--text-primary);
-  font: var(--fw-semibold) 0.8125rem/1.3 var(--font-reading);
-}
-
-.trusted-resource-card.is-featured .trusted-resource-copy h4 { font-size: 0.9375rem; }
-
-.trusted-resource-copy p,
-.trusted-resource-copy small {
-  display: block;
-  margin: 4px 0 0;
-  color: var(--text-tertiary);
-  font: 0.625rem/1.35 var(--font-ui);
-  text-transform: capitalize;
-}
-
-.trusted-resource-card button {
-  align-self: end;
-  padding: 4px 0;
+/* The imprint is the whole card reduced to the one thing that identifies it.
+   It keeps the publisher's colour at full strength — a muted mark is a mark
+   read twice — and pays for it in area rather than in saturation. */
+.trusted-resource-imprint {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 11px;
   border: 0;
-  background: transparent;
-  color: var(--text-secondary);
-  font: var(--fw-semibold) 0.625rem/1 var(--font-ui);
+  border-radius: 8px;
+  background: var(--resource-source);
   cursor: pointer;
+  transition: transform 150ms ease, box-shadow 150ms ease, filter 150ms ease;
 }
 
-.trusted-resource-card button:hover { color: var(--study-gold); }
-.trusted-resource-card button:focus-visible {
+.trusted-resource-imprint:hover {
+  box-shadow: 0 4px 10px -5px rgb(0 0 0 / 0.45);
+  transform: translateY(-1px);
+}
+
+.trusted-resource-imprint[aria-expanded="true"] {
+  box-shadow: 0 0 0 2px var(--surface-page, var(--bg-primary, transparent)), 0 0 0 3.5px var(--resource-source);
+}
+
+.trusted-resource-imprint:focus-visible {
   outline: 2px solid var(--accent-seal);
   outline-offset: 3px;
 }
 
+/* The publisher's colour owns the featured surface, and it is the same colour
+   in all four appearances: a masthead that changed with the theme would read
+   as our chrome rather than as their imprint. The mark is the mono/white
+   official variant, which is why the surface may not change under it. Only the
+   compact rows — which sit on the margin's own paper — follow the theme, as a
+   wash of that colour.
+
+   Marks ship for Working Preacher, BibleProject and The Gospel Coalition,
+   which are approved. Any fourth source falls back to its name set in type
+   until it is approved in its own right — see docs/trusted-resource-permissions
+   and tests/trusted-resource-permissions, which hold that line. */
+.trusted-resource-card,
+.trusted-resource-imprint {
+  --resource-source: var(--study-gold);
+  --resource-mark: none;
+  --resource-mark-height: 18px;
+  --resource-mark-ratio: 4;
+  --resource-ink: var(--text-primary);
+  --resource-ink-soft: var(--text-tertiary);
+  --resource-line: var(--border-medium);
+  --resource-pill-bg: var(--text-primary);
+  --resource-pill-ink: var(--surface-page, #fff);
+  min-width: 0;
+}
+
+.trusted-resource-card[data-source="working-preacher"],
+.trusted-resource-imprint[data-source="working-preacher"] {
+  --resource-source: #9d2235;
+  --resource-ink: #fbf1ea;
+  --resource-ink-soft: rgb(251 241 234 / 0.78);
+  --resource-line: rgb(251 241 234 / 0.34);
+  --resource-pill-bg: #fbf1ea;
+  --resource-pill-ink: #7d1b2b;
+  --resource-mark: url("./assets/brand/wp-stacked-white.svg");
+  --resource-mark-height: 22px;
+  --resource-mark-ratio: 3.266;
+}
+
+.trusted-resource-card[data-source="bibleproject"],
+.trusted-resource-imprint[data-source="bibleproject"] {
+  --resource-source: #00b3e5;
+  --resource-ink: #05303f;
+  --resource-ink-soft: rgb(5 48 63 / 0.76);
+  --resource-line: rgb(5 48 63 / 0.3);
+  --resource-pill-bg: #05303f;
+  --resource-pill-ink: #dff4fc;
+  --resource-mark: url("./assets/brand/bp-mono-wht.png");
+  --resource-mark-height: 18px;
+  --resource-mark-ratio: 4.353;
+}
+
+.trusted-resource-card[data-source="the-gospel-coalition"],
+.trusted-resource-imprint[data-source="the-gospel-coalition"] {
+  --resource-source: #79ae4a;
+  --resource-ink: #1b2a0d;
+  --resource-ink-soft: rgb(27 42 13 / 0.76);
+  --resource-line: rgb(27 42 13 / 0.32);
+  --resource-pill-bg: #1b2a0d;
+  --resource-pill-ink: #cce0ba;
+  --resource-mark: url("./assets/brand/tgc-mark-wht.svg");
+  --resource-mark-height: 18px;
+  --resource-mark-ratio: 2.273;
+}
+
+.trusted-resource-card.is-featured {
+  padding: 0 15px 13px;
+  border-radius: 12px;
+  background: var(--resource-source);
+  color: var(--resource-ink);
+}
+
+.trusted-resource-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.trusted-resource-card.is-featured .trusted-resource-head {
+  min-height: 26px;
+  margin: 0 -15px 12px;
+  padding: 12px 15px 10px;
+  border-bottom: 1px solid var(--resource-line);
+}
+
+.trusted-resource-source {
+  overflow: hidden;
+  font: var(--fw-semibold) 0.6875rem/1.2 var(--font-ui);
+  letter-spacing: 0.055em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* The mark replaces the name only for a source whose mark is approved; every
+   other source keeps its name in type. The name stays in the accessibility
+   tree either way — the indent moves the glyphs, not the text. */
+.trusted-resource-card.is-featured[data-source="working-preacher"] .trusted-resource-source,
+.trusted-resource-card.is-featured[data-source="bibleproject"] .trusted-resource-source,
+.trusted-resource-card.is-featured[data-source="the-gospel-coalition"] .trusted-resource-source,
+.trusted-resource-imprint[data-source="working-preacher"] .trusted-resource-source,
+.trusted-resource-imprint[data-source="bibleproject"] .trusted-resource-source,
+.trusted-resource-imprint[data-source="the-gospel-coalition"] .trusted-resource-source {
+  display: block;
+  height: var(--resource-mark-height);
+  aspect-ratio: var(--resource-mark-ratio);
+  background: var(--resource-mark) left center / contain no-repeat;
+  text-indent: -200vw;
+}
+
+.trusted-resource-kind {
+  flex: none;
+  color: var(--resource-ink-soft);
+  font: var(--fw-medium) 0.59375rem/1.2 var(--font-mono);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.trusted-resource-title {
+  margin: 0 0 3px;
+  font: var(--fw-semibold) 0.96875rem/1.34 var(--font-reading);
+  letter-spacing: -0.004em;
+  text-wrap: balance;
+}
+
+.trusted-resource-meta {
+  margin: 0 0 10px;
+  color: var(--resource-ink-soft);
+  font: 0.75rem/1.4 var(--font-ui);
+}
+
+.trusted-resource-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.trusted-resource-chip {
+  padding: 2px 8px;
+  border: 1px solid var(--resource-line);
+  border-radius: 6px;
+  font: var(--fw-medium) 0.6875rem/1.5 var(--font-ui);
+}
+
+.trusted-resource-chip.is-bref {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.02em;
+}
+
+.trusted-resource-chip.is-match {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: var(--fw-semibold);
+}
+
+.trusted-resource-chip.is-match::before {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentcolor;
+  content: "";
+}
+
+.trusted-resource-chip.is-basis {
+  border-style: dashed;
+  color: var(--resource-ink-soft);
+}
+
+.trusted-resource-actions { display: flex; align-items: center; }
+
+.trusted-resource-act {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 13px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--resource-pill-bg);
+  color: var(--resource-pill-ink);
+  font: var(--fw-semibold) 0.78125rem/1 var(--font-ui);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.trusted-resource-act:hover {
+  box-shadow: 0 4px 10px -4px rgb(0 0 0 / 0.4);
+  transform: translateY(-1px);
+}
+
+.trusted-resource-act:focus-visible {
+  outline: 2px solid var(--accent-seal);
+  outline-offset: 3px;
+}
+
+/* A mark stays on full-strength brand colour wherever it appears, because the
+   official variants are white: muting the surface would cost a dark mark
+   variant per publisher and a colour decision per theme, four times over. The
+   drawer pays for the colour in area instead — three chips closed, one card
+   open — so the group stops competing with the reading it sits beside. */
+.trusted-resource-imprint .trusted-resource-source {
+  height: var(--resource-mark-height);
+  aspect-ratio: var(--resource-mark-ratio);
+  overflow: hidden;
+  background: var(--resource-mark) left center / contain no-repeat;
+  text-indent: -200vw;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trusted-resource-act,
+  .trusted-resource-imprint { transition: none; }
+  .trusted-resource-act:hover,
+  .trusted-resource-imprint:hover { transform: none; }
+}
+
 @media (forced-colors: active) {
   .trusted-resources-masthead { border-color: CanvasText; }
-  .trusted-resource-card::before { background: CanvasText; }
-  .trusted-resource-source { color: CanvasText; }
-  .trusted-resource-card button:focus-visible { outline-color: Highlight; }
+  .trusted-resource-card { border: 1px solid CanvasText; background: Canvas; color: CanvasText; }
+  /* A forced palette drops the brand surface, and with it the only thing that
+     told the chips apart — so the name comes back out of the indent. */
+  .trusted-resource-imprint { border: 1px solid ButtonText; background: ButtonFace; padding: 0 9px; }
+  .trusted-resource-imprint .trusted-resource-source {
+    aspect-ratio: auto;
+    height: auto;
+    background: none;
+    color: ButtonText;
+    text-indent: 0;
+  }
+  .trusted-resource-imprint[aria-expanded="true"] { outline: 2px solid Highlight; box-shadow: none; }
+  .trusted-resource-source,
+  .trusted-resource-kind,
+  .trusted-resource-meta { color: CanvasText; }
+  .trusted-resource-chip { border-color: CanvasText; }
+  .trusted-resource-act { border: 1px solid ButtonText; background: ButtonFace; color: ButtonText; }
+  .trusted-resource-act:focus-visible { outline-color: Highlight; }
 }
 
 /* The material switch. Four appearances and one switch: this is the only

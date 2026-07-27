@@ -360,6 +360,29 @@ function MarginEmptyView({
   );
 }
 
+/** One verb per card, chosen by kind. Every verb leaves for the official page. */
+function resourceVerb(kind: string): string {
+  if (kind === "video") return "Watch";
+  if (kind === "podcast") return "Listen";
+  return "Read";
+}
+
+/** `bref:v1/ROM.8.6-ROM.8.11` reads as `ROM 8:6–11` on a mono chip. */
+function resourcePassageLabel(bref: string): string {
+  const read = (part: string): { book: string; chapter: string; verse: string } => {
+    const [book = "", chapter = "", verse = ""] = part.split(".");
+    return { book, chapter, verse };
+  };
+  const parts = bref.replace("bref:v1/", "").split("-");
+  const start = read(parts[0] ?? "");
+  const head = `${start.book} ${start.chapter}${start.verse ? `:${start.verse}` : ""}`;
+  if (parts.length === 1) return head;
+  const end = read(parts[1] ?? "");
+  if (end.book !== start.book) return `${head}–${end.book} ${end.chapter}${end.verse ? `:${end.verse}` : ""}`;
+  if (end.chapter !== start.chapter) return `${head}–${end.chapter}${end.verse ? `:${end.verse}` : ""}`;
+  return end.verse && end.verse !== start.verse ? `${head}–${end.verse}` : head;
+}
+
 function TrustedResourcesBlock({
   resources,
   loading,
@@ -370,6 +393,7 @@ function TrustedResourcesBlock({
   refusal: string | null;
 }): React.JSX.Element {
   const { showToast } = useToast();
+  const [openedId, setOpenedId] = useState<string | null>(null);
   const openResource = async (resource: RankedTrustedResource): Promise<void> => {
     const result = await safeCall(() => window.api.trustedResources.openOfficial(
       resource.source.id,
@@ -388,30 +412,72 @@ function TrustedResourcesBlock({
       {loading && <p className="trusted-resources-status" role="status">Checking local resource manifests…</p>}
       {refusal && <p className="trusted-resources-status is-refusal" role="status">Trusted resources unavailable: {refusal}</p>}
       {!loading && !refusal && resources.length > 0 && (
-        <div className="trusted-resource-list">
-          {resources.slice(0, 3).map((resource, index) => {
+        <div className="trusted-resource-drawer">
+          {/* Closed, the group is three imprints on the margin's own paper: the
+              colour is held to the size of a mark until a reader asks for one.
+              Opened, that source's card takes the full brand surface. */}
+          <div className="trusted-resource-imprints">
+            {resources.slice(0, 3).map((resource) => {
+              const id = `${resource.source.id}:${resource.record.id}`;
+              const opened = openedId === id;
+              return (
+                <button
+                  aria-controls={`trusted-resource-panel-${resource.source.id}`}
+                  aria-expanded={opened}
+                  aria-label={`${resource.source.name} — ${resource.record.kind}: ${resource.record.title}`}
+                  className="trusted-resource-imprint"
+                  data-kind={resource.record.kind}
+                  data-source={resource.source.id}
+                  key={id}
+                  onClick={() => setOpenedId(opened ? null : id)}
+                  type="button"
+                >
+                  <span className="trusted-resource-source">{resource.source.name}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {resources.slice(0, 3).map((resource) => {
+            const id = `${resource.source.id}:${resource.record.id}`;
+            if (openedId !== id) return <></>;
             const metadata = resource.record.metadata;
-            const details = [
-              resource.record.kind,
+            const byline = [
               metadata?.author,
               metadata?.publishedAt,
               metadata?.durationMinutes ? `${metadata.durationMinutes} min` : undefined,
+              metadata?.series,
             ].filter(Boolean).join(" · ");
+            const verb = resourceVerb(resource.record.kind);
             return (
               <article
-                className={`trusted-resource-card${index === 0 ? " is-featured" : " is-compact"}`}
+                className="trusted-resource-card is-featured"
+                data-kind={resource.record.kind}
                 data-source={resource.source.id}
-                key={`${resource.source.id}:${resource.record.id}`}
+                id={`trusted-resource-panel-${resource.source.id}`}
+                key={id}
               >
-                <div className="trusted-resource-source">{resource.source.name}</div>
-                <div className="trusted-resource-copy">
-                  <h4>{resource.record.title}</h4>
-                  {details && <p>{details}</p>}
-                  {index === 0 && <small>{resource.match.replaceAll("-", " ")} · reviewed sample</small>}
+                <header className="trusted-resource-head">
+                  <span className="trusted-resource-source">{resource.source.name}</span>
+                  <span className="trusted-resource-kind">{resource.record.kind}</span>
+                </header>
+                <h4 className="trusted-resource-title">{resource.record.title}</h4>
+                {byline && <p className="trusted-resource-meta">{byline}</p>}
+                <ul className="trusted-resource-chips">
+                  <li className="trusted-resource-chip is-bref">{resourcePassageLabel(resource.matchedBref)}</li>
+                  <li className="trusted-resource-chip is-match">{resource.match.replaceAll("-", " ")}</li>
+                  <li className="trusted-resource-chip is-basis">reviewed sample</li>
+                </ul>
+                <div className="trusted-resource-actions">
+                  <button
+                    className="trusted-resource-act"
+                    type="button"
+                    onClick={() => void openResource(resource)}
+                    aria-label={`${verb} ${resource.record.title} on ${resource.source.name} — opens the official page`}
+                  >
+                    {verb} at {resource.source.name} <span aria-hidden="true">↗</span>
+                  </button>
                 </div>
-                <button type="button" onClick={() => void openResource(resource)} aria-label={`Open ${resource.record.title} on ${resource.source.name}`}>
-                  Open <span aria-hidden="true">↗</span>
-                </button>
               </article>
             );
           })}

@@ -169,11 +169,48 @@ export function rankTrustedResources(
       if (best) ranked.push({ source: manifest.source, provenance: manifest.provenance, record, ...best });
     }
   }
-  return ranked
-    .sort((left, right) => right.score - left.score
-      || left.source.id.localeCompare(right.source.id)
-      || left.record.id.localeCompare(right.record.id))
-    .slice(0, query.limit ?? 3);
+  const ordered = ranked.sort((left, right) => right.score - left.score
+    || matchedSpan(left.matchedBref) - matchedSpan(right.matchedBref)
+    || left.source.id.localeCompare(right.source.id)
+    || left.record.id.localeCompare(right.record.id));
+
+  /* Breadth before depth. A publisher with a deep lectionary catalogue would
+     otherwise take every slot in the group on evidence alone, and the reader
+     would never learn that the other two had anything on this passage. Each
+     source puts its best card forward first; only then does a source get a
+     second slot. Order within each pass is untouched, so this re-seats cards
+     without ever promoting weaker evidence above stronger. */
+  const seen = new Set<string>();
+  const firstPerSource = ordered.filter((entry) => {
+    if (seen.has(entry.source.id)) return false;
+    seen.add(entry.source.id);
+    return true;
+  });
+  const remainder = ordered.filter((entry) => !firstPerSource.includes(entry));
+  return [...firstPerSource, ...remainder].slice(0, query.limit ?? 3);
+}
+
+/**
+ * How much ground a matched coordinate covers, as a comparable magnitude.
+ *
+ * Match class alone cannot separate a whole-book guide from a commentary on
+ * the six verses in front of the reader: read a chapter and both are merely
+ * `overlap`, so the old id tie-break handed the featured slot to whichever
+ * publisher sorted first, in every chapter of that book. Specificity is the
+ * evidence the reader means: of two records with the same class, the one that
+ * claims less ground claims it about this passage.
+ *
+ * This is an ordering proxy, not a verse count — it never leaves the parsed
+ * coordinate, so it cannot disagree with a backbone it does not consult. 200
+ * is above any chapter's verse count, which keeps chapters dominant over
+ * verses; a cross-book span outranks every single-book one by construction.
+ */
+function matchedSpan(bref: string): number {
+  const parsed = parseBref(bref);
+  if (!parsed.ok) return Number.MAX_SAFE_INTEGER;
+  const { start, end } = parsed.value;
+  if (start.book !== end.book) return 1_000_000;
+  return (end.chapter - start.chapter) * 200 + (end.verse - start.verse);
 }
 
 export function isOfficialTrustedResourceUrl(url: string, officialHosts: readonly string[]): boolean {
