@@ -11,6 +11,7 @@
 @import "./styles/rail.css";
 @import "./styles/register.css";
 @import "./styles/canvas.css";
+@import "./styles/player.css";
 @import "./styles/themes.css";
 
 /* Design tokens → CSS custom properties */
@@ -5285,6 +5286,15 @@ html, body, #root {
   scroll-padding-top: 78px;
 }
 
+/* The podcast dock parks over this panel's bottom-right corner, so the panel
+   grows a floor the height of it. A floating surface that covers the last two
+   entries of a scroll is a surface that has taken something away, and the last
+   entry here is often the resource card the episode was started from. */
+.app-shell:has(.podcast-dock) .living-margin {
+  padding-bottom: calc(var(--page-padding-block) + 40px + 117px);
+  scroll-padding-bottom: 117px;
+}
+
 .margin-connection-inspector {
   padding: 0 0 var(--sp-xl);
 }
@@ -7566,7 +7576,7 @@ html, body, #root {
 
 .toast-container {
   position: fixed;
-  bottom: var(--sp-xl);
+  bottom: calc(var(--sp-xl) + var(--player-lane, 0px));
   right: var(--sp-xl);
   display: flex;
   flex-direction: column;
@@ -7579,16 +7589,25 @@ html, body, #root {
 /* A persistent Dock and transient feedback are both bottom-edge surfaces.
    Reserve separate lanes so a toast can never cover marking actions. */
 .app-shell:has(.marking-dock-host[data-dock-layout="shelf"]) + .toast-container {
-  bottom: calc(104px + env(safe-area-inset-bottom));
+  bottom: calc(104px + var(--player-lane, 0px) + env(safe-area-inset-bottom));
 }
 
 .app-shell:has(.marking-dock-host[data-dock-layout="stacked"]) + .toast-container {
-  bottom: calc(144px + env(safe-area-inset-bottom));
+  bottom: calc(144px + var(--player-lane, 0px) + env(safe-area-inset-bottom));
 }
 
 .app-shell:has(.marking-dock-host[data-dock-layout="stacked"][data-dock-state="rest"]) + .toast-container {
-  bottom: calc(74px + env(safe-area-inset-bottom));
+  bottom: calc(74px + var(--player-lane, 0px) + env(safe-area-inset-bottom));
 }
+
+/* The podcast dock is a third bottom-right surface, and the only one of the
+   three that is permanent. It takes the marking lane's offsets (see
+   styles/player.css) and the toasts step over it, so all three states — dock,
+   player, both — resolve by addition rather than by a rule per combination.
+   103 is the dock's own height and 14 the interval between two floating things.
+   scripts/qa-podcast-player.mjs measures the live dock against both numbers, so
+   they cannot drift away from the surface they describe in silence. */
+.app-shell:has(.podcast-dock) + .toast-container { --player-lane: 117px; }
 
 .toast {
   --toast-tone: var(--text-tertiary);
@@ -19010,7 +19029,8 @@ button.lang-phrase-diagram-node:focus-visible,
    until it is approved in its own right — see docs/trusted-resource-permissions
    and tests/trusted-resource-permissions, which hold that line. */
 .trusted-resource-card,
-.trusted-resource-imprint {
+.trusted-resource-imprint,
+.podcast-dock {
   --resource-source: var(--study-gold);
   /* A surface colour and a 3px rail are not the same job. Most brands survive
      both; a near-black one does not, so the accent can be lifted away from the
@@ -19030,7 +19050,8 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-card[data-source="working-preacher"],
 .trusted-resource-imprint[data-source="working-preacher"],
 .resource-source[data-source="working-preacher"],
-.resource-matrix-row[data-source="working-preacher"] {
+.resource-matrix-row[data-source="working-preacher"],
+.podcast-dock[data-source="working-preacher"] {
   --resource-source: #9d2235;
   --resource-ink: #fbf1ea;
   --resource-ink-soft: rgb(251 241 234 / 0.78);
@@ -19045,7 +19066,8 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-card[data-source="bibleproject"],
 .trusted-resource-imprint[data-source="bibleproject"],
 .resource-source[data-source="bibleproject"],
-.resource-matrix-row[data-source="bibleproject"] {
+.resource-matrix-row[data-source="bibleproject"],
+.podcast-dock[data-source="bibleproject"] {
   --resource-source: #00b3e5;
   --resource-ink: #05303f;
   --resource-ink-soft: rgb(5 48 63 / 0.76);
@@ -19064,7 +19086,8 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-card[data-source="enter-the-bible"],
 .trusted-resource-imprint[data-source="enter-the-bible"],
 .resource-source[data-source="enter-the-bible"],
-.resource-matrix-row[data-source="enter-the-bible"] {
+.resource-matrix-row[data-source="enter-the-bible"],
+.podcast-dock[data-source="enter-the-bible"] {
   --resource-source: #fed141;
   --resource-ink: #1c1a12;
   --resource-ink-soft: rgb(28 26 18 / 0.72);
@@ -19084,7 +19107,8 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-card[data-source="naked-bible"],
 .trusted-resource-imprint[data-source="naked-bible"],
 .resource-source[data-source="naked-bible"],
-.resource-matrix-row[data-source="naked-bible"] {
+.resource-matrix-row[data-source="naked-bible"],
+.podcast-dock[data-source="naked-bible"] {
   --resource-accent: #6e7a80;
   --resource-source: #2f3437;
   --resource-ink: #e7eaea;
@@ -19100,7 +19124,8 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-card[data-source="the-gospel-coalition"],
 .trusted-resource-imprint[data-source="the-gospel-coalition"],
 .resource-source[data-source="the-gospel-coalition"],
-.resource-matrix-row[data-source="the-gospel-coalition"] {
+.resource-matrix-row[data-source="the-gospel-coalition"],
+.podcast-dock[data-source="the-gospel-coalition"] {
   --resource-source: #79ae4a;
   --resource-ink: #1b2a0d;
   --resource-ink-soft: rgb(27 42 13 / 0.76);

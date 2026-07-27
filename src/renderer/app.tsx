@@ -26,6 +26,7 @@ import { ToastProvider, type ShowToast } from "./components/Toast.js";
 import { Popover } from "./components/Popover.js";
 import { WelcomeScreen } from "./components/WelcomeScreen.js";
 import { PericopeMark } from "./components/PericopeMark.js";
+import { PodcastPlayer } from "./components/PodcastPlayer.js";
 import { ShortcutsOverlay } from "./components/ShortcutsOverlay.js";
 import { WorkspaceDecisionDialog } from "./components/WorkspaceDecisionDialog.js";
 import type { ReadingPrefs } from "./components/ReadingComfort.js";
@@ -1710,6 +1711,12 @@ export function App(): React.JSX.Element {
       addPane(canvas, canvas?.querySelector<HTMLElement>('.verse-line[aria-pressed="true"], .verse-line') ?? null);
       const margin = document.querySelector<HTMLElement>(".living-margin");
       addPane(margin, margin?.querySelector<HTMLElement>('.margin-tab[aria-selected="true"], #living-margin-title, #entity-research-title') ?? null);
+      // The podcast dock joins the rotation while it exists, and leaves with it.
+      // A floating surface that never dismisses needs a way in that is not the
+      // pointer, and this is the app's existing way in — no new binding, and
+      // nothing to learn that a reader does not already know.
+      const player = document.querySelector<HTMLElement>(".podcast-dock");
+      addPane(player, player?.querySelector<HTMLElement>(".podcast-transport-play") ?? null);
       if (panes.length === 0) return;
 
       const active = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -2242,6 +2249,12 @@ export function App(): React.JSX.Element {
             onSearchNotes={(query) => changeView("search", () => setWorkspaceIntent({ query, nonce: Date.now() }))}
             onRunAction={runCommandAction}
           />
+          {/* The podcast transport, mounted where nothing a reader does inside a
+              passage can take it away: the panel it is started from remounts on
+              every study tab, and the view under it unmounts on every 1–5. An
+              episode has to outlive both, so the element lives here and the
+              dock draws itself only once something is playing. */}
+          <PodcastPlayer bookNames={bookNames} onNavigate={handleNavigateToRef} />
           {shortcutsOpen && <ShortcutsOverlay onClose={closeShortcutsOverlay} />}
           {workspaceDecisionConfirmation && (
             <WorkspaceDecisionDialog

@@ -44,6 +44,7 @@ const read = (...parts: string[]): string => readFileSync(join(repoRoot, ...part
 
 const margin = read("src", "renderer", "components", "LivingMargin.tsx");
 const words = read("src", "renderer", "components", "LanguageWordsSection.tsx");
+const player = read("src", "renderer", "components", "PodcastPlayer.tsx");
 const entriesCss = read("src", "renderer", "styles", "margin-entries.css");
 const css = read("src", "renderer", "styles.css");
 const main = read("src", "electron", "main.ts");
@@ -432,7 +433,15 @@ test("laurel prose is never edited in place", () => {
   // be bound to a control that writes back to it. The capture flow is the law's
   // second clause, not a breach of its first: it quotes into a new seal entry
   // and leaves the laurel entry untouched.
-  for (const [file, source] of [["LivingMargin.tsx", margin], ["LanguageWordsSection.tsx", words]] as const) {
+  for (const [file, source] of [
+    ["LivingMargin.tsx", margin],
+    ["LanguageWordsSection.tsx", words],
+    // The podcast transport left the margin for the app shell and took its
+    // seek bar with it. The sweep follows the control rather than the file it
+    // used to sit in: a check that lapses when a control moves house was never
+    // checking the control.
+    ["PodcastPlayer.tsx", player],
+  ] as const) {
     // `contentEditable` as an *attribute we set* is the breach. The margin's
     // focus-trap selector mentions the attribute in order to find other
     // people's editable nodes, which is the opposite of making one.
@@ -448,14 +457,16 @@ test("laurel prose is never edited in place", () => {
       /<(?:textarea|input|ControlTextarea|ControlInput)\b[\s\S]{0,400}?\/?>/gi,
     )];
     // Say the number out loud, so a new control cannot arrive unexamined: the
-    // day the margin grows one, this fails and sends the author to the loop
-    // underneath rather than letting it wave the control through.
+    // day one of these surfaces grows one, this fails and sends the author to
+    // the loop underneath rather than letting it wave the control through.
     //
-    // LivingMargin draws exactly one — the podcast scrub, an <input type=range>
-    // bound to playback position. It was reviewed against the loop below when it
+    // PodcastPlayer draws exactly one — the scrub, an <input type=range> bound
+    // to playback position. It was reviewed against the loop below when it
     // landed: a seek bar edits a number of seconds, and there is no path from it
-    // to a licensed string. Raise this only after the same review.
-    const allowed = file === "LivingMargin.tsx" ? 1 : 0;
+    // to a licensed string. LivingMargin drew that same control until the
+    // transport moved out of it, and is back to none: the margin renders
+    // licensed prose and now edits nothing at all.
+    const allowed = file === "PodcastPlayer.tsx" ? 1 : 0;
     assert.equal(bindings.length, allowed,
       `${file} now draws ${bindings.length} editable control(s), expected ${allowed}. That is not `
       + "forbidden, but the licensed-prose check below has not run against the new one — review it, "

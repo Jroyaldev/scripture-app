@@ -1,0 +1,391 @@
+/* Owned partial — the podcast dock. Rules for this surface live here rather
+   than in styles.css. Anything that must CHANGE an existing rule in styles.css
+   belongs in styles.css and is written there: the toast lane, the panel's
+   bottom reservation, and the per-publisher palette the dock shares with the
+   resource cards are all in that file for exactly that reason.
+
+   The dock is the app's only persistent floating surface. Everything else that
+   floats is a decision waiting to be made and leaves when it is made; this one
+   stays because the thing it represents — a voice, still talking — stays. So it
+   is the quietest floating thing in the app: paper, a hairline, one shadow,
+   three sizes of type, and no colour at all except the publisher's own rule and
+   the seal on whatever has focus. */
+
+.podcast-dock {
+  /* Above every instrument inside the shell, below every decision outside it:
+     the marking dock sits at 10, the marking palette at 120, and popovers,
+     toasts and dialogs are all portaled past the shell entirely. A player is
+     never the thing a reader is being asked about. */
+  position: fixed;
+  right: var(--sp-xl);
+  bottom: var(--sp-xl);
+  z-index: 200;
+  display: grid;
+  gap: 9px;
+  width: min(408px, calc(100vw - 48px));
+  padding: 11px 13px 0;
+  border: 1px solid color-mix(in srgb, var(--border-medium) 76%, transparent);
+  border-radius: var(--radius-md);
+  background: var(--bg-float);
+  box-shadow: var(--shadow-elevated);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  backdrop-filter: blur(var(--material-blur)) saturate(var(--material-saturate));
+  animation: podcast-dock-in 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* A shelved Dock owns the bottom band of the reading stage. Both are permanent
+   bottom-edge surfaces, so the player takes the lane the toasts vacate rather
+   than landing on the marking instruments. The numbers are the toast lane's,
+   deliberately: one band, one set of offsets. */
+.app-shell:has(.marking-dock-host[data-dock-layout="shelf"]) .podcast-dock {
+  bottom: calc(104px + env(safe-area-inset-bottom));
+}
+
+.app-shell:has(.marking-dock-host[data-dock-layout="stacked"]) .podcast-dock {
+  bottom: calc(144px + env(safe-area-inset-bottom));
+}
+
+.app-shell:has(.marking-dock-host[data-dock-layout="stacked"][data-dock-state="rest"]) .podcast-dock {
+  bottom: calc(74px + env(safe-area-inset-bottom));
+}
+
+@keyframes podcast-dock-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── The head: whose voice, and where it is working ───────────────────────── */
+
+.podcast-dock-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+/* The publisher's colour, at the size of a mark and no larger. No logo: the
+   approved marks are the reversed variants and need the brand surface under
+   them, which this dock deliberately does not have. */
+.podcast-dock-imprint {
+  flex: 0 0 auto;
+  width: 2px;
+  height: 11px;
+  border-radius: var(--radius-mark);
+  background: var(--resource-accent, var(--resource-source, var(--text-tertiary)));
+}
+
+.podcast-dock-publisher {
+  flex: 0 1 auto;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font: var(--fw-medium) 0.59375rem/1.2 var(--font-mono);
+  letter-spacing: 0.13em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* The one place in the dock that reads as scripture, so it is set as a
+   reference and not as a label. It is also the way back to the passage the
+   episode is about, which is the only navigation a player has any business
+   offering. */
+.podcast-dock-passage {
+  flex: 0 0 auto;
+  /* The kicker is letterspaced and its last letter carries a trailing space of
+     its own, so the interval either side of it is measured rather than equal. */
+  margin-right: auto;
+  margin-left: 4px;
+  padding: 1px 0;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: none;
+  color: var(--text-secondary);
+  font: var(--fw-medium) 0.75rem/1.2 var(--font-reading);
+  letter-spacing: -0.005em;
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.podcast-dock-passage:hover {
+  border-bottom-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+.podcast-dock-passage:focus-visible {
+  outline: 2px solid var(--accent-seal);
+  outline-offset: 2px;
+}
+
+/* With no passage to name, the icons still belong at the far end. */
+.podcast-dock-head > .podcast-dock-icon:first-of-type { margin-left: auto; }
+.podcast-dock-passage ~ .podcast-dock-icon:first-of-type { margin-left: 0; }
+
+.podcast-dock-icon {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pebble);
+  background: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.podcast-dock-icon:hover {
+  background: color-mix(in srgb, var(--border-subtle) 62%, transparent);
+  color: var(--text-primary);
+}
+
+.podcast-dock-icon:focus-visible {
+  outline: 2px solid var(--accent-seal);
+  outline-offset: 2px;
+}
+
+/* ── The body: transport at the left, what is playing at the right ────────── */
+
+.podcast-dock-body {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 13px;
+}
+
+.podcast-transport {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.podcast-transport-play {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--border-medium);
+  border-radius: 50%;
+  background: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+/* Gold is a verb, and running is the verb. It marks the state rather than the
+   control, so a paused dock carries no colour at all. */
+.podcast-dock[data-status="playing"] .podcast-transport-play,
+.podcast-dock[data-status="reaching"] .podcast-transport-play {
+  border-color: color-mix(in srgb, var(--accent-seal) 58%, transparent);
+  color: var(--accent-seal);
+}
+
+.podcast-transport-play:hover { border-color: var(--border-strong); }
+.podcast-transport-play:active { transform: scale(0.96); }
+
+.podcast-transport-skip {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+.podcast-transport-skip:hover { color: var(--text-primary); }
+.podcast-transport-skip:active { transform: scale(0.94); }
+
+.podcast-transport-play:focus-visible,
+.podcast-transport-skip:focus-visible {
+  outline: 2px solid var(--accent-seal);
+  outline-offset: 2px;
+}
+
+.podcast-dock-lines {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+/* One line, always. A title that wraps changes the dock's height, and a
+   floating surface that changes height while it plays is a surface that moves
+   under the pointer. The whole title is on the card and in the tooltip. */
+.podcast-dock-title {
+  overflow: hidden;
+  margin: 0;
+  color: var(--text-primary);
+  font: var(--fw-semibold) 0.8125rem/1.35 var(--font-ui);
+  letter-spacing: -0.006em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.podcast-dock-clock {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  color: var(--text-tertiary);
+  font: 0.625rem/1.3 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.podcast-dock-clock-rest { color: var(--text-verse-number); }
+
+/* On the clock's own line and at the clock's own size, because it is what the
+   clock has to say when there is nothing to count. One line, so a failure does
+   not change the height of a surface a reader is pointing at. */
+.podcast-dock-refusal {
+  overflow: hidden;
+  margin: 0;
+  color: var(--error);
+  font: 0.625rem/1.3 var(--font-ui);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── The rail ─────────────────────────────────────────────────────────────── */
+
+/* Along the dock's own bottom edge, because the played part of an episode is
+   the one fact worth stating at the width of the whole surface. It stops 5px
+   short of each side rather than bleeding to the corners: the head is a circle
+   and the corner is an arc, and at value 0 the two of them meet. The input
+   carries a 13px hit band above a 3px line, so the target is a thumb's worth
+   even though what is drawn is a hairline. */
+.podcast-rail {
+  position: relative;
+  height: 13px;
+  margin: 0 -8px 3px;
+}
+
+.podcast-scrub {
+  display: block;
+  width: 100%;
+  height: 13px;
+  margin: 0;
+  background: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+.podcast-scrub::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--accent-seal) 0 var(--podcast-played, 0%),
+    var(--border-medium) var(--podcast-played, 0%) 100%
+  );
+}
+
+/* The head appears where a reader is about to use it and nowhere else: an
+   always-drawn knob on a hairline is a widget, and a hairline that fills is a
+   fact. */
+.podcast-scrub::-webkit-slider-thumb {
+  width: 9px;
+  height: 9px;
+  margin-top: -3px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent-seal);
+  box-shadow: 0 0 0 2px var(--bg-float);
+  opacity: 0;
+  appearance: none;
+  transition: opacity var(--transition-fast);
+}
+
+.podcast-dock:hover .podcast-scrub::-webkit-slider-thumb,
+.podcast-scrub:focus-visible::-webkit-slider-thumb,
+.podcast-scrub:active::-webkit-slider-thumb { opacity: 1; }
+
+.podcast-scrub:focus-visible {
+  outline: 2px solid var(--accent-seal);
+  outline-offset: -1px;
+}
+
+.podcast-scrub:disabled { cursor: default; }
+
+.podcast-dock[data-status="reaching"] .podcast-scrub:disabled::-webkit-slider-runnable-track {
+  background: none;
+}
+
+/* The app's one loading device: a segment travelling a hairline. The rail is
+   already a hairline, so nothing new appears in order to say "waiting". */
+.podcast-rail-reaching {
+  position: absolute;
+  top: 5px;
+  right: 0;
+  left: 0;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--border-medium);
+}
+
+.podcast-rail-reaching::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 28%;
+  background: var(--accent-seal);
+  animation: seal-progress-travel 1100ms linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .podcast-dock { animation: none; }
+  .podcast-dock-icon,
+  .podcast-dock-passage,
+  .podcast-transport-play,
+  .podcast-transport-skip,
+  .podcast-scrub::-webkit-slider-thumb { transition: none; }
+  .podcast-transport-play:active,
+  .podcast-transport-skip:active { transform: none; }
+  .podcast-rail-reaching::after { animation: none; transform: translateX(0); }
+}
+
+@media (forced-colors: active) {
+  .podcast-dock { border: 1px solid CanvasText; background: Canvas; box-shadow: none; }
+  .podcast-dock-imprint { background: CanvasText; }
+  .podcast-dock-publisher,
+  .podcast-dock-title,
+  .podcast-dock-clock,
+  .podcast-dock-clock-rest { color: CanvasText; }
+  .podcast-dock-icon,
+  .podcast-transport-play,
+  .podcast-transport-skip { border: 1px solid ButtonText; color: ButtonText; }
+  .podcast-dock-icon:focus-visible,
+  .podcast-dock-passage:focus-visible,
+  .podcast-scrub:focus-visible,
+  .podcast-transport-play:focus-visible,
+  .podcast-transport-skip:focus-visible { outline-color: Highlight; }
+  .podcast-scrub::-webkit-slider-runnable-track {
+    background: linear-gradient(
+      to right,
+      Highlight 0 var(--podcast-played, 0%),
+      ButtonText var(--podcast-played, 0%) 100%
+    );
+  }
+  .podcast-scrub::-webkit-slider-thumb { background: Highlight; }
+}
+
+/* Below the width where a 408px surface stops being a corner and starts being
+   the corner. The dock keeps every control and gives up its side inset. */
+@media (max-width: 620px) {
+  .podcast-dock {
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    width: auto;
+  }
+}

@@ -168,6 +168,21 @@ export const ATTRIBUTE_VOCABULARY = Object.freeze({
     source: "ScripturePage.tsx, ReadingComfort.tsx, ThemePicker.tsx · the header words",
     values: ["translation", "margin", "focus", "comfort", "theme"],
   },
+  // The transport reports the element's own state rather than our guess at it.
+  // "reaching" is the publisher's server not having answered yet, which is a
+  // different fact from paused and has to be able to look different.
+  "data-status": {
+    source: "src/renderer/components/PodcastPlayer.tsx · PodcastStatus",
+    values: ["idle", "reaching", "playing", "paused", "failed"],
+  },
+  // How a floating surface names itself, so the "is a decision open?" probes in
+  // app.tsx and ScripturePage.tsx can ask without a list of class names. The
+  // player is deliberately outside the dialog/popover pair those probes read:
+  // it is chrome that stays, not a question waiting for an answer.
+  "data-floating-layer": {
+    source: "app.tsx, MarkingSurface.tsx, PodcastPlayer.tsx, Toast.tsx, VersePeek.tsx",
+    values: ["dialog", "peek", "player", "popover", "toast", "toolbar"],
+  },
   "data-relationship-kind": {
     source: "src/renderer/utils/relationshipVocabulary.ts · RELATIONSHIPS",
     values: CONNECTION_KINDS,

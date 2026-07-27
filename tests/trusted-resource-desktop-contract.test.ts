@@ -43,5 +43,18 @@ test("Living Margin shows a publisher's whole answer, and still only links to it
   assert.match(block, /openOfficial/);
   assert.doesNotMatch(block, />Save/);
   assert.doesNotMatch(block, /<img|artwork|embed|description/);
-  assert.match(block, /preload="none"/, "audio must not be fetched before a reader presses play");
+
+  /* The element itself is no longer here. It was, and being here is what killed
+     it: the block unmounts on every study tab, passage and panel close, so an
+     episode lasted exactly as long as a reader stayed put. The transport moved
+     to the app shell — components/PodcastPlayer — and the card now only presses
+     play on it. So the guard moves with the element rather than lapsing: what
+     it protects is that nothing is fetched from a publisher before a reader
+     asks, and that is a property of wherever the element actually is. */
+  assert.doesNotMatch(block, /<audio/,
+    "the margin must not own an audio element again — it cannot keep one alive");
+  const player = read("src/renderer/components/PodcastPlayer.tsx");
+  assert.match(player, /<audio/, "the transport must be exactly where the guard below looks");
+  assert.match(player, /preload="none"/, "audio must not be fetched before a reader presses play");
+  assert.doesNotMatch(player, /autoPlay|<img|<iframe|<video/);
 });
