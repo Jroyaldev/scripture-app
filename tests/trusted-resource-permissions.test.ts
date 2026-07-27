@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { test } from "node:test";
 
@@ -30,10 +30,27 @@ test("reviewed manifests and cards retain the common link-only permission bounda
      refused is still refused, and the one permission granted is held to its
      terms: `preload="none"` is what makes "on press" true rather than merely
      intended — without it the element fetches from the publisher the moment a
-     card renders, which is the surveillance the boundary exists to prevent. */
+     card renders, which is the surveillance the boundary exists to prevent.
+
+     The element sits in components/PodcastPlayer now rather than in the card,
+     because a card is torn down on every study tab and an episode should not
+     be. Where it lives changes nothing about what it may do, so the terms are
+     asserted there — and there is still exactly ONE of it in the renderer,
+     which is what stops two publishers playing over each other. */
   assert.doesNotMatch(block, /<img|<iframe|<video|fetch\(|>Save/);
-  assert.match(block, /<audio/);
-  assert.match(block, /preload="none"/);
+  assert.doesNotMatch(block, /<audio/);
+
+  const player = read("src/renderer/components/PodcastPlayer.tsx");
+  assert.match(player, /<audio/);
+  assert.match(player, /preload="none"/);
+  assert.doesNotMatch(player, /autoPlay|<img|<iframe|<video|fetch\(/);
+
+  const renderer = resolve(root, "src/renderer");
+  const elements = readdirSync(renderer, { recursive: true, encoding: "utf8" })
+    .filter((entry) => entry.endsWith(".tsx"))
+    .filter((entry) => /<audio/.test(readFileSync(resolve(renderer, entry), "utf8")));
+  assert.deepEqual(elements, ["components/PodcastPlayer.tsx"],
+    "one element for the whole app, or two episodes can run at once");
 });
 
 /**
@@ -82,4 +99,40 @@ test("permission review records current official sources and deferred capabiliti
   assert.match(review, /thegospelcoalition\.org\/permissions/);
   assert.match(review, /automated full-catalog crawling/);
   assert.match(review, /background refresh or runtime network access/);
+});
+
+test("audio built ahead of permission stays declared as such wherever it appears", () => {
+  /* BibleProject audio was wired on 2026-07-27 at the maintainer's instruction,
+     explicitly before asking them, so the request could be made against a
+     working thing. That is a reasonable way to build and a terrible thing to
+     forget, because nothing about an un-asked-for capability looks different
+     from an approved one once it is in the tree.
+
+     So the three places that carry it are tied together. Add the host and the
+     disclosure must exist; delete the disclosure and this fails while the host
+     is still live. The only way to make this test quiet is to remove the
+     capability or to come back and record that it was granted. */
+  const simplecast = "afp-597195-injected.calisto.simplecastaudio.com";
+  const built = read("scripts/build-renderer.mjs");
+  const dev = read("src/renderer/index.html");
+  const review = read("docs/trusted-resource-permissions.md");
+  const importer = read("scripts/import-bibleproject-resources.ts");
+
+  const inPolicy = built.includes(simplecast) || dev.includes(simplecast);
+  const inImporter = importer.includes(simplecast);
+
+  if (inPolicy || inImporter) {
+    assert.match(review, /BibleProject audio — BUILT, NOT GRANTED/,
+      "BibleProject audio is wired but the permission review no longer says it is ungranted");
+    assert.match(review, /must not ship until BibleProject grants it/);
+    // And the withdrawal steps stay written down, because a capability nobody
+    // remembers how to remove is one nobody removes.
+    assert.match(review, /drop `mediaHosts` from the source/);
+  }
+
+  /* Both copies of the policy or neither. A media host added to the dev server's
+     page and not to the one that ships reads as working and silently blocks —
+     and the reverse ships a permission the developer never saw. */
+  assert.equal(built.includes(simplecast), dev.includes(simplecast),
+    "the two content-security policies disagree about the Simplecast media host");
 });

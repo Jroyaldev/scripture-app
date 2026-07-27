@@ -54,6 +54,10 @@ const ROOT = resolve(import.meta.dirname, "..");
 const HOST = "bibleproject.com";
 const SITEMAP = `https://${HOST}/en/sitemap.xml`;
 const FEED = "https://feeds.simplecast.com/3NVmUWZO";
+/* Where their audio actually is. Not bibleproject.com — every one of the 534
+   enclosures is an audio/mpeg on Simplecast's CDN, so linking and playing are
+   two different permissions here in a way they were not for Naked Bible. */
+const MEDIA_HOST = "afp-597195-injected.calisto.simplecastaudio.com";
 const USER_AGENT = "Pericope/0.1 (+https://marktheword.com; trusted-resource importer)";
 
 function arg(name: string): string | undefined {
@@ -99,17 +103,24 @@ const fold = (value: string): string =>
   value.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, " ").trim();
 
 /**
- * The two catalogues name the same episode differently, and the difference is
- * systematic: the feed appends the series and its number — "A Cup of Wrath? –
- * Character of God E8" — where the page is titled "A Cup of Wrath?". Indexing
- * the feed under both forms is what lets the join find anything at all; on the
- * full title alone it matched 81 episodes of 535.
+ * The two catalogues name the same episode differently, systematically, and in
+ * opposite directions. The feed appends the series and its number; the page
+ * puts the same thing in front:
+ *
+ *   feed  "A Cup of Wrath? – Character of God E8"
+ *   page  "The Letter of Jude E1: A Family Legacy and a Short Letter"
+ *
+ * So both sides are reduced to the bare episode name and matched on that.
+ * Stripping only the suffix matched 81 episodes of 535; stripping only what the
+ * feed does misses every page in a numbered series, which is most of them.
  */
 function titleKeys(title: string): string[] {
-  const keys = [fold(title)];
-  const trimmed = title.replace(/\s+[–—-]\s+[^–—]*\bE\d+\s*$/i, "").trim();
-  if (trimmed && trimmed !== title) keys.push(fold(trimmed));
-  return keys;
+  const keys = new Set([fold(title)]);
+  const withoutSuffix = title.replace(/\s+[–—-]\s+[^–—]*\bE\d+\s*$/i, "").trim();
+  if (withoutSuffix) keys.add(fold(withoutSuffix));
+  const withoutPrefix = title.replace(/^.{0,60}?\b(?:E\d+|Part\s+\d+|Q\s*[+&]\s*R)\s*[:–—-]\s*/i, "").trim();
+  if (withoutPrefix) keys.add(fold(withoutPrefix));
+  return [...keys].filter(Boolean);
 }
 
 /* ── the episodes the publisher publishes ────────────────────────────────── */
@@ -138,6 +149,7 @@ const CHAPTER = /<li>\s*([\s\S]*?)\s*\(\s*(\d{1,2}:\d{2}(?::\d{2})?)\s*[-–]\s*
 type FeedFacts = {
   publishedAt?: string;
   durationMinutes?: number;
+  audioUrl?: string;
   summary: string;
   chapters: Array<{ label: string; start: string; end: string }>;
 };
@@ -162,7 +174,12 @@ for (const block of feedItems) {
     ? Math.round(parts.reduce((total, part) => total * 60 + part, 0) / 60)
     : 0;
 
+  const enclosure = /<enclosure[^>]*\burl="([^"]+)"/.exec(block)?.[1];
+  const audio = enclosure ? decode(enclosure) : "";
+  let audioHost = ""; try { audioHost = new URL(audio).hostname; } catch { audioHost = ""; }
+
   const facts: FeedFacts = {
+    ...(audioHost === MEDIA_HOST ? { audioUrl: audio } : {}),
     ...(date && !Number.isNaN(date.getTime()) ? { publishedAt: date.toISOString().slice(0, 10) } : {}),
     ...(minutes > 0 ? { durationMinutes: minutes } : {}),
     summary: prose.split(/\bCHAPTERS\b/)[0]?.slice(0, 600).trim() ?? "",
@@ -209,7 +226,7 @@ async function pull(url: string): Promise<void> {
     url,
     stated,
     brefs,
-    ...(byTitle.get(fold(title)) ?? {}),
+    ...(titleKeys(title).map((key) => byTitle.get(key)).find(Boolean) ?? {}),
   });
   done += 1;
   if (done % 25 === 0) process.stdout.write(`\r  pages:   ${done}/${wanted.length}`);
@@ -236,10 +253,9 @@ for (const episode of episodes) {
     officialUrl: episode.url,
     brefs: episode.brefs,
     /* The publisher tagged their own episode with these coordinates. That is
-       their claim, not our reading of a headline. Audio is deliberately absent:
-       it is served from a Simplecast CDN this source has not declared, and
-       permission to link has never been permission to fetch. */
+       their claim, not our reading of a headline. */
     matchBasis: "publisher-scripture-tag",
+    ...(episode.audioUrl ? { audioUrl: episode.audioUrl } : {}),
     metadata: {
       ...(episode.publishedAt ? { publishedAt: episode.publishedAt } : {}),
       ...(episode.durationMinutes ? { durationMinutes: episode.durationMinutes } : {}),
@@ -256,6 +272,10 @@ const manifest: TrustedResourceManifestV1 = {
     name: "BibleProject",
     homepageUrl: `https://${HOST}/`,
     officialHosts: [HOST],
+    /* Declared so the audio may be played at all, and declared separately
+       from the link host because it is a separate grant. Permission to link
+       has never been permission to fetch. */
+    mediaHosts: [MEDIA_HOST],
   },
   provenance: {
     publisher: "BibleProject",

@@ -130,6 +130,15 @@ moved. What makes this narrower than the "no audio" it replaces:
   the publisher, kept nowhere. No download, no cache, no copy.
 - **The link stays.** Play sits beside the outbound verb rather than replacing
   it; the card still says where the episode lives.
+- **One element, and it outlives the card.** Amended 2026-07-27: the element
+  moved out of the resource card into the app shell, because a card is torn
+  down on every study tab, passage and panel close and an episode should not be.
+  Nothing about the permission moved with it — same `preload="none"`, same one
+  element for the whole app, same single declared host — and one thing was
+  added: the dock's stop releases the file (`src` removed, element reloaded)
+  rather than leaving a connection idling on a server that is not ours. A test
+  holds that exactly one `<audio>` exists in the renderer, so two publishers
+  can never play at once.
 
 The renderer's content-security policy names the one approved host rather than
 widening to a scheme, so an audio URL that slipped past validation still could
@@ -138,6 +147,37 @@ not load.
 Approved for the Naked Bible Podcast on 2026-07-27, whose audio is served from
 its own domain. TGC's audio sits on a CDN and Working Preacher's behind a player
 page; neither is enabled, and each would need its own decision.
+
+### BibleProject audio — BUILT, NOT GRANTED
+
+**This capability is wired and must not ship until BibleProject grants it.**
+
+Built on 2026-07-27 at the maintainer's instruction, explicitly ahead of
+permission, so that the request can be made against something real rather than a
+description. Nothing about it is approved.
+
+It is the first grant where linking and playing point at different parties. The
+episode pages are on `bibleproject.com`; all 534 audio enclosures are
+`audio/mpeg` on `afp-597195-injected.calisto.simplecastaudio.com`, a Simplecast
+CDN. So the source declares that CDN in `mediaHosts`, and the renderer's policy
+names it in `media-src` — one host, not a scheme, in both copies of the policy.
+
+What is deliberately *not* claimed by having built it: a public download button
+on the episode page shows the publisher intends listeners to have the file. That
+is a good fact to bring to the conversation. It is not the conversation.
+
+To withdraw it, if permission is refused or simply not obtained:
+
+1. drop `mediaHosts` from the source in `scripts/import-bibleproject-resources.ts`
+   and re-run the importer — records lose `audioUrl`, because the validator
+   refuses audio from a source that declares no media host;
+2. remove the Simplecast host from `media-src` in **both**
+   `scripts/build-renderer.mjs` and `src/renderer/index.html`;
+3. delete this section, which a test requires to exist while the host is present.
+
+That test is the point of writing this down. A capability built ahead of
+permission is one forgotten conversation away from shipping as though it had
+been granted, and the repo should not rely on anyone remembering.
 
 Transcripts are a separate question and remain out. The Naked Bible Podcast
 publishes transcript PDFs, and indexing their URLs would be catalogue metadata,
