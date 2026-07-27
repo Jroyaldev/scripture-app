@@ -19335,16 +19335,13 @@ button.lang-phrase-diagram-node:focus-visible,
   text-indent: 0;
 }
 
-/* The library panel. It opens where a card opens but must not read as one:
-   cards are what this passage offers, and this is what the reader keeps. Paper,
-   a hairline, and no brand colour of its own. */
+/* The library panel opens where a card opens, and its rows carry their own
+   border — so a panel border around them was a box drawn around boxes. The
+   rows are the object; the panel is only their order. What separates this from
+   the cards is that its rows are paper and theirs are brand colour. */
 .trusted-resource-library {
   display: grid;
-  gap: 14px;
-  padding: 14px 15px 15px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 12px;
-  background: var(--bg-float);
+  gap: 12px;
 }
 
 .trusted-resource-library-lead {
@@ -19372,7 +19369,7 @@ button.lang-phrase-diagram-node:focus-visible,
 /* The matrix: one row per publisher, and inside it only the kinds that
    publisher actually holds. A full grid would be thirty cells with a dozen
    filled, and drawing emptiness is not rigour. */
-.resource-matrix { display: grid; gap: 10px; }
+.resource-matrix { display: grid; gap: 8px; }
 .resource-matrix-status { margin: 0; color: var(--text-tertiary); font: 0.6875rem/1.5 var(--font-ui); }
 
 .resource-matrix-row {

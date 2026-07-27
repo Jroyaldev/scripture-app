@@ -557,8 +557,7 @@ function TrustedResourcesBlock({
           {openedSource === FILTERS && (
             <div className="trusted-resource-library">
               <p className="trusted-resource-library-lead">
-                Your library, everywhere — not just this passage. Everything links out to the
-                publisher; nothing is fetched while you read.
+                Your library, everywhere — not just this passage.
               </p>
               <ResourceLibraryMatrix
                 catalogue={catalogue}

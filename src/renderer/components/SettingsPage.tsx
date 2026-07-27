@@ -521,13 +521,9 @@ export function SettingsPage({
             <SectionHeading
               id="resources"
               title="Trusted resources"
-              description="Which publishers may offer you something beside the passage you are reading. Everything here links out; nothing is fetched while you read."
+              description="Which publishers, and which kinds from each, may offer you something beside the passage you are reading. This applies everywhere and lasts until you change it. Everything links out; nothing is fetched while you read."
             />
             <div className="settings-field">
-              <div className="settings-field-heading">
-                <label>Publishers</label>
-                <p>Switching one off hides its cards everywhere. Its catalogue stays installed, and the margin still tells you how many it held back.</p>
-              </div>
               {resourceError && <p className="settings-note is-error">{resourceError}</p>}
               <ResourceLibraryMatrix
                 catalogue={resourceCatalogue}
