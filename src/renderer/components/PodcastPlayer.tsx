@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "reac
 import type { BookNameData } from "../api.js";
 import type { Transcript } from "../../core/transcripts.js";
 import { readingLines } from "../../core/transcripts.js";
+import type { AnchorSet } from "../../core/anchors.js";
 import { safeCall } from "../utils/safeCall.js";
 import { useToast } from "./Toast.js";
 
@@ -31,19 +32,19 @@ import { useToast } from "./Toast.js";
 /**
  * A named span inside an episode, with the passage it works through.
  *
- * NOT WIRED. Nothing populates this yet. No trusted-resource adapter returns
- * chapter data, and none of the manifests carry it — see
- * src/core/resources/trusted-resources.ts, whose records are deliberately
- * body-less. The dock renders the list whenever an episode arrives carrying
- * one, and renders none when it does not, so the surface is ready for whichever
- * of these lands first:
+ * WIRED as of 2026-07-28, by the second of the two routes this comment
+ * anticipated: anchors derived from the machine transcript, in
+ * `src/core/anchors.ts`. Every chapter of the Bible is scored against every
+ * window of an episode and the strongest few survive an evidence bar — a
+ * passage the publisher named plus a good score, or a good score plus the book
+ * being spoken nearby. Score alone is written to the artifact and never loaded,
+ * because it was measured at roughly half the reliability of the other two and
+ * does not improve as the score rises.
  *
- *   · a publisher's own chapters, from the Podcasting 2.0 `podcast:chapters`
- *     tag or ID3 CHAP frames, parsed in the adapter that fetched the record;
- *   · our own, derived from the passage index the ranking already computes when
- *     it matches an episode to a bref.
- *
- * Until then this type is the contract, not a promise.
+ * The first route is still open and still wins where it exists: an episode that
+ * arrives carrying its own chapters — a publisher's `podcast:chapters` tag or
+ * ID3 CHAP frames — keeps them, because a publisher saying where their own
+ * passage is beats us inferring it.
  */
 export interface PodcastChapter {
   /** Seconds from the start of the file. */
@@ -402,6 +403,8 @@ export function PodcastPlayer({
   const activeLineRef = useRef<HTMLLIElement>(null);
   const [following, setFollowing] = useState(true);
   const [query, setQuery] = useState("");
+  /* undefined while unasked, null once we know there are none. */
+  const [anchors, setAnchors] = useState<AnchorSet | null | undefined>(undefined);
   const [rateIndex, setRateIndex] = useState(0);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -458,13 +461,18 @@ export function PodcastPlayer({
      sheet is not asking the disk anything new, and the answer for an episode
      does not change while it is playing. */
   useEffect(() => {
-    if (!episode) { setTranscript(undefined); return; }
+    if (!episode) { setTranscript(undefined); setAnchors(undefined); return; }
     let live = true;
     setTranscript(undefined);
+    setAnchors(undefined);
     void window.api.transcripts.load(episode.recordId).then((result) => {
       if (!live) return;
       setTranscript(result.ok ? result.transcript : null);
     }).catch(() => { if (live) setTranscript(null); });
+    void window.api.anchors.load(episode.recordId).then((result) => {
+      if (!live) return;
+      setAnchors(result.ok ? result.anchors : null);
+    }).catch(() => { if (live) setAnchors(null); });
     return () => { live = false; };
   }, [episode?.recordId]);
 
@@ -501,9 +509,12 @@ export function PodcastPlayer({
     setScrubbingAt(null);
   };
 
-  /* Chapters are drawn only when an episode brought some; nothing does yet.
-     See PodcastChapter for what would. */
-  const chapters = episode?.chapters ?? [];
+  /* Chapters, at last. An episode may still bring its own — a publisher's
+     `podcast:chapters` would arrive that way — and those win, because a
+     publisher saying where their own passage is beats us inferring it. */
+  const chapters: PodcastChapter[] = episode?.chapters
+    ?? anchors?.anchors.map((a) => ({ start: a.start, bref: a.bref, title: a.title }))
+    ?? [];
   const chapterIndex = chapters.reduce(
     (found, chapter, index) => (position >= chapter.start ? index : found),
     -1,

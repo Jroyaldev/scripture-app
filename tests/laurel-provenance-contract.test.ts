@@ -460,13 +460,22 @@ test("laurel prose is never edited in place", () => {
     // day one of these surfaces grows one, this fails and sends the author to
     // the loop underneath rather than letting it wave the control through.
     //
-    // PodcastPlayer draws exactly one — the scrub, an <input type=range> bound
-    // to playback position. It was reviewed against the loop below when it
-    // landed: a seek bar edits a number of seconds, and there is no path from it
-    // to a licensed string. LivingMargin drew that same control until the
-    // transport moved out of it, and is back to none: the margin renders
-    // licensed prose and now edits nothing at all.
-    const allowed = file === "PodcastPlayer.tsx" ? 1 : 0;
+    // PodcastPlayer draws exactly two.
+    //
+    // The scrub, an <input type=range> bound to playback position. Reviewed
+    // when it landed: a seek bar edits a number of seconds, and there is no
+    // path from it to a licensed string.
+    //
+    // The transcript search field, added 2026-07-28, an <input type=search>
+    // bound to a `query` string this component owns. Reviewed on the same
+    // terms: it holds what a reader typed, it is never seeded from a record,
+    // and its placeholder is our own words. What it filters is machine
+    // transcript rather than licensed publisher prose — and filtering is not
+    // binding in any case, since the licensed text never reaches the control.
+    //
+    // LivingMargin drew the scrub until the transport moved out of it, and is
+    // back to none: the margin renders licensed prose and now edits nothing.
+    const allowed = file === "PodcastPlayer.tsx" ? 2 : 0;
     assert.equal(bindings.length, allowed,
       `${file} now draws ${bindings.length} editable control(s), expected ${allowed}. That is not `
       + "forbidden, but the licensed-prose check below has not run against the new one — review it, "

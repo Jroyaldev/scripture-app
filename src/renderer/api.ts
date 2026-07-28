@@ -1,5 +1,6 @@
 import type { AppMaterial, AppTheme } from "./theme.js";
 import type { Transcript, TranscriptRefusal } from "../core/transcripts.js";
+import type { AnchorSet } from "../core/anchors.js";
 import type { EntityResearchData } from "../core/entities/place-research.js";
 import type {
   ConnectionAnchorV2,
@@ -108,6 +109,14 @@ declare global {
            transcript yet, and the player has to render that quietly. */
         load(recordId: string): Promise<
           | { ok: true; transcript: Transcript }
+          | { ok: false; reason: TranscriptRefusal }
+        >;
+      };
+      anchors: {
+        /* Absence is ordinary — an episode may have no moment that cleared the
+           evidence bar, which is a result rather than a fault. */
+        load(recordId: string): Promise<
+          | { ok: true; anchors: AnchorSet }
           | { ok: false; reason: TranscriptRefusal }
         >;
       };
