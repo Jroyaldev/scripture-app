@@ -665,6 +665,7 @@ function TrustedResourcesBlock({
                               officialUrl: resource.record.officialUrl,
                               audioUrl: resource.record.audioUrl as string,
                               bref: resource.matchedBref,
+                              kind: resource.record.kind,
                             })}
                             type="button"
                           >

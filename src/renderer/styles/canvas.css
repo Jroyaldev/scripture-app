@@ -173,6 +173,22 @@
   );
 }
 
+/* The panel's closed edge travels with the panel. With a player standing below
+   it the panel is shorter by exactly that height plus a gutter, so its fade has
+   to rise by the same amount or it would be drawn across the player instead of
+   across the last entry. */
+/* Gone, not moved. This band exists to close an edge that would otherwise run
+   off the bottom of the window — §05·1's "the passage scrolls under the leaf
+   inside its own radii". With a player standing below it the panel already has
+   a real bottom: a hard edge, its own radius, and 24px of canvas under it. A
+   fade on top of that closure is a second one, and at any weight it read as a
+   wash across whatever card happened to be last. The panel keeps its fade in
+   every other configuration; it only gives it up when something else is
+   already doing the job. */
+.app-shell:has(.podcast-dock) .scripture-body:has(> .living-margin)::after {
+  content: none;
+}
+
 /* The narrow shell puts the panel in the column's lower half with its own
    shadow and its own two sizes, and squares the page off underneath it. There
    is no bottom edge of the frame down there for this to close, and drawing one

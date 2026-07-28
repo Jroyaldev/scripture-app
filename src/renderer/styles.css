@@ -352,6 +352,11 @@
      it is the same 8 the tile uses as its flex gap. */
   --rail-label-x: calc(var(--rail-tile-inset) + var(--rail-tile) + 8px);
   --margin-width: 380px;
+  /* The collapsed dock's own height. Everything that has to keep clear of it
+     reads this — the study panel's floor, its scroll padding, the toast lane
+     and the panel's closing fade — so the reservation is one number rather
+     than a set of copies that drift apart. */
+  --podcast-dock-h: 138px;
   --reading-max-width: 660px;
   --verse-gutter: 32px;
   /* The margin's tab row sticks below its header. One value drives the
@@ -5286,13 +5291,19 @@ html, body, #root {
   scroll-padding-top: 78px;
 }
 
-/* The podcast dock parks over this panel's bottom-right corner, so the panel
-   grows a floor the height of it. A floating surface that covers the last two
-   entries of a scroll is a surface that has taken something away, and the last
-   entry here is often the resource card the episode was started from. */
+/* The panel STOPS above the player rather than growing a floor under it. Extra
+   padding only moves the end of the list; everything before the end still
+   scrolls under the player, and a surface that covers the entries passing
+   beneath it has taken them away. Shortening the box instead gives the panel a
+   real bottom edge — with its own radius and its own closing fade landing on
+   it — and leaves the player standing below, one gutter clear. */
 .app-shell:has(.podcast-dock) .living-margin {
-  padding-bottom: calc(var(--page-padding-block) + 40px + 117px);
-  scroll-padding-bottom: 117px;
+  margin-bottom: calc(var(--podcast-dock-h) + var(--sp-xl));
+  /* The panel's own gutter, the same --sp-xl it holds on the left and right.
+     The resting value clears a 40px fade that is no longer drawn here, and
+     every pixel of the surplus was scrollable emptiness under the last card —
+     the list appearing to continue past where it ends. */
+  padding-bottom: var(--sp-xl);
 }
 
 .margin-connection-inspector {
@@ -7607,7 +7618,7 @@ html, body, #root {
    103 is the dock's own height and 14 the interval between two floating things.
    scripts/qa-podcast-player.mjs measures the live dock against both numbers, so
    they cannot drift away from the surface they describe in silence. */
-.app-shell:has(.podcast-dock) + .toast-container { --player-lane: 117px; }
+.app-shell:has(.podcast-dock) + .toast-container { --player-lane: calc(var(--podcast-dock-h) + var(--sp-xl)); }
 
 .toast {
   --toast-tone: var(--text-tertiary);
@@ -19180,7 +19191,20 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint[data-source="naked-bible"] .trusted-resource-source,
 .trusted-resource-imprint[data-source="working-preacher"] .trusted-resource-source,
 .trusted-resource-imprint[data-source="bibleproject"] .trusted-resource-source,
-.trusted-resource-imprint[data-source="the-gospel-coalition"] .trusted-resource-source {
+.trusted-resource-imprint[data-source="the-gospel-coalition"] .trusted-resource-source,
+/* The dock's masthead takes the same mark on the same terms — and takes it HERE
+   rather than in styles/player.css where the rest of that surface is written.
+   A relative url() inside a custom property resolves against the stylesheet
+   that SUBSTITUTES the variable, not the one that declares it. The brand paths
+   above are written relative to this file, so they only land from this file:
+   substituted from the partial they resolve a directory deeper, into
+   styles/assets/brand/, and every mark comes back blank. This rule belongs to
+   the marks, and the marks live here. */
+.podcast-dock[data-source="working-preacher"] .podcast-mast-source,
+.podcast-dock[data-source="bibleproject"] .podcast-mast-source,
+.podcast-dock[data-source="the-gospel-coalition"] .podcast-mast-source,
+.podcast-dock[data-source="enter-the-bible"] .podcast-mast-source,
+.podcast-dock[data-source="naked-bible"] .podcast-mast-source {
   display: block;
   height: var(--resource-mark-height);
   aspect-ratio: var(--resource-mark-ratio);
