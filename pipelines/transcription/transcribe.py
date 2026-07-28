@@ -141,14 +141,20 @@ def fetch(episode: dict) -> dict:
     """Download one episode's mp3 into the audio Volume.
 
     Downloaded to /tmp rather than straight into the Volume, per Modal's
-    guidance, then published in two steps: copy into the Volume under a
-    .partial name, then replace. The replace is what matters — it is atomic
-    only because both names are on the same filesystem, so a container dying
-    mid-copy leaves a .partial that no later run mistakes for a finished file.
+    guidance, then copied across in one step.
 
-    os.rename cannot be used to cross from /tmp into the Volume: they are
-    different devices and it fails with EXDEV, which is what the first pilot
-    run discovered on all ten episodes at once.
+    The publish is deliberately NOT a rename. Two attempts to make it one both
+    failed, and for the same underlying reason: a Volume is not a local
+    filesystem. os.rename from /tmp fails with EXDEV because they are different
+    devices; writing a .partial beside the target and replacing it fails with
+    EPERM under concurrent writers. The atomic boundary here is not a rename at
+    all — it is commit(). Data that has not been committed does not persist, so
+    a container dying mid-copy leaves nothing behind, which is exactly the
+    property the .partial dance was trying to reconstruct by hand.
+
+    The size check is what the rename was really protecting against: a copy
+    that ends early would otherwise commit a truncated file that every later
+    run treats as finished.
     """
     key = _key(episode["id"])
     target = pathlib.Path(AUDIO_DIR) / f"{key}.mp3"
@@ -168,10 +174,11 @@ def fetch(episode: dict) -> dict:
     if size == 0:
         raise RuntimeError(f"empty download for {episode['id']}")
 
-    partial = target.with_suffix(".mp3.partial")
-    shutil.copyfile(staging, partial)
-    os.replace(partial, target)
+    shutil.copyfile(staging, target)
     staging.unlink(missing_ok=True)
+    if target.stat().st_size != size:
+        target.unlink(missing_ok=True)
+        raise RuntimeError(f"short write for {episode['id']}")
     audio_volume.commit()
     return {"id": episode["id"], "status": "fetched", "bytes": size}
 

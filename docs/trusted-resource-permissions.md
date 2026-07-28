@@ -179,9 +179,51 @@ That test is the point of writing this down. A capability built ahead of
 permission is one forgotten conversation away from shipping as though it had
 been granted, and the repo should not rely on anyone remembering.
 
-Transcripts are a separate question and remain out. The Naked Bible Podcast
-publishes transcript PDFs, and indexing their URLs would be catalogue metadata,
-but storing or displaying the text is storing a publisher's body.
+## Transcripts — amended 2026-07-28
+
+The earlier ruling here was that transcripts remain out: indexing a publisher's
+transcript URL would be catalogue metadata, but storing or displaying the text
+is storing a publisher's body. That reasoning still holds, and it is why this
+needed a grant rather than a judgement call.
+
+**BibleProject granted transcripts on 2026-07-28**, on one condition: that the
+transcriptions are not mischaracterized. No other source is granted. Requests
+are outstanding elsewhere, and until each is answered this capability covers
+exactly one publisher.
+
+What makes the capability narrower than "transcripts are allowed":
+
+- **Per source, enforced on data rather than intent.**
+  `TRANSCRIPT_APPROVED_SOURCES` in `src/core/transcripts.ts` names the granted
+  publishers, and a transcript whose record belongs to any other source is
+  refused before its file is read. An ungranted publisher's transcript cannot
+  be displayed by forgetting a check, because there is nothing to forget — the
+  record id itself is refused.
+- **Machine transcripts declare themselves.** Every record carries
+  `generated: true` and the model that produced it, the panel prints the model
+  beside the text, and the loader refuses any file that omits the claim. That is
+  the granted condition made structural: generated text cannot pass for
+  something a person wrote. Some of these words are wrong, which is precisely
+  why the provenance is not decoration.
+- **Ours, not theirs.** These are machine transcripts of the publisher's audio,
+  not the publisher's own transcript text. BibleProject publishes official
+  transcripts for roughly half its catalogue; those are a separate artifact and
+  this grant is not a licence to copy them.
+- **Their own store, outside the manifest.** Transcripts live in
+  `.artifacts/transcripts/`, keyed by record id. The trusted-resource manifest
+  stays a link-only catalogue with no body-shaped field in it, so the schema
+  that refuses `body`, `description` and `excerpt` is unchanged and its tests
+  pass untouched.
+- **No fetching.** Nothing here reaches a publisher's server. Transcripts are
+  produced by an explicitly invoked pipeline (`pipelines/transcription/`) and
+  read from local disk.
+
+The separate store is the honest weak point: it does not inherit `hasOnlyKeys`,
+host gating or provenance validation, so it carries its own fail-closed reader
+instead. That was the right call while the question was open. Now that one
+source is granted and others are pending, whether transcripts should become a
+declared manifest capability — the way `mediaHosts` made audio one — is worth
+revisiting rather than left settled by default.
 
 ## Importing
 

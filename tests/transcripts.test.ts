@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readTranscript, transcriptKey } from "../src/core/transcripts.js";
+import { readFileSync } from "node:fs";
+import {
+  TRANSCRIPT_APPROVED_SOURCES,
+  isTranscriptApprovedSource,
+  readTranscript,
+  transcriptKey,
+} from "../src/core/transcripts.js";
 
 function valid(overrides: Record<string, unknown> = {}): unknown {
   return {
@@ -87,6 +93,45 @@ test("a transcript missing its own id falls back to the record that asked", () =
  * pipeline that writes it lives in another language. If these two ever disagree
  * every transcript becomes unreachable at once, and nothing else would say so.
  */
+/**
+ * BibleProject granted transcripts on 2026-07-28; nobody else has. A grant is a
+ * fact about a conversation that happened, so it is recorded rather than
+ * inferred, and the refusal happens on the record id before any file is opened
+ * — an ungranted publisher's transcript has no path to a reader even if one
+ * were sitting on disk.
+ */
+test("only a publisher who granted transcripts can have one loaded", () => {
+  assert.ok(isTranscriptApprovedSource("bibleproject:podcast:anything"));
+  for (const ungranted of [
+    "naked-bible:podcast:whatever",
+    "working-preacher:commentary:whatever",
+    "the-gospel-coalition:article:whatever",
+    "enter-the-bible:article:whatever",
+    "",
+  ]) {
+    assert.equal(isTranscriptApprovedSource(ungranted), false, `${ungranted} has not granted`);
+  }
+});
+
+/**
+ * The list and the permissions doc have to move together. A source added to the
+ * code without a line in the doc is a capability shipping as though it had been
+ * granted — the same failure the BUILT-NOT-GRANTED test exists to prevent for
+ * audio, and the reason that test was written rather than trusted to memory.
+ */
+test("every approved source is named in the permissions doc", () => {
+  const doc = readFileSync("docs/trusted-resource-permissions.md", "utf-8");
+  const amendment = doc.slice(doc.indexOf("## Transcripts"));
+  assert.ok(amendment.length > 0, "the doc must carry a transcripts section");
+  assert.match(amendment, /2026-07-28/, "the grant must carry the date it was given");
+  for (const source of TRANSCRIPT_APPROVED_SOURCES) {
+    assert.ok(
+      amendment.toLowerCase().includes(source.replace(/-/g, "")),
+      `${source} is approved in code but not named in the permissions doc`,
+    );
+  }
+});
+
 test("the key matches the pipeline's, colon for colon", () => {
   assert.equal(
     transcriptKey("bibleproject:podcast:day-lord-question-response"),

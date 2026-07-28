@@ -1,5 +1,5 @@
 import type { AppMaterial, AppTheme } from "./theme.js";
-import type { Transcript } from "../core/transcripts.js";
+import type { Transcript, TranscriptRefusal } from "../core/transcripts.js";
 import type { EntityResearchData } from "../core/entities/place-research.js";
 import type {
   ConnectionAnchorV2,
@@ -108,7 +108,7 @@ declare global {
            transcript yet, and the player has to render that quietly. */
         load(recordId: string): Promise<
           | { ok: true; transcript: Transcript }
-          | { ok: false; reason: "absent" | "unreadable" | "refused" }
+          | { ok: false; reason: TranscriptRefusal }
         >;
       };
       trustedResources: {

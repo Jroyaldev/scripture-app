@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { readFileSyncInterruptible } from "./exec-sync.js";
-import { readTranscript, transcriptKey } from "../core/transcripts.js";
+import { isTranscriptApprovedSource, readTranscript, transcriptKey } from "../core/transcripts.js";
 import type { TranscriptResult } from "../core/transcripts.js";
 
 /**
@@ -17,6 +17,12 @@ export function transcriptDirectory(libraryPath: string): string {
 }
 
 export function loadTranscript(libraryPath: string, recordId: string): TranscriptResult {
+  /* Before the file, not after it. A transcript for a publisher who has not
+     granted them must have no path to a reader, and the cheapest way to
+     guarantee that is to refuse the id rather than the contents — a file that
+     is never opened cannot be displayed by a later mistake. */
+  if (!isTranscriptApprovedSource(recordId)) return { ok: false, reason: "ungranted" };
+
   const path = join(transcriptDirectory(libraryPath), `${transcriptKey(recordId)}.json`);
   /* Absence is the ordinary answer, not a failure: almost every episode has no
      transcript yet, and the caller has to be able to tell that apart from a

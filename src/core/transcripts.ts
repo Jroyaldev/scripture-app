@@ -44,7 +44,28 @@ export interface Transcript {
   audioSeconds: number | null;
 }
 
-export type TranscriptRefusal = "absent" | "unreadable" | "refused";
+/**
+ * Publishers who have granted transcripts, and only those.
+ *
+ * BibleProject granted on 2026-07-28, conditioned on the transcriptions not
+ * being mischaracterized — which is what `generated` and `model` below are for.
+ * Requests to other publishers are outstanding; until one is answered, adding
+ * its id here would be assuming an answer rather than recording one.
+ *
+ * Kept as data rather than as a check somewhere in the loader so the refusal
+ * cannot be forgotten: a source absent from this list has no path to being
+ * displayed, and `docs/trusted-resource-permissions.md` must name every id in
+ * it — a test holds the two together.
+ */
+export const TRANSCRIPT_APPROVED_SOURCES: readonly string[] = ["bibleproject"];
+
+/** Record ids are `${sourceId}:${kind}:${slug}`; the grant is per publisher. */
+export function isTranscriptApprovedSource(recordId: string): boolean {
+  const sourceId = recordId.split(":")[0] ?? "";
+  return TRANSCRIPT_APPROVED_SOURCES.includes(sourceId);
+}
+
+export type TranscriptRefusal = "absent" | "unreadable" | "refused" | "ungranted";
 
 export type TranscriptResult =
   | { ok: true; transcript: Transcript }
