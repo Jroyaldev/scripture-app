@@ -629,16 +629,41 @@ export function reorderStudyWorkspaceGroup(
   return { ...state, groups };
 }
 
+/**
+ * Open one study, and the others fold shut behind it.
+ *
+ * The register is a column, and every expanded study spends the same scarce
+ * run of it. Left independent, opening a fourth study does not reveal a fourth
+ * study — it pushes the first three off the top of a list the reader is trying
+ * to read. Exclusivity makes the act of opening one mean what it looks like it
+ * means: this is the study I am in now.
+ *
+ * No study is exempt, including the one holding the tab being read. Collapsing
+ * does not hide it: a collapsed study keeps a proxy tab in the strip carrying
+ * its own name, so the passage on screen is still named and still reachable —
+ * ScriptureWorkspaceTabs says so where it withholds the kicker from a collapsed
+ * study, "its proxy tab already carries the study's name". An exemption for the
+ * reading study would also be an exemption in almost every real case, since the
+ * study already open is usually the one being read, and the rule would quietly
+ * never fire.
+ *
+ * Collapsing is unconditional and touches nothing else: shutting a study is not
+ * a claim about any other study.
+ */
 export function toggleStudyWorkspaceGroup(
   state: StudyWorkspaceStateV2,
   groupId: string,
 ): StudyWorkspaceStateV2 {
-  if (!state.groups.some((group) => group.id === groupId)) return state;
+  const target = state.groups.find((group) => group.id === groupId);
+  if (!target) return state;
+  const expanding = target.collapsed;
   return {
     ...state,
-    groups: state.groups.map((group) => group.id === groupId
-      ? { ...group, collapsed: !group.collapsed }
-      : group),
+    groups: state.groups.map((group) => {
+      if (group.id === groupId) return { ...group, collapsed: !group.collapsed };
+      if (!expanding || group.collapsed) return group;
+      return { ...group, collapsed: true };
+    }),
   };
 }
 

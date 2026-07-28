@@ -2825,3 +2825,57 @@ test("reopening a reordered dependent before its passage restores order and its 
   assert.equal(entity?.kind === "entity" ? entity.returnPassageTabId : undefined, "branch");
   assert.equal(passageReopened.state.recentlyClosed.length, 0);
 });
+
+/**
+ * The register is a column, and every expanded study spends the same scarce run
+ * of it. Opening a third study must not push the first two off the top of a
+ * list the reader is trying to read.
+ *
+ * The exemption this replaced — leaving the study holding the active tab open —
+ * looked careful and was inert: the study already open is usually the one being
+ * read, so the rule almost never fired. Nothing is lost by folding it, because
+ * a collapsed study keeps a proxy tab carrying its own name, which the test
+ * above ("a collapsed study retains its last-active tab as a selectable proxy")
+ * already pins down.
+ */
+test("expanding a study folds every other study, including the one being read", () => {
+  const first = createStudyWorkspace(view("ACT", 19, "BSB"), {
+    groupId: "study-1",
+    passageTabId: "acts-19",
+  });
+  const second = createStudyWorkspaceGroup(first, {
+    id: "study-2",
+    passageTabId: "john-3",
+    view: view("JHN", 3, "BSB"),
+  }).state;
+  const third = createStudyWorkspaceGroup(second, {
+    id: "study-3",
+    passageTabId: "rom-8",
+    view: view("ROM", 8, "BSB"),
+  }).state;
+
+  const expandedIds = (state: typeof third): string[] =>
+    state.groups.filter((group) => !group.collapsed).map((group) => group.id);
+
+  // All three start open, which is the state that made the register unreadable.
+  assert.deepEqual(expandedIds(third).sort(), ["study-1", "study-2", "study-3"]);
+
+  // The reader is in study-3; opening study-1 must still fold study-3.
+  assert.equal(third.tabsById[third.activeTabId]?.groupId, "study-3");
+  const foldedTwice = toggleStudyWorkspaceGroup(
+    toggleStudyWorkspaceGroup(third, "study-1"),
+    "study-1",
+  );
+  assert.deepEqual(expandedIds(foldedTwice), ["study-1"],
+    "re-opening study-1 must leave it as the only expanded study");
+
+  // Nothing was hidden: the folded studies keep a named, selectable proxy.
+  const proxies = visibleStudyWorkspaceTabIds(foldedTwice);
+  assert.ok(proxies.includes("john-3"), "study-2 keeps a proxy tab");
+  assert.ok(proxies.includes("rom-8"), "study-3 keeps a proxy tab");
+
+  // Collapsing is not a claim about anything else.
+  const collapsedOne = toggleStudyWorkspaceGroup(foldedTwice, "study-1");
+  assert.deepEqual(expandedIds(collapsedOne), [],
+    "shutting the open study must not open another in its place");
+});
