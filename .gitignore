@@ -17,3 +17,8 @@ ds-bundle/
 lab/spine-v1/
 output/
 enrichment/
+
+# Python transcription pipeline
+pipelines/**/.venv/
+__pycache__/
+*.pyc
