@@ -251,91 +251,250 @@
 }
 
 .podcast-transcript-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 8px 8px 4px;
-}
-
-/* Quiet, but never absent. Some of these words are wrong, and a reader is owed
-   the means to know that without being shouted at about it. */
-.podcast-transcript-note {
-  margin: 0;
-  color: var(--resource-ink-soft);
-  font: 0.625rem/1.4 var(--font-mono);
-  letter-spacing: 0.02em;
-  opacity: 0.75;
-}
-
-.podcast-transcript-resume {
-  padding: 3px 9px;
-  border: 1px solid var(--resource-line);
-  border-radius: var(--radius-pebble);
-  background: none;
-  color: var(--resource-ink);
-  font: var(--fw-medium) 0.6875rem/1 var(--font-ui);
-  cursor: pointer;
-  transition: background var(--transition-fast);
-}
-
-.podcast-transcript-resume:hover {
-  background: color-mix(in srgb, var(--resource-ink) 11%, transparent);
-}
-
-.podcast-transcript {
-  max-height: 268px;
-  margin: 0;
-  padding: 0 0 6px;
-  overflow-y: auto;
-  list-style: none;
-  scrollbar-width: thin;
-  overscroll-behavior: contain;
-}
-
-.podcast-transcript-line {
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr);
-  align-items: baseline;
-  gap: 9px;
-  width: 100%;
-  padding: 5px 8px;
-  border: 0;
-  border-radius: var(--radius-pebble);
-  background: none;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 12px 5px;
+}
+
+.podcast-transcript-glass {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
   color: var(--resource-ink-soft);
-  text-align: left;
+  opacity: 0.55;
+}
+
+/* No box. A field drawn as a field is chrome, and this row sits above the
+   thing a reader is actually looking at — it should read as a place to type
+   only once someone is thinking about typing. */
+.podcast-transcript-search {
+  width: 100%;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: var(--resource-ink);
+  font: 0.8125rem/1.4 var(--font-ui);
+}
+
+.podcast-transcript-search::placeholder {
+  color: var(--resource-ink-soft);
+  opacity: 0.6;
+}
+
+.podcast-transcript-search:focus { outline: none; }
+
+.podcast-transcript-search::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  width: 11px;
+  height: 11px;
+  background: currentColor;
+  opacity: 0.4;
   cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast);
+  mask: radial-gradient(circle, #000 99%, transparent 100%) exclude,
+    linear-gradient(#000, #000);
+  mask-composite: exclude;
+  border-radius: 50%;
 }
 
-.podcast-transcript-line:hover {
-  background: color-mix(in srgb, var(--resource-ink) 11%, transparent);
-  color: var(--resource-ink);
-}
-
-/* What has been spoken reads at full strength; what is still ahead stays
-   dimmer. That contrast is what makes the playhead findable at a glance,
-   without a marker competing with the active line itself. */
-.podcast-transcript-line[data-spoken="true"] { color: var(--resource-ink); }
-
-.podcast-transcript-line[aria-current="true"] {
+/* The whole provenance claim, in four letters. The model id belongs in the
+   title attribute and in the file, not permanently in a reader's eyeline —
+   but something has to say these words were machined rather than written,
+   because some of them are wrong. */
+.podcast-transcript-auto {
+  padding: 1px 5px;
+  border-radius: 3px;
   background: color-mix(in srgb, var(--resource-ink) 9%, transparent);
-  color: var(--resource-ink);
+  color: var(--resource-ink-soft);
+  font: var(--fw-medium) 0.5625rem/1.5 var(--font-ui);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  /* No help cursor. The question mark it draws is a piece of 1990s chrome
+     announcing that something is explainable, which is louder than the four
+     letters it would be explaining. */
+  cursor: default;
+  user-select: none;
 }
 
-.podcast-transcript-line[aria-current="true"] .podcast-transcript-text {
-  font-weight: var(--fw-medium);
-}
+.podcast-transcript-stage { position: relative; }
 
-.podcast-transcript-time {
-  font: 0.625rem/1.5 var(--font-mono);
-  font-variant-numeric: tabular-nums;
+.podcast-transcript-empty {
+  margin: 0;
+  padding: 0 12px 18px;
+  color: var(--resource-ink-soft);
+  font: 0.8125rem/1.5 var(--font-reading);
   opacity: 0.7;
 }
 
-.podcast-transcript-text {
-  font: 0.8125rem/1.5 var(--font-reading);
+/* One word, one line, and it cannot become two: a pill that wraps is a pill
+   that was the wrong size. */
+.podcast-transcript-follow {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px 5px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--resource-ink);
+  color: var(--resource-source, var(--surface-page));
+  font: var(--fw-medium) 0.6875rem/1 var(--font-ui);
+  white-space: nowrap;
+  cursor: pointer;
+  transform: translateX(-50%);
+  box-shadow: 0 3px 12px -4px rgb(0 0 0 / 45%);
+  animation: podcast-follow-in 260ms cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.podcast-transcript-follow svg {
+  width: 11px;
+  height: 11px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.podcast-transcript-follow:hover { filter: brightness(1.12); }
+
+@keyframes podcast-follow-in {
+  from { opacity: 0; transform: translate(-50%, 7px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.podcast-transcript-line mark {
+  background: color-mix(in srgb, var(--accent, currentColor) 26%, transparent);
+  color: inherit;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .podcast-transcript-follow { animation: none; }
+}
+
+/* The list carries no clock. Timestamps were how we checked the alignment was
+   real; they are not how anyone listens. A reader following along already knows
+   where they are — the audio is telling them — so a column of numbers beside
+   every line is noise competing with the words. The time survives as the seek
+   target behind each line, which is the only thing it was ever needed for. */
+.podcast-transcript {
+  /* Roughly five lines. Fewer, larger lines are the point: this is read at a
+     glance while attention is on the passage, and a dense list invites
+     scanning at exactly the moment nobody should be scanning. */
+  max-height: 340px;
+  margin: 0;
+  padding: 30px 0;
+  overflow-y: auto;
+  list-style: none;
+  scrollbar-width: none;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+  /* Lines dissolve into the panel's edges instead of being guillotined by them.
+     A hard cut says "the list continues past here"; a fade says "you are in the
+     middle of something", which is what following an episode actually is. The
+     same gradient masks the fact that the active line is being scrolled to,
+     because the movement is hidden before it reaches an edge. */
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 34px,
+    #000 calc(100% - 34px),
+    transparent 100%
+  );
+}
+
+.podcast-transcript::-webkit-scrollbar { width: 0; }
+
+/* NO TRANSFORM ON THIS ELEMENT, EVER.
+   It was scaled to mark the active line, and because the button is width:100%
+   a scale of 1.045 renders it wider than the column that holds it. The panel
+   gained horizontal overflow, the scrollbar appeared and vanished as the
+   active line moved, and the whole box shifted a few pixels each time — the
+   wiggle. Depth here is carried by focus and contrast, which cost no layout. */
+.podcast-transcript-line {
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: var(--radius-pebble);
+  background: none;
+  color: var(--resource-ink);
+  /* Bigger than a list wants and about right for something read at a glance
+     from across a desk while your eyes are on the passage. */
+  font: 1.0625rem/1.5 var(--font-reading);
+  letter-spacing: -0.006em;
+  text-align: left;
+  text-wrap: pretty;
+  cursor: pointer;
+  /* About as long as a short line takes to speak, so emphasis drifts with the
+     voice instead of snapping ahead of it. */
+  transition:
+    opacity 460ms cubic-bezier(0.25, 0.9, 0.3, 1),
+    filter 460ms cubic-bezier(0.25, 0.9, 0.3, 1),
+    background var(--transition-fast);
+}
+
+/* Distance from the voice, in four steps. Blur is what makes the far lines
+   read as depth rather than as dimness — the eye interprets an out-of-focus
+   line as "behind", which is exactly the relationship these have to the one
+   being spoken. Kept under 2px: past that it stops looking like depth and
+   starts looking like a rendering fault. */
+/* Optical weight, not typographic weight. A heavier font is a different set of
+   glyph advances, so a line that gains weight re-wraps: words drop to the next
+   row, the block changes height, and everything below it shifts — the rod
+   pushing down the column. A same-colour shadow thickens the strokes by a
+   fraction of a pixel and changes no metric at all, so the line reads bolder
+   and nothing moves. */
+.podcast-transcript-line[data-d="0"] {
+  opacity: 1;
+  filter: none;
+  text-shadow: 0 0 0.34px currentColor;
+}
+
+.podcast-transcript-line[data-d="1"] { opacity: 0.5; filter: blur(0.6px); }
+.podcast-transcript-line[data-d="2"] { opacity: 0.32; filter: blur(1.3px); }
+.podcast-transcript-line[data-d="3"] { opacity: 0.22; filter: blur(1.9px); }
+
+/* Already spoken lines sit a little clearer than the ones still coming at the
+   same distance. Scrolling back should meet text, not fog. */
+.podcast-transcript-line[data-past="true"][data-d="2"] { opacity: 0.4; filter: blur(1px); }
+.podcast-transcript-line[data-past="true"][data-d="3"] { opacity: 0.3; filter: blur(1.4px); }
+
+/* Pointing at a line brings it into focus wherever it sits, so a reader can
+   read ahead without stopping the audio or losing the playhead. */
+.podcast-transcript-line:hover {
+  background: color-mix(in srgb, var(--resource-ink) 9%, transparent);
+  opacity: 0.92;
+  filter: none;
+}
+
+.podcast-transcript-line[data-d="0"]:hover { background: none; }
+
+.podcast-transcript-line:focus-visible {
+  opacity: 1;
+  filter: none;
+  outline: 2px solid var(--focus-ring, currentColor);
+  outline-offset: -2px;
+}
+
+/* Blur and drift are the whole effect, so without them the live line has to be
+   marked by contrast and weight alone — which it still is. */
+@media (prefers-reduced-motion: reduce) {
+  .podcast-transcript { scroll-behavior: auto; }
+  .podcast-transcript-line {
+    transition: opacity 1ms linear;
+    filter: none !important;
+  }
+  .podcast-transcript-line[data-d="1"] { opacity: 0.55; }
+  .podcast-transcript-line[data-d="2"] { opacity: 0.4; }
+  .podcast-transcript-line[data-d="3"] { opacity: 0.32; }
 }
 
 .podcast-chapter-ref {

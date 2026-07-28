@@ -200,11 +200,14 @@ What makes the capability narrower than "transcripts are allowed":
   be displayed by forgetting a check, because there is nothing to forget — the
   record id itself is refused.
 - **Machine transcripts declare themselves.** Every record carries
-  `generated: true` and the model that produced it, the panel prints the model
-  beside the text, and the loader refuses any file that omits the claim. That is
-  the granted condition made structural: generated text cannot pass for
-  something a person wrote. Some of these words are wrong, which is precisely
-  why the provenance is not decoration.
+  `generated: true` and the model that produced it, and the loader refuses any
+  file that omits the claim. The panel marks the transcript `auto`, reading
+  "Automatically transcribed by Pericope" — the attribution names us rather than
+  a model checkpoint, because who a reader can hold responsible for a wrong word
+  is the useful half of provenance, and a version string in the reading area was
+  a debugging artefact rather than a disclosure. That is the granted condition
+  made structural: generated text cannot pass for something a person wrote. Some
+  of these words are wrong, which is precisely why the marker is not decoration.
 - **Ours, not theirs.** These are machine transcripts of the publisher's audio,
   not the publisher's own transcript text. BibleProject publishes official
   transcripts for roughly half its catalogue; those are a separate artifact and

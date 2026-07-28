@@ -1,7 +1,8 @@
 import type React from "react";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { BookNameData } from "../api.js";
 import type { Transcript } from "../../core/transcripts.js";
+import { readingLines } from "../../core/transcripts.js";
 import { safeCall } from "../utils/safeCall.js";
 import { useToast } from "./Toast.js";
 
@@ -72,6 +73,29 @@ export interface PodcastEpisode {
   kind: string;
   /** Optional, and currently never supplied — see PodcastChapter. */
   chapters?: PodcastChapter[];
+}
+
+/**
+ * Marks the searched-for run inside a line.
+ *
+ * Split on the needle rather than replaced with markup: the text goes into the
+ * DOM as text either way, so a line containing angle brackets or an ampersand
+ * cannot become anything but the characters it is.
+ */
+function highlight(text: string, needle: string): React.ReactNode {
+  if (!needle) return text;
+  const parts: React.ReactNode[] = [];
+  const haystack = text.toLowerCase();
+  let cursor = 0;
+  for (;;) {
+    const at = haystack.indexOf(needle, cursor);
+    if (at === -1) break;
+    if (at > cursor) parts.push(text.slice(cursor, at));
+    parts.push(<mark key={at}>{text.slice(at, at + needle.length)}</mark>);
+    cursor = at + needle.length;
+  }
+  parts.push(text.slice(cursor));
+  return parts;
 }
 
 /** Where the transport is, in the element's own words rather than our guess. */
@@ -377,6 +401,7 @@ export function PodcastPlayer({
   const [transcript, setTranscript] = useState<Transcript | null | undefined>(undefined);
   const activeLineRef = useRef<HTMLLIElement>(null);
   const [following, setFollowing] = useState(true);
+  const [query, setQuery] = useState("");
   const [rateIndex, setRateIndex] = useState(0);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -489,7 +514,13 @@ export function PodcastPlayer({
      that has started. Binary search would be tidier over 1,400 lines, but this
      runs on a timeupdate tick against an already-sorted array, and the loader
      sorts precisely so this scan can be trusted. */
-  const lines = transcript?.segments ?? [];
+  /* The recogniser's segments are shaped by breathing, not by reading; these
+     are rebuilt from its words to a length the eye takes in one go. Done once
+     per transcript rather than per tick. */
+  const lines = useMemo(
+    () => (transcript ? readingLines(transcript.words) : []),
+    [transcript],
+  );
   const lineIndex = lines.reduce(
     (found, line, index) => (position >= line.s ? index : found),
     -1,
@@ -503,6 +534,46 @@ export function PodcastPlayer({
     if (!expanded || !following || lineIndex < 0) return;
     activeLineRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
   }, [lineIndex, following, expanded]);
+
+  /* Keyed on the active line rather than on the playhead. `position` ticks four
+     times a second and every line's state is a function of the index alone, so
+     rebuilding on position would reconcile ~1,400 elements several times a
+     second to produce an identical tree. Lines run about four seconds, so this
+     rebuilds roughly once per line instead. */
+  const needle = query.trim().toLowerCase();
+  const searching = needle.length > 0;
+
+  /* Searching narrows to the lines that say it. Highlighting in place was the
+     alternative and it is worse here: a hit fourteen screens down is invisible,
+     and the reader would be scrolling a transcript looking for their own
+     search. Narrowing turns the panel into the answer. */
+  const found = useMemo(() => lines
+    .map((line, index) => ({ line, index }))
+    .filter(({ line }) => !searching || line.t.toLowerCase().includes(needle)),
+  [lines, needle, searching]);
+  const matches = found.length;
+
+  const renderedLines = useMemo(() => found.map(({ line, index }) => (
+    <li key={`${line.s}-${index}`} ref={index === lineIndex ? activeLineRef : undefined}>
+      <button
+        aria-current={index === lineIndex}
+        className="podcast-transcript-line"
+        /* How far from the voice, capped at three. Distance is computed here
+           rather than chained through CSS sibling selectors because it is one
+           subtraction against a value that changes once a line, and because a
+           selector chain deep enough to reach the third neighbour is a thing
+           nobody can later read. Nothing playing, or a search underway -> every
+           line sits at the same readable weight rather than pretending to a
+           playhead the reader is not currently following. */
+        data-d={lineIndex < 0 || searching ? 0 : Math.min(3, Math.abs(index - lineIndex))}
+        data-past={index < lineIndex}
+        onClick={() => seekPodcast(line.s)}
+        type="button"
+      >
+        {searching ? highlight(line.t, needle) : line.t}
+      </button>
+    </li>
+  )), [found, lineIndex, needle, searching]);
 
   const rate = PODCAST_RATES[rateIndex] ?? 1;
   const cycleRate = (): void => {
@@ -659,43 +730,60 @@ export function PodcastPlayer({
               {transcript && lines.length > 0 && (
                 <div className="podcast-transcript-block">
                   <div className="podcast-transcript-head">
-                    <p className="podcast-transcript-note">
-                      Machine transcript · {transcript.model}
-                    </p>
-                    {!following && (
+                    <svg aria-hidden="true" className="podcast-transcript-glass" viewBox="0 0 16 16">
+                      <circle cx="7.2" cy="7.2" r="4.4" />
+                      <path d="M10.5 10.5 13.4 13.4" />
+                    </svg>
+                    <input
+                      aria-label="Search this transcript"
+                      className="podcast-transcript-search"
+                      onChange={(event) => setQuery(event.target.value)}
+                      placeholder="Search transcript"
+                      type="search"
+                      value={query}
+                    />
+                    {/* Provenance without a byline. The model id was a
+                        debugging artefact sitting where a reader looks; this
+                        keeps the claim — these words were machined, not
+                        written — in the smallest form that still makes it,
+                        and names us rather than a checkpoint, because who a
+                        reader can hold responsible is the useful half. */}
+                    <span className="podcast-transcript-auto" title="Automatically transcribed by Pericope">
+                      auto
+                    </span>
+                  </div>
+
+                  <div className="podcast-transcript-stage">
+                    <ul
+                      aria-label="Transcript"
+                      className="podcast-transcript"
+                      onWheel={() => setFollowing(false)}
+                      onTouchMove={() => setFollowing(false)}
+                    >
+                      {renderedLines}
+                    </ul>
+
+                    {searching && matches === 0 && (
+                      <p className="podcast-transcript-empty">No line says that.</p>
+                    )}
+
+                    {/* Floats over the text rather than sitting in the header:
+                        it is an answer to "I have scrolled away", so it belongs
+                        where the scrolling happened and should not hold a row
+                        of chrome open for the whole time it is irrelevant. */}
+                    {!following && !searching && (
                       <button
-                        className="podcast-transcript-resume"
+                        className="podcast-transcript-follow"
                         onClick={() => setFollowing(true)}
                         type="button"
                       >
-                        Follow along
+                        <svg aria-hidden="true" viewBox="0 0 16 16">
+                          <path d="M8 3.4v8.2M4.6 8.4 8 11.8l3.4-3.4" />
+                        </svg>
+                        Follow
                       </button>
                     )}
                   </div>
-                  <ul
-                    aria-label="Transcript"
-                    className="podcast-transcript"
-                    onWheel={() => setFollowing(false)}
-                    onTouchMove={() => setFollowing(false)}
-                  >
-                    {lines.map((line, index) => (
-                      <li
-                        key={`${line.s}-${index}`}
-                        ref={index === lineIndex ? activeLineRef : undefined}
-                      >
-                        <button
-                          aria-current={index === lineIndex}
-                          className="podcast-transcript-line"
-                          data-spoken={line.s <= position}
-                          onClick={() => seekPodcast(line.s)}
-                          type="button"
-                        >
-                          <span className="podcast-transcript-time">{formatClock(line.s)}</span>
-                          <span className="podcast-transcript-text">{line.t}</span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
                 </div>
               )}
             </div>
