@@ -241,6 +241,103 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Transcript. Taller than the chapter list because it is meant to be read
+   rather than scanned, and because the active line sits centred inside it — a
+   short box would hold the playhead at an edge, where a reader cannot see
+   what is coming next. */
+.podcast-transcript-block {
+  margin: 0 -8px;
+  border-top: 1px solid var(--resource-line);
+}
+
+.podcast-transcript-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 8px 4px;
+}
+
+/* Quiet, but never absent. Some of these words are wrong, and a reader is owed
+   the means to know that without being shouted at about it. */
+.podcast-transcript-note {
+  margin: 0;
+  color: var(--resource-ink-soft);
+  font: 0.625rem/1.4 var(--font-mono);
+  letter-spacing: 0.02em;
+  opacity: 0.75;
+}
+
+.podcast-transcript-resume {
+  padding: 3px 9px;
+  border: 1px solid var(--resource-line);
+  border-radius: var(--radius-pebble);
+  background: none;
+  color: var(--resource-ink);
+  font: var(--fw-medium) 0.6875rem/1 var(--font-ui);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.podcast-transcript-resume:hover {
+  background: color-mix(in srgb, var(--resource-ink) 11%, transparent);
+}
+
+.podcast-transcript {
+  max-height: 268px;
+  margin: 0;
+  padding: 0 0 6px;
+  overflow-y: auto;
+  list-style: none;
+  scrollbar-width: thin;
+  overscroll-behavior: contain;
+}
+
+.podcast-transcript-line {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 9px;
+  width: 100%;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: var(--radius-pebble);
+  background: none;
+  color: var(--resource-ink-soft);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.podcast-transcript-line:hover {
+  background: color-mix(in srgb, var(--resource-ink) 11%, transparent);
+  color: var(--resource-ink);
+}
+
+/* What has been spoken reads at full strength; what is still ahead stays
+   dimmer. That contrast is what makes the playhead findable at a glance,
+   without a marker competing with the active line itself. */
+.podcast-transcript-line[data-spoken="true"] { color: var(--resource-ink); }
+
+.podcast-transcript-line[aria-current="true"] {
+  background: color-mix(in srgb, var(--resource-ink) 9%, transparent);
+  color: var(--resource-ink);
+}
+
+.podcast-transcript-line[aria-current="true"] .podcast-transcript-text {
+  font-weight: var(--fw-medium);
+}
+
+.podcast-transcript-time {
+  font: 0.625rem/1.5 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+
+.podcast-transcript-text {
+  font: 0.8125rem/1.5 var(--font-reading);
+}
+
 .podcast-chapter-ref {
   overflow: hidden;
   font: var(--fw-medium) 0.75rem/1.35 var(--font-reading);

@@ -1,6 +1,7 @@
 import type React from "react";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { BookNameData } from "../api.js";
+import type { Transcript } from "../../core/transcripts.js";
 import { safeCall } from "../utils/safeCall.js";
 import { useToast } from "./Toast.js";
 
@@ -370,6 +371,12 @@ export function PodcastPlayer({
      new card should give back the corner, not whatever the last one was left
      at. */
   const [expanded, setExpanded] = useState(false);
+  /* undefined while unasked or in flight, null once we know there is none.
+     The distinction matters: "no transcript" is a fact worth drawing, and
+     "not looked yet" must not be drawn as that fact. */
+  const [transcript, setTranscript] = useState<Transcript | null | undefined>(undefined);
+  const activeLineRef = useRef<HTMLLIElement>(null);
+  const [following, setFollowing] = useState(true);
   const [rateIndex, setRateIndex] = useState(0);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -422,6 +429,20 @@ export function PodcastPlayer({
     if (peekTimer.current !== null) window.clearTimeout(peekTimer.current);
   }, [episodeId]);
 
+  /* Asked once per episode, not per open. A reader who opens and shuts the
+     sheet is not asking the disk anything new, and the answer for an episode
+     does not change while it is playing. */
+  useEffect(() => {
+    if (!episode) { setTranscript(undefined); return; }
+    let live = true;
+    setTranscript(undefined);
+    void window.api.transcripts.load(episode.recordId).then((result) => {
+      if (!live) return;
+      setTranscript(result.ok ? result.transcript : null);
+    }).catch(() => { if (live) setTranscript(null); });
+    return () => { live = false; };
+  }, [episode?.recordId]);
+
   /* Focus follows the press, in both directions: into the sheet when it opens,
      back to the control that opened it when it shuts. Without the second half a
      reader who collapses the sheet is left focused on an element that is now
@@ -463,6 +484,25 @@ export function PodcastPlayer({
     -1,
   );
   const chapter = chapterIndex >= 0 ? chapters[chapterIndex] : undefined;
+
+  /* The active line is found the same way the active chapter is: the last span
+     that has started. Binary search would be tidier over 1,400 lines, but this
+     runs on a timeupdate tick against an already-sorted array, and the loader
+     sorts precisely so this scan can be trusted. */
+  const lines = transcript?.segments ?? [];
+  const lineIndex = lines.reduce(
+    (found, line, index) => (position >= line.s ? index : found),
+    -1,
+  );
+
+  /* Following is the default and stays on until the reader scrolls away from
+     the playhead themselves. Dragging someone back to the active line while
+     they are reading ahead is the worst thing a transcript can do, so any
+     manual scroll is taken as an instruction to stop. */
+  useEffect(() => {
+    if (!expanded || !following || lineIndex < 0) return;
+    activeLineRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, [lineIndex, following, expanded]);
 
   const rate = PODCAST_RATES[rateIndex] ?? 1;
   const cycleRate = (): void => {
@@ -611,6 +651,52 @@ export function PodcastPlayer({
                     );
                   })}
                 </ul>
+              )}
+
+              {/* Machine transcript. The provenance line is not decoration: the
+                  reader has to be able to tell at a glance that no person wrote
+                  this, because some of the words in it will be wrong. */}
+              {transcript && lines.length > 0 && (
+                <div className="podcast-transcript-block">
+                  <div className="podcast-transcript-head">
+                    <p className="podcast-transcript-note">
+                      Machine transcript · {transcript.model}
+                    </p>
+                    {!following && (
+                      <button
+                        className="podcast-transcript-resume"
+                        onClick={() => setFollowing(true)}
+                        type="button"
+                      >
+                        Follow along
+                      </button>
+                    )}
+                  </div>
+                  <ul
+                    aria-label="Transcript"
+                    className="podcast-transcript"
+                    onWheel={() => setFollowing(false)}
+                    onTouchMove={() => setFollowing(false)}
+                  >
+                    {lines.map((line, index) => (
+                      <li
+                        key={`${line.s}-${index}`}
+                        ref={index === lineIndex ? activeLineRef : undefined}
+                      >
+                        <button
+                          aria-current={index === lineIndex}
+                          className="podcast-transcript-line"
+                          data-spoken={line.s <= position}
+                          onClick={() => seekPodcast(line.s)}
+                          type="button"
+                        >
+                          <span className="podcast-transcript-time">{formatClock(line.s)}</span>
+                          <span className="podcast-transcript-text">{line.t}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
             </div>
           </div>

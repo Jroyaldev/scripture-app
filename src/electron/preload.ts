@@ -137,6 +137,9 @@ const api = {
       book, chapter, startVerse, endVerse, packageId,
     }),
   },
+  transcripts: {
+    load: (recordId: string) => ipcRenderer.invoke("transcript-load", { recordId }),
+  },
   trustedResources: {
     query: (query: TrustedResourceQuery) => ipcRenderer.invoke("trusted-resources-query", query),
     catalogue: () => ipcRenderer.invoke("trusted-resources-catalogue"),

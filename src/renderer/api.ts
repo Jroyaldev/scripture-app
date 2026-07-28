@@ -1,4 +1,5 @@
 import type { AppMaterial, AppTheme } from "./theme.js";
+import type { Transcript } from "../core/transcripts.js";
 import type { EntityResearchData } from "../core/entities/place-research.js";
 import type {
   ConnectionAnchorV2,
@@ -101,6 +102,14 @@ declare global {
           endVerse: number,
           packageId: string,
         ): Promise<CrossReferenceResultData>;
+      };
+      transcripts: {
+        /* Absence is the ordinary answer, not a failure: most episodes have no
+           transcript yet, and the player has to render that quietly. */
+        load(recordId: string): Promise<
+          | { ok: true; transcript: Transcript }
+          | { ok: false; reason: "absent" | "unreadable" | "refused" }
+        >;
       };
       trustedResources: {
         query(query: TrustedResourceQuery): Promise<

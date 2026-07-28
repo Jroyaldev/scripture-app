@@ -9,6 +9,7 @@ import { join, resolve, dirname } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { appendFileSync, existsSync, mkdirSync, readdirSync, unlinkSync, writeFileSync } from "node:fs";
 import { readFileSyncInterruptible } from "../host/exec-sync.js";
+import { loadTranscript } from "../host/transcript-loader.js";
 import { createRequire } from "node:module";
 import { createHash } from "node:crypto";
 import ElectronStore from "electron-store";
@@ -2452,6 +2453,21 @@ function registerIpcHandlers(): void {
      the matrix is publisher x kind, but only the cells that exist. Passage
      counts are deliberately absent — this is what the library contains, not
      what the chapter in front of the reader happens to offer. */
+  /* Transcripts are read by record id from their own store, never from the
+     resource manifest — see src/host/transcript-loader.ts for why. A refusal
+     is returned as a reason rather than thrown: "this episode has no
+     transcript" is the ordinary case, not an error. */
+  registerRuntimeReadIpc("transcript-load", (_event, input: unknown) => {
+    if (typeof input !== "object" || input === null) {
+      return { ok: false as const, reason: "refused" as const };
+    }
+    const { recordId } = input as { recordId?: unknown };
+    if (typeof recordId !== "string" || recordId.length === 0) {
+      return { ok: false as const, reason: "refused" as const };
+    }
+    return loadTranscript(getLibraryPath(), recordId);
+  });
+
   registerRuntimeReadIpc("trusted-resources-catalogue", () => {
     const loaded = loadCurrentTrustedResourceManifests();
     if (!loaded.ok) return loaded;
