@@ -2,7 +2,8 @@
  * Load compact MACULA syntax book JSON for structure charts.
  */
 
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
+import { readFileSyncInterruptible } from "./exec-sync.js";
 import { join } from "node:path";
 import type { SyntaxPackageIndex, SyntaxSentence } from "../core/language/syntax-tree.js";
 import {
@@ -81,7 +82,7 @@ export class SyntaxTreeLoader {
       const path = join(root, syntaxId, `${book.toUpperCase()}.json`);
       if (!existsSync(path)) continue;
       try {
-        const index = JSON.parse(readFileSync(path, "utf8")) as SyntaxPackageIndex;
+        const index = JSON.parse(readFileSyncInterruptible(path, "utf8")) as SyntaxPackageIndex;
         this.cache.set(key, index);
         return index;
       } catch {

@@ -5,7 +5,7 @@
  * Never commits binaries (INV-13). User never sees Git directly.
  */
 
-import { execFileSync } from "node:child_process";
+import { execFileSyncInterruptible } from "./exec-sync.js";
 import { createHash } from "node:crypto";
 import { closeSync, existsSync, openSync, readSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -230,13 +230,14 @@ export class GitRevisionStore implements RevisionStore {
   }
 
   private gitWithTimeout(timeoutMs: number, ...args: string[]): string {
-    const result = execFileSync("git", args, {
+    /* Interruptible: a signal landing while spawnSync waits on git's stdout is
+       not git failing, and the store is opened on the startup path. */
+    return execFileSyncInterruptible("git", args, {
       cwd: this.libraryPath,
       encoding: "utf-8",
       stdio: ["pipe", "pipe", "pipe"],
       timeout: Math.max(10, Math.min(GIT_COMMAND_TIMEOUT_MS, timeoutMs)),
     });
-    return result;
   }
 
   private serializeAppend<T>(operation: () => T | Promise<T>): Promise<T> {

@@ -3,7 +3,8 @@
  * (bsb, akjv-strongs). Pure lookup — no JSONL scan at runtime.
  */
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
+import { readFileSyncInterruptible } from "./exec-sync.js";
 import { join } from "node:path";
 import {
   buildReverseOrbitDetailed,
@@ -38,7 +39,7 @@ export class ReverseIndexLoader {
       const path = join(root, packageId, "reverse-index.json");
       if (!existsSync(path)) continue;
       try {
-        found = JSON.parse(readFileSync(path, "utf8")) as ReverseIndexFile;
+        found = JSON.parse(readFileSyncInterruptible(path, "utf8")) as ReverseIndexFile;
         break;
       } catch {
         found = null;

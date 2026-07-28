@@ -7,7 +7,8 @@ import { app, BrowserWindow, crashReporter, dialog, ipcMain, nativeTheme, shell 
 import type { IpcMainEvent, IpcMainInvokeEvent } from "electron";
 import { join, resolve, dirname } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, unlinkSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, readdirSync, unlinkSync, writeFileSync } from "node:fs";
+import { readFileSyncInterruptible } from "../host/exec-sync.js";
 import { createRequire } from "node:module";
 import { createHash } from "node:crypto";
 import ElectronStore from "electron-store";
@@ -313,7 +314,7 @@ function readLegacySettingsForAdoption(): LegacySettingsAdoption {
   const legacyConfig = resolve(userDataDirectory, "..", "Electron", "config.json");
   if (!existsSync(legacyConfig)) return { status: "legacy-missing" };
   try {
-    const settings = sanitizeLegacySettings(JSON.parse(readFileSync(legacyConfig, "utf8")));
+    const settings = sanitizeLegacySettings(JSON.parse(readFileSyncInterruptible(legacyConfig, "utf8")));
     return settings ? { status: "adopt", settings } : { status: "legacy-refused" };
   } catch {
     return { status: "legacy-read-failed" };
@@ -586,7 +587,7 @@ if (legacySettingsAdoption.status === "adopt") {
     if (legacyKinds.length > 0) {
       const loaded = loadTrustedResourceManifests({
         bundledRoot: TRUSTED_RESOURCE_DIR,
-        backbone: JSON.parse(readFileSync(join(DATA_DIR, "backbone.json"), "utf8")) as BackboneData,
+        backbone: JSON.parse(readFileSyncInterruptible(join(DATA_DIR, "backbone.json"), "utf8")) as BackboneData,
       });
       const sourceIds = loaded.ok
         ? loaded.manifests.map((entry) => entry.manifest.source.id)
@@ -1269,7 +1270,7 @@ function connectionProjectionWarning(
 
 function loadBackbone(): BackboneData {
   const backbonePath = join(DATA_DIR, "backbone.json");
-  const data = JSON.parse(readFileSync(backbonePath, "utf-8")) as BackboneData;
+  const data = JSON.parse(readFileSyncInterruptible(backbonePath, "utf-8")) as BackboneData;
   const validation = validateBackboneData(data);
   if (!validation.ok) {
     throw new Error(`Backbone validation failed: ${validation.error}`);
@@ -1279,7 +1280,7 @@ function loadBackbone(): BackboneData {
 
 function loadBookNames(): BookNameMap {
   const namesPath = join(DATA_DIR, "book-names-en.json");
-  return JSON.parse(readFileSync(namesPath, "utf-8")) as BookNameMap;
+  return JSON.parse(readFileSyncInterruptible(namesPath, "utf-8")) as BookNameMap;
 }
 
 function loadCrossRefs(): CrossRefData | null {
@@ -1304,7 +1305,7 @@ function readScriptureChapter(packageId: string, book: string, chapter: number):
   const dataPath = join(DATA_DIR, "text", packageId, book, `${chapter}.json`);
   const path = libraryPath && existsSync(libraryPath) ? libraryPath : dataPath;
   const value = existsSync(path)
-    ? JSON.parse(readFileSync(path, "utf-8")) as ScriptureChapterFile
+    ? JSON.parse(readFileSyncInterruptible(path, "utf-8")) as ScriptureChapterFile
     : null;
   scriptureChapterCache.set(cacheKey, value);
   while (scriptureChapterCache.size > MAX_SCRIPTURE_CHAPTER_CACHE_ENTRIES) {
@@ -1693,7 +1694,7 @@ function addCrossReferencePreviews(
 function loadThemes(): ThemeEntry[] {
   const themesPath = resolve(__dirname, "../../data/themes/themes-seed-en.json");
   if (!existsSync(themesPath)) return [];
-  return (JSON.parse(readFileSync(themesPath, "utf-8")) as { themes: ThemeEntry[] }).themes;
+  return (JSON.parse(readFileSyncInterruptible(themesPath, "utf-8")) as { themes: ThemeEntry[] }).themes;
 }
 
 function getLibraryPath(libraryPath?: string): string {
@@ -1960,10 +1961,10 @@ function loadStepMorphTablesOnce(): void {
   const hebrewPath = join(morphDir, "TEHMC-STEPBible-CC-BY.txt");
   try {
     if (existsSync(greekPath)) {
-      index.loadTable(readFileSync(greekPath, "utf8"), "STEPBible TEGMC");
+      index.loadTable(readFileSyncInterruptible(greekPath, "utf8"), "STEPBible TEGMC");
     }
     if (existsSync(hebrewPath)) {
-      index.loadTable(readFileSync(hebrewPath, "utf8"), "STEPBible TEHMC");
+      index.loadTable(readFileSyncInterruptible(hebrewPath, "utf8"), "STEPBible TEHMC");
     }
     stepMorphLoaded = index.size > 0;
     console.log(
@@ -1990,7 +1991,7 @@ function loadTipnrIndexOnce(): void {
       tipnrLoaded = false;
       return;
     }
-    const n = index.loadJson(readFileSync(path, "utf8"));
+    const n = index.loadJson(readFileSyncInterruptible(path, "utf8"));
     tipnrLoaded = n > 0;
     console.log(`TIPNR names index: ${n} entities (${path})`);
   } catch (err) {
@@ -2014,7 +2015,7 @@ function loadHebrewOrbitIndexOnce(): void {
       hebrewOrbitLoaded = false;
       return;
     }
-    const n = index.loadJson(readFileSync(path, "utf8"));
+    const n = index.loadJson(readFileSyncInterruptible(path, "utf8"));
     hebrewOrbitLoaded = n > 0;
     console.log(`Hebrew orbit index: ${n} Strong’s keys (${path})`);
   } catch (err) {
@@ -2045,19 +2046,19 @@ function buildEngineRuntime(
   const nextUserMutationBroker = new UserMutationBroker(nextEngine, nextRevisionStore);
   const hebrewGlossPath = join(DATA_DIR, "lexicons/strongs-hebrew-gloss.json");
   const hebrewGlossJson = existsSync(hebrewGlossPath)
-    ? readFileSync(hebrewGlossPath, "utf8")
+    ? readFileSyncInterruptible(hebrewGlossPath, "utf8")
     : undefined;
   const strongDefsPath = join(DATA_DIR, "lexicons/strongs-plus.json");
   const strongDefinitionsJson = existsSync(strongDefsPath)
-    ? readFileSync(strongDefsPath, "utf8")
+    ? readFileSyncInterruptible(strongDefsPath, "utf8")
     : undefined;
   const thayerPath = join(DATA_DIR, "lexicons/thayer.json");
   const thayerDefinitionsJson = existsSync(thayerPath)
-    ? readFileSync(thayerPath, "utf8")
+    ? readFileSyncInterruptible(thayerPath, "utf8")
     : undefined;
   const bdbPath = join(DATA_DIR, "lexicons/bdb-kjv.json");
   const bdbDefinitionsJson = existsSync(bdbPath)
-    ? readFileSync(bdbPath, "utf8")
+    ? readFileSyncInterruptible(bdbPath, "utf8")
     : undefined;
 
   // STEP morph overlay (Approach A) — load before any card request.
@@ -2652,7 +2653,7 @@ function registerIpcHandlers(): void {
         if (entry.isDirectory()) {
           readDir(full, rel);
         } else if (entry.name.endsWith(".md")) {
-          files.push({ path: rel, content: readFileSync(full, "utf-8") });
+          files.push({ path: rel, content: readFileSyncInterruptible(full, "utf-8") });
         }
       }
     }
@@ -3966,6 +3967,12 @@ if (!hasSingleInstanceLock) {
       await initializeEngine(undefined, store.get("libraryPath") != null);
     } catch (err) {
       const detail = String((err as Error)?.message ?? err);
+      /* The dialog gets a sentence; the log gets the stack. Without this the
+         only record of a failed open is the message, which for a failure like
+         EINTR names the syscall and nothing about which call made it — and the
+         outer .catch below has always logged, so this was the one startup path
+         that failed silently. */
+      logLifecycle("engine-initialize-failed", { error: diagnosticError(err) }, "error");
       dialog.showErrorBox(
         "Failed to initialize library",
         "The library engine could not start.\n\n" +

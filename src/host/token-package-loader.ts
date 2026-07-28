@@ -3,7 +3,8 @@
  * Node I/O lives here; query logic uses pure core indexes.
  */
 
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, statSync } from "node:fs";
+import { readFileSyncInterruptible } from "./exec-sync.js";
 import { join } from "node:path";
 import {
   buildTokenIndex,
@@ -399,7 +400,7 @@ export class TokenPackageLoader {
         if (!existsSync(manifestPath)) continue;
         let raw: unknown;
         try {
-          raw = JSON.parse(readFileSync(manifestPath, "utf8"));
+          raw = JSON.parse(readFileSyncInterruptible(manifestPath, "utf8"));
         } catch {
           continue;
         }
@@ -441,7 +442,7 @@ export class TokenPackageLoader {
 
     let content: string;
     try {
-      content = readFileSync(tokensPath, "utf8");
+      content = readFileSyncInterruptible(tokensPath, "utf8");
     } catch {
       return false;
     }
@@ -825,7 +826,7 @@ export class TokenPackageLoader {
       const manifestPath = join(dir, "manifest.json");
       if (!existsSync(manifestPath)) continue;
       try {
-        const raw = JSON.parse(readFileSync(manifestPath, "utf8")) as unknown;
+        const raw = JSON.parse(readFileSyncInterruptible(manifestPath, "utf8")) as unknown;
         const manifest = parseLanguagePackageManifest(raw);
         if (!manifest || manifest.type !== "interlinear-data") continue;
         // Directory name is the package id the app requests.

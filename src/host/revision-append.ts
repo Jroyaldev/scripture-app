@@ -1,18 +1,7 @@
-import { execFileSync } from "node:child_process";
+import { execFileSyncInterruptible } from "./exec-sync.js";
 import { createHash, randomUUID } from "node:crypto";
-import {
-  closeSync,
-  existsSync,
-  fsyncSync,
-  mkdirSync,
-  openSync,
-  readdirSync,
-  readFileSync,
-  renameSync,
-  rmSync,
-  statSync,
-  writeSync,
-} from "node:fs";
+import { closeSync, existsSync, fsyncSync, mkdirSync, openSync, readdirSync, renameSync, rmSync, statSync, writeSync } from "node:fs";
+import { readFileSyncInterruptible } from "./exec-sync.js";
 import { dirname, isAbsolute, join, normalize, sep } from "node:path";
 import { threadId } from "node:worker_threads";
 import type { RevisionAppend } from "../core/interfaces.js";
@@ -202,7 +191,7 @@ export class RevisionAppendCoordinator {
         return resultFromEnvelope(relativePath, true, existing);
       }
 
-      const base = existsSync(absolutePath) ? readFileSync(absolutePath) : Buffer.alloc(0);
+      const base = existsSync(absolutePath) ? readFileSyncInterruptible(absolutePath) : Buffer.alloc(0);
       if (base.length !== append.expectedByteLength) {
         throw new RevisionAppendConflictError(
           `Revision append conflict for ${relativePath}: expected ${append.expectedByteLength} bytes, found ${base.length}.`,
@@ -264,7 +253,7 @@ export class RevisionAppendCoordinator {
       return;
     }
 
-    const content = stat ? readFileSync(absolutePath, "utf8") : "";
+    const content = stat ? readFileSyncInterruptible(absolutePath, "utf8") : "";
     if (content.length > 0 && !content.endsWith("\n")) {
       throw new RevisionAppendConflictError(
         `Existing JSONL ${absolutePath} ends with an incomplete event and requires repair before another append.`,
@@ -610,7 +599,7 @@ function inspectPreparedTarget(
   prepared: PreparedIntent,
   content: Buffer,
 ): { missing: Buffer; appliedBytes: number } {
-  const target = existsSync(absolutePath) ? readFileSync(absolutePath) : Buffer.alloc(0);
+  const target = existsSync(absolutePath) ? readFileSyncInterruptible(absolutePath) : Buffer.alloc(0);
   const expected = prepared.append.expectedByteLength;
   if (target.length < expected) {
     throw preparedTargetConflict(prepared, prepared.append.path);
@@ -974,7 +963,7 @@ function inspectProcessStartIdentity(pid: number, faultHooks: RevisionAppendFaul
 
 function defaultProcessStartIdentity(pid: number): string | null {
   if (process.platform === "linux") {
-    const stat = readFileSync(`/proc/${pid}/stat`, "utf8");
+    const stat = readFileSyncInterruptible(`/proc/${pid}/stat`, "utf8");
     const closeParen = stat.lastIndexOf(")");
     if (closeParen < 0) return null;
     const fieldsAfterCommand = stat.slice(closeParen + 1).trim().split(/\s+/);
@@ -982,7 +971,7 @@ function defaultProcessStartIdentity(pid: number): string | null {
     return startTicks ? `linux:${startTicks}` : null;
   }
   if (process.platform === "darwin") {
-    const output = execFileSync("/bin/ps", ["-o", "lstart=", "-p", String(pid)], {
+    const output = execFileSyncInterruptible("/bin/ps", ["-o", "lstart=", "-p", String(pid)], {
       encoding: "utf8",
       maxBuffer: 4_096,
       timeout: 250,
@@ -1057,7 +1046,7 @@ function writeDurableJson(path: string, value: unknown): void {
 }
 
 function readJson(path: string): unknown {
-  return JSON.parse(readFileSync(path, "utf8")) as unknown;
+  return JSON.parse(readFileSyncInterruptible(path, "utf8")) as unknown;
 }
 
 function writeAll(

@@ -1,6 +1,7 @@
 /** Node host adapter for the read-only place research artifact. */
 
-import { readFileSync, existsSync } from "node:fs";
+import { existsSync } from "node:fs";
+import { readFileSyncInterruptible } from "./exec-sync.js";
 import { join } from "node:path";
 import {
   PlaceResearchIndex,
@@ -39,9 +40,9 @@ export class PlaceResearchLoader {
     const naturalEarthPath = join(directory, "natural-earth-50m-land.geojson");
     const pleiadesPath = join(directory, "pleiades-4.1.json");
     if (!existsSync(artifactPath) || !existsSync(naturalEarthPath)) return 0;
-    const count = this.index.loadArtifact(readFileSync(artifactPath, "utf8"));
-    this.index.loadNaturalEarth(readFileSync(naturalEarthPath, "utf8"));
-    if (existsSync(pleiadesPath)) this.pleiades.loadArtifact(readFileSync(pleiadesPath, "utf8"));
+    const count = this.index.loadArtifact(readFileSyncInterruptible(artifactPath, "utf8"));
+    this.index.loadNaturalEarth(readFileSyncInterruptible(naturalEarthPath, "utf8"));
+    if (existsSync(pleiadesPath)) this.pleiades.loadArtifact(readFileSyncInterruptible(pleiadesPath, "utf8"));
     this.mediaDir = join(directory, "media");
     return count;
   }
@@ -65,7 +66,7 @@ export class PlaceResearchLoader {
     if (place?.image) {
       const path = join(this.mediaDir, place.image.file);
       if (existsSync(path)) {
-        imageDataUrl = `data:${place.image.mimeType};base64,${readFileSync(path).toString("base64")}`;
+        imageDataUrl = `data:${place.image.mimeType};base64,${readFileSyncInterruptible(path).toString("base64")}`;
       }
     }
     // Resolve the sigla here, once, from what each artifact declares about

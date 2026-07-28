@@ -15,7 +15,8 @@
  */
 
 import { spawn, execSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync, existsSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSyncInterruptible } from "./exec-sync.js";
 import { join } from "node:path";
 import { tmpdir, homedir } from "node:os";
 import type { AIProvider, AIRequest, AIResponse } from "../core/interfaces.js";
@@ -63,7 +64,7 @@ export class CodexExecAIProvider implements AIProvider {
       args.push(prompt);
 
       const stdout = await this.run(args);
-      const text = existsSync(outFile) ? readFileSync(outFile, "utf-8").trim() : "";
+      const text = existsSync(outFile) ? readFileSyncInterruptible(outFile, "utf-8").trim() : "";
       if (text.length === 0) {
         throw new Error(`codex exec produced no output message (stdout tail: ${stdout.slice(-200)})`);
       }

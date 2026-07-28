@@ -5,13 +5,14 @@
  * (so real environment always wins over the file).
  */
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
+import { readFileSyncInterruptible } from "./exec-sync.js";
 
 export function loadEnvFile(path: string): Record<string, string> {
   const loaded: Record<string, string> = {};
   if (!existsSync(path)) return loaded;
 
-  const lines = readFileSync(path, "utf-8").split("\n");
+  const lines = readFileSyncInterruptible(path, "utf-8").split("\n");
   for (const raw of lines) {
     const line = raw.trim();
     if (line.length === 0 || line.startsWith("#")) continue;

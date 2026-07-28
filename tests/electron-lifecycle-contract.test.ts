@@ -201,7 +201,11 @@ test("revision flush is bounded, retry-safe, and samples files without full read
   const revisions = read("src/host/git-revision-store.ts");
   const main = read("src/electron/main.ts");
 
-  assert.match(revisions, /execFileSync\("git", args/);
+  assert.match(revisions, /execFileSyncInterruptible\("git", args/,
+    "git runs on the startup path, so it must go through the EINTR-retrying wrapper");
+  assert.doesNotMatch(revisions, /execFileSync\(/,
+    "bare spawnSync reports an interrupted read as a failure, which surfaces as "
+    + "'The library engine could not start' when a helper process exits mid-open");
   assert.match(revisions, /timeout: Math\.max\(10, Math\.min\(GIT_COMMAND_TIMEOUT_MS, timeoutMs\)\)/);
   assert.match(revisions, /void this\.flush\(label\)\.catch\(\(\) => undefined\)/,
     "timer flush failures must not become process-level unhandled rejections");

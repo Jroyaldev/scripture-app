@@ -3,7 +3,8 @@
  * Merges Substrate folders without deleting authored data.
  */
 
-import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { readFileSyncInterruptible } from "./exec-sync.js";
 import { basename, dirname, join } from "node:path";
 import { createHash } from "node:crypto";
 import type { LibraryEvent } from "../core/events/types.js";
@@ -65,7 +66,7 @@ export class FolderSyncAdapter {
     let conflicts = 0;
     for (const filename of readdirSync(sourceNotesDir).filter((file) => file.endsWith(".md"))) {
       const sourcePath = join(sourceNotesDir, filename);
-      const sourceContent = readFileSync(sourcePath, "utf-8");
+      const sourceContent = readFileSyncInterruptible(sourcePath, "utf-8");
       const sourceId = parseFrontmatter(sourceContent).frontmatter.id;
       if (!sourceId) continue;
 
@@ -75,7 +76,7 @@ export class FolderSyncAdapter {
         continue;
       }
 
-      const targetContent = readFileSync(targetPath, "utf-8");
+      const targetContent = readFileSyncInterruptible(targetPath, "utf-8");
       if (targetContent === sourceContent) continue;
       if (hasConflictCopy(targetNotesDir, sourceId, sourceContent)) continue;
 
@@ -111,7 +112,7 @@ export class FolderSyncAdapter {
 
 function readEvents(path: string): LibraryEvent[] {
   if (!existsSync(path)) return [];
-  return readFileSync(path, "utf-8")
+  return readFileSyncInterruptible(path, "utf-8")
     .split("\n")
     .filter((line) => line.trim())
     .map((line) => JSON.parse(line) as LibraryEvent);
@@ -128,7 +129,7 @@ function noteIndex(notesDir: string): Map<string, string> {
   if (!existsSync(notesDir)) return index;
   for (const filename of readdirSync(notesDir).filter((file) => file.endsWith(".md"))) {
     const path = join(notesDir, filename);
-    const content = readFileSync(path, "utf-8");
+    const content = readFileSyncInterruptible(path, "utf-8");
     const id = parseFrontmatter(content).frontmatter.id;
     if (id && !index.has(id)) index.set(id, path);
   }
@@ -139,7 +140,7 @@ function hasConflictCopy(notesDir: string, noteId: string, content: string): boo
   const digest = shortHash(content);
   return readdirSync(notesDir)
     .filter((file) => file.includes(`.conflict-sync-${noteId}-${digest}`))
-    .some((file) => readFileSync(join(notesDir, file), "utf-8") === content);
+    .some((file) => readFileSyncInterruptible(join(notesDir, file), "utf-8") === content);
 }
 
 function conflictFilename(originalFilename: string, noteId: string, content: string): string {
@@ -152,7 +153,7 @@ function shortHash(content: string): string {
 }
 
 function canSyncPackageContent(manifestPath: string): boolean {
-  const parsed = JSON.parse(readFileSync(manifestPath, "utf-8")) as unknown;
+  const parsed = JSON.parse(readFileSyncInterruptible(manifestPath, "utf-8")) as unknown;
   if (!isRecord(parsed)) return false;
   const license = parsed["license"];
   if (!isRecord(license)) return false;

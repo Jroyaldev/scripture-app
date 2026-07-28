@@ -4,7 +4,8 @@
  * Tracks daily token/spend usage and clamps AI/network activity.
  */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
+import { writeFileSync, existsSync, mkdirSync } from "node:fs";
+import { readFileSyncInterruptible } from "./exec-sync.js";
 import { join } from "node:path";
 import type { BudgetEnvelope } from "../core/interfaces.js";
 
@@ -29,7 +30,7 @@ export class BudgetManager {
   private load(): BudgetEnvelope {
     if (!existsSync(this.configPath)) return { ...DEFAULT_ENVELOPE };
     try {
-      return JSON.parse(readFileSync(this.configPath, "utf-8")) as BudgetEnvelope;
+      return JSON.parse(readFileSyncInterruptible(this.configPath, "utf-8")) as BudgetEnvelope;
     } catch {
       return { ...DEFAULT_ENVELOPE };
     }

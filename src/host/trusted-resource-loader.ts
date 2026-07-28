@@ -11,7 +11,8 @@
  * work goes away.
  */
 
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, statSync } from "node:fs";
+import { readFileSyncInterruptible } from "./exec-sync.js";
 import { join } from "node:path";
 import {
   validateTrustedResourceManifest,
@@ -103,7 +104,7 @@ export function loadTrustedResourceManifests(options: {
 
     let input: unknown;
     try {
-      input = JSON.parse(readFileSync(path, "utf8")) as unknown;
+      input = JSON.parse(readFileSyncInterruptible(path, "utf8")) as unknown;
     } catch (error) {
       return {
         ok: false,

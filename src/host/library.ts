@@ -4,21 +4,8 @@
  */
 
 import { createHash } from "node:crypto";
-import {
-  closeSync,
-  copyFileSync,
-  existsSync,
-  fsyncSync,
-  mkdirSync,
-  openSync,
-  readFileSync,
-  readdirSync,
-  readSync,
-  renameSync,
-  rmSync,
-  statSync,
-  writeFileSync,
-} from "node:fs";
+import { closeSync, copyFileSync, existsSync, fsyncSync, mkdirSync, openSync, readdirSync, readSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { readFileSyncInterruptible } from "./exec-sync.js";
 import { basename, join } from "node:path";
 import { ulid } from "ulid";
 
@@ -297,7 +284,7 @@ export class LibraryEngine {
       };
     }
 
-    const sourceBytes = readFileSync(manifestPath);
+    const sourceBytes = readFileSyncInterruptible(manifestPath);
     const sourceManifest = JSON.parse(sourceBytes.toString("utf8")) as LibraryManifest;
     const result = checkMigration(sourceManifest, false);
     if (result.status !== "migrated") return result;
@@ -323,7 +310,7 @@ export class LibraryEngine {
   readManifest(): LibraryManifest | null {
     const manifestPath = join(this.rootPath, LIBRARY_MANIFEST_RELATIVE_PATH);
     if (!existsSync(manifestPath)) return null;
-    return JSON.parse(readFileSync(manifestPath, "utf-8")) as LibraryManifest;
+    return JSON.parse(readFileSyncInterruptible(manifestPath, "utf-8")) as LibraryManifest;
   }
 
   private publishLibraryManifest(manifest: LibraryManifest, expectedSource?: Buffer): void {
@@ -349,7 +336,7 @@ export class LibraryEngine {
       }
 
       if (expectedSource !== undefined) {
-        const currentSource = existsSync(manifestPath) ? readFileSync(manifestPath) : null;
+        const currentSource = existsSync(manifestPath) ? readFileSyncInterruptible(manifestPath) : null;
         if (!currentSource?.equals(expectedSource)) {
           throw new Error("Library manifest changed while its migration was being prepared.");
         }
@@ -367,14 +354,14 @@ export class LibraryEngine {
    */
   installBackboneData(backbonePath: string, versificationDir: string): void {
     const targetBackbone = join(this.rootPath, ".artifacts/scripture/backbone.json");
-    writeFileSync(targetBackbone, readFileSync(backbonePath, "utf-8"));
+    writeFileSync(targetBackbone, readFileSyncInterruptible(backbonePath, "utf-8"));
 
     const targetVersDir = join(this.rootPath, ".artifacts/scripture/versification");
     mkdirSync(targetVersDir, { recursive: true });
     for (const file of readdirSync(versificationDir)) {
       writeFileSync(
         join(targetVersDir, file),
-        readFileSync(join(versificationDir, file), "utf-8"),
+        readFileSyncInterruptible(join(versificationDir, file), "utf-8"),
       );
     }
   }
@@ -424,7 +411,7 @@ export class LibraryEngine {
   updateNote(id: string, title: string, body: string, opts?: { tags?: string[] }): string | null {
     const notePath = this.findNotePath(id);
     if (!notePath) return null;
-    const existing = parseNote(readFileSync(notePath, "utf-8"), this.bookNames, this.backbone);
+    const existing = parseNote(readFileSyncInterruptible(notePath, "utf-8"), this.bookNames, this.backbone);
     const now = new Date().toISOString();
     const tags = opts?.tags ?? existing.frontmatter.tags;
 
@@ -441,7 +428,7 @@ export class LibraryEngine {
   deleteNote(id: string): { filename: string; content: string } | null {
     const notePath = this.findNotePath(id);
     if (!notePath) return null;
-    const content = readFileSync(notePath, "utf-8");
+    const content = readFileSyncInterruptible(notePath, "utf-8");
     rmSync(notePath);
     return { filename: basename(notePath), content };
   }
@@ -523,7 +510,7 @@ export class LibraryEngine {
   private readJsonlEvents(filename: string): LibraryEvent[] {
     const filePath = join(this.rootPath, "annotations", filename);
     if (!existsSync(filePath)) return [];
-    const content = readFileSync(filePath, "utf-8");
+    const content = readFileSyncInterruptible(filePath, "utf-8");
     return content
       .split("\n")
       .filter((line) => line.trim())
@@ -546,7 +533,7 @@ export class LibraryEngine {
       return this.connectionEventCache.events;
     }
     const events = stat
-      ? readFileSync(filePath, "utf8")
+      ? readFileSyncInterruptible(filePath, "utf8")
         .split("\n")
         .filter((line) => line.trim())
         .map((line) => JSON.parse(line) as LibraryEvent)
@@ -683,7 +670,7 @@ export class LibraryEngine {
     if (!existsSync(notesDir)) return [];
     const files = readdirSync(notesDir).filter((f) => f.endsWith(".md"));
     return files.map((file) => {
-      const content = readFileSync(join(notesDir, file), "utf-8");
+      const content = readFileSyncInterruptible(join(notesDir, file), "utf-8");
       return parseNote(content, this.bookNames, this.backbone);
     });
   }
@@ -2028,7 +2015,7 @@ export class LibraryEngine {
 
     const originalPath = join(sourceDir, "original.pdf");
     copyFileSync(pdfPath, originalPath);
-    const originalBytes = readFileSync(originalPath);
+    const originalBytes = readFileSyncInterruptible(originalPath);
     const imported = new Date().toISOString();
     const metadata: SourceMetadata = {
       schemaVersion: 1,
@@ -2055,7 +2042,7 @@ export class LibraryEngine {
   async rechunkSource(sourceId: string): Promise<SourceChunk[]> {
     const metadata = this.readSourceMetadata(sourceId);
     const originalPath = join(this.rootPath, "sources", sourceId, "original.pdf");
-    const originalBytes = readFileSync(originalPath);
+    const originalBytes = readFileSyncInterruptible(originalPath);
     const chunks = await extractPdfChunks(sourceId, toUint8Array(originalBytes));
     this.materializeSource(metadata, chunks);
     return chunks;
@@ -2130,7 +2117,7 @@ export class LibraryEngine {
 
   private readSourceMetadata(sourceId: string): SourceMetadata {
     const metadataPath = join(this.rootPath, "sources", sourceId, "metadata.json");
-    const parsed = JSON.parse(readFileSync(metadataPath, "utf-8")) as unknown;
+    const parsed = JSON.parse(readFileSyncInterruptible(metadataPath, "utf-8")) as unknown;
     if (!isRecord(parsed) || parsed["schemaVersion"] !== 1 || parsed["id"] !== sourceId || parsed["kind"] !== "pdf") {
       throw new Error(`Invalid source metadata: ${sourceId}`);
     }

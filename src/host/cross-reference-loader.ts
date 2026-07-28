@@ -1,6 +1,6 @@
 /** Host-only loader for the normalized OpenBible JSONL artifact. */
 
-import { readFileSync } from "node:fs";
+import { readFileSyncInterruptible } from "./exec-sync.js";
 import type {
   CrossReferenceData,
   CrossReferenceEdge,
@@ -11,7 +11,7 @@ type MetaLine = { meta: CrossReferenceMeta };
 type SourceLine = { source: string; targets: CrossReferenceEdge[] };
 
 export function loadOpenBibleCrossReferences(path: string): CrossReferenceData {
-  const lines = readFileSync(path, "utf-8").split("\n").filter(Boolean);
+  const lines = readFileSyncInterruptible(path, "utf-8").split("\n").filter(Boolean);
   const first = lines.shift();
   if (!first) throw new Error("OpenBible cross-reference artifact is empty");
   const metaLine = JSON.parse(first) as MetaLine;

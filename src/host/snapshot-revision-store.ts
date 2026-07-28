@@ -6,7 +6,8 @@
  */
 
 import { createHash } from "node:crypto";
-import { copyFileSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, statSync, writeFileSync } from "node:fs";
+import { readFileSyncInterruptible } from "./exec-sync.js";
 import { dirname, join, normalize, sep } from "node:path";
 import { ulid } from "ulid";
 import type {
@@ -159,7 +160,7 @@ export class SnapshotRevisionStore implements RevisionStore {
     try {
       const logPath = this.absolutePath(file.path);
       if (!existsSync(logPath)) return null;
-      content = readFileSync(logPath, "utf8");
+      content = readFileSyncInterruptible(logPath, "utf8");
     } catch {
       return null;
     }
@@ -217,7 +218,7 @@ export class SnapshotRevisionStore implements RevisionStore {
       return { path: relativePath, kind };
     }
 
-    const content = readFileSync(absolutePath);
+    const content = readFileSyncInterruptible(absolutePath);
     const sha256 = createHash("sha256").update(content).digest("hex");
     if (kind !== "note") {
       return {
@@ -248,7 +249,7 @@ export class SnapshotRevisionStore implements RevisionStore {
     this.ensureHistoryDir();
     const logPath = this.absolutePath(REVISION_LOG);
     if (existsSync(logPath)) {
-      const existing = readFileSync(logPath);
+      const existing = readFileSyncInterruptible(logPath);
       if (existing.byteLength > 0 && existing[existing.byteLength - 1] !== 0x0a) {
         // Preserve a corrupt/partial auxiliary receipt line, but terminate it
         // so the new valid record cannot be concatenated into the same line.
@@ -290,7 +291,7 @@ export class SnapshotRevisionStore implements RevisionStore {
     const records = new Map<string, SnapshotRecord>();
     let content = "";
     try {
-      content = existsSync(logPath) ? readFileSync(logPath, "utf-8") : "";
+      content = existsSync(logPath) ? readFileSyncInterruptible(logPath, "utf-8") : "";
     } catch {
       this.recordIndex = records;
       this.recordIndexSignature = signature;
@@ -329,7 +330,7 @@ export class SnapshotRevisionStore implements RevisionStore {
     if (!existsSync(logPath)) return [];
     let content = "";
     try {
-      content = readFileSync(logPath, "utf8");
+      content = readFileSyncInterruptible(logPath, "utf8");
     } catch {
       return [];
     }
