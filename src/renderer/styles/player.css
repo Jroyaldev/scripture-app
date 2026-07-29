@@ -80,18 +80,29 @@
    Everything else that was here — the publisher's own page — moved into the
    sheet, where it can be a sentence instead of a third glyph competing with
    the mark for a 380px line. */
+/* `min-width: 0` because this is a grid item, and a grid item's automatic
+   minimum size is its min-content — the row would rather push through the dock
+   than let its longest child shrink. With a mark that never mattered: an image
+   at a fixed height is 161px wide whatever the publisher is called. With the
+   name in type it matters immediately, and "40 Minutes in the Old Testament"
+   drove the transport controls off the right edge. */
 .podcast-mast {
   display: flex;
   align-items: center;
   gap: 11px;
+  min-width: 0;
   min-height: 30px;
   margin: 0 -16px;
   padding: 13px 12px 12px 16px;
   border-bottom: 1px solid var(--resource-line);
 }
 
+/* The same floor again, for the same reason one level down. `overflow: hidden`
+   is what lets the ellipsis appear; `min-width: 0` is what lets the shrink
+   happen at all. */
 .podcast-mast-source {
   flex: 0 1 auto;
+  min-width: 0;
   overflow: hidden;
   font: var(--fw-semibold) 0.6875rem/1.2 var(--font-ui);
   letter-spacing: 0.055em;
@@ -208,6 +219,13 @@
   margin: 0 -8px 12px;
   padding: 0;
   overflow-y: auto;
+  /* Horizontal is CLIPPED, not merely unscrolled. `overflow-y: auto` alone
+     computes the other axis to `auto` too, so anything a pixel too wide turns
+     this into a horizontally scrollable box — and then any focus or
+     scroll-into-view slides the whole panel sideways. That is the wiggle,
+     which a long publisher name reintroduced years after a transform first
+     caused it. Neither cause is worth trusting not to return. */
+  overflow-x: clip;
   border-top: 1px solid var(--resource-line);
   list-style: none;
   scrollbar-width: thin;
@@ -319,6 +337,13 @@
 .podcast-refs-view {
   max-height: 300px;
   overflow-y: auto;
+  /* Horizontal is CLIPPED, not merely unscrolled. `overflow-y: auto` alone
+     computes the other axis to `auto` too, so anything a pixel too wide turns
+     this into a horizontally scrollable box — and then any focus or
+     scroll-into-view slides the whole panel sideways. That is the wiggle,
+     which a long publisher name reintroduced years after a transform first
+     caused it. Neither cause is worth trusting not to return. */
+  overflow-x: clip;
   scrollbar-width: none;
   overscroll-behavior: contain;
   mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
@@ -564,6 +589,13 @@
   margin: 0;
   padding: 30px 0;
   overflow-y: auto;
+  /* Horizontal is CLIPPED, not merely unscrolled. `overflow-y: auto` alone
+     computes the other axis to `auto` too, so anything a pixel too wide turns
+     this into a horizontally scrollable box — and then any focus or
+     scroll-into-view slides the whole panel sideways. That is the wiggle,
+     which a long publisher name reintroduced years after a transform first
+     caused it. Neither cause is worth trusting not to return. */
+  overflow-x: clip;
   list-style: none;
   scrollbar-width: none;
   overscroll-behavior: contain;
