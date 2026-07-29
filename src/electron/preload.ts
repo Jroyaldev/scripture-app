@@ -140,8 +140,8 @@ const api = {
   transcripts: {
     load: (recordId: string) => ipcRenderer.invoke("transcript-load", { recordId }),
   },
-  anchors: {
-    load: (recordId: string) => ipcRenderer.invoke("anchors-load", { recordId }),
+  references: {
+    load: (recordId: string) => ipcRenderer.invoke("references-load", { recordId }),
   },
   trustedResources: {
     query: (query: TrustedResourceQuery) => ipcRenderer.invoke("trusted-resources-query", query),

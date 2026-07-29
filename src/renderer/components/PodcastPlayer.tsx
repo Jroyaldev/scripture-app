@@ -3,7 +3,8 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "reac
 import type { BookNameData } from "../api.js";
 import type { Transcript } from "../../core/transcripts.js";
 import { readingLines } from "../../core/transcripts.js";
-import type { AnchorSet } from "../../core/anchors.js";
+import type { PassageReference, ReferenceSet } from "../../core/references.js";
+import { passingIn, subjectsOf } from "../../core/references.js";
 import { safeCall } from "../utils/safeCall.js";
 import { useToast } from "./Toast.js";
 
@@ -32,19 +33,16 @@ import { useToast } from "./Toast.js";
 /**
  * A named span inside an episode, with the passage it works through.
  *
- * WIRED as of 2026-07-28, by the second of the two routes this comment
- * anticipated: anchors derived from the machine transcript, in
- * `src/core/anchors.ts`. Every chapter of the Bible is scored against every
- * window of an episode and the strongest few survive an evidence bar — a
- * passage the publisher named plus a good score, or a good score plus the book
- * being spoken nearby. Score alone is written to the artifact and never loaded,
- * because it was measured at roughly half the reliability of the other two and
- * does not improve as the score rises.
+ * Still the publisher's slot. An episode arriving with its own chapters — a
+ * `podcast:chapters` tag or ID3 CHAP frames — keeps them, because a publisher
+ * saying where their own passage is beats anything we work out afterwards.
  *
- * The first route is still open and still wins where it exists: an episode that
- * arrives carrying its own chapters — a publisher's `podcast:chapters` tag or
- * ID3 CHAP frames — keeps them, because a publisher saying where their own
- * passage is beats us inferring it.
+ * What we work out ourselves is no longer squeezed through this shape. It lives
+ * in `src/core/references.ts`, because a reference carries things a chapter
+ * marker has nowhere to put: whether the passage is the subject or merely
+ * touched, how long the discussion runs, whether it was named aloud at all, and
+ * the words that justify the claim. Those distinctions are the product; folding
+ * them into {start, bref, title} would have thrown them away to reuse a type.
  */
 export interface PodcastChapter {
   /** Seconds from the start of the file. */
@@ -404,7 +402,7 @@ export function PodcastPlayer({
   const [following, setFollowing] = useState(true);
   const [query, setQuery] = useState("");
   /* undefined while unasked, null once we know there are none. */
-  const [anchors, setAnchors] = useState<AnchorSet | null | undefined>(undefined);
+  const [refs, setRefs] = useState<ReferenceSet | null | undefined>(undefined);
   const [rateIndex, setRateIndex] = useState(0);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -461,18 +459,18 @@ export function PodcastPlayer({
      sheet is not asking the disk anything new, and the answer for an episode
      does not change while it is playing. */
   useEffect(() => {
-    if (!episode) { setTranscript(undefined); setAnchors(undefined); return; }
+    if (!episode) { setTranscript(undefined); setRefs(undefined); return; }
     let live = true;
     setTranscript(undefined);
-    setAnchors(undefined);
+    setRefs(undefined);
     void window.api.transcripts.load(episode.recordId).then((result) => {
       if (!live) return;
       setTranscript(result.ok ? result.transcript : null);
     }).catch(() => { if (live) setTranscript(null); });
-    void window.api.anchors.load(episode.recordId).then((result) => {
+    void window.api.references.load(episode.recordId).then((result) => {
       if (!live) return;
-      setAnchors(result.ok ? result.anchors : null);
-    }).catch(() => { if (live) setAnchors(null); });
+      setRefs(result.ok ? result.references : null);
+    }).catch(() => { if (live) setRefs(null); });
     return () => { live = false; };
   }, [episode?.recordId]);
 
@@ -509,12 +507,18 @@ export function PodcastPlayer({
     setScrubbingAt(null);
   };
 
-  /* Chapters, at last. An episode may still bring its own — a publisher's
-     `podcast:chapters` would arrive that way — and those win, because a
-     publisher saying where their own passage is beats us inferring it. */
-  const chapters: PodcastChapter[] = episode?.chapters
-    ?? anchors?.anchors.map((a) => ({ start: a.start, bref: a.bref, title: a.title }))
-    ?? [];
+  /* Two lists, because they are two different claims. What an episode works
+     THROUGH is what a reader chooses an episode for; what it merely touches is
+     what a reader searching a passage wants to find. Collapsing them into one
+     list of hits would say neither, and ordering them together would rank a
+     one-line aside beside a twenty-minute exposition.
+
+     A publisher's own chapters still win where they exist — the dock keeps
+     drawing those instead, because a publisher saying where their own passage
+     is beats us reading it out of a transcript. */
+  const subjects: PassageReference[] = refs ? subjectsOf(refs) : [];
+  const passing: PassageReference[] = refs ? passingIn(refs) : [];
+  const chapters: PodcastChapter[] = episode?.chapters ?? [];
   const chapterIndex = chapters.reduce(
     (found, chapter, index) => (position >= chapter.start ? index : found),
     -1,
@@ -710,6 +714,62 @@ export function PodcastPlayer({
                   {of > 0 ? formatClock(of) : "length unknown until it loads"}
                 </p>
               </div>
+
+              {/* What the episode works through. Ordered by how long they stay
+                  with it rather than by when it comes up: a reader scanning
+                  this is deciding whether the episode is worth an hour, and
+                  the twenty-minute passage answers that better than whichever
+                  one happened to be first. */}
+              {subjects.length > 0 && (
+                <ul aria-label="Passages in this episode" className="podcast-refs">
+                  {subjects.map((r) => (
+                    <li key={`s-${r.at}-${r.bref}`}>
+                      <button
+                        className="podcast-ref"
+                        data-relation="subject"
+                        onClick={() => seekPodcast(r.at)}
+                        title={r.evidence ? `“${r.evidence}”` : undefined}
+                        type="button"
+                      >
+                        <span className="podcast-ref-time">{formatClock(r.at)}</span>
+                        <span className="podcast-ref-title">{r.title}</span>
+                        <span className="podcast-ref-extent">
+                          {r.seconds >= 60 ? `${Math.round(r.seconds / 60)} min` : ""}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {/* Everything the episode touches without being about. Ordered by
+                  time, because this list is read while listening rather than
+                  before. Allusions are marked: a passage nobody named aloud is
+                  the one entry here a reader could not have found themselves. */}
+              {passing.length > 0 && (
+                <div className="podcast-refs-passing">
+                  <p className="podcast-refs-head">Also referenced</p>
+                  <ul aria-label="Passages referenced in this episode" className="podcast-refs">
+                    {passing.map((r) => (
+                      <li key={`p-${r.at}-${r.bref}`}>
+                        <button
+                          className="podcast-ref"
+                          data-relation={r.relation}
+                          onClick={() => seekPodcast(r.at)}
+                          title={r.evidence ? `“${r.evidence}”` : undefined}
+                          type="button"
+                        >
+                          <span className="podcast-ref-time">{formatClock(r.at)}</span>
+                          <span className="podcast-ref-title">{r.title}</span>
+                          <span className="podcast-ref-extent">
+                            {r.relation === "allusion" ? "alluded" : ""}
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               {chapters.length > 0 && (
                 <ul aria-label="Chapters" className="podcast-chapters">

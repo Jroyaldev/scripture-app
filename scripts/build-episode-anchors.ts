@@ -117,6 +117,23 @@ interface Anchor {
 /** Two chapters are one discussion if they peak this close together. */
 const MERGE_SECONDS = 120;
 
+/**
+ * Which tiers reach a reader.
+ *
+ * B is built and withheld rather than deleted, and the distinction matters:
+ * tier B is the ONLY path that works for a publisher who tags nothing, so
+ * removing it would quietly make the whole feature depend on metadata this
+ * project is meant to be independent of. It is withheld because the rule
+ * currently behind it — a good score plus the book being spoken nearby — was
+ * measured at 24.2% against tier A's 60.0%. That is my rule failing, not the
+ * tier being a bad idea.
+ *
+ * What should refill it is agreement between two independent retrievals rather
+ * than one score with a lexical sanity check bolted on. Until that exists, B
+ * is written to the artifact, counted, and not drawn.
+ */
+const SHOWN_TIERS = new Set(["A"]);
+
 const brefParts = (a: Anchor): { book: string; chapter: number } => {
   const m = /^bref:v1\/([A-Z0-9]+)\.(\d+)/.exec(a.bref);
   return { book: m?.[1] ?? "", chapter: Number(m?.[2] ?? 0) };
@@ -158,7 +175,7 @@ for (const [recordId, anchors] of byEpisode) {
      one discussion, and three entries for Matthew 5 is three ways of saying
      the same thing. */
   const best = new Map<string, Anchor>();
-  for (const anchor of anchors.filter((a) => a.tier !== "C")) {
+  for (const anchor of anchors.filter((a) => SHOWN_TIERS.has(a.tier))) {
     const held = best.get(anchor.bref);
     if (!held || anchor.score > held.score) best.set(anchor.bref, anchor);
   }

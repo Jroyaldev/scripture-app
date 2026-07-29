@@ -46,7 +46,14 @@ export interface AIProvider {
 export type EmbeddingKind = "document" | "query";
 
 export interface EmbeddingProvider {
-  embed(texts: string[], kind?: EmbeddingKind): Promise<Float32Array[]>;
+  /**
+   * `titles` fills the document prompt's title slot, one per text. The model
+   * was trained with that field present, and a 45-second slice of conversation
+   * has lost every antecedent it had — naming the thing it came from restores
+   * context the slice itself cannot carry. Omitted, it stays "none", which is
+   * what every existing caller gets.
+   */
+  embed(texts: string[], kind?: EmbeddingKind, titles?: readonly string[]): Promise<Float32Array[]>;
   readonly dim: number;
   /** Stable identifier for invalidation (stored beside each vector). */
   readonly modelId: string;

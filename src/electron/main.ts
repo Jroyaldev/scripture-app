@@ -10,7 +10,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { appendFileSync, existsSync, mkdirSync, readdirSync, unlinkSync, writeFileSync } from "node:fs";
 import { readFileSyncInterruptible } from "../host/exec-sync.js";
 import { loadTranscript } from "../host/transcript-loader.js";
-import { loadAnchors } from "../host/anchor-loader.js";
+import { loadReferences } from "../host/reference-loader.js";
 import { createRequire } from "node:module";
 import { createHash } from "node:crypto";
 import ElectronStore from "electron-store";
@@ -2469,11 +2469,12 @@ function registerIpcHandlers(): void {
     return loadTranscript(getLibraryPath(), recordId);
   });
 
-  /* Where in an episode a passage is discussed. Gated by the transcript grant
-     rather than one of its own: an anchor is derived from a transcript and
-     points into the same audio, and deriving a second artifact from the first
-     does not launder the permission. */
-  registerRuntimeReadIpc("anchors-load", (_event, input: unknown) => {
+  /* Where in an episode a passage is discussed, and in what way. Gated by the
+     transcript grant rather than one of its own: a reference is derived from a
+     transcript, points into the same audio, and carries a short verbatim
+     fragment of it — deriving a second artifact from the first does not
+     launder the permission. */
+  registerRuntimeReadIpc("references-load", (_event, input: unknown) => {
     if (typeof input !== "object" || input === null) {
       return { ok: false as const, reason: "refused" as const };
     }
@@ -2481,7 +2482,7 @@ function registerIpcHandlers(): void {
     if (typeof recordId !== "string" || recordId.length === 0) {
       return { ok: false as const, reason: "refused" as const };
     }
-    return loadAnchors(getLibraryPath(), recordId);
+    return loadReferences(getLibraryPath(), recordId);
   });
 
   registerRuntimeReadIpc("trusted-resources-catalogue", () => {

@@ -20,8 +20,25 @@ export const EMBEDDING_PREFIXES: Record<EmbeddingKind, string> = {
   document: "title: none | text: ",
 };
 
-/** Prepend the correct asymmetric-retrieval prefix. Exported for tests. */
-export function prefixTexts(texts: string[], kind: EmbeddingKind): string[] {
+/**
+ * Prepend the correct asymmetric-retrieval prefix. Exported for tests.
+ *
+ * A document may carry a title, which goes in the slot the default leaves as
+ * "none". Only documents have one — the query prompt has no such field, so a
+ * title passed with a query is ignored rather than silently mangling the
+ * prompt into something the model was never trained on.
+ */
+export function prefixTexts(
+  texts: string[],
+  kind: EmbeddingKind,
+  titles?: readonly string[],
+): string[] {
+  if (kind === "document" && titles) {
+    return texts.map((t, i) => {
+      const title = titles[i]?.trim();
+      return `title: ${title && title.length > 0 ? title : "none"} | text: ${t}`;
+    });
+  }
   const prefix = EMBEDDING_PREFIXES[kind];
   return texts.map((t) => prefix + t);
 }
@@ -79,10 +96,14 @@ export class LocalEmbeddingProvider implements EmbeddingProvider {
     return extractor as unknown as FeatureExtractor;
   }
 
-  async embed(texts: string[], kind: EmbeddingKind = "document"): Promise<Float32Array[]> {
+  async embed(
+    texts: string[],
+    kind: EmbeddingKind = "document",
+    titles?: readonly string[],
+  ): Promise<Float32Array[]> {
     if (texts.length === 0) return [];
     const extractor = await this.getExtractor();
-    const output = await extractor(prefixTexts(texts, kind), {
+    const output = await extractor(prefixTexts(texts, kind, titles), {
       pooling: "mean",
       normalize: true,
     });

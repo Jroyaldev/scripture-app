@@ -53,6 +53,25 @@ function arg(name: string, fallback: string): string {
 }
 const LIMIT = Number(arg("limit", "0"));
 const TOP = Number(arg("top", "12"));
+/**
+ * Search windows only inside the N episodes that best match the passage.
+ *
+ * The two questions are answered with very different confidence: "does this
+ * episode discuss P" separates at AUC 0.941, while "is this the moment"
+ * measured 51.9% on passages nobody tagged. Letting the strong answer constrain
+ * the weak one costs nothing and removes a whole class of failure — a
+ * charismatic forty-five seconds in an unrelated episode can no longer win, no
+ * matter how theologically it phrases itself.
+ *
+ * An episode's vector is the mean of its centred windows, which is a fair
+ * summary of an hour of talk in a way that a mean of five adjacent windows is
+ * not. That distinction is why this is not the "dwell" idea that failed twice:
+ * aggregation is meaningful at the scale where the thing being aggregated has
+ * one subject.
+ *
+ * 0 disables the gate, which is how the two are compared.
+ */
+const GATE = Number(arg("gate", "0"));
 
 const bookNames = JSON.parse(readFileSync(NAMES, "utf-8")) as Record<string, unknown>;
 function bookLabel(code: string): string {
@@ -182,11 +201,42 @@ const chosen = LIMIT > 0 ? episodes.slice(0, LIMIT) : episodes;
 const started = Date.now();
 let windowsDone = 0;
 
+/* Episode summaries, and which episodes each chapter is allowed to draw from.
+   Built up front because the gate has to be known before any window is scored,
+   and one pass over the corpus is cheap next to the scoring itself. */
+const allowed: Array<Set<number>> = chapters.map(() => new Set<number>());
+if (GATE > 0) {
+  const summaries = chosen.map(([, metas]) => {
+    const mean = new Float32Array(DIM);
+    for (const meta of metas) {
+      const v = centred(readVector(meta));
+      for (let i = 0; i < DIM; i += 1) mean[i]! += v[i]!;
+    }
+    let n = Math.sqrt(mean.reduce((s, x) => s + x * x, 0)) || 1;
+    for (let i = 0; i < DIM; i += 1) mean[i]! /= n;
+    return mean;
+  });
+  for (let c = 0; c < chapterVecs.length; c += 1) {
+    const vec = chapterVecs[c]!;
+    const ranked = summaries
+      .map((summary, e) => {
+        let s = 0;
+        for (let i = 0; i < DIM; i += 1) s += summary[i]! * vec[i]!;
+        return { e, s };
+      })
+      .sort((a, b) => b.s - a.s)
+      .slice(0, GATE);
+    for (const { e } of ranked) allowed[c]!.add(e);
+  }
+  console.log(`episode gate: each chapter may draw from its ${GATE} best-matching episodes`);
+}
+
 for (const [n, [recordId, metas]] of chosen.entries()) {
   const windows = metas.map(readVector).map(centred);
   for (let w = 0; w < windows.length; w += 1) {
     const window = windows[w]!;
     for (let c = 0; c < chapterVecs.length; c += 1) {
+      if (GATE > 0 && !allowed[c]!.has(n)) continue;
       const vec = chapterVecs[c]!;
       let s = 0;
       for (let i = 0; i < DIM; i += 1) s += window[i]! * vec[i]!;

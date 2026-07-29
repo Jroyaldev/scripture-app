@@ -77,6 +77,24 @@ const metaPath = `${vectorPath}.jsonl`;
     itself should say which one it came from. */
 const MODEL_ID = "onnx-community/embeddinggemma-300m-ONNX";
 
+/* Episode titles, for the document prompt's title slot. A window is 45 seconds
+   of conversation with every antecedent stripped — "and so he's saying here
+   that the fire..." is close to contentless alone. The model has a trained
+   field for exactly this, and it was being filled with "none". */
+const episodeTitles = new Map<string, string>();
+try {
+  const resourceManifest = JSON.parse(readFileSync(
+    join(libraryPath, ".artifacts/resources/bibleproject/manifest.json"), "utf-8",
+  )) as { records: Array<{ id: string; title?: string }> };
+  for (const record of resourceManifest.records) {
+    if (record.title) episodeTitles.set(record.id, record.title);
+  }
+} catch {
+  /* No manifest, no titles. The slot falls back to "none" and everything else
+     still works — which is the point: a corpus with no metadata at all must
+     still index. */
+}
+
 interface Window {
   /** `${recordId}#${start}` — the record and the second it starts at, which is
       everything a result needs to become a seek. The text is not stored; the

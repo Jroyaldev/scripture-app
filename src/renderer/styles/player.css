@@ -241,6 +241,85 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Passage references. Two lists, styled as one family: what the episode works
+   through, then what it touches in passing. The distinction is carried by
+   order and by weight rather than by two different designs, because they are
+   the same kind of object making two strengths of claim. */
+.podcast-refs {
+  margin: 0 -8px;
+  padding: 0;
+  list-style: none;
+}
+
+.podcast-refs-passing {
+  margin-top: 4px;
+  border-top: 1px solid var(--resource-line);
+  padding-top: 6px;
+}
+
+.podcast-refs-head {
+  margin: 0;
+  padding: 2px 12px 4px;
+  color: var(--resource-ink-soft);
+  font: var(--fw-medium) 0.5625rem/1.5 var(--font-ui);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.podcast-ref {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 9px;
+  width: 100%;
+  padding: 5px 12px;
+  border: 0;
+  border-radius: var(--radius-pebble);
+  background: none;
+  color: var(--resource-ink);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.podcast-ref:hover {
+  background: color-mix(in srgb, var(--resource-ink) 10%, transparent);
+}
+
+/* A passage the episode merely touches sits back from one it works through.
+   Same list, quieter claim. */
+.podcast-ref:not([data-relation="subject"]) { color: var(--resource-ink-soft); }
+
+.podcast-ref-time {
+  font: 0.625rem/1.5 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  opacity: 0.65;
+}
+
+.podcast-ref-title {
+  overflow: hidden;
+  font: 0.8125rem/1.4 var(--font-reading);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.podcast-ref[data-relation="subject"] .podcast-ref-title {
+  font-weight: var(--fw-medium);
+}
+
+/* Extent on the left-hand list, and the one word that matters on the right:
+   "alluded" marks a passage nobody said aloud, which is the only entry here a
+   reader could not have found by searching. */
+.podcast-ref-extent {
+  color: var(--resource-ink-soft);
+  font: 0.5625rem/1.6 var(--font-ui);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.75;
+  white-space: nowrap;
+}
+
 /* Transcript. Taller than the chapter list because it is meant to be read
    rather than scanned, and because the active line sits centred inside it — a
    short box would hold the playhead at an edge, where a reader cannot see
