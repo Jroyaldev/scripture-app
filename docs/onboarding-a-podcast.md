@@ -190,6 +190,41 @@ a spread sample rather than one series. **Start it while the transcription is
 still running** — it reads whatever is installed, and a re-run picks up the rest
 without redoing anything.
 
+### Concurrency is capped by this machine's memory, not by the API
+
+**Twelve workers on 16 GB. Not more.** Each concurrent `codex exec` costs
+roughly 275 MB resident, and it is the node wrapper that holds it rather than
+the native binary underneath.
+
+Thirty-four workers wanted more than the machine had. Swap went to 23.4 GB of
+24.6, the box began thrashing, and everything slowed down — including the
+transcription running beside it. Killing the run took free memory from 25% back
+to 71% and swap from 23.4 GB to 8.7, which is how the cause was confirmed rather
+than guessed.
+
+Two things that made this hard to see, both worth knowing:
+
+- **Measuring the wrong process.** A `ps | grep codex` finds the native binaries
+  at ~30 MB each and misses the node wrappers holding ten times that. The number
+  to watch is total node RSS, not the codex processes.
+- **A thrashing machine reports inflated per-process memory**, because paging
+  churn shows up as resident set. The 618 MB/worker figure measured mid-thrash
+  was itself a symptom; the real steady-state cost is ~275 MB.
+
+It also produced a false performance finding. Throughput at 34 workers looked
+like 69% scaling efficiency against a "soft server-side limit" — there was no
+server-side limit. The machine was already paging, and the missing third was
+swap.
+
+**MCP servers are not the cause**, though thirteen of them are configured and
+young `playwright-mcp` processes do appear during a run. Measured with four real
+40 KB prompts: 2,707 MB of node RSS with them and 2,839 MB with
+`-c mcp_servers={}`. The flag is not worth adding.
+
+At twelve workers, expect roughly 6–7 episodes a minute and free memory around
+30%. Watch free memory and swap rather than the episode counter: the first sign
+of trouble is the whole machine getting slower, not the extraction failing.
+
 The prompt lives in that file and **is the valuable part** — it is what
 produced 22,955 references at a 0.03% rejection rate. It asks for one entry per
 place a passage is discussed, with a relation (`subject` / `crossref` /
@@ -252,32 +287,46 @@ so a newly installed publisher's episodes resolve immediately.
 ## What to check on a new corpus
 
 Everything in the ranking was tuned on two publishers with opposite formats, and
-the second overturned a design the first had made look obvious. Assume a third
-will do it again.
+the second overturned a design the first had made look obvious. Four corpora in,
+one measure has survived and every other candidate has died.
 
-- **Relation counts describe teaching style, not content.** 55% of BibleProject
-  references are `subject`; 11% of Naked Bible's are. A thematic show lands on
+- **Duration is the invariant.** Median extent, by corpus: BibleProject 36s,
+  Naked Bible 30s, Spoken Gospel 30s, 40 Minutes in the OT 35s. Four shows with
+  very different formats land within six seconds of each other. It is the only
+  quantity yet measured that means the same thing across publishers, and it is
+  what the index ranks on.
+- **Relation counts describe teaching style, not content.** `subject` share:
+  BibleProject 55%, Naked Bible 11%, Spoken Gospel 24%. A thematic show lands on
   many passages briefly; a verse-by-verse show works one deeply and reaches
   outward. Do not rank on relation.
 - **Share of episode describes episode length.** A `subject` occupies 3.1% of a
   BibleProject episode and 12.7% of a Naked Bible one. Do not rank on share.
-- **Duration is the invariant.** The two corpora's distributions sit almost on
-  top of each other — median 36 seconds against 30. It is the only quantity
-  measured so far that means the same thing across publishers, and it is what
-  the index ranks on.
+- **Reference density describes format too.** 28.2 references an episode from
+  Spoken Gospel against 15.1 from 40 Minutes in the OT — the same finding as
+  relation counts wearing different clothes. A passage is not better attested
+  because the show that mentioned it talks quickly.
 
 ---
 
 ## Costs and timings, measured
 
-| | BibleProject | Naked Bible |
-|---|---|---|
-| Episodes | 528 | 230 |
-| Audio | 495.3 h | 222.1 h |
-| Transcription | ~1 h wall, ~$3 | ~30 min, ~$1.50 |
-| Extraction | ~3 h wall | ~1.5 h |
-| References | 15,252 | 7,703 |
-| Rejected | 5 | 15 |
+| | BibleProject | Naked Bible | Spoken Gospel |
+|---|---|---|---|
+| Episodes | 528 | 230 | 295 |
+| Audio | 495.3 h | 222.1 h | 254.3 h |
+| Transcription | ~1 h wall, ~$3 | ~30 min, ~$1.50 | ~50 min, ~$2 |
+| Extraction | ~3 h wall | ~1.5 h | ~1.2 h |
+| References | 15,252 | 7,703 | 8,333 |
+| Rejected | 5 | 15 | 0 |
+
+Transcription scales with audio hours and costs about $3 per 500 hours on an L4.
+Extraction scales with *episode count* rather than hours — roughly 105 seconds
+per episode per worker, so at the twelve-worker ceiling above, about 6.5 episodes
+a minute regardless of how long they are.
+
+The 2,469-episode batch of five shows added later took about 2 hours to
+transcribe 1,074 hours, and the extraction is the long pole at roughly 6 hours.
+Budget by episodes, not by hours.
 
 Embedding (`scripts/index-transcripts.ts`) is a separate, optional path that
 powers question search rather than references. It runs locally at ~16
