@@ -22,6 +22,7 @@
  */
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { TRANSCRIPT_APPROVED_SOURCES } from "../src/core/transcripts.js";
 
 const REPO = new URL("..", import.meta.url).pathname;
 const LIBRARY = join(process.env["HOME"] ?? "", "ScriptureLibrary");
@@ -86,19 +87,43 @@ const rows = readFileSync(SOURCE, "utf-8").trim().split("\n").map((l) => JSON.pa
    fields. */
 interface EpisodeFacts { episode: string; sourceId: string; sourceName: string; audioUrl: string; officialUrl: string; kind: string }
 const episodeFacts = new Map<string, EpisodeFacts>();
-for (const sourceId of ["bibleproject", "naked-bible"]) {
+/* Every publisher who has granted transcripts, read from the grant list rather
+   than named again here — a source added to the grant and forgotten here would
+   transcribe and extract perfectly and then have every moment silently dropped
+   for want of an audio URL. */
+for (const sourceId of TRANSCRIPT_APPROVED_SOURCES) {
+  const dir = join(LIBRARY, ".artifacts/resources", sourceId);
+  let sourceName = sourceId;
   try {
-    const m = JSON.parse(readFileSync(
-      join(LIBRARY, ".artifacts/resources", sourceId, "manifest.json"), "utf-8",
-    )) as { source: { name: string }; records: Array<Record<string, string>> };
+    const m = JSON.parse(readFileSync(join(dir, "manifest.json"), "utf-8")) as
+      { source: { name: string }; records: Array<Record<string, string>> };
+    sourceName = m.source.name;
     for (const r of m.records) {
       if (!r["audioUrl"]) continue;
       episodeFacts.set(r["id"]!, {
-        episode: r["title"] ?? r["id"]!, sourceId, sourceName: m.source.name,
+        episode: r["title"] ?? r["id"]!, sourceId, sourceName,
         audioUrl: r["audioUrl"], officialUrl: r["officialUrl"] ?? "", kind: r["kind"] ?? "podcast",
       });
     }
   } catch { /* a source with no installed manifest simply contributes none */ }
+  /* The episode catalogue, where the importer wrote one. It holds every
+     episode with audio, including those whose title stated no passage and so
+     have no manifest record — and those episodes have references precisely
+     because a title was never how the references were found. */
+  try {
+    const c = JSON.parse(readFileSync(join(dir, "episodes.json"), "utf-8")) as {
+      schema: string; sourceName?: string;
+      episodes: Array<{ id: string; title: string; audioUrl: string; officialUrl: string | null }>;
+    };
+    if (c.schema !== "podcast-catalog/v1") throw new Error("not a catalogue");
+    for (const e of c.episodes) {
+      if (!e.audioUrl || episodeFacts.has(e.id)) continue;
+      episodeFacts.set(e.id, {
+        episode: e.title || e.id, sourceId, sourceName: c.sourceName ?? sourceName,
+        audioUrl: e.audioUrl, officialUrl: e.officialUrl ?? "", kind: "podcast",
+      });
+    }
+  } catch { /* no catalogue: the manifest was the whole list */ }
 }
 
 const RELATIONS = new Set(["subject", "crossref", "mention", "allusion"]);

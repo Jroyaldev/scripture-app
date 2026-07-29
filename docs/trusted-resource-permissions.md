@@ -1,7 +1,7 @@
 # Trusted resource permissions boundary
 
 Reviewed: 2026-07-20
-Mark approval recorded: 2026-07-26 (three sources), 2026-07-27 (Enter the Bible, Naked Bible)
+Mark approval recorded: 2026-07-26 (three sources), 2026-07-27 (Enter the Bible, Naked Bible), 2026-07-29 (Spoken Gospel)
 
 This is a product-engineering boundary, not a grant of rights or a substitute
 for legal review. Re-check the live publisher terms before expanding any source
@@ -18,6 +18,7 @@ Marks are approved for the sources listed here, and for no others:
 | The Gospel Coalition | `tgc-mark-wht.svg` | `#79AE4A` |
 | Enter the Bible | `etb-main-logo-colour.svg` | `#FED141` |
 | Naked Bible Podcast | `naked-bible-emblem-white.png` | `#2F3437` |
+| Spoken Gospel | `spoken-gospel-lockup-white.png` | `#239948` |
 
 The 2026-07-20 review below records what each publisher *publishes* about reuse.
 It was never a finding that these marks could not be shown — only that the
@@ -25,13 +26,24 @@ milestone held no approval to show them. Approval was recorded on 2026-07-26 for
 the first three and on 2026-07-27 for Enter the Bible and the Naked Bible
 Podcast, and the marks now ship.
 
-Two of these ship artwork that needed handling rather than dropping in. Enter
+Three of these ship artwork that needed handling rather than dropping in. Enter
 the Bible's logo is built for a light ground — a yellow tile, orange "BIBLE",
 black type — so its card is light, the surface is that tile's own yellow, and
 the logo ships unmodified. The Naked Bible Podcast publishes a wordmark that is
 a single hairline of small caps, illegible at card size; its emblem was lifted
 from the 2000px cover art, reversed to one ink, and is locked up with the show's
 name, since an emblem alone identifies nobody.
+
+Spoken Gospel presents two identities and the card had to choose one. The show's
+cover art is a gold-leaf gradient on navy; the brand's stated colours are a
+green, a pale yellow and a cream, with no gold among them. The green takes the
+surface, because it is the only one of the three a reversed mark can sit on and
+because a gradient of gold leaf resolves to mud at fifteen pixels — gold there
+is a texture, and a texture needs room a masthead has not got. So the
+publisher's own horizontal lockup, emblem and wordmark together, reversed to one
+ink: the same treatment and the same reason as the Naked Bible emblem. The other
+two palette colours are not dropped — the cream is the card's ink and the yellow
+is its pill — so the card carries the publisher's three colours and none of ours.
 
 Approval is per source. An unapproved source shows its name in type until it is
 approved in its own right, and the renderer enforces that rather than trusting
@@ -112,6 +124,26 @@ Do not exercise the broader excerpt/embed permission until a separate feature
 defines attribution, exceptions, media hosting, and removal handling. Mark
 approval recorded 2026-07-26.
 
+### Spoken Gospel
+
+Granted 2026-07-29. The maintainer reports that the publisher gave permission
+directly and stated that their terms of use permit non-commercial use. That is
+recorded here as what the publisher said, not as a reading of a published page:
+unlike the four sources above, no live terms URL was reviewed for this entry, so
+if this source is ever expanded beyond the capabilities below, the terms are the
+thing to go and read first.
+
+Decision: factual cards carrying the approved Spoken Gospel mark and one
+official link, audio streamed from the publisher's feed host, and machine
+transcripts under the grant recorded below. No artwork, no show notes, no
+episode descriptions — the feed carries all three and none is imported.
+
+The permission as stated is for non-commercial use, which the current product
+is. It is worth writing down plainly that this is the first grant whose scope is
+tied to how the product is sold rather than to what the feature does: nothing in
+the code can enforce it, and a change in business model would need this
+conversation reopened rather than merely re-read.
+
 ## Playing audio — amended 2026-07-27
 
 A card may play a source's own audio file, and nothing else about media has
@@ -147,6 +179,15 @@ not load.
 Approved for the Naked Bible Podcast on 2026-07-27, whose audio is served from
 its own domain. TGC's audio sits on a CDN and Working Preacher's behind a player
 page; neither is enabled, and each would need its own decision.
+
+Approved for Spoken Gospel on 2026-07-29. Like BibleProject, its pages and its
+audio belong to different parties — episodes live on `www.spokengospel.com` and
+`www.spokengospelpodcast.com`, and all 295 enclosures are `audio/mpeg` on
+`traffic.megaphone.fm`. So the source declares that one media host and the
+renderer's policy names it in `media-src`, in both copies of the policy. Two
+page hosts rather than one is not sloppiness: the show moved domains part-way
+through its run and the older episodes' links were never rewritten, so allowing
+only the current one would break thirty-one episodes' cards.
 
 ### BibleProject audio — BUILT, NOT GRANTED
 
@@ -189,9 +230,10 @@ needed a grant rather than a judgement call.
 **BibleProject granted transcripts on 2026-07-28**, on one condition: that the
 transcriptions are not mischaracterized. **The Naked Bible Podcast granted the
 same day**, whose audio was already approved on 2026-07-27 because it is served
-from the publisher's own domain. Requests to Working Preacher, The Gospel
-Coalition and Enter the Bible are outstanding, and until each is answered this
-capability covers exactly those two.
+from the publisher's own domain. **Spoken Gospel granted on 2026-07-29**, under
+the non-commercial terms recorded in its source review above. Requests to
+Working Preacher, The Gospel Coalition and Enter the Bible are outstanding, and
+until each is answered this capability covers exactly those three.
 
 Naked Bible matters beyond its own catalogue. Everything built on transcripts so
 far — the reference extraction, the notion of how much of an episode a passage

@@ -19377,6 +19377,40 @@ button.lang-phrase-diagram-node:focus-visible,
   --resource-mark-ratio: 1.583;
 }
 
+/* Two identities, and the palette had to pick one. The show's cover art is a
+   gold gradient on navy; the publisher's stated brand colours are a green, a
+   pale yellow and a cream. The green wins the surface because it is the only
+   one of the three a reversed mark can sit on, and because a gradient of gold
+   leaf resolves to mud at fifteen pixels — the gold is a texture, and a texture
+   needs room this masthead does not have. Their lockup, reversed to one ink,
+   the same treatment the Naked Bible emblem got and for the same reason.
+
+   The other two palette colours are not discarded: the cream is the ink and the
+   yellow is the pill, so the card is the publisher's three colours and no
+   invention of ours. */
+.trusted-resource-card[data-source="spoken-gospel"],
+.trusted-resource-imprint[data-source="spoken-gospel"],
+.resource-source[data-source="spoken-gospel"],
+.resource-matrix-row[data-source="spoken-gospel"],
+.podcast-dock[data-source="spoken-gospel"] {
+  --resource-source: #239948;
+  --resource-ink: #faf0d7;
+  --resource-ink-soft: rgb(250 240 215 / 0.78);
+  --resource-line: rgb(250 240 215 / 0.3);
+  --resource-pill-bg: #fde481;
+  --resource-pill-ink: #14532b;
+  --resource-mark: url("./assets/brand/spoken-gospel-lockup-white.png");
+  /* One image carrying emblem and wordmark together, where the other lockups
+     here are an emblem beside type. That makes it the widest mark on the shelf
+     at any given height, and sizing it by height alone — 15px, matching
+     BibleProject's — left the emblem a smudge and the card reading as the
+     quiet one in a row. Weight is what has to match, not the number: 21px
+     brings it to 161px of a 320px head, which is the room there is once the
+     count chip has its own. */
+  --resource-mark-height: 21px;
+  --resource-mark-ratio: 7.671;
+}
+
 .trusted-resource-card[data-source="the-gospel-coalition"],
 .trusted-resource-imprint[data-source="the-gospel-coalition"],
 .resource-source[data-source="the-gospel-coalition"],
@@ -19432,6 +19466,8 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-card.is-featured[data-source="the-gospel-coalition"] .trusted-resource-source,
 .trusted-resource-card.is-featured[data-source="enter-the-bible"] .trusted-resource-source,
 .trusted-resource-card.is-featured[data-source="naked-bible"] .trusted-resource-source,
+.trusted-resource-card.is-featured[data-source="spoken-gospel"] .trusted-resource-source,
+.trusted-resource-imprint[data-source="spoken-gospel"] .trusted-resource-source,
 .trusted-resource-imprint[data-source="enter-the-bible"] .trusted-resource-source,
 .trusted-resource-imprint[data-source="naked-bible"] .trusted-resource-source,
 .trusted-resource-imprint[data-source="working-preacher"] .trusted-resource-source,
@@ -19449,7 +19485,8 @@ button.lang-phrase-diagram-node:focus-visible,
 .podcast-dock[data-source="bibleproject"] .podcast-mast-source,
 .podcast-dock[data-source="the-gospel-coalition"] .podcast-mast-source,
 .podcast-dock[data-source="enter-the-bible"] .podcast-mast-source,
-.podcast-dock[data-source="naked-bible"] .podcast-mast-source {
+.podcast-dock[data-source="naked-bible"] .podcast-mast-source,
+.podcast-dock[data-source="spoken-gospel"] .podcast-mast-source {
   display: block;
   height: var(--resource-mark-height);
   aspect-ratio: var(--resource-mark-ratio);

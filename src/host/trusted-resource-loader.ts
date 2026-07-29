@@ -40,6 +40,10 @@ export const TRUSTED_RESOURCE_SOURCES = [
   { id: "the-gospel-coalition", officialHosts: ["www.thegospelcoalition.org"] },
   { id: "enter-the-bible", officialHosts: ["enterthebible.org"] },
   { id: "naked-bible", officialHosts: ["nakedbiblepodcast.com"] },
+  /* Two hosts, both the publisher's: the show moved from its own podcast domain
+     onto the main site part-way through and the older links were never
+     rewritten, so allowing only one would break thirty-one episodes' cards. */
+  { id: "spoken-gospel", officialHosts: ["www.spokengospel.com", "www.spokengospelpodcast.com"] },
 ] as const;
 
 export const TRUSTED_RESOURCE_SOURCE_IDS = TRUSTED_RESOURCE_SOURCES.map((source) => source.id);

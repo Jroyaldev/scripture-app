@@ -44,6 +44,7 @@ import json
 import os
 import pathlib
 import shutil
+import threading
 import urllib.request
 
 import modal
@@ -109,6 +110,14 @@ model_volume = modal.Volume.from_name("asr-models", create_if_missing=True)
 audio_volume = modal.Volume.from_name("asr-audio", create_if_missing=True)
 out_volume = modal.Volume.from_name("asr-transcripts", create_if_missing=True)
 
+# A Volume mount is per-container, not per-input, and `fetch` runs two inputs at
+# once inside one container. reload() re-points that shared mount, so one input
+# calling it while another has a file open on it takes the file out from under
+# the second — which surfaces as EPERM on the open, not as anything mentioning
+# concurrency. Three of Spoken Gospel's 295 episodes failed that way on the
+# first run before this lock existed.
+_VOLUME = threading.Lock()
+
 
 # --- stage 0: warm the weights ------------------------------------------------
 
@@ -155,13 +164,19 @@ def fetch(episode: dict) -> dict:
     The size check is what the rename was really protecting against: a copy
     that ends early would otherwise commit a truncated file that every later
     run treats as finished.
+
+    The download runs outside _VOLUME, and the two volume operations inside it.
+    That is the whole point of holding a lock rather than dropping concurrency:
+    waiting on a CDN is what the second input is here to overlap, and it is the
+    only part that takes any real time.
     """
     key = _key(episode["id"])
     target = pathlib.Path(AUDIO_DIR) / f"{key}.mp3"
 
-    audio_volume.reload()
-    if target.exists() and target.stat().st_size > 0:
-        return {"id": episode["id"], "status": "cached", "bytes": target.stat().st_size}
+    with _VOLUME:
+        audio_volume.reload()
+        if target.exists() and target.stat().st_size > 0:
+            return {"id": episode["id"], "status": "cached", "bytes": target.stat().st_size}
 
     staging = pathlib.Path("/tmp") / f"{key}.mp3"
     request = urllib.request.Request(
@@ -174,12 +189,13 @@ def fetch(episode: dict) -> dict:
     if size == 0:
         raise RuntimeError(f"empty download for {episode['id']}")
 
-    shutil.copyfile(staging, target)
-    staging.unlink(missing_ok=True)
-    if target.stat().st_size != size:
-        target.unlink(missing_ok=True)
-        raise RuntimeError(f"short write for {episode['id']}")
-    audio_volume.commit()
+    with _VOLUME:
+        shutil.copyfile(staging, target)
+        staging.unlink(missing_ok=True)
+        if target.stat().st_size != size:
+            target.unlink(missing_ok=True)
+            raise RuntimeError(f"short write for {episode['id']}")
+        audio_volume.commit()
     return {"id": episode["id"], "status": "fetched", "bytes": size}
 
 

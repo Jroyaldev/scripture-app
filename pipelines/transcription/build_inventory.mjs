@@ -51,10 +51,53 @@ try {
 const manifest = JSON.parse(readFileSync(manifestPath, "utf-8"));
 const records = manifest.records ?? [];
 
+/* An episode catalogue beside the manifest, where the importer wrote one.
+
+   The manifest is a catalogue of passage claims — a record cannot exist
+   without brefs — and a podcast's audio catalogue is not the same list. Spoken
+   Gospel publishes 295 episodes and states a passage in 253 titles; building
+   from the manifest alone would decide, here, that the other 42 have no speech
+   in them. Where no catalogue exists the manifest is still the list, which is
+   what the first two publishers ran on. */
+const catalogPath = join(libraryPath, ".artifacts/resources", SOURCE, "episodes.json");
+let catalog = null;
+try {
+  const parsed = JSON.parse(readFileSync(catalogPath, "utf-8"));
+  if (parsed.schema === "podcast-catalog/v1" && Array.isArray(parsed.episodes)) catalog = parsed;
+} catch {
+  /* No catalogue; the manifest is the list. */
+}
+
+/* What the publisher stated, kept by record id so an episode carried only by
+   the catalogue still picks up any coordinates the manifest holds for it. */
+const statedBrefs = new Map(records.map((record) => [record.id, record.brefs ?? []]));
+/* Seconds, where the catalogue has them. A feed states its own durations to the
+   second and the manifest rounds them to minutes, so this is the finer of the
+   two numbers rather than a substitute for a missing one. */
+const catalogSeconds = new Map(
+  (catalog?.episodes ?? [])
+    .filter((episode) => typeof episode.durationSeconds === "number")
+    .map((episode) => [episode.id, episode.durationSeconds]),
+);
+
 /* Only podcasts have audio; guides and videos are a different kind of record
    and silently including one would put a transcript against something that was
    never spoken. */
-const podcasts = records.filter((record) => record.kind === "podcast");
+const podcasts = catalog
+  ? catalog.episodes.map((episode) => ({
+    id: episode.id,
+    kind: "podcast",
+    title: episode.title,
+    audioUrl: episode.audioUrl,
+    officialUrl: episode.officialUrl,
+    brefs: statedBrefs.get(episode.id) ?? [],
+    metadata: {
+      ...(episode.publishedAt ? { publishedAt: episode.publishedAt } : {}),
+      ...(episode.durationSeconds ? { durationMinutes: Math.round(episode.durationSeconds / 60) } : {}),
+      language: "en",
+    },
+  }))
+  : records.filter((record) => record.kind === "podcast");
 
 const episodes = [];
 const skipped = [];
@@ -73,6 +116,8 @@ for (const record of podcasts) {
   }
   const probed = measured.get(record.id);
   const statedMinutes = record.metadata?.durationMinutes ?? null;
+  const statedSeconds = catalogSeconds.get(record.id)
+    ?? (statedMinutes === null ? null : statedMinutes * 60);
   episodes.push({
     id: record.id,
     title: record.title,
@@ -84,8 +129,15 @@ for (const record of podcasts) {
        three records where they differ are worth fixing at the source. */
     durationMinutes: probed?.minutes ?? statedMinutes,
     statedMinutes,
-    durationSeconds: probed?.seconds ?? null,
-    durationSource: probed ? "ffprobe" : statedMinutes === null ? "unknown" : "manifest",
+    /* Falls back to what the publisher stated rather than to null, because null
+       does not travel as "unknown" — it is written into every transcript as
+       `audioSeconds`, and the reference extractor reads that to check a cited
+       timestamp lies inside the episode. `audioSeconds || Infinity` turns a
+       missing duration into no bound at all, so the check goes quiet rather
+       than loud, which is the worst way for a check to fail. A stated duration
+       is a real bound; ffprobe's is a better one. */
+    durationSeconds: probed?.seconds ?? statedSeconds,
+    durationSource: probed ? "ffprobe" : statedSeconds === null ? "unknown" : "manifest",
     bitrate: probed?.bitrate ?? null,
     publishedAt: record.metadata?.publishedAt ?? null,
     language: record.metadata?.language ?? "en",

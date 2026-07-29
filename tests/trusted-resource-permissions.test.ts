@@ -8,8 +8,8 @@ const read = (path: string): string => readFileSync(resolve(root, path), "utf8")
 
 /** Approved for their official marks. No other source is. */
 const APPROVED_MARK_SOURCES = ["working-preacher", "bibleproject", "the-gospel-coalition"];
-/** Approved 2026-07-27, and shipping without a bundled sample manifest. */
-const APPROVED_MARK_SOURCES_IMPORTED = ["enter-the-bible", "naked-bible"];
+/** Approved 2026-07-27 and 2026-07-29, shipping without a bundled sample manifest. */
+const APPROVED_MARK_SOURCES_IMPORTED = ["enter-the-bible", "naked-bible", "spoken-gospel"];
 const ALL_APPROVED_MARK_SOURCES = [...APPROVED_MARK_SOURCES, ...APPROVED_MARK_SOURCES_IMPORTED];
 
 test("reviewed manifests and cards retain the common link-only permission boundary", () => {

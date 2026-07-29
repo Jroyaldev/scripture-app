@@ -45,6 +45,8 @@ function arg(name: string, fallback: string): string {
 const EPISODES = Number(arg("episodes", "5"));
 const CONCURRENCY = Number(arg("concurrency", "4"));
 const EFFORT = arg("effort", "medium");
+/** How long one episode may take before its worker is taken back. */
+const TIMEOUT_MS = Number(arg("timeout-minutes", "12")) * 60_000;
 /** Shifts the deterministic pick, so a second dry run reads different episodes. */
 const OFFSET = Number(arg("offset", "0"));
 /* Which publisher's transcripts to read. Both now sit in one directory, keyed
@@ -123,6 +125,23 @@ function callCodex(body: string): Promise<Ref[] | null> {
       "-c", `model_reasoning_effort=${EFFORT}`, "-",
     ], { cwd: REPO });
     let out = "";
+    let settled = false;
+    const finish = (value: Ref[] | null): void => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(value);
+    };
+    /* A call that never returns holds its worker forever, and there are only a
+       handful of workers. Two hung during the first large run and the rest of
+       the batch waited behind them until they were killed by hand. The cap is
+       deliberately generous — a ninety-minute episode is real work — and the
+       cost of hitting it is one episode, which a re-run picks up, because
+       results are written as they land rather than at the end. */
+    const timer = setTimeout(() => {
+      child.kill("SIGKILL");
+      finish(null);
+    }, TIMEOUT_MS);
     child.stdout.on("data", (d) => { out += String(d); });
     child.stderr.on("data", () => { /* MCP transport noise */ });
     child.on("close", () => {
@@ -130,13 +149,13 @@ function callCodex(body: string): Promise<Ref[] | null> {
          that carries the key we asked for. */
       const matches = [...out.matchAll(/\{[\s\S]*?"references"[\s\S]*?\]\s*\}/g)];
       const last = matches[matches.length - 1]?.[0];
-      if (!last) { resolve(null); return; }
+      if (!last) { finish(null); return; }
       try {
         const parsed = JSON.parse(last) as { references?: Ref[] };
-        resolve(Array.isArray(parsed.references) ? parsed.references : null);
-      } catch { resolve(null); }
+        finish(Array.isArray(parsed.references) ? parsed.references : null);
+      } catch { finish(null); }
     });
-    child.on("error", () => resolve(null));
+    child.on("error", () => finish(null));
     child.stdin.write(body);
     child.stdin.end();
   });
@@ -146,6 +165,18 @@ const manifest = JSON.parse(
   readFileSync(join(LIBRARY, ".artifacts/resources", SOURCE, "manifest.json"), "utf-8"),
 ) as { records: Array<{ id: string; kind: string; title: string }> };
 const titles = new Map(manifest.records.map((r) => [r.id, r.title]));
+/* The episode catalogue too, where the importer wrote one. It names every
+   episode with audio, including the ones whose title stated no passage and so
+   have no manifest record — and those have transcripts, so without this they
+   would be catalogued here under their record id instead of their name. */
+try {
+  const catalog = JSON.parse(
+    readFileSync(join(LIBRARY, ".artifacts/resources", SOURCE, "episodes.json"), "utf-8"),
+  ) as { schema: string; episodes: Array<{ id: string; title: string }> };
+  if (catalog.schema === "podcast-catalog/v1") {
+    for (const e of catalog.episodes) if (!titles.has(e.id)) titles.set(e.id, e.title);
+  }
+} catch { /* no catalogue: the manifest named everything there was */ }
 
 const files = readdirSync(TRANSCRIPTS).filter((f) => f.endsWith(".json") && f.startsWith(`${SOURCE.replace(/:/g, "__")}__`));
 /* Spread through the catalogue rather than taking its head, which is one
