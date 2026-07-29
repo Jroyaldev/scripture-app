@@ -18988,14 +18988,37 @@ button.lang-phrase-diagram-node:focus-visible,
   list-style: none;
 }
 
-/* One hairline where the directly-relevant moments end. The only boundary a
-   reader needs drawn, and it is drawn once — the version with a heading per
-   band put chrome above almost every row and read as a list that could not
-   settle. */
-.taught-here-list > li[data-rule="true"] {
-  margin-top: 9px;
-  padding-top: 9px;
-  border-top: 1px solid var(--border-subtle);
+/* Two section headings, and only where both sections hold something. The
+   median chapter has seven moments and reads as one run; Genesis 1 has 427,
+   and there a reader needs to know which bear on the verse in front of them
+   before anything else is worth reading.
+   
+   An earlier version banded four ways and drew a heading above nearly every
+   row — stutter rather than structure. Two headings over hundreds of rows is
+   the opposite trade, and the count is what makes each one worth its line. */
+.taught-here-section {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 13px 0 2px;
+  padding: 0 6px 5px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-tertiary);
+  font: var(--fw-semibold) 0.5625rem/1.3 var(--font-ui);
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.taught-here-section:first-of-type { margin-top: 6px; }
+
+/* The count is the point of the heading on a long chapter: it says how much
+   is behind it without spending a row saying so. */
+.taught-here-section span {
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
 }
 
 .taught-here-row {

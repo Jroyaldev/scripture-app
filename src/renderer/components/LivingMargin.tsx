@@ -423,6 +423,26 @@ function TaughtHereBlock({ moments, verse, onPlay }: {
      the rest genuinely reachable rather than merely counted. A line saying
      "eleven more" with no way to see them tells a reader what they are not
      being shown, which is worse than not mentioning it. */
+  /* Two sections, because the corpus is not one shape. The median chapter has
+     seven moments and a flat list serves it; Genesis 1 has 427, and there a
+     reader needs to know which of them bear on the verse in front of them
+     before anything else is worth reading.
+     
+     Two, not four. The earlier version banded by exact / near / whole /
+     elsewhere and drew a heading above almost every row, which is stutter
+     rather than structure. Sections earn their headings only when each holds
+     enough to be worth naming. */
+  const onPassage = verse == null ? [] : moments.filter((m) => {
+    const band = proximityOf(m, verse);
+    return band === "on" || band === "near";
+  });
+  const around = verse == null ? moments : moments.filter((m) => {
+    const band = proximityOf(m, verse);
+    return band !== "on" && band !== "near";
+  });
+  const sectioned = onPassage.length > 0 && around.length > 0;
+  /* The unsectioned case — no verse chosen, or everything falls in one group.
+     The median chapter has seven moments and reads perfectly well as one run. */
   const shown = expanded ? moments : moments.slice(0, 4);
   const clock = (s: number): string =>
     `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
@@ -438,12 +458,6 @@ function TaughtHereBlock({ moments, verse, onPlay }: {
      numbers have said. What remains is order, and one hairline where the
      directly-relevant moments end, which is the only boundary a reader needs
      drawn for them. */
-  const relevant = (m: PassageMoment): boolean => {
-    const band = proximityOf(m, verse);
-    return band === "on" || band === "near" || band === "whole";
-  };
-  const firstDistant = verse == null ? -1 : shown.findIndex((m) => !relevant(m));
-  const drawRule = firstDistant > 0;
 
   return (
     <section className="taught-here" data-expanded={expanded} aria-labelledby="taught-here-title">
@@ -451,9 +465,14 @@ function TaughtHereBlock({ moments, verse, onPlay }: {
         <span className="taught-here-kicker">From the transcripts</span>
         <h3 id="taught-here-title">Taught here</h3>
       </header>
+      {sectioned && (
+        <p className="taught-here-section">
+          On this passage<span>{onPassage.length}</span>
+        </p>
+      )}
       <ul className="taught-here-list">
-        {shown.map((m, i) => (
-          <li key={`${m.id}-${m.at}`} data-rule={drawRule && i === firstDistant}>
+        {(sectioned ? (expanded ? onPassage : onPassage.slice(0, 3)) : shown).map((m) => (
+          <li key={`${m.id}-${m.at}`}>
             <button
               className="taught-here-row"
               data-band={proximityOf(m, verse)}
@@ -475,14 +494,42 @@ function TaughtHereBlock({ moments, verse, onPlay }: {
           </li>
         ))}
       </ul>
-      {moments.length > 4 && (
+      {sectioned && (
+        <>
+          <p className="taught-here-section">
+            Around it<span>{around.length}</span>
+          </p>
+          <ul className="taught-here-list">
+            {(expanded ? around : around.slice(0, 2)).map((m) => (
+              <li key={`${m.id}-${m.at}`}>
+                <button
+                  className="taught-here-row"
+                  data-band={proximityOf(m, verse)}
+                  onClick={() => onPlay(m)}
+                  type="button"
+                >
+                  <span className="taught-here-episode">{m.episode}</span>
+                  <span className="taught-here-extent">{extent(m.seconds)}</span>
+                  <span className="taught-here-meta">
+                    <span className="taught-here-ref">{m.title}</span>
+                    {m.sourceName} · {clock(m.at)}
+                    {m.relation !== "subject" && ` · ${m.relation === "allusion" ? "alluded" : m.relation}`}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      {moments.length > (sectioned ? 5 : 4) && (
         <button
           aria-expanded={expanded}
           className="taught-here-more"
           onClick={() => setExpanded((open) => !open)}
           type="button"
         >
-          {expanded ? "Show fewer" : `${moments.length - 4} more in the library`}
+          {expanded ? "Show fewer" : `${moments.length - (sectioned ? 5 : 4)} more in the library`}
         </button>
       )}
     </section>
