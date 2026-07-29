@@ -373,3 +373,16 @@ for (const k of ["subject", "crossref", "mention", "allusion"]) {
   console.log(`    ${k.padEnd(9)} median ${String(s[s.length >> 1]).padStart(4)}s   max ${String(s[s.length - 1]).padStart(4)}s`);
 }
 console.log(`\nwrote ${OUT}`);
+
+/* Exit rather than fall off the end.
+ *
+ * The CLI leaves something behind — a grandchild holding the inherited pipe,
+ * most likely — so the event loop stays alive after the last worker returns and
+ * the process sits there indefinitely. Pass two printed this summary at 13:55
+ * and was still running at 19:30. One of those is a curiosity; a queue of them,
+ * left by run after run at thirty-four workers, is a machine slowly filling
+ * with processes that have nothing to do.
+ *
+ * Safe to do bluntly here: every result was written with writeFileSync as it
+ * landed, so there is no buffered output to lose. */
+process.exit(process.exitCode ?? 0);
