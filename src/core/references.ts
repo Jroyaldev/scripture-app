@@ -32,6 +32,8 @@ export interface PassageReference {
   bref: string;
   book: string;
   chapter: number;
+  /** Verses within the chapter, as spoken — "17", "1-4", "8-9,16-17". */
+  verses: string | null;
   /** Human label — "Genesis 19", or "Matthew 5:17-20" where verses are known. */
   title: string;
   /** Seconds from the start of the episode. */

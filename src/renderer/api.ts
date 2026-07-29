@@ -124,7 +124,7 @@ declare global {
       passages: {
         /* Empty is the ordinary answer — most chapters have nobody teaching
            them, and that is not a failure to report. */
-        moments(book: string, chapter: number): Promise<{ ok: true; moments: PassageMoment[] }>;
+        moments(book: string, chapter: number, verse?: number | null): Promise<{ ok: true; moments: PassageMoment[] }>;
       };
       trustedResources: {
         query(query: TrustedResourceQuery): Promise<

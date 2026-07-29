@@ -23,7 +23,8 @@ import {
   canonicalConnectionAnchors,
   compareConnectionsCanonical,
 } from "../../core/annotations/connection-order.js";
-import type { PassageMoment } from "../../core/passage-index.js";
+import type { PassageMoment, Proximity } from "../../core/passage-index.js";
+import { proximityOf } from "../../core/passage-index.js";
 import { CONNECTION_ROUTE_SELECTED_STROKE } from "../utils/connectionGeometry.js";
 import type {
   ConnectionPaintAnchor,
@@ -407,8 +408,9 @@ function resourcePassageLabel(bref: string): string {
  * The relation rides along as a label because a reader wants to know whether a
  * passage was worked through or glanced at — but it never decides an order.
  */
-function TaughtHereBlock({ moments, onPlay }: {
+function TaughtHereBlock({ moments, verse, onPlay }: {
   moments: readonly PassageMoment[];
+  verse: number | null;
   onPlay: (moment: PassageMoment) => void;
 }): React.ReactElement {
   /* Nothing at all rather than an empty state. Most chapters have nobody
@@ -427,6 +429,19 @@ function TaughtHereBlock({ moments, onPlay }: {
   const extent = (s: number): string =>
     (s >= 60 ? `${Math.round(s / 60)} min` : `${Math.max(1, Math.round(s))}s`);
 
+  /* Bands rather than one run of rows. "Eleven minutes on this verse" and
+     "eleven minutes elsewhere in the chapter" are different offers, and a flat
+     list ordered by length puts them side by side as though they were the
+     same. The heading is only drawn where the band changes, so a list with one
+     kind in it carries no chrome at all. */
+  const BANDS: Record<Proximity, string> = {
+    on: verse == null ? "In this chapter" : "On this verse",
+    near: "Just before or after",
+    whole: "The chapter as a whole",
+    chapter: "Elsewhere in the chapter",
+  };
+  let lastBand: Proximity | null = null;
+
   return (
     <section className="taught-here" data-expanded={expanded} aria-labelledby="taught-here-title">
       <header className="taught-here-masthead">
@@ -434,22 +449,28 @@ function TaughtHereBlock({ moments, onPlay }: {
         <h3 id="taught-here-title">Taught here</h3>
       </header>
       <ul className="taught-here-list">
-        {shown.map((m) => (
+        {shown.map((m) => {
+          const band = proximityOf(m, verse);
+          const opensBand = band !== lastBand;
+          lastBand = band;
+          return (
           <li key={`${m.id}-${m.at}`}>
-            <button className="taught-here-row" onClick={() => onPlay(m)} type="button">
+            {opensBand && <p className="taught-here-band">{BANDS[band]}</p>}
+            <button className="taught-here-row" data-band={band} onClick={() => onPlay(m)} type="button">
               {/* Extent first, because it is what a reader is choosing on —
                   eleven minutes and forty seconds are different offers. */}
               <span className="taught-here-extent">{extent(m.seconds)}</span>
               <span className="taught-here-body">
                 <span className="taught-here-episode">{m.episode}</span>
                 <span className="taught-here-meta">
-                  {m.sourceName} · {clock(m.at)}
+                  {m.title} · {m.sourceName} · {clock(m.at)}
                   {m.relation !== "subject" && ` · ${m.relation === "allusion" ? "alluded" : m.relation}`}
                 </span>
               </span>
             </button>
           </li>
-        ))}
+          );
+        })}
       </ul>
       {moments.length > 4 && (
         <button
@@ -3735,17 +3756,22 @@ export function LivingMargin({
   const contextReference = isPinned ? pinnedRef : isNear ? nearRef : `${displayBook} ${chapter}`;
   const chapterEndVerse = Math.max(1, ...Array.from(chapterVerseText?.keys() ?? []));
 
-  /* Chapter-granular, and keyed only on book and chapter — moving between
-     verses inside a chapter must not re-ask, because the answer cannot change
-     and a reader scrolling would otherwise fire this on every line. */
+  /* Re-asked when the verse changes, because three quarters of moments carry a
+     verse range and selecting a line genuinely changes which ones bear on it —
+     the earlier version keyed on the chapter alone and made every verse in a
+     chapter show an identical list.
+     
+     Also re-asked when a publisher filter changes. Without that the block kept
+     showing sources a reader had just switched off until the window reloaded,
+     which reads as the setting not working. */
   useEffect(() => {
     let cancelled = false;
-    void safeCall(() => window.api.passages.moments(book, chapter)).then((result) => {
+    void safeCall(() => window.api.passages.moments(book, chapter, nearVerse ?? null)).then((result) => {
       if (cancelled) return;
       setTaughtHere(result.ok && result.value.ok ? result.value.moments : []);
     });
     return () => { cancelled = true; };
-  }, [book, chapter]);
+  }, [book, chapter, nearVerse, trustedResourceFilterVersion]);
   const trustedResourceBref = pinnedRange
     ? `bref:v1/${book}.${chapter}.${pinnedRange.start}${pinnedRange.end === pinnedRange.start ? "" : `-${book}.${chapter}.${pinnedRange.end}`}`
     : nearVerse != null
@@ -4534,6 +4560,7 @@ export function LivingMargin({
             <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} catalogue={trustedResourceCatalogue} onOpenSettings={onOpenResourceSettings} onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)} />
             <TaughtHereBlock
               moments={taughtHere}
+              verse={nearVerse ?? null}
               onPlay={(m) => playPodcastEpisode({
                 id: `${m.sourceId}:${m.id}`,
                 sourceId: m.sourceId,
@@ -4664,6 +4691,7 @@ export function LivingMargin({
             <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} catalogue={trustedResourceCatalogue} onOpenSettings={onOpenResourceSettings} onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)} />
             <TaughtHereBlock
               moments={taughtHere}
+              verse={nearVerse ?? null}
               onPlay={(m) => playPodcastEpisode({
                 id: `${m.sourceId}:${m.id}`,
                 sourceId: m.sourceId,
@@ -4797,6 +4825,7 @@ export function LivingMargin({
             <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} catalogue={trustedResourceCatalogue} onOpenSettings={onOpenResourceSettings} onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)} />
             <TaughtHereBlock
               moments={taughtHere}
+              verse={nearVerse ?? null}
               onPlay={(m) => playPodcastEpisode({
                 id: `${m.sourceId}:${m.id}`,
                 sourceId: m.sourceId,

@@ -2491,14 +2491,15 @@ function registerIpcHandlers(): void {
      return nothing for most verses and read as "nobody teaches this". */
   registerRuntimeReadIpc("passage-moments", (_event, input: unknown) => {
     if (typeof input !== "object" || input === null) return { ok: true as const, moments: [] };
-    const { book, chapter } = input as { book?: unknown; chapter?: unknown };
+    const { book, chapter, verse } = input as { book?: unknown; chapter?: unknown; verse?: unknown };
     if (typeof book !== "string" || typeof chapter !== "number" || !Number.isFinite(chapter)) {
       return { ok: true as const, moments: [] };
     }
+    const atVerse = typeof verse === "number" && Number.isFinite(verse) ? verse : null;
     /* Read from the store rather than taken from the caller, exactly as the
        resource query does — a window that forgot to send the setting would
        quietly show a reader the publishers they had switched off. */
-    return loadPassageMoments(getLibraryPath(), book, chapter, store.get("resourceMutes") ?? []);
+    return loadPassageMoments(getLibraryPath(), book, chapter, store.get("resourceMutes") ?? [], atVerse);
   });
 
   registerRuntimeReadIpc("trusted-resources-catalogue", () => {

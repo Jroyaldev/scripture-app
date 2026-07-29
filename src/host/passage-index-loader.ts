@@ -59,8 +59,9 @@ export function loadPassageMoments(
   book: string,
   chapter: number,
   mutes: readonly string[] = [],
+  verse: number | null = null,
 ): PassageMomentsResult {
   const index = load(libraryPath);
   if (!index) return { ok: true, moments: [] };
-  return { ok: true, moments: momentsFor(index, book, chapter, mutes) };
+  return { ok: true, moments: momentsFor(index, book, chapter, mutes, verse) };
 }

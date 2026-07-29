@@ -74,6 +74,28 @@ for (const sourceId of ["bibleproject", "naked-bible"]) {
 }
 
 const RELATIONS = new Set(["subject", "crossref", "mention", "allusion"]);
+
+/** First and last verse a range touches — "8-9,16-17" spans 8 to 17. */
+export function verseSpan(verses: string | null): { from: number; to: number } | null {
+  if (!verses) return null;
+  let from = Infinity;
+  let to = -Infinity;
+  for (const part of verses.split(",")) {
+    const [a, b] = part.split("-").map((n) => Number.parseInt(n.trim(), 10));
+    if (!Number.isFinite(a)) continue;
+    from = Math.min(from, a!);
+    to = Math.max(to, Number.isFinite(b) ? b! : a!);
+  }
+  return Number.isFinite(from) ? { from, to } : null;
+}
+
+function brefFor(book: string, chapter: number, verses: string | null): string {
+  const span = verseSpan(verses);
+  if (!span) return `bref:v1/${book}.${chapter}.1`;
+  return span.from === span.to
+    ? `bref:v1/${book}.${chapter}.${span.from}`
+    : `bref:v1/${book}.${chapter}.${span.from}-${book}.${chapter}.${span.to}`;
+}
 const byEpisode = new Map<string, Raw[]>();
 let refused = 0;
 for (const row of rows) {
@@ -111,9 +133,14 @@ for (const [recordId, raws] of byEpisode) {
 
   const references = [...best.values()]
     .map((row) => ({
-      bref: `bref:v1/${row.book}.${row.chapter}.1`,
+      /* The bref names the verses actually discussed, not the top of the
+         chapter. Pinning every reference to verse 1 rendered correctly — the
+         range survived in the title — while making the record unreasonable
+         about and sending a press to the wrong line. */
+      bref: brefFor(row.book, row.chapter, row.verses),
       book: row.book,
       chapter: row.chapter,
+      verses: row.verses ?? null,
       title: `${label(row.book)} ${row.chapter}${row.verses ? `:${row.verses}` : ""}`,
       at: Math.round(row.at),
       seconds: Math.max(0, Math.round(row.seconds)),
@@ -183,6 +210,12 @@ for (const [recordId, raws] of byEpisode) {
       at: Math.round(row.at),
       seconds: Math.max(0, Math.round(row.seconds)),
       relation: row.relation,
+      /* The verse range, kept as data rather than only as display text.
+         Three quarters of references carry one, and discarding it made every
+         moment look chapter-wide — so a reader on Romans 8:28 was shown the
+         same list as a reader on 8:1, which is most of what a passage index is
+         supposed to tell apart. */
+      verses: row.verses ?? null,
       title: `${label(row.book)} ${row.chapter}${row.verses ? `:${row.verses}` : ""}`,
     });
     inverse.set(key, list);

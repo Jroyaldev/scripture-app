@@ -47,8 +47,69 @@ export interface PassageMoment {
   /** How long the discussion runs. */
   seconds: number;
   relation: ReferenceRelation;
+  /**
+   * The verses within the chapter, as spoken — "17", "1-4", "8-9,16-17".
+   * Null where the discussion was of the chapter rather than a part of it,
+   * which is about a quarter of them.
+   */
+  verses: string | null;
   /** The passage as the episode framed it — "Romans 8:1-11". */
   title: string;
+}
+
+/**
+ * Does this moment's verse range touch the verse a reader is on?
+ *
+ * A moment with no range covers the whole chapter and therefore touches every
+ * verse in it. That is not a fallback — an episode working through Romans 8 as
+ * a unit genuinely bears on verse 28, and treating "no range" as "no match"
+ * would hide the longest treatments from every verse.
+ */
+/** First and last verse a range touches — "8-9,16-17" spans 8 to 17. */
+export function verseSpan(verses: string | null): { from: number; to: number } | null {
+  if (!verses) return null;
+  let from = Infinity;
+  let to = -Infinity;
+  for (const part of verses.split(",")) {
+    const [a, b] = part.split("-").map((n) => Number.parseInt(n.trim(), 10));
+    if (!Number.isFinite(a)) continue;
+    from = Math.min(from, a!);
+    to = Math.max(to, Number.isFinite(b) ? b! : a!);
+  }
+  return Number.isFinite(from) ? { from, to } : null;
+}
+
+/** How close a moment sits to the verse in hand. */
+export type Proximity = "on" | "near" | "chapter" | "whole";
+
+/**
+ * Close enough that a reader on one verse would want the other. Five is a
+ * paragraph in most chapters — near enough to be the same thought, far enough
+ * that everything does not collapse into one band.
+ */
+const NEAR_VERSES = 5;
+
+export function proximityOf(moment: PassageMoment, verse: number | null): Proximity {
+  const span = verseSpan(moment.verses);
+  /* No range means the episode took the chapter as a unit, which is a
+     different offer from one that happens to land elsewhere in it — and often
+     the better one. It gets its own band rather than being sorted among the
+     misses. */
+  if (!span) return "whole";
+  if (verse == null) return "chapter";
+  if (verse >= span.from && verse <= span.to) return "on";
+  const gap = verse < span.from ? span.from - verse : verse - span.to;
+  return gap <= NEAR_VERSES ? "near" : "chapter";
+}
+
+export function touchesVerse(moment: PassageMoment, verse: number | null): boolean {
+  if (verse == null || !moment.verses) return true;
+  for (const part of moment.verses.split(",")) {
+    const [from, to] = part.split("-").map((n) => Number.parseInt(n.trim(), 10));
+    if (!Number.isFinite(from)) continue;
+    if (verse >= from! && verse <= (Number.isFinite(to) ? to! : from!)) return true;
+  }
+  return false;
 }
 
 export interface PassageEntry {
@@ -79,6 +140,7 @@ function isMoment(value: unknown): value is PassageMoment {
     && typeof m["seconds"] === "number" && Number.isFinite(m["seconds"]) && m["seconds"] >= 0
     && typeof m["relation"] === "string" && RELATIONS.has(m["relation"])
     && typeof m["title"] === "string" && typeof m["episode"] === "string"
+    && (m["verses"] === null || typeof m["verses"] === "string")
     /* A moment with no audio cannot be played, and a row that looks pressable
        and is not is worse than one that was never drawn. */
     && typeof m["audioUrl"] === "string" && m["audioUrl"].startsWith("https://")
@@ -135,8 +197,20 @@ export function momentsFor(
   book: string,
   chapter: number,
   mutes: readonly string[] = [],
+  verse: number | null = null,
 ): PassageMoment[] {
-  const found = index.index.find((e) => e.book === book && e.chapter === chapter)?.moments ?? [];
+  let found = index.index.find((e) => e.book === book && e.chapter === chapter)?.moments ?? [];
+  if (verse != null) {
+    /* Banded, not filtered. A verse with nothing said about it specifically
+       must still show the chapter's real treatments, or selecting a line would
+       empty a list that was full a moment earlier and read as a fault. Order
+       within each band is unchanged — longest first. */
+    const order: Proximity[] = ["on", "near", "whole", "chapter"];
+    found = [...found].sort((a, b) => {
+      const rank = order.indexOf(proximityOf(a, verse)) - order.indexOf(proximityOf(b, verse));
+      return rank !== 0 ? rank : b.seconds - a.seconds;
+    });
+  }
   if (mutes.length === 0) return found;
   /* The same rule shape the resource query uses — a source id, or source:kind.
      Applied identically here because a reader who switched a publisher off
