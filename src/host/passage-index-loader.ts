@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { readFileSyncInterruptible } from "./exec-sync.js";
 import { momentsFor, readPassageIndex } from "../core/passage-index.js";
@@ -16,7 +16,7 @@ import type { PassageIndex, PassageMoment } from "../core/passage-index.js";
  * rather than answering the new library's questions from the old one's index.
  */
 
-let cached: { libraryPath: string; index: PassageIndex } | null = null;
+let cached: { libraryPath: string; mtimeMs: number; size: number; index: PassageIndex } | null = null;
 
 export function passageIndexPath(libraryPath: string): string {
   return join(libraryPath, ".artifacts/passage-index.json");
@@ -28,13 +28,32 @@ export function resetPassageIndex(): void {
 }
 
 function load(libraryPath: string): PassageIndex | null {
-  if (cached?.libraryPath === libraryPath) return cached.index;
   const path = passageIndexPath(libraryPath);
   if (!existsSync(path)) return null;
+  /* Keyed on the identity the filesystem already gives us — path, mtime, size —
+     the same way `trusted-resource-loader` keys its manifests, and for the same
+     reason. Keying on the library path alone meant a rebuilt index was never
+     picked up: the file changed and the answer did not, for the life of the
+     process. That is not a slow refresh, it is a wrong answer that looks like a
+     missing publisher — a chapter with seventy-one moments reported none,
+     because the index holding them had been written after the app read it. */
+  let stamp: { mtimeMs: number; size: number } | null = null;
+  try {
+    const stats = statSync(path);
+    stamp = { mtimeMs: stats.mtimeMs, size: stats.size };
+  } catch {
+    /* An unstattable file is still read below, just never cached. */
+  }
+  if (
+    cached?.libraryPath === libraryPath && stamp
+    && cached.mtimeMs === stamp.mtimeMs && cached.size === stamp.size
+  ) {
+    return cached.index;
+  }
   try {
     const result = readPassageIndex(JSON.parse(readFileSyncInterruptible(path, "utf-8")));
     if (!result.ok) return null;
-    cached = { libraryPath, index: result.index };
+    if (stamp) cached = { libraryPath, ...stamp, index: result.index };
     return result.index;
   } catch {
     return null;
