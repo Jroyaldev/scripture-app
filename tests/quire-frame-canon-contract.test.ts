@@ -54,17 +54,36 @@ const px = (property: string): number => {
 /* ═══════════════════════════════════════════════════════════════════════════
    Rev 05 §05·3 · the frame, stated once · desktop ≥ 1200
 
-     Page top        54     24 canvas + 30 strip. Invariant across modes.
+     Page top        40     10 canvas + 30 strip. Invariant across modes.
      Page left       56     OWNER OVERRIDE. The table says 80 — 56 rail + 24
                             canvas — and calls it invariant. The paper meets the
                             rail instead, and the measure gains the 24.
-     Page right/bot  24     window edge, or the study panel's near edge.
+     Page right/bot  10     window edge, or the study panel's near edge.
      Study panel    380     its top, right and bottom obey the frame.
      Page padding  40/24    inside the paper.
      Paper max     1428     past it the FRAME grows, not the page.
 
-   "Six numbers, and four of them are 24. Everything in §05·4 is derived from
-   this table rather than added to it."
+   RE-CANONNED 2026-07-29, on the owner's decision, against wireframes of the
+   whole frame at 24, 16 and 10.
+
+   The inset was 24, and four of the table's six numbers were 24 — the
+   repetition was the argument. At that width the two papers were a photograph
+   on a mat: canvas all the way round them, and because a 24px gap dwarfs an
+   8px corner, nothing nested. They read as slabs on a ground rather than as
+   one window divided.
+
+   At 10 the papers ARE the window, and the canvas survives only as the seam
+   between them — which is what lets the corners nest. The radii moved with it,
+   page 8 → 14 and window 10 → 18, and cards stayed at 8 exactly so they nest
+   INSIDE the panels instead of matching them. Concentricity is the new
+   argument where repetition was the old one.
+
+   This reverses a rejection already in the record: .scripture-body still
+   carries the note that shrinking the inset to 16 was tried and "rejected on
+   looking". That note stands as history rather than as a mistake — 16 is the
+   half-measure, and it does read as neither one thing nor the other.
+
+   Everything in §05·4 is still derived from this table rather than added to it.
 
    The rows this file owns are the last three. Page top is composed by the
    register strip (--frame-top) and page left by the rail; both are held by
@@ -76,7 +95,7 @@ test("the frame table states each of its numbers exactly once", () => {
   assert.equal(px("--page-padding-block"), 24, "page padding, top and bottom, inside the paper");
   assert.equal(px("--page-max-width"), 1428, "paper max width; past it the frame grows, not the page");
   assert.equal(px("--margin-width"), 380, "the study panel");
-  assert.equal(px("--page-inset"), 24, "page right and bottom");
+  assert.equal(px("--page-inset"), 10, "page right and bottom");
 
   // §05·4's four, which are derived from the table rather than added to it.
   assert.equal(px("--margin-column"), 320);

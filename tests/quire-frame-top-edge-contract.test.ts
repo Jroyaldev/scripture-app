@@ -6,7 +6,7 @@ import { test } from "node:test";
 /**
  * Rev 05 §05·3, row one of the frame table.
  *
- *   Page top · 54 · Window top: 24 canvas + 30 strip. Invariant across modes.
+ *   Page top · 40 · Window top: 10 canvas + 30 strip. Invariant across modes.
  *
  * This file exists because three surfaces now derive from that one number and
  * none of them owns it. The register composes it (§05·2), the rail aligns its
@@ -53,9 +53,12 @@ function declarationsOf(token: string): Array<{ sheet: string; value: string }> 
   return found;
 }
 
-test("the page's top edge is 54, and it is composed rather than asserted", () => {
-  // The number is never written down. It is 24px of canvas — the drag band —
+test("the page's top edge is 40, and it is composed rather than asserted", () => {
+  // The number is never written down. It is 10px of canvas — the drag band —
   // over a 30px tab strip, and the sum is what the other two surfaces read.
+  // Was 54 while the canvas was 24; re-canonned 2026-07-29 with the frame, and
+  // the property this test actually defends is unchanged: composed from two
+  // declarations, each stated exactly once, and readable by three surfaces.
   const inset = declarationsOf("--page-inset");
   const strip = declarationsOf("--register-strip");
   const frame = declarationsOf("--frame-top");
@@ -64,14 +67,14 @@ test("the page's top edge is 54, and it is composed rather than asserted", () =>
   assert.equal(strip.length, 1, "--register-strip is declared once");
   assert.equal(frame.length, 1, "--frame-top is declared once");
 
-  assert.equal(inset[0].value, "24px");
+  assert.equal(inset[0].value, "10px");
   assert.equal(strip[0].value, "30px");
   assert.match(frame[0].value, /^calc\(var\(--page-inset\) \+ var\(--register-strip\)\)$/);
 
   // And the sum is 54. Written as arithmetic on the two declared values so the
   // test fails when either half moves, rather than when someone edits a comment.
   const px = (value: string): number => Number.parseFloat(value.replace("px", ""));
-  assert.equal(px(inset[0].value) + px(strip[0].value), 54);
+  assert.equal(px(inset[0].value) + px(strip[0].value), 40);
 });
 
 test("the top edge does not vary by mode, by width, or by atmosphere", () => {

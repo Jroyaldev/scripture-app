@@ -1485,12 +1485,30 @@ test("no marking surface may move the reading measure, and the dock's inset stay
   assert.doesNotMatch(styles, /--marking-bottom-inset/,
     "the dock's layout arithmetic must not read as a theme token");
   const insetDeclarations = rules.filter(({ body }) => /--mdock-bottom-inset\s*:/.test(body));
-  assert.equal(insetDeclarations.length, 5,
-    "one zero default, one per dock state, and the narrow shell's flush dock");
+  assert.equal(insetDeclarations.length, 6,
+    "one zero default, one per dock state, the narrow shell's flush dock, and the empty-handed rest");
+
+  /* What reserves room is a dock that is THERE, which used to be the same thing
+     as a dock that exists. Since 2026-07-29 it is not: at rest and empty-handed
+     the dock is hidden, and a floor held open under a bar nobody can see is the
+     doubled gap this file exists to prevent from the other direction. So one
+     dock selector may legitimately reserve nothing, and it is exactly the pair
+     of conditions that hides it — `rest` alone would close the page over a wash
+     still in hand. */
+  const HIDDEN = '.scripture-reading-stage:has(.marking-dock-host[data-dock-state="rest"][data-tool-armed="false"])';
+  assert.ok(
+    insetDeclarations.some(({ selector }) => selector === HIDDEN),
+    "the state that hides the dock must also release its reservation",
+  );
+
   for (const { selector, body } of insetDeclarations) {
     const value = /--mdock-bottom-inset:\s*([^;]+);/.exec(body)?.[1]?.trim();
     if (selector === ".scripture-reading-stage") {
       assert.equal(value, "0px", "a stage with no dock in it must reserve nothing");
+      continue;
+    }
+    if (selector === HIDDEN) {
+      assert.equal(value, "0px", "a hidden dock must reserve nothing either");
       continue;
     }
     assert.match(

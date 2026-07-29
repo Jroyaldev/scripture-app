@@ -225,10 +225,14 @@ class Transcriber:
         import nemo.collections.asr as nemo_asr
         import torch
 
-        # Bound to the class so `transcribe` can reach it. torch exists only
+        # On the INSTANCE, exactly like self.model below. torch exists only
         # inside the GPU image, so it cannot be imported at module scope — the
-        # local entrypoint runs this file too.
-        Transcriber.torch = torch
+        # local entrypoint runs this file too — and it cannot be hung on the
+        # class either: at module scope `Transcriber` is Modal's wrapper, not
+        # the class the container instantiates, so `Transcriber.torch = torch`
+        # assigns somewhere `self` will never look. That cost 454 episodes a
+        # second time, as 4,086 AttributeErrors.
+        self.torch = torch
 
         os.environ["HF_HUB_CACHE"] = MODEL_DIR
         self.model = nemo_asr.models.ASRModel.from_pretrained(model_name=MODEL_NAME)

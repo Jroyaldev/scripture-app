@@ -583,7 +583,14 @@ test("one tab shape in every atmosphere, because nothing in it is a colour", () 
   // page ever take different numbers the fillet stops reading as a joint and
   // starts reading as a rendering bug — which is exactly how it would look in
   // whichever atmosphere separates its two planes most weakly.
-  assert.match(css, /--radius-page: 8px;/);
+  // One value in three places is the claim; the literal never was. It read 8px
+  // until the frame was re-canonned on 2026-07-29 and became 14, so this
+  // asserts the shape of the declaration rather than its magnitude — the number
+  // belongs to the frame table, and pinning it here made this file a second
+  // owner of a decision it does not own.
+  const pageRadius = [...css.matchAll(/--radius-page:\s*([^;]+);/g)];
+  assert.equal(pageRadius.length, 1, "--radius-page is declared once");
+  assert.match(pageRadius[0]![1]!.trim(), /^\d+px$/);
   assert.ok((tab.match(/var\(--radius-page\)/g) ?? []).length >= 4,
     "both fillets take the page radius for their size and their offset");
 });

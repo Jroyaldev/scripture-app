@@ -453,6 +453,42 @@ export function PodcastPlayer({
      the stylesheet: waiting in CSS as well would spend both twice. */
   const [peeking, setPeeking] = useState(false);
   const peekTimer = useRef<number | null>(null);
+  const dockBoxRef = useRef<HTMLElement>(null);
+
+  /**
+   * Publish the dock's real height, so the study panel stops above it exactly.
+   *
+   * `--podcast-dock-h` was a constant, 138px, and the dock has never been one
+   * height: it grows for a chapter line, again while peeking, and to several
+   * hundred pixels when the sheet is open. The panel was shortened by a guess,
+   * so the gap under it was right in one state and wrong in every other — too
+   * much air under the last card at rest, the last card hidden behind the sheet
+   * when it opened.
+   *
+   * Measured with a ResizeObserver rather than from state, because the height
+   * changes for reasons this component does not own — a long episode title
+   * wrapping, a font finishing loading, the window narrowing.
+   *
+   * Written to the shell rather than to :root, so a second player could never
+   * write over the first one's number.
+   */
+  useEffect(() => {
+    const box = dockBoxRef.current;
+    const shell = box?.closest<HTMLElement>(".app-shell");
+    if (!box || !shell) return undefined;
+    const publish = (): void => {
+      shell.style.setProperty("--podcast-dock-h", `${Math.round(box.getBoundingClientRect().height)}px`);
+    };
+    publish();
+    const observer = new ResizeObserver(publish);
+    observer.observe(box);
+    return () => {
+      observer.disconnect();
+      /* Back to the sheet's own value when the player leaves, rather than
+         leaving the last measured height behind as a floor nothing stands on. */
+      shell.style.removeProperty("--podcast-dock-h");
+    };
+  }, [episode?.id]);
 
   const armPeek = (next: boolean, pointerType: string): void => {
     /* A pointer that cannot hover has nothing to peek with. Touch fires enter
@@ -671,6 +707,7 @@ export function PodcastPlayer({
         <section
           aria-label={`Podcast player — ${episode.title}`}
           className="podcast-dock"
+          ref={dockBoxRef}
           data-expanded={expanded}
           data-peeking={peeking}
           onPointerEnter={(event) => armPeek(true, event.pointerType)}

@@ -351,9 +351,10 @@
      full rail and raises it to z-index 40; its `margin-right` is inert on an
      absolutely-positioned box and is left alone rather than pruned blind.
 
-     §05·5 says a 56px ground band. This is 24, because that is what the page
-     leaves once it fills to its own inset — the band cannot be wider than the
-     canvas without lying on top of the page it is meant to sit beside. */
+     §05·5 says a 56px ground band. This is the page inset, because that is what
+     the page leaves once it fills to it — the band cannot be wider than the
+     canvas without lying on top of the page it is meant to sit beside. It read
+     24 while the frame did; it follows the frame rather than restating it. */
   z-index: 5;
   width: var(--page-inset);
   min-width: var(--page-inset);

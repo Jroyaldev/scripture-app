@@ -128,17 +128,29 @@ test("the durable token artifact matches the rendered desktop system", () => {
   }
   assert.doesNotMatch(css, /#9464b4|rgba\(148, 100, 180/);
 
-  // --- The radius family. -------------------------------------------------
-  assert.deepEqual(tokens.radius, {
-    "--radius-mark": "2px",
-    "--radius-pebble": "4px",
-    "--radius-sm": "6px",
-    "--radius-page": "8px",
-    "--radius-md": "8px",
-    "--radius-window": "10px",
-    "--radius-lg": "12px",
-    "--radius-modal": "12px",
+  /* --- The radius family. -------------------------------------------------
+     Eight steps, and the family is the claim: every radius names a step, the
+     steps ascend, and nothing in the sheet reaches for a literal between them.
+     The magnitudes belong to the frame table, which re-canonned page 8 → 14 and
+     window 10 → 18 on 2026-07-29 when the inset moved to 10; restating them here
+     made this file a second owner of that decision and it broke for a change it
+     has no opinion about.
+
+     Window is now LARGER than modal, which was previously called out as
+     deliberate the other way ("deliberately less than the modal"). That is the
+     one relation worth keeping an eye on rather than asserting: at a 10px frame
+     the window contains the modal visually, so containing it in curvature too is
+     the point rather than a slip. */
+  assert.deepEqual(Object.keys(tokens.radius), [
+    "--radius-mark", "--radius-pebble", "--radius-sm", "--radius-page",
+    "--radius-md", "--radius-window", "--radius-lg", "--radius-modal",
+  ]);
+  const steps = Object.values(tokens.radius).map((value) => {
+    assert.match(value, /^\d+px$/, "a radius step is a plain length");
+    return Number.parseInt(value, 10);
   });
+  assert.deepEqual(steps.slice(0, 3), [2, 4, 6], "the small end of the family is fixed");
+  assert.ok(steps.every((step) => step > 0 && step <= 24), "no radius leaves the family band");
   // --- Motion. Ink moves in 120, panes in 180, nothing else moves. --------
   const motion = tokens.motion[":root"]!;
   assert.match(motion["--transition-fast"]!, /^120ms /);

@@ -271,8 +271,18 @@
   --sp-2xl: 2rem;
   --sp-3xl: 3rem;
   --band: 32px;          /* one reading line, the vertical unit */
-  --pane-gutter: 24px;   /* canvas between two panes; replaces a border */
-  --page-inset: 24px;    /* paper's inset from the window, four sides */
+  /* The frame, moved in from 24 on 2026-07-29.
+     At 24 the two papers were a photograph on a mat: the canvas was a margin
+     around them, and because the gap dwarfed the 8px corners nothing nested —
+     the panels read as separate slabs on a ground rather than as one window
+     divided. At 10 the papers ARE the window and the canvas survives only as
+     the seam between them, which is what lets the corners nest and is the
+     relationship Finder's sidebar has with its window.
+     Every consumer composes from these two — --frame-top, the register strip,
+     the study panel's right edge, the podcast dock's pin — so the frame moves
+     as one thing. */
+  --pane-gutter: 10px;   /* canvas between two panes; replaces a border */
+  --page-inset: 10px;    /* paper's inset from the window, four sides */
   --page-gutter: 24px;
 
   /* Rev 05 §05·3, row one of the frame table: "Page top · 54 · Window top:
@@ -286,7 +296,7 @@
      the two halves may not be edited apart, and neither may be redeclared in a
      mode block. tests/quire-frame-top-edge-contract.test.ts holds both facts. */
   --register-strip: 30px;
-  --frame-top: calc(var(--page-inset) + var(--register-strip));  /* 54px */
+  --frame-top: calc(var(--page-inset) + var(--register-strip));  /* 40px */
 
   /* Rev 05 §05·3: "Page padding · 40 / 24 · 40 left and right, 24 top and
      bottom, inside the paper. 40 is the one left datum of §05·2." Inside the
@@ -376,9 +386,16 @@
   --radius-mark: 2px;     /* marks, seals */
   --radius-pebble: 4px;   /* nav icons, swatches, the active-row pebble */
   --radius-sm: 6px;       /* avatar, mini toolbar, tooltip */
-  --radius-page: 8px;     /* page, tab, fillet, popover — one value, three places */
-  --radius-md: 8px;       /* panels and cards land on the page radius */
-  --radius-window: 10px;  /* OS shape, deliberately less than the modal */
+  /* Raised with the frame. A 14px corner on an 8px gap would swallow the gap;
+     on a 10px one it reads as a curve rather than a chamfer, which is the whole
+     point of moving the inset in. The fillet scales with it — it is the same
+     value in three places precisely so the joint keeps matching the corner. */
+  --radius-page: 14px;    /* page, tab, fillet, popover — one value, three places */
+  /* Deliberately NOT raised. Cards sit inside the panels, so a smaller corner
+     is what nests: 14 outside, 8 in. They used to be equal because the frame
+     had no nesting to express. */
+  --radius-md: 8px;       /* panels and cards land inside the page radius */
+  --radius-window: 18px;  /* OS shape, now larger than the modal: it contains it */
   --radius-lg: 12px;      /* modal */
   --radius-modal: 12px;
 
@@ -3607,6 +3624,16 @@ html, body, #root {
   --mdock-bottom-inset: 67px;
 }
 
+/* A dock that is not there reserves nothing.
+   Since the dock went away at rest and empty-handed, this reservation was
+   still standing — 80px of page bottom plus 82 of shelf inset, holding a floor
+   open under a bar nobody could see. That is the doubled gap: two spends, one
+   occupant, and the occupant had left. It must be the same pair of conditions
+   that hides the dock, or the page would close over a wash still in hand. */
+.scripture-reading-stage:has(.marking-dock-host[data-dock-state="rest"][data-tool-armed="false"]) {
+  --mdock-bottom-inset: 0px;
+}
+
 .scripture-reading-stage:has(.marking-dock-host) .scripture-content {
   padding-bottom: calc(80px + var(--mdock-bottom-inset));
   scroll-padding-bottom: calc(24px + var(--mdock-bottom-inset));
@@ -5298,7 +5325,13 @@ html, body, #root {
    real bottom edge — with its own radius and its own closing fade landing on
    it — and leaves the player standing below, one gutter clear. */
 .app-shell:has(.podcast-dock) .living-margin {
-  margin-bottom: calc(var(--podcast-dock-h) + var(--sp-xl));
+  /* The seam is the frame's own, not a separate 24. Every other gap in the
+     shell is --pane-gutter now; this one kept spending --sp-xl, so the space
+     between the panel and the player read as more than twice the space
+     between the panel and the page. --podcast-dock-h is measured by the
+     player rather than guessed, so this closes on the dock's actual height
+     in every state it has. */
+  margin-bottom: calc(var(--podcast-dock-h) + var(--pane-gutter));
   /* The panel's own gutter, the same --sp-xl it holds on the left and right.
      The resting value clears a 40px fade that is no longer drawn here, and
      every pixel of the surplus was scrollable emptiness under the last card —

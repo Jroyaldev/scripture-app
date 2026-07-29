@@ -125,7 +125,18 @@ test("the active tab joins the page with two fillets, not with an underline", ()
   );
   // Page corner, tab top and fillet are one value. If those three drift the
   // fillet stops being a joint and starts being a smudge.
-  assert.match(styles, /--radius-page: 8px;/);
+  //
+  // What matters is that all three read the SAME token, which the assertions
+  // around this one already hold. The literal was 8px until the frame was
+  // re-canonned on 2026-07-29 and it became 14 — at which point pinning the
+  // number here turned this into a value-lock on a decision the frame table
+  // owns, and it failed for a change that never touched the joint. So the
+  // assertion is now the property it was written for: declared once, and a
+  // plain length, because the fillet's geometry is computed from it.
+  const pageRadius = [...styles.matchAll(/--radius-page:\s*([^;]+);/g)];
+  assert.equal(pageRadius.length, 1, "--radius-page is declared once");
+  assert.match(pageRadius[0]![1]!.trim(), /^\d+px$/,
+    "the fillet is drawn from this length, so it must be a plain px value");
   assert.match(styles, /\.scripture-content \{[\s\S]{0,320}background: var\(--bg-reading\);\s*border-radius: var\(--radius-page\);/);
   assert.match(workspaceStyles, /\.scripture-workspace-tab \{[\s\S]{0,420}border-radius: var\(--radius-page\) var\(--radius-page\) 0 0;/);
   // Exactly two gradients in the whole register: the pair of fillets.

@@ -243,9 +243,9 @@
     "--radius-mark": "2px",
     "--radius-pebble": "4px",
     "--radius-sm": "6px",
-    "--radius-page": "8px",
+    "--radius-page": "14px",
     "--radius-md": "8px",
-    "--radius-window": "10px",
+    "--radius-window": "18px",
     "--radius-lg": "12px",
     "--radius-modal": "12px"
   },
@@ -292,8 +292,8 @@
     "--sp-2xl": "2rem",
     "--sp-3xl": "3rem",
     "--band": "32px",
-    "--pane-gutter": "24px",
-    "--page-inset": "24px",
+    "--pane-gutter": "10px",
+    "--page-inset": "10px",
     "--page-gutter": "24px"
   },
   "layout": {
