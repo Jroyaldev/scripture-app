@@ -43,7 +43,6 @@ function show(verse: number | null): void {
 }
 
 show(null);
-show(1);
-show(28);
+show(Number(process.argv[4] ?? 1));
 console.log(`\n  A verse promotes the moments that address it and keeps the rest below,`);
 console.log(`  so selecting a line sharpens the list without ever emptying it.`);

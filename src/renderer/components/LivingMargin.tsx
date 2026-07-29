@@ -3806,6 +3806,13 @@ export function LivingMargin({
   const contextReference = isPinned ? pinnedRef : isNear ? nearRef : `${displayBook} ${chapter}`;
   const chapterEndVerse = Math.max(1, ...Array.from(chapterVerseText?.keys() ?? []));
 
+  /* A pinned verse is a choice; a near one is where the page happens to be.
+     Keying on `nearVerse` alone meant a reader who SELECTED verse 31 never
+     reached the ranking at all — the verse arrived null, no proximity sort
+     ran, and the index's own longest-first order showed through. Same
+     precedence the resource query above already uses. */
+  const focusVerse = pinnedRange?.start ?? nearVerse ?? null;
+
   /* Re-asked when the verse changes, because three quarters of moments carry a
      verse range and selecting a line genuinely changes which ones bear on it —
      the earlier version keyed on the chapter alone and made every verse in a
@@ -3816,12 +3823,12 @@ export function LivingMargin({
      which reads as the setting not working. */
   useEffect(() => {
     let cancelled = false;
-    void safeCall(() => window.api.passages.moments(book, chapter, nearVerse ?? null)).then((result) => {
+    void safeCall(() => window.api.passages.moments(book, chapter, focusVerse)).then((result) => {
       if (cancelled) return;
       setTaughtHere(result.ok && result.value.ok ? result.value.moments : []);
     });
     return () => { cancelled = true; };
-  }, [book, chapter, nearVerse, trustedResourceFilterVersion]);
+  }, [book, chapter, focusVerse, trustedResourceFilterVersion]);
   const trustedResourceBref = pinnedRange
     ? `bref:v1/${book}.${chapter}.${pinnedRange.start}${pinnedRange.end === pinnedRange.start ? "" : `-${book}.${chapter}.${pinnedRange.end}`}`
     : nearVerse != null
@@ -4610,7 +4617,7 @@ export function LivingMargin({
             <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} catalogue={trustedResourceCatalogue} onOpenSettings={onOpenResourceSettings} onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)} />
             <TaughtHereBlock
               moments={taughtHere}
-              verse={nearVerse ?? null}
+              verse={focusVerse}
               onPlay={(m) => playPodcastEpisode({
                 id: `${m.sourceId}:${m.id}`,
                 sourceId: m.sourceId,
@@ -4741,7 +4748,7 @@ export function LivingMargin({
             <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} catalogue={trustedResourceCatalogue} onOpenSettings={onOpenResourceSettings} onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)} />
             <TaughtHereBlock
               moments={taughtHere}
-              verse={nearVerse ?? null}
+              verse={focusVerse}
               onPlay={(m) => playPodcastEpisode({
                 id: `${m.sourceId}:${m.id}`,
                 sourceId: m.sourceId,
@@ -4875,7 +4882,7 @@ export function LivingMargin({
             <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} catalogue={trustedResourceCatalogue} onOpenSettings={onOpenResourceSettings} onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)} />
             <TaughtHereBlock
               moments={taughtHere}
-              verse={nearVerse ?? null}
+              verse={focusVerse}
               onPlay={(m) => playPodcastEpisode({
                 id: `${m.sourceId}:${m.id}`,
                 sourceId: m.sourceId,
