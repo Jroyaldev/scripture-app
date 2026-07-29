@@ -1642,8 +1642,14 @@ html, body, #root {
   overflow-x: auto;
   overflow-y: visible;
   overscroll-behavior-inline: contain;
-  padding-inline: var(--page-inset) 0;
-  scroll-padding-inline: var(--page-inset);
+  /* Flush to the paper's own left edge. The strip used to open on a
+     --page-inset of canvas, which read as the tabs being indented from the
+     page they belong to rather than growing out of it — a browser's first tab
+     starts where the window starts, and these tabs are the same claim about
+     the same edge. The end side keeps nothing either; what stops the last tab
+     is the page's right edge, as before. */
+  padding-inline: 0;
+  scroll-padding-inline: 0;
   scrollbar-width: none;
 }
 
@@ -8240,31 +8246,21 @@ html, body, #root {
   color: var(--text-secondary);
   font-size: 13.5px;
   line-height: 1.55;
-  /* Two lines, "clamped without an ellipsis character — the fade of a cut
-     line is enough". The WebKit line clamp is deliberately not used: it stamps
-     a literal … that no declaration can take back off. Height and a mask do
-     the same job and leave the cut silent. */
+  /* Two lines, "clamped without an ellipsis character". The WebKit line clamp
+     is still not used: it stamps a literal … that no declaration can take back
+     off. Height alone does the job, and the cut lands on a line boundary, so
+     nothing is ever sliced through the middle of a glyph. */
   max-height: calc(1lh * 2);
   overflow: hidden;
-  /* THE FADE. Two mask layers: everything above the last line at full
-     strength, and the last line dissolving to its right. A mask takes the
-     plane's own pixels, so the cut reads correctly on paper and on canvas and
-     in all four atmospheres — including over the row's own hover mark. A
-     gradient to a literal white smears on the dark pair; a gradient to
-     var(--bg-reading) still smears anywhere the row is not sitting flat on
-     paper. §C4·6: derive the fade from the plane's own background. */
-  -webkit-mask-image:
-    linear-gradient(#000, #000),
-    linear-gradient(to right, #000 58%, transparent 100%);
-  mask-image:
-    linear-gradient(#000, #000),
-    linear-gradient(to right, #000 58%, transparent 100%);
-  -webkit-mask-size: 100% calc(100% - 1lh), 100% 1lh;
-  mask-size: 100% calc(100% - 1lh), 100% 1lh;
-  -webkit-mask-position: top left, bottom left;
-  mask-position: top left, bottom left;
-  -webkit-mask-repeat: no-repeat, no-repeat;
-  mask-repeat: no-repeat, no-repeat;
+
+  /* THE FADE IS GONE, 2026-07-29, on looking at it.
+     Two mask layers used to dissolve the last line to its right, on the
+     argument that "the fade of a cut line is enough" to say there is more. It
+     is enough — it also puts a smear of half-legible type at the end of every
+     compact row in the panel, and a column of them reads as the panel itself
+     being out of focus rather than as several sentences being longer than two
+     lines. What says there is more is that the sentence stops mid-clause,
+     which needs no rendering at all. */
 }
 
 /* "Verbs appear on hover, top-aligned with the reference, in reserved space."

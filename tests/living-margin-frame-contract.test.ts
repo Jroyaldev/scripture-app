@@ -799,14 +799,24 @@ test("§C4·2 · a verse-with-a-fragment is one object with two drawings", () =>
   assert.doesNotMatch(compactText, /line-clamp/, "-webkit-line-clamp stamps a literal … that no rule can remove");
   assert.doesNotMatch(compactText, /text-overflow/);
 
-  // §C4·6 · the fade "must work on both planes and in all four atmospheres".
-  // A mask takes the plane's own pixels; a gradient to a literal colour is a
-  // bright smear on the dark pair, and a gradient to var(--bg-reading) is a
-  // patch anywhere the row is not flat on paper.
-  assert.match(compactText, /mask-image:/);
-  assert.match(compactText, /-webkit-mask-image:/);
-  assert.doesNotMatch(compactText, /#fff|#FFF|白|rgba\(255|\bwhite\b/);
+  /* §C4·6 asked the fade to "work on both planes and in all four atmospheres",
+     and a mask was the only way — a gradient to a literal colour is a bright
+     smear on the dark pair, and one to var(--bg-reading) is a patch anywhere
+     the row is not sitting flat on paper.
+
+     The fade was removed on 2026-07-29, on looking at it. It worked exactly as
+     specified; the trouble is that a column of compact rows each ending in
+     half-legible type reads as the panel being out of focus rather than as
+     several sentences being longer than two lines. What says there is more is
+     that the sentence stops mid-clause, and that needs no rendering.
+
+     The prohibition outlives the fade, and is what this holds now: if one ever
+     comes back it must be a mask, because none of the reasons it could not be
+     a painted colour have changed. */
+  assert.doesNotMatch(compactText, /#fff|#FFF|rgba\(255|\bwhite\b/);
   assert.doesNotMatch(compactText, /background:/);
+  assert.doesNotMatch(compactText, /linear-gradient/,
+    "a cut line is marked with a mask or not at all — never with a painted gradient");
 
   // compact · "Verbs appear on hover, top-aligned with the reference, in
   // reserved space." Shipped, they were vertically centred, "so on a nine-line
