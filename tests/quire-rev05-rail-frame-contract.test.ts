@@ -234,7 +234,15 @@ test("one vertical axis runs through every tile in the rail", () => {
   const rail = read(RAIL);
   assert.match(ruleBlocks(css, ".brand-row")[0]!, /gap: 8px;/);
   assert.match(ruleBlocks(css, ".nav-item")[0]!, /gap: 8px;/);
-  for (const selector of [".rail-held", ".rail-study-kicker", ".rail-study-list"]) {
+  for (const selector of [
+    ".rail-held", ".rail-study-kicker", ".rail-study-list",
+    /* The study switcher, added 2026-07-29 when group heads left the tab strip.
+       It is the first thing in the rail that navigates — the study block beside
+       it is explicitly "not a second way to navigate", and that still holds for
+       the block. The switcher is a different object with a different job, and
+       it answers to the same column as everything else here. */
+    ".rail-studies-list",
+  ]) {
     assert.match(ruleBlocks(rail, selector)[0]!, /var\(--rail-label-x\)/,
       `${selector} left the rail's label column behind`);
   }

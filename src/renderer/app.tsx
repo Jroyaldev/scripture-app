@@ -1885,6 +1885,36 @@ export function App(): React.JSX.Element {
   });
   const studyBlockOverflow = studyBlockPassages.length - studyBlockLines.length;
 
+  /**
+   * Every study, so the rail can switch between them.
+   *
+   * The block above says what is IN the current study; this is the row of
+   * studies themselves, and together they are the switcher the register used to
+   * be. Group heads leave the tab strip because a label among the tabs spends
+   * horizontal space permanently on something a reader wants only when changing
+   * studies — and a rail is a column, so a study's whole name fits where a strip
+   * truncated it.
+   *
+   * Selecting a study lands on the tab it was last on rather than its first: a
+   * study you come back to should open where you left it.
+   */
+  const studySwitcher = studyWorkspace.groups
+    .map((group) => {
+      const tabs = orderedStudyWorkspaceTabs(studyWorkspace, group.id);
+      const holdsActive = tabs.some((tab) => tab.id === studyWorkspace.activeTabId);
+      const landing = holdsActive
+        ? tabs.find((tab) => tab.id === studyWorkspace.activeTabId)
+        : tabs[0];
+      return {
+        id: group.id,
+        label: group.label.kind === "custom" ? group.label.value : "This study",
+        count: tabs.filter((tab) => tab.kind === "passage").length,
+        current: holdsActive,
+        target: landing?.id ?? null,
+      };
+    })
+    .filter((entry) => entry.target !== null);
+
   const commandActions: CommandPaletteAction[] = [
     {
       id: "new-note",
@@ -2063,6 +2093,33 @@ export function App(): React.JSX.Element {
                     ? "Recovering a write · navigation held"
                     : "Writing a connection · navigation held"}
                 </p>
+              )}
+              {/* The switcher. Only from two studies — with one there is nothing
+                  to switch between, and a list of one is a label pretending to
+                  be a choice. Each study carries its count so an unselected one
+                  says how much is inside; without that, switching is
+                  exploratory, and you click a study to find out whether the
+                  thing you wanted is in it. */}
+              {studySwitcher.length >= 2 && (
+                <section className="rail-studies" aria-label="Studies">
+                  <p className="rail-study-kicker">Studies</p>
+                  <ul className="rail-studies-list">
+                    {studySwitcher.map((study) => (
+                      <li key={study.id}>
+                        <button
+                          type="button"
+                          className={`rail-studies-item${study.current ? " is-current" : ""}`}
+                          aria-current={study.current || undefined}
+                          data-study-switch={study.id}
+                          onClick={() => { if (study.target) void selectWorkspaceTab(study.target); }}
+                        >
+                          <span className="rail-studies-name">{study.label}</span>
+                          <span className="rail-studies-count">{study.count}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
               )}
               {studyBlockPassages.length >= 2 && (
                 <section className="rail-study" aria-label={studyBlockKicker}>
