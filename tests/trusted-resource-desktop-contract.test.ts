@@ -23,7 +23,10 @@ test("Living Margin shows a publisher's whole answer, and still only links to it
   const start = margin.indexOf("function TrustedResourcesBlock");
   const end = margin.indexOf("function DeepNoteCard", start);
   const block = margin.slice(start, end);
-  assert.match(block, /Trusted resources/);
+  /* "Trusted" read as an endorsement of what a publisher teaches. What was
+     reviewed is the index — which sources may appear and what may be shown of
+     them — not the content. The heading says so now. */
+  assert.match(block, /Published resources/);
 
   /* The block used to render `resources.slice(0, 3)` — one featured card and two
      compact ones — so a publisher holding four good answers showed one and threw

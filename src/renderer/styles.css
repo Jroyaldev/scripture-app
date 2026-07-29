@@ -19035,9 +19035,30 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .taught-here-more {
   margin: 2px 0 0;
-  padding: 0 6px;
+  padding: 5px 6px;
+  border: 0;
+  border-radius: var(--radius-pebble);
+  background: none;
   color: var(--text-tertiary);
   font: 0.6875rem/1.4 var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.taught-here-more:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+/* Expanded, the list gets its own scroll rather than pushing everything below
+   it off the panel — a chapter with sixty moments would otherwise bury the
+   resources underneath. */
+.taught-here[data-expanded="true"] .taught-here-list {
+  max-height: 320px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  overscroll-behavior: contain;
 }
 
 .trusted-resources {

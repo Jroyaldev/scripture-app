@@ -414,18 +414,21 @@ function TaughtHereBlock({ moments, onPlay }: {
   /* Nothing at all rather than an empty state. Most chapters have nobody
      teaching them, and a heading over a blank space says something went wrong
      when nothing did. */
+  const [expanded, setExpanded] = useState(false);
   if (moments.length === 0) return <></>;
 
-  /* Enough to choose from, not so many that choosing becomes the work. The
-     tail is real and stays reachable through the count. */
-  const shown = moments.slice(0, 4);
+  /* Enough to choose from, not so many that choosing becomes the work — and
+     the rest genuinely reachable rather than merely counted. A line saying
+     "eleven more" with no way to see them tells a reader what they are not
+     being shown, which is worse than not mentioning it. */
+  const shown = expanded ? moments : moments.slice(0, 4);
   const clock = (s: number): string =>
     `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
   const extent = (s: number): string =>
     (s >= 60 ? `${Math.round(s / 60)} min` : `${Math.max(1, Math.round(s))}s`);
 
   return (
-    <section className="taught-here" aria-labelledby="taught-here-title">
+    <section className="taught-here" data-expanded={expanded} aria-labelledby="taught-here-title">
       <header className="taught-here-masthead">
         <span className="taught-here-kicker">From the transcripts</span>
         <h3 id="taught-here-title">Taught here</h3>
@@ -448,8 +451,15 @@ function TaughtHereBlock({ moments, onPlay }: {
           </li>
         ))}
       </ul>
-      {moments.length > shown.length && (
-        <p className="taught-here-more">{moments.length - shown.length} more in the library</p>
+      {moments.length > 4 && (
+        <button
+          aria-expanded={expanded}
+          className="taught-here-more"
+          onClick={() => setExpanded((open) => !open)}
+          type="button"
+        >
+          {expanded ? "Show fewer" : `${moments.length - 4} more in the library`}
+        </button>
       )}
     </section>
   );
@@ -555,11 +565,11 @@ function TrustedResourcesBlock({
   return (
     <section className="trusted-resources" aria-labelledby="trusted-resources-title">
       <header className="trusted-resources-masthead">
-        <span className="trusted-resources-kicker">Local reviewed index</span>
-        <h3 id="trusted-resources-title">Trusted resources</h3>
+        <span className="trusted-resources-kicker">Local publisher index</span>
+        <h3 id="trusted-resources-title">Published resources</h3>
       </header>
       {loading && <p className="trusted-resources-status" role="status">Checking local resource manifests…</p>}
-      {refusal && <p className="trusted-resources-status is-refusal" role="status">Trusted resources unavailable: {refusal}</p>}
+      {refusal && <p className="trusted-resources-status is-refusal" role="status">Published resources unavailable: {refusal}</p>}
       {!loading && !refusal && resources.length > 0 && (
         <div className="trusted-resource-drawer">
           {/* Closed, the group is three imprints on the margin's own paper: the

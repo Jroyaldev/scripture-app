@@ -2495,7 +2495,10 @@ function registerIpcHandlers(): void {
     if (typeof book !== "string" || typeof chapter !== "number" || !Number.isFinite(chapter)) {
       return { ok: true as const, moments: [] };
     }
-    return loadPassageMoments(getLibraryPath(), book, chapter);
+    /* Read from the store rather than taken from the caller, exactly as the
+       resource query does — a window that forgot to send the setting would
+       quietly show a reader the publishers they had switched off. */
+    return loadPassageMoments(getLibraryPath(), book, chapter, store.get("resourceMutes") ?? []);
   });
 
   registerRuntimeReadIpc("trusted-resources-catalogue", () => {

@@ -130,6 +130,18 @@ export function readPassageIndex(parsed: unknown): PassageIndexResult {
  * belongs to, so asking at verse granularity would return nothing for most
  * verses and give a reader the false impression that nobody teaches them.
  */
-export function momentsFor(index: PassageIndex, book: string, chapter: number): PassageMoment[] {
-  return index.index.find((e) => e.book === book && e.chapter === chapter)?.moments ?? [];
+export function momentsFor(
+  index: PassageIndex,
+  book: string,
+  chapter: number,
+  mutes: readonly string[] = [],
+): PassageMoment[] {
+  const found = index.index.find((e) => e.book === book && e.chapter === chapter)?.moments ?? [];
+  if (mutes.length === 0) return found;
+  /* The same rule shape the resource query uses — a source id, or source:kind.
+     Applied identically here because a reader who switched a publisher off
+     switched it off; a second list still showing them would read as the
+     setting not working rather than as two lists with two policies. */
+  const muted = new Set(mutes);
+  return found.filter((m) => !muted.has(m.sourceId) && !muted.has(`${m.sourceId}:${m.kind}`));
 }
