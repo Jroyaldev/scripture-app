@@ -2200,30 +2200,34 @@ html, body, #root {
 
 .scripture-workspace-persistence:not(.is-saving):not(.is-failed) { display: none; }
 
-/* SAVING COSTS NO LAYOUT.
-   "Saving…" appearing and going used to widen and narrow the actions cluster
-   on every write, and the whole strip reflowed around it — the plus and the
-   tabs twitching each time the workspace saved, which is many times a minute
-   while a reader is moving about. Nobody is being told anything by that
-   movement; the word is already saying it.
+/* SAVING IS NOT SHOWN AT ALL.
+   It used to be a run of text inside the actions cluster, appearing on every
+   write — so the cluster widened and narrowed and the whole strip reflowed
+   around it. The workspace saves many times a minute while a reader is moving
+   about, so the tabs and the plus twitched constantly.
 
-   So the transient state leaves the flow and floats over the cluster's own
-   right edge. It is nine-pixel chrome that lives for a few hundred
-   milliseconds, and it has nothing to push.
+   Floating it out of the flow fixed the movement and left the flicker: a word
+   blinking on and off at the edge of vision, reporting something that always
+   succeeds and that nobody asked about. Saving is the app's business, not the
+   reader's. It is announced and not drawn.
 
-   The FAILED state stays in flow deliberately. It is not transient — it holds
-   until the write succeeds or the reader retries — it carries a reason and a
-   button, and something that persists and can be pressed must occupy real
-   space rather than hover over whatever is beneath it. */
+   The live region is why this is clipped rather than `display: none`: a screen
+   reader following the workspace still hears "Saving…", and a region that is
+   removed from the tree announces nothing at all.
+
+   The FAILED state is untouched and stays visible, in flow. A write that did
+   NOT succeed is the reader's business — it holds until it works or they
+   retry, and it carries a reason and a button. */
 .scripture-workspace-persistence.is-saving {
   position: absolute;
-  /* Just OUTSIDE the cluster's leading edge, over the empty bar — not inside
-     it, where it would sit on top of All Tabs. The cluster is the containing
-     block (it is already `position: relative`), so `right: 100%` is its own
-     left edge and the offset is the gap. */
-  right: calc(100% + 6px);
-  bottom: 5px;
-  pointer-events: none;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 .scripture-workspace-persistence button {
   min-height: 24px;
