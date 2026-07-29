@@ -1635,7 +1635,13 @@ html, body, #root {
 .scripture-workspace-viewport {
   position: relative;
   min-width: 0;
-  flex: 1 1 auto;
+  /* Grows to its tabs, not to the bar. It was `1 1 auto`, which was invisible
+     while the only thing after it was a toolbar pinned to the far edge — but
+     the new-tab plus sits immediately after the strip now, and a viewport that
+     claims the whole bar pushes it to the far right, which is the one place it
+     must not be. Shrink stays at 1 so an overflowing strip still gives way and
+     scrolls; only the growing is refused. */
+  flex: 0 1 auto;
   display: flex;
   align-items: flex-end;
   gap: 2px;
@@ -2124,7 +2130,10 @@ html, body, #root {
   gap: 0;
   width: 28px;
   height: 28px;
-  margin: 0 0 3px 4px;
+  /* The auto end-margin is what holds the toolbar out at the far edge now that
+     the viewport no longer grows. Without it the status and All Tabs would
+     follow the plus and cluster in the middle of an empty bar. */
+  margin: 0 auto 3px 4px;
   padding: 0;
   border-radius: var(--radius-sm);
   color: var(--text-tertiary);

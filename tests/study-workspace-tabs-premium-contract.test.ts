@@ -294,7 +294,14 @@ test("the register is a strip of canvas the active page is pulled up through", (
   assert.doesNotMatch(rail, /is-scrollable-left \{[\s\S]{0,120}box-shadow/);
   // The viewport may only clip on the x-axis: overflow:hidden would shear the
   // fillets flush against the tab and read as a rendering bug.
-  assert.match(rail, /\.scripture-workspace-viewport \{[\s\S]{0,320}overflow-x: auto;\s*overflow-y: visible;/);
+  /* Read from the rule's own body rather than from a 320-character window after
+     its selector. The claim is that the viewport scrolls on x and never clips
+     on y — the fillets hang below the tab and `overflow: hidden` would slice
+     them off — and that claim has nothing to do with how far into the rule the
+     declarations happen to fall. The window broke on a comment. */
+  const viewportRule = section(rail, ".scripture-workspace-viewport {", "\n}");
+  assert.match(viewportRule, /overflow-x: auto;/);
+  assert.match(viewportRule, /overflow-y: visible;/);
   assert.match(rail, /@media \(forced-colors: active\)/);
   assert.match(rail, /@media \(prefers-reduced-motion: reduce\)/);
 });

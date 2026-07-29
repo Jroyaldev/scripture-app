@@ -136,16 +136,34 @@ test("the allowlist stays honest", () => {
 });
 
 test("the register's actions cluster is held in place by layout, not by a selection rule", () => {
-  // The specific case ruling 5·3 came from. The strip is viewport + actions;
-  // the viewport takes the free space and the actions sit after it, so the
-  // cluster's position is a property of the bar rather than of which tab is
-  // selected. The selected tab's fillet margins move tabs INSIDE the scroller
-  // and cannot reach the controls beside it.
+  /* The specific case ruling 5·3 came from: the cluster's position must be a
+     property of the BAR, not of which tab is selected. The selected tab's
+     fillet margins move tabs inside the scroller and must never reach the
+     controls beside it.
+
+     WHICH ELEMENT ABSORBS THE FREE SPACE CHANGED on 2026-07-29; the ruling did
+     not. The viewport used to take it (`flex: 1 1 auto`), which was harmless
+     while the only thing after it was a toolbar already pinned to the far edge.
+     Then the new-tab plus moved in between them, and a viewport claiming the
+     whole bar pushed the plus to the far right — the one place a new-tab
+     control must not be. So the viewport grows to its tabs now and the plus
+     carries the auto margin instead.
+
+     Both are layout; neither is a selection rule. That is the claim, and it is
+     asserted as such rather than as one particular flex value. */
   const css = read("src/renderer/styles.css");
-  const viewport = css.slice(css.indexOf(".scripture-workspace-viewport {"));
-  assert.match(viewport.slice(0, viewport.indexOf("}")), /flex: 1 1 auto;/);
-  const actions = css.slice(css.indexOf(".scripture-workspace-actions {"));
-  assert.match(actions.slice(0, actions.indexOf("}")), /flex: 0 1 auto;/);
+  const body = (selector: string): string => {
+    const start = css.indexOf(selector);
+    assert.ok(start >= 0, `missing ${selector}`);
+    return css.slice(start, css.indexOf("\n}", start));
+  };
+
+  // Shrinks for an overflowing strip; never grows past its tabs.
+  assert.match(body(".scripture-workspace-viewport {"), /flex: 0 1 auto;/);
+  // The plus is what holds the toolbar out at the far edge.
+  assert.match(body(".scripture-workspace-open.is-inline {"), /margin: 0 auto 3px 4px;/);
+  // And the toolbar still only ever shrinks.
+  assert.match(body(".scripture-workspace-actions {"), /flex: 0 1 auto;/);
 
   // And the register file holds no rule that moves them. The premium contract
   // already bans the flush-end attribute by name; this bans the mechanism.
