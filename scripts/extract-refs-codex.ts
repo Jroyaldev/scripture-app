@@ -118,15 +118,33 @@ interface Ref {
   relation: string; named: boolean; confidence: string; evidence: string;
 }
 
-function callCodex(body: string): Promise<Ref[] | null> {
+/**
+ * Why a call produced nothing, which is not one question but four.
+ *
+ * Every failure used to print NO PARSE, and at four workers that was tolerable
+ * because there were few of them and you could read the transcript yourself.
+ * At twenty-four it is dangerous: a quota wall, an auth expiry and a genuinely
+ * confusing episode all look identical, and each one still costs a message. A
+ * run that hits a systemic problem should read as a systemic problem rather
+ * than as a model that quietly stopped finding references.
+ */
+type Refusal = "timeout" | "throttled" | "crashed" | "no-json" | "bad-json";
+type CodexResult = { ok: true; refs: Ref[] } | { ok: false; why: Refusal; detail: string };
+
+/* The CLI reports these as prose on its way out rather than as an exit code, so
+   the text is the only signal there is. */
+const THROTTLED = /rate limit|rate-limit|429|usage limit|quota|too many requests|upgrade to continue/i;
+
+function callCodex(body: string): Promise<CodexResult> {
   return new Promise((resolve) => {
     const child = spawn("codex", [
       "exec", "--sandbox", "read-only", "--skip-git-repo-check",
       "-c", `model_reasoning_effort=${EFFORT}`, "-",
     ], { cwd: REPO });
     let out = "";
+    let err = "";
     let settled = false;
-    const finish = (value: Ref[] | null): void => {
+    const finish = (value: CodexResult): void => {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
@@ -140,26 +158,47 @@ function callCodex(body: string): Promise<Ref[] | null> {
        results are written as they land rather than at the end. */
     const timer = setTimeout(() => {
       child.kill("SIGKILL");
-      finish(null);
+      finish({ ok: false, why: "timeout", detail: `no answer in ${TIMEOUT_MS / 60000} min` });
     }, TIMEOUT_MS);
     child.stdout.on("data", (d) => { out += String(d); });
-    child.stderr.on("data", () => { /* MCP transport noise */ });
-    child.on("close", () => {
+    /* Kept now rather than discarded. It was ignored as MCP transport noise,
+       which it mostly is — but it is also where a refusal says why. */
+    child.stderr.on("data", (d) => { err += String(d); });
+    child.on("close", (code) => {
       /* The CLI wraps its answer in its own chatter, so take the last object
          that carries the key we asked for. */
       const matches = [...out.matchAll(/\{[\s\S]*?"references"[\s\S]*?\]\s*\}/g)];
       const last = matches[matches.length - 1]?.[0];
-      if (!last) { finish(null); return; }
-      try {
-        const parsed = JSON.parse(last) as { references?: Ref[] };
-        finish(Array.isArray(parsed.references) ? parsed.references : null);
-      } catch { finish(null); }
+      if (last) {
+        try {
+          const parsed = JSON.parse(last) as { references?: Ref[] };
+          if (Array.isArray(parsed.references)) { finish({ ok: true, refs: parsed.references }); return; }
+        } catch {
+          finish({ ok: false, why: "bad-json", detail: last.slice(0, 120) });
+          return;
+        }
+      }
+      const said = `${out}\n${err}`;
+      const throttle = THROTTLED.exec(said);
+      if (throttle) { finish({ ok: false, why: "throttled", detail: quotedLine(said, throttle.index) }); return; }
+      if (code !== 0) { finish({ ok: false, why: "crashed", detail: `exit ${code}: ${tail(err)}` }); return; }
+      finish({ ok: false, why: "no-json", detail: tail(out) });
     });
-    child.on("error", () => finish(null));
+    child.on("error", (error) => finish({ ok: false, why: "crashed", detail: String(error).slice(0, 120) }));
     child.stdin.write(body);
     child.stdin.end();
   });
 }
+
+/** The line a match landed on, so a refusal is quoted rather than paraphrased. */
+function quotedLine(text: string, index: number): string {
+  const start = text.lastIndexOf("\n", index) + 1;
+  const end = text.indexOf("\n", index);
+  return text.slice(start, end === -1 ? undefined : end).trim().slice(0, 160);
+}
+
+const tail = (text: string): string =>
+  text.trim().split("\n").filter(Boolean).slice(-1)[0]?.slice(0, 120) ?? "(silence)";
 
 const manifest = JSON.parse(
   readFileSync(join(LIBRARY, ".artifacts/resources", SOURCE, "manifest.json"), "utf-8"),
@@ -219,9 +258,12 @@ console.log(`reading ${picked.length} transcripts, ${CONCURRENCY} at a time, eff
 
 const results: Array<Record<string, unknown>> = [...carried];
 let cursor = 0;
+const refusals = new Map<Refusal, number>();
+/* Set once by whichever worker meets the wall; read by all of them. */
+let throttled = false;
 
 async function worker(): Promise<void> {
-  while (cursor < picked.length) {
+  while (cursor < picked.length && !throttled) {
     const file = picked[cursor++]!;
     const recordId = file.replace(/\.json$/, "").replace(/__/g, ":");
     const t = JSON.parse(readFileSync(join(TRANSCRIPTS, file), "utf-8")) as
@@ -230,11 +272,21 @@ async function worker(): Promise<void> {
     /* One timestamped line per segment. The model can only cite a moment it
        can see, so the timestamps have to be in the text rather than implied. */
     const body = `${PROMPT}\n\nTRANSCRIPT:\n${t.segments.map((s) => `[${clock(s.s)}] ${s.t}`).join("\n")}\n`;
-    const refs = await callCodex(body);
-    if (!refs) {
-      console.log(`  ${recordId.replace("bibleproject:podcast:", "").slice(0, 34)}  NO PARSE`);
+    const answer = await callCodex(body);
+    if (!answer.ok) {
+      refusals.set(answer.why, (refusals.get(answer.why) ?? 0) + 1);
+      console.log(
+        `  ${recordId.replace(/^[a-z-]+:podcast:/, "").slice(0, 32).padEnd(34)}`
+        + `${answer.why.toUpperCase().padEnd(10)} ${answer.detail}`,
+      );
+      /* A quota wall is not this episode's problem, and it will not be the next
+         episode's either. Every worker racing on to spend another message
+         against a closed door turns one refusal into two hundred, so the run
+         stops and says so — and resume means nothing already paid for is lost. */
+      if (answer.why === "throttled") { throttled = true; return; }
       continue;
     }
+    const refs = answer.refs;
 
     const flat = t.segments.map((s) => s.t).join(" ").toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ");
     const kept: Array<Record<string, unknown>> = [];
@@ -282,10 +334,27 @@ async function worker(): Promise<void> {
 await Promise.all(Array.from({ length: CONCURRENCY }, worker));
 
 const rel = (k: string): number => results.filter((r) => r["relation"] === k).length;
+
+/* Reported before the reference counts rather than after, because this is the
+   number that decides whether the ones below mean anything. A run that refused
+   half its episodes still prints a plausible-looking median. */
+const refused = [...refusals.values()].reduce((total, n) => total + n, 0);
+if (refused > 0) {
+  console.log(`\n  ${refused} episode${refused === 1 ? "" : "s"} produced nothing:`);
+  for (const [why, count] of [...refusals].sort((a, b) => b[1] - a[1])) {
+    console.log(`    ${why.padEnd(10)} ${count}`);
+  }
+}
+if (throttled) {
+  console.log(`\n  STOPPED EARLY — the limit was reached, so the remaining episodes were not attempted.`);
+  console.log(`  Nothing already paid for is lost: re-running skips every episode in the output file.`);
+  process.exitCode = 2;
+}
+
 /* Episodes read across every pass, not just this one — `results` carries the
    earlier passes' references, so dividing by this pass alone would report a
    rate several times the real one. */
-const episodesRead = alreadyRead.size + picked.length;
+const episodesRead = alreadyRead.size + picked.length - refused;
 console.log(`\n${results.length} references kept from ${episodesRead} episodes  (${(results.length / Math.max(1, episodesRead)).toFixed(1)} each)`);
 console.log(`  subject ${rel("subject")}   crossref ${rel("crossref")}   mention ${rel("mention")}   allusion ${rel("allusion")}`);
 console.log(`  unnamed (allusions and implicit): ${results.filter((r) => r["named"] !== true).length}`);
