@@ -23,7 +23,7 @@ import {
   canonicalConnectionAnchors,
   compareConnectionsCanonical,
 } from "../../core/annotations/connection-order.js";
-import type { PassageMoment, Proximity } from "../../core/passage-index.js";
+import type { PassageMoment } from "../../core/passage-index.js";
 import { proximityOf } from "../../core/passage-index.js";
 import { CONNECTION_ROUTE_SELECTED_STROKE } from "../utils/connectionGeometry.js";
 import type {
@@ -429,18 +429,21 @@ function TaughtHereBlock({ moments, verse, onPlay }: {
   const extent = (s: number): string =>
     (s >= 60 ? `${Math.round(s / 60)} min` : `${Math.max(1, Math.round(s))}s`);
 
-  /* Bands rather than one run of rows. "Eleven minutes on this verse" and
-     "eleven minutes elsewhere in the chapter" are different offers, and a flat
-     list ordered by length puts them side by side as though they were the
-     same. The heading is only drawn where the band changes, so a list with one
-     kind in it carries no chrome at all. */
-  const BANDS: Record<Proximity, string> = {
-    on: verse == null ? "In this chapter" : "On this verse",
-    near: "Just before or after",
-    whole: "The chapter as a whole",
-    chapter: "Elsewhere in the chapter",
+  /* No band headings. Four rows spanning three bands produced a header above
+     almost every row, which is more chrome than content and reads as a list
+     that cannot make up its mind.
+     
+     The range does that work already. A reader on Romans 8:1 sees "8:1-4" and
+     knows it is theirs — naming the band as well explains something the
+     numbers have said. What remains is order, and one hairline where the
+     directly-relevant moments end, which is the only boundary a reader needs
+     drawn for them. */
+  const relevant = (m: PassageMoment): boolean => {
+    const band = proximityOf(m, verse);
+    return band === "on" || band === "near" || band === "whole";
   };
-  let lastBand: Proximity | null = null;
+  const firstDistant = verse == null ? -1 : shown.findIndex((m) => !relevant(m));
+  const drawRule = firstDistant > 0;
 
   return (
     <section className="taught-here" data-expanded={expanded} aria-labelledby="taught-here-title">
@@ -449,28 +452,28 @@ function TaughtHereBlock({ moments, verse, onPlay }: {
         <h3 id="taught-here-title">Taught here</h3>
       </header>
       <ul className="taught-here-list">
-        {shown.map((m) => {
-          const band = proximityOf(m, verse);
-          const opensBand = band !== lastBand;
-          lastBand = band;
-          return (
-          <li key={`${m.id}-${m.at}`}>
-            {opensBand && <p className="taught-here-band">{BANDS[band]}</p>}
-            <button className="taught-here-row" data-band={band} onClick={() => onPlay(m)} type="button">
-              {/* Extent first, because it is what a reader is choosing on —
-                  eleven minutes and forty seconds are different offers. */}
+        {shown.map((m, i) => (
+          <li key={`${m.id}-${m.at}`} data-rule={drawRule && i === firstDistant}>
+            <button
+              className="taught-here-row"
+              data-band={proximityOf(m, verse)}
+              onClick={() => onPlay(m)}
+              type="button"
+            >
+              {/* The episode leads, because it is the thing being chosen. The
+                  reference and the source sit under it, and the length sits at
+                  the end as the offer — one figure to compare rows on, in the
+                  numeral face so a column of them lines up. */}
+              <span className="taught-here-episode">{m.episode}</span>
               <span className="taught-here-extent">{extent(m.seconds)}</span>
-              <span className="taught-here-body">
-                <span className="taught-here-episode">{m.episode}</span>
-                <span className="taught-here-meta">
-                  {m.title} · {m.sourceName} · {clock(m.at)}
-                  {m.relation !== "subject" && ` · ${m.relation === "allusion" ? "alluded" : m.relation}`}
-                </span>
+              <span className="taught-here-meta">
+                <span className="taught-here-ref">{m.title}</span>
+                {m.sourceName} · {clock(m.at)}
+                {m.relation !== "subject" && ` · ${m.relation === "allusion" ? "alluded" : m.relation}`}
               </span>
             </button>
           </li>
-          );
-        })}
+        ))}
       </ul>
       {moments.length > 4 && (
         <button
