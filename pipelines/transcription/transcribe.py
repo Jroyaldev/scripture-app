@@ -40,6 +40,7 @@ accurate of the two on English benchmarks, and roughly an order of magnitude
 faster, but those are a bonus rather than the argument.
 """
 
+import gc
 import json
 import os
 import pathlib
@@ -222,6 +223,12 @@ class Transcriber:
     @modal.enter()
     def load(self) -> None:
         import nemo.collections.asr as nemo_asr
+        import torch
+
+        # Bound to the class so `transcribe` can reach it. torch exists only
+        # inside the GPU image, so it cannot be imported at module scope — the
+        # local entrypoint runs this file too.
+        Transcriber.torch = torch
 
         os.environ["HF_HUB_CACHE"] = MODEL_DIR
         self.model = nemo_asr.models.ASRModel.from_pretrained(model_name=MODEL_NAME)
@@ -273,13 +280,48 @@ class Transcriber:
         if not chunks:
             return {"id": episode["id"], "status": "chunk-failed"}
 
-        outputs = self.model.transcribe(
-            [str(c["path"]) for c in chunks], timestamps=True, batch_size=1
-        )
+        # One chunk at a time, each on its own, and the cache emptied after every
+        # episode.
+        #
+        # Handing the whole list to transcribe() cost 454 of 2,168 episodes on
+        # the first large run. Two failures, one cause and one passenger:
+        #
+        #   OutOfMemoryError, 2,116 of them. A container is reused for episode
+        #   after episode — around two hundred each here — and nothing released
+        #   the allocator's cached blocks between them. The GPU reported 22 GiB
+        #   total and 935 MiB free while being asked for 940. Not one enormous
+        #   episode: an accumulation across many ordinary ones, which is why it
+        #   appeared on the fourth corpus rather than the first.
+        #
+        #   IndexError: index 0 is out of bounds for dimension 1 with size 0.
+        #   A chunk that decodes to no tokens at all — silence, or an outro of
+        #   music — thrown from inside NeMo's decoding. In a batch it takes the
+        #   whole episode down with it; alone it costs its own ten minutes.
+        #
+        # `_merge` already reads each output with getattr(..., "timestamp", None)
+        # or {}, so a None simply contributes no words and the surrounding
+        # chunks still stitch correctly.
+        outputs: list = []
+        lost = 0
+        for c in chunks:
+            try:
+                with self.torch.inference_mode():
+                    outputs.extend(
+                        self.model.transcribe([str(c["path"])], timestamps=True, batch_size=1)
+                    )
+            except Exception as error:  # noqa: BLE001 — one chunk must not cost the episode
+                print(f"  chunk failed ({episode['id']} @ {c['start']:.0f}s): {type(error).__name__}")
+                outputs.append(None)
+                lost += 1
+                self.torch.cuda.empty_cache()
+
         result = _shape(episode, _merge(chunks, outputs))
 
         for c in chunks:
             c["path"].unlink(missing_ok=True)
+        # Between episodes, not merely at the end of the container's life.
+        gc.collect()
+        self.torch.cuda.empty_cache()
 
         destination.write_text(json.dumps(result, ensure_ascii=False))
         out_volume.commit()

@@ -18260,6 +18260,38 @@ button.lang-phrase-diagram-node:focus-visible,
 .marking-dock-host[data-dock-layout="stacked"][data-dock-state="rest"] .marking-dock-context,
 .marking-dock-host[data-dock-layout="stacked"][data-dock-state="rest"] .marking-dock-actions { display: none; }
 
+/* At rest and empty-handed, the dock is not there.
+   It used to sit across the foot of the page saying "Select words, or choose a
+   tool to keep in hand" for the entire time a reader was reading — a permanent
+   bar explaining how to start, to someone who had already started. A tool is
+   reached for; it does not need to stand in the room waiting to be noticed.
+
+   Both conditions matter. `rest` alone would take the dock away while a wash or
+   a connector was still in hand, which is the one moment it is genuinely
+   holding something on a reader's behalf; `data-tool-armed="false"` is what
+   says the hand is empty. Anything else — a selection, a session, a failure to
+   report — is a state with something to say, and says it.
+
+   Hidden rather than unmounted: the dock carries the polite live region that
+   announces marking outcomes, and a screen reader listening to a region that
+   comes and goes hears nothing at all. */
+.marking-dock-host[data-dock-state="rest"][data-tool-armed="false"] .marking-dock {
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+}
+
+.marking-dock-host[data-dock-state="rest"][data-tool-armed="false"] .marking-dock.is-entered {
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marking-dock-host[data-dock-state="rest"][data-tool-armed="false"] .marking-dock {
+    transform: none;
+    transition: none;
+  }
+}
+
 @container reading-stage (max-width: 900px) {
   .marking-dock-context { padding-inline: 7px; }
   .marking-dock-context .marking-choice-panel { gap: 6px; }
