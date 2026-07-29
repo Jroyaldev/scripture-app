@@ -25,7 +25,13 @@ import { join } from "node:path";
 
 const REPO = new URL("..", import.meta.url).pathname;
 const LIBRARY = join(process.env["HOME"] ?? "", "ScriptureLibrary");
-const SOURCE = "/Volumes/External/Transcripts/codex-refs-all.jsonl";
+/* Which extraction to install. Per-episode files are keyed by record id, so
+   installing a second publisher adds files rather than replacing any — and
+   running this against a job still in flight installs whatever has landed,
+   because the extractor writes after each episode rather than at the end. */
+const SOURCE = process.argv.includes("--from")
+  ? process.argv[process.argv.indexOf("--from") + 1]!
+  : "/Volumes/External/Transcripts/codex-refs-all.jsonl";
 const OUT_DIR = join(LIBRARY, ".artifacts/references");
 const NAMES = join(REPO, "data/scripture/book-names-en.json");
 

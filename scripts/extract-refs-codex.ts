@@ -47,6 +47,9 @@ const CONCURRENCY = Number(arg("concurrency", "4"));
 const EFFORT = arg("effort", "medium");
 /** Shifts the deterministic pick, so a second dry run reads different episodes. */
 const OFFSET = Number(arg("offset", "0"));
+/* Which publisher's transcripts to read. Both now sit in one directory, keyed
+   by record id, so the source is a filter rather than a path. */
+const SOURCE = arg("source", "bibleproject");
 
 /** Every alias the names file knows, folded to its canonical code. */
 const bookNames = JSON.parse(readFileSync(NAMES, "utf-8")) as Record<string, string[] | string>;
@@ -140,11 +143,11 @@ function callCodex(body: string): Promise<Ref[] | null> {
 }
 
 const manifest = JSON.parse(
-  readFileSync(join(LIBRARY, ".artifacts/resources/bibleproject/manifest.json"), "utf-8"),
+  readFileSync(join(LIBRARY, ".artifacts/resources", SOURCE, "manifest.json"), "utf-8"),
 ) as { records: Array<{ id: string; kind: string; title: string }> };
 const titles = new Map(manifest.records.map((r) => [r.id, r.title]));
 
-const files = readdirSync(TRANSCRIPTS).filter((f) => f.endsWith(".json"));
+const files = readdirSync(TRANSCRIPTS).filter((f) => f.endsWith(".json") && f.startsWith(`${SOURCE.replace(/:/g, "__")}__`));
 /* Spread through the catalogue rather than taking its head, which is one
    series and one era. */
 const stride = Math.max(1, Math.floor(files.length / EPISODES));

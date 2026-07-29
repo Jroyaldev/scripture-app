@@ -187,9 +187,18 @@ is storing a publisher's body. That reasoning still holds, and it is why this
 needed a grant rather than a judgement call.
 
 **BibleProject granted transcripts on 2026-07-28**, on one condition: that the
-transcriptions are not mischaracterized. No other source is granted. Requests
-are outstanding elsewhere, and until each is answered this capability covers
-exactly one publisher.
+transcriptions are not mischaracterized. **The Naked Bible Podcast granted the
+same day**, whose audio was already approved on 2026-07-27 because it is served
+from the publisher's own domain. Requests to Working Preacher, The Gospel
+Coalition and Enter the Bible are outstanding, and until each is answered this
+capability covers exactly those two.
+
+Naked Bible matters beyond its own catalogue. Everything built on transcripts so
+far — the reference extraction, the notion of how much of an episode a passage
+is given — was measured against one publisher whose episodes range widely across
+scripture. Naked Bible works the opposite way, an episode at a time through a
+passage, and is the first corpus able to show whether any of it generalises or
+was only ever a description of BibleProject.
 
 What makes the capability narrower than "transcripts are allowed":
 

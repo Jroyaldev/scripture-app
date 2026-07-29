@@ -49,15 +49,16 @@ export interface Transcript {
  *
  * BibleProject granted on 2026-07-28, conditioned on the transcriptions not
  * being mischaracterized — which is what `generated` and `model` below are for.
- * Requests to other publishers are outstanding; until one is answered, adding
- * its id here would be assuming an answer rather than recording one.
+ * The Naked Bible Podcast granted the same day. Requests to the remaining
+ * publishers are outstanding; until one is answered, adding its id here would
+ * be assuming an answer rather than recording one.
  *
  * Kept as data rather than as a check somewhere in the loader so the refusal
  * cannot be forgotten: a source absent from this list has no path to being
  * displayed, and `docs/trusted-resource-permissions.md` must name every id in
  * it — a test holds the two together.
  */
-export const TRANSCRIPT_APPROVED_SOURCES: readonly string[] = ["bibleproject"];
+export const TRANSCRIPT_APPROVED_SOURCES: readonly string[] = ["bibleproject", "naked-bible"];
 
 /** Record ids are `${sourceId}:${kind}:${slug}`; the grant is per publisher. */
 export function isTranscriptApprovedSource(recordId: string): boolean {

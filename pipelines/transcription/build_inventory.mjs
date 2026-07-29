@@ -19,15 +19,18 @@ import { dirname, join, resolve } from "node:path";
 
 const DEFAULT_LIBRARY = join(process.env["HOME"] ?? "", "ScriptureLibrary");
 const DEFAULT_OUT = "/Volumes/External/Transcripts/inventory.json";
-const SOURCE = "bibleproject";
 
 function arg(name, fallback) {
   const i = process.argv.indexOf(`--${name}`);
   return i !== -1 && process.argv[i + 1] ? process.argv[i + 1] : fallback;
 }
 
+/* Which publisher's catalogue to build from. Hardcoding one was fine while
+   only one had granted transcripts; a second grant makes it a parameter rather
+   than a rewrite. */
+const SOURCE = arg("source", "bibleproject");
 const libraryPath = resolve(arg("library", DEFAULT_LIBRARY));
-const outPath = resolve(arg("out", DEFAULT_OUT));
+const outPath = resolve(arg("out", SOURCE === "bibleproject" ? DEFAULT_OUT : `/Volumes/External/Transcripts/${SOURCE}-inventory.json`));
 const manifestPath = join(libraryPath, ".artifacts/resources", SOURCE, "manifest.json");
 
 /* Measured durations, if probe_durations.mjs has run. ffprobe reads the
@@ -35,7 +38,7 @@ const manifestPath = join(libraryPath, ".artifacts/resources", SOURCE, "manifest
    is simply wrong — three records are, by more than 10%. Cost estimates and
    batch packing both key on duration, so they use the measured value and fall
    back to the stated one only where nothing was measured. */
-const durationsPath = resolve(arg("durations", "/Volumes/External/Transcripts/durations.json"));
+const durationsPath = resolve(arg("durations", SOURCE === "bibleproject" ? "/Volumes/External/Transcripts/durations.json" : `/Volumes/External/Transcripts/${SOURCE}-durations.json`));
 const measured = new Map();
 try {
   const report = JSON.parse(readFileSync(durationsPath, "utf-8"));

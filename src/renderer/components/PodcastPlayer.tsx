@@ -401,6 +401,11 @@ export function PodcastPlayer({
   const activeLineRef = useRef<HTMLLIElement>(null);
   const [following, setFollowing] = useState(true);
   const [query, setQuery] = useState("");
+  /* One view at a time. Stacking the passage lists above the transcript let
+     them take whatever height they wanted and gave a reader no way to put them
+     away — on an episode with fifteen references the transcript was pushed off
+     the bottom of a sheet that has no scroll of its own. */
+  const [view, setView] = useState<"transcript" | "passages">("transcript");
   /* undefined while unasked, null once we know there are none. */
   const [refs, setRefs] = useState<ReferenceSet | null | undefined>(undefined);
   const [rateIndex, setRateIndex] = useState(0);
@@ -518,6 +523,26 @@ export function PodcastPlayer({
      is beats us reading it out of a transcript. */
   const subjects: PassageReference[] = refs ? subjectsOf(refs) : [];
   const passing: PassageReference[] = refs ? passingIn(refs) : [];
+
+  /* Choosing a passage is a request to HEAR it, not to read about it. So the
+     press does the whole errand: move the audio, return to the transcript, and
+     start following again — landing a reader in the passage list they just
+     left, with the words scrolling somewhere behind it, would make them do the
+     last two steps themselves every time. */
+  const goToMoment = (seconds: number): void => {
+    seekPodcast(seconds);
+    setQuery("");
+    setFollowing(true);
+    setView("transcript");
+  };
+
+  /* The way out of a search. Clearing the box is not enough on its own — a
+     reader who searched, scrolled, and then cleared would be left parked
+     wherever they had wandered to, with the audio elsewhere. */
+  const clearSearch = (): void => {
+    setQuery("");
+    setFollowing(true);
+  };
   const chapters: PodcastChapter[] = episode?.chapters ?? [];
   const chapterIndex = chapters.reduce(
     (found, chapter, index) => (position >= chapter.start ? index : found),
@@ -715,59 +740,97 @@ export function PodcastPlayer({
                 </p>
               </div>
 
+              {/* Two views, not two stacked panels. A reader is either choosing
+                  a passage or following the words, and the sheet has no scroll
+                  of its own — so the lists took height the transcript needed
+                  and offered no way to give it back. */}
+              {(subjects.length + passing.length > 0) && lines.length > 0 && (
+                <div className="podcast-views" role="tablist">
+                  <button
+                    aria-selected={view === "transcript"}
+                    className="podcast-view-tab"
+                    onClick={() => setView("transcript")}
+                    role="tab"
+                    type="button"
+                  >
+                    Transcript
+                  </button>
+                  <button
+                    aria-selected={view === "passages"}
+                    className="podcast-view-tab"
+                    onClick={() => setView("passages")}
+                    role="tab"
+                    type="button"
+                  >
+                    Passages
+                    <span className="podcast-view-count">{subjects.length + passing.length}</span>
+                  </button>
+                </div>
+              )}
+
               {/* What the episode works through. Ordered by how long they stay
                   with it rather than by when it comes up: a reader scanning
                   this is deciding whether the episode is worth an hour, and
                   the twenty-minute passage answers that better than whichever
                   one happened to be first. */}
-              {subjects.length > 0 && (
-                <ul aria-label="Passages in this episode" className="podcast-refs">
-                  {subjects.map((r) => (
-                    <li key={`s-${r.at}-${r.bref}`}>
-                      <button
-                        className="podcast-ref"
-                        data-relation="subject"
-                        onClick={() => seekPodcast(r.at)}
-                        title={r.evidence ? `“${r.evidence}”` : undefined}
-                        type="button"
-                      >
-                        <span className="podcast-ref-time">{formatClock(r.at)}</span>
-                        <span className="podcast-ref-title">{r.title}</span>
-                        <span className="podcast-ref-extent">
-                          {r.seconds >= 60 ? `${Math.round(r.seconds / 60)} min` : ""}
-                        </span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-
-              {/* Everything the episode touches without being about. Ordered by
-                  time, because this list is read while listening rather than
-                  before. Allusions are marked: a passage nobody named aloud is
-                  the one entry here a reader could not have found themselves. */}
-              {passing.length > 0 && (
-                <div className="podcast-refs-passing">
-                  <p className="podcast-refs-head">Also referenced</p>
-                  <ul aria-label="Passages referenced in this episode" className="podcast-refs">
-                    {passing.map((r) => (
-                      <li key={`p-${r.at}-${r.bref}`}>
+              {view === "passages" && (
+                <div className="podcast-refs-view">
+                {view === "passages" && subjects.length > 0 && (
+                  <ul aria-label="Passages in this episode" className="podcast-refs">
+                    {subjects.map((r) => (
+                      <li key={`s-${r.at}-${r.bref}`}>
                         <button
                           className="podcast-ref"
-                          data-relation={r.relation}
-                          onClick={() => seekPodcast(r.at)}
-                          title={r.evidence ? `“${r.evidence}”` : undefined}
+                          data-relation="subject"
+                          onClick={() => goToMoment(r.at)}
                           type="button"
                         >
                           <span className="podcast-ref-time">{formatClock(r.at)}</span>
                           <span className="podcast-ref-title">{r.title}</span>
                           <span className="podcast-ref-extent">
-                            {r.relation === "allusion" ? "alluded" : ""}
+                            {r.seconds >= 60 ? `${Math.round(r.seconds / 60)} min` : ""}
                           </span>
+                          {/* The words behind the claim, shown rather than
+                              hidden under a hover. A native title arrives after
+                              a second, in the system's own styling, and cannot
+                              be reached at all by touch — and this is the line
+                              that lets a reader dismiss a wrong reference at a
+                              glance, which is too important to hide. */}
+                          {r.evidence && <span className="podcast-ref-why">{r.evidence}</span>}
                         </button>
                       </li>
                     ))}
                   </ul>
+                )}
+  
+                {/* Everything the episode touches without being about. Ordered by
+                    time, because this list is read while listening rather than
+                    before. Allusions are marked: a passage nobody named aloud is
+                    the one entry here a reader could not have found themselves. */}
+                {view === "passages" && passing.length > 0 && (
+                  <div className="podcast-refs-passing">
+                    <p className="podcast-refs-head">Also referenced</p>
+                    <ul aria-label="Passages referenced in this episode" className="podcast-refs">
+                      {passing.map((r) => (
+                        <li key={`p-${r.at}-${r.bref}`}>
+                          <button
+                            className="podcast-ref"
+                            data-relation={r.relation}
+                            onClick={() => goToMoment(r.at)}
+                            type="button"
+                          >
+                            <span className="podcast-ref-time">{formatClock(r.at)}</span>
+                            <span className="podcast-ref-title">{r.title}</span>
+                            <span className="podcast-ref-extent">
+                              {r.relation === "allusion" ? "alluded" : ""}
+                            </span>
+                            {r.evidence && <span className="podcast-ref-why">{r.evidence}</span>}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 </div>
               )}
 
@@ -798,7 +861,7 @@ export function PodcastPlayer({
               {/* Machine transcript. The provenance line is not decoration: the
                   reader has to be able to tell at a glance that no person wrote
                   this, because some of the words in it will be wrong. */}
-              {transcript && lines.length > 0 && (
+              {view === "transcript" && transcript && lines.length > 0 && (
                 <div className="podcast-transcript-block">
                   <div className="podcast-transcript-head">
                     <svg aria-hidden="true" className="podcast-transcript-glass" viewBox="0 0 16 16">
@@ -809,19 +872,32 @@ export function PodcastPlayer({
                       aria-label="Search this transcript"
                       className="podcast-transcript-search"
                       onChange={(event) => setQuery(event.target.value)}
+                      onKeyDown={(event) => { if (event.key === "Escape") clearSearch(); }}
                       placeholder="Search transcript"
                       type="search"
                       value={query}
                     />
+                    {searching && (
+                      <button
+                        className="podcast-transcript-clear"
+                        onClick={clearSearch}
+                        title="Clear search and follow along"
+                        type="button"
+                      >
+                        {matches} · clear
+                      </button>
+                    )}
                     {/* Provenance without a byline. The model id was a
                         debugging artefact sitting where a reader looks; this
                         keeps the claim — these words were machined, not
                         written — in the smallest form that still makes it,
                         and names us rather than a checkpoint, because who a
                         reader can hold responsible is the useful half. */}
-                    <span className="podcast-transcript-auto" title="Automatically transcribed by Pericope">
-                      auto
-                    </span>
+                    {!searching && (
+                      <span className="podcast-transcript-auto" title="Automatically transcribed by Pericope">
+                        auto
+                      </span>
+                    )}
                   </div>
 
                   <div className="podcast-transcript-stage">

@@ -94,16 +94,17 @@ test("a transcript missing its own id falls back to the record that asked", () =
  * every transcript becomes unreachable at once, and nothing else would say so.
  */
 /**
- * BibleProject granted transcripts on 2026-07-28; nobody else has. A grant is a
- * fact about a conversation that happened, so it is recorded rather than
- * inferred, and the refusal happens on the record id before any file is opened
+ * BibleProject and the Naked Bible Podcast granted transcripts on 2026-07-28;
+ * nobody else has. A grant is a fact about a conversation that happened, so it
+ * is recorded rather than inferred, and the refusal happens on the record id
+ * before any file is opened
  * — an ungranted publisher's transcript has no path to a reader even if one
  * were sitting on disk.
  */
 test("only a publisher who granted transcripts can have one loaded", () => {
   assert.ok(isTranscriptApprovedSource("bibleproject:podcast:anything"));
+  assert.ok(isTranscriptApprovedSource("naked-bible:podcast:4192"));
   for (const ungranted of [
-    "naked-bible:podcast:whatever",
     "working-preacher:commentary:whatever",
     "the-gospel-coalition:article:whatever",
     "enter-the-bible:article:whatever",
@@ -124,9 +125,15 @@ test("every approved source is named in the permissions doc", () => {
   const amendment = doc.slice(doc.indexOf("## Transcripts"));
   assert.ok(amendment.length > 0, "the doc must carry a transcripts section");
   assert.match(amendment, /2026-07-28/, "the grant must carry the date it was given");
+  /* Compared with every non-letter removed on both sides, so an id written
+     "naked-bible" still matches a doc that calls it the Naked Bible Podcast.
+     The earlier form stripped hyphens from the id only, which made the two
+     unmatchable and would have read as a missing disclosure. */
+  const flatten = (text: string): string => text.toLowerCase().replace(/[^a-z]/g, "");
+  const flatDoc = flatten(amendment);
   for (const source of TRANSCRIPT_APPROVED_SOURCES) {
     assert.ok(
-      amendment.toLowerCase().includes(source.replace(/-/g, "")),
+      flatDoc.includes(flatten(source)),
       `${source} is approved in code but not named in the permissions doc`,
     );
   }

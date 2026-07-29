@@ -241,6 +241,68 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* The view switcher. Two words and a count, on a rail rather than as buttons:
+   it is a place indicator more than a control, and a pair of drawn buttons in
+   a 380px sheet reads as chrome competing with the words underneath. */
+.podcast-views {
+  display: flex;
+  gap: 2px;
+  margin: 2px -4px 0;
+  padding: 3px;
+  border-radius: var(--radius-pebble);
+  background: color-mix(in srgb, var(--resource-ink) 8%, transparent);
+}
+
+.podcast-view-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: calc(var(--radius-pebble) - 2px);
+  background: none;
+  color: var(--resource-ink-soft);
+  font: var(--fw-medium) 0.6875rem/1 var(--font-ui);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.podcast-view-tab[aria-selected="true"] {
+  background: color-mix(in srgb, var(--resource-ink) 15%, transparent);
+  color: var(--resource-ink);
+}
+
+.podcast-view-tab:not([aria-selected="true"]):hover { color: var(--resource-ink); }
+
+.podcast-view-count {
+  padding: 0 4px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--resource-ink) 14%, transparent);
+  font: 0.5625rem/1.6 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+}
+
+/* Leaving a search. Says how many were found and how to stop looking in the
+   same control, because those are one thought — and a count with no exit is a
+   reader stuck in their own filter. */
+.podcast-transcript-clear {
+  padding: 2px 7px;
+  border: 0;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--resource-ink) 12%, transparent);
+  color: var(--resource-ink);
+  font: var(--fw-medium) 0.5625rem/1.6 var(--font-ui);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.podcast-transcript-clear:hover { background: color-mix(in srgb, var(--resource-ink) 20%, transparent); }
+
 /* Passage references. Two lists, styled as one family: what the episode works
    through, then what it touches in passing. The distinction is carried by
    order and by weight rather than by two different designs, because they are
@@ -250,6 +312,19 @@
   padding: 0;
   list-style: none;
 }
+
+/* The view owns a fixed height and scrolls inside it, so a fifteen-reference
+   episode and a two-reference one open the sheet to the same size. Height that
+   depends on content is what let these push the transcript away. */
+.podcast-refs-view {
+  max-height: 300px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  overscroll-behavior: contain;
+  mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+}
+
+.podcast-refs-view::-webkit-scrollbar { width: 0; }
 
 .podcast-refs-passing {
   margin-top: 4px;
@@ -270,8 +345,9 @@
 .podcast-ref {
   display: grid;
   grid-template-columns: 40px minmax(0, 1fr) auto;
+  grid-template-areas: "time title extent" ".    why   why";
   align-items: baseline;
-  gap: 9px;
+  gap: 2px 9px;
   width: 100%;
   padding: 5px 12px;
   border: 0;
@@ -292,12 +368,14 @@
 .podcast-ref:not([data-relation="subject"]) { color: var(--resource-ink-soft); }
 
 .podcast-ref-time {
+  grid-area: time;
   font: 0.625rem/1.5 var(--font-mono);
   font-variant-numeric: tabular-nums;
   opacity: 0.65;
 }
 
 .podcast-ref-title {
+  grid-area: title;
   overflow: hidden;
   font: 0.8125rem/1.4 var(--font-reading);
   text-overflow: ellipsis;
@@ -312,6 +390,7 @@
    "alluded" marks a passage nobody said aloud, which is the only entry here a
    reader could not have found by searching. */
 .podcast-ref-extent {
+  grid-area: extent;
   color: var(--resource-ink-soft);
   font: 0.5625rem/1.6 var(--font-ui);
   letter-spacing: 0.04em;
@@ -319,6 +398,20 @@
   opacity: 0.75;
   white-space: nowrap;
 }
+
+/* Why this row exists, in the speakers' own words. One line, clipped — enough
+   to recognise the moment, never enough to become the thing being read. */
+.podcast-ref-why {
+  grid-area: why;
+  overflow: hidden;
+  color: var(--resource-ink-soft);
+  font: 0.6875rem/1.45 var(--font-reading);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.62;
+}
+
+.podcast-ref:hover .podcast-ref-why { opacity: 0.85; }
 
 /* Transcript. Taller than the chapter list because it is meant to be read
    rather than scanned, and because the active line sits centred inside it — a
