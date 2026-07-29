@@ -206,6 +206,33 @@ narrowest honest statement of where this publisher's audio lives is
 `*.megaphone.fm`, because the publisher's own CDN decides the subdomain per
 request.
 
+### Every media host, and where it actually goes
+
+The host in an enclosure URL is usually a router, not a file server. These were
+measured by following the redirect on sampled episodes from each show, and the
+policy is built from the right-hand column — because CSP re-checks the target,
+and getting this wrong does not fail at import. It fails much later, as a player
+saying it could not reach the episode.
+
+| Declared in the manifest | Actually serves the bytes |
+|---|---|
+| `nakedbiblepodcast.com` | itself — no redirect |
+| `afp-597195-injected.calisto.simplecastaudio.com` | itself — no redirect |
+| `traffic.megaphone.fm` | `dcs-spotify.megaphone.fm`, `dcs-cached.megaphone.fm` → **`*.megaphone.fm`** |
+| `dts.podtrac.com` | `traffic.libsyn.com` → `content.libsyn.com` → **`*.libsyn.com`** |
+| `adbarker.com` | `traffic.libsyn.com` → `content.libsyn.com` → **`*.libsyn.com`** |
+| `mcdn.podbean.com` | `s328`/`s332`/`s368`/`s381`.podbean.com → **`*.podbean.com`** |
+| `api.substack.com` | `substackcdn.com` |
+
+Three of these need a wildcard and two do not, which is the test to apply to the
+next one: name the literal host wherever the redirect is stable, and take the
+registrable domain only where the publisher's CDN picks a subdomain per request.
+Podbean is the clearest case — four sampled episodes went to four different
+numbered shards, so there is nothing to enumerate.
+
+A test requires every wildcard in the policy to have its domain named in this
+file, so one cannot be widened quietly.
+
 ### BibleProject audio — BUILT, NOT GRANTED
 
 **This capability is wired and must not ship until BibleProject grants it.**
@@ -259,13 +286,61 @@ scripture. Naked Bible works the opposite way, an episode at a time through a
 passage, and is the first corpus able to show whether any of it generalises or
 was only ever a description of BibleProject.
 
-What makes the capability narrower than "transcripts are allowed":
+### The second footing — public feed, added 2026-07-29
+
+Five sources were added on a different basis, and the difference is the point of
+writing this down. **They have not been asked.**
+
+| Source | id in code | Feed |
+|---|---|---|
+| Ask N.T. Wright Anything | `ask-nt-wright` | `feeds.megaphone.fm/NSR7466770103` |
+| 5 Minutes in Church History | `five-minutes-church-history` | `rss.libsyn.com/shows/116817/…` |
+| 40 Minutes in the Old Testament | `forty-minutes-ot` | `rss.libsyn.com/shows/62612/…` |
+| The Listener's Bible Commentary | `listeners-commentary` | `feed.podbean.com/listenerscommentary/feed.xml` |
+| Radically Christian | `radically-christian` | `api.substack.com/feed/podcast/2966200.rss` |
+
+The id column is not decoration: the test that holds this file and the code
+together matches on the identifier, so a show named here only in prose would
+read as undisclosed.
+
+The maintainer's position, recorded as theirs: a podcast RSS feed is published
+so that clients may consume it, the catalogue metadata taken from it is not the
+publisher's copyrightable work, and machine transcription is what every large
+podcast client already offers. On that reading this is the ordinary use a feed
+is for, and it proceeds without waiting.
+
+What that position does **not** say, and what this file exists to keep saying:
+
+- **It is not permission.** Permission is to be sought from each of these
+  publishers before any public listing, and honoured if refused.
+- **A takedown request is to be honoured on request**, per source, and the
+  per-source gate below is what makes that a one-line change rather than a hunt.
+- **The distinction must stay visible.** `TRANSCRIPT_SOURCES` records a basis
+  per id — `publisher-granted` or `public-feed` — and `TRANSCRIPT_UNASKED_SOURCES`
+  enumerates the second. That list is the agenda for the conversations still
+  owed; an empty one is the condition for a public listing. A test requires
+  every id to carry a basis, so a new source cannot arrive without stating which
+  footing it is on.
+
+The gate treats both footings alike on purpose — the enforcement is about
+whether a source is enabled at all. What is not allowed to blur is the record of
+*why* each one is, because the whole list quietly becoming "approved" in
+somebody's memory is exactly the failure the rest of this document is built to
+prevent.
+
+Nothing else moves. These sources take generic treatment — their name in type,
+no mark — because no mark is approved for any of them, and the rule that a mark
+ships only for an approved source is unchanged.
+
+### What the capability is
+
+What makes it narrower than "transcripts are allowed":
 
 - **Per source, enforced on data rather than intent.**
-  `TRANSCRIPT_APPROVED_SOURCES` in `src/core/transcripts.ts` names the granted
-  publishers, and a transcript whose record belongs to any other source is
-  refused before its file is read. An ungranted publisher's transcript cannot
-  be displayed by forgetting a check, because there is nothing to forget — the
+  `TRANSCRIPT_SOURCES` in `src/core/transcripts.ts` names every enabled
+  publisher, and a transcript whose record belongs to any other source is
+  refused before its file is read. A source that is not on the list cannot be
+  displayed by forgetting a check, because there is nothing to forget — the
   record id itself is refused.
 - **Machine transcripts declare themselves.** Every record carries
   `generated: true` and the model that produced it, and the loader refuses any

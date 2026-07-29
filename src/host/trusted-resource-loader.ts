@@ -44,6 +44,21 @@ export const TRUSTED_RESOURCE_SOURCES = [
      onto the main site part-way through and the older links were never
      rewritten, so allowing only one would break thirty-one episodes' cards. */
   { id: "spoken-gospel", officialHosts: ["www.spokengospel.com", "www.spokengospelpodcast.com"] },
+  /* Read from public feeds on 2026-07-29, on the footing recorded in
+     docs/trusted-resource-permissions under "the second footing". Each opens
+     only onto the hosts its own feed names. */
+  { id: "ask-nt-wright", officialHosts: ["askntwrightanything.podbean.com"] },
+  {
+    id: "five-minutes-church-history",
+    officialHosts: [
+      "www.5minutesinchurchhistory.com",
+      "5minutesinchurchhistory.libsyn.com",
+      "ligonier.org",
+    ],
+  },
+  { id: "forty-minutes-ot", officialHosts: ["40minot.libsyn.com"] },
+  { id: "listeners-commentary", officialHosts: ["listenerscommentary.podbean.com"] },
+  { id: "radically-christian", officialHosts: ["www.radicallychristian.com"] },
 ] as const;
 
 export const TRUSTED_RESOURCE_SOURCE_IDS = TRUSTED_RESOURCE_SOURCES.map((source) => source.id);

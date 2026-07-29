@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { readFileSyncInterruptible } from "./exec-sync.js";
 import { readReferences } from "../core/references.js";
-import { isTranscriptApprovedSource, transcriptKey } from "../core/transcripts.js";
+import { isTranscriptEnabledSource, transcriptKey } from "../core/transcripts.js";
 import type { ReferenceResult } from "../core/references.js";
 
 /**
@@ -22,7 +22,7 @@ export function referenceDirectory(libraryPath: string): string {
 }
 
 export function loadReferences(libraryPath: string, recordId: string): ReferenceResult {
-  if (!isTranscriptApprovedSource(recordId)) return { ok: false, reason: "ungranted" };
+  if (!isTranscriptEnabledSource(recordId)) return { ok: false, reason: "ungranted" };
 
   const path = join(referenceDirectory(libraryPath), `${transcriptKey(recordId)}.json`);
   /* Absence is ordinary — an episode may simply discuss no passage the reader

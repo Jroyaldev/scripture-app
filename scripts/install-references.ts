@@ -22,7 +22,7 @@
  */
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { TRANSCRIPT_APPROVED_SOURCES } from "../src/core/transcripts.js";
+import { TRANSCRIPT_ENABLED_SOURCES } from "../src/core/transcripts.js";
 
 const REPO = new URL("..", import.meta.url).pathname;
 const LIBRARY = join(process.env["HOME"] ?? "", "ScriptureLibrary");
@@ -91,7 +91,7 @@ const episodeFacts = new Map<string, EpisodeFacts>();
    than named again here — a source added to the grant and forgotten here would
    transcribe and extract perfectly and then have every moment silently dropped
    for want of an audio URL. */
-for (const sourceId of TRANSCRIPT_APPROVED_SOURCES) {
+for (const sourceId of TRANSCRIPT_ENABLED_SOURCES) {
   const dir = join(LIBRARY, ".artifacts/resources", sourceId);
   let sourceName = sourceId;
   try {

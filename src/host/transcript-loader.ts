@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { readFileSyncInterruptible } from "./exec-sync.js";
-import { isTranscriptApprovedSource, readTranscript, transcriptKey } from "../core/transcripts.js";
+import { isTranscriptEnabledSource, readTranscript, transcriptKey } from "../core/transcripts.js";
 import type { TranscriptResult } from "../core/transcripts.js";
 
 /**
@@ -21,7 +21,7 @@ export function loadTranscript(libraryPath: string, recordId: string): Transcrip
      granted them must have no path to a reader, and the cheapest way to
      guarantee that is to refuse the id rather than the contents — a file that
      is never opened cannot be displayed by a later mistake. */
-  if (!isTranscriptApprovedSource(recordId)) return { ok: false, reason: "ungranted" };
+  if (!isTranscriptEnabledSource(recordId)) return { ok: false, reason: "ungranted" };
 
   const path = join(transcriptDirectory(libraryPath), `${transcriptKey(recordId)}.json`);
   /* Absence is the ordinary answer, not a failure: almost every episode has no

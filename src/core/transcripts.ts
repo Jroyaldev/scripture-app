@@ -45,30 +45,62 @@ export interface Transcript {
 }
 
 /**
- * Publishers who have granted transcripts, and only those.
+ * On what footing each publisher's transcripts are here.
  *
- * BibleProject granted on 2026-07-28, conditioned on the transcriptions not
- * being mischaracterized — which is what `generated` and `model` below are for.
- * The Naked Bible Podcast granted the same day. Spoken Gospel granted on
- * 2026-07-29. Requests to the remaining publishers are outstanding; until one
- * is answered, adding its id here would be assuming an answer rather than
- * recording one.
+ *   publisher-granted   they were asked and they said yes
+ *   public-feed         their RSS feed was read the way any podcast client
+ *                       reads it, and they have not been asked
+ *
+ * The two are not the same claim and the list must not pretend they are. This
+ * was one list called APPROVED while every entry on it had actually been
+ * granted; once entries arrive on the other footing, a name saying "approved"
+ * is the lie, not the policy. So the basis travels with the id.
+ *
+ * `public-feed` is a deliberate position rather than an oversight: a podcast
+ * feed is published for clients to consume, catalogue metadata is not the
+ * publisher's copyrightable work, and transcription is what every large client
+ * already does. What it is NOT is permission. Every source on that footing is a
+ * conversation still to have, permission is still to be sought before any
+ * public listing, and a takedown is to be honoured on request — and this field
+ * is what makes "which ones have we not asked yet" a query rather than a memory.
  *
  * Kept as data rather than as a check somewhere in the loader so the refusal
- * cannot be forgotten: a source absent from this list has no path to being
+ * cannot be forgotten: a source absent from this map has no path to being
  * displayed, and `docs/trusted-resource-permissions.md` must name every id in
- * it — a test holds the two together.
+ * it and state its basis — a test holds the three together.
  */
-export const TRANSCRIPT_APPROVED_SOURCES: readonly string[] = [
-  "bibleproject",
-  "naked-bible",
-  "spoken-gospel",
-];
+export type TranscriptBasis = "publisher-granted" | "public-feed";
 
-/** Record ids are `${sourceId}:${kind}:${slug}`; the grant is per publisher. */
-export function isTranscriptApprovedSource(recordId: string): boolean {
+export const TRANSCRIPT_SOURCES: Readonly<Record<string, TranscriptBasis>> = {
+  /* Granted 2026-07-28, on the condition that the transcriptions are not
+     mischaracterized — which is what `generated` and `model` above are for. */
+  "bibleproject": "publisher-granted",
+  "naked-bible": "publisher-granted",
+  /* Granted 2026-07-29, under the publisher's non-commercial terms. */
+  "spoken-gospel": "publisher-granted",
+  /* Read from their public feeds on 2026-07-29. Not yet asked. */
+  "ask-nt-wright": "public-feed",
+  "five-minutes-church-history": "public-feed",
+  "forty-minutes-ot": "public-feed",
+  "listeners-commentary": "public-feed",
+  "radically-christian": "public-feed",
+};
+
+/** Every source whose transcripts may be read, on either footing. */
+export const TRANSCRIPT_ENABLED_SOURCES: readonly string[] = Object.keys(TRANSCRIPT_SOURCES);
+
+/** The sources nobody has asked yet. Empty is the condition for public listing. */
+export const TRANSCRIPT_UNASKED_SOURCES: readonly string[] = TRANSCRIPT_ENABLED_SOURCES
+  .filter((id) => TRANSCRIPT_SOURCES[id] === "public-feed");
+
+/** Record ids are `${sourceId}:${kind}:${slug}`; the footing is per publisher. */
+export function isTranscriptEnabledSource(recordId: string): boolean {
   const sourceId = recordId.split(":")[0] ?? "";
-  return TRANSCRIPT_APPROVED_SOURCES.includes(sourceId);
+  return sourceId in TRANSCRIPT_SOURCES;
+}
+
+export function transcriptBasis(recordId: string): TranscriptBasis | null {
+  return TRANSCRIPT_SOURCES[recordId.split(":")[0] ?? ""] ?? null;
 }
 
 export type TranscriptRefusal = "absent" | "unreadable" | "refused" | "ungranted";

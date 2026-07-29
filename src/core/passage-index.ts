@@ -28,7 +28,7 @@
  * rank.
  */
 
-import { isTranscriptApprovedSource } from "./transcripts.js";
+import { isTranscriptEnabledSource } from "./transcripts.js";
 import type { ReferenceRelation } from "./references.js";
 
 export interface PassageMoment {
@@ -187,7 +187,7 @@ export function readPassageIndex(parsed: unknown): PassageIndexResult {
     if (typeof e["chapter"] !== "number" || !Number.isFinite(e["chapter"])) continue;
     const moments = (Array.isArray(e["moments"]) ? e["moments"] : [])
       .filter(isMoment)
-      .filter((m) => isTranscriptApprovedSource(m.id))
+      .filter((m) => isTranscriptEnabledSource(m.id))
       /* Longest first, established here rather than trusted from the file. */
       .sort((a, b) => b.seconds - a.seconds);
     if (moments.length === 0) continue;

@@ -2,8 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
 import {
-  TRANSCRIPT_APPROVED_SOURCES,
-  isTranscriptApprovedSource,
+  TRANSCRIPT_SOURCES,
+  TRANSCRIPT_ENABLED_SOURCES,
+  TRANSCRIPT_UNASKED_SOURCES,
+  transcriptBasis,
+  isTranscriptEnabledSource,
   readTranscript,
   transcriptKey,
 } from "../src/core/transcripts.js";
@@ -101,17 +104,48 @@ test("a transcript missing its own id falls back to the record that asked", () =
  * — an ungranted publisher's transcript has no path to a reader even if one
  * were sitting on disk.
  */
-test("only a publisher who granted transcripts can have one loaded", () => {
-  assert.ok(isTranscriptApprovedSource("bibleproject:podcast:anything"));
-  assert.ok(isTranscriptApprovedSource("naked-bible:podcast:4192"));
-  for (const ungranted of [
+test("only an enabled source can have a transcript loaded", () => {
+  assert.ok(isTranscriptEnabledSource("bibleproject:podcast:anything"));
+  assert.ok(isTranscriptEnabledSource("naked-bible:podcast:4192"));
+  for (const off of [
     "working-preacher:commentary:whatever",
     "the-gospel-coalition:article:whatever",
     "enter-the-bible:article:whatever",
     "",
   ]) {
-    assert.equal(isTranscriptApprovedSource(ungranted), false, `${ungranted} has not granted`);
+    assert.equal(isTranscriptEnabledSource(off), false, `${off} is not an enabled source`);
   }
+});
+
+/**
+ * The footing is the part worth guarding now that there are two of them.
+ *
+ * A source read from a public feed and a source whose publisher said yes are
+ * different claims, and the danger is not that the wrong one is enforced — the
+ * gate treats them alike on purpose — but that the difference stops being
+ * visible and the whole list gets remembered as "approved". So every id must
+ * carry a basis, and the unasked ones must be enumerable: that list is the
+ * agenda for the permission conversations, and an empty one is the condition
+ * for a public listing.
+ */
+test("every source states its footing, and the unasked ones can be counted", () => {
+  for (const [id, basis] of Object.entries(TRANSCRIPT_SOURCES)) {
+    assert.ok(
+      basis === "publisher-granted" || basis === "public-feed",
+      `${id} carries no recognised basis`,
+    );
+    assert.equal(transcriptBasis(`${id}:podcast:x`), basis);
+  }
+  assert.equal(transcriptBasis("working-preacher:commentary:x"), null);
+  for (const granted of ["bibleproject", "naked-bible", "spoken-gospel"]) {
+    assert.equal(TRANSCRIPT_SOURCES[granted], "publisher-granted",
+      `${granted} was granted and the record must keep saying so`);
+    assert.ok(!TRANSCRIPT_UNASKED_SOURCES.includes(granted));
+  }
+  assert.deepEqual(
+    TRANSCRIPT_UNASKED_SOURCES,
+    TRANSCRIPT_ENABLED_SOURCES.filter((id) => TRANSCRIPT_SOURCES[id] === "public-feed"),
+  );
 });
 
 /**
@@ -120,21 +154,26 @@ test("only a publisher who granted transcripts can have one loaded", () => {
  * granted — the same failure the BUILT-NOT-GRANTED test exists to prevent for
  * audio, and the reason that test was written rather than trusted to memory.
  */
-test("every approved source is named in the permissions doc", () => {
+test("every enabled source is named in the permissions doc", () => {
   const doc = readFileSync("docs/trusted-resource-permissions.md", "utf-8");
   const amendment = doc.slice(doc.indexOf("## Transcripts"));
   assert.ok(amendment.length > 0, "the doc must carry a transcripts section");
   assert.match(amendment, /2026-07-28/, "the grant must carry the date it was given");
+  /* The doc must say the public-feed footing exists and what is owed under it.
+     A source read from a feed and never asked is the case a reader of this repo
+     is most likely to mistake for a grant, so the words have to be present. */
+  assert.match(amendment, /public.feed/i, "the doc must name the second footing");
+  assert.match(amendment, /takedown/i, "the doc must record what is owed on request");
   /* Compared with every non-letter removed on both sides, so an id written
      "naked-bible" still matches a doc that calls it the Naked Bible Podcast.
      The earlier form stripped hyphens from the id only, which made the two
      unmatchable and would have read as a missing disclosure. */
   const flatten = (text: string): string => text.toLowerCase().replace(/[^a-z]/g, "");
   const flatDoc = flatten(amendment);
-  for (const source of TRANSCRIPT_APPROVED_SOURCES) {
+  for (const source of TRANSCRIPT_ENABLED_SOURCES) {
     assert.ok(
       flatDoc.includes(flatten(source)),
-      `${source} is approved in code but not named in the permissions doc`,
+      `${source} is enabled in code but not named in the permissions doc`,
     );
   }
 });

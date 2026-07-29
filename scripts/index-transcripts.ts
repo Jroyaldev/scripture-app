@@ -42,7 +42,7 @@
 import { createHash } from "node:crypto";
 import { appendFileSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync, readSync, statSync, writeSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { isTranscriptApprovedSource, readTranscript, readingLines } from "../src/core/transcripts.js";
+import { isTranscriptEnabledSource, readTranscript, readingLines } from "../src/core/transcripts.js";
 import type { TranscriptLine } from "../src/core/transcripts.js";
 
 /** Long enough to hold an argument, short enough that a hit points somewhere. */
@@ -158,7 +158,7 @@ for (const file of files) {
   /* The same grant that gates display gates indexing. A publisher who has not
      granted transcripts should not have their words in a search index either —
      an index is a use, not a neutral intermediate. */
-  if (!isTranscriptApprovedSource(recordId)) { skippedUngranted += 1; continue; }
+  if (!isTranscriptEnabledSource(recordId)) { skippedUngranted += 1; continue; }
 
   const result = readTranscript(parsed, recordId);
   if (!result.ok) { skippedUnreadable += 1; continue; }

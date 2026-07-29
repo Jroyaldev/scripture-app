@@ -312,10 +312,56 @@ test("the shipped policy matches the served one, and names the audio host", () =
   );
   const renderer = served[0] as string;
   assert.match(renderer, /media-src 'self' https:\/\/nakedbiblepodcast\.com/);
-  assert.doesNotMatch(renderer, /media-src[^;]*\*/, "the media host must be named, never a wildcard");
+
+  /* This once required every media source to be a literal host, which was the
+     right rule while every one of them was a file server. Podcast CDNs are not:
+     traffic.megaphone.fm 302s to dcs-spotify or dcs-cached, and podbean shards
+     across numbered subdomains chosen per request. CSP re-checks the redirect
+     target, so a literal-only policy does not narrow anything — it just stops
+     the audio playing, which is how this was found.
+
+     What the rule was actually protecting is still protected, and is what is
+     asserted now: no source may be a bare scheme or a wildcard loose enough to
+     match hosts the publisher does not own. A wildcard must be `*.` followed by
+     a registrable domain of at least two labels, and every source must be
+     https. `https:`, `*`, `*.com` and `http://…` all still fail. */
+  const sources = (/media-src ([^;]+)/.exec(renderer)?.[1] ?? "")
+    .trim().split(/\s+/).filter((source) => source !== "'self'");
+  assert.ok(sources.length > 0, "the renderer policy must name its media sources");
+  for (const source of sources) {
+    assert.match(source, /^https:\/\/[^*]/u.test(source) ? /^https:\/\// : /^https:\/\/\*\./,
+      `${source} must be an https host or an https subdomain wildcard`);
+    const host = source.replace(/^https:\/\//, "");
+    if (!host.startsWith("*.")) continue;
+    const domain = host.slice(2);
+    assert.ok(
+      domain.split(".").length >= 2 && !domain.startsWith("*"),
+      `${source} widens past a single registrable domain`,
+    );
+  }
+  assert.doesNotMatch(renderer, /media-src[^;]*(?:^|\s)(?:\*|https:)(?:\s|$)/,
+    "a bare scheme or bare wildcard would permit any host alive");
+
   for (const policy of shipped) {
     if (policy === renderer) continue;
     assert.doesNotMatch(policy, /media-src/, "only the renderer needs a media host");
+  }
+});
+
+/**
+ * A wildcard in the policy is a claim about a publisher's delivery network, and
+ * the doc is where that claim has to be justified. Left unwritten, the next
+ * reader sees `*.something.com` and cannot tell a measured redirect chain from
+ * somebody widening the policy until the error stopped.
+ */
+test("every media wildcard is accounted for in the permissions doc", () => {
+  const page = readFileSync(join(root, "src/renderer/index.html"), "utf8");
+  const doc = readFileSync(join(root, "docs/trusted-resource-permissions.md"), "utf8");
+  const policy = /media-src ([^;]+)/.exec(page)?.[1] ?? "";
+  const wildcards = policy.split(/\s+/).filter((source) => source.includes("*."));
+  for (const source of wildcards) {
+    const domain = source.replace(/^https:\/\/\*\./, "");
+    assert.ok(doc.includes(domain), `${source} is in the policy but ${domain} is not explained in the doc`);
   }
 });
 
