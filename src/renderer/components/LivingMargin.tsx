@@ -437,10 +437,7 @@ function TaughtHereBlock({ moments, verse, onPlay }: {
     {
       key: "on",
       label: verse == null ? "On this chapter" : "On this passage",
-      items: verse == null ? [] : moments.filter((m) => {
-        const band = proximityOf(m, verse);
-        return band === "on" || band === "near";
-      }),
+      items: verse == null ? [] : moments.filter((m) => proximityOf(m, verse) === "on"),
     },
     {
       key: "whole",

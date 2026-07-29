@@ -80,15 +80,33 @@ export function verseSpan(verses: string | null): { from: number; to: number } |
 }
 
 /** How close a moment sits to the verse in hand. */
-export type Proximity = "on" | "near" | "chapter" | "whole";
+export type Proximity = "on" | "chapter" | "whole";
 
 /**
- * Close enough that a reader on one verse would want the other. Five is a
- * paragraph in most chapters — near enough to be the same thought, far enough
- * that everything does not collapse into one band.
+ * How far a moment's range sits from the verse, in verses. Zero when it
+ * contains it.
  */
-const NEAR_VERSES = 5;
+export function distanceFrom(moment: PassageMoment, verse: number | null): number {
+  const span = verseSpan(moment.verses);
+  if (!span || verse == null) return Number.POSITIVE_INFINITY;
+  if (verse >= span.from && verse <= span.to) return 0;
+  return verse < span.from ? span.from - verse : verse - span.to;
+}
 
+/**
+ * "On this passage" means ON it — the range contains the verse, and nothing
+ * else qualifies.
+ *
+ * An earlier version admitted anything within five verses, on the theory that
+ * a paragraph is about that long. Selecting Romans 8:8 then offered a
+ * discussion of 8:1-4 under a heading promising the passage in hand, which is
+ * a heading making a claim the entry does not meet. Five verses is also not one
+ * thought here: 8:1-4 and 8:5-8 are different arguments.
+ *
+ * Nearness did not stop mattering — it decides the order of everything that is
+ * not on the verse. It just cannot buy membership in a group whose name says
+ * otherwise.
+ */
 export function proximityOf(moment: PassageMoment, verse: number | null): Proximity {
   const span = verseSpan(moment.verses);
   /* No range means the episode took the chapter as a unit, which is a
@@ -97,9 +115,7 @@ export function proximityOf(moment: PassageMoment, verse: number | null): Proxim
      misses. */
   if (!span) return "whole";
   if (verse == null) return "chapter";
-  if (verse >= span.from && verse <= span.to) return "on";
-  const gap = verse < span.from ? span.from - verse : verse - span.to;
-  return gap <= NEAR_VERSES ? "near" : "chapter";
+  return distanceFrom(moment, verse) === 0 ? "on" : "chapter";
 }
 
 export function touchesVerse(moment: PassageMoment, verse: number | null): boolean {
@@ -205,10 +221,16 @@ export function momentsFor(
        must still show the chapter's real treatments, or selecting a line would
        empty a list that was full a moment earlier and read as a fault. Order
        within each band is unchanged — longest first. */
-    const order: Proximity[] = ["on", "near", "whole", "chapter"];
+    const order: Proximity[] = ["on", "whole", "chapter"];
     found = [...found].sort((a, b) => {
       const rank = order.indexOf(proximityOf(a, verse)) - order.indexOf(proximityOf(b, verse));
-      return rank !== 0 ? rank : b.seconds - a.seconds;
+      if (rank !== 0) return rank;
+      /* Within everything that is not on the verse, nearness leads and length
+         breaks the tie. Ordering that group by length alone put a discussion
+         four verses away above one immediately adjacent, on the strength of a
+         single extra minute. */
+      const near = distanceFrom(a, verse) - distanceFrom(b, verse);
+      return near !== 0 ? near : b.seconds - a.seconds;
     });
   }
   if (mutes.length === 0) return found;
