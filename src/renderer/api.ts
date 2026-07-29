@@ -1,6 +1,7 @@
 import type { AppMaterial, AppTheme } from "./theme.js";
 import type { Transcript, TranscriptRefusal } from "../core/transcripts.js";
 import type { ReferenceSet } from "../core/references.js";
+import type { PassageMoment } from "../core/passage-index.js";
 import type { EntityResearchData } from "../core/entities/place-research.js";
 import type {
   ConnectionAnchorV2,
@@ -119,6 +120,11 @@ declare global {
           | { ok: true; references: ReferenceSet }
           | { ok: false; reason: TranscriptRefusal }
         >;
+      };
+      passages: {
+        /* Empty is the ordinary answer — most chapters have nobody teaching
+           them, and that is not a failure to report. */
+        moments(book: string, chapter: number): Promise<{ ok: true; moments: PassageMoment[] }>;
       };
       trustedResources: {
         query(query: TrustedResourceQuery): Promise<

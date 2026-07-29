@@ -23,6 +23,7 @@ import {
   canonicalConnectionAnchors,
   compareConnectionsCanonical,
 } from "../../core/annotations/connection-order.js";
+import type { PassageMoment } from "../../core/passage-index.js";
 import { CONNECTION_ROUTE_SELECTED_STROKE } from "../utils/connectionGeometry.js";
 import type {
   ConnectionPaintAnchor,
@@ -388,6 +389,70 @@ function resourcePassageLabel(bref: string): string {
   if (end.book !== start.book) return `${head}–${end.book} ${end.chapter}${end.verse ? `:${end.verse}` : ""}`;
   if (end.chapter !== start.chapter) return `${head}–${end.chapter}${end.verse ? `:${end.verse}` : ""}`;
   return end.verse && end.verse !== start.verse ? `${head}–${end.verse}` : head;
+}
+
+/**
+ * Who has taught this chapter, and where in the episode.
+ *
+ * The inverse of the dock's own list, and the read a reader arrives with: not
+ * "what does this episode cover" but "I am here, who has worked through it".
+ *
+ * Ordered by how long the discussion runs, and by nothing else. Two publishers
+ * with opposite formats were measured, and the two obvious alternatives both
+ * described the publisher rather than the passage — share of an episode depends
+ * on how long the episode is, and what a show calls its "subject" depends on
+ * how it makes episodes. Duration is the quantity that meant the same thing in
+ * both: eleven minutes is eleven minutes whoever recorded it.
+ *
+ * The relation rides along as a label because a reader wants to know whether a
+ * passage was worked through or glanced at — but it never decides an order.
+ */
+function TaughtHereBlock({ moments, onPlay }: {
+  moments: readonly PassageMoment[];
+  onPlay: (moment: PassageMoment) => void;
+}): React.ReactElement {
+  /* Nothing at all rather than an empty state. Most chapters have nobody
+     teaching them, and a heading over a blank space says something went wrong
+     when nothing did. */
+  if (moments.length === 0) return <></>;
+
+  /* Enough to choose from, not so many that choosing becomes the work. The
+     tail is real and stays reachable through the count. */
+  const shown = moments.slice(0, 4);
+  const clock = (s: number): string =>
+    `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
+  const extent = (s: number): string =>
+    (s >= 60 ? `${Math.round(s / 60)} min` : `${Math.max(1, Math.round(s))}s`);
+
+  return (
+    <section className="taught-here" aria-labelledby="taught-here-title">
+      <header className="taught-here-masthead">
+        <span className="taught-here-kicker">From the transcripts</span>
+        <h3 id="taught-here-title">Taught here</h3>
+      </header>
+      <ul className="taught-here-list">
+        {shown.map((m) => (
+          <li key={`${m.id}-${m.at}`}>
+            <button className="taught-here-row" onClick={() => onPlay(m)} type="button">
+              {/* Extent first, because it is what a reader is choosing on —
+                  eleven minutes and forty seconds are different offers. */}
+              <span className="taught-here-extent">{extent(m.seconds)}</span>
+              <span className="taught-here-body">
+                <span className="taught-here-episode">{m.episode}</span>
+                <span className="taught-here-meta">
+                  {m.sourceName} · {clock(m.at)}
+                  {m.relation !== "subject" && ` · ${m.relation === "allusion" ? "alluded" : m.relation}`}
+                </span>
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      {moments.length > shown.length && (
+        <p className="taught-here-more">{moments.length - shown.length} more in the library</p>
+      )}
+    </section>
+  );
 }
 
 function TrustedResourcesBlock({
@@ -3300,6 +3365,11 @@ export function LivingMargin({
    *  message, not a state. */
   const [deepNotesAttempt, setDeepNotesAttempt] = useState(0);
   const [trustedResources, setTrustedResources] = useState<RankedTrustedResource[]>([]);
+  /* Who has taught this chapter. Keyed on book and chapter rather than on the
+     narrower bref the resource query uses: references are recorded against
+     chapters, so asking per verse would return nothing for most verses and
+     read to a reader as "nobody teaches this". */
+  const [taughtHere, setTaughtHere] = useState<PassageMoment[]>([]);
   const [trustedResourceTotal, setTrustedResourceTotal] = useState(0);
   const [trustedResourcesHidden, setTrustedResourcesHidden] = useState(0);
   /* Bumped when the reader changes a filter, so the effect refetches: the
@@ -3654,6 +3724,18 @@ export function LivingMargin({
   const nearRef = nearVerse != null ? `${displayBook} ${chapter}:${nearVerse}` : "";
   const contextReference = isPinned ? pinnedRef : isNear ? nearRef : `${displayBook} ${chapter}`;
   const chapterEndVerse = Math.max(1, ...Array.from(chapterVerseText?.keys() ?? []));
+
+  /* Chapter-granular, and keyed only on book and chapter — moving between
+     verses inside a chapter must not re-ask, because the answer cannot change
+     and a reader scrolling would otherwise fire this on every line. */
+  useEffect(() => {
+    let cancelled = false;
+    void safeCall(() => window.api.passages.moments(book, chapter)).then((result) => {
+      if (cancelled) return;
+      setTaughtHere(result.ok && result.value.ok ? result.value.moments : []);
+    });
+    return () => { cancelled = true; };
+  }, [book, chapter]);
   const trustedResourceBref = pinnedRange
     ? `bref:v1/${book}.${chapter}.${pinnedRange.start}${pinnedRange.end === pinnedRange.start ? "" : `-${book}.${chapter}.${pinnedRange.end}`}`
     : nearVerse != null
@@ -4440,6 +4522,21 @@ export function LivingMargin({
               onOpenEntity={onOpenEntity}
             />
             <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} catalogue={trustedResourceCatalogue} onOpenSettings={onOpenResourceSettings} onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)} />
+            <TaughtHereBlock
+              moments={taughtHere}
+              onPlay={(m) => playPodcastEpisode({
+                id: `${m.sourceId}:${m.id}`,
+                sourceId: m.sourceId,
+                recordId: m.id,
+                sourceName: m.sourceName,
+                title: m.episode,
+                officialUrl: m.officialUrl,
+                audioUrl: m.audioUrl,
+                bref: `bref:v1/${book}.${chapter}.1`,
+                kind: m.kind,
+                startAt: m.at,
+              })}
+            />
           </section>
 
           <section
@@ -4555,6 +4652,21 @@ export function LivingMargin({
               onOpenEntity={onOpenEntity}
             />
             <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} catalogue={trustedResourceCatalogue} onOpenSettings={onOpenResourceSettings} onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)} />
+            <TaughtHereBlock
+              moments={taughtHere}
+              onPlay={(m) => playPodcastEpisode({
+                id: `${m.sourceId}:${m.id}`,
+                sourceId: m.sourceId,
+                recordId: m.id,
+                sourceName: m.sourceName,
+                title: m.episode,
+                officialUrl: m.officialUrl,
+                audioUrl: m.audioUrl,
+                bref: `bref:v1/${book}.${chapter}.1`,
+                kind: m.kind,
+                startAt: m.at,
+              })}
+            />
           </section>
 
           <section
@@ -4673,6 +4785,21 @@ export function LivingMargin({
               onOpenEntity={onOpenEntity}
             />
             <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} catalogue={trustedResourceCatalogue} onOpenSettings={onOpenResourceSettings} onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)} />
+            <TaughtHereBlock
+              moments={taughtHere}
+              onPlay={(m) => playPodcastEpisode({
+                id: `${m.sourceId}:${m.id}`,
+                sourceId: m.sourceId,
+                recordId: m.id,
+                sourceName: m.sourceName,
+                title: m.episode,
+                officialUrl: m.officialUrl,
+                audioUrl: m.audioUrl,
+                bref: `bref:v1/${book}.${chapter}.1`,
+                kind: m.kind,
+                startAt: m.at,
+              })}
+            />
           </section>
 
           <section

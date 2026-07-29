@@ -72,6 +72,15 @@ export interface PodcastEpisode {
   kind: string;
   /** Optional, and currently never supplied — see PodcastChapter. */
   chapters?: PodcastChapter[];
+  /**
+   * Where to begin, in seconds.
+   *
+   * Set when an episode is opened from a passage rather than from its card: a
+   * reader who pressed "eleven minutes on Romans 8" asked for that discussion,
+   * not for the top of a ninety-minute file. Absent, playback starts where it
+   * always did.
+   */
+  startAt?: number;
 }
 
 /**
@@ -160,8 +169,21 @@ export function playPodcastEpisode(episode: PodcastEpisode): void {
     return;
   }
   transport.src = episode.audioUrl;
-  announceElapsed(0, 0);
+  announceElapsed(episode.startAt ?? 0, 0);
   announceNowPlaying({ episode, status: "reaching" });
+  /* Seeking has to wait for the element to know how long the file is — a
+     currentTime set against an unloaded source is discarded, and the episode
+     would open at the top having appeared to accept the instruction. */
+  if (episode.startAt && episode.startAt > 0) {
+    const element = transport;
+    const seekOnce = (): void => {
+      element.removeEventListener("loadedmetadata", seekOnce);
+      if (Number.isFinite(element.duration)) {
+        element.currentTime = Math.min(episode.startAt!, element.duration);
+      }
+    };
+    element.addEventListener("loadedmetadata", seekOnce);
+  }
   void transport.play().catch(() => announceNowPlaying({ episode, status: "failed" }));
 }
 

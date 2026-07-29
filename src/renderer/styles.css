@@ -18951,6 +18951,95 @@ button.lang-phrase-diagram-node:focus-visible,
    pairs a 28px tail with a 27px head across a subtle hairline, and this group
    sat at 18px against a heavier rule, reading as a different kind of object
    than the sections above it. */
+/* Taught here. The same masthead grammar as the resource block below it —
+   kicker, rule, name — because they are two answers to one question and a
+   second visual language would read as a second kind of thing. What differs is
+   the row: this one leads with duration, since that is what a reader is
+   choosing on. */
+.taught-here {
+  margin-top: 27px;
+  border-top: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.taught-here-masthead {
+  display: grid;
+  gap: 2px;
+  padding: 11px 0 9px;
+  border-bottom: 3px solid var(--text-primary);
+}
+
+.taught-here-kicker {
+  color: var(--text-tertiary);
+  font: var(--fw-semibold) 0.5625rem/1.2 var(--font-ui);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.taught-here-masthead h3 {
+  margin: 0;
+  font: var(--fw-bold) 1rem/1.1 var(--font-ui);
+  letter-spacing: -0.025em;
+}
+
+.taught-here-list {
+  margin: 0;
+  padding: 4px 0 0;
+  list-style: none;
+}
+
+.taught-here-row {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 6px;
+  border: 0;
+  border-radius: var(--radius-pebble);
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.taught-here-row:hover { background: var(--surface-hover); }
+
+/* Duration first and in the numeral face: it is the comparison being made, and
+   eleven minutes against forty seconds is the whole decision. */
+.taught-here-extent {
+  color: var(--text-primary);
+  font: var(--fw-semibold) 0.75rem/1.3 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.taught-here-body {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.taught-here-episode {
+  overflow: hidden;
+  font: var(--fw-medium) 0.8125rem/1.35 var(--font-reading);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.taught-here-meta {
+  color: var(--text-tertiary);
+  font: 0.6875rem/1.35 var(--font-ui);
+}
+
+.taught-here-more {
+  margin: 2px 0 0;
+  padding: 0 6px;
+  color: var(--text-tertiary);
+  font: 0.6875rem/1.4 var(--font-ui);
+}
+
 .trusted-resources {
   margin-top: 27px;
   border-top: 1px solid var(--border-subtle);

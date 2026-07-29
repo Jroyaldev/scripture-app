@@ -11,6 +11,7 @@ import { appendFileSync, existsSync, mkdirSync, readdirSync, unlinkSync, writeFi
 import { readFileSyncInterruptible } from "../host/exec-sync.js";
 import { loadTranscript } from "../host/transcript-loader.js";
 import { loadReferences } from "../host/reference-loader.js";
+import { loadPassageMoments } from "../host/passage-index-loader.js";
 import { createRequire } from "node:module";
 import { createHash } from "node:crypto";
 import ElectronStore from "electron-store";
@@ -2483,6 +2484,18 @@ function registerIpcHandlers(): void {
       return { ok: false as const, reason: "refused" as const };
     }
     return loadReferences(getLibraryPath(), recordId);
+  });
+
+  /* Who has taught this chapter, longest treatment first. Chapter-granular
+     because references are recorded against chapters; asking per verse would
+     return nothing for most verses and read as "nobody teaches this". */
+  registerRuntimeReadIpc("passage-moments", (_event, input: unknown) => {
+    if (typeof input !== "object" || input === null) return { ok: true as const, moments: [] };
+    const { book, chapter } = input as { book?: unknown; chapter?: unknown };
+    if (typeof book !== "string" || typeof chapter !== "number" || !Number.isFinite(chapter)) {
+      return { ok: true as const, moments: [] };
+    }
+    return loadPassageMoments(getLibraryPath(), book, chapter);
   });
 
   registerRuntimeReadIpc("trusted-resources-catalogue", () => {

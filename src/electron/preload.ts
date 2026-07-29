@@ -143,6 +143,9 @@ const api = {
   references: {
     load: (recordId: string) => ipcRenderer.invoke("references-load", { recordId }),
   },
+  passages: {
+    moments: (book: string, chapter: number) => ipcRenderer.invoke("passage-moments", { book, chapter }),
+  },
   trustedResources: {
     query: (query: TrustedResourceQuery) => ipcRenderer.invoke("trusted-resources-query", query),
     catalogue: () => ipcRenderer.invoke("trusted-resources-catalogue"),

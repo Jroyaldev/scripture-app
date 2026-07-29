@@ -51,6 +51,28 @@ interface Raw {
 
 const rows = readFileSync(SOURCE, "utf-8").trim().split("\n").map((l) => JSON.parse(l) as Raw);
 
+/* Enough of each episode for a moment to be pressed rather than merely read.
+   Carried into the index at build time rather than looked up in the renderer:
+   the alternative is the margin holding every publisher's catalogue in memory
+   to resolve a title, which is a lot of machinery to avoid copying four
+   fields. */
+interface EpisodeFacts { episode: string; sourceId: string; sourceName: string; audioUrl: string; officialUrl: string; kind: string }
+const episodeFacts = new Map<string, EpisodeFacts>();
+for (const sourceId of ["bibleproject", "naked-bible"]) {
+  try {
+    const m = JSON.parse(readFileSync(
+      join(LIBRARY, ".artifacts/resources", sourceId, "manifest.json"), "utf-8",
+    )) as { source: { name: string }; records: Array<Record<string, string>> };
+    for (const r of m.records) {
+      if (!r["audioUrl"]) continue;
+      episodeFacts.set(r["id"]!, {
+        episode: r["title"] ?? r["id"]!, sourceId, sourceName: m.source.name,
+        audioUrl: r["audioUrl"], officialUrl: r["officialUrl"] ?? "", kind: r["kind"] ?? "podcast",
+      });
+    }
+  } catch { /* a source with no installed manifest simply contributes none */ }
+}
+
 const RELATIONS = new Set(["subject", "crossref", "mention", "allusion"]);
 const byEpisode = new Map<string, Raw[]>();
 let refused = 0;
@@ -126,7 +148,74 @@ for (const [recordId, raws] of byEpisode) {
   }
 }
 
+/* The inverse index: for each chapter, which episodes teach it and where.
+ *
+ * This is the read that matters. Episode -> passages is a footnote list on
+ * something a reader already chose; passage -> moments answers the question
+ * they actually arrive with — I am reading Romans 8, who has taught this.
+ *
+ * Ranked by SECONDS, and by nothing else. Two publishers with opposite formats
+ * were measured: share of episode and relation counts both swing wildly between
+ * them (a "subject" runs 102 seconds on one and 435 on the other), while the
+ * duration distributions sit almost on top of each other — median 36s against
+ * 30s. Seconds is the one quantity that means the same thing in both, so it is
+ * the only one safe to rank across publishers on.
+ *
+ * Relation rides along as a label. It says what KIND of engagement a moment is,
+ * which is worth showing; it just cannot order anything, because what a
+ * publisher calls a subject depends on how that publisher makes episodes.
+ */
+const inverse = new Map<string, Array<Record<string, unknown>>>();
+for (const [recordId, raws] of byEpisode) {
+  const best = new Map<string, Raw>();
+  for (const row of raws) {
+    const key = `${row.book}.${row.chapter}`;
+    const held = best.get(key);
+    if (!held || row.seconds > held.seconds) best.set(key, row);
+  }
+  for (const [key, row] of best) {
+    const list = inverse.get(key) ?? [];
+    const facts = episodeFacts.get(recordId);
+    if (!facts) continue;
+    list.push({
+      id: recordId,
+      ...facts,
+      at: Math.round(row.at),
+      seconds: Math.max(0, Math.round(row.seconds)),
+      relation: row.relation,
+      title: `${label(row.book)} ${row.chapter}${row.verses ? `:${row.verses}` : ""}`,
+    });
+    inverse.set(key, list);
+  }
+}
+
+const index = [...inverse.entries()]
+  .map(([key, moments]) => {
+    const [book, chapter] = key.split(".");
+    return {
+      bref: `bref:v1/${book}.${chapter}.1`,
+      book,
+      chapter: Number(chapter),
+      /* Longest first, and no cut — a reader asking who teaches a passage is
+         better served by a short honest list than a padded one, and the
+         shortest entries are still true. */
+      moments: moments.sort((a, b) => Number(b["seconds"]) - Number(a["seconds"])),
+    };
+  })
+  .sort((a, b) => a.book.localeCompare(b.book) || a.chapter - b.chapter);
+
+if (!dryRun) {
+  writeFileSync(join(LIBRARY, ".artifacts", "passage-index.json"), `${JSON.stringify({
+    schema: "passage-index/v1",
+    generated: true,
+    ranking: "seconds",
+    chapters: index.length,
+    index,
+  })}\n`);
+}
+
 console.log(`${rows.length} extracted -> ${entries} entries across ${byEpisode.size} episodes`);
+console.log(`  inverse index:   ${index.length} chapters, ${index.reduce((n, c) => n + c.moments.length, 0)} moments`);
 console.log(`  folded repeats:  ${rows.length - entries - refused}`);
 console.log(`  refused:         ${refused}`);
 console.log(`  per episode:     ${(entries / byEpisode.size).toFixed(1)}`);
