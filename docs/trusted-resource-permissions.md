@@ -183,11 +183,28 @@ page; neither is enabled, and each would need its own decision.
 Approved for Spoken Gospel on 2026-07-29. Like BibleProject, its pages and its
 audio belong to different parties — episodes live on `www.spokengospel.com` and
 `www.spokengospelpodcast.com`, and all 295 enclosures are `audio/mpeg` on
-`traffic.megaphone.fm`. So the source declares that one media host and the
-renderer's policy names it in `media-src`, in both copies of the policy. Two
-page hosts rather than one is not sloppiness: the show moved domains part-way
-through its run and the older episodes' links were never rewritten, so allowing
-only the current one would break thirty-one episodes' cards.
+`traffic.megaphone.fm`. So the source declares that one media host. Two page
+hosts rather than one is not sloppiness: the show moved domains part-way through
+its run and the older episodes' links were never rewritten, so allowing only the
+current one would break thirty-one episodes' cards.
+
+**`media-src` names `https://*.megaphone.fm`, and this is the first wildcard in
+the policy.** It is here because `traffic.megaphone.fm` is a router rather than
+a file server: every request 302s to whichever delivery host Megaphone picks at
+that moment — `dcs-spotify.megaphone.fm` and `dcs-cached.megaphone.fm` in twelve
+sampled episodes, and there is no reason to think those are all of them. CSP
+re-checks the redirect target, so naming only the URL we store means every
+episode fails to play, which is what happened: `networkState` 3, no source, and
+a player saying it could not reach the episode.
+
+Enumerating today's two would be a policy that works until Megaphone adds a
+third, and it would fail silently for some episodes and not others. What was
+refused before, and is still refused, is widening to a *scheme* — `https:` would
+permit any host on the internet. One registrable domain, belonging to the media
+host the publisher declared, is a different and much smaller thing. The
+narrowest honest statement of where this publisher's audio lives is
+`*.megaphone.fm`, because the publisher's own CDN decides the subdomain per
+request.
 
 ### BibleProject audio — BUILT, NOT GRANTED
 

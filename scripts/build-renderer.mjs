@@ -95,7 +95,7 @@ await writeFile(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; media-src 'self' https://nakedbiblepodcast.com https://afp-597195-injected.calisto.simplecastaudio.com https://traffic.megaphone.fm">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; media-src 'self' https://nakedbiblepodcast.com https://afp-597195-injected.calisto.simplecastaudio.com https://traffic.megaphone.fm https://*.megaphone.fm">
   <title>Pericope</title>
 ${cssTag}</head>
 <body>
