@@ -54,7 +54,12 @@ test("the workspace exposes approval-returning callbacks for every tab and group
 
 test("one global APG tablist contains tabs and collapsed proxies with one roving stop", () => {
   assert.equal([...componentSource.matchAll(/role="tablist"/g)].length, 1);
-  const tablist = section(componentSource, 'role="tablist"', '<div className="scripture-workspace-actions"');
+  /* Ends where the tablist ends, not where the toolbar begins. The inline
+     new-tab plus now sits between the two, and it is a button — so a range that
+     ran on to the toolbar swept it in and failed the claim below for a control
+     that is correctly OUTSIDE the tablist. The claim is unchanged: a tablist
+     holds tabs and proxies and nothing else. */
+  const tablist = section(componentSource, 'role="tablist"', "{/* The new-tab plus, against the last tab");
   assert.match(tablist, /groups\.flatMap/);
   assert.match(tablist, /role="tab"/);
   assert.match(tablist, /role="presentation"/);
@@ -93,15 +98,58 @@ test("the fixed toolbar stays small and exposes one active-group menu, Open, rec
   assert.match(toolbar, /data-study-active-group-manage/);
   assert.equal([...toolbar.matchAll(/data-study-active-group-manage/g)].length, 1);
   assert.doesNotMatch(toolbar, /groups\.map/);
-  assert.match(toolbar, /data-study-open=""/);
-  // The Open control now carries an inline stroke glyph, not the "+" character.
-  assert.match(toolbar, /<span aria-hidden="true"><PlusGlyph \/><\/span><span>Open<\/span>/);
+  /* Open LEFT this toolbar on 2026-07-29 and now sits inline against the last
+     tab, which is where every browser puts the control that makes a tab. It had
+     been filed here with the save status and the overflow menu — the one
+     control that CREATES a tab, grouped behind a border-left with the two that
+     report on tabs — so a reader looking where the pattern says to look found
+     nothing there.
+
+     What this test is for survives: the toolbar stays small, and holds exactly
+     one active-group menu and one All Tabs. Open's placement is asserted
+     against the strip instead, below. */
+  assert.doesNotMatch(toolbar, /data-study-open=""/,
+    "Open belongs against the tabs now, not in the cluster that reports on them");
   // The standalone reopen button is gone from the at-rest cluster; recovery now
   // lives entirely inside the All Tabs overflow.
   assert.doesNotMatch(toolbar, /data-study-reopen-recent/);
   assert.doesNotMatch(toolbar, /scripture-workspace-reopen/);
   assert.match(toolbar, /data-study-all-tabs/);
   assert.match(componentSource, />Study or question<\/label>/);
+});
+
+/**
+ * The new-tab control sits against the tabs, and says so without a word.
+ *
+ * Two claims, and the second is the one that decays: that there is exactly ONE
+ * of it — a second Open anywhere would be two answers to "how do I open a tab"
+ * — and that it is the glyph alone. The label went with the move: behind a
+ * divider "Open" was carrying the meaning, and in the row the plus is already
+ * unambiguous, so the word became 38px of chrome repeating the icon. The
+ * accessible name is what keeps the sentence, and it is asserted here because
+ * an icon-only control that loses its name is unusable rather than merely terse.
+ */
+test("one new-tab control, inline with the strip, glyph only, and still named", () => {
+  const opens = [...componentSource.matchAll(/data-study-open=""/g)];
+  assert.equal(opens.length, 1, "exactly one control opens a tab");
+
+  const strip = section(
+    componentSource,
+    "{/* The new-tab plus, against the last tab",
+    '<div className="scripture-workspace-actions"',
+  );
+  assert.match(strip, /data-study-open=""/, "it is rendered in the strip, before the toolbar");
+  assert.match(strip, /className="scripture-workspace-open is-inline"/);
+  assert.match(strip, /<span aria-hidden="true"><PlusGlyph \/><\/span>/);
+  assert.doesNotMatch(strip, /<span>Open<\/span>/, "the glyph carries it; the word repeated it");
+  assert.match(strip, /aria-label="Open a new study tab"/, "an icon-only control keeps its name");
+  assert.match(strip, /data-study-open-disabled=\{atTabCapacity \|\| undefined\}/);
+
+  // And it is a square seated on the tabs' own baseline, not a pill in the band.
+  const inline = section(stylesSource, ".scripture-workspace-open.is-inline {", "}");
+  assert.match(inline, /align-self: flex-end;/);
+  assert.match(inline, /width: 28px;/);
+  assert.match(inline, /height: 28px;/);
 });
 
 test("the strip and its popovers use custom menus and shared tooltips, never native selects", () => {

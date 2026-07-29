@@ -1189,6 +1189,28 @@ export function ScriptureWorkspaceTabs({
         ))}
       </div>
 
+      {/* The new-tab plus, against the last tab rather than across the bar.
+          It used to sit inside the actions toolbar, which is on the far side of
+          a border-left with the save status and the overflow menu — so the one
+          control that makes a tab was grouped with the controls that report on
+          them, and a reader looking where every browser puts it found nothing.
+          Here it reads as the end of the row it extends. */}
+      <Tooltip label={openTooltip}>
+        <button
+          type="button"
+          className="scripture-workspace-open is-inline"
+          data-study-open=""
+          data-study-open-tab=""
+          data-study-open-disabled={atTabCapacity || undefined}
+          aria-disabled={atTabCapacity || undefined}
+          aria-label="Open a new study tab"
+          onMouseDown={deferMouseFocus}
+          onClick={() => { if (!atTabCapacity) onNewResearch(); }}
+        >
+          <span aria-hidden="true"><PlusGlyph /></span>
+        </button>
+      </Tooltip>
+
       <div className="scripture-workspace-actions" role="toolbar" aria-label="Study tab controls">
         <span
           className={`scripture-workspace-persistence is-${persistenceStatus.phase}`}
@@ -1241,21 +1263,6 @@ export function ScriptureWorkspaceTabs({
             </button>
           </Tooltip>
         )}
-        <Tooltip label={openTooltip}>
-          <button
-            type="button"
-            className="scripture-workspace-open"
-            data-study-open=""
-            data-study-open-tab=""
-            data-study-open-disabled={atTabCapacity || undefined}
-            aria-disabled={atTabCapacity || undefined}
-            aria-label="Open a new study tab"
-            onMouseDown={deferMouseFocus}
-            onClick={() => { if (!atTabCapacity) onNewResearch(); }}
-          >
-            <span aria-hidden="true"><PlusGlyph /></span><span>Open</span>
-          </button>
-        </Tooltip>
         {(groups.length > 0 || hasMeasuredOverflow) && (
           <Tooltip label="All study tabs and groups">
             <button

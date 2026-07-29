@@ -2106,6 +2106,57 @@ html, body, #root {
   font: 500 11px/1 var(--font-ui);
 }
 
+/* Inline against the last tab, which is where every browser puts the control
+   that makes a tab.
+   A square rather than a labelled button: the word "Open" was carrying the
+   meaning while the button sat behind a divider with the save status, and in
+   the row itself the plus is unambiguous and the label is 38px of chrome
+   repeating what the glyph says. The accessible name keeps the sentence.
+
+   Sized and seated on the tab's own terms — the strip's height, the tab's
+   radius on the top corners only, and flex-end so it sits on the same baseline
+   the tabs grow from rather than floating in the band. */
+.scripture-workspace-open.is-inline {
+  flex: 0 0 auto;
+  align-self: flex-end;
+  display: inline-grid;
+  place-items: center;
+  gap: 0;
+  width: 28px;
+  height: 28px;
+  margin: 0 0 3px 4px;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.scripture-workspace-open.is-inline:hover {
+  background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+  color: var(--text-primary);
+}
+
+.scripture-workspace-open.is-inline:focus-visible {
+  outline: 2px solid var(--accent-seal);
+  outline-offset: 2px;
+}
+
+/* At capacity it stays put and stops responding, rather than leaving the row.
+   A control that vanishes at the limit teaches that the limit is a bug. */
+.scripture-workspace-open.is-inline[data-study-open-disabled] {
+  opacity: 0.38;
+  cursor: default;
+}
+
+.scripture-workspace-open.is-inline[data-study-open-disabled]:hover {
+  background: none;
+  color: var(--text-tertiary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scripture-workspace-open.is-inline { transition: none; }
+}
+
 .scripture-workspace-open[aria-disabled="true"] {
   color: var(--text-tertiary);
   cursor: default;
