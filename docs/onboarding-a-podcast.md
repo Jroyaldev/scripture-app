@@ -1,12 +1,20 @@
 # Onboarding a podcast
 
 Everything needed to take a publisher from "has audio" to "appears in the
-margin with timestamped passage references". Written after doing it twice —
-BibleProject (528 episodes, 495 hours) and the Naked Bible Podcast (230
-episodes, 222 hours) — so the order below is the order that worked, and the
-warnings are things that actually went wrong rather than things that might.
+margin with timestamped passage references". Written after doing it three
+times — BibleProject (528 episodes, 495 hours), the Naked Bible Podcast (230
+episodes, 222 hours) and Spoken Gospel (295 episodes, 254 hours) — so the order
+below is the order that worked, and the warnings are things that actually went
+wrong rather than things that might.
 
 Roughly three hours of wall time per 500 episodes, and about $3 of GPU.
+
+**Paths here are examples, not defaults worth trusting.** The scripts still fall
+back to `/Volumes/External/Transcripts`, an external drive that is not always
+mounted; every one of them takes an explicit path, and `~/Transcripts` is what
+the last run used. What must not move is the library — `~/ScriptureLibrary`,
+never anywhere iCloud syncs, because SQLite on synced storage is what caused the
+freezes.
 
 ---
 
@@ -34,19 +42,40 @@ audio grant, which is separate and may predate the transcript grant.
 
 ---
 
-## 1. Inventory
+## 1. Import, then inventory
 
 ```bash
-node pipelines/transcription/build_inventory.mjs --source <sourceId>
+node --import tsx scripts/import-spoken-gospel-resources.ts        # or the publisher's own
+node pipelines/transcription/build_inventory.mjs --source <sourceId> \
+  --out ~/Transcripts/<source>-inventory.json \
+  --durations ~/Transcripts/<source>-durations.json
 ```
 
-Reads the installed resource manifest and writes the pipeline's input contract
-to `/Volumes/External/Transcripts/<source>-inventory.json`. The pipeline never
-reads the manifest directly — that is user data with its own schema and refusal
-rules, and a job on a rented GPU has no business depending on any of it.
+The importer writes into `<library>/.artifacts/resources/<source>/`, and for a
+feed-based publisher it writes **two** files:
 
-Everything downstream keys on the manifest's record id, which is what makes a
-transcript re-attachable and makes "already done" an unambiguous question.
+- `manifest.json` — episodes whose title states a passage. This is the card
+  catalogue, and a record cannot exist without `brefs`.
+- `episodes.json` — every episode with audio. This is the audio catalogue.
+
+**They are not the same list, and conflating them loses episodes silently.**
+The pipeline used to build its inventory from the manifest, which meant "did the
+publisher's title name a passage" was quietly deciding "does this episode have
+speech in it". Spoken Gospel states a passage in 253 of 295 titles; the other 42
+are Holy Week episodes, interviews and Q&As that discuss scripture for an hour
+apiece. `build_inventory` prefers `episodes.json` where it exists and falls back
+to the manifest where it does not, which is what the first two publishers ran
+on.
+
+Whether an episode deserves a card and whether it deserves a transcript are
+different questions. The card asks what the publisher said it was about; the
+reference extraction answers that far better by listening.
+
+The pipeline still never reads the manifest directly — that is user data with
+its own schema and refusal rules, and a job on a rented GPU has no business
+depending on any of it. Everything downstream keys on the record id, which is
+what makes a transcript re-attachable and "already done" an unambiguous
+question.
 
 ---
 
@@ -65,14 +94,29 @@ node pipelines/transcription/probe_durations.mjs \
 A dead URL found here costs nothing. Found mid-run it costs a container, a
 retry, and money.
 
-**The bitrate trap, which caught me twice.** `probe_audio` derives duration from
-`Content-Length` assuming 128kbps. When the real bitrate differs, every episode
-looks like it carries the wrong recording — at a suspiciously constant ratio.
-BibleProject had twelve 96kbps files (ratio 0.75 = 96/128); Naked Bible is
-almost entirely 64kbps (ratio 0.52). **A constant ratio is the assumption being
-wrong, not the data.** `probe_durations` reads the container with ffprobe and
-needs no assumption; trust it and re-run `build_inventory` afterwards so the
-measured durations land in the inventory.
+**The bitrate trap, which has now caught me three times.** `probe_audio` derives
+duration from `Content-Length` assuming 128kbps. When the real bitrate differs,
+every episode looks like it carries the wrong recording — at a suspiciously
+constant ratio. BibleProject had twelve 96kbps files (ratio 0.75 = 96/128);
+Naked Bible is almost entirely 64kbps (0.52); Spoken Gospel runs 160–320kbps
+and so reported 388 hours against a true 254, with 272 of 295 flagged as
+disagreeing. **A constant ratio is the assumption being wrong, not the data**,
+and it can be wrong in either direction — the first two under-reported, the
+third over-reported.
+
+Five ffprobe calls settle it in a minute; do that before believing anything the
+byte estimate says. Where the feed states `itunes:duration` it agreed with
+ffprobe to within 2%, so a feed-based publisher needs no full duration probe —
+but it does need the seconds carried through, see below.
+
+**`durationSeconds` must reach the inventory.** It is written into every
+transcript as `audioSeconds`, and the reference extractor uses it to reject a
+citation timestamped outside the episode. The extractor reads
+`audioSeconds || Infinity`, so a missing runtime does not fail — it removes the
+bound, and one of the three checks stops checking without saying so. The
+inventory now falls back to the publisher's stated duration when ffprobe has not
+run, and `pull_transcripts` repairs any transcript that came through without
+one.
 
 ---
 
@@ -105,18 +149,30 @@ encoder, so timestamps cannot drift. Measured — every word start lands on an
 80ms frame boundary, which is the signature of the duration head rather than a
 forced aligner.
 
-Then pull them down and check:
+**One fetch in sixty dies on EPERM.** A Volume mount is per-container, not
+per-input, and `fetch` runs two inputs per container — so one input calling
+`reload()` moves the mount out from under the other's open file, and the failure
+surfaces as a permission error that mentions nothing about concurrency. Retries
+covered it (295/295 landed), and a lock around the two volume operations is the
+actual fix. The download stays outside the lock, since waiting on a CDN is the
+only part worth overlapping.
+
+Then pull them down, repair, and install — one command, and safe to run while
+the job is still going:
 
 ```bash
-.venv/bin/python -m modal volume get asr-transcripts / /Volumes/External/Transcripts/raw --force
-node pipelines/transcription/check_transcripts.mjs
-cp /Volumes/External/Transcripts/raw/<source>__*.json ~/ScriptureLibrary/.artifacts/transcripts/
+node pipelines/transcription/pull_transcripts.mjs --source <sourceId>
 ```
 
-`check_transcripts` verifies coverage (words should reach ~99% of the file
-duration), monotonic timestamps, and that every transcript declares itself
-machine-made. Both corpora came in at 99.3–99.4% median coverage; anything much
-below that is a truncated or failed episode.
+It pulls only the files for that source that are not already on disk, so it can
+be run every few minutes to watch a run land. `modal volume get / --force`, what
+this replaces, re-downloads every publisher's transcripts — hundreds of
+megabytes — to collect whatever appeared since the last look.
+
+On the way through it fills in any missing `audioSeconds` from the inventory,
+refuses any transcript carrying no words, and reports coverage: the last word
+should land near the end of the audio. All three corpora came in at 99.0–99.4%
+median; anything much below is a truncated or failed episode.
 
 ---
 
@@ -124,9 +180,15 @@ below that is a truncated or failed episode.
 
 ```bash
 node --import tsx scripts/extract-refs-codex.ts \
-  --source <sourceId> --episodes <n> --concurrency 8 \
-  --out /Volumes/External/Transcripts/codex-refs-<source>.jsonl
+  --source <sourceId> --episodes 400 --concurrency 6 --timeout-minutes 12 \
+  --out ~/Transcripts/codex-refs-<source>.jsonl
 ```
+
+`--episodes` above the transcript count takes them all; below it, the script
+strides through the catalogue rather than taking its head, so a small number is
+a spread sample rather than one series. **Start it while the transcription is
+still running** — it reads whatever is installed, and a re-run picks up the rest
+without redoing anything.
 
 The prompt lives in that file and **is the valuable part** — it is what
 produced 22,955 references at a 0.03% rejection rate. It asks for one entry per
@@ -141,26 +203,40 @@ quotation can be verified in milliseconds; one without can only be believed.
 
 Writes incrementally, so a hung call costs one episode rather than the batch.
 
-**Codex hangs occasionally.** Twice a call stalled indefinitely and blocked its
-worker; the fix each time was `pkill -f codex-darwin-arm64`, which releases the
-worker and lets the rest finish. A per-call timeout would prevent it and is not
-yet written.
+**Codex hangs occasionally**, and there is now a timeout for it —
+`--timeout-minutes`, twelve by default. Before it existed, two calls stalled
+indefinitely and the rest of the batch sat behind them until `pkill -f
+codex-darwin-arm64` released the workers by hand. A killed call costs one
+episode, which a re-run picks up.
+
+**Re-running resumes.** A second pass reads the output file, skips every episode
+already in it, and carries those references forward — so the normal shape of
+this step is: start it early against whatever has landed, run it again when the
+transcription finishes, and pay once per episode. `--restart` forces a full
+re-read. Resume is keyed on the episode, not on its references, so an episode
+that legitimately yielded nothing stays done rather than being retried forever.
 
 ---
 
 ## 5. Install
 
 ```bash
-cat /Volumes/External/Transcripts/codex-refs-*.jsonl \
-  > /Volumes/External/Transcripts/codex-refs-combined.jsonl
+cat ~/Transcripts/codex-refs-*.jsonl > ~/Transcripts/codex-refs-combined.jsonl
 node --import tsx scripts/install-references.ts \
-  --from /Volumes/External/Transcripts/codex-refs-combined.jsonl
+  --from ~/Transcripts/codex-refs-combined.jsonl
 ```
 
 **Install from every publisher's file at once.** The per-episode files are keyed
 by record id and merge harmlessly, but the inverse index is rebuilt from
 whatever is passed — install one source alone and the index covers only that
 source.
+
+Episode facts — the title, the audio URL, the link a moment opens — come from
+the manifest and then from `episodes.json`, for every id in
+`TRANSCRIPT_APPROVED_SOURCES`. Reading the grant list rather than a second list
+of names is deliberate: a source added to the grant and forgotten here would
+transcribe and extract perfectly, and then have every one of its moments dropped
+for want of an audio URL, which is a failure with no error message anywhere.
 
 This writes per-episode references to `.artifacts/references/` and the
 passage → moments index to `.artifacts/passage-index.json`. It also normalises

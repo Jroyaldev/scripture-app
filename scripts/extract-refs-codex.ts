@@ -178,15 +178,46 @@ try {
   }
 } catch { /* no catalogue: the manifest named everything there was */ }
 
-const files = readdirSync(TRANSCRIPTS).filter((f) => f.endsWith(".json") && f.startsWith(`${SOURCE.replace(/:/g, "__")}__`));
+/**
+ * What a previous run already read.
+ *
+ * Transcription lands over the better part of an hour and this can start on
+ * whatever has arrived, so the second pass is the normal case rather than the
+ * recovery case — and a pass that redoes the first eighty-three episodes to
+ * reach the remaining two hundred is paying twice for nothing. Their rows are
+ * carried forward rather than merely skipped, because the output file is
+ * rewritten whole after each episode.
+ *
+ * Keyed on episode, not on reference. An episode that yielded nothing is done;
+ * counting its references would send it back through every time.
+ */
+const carried: Array<Record<string, unknown>> = [];
+const alreadyRead = new Set<string>();
+if (existsSync(OUT) && !process.argv.includes("--restart")) {
+  for (const line of readFileSync(OUT, "utf-8").split("\n")) {
+    if (!line.trim()) continue;
+    try {
+      const row = JSON.parse(line) as Record<string, unknown>;
+      carried.push(row);
+      if (typeof row["recordId"] === "string") alreadyRead.add(row["recordId"]);
+    } catch { /* a partial last line from a killed run */ }
+  }
+}
+
+const files = readdirSync(TRANSCRIPTS)
+  .filter((f) => f.endsWith(".json") && f.startsWith(`${SOURCE.replace(/:/g, "__")}__`))
+  .filter((f) => !alreadyRead.has(f.replace(/\.json$/, "").replace(/__/g, ":")));
 /* Spread through the catalogue rather than taking its head, which is one
    series and one era. */
 const stride = Math.max(1, Math.floor(files.length / EPISODES));
 const picked = files.filter((_, i) => i % stride === OFFSET % stride).slice(0, EPISODES);
 
+if (alreadyRead.size > 0) {
+  console.log(`${alreadyRead.size} episodes already read, ${carried.length} references carried forward`);
+}
 console.log(`reading ${picked.length} transcripts, ${CONCURRENCY} at a time, effort=${EFFORT}\n`);
 
-const results: Array<Record<string, unknown>> = [];
+const results: Array<Record<string, unknown>> = [...carried];
 let cursor = 0;
 
 async function worker(): Promise<void> {
@@ -251,7 +282,11 @@ async function worker(): Promise<void> {
 await Promise.all(Array.from({ length: CONCURRENCY }, worker));
 
 const rel = (k: string): number => results.filter((r) => r["relation"] === k).length;
-console.log(`\n${results.length} references kept from ${picked.length} episodes  (${(results.length / picked.length).toFixed(1)} each)`);
+/* Episodes read across every pass, not just this one — `results` carries the
+   earlier passes' references, so dividing by this pass alone would report a
+   rate several times the real one. */
+const episodesRead = alreadyRead.size + picked.length;
+console.log(`\n${results.length} references kept from ${episodesRead} episodes  (${(results.length / Math.max(1, episodesRead)).toFixed(1)} each)`);
 console.log(`  subject ${rel("subject")}   crossref ${rel("crossref")}   mention ${rel("mention")}   allusion ${rel("allusion")}`);
 console.log(`  unnamed (allusions and implicit): ${results.filter((r) => r["named"] !== true).length}`);
 
