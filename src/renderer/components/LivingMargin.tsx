@@ -413,125 +413,108 @@ function TaughtHereBlock({ moments, verse, onPlay }: {
   verse: number | null;
   onPlay: (moment: PassageMoment) => void;
 }): React.ReactElement {
-  /* Nothing at all rather than an empty state. Most chapters have nobody
-     teaching them, and a heading over a blank space says something went wrong
-     when nothing did. */
-  const [expanded, setExpanded] = useState(false);
+  const [open, setOpen] = useState<Set<string>>(new Set());
   if (moments.length === 0) return <></>;
 
-  /* Enough to choose from, not so many that choosing becomes the work — and
-     the rest genuinely reachable rather than merely counted. A line saying
-     "eleven more" with no way to see them tells a reader what they are not
-     being shown, which is worse than not mentioning it. */
-  /* Two sections, because the corpus is not one shape. The median chapter has
-     seven moments and a flat list serves it; Genesis 1 has 427, and there a
-     reader needs to know which of them bear on the verse in front of them
-     before anything else is worth reading.
-     
-     Two, not four. The earlier version banded by exact / near / whole /
-     elsewhere and drew a heading above almost every row, which is stutter
-     rather than structure. Sections earn their headings only when each holds
-     enough to be worth naming. */
-  const onPassage = verse == null ? [] : moments.filter((m) => {
-    const band = proximityOf(m, verse);
-    return band === "on" || band === "near";
-  });
-  const around = verse == null ? moments : moments.filter((m) => {
-    const band = proximityOf(m, verse);
-    return band !== "on" && band !== "near";
-  });
-  const sectioned = onPassage.length > 0 && around.length > 0;
-  /* The unsectioned case — no verse chosen, or everything falls in one group.
-     The median chapter has seven moments and reads perfectly well as one run. */
-  const shown = expanded ? moments : moments.slice(0, 4);
   const clock = (s: number): string =>
     `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
   const extent = (s: number): string =>
     (s >= 60 ? `${Math.round(s / 60)} min` : `${Math.max(1, Math.round(s))}s`);
 
-  /* No band headings. Four rows spanning three bands produced a header above
-     almost every row, which is more chrome than content and reads as a list
-     that cannot make up its mind.
-     
-     The range does that work already. A reader on Romans 8:1 sees "8:1-4" and
-     knows it is theirs — naming the band as well explains something the
-     numbers have said. What remains is order, and one hairline where the
-     directly-relevant moments end, which is the only boundary a reader needs
-     drawn for them. */
+  /* Three questions, three drawers, all shut.
+   *
+   * A chapter holds seven moments at the median and 427 at Genesis 1. Shown
+   * open, the long ones bury everything under them and the block stops being a
+   * margin note; shown as one list, the reader cannot tell which of four
+   * hundred bear on the line in front of them. Shut with a count, all of it
+   * fits in three rows and the reader opens the question they actually have.
+   *
+   * The chapter gets its own drawer rather than being folded into the
+   * surroundings, because an episode taking Genesis 1 as a unit is a different
+   * offer from one that lands on verse 3 — often the better one, and never the
+   * same one. */
+  const groups = [
+    {
+      key: "on",
+      label: verse == null ? "On this chapter" : "On this passage",
+      items: verse == null ? [] : moments.filter((m) => {
+        const band = proximityOf(m, verse);
+        return band === "on" || band === "near";
+      }),
+    },
+    {
+      key: "whole",
+      label: "The chapter as a whole",
+      items: moments.filter((m) => proximityOf(m, verse) === "whole"),
+    },
+    {
+      key: "around",
+      label: verse == null ? "Elsewhere in the chapter" : "Around it",
+      items: verse == null
+        ? moments.filter((m) => proximityOf(m, verse) !== "whole")
+        : moments.filter((m) => proximityOf(m, verse) === "chapter"),
+    },
+  ].filter((g) => g.items.length > 0);
+
+  const row = (m: PassageMoment): React.ReactElement => (
+    <li key={`${m.id}-${m.at}`}>
+      <button
+        className="taught-here-row"
+        onClick={() => onPlay(m)}
+        type="button"
+      >
+        <span className="taught-here-episode">{m.episode}</span>
+        <span className="taught-here-extent">{extent(m.seconds)}</span>
+        <span className="taught-here-meta">
+          <span className="taught-here-ref">{m.title}</span>
+          {m.sourceName} · {clock(m.at)}
+          {m.relation !== "subject" && ` · ${m.relation === "allusion" ? "alluded" : m.relation}`}
+        </span>
+      </button>
+    </li>
+  );
 
   return (
-    <section className="taught-here" data-expanded={expanded} aria-labelledby="taught-here-title">
+    <section className="taught-here" aria-labelledby="taught-here-title">
       <header className="taught-here-masthead">
         <span className="taught-here-kicker">From the transcripts</span>
         <h3 id="taught-here-title">Taught here</h3>
       </header>
-      {sectioned && (
-        <p className="taught-here-section">
-          On this passage<span>{onPassage.length}</span>
-        </p>
-      )}
-      <ul className="taught-here-list">
-        {(sectioned ? (expanded ? onPassage : onPassage.slice(0, 3)) : shown).map((m) => (
-          <li key={`${m.id}-${m.at}`}>
+      {groups.map((group) => {
+        const isOpen = open.has(group.key);
+        return (
+          <div className="taught-here-group" key={group.key} data-open={isOpen}>
             <button
-              className="taught-here-row"
-              data-band={proximityOf(m, verse)}
-              onClick={() => onPlay(m)}
+              aria-expanded={isOpen}
+              className="taught-here-toggle"
+              onClick={() => setOpen((prev) => {
+                const next = new Set(prev);
+                if (next.has(group.key)) next.delete(group.key); else next.add(group.key);
+                return next;
+              })}
               type="button"
             >
-              {/* The episode leads, because it is the thing being chosen. The
-                  reference and the source sit under it, and the length sits at
-                  the end as the offer — one figure to compare rows on, in the
-                  numeral face so a column of them lines up. */}
-              <span className="taught-here-episode">{m.episode}</span>
-              <span className="taught-here-extent">{extent(m.seconds)}</span>
-              <span className="taught-here-meta">
-                <span className="taught-here-ref">{m.title}</span>
-                {m.sourceName} · {clock(m.at)}
-                {m.relation !== "subject" && ` · ${m.relation === "allusion" ? "alluded" : m.relation}`}
-              </span>
+              <svg aria-hidden="true" className="taught-here-chevron" viewBox="0 0 12 12">
+                <path d="M4.5 2.5 8 6l-3.5 3.5" />
+              </svg>
+              <span className="taught-here-label">{group.label}</span>
+              {/* The count is what makes a shut drawer worth reading: it says
+                  how much is behind it without spending a row saying so. */}
+              <span className="taught-here-count">{group.items.length}</span>
             </button>
-          </li>
-        ))}
-      </ul>
-      {sectioned && (
-        <>
-          <p className="taught-here-section">
-            Around it<span>{around.length}</span>
-          </p>
-          <ul className="taught-here-list">
-            {(expanded ? around : around.slice(0, 2)).map((m) => (
-              <li key={`${m.id}-${m.at}`}>
-                <button
-                  className="taught-here-row"
-                  data-band={proximityOf(m, verse)}
-                  onClick={() => onPlay(m)}
-                  type="button"
-                >
-                  <span className="taught-here-episode">{m.episode}</span>
-                  <span className="taught-here-extent">{extent(m.seconds)}</span>
-                  <span className="taught-here-meta">
-                    <span className="taught-here-ref">{m.title}</span>
-                    {m.sourceName} · {clock(m.at)}
-                    {m.relation !== "subject" && ` · ${m.relation === "allusion" ? "alluded" : m.relation}`}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
-
-      {moments.length > (sectioned ? 5 : 4) && (
-        <button
-          aria-expanded={expanded}
-          className="taught-here-more"
-          onClick={() => setExpanded((open) => !open)}
-          type="button"
-        >
-          {expanded ? "Show fewer" : `${moments.length - (sectioned ? 5 : 4)} more in the library`}
-        </button>
-      )}
+            {isOpen && (
+              <ul className="taught-here-list">
+                {group.items.slice(0, 25).map(row)}
+                {group.items.length > 25 && (
+                  <li className="taught-here-tail">
+                    {group.items.length - 25} more, shortest last
+                  </li>
+                )}
+              </ul>
+            )}
+          </div>
+        );
+      })}
     </section>
   );
 }

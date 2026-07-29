@@ -20,7 +20,7 @@
  *   one no other tool offers, and collapsing them would throw away the
  *   distinction that makes the list worth reading.
  */
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const REPO = new URL("..", import.meta.url).pathname;
@@ -36,6 +36,34 @@ const OUT_DIR = join(LIBRARY, ".artifacts/references");
 const NAMES = join(REPO, "data/scripture/book-names-en.json");
 
 const dryRun = process.argv.includes("--dry-run");
+
+/* How many verses each chapter holds, so a range covering all of them can be
+   recognised for what it is. Genesis 1 has 31 verses, so "1-31" and "the whole
+   chapter" are the same claim written two ways — and left unnormalised they
+   landed in different sections purely because of how a reference happened to
+   be recorded. */
+const chapterLengths = new Map<string, number>();
+try {
+  const textRoot = join(REPO, "data/scripture/text/web");
+  for (const book of readdirSync(textRoot)) {
+    for (const file of readdirSync(join(textRoot, book))) {
+      if (!file.endsWith(".json")) continue;
+      const verses = (JSON.parse(readFileSync(join(textRoot, book, file), "utf-8")) as
+        { verses: Array<{ verse: number }> }).verses;
+      if (verses.length > 0) {
+        chapterLengths.set(`${book}.${Number(file.replace(".json", ""))}`, verses[verses.length - 1]!.verse);
+      }
+    }
+  }
+} catch { /* without the text the ranges simply stay as spoken */ }
+
+/** A range covering the chapter IS the chapter. */
+function normaliseVerses(book: string, chapter: number, verses: string | null): string | null {
+  const span = verseSpan(verses);
+  const length = chapterLengths.get(`${book}.${chapter}`);
+  if (!span || !length) return verses;
+  return span.from <= 1 && span.to >= length ? null : verses;
+}
 
 const bookNames = JSON.parse(readFileSync(NAMES, "utf-8")) as Record<string, string[] | string>;
 const label = (code: string): string => {
@@ -137,10 +165,10 @@ for (const [recordId, raws] of byEpisode) {
          chapter. Pinning every reference to verse 1 rendered correctly — the
          range survived in the title — while making the record unreasonable
          about and sending a press to the wrong line. */
-      bref: brefFor(row.book, row.chapter, row.verses),
+      bref: brefFor(row.book, row.chapter, normaliseVerses(row.book, row.chapter, row.verses)),
       book: row.book,
       chapter: row.chapter,
-      verses: row.verses ?? null,
+      verses: normaliseVerses(row.book, row.chapter, row.verses),
       title: `${label(row.book)} ${row.chapter}${row.verses ? `:${row.verses}` : ""}`,
       at: Math.round(row.at),
       seconds: Math.max(0, Math.round(row.seconds)),
@@ -215,8 +243,8 @@ for (const [recordId, raws] of byEpisode) {
          moment look chapter-wide — so a reader on Romans 8:28 was shown the
          same list as a reader on 8:1, which is most of what a passage index is
          supposed to tell apart. */
-      verses: row.verses ?? null,
-      title: `${label(row.book)} ${row.chapter}${row.verses ? `:${row.verses}` : ""}`,
+      verses: normaliseVerses(row.book, row.chapter, row.verses),
+      title: `${label(row.book)} ${row.chapter}${normaliseVerses(row.book, row.chapter, row.verses) ? `:${row.verses}` : ""}`,
     });
     inverse.set(key, list);
   }
