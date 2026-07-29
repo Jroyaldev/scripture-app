@@ -812,7 +812,16 @@ function TrustedResourcesBlock({
                           onClick={() => void openResource(resource)}
                           aria-label={`${verb} ${resource.record.title} on ${resource.source.name} — opens the official page`}
                         >
-                          {verb} at {resource.source.name} <span aria-hidden="true">↗</span>
+                          {/* The publisher is named once, in the group's masthead
+                              above — the same reason the mark is stated there and
+                              not on every row. Repeating it inside the button set
+                              "Listen at The Listener's Bible Commentary" beside a
+                              play control on a 320px card, which no amount of
+                              wrapping saves; the button is `nowrap` because a verb
+                              broken across two lines is worse. The full
+                              destination stays in the accessible name, which is
+                              where a screen reader wants it anyway. */}
+                          {verb} <span aria-hidden="true">↗</span>
                         </button>
                       </div>
                     </li>

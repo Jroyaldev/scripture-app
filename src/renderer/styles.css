@@ -19411,6 +19411,97 @@ button.lang-phrase-diagram-node:focus-visible,
   --resource-mark-ratio: 7.671;
 }
 
+/* The five read from public feeds take their publisher's colours and their name
+   in type. No mark: the rule that a mark ships only for a source approved in its
+   own right is unchanged, and none of these has been asked yet — the whole point
+   of the second footing recorded in docs/trusted-resource-permissions is that it
+   stays visibly different from a grant. Colour is not a mark; it is what stops
+   five publishers arriving as five identical gold cards.
+
+   Each surface is sampled from the publisher's own artwork rather than chosen:
+   1517's brick, Ligonier's sage, Premier's blue and red, the Listener's navy on
+   pale blue, Radically Christian's oxblood and its ripple. */
+
+/* 40 Minutes in the Old Testament — published by 1517, whose mark is a white
+   wordmark on brick. Their tile's own colour, so the card is their imprint. */
+.trusted-resource-card[data-source="forty-minutes-ot"],
+.trusted-resource-imprint[data-source="forty-minutes-ot"],
+.resource-source[data-source="forty-minutes-ot"],
+.resource-matrix-row[data-source="forty-minutes-ot"],
+.podcast-dock[data-source="forty-minutes-ot"] {
+  --resource-source: #a8402a;
+  --resource-ink: #f9ede6;
+  --resource-ink-soft: rgb(249 237 230 / 0.76);
+  --resource-line: rgb(249 237 230 / 0.3);
+  --resource-pill-bg: #f9ede6;
+  --resource-pill-ink: #7d2c1b;
+}
+
+/* 5 Minutes in Church History — Ligonier. Their emblem is a black tree on white
+   and their app tile a sage gradient; the tile's family darkened until a light
+   ink holds on it. */
+.trusted-resource-card[data-source="five-minutes-church-history"],
+.trusted-resource-imprint[data-source="five-minutes-church-history"],
+.resource-source[data-source="five-minutes-church-history"],
+.resource-matrix-row[data-source="five-minutes-church-history"],
+.podcast-dock[data-source="five-minutes-church-history"] {
+  --resource-source: #45696a;
+  --resource-ink: #eef4f2;
+  --resource-ink-soft: rgb(238 244 242 / 0.76);
+  --resource-line: rgb(238 244 242 / 0.3);
+  --resource-pill-bg: #eef4f2;
+  --resource-pill-ink: #2f4d4e;
+}
+
+/* Ask N.T. Wright Anything — Premier Unbelievable?, whose identity is exactly
+   two colours on white. Used as they use them: the blue carries, the red
+   answers. */
+.trusted-resource-card[data-source="ask-nt-wright"],
+.trusted-resource-imprint[data-source="ask-nt-wright"],
+.resource-source[data-source="ask-nt-wright"],
+.resource-matrix-row[data-source="ask-nt-wright"],
+.podcast-dock[data-source="ask-nt-wright"] {
+  --resource-source: #0079a8;
+  --resource-ink: #eaf6fb;
+  --resource-ink-soft: rgb(234 246 251 / 0.78);
+  --resource-line: rgb(234 246 251 / 0.3);
+  --resource-pill-bg: #d8183c;
+  --resource-pill-ink: #ffffff;
+}
+
+/* The Listener's Bible Commentary — navy on pale blue, which is how the show's
+   own cover reads. A light card, like Enter the Bible's, because inverting it
+   would be our idea rather than theirs. */
+.trusted-resource-card[data-source="listeners-commentary"],
+.trusted-resource-imprint[data-source="listeners-commentary"],
+.resource-source[data-source="listeners-commentary"],
+.resource-matrix-row[data-source="listeners-commentary"],
+.podcast-dock[data-source="listeners-commentary"] {
+  --resource-accent: #26518c;
+  --resource-source: #dfeaf8;
+  --resource-ink: #0a2450;
+  --resource-ink-soft: rgb(10 36 80 / 0.74);
+  --resource-line: rgb(10 36 80 / 0.24);
+  --resource-pill-bg: #0a2450;
+  --resource-pill-ink: #dfeaf8;
+}
+
+/* Radically Christian — an oxblood drop over a blue ripple. The drop takes the
+   surface and the ripple the pill, which is the relation the logo already has. */
+.trusted-resource-card[data-source="radically-christian"],
+.trusted-resource-imprint[data-source="radically-christian"],
+.resource-source[data-source="radically-christian"],
+.resource-matrix-row[data-source="radically-christian"],
+.podcast-dock[data-source="radically-christian"] {
+  --resource-accent: #3f6fb0;
+  --resource-source: #6d1409;
+  --resource-ink: #f6e9e5;
+  --resource-ink-soft: rgb(246 233 229 / 0.76);
+  --resource-line: rgb(246 233 229 / 0.28);
+  --resource-pill-bg: #1d4f8f;
+  --resource-pill-ink: #f2f7fd;
+}
+
 .trusted-resource-card[data-source="the-gospel-coalition"],
 .trusted-resource-imprint[data-source="the-gospel-coalition"],
 .resource-source[data-source="the-gospel-coalition"],
@@ -20034,7 +20125,13 @@ button.lang-phrase-diagram-node:focus-visible,
   .trusted-resource-play { transition: none; }
 }
 
-.trusted-resource-actions { display: flex; align-items: center; }
+/* `min-width: 0` because a flex item's floor is its content, not zero — without
+   it a long label pushes straight through the card's edge instead of being
+   constrained by it, which is what put "Listen at The Listener's Bible
+   Commentary" outside its own card. The labels are short now; this is what
+   keeps the next long one from doing the same thing. */
+.trusted-resource-actions { display: flex; align-items: center; min-width: 0; }
+.trusted-resource-actions > * { min-width: 0; }
 
 .trusted-resource-act {
   display: inline-flex;

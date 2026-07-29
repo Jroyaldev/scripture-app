@@ -319,14 +319,37 @@ one measure has survived and every other candidate has died.
 | References | 15,252 | 7,703 | 8,333 |
 | Rejected | 5 | 15 | 0 |
 
-Transcription scales with audio hours and costs about $3 per 500 hours on an L4.
-Extraction scales with *episode count* rather than hours — roughly 105 seconds
-per episode per worker, so at the twelve-worker ceiling above, about 6.5 episodes
-a minute regardless of how long they are.
+**Both stages scale with audio hours, not with episode count.** Transcription
+costs about $3 per 500 hours on an L4. Extraction costs roughly a minute of
+one worker per twenty minutes of episode, because *the transcript is the
+prompt* — a 24-minute episode is about half the tokens of a 51-minute one, and
+takes about half as long to read.
 
-The 2,469-episode batch of five shows added later took about 2 hours to
-transcribe 1,074 hours, and the extraction is the long pole at roughly 6 hours.
-Budget by episodes, not by hours.
+Measured at twelve workers:
+
+| Show | Mean episode | eps/min | sec/call |
+|---|---|---|---|
+| Spoken Gospel | 51 min | 4.6 | ~105 |
+| The Listener's Bible Commentary | 24 min | 16.5 | ~44 |
+
+So a show's episode count says very little about what it will cost. 5 Minutes
+in Church History is 676 episodes and 57 hours — the largest catalogue here and
+among the cheapest to process. Budget by hours.
+
+Where the two stages differ is *what* they are limited by, and it is worth being
+clear because it decides which knob helps:
+
+| | Runs on | Limited by |
+|---|---|---|
+| Transcription | Modal L4s | GPU spend |
+| Extraction | this machine | RAM — see the ceiling above |
+| Pulling transcripts | this machine | one `volume get` per file |
+
+The Modal driver is a 5 MB client; the GPUs are remote and the laptop could be
+closed. Codex has no remote mode here, which is the only reason local memory is
+a constraint on anything. If the catalogue grows much further, moving extraction
+onto Modal the way transcription already is would replace a hard 16 GB ceiling
+with an API one.
 
 Embedding (`scripts/index-transcripts.ts`) is a separate, optional path that
 powers question search rather than references. It runs locally at ~16
