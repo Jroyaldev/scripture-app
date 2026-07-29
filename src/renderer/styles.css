@@ -2199,6 +2199,32 @@ html, body, #root {
 }
 
 .scripture-workspace-persistence:not(.is-saving):not(.is-failed) { display: none; }
+
+/* SAVING COSTS NO LAYOUT.
+   "Saving…" appearing and going used to widen and narrow the actions cluster
+   on every write, and the whole strip reflowed around it — the plus and the
+   tabs twitching each time the workspace saved, which is many times a minute
+   while a reader is moving about. Nobody is being told anything by that
+   movement; the word is already saying it.
+
+   So the transient state leaves the flow and floats over the cluster's own
+   right edge. It is nine-pixel chrome that lives for a few hundred
+   milliseconds, and it has nothing to push.
+
+   The FAILED state stays in flow deliberately. It is not transient — it holds
+   until the write succeeds or the reader retries — it carries a reason and a
+   button, and something that persists and can be pressed must occupy real
+   space rather than hover over whatever is beneath it. */
+.scripture-workspace-persistence.is-saving {
+  position: absolute;
+  /* Just OUTSIDE the cluster's leading edge, over the empty bar — not inside
+     it, where it would sit on top of All Tabs. The cluster is the containing
+     block (it is already `position: relative`), so `right: 100%` is its own
+     left edge and the offset is the gap. */
+  right: calc(100% + 6px);
+  bottom: 5px;
+  pointer-events: none;
+}
 .scripture-workspace-persistence button {
   min-height: 24px;
   padding: 0 6px;
