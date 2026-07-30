@@ -4,6 +4,10 @@
  *
  *   node --import tsx scripts/extract-refs-codex.ts --episodes 5 [--concurrency 4]
  *
+ * Resumes by default: `--dry-run` reports what a resume would do and spends
+ * nothing, `--restart` forgets every earlier pass and reads the source again,
+ * `--only <recordId>` reads just the episodes named.
+ *
  * WHY THIS EXISTS ALONGSIDE THE EMBEDDING INDEX
  *
  * The embedding index compares meaning numerically. It is exhaustive and cheap
@@ -27,8 +31,14 @@
  * which is what makes a model's output usable as data instead of as prose.
  */
 import { spawn } from "node:child_process";
-import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import {
+  emptyResume,
+  readLogPathFor,
+  resumeFrom,
+  serializeReadLog,
+} from "./reference-read-log.js";
 
 const REPO = new URL("..", import.meta.url).pathname;
 const LIBRARY = join(process.env["HOME"] ?? "", "ScriptureLibrary");
@@ -227,33 +237,83 @@ try {
  * carried forward rather than merely skipped, because the output file is
  * rewritten whole after each episode.
  *
- * Keyed on episode, not on reference. An episode that yielded nothing is done;
- * counting its references would send it back through every time.
+ * Keyed on episode, and — since 2026-07-30 — actually keyed on episode.
+ *
+ * The comment that stood here claimed it already was, and it was not. Resume
+ * was rebuilt from the record ids appearing in the output rows, so an episode
+ * that answered honestly with no references wrote no row, left no trace, and
+ * was re-read on every subsequent pass forever. Measured on the 2026-07-30
+ * sweep: 3,521 transcripts, 3,208 episodes with a reference, 313 episodes
+ * paid for and forgotten — about 309 wasted calls in one pass for 22 marginal
+ * references. So the ledger beside the output (`.read-log.json`) is now what
+ * "already read" means, and the rows only seed it. See
+ * `scripts/reference-read-log.ts` for why it is a file of its own.
  */
-const carried: Array<Record<string, unknown>> = [];
-const alreadyRead = new Set<string>();
-if (existsSync(OUT) && !process.argv.includes("--restart")) {
-  for (const line of readFileSync(OUT, "utf-8").split("\n")) {
-    if (!line.trim()) continue;
-    try {
-      const row = JSON.parse(line) as Record<string, unknown>;
-      carried.push(row);
-      if (typeof row["recordId"] === "string") alreadyRead.add(row["recordId"]);
-    } catch { /* a partial last line from a killed run */ }
-  }
+const READ_LOG = readLogPathFor(OUT);
+const restart = process.argv.includes("--restart");
+/** Print the resume accounting and stop, without spending a single call. */
+const dryRun = process.argv.includes("--dry-run");
+
+const resume = restart
+  ? emptyResume()
+  : resumeFrom({
+    rows: existsSync(OUT) ? readFileSync(OUT, "utf-8") : "",
+    log: existsSync(READ_LOG) ? readFileSync(READ_LOG, "utf-8") : null,
+  });
+const { carried, alreadyRead } = resume;
+
+/** Rewritten whole, and through a temp file: a half-written ledger reads as none. */
+function writeReadLog(): void {
+  writeFileSync(`${READ_LOG}.tmp`, serializeReadLog(SOURCE, OUT, alreadyRead));
+  renameSync(`${READ_LOG}.tmp`, READ_LOG);
 }
 
-const files = readdirSync(TRANSCRIPTS)
-  .filter((f) => f.endsWith(".json") && f.startsWith(`${SOURCE.replace(/:/g, "__")}__`))
-  .filter((f) => !alreadyRead.has(f.replace(/\.json$/, "").replace(/__/g, ":")));
+/**
+ * Named episodes, repeatable, for the case a spread sample cannot serve.
+ *
+ * One episode hit the twelve-minute timeout on a hung call and was left
+ * unread while its 675 neighbours were done. Reaching it through the ordinary
+ * pick means offering the whole source and taking whatever the stride lands
+ * on; naming it costs one call. Resume still wins — an episode already read
+ * stays read, and `--restart` is how you overrule that.
+ */
+const ONLY = new Set(
+  process.argv.flatMap((a, i) => (a === "--only" && process.argv[i + 1] ? [process.argv[i + 1]!] : [])),
+);
+
+const recordIdOf = (file: string): string => file.replace(/\.json$/, "").replace(/__/g, ":");
+const transcripts = readdirSync(TRANSCRIPTS)
+  .filter((f) => f.endsWith(".json") && f.startsWith(`${SOURCE.replace(/:/g, "__")}__`));
+const files = transcripts
+  .filter((f) => !alreadyRead.has(recordIdOf(f)))
+  .filter((f) => ONLY.size === 0 || ONLY.has(recordIdOf(f)));
 /* Spread through the catalogue rather than taking its head, which is one
-   series and one era. */
+   series and one era. Named episodes are already the whole selection. */
 const stride = Math.max(1, Math.floor(files.length / EPISODES));
-const picked = files.filter((_, i) => i % stride === OFFSET % stride).slice(0, EPISODES);
+const picked = ONLY.size > 0
+  ? files
+  : files.filter((_, i) => i % stride === OFFSET % stride).slice(0, EPISODES);
 
-if (alreadyRead.size > 0) {
-  console.log(`${alreadyRead.size} episodes already read, ${carried.length} references carried forward`);
+if (resume.unreadableLog) {
+  console.log(`  WARNING ${READ_LOG} is not a read log — falling back to the output rows,`);
+  console.log(`          so episodes that yielded nothing will be read again.`);
 }
+if (alreadyRead.size > 0) {
+  console.log(
+    `${alreadyRead.size} episodes already read (${resume.barren} of them yielded nothing),`
+    + ` ${carried.length} references carried forward`,
+  );
+}
+if (dryRun) {
+  console.log(
+    `\n${SOURCE}: ${transcripts.length} transcripts, ${alreadyRead.size} already read,`
+    + ` ${files.length} left to read`,
+  );
+  process.exit(0);
+}
+/* Persisted before any call is made, so an output written before the ledger
+   existed becomes a ledger even if this run is killed on its first episode. */
+if (alreadyRead.size > 0 || existsSync(READ_LOG)) writeReadLog();
 console.log(`reading ${picked.length} transcripts, ${CONCURRENCY} at a time, effort=${EFFORT}\n`);
 
 const results: Array<Record<string, unknown>> = [...carried];
@@ -321,14 +381,28 @@ async function worker(): Promise<void> {
       });
     }
     results.push(...kept);
+    /* The same trimming as the refusal line above, rather than the literal
+       "bibleproject:podcast:" this once stripped. With one publisher those were
+       the same thing; with eight, every other source kept its whole prefix and
+       was then cut to 32 characters — so 5 Minutes in Church History logged
+       676 episodes as "five-minutes-church-history:podc" and the run log could
+       not say which episode any line was about. That mattered on 2026-07-30:
+       the logs were the obvious place to look for which episodes had been read
+       when the ledger below did not yet exist, and they could not answer. */
     console.log(
-      `  ${recordId.replace("bibleproject:podcast:", "").slice(0, 32).padEnd(34)}`
+      `  ${recordId.replace(/^[a-z-]+:podcast:/, "").slice(0, 32).padEnd(34)}`
       + `${String(refs.length).padStart(3)} found, ${String(kept.length).padStart(3)} kept`
       + `  (dropped: book ${dropped.book}, time ${dropped.time}, evidence ${dropped.evidence})`,
     );
     /* Written as we go. An earlier run held everything in memory and one hung
        call nearly cost the batch. */
     writeFileSync(OUT, `${results.map((r) => JSON.stringify(r)).join("\n")}\n`);
+    /* And the ledger with it. This line is the fix: the episode is recorded as
+       read because it was answered, whether or not the answer had anything in
+       it. A refusal never reaches here — no answer is not a reading, and it
+       must be retried. */
+    alreadyRead.add(recordId);
+    writeReadLog();
   }
 }
 await Promise.all(Array.from({ length: CONCURRENCY }, worker));
@@ -347,14 +421,20 @@ if (refused > 0) {
 }
 if (throttled) {
   console.log(`\n  STOPPED EARLY — the limit was reached, so the remaining episodes were not attempted.`);
-  console.log(`  Nothing already paid for is lost: re-running skips every episode in the output file.`);
+  console.log(`  Nothing already paid for is lost: re-running skips every episode already read.`);
   process.exitCode = 2;
 }
 
 /* Episodes read across every pass, not just this one — `results` carries the
    earlier passes' references, so dividing by this pass alone would report a
-   rate several times the real one. */
-const episodesRead = alreadyRead.size + picked.length - refused;
+   rate several times the real one.
+ *
+ * Read off the ledger rather than reckoned as `already + picked - refused`,
+ * which was the same arithmetic the resume bug was made of: it assumed every
+ * picked episode was either answered or counted as a refusal, and a throttled
+ * run abandons the rest without either. The ledger only ever grows on an
+ * answer, so it is the count rather than an estimate of it. */
+const episodesRead = alreadyRead.size;
 console.log(`\n${results.length} references kept from ${episodesRead} episodes  (${(results.length / Math.max(1, episodesRead)).toFixed(1)} each)`);
 console.log(`  subject ${rel("subject")}   crossref ${rel("crossref")}   mention ${rel("mention")}   allusion ${rel("allusion")}`);
 console.log(`  unnamed (allusions and implicit): ${results.filter((r) => r["named"] !== true).length}`);
@@ -364,8 +444,16 @@ console.log(`  unnamed (allusions and implicit): ${results.filter((r) => r["name
    without this the ordering between them is arbitrary. */
 const spans = results.map((r) => Number(r["seconds"])).sort((a, b) => a - b);
 const passing = spans.filter((s) => s < 60).length;
-console.log(`\n  extent:  median ${spans[spans.length >> 1]}s   longest ${spans[spans.length - 1]}s`);
-console.log(`  under a minute (passing): ${passing}   a minute or more (treated): ${spans.length - passing}`);
+/* A pass whose episodes all answered "nothing here" has no distribution, and
+   said so as "median undefineds". An honest zero is now an ordinary outcome
+   rather than a sign something went wrong — `--only` on one short episode
+   reaches it in a single call. */
+if (spans.length === 0) {
+  console.log(`\n  extent:  no references, so nothing to distribute`);
+} else {
+  console.log(`\n  extent:  median ${spans[spans.length >> 1]}s   longest ${spans[spans.length - 1]}s`);
+  console.log(`  under a minute (passing): ${passing}   a minute or more (treated): ${spans.length - passing}`);
+}
 for (const k of ["subject", "crossref", "mention", "allusion"]) {
   const s = results.filter((r) => r["relation"] === k).map((r) => Number(r["seconds"]));
   if (s.length === 0) continue;
