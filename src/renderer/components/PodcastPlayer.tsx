@@ -592,6 +592,9 @@ export function playPodcastEpisode(episode: PodcastEpisode): void {
      this surface goes through, so there is one answer to "the file is not
      ready yet" instead of two that can drift apart. */
   pendingSeek = episode.startAt != null && episode.startAt > 0 ? episode.startAt : null;
+  /* Same reason as the resume: a fade armed against the LAST episode must not
+     be able to pause this one. */
+  endEase();
   element.src = episode.audioUrl;
   applyPodcastRate();
   /* The first frame of a new file arrives at whatever level the last one was
@@ -615,6 +618,14 @@ export function resumePodcast(): void {
   // against a finished element and leaves the reader pressing a dead button.
   if (element.ended && pendingSeek == null) element.currentTime = 0;
   announceNowPlaying({ episode, status: "reaching" });
+  /* A pending fade-out belongs to a decision the reader has just reversed, and
+     its errand is `element.pause()`. Cancel it here rather than at the end of
+     `play()`: a frame loop does not run while the window is behind another
+     one, so a ramp armed before a resume can land several seconds AFTER it and
+     pause an episode that is already playing. Caught by the QA tour, which
+     brings the window to the front to take a picture and so ran the stale
+     frame at exactly the wrong moment. */
+  endEase();
   /* Up from silence rather than in at full level: a voice that arrives with an
      edge on it reads as a fault in the file. */
   element.volume = 0;
@@ -1369,6 +1380,23 @@ export function PodcastPlayer({
     // whole reset if the same episode were ever re-announced without one.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [episodeId]);
+
+  /* FOLDING PUTS THE TRANSCRIPT BACK UNDER THE VOICE. Added 2026-07-30 with
+     the column swap.
+
+     The list is drawn only while the player is unfolded, so folding destroys
+     the box the reader had scrolled — there is no position left to be browsing
+     at. Two things follow, and the second is the one that bit: the mode has to
+     come back to following, and it cannot be left to the scroll handler,
+     because the collapse itself scrolls. A box that loses its height clamps
+     its own scrollTop and fires a scroll for it, which the machine correctly
+     reads as "the reader moved the list" and wrongly attributes to a reader
+     who pressed fold. */
+  useEffect(() => {
+    if (expanded) return;
+    setMode("following");
+    setWhereAt(null);
+  }, [expanded]);
 
   /* Asked once per episode, not per open. A reader who opens and shuts the
      sheet is not asking the disk anything new, and the answer for an episode
@@ -2363,7 +2391,28 @@ export function PodcastPlayer({
                 what the comment at the head of .podcast-mast had claimed for
                 two commits while the glyph was still here. It is a sentence in
                 the sheet now — "Open at Naked Bible Podcast" — which is both
-                the thing it says and a fifth of the width it was spending. */}
+                the thing it says and a fifth of the width it was spending.
+
+                AND IT COMES BACK FOR ONE STATE. The refusal's own copy is
+                written around "the way out is the link that was always beside
+                play", and in the state that says it the sheet is shut and the
+                sentence was pointing at nothing. The corner's line column
+                cannot hold both the reason and the route — 226px against a
+                223px sentence — so the route returns to the mast, in the one
+                state where the reader needs it and the passage chip is the
+                least useful thing on the row. */}
+            {status === "failed" && (
+              <button
+                aria-label={`Open ${episode.title} at ${episode.sourceName} — opens the official page`}
+                className="podcast-mast-icon podcast-mast-out"
+                onClick={() => void openOfficial()}
+                type="button"
+              >
+                <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                  <path d="M9.6 6.3h8.1v8.1M17.7 6.3 7.5 16.5" stroke="currentColor" />
+                </svg>
+              </button>
+            )}
             <button
               aria-label={`Stop ${episode.title} and close the player`}
               className="podcast-mast-icon"
@@ -2897,33 +2946,15 @@ export function PodcastPlayer({
                    repeating it here was what pushed the sentence off the end
                    of its own line. The QA tour has asserted this fit since it
                    was written and never once reached the assertion. */
-                /* The way out, put back 2026-07-30. The sentence above has
-                   always been written around one — "the way out is the link
-                   that was always beside play" — and the link stopped being
-                   beside play two builds ago: the mast's third glyph became a
-                   sentence inside the sheet, and the sheet is shut in the one
-                   state that needs it. So the refusal states the failure and
-                   carries the route in the same breath, at the size of the
-                   clock it replaces. It is the publisher's own page, which is
-                   where the episode is if it is anywhere.
-
-                   Four letters and an arrow, not "Open at Naked Bible
-                   Podcast": the sentence beside it already wants 223px of a
-                   348px line, the publisher is named on the mast one row up,
-                   and the whole destination is in the accessible name, which
-                   is where a screen reader wants it anyway. Same chip idiom as
-                   `clear` and `leave`, and the row keeps the one height all
-                   three of its forms share. */
+                /* The sentence, and only the sentence. The way out it is
+                   written around is on the mast, where the audit says it used
+                   to be — see the ↗ above, which is drawn in this state and in
+                   no other. It cannot be here: the corner's line column is
+                   about 226px and this sentence wants 223 of them, so a second
+                   thing on the row ellipses the reason, and a truncated reason
+                   is not a reason. */
                 <p className="podcast-dock-refusal">
                   <span className="podcast-dock-refusal-said">Did not arrive. This needed the network.</span>
-                  <button
-                    aria-label={`Open ${episode.title} at ${episode.sourceName} — opens the official page`}
-                    className="podcast-dock-refusal-out"
-                    onClick={() => void openOfficial()}
-                    type="button"
-                  >
-                    open <span aria-hidden="true">↗</span>
-                  </button>
                 </p>
               ) : reaching ? (
                 /* The third form of this one row, added 2026-07-30. Reaching

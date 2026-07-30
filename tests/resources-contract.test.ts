@@ -398,6 +398,13 @@ test("no hard cut: every start, stop, seek and boundary rides a ramp", () => {
      the level across the discontinuity; the walk fades between two voices; and
      letting go of the file is the hardest cut of all. */
   assert.match(player, /ease\(0, \(\) => \{ element\.pause\(\); element\.volume = 1; \}\);/);
+  /* And a reversal cancels the ramp it is reversing. A frame loop does not run
+     while the window is behind another one, so a fade armed before a resume
+     can land seconds after it and pause an episode that is already playing —
+     which the QA tour found by bringing the window to the front to take a
+     picture. */
+  assert.match(player, /endEase\(\);\n\s*\/\* Up from silence/);
+  assert.match(player, /endEase\(\);\n\s*element\.src = episode\.audioUrl;/);
   assert.match(player, /element\.volume = 0;\n\s*void element\.play\(\)\.then\(\(\) => ease\(1\)\)/);
   assert.match(player, /easeThrough\(\(\) => \{ element\.currentTime = clamped; \}\);/);
   assert.match(player, /ease\(0, \(\) => \{\n\s*announceWalk\(\{ \.\.\.held, at: index \}\);/);
@@ -452,8 +459,13 @@ test("the regression audit's smallest fixes are in place", () => {
 
   /* C1 · the refusal has a way out again — the publisher's own page, which is
      where the episode is if it is anywhere. */
-  assert.match(player, /className="podcast-dock-refusal-out"/);
+  assert.match(player, /className="podcast-mast-icon podcast-mast-out"/);
   assert.match(player, /aria-label=\{`Open \$\{episode\.title\} at \$\{episode\.sourceName\}/);
+  assert.match(player, /\{status === "failed" && \(/,
+    "the way out must be drawn in the refusal state and in no other");
+  /* And it cannot be on the clock's own line: that column is ~226px and the
+     sentence wants 223 of them, so a chip beside it ellipses the reason. */
+  assert.doesNotMatch(css, /\.podcast-dock-refusal-out/);
 
   /* C5 · one tab idiom. The sheet's switcher takes the app's own law — ink and
      a seal on the edge nearest what it opens — rather than a filled pill. */
