@@ -485,6 +485,7 @@ interface Props {
   onWorkspaceGroupClose?: (groupId: string) => Promise<boolean>;
   onWorkspaceGroupRename?: (groupId: string, label: string) => Promise<boolean>;
   onWorkspaceTabMove?: (tabId: string, targetGroupId: string) => Promise<boolean>;
+  onWorkspaceTabPromote?: (tabId: string) => Promise<boolean>;
   onWorkspaceTabReorder?: (
     tabId: string,
     position: "left" | "right" | "start" | "end",
@@ -685,6 +686,7 @@ export function ScripturePage({
   onWorkspaceGroupClose,
   onWorkspaceGroupRename,
   onWorkspaceTabMove,
+  onWorkspaceTabPromote,
   onWorkspaceTabReorder,
   onWorkspaceGroupReorder,
   onWorkspaceRecentReopen,
@@ -727,6 +729,16 @@ export function ScripturePage({
   // can restore an intentional zero scroll without confusing it with a live
   // scope transition.
   const [sessionRestoreNonce, setSessionRestoreNonce] = useState(1);
+  /* The study a tab is being dragged over, which is the one fact the two rows
+     of the register have to share.
+     The drag belongs to the strip — it owns the pointer, the tab and the
+     mutation — and the chip that has to signal is the line's, one row up.
+     Neither can see the other, so the page holds the fact between them: the
+     strip reports what its pointer is over, the line paints it. It is not
+     `studyFilterId` returning under another name; nothing about which study
+     the strip SHOWS is stored here, and this is null except while a pointer is
+     actually down on a tab. */
+  const [tabDropStudyId, setTabDropStudyId] = useState<string | null>(null);
   const marginWorkspace: MarginWorkspace = activeWorkspaceKind === "entity" ? "research" : "study";
   const [marginData, setMarginData] = useState<QueryResult>(EMPTY_MARGIN_DATA);
   const [marginDataChapterKey, setMarginDataChapterKey] = useState<string | null>(null);
@@ -4673,8 +4685,11 @@ export function ScripturePage({
           onRenameStudy={(groupId, label) => (
             onWorkspaceGroupRename?.(groupId, label) ?? Promise.resolve(false)
           )}
+          onCloseStudy={(groupId) => onWorkspaceGroupClose?.(groupId) ?? Promise.resolve(false)}
           onStartStudy={() => onStartStudy?.() ?? Promise.resolve(false)}
+          onNewTab={() => (onOpenResearchPalette ?? onOpenCommandPalette)?.()}
           namingRequest={studyNamingRequest}
+          dropTargetStudyId={tabDropStudyId}
         />
       )}
 
@@ -4691,6 +4706,8 @@ export function ScripturePage({
           onMoveTab={(tabId, targetGroupId) => (
             onWorkspaceTabMove?.(tabId, targetGroupId) ?? Promise.resolve(false)
           )}
+          onPromoteTab={(tabId) => onWorkspaceTabPromote?.(tabId) ?? Promise.resolve(false)}
+          onTabDragOverStudy={setTabDropStudyId}
           onReorderTab={(tabId, position) => (
             onWorkspaceTabReorder?.(tabId, position) ?? Promise.resolve(false)
           )}

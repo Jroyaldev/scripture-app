@@ -16,6 +16,7 @@ import {
   openPassageWorkspaceTab,
   orderedStudyWorkspaceGroups,
   orderedStudyWorkspaceTabs,
+  promoteStudyWorkspaceTabToNewGroup,
   renameStudyWorkspaceGroup,
   reopenClosedStudyItem,
   reorderStudyWorkspaceGroup,
@@ -23,6 +24,7 @@ import {
   resolveStudyWorkspaceDecision,
   returnEntityWorkspaceToOrigin,
   selectStudyWorkspaceTab,
+  STUDY_WORKSPACE_GROUP_LIMIT,
   studyWorkspaceGroupLabel,
   studyWorkspaceGroupCloseAvailability,
   studyWorkspaceTabCloseAvailability,
@@ -736,6 +738,228 @@ test("creating a study group appends and activates its new home passage", () => 
   assert.deepEqual(created.state.groups[1]?.tabIds, ["john-3"]);
   assert.equal(created.state.tabsById["john-3"]?.groupId, "study-2");
   assert.deepEqual(created.state.activationOrder, ["acts-19", "john-3"]);
+});
+
+test("a tab promoted to a new study LEAVES the one it was in, and the new study is where the page lands", () => {
+  /* THE DIFFERENCE FROM `createStudyWorkspaceGroup`, in one word: leaves.
+     The + control's path mints a fresh passage cloned from the view you are
+     on, so the reader ends up with two tabs showing one chapter and the
+     original still where it was. That is right for "start a study here" and
+     wrong for "this tab is its own study". */
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
+    groupId: "study-1",
+    passageTabId: "acts-19",
+  });
+  const withJohn = openPassageWorkspaceTab(initial, {
+    id: "john-3",
+    sourceTabId: "acts-19",
+    view: view("JHN", 3, "BSB"),
+  }).state;
+  const onActs = selectStudyWorkspaceTab(withJohn, "acts-19");
+  const promoted = promoteStudyWorkspaceTabToNewGroup(onActs, {
+    tabId: "john-3",
+    groupId: "study-2",
+  });
+  assert.equal(promoted.outcome, "opened");
+  const state = promoted.state;
+  // No tab was made: the workspace holds the same two it held before.
+  assert.deepEqual(Object.keys(state.tabsById).sort(), ["acts-19", "john-3"]);
+  assert.deepEqual(state.groups.map((group) => group.id), ["study-1", "study-2"]);
+  assert.deepEqual(state.groups[0]?.tabIds, ["acts-19"]);
+  assert.deepEqual(state.groups[1]?.tabIds, ["john-3"]);
+  assert.equal(state.tabsById["john-3"]?.groupId, "study-2");
+  assert.equal(state.groups[1]?.homePassageTabId, "john-3");
+  assert.equal(state.groups[1]?.lastActiveTabId, "john-3");
+  // Selection follows the tab, which is what puts the strip in the new study
+  // and what lets the caller open the naming invitation on its chip.
+  assert.equal(state.activeTabId, "john-3");
+  assert.deepEqual(state.activationOrder, ["acts-19", "john-3"]);
+  // Born unfrozen, exactly as the + control's study is: a lone passage follows
+  // its home reference live until it has a sibling.
+  assert.deepEqual(state.groups[1]?.label, { kind: "automatic" });
+  assert.equal(studyWorkspaceGroupLabel(state, state.groups[1]!), "JHN 3");
+  // Nothing is recoverable, because nothing closed.
+  assert.deepEqual(state.recentlyClosed, []);
+});
+
+test("promoting a study's home passage re-homes the study it left", () => {
+  // A group whose `homePassageTabId` is not among its own tabs is a payload the
+  // Electron validator rewrites — and the save is a canonical-JSON round-trip
+  // equality check, so a rewritten payload means the workspace stops saving.
+  // The source takes its nearest remaining passage, through the same helper a
+  // closed home passage goes through.
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
+    groupId: "study-1",
+    passageTabId: "acts-19",
+  });
+  const withJohn = openPassageWorkspaceTab(initial, {
+    id: "john-3",
+    sourceTabId: "acts-19",
+    view: view("JHN", 3, "BSB"),
+  }).state;
+  assert.equal(withJohn.groups[0]?.homePassageTabId, "acts-19");
+  const promoted = promoteStudyWorkspaceTabToNewGroup(withJohn, {
+    tabId: "acts-19",
+    groupId: "study-2",
+  });
+  assert.equal(promoted.outcome, "opened");
+  assert.equal(promoted.state.groups[0]?.homePassageTabId, "john-3");
+  assert.equal(promoted.state.groups[0]?.lastActiveTabId, "john-3");
+  assert.deepEqual(promoted.state.groups[0]?.tabIds, ["john-3"]);
+  assert.equal(promoted.state.groups[1]?.homePassageTabId, "acts-19");
+});
+
+test("research travels with the passage it hangs off, because a return link may not cross a study", () => {
+  /* `move-branch` moves a passage's dependent entity tabs with it, and this
+     does the same for the same reason — which is a persistence requirement
+     rather than a courtesy. The validator nulls an entity's
+     `returnPassageTabId` when it names a passage outside the entity's own
+     group, and a rewritten payload fails the round-trip equality check on every
+     subsequent save. A study born with siblings also freezes its label, exactly
+     as a study that gains one does. */
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
+    groupId: "study-1",
+    passageTabId: "acts-19",
+  });
+  const withJohn = openPassageWorkspaceTab(initial, {
+    id: "john-3",
+    sourceTabId: "acts-19",
+    view: view("JHN", 3, "BSB"),
+  }).state;
+  const withPaul = openEntityWorkspaceTab(withJohn, {
+    id: "paul",
+    sourceTabId: "john-3",
+    entityId: "person:paul",
+    entityKind: "person",
+    nonce: 1,
+    origin: view("JHN", 3, "BSB"),
+    returnPassageTabId: "john-3",
+  }).state;
+  const promoted = promoteStudyWorkspaceTabToNewGroup(withPaul, {
+    tabId: "john-3",
+    groupId: "study-2",
+  });
+  assert.equal(promoted.outcome, "opened");
+  assert.deepEqual(promoted.state.groups[0]?.tabIds, ["acts-19"]);
+  assert.deepEqual(promoted.state.groups[1]?.tabIds, ["john-3", "paul"]);
+  assert.equal(promoted.state.tabsById["paul"]?.groupId, "study-2");
+  const carried = promoted.state.tabsById["paul"];
+  assert.equal(carried?.kind === "entity" && carried.returnPassageTabId, "john-3");
+  assert.deepEqual(promoted.state.groups[1]?.label, {
+    kind: "automatic",
+    frozenReference: { book: "JHN", chapter: 3 },
+  });
+});
+
+test("promotion refuses the shapes the persisted model cannot hold, and reports the study cap", () => {
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
+    groupId: "study-1",
+    passageTabId: "acts-19",
+  });
+  // A study's only passage cannot leave it: the study it left would have none.
+  const sole = promoteStudyWorkspaceTabToNewGroup(initial, {
+    tabId: "acts-19",
+    groupId: "study-2",
+  });
+  assert.equal(sole.outcome, "unchanged");
+  assert.equal(sole.state, initial);
+
+  const withJohn = openPassageWorkspaceTab(initial, {
+    id: "john-3",
+    sourceTabId: "acts-19",
+    view: view("JHN", 3, "BSB"),
+  }).state;
+  const withPaul = openEntityWorkspaceTab(withJohn, {
+    id: "paul",
+    sourceTabId: "john-3",
+    entityId: "person:paul",
+    entityKind: "person",
+    nonce: 1,
+    origin: view("JHN", 3, "BSB"),
+    returnPassageTabId: "john-3",
+  }).state;
+  // An entity tab cannot found a study — every group must own a passage.
+  assert.equal(
+    promoteStudyWorkspaceTabToNewGroup(withPaul, { tabId: "paul", groupId: "study-2" }).outcome,
+    "unchanged",
+  );
+  // An unknown tab, and a group id already in use, are both inert.
+  assert.equal(
+    promoteStudyWorkspaceTabToNewGroup(withPaul, { tabId: "missing", groupId: "study-2" }).outcome,
+    "unchanged",
+  );
+  assert.equal(
+    promoteStudyWorkspaceTabToNewGroup(withPaul, { tabId: "john-3", groupId: "study-1" }).outcome,
+    "unchanged",
+  );
+
+  // Sixteen studies is the cap the study line's + meets, in the same unit, and
+  // this reports it the same way so the capacity toast can name it.
+  let full = withJohn;
+  for (let index = 1; index < STUDY_WORKSPACE_GROUP_LIMIT; index += 1) {
+    const created = createStudyWorkspaceGroup(full, {
+      id: `filler-${index}`,
+      passageTabId: `filler-${index}-passage`,
+      view: view("ROM", 8, "BSB"),
+    });
+    assert.equal(created.outcome, "opened");
+    full = created.state;
+  }
+  assert.equal(full.groups.length, STUDY_WORKSPACE_GROUP_LIMIT);
+  const refused = promoteStudyWorkspaceTabToNewGroup(full, {
+    tabId: "john-3",
+    groupId: "one-study-too-many",
+  });
+  assert.equal(refused.outcome, "group-limit");
+  assert.equal(refused.state, full);
+});
+
+test("moving the active tab takes the strip with it; moving an inactive tab moves nothing else", () => {
+  /* SELECTION LEADS, and the move mutation is where that becomes structural
+     for a drag onto a study chip. `moveStudyWorkspaceTab` never touches
+     `activeTabId`, and which study the strip shows is
+     `tabsById[activeTabId].groupId` — so the active tab arriving in another
+     study IS the strip arriving there, and an inactive tab leaving cannot move
+     the page anywhere. Neither behaviour is maintained by hand. */
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
+    groupId: "study-1",
+    passageTabId: "acts-19",
+  });
+  const withSibling = openPassageWorkspaceTab(initial, {
+    id: "acts-19-kjv",
+    sourceTabId: "acts-19",
+    view: view("ACT", 19, "KJV"),
+    duplicate: true,
+  }).state;
+  const withSecondStudy = createStudyWorkspaceGroup(withSibling, {
+    id: "study-2",
+    passageTabId: "john-3",
+    view: view("JHN", 3, "BSB"),
+  }).state;
+  const activeStudyId = (state: typeof withSecondStudy): string | undefined =>
+    state.tabsById[state.activeTabId]?.groupId;
+
+  // The reader is on acts-19-kjv, in study-1. Move it: the strip follows.
+  const onSibling = selectStudyWorkspaceTab(withSecondStudy, "acts-19-kjv");
+  assert.equal(activeStudyId(onSibling), "study-1");
+  const movedActive = moveStudyWorkspaceTab(onSibling, {
+    tabId: "acts-19-kjv",
+    targetGroupId: "study-2",
+  });
+  assert.equal(movedActive.outcome, "applied");
+  assert.equal(movedActive.state.activeTabId, "acts-19-kjv");
+  assert.equal(activeStudyId(movedActive.state), "study-2");
+  assert.equal(movedActive.state.groups[1]?.lastActiveTabId, "acts-19-kjv");
+
+  // The reader is on acts-19. Move its sibling: nothing about the page changes.
+  const onActs = selectStudyWorkspaceTab(withSecondStudy, "acts-19");
+  const movedInactive = moveStudyWorkspaceTab(onActs, {
+    tabId: "acts-19-kjv",
+    targetGroupId: "study-2",
+  });
+  assert.equal(movedInactive.outcome, "applied");
+  assert.equal(movedInactive.state.activeTabId, "acts-19");
+  assert.equal(activeStudyId(movedInactive.state), "study-1");
 });
 
 test("tab reorder actions move deterministically left, right, start, and end", () => {

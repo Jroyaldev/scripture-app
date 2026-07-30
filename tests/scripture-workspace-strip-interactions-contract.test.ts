@@ -3,15 +3,18 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { test } from "node:test";
 import {
+  studyChipDropTargetId,
   studyWorkspaceDragReorderPosition,
   studyWorkspaceWheelScrollDelta,
 } from "../src/renderer/components/ScriptureWorkspaceTabs.js";
 import {
   closeStudyWorkspaceTab,
   createStudyWorkspace,
+  openEntityWorkspaceTab,
   openPassageWorkspaceTab,
   reopenClosedStudyItem,
   reopenClosedStudyItemAt,
+  studyWorkspaceTabPromoteAvailability,
   type PassageViewState,
 } from "../src/renderer/utils/studyWorkspace.js";
 
@@ -213,6 +216,94 @@ test("pointer drag is thresholded and paints a lift plus a drop indicator", () =
   assert.match(source, /data-study-drop=\{dropBefore \? "before" : dropAfter \? "after" : undefined\}/);
   // A plain click below the threshold is never swallowed as a drag.
   assert.match(source, /suppressTabClickRef/);
+});
+
+test("a drag that reaches a study chip is asking for a study, not for a slot", () => {
+  /* THE SECOND AUTHORING GESTURE. The chips are one row up and in another
+     component, and the drag cannot be handed to them: it sets pointer capture
+     on the tab so it survives leaving the strip, and a captured pointer routes
+     every event to the capturing element — a chip never sees one. So the strip
+     hit-tests the document it can see, and reports what it found.
+
+     A chip standing for the tab's OWN study is not a target. There is no move
+     to make and lighting it would promise one. */
+  const chip = (groupId: string | null): Element => ({
+    closest: (selector: string) => (selector === "[data-study-line-chip]" && groupId !== null
+      ? { getAttribute: (name: string) => (name === "data-study-group-id" ? groupId : null) }
+      : null),
+  }) as unknown as Element;
+  assert.equal(studyChipDropTargetId(chip("john-study"), "acts-study"), "john-study");
+  assert.equal(studyChipDropTargetId(chip("acts-study"), "acts-study"), null);
+  assert.equal(studyChipDropTargetId(chip(null), "acts-study"), null);
+  assert.equal(studyChipDropTargetId(null, "acts-study"), null);
+
+  // The drop is `onMoveTab` — the same mutation the "Move to study…" menus
+  // make, with the same confirmations and the same refusals. A second gesture
+  // for changing a tab's study may never be a second set of rules for it.
+  const up = section("const handleTabPointerUp", "const handleTabPointerCancel");
+  assert.match(up, /if \(origin\.studyId\) \{\s*await handleMoveTab\(tabId, origin\.studyId, event\.currentTarget\);/);
+  assert.match(up, /studyWorkspaceDragReorderPosition\(orderedIds, tabId, origin\.insertionIndex\)/);
+  assert.ok(
+    up.indexOf("handleMoveTab") < up.indexOf("studyWorkspaceDragReorderPosition"),
+    "a chip outranks the slot: the row's question has been left behind",
+  );
+
+  // And while a chip is the target the row stops answering, so exactly one
+  // drop indicator is on screen and it is on the surface under the pointer.
+  assert.match(source, /const overStudy = dragState\?\.studyId != null;/);
+  assert.match(source, /const dropBefore = !overStudy/);
+  assert.match(source, /const dropAfter = !overStudy/);
+
+  // The mark is strictly transient: cleared on drop and on cancel, so it can
+  // never be mistaken for state by a reader or by a screenshot.
+  const move = section("const handleTabPointerMove", "const handleTabPointerUp");
+  assert.match(move, /if \(studyId !== origin\.studyId\) onTabDragOverStudy\(studyId\);/);
+  assert.match(up, /if \(origin\?\.studyId\) onTabDragOverStudy\(null\);/);
+  const cancel = section("const handleTabPointerCancel", "const handleTabAuxClick");
+  assert.match(cancel, /if \(dragPointerRef\.current\?\.studyId\) onTabDragOverStudy\(null\);/);
+});
+
+test("a tab can found a study of its own, and the shapes that refuse it are the model's", () => {
+  /* THE FIRST AUTHORING GESTURE — and the word that separates it from the item
+     above it in the same menu is LEAVES. Duplicate copies; this moves. A study
+     born here holds the tab you pressed, the tab is gone from the study it was
+     in, and the strip follows because the model activates it.
+
+     The refusals are shapes the persisted model cannot hold rather than
+     policy, so they are computed in the model and only READ here. */
+  assert.match(source, /const promoteAvailability = studyWorkspaceTabPromoteAvailability\(workspace, target\.tabId\);/);
+  assert.match(source, /data-study-context-promote=""/);
+  assert.match(source, /disabled=\{promoteAvailability !== "direct"\}/);
+  assert.match(source, />New study from this tab</);
+  assert.match(source, /await handlePromoteTab\(target\.tabId\)/);
+
+  const study = createStudyWorkspace(view("ACT", 19), {
+    groupId: "study-1",
+    passageTabId: "acts-19",
+  });
+  // A study's ONLY passage cannot leave it: the study it left would have none,
+  // which the validator rejects, and the act would rename the study you are in
+  // rather than make a new one.
+  assert.equal(studyWorkspaceTabPromoteAvailability(study, "acts-19"), "unavailable");
+  const withSecond = openPassageWorkspaceTab(study, {
+    id: "john-3",
+    sourceTabId: "acts-19",
+    view: view("JHN", 3),
+  }).state;
+  assert.equal(studyWorkspaceTabPromoteAvailability(withSecond, "acts-19"), "direct");
+  assert.equal(studyWorkspaceTabPromoteAvailability(withSecond, "john-3"), "direct");
+  // An entity tab cannot found one at all — every group must own a passage.
+  const withEntity = openEntityWorkspaceTab(withSecond, {
+    id: "paul",
+    sourceTabId: "john-3",
+    entityId: "person:paul",
+    entityKind: "person",
+    nonce: 1,
+    origin: view("JHN", 3),
+    returnPassageTabId: "john-3",
+  }).state;
+  assert.equal(studyWorkspaceTabPromoteAvailability(withEntity, "paul"), "unavailable");
+  assert.equal(studyWorkspaceTabPromoteAvailability(withEntity, "missing"), "unavailable");
 });
 
 test("the strip owns wheel panning, double-click new tab, and pointer context menus", () => {

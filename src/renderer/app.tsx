@@ -55,6 +55,7 @@ import {
   openEntityWorkspaceTab,
   openPassageWorkspaceTab,
   orderedStudyWorkspaceTabs,
+  promoteStudyWorkspaceTabToNewGroup,
   reopenClosedStudyItem,
   reopenClosedStudyItemAt,
   renameStudyWorkspaceGroup,
@@ -1490,6 +1491,48 @@ export function App(): React.JSX.Element {
     });
     return proceed && applied;
   }, [commitStudyWorkspace, requestWorkspaceDecision, runWorkspaceTransition]);
+  /**
+   * A new study made of a tab you already have.
+   *
+   * It is the + control's shape with one word changed — the study is born
+   * HOLDING the tab rather than holding a copy of the view it is on — so the
+   * two steps that follow are the same two: land focus on the tab that founded
+   * the study, then invite the reader to name its chip. `promoteStudyWorkspaceTabToNewGroup`
+   * activates the promoted tab, which is what puts the strip in the new study,
+   * and it is also what the naming guard checks before it seizes anything.
+   */
+  const promoteWorkspaceTabToNewStudy = useCallback((tabId: string): Promise<boolean> => {
+    let accepted = false;
+    let openedGroupId: string | null = null;
+    let outcome: WorkspaceMutationOutcome = "unchanged";
+    return runWorkspaceTransition("group-change", () => {
+      commitStudyWorkspace((current) => {
+        if (!current) return current;
+        const result = promoteStudyWorkspaceTabToNewGroup(current, {
+          tabId,
+          groupId: `study-group-${crypto.randomUUID()}`,
+        });
+        outcome = result.outcome;
+        accepted = result.outcome === "opened";
+        openedGroupId = accepted
+          ? result.state.tabsById[result.state.activeTabId]?.groupId ?? null
+          : null;
+        return accepted ? result.state : current;
+      });
+      notifyWorkspaceCapacity(outcome, workspaceShowToastRef.current);
+    }).then((proceed) => {
+      if (proceed && accepted && openedGroupId) {
+        focusWorkspaceTabAfterCommit(tabId);
+        openWorkspaceGroupNamingAfterCommit(openedGroupId);
+      }
+      return proceed && accepted;
+    });
+  }, [
+    commitStudyWorkspace,
+    focusWorkspaceTabAfterCommit,
+    openWorkspaceGroupNamingAfterCommit,
+    runWorkspaceTransition,
+  ]);
   const reopenRecentWorkspaceItem = useCallback(async (index?: number): Promise<boolean> => {
     let applied = false;
     let focusTabId: string | null = null;
@@ -2254,6 +2297,7 @@ export function App(): React.JSX.Element {
                 onWorkspaceGroupClose={closeWorkspaceGroup}
                 onWorkspaceGroupRename={renameWorkspaceGroup}
                 onWorkspaceTabMove={moveWorkspaceTab}
+                onWorkspaceTabPromote={promoteWorkspaceTabToNewStudy}
                 onWorkspaceTabReorder={reorderWorkspaceTab}
                 onWorkspaceGroupReorder={reorderWorkspaceGroup}
                 onWorkspaceRecentReopen={reopenRecentWorkspaceItem}

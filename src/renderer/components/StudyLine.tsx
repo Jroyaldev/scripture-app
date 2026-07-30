@@ -3,10 +3,12 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import type { BookNameData } from "../api.js";
 import {
   STUDY_WORKSPACE_GROUP_LIMIT,
+  studyWorkspaceGroupCloseAvailability,
   studyWorkspaceGroupLabel,
   type StudyWorkspaceGroup,
   type StudyWorkspaceStateV2,
 } from "../utils/studyWorkspace.js";
+import { Popover } from "./Popover.js";
 import { Tooltip } from "./Tooltip.js";
 
 /**
@@ -127,9 +129,20 @@ export interface StudyLineProps {
   bookNames: BookNameData;
   onSelectTab: (tabId: string) => Promise<boolean>;
   onRenameStudy: (groupId: string, label: string) => Promise<boolean>;
+  onCloseStudy: (groupId: string) => Promise<boolean>;
   onStartStudy: () => Promise<boolean>;
+  onNewTab: () => void;
   /** A study that has just been made and is waiting to be named. */
   namingRequest: { groupId: string; nonce: number } | null;
+  /**
+   * The study a tab is currently being dragged over, reported by the strip.
+   *
+   * It arrives as a prop rather than as state here for the reason the whole
+   * line holds none: the gesture belongs to the strip, which owns the pointer
+   * and the tab. The line paints what the pointer is over and knows nothing
+   * else about the drag — least of all how to commit it.
+   */
+  dropTargetStudyId: string | null;
 }
 
 export function StudyLine({
@@ -137,14 +150,18 @@ export function StudyLine({
   bookNames,
   onSelectTab,
   onRenameStudy,
+  onCloseStudy,
   onStartStudy,
+  onNewTab,
   namingRequest,
+  dropTargetStudyId,
 }: StudyLineProps): React.JSX.Element {
   const [focusedKey, setFocusedKey] = useState<string | null>(null);
   const [focusIntent, setFocusIntent] = useState<{ key: string; nonce: number } | null>(null);
   const [renameGroupId, setRenameGroupId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
   const [scrollEdges, setScrollEdges] = useState({ left: false, right: false });
+  const [chipMenu, setChipMenu] = useState<{ groupId: string; anchor: DOMRect } | null>(null);
   const chipsRef = useRef<HTMLDivElement>(null);
   const stopRefs = useRef<Map<string, HTMLElement>>(new Map());
   const renameInputRef = useRef<HTMLInputElement>(null);
@@ -258,12 +275,20 @@ export function StudyLine({
     beginRename(group.id, studyWorkspaceGroupLabel(workspace, group, bookNames));
   }, [beginRename, bookNames, namingRequest, workspace]);
 
-  // A study that closes while its chip is being renamed takes the field with it.
+  // A study that closes while its chip is being renamed takes the field with
+  // it — and its menu too, which is the same rule applied to the same fact: no
+  // surface may go on standing for a study that is not there.
   useEffect(() => {
     if (!renameGroupId) return;
     if (workspace.groups.some((group) => group.id === renameGroupId)) return;
     endRename();
   }, [endRename, renameGroupId, workspace.groups]);
+
+  useEffect(() => {
+    if (!chipMenu) return;
+    if (workspace.groups.some((group) => group.id === chipMenu.groupId)) return;
+    setChipMenu(null);
+  }, [chipMenu, workspace.groups]);
 
   /**
    * Open a study.
@@ -273,19 +298,31 @@ export function StudyLine({
    * page is in, so the row underneath follows the selection the same way the
    * page does. A refused selection therefore changes nothing anywhere, which is
    * the only honest outcome for a refusal.
+   *
+   * It reports whether the page arrived, 2026-07-30, and that is all the return
+   * value is for: the chip's own press ignores it, because a refusal leaves the
+   * line where the page still is either way. "New tab in this study" is the
+   * caller that needs it — a tab opens into the study the page is in, so a
+   * refused landing must not be followed by opening one somewhere else.
    */
-  const openStudy = useCallback(async (groupId: string): Promise<void> => {
-    if (pendingIntentRef.current) return;
+  const openStudy = useCallback(async (groupId: string): Promise<boolean> => {
+    if (pendingIntentRef.current) return false;
     const group = workspace.groups.find((candidate) => candidate.id === groupId);
-    if (!group) return;
+    if (!group) return false;
     pendingIntentRef.current = true;
     try {
       const landing = studyLineLandingTabId(workspace, group);
-      if (landing && landing !== workspace.activeTabId) await onSelectTab(landing);
+      if (landing && landing !== workspace.activeTabId) return await onSelectTab(landing);
+      return landing !== null;
     } finally {
       pendingIntentRef.current = false;
     }
   }, [onSelectTab, workspace]);
+
+  const dismissChipMenu = useCallback((groupId: string): void => {
+    setChipMenu(null);
+    focusStop(studyStop(groupId));
+  }, [focusStop]);
 
   const commitRename = useCallback(async (groupId: string, refocus: boolean): Promise<void> => {
     // Escape unmounts the field, and an unmounting input can still blur; the ref
@@ -392,6 +429,14 @@ export function StudyLine({
             className="scripture-study-chip"
             data-study-line-chip=""
             data-study-group-id={chip.groupId}
+            /* THE CHIP IS A LIVE TARGET, in the ink the strip already drops
+               tabs in: the same 2px secondary-ink rule, laid along the chip's
+               baseline instead of standing between two tabs. No fill, no glow,
+               no dashed outline — a drop target that lights up is a browser
+               telling you it is a browser, and the register was drawn to
+               refuse that. The strip decides when this is on; the chip only
+               wears it. */
+            data-study-drop-target={dropTargetStudyId === chip.groupId || undefined}
             // At the floor there is one study and nothing to be current AMONG,
             // so the resting line states no selection: `aria-current` on the
             // only option is an answer to a question nobody asked.
@@ -407,8 +452,33 @@ export function StudyLine({
               : `${chip.label}, ${chip.tabCount} ${chip.tabCount === 1 ? "tab" : "tabs"}`}
             title={`${chip.label} — ${chip.tabCount} ${chip.tabCount === 1 ? "tab" : "tabs"}`}
             aria-keyshortcuts="F2"
+            // No `aria-haspopup`, for the reason the strip's tabs carry none:
+            // the chip's primary activation is a study, and announcing a popup
+            // on a control whose Enter switches studies promises a key that
+            // does not exist. A context menu is reached by the gesture and the
+            // key the platform already reserves for one.
             tabIndex={rovingKey === studyStop(chip.groupId) ? 0 : -1}
             onFocus={() => setFocusedKey(studyStop(chip.groupId))}
+            onContextMenu={(event) => {
+              // The strip's idiom, one row up: a menu at the pointer, on the
+              // shared float, with the same three shapes of item. What it
+              // offers is what a chip already IS — the study's name, its
+              // tabs, and its life — so nothing here is a second way to do
+              // something the model does not already do.
+              //
+              // It serves both devices with one handler, because the platform
+              // already routes both to it: the Menu key and Shift+F10 fire
+              // `contextmenu` on the focused element, so the chip the roving
+              // stop is on opens its own menu with no second key path invented
+              // here.
+              event.preventDefault();
+              endRename();
+              setFocusedKey(studyStop(chip.groupId));
+              setChipMenu({
+                groupId: chip.groupId,
+                anchor: new DOMRect(event.clientX, event.clientY, 0, 0),
+              });
+            }}
             onMouseDown={(event) => {
               // Keeping focus where it is stops the roving stop jumping on a
               // press — right until a rename is open. Then the press must be
@@ -461,6 +531,69 @@ export function StudyLine({
           <span aria-hidden="true"><PlusGlyph /></span>
         </button>
       </Tooltip>
+      {/* THE CHIP'S MENU — the strip's context-menu idiom, one row up.
+          It is the same primitive on the same float with the same class, the
+          same `role="menu"` of plain menuitems, and the same rule about what
+          may be in it: every item routes to a mutation that already exists and
+          already refuses what it must. Rename opens the field F2 opens, in
+          place, so there is still no dialog that asks a study for its name.
+          Close study goes through `closeStudyWorkspaceGroup`, which refuses the
+          last study and demands a confirmation for one holding several tabs —
+          this menu adds no exception to either. */}
+      {chipMenu && (() => {
+        const group = workspace.groups.find((candidate) => candidate.id === chipMenu.groupId);
+        if (!group) return null;
+        const label = studyWorkspaceGroupLabel(workspace, group, bookNames);
+        const closeAvailability = studyWorkspaceGroupCloseAvailability(workspace, group.id);
+        return (
+          <Popover
+            anchorRect={chipMenu.anchor}
+            onClose={() => dismissChipMenu(group.id)}
+            width={244}
+            maxHeight={360}
+            className="scripture-workspace-context-popover"
+            ariaLabel={`${label} actions`}
+          >
+            <div className="scripture-workspace-context-menu" role="menu" data-study-chip-menu="">
+              <button
+                type="button"
+                role="menuitem"
+                data-study-chip-rename=""
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => {
+                  setChipMenu(null);
+                  beginRename(group.id, label);
+                }}
+              >Rename</button>
+              <button
+                type="button"
+                role="menuitem"
+                data-study-chip-new-tab=""
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={async () => {
+                  setChipMenu(null);
+                  // A tab opens into the study the page is IN, so the page has
+                  // to arrive first. A refused landing opens nothing: a tab in
+                  // a study the reader never reached is worse than no tab.
+                  if (await openStudy(group.id)) onNewTab();
+                }}
+              >New tab in this study</button>
+              <button
+                type="button"
+                role="menuitem"
+                data-study-chip-close=""
+                data-study-close-availability={closeAvailability}
+                disabled={closeAvailability === "unavailable"}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={async () => {
+                  setChipMenu(null);
+                  await onCloseStudy(group.id);
+                }}
+              >{closeAvailability === "decision" ? "Close study…" : "Close study"}</button>
+            </div>
+          </Popover>
+        );
+      })()}
     </div>
   );
 }

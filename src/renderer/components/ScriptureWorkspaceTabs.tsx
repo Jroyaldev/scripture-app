@@ -11,6 +11,7 @@ import {
   studyWorkspaceTabLabel,
   studyWorkspaceTabLabelParts,
   studyWorkspaceTabOrdinal,
+  studyWorkspaceTabPromoteAvailability,
   studyWorkspaceTabType,
   type StudyWorkspaceGroup,
   type StudyWorkspaceStateV2,
@@ -37,6 +38,16 @@ export interface ScriptureWorkspaceTabsProps {
   onCloseGroup: (groupId: string) => Promise<boolean>;
   onRenameGroup: (groupId: string, label: string) => Promise<boolean>;
   onMoveTab: (tabId: string, targetGroupId: string) => Promise<boolean>;
+  onPromoteTab: (tabId: string) => Promise<boolean>;
+  /**
+   * The study a dragged tab is currently over, or null.
+   *
+   * The chips are the study line's, one row up and in another component, so
+   * the strip reports what its own pointer is over and the line paints it. It
+   * is deliberately NOT an intent: nothing is committed by hovering, so this
+   * one callback is void where every mutation here returns an approval.
+   */
+  onTabDragOverStudy: (groupId: string | null) => void;
   onReorderTab: (tabId: string, position: WorkspaceReorderPosition) => Promise<boolean>;
   onReorderGroup: (groupId: string, position: WorkspaceReorderPosition) => Promise<boolean>;
   onReopenRecent: () => Promise<boolean>;
@@ -73,6 +84,30 @@ interface WorkspaceDragState {
   tabId: string;
   groupId: string;
   insertionIndex: number;
+  /** A study chip the pointer is over, which outranks the insertion slot. */
+  studyId: string | null;
+}
+
+/**
+ * The study chip under a dragged tab, if the pointer has left the strip for the
+ * line above it.
+ *
+ * Hit-testing the document rather than listening for pointer events on the chip
+ * is not a shortcut: the drag sets pointer capture on the tab so the gesture
+ * survives leaving the strip, and a captured pointer sends its events to the
+ * capturing element — the chips never see one. `elementFromPoint` asks the
+ * question capture cannot answer, and asks it of the DOM the reader can see.
+ *
+ * A chip standing for the tab's OWN study is not a target: dropping a tab back
+ * where it already is has no move to make, and lighting it would promise one.
+ */
+export function studyChipDropTargetId(
+  element: Element | null,
+  sourceGroupId: string,
+): string | null {
+  const chip = element?.closest("[data-study-line-chip]");
+  const groupId = chip?.getAttribute("data-study-group-id") ?? null;
+  return groupId && groupId !== sourceGroupId ? groupId : null;
 }
 
 interface TabExitGeometry {
@@ -271,6 +306,8 @@ export function ScriptureWorkspaceTabs({
   onCloseGroup,
   onRenameGroup,
   onMoveTab,
+  onPromoteTab,
+  onTabDragOverStudy,
   onReorderTab,
   onReorderGroup,
   onReopenRecent,
@@ -301,7 +338,15 @@ export function ScriptureWorkspaceTabs({
   const tabRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const pendingWorkspaceIntentCountRef = useRef(0);
   const dragPointerRef = useRef<
-    { x: number; y: number; tabId: string; groupId: string; started: boolean; insertionIndex: number } | null
+    {
+      x: number;
+      y: number;
+      tabId: string;
+      groupId: string;
+      started: boolean;
+      insertionIndex: number;
+      studyId: string | null;
+    } | null
   >(null);
   const suppressTabClickRef = useRef(false);
   const rovingFocusNonceRef = useRef(0);
@@ -671,6 +716,14 @@ export function ScriptureWorkspaceTabs({
     () => scheduleControlFocus(focusTarget, overflowSearchRef),
   ), [onMoveTab, runApprovedIntent, scheduleControlFocus]);
 
+  const handlePromoteTab = useCallback(async (tabId: string): Promise<boolean> => await runApprovedIntent(
+    () => onPromoteTab(tabId),
+    // The promoted tab is the new study's founding member and the model
+    // activates it, so focus follows the tab rather than staying in a menu
+    // that has already closed.
+    () => scheduleCommittedTabFocus(tabId, true),
+  ), [onPromoteTab, runApprovedIntent, scheduleCommittedTabFocus]);
+
   const handleReorderTab = useCallback(async (
     tabId: string,
     position: WorkspaceReorderPosition,
@@ -753,6 +806,7 @@ export function ScriptureWorkspaceTabs({
       groupId,
       started: false,
       insertionIndex: 0,
+      studyId: null,
     };
   };
 
@@ -767,6 +821,15 @@ export function ScriptureWorkspaceTabs({
       origin.started = true;
       try { event.currentTarget.setPointerCapture(event.pointerId); } catch { /* capture is best-effort */ }
     }
+    // The line is one row up, and a drag that reaches it is asking for a study
+    // rather than a slot. It outranks the insertion index because the two
+    // answers cannot both be shown without the row claiming to do both.
+    const studyId = studyChipDropTargetId(
+      document.elementFromPoint(event.clientX, event.clientY),
+      groupId,
+    );
+    if (studyId !== origin.studyId) onTabDragOverStudy(studyId);
+    origin.studyId = studyId;
     const entry = groups.find((candidate) => candidate.group.id === groupId);
     if (!entry) return;
     const orderedIds = entry.tabs.map((tab) => tab.id);
@@ -781,7 +844,7 @@ export function ScriptureWorkspaceTabs({
       }
     }
     origin.insertionIndex = insertionIndex;
-    setDragState({ tabId: origin.tabId, groupId, insertionIndex });
+    setDragState({ tabId: origin.tabId, groupId, insertionIndex, studyId });
   };
 
   const handleTabPointerUp = async (
@@ -792,9 +855,17 @@ export function ScriptureWorkspaceTabs({
     const origin = dragPointerRef.current;
     dragPointerRef.current = null;
     setDragState(null);
+    if (origin?.studyId) onTabDragOverStudy(null);
     if (!origin || !origin.started) return;
     suppressTabClickRef.current = true;
     try { event.currentTarget.releasePointerCapture(event.pointerId); } catch { /* release is best-effort */ }
+    // A DROP ON A CHIP IS THE MOVE THE MENUS ALREADY MAKE — same mutation, same
+    // confirmations, same refusals. The gesture is a second door onto
+    // `onMoveTab`, never a second set of rules for changing a tab's study.
+    if (origin.studyId) {
+      await handleMoveTab(tabId, origin.studyId, event.currentTarget);
+      return;
+    }
     const entry = groups.find((candidate) => candidate.group.id === groupId);
     if (!entry) return;
     const orderedIds = entry.tabs.map((tab) => tab.id);
@@ -803,6 +874,7 @@ export function ScriptureWorkspaceTabs({
   };
 
   const handleTabPointerCancel = (): void => {
+    if (dragPointerRef.current?.studyId) onTabDragOverStudy(null);
     dragPointerRef.current = null;
     setDragState(null);
   };
@@ -1026,8 +1098,15 @@ export function ScriptureWorkspaceTabs({
           const canClose = closeAvailability !== "unavailable";
           const closeCopy = studyWorkspaceCloseActionCopy(label, closeAvailability);
           const dragging = dragState?.tabId === tab.id;
-          const dropBefore = dragState?.groupId === group.id && dragState.insertionIndex === tabIndex;
-          const dropAfter = dragState?.groupId === group.id
+          // A drag over a study chip has left the row's question behind, so the
+          // row stops answering it: one drop indicator at a time, and it is on
+          // the surface the pointer is over.
+          const overStudy = dragState?.studyId != null;
+          const dropBefore = !overStudy
+            && dragState?.groupId === group.id
+            && dragState.insertionIndex === tabIndex;
+          const dropAfter = !overStudy
+            && dragState?.groupId === group.id
             && tabIndex === tabs.length - 1
             && dragState.insertionIndex >= tabs.length;
           return (
@@ -1519,6 +1598,7 @@ export function ScriptureWorkspaceTabs({
                     && studyWorkspaceTabCloseAvailability(workspace, tab.id) !== "unavailable").length
                 : 0;
               const tabCloseAvailability = studyWorkspaceTabCloseAvailability(workspace, target.tabId);
+              const promoteAvailability = studyWorkspaceTabPromoteAvailability(workspace, target.tabId);
               const moveTargets = allGroups.filter((entry) => entry.group.id !== target.groupId);
               return (
                 <>
@@ -1544,6 +1624,22 @@ export function ScriptureWorkspaceTabs({
                     onMouseDown={deferMouseFocus}
                     onClick={async () => { setContextMenu(null); await handleDuplicateTab(target.tabId); }}
                   >Duplicate tab</button>
+                  {/* THE TAB LEAVES — it is not copied, which is the whole
+                      difference between this and Duplicate above it. The study
+                      it founds is born holding this tab, the strip follows it
+                      because the tab is activated, and its chip opens as a
+                      field the way the study line's + does. Disabled when the
+                      shape refuses it: an entity tab cannot found a study, and
+                      a study's last passage cannot leave it. */}
+                  <button
+                    type="button"
+                    role="menuitem"
+                    data-study-context-promote=""
+                    data-study-promote-availability={promoteAvailability}
+                    disabled={promoteAvailability !== "direct"}
+                    onMouseDown={deferMouseFocus}
+                    onClick={async () => { setContextMenu(null); await handlePromoteTab(target.tabId); }}
+                  >New study from this tab</button>
                   {moveTargets.length > 0 && (
                     <div className="scripture-workspace-context-submenu" role="group" aria-label="Move to study">
                       <span>Move to study…</span>
