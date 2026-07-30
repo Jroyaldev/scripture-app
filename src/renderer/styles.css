@@ -1687,7 +1687,6 @@ html, body, #root {
    reads as a stuck focus ring. */
 .scripture-workspace-tab,
 .scripture-workspace-tab-close,
-.scripture-workspace-group-tab,
 .scripture-workspace-active-group,
 .scripture-workspace-open,
 .scripture-workspace-reopen,
@@ -1726,8 +1725,7 @@ html, body, #root {
 
    The flag lands on whichever element opens the run: the kicker when a study is
    expanded, the proxy tab's own wrap when it is collapsed. */
-.scripture-workspace-tab-wrap[data-study-group-start="true"],
-.scripture-workspace-group-head[data-study-group-start="true"] {
+.scripture-workspace-tab-wrap[data-study-group-start="true"] {
   margin-left: var(--page-inset);
   padding-left: 0;
   border-left: 0;
@@ -2246,7 +2244,6 @@ html, body, #root {
    strength rather than the translucent halo the rest of the app rings with:
    that wash is 34-42% and cannot carry a 3:1 ring against paper. */
 .scripture-workspace-tab:focus-visible,
-.scripture-workspace-group-tab:focus-visible,
 .scripture-workspace-active-group:focus-visible,
 .scripture-workspace-open:focus-visible,
 .scripture-workspace-reopen:focus-visible,
@@ -2708,70 +2705,14 @@ html, body, #root {
    and the only thing separating it from the run before it is 24px of canvas
    (see [data-study-group-start] above) — the same argument that removed the
    Research divider. */
-.scripture-workspace-group-head {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  min-width: 0;
-}
+/* THE KICKER'S RULES ARE RETIRED, 2026-07-29.
+   .scripture-workspace-group-head, -group-tab, -group-mark and the
+   [data-study-group-active] recede all belonged to the in-strip study label,
+   which moved to the rail. The interval that opened a study's run survives on
+   the first member's wrap — see [data-study-group-start] above — and is still
+   24px of canvas rather than a rule, which is the argument that removed the
+   Research divider and has not changed. */
 
-/* One 30px box, the tab's own, so the kicker sits on the strip's row rather
-   than above it. 10px of trailing air is the tab's own leading padding, which
-   is what puts the kicker's name and its first member's name in one rhythm —
-   and it is more than the 8px a selected first member's fillet reaches back
-   for, so the fillet has room without a rule of its own. */
-.scripture-workspace-group-tab {
-  height: var(--register-strip);
-  min-width: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  padding: 0 10px 0 0;
-  font: 500 9px/1 var(--font-mono);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  border-radius: 0;
-  background: transparent;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  transition: color var(--transition-fast);
-}
-
-/* Law 2's mark at the smallest scale it appears: 2 × 11, on the edge nearest
-   what it names. Slate, because a study is a grouping the app inferred from
-   what you opened — Law 3's ink for that, and the one ink in the strip that is
-   not saying "selected". */
-.scripture-workspace-group-mark {
-  width: 2px;
-  height: 11px;
-  flex: 0 0 auto;
-  border-radius: var(--radius-mark);
-  background: var(--accent-machine);
-}
-
-/* Capped at one tab's width. A study can be named anything, and an unbounded
-   run of 9px caps across the strip is the defect the retired bracket was drawn
-   to replace — the cap survives the device that needed it. */
-.scripture-workspace-group-tab > span {
-  min-width: 0;
-  flex: 0 1 auto;
-  max-width: 176px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.scripture-workspace-group-tab:hover {
-  background: transparent;
-  color: var(--text-secondary);
-}
-
-/* B3: "A group with no active tab drops its rule and label to 72% — present,
-   receded." There is no rule left to recede with it, so the flag moved from the
-   member's wrap onto the kicker itself, which is now the whole device. */
-.scripture-workspace-group-tab[data-study-group-active="false"] {
-  opacity: 0.72;
-}
 
 .scripture-workspace-tab-wrap.is-dragging {
   opacity: 0.55;
@@ -2994,9 +2935,7 @@ html, body, #root {
   /* Slate is a hue, and forced colours have none: the kicker's mark is redrawn
      in the system's own ink so the group still has a mark, and the receded
      state stops being a 72% wash that this mode cannot render. */
-  .scripture-workspace-group-mark { background: CanvasText; forced-color-adjust: none; }
   .scripture-workspace-group-title > button,
-  .scripture-workspace-group-tab[data-study-group-active="false"],
   .scripture-workspace-row-tools { opacity: 1; }
 
   .scripture-workspace-tab:focus-visible,
@@ -20643,10 +20582,9 @@ button.lang-phrase-diagram-node:focus-visible,
      more: Rev 05 §05·2 retired the device outright, so there is nothing left to
      hide, and the 15px band it reserved is gone from every width rather than
      zeroed at this one. */
-  .scripture-workspace-group-head {
-    display: none;
-  }
-
+  /* The narrow shell used to hide the kicker here and keep the interval. The
+     kicker is gone at every width now, so only the interval remains to be
+     tightened. */
   .scripture-workspace-tab-wrap[data-study-group-start="true"] {
     margin-left: 2px;
   }

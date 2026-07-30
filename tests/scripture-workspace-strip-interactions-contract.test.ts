@@ -163,8 +163,20 @@ test("the strip owns wheel panning, double-click new tab, and pointer context me
 });
 
 test("collapsing a study in the strip has an inverse in the strip", () => {
-  const tablist = section('role="tablist"', '<div className="scripture-workspace-actions"');
-  assert.match(tablist, /className="scripture-workspace-group-tab"/);
+  const tablist = section('role="tablist"', "{/* The new-tab plus, against the last tab");
+
+  /* THE KICKER IS GONE FROM THE STRIP, 2026-07-29, and this test survives it.
+     Two assertions died with it — that the strip contains a
+     .scripture-workspace-group-tab, and that its toggle reads
+     `!group.collapsed` rather than a literal. Both were about the kicker being
+     a two-way control, and there is no kicker here now: the switcher is in the
+     rail and collapse, rename and close are in the group's context menu.
+
+     What the test is FOR is untouched, and is the whole of what remains:
+     collapsing from the strip must have its inverse in the strip. Pressing the
+     tab you are already on folds the study; pressing the proxy that replaces it
+     unfolds. That pair is asserted below, and it is the pair that made this
+     file necessary in the first place. */
   // This used to assert `await toggleGroup(group.id, true, event.currentTarget)`
   // — the literal `true` that made the kicker collapse-only. That was the whole
   // defect: the kicker renders only while a study is expanded, so once collapsed
@@ -174,7 +186,7 @@ test("collapsing a study in the strip has an inverse in the strip", () => {
   // Two assertions replace it, and neither is the old one weakened. The kicker
   // reads the state rather than assuming it, and the collapsed proxy — the one
   // element standing for a collapsed study — expands before it selects.
-  assert.match(tablist, /await toggleGroup\(group\.id, !group\.collapsed, event\.currentTarget\)/);
+
   // The blanket ban on a literal `true` that stood here was too broad, and this
   // is the distinction it was missing. A hardcoded direction is a defect on a
   // control whose direction depends on state — the kicker — and is correct on
@@ -200,14 +212,26 @@ test("collapsing a study in the strip has an inverse in the strip", () => {
   // reason the selection's focus move is: focusing it after a pointer press is
   // what drew a ring the reader never asked for.
   assert.match(tablist, /if \(collapsedProxy\) \{\s*await toggleGroup\(group\.id, false, byKeyboard \? trigger : undefined\);/);
-  assert.match(tablist, /openContextMenu\(\{ kind: "group", groupId: group\.id \}, event\)/);
+  /* The group's own menu — collapse, rename, close — is reached from the
+     collapsed proxy, which IS the study while it is folded. It used to be on
+     the kicker as well; with the kicker gone this is the strip's only route to
+     it, so the assertion moved from the kicker's call to the proxy's ternary.
+     An expanded study's members reach the tab menu, which carries "Rename
+     study" and "Move to study…" of its own. */
+  assert.match(
+    tablist,
+    /collapsedProxy\s*\?\s*\{ kind: "group", groupId: group\.id \}\s*:\s*\{ kind: "tab"/,
+    "a folded study must still open its own menu from the strip",
+  );
   // The last line used to read `title={expandedGroupLabel}`, naming the local
   // that existed only while the group label was a bracket anchored to the first
   // member's wrap. Rev 05 §05·2 makes the label a kicker of its own at the head
   // of the members, so the label it titles itself with is the group's, full
   // stop. What the test protects — that the in-strip label is a real control
   // with a real name, not decoration — is unchanged.
-  assert.match(tablist, /title=\{groupLabel\}/);
+  /* `title={groupLabel}` was the kicker's, and went with it. The collapsed
+     proxy carries the study's name now and is the only in-strip element that
+     names a study at all — asserted where the proxy is, above. */
 });
 
 test("the All Tabs popover lists every retained recently-closed item with a reopen action", () => {

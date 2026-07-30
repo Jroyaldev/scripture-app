@@ -934,71 +934,23 @@ export function ScriptureWorkspaceTabs({
         onContextMenu={handleViewportContextMenu}
       >
         {groups.flatMap(({ group, label: groupLabel, visibleTabs }, groupIndex) => {
-        // Rev 05 §05·2 retires the group bracket. What a study gets instead is a
-        // slate-marked kicker at the head of its own members, IN the strip: "a
-        // label above the strip creates a second strip. It belongs in the strip,
-        // at the head of its members." The rule that used to span the members is
-        // gone with it — "a rule that brackets a group must end exactly where the
-        // group ends; this one cannot, because tabs move" — and 24px of canvas
-        // does the separating, the same argument that removed the Research
-        // divider.
-        //
-        // A collapsed study gets no kicker: its proxy tab already carries the
-        // study's name, and a kicker beside it would say it twice. So the 24px
-        // interval falls on whichever element actually opens the run.
-        const kickered = !group.collapsed && visibleTabs.length > 0;
-        const groupHead = kickered ? (
-          <div
-            className="scripture-workspace-group-head"
-            role="presentation"
-            key={`study-group-head-${group.id}`}
-            data-study-group-head=""
-            data-study-group-id={group.id}
-            data-study-group-start={groupIndex > 0 || undefined}
-          >
-            <button
-              type="button"
-              className="scripture-workspace-group-tab"
-              data-study-group-tab=""
-              data-study-group-id={group.id}
-              // B3: a study with no active tab recedes to 72% — present, never a
-              // second ink. The flag used to sit on the first member's wrap so
-              // the rule and the label could recede together; with the rule
-              // retired the kicker IS the device, and the flag belongs on it.
-              data-study-group-active={activeGroup?.group.id === group.id}
-              tabIndex={-1}
-              title={groupLabel}
-              aria-label={`Collapse study ${groupLabel}`}
-              onMouseDown={deferMouseFocus}
-              onClick={async (event) => {
-                // `!group.collapsed` rather than a literal `true`. It resolves to
-                // the same value today, because the kicker only renders while the
-                // study is expanded — but a hardcoded `true` states an assumption
-                // about the render condition instead of reading it, and if that
-                // condition ever widens the button would silently collapse an
-                // already-collapsed study. That is how the missing inverse got
-                // here: this was a real toggle until it was pinned to one
-                // direction.
-                await toggleGroup(group.id, !group.collapsed, event.currentTarget);
-              }}
-              onContextMenu={(event) => openContextMenu({ kind: "group", groupId: group.id }, event)}
-            >
-              {/* Law 2's mark at the smallest scale it appears, on the edge
-                  nearest what it names. @quire derived · kin: margin entry ·
-                  slate because a study is a grouping the app inferred from what
-                  you opened; the reader may rename it, and renaming an inference
-                  does not make it an authored object. */}
-              <span className="scripture-workspace-group-mark" aria-hidden="true" />
-              {/* @quire guessed · both §05·2 and §05·6 letter the kicker
-                  "EXOD 34 · STUDY", and the shipped group label is already a
-                  study's name ("Pastoral Romans study"), so appending the word
-                  would name the kind twice. Read as the drawing showing a
-                  reference that needs saying what it is, not as a fixed suffix.
-                  Reverses to `${groupLabel} · STUDY` in one line if wrong. */}
-              <span>{groupLabel}</span>
-            </button>
-          </div>
-        ) : null;
+        /* THE GROUP HEAD IS GONE FROM HERE, 2026-07-29.
+           Rev 05 §05·2 had retired the group bracket in favour of a
+           slate-marked kicker at the head of a study's own members, IN the
+           strip: "a label above the strip creates a second strip. It belongs in
+           the strip, at the head of its members."
+
+           Right about the second strip, wrong about the alternative — because a
+           column already existed. A label among the tabs spends horizontal
+           space permanently on something a reader wants only when changing
+           studies, and a strip truncates the name at exactly the moment the name
+           is what is being read. The switcher is in the rail now, where
+           "Deuteronomy 32 worldview" fits whole.
+
+           Nothing went with it. Collapse, rename and close were always in the
+           group's context menu too; and a collapsed study still renders here as
+           its own proxy tab, which is the one case where a study does belong
+           among the tabs — collapsed, it is one. */
         const members = visibleTabs.map((tab, tabIndex) => {
           const label = studyWorkspaceTabLabel(workspace, tab, bookNames);
           const labelParts = studyWorkspaceTabLabelParts(workspace, tab, bookNames);
@@ -1014,10 +966,11 @@ export function ScriptureWorkspaceTabs({
             collapsedProxy ? `study ${groupLabel}` : label,
             closeAvailability,
           );
-          // The interval belongs to the run, not to the tab: when a study is
-          // expanded the kicker opens it and carries the 24px, so a member that
-          // carried it too would double the gap.
-          const groupStart = tabIndex === 0 && groupIndex > 0 && !kickered;
+          /* The interval opens a study's run. It used to fall on the kicker
+             where there was one and on the first member otherwise; with the
+             kicker gone the first member always carries it, which is what the
+             `!kickered` term was arranging for the one case where it did not. */
+          const groupStart = tabIndex === 0 && groupIndex > 0;
           const dragging = dragState?.tabId === tab.id;
           const dropBefore = dragState?.groupId === group.id && dragState.insertionIndex === tabIndex;
           const dropAfter = dragState?.groupId === group.id
@@ -1169,7 +1122,21 @@ export function ScriptureWorkspaceTabs({
         // keeps one flat index space, and a kicker inside the first member's
         // wrap would be shoved by the 8px that wrap reserves for the fillet
         // whenever that member is the selected tab.
-        return groupHead ? [groupHead, ...members] : members;
+        /* Members only. The head moved to the rail on 2026-07-29.
+           Rev 05 §05·2 had put it here — "a label above the strip creates a
+           second strip; it belongs in the strip, at the head of its members" —
+           and that was right about the second strip and wrong about the
+           alternative, because the rail is a column that already exists. A
+           label among the tabs spends horizontal space permanently on something
+           a reader wants only when changing studies, and it truncates the name
+           at exactly the moment the name is the thing being read.
+
+           Nothing was lost with it. Collapse, rename and close were always in
+           the group's context menu as well; switching is the rail's now; and a
+           collapsed study still appears here as its own proxy tab, which is the
+           one case where a study genuinely belongs among the tabs — collapsed,
+           it IS one. */
+        return members;
         })}
         {exitingTabs.map((ghost) => (
           <div
