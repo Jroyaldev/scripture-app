@@ -12,7 +12,6 @@ import {
   studyWorkspaceTabLabelParts,
   studyWorkspaceTabOrdinal,
   studyWorkspaceTabType,
-  visibleStudyWorkspaceTabIds,
   type StudyWorkspaceGroup,
   type StudyWorkspaceStateV2,
   type StudyWorkspaceTab,
@@ -36,7 +35,6 @@ export interface ScriptureWorkspaceTabsProps {
   onSelect: (tabId: string) => Promise<boolean>;
   onClose: (tabId: string) => Promise<boolean>;
   onCloseGroup: (groupId: string) => Promise<boolean>;
-  onToggleGroup: (groupId: string, collapsing: boolean) => Promise<boolean>;
   onRenameGroup: (groupId: string, label: string) => Promise<boolean>;
   onMoveTab: (tabId: string, targetGroupId: string) => Promise<boolean>;
   onReorderTab: (tabId: string, position: WorkspaceReorderPosition) => Promise<boolean>;
@@ -53,7 +51,6 @@ interface WorkspaceTabGroup {
   group: StudyWorkspaceGroup;
   label: string;
   tabs: StudyWorkspaceTab[];
-  visibleTabs: StudyWorkspaceTab[];
 }
 
 interface SelectTabOptions {
@@ -65,7 +62,6 @@ interface CloseTabOptions extends SelectTabOptions {}
 
 type WorkspaceContextTarget =
   | { kind: "tab"; tabId: string; groupId: string }
-  | { kind: "group"; groupId: string }
   | { kind: "empty" };
 
 interface WorkspaceContextMenu {
@@ -273,7 +269,6 @@ export function ScriptureWorkspaceTabs({
   onSelect,
   onClose,
   onCloseGroup,
-  onToggleGroup,
   onRenameGroup,
   onMoveTab,
   onReorderTab,
@@ -288,17 +283,12 @@ export function ScriptureWorkspaceTabs({
   const [overflowOpen, setOverflowOpen] = useState(false);
   const [overflowAnchor, setOverflowAnchor] = useState<DOMRect | null>(null);
   const [overflowQuery, setOverflowQuery] = useState("");
-  const [groupMenuOpen, setGroupMenuOpen] = useState(false);
-  const [groupMenuAnchor, setGroupMenuAnchor] = useState<DOMRect | null>(null);
   const [renameGroupId, setRenameGroupId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
   const [hasMeasuredOverflow, setHasMeasuredOverflow] = useState(false);
-  // How many tabs are wholly inside the strip right now. Everything else in the
-  // register — scrolled past the cut, or folded inside a collapsed study — is
-  // "the rest", and the overflow control counts it as +n.
-  const [tabsInStrip, setTabsInStrip] = useState<number | null>(null);
   const [scrollEdges, setScrollEdges] = useState({ left: false, right: false });
   const [focusedTabId, setFocusedTabId] = useState<string | null>(null);
+  const [rovingFocusIntent, setRovingFocusIntent] = useState<{ id: string; nonce: number } | null>(null);
   const [contextMenu, setContextMenu] = useState<WorkspaceContextMenu | null>(null);
   const [dragState, setDragState] = useState<WorkspaceDragState | null>(null);
   const [menu, setMenu] = useState<WorkspaceMenuState | null>(null);
@@ -306,11 +296,7 @@ export function ScriptureWorkspaceTabs({
   const viewportRef = useRef<HTMLDivElement>(null);
   const overflowButtonRef = useRef<HTMLButtonElement>(null);
   const overflowSearchRef = useRef<HTMLInputElement>(null);
-  const groupMenuButtonRef = useRef<HTMLButtonElement>(null);
   const groupRenameInputRef = useRef<HTMLInputElement>(null);
-  // Where the group popover puts focus when it opens. It is the heading and not
-  // the rename field on purpose — see the note on the Popover below.
-  const groupMenuHeadingRef = useRef<HTMLDivElement>(null);
   const contextTriggerRef = useRef<HTMLElement | null>(null);
   const tabRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const pendingWorkspaceIntentCountRef = useRef(0);
@@ -318,46 +304,68 @@ export function ScriptureWorkspaceTabs({
     { x: number; y: number; tabId: string; groupId: string; started: boolean; insertionIndex: number } | null
   >(null);
   const suppressTabClickRef = useRef(false);
+  const rovingFocusNonceRef = useRef(0);
   // Symmetric exit motion: a closed tab leaves a decorative ghost that collapses
   // its width/opacity to mirror the 150ms entrance. Geometry is captured while
   // the tab still exists, so the ghost can be painted after React unmounts it.
   const tabGeometryRef = useRef<Map<string, TabExitGeometry>>(new Map());
-  const prevVisibleTabIdsRef = useRef<string[]>([]);
+  const prevRegisterTabIdsRef = useRef<string[]>([]);
   const prefersReducedMotionRef = useRef(false);
 
-  const visibleTabIds = useMemo(() => visibleStudyWorkspaceTabIds(workspace), [workspace]);
-  const visibleTabIdSet = useMemo(() => new Set(visibleTabIds), [visibleTabIds]);
+  /**
+   * THE REGISTER IS ONE STUDY AT A TIME, 2026-07-30.
+   *
+   * The strip holds the tabs of the study the page is in, and nothing else.
+   * There is no filter state anywhere and there is no "all studies" view: the
+   * study line above names every study, and which one the strip is showing is
+   * the same fact as which tab is active. Selection leads and the line follows
+   * because there is nothing else it could do — a chip asks for a tab, the
+   * active tab moves, and the row underneath is that tab's study by
+   * construction. A refused selection is self-correcting for the same reason.
+   *
+   * `allGroups` is the whole workspace and every surface that has to reach a
+   * study the strip is NOT showing asks for it by name: All Tabs and its
+   * search, the "Move to study…" menus, the rename this component still owns.
+   * A call site that wants the workspace and takes `groups` is a mistake you
+   * can see, rather than a study that quietly disappears from a menu.
+   */
+  const allGroups = useMemo<WorkspaceTabGroup[]>(() => workspace.groups.map((group) => ({
+    group,
+    label: studyWorkspaceGroupLabel(workspace, group, bookNames),
+    tabs: orderedStudyWorkspaceTabs(workspace, group.id),
+  })), [bookNames, workspace]);
+  const activeStudyId = workspace.tabsById[workspace.activeTabId]?.groupId ?? null;
+  const groups = useMemo<WorkspaceTabGroup[]>(
+    () => allGroups.filter(({ group }) => group.id === activeStudyId),
+    [activeStudyId, allGroups],
+  );
+  /**
+   * The tabs the strip is showing, in strip order — and every one of the
+   * study's tabs, because nothing folds any more.
+   *
+   * Roving focus and the arrow keys read THIS. A roving stop naming a tab that
+   * is not rendered leaves the tablist with no `tabIndex=0` element at all — it
+   * drops out of the Tab order, which is an APG violation — and an arrow would
+   * move focus to a tab `tabRefs` has no node for, so focus would die silently.
+   */
+  const stripTabIds = useMemo(
+    () => groups.flatMap(({ tabs }) => tabs.map((tab) => tab.id)),
+    [groups],
+  );
+  const registerTabIds = useMemo(() => studyWorkspaceRegisterTabIds(workspace), [workspace]);
+  const stripTabIdSet = useMemo(() => new Set(stripTabIds), [stripTabIds]);
   const rovingTabId = useMemo(
-    () => studyWorkspaceRovingTabId(visibleTabIds, workspace.activeTabId),
-    [visibleTabIds, workspace.activeTabId],
+    () => studyWorkspaceRovingTabId(stripTabIds, workspace.activeTabId),
+    [stripTabIds, workspace.activeTabId],
   );
   // Manual activation: roving FOCUS may lead the active (aria-selected) tab, so
   // the single tabindex=0 stop follows the focused tab and only falls back to
   // the active tab once focus leaves or the selection commits.
   const effectiveRovingTabId = useMemo(
-    () => (focusedTabId && visibleTabIdSet.has(focusedTabId) ? focusedTabId : rovingTabId),
-    [focusedTabId, rovingTabId, visibleTabIdSet],
+    () => (focusedTabId && stripTabIdSet.has(focusedTabId) ? focusedTabId : rovingTabId),
+    [focusedTabId, rovingTabId, stripTabIdSet],
   );
-  const groups = useMemo<WorkspaceTabGroup[]>(() => workspace.groups.map((group) => {
-    const tabs = orderedStudyWorkspaceTabs(workspace, group.id);
-    return {
-      group,
-      label: studyWorkspaceGroupLabel(workspace, group, bookNames),
-      tabs,
-      visibleTabs: tabs.filter((tab) => visibleTabIdSet.has(tab.id)),
-    };
-  }), [bookNames, visibleTabIdSet, workspace]);
-  const activeGroup = useMemo(() => {
-    const activeTab = workspace.tabsById[workspace.activeTabId];
-    return activeTab ? groups.find(({ group }) => group.id === activeTab.groupId) ?? null : null;
-  }, [groups, workspace.activeTabId, workspace.tabsById]);
-  const activeGroupCloseAvailability = activeGroup
-    ? studyWorkspaceGroupCloseAvailability(workspace, activeGroup.group.id)
-    : "unavailable";
-  const activeGroupCloseCopy = activeGroup
-    ? studyWorkspaceCloseActionCopy(`study ${activeGroup.label}`, activeGroupCloseAvailability)
-    : null;
-  const filteredGroups = useMemo(() => groups.flatMap((entry) => {
+  const filteredGroups = useMemo(() => allGroups.flatMap((entry) => {
     const groupMatches = studyWorkspaceSearchMatches(overflowQuery, entry.label);
     const tabs = groupMatches
       ? entry.tabs
@@ -367,7 +375,7 @@ export function ScriptureWorkspaceTabs({
           studyWorkspaceTabLabel(workspace, tab, bookNames),
         ));
     return tabs.length > 0 ? [{ ...entry, tabs }] : [];
-  }), [bookNames, groups, overflowQuery, workspace]);
+  }), [allGroups, bookNames, overflowQuery, workspace]);
   const recentlyClosed = workspace.recentlyClosed.at(-1);
   const recentlyClosedLabel = useMemo(() => {
     if (!recentlyClosed) return null;
@@ -414,36 +422,41 @@ export function ScriptureWorkspaceTabs({
     }
   }, []);
 
+  /**
+   * Focus after a commit, once React has caught up.
+   *
+   * `window.setTimeout(…, 0)` and not `requestAnimationFrame`, changed
+   * 2026-07-30 for the same reason the roving stop was: a frame is a compositor
+   * promise, and an occluded window throttles rAF to never — so the workspace
+   * would commit a selection and simply not move focus, silently, with no
+   * error anywhere. A task runs after React's commit whether or not anything is
+   * being painted. `focusWorkspaceTabAfterCommit` in app.tsx has always used a
+   * task for exactly this; these two are brought into line with it.
+   */
   const scheduleCommittedTabFocus = useCallback((tabId: string | null, moveFocus: boolean): void => {
-    window.requestAnimationFrame(() => {
+    window.setTimeout(() => {
       const requested = tabId ? tabRefs.current.get(tabId) : undefined;
       const selected = viewportRef.current?.querySelector<HTMLButtonElement>('[role="tab"][aria-selected="true"]');
       const target = requested?.isConnected ? requested : selected ?? overflowButtonRef.current;
       target?.scrollIntoView({ block: "nearest", inline: "nearest" });
       if (moveFocus) target?.focus({ preventScroll: true });
-    });
+    }, 0);
   }, []);
 
   const scheduleControlFocus = useCallback((
     requested: HTMLElement | null,
     fallback: React.RefObject<HTMLElement | null>,
   ): void => {
-    window.requestAnimationFrame(() => {
+    window.setTimeout(() => {
       const target = requested?.isConnected ? requested : fallback.current;
       if (target?.isConnected) target.focus({ preventScroll: true });
-    });
+    }, 0);
   }, []);
 
   const dismissOverflow = useCallback((): void => {
     setOverflowOpen(false);
     setRenameGroupId(null);
     scheduleControlFocus(overflowButtonRef.current, overflowButtonRef);
-  }, [scheduleControlFocus]);
-
-  const dismissGroupMenu = useCallback((): void => {
-    setGroupMenuOpen(false);
-    setRenameGroupId(null);
-    scheduleControlFocus(groupMenuButtonRef.current, groupMenuButtonRef);
   }, [scheduleControlFocus]);
 
   const dismissContextMenu = useCallback((): void => {
@@ -480,7 +493,6 @@ export function ScriptureWorkspaceTabs({
     event.preventDefault();
     setMenu(null);
     setOverflowOpen(false);
-    setGroupMenuOpen(false);
     contextTriggerRef.current = event.currentTarget;
     setContextMenu({ target, anchor: new DOMRect(event.clientX, event.clientY, 0, 0) });
   }, []);
@@ -494,15 +506,6 @@ export function ScriptureWorkspaceTabs({
         left: viewport.scrollLeft > 2,
         right: viewport.scrollLeft + viewport.clientWidth < viewport.scrollWidth - 2,
       });
-      const box = viewport.getBoundingClientRect();
-      let shown = 0;
-      for (const node of tabRefs.current.values()) {
-        if (!node.isConnected) continue;
-        const rect = node.getBoundingClientRect();
-        // A tab clipped by the 36px edge fade is not readable, so it is not shown.
-        if (rect.left >= box.left - 1 && rect.right <= box.right + 1) shown += 1;
-      }
-      setTabsInStrip(shown);
     };
     measure();
     const observer = new ResizeObserver(measure);
@@ -542,12 +545,17 @@ export function ScriptureWorkspaceTabs({
   // collapsing ghost. Runs in layout phase: the diff uses the geometry captured
   // on the previous commit (still valid for the just-removed tab), then records
   // fresh geometry for the surviving tabs.
+  /* Diffed against the WORKSPACE's tabs and not against the strip's. A tab that
+     left the workspace is a close and gets its ghost; a tab that left the strip
+     because the reader changed study is still open, and replaying a row of
+     collapse-out animations every time a chip is pressed would turn a switch
+     into a demolition. */
   useLayoutEffect(() => {
     const viewport = viewportRef.current;
     const priorGeometry = tabGeometryRef.current;
-    const currentIds = new Set(visibleTabIds);
+    const currentIds = new Set(registerTabIds);
     if (!prefersReducedMotionRef.current && viewport) {
-      const removed = prevVisibleTabIdsRef.current.filter((id) => !currentIds.has(id));
+      const removed = prevRegisterTabIdsRef.current.filter((id) => !currentIds.has(id));
       const ghosts: ExitingTab[] = [];
       for (const id of removed) {
         const geometry = priorGeometry.get(id);
@@ -563,7 +571,7 @@ export function ScriptureWorkspaceTabs({
     const nextGeometry = new Map<string, TabExitGeometry>();
     if (viewport) {
       const viewportRect = viewport.getBoundingClientRect();
-      for (const id of visibleTabIds) {
+      for (const id of registerTabIds) {
         const node = tabRefs.current.get(id);
         if (!node) continue;
         const wrap = (node.closest(".scripture-workspace-tab-wrap") as HTMLElement | null) ?? node;
@@ -577,8 +585,29 @@ export function ScriptureWorkspaceTabs({
       }
     }
     tabGeometryRef.current = nextGeometry;
-    prevVisibleTabIdsRef.current = visibleTabIds;
-  }, [visibleTabIds]);
+    prevRegisterTabIdsRef.current = registerTabIds;
+  }, [registerTabIds]);
+
+  /**
+   * Put focus on the tab the arrows just moved the roving stop to.
+   *
+   * This was `window.requestAnimationFrame(() => …focus())` in the keydown
+   * handler, and it went out of step with the tabindex it belongs to on
+   * 2026-07-30: an Electron window that is occluded throttles rAF to never, so
+   * `setFocusedTabId` landed, the stop moved, and focus stayed where it was.
+   * The arrows stopped working with no error anywhere — the exact failure a
+   * roving tabindex cannot survive, because focus and the stop ARE the pattern.
+   *
+   * A layout effect gives the same "after the DOM has caught up" guarantee
+   * without asking the compositor for anything. The nonce is what makes a
+   * second arrow onto the same tab a second request; a bare id would look
+   * unchanged and this would not re-run.
+   */
+  useLayoutEffect(() => {
+    if (!rovingFocusIntent) return;
+    tabRefs.current.get(rovingFocusIntent.id)?.focus({ preventScroll: true });
+    setRovingFocusIntent(null);
+  }, [rovingFocusIntent]);
 
   // Once a selection commits, roving focus rejoins the active tab.
   useEffect(() => {
@@ -588,7 +617,7 @@ export function ScriptureWorkspaceTabs({
   useLayoutEffect(() => {
     if (pendingWorkspaceIntentCountRef.current > 0) return;
     scheduleCommittedTabFocus(workspace.activeTabId, false);
-  }, [scheduleCommittedTabFocus, visibleTabIds, workspace.activeTabId]);
+  }, [scheduleCommittedTabFocus, stripTabIds, workspace.activeTabId]);
 
   const handleSelectTab = useCallback(async (
     tabId: string,
@@ -616,35 +645,22 @@ export function ScriptureWorkspaceTabs({
     () => onCloseGroup(groupId),
     () => {
       setOverflowOpen(false);
-      setGroupMenuOpen(false);
       setRenameGroupId(null);
       scheduleCommittedTabFocus(null, true);
     },
   ), [onCloseGroup, runApprovedIntent, scheduleCommittedTabFocus]);
-
-  const toggleGroup = useCallback(async (
-    groupId: string,
-    collapsing: boolean,
-    focusTarget?: HTMLElement,
-  ): Promise<boolean> => await runApprovedIntent(
-    () => onToggleGroup(groupId, collapsing),
-    () => scheduleControlFocus(focusTarget ?? null, overflowSearchRef),
-  ), [onToggleGroup, runApprovedIntent, scheduleControlFocus]);
 
   const handleRenameGroup = useCallback(async (groupId: string): Promise<boolean> => {
     const trimmed = renameDraft.trim();
     if (!trimmed) return false;
     const approved = await runApprovedIntent(
       () => onRenameGroup(groupId, trimmed),
-      () => scheduleControlFocus(
-        groupRenameInputRef.current,
-        overflowOpen ? overflowSearchRef : groupMenuButtonRef,
-      ),
+      () => scheduleControlFocus(groupRenameInputRef.current, overflowSearchRef),
     );
     if (approved) setRenameGroupId(null);
     if (approved) setRenameDraft("");
     return approved;
-  }, [onRenameGroup, overflowOpen, renameDraft, runApprovedIntent, scheduleControlFocus]);
+  }, [onRenameGroup, renameDraft, runApprovedIntent, scheduleControlFocus]);
 
   const handleMoveTab = useCallback(async (
     tabId: string,
@@ -677,7 +693,6 @@ export function ScriptureWorkspaceTabs({
     () => onReopenRecent(),
     () => {
       setOverflowOpen(false);
-      setGroupMenuOpen(false);
       scheduleCommittedTabFocus(null, true);
     },
   ), [onReopenRecent, runApprovedIntent, scheduleCommittedTabFocus]);
@@ -686,25 +701,23 @@ export function ScriptureWorkspaceTabs({
     () => onReopenRecentItem(index),
     () => {
       setOverflowOpen(false);
-      setGroupMenuOpen(false);
       scheduleCommittedTabFocus(null, true);
     },
   ), [onReopenRecentItem, runApprovedIntent, scheduleCommittedTabFocus]);
 
   const beginRenameFromContext = useCallback((groupId: string): void => {
-    const entry = groups.find((candidate) => candidate.group.id === groupId);
+    const entry = allGroups.find((candidate) => candidate.group.id === groupId);
     setContextMenu(null);
-    setGroupMenuOpen(false);
     setOverflowQuery("");
     setRenameGroupId(groupId);
     setRenameDraft(entry?.label ?? "");
     setOverflowAnchor(overflowButtonRef.current?.getBoundingClientRect() ?? null);
     setOverflowOpen(true);
-    window.requestAnimationFrame(() => groupRenameInputRef.current?.focus({ preventScroll: true }));
-  }, [groups]);
+    window.setTimeout(() => groupRenameInputRef.current?.focus({ preventScroll: true }), 0);
+  }, [allGroups]);
 
   const handleCloseOthers = useCallback(async (groupId: string, keepTabId: string): Promise<void> => {
-    const entry = groups.find((candidate) => candidate.group.id === groupId);
+    const entry = allGroups.find((candidate) => candidate.group.id === groupId);
     if (!entry) return;
     const targets = entry.tabs
       .filter((tab) => tab.id !== keepTabId
@@ -715,7 +728,7 @@ export function ScriptureWorkspaceTabs({
       const closed = await handleCloseTab(id);
       if (!closed) break;
     }
-  }, [groups, handleCloseTab, workspace]);
+  }, [allGroups, handleCloseTab, workspace]);
 
   const handleDuplicateTab = useCallback(async (tabId: string): Promise<void> => {
     if (workspace.activeTabId !== tabId) {
@@ -756,7 +769,7 @@ export function ScriptureWorkspaceTabs({
     }
     const entry = groups.find((candidate) => candidate.group.id === groupId);
     if (!entry) return;
-    const orderedIds = entry.visibleTabs.map((tab) => tab.id);
+    const orderedIds = entry.tabs.map((tab) => tab.id);
     let insertionIndex = orderedIds.length;
     for (let index = 0; index < orderedIds.length; index += 1) {
       const node = tabRefs.current.get(orderedIds[index]);
@@ -784,7 +797,7 @@ export function ScriptureWorkspaceTabs({
     try { event.currentTarget.releasePointerCapture(event.pointerId); } catch { /* release is best-effort */ }
     const entry = groups.find((candidate) => candidate.group.id === groupId);
     if (!entry) return;
-    const orderedIds = entry.visibleTabs.map((tab) => tab.id);
+    const orderedIds = entry.tabs.map((tab) => tab.id);
     const position = studyWorkspaceDragReorderPosition(orderedIds, tabId, origin.insertionIndex);
     if (position) await handleReorderTab(tabId, position, event.currentTarget);
   };
@@ -798,15 +811,13 @@ export function ScriptureWorkspaceTabs({
     event: React.MouseEvent<HTMLButtonElement>,
     tabId: string,
     canClose: boolean,
-    collapsedProxy: boolean,
   ): Promise<void> => {
     if (event.button !== 1) return;
-    // A collapsed study's proxy stands in for many tabs; middle-clicking it must
-    // never close the whole study. Individual tabs keep middle-click-to-close.
-    if (collapsedProxy) {
-      event.preventDefault();
-      return;
-    }
+    /* The collapsed-proxy guard went with the proxy on 2026-07-30. It read
+         if (collapsedProxy) { event.preventDefault(); return; }
+       and it existed because one tab could stand for a whole study, so
+       middle-clicking it would have closed every tab in that study at once.
+       Every tab in the strip is one tab again. */
     if (!canClose) return;
     event.preventDefault();
     await handleCloseTab(tabId, { moveFocus: true });
@@ -816,12 +827,13 @@ export function ScriptureWorkspaceTabs({
     event: React.KeyboardEvent<HTMLButtonElement>,
     tabId: string,
     canClose: boolean,
-    collapsedGroupId: string | null,
   ): Promise<void> => {
+    // Delete closes the tab. It used to close the whole STUDY when the focused
+    // tab was a collapsed study's proxy; there are no proxies, so one key has
+    // one meaning again.
     if (canClose && (event.key === "Delete" || event.key === "Backspace")) {
       event.preventDefault();
-      if (collapsedGroupId) await handleCloseGroup(collapsedGroupId);
-      else await handleCloseTab(tabId, { moveFocus: true });
+      await handleCloseTab(tabId, { moveFocus: true });
       return;
     }
     // APG manual activation: Enter/Space commit the focused tab's transition —
@@ -845,20 +857,26 @@ export function ScriptureWorkspaceTabs({
     // this branch existed — is what tells it a keyboard sent the click, so
     // focus travels for the keyboard and stays put for the pointer. One commit
     // path, reached two ways.
-    if (visibleTabIds.length === 0) return;
-    const current = Math.max(0, visibleTabIds.indexOf(tabId));
+    // The arrows travel what the strip is SHOWING. They used to travel the
+    // model-wide visible list, which was the same list until the study line
+    // began filtering the strip; after that an arrow could land on a tab in a
+    // study that is not on screen, `tabRefs` would have no node for it, and
+    // focus would leave the register without arriving anywhere.
+    if (stripTabIds.length === 0) return;
+    const current = Math.max(0, stripTabIds.indexOf(tabId));
     let index: number | null = null;
-    if (event.key === "ArrowRight") index = (current + 1) % visibleTabIds.length;
-    else if (event.key === "ArrowLeft") index = (current - 1 + visibleTabIds.length) % visibleTabIds.length;
+    if (event.key === "ArrowRight") index = (current + 1) % stripTabIds.length;
+    else if (event.key === "ArrowLeft") index = (current - 1 + stripTabIds.length) % stripTabIds.length;
     else if (event.key === "Home") index = 0;
-    else if (event.key === "End") index = visibleTabIds.length - 1;
+    else if (event.key === "End") index = stripTabIds.length - 1;
     if (index == null) return;
     event.preventDefault();
-    const next = visibleTabIds[index];
+    const next = stripTabIds[index];
     if (!next) return;
     // Arrows move roving FOCUS only; aria-selected/activation is untouched.
     setFocusedTabId(next);
-    window.requestAnimationFrame(() => tabRefs.current.get(next)?.focus({ preventScroll: true }));
+    rovingFocusNonceRef.current += 1;
+    setRovingFocusIntent({ id: next, nonce: rovingFocusNonceRef.current });
   };
 
   const deferMouseFocus = (event: React.MouseEvent<HTMLElement>): void => event.preventDefault();
@@ -896,7 +914,7 @@ export function ScriptureWorkspaceTabs({
     ? contextMenu.target.groupId
     : null;
   const contextGroup = contextGroupId
-    ? groups.find((entry) => entry.group.id === contextGroupId) ?? null
+    ? allGroups.find((entry) => entry.group.id === contextGroupId) ?? null
     : null;
 
   // The active tab flows into the page with a concave fillet, and claims the
@@ -917,8 +935,7 @@ export function ScriptureWorkspaceTabs({
   // corner and nobody could see why, because the expression named an object
   // that was no longer rendered. Nothing precedes the first tab now, so the
   // condition is the whole of what it always meant: the active tab is first.
-  const registerTabIds = groups.flatMap(({ visibleTabs }) => visibleTabs.map((tab) => tab.id));
-  const activeRegisterIndex = registerTabIds.indexOf(workspace.activeTabId);
+  const activeRegisterIndex = stripTabIds.indexOf(workspace.activeTabId);
   const flushStart = activeRegisterIndex === 0;
 
   // There is deliberately no flush-END counterpart, and this is a ruling rather
@@ -933,10 +950,18 @@ export function ScriptureWorkspaceTabs({
   // to say out loud that it no longer varies.
   const actionsPlacement = "strip-end";
 
-  // "The rest": everything the strip is not showing — scrolled past the 36px
-  // cut, or folded inside a collapsed study. The overflow control counts it.
-  const registerSize = studyWorkspaceRegisterTabIds(workspace).length;
-  const hiddenTabCount = tabsInStrip === null ? 0 : Math.max(0, registerSize - tabsInStrip);
+  /* THE +n COUNT IS RETIRED, 2026-07-30. B4 asked for it — "a +7 count opens
+     the rest as a list" — and it was right while the strip was the whole
+     workspace and "the rest" was one number with one meaning. It stopped being
+     one number when the register became one study at a time: some of it was a
+     scroll you could undo by panning, and the rest was other studies entirely.
+     Scoping it to the visible study left a count of tabs that are two pixels
+     off the edge of a row you can pan with a wheel, which is chrome reporting
+     on chrome.
+     What answers "where is the rest" now is the study line: every study named,
+     with its own count in the chip's tooltip, one press away. This control goes
+     back to being what it says — the door to the overview — and it says how
+     many tabs are behind it in its accessible name. */
   const persistenceReason = studyWorkspacePersistenceReason(persistenceStatus.error);
 
   return (
@@ -961,56 +986,56 @@ export function ScriptureWorkspaceTabs({
         onDoubleClick={handleViewportDoubleClick}
         onContextMenu={handleViewportContextMenu}
       >
-        {groups.flatMap(({ group, label: groupLabel, visibleTabs }, groupIndex) => {
-        /* THE GROUP HEAD IS GONE FROM HERE, 2026-07-29.
-           Rev 05 §05·2 had retired the group bracket in favour of a
-           slate-marked kicker at the head of a study's own members, IN the
-           strip: "a label above the strip creates a second strip. It belongs in
-           the strip, at the head of its members."
+        {groups.flatMap(({ group, label: groupLabel, tabs }) => {
+        /* THE STRIP IS ONE STUDY'S TABS, 2026-07-30, and this loop lost two
+           devices on that date.
 
-           Right about the second strip, wrong about the alternative — because a
-           column already existed. A label among the tabs spends horizontal
-           space permanently on something a reader wants only when changing
-           studies, and a strip truncates the name at exactly the moment the name
-           is what is being read. The switcher is in the rail now, where
-           "Deuteronomy 32 worldview" fits whole.
+           THE GROUP HEAD went on 2026-07-29. Rev 05 §05·2 had retired the group
+           bracket in favour of a slate-marked kicker at the head of a study's
+           own members, IN the strip — "a label above the strip creates a second
+           strip. It belongs in the strip, at the head of its members." Right
+           about the second strip, wrong about the alternative: a label among the
+           tabs spends horizontal space permanently on something a reader wants
+           only when changing studies, and a strip truncates the name at exactly
+           the moment the name is what is being read.
 
-           Nothing went with it. Collapse, rename and close were always in the
-           group's context menu too; and a collapsed study still renders here as
-           its own proxy tab, which is the one case where a study does belong
-           among the tabs — collapsed, it is one. */
-        const members = visibleTabs.map((tab, tabIndex) => {
+           THE COLLAPSED PROXY went with the ruling that the register holds one
+           study at a time. A proxy tab was a whole study folded into a single
+           tab so its siblings could get out of the row — and the row now holds
+           one study's tabs by construction, so there is nothing for a fold to
+           achieve and no second study in the row to fold away from. Everything
+           that hung off it goes too: `data-study-collapsed-proxy`, the
+           expand-then-select branch, press-the-active-tab-to-collapse, the
+           proxy's group context menu, and the count badge it wore.
+
+           That retires the collapse-parity claim made here on 2026-07-30 —
+           "collapsing from the strip must have its inverse in the strip", which
+           was true and is now moot, because neither half of the pair exists.
+           `collapsed` is still in the model and still persisted; nothing reads
+           it. The claim's replacement is simpler: there is no gesture in the
+           strip that hides a tab, so there is no gesture that has to un-hide
+           one.
+
+           What is left is the study's members, in the study's own order. */
+        return tabs.map((tab, tabIndex) => {
           const label = studyWorkspaceTabLabel(workspace, tab, bookNames);
           const labelParts = studyWorkspaceTabLabelParts(workspace, tab, bookNames);
           const selected = workspace.activeTabId === tab.id;
           const roving = effectiveRovingTabId === tab.id;
-          const collapsedProxy = group.collapsed;
-          const visibleLabel = collapsedProxy ? groupLabel : label;
-          const closeAvailability = collapsedProxy
-            ? studyWorkspaceGroupCloseAvailability(workspace, group.id)
-            : studyWorkspaceTabCloseAvailability(workspace, tab.id);
+          const closeAvailability = studyWorkspaceTabCloseAvailability(workspace, tab.id);
           const canClose = closeAvailability !== "unavailable";
-          const closeCopy = studyWorkspaceCloseActionCopy(
-            collapsedProxy ? `study ${groupLabel}` : label,
-            closeAvailability,
-          );
-          /* The interval opens a study's run. It used to fall on the kicker
-             where there was one and on the first member otherwise; with the
-             kicker gone the first member always carries it, which is what the
-             `!kickered` term was arranging for the one case where it did not. */
-          const groupStart = tabIndex === 0 && groupIndex > 0;
+          const closeCopy = studyWorkspaceCloseActionCopy(label, closeAvailability);
           const dragging = dragState?.tabId === tab.id;
           const dropBefore = dragState?.groupId === group.id && dragState.insertionIndex === tabIndex;
           const dropAfter = dragState?.groupId === group.id
-            && tabIndex === visibleTabs.length - 1
-            && dragState.insertionIndex >= visibleTabs.length;
+            && tabIndex === tabs.length - 1
+            && dragState.insertionIndex >= tabs.length;
           return (
             <div
-              className={`scripture-workspace-tab-wrap${selected ? " is-selected" : ""}${collapsedProxy ? " is-collapsed-proxy" : ""}${dragging ? " is-dragging" : ""}`}
+              className={`scripture-workspace-tab-wrap${selected ? " is-selected" : ""}${dragging ? " is-dragging" : ""}`}
               role="presentation"
               key={tab.id}
               data-study-group-id={group.id}
-              data-study-group-start={groupStart || undefined}
               data-study-drop={dropBefore ? "before" : dropAfter ? "after" : undefined}
             >
               <button
@@ -1022,24 +1047,20 @@ export function ScriptureWorkspaceTabs({
                 id={`study-workspace-tab-${tab.id}`}
                 className={`scripture-workspace-tab is-${tab.kind}`}
                 role="tab"
-                aria-label={collapsedProxy
-                  ? `${groupLabel}, collapsed study with ${group.tabIds.length} tabs, opens ${label}${closeAvailability === "decision" ? ", closing requires confirmation" : ""}`
-                  : `${label}, ${groupLabel}${closeAvailability === "decision" ? ", closing requires confirmation" : ""}`}
+                aria-label={`${label}, ${groupLabel}${closeAvailability === "decision" ? ", closing requires confirmation" : ""}`}
                 aria-selected={selected}
                 aria-controls="scripture-workspace-panel"
                 aria-keyshortcuts={canClose ? "Delete" : undefined}
                 tabIndex={roving ? 0 : -1}
                 data-study-tab-id={tab.id}
                 data-study-tab-kind={studyWorkspaceTabType(tab)}
-                data-study-collapsed-proxy={collapsedProxy || undefined}
-                title={collapsedProxy ? `${groupLabel} — ${group.tabIds.length} tabs` : `${label} — ${groupLabel}`}
+                title={`${label} — ${groupLabel}`}
                 onMouseDown={deferMouseFocus}
-                onPointerDown={(event) => handleTabPointerDown(event, tab.id, group.id, !collapsedProxy)}
+                onPointerDown={(event) => handleTabPointerDown(event, tab.id, group.id, true)}
                 onPointerMove={(event) => handleTabPointerMove(event, group.id)}
                 onPointerUp={(event) => handleTabPointerUp(event, tab.id, group.id)}
                 onPointerCancel={handleTabPointerCancel}
                 onClick={async (event) => {
-                  const trigger = event.currentTarget;
                   // A pointer press must not draw a focus ring, and this one did.
                   // `deferMouseFocus` cancels the browser's own mousedown focus,
                   // so the programmatic focus below is the FIRST focus the tab
@@ -1055,84 +1076,32 @@ export function ScriptureWorkspaceTabs({
                   // tab into view is unconditional either way — that happens in
                   // `scheduleCommittedTabFocus` before the focus call it gates.
                   //
-                  // This test had nothing to distinguish until 2026-07-30:
-                  // `handleTabKeyDown` was cancelling the synthesized click, so
-                  // every click that reached here came from a pointer and the
-                  // three branches below were pointer-only. The keydown handler
-                  // stopped intercepting Enter and Space, so this is now the one
-                  // commit path both devices arrive on — which is what makes
-                  // collapse and expand reachable from the keyboard at all.
-                  //
-                  // How the fold is announced: the study the reader collapsed
-                  // folds to one proxy, which IS the tab they pressed, so focus
-                  // does not move and the focused control's accessible name
-                  // changes under it — "Acts 19, Acts study" becomes "Acts
-                  // study, collapsed study with 3 tabs, opens Acts 19". That
-                  // name is the announcement, and it is the same fact the strip
-                  // shows a sighted reader. Nothing new is added to say it.
+                  // Two branches stood in front of this one until 2026-07-30 —
+                  // expand-then-select on a collapsed study's proxy, and
+                  // press-the-tab-you-are-on to fold its study — and both went
+                  // with the proxy. A tab press selects a tab. That is the whole
+                  // of it, which is what the strip's one gesture should have
+                  // been all along.
                   const byKeyboard = event.detail === 0;
                   if (suppressTabClickRef.current) {
                     suppressTabClickRef.current = false;
                     return;
                   }
                   if (event.target instanceof Element && event.target.closest("[data-workspace-tab-close]")) {
-                    if (collapsedProxy) await handleCloseGroup(group.id);
-                    else await handleCloseTab(tab.id, { moveFocus: true });
-                    return;
-                  }
-                  // Press-to-collapse had no inverse. The kicker that collapses a
-                  // study only renders while the study is expanded, so once
-                  // collapsed there was nothing in the strip left to press — and
-                  // this proxy, the one element standing for the whole group,
-                  // only selected. Expanding was reachable solely from the
-                  // group menu's "Expand tabs", which is a long way to undo a
-                  // press. Expand first, then select, so the reader lands on the
-                  // tab the proxy named with the rest of the study beside it —
-                  // which is also what the proxy's own label promises when it
-                  // says it opens that tab.
-                  if (collapsedProxy) {
-                    await toggleGroup(group.id, false, byKeyboard ? trigger : undefined);
-                    await handleSelectTab(tab.id, { moveFocus: byKeyboard });
-                    return;
-                  }
-                  // Pressing the tab you are already on collapses its study.
-                  // That press had no effect at all before — the one click in
-                  // the strip that did nothing — and it is the click readers
-                  // reach for when they want the study out of the way, which is
-                  // the only evidence available and better than a guess. It also
-                  // gives the toggle one shape: press the thing that stands for
-                  // where you are, and its siblings hide; press it again, now a
-                  // proxy, and they come back.
-                  //
-                  // Every study folds, with no qualifying condition. Two earlier
-                  // guards tried to predict which folds would "look right" —
-                  // first a sibling count, then a named label — and both were
-                  // wrong in the same way: they made one gesture behave
-                  // differently depending on state the reader is not thinking
-                  // about, which is worse than a fold that happens to be subtle.
-                  //
-                  // The premise behind both was wrong anyway. A lone tab still
-                  // has a kicker, so collapsing removes it, and the tab's own
-                  // label goes from split book-and-chapter parts to the study's
-                  // name as one string. The fold shows. A double click
-                  // self-corrects, since the second press lands on the proxy.
-                  if (selected) {
-                    await toggleGroup(group.id, true, byKeyboard ? trigger : undefined);
+                    await handleCloseTab(tab.id, { moveFocus: true });
                     return;
                   }
                   await handleSelectTab(tab.id, { moveFocus: byKeyboard });
                 }}
-                onAuxClick={(event) => handleTabAuxClick(event, tab.id, canClose, collapsedProxy)}
+                onAuxClick={(event) => handleTabAuxClick(event, tab.id, canClose)}
                 onContextMenu={(event) => openContextMenu(
-                  collapsedProxy
-                    ? { kind: "group", groupId: group.id }
-                    : { kind: "tab", tabId: tab.id, groupId: group.id },
+                  { kind: "tab", tabId: tab.id, groupId: group.id },
                   event,
                 )}
-                onKeyDown={(event) => handleTabKeyDown(event, tab.id, canClose, collapsedProxy ? group.id : null)}
+                onKeyDown={(event) => handleTabKeyDown(event, tab.id, canClose)}
               >
                 <TabMark tab={tab} />
-                {labelParts && !collapsedProxy ? (
+                {labelParts ? (
                   <span className="scripture-workspace-tab-label">
                     <span className="scripture-workspace-tab-book">{labelParts.book}</span>
                     <span className="scripture-workspace-tab-chapter">{labelParts.chapter}</span>
@@ -1141,10 +1110,7 @@ export function ScriptureWorkspaceTabs({
                     )}
                   </span>
                 ) : (
-                  <span className="scripture-workspace-tab-label">{visibleLabel}</span>
-                )}
-                {collapsedProxy && group.tabIds.length > 1 && (
-                  <span className="scripture-workspace-tab-count" aria-hidden="true">{group.tabIds.length}</span>
+                  <span className="scripture-workspace-tab-label">{label}</span>
                 )}
                 {canClose && (
                   <span
@@ -1161,26 +1127,6 @@ export function ScriptureWorkspaceTabs({
             </div>
           );
         });
-        // The kicker is a sibling of its members, not a child of the first one:
-        // the members have to stay direct children of the strip so drag and drop
-        // keeps one flat index space, and a kicker inside the first member's
-        // wrap would be shoved by the 8px that wrap reserves for the fillet
-        // whenever that member is the selected tab.
-        /* Members only. The head moved to the rail on 2026-07-29.
-           Rev 05 §05·2 had put it here — "a label above the strip creates a
-           second strip; it belongs in the strip, at the head of its members" —
-           and that was right about the second strip and wrong about the
-           alternative, because the rail is a column that already exists. A
-           label among the tabs spends horizontal space permanently on something
-           a reader wants only when changing studies, and it truncates the name
-           at exactly the moment the name is the thing being read.
-
-           Nothing was lost with it. Collapse, rename and close were always in
-           the group's context menu as well; switching is the rail's now; and a
-           collapsed study still appears here as its own proxy tab, which is the
-           one case where a study genuinely belongs among the tabs — collapsed,
-           it IS one. */
-        return members;
         })}
         {exitingTabs.map((ghost) => (
           <div
@@ -1254,35 +1200,26 @@ export function ScriptureWorkspaceTabs({
             </>
           ) : null}
         </span>
-        {activeGroup && (
-          <Tooltip label={`Manage ${activeGroup.label}`}>
-            <button
-              ref={groupMenuButtonRef}
-              type="button"
-              className="scripture-workspace-active-group"
-              data-study-active-group-manage=""
-              data-study-group-id={activeGroup.group.id}
-              aria-haspopup="dialog"
-              aria-expanded={groupMenuOpen}
-              aria-label={`Manage ${activeGroup.label}`}
-              onMouseDown={deferMouseFocus}
-              onClick={() => {
-                setMenu(null);
-                setOverflowOpen(false);
-                setRenameGroupId(activeGroup.group.id);
-                setRenameDraft(activeGroup.label);
-                setGroupMenuAnchor(groupMenuButtonRef.current?.getBoundingClientRect() ?? null);
-                setGroupMenuOpen(true);
-              }}
-            >
-              <span>{activeGroup.label}</span>
-              <small>{activeGroup.tabs.length}</small>
-              <span className="scripture-workspace-caret" aria-hidden="true"><CaretGlyph /></span>
-            </button>
-          </Tooltip>
-        )}
-        {(groups.length > 0 || hasMeasuredOverflow) && (
-          <Tooltip label="All study tabs and groups">
+        {/* THE STUDY'S NAME IS NOT HERE ANY MORE, 2026-07-30.
+            A `.scripture-workspace-active-group` control stood in this slot: the
+            current study's name, its tab count and a caret, opening a popover
+            with rename, order, collapse and close. It was the last element in
+            the strip that stood for a study, and it was the same defect
+            ae49372 removed from among the tabs, moved to the cluster that
+            reports on them — 132px capped, ellipsised, and truncating the name
+            at exactly the moment the name is the thing being read.
+
+            The study line names studies now: every study, not only the one you
+            are in; whole names at 168px; and renaming in place on the chip
+            rather than in a dialog over the page. Order and close are
+            per-study in All Tabs, which is also the one place a reader can
+            reach a study they are not in.
+
+            What is left in this cluster is the save status and the overview —
+            one control that REPORTS on tabs and one that opens the door to all
+            of them, and nothing that names a study. */}
+        {(allGroups.length > 0 || hasMeasuredOverflow) && (
+          <Tooltip label="Every tab in every study">
             <button
               ref={overflowButtonRef}
               type="button"
@@ -1292,129 +1229,31 @@ export function ScriptureWorkspaceTabs({
               onMouseDown={deferMouseFocus}
               onClick={() => {
                 setMenu(null);
-                setGroupMenuOpen(false);
                 setRenameGroupId(null);
                 setOverflowQuery("");
                 setOverflowAnchor(overflowButtonRef.current?.getBoundingClientRect() ?? null);
                 setOverflowOpen(true);
               }}
-              aria-label={hiddenTabCount > 0
-                ? `Show all ${totalTabs} study tabs — ${hiddenTabCount} not in the strip`
-                : `Show all ${totalTabs} study tabs`}
+              aria-label={`Show all ${totalTabs} study tabs in ${allGroups.length} ${allGroups.length === 1 ? "study" : "studies"}`}
               aria-haspopup="dialog"
               aria-expanded={overflowOpen}
             >
-              {/* Never squeeze: the strip scrolls and the remainder is counted.
-                  A count you can act on beats an icon that only means "more". */}
-              {hiddenTabCount > 0 ? (
-                <>
-                  <span className="scripture-workspace-overflow-count">{`+${hiddenTabCount}`}</span>
-                  <span aria-hidden="true"><CaretGlyph /></span>
-                </>
-              ) : <span aria-hidden="true"><OverflowGlyph /></span>}
+              {/* THE QUIET DOOR, and one glyph in every state as of 2026-07-30.
+                  It wore a `+n` count whenever the strip was not showing
+                  everything, which was B4's "a +7 count opens the rest as a
+                  list" — right while the strip WAS the workspace and "the rest"
+                  was one number meaning one thing. The register holds one study
+                  now, so the rest is mostly other studies, and those are named
+                  on the line above with their own counts. What is left over is
+                  a tab or two past the edge of a row you can pan with a wheel,
+                  which is not worth a number. The count survives where a count
+                  belongs: in this control's accessible name, and in each chip's
+                  tooltip. */}
+              <span aria-hidden="true"><OverflowGlyph /></span>
             </button>
           </Tooltip>
         )}
       </div>
-
-      {groupMenuOpen && groupMenuAnchor && activeGroup && (
-        <Popover
-          anchorRect={groupMenuAnchor}
-          onClose={dismissGroupMenu}
-          width={300}
-          maxHeight={440}
-          className="scripture-workspace-group-popover"
-          ariaLabel={`Manage ${activeGroup.label}`}
-          // Focus lands on the heading, not on the rename field. A text input
-          // matches :focus-visible however focus arrived — that is the HTML
-          // spec's own heuristic for keyboard-input controls, not a browser
-          // quirk — so pointing the popover's initial focus at the field drew a
-          // keyboard focus ring on a mouse click, which is precisely the one
-          // thing a keyboard focus ring is supposed to rule out. The heading is
-          // not a text-entry control, so it rings only when the last
-          // interaction really was a keyboard one. Focus still enters the
-          // dialog, so Escape and Tab behave, and the first Tab reaches the
-          // field with its own ring intact.
-          // Renaming from the context menu is an explicit rename intent and
-          // still focuses the field directly; opening the menu to look at it is
-          // not, and no longer does.
-          initialFocusRef={groupMenuHeadingRef}
-        >
-          <div
-            ref={groupMenuHeadingRef}
-            className="scripture-workspace-popover-heading"
-            tabIndex={-1}
-          >
-            <div><strong>{activeGroup.label}</strong><span>{activeGroup.tabs.length} {activeGroup.tabs.length === 1 ? "tab" : "tabs"}</span></div>
-            <span>Study group</span>
-          </div>
-          <form
-            className="scripture-workspace-rename"
-            data-study-group-rename=""
-            onSubmit={async (event) => {
-              event.preventDefault();
-              await handleRenameGroup(activeGroup.group.id);
-            }}
-          >
-            <label htmlFor={`study-group-rename-${activeGroup.group.id}`}>Study or question</label>
-            <input
-              ref={groupRenameInputRef}
-              id={`study-group-rename-${activeGroup.group.id}`}
-              value={renameGroupId === activeGroup.group.id ? renameDraft : activeGroup.label}
-              maxLength={60}
-              onChange={(event) => {
-                setRenameGroupId(activeGroup.group.id);
-                setRenameDraft(event.currentTarget.value);
-              }}
-              autoComplete="off"
-            />
-            <button type="submit" disabled={!renameDraft.trim() || renameDraft.trim() === activeGroup.label}>Save</button>
-          </form>
-          <div className="scripture-workspace-group-menu-actions">
-            <button
-              type="button"
-              className="scripture-workspace-menu-trigger"
-              data-study-group-reorder=""
-              aria-haspopup="menu"
-              aria-expanded={menu?.id === "group-reorder-active"}
-              aria-label={`Change order of ${activeGroup.label}`}
-              onMouseDown={deferMouseFocus}
-              onClick={(event) => {
-                const trigger = event.currentTarget;
-                openMenu(
-                  "group-reorder-active",
-                  trigger,
-                  `Change order of ${activeGroup.label}`,
-                  REORDER_MENU_LABELS.map(({ position, label }) => ({
-                    key: position,
-                    label,
-                    run: () => handleReorderGroup(activeGroup.group.id, position, trigger),
-                  })),
-                );
-              }}
-            ><span>Order</span><CaretGlyph /></button>
-            <button
-              type="button"
-              data-study-group-collapse=""
-              aria-expanded={!activeGroup.group.collapsed}
-              onMouseDown={deferMouseFocus}
-              onClick={async (event) => { await toggleGroup(activeGroup.group.id, !activeGroup.group.collapsed, event.currentTarget); }}
-            >{activeGroup.group.collapsed ? "Expand tabs" : "Collapse tabs"}</button>
-            {activeGroupCloseAvailability !== "unavailable" && activeGroupCloseCopy && (
-              <button
-                type="button"
-                className="is-danger"
-                data-study-group-close=""
-                data-study-close-availability={activeGroupCloseAvailability}
-                onMouseDown={deferMouseFocus}
-                onClick={async () => { await handleCloseGroup(activeGroup.group.id); }}
-                aria-label={activeGroupCloseCopy.ariaLabel}
-                title={activeGroupCloseCopy.title}
-              >{activeGroupCloseAvailability === "decision" ? "Close study…" : "Close study"}</button>
-            )}
-          </div>
-        </Popover>
-      )}
 
       {overflowOpen && overflowAnchor && (
         <Popover
@@ -1428,7 +1267,7 @@ export function ScriptureWorkspaceTabs({
           initialFocusRef={overflowSearchRef}
         >
           <div className="scripture-workspace-overflow-head">
-            <div><strong>All Tabs</strong><span>{totalTabs} open in {groups.length} {groups.length === 1 ? "study" : "studies"}</span></div>
+            <div><strong>All Tabs</strong><span>{totalTabs} open in {allGroups.length} {allGroups.length === 1 ? "study" : "studies"}</span></div>
             {recentlyClosed && (
               <button
                 type="button"
@@ -1488,7 +1327,7 @@ export function ScriptureWorkspaceTabs({
                           onClick={() => {
                             setRenameGroupId(group.id);
                             setRenameDraft(label);
-                            window.requestAnimationFrame(() => groupRenameInputRef.current?.focus({ preventScroll: true }));
+                            window.setTimeout(() => groupRenameInputRef.current?.focus({ preventScroll: true }), 0);
                           }}
                         >Rename</button>
                       </div>
@@ -1516,13 +1355,15 @@ export function ScriptureWorkspaceTabs({
                           );
                         }}
                       ><span>Order</span><CaretGlyph /></button>
-                      <button
-                        type="button"
-                        data-study-group-collapse=""
-                        aria-expanded={!group.collapsed}
-                        onMouseDown={deferMouseFocus}
-                        onClick={async (event) => { await toggleGroup(group.id, !group.collapsed, event.currentTarget); }}
-                      >{group.collapsed ? "Expand" : "Collapse"}</button>
+                      {/* COLLAPSE LEFT THIS ROW ON 2026-07-30, with the proxy
+                          tab it produced. Folding a study was a way of getting
+                          its tabs out of the strip; the strip holds one study's
+                          tabs by construction now, so the toggle had nothing
+                          left to change on screen — and a control whose only
+                          effect is a field nobody reads is worse than a missing
+                          one, because a reader presses it and concludes the app
+                          is broken. `collapsed` stays in the model and stays
+                          persisted, untouched. */}
                       {canCloseGroup && (
                         <button
                           type="button"
@@ -1586,7 +1427,7 @@ export function ScriptureWorkspaceTabs({
                                 );
                               }}
                             ><span>Order</span><CaretGlyph /></button>
-                            {groups.length > 1 && (
+                            {allGroups.length > 1 && (
                               <button
                                 type="button"
                                 className="scripture-workspace-menu-trigger"
@@ -1601,7 +1442,7 @@ export function ScriptureWorkspaceTabs({
                                     `tab-move-${tab.id}`,
                                     trigger,
                                     `Move ${tabLabel} to another study`,
-                                    groups
+                                    allGroups
                                       .filter((entry) => entry.group.id !== group.id)
                                       .map((entry) => ({
                                         key: entry.group.id,
@@ -1678,7 +1519,7 @@ export function ScriptureWorkspaceTabs({
                     && studyWorkspaceTabCloseAvailability(workspace, tab.id) !== "unavailable").length
                 : 0;
               const tabCloseAvailability = studyWorkspaceTabCloseAvailability(workspace, target.tabId);
-              const moveTargets = groups.filter((entry) => entry.group.id !== target.groupId);
+              const moveTargets = allGroups.filter((entry) => entry.group.id !== target.groupId);
               return (
                 <>
                   <button
@@ -1731,43 +1572,13 @@ export function ScriptureWorkspaceTabs({
                 </>
               );
             })()}
-            {contextMenu.target.kind === "group" && (() => {
-              const target = contextMenu.target;
-              const groupCloseAvailability = studyWorkspaceGroupCloseAvailability(workspace, target.groupId);
-              const collapsed = contextGroup?.group.collapsed ?? false;
-              return (
-                <>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onMouseDown={deferMouseFocus}
-                    onClick={() => beginRenameFromContext(target.groupId)}
-                  >Rename study</button>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    data-study-context-collapse=""
-                    aria-expanded={!collapsed}
-                    onMouseDown={deferMouseFocus}
-                    onClick={async (event) => {
-                      const trigger = event.currentTarget;
-                      setContextMenu(null);
-                      await toggleGroup(target.groupId, !collapsed, trigger);
-                    }}
-                  >{collapsed ? "Expand study" : "Collapse study"}</button>
-                  {groupCloseAvailability !== "unavailable" && (
-                    <button
-                      type="button"
-                      role="menuitem"
-                      className="is-danger"
-                      data-study-context-close-group=""
-                      onMouseDown={deferMouseFocus}
-                      onClick={async () => { setContextMenu(null); await handleCloseGroup(target.groupId); }}
-                    >{groupCloseAvailability === "decision" ? "Close study…" : "Close study"}</button>
-                  )}
-                </>
-              );
-            })()}
+            {/* THE GROUP MENU IS GONE, 2026-07-30. It held Rename study, a
+                Collapse/Expand toggle and Close study, and it was reachable
+                from exactly one element: a collapsed study's proxy tab, which
+                IS the study while it is folded. Nothing folds now, so the menu
+                had no trigger. Rename study survives on the tab menu above and
+                on the study's own chip; close is per-study in this popover's
+                list; collapse is retired with the proxy. */}
             {contextMenu.target.kind === "empty" && (
               <>
                 <button

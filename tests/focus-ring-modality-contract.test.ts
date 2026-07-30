@@ -175,9 +175,17 @@ test("text entry answers a click with the wash and a seal caret, not a ring", ()
   assert.doesNotMatch(searchFocus.slice(0, searchFocus.indexOf("}") + 1), /box-shadow|outline/);
   // The caret is stated once, where the register's three text fields are
   // declared together, rather than three times at three focus rules.
+  //
+  // The first of the three was `.scripture-workspace-rename input` — the group
+  // popover's field — and both that popover and the control that opened it left
+  // the strip on 2026-07-30. Renaming a study happens on its own chip in the
+  // study line now, in place and at the size the name is read, so
+  // `.scripture-study-rename input` takes the slot. Three fields, one
+  // declaration, and the claim is unchanged: a text field in the register
+  // answers a click with a caret, wherever the field stands.
   assert.match(
     css,
-    /\.scripture-workspace-rename input,\s*\n\.scripture-workspace-inline-rename input,\s*\n\.scripture-workspace-search input \{[^}]*caret-color: var\(--accent-seal\);/,
+    /\.scripture-study-rename input,\s*\n\.scripture-workspace-inline-rename input,\s*\n\.scripture-workspace-search input \{[^}]*caret-color: var\(--accent-seal\);/,
   );
   assert.match(
     css,

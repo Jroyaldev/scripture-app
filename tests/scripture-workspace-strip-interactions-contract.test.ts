@@ -134,52 +134,72 @@ test("arrow keys move roving focus without committing a transition", () => {
   assert.match(source, /effectiveRovingTabId === tab\.id/);
 });
 
-test("Enter and Space reach the tab's one commit path, collapse and expand included", () => {
-  /* THIS REPLACES A CLAIM THAT WAS TRUE OF THE CODE AND FALSE OF THE PRODUCT,
-     2026-07-30. The line that stood here was
+test("Enter and Space reach the tab's one commit path, and there is only one", () => {
+  /* TWO CLAIMS HAVE BEEN RETIRED HERE IN TWO DAYS, and the second retirement
+     is what made the first one moot.
+
+     It began as "Enter/Space are the only commit path from the keyboard",
+     pinning
 
        assert.match(keyboard,
          /event\.key === "Enter" \|\| event\.key === " "[\s\S]{0,120}handleSelectTab\(tabId/)
 
-     under the comment "Enter/Space are the only commit path from the keyboard".
-     Both halves were accurate and together they hid a defect: that branch
-     called `preventDefault()` and then `handleSelectTab`, so it cancelled the
-     button's own synthesized click AND made the plain selection the only thing
-     a key could do. The tab's click handler has three outcomes — collapse the
-     study when the tab is already active, expand-then-select on a collapsed
-     study's proxy, select otherwise — and the keyboard could reach exactly one
-     of them. Enter on the tab you are already on did nothing at all, because
-     the select it routed to early-returns on the active tab.
+     — accurate about the code and hiding a defect: that branch called
+     `preventDefault()` and then `handleSelectTab`, so it cancelled the button's
+     own synthesized click AND made a plain selection the only thing a key could
+     do. The tab's click handler had three outcomes and the keyboard reached one.
 
-     The keydown handler no longer touches Enter or Space. A button activates on
-     both by itself, so the keyboard arrives at the same handler the pointer
-     does and the three outcomes are one set rather than two. The claim is
-     therefore stated as parity — the commit path is the tab's click handler and
-     both devices reach it — rather than as the shape of a branch. */
+     It became a PARITY claim on 2026-07-30 — the commit path is the click
+     handler, and both devices reach it — which was right, and which is now the
+     whole story rather than half of it: the other two outcomes are gone. The
+     register holds one study's tabs, so there is no proxy to expand and nothing
+     for a fold to hide. A tab press selects a tab, from either device.
+
+     What is asserted is the shape that guarantees it: the keydown handler does
+     not touch Enter or Space, so a button activates itself, and the one click
+     handler tells the devices apart only to decide whether focus travels. */
   const keyboardStatements = (() => {
     const start = statements.indexOf("const handleTabKeyDown");
     return statements.slice(start, statements.indexOf("const deferMouseFocus", start));
   })();
   assert.ok(keyboardStatements.length > 0, "handleTabKeyDown must still exist");
   assert.doesNotMatch(keyboardStatements, /event\.key === "Enter"|event\.key === " "|Spacebar/,
-    "intercepting Enter/Space cancels the click that carries collapse and expand");
+    "intercepting Enter/Space cancels the click that is the commit path");
   // Delete/Backspace still belong to the keydown handler: no default action of
   // the button's does what they do, so there is nothing to route through.
   assert.match(keyboardStatements, /event\.key === "Delete" \|\| event\.key === "Backspace"/);
 
-  // And the click handler is where all three outcomes live, keyed on whether a
-  // keyboard sent the click so focus travels for it and not for the pointer.
   const tablist = section('role="tablist"', "{/* The new-tab plus, against the last tab");
   assert.match(tablist, /const byKeyboard = event\.detail === 0;/);
-  assert.match(tablist, /if \(collapsedProxy\) \{\s*await toggleGroup\(group\.id, false, byKeyboard \? trigger : undefined\);/);
-  assert.match(tablist, /if \(selected\) \{\s*await toggleGroup\(group\.id, true, byKeyboard \? trigger : undefined\);/);
   assert.match(tablist, /await handleSelectTab\(tab\.id, \{ moveFocus: byKeyboard \}\);/);
+  const tablistStatements = (() => {
+    const start = statements.indexOf('role="tablist"');
+    return statements.slice(start, statements.indexOf("scripture-workspace-actions", start));
+  })();
+  assert.doesNotMatch(tablistStatements, /toggleGroup|collapsedProxy/,
+    "a tab press selects a tab; the two branches in front of that are retired");
+  assert.equal([...tablistStatements.matchAll(/await handleSelectTab\(/g)].length, 1,
+    "one commit path, reached two ways");
 });
 
-test("a collapsed proxy ignores middle-click while tabs keep middle-click-close", () => {
+test("middle-click closes the tab under the pointer, and every tab is one tab", () => {
+  /* This was "a collapsed proxy ignores middle-click while tabs keep
+     middle-click-close", pinning
+
+       assert.match(aux, /if \(collapsedProxy\) \{[\s\S]{0,80}return;/);
+
+     — a guard that existed because one tab could stand for a whole study, so
+     middle-clicking it would have closed six tabs with a gesture that closes
+     one. There are no proxies as of 2026-07-30: the strip holds one study's
+     tabs, so nothing folds, so no tab stands for anything but itself. The
+     guard is retired and the claim it protected is now structural. */
   const aux = section("const handleTabAuxClick", "const handleTabKeyDown");
-  assert.match(aux, /if \(collapsedProxy\) \{[\s\S]{0,80}return;/);
+  assert.match(aux, /if \(event\.button !== 1\) return;/);
   assert.match(aux, /await handleCloseTab\(tabId/);
+  assert.doesNotMatch(
+    aux.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, ""),
+    /collapsedProxy/,
+  );
 });
 
 test("pointer drag is thresholded and paints a lift plus a drop indicator", () => {
@@ -212,76 +232,36 @@ test("the strip owns wheel panning, double-click new tab, and pointer context me
   assert.match(source, />Reopen closed tab</);
 });
 
-test("collapsing a study in the strip has an inverse in the strip", () => {
-  const tablist = section('role="tablist"', "{/* The new-tab plus, against the last tab");
+test("the strip has no gesture that hides a tab, so it needs none that un-hides one", () => {
+  /* THIS FILE EXISTED FOR THIS TEST, and the pair it was written about is gone.
 
-  /* THE KICKER IS GONE FROM THE STRIP, 2026-07-29, and this test survives it.
-     Two assertions died with it — that the strip contains a
-     .scripture-workspace-group-tab, and that its toggle reads
-     `!group.collapsed` rather than a literal. Both were about the kicker being
-     a two-way control, and there is no kicker here now: the switcher is in the
-     rail and collapse, rename and close are in the group's context menu.
+     The claim was "collapsing a study in the strip has an inverse in the strip":
+     press the tab you are already on and its study folds; press the proxy that
+     replaces it and the study comes back. It was made on 2026-07-30 to fix a
+     real defect — the kicker that collapsed a study only rendered while the
+     study was expanded, so a press had no inverse — and it survived the kicker's
+     removal by moving onto the tab and its proxy.
 
-     What the test is FOR is untouched, and is the whole of what remains:
-     collapsing from the strip must have its inverse in the strip. Pressing the
-     tab you are already on folds the study; pressing the proxy that replaces it
-     unfolds. That pair is asserted below, and it is the pair that made this
-     file necessary in the first place. */
-  // This used to assert `await toggleGroup(group.id, true, event.currentTarget)`
-  // — the literal `true` that made the kicker collapse-only. That was the whole
-  // defect: the kicker renders only while a study is expanded, so once collapsed
-  // there was nothing left in the strip to press, and expanding was reachable
-  // only from the group menu. A press had no inverse.
-  //
-  // Two assertions replace it, and neither is the old one weakened. The kicker
-  // reads the state rather than assuming it, and the collapsed proxy — the one
-  // element standing for a collapsed study — expands before it selects.
+     The register holds one study's tabs as of 2026-07-30. Folding was a way of
+     getting a study's tabs out of a row that held several studies; the row holds
+     one study by construction now, so there is nothing to fold away from and no
+     proxy to fold into. Both halves of the pair are retired together, which is
+     the only honest way to retire a pair.
 
-  // The blanket ban on a literal `true` that stood here was too broad, and this
-  // is the distinction it was missing. A hardcoded direction is a defect on a
-  // control whose direction depends on state — the kicker — and is correct on
-  // one that only ever goes one way. Pressing the tab you are already on always
-  // collapses; its inverse is pressing the proxy that replaces it. So the
-  // literal is allowed exactly once, and only behind the `selected` guard that
-  // makes it one-way.
-  const literalCollapses = [...tablist.matchAll(/toggleGroup\(group\.id, true\b/g)];
-  assert.equal(literalCollapses.length, 1,
-    "only the already-selected tab may collapse in a fixed direction");
-  // Unconditional, and two earlier attempts to condition it are recorded here
-  // because the pattern is the lesson. First `group.tabIds.length > 1`, then
-  // `|| group.label.kind === "custom"` — each an attempt to predict which folds
-  // would look worth doing. Both made one gesture behave differently depending
-  // on state the reader is not thinking about, which is a worse defect than a
-  // fold that happens to be subtle. A gesture that works sometimes reads as
-  // broken; a subtle one only reads as subtle.
-  assert.match(tablist, /if \(selected\) \{\s*await toggleGroup\(group\.id, true,/,
-    "pressing the active tab folds its study, with no qualifying condition");
-  assert.doesNotMatch(tablist, /selected && (group\.tabIds\.length|foldIsVisible|group\.label)/,
-    "conditioning the fold on group shape is what made it feel unreliable");
-  // The trigger is handed over only for keyboard activation, for the same
-  // reason the selection's focus move is: focusing it after a pointer press is
-  // what drew a ring the reader never asked for.
-  assert.match(tablist, /if \(collapsedProxy\) \{\s*await toggleGroup\(group\.id, false, byKeyboard \? trigger : undefined\);/);
-  /* The group's own menu — collapse, rename, close — is reached from the
-     collapsed proxy, which IS the study while it is folded. It used to be on
-     the kicker as well; with the kicker gone this is the strip's only route to
-     it, so the assertion moved from the kicker's call to the proxy's ternary.
-     An expanded study's members reach the tab menu, which carries "Rename
-     study" and "Move to study…" of its own. */
-  assert.match(
-    tablist,
-    /collapsedProxy\s*\?\s*\{ kind: "group", groupId: group\.id \}\s*:\s*\{ kind: "tab"/,
-    "a folded study must still open its own menu from the strip",
-  );
-  // The last line used to read `title={expandedGroupLabel}`, naming the local
-  // that existed only while the group label was a bracket anchored to the first
-  // member's wrap. Rev 05 §05·2 makes the label a kicker of its own at the head
-  // of the members, so the label it titles itself with is the group's, full
-  // stop. What the test protects — that the in-strip label is a real control
-  // with a real name, not decoration — is unchanged.
-  /* `title={groupLabel}` was the kicker's, and went with it. The collapsed
-     proxy carries the study's name now and is the only in-strip element that
-     names a study at all — asserted where the proxy is, above. */
+     The claim is therefore stated as the absence: nothing in the strip hides a
+     tab. A press selects, an × closes, a drag reorders, and every tab in the
+     row is one tab. `collapsed` stays in the model and stays persisted; no
+     renderer path reads or writes it. */
+  const tablistStatements = (() => {
+    const start = statements.indexOf('role="tablist"');
+    return statements.slice(start, statements.indexOf("scripture-workspace-actions", start));
+  })();
+  assert.doesNotMatch(tablistStatements, /collapsed|toggleGroup|data-study-collapsed-proxy/,
+    "no tab in the strip stands for more than itself");
+  assert.doesNotMatch(statements, /kind: "group"/,
+    "the proxy's group menu had exactly one trigger, and it was the proxy");
+  // And the one gesture that remains says what it does.
+  assert.match(tablistStatements, /await handleSelectTab\(tab\.id, \{ moveFocus: byKeyboard \}\);/);
 });
 
 test("the All Tabs popover lists every retained recently-closed item with a reopen action", () => {

@@ -9,7 +9,14 @@ const overlay = read("src/renderer/components/ShortcutsOverlay.tsx");
 
 test("workspace shortcuts cycle visual tab order without colliding with the macOS app switcher", () => {
   assert.match(app, /event\.ctrlKey[\s\S]{0,220}event\.key === "Tab"/);
-  assert.match(app, /visibleStudyWorkspaceTabIds\(current\)/);
+  /* Cycling walks the STRIP — the active study's tabs. This read
+     `visibleStudyWorkspaceTabIds(current)`, the whole workspace with each
+     collapsed study folded to one proxy, which was the same list while the
+     strip held every study. The register holds one study at a time as of
+     2026-07-30, and a cycle that leaves the row you are looking at is a jump
+     rather than a cycle. Crossing studies is the study line's, the overview's
+     and reopen's. */
+  assert.match(app, /studyWorkspaceStripTabIds\(current\)/);
   assert.match(app, /event\.shiftKey \? -1 : 1/);
   assert.doesNotMatch(overlay, /⌘ Tab/);
   assert.match(overlay, /Ctrl Tab[\s\S]{0,100}next Study tab/);

@@ -67,12 +67,11 @@ import {
   studyWorkspaceOrdinalTabId,
   studyWorkspaceTabCloseAvailability,
   studyWorkspaceTabLabelParts,
-  toggleStudyWorkspaceGroup,
   truncateEntityResearchTrail,
   updateActiveStudyCanvasSession,
   updateEntityWorkspaceScrollTop,
   updateEntityWorkspaceTrail,
-  visibleStudyWorkspaceTabIds,
+  studyWorkspaceStripTabIds,
   type PassageWorkspaceSession,
   type PassageViewState,
   type WorkspaceConfirmation,
@@ -318,6 +317,11 @@ export function App(): React.JSX.Element {
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [workspaceDecisionConfirmation, setWorkspaceDecisionConfirmation] = useState<WorkspaceConfirmation | null>(null);
   const pendingWorkspaceDecisionRef = useRef<PendingWorkspaceDecision | null>(null);
+  /* A study that has just been made and is waiting to be named. The nonce is
+     what makes a second study of the same name-in-waiting a second invitation
+     rather than a no-op, and it is why this is a request and not a flag. */
+  const [studyNamingRequest, setStudyNamingRequest] = useState<{ groupId: string; nonce: number } | null>(null);
+  const studyNamingNonceRef = useRef(0);
   const workspaceShowToastRef = useRef<ShowToast | null>(null);
   const registerWorkspaceShowToast = useCallback((showToast: ShowToast | null): void => {
     workspaceShowToastRef.current = showToast;
@@ -966,13 +970,28 @@ export function App(): React.JSX.Element {
     }, 0);
   }, []);
 
+  /**
+   * Invite the reader to name the study they have just made.
+   *
+   * This used to reach into the DOM: `querySelector('[data-study-active-group-manage]')`
+   * and a synthetic `.click()` on the strip's Manage control, which opened a
+   * dialog over the page to ask for four words. That control left the strip on
+   * 2026-07-30 with the rest of the study's identity, and a handshake made of a
+   * selector is the wrong shape anyway — it fails silently when the element it
+   * names is renamed, which is exactly what happened to the QA gate's own copy
+   * of the same trick.
+   *
+   * The invitation is a request now, carried as state to the study line, which
+   * turns the new study's chip into its own field. The guard is unchanged and
+   * still matters: a naming step that arrives after the reader has already
+   * moved somewhere else must not seize their focus.
+   */
   const openWorkspaceGroupNamingAfterCommit = useCallback((groupId: string): void => {
     window.setTimeout(() => {
       const current = studyWorkspaceRef.current;
       if (current?.tabsById[current.activeTabId]?.groupId !== groupId) return;
-      const manage = document.querySelector<HTMLButtonElement>('[data-study-active-group-manage]');
-      if (manage?.dataset.studyGroupId !== groupId) return;
-      manage?.click();
+      studyNamingNonceRef.current += 1;
+      setStudyNamingRequest({ groupId, nonce: studyNamingNonceRef.current });
     }, 0);
   }, []);
 
@@ -1356,17 +1375,15 @@ export function App(): React.JSX.Element {
     if (proceed && applied && focusTabId) focusWorkspaceTabAfterCommit(focusTabId);
     return proceed && applied;
   }, [commitStudyWorkspace, focusWorkspaceTabAfterCommit, requestWorkspaceDecision, runWorkspaceTransition]);
-  const toggleWorkspaceGroup = useCallback((
-    groupId: string,
-    collapsing: boolean,
-  ): Promise<boolean> => runWorkspaceTransition("group-change", () => {
-    commitStudyWorkspace((current) => {
-      if (!current) return current;
-      const group = current.groups.find((candidate) => candidate.id === groupId);
-      if (!group || group.collapsed === collapsing) return current;
-      return toggleStudyWorkspaceGroup(current, groupId);
-    });
-  }), [commitStudyWorkspace, runWorkspaceTransition]);
+  /* `toggleWorkspaceGroup` stood here and is retired 2026-07-30 with the
+     collapse gesture itself. Folding a study got its tabs out of the strip; the
+     strip holds one study's tabs by construction now, so the toggle had nothing
+     left to change on screen and every surface that offered it was offering a
+     control whose only effect was a field nobody reads. `collapsed` stays in
+     StudyWorkspaceStateV2 and stays persisted — the model and the Electron
+     validator are untouched, and a workspace saved with a folded study still
+     round-trips — and `toggleStudyWorkspaceGroup` stays in the model with the
+     exclusivity ruling it carries, unread. */
   const renameWorkspaceGroup = useCallback((groupId: string, label: string): Promise<boolean> => {
     const value = label.trim();
     if (!value) return Promise.resolve(false);
@@ -1486,8 +1503,14 @@ export function App(): React.JSX.Element {
 
       // Ctrl+Tab is intentionally cross-platform. Command+Tab belongs to the
       // macOS app switcher and must never be advertised or intercepted here.
+      // Cycling walks what the strip SHOWS — the active study's tabs. It walked
+      // the whole workspace's visible list until 2026-07-30, which was the same
+      // list while the strip held every study; the register is one study at a
+      // time now, and a cycle that leaves the row you are looking at is a jump
+      // rather than a cycle. Crossing studies is the study line's, the overview's
+      // and reopen's.
       if (event.ctrlKey && !event.metaKey && !event.altKey && event.key === "Tab") {
-        const tabIds = visibleStudyWorkspaceTabIds(current);
+        const tabIds = studyWorkspaceStripTabIds(current);
         if (tabIds.length < 2) return;
         const currentIndex = Math.max(0, tabIds.indexOf(current.activeTabId));
         const direction = event.shiftKey ? -1 : 1;
@@ -1501,9 +1524,8 @@ export function App(): React.JSX.Element {
         return;
       }
 
-      // Command-digit jumps to a tab by its place in the register. The ordinal
-      // counts across the WHOLE register including collapsed studies, so
-      // folding one does not silently renumber every shortcut after it.
+      // Command-digit jumps to a tab by its place in the strip — the active
+      // study's run — which is also where the number is shown, in All Tabs.
       if (event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey
         && /^[1-9]$/u.test(event.key)) {
         const tabId = studyWorkspaceOrdinalTabId(current, Number(event.key));
@@ -2182,13 +2204,14 @@ export function App(): React.JSX.Element {
                 onWorkspaceTabSelect={selectWorkspaceTab}
                 onWorkspaceTabClose={closeResearchTab}
                 onWorkspaceGroupClose={closeWorkspaceGroup}
-                onWorkspaceGroupToggle={toggleWorkspaceGroup}
                 onWorkspaceGroupRename={renameWorkspaceGroup}
                 onWorkspaceTabMove={moveWorkspaceTab}
                 onWorkspaceTabReorder={reorderWorkspaceTab}
                 onWorkspaceGroupReorder={reorderWorkspaceGroup}
                 onWorkspaceRecentReopen={reopenRecentWorkspaceItem}
                 onWorkspaceTabDuplicate={duplicateActivePassageTab}
+                onStartStudy={startStudyFromCurrentCanvas}
+                studyNamingRequest={studyNamingRequest}
                 workspacePersistenceStatus={workspacePersistenceStatus}
                 onRetryWorkspacePersistence={retryWorkspacePersistence}
                 researchScrollTop={activeEntityTab?.scrollTop}

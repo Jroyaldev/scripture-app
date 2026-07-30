@@ -102,6 +102,81 @@ test("every atmosphere paints the register out of the two planes and nothing els
     "the retired bar fills must not be declared at all");
 });
 
+test("the study line is painted out of the same two planes, and states its own state", () => {
+  /* ADDED 2026-07-30 with the line itself. The register's theme rule is that a
+     surface may be paper or ground and nothing else, and the line is the second
+     row of the register — the frame's top band, above the tabs — so the rule
+     reaches it unchanged. It carries no fill: it is the page's own canvas
+     showing through, exactly as the strip beneath it is.
+
+     What it may not do is answer "which study" with a fill. That is Law 2 and it
+     is also the ruling the actions-cluster sweep enforces from the other side:
+     the current chip is told by ink and weight, over a width the label reserves
+     in every state, so a switch changes nothing's position and adds no third
+     plane. */
+  for (const [selector, body] of ruleBlocks()) {
+    if (!/\.scripture-study-line\b/.test(selector)) continue;
+    for (const value of [...body.matchAll(/(?:^|[\s;])background(?:-color)?:\s*([^;]+);/g)].map((m) => m[1]!.trim())) {
+      assert.match(value, /^(?:transparent|Canvas)$/, `${selector} gives the study line a fill of its own (${value})`);
+    }
+  }
+  const currentChip = /\.scripture-study-chip\[aria-current="true"\] \{([^}]*)\}/.exec(workspaceStyles);
+  assert.ok(currentChip, "the current study must be declared");
+  assert.match(currentChip[1]!, /color: var\(--text-primary\);/);
+  assert.match(currentChip[1]!, /font-weight: var\(--fw-semibold\);/);
+  assert.doesNotMatch(currentChip[1]!, /background/,
+    "the current study is ink and weight, never a fill");
+  // And the weight costs no motion: the label reserves the bold form's width in
+  // every state, so the chips beside it do not shuffle when the current changes.
+  assert.match(
+    workspaceStyles,
+    /\.scripture-study-chip-label::after \{\s*content: attr\(data-label\);\s*font-weight: var\(--fw-semibold\);\s*visibility: hidden;/,
+  );
+
+  /* Forced colours has no hues, so neither ink nor seal survives it and the
+     state has to be said in the system's own selection pair — the same answer
+     the active tab gives one line down. The line takes the system field so the
+     mode reaches it at all, and the seal is redrawn in system ink so an
+     authored study still carries a mark. */
+  const forced = mediaBlocks("@media (forced-colors: active)")
+    .find((block) => block.includes(".scripture-study-chip"));
+  assert.ok(forced, "forced colours must reach the study line");
+  assert.match(forced, /\.scripture-study-line \{\s*background: Canvas;\s*forced-color-adjust: none;\s*\}/);
+  assert.match(forced, /\.scripture-study-chip\[aria-current="true"\] \{ background: Highlight; color: HighlightText; \}/);
+  assert.match(forced, /\.scripture-study-chip-seal \{ background: CanvasText; \}/);
+  assert.match(forced, /\.scripture-study-chip:focus-visible,/);
+
+  // Reduced motion stops the chips' ink transition with everything else.
+  assert.match(
+    workspaceStyles,
+    /@media \(prefers-reduced-motion: reduce\) \{\s*\.scripture-study-chip,\s*\.scripture-study-open \{ animation: none; transition: none; \}/,
+  );
+  /* A chip enters on the app's shared 150ms easing — the same entrance a tab
+     makes — so the second study waking the line up reads as a thing appearing
+     beside the first rather than as the row re-laying out. Nothing already in
+     the row moves while it happens, which is the other half of the same claim:
+     the resting name IS the chip it becomes, in the same place, at the width
+     its bold form already reserves. */
+  assert.match(workspaceStyles, /animation: scripture-study-chip-in 150ms ease;/);
+  assert.match(
+    workspaceStyles,
+    /\.scripture-study-line\[data-study-line-state="resting"\] \.scripture-study-chip \{\s*color: var\(--text-secondary\);\s*\}/,
+  );
+
+  /* And the narrow shell keeps it. The frame's top edge is invariant across
+     modes and is composed as --study-line + --register-strip, so hiding the
+     line would leave 24px of the page's reserve standing empty and drop the
+     rail's brand tile out of alignment with the paper. It is also the only
+     control at that width that switches studies at all: the rail becomes a
+     bottom bar with no switcher in it. */
+  for (const block of mediaBlocks("@media (max-width: 979px)")) {
+    assert.doesNotMatch(block, /\.scripture-study-line\b[^{}]*\{[^}]*display:\s*none/,
+      "a compact-width block hides the study line — it is the only study switcher at that width");
+    assert.doesNotMatch(block, /--study-line:|--register-strip:|--frame-top:/,
+      "the frame's top edge may not be recomposed at a breakpoint");
+  }
+});
+
 test("the active tab joins the page with two fillets, not with an underline", () => {
   // Each fillet is an 8x8 block of paper sitting outside the tab at its
   // baseline with the outer top corner carved away by a radial gradient, so the

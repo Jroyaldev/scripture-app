@@ -53,9 +53,19 @@ const FLOW_ONLY = new Set(["order", "justify-content", "flex-direction", "justif
  * Every way this sheet says "this one is the selected/current/attended one".
  * Widen it when a new state attribute appears — a state key the sweep does not
  * know about is a hole in the sweep, not a passing test.
+ *
+ * `.is-current` was that hole and is closed here, 2026-07-30. Three surfaces
+ * were already using it — the rail's study line, the connection card's anchor
+ * list, the entity breadcrumb and footprint — and none of them positioned
+ * anything, so the sweep passed for a state it had never looked at. The study
+ * line's chips made it load-bearing: a chip is a real element in flow, and
+ * "which study is showing" is exactly the kind of state that tempts a layout
+ * answer. The chips answer it with ink and weight over a reserved width, which
+ * is what this sweep exists to require; adding the key is what makes that a
+ * finding rather than a coincidence.
  */
 const SELECTION_KEY =
-  /\[aria-selected\s*=|\[aria-current\s*=|\[aria-pressed\s*=|\[data-selected|\[data-active|\[data-dock-state\s*=|\[data-surface-state\s*=|\[data-connect-state\s*=|\[data-paint-state\s*=|\[data-study-group-active\s*=|\[data-study-drop\s*=|\[data-flush-start|\[data-margin-mode\s*=|\[data-dirty\s*=|\.is-selected\b|\.is-active\b|\.is-focused\b|\.is-attended\b|\.selected\b|\.active\b|:checked/;
+  /\[aria-selected\s*=|\[aria-current\s*=|\[aria-pressed\s*=|\[data-selected|\[data-active|\[data-dock-state\s*=|\[data-surface-state\s*=|\[data-connect-state\s*=|\[data-paint-state\s*=|\[data-study-group-active\s*=|\[data-study-drop\s*=|\[data-flush-start|\[data-margin-mode\s*=|\[data-dirty\s*=|\.is-selected\b|\.is-active\b|\.is-current\b|\.is-focused\b|\.is-attended\b|\.selected\b|\.active\b|:checked/;
 
 const PSEUDO_ELEMENT = /::(before|after|marker|backdrop|placeholder|selection)/;
 
@@ -146,8 +156,19 @@ test("the register's actions cluster is held in place by layout, not by a select
      while the only thing after it was a toolbar already pinned to the far edge.
      Then the new-tab plus moved in between them, and a viewport claiming the
      whole bar pushed the plus to the far right — the one place a new-tab
-     control must not be. So the viewport grows to its tabs now and the plus
-     carries the auto margin instead.
+     control must not be. So the viewport grows to its tabs now.
+
+     THE AUTO MARGIN WENT ON THE WRONG ELEMENT, and it is corrected on
+     2026-07-30. It was given to the plus, and three places — this file, the
+     sheet, and the note beside the declaration — said it was "what holds the
+     toolbar out at the far edge". Measured in a real Chromium it holds nothing:
+     the Tooltip primitive wraps the plus in a `.control-tooltip-anchor` span at
+     `display: inline-flex`, sized to its content, so the plus is a flex item of
+     THAT and not of the bar; an auto margin resolves against free space and an
+     intrinsically sized container has none. The anchor came out 32px wide with
+     the cluster starting at its right edge and ~570px of empty bar beyond. The
+     margin moves to the cluster, which IS a direct child of the bar and can
+     therefore use it.
 
      Both are layout; neither is a selection rule. That is the claim, and it is
      asserted as such rather than as one particular flex value. */
@@ -164,22 +185,21 @@ test("the register's actions cluster is held in place by layout, not by a select
   // `0 auto 3px 4px` until 2026-07-30: 28px of control plus 3px of margin is 31
   // inside a 30px content box, and flex-end takes the overflow off the top, so
   // the plus overhung every tab by a pixel into the window's drag band — the
-  // one band the register may not draw in.
-  //
-  // The comment that stood here said "the plus is what holds the toolbar out at
-  // the far edge". Measured in a real window on 2026-07-30, it does not: the
-  // Tooltip primitive wraps the plus in an inline-flex span sized to its
-  // content, so the auto end-margin has no free space to resolve against and
-  // comes out zero. The layout is left as it is — the study line rebuilds this
-  // band next — but the assertion is stated as what it can actually defend,
-  // which is the geometry of the control, not a consequence it does not have.
+  // one band the register may not draw in. The `auto` went the same day, for
+  // the reason above: it was inert, and an inert declaration that three
+  // comments describe as load-bearing is worse than no declaration.
   const inlineOpen = body(".scripture-workspace-open.is-inline {");
-  assert.match(inlineOpen, /margin: 0 auto 2px 4px;/);
+  assert.match(inlineOpen, /margin: 0 0 2px 4px;/);
+  assert.doesNotMatch(inlineOpen, /margin:[^;]*auto/,
+    "the plus cannot resolve an auto margin inside the tooltip's anchor");
   assert.match(inlineOpen, /height: 28px;/);
   const stripRow = Number.parseFloat(/--register-strip:\s*([\d.]+)px;/.exec(css)![1]!);
   assert.equal(28 + 2, stripRow, "the plus's margin box must be the strip's row exactly");
-  // And the toolbar still only ever shrinks.
-  assert.match(body(".scripture-workspace-actions {"), /flex: 0 1 auto;/);
+  // And the cluster is at the far edge, held there by a margin on the element
+  // that can actually resolve one, while still only ever shrinking.
+  const actions = body(".scripture-workspace-actions {");
+  assert.match(actions, /margin-left: auto;/);
+  assert.match(actions, /flex: 0 1 auto;/);
 
   // And the register file holds no rule that moves them. The premium contract
   // already bans the flush-end attribute by name; this bans the mechanism.

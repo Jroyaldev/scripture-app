@@ -1948,13 +1948,41 @@ export function studyWorkspaceRegisterTabIds(
   ));
 }
 
+/**
+ * The tabs the strip shows: the active study's, in its own order.
+ *
+ * THE REGISTER IS ONE STUDY AT A TIME as of 2026-07-30. The study line above
+ * the strip names every study and the strip holds exactly the one the page is
+ * in, so "the register" and "the workspace" are no longer the same list, and
+ * everything that walks the register — Ctrl+Tab, ⌘1–9, the strip's arrows —
+ * walks this one.
+ *
+ * Deliberately blind to `collapsed`. That field is still in the model and still
+ * persisted, and nothing reads it any more: folding a study was a way of
+ * getting its tabs out of the row, and the row now holds one study's tabs by
+ * construction.
+ */
+export function studyWorkspaceStripTabIds(
+  state: StudyWorkspaceStateV2,
+): string[] {
+  const groupId = state.tabsById[state.activeTabId]?.groupId;
+  const group = state.groups.find((candidate) => candidate.id === groupId);
+  if (!group) return [];
+  return group.tabIds.filter((tabId) => state.tabsById[tabId]?.groupId === group.id);
+}
+
 /** How many register ordinals the keyboard exposes: ⌘1 … ⌘9. */
 export const STUDY_WORKSPACE_ORDINAL_LIMIT = 9;
 
 /**
- * The tab a 1-based register ordinal addresses, or `null` when the register is
+ * The tab a 1-based register ordinal addresses, or `null` when the strip is
  * shorter than the ordinal. Only the first nine are addressable; a tenth
  * shortcut is a shortcut nobody counts to.
+ *
+ * It counted across the whole workspace until 2026-07-30, so that folding a
+ * study could not silently renumber every shortcut after it. Nothing folds now,
+ * and the reason the count was global has gone with it: ⌘4 addresses the fourth
+ * tab of the study you are reading, which is the only run of tabs on screen.
  */
 export function studyWorkspaceOrdinalTabId(
   state: StudyWorkspaceStateV2,
@@ -1963,19 +1991,20 @@ export function studyWorkspaceOrdinalTabId(
   if (!Number.isInteger(ordinal) || ordinal < 1 || ordinal > STUDY_WORKSPACE_ORDINAL_LIMIT) {
     return null;
   }
-  return studyWorkspaceRegisterTabIds(state)[ordinal - 1] ?? null;
+  return studyWorkspaceStripTabIds(state)[ordinal - 1] ?? null;
 }
 
 /**
- * The ordinal shown beside a tab in the All Tabs list, or `null` when the tab
- * sits past ⌘9. Numbers appear in that list and never on the tabs themselves —
- * a strip of shortcut hints is chrome about chrome.
+ * The ordinal shown beside a tab in the All Tabs overview, or `null` when the
+ * tab is past ⌘9 or belongs to a study the page is not in. Numbers appear in
+ * that list and never on the tabs themselves — a strip of shortcut hints is
+ * chrome about chrome.
  */
 export function studyWorkspaceTabOrdinal(
   state: StudyWorkspaceStateV2,
   tabId: string,
 ): number | null {
-  const index = studyWorkspaceRegisterTabIds(state).indexOf(tabId);
+  const index = studyWorkspaceStripTabIds(state).indexOf(tabId);
   if (index < 0 || index >= STUDY_WORKSPACE_ORDINAL_LIMIT) return null;
   return index + 1;
 }

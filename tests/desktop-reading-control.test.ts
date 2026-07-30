@@ -257,7 +257,13 @@ test("desktop integration owns one draft rail, exit controller, attention scroll
   assert.match(scripture, /<ScriptureWorkspaceTabs/);
   assert.match(workspaceTabs, /role="tablist"[\s\S]{0,80}aria-label="Open study tabs"/);
   assert.match(workspaceTabs, /role="toolbar" aria-label="Study tab controls"/);
-  assert.match(workspaceTabs, /aria-expanded=\{!group\.collapsed\}/);
+  /* `aria-expanded={!group.collapsed}` was the All Tabs collapse toggle's
+     state, and both it and the strip's collapsed proxy are retired on
+     2026-07-30: the register holds one study's tabs, so folding a study has
+     nothing to get out of the row and the toggle's only remaining effect was
+     writing a field nobody reads. `collapsed` stays in the model and stays
+     persisted. */
+  assert.doesNotMatch(workspaceTabs, /aria-expanded=\{!group\.collapsed\}/);
   assert.match(workspaceTabs, /Show all \$\{totalTabs\} study tabs/);
   assert.match(workspaceTabs, /event\.key === "Delete"/);
   assert.doesNotMatch(margin, /margin-workspace-tabs/);
@@ -290,5 +296,5 @@ test("App is the sole workspace transition authority and Scripture aggregates au
   assert.match(tabs, /onSelect: \(tabId: string\) => Promise<boolean>/);
   assert.match(tabs, /onClose: \(tabId: string\) => Promise<boolean>/);
   assert.match(tabs, /onCloseGroup: \(groupId: string\) => Promise<boolean>/);
-  assert.match(tabs, /onToggleGroup: \(groupId: string, collapsing: boolean\) => Promise<boolean>/);
+  assert.doesNotMatch(tabs, /onToggleGroup:/);
 });

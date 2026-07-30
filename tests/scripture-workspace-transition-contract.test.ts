@@ -121,7 +121,14 @@ test("research attention waits for tab approval before chooser and focus mutatio
   const held = handler.indexOf("replaceHeldConnectionIds");
   assert.ok(approval >= 0 && held > approval);
   assert.doesNotMatch(handler, /onCloseEntity\?\./);
-  assert.match(page, /onToggleGroup=\{\(groupId, collapsing\) =>/);
+  /* `onToggleGroup={(groupId, collapsing) => …}` was here: the collapse
+     gesture threaded from the page into the strip, and this file's interest in
+     it was that it went through the same approval as every other structural
+     change. The gesture is retired on 2026-07-30 with the collapsed proxy —
+     the strip holds one study's tabs, so folding one has nothing to hide — and
+     the wiring is asserted on what the page still threads. */
+  assert.doesNotMatch(page, /onToggleGroup/);
+  assert.match(page, /onWorkspaceGroupRename\?\.\(groupId, label\)/);
 });
 
 test("marking draft reasons cover every structural workspace exit", () => {

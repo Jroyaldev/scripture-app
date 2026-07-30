@@ -197,8 +197,29 @@ test("workspace-bar QA captures one identical fixture across four atmospheres an
     "active-entity",
     "data-study-all-tabs-search",
     "document.fonts.ready",
-    "requestAnimationFrame(() => requestAnimationFrame",
+    /* `requestAnimationFrame(() => requestAnimationFrame` was here, five times
+       over in the tour, as the way a capture waited for the page to settle. It
+       is gone as of 2026-07-30 and is replaced by `driver.settle()`: an Electron
+       window that has slipped behind another one FREEZES its animations at the
+       from-keyframe and throttles rAF to never, so an evaluate that awaits a
+       frame does not fail at the gate it belongs to — it hangs the CDP call and
+       reports as the tour losing the renderer, with no gate named. The tour
+       measures settled states, so it settles them: front the window, await the
+       fonts, finish every running animation. */
+    "const settle = async ()",
+    "document.getAnimations()",
+    "Page.bringToFront",
     "pendingScreenshots",
+    /* The study line is captured on its own, at 3x, in the clean state and in
+       All, plus a forced-colours frame. A 24px row of 11px type is not
+       something a designer can read in a 1180x900 viewport shot, and the six
+       theme captures are taken with the All Tabs popover open over the page. */
+    "study-line.png",
+    "study-line-switched.png",
+    "study-line-single.png",
+    "study-line-many.png",
+    "study-line-narrow.png",
+    "forced-colors.png",
   ]) {
     assert.ok(workspaceBarQa.includes(marker), `missing bar-fixture marker: ${marker}`);
   }
@@ -238,6 +259,38 @@ test("workspace-bar QA computes geometry, material, focus, and accessibility ass
        check, because the plus overhung the row by a pixel into the drag band
        for a day and no source-reading test could have seen it. */
     "openInStrip",
+    /* THE STUDY LINE, measured rather than read. `groupVisible` was here and
+       is `groupNamedInStrip` now, inverted: it asserted that the strip carried
+       a control with a study's name on it, and it pointed at the kicker, then
+       at the Manage control, and outlived both. Nothing in the strip stands for
+       a study; the line above it names every one, and these are the properties
+       a source-reading test cannot see — that the line is ABOVE the strip (a
+       row between the strip and the page severs the fillet joining the active
+       tab to the page), that the frame's top edge is still the composed 54,
+       that the chips carry the window's drag band without eating a press, and
+       that switching studies moves nothing above the strip. */
+    "groupNamedInStrip",
+    "lineAboveStrip",
+    "frameTop",
+    "lineOutsideRegister",
+    "chipNames",
+    "currentChipNames",
+    "chipTargets",
+    "lineDrags",
+    "chipsNoDrag",
+    "currentChipFilled",
+    "sealVisible",
+    /* `allChipSealed` was here and the All chip it named lasted a day: the strip
+       holds one study's tabs, so a chip for "every study at once" was a control
+       for choosing between one arrangement and itself. What replaced it is a
+       count — the seal marks a study the reader has NAMED, so the tour drives a
+       fixture that is half named and asserts the number of marks. */
+    "sealedChips",
+    "lineState",
+    "studyLineForced",
+    "geometryBefore",
+    "data-study-line-chip",
+    "data-study-start",
     "minimumTargetSize",
     "centerVisible",
     "Escape",

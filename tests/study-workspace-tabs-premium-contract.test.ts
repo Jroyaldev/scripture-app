@@ -52,7 +52,7 @@ test("the workspace exposes approval-returning callbacks for every tab and group
   assert.doesNotMatch(imports, /renameStudyWorkspaceGroup|moveStudyWorkspaceTab|reorderStudyWorkspace|reopenClosedStudyItem/);
 });
 
-test("one global APG tablist contains tabs and collapsed proxies with one roving stop", () => {
+test("one global APG tablist contains one study's tabs, with one roving stop", () => {
   assert.equal([...componentSource.matchAll(/role="tablist"/g)].length, 1);
   /* Ends where the tablist ends, not where the toolbar begins. The inline
      new-tab plus now sits between the two, and it is a button — so a range that
@@ -64,8 +64,16 @@ test("one global APG tablist contains tabs and collapsed proxies with one roving
   assert.match(tablist, /role="tab"/);
   assert.match(tablist, /role="presentation"/);
   assert.doesNotMatch(tablist, /role="button"|scripture-workspace-group-manage|scripture-workspace-open/);
-  assert.match(tablist, /data-study-collapsed-proxy=/);
-  assert.match(tablist, /const visibleLabel = collapsedProxy \? groupLabel : label/);
+  /* THE COLLAPSED PROXY IS RETIRED, 2026-07-30, and these two lines went with
+     it:
+       assert.match(tablist, /data-study-collapsed-proxy=/);
+       assert.match(tablist, /const visibleLabel = collapsedProxy \? groupLabel : label/);
+     A proxy was a whole study folded into one tab so its siblings could get out
+     of the row. The register holds one study's tabs by construction now, so
+     there is nothing to fold away from — and a tab wearing a STUDY's name was
+     also the last thing in the strip that stood for a study, which is the claim
+     restated at full strength further down this file. */
+  assert.doesNotMatch(componentStatements, /collapsedProxy|data-study-collapsed-proxy/);
   // This used to read:
   //   assert.match(tablist, /const expandedGroupLabel = !collapsedProxy && tabIndex === 0 \? groupLabel : undefined/)
   // — the bracket's label, computed inside the member loop because the bracket
@@ -78,17 +86,28 @@ test("one global APG tablist contains tabs and collapsed proxies with one roving
      before the members. A study's identity is not in the strip at all now; it
      is in the rail, where a long name fits. What the strip renders for a study
      is its members, and — while folded — one proxy tab carrying its name. */
-  assert.match(tablist, /return members;/,
-    "the strip renders a study's members and nothing standing for the study");
+  /* `return members;` was the shape this claim was stated on — the flatMap
+     returned a study's member tabs and nothing else, after the kicker that used
+     to precede them was retired. The loop has one thing left to return as of
+     2026-07-30, because there is one study in the strip and it has no head, no
+     proxy and no interval to another study; `members` was a name for "what is
+     left over", and what is left over is the tabs. */
+  assert.match(tablist, /return tabs\.map\(\(tab, tabIndex\) => \{/,
+    "the strip renders one study's tabs and nothing standing for the study");
   /* Declarations only. This file records a retirement by quoting the rule that
      was retired, so a "may not come back" check that reads comments fails on
      the very note proving the device is gone. */
   assert.doesNotMatch(
-    section(componentStatements, 'role="tablist"', "const members = visibleTabs.map"),
-    /const groupHead|kickered/,
-    "the group head belongs to the rail now",
+    section(componentStatements, 'role="tablist"', "return tabs.map"),
+    /const groupHead|kickered|const members/,
+    "nothing is built ahead of the tabs: the head and the proxy are both retired",
   );
-  assert.match(tablist, /const closeAvailability = collapsedProxy/);
+  /* `const closeAvailability = collapsedProxy ? …group… : …tab…` — an × on a
+     proxy closed the whole study it stood for, which was the only honest
+     reading of one tab standing for six. Every tab in the strip is one tab, so
+     an × closes one tab; closing a STUDY is the overview's, where the thing
+     being closed is named. */
+  assert.match(tablist, /const closeAvailability = studyWorkspaceTabCloseAvailability\(workspace, tab\.id\)/);
   assert.match(tablist, /const canClose = closeAvailability !== "unavailable"/);
   assert.match(tablist, /tabIndex=\{roving \? 0 : -1\}/);
 
@@ -97,15 +116,40 @@ test("one global APG tablist contains tabs and collapsed proxies with one roving
   assert.equal(studyWorkspaceRovingTabId([], "missing"), null);
 });
 
-test("the fixed toolbar stays small and exposes one active-group menu, Open, recent recovery, and All Tabs", () => {
+test("the fixed toolbar reports on tabs and names no study", () => {
   const toolbar = section(
     componentSource,
     '<div className="scripture-workspace-actions"',
     "{overflowOpen && overflowAnchor",
   );
-  assert.match(toolbar, /data-study-active-group-manage/);
-  assert.equal([...toolbar.matchAll(/data-study-active-group-manage/g)].length, 1);
-  assert.doesNotMatch(toolbar, /groups\.map/);
+  /* THE ACTIVE-GROUP MENU LEFT THIS CLUSTER ON 2026-07-30, and these two lines
+     went with it:
+
+       assert.match(toolbar, /data-study-active-group-manage/);
+       assert.equal([...toolbar.matchAll(/data-study-active-group-manage/g)].length, 1);
+
+     It was a 132px control carrying the current study's name, its tab count and
+     a caret onto a popover with rename, order, collapse and close. ae49372's
+     whole argument for taking the study's label out of the tab row was that a
+     strip "truncates the name at exactly the moment the name is what is being
+     read" — and this control was that same truncation, filed one divider to the
+     right, where it also put a name among two controls whose entire job is
+     reporting on tabs.
+
+     The study line names studies now: all of them, not only the one you are in;
+     whole names with a count and a seal; renamed in place on the chip. Order,
+     collapse and close are per-study in All Tabs, which is also the only place
+     that can reach a study you are not in.
+
+     So the claim is inverted rather than deleted. What is left in the cluster
+     is the save status and All Tabs — two controls that report, and nothing
+     that names — and the assertion is that it stays that way. */
+  assert.doesNotMatch(
+    section(componentStatements, 'className="scripture-workspace-actions"', "{overflowOpen && overflowAnchor"),
+    /data-study-active-group-manage|scripture-workspace-active-group/,
+    "the cluster reports on tabs; naming a study is the study line's",
+  );
+  assert.doesNotMatch(toolbar, /groups\.map|allGroups\.map/);
   /* Open LEFT this toolbar on 2026-07-29 and now sits inline against the last
      tab, which is where every browser puts the control that makes a tab. It had
      been filed here with the save status and the overflow menu — the one
@@ -123,7 +167,15 @@ test("the fixed toolbar stays small and exposes one active-group menu, Open, rec
   assert.doesNotMatch(toolbar, /data-study-reopen-recent/);
   assert.doesNotMatch(toolbar, /scripture-workspace-reopen/);
   assert.match(toolbar, /data-study-all-tabs/);
-  assert.match(componentSource, />Study or question<\/label>/);
+  /* This line read `assert.match(componentSource, />Study or question<\/label>/)`
+     — the visible label above the group popover's rename field, and the one
+     place the strip said out loud what a study is FOR. Both the popover and the
+     control that opened it are gone. The sentence survives in the palette row
+     that creates a study ("Create a separate sermon, question, or class study",
+     pinned in tests/study-open-orchestration-contract) and in the field the
+     chip becomes, whose accessible name asks for the same thing in the same
+     words the reader would use. */
+  assert.doesNotMatch(componentStatements, />Study or question<\/label>/);
 });
 
 /**
@@ -199,7 +251,12 @@ test("All Tabs is searchable, grouped, and owns tab and group management", () =>
   assert.match(allTabs, /data-study-all-tabs-search/);
   assert.match(allTabs, /filteredGroups\.map/);
   assert.match(allTabs, /data-study-group-rename/);
-  assert.match(allTabs, /data-study-group-collapse/);
+  /* `data-study-group-collapse` was here, per study. A toggle whose only effect
+     is a field nobody reads is worse than a missing control — a reader presses
+     it, nothing moves, and they conclude the app is broken — so it went with
+     the proxy on 2026-07-30. Order, rename, move and close all remain, which is
+     everything that has a visible effect. */
+  assert.doesNotMatch(allTabs, /data-study-group-collapse/);
   assert.match(allTabs, /data-study-group-close/);
   assert.match(allTabs, /data-study-group-reorder/);
   assert.match(allTabs, /data-study-tab-reorder/);
@@ -246,10 +303,17 @@ test("the register is a strip of canvas the active page is pulled up through", (
   // screen, so the page's top edge moved between 54 and 69 with the register's
   // CONTENTS. The height is now the frame's own composition and the strip is
   // half of it — see tests/quire-frame-top-edge-contract.test.ts for the sum.
-  assert.match(rail, /\.scripture-workspace-bar \{[\s\S]{0,320}height: var\(--frame-top\);/);
+  /* The bar is the STRIP's half of the frame as of 2026-07-30. These two lines
+     read `height: var(--frame-top)` and
+     `padding: var(--page-inset) var(--page-inset) 0 0`, from when the band above
+     the tabs was the bar's own empty top padding and the bar therefore stood
+     for the whole edge. The study line is a real element in that band now and
+     states its own height, so a bar still claiming --frame-top would claim it
+     twice. The frame's sum is held in tests/quire-frame-top-edge-contract. */
+  assert.match(rail, /\.scripture-workspace-bar \{[\s\S]{0,320}height: var\(--register-strip\);/);
   assert.doesNotMatch(rail, /\.scripture-workspace-bar \{[\s\S]{0,320}min-height:/);
   assert.match(rail, /\.scripture-workspace-bar \{[\s\S]{0,320}flex: 0 0 auto;/);
-  assert.match(rail, /\.scripture-workspace-bar \{[\s\S]{0,320}padding: var\(--page-inset\) var\(--page-inset\) 0 0;/);
+  assert.match(rail, /\.scripture-workspace-bar \{[\s\S]{0,320}padding: 0 var\(--page-inset\) 0 0;/);
   assert.match(rail, /\.scripture-workspace-bar \{[\s\S]{0,320}background: transparent;/);
   // No border-bottom: a rule here would fight the fillet, which is the thing
   // actually joining the tab to the page.
@@ -267,8 +331,30 @@ test("the register is a strip of canvas the active page is pulled up through", (
   // An inactive tab gets no shape and no hover fill, ever — a hovered shape is
   // a third fill, and re-creates the mush the two-plane rule exists to prevent.
   assert.match(rail, /\.scripture-workspace-tab:hover \{\s*background: transparent;/);
-  // Gold survives in the register as ink and as the focus ring, never as a fill.
-  assert.doesNotMatch(rail, /background:\s*(?:var\(--study-gold\)|color-mix\([^;]*--study-gold)/);
+  /* Gold survives in the register as ink, as the focus ring, and as a MARK —
+     never as a fill. This line used to forbid the token from `background`
+     outright, which was the same claim while nothing in the register carried a
+     mark; the study line's chips carry the seal, and a mark is drawn by
+     painting a 2px box. So the sweep is stated the way Law 2 states it: a
+     selection or provenance mark may take the seal, a control's surface may
+     not, and the difference is whether the subject is a mark. Anything that
+     takes a gold background and is not one fails here. */
+  for (const [selector, body] of [...rail.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map(
+    (match): [string, string] => [
+      match[1]!.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/\s+/g, " ").trim(),
+      match[2]!,
+    ],
+  )) {
+    if (!/background:\s*(?:var\(--study-gold\)|color-mix\([^;]*--study-gold)/.test(body)) continue;
+    assert.match(
+      selector,
+      /(?:-seal|-mark)\b|::(?:before|after)/,
+      `${selector} gives a control a gold fill; seal marks a thing, it does not fill one`,
+    );
+    const box = /width:\s*([\d.]+)px/.exec(body);
+    assert.ok(box && Number.parseFloat(box[1]!) <= 2,
+      `${selector} paints seal wider than a mark`);
+  }
   // This line used to read:
   //   assert.match(rail, /\.scripture-workspace-tab\[aria-selected="true"\] \.scripture-workspace-tab-mark \{\s*color: var\(--study-gold\);/);
   // Rev 04 §8 retires that mark — "the gold underline on the active tab; the
@@ -295,18 +381,40 @@ test("the register is a strip of canvas the active page is pulled up through", (
      that manages it, never among the tabs. The assertion below is about the
      kicker's class name and is unchanged; only the sentence about where the
      name went had to be corrected. */
+  /* The kicker's 9px mono went to the rail with the kicker, came back on
+     2026-07-30 to the actions cluster's Manage control when the rail's switcher
+     was removed, and left the strip altogether later the same day when that
+     control did. A study's name is set in the study line now, in the frame's
+     own row above the tabs — 11px UI type with a tabular count beside it — and
+     the strip sets no study's name at all. Both assertions below are about the
+     STRIP and both are negative, which is the strongest form this claim has
+     taken: it used to name a place the label had gone to, and it now says the
+     label is not in the register's tab bar under any class name it has worn. */
   assert.doesNotMatch(rail, /\.scripture-workspace-group-tab\b/,
     "no study label is drawn among the tabs any more");
-  assert.match(rail, /\.scripture-workspace-active-group small \{[\s\S]{0,260}font: 500 9px\/1 var\(--font-ui\);[\s\S]{0,80}font-variant-numeric: tabular-nums/);
+  assert.doesNotMatch(declarationsOnly(rail), /\.scripture-workspace-active-group\b/,
+    "and none is drawn beside them either");
+  /* A count was set here in the register's own chrome type — `.scripture-study-chip
+     small`, 9px tabular — and it is gone as of 2026-07-30. A row of names each
+     carrying a number turns the frame's quietest row into a readout, and the
+     number is not what a reader chooses by. Each chip's tooltip and accessible
+     name still carry it, which is where a number belongs when it answers a
+     question you have to ask. */
+  assert.doesNotMatch(stylesDeclarations, /\.scripture-study-chip small/,
+    "a count on every chip is a dashboard");
   assert.match(rail, /min-width: 24px/);
   assert.match(rail, /min-height: 24px/);
   assert.match(rail, /overflow-x: auto/);
   assert.match(rail, /overscroll-behavior-inline: contain/);
   assert.match(rail, /scroll-padding-inline/);
-  // Workspace popovers inherit the shared --bg-float material (no fill override).
+  /* The workspace popover inherits the shared --bg-float material (no fill
+     override). There were two of them until 2026-07-30 and the selector named
+     both; the group popover left the strip with the Manage control that was the
+     only thing that opened it, so All Tabs is the register's one float and the
+     claim is stated on it. */
   assert.match(
     rail,
-    /\.popover-panel\.scripture-workspace-group-popover,\s*\.popover-panel\.scripture-workspace-overflow-popover \{[\s\S]{0,180}background: rgb\(from var\(--bg-float\) r g b \/ 1\);/,
+    /\.popover-panel\.scripture-workspace-overflow-popover \{[\s\S]{0,180}background: rgb\(from var\(--bg-float\) r g b \/ 1\);/,
   );
   assert.match(rail, /\.scripture-workspace-overflow-popover \{[\s\S]{0,220}display: grid;[\s\S]{0,180}grid-template-rows: auto auto minmax\(0, 1fr\)/);
   assert.match(rail, /\.scripture-workspace-overflow-list \{[\s\S]{0,220}min-height: 0;[\s\S]{0,120}overflow-y: auto;[\s\S]{0,120}overscroll-behavior: contain;/);
@@ -398,31 +506,53 @@ test("flush-END is retired: the actions never move and the last tab keeps its ri
   );
 });
 
-test("the group popover opens on its heading, not inside the rename field", () => {
-  // The owner reported a focus ring drawn on the rename box the moment the
-  // "manage group" dropdown opens. The ring rule was already :focus-visible, so
-  // the selector was not the bug: a focused text input matches :focus-visible
-  // however focus arrived, which is the HTML spec's own heuristic for controls
-  // that accept keyboard input. The only way to stop painting a keyboard ring
-  // after a mouse click was to stop putting focus in the field.
-  //
-  // Focus still enters the dialog — it lands on the heading, which is not a
-  // text-entry control and therefore rings only when the last interaction
-  // really was a keyboard one. Removing the ring instead would have been an
-  // accessibility regression, so it is still declared, on the heading and on
-  // the field a Tab away.
-  assert.match(componentSource, /initialFocusRef=\{groupMenuHeadingRef\}/);
-  assert.doesNotMatch(componentSource, /initialFocusRef=\{groupRenameInputRef\}/);
-  assert.match(
-    componentSource,
-    /ref=\{groupMenuHeadingRef\}\s*className="scripture-workspace-popover-heading"\s*tabIndex=\{-1\}/,
+test("no dialog opens over the page to ask a study for its name", () => {
+  /* THIS TEST USED TO DEFEND A FIX INSIDE A DIALOG THAT NO LONGER EXISTS.
+     It was named "the group popover opens on its heading, not inside the rename
+     field" and it pinned five things: `initialFocusRef={groupMenuHeadingRef}`,
+     the absence of `initialFocusRef={groupRenameInputRef}`, the heading's
+     `tabIndex={-1}` markup, its `:focus-visible` seal ring, and the field's own
+     ring a Tab away.
+
+     The defect it was written for was real and worth recording. The owner
+     reported a keyboard focus ring drawn on the rename box the instant the
+     manage dropdown opened on a MOUSE click; the ring rule was already
+     `:focus-visible`, so the selector was not the bug — a focused text input
+     matches :focus-visible however focus arrived, which is the HTML spec's own
+     heuristic for controls that take keyboard input. The only fix was to stop
+     putting focus in the field, so the popover landed focus on a tabindex="-1"
+     heading instead, which rings only when the last interaction really was a
+     keyboard one.
+
+     Both the popover and the Manage control that opened it left the strip on
+     2026-07-30. Renaming a study is on its chip in the study line: the chip
+     becomes the field, in place, at its own size, and the field is focused
+     because the reader asked for it — a double-click, F2, or the naming step
+     that follows creating a study. There is no dialog and therefore no
+     initial-focus decision to get wrong, which is the strongest available form
+     of the fix.
+
+     So the assertions are inverted. Nothing may open a dialog to name a study
+     again, and the field the rename does use still answers a click the way §4
+     says every field in the register does — with a caret and a wash, held in
+     tests/focus-ring-modality-contract.test.ts. */
+  assert.doesNotMatch(componentStatements, /groupMenuHeadingRef|groupMenuButtonRef|groupMenuOpen/,
+    "the group popover is gone; nothing in the strip opens one");
+  assert.doesNotMatch(componentStatements, /scripture-workspace-group-popover|scripture-workspace-popover-heading/);
+  assert.doesNotMatch(stylesDeclarations, /scripture-workspace-group-popover|scripture-workspace-popover-heading/,
+    "styling a popover the strip cannot open describes a product that does not exist");
+
+  const line = readFileSync(
+    resolve(import.meta.dirname, "../src/renderer/components/StudyLine.tsx"),
+    "utf8",
   );
+  assert.match(line, /className="scripture-study-rename"/);
+  assert.doesNotMatch(line, /Popover|role="dialog"/,
+    "a study is renamed where its name is, not in a float over the page");
   assert.match(
     stylesSource,
-    /\.scripture-workspace-group-popover \.scripture-workspace-popover-heading:focus-visible \{\s*outline: 2px solid var\(--study-gold\);/,
+    /\.scripture-study-rename input:focus-visible \{\s*outline: 2px solid var\(--study-gold\);/,
   );
-  // The field's own ring is untouched: a Tab into it still rings.
-  assert.match(stylesSource, /\.scripture-workspace-group-popover input:focus-visible,/);
 });
 
 test("the group is a kicker at the head of its members, separated by canvas and never by a rule", () => {
@@ -488,13 +618,64 @@ test("the group is a kicker at the head of its members, separated by canvas and 
      The 176px cap went with the kicker and is not missed: it existed because an
      unbounded run of 9px caps across a horizontal strip was the defect the whole
      family of devices was drawn to replace. */
-  assert.doesNotMatch(componentStatements, /scripture-workspace-group-tab|scripture-workspace-group-head/,
-    "no element among the TABS stands for a study");
-  assert.match(componentSource, /className="scripture-workspace-active-group"/,
-    "a study is named by the control that manages it");
-  assert.match(componentSource, /aria-label=\{`Manage \$\{activeGroup\.label\}`\}/);
-  assert.match(componentSource, /const visibleLabel = collapsedProxy \? groupLabel : label/,
-    "and a folded study wears its own name on the proxy that stands for it");
+  /* AT FULL STRENGTH, 2026-07-30. This read
+
+       assert.doesNotMatch(componentStatements, /scripture-workspace-group-tab|scripture-workspace-group-head/,
+         "no element among the TABS stands for a study");
+       assert.match(componentSource, /className="scripture-workspace-active-group"/,
+         "a study is named by the control that manages it");
+       assert.match(componentSource, /aria-label=\{`Manage \$\{activeGroup\.label\}`\}/);
+
+     and the narrowing — "among the TABS" — was doing real work: the actions
+     cluster still held a control that carried the current study's name, so the
+     unqualified claim would have been false. It was left narrow deliberately,
+     with a note saying the smaller claim was the honest one until the study
+     line arrived.
+
+     It has arrived, and the qualification comes off. Nothing in the strip
+     stands for a study under any class name the device has worn — not among the
+     tabs, not beside them. Every one of the three is banned by name, because
+     three different elements have carried this label in three weeks and the
+     next one will have a fourth name.
+
+     The one apparent exception is stated rather than exempted: a COLLAPSED study
+     renders as a single proxy tab wearing its own name. That is not a label in
+     the strip, it is a study that has folded itself into a tab, which is the one
+     case where a study genuinely belongs among them. */
+  assert.doesNotMatch(
+    componentStatements,
+    /scripture-workspace-group-tab|scripture-workspace-group-head|scripture-workspace-active-group/,
+    "no element in the strip stands for a study",
+  );
+  assert.doesNotMatch(componentStatements, /data-study-active-group-manage/);
+  /* The last exception closed on 2026-07-30. This read
+       assert.match(componentSource, /const visibleLabel = collapsedProxy \? groupLabel : label/,
+         "except a folded study, which IS a tab and wears its own name on it");
+     — a collapsed study rendered as a single proxy tab wearing the STUDY's
+     name, which was the one honest case of a study among the tabs. The register
+     holds one study's tabs, so nothing folds and no tab stands for anything but
+     itself. The claim needs no exception now: nothing in the strip names a
+     study, in any state. */
+  assert.doesNotMatch(componentStatements, /groupLabel : label|collapsedProxy/);
+
+  /* And where the guarantee lands now. The bracket cost a 15px band above the
+     row; the kicker cost a slot inside it; the Manage control cost 132px of the
+     cluster and truncated the name there. The study line costs the tab row
+     nothing at all — it is a second row in the frame's own band, which the page
+     was already reserving as the window's drag region — and it names EVERY
+     study rather than only the one you are in, which is more than the row ever
+     did at any of its three prices. */
+  const studyLine = readFileSync(
+    resolve(import.meta.dirname, "../src/renderer/components/StudyLine.tsx"),
+    "utf8",
+  );
+  assert.match(studyLine, /studyWorkspaceGroupLabel\(workspace, group, bookNames\)/,
+    "a study is named on its chip, in the same vocabulary every other surface uses");
+  assert.doesNotMatch(
+    studyLine.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, ""),
+    /This study/,
+    "the rail's placeholder is not coming back: every study has a name it can be told apart by",
+  );
 
   /* The slate mark went with the kicker it sat on. It was Law 2's mark at the
      smallest scale it appears — 2 x 11 — in Law 3's ink for something the app
@@ -510,26 +691,48 @@ test("the group is a kicker at the head of its members, separated by canvas and 
   assert.doesNotMatch(componentStatements, /scripture-workspace-group-mark/,
     "the kicker's mark went with the kicker");
 
-  // Separated by canvas, and by the strip's own number: "separated from the
-  // ungrouped tabs by 24px of canvas rather than by a rule — the same argument
-  // that removed the Research divider."
-  assert.match(
-    rail,
-    /\.scripture-workspace-tab-wrap\[data-study-group-start="true"\] \{\s*margin-left: var\(--page-inset\);/,
-  );
-  /* The interval belongs to whichever element opens the run, and there is only
-     one candidate now. The `!kickered` term existed to hand the 24px to the
-     kicker where a study had one and to the first member otherwise; with no
-     kicker the first member always carries it, so the term went and the claim
-     — a study's run is opened by exactly one interval, never two — is stated
-     on what remains. */
-  assert.match(
-    componentStatements,
-    /const groupStart = tabIndex === 0 && groupIndex > 0;/,
-  );
-  /* The marker was on the head and is on the first member now — the head was
-     the element that opened a run while it existed. */
-  assert.match(componentSource, /data-study-group-start=\{groupStart \|\| undefined\}/);
+  /* AND THIS IS WHERE IT RETURNED, 2026-07-30 — the note above said to assert it
+     here when it did. The kicker's mark was SLATE, Law 3's ink for something the
+     app inferred, and that was correct while a study was something the app
+     assembled out of whatever you happened to open. The only way a study comes
+     into being now is a reader pressing the + on the study line, so the mark is
+     SEAL, Law 3's ink for authorship, and the claim it makes is true.
+
+     It is provenance and not state: every study chip carries it at one strength,
+     because every study was made the same way. Which study you are in is told by
+     the label's ink. "All" carries none — it is not a study, and a provenance
+     mark on it would certify a thing nobody authored. */
+  assert.match(stylesDeclarations, /\.scripture-study-chip-seal \{[\s\S]{0,140}background: var\(--study-gold\);/,
+    "an authored study wears the seal");
+  assert.match(studyLine, /<span className="scripture-study-chip-seal" aria-hidden="true" \/>/);
+  const allChip = studyLine.slice(studyLine.indexOf("{showAll && ("), studyLine.indexOf("{chips.map("));
+  assert.doesNotMatch(allChip, /scripture-study-chip-seal/,
+    "All is not a study and may not be certified as one");
+
+  /* "Separated from the ungrouped tabs by 24px of canvas rather than by a rule
+     — the same argument that removed the Research divider." The ARGUMENT is
+     general and holds; the rule that applied it is retired, because it opened
+     each study's run after the first and the strip never holds two studies at
+     once. It is asserted as the negative so it cannot come back as dead CSS. */
+  assert.doesNotMatch(stylesDeclarations, /data-study-group-start/,
+    "the interval between studies is the whole strip now: they are never in it together");
+  /* THE INTERVAL HAS NOTHING LEFT TO SEPARATE, 2026-07-30. These two lines read
+
+       assert.match(componentStatements, /const groupStart = tabIndex === 0 && groupIndex > 0;/);
+       assert.match(componentSource, /data-study-group-start=\{groupStart \|\| undefined\}/);
+
+     — 24px of canvas opening each study's run after the first, which is §05·2's
+     "separated from the ungrouped tabs by 24px of canvas rather than by a rule".
+     It was the last device in the strip that knew there was more than one study
+     in it. The register holds one study's tabs, so there is no second run to
+     open and `groupIndex > 0` can never be true; a rule that can only ever be
+     false is a rule that describes a product that does not exist.
+
+     The 24px survives in the SHEET, unreferenced, because the argument it
+     carries — separate with interval, never with a line — is the general rule
+     and outlives the one place it was applied. */
+  assert.doesNotMatch(componentStatements, /groupStart|data-study-group-start/,
+    "one study in the strip has no second run to open");
 
   /* B3's recede was the kicker dimming to 72% for a study with no active tab —
      "present, never a second ink". It goes with the kicker. The rail says the
@@ -580,7 +783,11 @@ test("the strip's right-hand cluster sits on the strip's row, not centred in the
      family and none carries a height of its own. */
   assert.doesNotMatch(stylesDeclarations, /scripture-workspace-reopen/,
     "styling a control the strip does not render describes a product that does not exist");
-  const controls = /\.scripture-workspace-active-group,\s*\.scripture-workspace-open,\s*\.scripture-workspace-overflow \{([^}]*)\}/
+  /* The family lost `.scripture-workspace-active-group` on 2026-07-30, and for
+     the opposite reason it lost `.scripture-workspace-reopen`: that control was
+     rendered, and it was the last element in the strip that stood for a study.
+     Two controls remain and both report on tabs. */
+  const controls = /\.scripture-workspace-open,\s*\.scripture-workspace-overflow \{([^}]*)\}/
     .exec(rail);
   assert.ok(controls, "the cluster's controls must still be sized as one family");
   assert.doesNotMatch(controls[1], /(?:^|[\s;])height\s*:/);
@@ -620,15 +827,29 @@ test("no control in the register is left to the platform to draw", () => {
        kicker. A note followed it pointing at .rail-studies-item:focus-visible
        as the ring the switcher carried in the rail's stead; the switcher was
        removed on 2026-07-30 and the rail has no focusable control of its own
-       again. Every ring the register owes is in this list. */
+       again. .scripture-workspace-active-group:focus-visible was here too, and
+       left with the Manage control later the same day. Every ring the STRIP
+       owes is in this list; the study line's three are asserted below, in the
+       same width and the same offset, because the line and the strip are one
+       surface as far as a keyboard is concerned. */
     ".scripture-workspace-context-menu button:focus-visible",
-    ".scripture-workspace-active-group:focus-visible",
     ".scripture-workspace-open:focus-visible",
     ".scripture-workspace-overflow:focus-visible",
     ".scripture-workspace-persistence button:focus-visible",
   ]) {
     assert.ok(focusSelectors.includes(selector), `${selector} must carry the register's focus mark`);
   }
+  const lineFocusStart = rail.indexOf(".scripture-study-chip:focus-visible");
+  assert.ok(lineFocusStart > 0, "the study line must declare a focus ring");
+  const lineFocus = rail.slice(lineFocusStart, rail.indexOf("}", lineFocusStart) + 1);
+  for (const selector of [
+    ".scripture-study-chip:focus-visible",
+    ".scripture-study-open:focus-visible",
+    ".scripture-study-rename input:focus-visible",
+  ]) {
+    assert.ok(lineFocus.includes(selector), `${selector} must carry the register's focus mark`);
+  }
+  assert.match(lineFocus, /outline: 2px solid var\(--study-gold\);\s*outline-offset: 2px;/);
 });
 
 test("a derived tab wears the machine hue whether or not you are reading it", () => {
@@ -692,7 +913,11 @@ test("a save is announced and never drawn, and its live region is never removed"
      and always in the tree; the sheet hides it in every phase but failed; and
      it is out of FLOW while hidden, which is the other half — a save that
      reflows the strip is the twitch this whole treatment was drawn to stop. */
-  const status = section(componentSource, 'className="scripture-workspace-actions"', "{activeGroup &&");
+  /* The end marker was `{activeGroup &&` — the Manage control that used to
+     follow the status region in the cluster, and which left the strip on
+     2026-07-30. The region is still the cluster's first child, so the slice now
+     ends at the control that follows it. */
+  const status = section(componentSource, 'className="scripture-workspace-actions"', "{(allGroups.length > 0");
   assert.match(status, /role="status"/);
   assert.match(status, /aria-live="polite"/);
   // Rendered in every phase: the phase is a class on it, never a condition
@@ -760,15 +985,33 @@ test("a persistence failure seals the strip's baseline and states four words bes
   }
 });
 
-test("overflow counts the rest and the register's ordinals live in that list", () => {
-  // B4: "a +7 count opens the rest as a list" — the count is the part you can
-  // act on. And B5: numbers appear in the overflow list, never on the tabs.
-  assert.match(componentSource, /const hiddenTabCount = tabsInStrip === null \? 0 : Math\.max\(0, registerSize - tabsInStrip\)/);
-  assert.match(componentSource, /className="scripture-workspace-overflow-count">\{`\+\$\{hiddenTabCount\}`\}/);
+test("the overview is a door, not a readout, and the ordinals live inside it", () => {
+  /* B4 asked for a count on this control — "a +7 count opens the rest as a
+     list" — and these two lines pinned it:
+
+       assert.match(componentSource, /const hiddenTabCount = tabsInStrip === null \? 0 : Math\.max\(0, registerSize - tabsInStrip\)/);
+       assert.match(componentSource, /className="scripture-workspace-overflow-count">\{`\+\$\{hiddenTabCount\}`\}/);
+
+     They were right while the strip WAS the workspace and "the rest" was one
+     number meaning one thing. The register holds one study at a time as of
+     2026-07-30, so most of "the rest" is other studies — named on the study
+     line above, each with its own count in its own tooltip — and what a badge
+     had left to report was a tab or two past the edge of a row you can pan with
+     a wheel. That is chrome reporting on chrome.
+
+     So the control goes back to being what it is: the quiet door to every tab
+     in every study. The count survives in its accessible name, where a number
+     answers a question rather than sitting in the frame asking one. */
+  assert.doesNotMatch(componentStatements, /hiddenTabCount|tabsInStrip|scripture-workspace-overflow-count/);
+  assert.doesNotMatch(declarationsOnly(registerSource), /scripture-workspace-overflow-count/,
+    "styling a badge the strip does not render describes a product that does not exist");
+  assert.match(componentSource, /aria-label=\{`Show all \$\{totalTabs\} study tabs in \$\{allGroups\.length\}/);
+  assert.match(componentSource, /<span aria-hidden="true"><OverflowGlyph \/><\/span>/);
+
+  // B5: numbers appear in the overview's list, never on the tabs.
   assert.match(componentSource, /const ordinal = studyWorkspaceTabOrdinal\(workspace, tab\.id\)/);
   assert.match(componentSource, /className="scripture-workspace-overflow-shortcut"/);
   assert.match(componentSource, /data-study-tab-ordinal=\{ordinal\}/);
-  // The tabs themselves stay clean: no shortcut hint is rendered in the strip.
   const tablist = section(componentSource, 'role="tablist"', '<div className="scripture-workspace-actions"');
   assert.doesNotMatch(tablist, /⌘/);
 });

@@ -41,6 +41,7 @@ import { nextVerseSelection } from "../utils/verseSelection.js";
 import { scopeHighlightsToPackage } from "../utils/highlightPackageScope.js";
 import { Popover } from "./Popover.js";
 import { ScriptureWorkspaceTabs } from "./ScriptureWorkspaceTabs.js";
+import { StudyLine } from "./StudyLine.js";
 import { HighlightUnderlay, FADE_MS, SWEEP_MS } from "./HighlightUnderlay.js";
 import {
   MarkingSurface,
@@ -482,7 +483,6 @@ interface Props {
   onWorkspaceTabSelect?: (tabId: string) => Promise<boolean>;
   onWorkspaceTabClose?: (tabId: string) => Promise<boolean>;
   onWorkspaceGroupClose?: (groupId: string) => Promise<boolean>;
-  onWorkspaceGroupToggle?: (groupId: string, collapsing: boolean) => Promise<boolean>;
   onWorkspaceGroupRename?: (groupId: string, label: string) => Promise<boolean>;
   onWorkspaceTabMove?: (tabId: string, targetGroupId: string) => Promise<boolean>;
   onWorkspaceTabReorder?: (
@@ -495,6 +495,9 @@ interface Props {
   ) => Promise<boolean>;
   onWorkspaceRecentReopen?: (index?: number) => Promise<boolean>;
   onWorkspaceTabDuplicate?: () => Promise<boolean>;
+  onStartStudy?: () => Promise<boolean>;
+  /** A study just created and waiting for the reader to name it on its chip. */
+  studyNamingRequest?: { groupId: string; nonce: number } | null;
   workspacePersistenceStatus: WorkspacePersistenceStatus;
   onRetryWorkspacePersistence: () => Promise<boolean>;
   researchScrollTop?: number;
@@ -680,13 +683,14 @@ export function ScripturePage({
   onWorkspaceTabSelect,
   onWorkspaceTabClose,
   onWorkspaceGroupClose,
-  onWorkspaceGroupToggle,
   onWorkspaceGroupRename,
   onWorkspaceTabMove,
   onWorkspaceTabReorder,
   onWorkspaceGroupReorder,
   onWorkspaceRecentReopen,
   onWorkspaceTabDuplicate,
+  onStartStudy,
+  studyNamingRequest = null,
   workspacePersistenceStatus,
   onRetryWorkspacePersistence,
   researchScrollTop,
@@ -4617,6 +4621,19 @@ export function ScripturePage({
     }
   }, [advanceSelectionGeneration, applyPassageSelectionRestore, book, chapter, closeConnectionWordChooser, packageId, sessionOwnerTabId]);
 
+  /* THERE IS NO FILTER STATE, 2026-07-30, and this is where it was.
+     A `studyFilterId` lived here for a few hours, with a follow effect keyed on
+     the active tab having moved, so that a chip could narrow the strip and a
+     Ctrl+Tab across studies could widen it back. Both went with the "All" view:
+     the strip shows the study the page is in, full stop, so which study it
+     shows is `workspace.tabsById[activeTabId].groupId` — already persisted,
+     already restored, already correct on launch, and incapable of disagreeing
+     with the page. Selection leads and the line follows because there is
+     nothing left in between them to get out of step.
+
+     Nothing goes in this place. If a future surface needs to show a study the
+     page is not in, it is a list, not a state on this component. */
+
   // Phrase offsets and highlight animations belong to one translation's text
   // shape, so they cannot survive a package change. Whole-verse selection and
   // its canonical anchor do survive: those coordinates are translation-free.
@@ -4649,15 +4666,25 @@ export function ScripturePage({
     <div className="scripture-page">
 
       {!focusMode && (
+        <StudyLine
+          workspace={studyWorkspace}
+          bookNames={bookNames}
+          onSelectTab={(tabId) => onWorkspaceTabSelect?.(tabId) ?? Promise.resolve(false)}
+          onRenameStudy={(groupId, label) => (
+            onWorkspaceGroupRename?.(groupId, label) ?? Promise.resolve(false)
+          )}
+          onStartStudy={() => onStartStudy?.() ?? Promise.resolve(false)}
+          namingRequest={studyNamingRequest}
+        />
+      )}
+
+      {!focusMode && (
         <ScriptureWorkspaceTabs
           workspace={studyWorkspace}
           bookNames={bookNames}
           onSelect={(tabId) => onWorkspaceTabSelect?.(tabId) ?? Promise.resolve(false)}
           onClose={(tabId) => onWorkspaceTabClose?.(tabId) ?? Promise.resolve(false)}
           onCloseGroup={(groupId) => onWorkspaceGroupClose?.(groupId) ?? Promise.resolve(false)}
-          onToggleGroup={(groupId, collapsing) => (
-            onWorkspaceGroupToggle?.(groupId, collapsing) ?? Promise.resolve(false)
-          )}
           onRenameGroup={(groupId, label) => (
             onWorkspaceGroupRename?.(groupId, label) ?? Promise.resolve(false)
           )}

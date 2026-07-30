@@ -568,12 +568,32 @@ try {
 
   await clickStudyControl(driver, '[data-study-tab-id="romans-6-bsb"]');
   await driver.waitFor(`document.querySelector('[data-study-tab-id="romans-6-bsb"]')?.getAttribute("aria-selected") === "true"`);
-  await clickStudyControl(driver, "[data-study-active-group-manage]");
-  await driver.waitFor(`Boolean(document.querySelector("[data-study-group-rename] input"))`);
-  await setNativeControlValue(driver, "[data-study-group-rename] input", "Baptism and New Life");
-  await clickStudyControl(driver, '[data-study-group-rename] button[type="submit"]');
-  await driver.waitFor(`document.querySelector('[data-study-group-tab][data-study-group-id="pastoral-romans-study"]')
-    ?.textContent?.trim() === "Baptism and New Life"`);
+  /* RENAMING A STUDY HAPPENS ON ITS CHIP, 2026-07-30. This drove
+     `[data-study-active-group-manage]` — the strip's Manage control — into a
+     popover with a rename form, and then waited on
+     `[data-study-group-tab][data-study-group-id=…]`, the kicker, which had
+     already been retired on 2026-07-29 and could never match. Two dead
+     selectors in five lines, in a gate that is not part of `npm test` and so
+     had nobody to tell it.
+
+     The study line renames in place: a double-click turns the chip into its own
+     field. The oracle is the chip's own label, which is also the one surface a
+     reader would look at to see whether the rename took. */
+  await driver.evaluate(`(() => {
+    const chip = document.querySelector('[data-study-line-chip][data-study-group-id="pastoral-romans-study"]');
+    chip?.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    return Boolean(chip);
+  })()`);
+  await driver.waitFor(`Boolean(document.querySelector("[data-study-line-rename] input"))`);
+  await setNativeControlValue(driver, "[data-study-line-rename] input", "Baptism and New Life");
+  await driver.evaluate(`(() => {
+    const form = document.querySelector("[data-study-line-rename]");
+    if (!(form instanceof HTMLFormElement)) return false;
+    form.requestSubmit();
+    return true;
+  })()`);
+  await driver.waitFor(`document.querySelector('[data-study-line-chip][data-study-group-id="pastoral-romans-study"]')
+    ?.textContent?.trim().startsWith("Baptism and New Life")`);
 
   await clickStudyControl(driver, "[data-study-all-tabs]");
   await driver.waitFor(`Boolean(document.querySelector("[data-study-all-tabs-search]"))`);
@@ -591,14 +611,26 @@ try {
   await driver.evaluate(`window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))`);
   await driver.waitFor(`!document.querySelector("[data-study-all-tabs-search]")`);
 
-  await clickStudyControl(driver, "[data-study-active-group-manage]");
-  await clickStudyControl(driver, "[data-study-group-collapse]");
+  /* Collapse and expand are All Tabs' now, per study, which is also where a
+     reader can reach a study they are not in. They used to be driven through
+     the strip's Manage popover; that control left the strip with the study's
+     name on 2026-07-30. */
+  await clickStudyControl(driver, "[data-study-all-tabs]");
+  await driver.waitFor(`Boolean(document.querySelector("[data-study-all-tabs-search]"))`);
+  await clickStudyControl(
+    driver,
+    '[data-study-group-id="pastoral-romans-study"] [data-study-group-collapse]',
+  );
   await driver.waitFor(`Boolean(document.querySelector(
-    '[data-study-group-id="pastoral-romans-study"] [data-study-collapsed-proxy="true"]'
+    '[data-study-workspace-bar] [data-study-group-id="pastoral-romans-study"] [data-study-collapsed-proxy="true"]'
   ))`);
-  await clickStudyControl(driver, "[data-study-active-group-manage]");
-  await clickStudyControl(driver, "[data-study-group-collapse]");
-  await driver.waitFor(`!document.querySelector('[data-study-group-id="pastoral-romans-study"] [data-study-collapsed-proxy="true"]')`);
+  await clickStudyControl(
+    driver,
+    '[data-study-group-id="pastoral-romans-study"] [data-study-group-collapse]',
+  );
+  await driver.waitFor(`!document.querySelector('[data-study-workspace-bar] [data-study-group-id="pastoral-romans-study"] [data-study-collapsed-proxy="true"]')`);
+  await driver.evaluate(`window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))`);
+  await driver.waitFor(`!document.querySelector("[data-study-all-tabs-search]")`);
 
   await clickStudyControl(driver, "[data-study-all-tabs]");
   await setNativeControlValue(driver, "[data-study-all-tabs-search]", "Priscilla");
@@ -708,8 +740,14 @@ try {
   await clickStudyControl(driver, '[data-study-tab-id="john-3-kjv"]');
   await driver.waitFor(`Boolean(document.querySelector(".connection-draft-exit-dialog"))`);
   await clickButtonByText(driver, ".connection-draft-exit-actions button", "Keep editing");
-  await clickStudyControl(driver, "[data-study-active-group-manage]");
-  await clickStudyControl(driver, "[data-study-group-collapse]");
+  // Collapse is All Tabs' now — the strip's Manage control left with the study
+  // name it carried on 2026-07-30 — and a dirty draft still blocks it.
+  await clickStudyControl(driver, "[data-study-all-tabs]");
+  await driver.waitFor(`Boolean(document.querySelector("[data-study-all-tabs-search]"))`);
+  await clickStudyControl(
+    driver,
+    '[data-study-group-id="pastoral-acts-study"] [data-study-group-collapse]',
+  );
   await driver.waitFor(`Boolean(document.querySelector(".connection-draft-exit-dialog"))`);
   await clickButtonByText(driver, ".connection-draft-exit-actions button", "Keep editing");
   await driver.evaluate(`window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))`);

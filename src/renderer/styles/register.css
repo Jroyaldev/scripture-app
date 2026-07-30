@@ -151,22 +151,23 @@
 }
 
 
-/* ── Overflow: a count, not an icon ───────────────────────────────────────
+/* ── Overflow: the quiet door to every tab ────────────────────────────────
 
-   B4: "a +7 count opens the rest as a list." The count is the part you can act
-   on; three dots only say "more". Mono, because it is a quantity of chrome. */
+   B4 asked for a count here — "a +7 count opens the rest as a list" — and it
+   was the right control while the strip WAS the workspace and "the rest" was
+   one number meaning one thing. The register holds one study at a time as of
+   2026-07-30, so the rest is mostly other studies, and those are named on the
+   study line above with their own counts in their own tooltips. What was left
+   for a badge to report was a tab or two past the edge of a row you can pan
+   with a wheel, which is chrome reporting on chrome.
+
+   So `.scripture-workspace-overflow-count` is gone with the badge, and the
+   control is the glyph in every state: a door, and the count is in its name. */
 .scripture-workspace-bar .scripture-workspace-overflow {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   padding: 0 6px;
-}
-
-.scripture-workspace-overflow-count {
-  color: var(--text-primary);
-  font: 500 10px/1 var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.02em;
 }
 
 

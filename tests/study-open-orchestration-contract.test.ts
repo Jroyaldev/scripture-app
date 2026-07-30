@@ -100,12 +100,40 @@ test("destination focus is deferred and refuses to steal focus from a newer acti
   assert.match(focus, /focus\(\{ preventScroll: true \}\)/);
 });
 
-test("a new study opens the existing group manager as its naming step", () => {
+test("a new study is invited to name itself on its own chip", () => {
+  /* THIS USED TO ASSERT A DOM HANDSHAKE, and it is restated rather than
+     relaxed because the handshake is gone, not merely moved. The two lines that
+     stood here were
+
+       assert.match(naming, /querySelector<HTMLButtonElement>\('\[data-study-active-group-manage\]'/);
+       assert.match(naming, /manage\?\.click\(\)/);
+
+     — the app finding the strip's Manage control by selector and clicking it,
+     which opened a dialog over the page to ask the reader for four words. The
+     Manage control left the strip on 2026-07-30 with the rest of a study's
+     identity, so the selector had nothing to find; and a handshake made of a
+     selector fails silently when the element it names is renamed, which is
+     exactly how the QA gate's own copy of this trick went a day pointing at a
+     retired kicker.
+
+     The invitation is a REQUEST now — a group id and a nonce, handed to the
+     study line, which turns that study's chip into its own field where the name
+     will be read. The nonce is load-bearing: two studies made in a row must be
+     two invitations, and a bare id would look unchanged.
+
+     What the test is for is untouched and is asserted below: a study created
+     from the current canvas asks to be named at once, and the naming step
+     refuses to seize focus if the reader has already gone somewhere else. */
   const naming = section(app, "const openWorkspaceGroupNamingAfterCommit", "const openPassageTab");
   assert.match(naming, /const current = studyWorkspaceRef\.current/);
   assert.match(naming, /current\?\.tabsById\[current\.activeTabId\]\?\.groupId !== groupId/);
-  assert.match(naming, /querySelector<HTMLButtonElement>\('\[data-study-active-group-manage\]'/);
-  assert.match(naming, /manage\?\.click\(\)/);
+  assert.match(naming, /setStudyNamingRequest\(\{ groupId, nonce: studyNamingNonceRef\.current \}\)/);
+  assert.doesNotMatch(naming, /querySelector|\.click\(\)/,
+    "the naming step is a request the study line answers, not an element it clicks");
+  assert.match(app, /studyNamingRequest=\{studyNamingRequest\}/,
+    "and the request reaches the study line");
+  assert.match(app, /onStartStudy=\{startStudyFromCurrentCanvas\}/,
+    "the study line's plus reuses the palette's own create-a-study path");
   assert.match(palette, /Create a separate sermon, question, or class study/);
 });
 

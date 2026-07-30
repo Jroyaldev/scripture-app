@@ -75,10 +75,18 @@ test("the rail is bracketed by the same two lines as the paper", () => {
   const css = read(STYLES);
 
   // Top: the brand tile's top edge IS the page's top edge — 54, the same
-  // number, composed by rev05-canon as 24 canvas + 30 strip. The rail names
-  // that token rather than restating 54, so the two halves of the frame cannot
-  // be edited apart. Anything else here is the rail keeping its own origin.
-  assert.match(css, /--frame-top: calc\(var\(--page-inset\) \+ var\(--register-strip\)\);/,
+  // number, composed by rev05-canon as a 24px study line over a 30px strip. The
+  // rail names that token rather than restating 54, so the two halves of the
+  // frame cannot be edited apart. Anything else here is the rail keeping its
+  // own origin.
+  //
+  // The first half read `var(--page-inset)` between 2026-07-29 and 2026-07-30,
+  // while the band above the tabs happened to be the same 10 the paper is inset
+  // by; the study line took the band over and the sum returned to the 54 §05·3's
+  // frame table states. The rail needed no edit for either move, which is the
+  // property this line is really defending: it consumes the composed token and
+  // never the number.
+  assert.match(css, /--frame-top: calc\(var\(--study-line\) \+ var\(--register-strip\)\);/,
     "the frame's top edge token is rev05-canon's; the rail consumes it");
   assert.match(ruleBlocks(css, ".sidebar")[0]!, /padding-top: var\(--frame-top\);/,
     "the rail's vertical origin must be the page's, not the window's");

@@ -290,13 +290,32 @@
 
      The number is COMPOSED rather than asserted, because §05·2's whole argument
      is that the top band held four objects measured against four references.
-     There is one datum now and it is this sum: 24px of canvas — the drag band,
-     and nothing else — over a 30px tab strip. The rail's brand tile aligns its
-     top edge to --frame-top and the page grid derives its rectangle from it, so
-     the two halves may not be edited apart, and neither may be redeclared in a
-     mode block. tests/quire-frame-top-edge-contract.test.ts holds both facts. */
+     There is one datum and it is this sum. The rail's brand tile aligns its top
+     edge to --frame-top and the page grid derives its rectangle from it, so the
+     two halves may not be edited apart, and neither may be redeclared in a mode
+     block. tests/quire-frame-top-edge-contract.test.ts holds both facts.
+
+     RECOMPOSED 2026-07-30, and the sum returns to the frame table's own 54.
+     The first half used to be --page-inset: 10px of empty canvas that was "the
+     drag band, and nothing else". It had been 24 until commit e8e2ee9 re-canned
+     the frame to a 10px inset, and at 10 the band was too thin to drag by and
+     held nothing — the section's "and nothing else" had become the whole of it.
+     The study line takes that band over: the same region, the same job for the
+     window, and now a row of study chips in it. So the first half is named for
+     what stands in it rather than for a coincidence with the paper's inset —
+     the page's inset is still 10 and is no longer the frame's top half — and 24
+     is the height the band held before e8e2ee9, which is also what a 24px
+     pointer row needs.
+
+     Top to bottom: --study-line, then --register-strip, then paper. The order
+     matters and is not a formality. The active tab is a piece of the page
+     pulled up above the register's baseline and its two fillets sweep into
+     --bg-reading at that baseline, so nothing may be inserted between the strip
+     and the page without severing that joint; the band above the strip is the
+     one place in the frame a second row can go. */
+  --study-line: 24px;
   --register-strip: 30px;
-  --frame-top: calc(var(--page-inset) + var(--register-strip));  /* 40px */
+  --frame-top: calc(var(--study-line) + var(--register-strip));  /* 54px */
 
   /* Rev 05 §05·3: "Page padding · 40 / 24 · 40 left and right, 24 top and
      bottom, inside the paper. 40 is the one left datum of §05·2." Inside the
@@ -1587,19 +1606,26 @@ html, body, #root {
    one active-study control, and management that opens only on demand. Its
    surface is canvas, like every other piece of chrome: the page is the only
    object in the column, and the strip is part of the ground it sits on. */
-/* A register, not browser tabs: one 30px tab strip under 24px of canvas, and
-   the sum of those two is the page's top edge.
+/* A register, not browser tabs: one 30px tab strip under a 24px study line,
+   and the sum of those two is the page's top edge.
 
    Rev 05 §05·2 collapsed this band from four competing datums to one. It used
    to be `min-height: 34px` with a 15px bracket band opening above the tabs
    whenever a study was on screen, so the page's top edge moved between 54 and
    69 depending on the register's CONTENTS — which is the drift the section was
-   written against. The height is now stated, not floored: 54px in every mode
-   and at every window size, composed as --page-inset + --register-strip.
+   written against. The height is stated, not floored, and it is now the STRIP's
+   half of the frame alone: --register-strip, 30px in every mode and at every
+   window size. The bar was `height: var(--frame-top)` with --page-inset of top
+   padding while the band above the tabs was the bar's own empty lane; the study
+   line is a real element in that lane now and owns its height, so a bar still
+   claiming the whole frame would claim it twice.
 
-   The 24px above the strip is the drag band "and nothing else". Nothing may be
-   drawn in it: the group's rule and the study siglum both lived up there and
-   both are retired below.
+   §05·2's "the drag band is 24 and nothing else" is not repealed — it is
+   answered. Nothing is drawn ABOVE THE TAB ROW inside the register: the group's
+   rule and the study siglum are still retired, the wrap may still not open a
+   lane above itself, and the bar reserves nothing over its tabs. What stands in
+   the band is a sibling of the bar, which is the study line, and it carries the
+   window's drag region — the thing the band existed for.
 
    No border-bottom. The baseline seal is a failure state only (see the
    persistence rules below); a rule here would fight the fillet, which is the
@@ -1607,14 +1633,280 @@ html, body, #root {
 .scripture-workspace-bar {
   position: relative;
   z-index: 7;
-  height: var(--frame-top);
+  height: var(--register-strip);
   flex: 0 0 auto;
   display: flex;
   align-items: flex-end;
   min-width: 0;
-  padding: var(--page-inset) var(--page-inset) 0 0;
+  padding: 0 var(--page-inset) 0 0;
   background: transparent;
   color: var(--text-secondary);
+}
+
+/* ── THE STUDY LINE ────────────────────────────────────────────────────────
+
+   The frame's top row: an "All" chip, one chip per study, and the control that
+   starts one. It is the second line of the register in the sense Chrome's tab
+   groups are — the row that says which set of tabs the strip is showing — and
+   it is deliberately NOT a toolbar, a filter bar or a dashboard. It is chrome:
+   quiet, structural, and load-bearing, because it is also the band the window
+   is dragged by.
+
+   Why it is above the strip and not between the strip and the page: the active
+   tab's paper fill and its two fillets join the tab to --bg-reading at the
+   strip's baseline, and [data-flush-start] lets the first tab claim the page's
+   own top-left corner. A row inserted between them severs that joint and turns
+   the tab into a chip floating on canvas. The band above the tabs was already
+   reserved, already the drag region, and already empty; the line takes it.
+
+   The line is the page's width, not the reading pane's — a study is not a
+   property of the pane that happens to be open, and the window has to be
+   draggable across the whole top edge. The strip below it still stops at the
+   reading pane's right edge when the margin is open, which is right for tabs:
+   a tab's fillet reaches for a page edge that has to be underneath it. */
+.scripture-study-line {
+  -webkit-app-region: drag;
+  position: relative;
+  z-index: 7;
+  height: var(--study-line);
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding: 0 var(--page-inset) 0 0;
+  background: transparent;
+  color: var(--text-tertiary);
+}
+
+/* Overflow scrolls; a study's name may not shrink to fit. Sixteen studies is
+   the model's cap and sixteen chips do not fit a narrow window, so the row pans
+   exactly as the strip does — same fade, same wheel behaviour, no squeeze. */
+.scripture-study-line-chips {
+  min-width: 0;
+  /* Grows to its chips, never to the line: the + sits against the last chip,
+     which is where a tab row puts the control that extends it. It also has to
+     shrink, so an overflowing row gives way and pans rather than pushing the +
+     off the end of the window. */
+  flex: 0 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: none;
+}
+
+.scripture-study-line-chips::-webkit-scrollbar { display: none; }
+
+.scripture-study-line-chips.is-scrollable-right {
+  -webkit-mask-image: linear-gradient(to left, transparent 0, #000 36px);
+  mask-image: linear-gradient(to left, transparent 0, #000 36px);
+}
+
+/* Every control in the line is drawn by this sheet; nothing falls through to
+   the platform's own button chrome. And every one of them is no-drag, or the
+   band would swallow the press before the chip ever saw it. */
+.scripture-study-chip,
+.scripture-study-open,
+.scripture-study-rename input {
+  -webkit-app-region: no-drag;
+  appearance: none;
+  border: 0;
+  font-family: var(--font-ui);
+}
+
+.scripture-study-line .control-tooltip-anchor {
+  -webkit-app-region: no-drag;
+  display: inline-flex;
+}
+
+/* A held place, not a filter tag. Ink on the frame's own surface: no fill, no
+   border, no pill. The current study is told by ink and weight — which is the
+   same way the register tells you which tab is the page, and the same way Law 2
+   refuses a second fill.
+
+   A chip arrives on the app's shared 150ms easing, the same entrance a tab
+   makes, so the second study waking the line up reads as a thing appearing
+   beside the first rather than as the row re-laying out. Nothing already on
+   the row moves when it happens: the resting name is a chip at rest, in the
+   same place, at the width its bold form already reserved. */
+.scripture-study-chip {
+  position: relative;
+  /* The row IS the target. 24px is the floor a control may not go under — the
+     register states it the same way one line down — and here it is also the
+     whole band, so the chip's hit area and the frame's top row are one box and
+     there is no dead canvas between two chips to press by mistake. */
+  height: var(--study-line);
+  max-width: 168px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font: 500 11px/1 var(--font-ui);
+  letter-spacing: 0.004em;
+  white-space: nowrap;
+  animation: scripture-study-chip-in 150ms ease;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+@keyframes scripture-study-chip-in {
+  from { opacity: 0; transform: translateX(-4px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* THE RESTING LINE. One study is the model's floor, not an edge case, and at
+   the floor there is nothing to choose between: the band keeps its height and
+   its drag region, and the study's name sits in it in resting ink with the +
+   beside it. It is the same element in the same place at the same size as the
+   chip it becomes — only the ink changes — so the second study wakes the line
+   up instead of re-laying it out. */
+.scripture-study-line[data-study-line-state="resting"] .scripture-study-chip {
+  color: var(--text-secondary);
+}
+
+/* The label reserves the width its boldest state needs, in every state, so
+   switching studies changes ink and weight and moves nothing. Law 2's reserved
+   gutter applied to type: the visible label and a hidden semibold copy of it
+   share one grid cell, so the cell is always as wide as the bold form and the
+   chips beside it never shuffle when the current one changes.
+   `visibility: hidden` and not `opacity: 0` — the copy has to be out of the
+   accessibility tree, or every study is named twice. */
+.scripture-study-chip-label {
+  display: grid;
+  min-width: 0;
+}
+
+.scripture-study-chip-label > span,
+.scripture-study-chip-label::after {
+  grid-area: 1 / 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scripture-study-chip-label::after {
+  content: attr(data-label);
+  font-weight: var(--fw-semibold);
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.scripture-study-chip:hover {
+  background: color-mix(in srgb, var(--text-primary) 5%, transparent);
+  color: var(--text-secondary);
+}
+
+/* Ink and weight, and nothing that moves. The chip is in flow, so its current
+   state may not touch a positional property — Rev 04 §7 ruling 5·3, swept by
+   tests/actions-cluster-position-contract.test.ts. */
+.scripture-study-chip[aria-current="true"] {
+  color: var(--text-primary);
+  font-weight: var(--fw-semibold);
+}
+
+.scripture-study-chip[aria-current="true"]:hover {
+  color: var(--text-primary);
+}
+
+/* THE SEAL RETURNS HERE, and this is the assertion the premium contract left a
+   place for. The kicker's 2 x 11 slate mark was Law 3's ink for something the
+   app INFERRED, and it was correct while a study was something the app
+   assembled out of what you happened to open. A study is authored now — the
+   only way one comes into being is a reader pressing the + on this line — so
+   the mark is seal, which is Law 3's ink for authorship, and it is honest.
+
+   It is provenance and not state: every study chip carries it at the same
+   strength, because every study was made the same way. "All" carries none — it
+   is not a study, it is the absence of a choice among them. What tells you
+   which study you are in is the label's ink, above. */
+.scripture-study-chip-seal {
+  width: 2px;
+  height: 10px;
+  flex: 0 0 auto;
+  border-radius: 1px;
+  background: var(--study-gold);
+}
+
+/* A COUNT ON EVERY CHIP IS A DASHBOARD, and this rule styled one until
+   2026-07-30. A row of names each carrying a number turns the frame's quietest
+   row into a readout, and the number is not what a reader is choosing by. Each
+   chip's tooltip and its accessible name still carry the count, which is where
+   a number belongs when it answers a question you have to ask. */
+
+/* Renaming happens where the name is. The chip becomes the field, in place and
+   at its own size, so nothing opens over the page to ask for four words. */
+.scripture-study-rename {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+}
+
+.scripture-study-rename input {
+  width: 168px;
+  height: var(--study-line);
+  padding: 0 8px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-float);
+  color: var(--text-primary);
+  font: 500 11px/1 var(--font-ui);
+}
+
+/* The modern little add button at the end of a good tab row, one size down
+   from the strip's own — this row is 24px where the strip is 30. */
+.scripture-study-open {
+  width: var(--study-line);
+  height: var(--study-line);
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  margin-left: 2px;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.scripture-study-open .scripture-workspace-glyph { width: 12px; height: 12px; }
+
+.scripture-study-open:hover {
+  background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+  color: var(--text-primary);
+}
+
+/* At capacity it stays put and stops responding, exactly as the tab plus does
+   at 64 — a control that vanishes at the limit teaches that the limit is a bug. */
+.scripture-study-open[data-study-start-disabled] {
+  opacity: 0.38;
+  cursor: default;
+}
+
+.scripture-study-open[data-study-start-disabled]:hover {
+  background: none;
+  color: var(--text-tertiary);
+}
+
+/* One focus mark for the whole frame: the register's seal ring, at the same
+   width and the same offset, because the line and the strip are one surface as
+   far as a keyboard is concerned. */
+.scripture-study-chip:focus-visible,
+.scripture-study-open:focus-visible,
+.scripture-study-rename input:focus-visible {
+  outline: 2px solid var(--study-gold);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scripture-study-chip,
+  .scripture-study-open { animation: none; transition: none; }
 }
 
 /* The register belongs to the page, not to the window. When the margin is
@@ -1687,15 +1979,11 @@ html, body, #root {
    reads as a stuck focus ring. */
 .scripture-workspace-tab,
 .scripture-workspace-tab-close,
-.scripture-workspace-active-group,
 .scripture-workspace-open,
 .scripture-workspace-overflow,
 .scripture-workspace-persistence button,
-.scripture-workspace-group-popover button,
 .scripture-workspace-overflow-popover button,
-.scripture-workspace-group-popover input,
 .scripture-workspace-overflow-popover input,
-.scripture-workspace-group-popover select,
 .scripture-workspace-overflow-popover select {
   appearance: none;
   border: 0;
@@ -1712,23 +2000,19 @@ html, body, #root {
   animation: scripture-workspace-tab-in 150ms ease;
 }
 
-/* Separate with interval, not with lines. The vertical rule before a new group
-   is gone; canvas says the same thing without drawing anything.
-
-   Rev 05 §05·2 raises the interval from 12px to 24px and gives it the whole job
-   the group's hairline used to share: "the group becomes a slate-marked kicker
-   at the head of its own members, separated from ungrouped tabs by 24px of
+/* THE STUDY INTERVAL IS RETIRED, 2026-07-30, and the argument it carried is
+   not. Rev 05 §05·2 raised it from 12px to 24px and gave it the whole job the
+   group's hairline used to share: "separated from ungrouped tabs by 24px of
    canvas rather than by a rule — the same argument that removed the Research
-   divider." 24 is also the strip's one inset, so the gap between two studies is
-   the same number as the gap between the page and the window.
+   divider." Separate with interval, never with a line: that ruling is general
+   and outlives this application of it.
 
-   The flag lands on whichever element opens the run: the kicker when a study is
-   expanded, the proxy tab's own wrap when it is collapsed. */
-.scripture-workspace-tab-wrap[data-study-group-start="true"] {
-  margin-left: var(--page-inset);
-  padding-left: 0;
-  border-left: 0;
-}
+   What is gone is the application. The rule opened each study's run after the
+   first, so it needed two studies in the row to have anything to open — and the
+   register holds one study's tabs by construction. `groupIndex > 0` can never
+   be true, and a rule that can only ever be false describes a product that does
+   not exist. The interval between two STUDIES is the whole strip now: they are
+   never in it together. */
 
 @keyframes scripture-workspace-tab-in {
   from { opacity: 0; transform: translateX(-4px); }
@@ -1953,14 +2237,11 @@ html, body, #root {
   color: var(--text-tertiary);
 }
 
-.scripture-workspace-tab-count {
-  min-width: 17px;
-  flex: 0 0 auto;
-  color: var(--text-secondary);
-  font: 500 8px/1 var(--font-ui);
-  font-variant-numeric: tabular-nums;
-  text-align: center;
-}
+/* `.scripture-workspace-tab-count` stood here: the number a collapsed study's
+   proxy tab wore to say how many tabs were folded inside it. The proxy is
+   retired with the collapse gesture on 2026-07-30 — the strip holds one study's
+   tabs by construction, so there is nothing left for a study to fold away from
+   — and this is the last of its styling. */
 
 .scripture-workspace-tab-close {
   position: absolute;
@@ -2029,6 +2310,18 @@ html, body, #root {
   display: flex;
   align-items: flex-end;
   gap: 2px;
+  /* THE FAR EDGE, RESOLVED 2026-07-30. The auto end-margin was on the plus, and
+     three places said it was "what holds the toolbar out at the far edge now
+     that the viewport no longer grows". Measured in a real window on 2026-07-30
+     it holds nothing: the Tooltip primitive wraps the plus in an inline-flex
+     span sized to its content, so the plus is a flex item of THAT and not of
+     the bar, and an auto margin with no free space to resolve against comes out
+     zero. The cluster sat wherever the tabs ended, with ~570px of empty bar
+     beyond it. The margin moves to the element that can actually use it — this
+     one is a direct child of the bar — and the claim becomes true instead of
+     being restated. It is layout, never a selection rule: ruling 5·3 is about
+     what MOVES the cluster, and nothing here reads which tab is selected. */
+  margin-left: auto;
   padding-left: 7px;
   padding-bottom: 4px;
   border-left: 1px solid var(--border-subtle);
@@ -2046,8 +2339,16 @@ html, body, #root {
    All Tabs, and only its CSS stayed. Styles for an element that is never
    rendered are the worst kind of dead code, because they read as a description
    of the product. Recovery is `[data-study-reopen-recent]` in the All Tabs
-   popover now, and it is styled with that popover's rows. */
-.scripture-workspace-active-group,
+   popover now, and it is styled with that popover's rows.
+
+   It lost a second member on 2026-07-30, and for the opposite reason: the
+   `.scripture-workspace-active-group` control was rendered, and was the last
+   element in the strip that stood for a study. The study line names studies
+   now — with room for the whole name, a count, a seal and a rename — so a
+   132px control in the strip repeating the current one's name is the same
+   truncated label ae49372 removed from among the tabs, filed in the cluster
+   that reports on tabs. What remains in the cluster is the save status and All
+   Tabs: two controls that report, and nothing that names. */
 .scripture-workspace-open,
 .scripture-workspace-overflow {
   min-width: 24px;
@@ -2057,32 +2358,6 @@ html, body, #root {
   background: transparent;
   color: var(--text-tertiary);
   cursor: pointer;
-}
-
-.scripture-workspace-active-group {
-  max-width: 132px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 0 6px 0 8px;
-  color: var(--text-secondary);
-  font: 500 10px/1 var(--font-ui);
-}
-
-.scripture-workspace-active-group > span:first-child {
-  min-width: 0;
-  overflow: hidden;
-  opacity: 1;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.scripture-workspace-active-group small {
-  min-width: 15px;
-  color: var(--text-tertiary);
-  font: 500 9px/1 var(--font-ui);
-  font-variant-numeric: tabular-nums;
-  text-align: center;
 }
 
 .scripture-workspace-caret {
@@ -2140,19 +2415,20 @@ html, body, #root {
      above every tab and reached into the drag band the register is not allowed
      to draw in. 28 + 2 is the row exactly, measured in a real window.
 
-     THE END MARGIN IS INERT, and this note is here so the next hand does not
-     inherit the claim that was: "the auto end-margin is what holds the toolbar
-     out at the far edge now that the viewport no longer grows." It cannot. The
-     plus is wrapped by the Tooltip primitive's `.control-tooltip-anchor`, an
-     inline-flex span sized to its content, so the plus is a flex item of THAT
-     and not of the bar; auto margins resolve against free space, an intrinsi-
-     cally sized container has none, and the margin comes out as zero. Measured:
-     the anchor is 32px wide and the actions cluster starts at its right edge
-     with the rest of the bar empty beyond it. Left alone deliberately — moving
-     the cluster is a visible change to a band the study line is about to
-     rebuild — but recorded, because a comment describing a layout the browser
-     is not performing is worse than no comment. */
-  margin: 0 auto 2px 4px;
+     THE END MARGIN WAS INERT AND IS GONE, 2026-07-30. It read `0 auto 2px 4px`
+     under the claim that "the auto end-margin is what holds the toolbar out at
+     the far edge now that the viewport no longer grows." It cannot: the plus is
+     wrapped by the Tooltip primitive's `.control-tooltip-anchor`, an inline-flex
+     span sized to its content, so the plus is a flex item of THAT and not of the
+     bar; an auto margin resolves against free space and an intrinsically sized
+     container has none. Measured in a real Chromium, the anchor was 32px wide
+     with the actions cluster starting at its right edge and the rest of the bar
+     empty beyond it — the cluster sat wherever the tabs happened to end.
+
+     The margin moved to `.scripture-workspace-actions`, which is a direct child
+     of the bar and can resolve one. The plus keeps its 4px against the last tab,
+     which is the only thing this declaration was ever really doing. */
+  margin: 0 0 2px 4px;
   padding: 0;
   border-radius: var(--radius-sm);
   color: var(--text-tertiary);
@@ -2200,7 +2476,6 @@ html, body, #root {
 }
 .scripture-workspace-overflow { font: 600 9px/1 var(--font-ui); letter-spacing: 1px; }
 
-.scripture-workspace-active-group:hover,
 .scripture-workspace-open:hover,
 .scripture-workspace-overflow:hover {
   background: color-mix(in srgb, var(--text-primary) 5%, transparent);
@@ -2278,16 +2553,12 @@ html, body, #root {
    strength rather than the translucent halo the rest of the app rings with:
    that wash is 34-42% and cannot carry a 3:1 ring against paper. */
 .scripture-workspace-tab:focus-visible,
-.scripture-workspace-active-group:focus-visible,
 .scripture-workspace-open:focus-visible,
 .scripture-workspace-overflow:focus-visible,
 .scripture-workspace-persistence button:focus-visible,
 .scripture-workspace-context-menu button:focus-visible,
-.scripture-workspace-group-popover button:focus-visible,
 .scripture-workspace-overflow-popover button:focus-visible,
-.scripture-workspace-group-popover input:focus-visible,
 .scripture-workspace-overflow-popover input:focus-visible,
-.scripture-workspace-group-popover select:focus-visible,
 .scripture-workspace-overflow-popover select:focus-visible {
   outline: 2px solid var(--study-gold);
   outline-offset: 2px;
@@ -2303,23 +2574,26 @@ html, body, #root {
    override is gone and the bracket now takes the register's one shared ring at
    `outline-offset: 2px`, declared above with every other control. */
 
-/* The group popover opens with focus on its heading rather than on the rename
-   field, because a focused text input matches :focus-visible however focus
-   reached it and so painted a keyboard ring on a mouse click. The heading is a
-   tabindex="-1" landing spot, which means it rings only when the last
-   interaction was a keyboard one — and it must ring with the register's seal
-   rather than fall through to the platform's own rectangle, same as every other
-   control above. */
-.scripture-workspace-group-popover .scripture-workspace-popover-heading:focus-visible {
-  outline: 2px solid var(--study-gold);
-  outline-offset: 2px;
-}
+/* THE GROUP POPOVER IS RETIRED, 2026-07-30, with the Manage control that was
+   the only thing that opened it. It carried a rename field, an Order menu, a
+   Collapse toggle and Close study for whichever study the reader was in — and
+   every one of those is in All Tabs, per study, where a reader can also reach
+   the studies they are NOT in. The rename it owned is on the study line's chips
+   now, in place, at the size the name is read.
 
-/* The active group popover is the fixed rail's only management surface. It
-   inherits the shared --bg-float popover material so every float in the app
-   reads as one system — flattened to full alpha because workspace management
-   surfaces must stay opaque over the reading canvas (D8 contract). */
-.popover-panel.scripture-workspace-group-popover,
+   Its heading's focus rule went with it. That rule existed because the popover
+   used to open focus INTO the rename field, and a text input matches
+   :focus-visible however focus arrived, so a mouse click drew a keyboard ring;
+   the fix was a tabindex="-1" heading to land on instead. The study line has no
+   dialog to land in — pressing a chip renames it where it stands — so the
+   defect has no surface to occur on. The lesson survives in
+   tests/focus-ring-modality-contract.test.ts, which still holds the caret
+   treatment every text field in the register answers a click with.
+
+   All Tabs is the register's management surface now, and it inherits the shared
+   --bg-float popover material so every float in the app reads as one system —
+   flattened to full alpha because workspace management surfaces must stay
+   opaque over the reading canvas (D8 contract). */
 .popover-panel.scripture-workspace-overflow-popover {
   padding: 12px;
   color: var(--text-secondary);
@@ -2332,7 +2606,6 @@ html, body, #root {
   grid-template-rows: auto auto minmax(0, 1fr);
 }
 
-.scripture-workspace-popover-heading,
 .scripture-workspace-overflow-head {
   display: flex;
   align-items: flex-start;
@@ -2342,14 +2615,12 @@ html, body, #root {
   border-bottom: 1px solid var(--border-subtle);
 }
 
-.scripture-workspace-popover-heading > div,
 .scripture-workspace-overflow-head > div {
   min-width: 0;
   display: grid;
   gap: 3px;
 }
 
-.scripture-workspace-popover-heading strong,
 .scripture-workspace-overflow-head strong {
   overflow: hidden;
   color: var(--text-primary);
@@ -2359,7 +2630,6 @@ html, body, #root {
   white-space: nowrap;
 }
 
-.scripture-workspace-popover-heading span,
 .scripture-workspace-overflow-head span {
   color: var(--text-tertiary);
   font: 500 9px/1.2 var(--font-ui);
@@ -2376,20 +2646,11 @@ html, body, #root {
   font-size: 9.5px;
 }
 
-.scripture-workspace-rename {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 5px;
-  margin-top: 11px;
-}
-
-.scripture-workspace-rename label {
-  grid-column: 1 / -1;
-  color: var(--text-tertiary);
-  font: 500 9px/1 var(--font-ui);
-}
-
-.scripture-workspace-rename input,
+/* The register's text fields. `.scripture-workspace-rename` was the group
+   popover's own field and is gone with it; the study line's chip rename takes
+   its place in this family, because a field that renames a study should answer
+   a click the same way wherever it stands. */
+.scripture-study-rename input,
 .scripture-workspace-inline-rename input,
 .scripture-workspace-search input {
   min-width: 0;
@@ -2413,14 +2674,13 @@ html, body, #root {
    background-color. The search field is excluded because its frame carries the
    wash on the field's behalf — see the note there — and washing both would
    double it. */
-.scripture-workspace-rename input:focus,
+.scripture-study-rename input:focus,
 .scripture-workspace-inline-rename input:focus {
   background-image: linear-gradient(
     color-mix(in srgb, var(--study-gold) 6%, transparent),
     color-mix(in srgb, var(--study-gold) 6%, transparent));
 }
 
-.scripture-workspace-rename button,
 .scripture-workspace-inline-rename button {
   min-width: 24px;
   min-height: 28px;
@@ -2432,38 +2692,13 @@ html, body, #root {
   font-size: 10px;
 }
 
-.scripture-workspace-rename button:disabled,
 .scripture-workspace-inline-rename button:disabled { cursor: default; opacity: 0.42; }
 
-.scripture-workspace-group-menu-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 9px;
-  padding-top: 9px;
-  border-top: 1px solid var(--border-subtle);
-}
-
-.scripture-workspace-group-menu-actions button,
-.scripture-workspace-group-menu-actions select {
-  min-width: 24px;
-  min-height: 28px;
-  padding: 0 8px;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-  font-size: 10px;
-}
-
-.scripture-workspace-group-menu-actions button:hover,
-.scripture-workspace-group-menu-actions select:hover,
 .scripture-workspace-overflow-head > button:hover {
   background: color-mix(in srgb, var(--text-primary) 5%, transparent);
   color: var(--text-primary);
 }
 
-.scripture-workspace-group-menu-actions .is-danger,
 .scripture-workspace-group-tools .is-danger { color: var(--error); }
 
 .scripture-workspace-search {
@@ -2940,16 +3175,14 @@ html, body, #root {
   }
 
   .scripture-workspace-tab,
-  .scripture-workspace-active-group,
   .scripture-workspace-open,
   .scripture-workspace-overflow,
-  .scripture-workspace-group-popover,
+  .scripture-study-chip,
+  .scripture-study-open,
+  .scripture-study-rename input,
   .scripture-workspace-overflow-popover,
-  .scripture-workspace-group-popover button,
   .scripture-workspace-overflow-popover button,
-  .scripture-workspace-group-popover input,
   .scripture-workspace-overflow-popover input,
-  .scripture-workspace-group-popover select,
   .scripture-workspace-overflow-popover select {
     border-color: CanvasText;
     background: Canvas;
@@ -2957,11 +3190,27 @@ html, body, #root {
     forced-color-adjust: none;
   }
 
+  /* The study line takes the system's own field, like the strip above it, and
+     the current study takes Highlight exactly as the current tab does — one
+     mode, one way of saying "this is the one you are in". Weight cannot carry
+     it here: forced colours flattens ink to two values, so the state has to be
+     the system's selection pair or it is not stated at all. */
+  .scripture-study-line {
+    background: Canvas;
+    forced-color-adjust: none;
+  }
+
+  .scripture-study-chip[aria-current="true"] { background: Highlight; color: HighlightText; }
+  /* Seal is a hue and forced colours have none. The mark is redrawn in the
+     system's own ink so an authored study still carries one. */
+  .scripture-study-chip-seal { background: CanvasText; }
+  .scripture-study-chip[aria-current="true"] .scripture-study-chip-seal { background: HighlightText; }
+  .scripture-study-chip-label::after { visibility: hidden; }
+
   .scripture-workspace-tab[aria-selected="true"] { background: Highlight; color: HighlightText; }
   .scripture-workspace-tab[aria-selected="true"]::after { background: HighlightText; }
   .scripture-workspace-tab-mark,
   .scripture-workspace-tab-close { color: currentColor; opacity: 1; }
-  .scripture-workspace-tab-wrap[data-study-group-start="true"],
   .scripture-workspace-actions,
   .scripture-workspace-overflow-group > header { border-color: CanvasText; }
   /* Slate is a hue, and forced colours have none: the kicker's mark is redrawn
@@ -2971,16 +3220,14 @@ html, body, #root {
   .scripture-workspace-row-tools { opacity: 1; }
 
   .scripture-workspace-tab:focus-visible,
-  .scripture-workspace-active-group:focus-visible,
   .scripture-workspace-open:focus-visible,
   .scripture-workspace-overflow:focus-visible,
-  .scripture-workspace-group-popover button:focus-visible,
+  .scripture-study-chip:focus-visible,
+  .scripture-study-open:focus-visible,
+  .scripture-study-rename input:focus-visible,
   .scripture-workspace-overflow-popover button:focus-visible,
-  .scripture-workspace-group-popover input:focus-visible,
   .scripture-workspace-overflow-popover input:focus-visible,
-  .scripture-workspace-group-popover select:focus-visible,
-  .scripture-workspace-overflow-popover select:focus-visible,
-  .scripture-workspace-group-popover .scripture-workspace-popover-heading:focus-visible {
+  .scripture-workspace-overflow-popover select:focus-visible {
     outline: 2px solid Highlight;
     outline-offset: 2px;
   }
@@ -20613,11 +20860,37 @@ button.lang-phrase-diagram-node:focus-visible,
      more: Rev 05 §05·2 retired the device outright, so there is nothing left to
      hide, and the 15px band it reserved is gone from every width rather than
      zeroed at this one. */
-  /* The narrow shell used to hide the kicker here and keep the interval. The
-     kicker is gone at every width now, so only the interval remains to be
-     tightened. */
-  .scripture-workspace-tab-wrap[data-study-group-start="true"] {
-    margin-left: 2px;
+  /* The narrow shell used to hide the kicker here and tighten the study
+     interval to 2px. Both are gone at every width now — the kicker on
+     2026-07-29, the interval on 2026-07-30 with the second study it separated
+     the first from — so there is nothing left for this width to concede. */
+
+  /* THE STUDY LINE STAYS, and the decision is recorded here because the obvious
+     move — drop the second row where there is no room — is not available, and
+     the reason is structural rather than aesthetic. The frame's top edge is
+     invariant across modes and widths and is composed as --study-line +
+     --register-strip; a block that hid the line would leave 24px of the page's
+     own reserve standing empty and put the rail's brand tile 24px out of
+     alignment with the paper, which is the four-datums fault §05·2 was written
+     against. Neither half of the sum may be redeclared here either — same rule,
+     held by tests/quire-frame-top-edge-contract.test.ts.
+
+     It also has to stay on the merits. Below 980 the rail becomes a bottom bar
+     with no switcher in it, and All Tabs is a list of tabs rather than a way of
+     changing which study you are in; take the line away and the reader loses
+     the only control at this width that switches studies at all.
+
+     What the narrow shell changes is what the line SPENDS. The chips tighten by
+     the same 2px the study interval above gives up, and the band stops claiming
+     the window: a shell whose navigation is under the thumb has no title bar to
+     drag, so the drag region is released and the whole row is chip. */
+  .scripture-study-line {
+    -webkit-app-region: no-drag;
+  }
+
+  .scripture-study-chip {
+    gap: 5px;
+    padding: 0 6px;
   }
 }
 

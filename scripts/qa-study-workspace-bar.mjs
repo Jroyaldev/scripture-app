@@ -92,7 +92,13 @@ async function connect(url) {
     const messageId = ++id;
     const timer = setTimeout(() => {
       pending.delete(messageId);
-      reject(new Error(`Timed out waiting for CDP ${method}`));
+      // Name the expression. "Timed out waiting for CDP Runtime.evaluate" with
+      // nothing else is the least useful failure this tour can produce, and it
+      // is the one it produces most often on a loaded machine.
+      const subject = typeof params.expression === "string"
+        ? `: ${params.expression.replace(/\s+/g, " ").slice(0, 160)}`
+        : "";
+      reject(new Error(`Timed out after ${timeout}ms waiting for CDP ${method}${subject}`));
     }, timeout);
     pending.set(messageId, { resolve: resolvePromise, reject, timer });
     socket.send(JSON.stringify({ id: messageId, method, params }));
@@ -118,12 +124,25 @@ async function waitForTarget(endpoint, childState, timeout = 20_000) {
 }
 
 function createDriver(cdp) {
-  const evaluate = async (expression) => {
+  /* `timeout` is a parameter and not a constant because one call in this tour
+     is not like the others: resolving the fixture's three real entities goes
+     through the library, and on a cold profile that request queues behind the
+     library's own initialise/reinitialise. Everything else here is a DOM read
+     that answers in a frame.
+
+     Both ceilings are generous, and the default moved from 20s to 45s on
+     2026-07-30 because `waitForState` does not catch a STALLED evaluate — only
+     a gate that stays false. A slow answer therefore surfaced as "Timed out
+     waiting for CDP Runtime.evaluate" with no gate named, which is the least
+     useful failure this tour can produce, and it happened on a machine merely
+     under load. The tour reloads the shell once per theme and each reload
+     re-opens the library underneath it. */
+  const evaluate = async (expression, timeout = 45_000) => {
     const response = await cdp.send("Runtime.evaluate", {
       expression,
       awaitPromise: true,
       returnByValue: true,
-    });
+    }, timeout);
     if (response.result?.exceptionDetails) {
       throw new Error(JSON.stringify(response.result.exceptionDetails).slice(0, 2_000));
     }
@@ -135,7 +154,34 @@ function createDriver(cdp) {
   const waitFor = async (expression, timeout = 15_000) => {
     await waitForState(evaluate, sleep, expression, timeout);
   };
-  return { evaluate, waitFor };
+  /**
+   * Settle the page: fonts loaded, every running animation finished.
+   *
+   * The tour measures settled states — a popover's opacity, a control's
+   * geometry, a screenshot — and it may not wait on a frame clock it does not
+   * control. An Electron window that is occluded freezes its animations at the
+   * from-keyframe, so `.popover-panel`'s 180ms entrance sits at opacity 0
+   * indefinitely and a gate on "has it arrived" waits forever. Finishing the
+   * animations is the same end state a visible window reaches, reached
+   * deliberately: what the tour is testing is what the register looks like at
+   * rest, not how long it takes to get there.
+   */
+  const settle = async () => {
+    // Front first. An occluded window freezes animations AND throttles
+    // requestAnimationFrame to never — and the register moves focus in a rAF,
+    // so a keyboard gate against a window that has slipped behind another one
+    // waits for a frame that is not coming.
+    await cdp.send("Page.bringToFront");
+    await evaluate(`(async () => {
+      await document.fonts.ready;
+      for (const animation of document.getAnimations()) {
+        try { animation.finish(); } catch { /* an infinite animation cannot finish */ }
+      }
+      return true;
+    })()`);
+    await sleep(120);
+  };
+  return { evaluate, waitFor, settle };
 }
 
 /**
@@ -323,6 +369,67 @@ function buildFixture(entities) {
   };
 }
 
+/**
+ * A workspace of `count` studies, each holding one passage, for the shape pass.
+ *
+ * The register's fixture is two studies and two long names, which is the shape
+ * a reader is usually in. It is not the shape that breaks a row of chips. Those
+ * are the floor — one study, where "All" would be a choice between a thing and
+ * itself — and the ceiling, sixteen, which is the model's group cap and more
+ * names than any window fits.
+ */
+function shapeFixture(count, labels) {
+  const groups = [];
+  const tabsById = {};
+  for (let index = 0; index < count; index += 1) {
+    const groupId = `shape-study-${index}`;
+    const tabId = `shape-passage-${index}`;
+    tabsById[tabId] = {
+      kind: "passage",
+      id: tabId,
+      groupId,
+      session: session(passageView("ACT", 1 + (index % 28), "bsb", 1, index)),
+    };
+    groups.push({
+      id: groupId,
+      homePassageTabId: tabId,
+      tabIds: [tabId],
+      lastActiveTabId: tabId,
+      collapsed: false,
+      label: labels[index % labels.length] === null
+        ? { kind: "automatic" }
+        : { kind: "custom", value: labels[index % labels.length] },
+    });
+  }
+  return {
+    version: 2,
+    groups,
+    tabsById,
+    activeTabId: "shape-passage-0",
+    activationOrder: Object.keys(tabsById),
+    recentlyClosed: [],
+  };
+}
+
+/**
+ * Names for the shape pass, and every other study goes UNNAMED.
+ *
+ * `null` is a study the reader has made and not yet claimed: its label stays
+ * `{ kind: "automatic" }` and the line shows the reference the app derived.
+ * That is the other half of the seal's claim — the mark certifies the naming,
+ * so half of these chips must go unmarked or the assertion proves nothing.
+ */
+const SHAPE_LABELS = [
+  "Deuteronomy 32 worldview",
+  null,
+  "Sunday evening — the riot in Ephesus",
+  null,
+  "Baptism",
+  null,
+  "Hospitality in the Pastorals",
+  null,
+];
+
 function normalMetricsExpression(themeId, hitTarget, keyboardFocusMetrics) {
   return `(() => {
     const parseColor = (value) => {
@@ -363,6 +470,7 @@ function normalMetricsExpression(themeId, hitTarget, keyboardFocusMetrics) {
       return (Math.max(foregroundLum, backgroundLum) + 0.05) / (Math.min(foregroundLum, backgroundLum) + 0.05);
     };
     const bar = document.querySelector("[data-study-workspace-bar]");
+    const studyLine = document.querySelector("[data-study-line]");
     const active = document.querySelector('[data-study-tab-id="active-entity"]');
     const inactive = document.querySelector('[data-study-tab-id="acts-19-bsb"]');
     const popover = document.querySelector(".scripture-workspace-overflow-popover");
@@ -377,12 +485,13 @@ function normalMetricsExpression(themeId, hitTarget, keyboardFocusMetrics) {
     const labelStyle = label ? getComputedStyle(label) : null;
     const mark = active.querySelector(".scripture-workspace-tab-mark");
     const close = active.querySelector(".scripture-workspace-tab-close");
-    const groupControl = document.querySelector("[data-study-active-group-manage]");
     // The strip's own new-tab control. This used to be
     // \`document.querySelector("[data-study-group-tab]")\` — the group kicker,
     // which left the strip on 2026-07-29 — so the gate below was asserting the
     // visibility of an element the app no longer renders and could not pass.
     const openControl = document.querySelector("[data-study-open]");
+    const studyChips = [...document.querySelectorAll("[data-study-line-chip]")];
+    const startControl = document.querySelector("[data-study-start]");
     const barColor = parseColor(barStyle.backgroundColor);
     const activeBackground = parseColor(activeStyle.backgroundColor);
     const inactiveRect = inactive.getBoundingClientRect();
@@ -411,6 +520,66 @@ function normalMetricsExpression(themeId, hitTarget, keyboardFocusMetrics) {
     const actionLayerAlpha = toolbar instanceof HTMLElement
       ? parseColor(getComputedStyle(toolbar).backgroundColor).a
       : 1;
+    /* THE STUDY LINE — the frame's top row, measured in a used layout because
+       the two things that can go wrong with it are both geometric and neither
+       is visible to a source-reading test.
+
+       It has to be ABOVE the strip. Between the strip and the page it would
+       sever the joint that makes the active tab a piece of the page: the tab's
+       fillets sweep into --bg-reading at the strip's baseline, and a 24px row
+       inserted there leaves the tab floating on canvas with two paper blocks
+       under its corners.
+
+       And the frame's top edge has to be the composed 54 — the line's band plus
+       the strip — because the rail's brand tile and the page grid both derive
+       their origin from that number and neither can see it move. */
+    const lineRect = studyLine instanceof HTMLElement ? studyLine.getBoundingClientRect() : null;
+    const barRect = bar.getBoundingClientRect();
+    const lineStyle = studyLine instanceof HTMLElement ? getComputedStyle(studyLine) : null;
+    const lineAboveStrip = Boolean(lineRect) && lineRect.bottom <= barRect.top + 0.5;
+    const frameTop = Boolean(lineRect) ? barRect.bottom - lineRect.top : 0;
+    const lineOutsideRegister = studyLine instanceof HTMLElement
+      && studyLine.closest("[data-study-workspace-bar]") === null
+      && studyLine.closest('[role="tablist"]') === null
+      && studyLine.getAttribute("role") === "toolbar";
+    // Every study is named, once, on a control big enough to press, and the one
+    // the strip is showing is the one marked current.
+    // The chip's own label, not its whole text: a chip also carries a count.
+    const chipName = (chip) => (chip.querySelector(".scripture-study-chip-label")?.textContent ?? "")
+      .replace(/\\s+/g, " ").trim();
+    const chipNames = studyChips.map(chipName);
+    const currentChips = studyChips.filter((chip) => chip.getAttribute("aria-current") === "true");
+    const chipTargets = [...studyChips, startControl].every((control) => {
+      if (!(control instanceof HTMLElement)) return false;
+      const rect = control.getBoundingClientRect();
+      return rect.width >= 24 && rect.height >= 24;
+    });
+    const chipsOutsideTablist = studyChips.every((chip) => chip.closest('[role="tablist"]') === null
+      && chip.closest("[data-study-workspace-bar]") === null);
+    // The band drags the window and the chips do not, or the region eats the
+    // press before the chip ever sees it.
+    const lineDrags = lineStyle?.webkitAppRegion === "drag" || lineStyle?.appRegion === "drag";
+    const chipStyle = studyChips[0] ? getComputedStyle(studyChips[0]) : null;
+    const chipsNoDrag = chipStyle?.webkitAppRegion === "no-drag" || chipStyle?.appRegion === "no-drag";
+    // Current is ink and weight over the frame's own canvas, never a fill.
+    const currentChipStyle = currentChips[0] ? getComputedStyle(currentChips[0]) : null;
+    const currentChipFilled = currentChipStyle
+      ? parseColor(currentChipStyle.backgroundColor).a > 0.02
+      : true;
+    const lineAlpha = lineStyle ? parseColor(lineStyle.backgroundColor).a : 1;
+    const chipContrast = currentChipStyle
+      ? contrastRatio(parseColor(currentChipStyle.color), parseColor(getComputedStyle(document.querySelector(".app-shell")).backgroundColor))
+      : 0;
+    // The seal marks a NAMED study. Both of the fixture's studies carry custom
+    // labels, so both chips wear one; the shape pass drives the other half,
+    // where an automatic label goes unmarked.
+    const sealMark = studyChips[0]?.querySelector(".scripture-study-chip-seal");
+    const sealVisible = sealMark instanceof HTMLElement
+      && sealMark.getBoundingClientRect().width > 0
+      && Number(getComputedStyle(sealMark).opacity) >= 0.9;
+    const sealedChips = studyChips.filter((chip) => chip.querySelector(".scripture-study-chip-seal")).length;
+    const lineState = studyLine?.getAttribute("data-study-line-state") ?? null;
+
     const activeContrast = contrastRatio(parseColor(activeStyle.color), activeBackground);
     const inactiveContrast = contrastRatio(parseColor(inactiveStyle.color), barColor);
     const compactInactive = inactiveRect.width <= 176 && inactiveRect.height >= 24;
@@ -420,12 +589,13 @@ function normalMetricsExpression(themeId, hitTarget, keyboardFocusMetrics) {
     const typeVisible = mark instanceof HTMLElement
       && Number(getComputedStyle(mark).opacity) >= 0.9
       && mark.getBoundingClientRect().width > 0;
-    // The named study is reachable from the strip: one control, carrying the
-    // study's own name, big enough to press. It used to have to be the kicker
-    // among the tabs; the Manage control in the cluster is the whole of it now.
-    const groupVisible = groupControl instanceof HTMLElement
-      && groupControl.getBoundingClientRect().width >= 24
-      && (groupControl.textContent ?? "").trim().length > 0;
+    // Nothing in the strip stands for a study any more. The kicker went on
+    // 2026-07-29, the Manage control on 2026-07-30, and the study line above
+    // carries every study's name — so the check here is the negative, and the
+    // naming claim is measured on the line, below.
+    const groupNamedInStrip = bar.querySelector(
+      "[data-study-active-group-manage], .scripture-workspace-active-group, [data-study-group-tab]",
+    ) !== null;
     // And the control that makes a tab is in the strip rather than the toolbar,
     // seated inside the tab row rather than overhanging it into the drag band.
     // The margin box was 31px in a 30px row until 2026-07-30, which put its top
@@ -466,8 +636,23 @@ function normalMetricsExpression(themeId, hitTarget, keyboardFocusMetrics) {
       compactInactive,
       closeVisible,
       typeVisible,
-      groupVisible,
+      groupNamedInStrip,
       openInStrip,
+      lineAboveStrip,
+      frameTop,
+      lineOutsideRegister,
+      chipNames,
+      currentChipNames: currentChips.map(chipName),
+      chipTargets,
+      chipsOutsideTablist,
+      lineDrags,
+      chipsNoDrag,
+      currentChipFilled,
+      lineAlpha,
+      chipContrast,
+      sealVisible,
+      sealedChips,
+      lineState,
       neutralHalo,
       activeBoxShadow,
       focusRingWidth,
@@ -494,7 +679,13 @@ function assertNormalMetrics(theme, metrics, fixtureSignature) {
   assert.equal(metrics.popoverAlpha, 1, `${theme.id}: All Tabs material is translucent`);
   assert.equal(metrics.popoverOpacity, 1, `${theme.id}: All Tabs capture did not reach settled opacity`);
   assert.equal(metrics.labelOpacity, 1, `${theme.id}: active label opacity is not 1`);
-  assert.ok(metrics.railHeight >= 36 && metrics.railHeight <= 40, `${theme.id}: rail is ${metrics.railHeight}px`);
+  /* The bar is the STRIP's half of the frame, 30px. This read `>= 36 && <= 40`
+     from when the bar also owned the empty band above the tabs and therefore
+     stood for the whole top edge; the study line is a real element in that band
+     now and states its own height. The edge itself is measured as `frameTop`
+     below — line top to strip bottom — which is the number the rail and the
+     page grid actually read, and it is the one that must not move. */
+  assert.equal(metrics.railHeight, 30, `${theme.id}: the tab strip is ${metrics.railHeight}px, not 30`);
   /* The blur belongs to the material, not the atmosphere — that was the whole
      reason Glass and Candlelight stopped being themes. It no longer belongs to
      the REGISTER at all, and this is the same re-canon as the alpha above: a
@@ -518,7 +709,40 @@ function assertNormalMetrics(theme, metrics, fixtureSignature) {
   assert.equal(metrics.compactInactive, true, `${theme.id}: inactive tab is not compact/readable`);
   assert.equal(metrics.closeVisible, true, `${theme.id}: selected close target is not visible`);
   assert.equal(metrics.typeVisible, true, `${theme.id}: selected type mark is not visible`);
-  assert.equal(metrics.groupVisible, true, `${theme.id}: named group affordance is not visible`);
+  /* THE STUDY IS NAMED ONCE, AND NOT IN THE STRIP.
+     This read `metrics.groupVisible` against `[data-study-active-group-manage]`
+     — the actions cluster's Manage control, which carried the current study's
+     name at a 132px cap and left the strip on 2026-07-30 with the rest of a
+     study's identity. Before that it read `[data-study-group-tab]`, the kicker,
+     and went a day pointing at an element the app no longer rendered. Three
+     devices, three selectors, one claim; it is stated on the study line now,
+     and it is stated as a property rather than as a selector — EVERY study is
+     named, exactly one is current, and the strip names none. */
+  assert.equal(metrics.groupNamedInStrip, false, `${theme.id}: an element in the strip stands for a study`);
+  assert.deepEqual(
+    metrics.chipNames,
+    ["Pastoral Teaching Lab", "Romans Baptism Cohort"],
+    `${theme.id}: the study line does not name every study`,
+  );
+  assert.deepEqual(
+    metrics.currentChipNames,
+    ["Pastoral Teaching Lab"],
+    `${theme.id}: exactly one chip is current, and it is the study the strip is showing`,
+  );
+  assert.equal(metrics.lineAboveStrip, true,
+    `${theme.id}: the study line is not above the strip — between it and the page it severs the tab's joint with the page`);
+  assert.equal(metrics.frameTop, 54, `${theme.id}: the frame's top edge is ${metrics.frameTop}, not 54`);
+  assert.equal(metrics.lineOutsideRegister, true, `${theme.id}: the study line is inside the register's tablist or bar`);
+  assert.equal(metrics.chipsOutsideTablist, true, `${theme.id}: a chip is inside the strip's tablist`);
+  assert.equal(metrics.chipTargets, true, `${theme.id}: a study line control is smaller than 24px`);
+  assert.equal(metrics.lineDrags, true, `${theme.id}: the study line does not carry the window's drag band`);
+  assert.equal(metrics.chipsNoDrag, true, `${theme.id}: the drag band would eat a chip press`);
+  assert.equal(metrics.lineAlpha, 0, `${theme.id}: the study line paints a material of its own`);
+  assert.equal(metrics.currentChipFilled, false, `${theme.id}: the current study is a fill, not ink and weight`);
+  assert.ok(metrics.chipContrast >= 4.5, `${theme.id}: current study contrast ${metrics.chipContrast}`);
+  assert.equal(metrics.sealVisible, true, `${theme.id}: a named study carries no seal`);
+  assert.equal(metrics.sealedChips, 2, `${theme.id}: both of the fixture's studies are named and both must be marked`);
+  assert.equal(metrics.lineState, "chips", `${theme.id}: two studies is a choice, so the line draws chips`);
   assert.equal(metrics.openInStrip, true, `${theme.id}: the new-tab plus is not seated in the tab row`);
   assert.equal(metrics.neutralHalo, true, `${theme.id}: selected tab has a decorative outer halo (${metrics.activeBoxShadow})`);
   assert.ok(metrics.focusVisible && metrics.focusRingWidth >= 2, `${theme.id}: focus ring is below 2px`);
@@ -561,6 +785,8 @@ try {
   await driver.evaluate(`document.querySelector('.welcome-location-choice [data-variant="primary"]')?.click()`);
   await driver.waitFor(`Boolean(document.querySelector("[data-study-workspace-bar]"))`, 20_000);
 
+  // Two minutes: this is the one call that waits on the library rather than on
+  // the DOM. See the note on `evaluate`.
   const entities = await driver.evaluate(`(async () => {
     const resolveEntity = async (name, kind) => {
       const result = await window.api.language.searchEntities(name, 24);
@@ -575,8 +801,27 @@ try {
       resolveEntity("Priscilla", "person"),
     ]);
     return { apollos, ephesus, priscilla };
-  })()`);
+  })()`, 120_000);
   const fixture = buildFixture(entities);
+
+  const captureBand = async (file) => {
+    await driver.settle();
+    const clip = await driver.evaluate(`(() => {
+      const body = document.querySelector(".scripture-body");
+      if (!(body instanceof HTMLElement)) return null;
+      const rect = body.getBoundingClientRect();
+      return { x: 0, y: 0, width: Math.round(rect.right), height: Math.round(rect.top + 24) };
+    })()`);
+    assert.ok(clip, `${file}: the frame's top band must be measurable`);
+    const shot = await cdp.send("Page.captureScreenshot", {
+      format: "png",
+      fromSurface: true,
+      captureBeyondViewport: false,
+      clip: { ...clip, scale: 3 },
+    });
+    pendingScreenshots.push({ file, bytes: Buffer.from(shot.result.data, "base64") });
+  };
+
   const pendingScreenshots = [];
   let expectedFixtureSignature = null;
 
@@ -598,18 +843,79 @@ try {
       lastRead: { book: "ACT", chapter: 19, packageId: "bsb" }
     })`);
     await cdp.send("Page.reload", { ignoreCache: true });
+    /* Bring the window forward after every reload. An occluded Electron window
+       stops running CSS transitions and throttles rAF to never, so a tour that
+       measures settled opacity and captures screenshots has to be looking at a
+       window that is actually being drawn — otherwise the first theme passes,
+       something else takes focus, and every theme after it fails at whatever
+       gate happens to depend on a frame. */
+    await cdp.send("Page.bringToFront");
+    /* THE STRIP IS ONE STUDY'S TABS. The fixture's active tab is in the first
+       study, so the strip holds that study's six and the second study is on the
+       line rather than in the row — which is also what a launch does, because
+       the study the strip shows is read off the persisted `activeTabId`.
+
+       This used to wait on `[data-study-group-id="collapsed-study"]
+       [data-study-collapsed-proxy="true"]`, the folded second study's proxy
+       tab. The fixture still marks that study `collapsed: true` and the assertion
+       is now that it changes NOTHING: the field stays in the model, stays
+       persisted, and no surface reads it. There is no "All" chip either — one
+       was built and removed the same day, because a row that has one
+       arrangement does not need a control for choosing it. */
     await driver.waitFor(`document.querySelector(".app-shell")?.classList.contains(${JSON.stringify(`theme-${theme.id}`)})
       && document.querySelector(".app-shell")?.classList.contains("material-translucent") === ${JSON.stringify(theme.material === "translucent")}
       && document.querySelector('[data-study-tab-id="active-entity"]')?.getAttribute("aria-selected") === "true"
-      && document.querySelector('[data-study-group-id="collapsed-study"] [data-study-collapsed-proxy="true"]')
+      && document.querySelectorAll("[data-study-line-chip]").length === 2
+      && document.querySelectorAll('[data-study-workspace-bar] [data-study-tab-id]').length === 6
+      && !document.querySelector("[data-study-workspace-bar] [data-study-collapsed-proxy]")
+      && !document.querySelector("[data-study-line-all]")
       && document.querySelector("#entity-research-title")?.textContent?.includes("Priscilla")`, 20_000);
-    const unobstructedHitTarget = await driver.evaluate(`(() => {
-      const active = document.querySelector('[data-study-tab-id="active-entity"]');
-      if (!(active instanceof HTMLElement)) return false;
-      const rect = active.getBoundingClientRect();
-      const target = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
-      return Boolean(target && active.contains(target));
+    /* The active tab's centre must be the active tab. When it is not, the useful
+       thing is WHAT is on top of it — a scrim, a control that has grown, a row
+       that has been inserted over the strip — so the probe says so rather than
+       returning a bare false and leaving the next hand to guess. */
+    /* Bring the active tab in first, in its own evaluate, and let the scroll
+       settle on the HOST's clock rather than the page's. The fixture's active
+       tab is the last of six in an overflowing strip, so whether it has finished
+       being scrolled into view when the probe runs is a race with font metrics
+       settling — and a tab scrolled past the strip's 36px cut is not a
+       hit-target failure, it is a tab that is not on screen yet.
+
+       NO rAF INSIDE AN EVALUATE, anywhere in this tour as of 2026-07-30. An
+       Electron window that is occluded throttles requestAnimationFrame to
+       never, so an evaluate that awaits one does not time out at the gate it
+       belongs to — it hangs the CDP call and reports as the tour losing the
+       renderer, with no gate named. Five settle blocks were written that way
+       and all five are host sleeps now; `document.fonts.ready` stays, because a
+       font promise resolves whether or not the window is on screen. */
+    await driver.evaluate(`(() => {
+      document.querySelector('[data-study-tab-id="active-entity"]')
+        ?.scrollIntoView({ block: "nearest", inline: "nearest" });
+      return true;
     })()`);
+    await sleep(160);
+    const hitProbe = await driver.evaluate(`(() => {
+      const active = document.querySelector('[data-study-tab-id="active-entity"]');
+      if (!(active instanceof HTMLElement)) return { ok: false, why: "no active tab" };
+      const rect = active.getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
+      const target = document.elementFromPoint(x, y);
+      const describe = (node) => node instanceof Element
+        ? node.tagName.toLowerCase() + (node.className && typeof node.className === "string" ? "." + node.className.trim().split(/\\s+/).join(".") : "")
+        : String(node);
+      return {
+        ok: Boolean(target && active.contains(target)),
+        why: JSON.stringify({
+          point: [Math.round(x), Math.round(y)],
+          tab: [Math.round(rect.left), Math.round(rect.top), Math.round(rect.width), Math.round(rect.height)],
+          hit: describe(target),
+          stack: document.elementsFromPoint(x, y).slice(0, 4).map(describe),
+        }),
+      };
+    })()`);
+    const unobstructedHitTarget = hitProbe.ok;
+    if (!unobstructedHitTarget) console.log(`  hit-test miss (${theme.label}): ${hitProbe.why}`);
     assert.equal(await driver.evaluate(`(() => {
       const active = document.querySelector('[data-study-tab-id="active-entity"]');
       if (!(active instanceof HTMLElement)) return false;
@@ -635,28 +941,24 @@ try {
     // retired Glass id migrates to — so an id test captured this twice and the
     // second write landed on the first.
     if (theme.label === ATMOSPHERE_LABELS.light) {
-      await driver.evaluate(`(async () => {
-        await document.fonts.ready;
-        await new Promise((resolvePromise) => requestAnimationFrame(() => requestAnimationFrame(resolvePromise)));
-        return true;
-      })()`);
-      await sleep(180);
+      await driver.settle();
       const tabStateScreenshot = await cdp.send("Page.captureScreenshot", {
         format: "png",
         fromSurface: true,
         captureBeyondViewport: false,
       });
       pendingScreenshots.push({ file: "paper-tabs.png", bytes: Buffer.from(tabStateScreenshot.result.data, "base64") });
+      // And the frame's top band on its own, at 3x, because the study line is
+      // 24px of 11px type and a full-viewport capture is not something a
+      // designer can read it in.
+      await captureBand("study-line.png");
     }
     await driver.evaluate(`document.querySelector("[data-study-all-tabs]")?.click()`);
     await driver.waitFor(`Boolean(document.querySelector("[data-study-all-tabs-search]"))
       && document.querySelectorAll("[data-study-all-tabs-row]").length === ${Object.keys(fixture.tabsById).length}`);
-    await driver.evaluate(`(async () => {
-      await document.fonts.ready;
-      await new Promise((resolvePromise) => requestAnimationFrame(() => requestAnimationFrame(resolvePromise)));
-      return true;
-    })()`);
-    await sleep(260);
+    await driver.settle();
+    await driver.waitFor(`getComputedStyle(document.querySelector(".scripture-workspace-overflow-popover")).opacity === "1"`);
+    await sleep(120);
     const metrics = await driver.evaluate(normalMetricsExpression(
       theme.id,
       unobstructedHitTarget,
@@ -670,13 +972,109 @@ try {
       captureBeyondViewport: false,
     });
     pendingScreenshots.push({ file: theme.file, bytes: Buffer.from(screenshot.result.data, "base64") });
+    console.log(`  captured ${theme.label}`);
   }
+
+  /* ── THE STUDY LINE, DRIVEN ────────────────────────────────────────────────
+     Six themes prove the line is drawn. This proves it WORKS, once, in the last
+     theme the loop left standing — and it is a used-layout pass because every
+     claim in it is about what moves and what does not, which no source-reading
+     test can see.
+
+     Three things are asserted, in the order a reader meets them:
+       1. a chip lands on the tab that study was LAST ON, not its first. The
+          rail's switcher documented that rule in a comment three lines above
+          code that did the opposite, which is the defect that took it out;
+       2. the strip underneath becomes that study's tabs, all of them — the
+          second study is marked `collapsed: true` in the fixture and it makes
+          no difference, because nothing reads the field;
+       3. nothing above the strip moves while it happens. The line's geometry
+          may not depend on which chip is current: the current study is told by
+          ink and weight over a width the label reserves in every state, so the
+          chips are in the same places before and after. */
+  /* A REAL Escape. The synthetic `window.dispatchEvent` this used works only
+     when something happens to be listening on `window`; the overview's dismissal
+     is the Popover primitive's, and pressing the key is both more faithful and
+     the one form that cannot go stale when the primitive changes where it
+     listens. Fronted first, because a key goes to the focused window. */
+  await driver.settle();
+  await dispatchKey(cdp, "Escape", "Escape", 27);
+  await driver.waitFor(`!document.querySelector("[data-study-all-tabs-search]")`);
+
+  const chipGeometryExpression = `(() => {
+    const line = document.querySelector("[data-study-line]");
+    const chips = [...document.querySelectorAll("[data-study-line-chip], [data-study-start]")];
+    return {
+      line: line ? [line.getBoundingClientRect().top, line.getBoundingClientRect().height] : null,
+      chips: chips.map((chip) => {
+        const rect = chip.getBoundingClientRect();
+        return [Math.round(rect.left), Math.round(rect.width)];
+      }),
+    };
+  })()`;
+  await driver.settle();
+  const geometryBefore = await driver.evaluate(chipGeometryExpression);
+
+  await driver.evaluate(`document.querySelector('[data-study-line-chip][data-study-group-id="collapsed-study"]')?.click()`);
+  await driver.waitFor(`document.querySelector('[data-study-tab-id="collapsed-priscilla"]')?.getAttribute("aria-selected") === "true"
+    && document.querySelectorAll('[data-study-workspace-bar] [data-study-tab-id]').length === 2
+    && document.querySelector('[data-study-line-chip][data-study-group-id="collapsed-study"]')?.getAttribute("aria-current") === "true"`, 10_000);
+
+  const switchMetrics = await driver.evaluate(`(() => {
+    const rows = [...document.querySelectorAll('[data-study-workspace-bar] [data-study-tab-id]')]
+      .map((tab) => tab.getAttribute("data-study-tab-id"));
+    return {
+      rows,
+      roving: document.querySelectorAll('[data-study-workspace-bar] [role="tab"][tabindex="0"]').length,
+      stops: document.querySelectorAll("[data-study-line] [tabindex='0']").length,
+      current: [...document.querySelectorAll('[data-study-line-chip][aria-current="true"]')]
+        .map((chip) => chip.getAttribute("data-study-group-id")),
+    };
+  })()`);
+  assert.deepEqual(
+    switchMetrics.rows,
+    ["romans-6-bsb", "collapsed-priscilla"],
+    "a chip shows exactly its own study's tabs — the fixture folds this one, and it makes no difference",
+  );
+  assert.deepEqual(switchMetrics.current, ["collapsed-study"], "exactly one chip is current");
+  assert.equal(switchMetrics.roving, 1, "the strip keeps exactly one roving tab stop");
+  assert.equal(switchMetrics.stops, 1, "the study line is one tab stop, and the arrows travel it");
+
+  const geometryAfter = await driver.evaluate(chipGeometryExpression);
+  assert.deepEqual(
+    geometryAfter,
+    geometryBefore,
+    "switching studies moved the study line — the current chip must be ink and weight over a reserved width",
+  );
+  await captureBand("study-line-switched.png");
+
+  // The arrows travel the line, and Enter on a chip commits — the same manual
+  // activation the strip below uses, reached the same way.
+  await driver.settle();
+  await driver.evaluate(`document.querySelector('[data-study-line-chip][data-study-group-id="collapsed-study"]')?.focus()`);
+  await dispatchKey(cdp, "ArrowLeft", "ArrowLeft", 37);
+  await driver.waitFor(`document.activeElement?.getAttribute("data-study-group-id") === "named-expanded-study"
+    && document.querySelector('[data-study-tab-id="collapsed-priscilla"]')?.getAttribute("aria-selected") === "true"`, 20_000);
+  await dispatchKey(cdp, "Enter", "Enter", 13, 0, "\r");
+  await driver.waitFor(`document.querySelector('[data-study-tab-id="active-entity"]')?.getAttribute("aria-selected") === "true"
+    && document.querySelectorAll('[data-study-workspace-bar] [data-study-tab-id]').length === 6`, 10_000);
+  const lineFocus = await driver.evaluate(`(() => {
+    const chip = document.activeElement;
+    if (!(chip instanceof HTMLElement)) return null;
+    const style = getComputedStyle(chip);
+    return {
+      id: chip.getAttribute("data-study-group-id"),
+      focusVisible: chip.matches(":focus-visible"),
+      outlineWidth: Number.parseFloat(style.outlineWidth) || 0,
+    };
+  })()`);
+  assert.equal(lineFocus.id, "named-expanded-study", "Enter commits on the focused chip and focus stays there");
+  assert.equal(lineFocus.focusVisible, true, "a chip reached by the keyboard shows a focus ring");
+  assert.ok(lineFocus.outlineWidth >= 2, `study line focus ring is ${lineFocus.outlineWidth}px`);
 
   // A 590 x 450 fine-pointer viewport is the 200%-zoom equivalent of the
   // representative desktop window, not a mobile product surface. All Tabs
   // must own its vertical overflow so the final item remains reachable.
-  await driver.evaluate(`window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))`);
-  await driver.waitFor(`!document.querySelector("[data-study-all-tabs-search]")`);
   await cdp.send("Emulation.setDeviceMetricsOverride", ZOOM_VIEWPORT);
   await driver.waitFor(`window.innerWidth === ${ZOOM_VIEWPORT.width}
     && window.innerHeight === ${ZOOM_VIEWPORT.height}
@@ -697,7 +1095,6 @@ try {
     list.scrollTop = list.scrollHeight;
     lastButton.focus({ preventScroll: false });
     lastButton.scrollIntoView({ block: "nearest", inline: "nearest" });
-    await new Promise((resolvePromise) => requestAnimationFrame(() => requestAnimationFrame(resolvePromise)));
     const panelRect = panel.getBoundingClientRect();
     const listRect = list.getBoundingClientRect();
     const lastRect = lastRow.getBoundingClientRect();
@@ -736,19 +1133,24 @@ try {
       { name: "prefers-reduced-motion", value: "reduce" },
     ],
   });
-  await driver.evaluate(`(async () => {
-    await document.fonts.ready;
-    await new Promise((resolvePromise) => requestAnimationFrame(() => requestAnimationFrame(resolvePromise)));
-    return true;
-  })()`);
+  await driver.settle();
 
+  /* Scoped to the REGISTER, 2026-07-30. This counted `[role="tab"][tabindex="0"]`
+     across the whole document and asserted exactly one, which was only ever true
+     by luck: the living margin is a second, entirely legitimate tablist with its
+     own roving stop, and whether it is on screen depends on what kind of tab the
+     canvas is showing. The claim is about the strip — one tablist, one stop,
+     forced colours included — so it is asked of the strip. */
   const rovingBefore = await driver.evaluate(`(() => ({
-    rovingTabCount: document.querySelectorAll('[role="tab"][tabindex="0"]').length,
-    activeId: document.querySelector('[role="tab"][aria-selected="true"]')?.getAttribute("data-study-tab-id"),
+    rovingTabCount: document.querySelectorAll('[data-study-workspace-bar] [role="tab"][tabindex="0"]').length,
+    rovingTabs: [...document.querySelectorAll('[data-study-workspace-bar] [role="tab"][tabindex="0"]')]
+      .map((tab) => tab.getAttribute("data-study-tab-id")),
+    activeId: document.querySelector('[data-study-workspace-bar] [role="tab"][aria-selected="true"]')?.getAttribute("data-study-tab-id"),
   }))()`);
-  assert.equal(rovingBefore.rovingTabCount, 1, "forced colors must retain exactly one roving tab");
+  assert.equal(rovingBefore.rovingTabCount, 1,
+    `forced colors must retain exactly one roving tab (${JSON.stringify(rovingBefore.rovingTabs)})`);
   await driver.evaluate(`(() => {
-    const active = document.querySelector('[role="tab"][aria-selected="true"]');
+    const active = document.querySelector('[data-study-workspace-bar] [role="tab"][aria-selected="true"]');
     active?.focus({ preventScroll: true });
     active?.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
     return true;
@@ -759,7 +1161,7 @@ try {
     id: document.activeElement?.getAttribute("data-study-tab-id") ?? null,
     role: document.activeElement?.getAttribute("role") ?? null,
     managementControl: Boolean(document.activeElement?.closest(".scripture-workspace-actions")),
-    selectedId: document.querySelector('[role="tab"][aria-selected="true"]')?.getAttribute("data-study-tab-id") ?? null,
+    selectedId: document.querySelector('[data-study-workspace-bar] [role="tab"][aria-selected="true"]')?.getAttribute("data-study-tab-id") ?? null,
   })`);
   assert.equal(arrowFocus.role, "tab", "ArrowRight did not land on the next study tab");
   assert.equal(arrowFocus.managementControl, false, "ArrowRight entered a management control");
@@ -778,7 +1180,7 @@ try {
      than describe it. This is the more faithful test either way: what it asserts
      now is that a reader's Enter commits, not that one branch exists. */
   await dispatchKey(cdp, "Enter", "Enter", 13, 0, "\r");
-  await driver.waitFor(`document.querySelector('[role="tab"][aria-selected="true"]')?.getAttribute("data-study-tab-id") !== ${JSON.stringify(rovingBefore.activeId)}`);
+  await driver.waitFor(`document.querySelector('[data-study-workspace-bar] [role="tab"][aria-selected="true"]')?.getAttribute("data-study-tab-id") !== ${JSON.stringify(rovingBefore.activeId)}`);
 
   await driver.evaluate(`document.querySelector("[data-study-all-tabs]")?.click()`);
   await driver.waitFor(`document.activeElement?.matches("[data-study-all-tabs-search]") === true`);
@@ -795,7 +1197,7 @@ try {
       return Math.max(maximum, Number.isFinite(valueInMilliseconds) ? valueInMilliseconds : 0);
     }, 0);
     const bar = document.querySelector("[data-study-workspace-bar]");
-    const selected = document.querySelector('[role="tab"][aria-selected="true"]');
+    const selected = document.querySelector('[data-study-workspace-bar] [role="tab"][aria-selected="true"]');
     selected?.focus({ preventScroll: true });
     const selectedStyle = selected ? getComputedStyle(selected) : null;
     const barStyle = bar ? getComputedStyle(bar) : null;
@@ -858,8 +1260,25 @@ try {
     const visibleTargetChecks = targetChecks.filter((target) => target.centerVisible);
     const hitTarget = visibleTargetChecks.length > 0
       && visibleTargetChecks.every((target) => target.centerHit);
-    const rovingTabCount = document.querySelectorAll('[role="tab"][tabindex="0"]').length;
+    const rovingTabCount = document.querySelectorAll('[data-study-workspace-bar] [role="tab"][tabindex="0"]').length;
     const focusReturn = document.activeElement === selected;
+    /* Forced colours flattens every hue, so neither the label's ink nor the
+       seal survives it and "which study" has to be said in the system's own
+       selection pair — the same answer the active tab gives one row down. */
+    const studyLine = document.querySelector("[data-study-line]");
+    const lineControls = [...document.querySelectorAll("[data-study-line] button")];
+    const currentChip = document.querySelector('[data-study-line-chip][aria-current="true"]');
+    const currentChipStyle = currentChip ? getComputedStyle(currentChip) : null;
+    const studyLineForced = {
+      present: studyLine instanceof HTMLElement
+        && getComputedStyle(studyLine).forcedColorAdjust === "none",
+      currentIsSystemSelection: Boolean(currentChipStyle)
+        && currentChipStyle.backgroundColor !== getComputedStyle(studyLine).backgroundColor,
+      targets: lineControls.length > 0 && lineControls.every((control) => {
+        const rect = control.getBoundingClientRect();
+        return rect.width >= 24 && rect.height >= 24;
+      }),
+    };
     return {
       forcedColors: matchMedia("(forced-colors: active)").matches,
       reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -871,6 +1290,7 @@ try {
       hitTarget,
       zeroDuration,
       focusReturn,
+      studyLineForced,
       Escape: true,
     };
   })()`);
@@ -883,6 +1303,129 @@ try {
   assert.equal(forcedMetrics.minimumTargetSize, true, "a visible Study control is smaller than 24px");
   assert.equal(forcedMetrics.hitTarget, true, "a Study control center is intercepted");
   assert.equal(forcedMetrics.zeroDuration, true, "reduced motion left a Study transition or animation running");
+  assert.equal(forcedMetrics.studyLineForced.present, true, "forced colours did not reach the study line");
+  assert.equal(forcedMetrics.studyLineForced.currentIsSystemSelection, true,
+    "the current study must take the system's selection pair — forced colours has no ink and no seal");
+  assert.equal(forcedMetrics.studyLineForced.targets, true, "a study line control is smaller than 24px in forced colours");
+  const forcedShot = await cdp.send("Page.captureScreenshot", {
+    format: "png",
+    fromSurface: true,
+    captureBeyondViewport: false,
+  });
+  pendingScreenshots.push({ file: "forced-colors.png", bytes: Buffer.from(forcedShot.result.data, "base64") });
+
+  /* ── THE SHAPES A ROW OF CHIPS HAS TO SURVIVE ─────────────────────────────
+     The floor, the ceiling and the narrow shell, each captured so the decisions
+     about them can be LOOKED at rather than argued about.
+
+       · one study — "All" does not appear, because a choice between a thing and
+         itself teaches that the choice does not matter;
+       · sixteen, the model's group cap, with names long enough to need the row
+         to scroll and the + to refuse;
+       · the narrow shell at 900px, where the rail becomes a bottom bar and the
+         study line is the only control that switches studies at all. */
+  await cdp.send("Emulation.setEmulatedMedia", {
+    media: "screen",
+    features: [
+      { name: "forced-colors", value: "none" },
+      { name: "prefers-reduced-motion", value: "no-preference" },
+    ],
+  });
+
+  const loadShape = async (workspace) => {
+    await driver.evaluate(`window.api.settings.set({
+      theme: "light",
+      material: "solid",
+      studyWorkspace: ${JSON.stringify(workspace)},
+      sidebarCollapsed: true,
+      marginVisible: true,
+      lastRead: { book: "ACT", chapter: 19, packageId: "bsb" }
+    })`);
+    await cdp.send("Page.reload", { ignoreCache: true });
+    await cdp.send("Page.bringToFront");
+    await driver.waitFor(`document.querySelectorAll("[data-study-line-chip]").length === ${workspace.groups.length}`, 20_000);
+  };
+
+  await loadShape(shapeFixture(1, SHAPE_LABELS));
+  const floor = await driver.evaluate(`(() => {
+    const chip = document.querySelector("[data-study-line-chip]");
+    const line = document.querySelector("[data-study-line]");
+    return {
+      state: line.getAttribute("data-study-line-state"),
+      current: chip.getAttribute("aria-current"),
+      lineHeight: line.getBoundingClientRect().height,
+      chipLeft: Math.round(chip.getBoundingClientRect().left),
+      startDisabled: Boolean(document.querySelector("[data-study-start][data-study-start-disabled]")),
+      ink: getComputedStyle(chip).color,
+      weight: getComputedStyle(chip).fontWeight,
+    };
+  })()`);
+  assert.equal(floor.state, "resting", "one study is not a choice, so the line rests");
+  assert.equal(floor.current, null, "a resting line states no selection: there is nothing to be current among");
+  assert.equal(floor.lineHeight, 24, "the band keeps its height at the floor — the frame does not move");
+  assert.equal(floor.startDisabled, false, "one study is nowhere near the cap");
+  await captureBand("study-line-single.png");
+
+  await loadShape(shapeFixture(16, SHAPE_LABELS));
+  const ceiling = await driver.evaluate(`(() => {
+    const row = document.querySelector(".scripture-study-line-chips");
+    const chips = [...document.querySelectorAll("[data-study-line-chip]")];
+    return {
+      state: document.querySelector("[data-study-line]").getAttribute("data-study-line-state"),
+      chips: chips.length,
+      sealed: chips.filter((chip) => chip.querySelector(".scripture-study-chip-seal")).length,
+      current: chips.filter((chip) => chip.getAttribute("aria-current") === "true").length,
+      chipLeft: Math.round(chips[0].getBoundingClientRect().left),
+      scrolls: row.scrollWidth > row.clientWidth + 2,
+      fades: row.classList.contains("is-scrollable-right"),
+      startDisabled: Boolean(document.querySelector("[data-study-start][data-study-start-disabled]")),
+      truncated: chips.some((chip) => {
+        const label = chip.querySelector(".scripture-study-chip-label");
+        return label.scrollWidth > label.clientWidth + 1;
+      }),
+      lineHeight: document.querySelector("[data-study-line]").getBoundingClientRect().height,
+    };
+  })()`);
+  assert.equal(ceiling.state, "chips", "sixteen studies is a choice, so the line draws chips");
+  assert.equal(ceiling.chips, 16, "the model's cap is sixteen studies and the line draws all of them");
+  assert.equal(ceiling.current, 1, "exactly one study is current");
+  // Half the shape fixture's studies carry a custom name and half keep the
+  // reference the app derived. The seal marks the naming and nothing else.
+  assert.equal(ceiling.sealed, 8, "the seal marks a named study, not every study");
+  // And the line woke up without moving: the first chip stands where the
+  // resting name stood.
+  assert.equal(ceiling.chipLeft, floor.chipLeft,
+    "the line wakes up rather than re-laying out — the first name does not move");
+  assert.equal(ceiling.scrolls, true, "sixteen names do not fit; the row pans rather than squeezing them");
+  assert.equal(ceiling.fades, true, "an overflowing row says so with the strip's own edge fade");
+  assert.equal(ceiling.startDisabled, true, "at the cap the + stays in the row and stops responding");
+  assert.equal(ceiling.lineHeight, 24, "the row may not grow to fit its contents");
+  await captureBand("study-line-many.png");
+
+  // The narrow shell. The rail becomes a 56px bottom bar with no switcher in
+  // it, so the line is the only way left to change study — it stays, it sheds
+  // the drag band a bottom-bar shell has no title bar for, and the frame's top
+  // edge is the same 54 it is at every other width.
+  await cdp.send("Emulation.setDeviceMetricsOverride", { width: 900, height: 760, deviceScaleFactor: 1, mobile: false });
+  await driver.waitFor(`window.innerWidth === 900
+    && getComputedStyle(document.querySelector("[data-study-line]")).display !== "none"`);
+  const narrow = await driver.evaluate(`(() => {
+    const line = document.querySelector("[data-study-line]");
+    const bar = document.querySelector("[data-study-workspace-bar]");
+    const style = getComputedStyle(line);
+    return {
+      visible: line.getBoundingClientRect().height > 0,
+      frameTop: bar.getBoundingClientRect().bottom - line.getBoundingClientRect().top,
+      drags: (style.webkitAppRegion ?? style.appRegion) === "drag",
+      bottomBar: document.querySelector(".sidebar").getBoundingClientRect().height <= 72,
+    };
+  })()`);
+  assert.equal(narrow.visible, true, "the narrow shell keeps the only control that switches studies");
+  assert.equal(narrow.frameTop, 54, `the frame's top edge is ${narrow.frameTop} in the narrow shell, not 54`);
+  assert.equal(narrow.drags, false, "a shell with navigation under the thumb has no title bar to drag");
+  assert.equal(narrow.bottomBar, true, "the narrow shell fixture did not reach the bottom-bar rail");
+  await captureBand("study-line-narrow.png");
+  await cdp.send("Emulation.clearDeviceMetricsOverride");
 
   mkdirSync(OUTPUT_DIR, { recursive: true });
   /* One capture per row of the matrix, plus the one named state capture.
@@ -897,7 +1440,16 @@ try {
      coverage, so the check is on the FILENAMES now — a row that captures twice
      and a row that never captures are both visible in a sorted list, and
      neither is visible in a total. */
-  const expectedCaptures = [...THEMES.map((theme) => theme.file), "paper-tabs.png"].sort();
+  const expectedCaptures = [
+    ...THEMES.map((theme) => theme.file),
+    "paper-tabs.png",
+    "study-line.png",
+    "study-line-switched.png",
+    "study-line-single.png",
+    "study-line-many.png",
+    "study-line-narrow.png",
+    "forced-colors.png",
+  ].sort();
   assert.deepEqual(
     pendingScreenshots.map((capture) => capture.file).sort(),
     expectedCaptures,
@@ -906,7 +1458,7 @@ try {
   for (const capture of pendingScreenshots) {
     writeFileSync(join(OUTPUT_DIR, capture.file), capture.bytes);
   }
-  console.log(`PASS study workspace bar: ${THEMES.length} identical-fixture theme captures + clean tab state + forced-colors/reduced-motion`);
+  console.log(`PASS study workspace bar: ${THEMES.length} identical-fixture theme captures + clean tab state + study line (switch, one, sixteen, narrow) + forced-colors/reduced-motion`);
 } catch (error) {
   throw new Error(`${error instanceof Error ? error.stack ?? error.message : String(error)}\nElectron log:\n${childLog}`);
 } finally {

@@ -6,7 +6,7 @@ import { test } from "node:test";
 /**
  * Rev 05 §05·3, row one of the frame table.
  *
- *   Page top · 40 · Window top: 10 canvas + 30 strip. Invariant across modes.
+ *   Page top · 54 · Window top: 24 study line + 30 strip. Invariant across modes.
  *
  * This file exists because three surfaces now derive from that one number and
  * none of them owns it. The register composes it (§05·2), the rail aligns its
@@ -65,31 +65,54 @@ const px = (value: string): number => Number.parseFloat(value.replace("px", ""))
  * silently through the second one because this file pinned `= 54` as text
  * instead of as arithmetic on the sheets.
  */
-const FRAME_TOP = px(declarationsOf("--page-inset")[0]!.value)
+const FRAME_TOP = px(declarationsOf("--study-line")[0]!.value)
   + px(declarationsOf("--register-strip")[0]!.value);
 
-test("the page's top edge is 40, and it is composed rather than asserted", () => {
-  // The number is never written down. It is 10px of canvas — the drag band —
-  // over a 30px tab strip, and the sum is what the other two surfaces read.
-  // Was 54 while the canvas was 24; re-canonned 2026-07-29 with the frame, and
-  // the property this test actually defends is unchanged: composed from two
-  // declarations, each stated exactly once, and readable by three surfaces.
-  const inset = declarationsOf("--page-inset");
+test("the page's top edge is 54, and it is composed rather than asserted", () => {
+  /* The number is never written down. It is a 24px study line — the drag band,
+     with the study chips standing in it — over a 30px tab strip, and the sum is
+     what the other two surfaces read.
+
+     THE FIRST HALF WAS RENAMED ON 2026-07-30 and the sum went back to 54. It
+     used to be --page-inset, and the coincidence was real for one day: commit
+     e8e2ee9 re-canonned the frame to a 10px inset and the band above the tabs
+     happened to be that same 10. §05·2 had specified the band as "24 and
+     nothing else", so at 10 the band was two thirds gone and its "and nothing
+     else" was the whole of it — too thin to drag a window by and holding
+     nothing. The study line takes the band over: the same region, still the
+     window's drag region, now with a row of chips in it. The page's own inset
+     is still 10 and is no longer half of the frame's top edge, which is the
+     honest arrangement — two facts that were never the same fact are no longer
+     spelled with one token.
+
+     What this test defends is unchanged, and it is why the rename could be made
+     safely: the edge is composed from two declarations, each stated exactly
+     once, and read by three surfaces that do not own it. */
+  const line = declarationsOf("--study-line");
   const strip = declarationsOf("--register-strip");
   const frame = declarationsOf("--frame-top");
 
-  assert.equal(inset.length, 1, "--page-inset is declared once");
+  assert.equal(line.length, 1, "--study-line is declared once");
   assert.equal(strip.length, 1, "--register-strip is declared once");
   assert.equal(frame.length, 1, "--frame-top is declared once");
 
-  assert.equal(inset[0].value, "10px");
+  assert.equal(line[0].value, "24px");
   assert.equal(strip[0].value, "30px");
-  assert.match(frame[0].value, /^calc\(var\(--page-inset\) \+ var\(--register-strip\)\)$/);
+  assert.match(frame[0].value, /^calc\(var\(--study-line\) \+ var\(--register-strip\)\)$/);
 
-  // And the sum is 40. Written as arithmetic on the two declared values so the
+  // And the sum is 54. Written as arithmetic on the two declared values so the
   // test fails when either half moves, rather than when someone edits a comment.
-  assert.equal(px(inset[0].value) + px(strip[0].value), 40);
-  assert.equal(FRAME_TOP, 40);
+  assert.equal(px(line[0].value) + px(strip[0].value), 54);
+  assert.equal(FRAME_TOP, 54);
+
+  // The page's inset is still declared once and is still 10; it is simply not
+  // part of this sum any more. Asserted so the rename cannot be undone by
+  // accident, in either direction.
+  const inset = declarationsOf("--page-inset");
+  assert.equal(inset.length, 1, "--page-inset is declared once");
+  assert.equal(inset[0].value, "10px");
+  assert.doesNotMatch(frame[0].value, /--page-inset/,
+    "the frame's top edge is the study line over the strip, not the paper's inset over it");
 });
 
 test("the top edge does not vary by mode, by width, or by atmosphere", () => {
@@ -103,29 +126,58 @@ test("the top edge does not vary by mode, by width, or by atmosphere", () => {
     styles.indexOf(".scripture-workspace-bar {"),
     styles.indexOf("}", styles.indexOf(".scripture-workspace-bar {")),
   );
-  assert.match(bar, /height: var\(--frame-top\);/);
-  assert.match(bar, /padding: var\(--page-inset\) var\(--page-inset\) 0 0;/);
+  /* THE BAR IS HALF THE FRAME NOW, 2026-07-30. These two lines read
+       assert.match(bar, /height: var\(--frame-top\);/);
+       assert.match(bar, /padding: var\(--page-inset\) var\(--page-inset\) 0 0;/);
+     from when the band above the tabs was the bar's own empty top padding and
+     the bar therefore stood for the whole edge. The study line is a real
+     element in that band now and owns its height, so a bar still claiming
+     --frame-top would claim it twice and the page's top edge would land at 78.
+     The claim being defended is the same one and is if anything sharper: each
+     half of the sum is declared by exactly one element, and neither may state a
+     second height. */
+  assert.match(bar, /height: var\(--register-strip\);/);
+  assert.match(bar, /padding: 0 var\(--page-inset\) 0 0;/);
+  const line = styles.slice(
+    styles.indexOf(".scripture-study-line {"),
+    styles.indexOf("}", styles.indexOf(".scripture-study-line {")),
+  );
+  assert.match(line, /height: var\(--study-line\);/);
+  assert.match(line, /flex: 0 0 auto;/);
+  assert.doesNotMatch(line, /min-height/);
+  // And the two halves are siblings in the page's column, in that order — the
+  // line above the strip. Between the strip and the page is the one place a
+  // second row may not go: the active tab's fillets join it to --bg-reading at
+  // the strip's baseline, and a row inserted there severs the joint that makes
+  // the tab a piece of the page.
+  const page = read("src/renderer/components/ScripturePage.tsx");
+  assert.ok(
+    page.indexOf("<StudyLine") < page.indexOf("<ScriptureWorkspaceTabs"),
+    "the study line stands above the strip, in the band, not between the strip and the page",
+  );
   // A floor is what let the band grow in the first place — the retired group
   // bracket opened a 15px lane above the tabs and the edge moved 54 → 69 with
   // the register's contents. The height is stated, and no other rule anywhere
   // may restate it.
   assert.doesNotMatch(bar, /min-height/);
   for (const { name, source } of sheets) {
-    for (const [, selector, body] of source.matchAll(/([^{};]*\.scripture-workspace-bar[^{};]*)\{([^}]*)\}/g)) {
+    for (const [, selector, body] of source.matchAll(/([^{};]*\.scripture-(?:workspace-bar|study-line)[^{};]*)\{([^}]*)\}/g)) {
       // Only rules whose SUBJECT is the bar itself. A rule that merely scopes
       // itself to the bar sizes something inside it — the failure line's retry
       // button has a 24px target, and the seal baseline is a 1px pseudo-element
       // — and neither has anything to do with the bar's own box.
-      const subjectIsBar = selector
+      const subjectIsFrameRow = selector
         .split(",")
         .map((one) => one.trim().split(/[\s>+~]+/).at(-1) ?? "")
-        .some((subject) => subject.startsWith(".scripture-workspace-bar") && !subject.includes("::"));
-      if (!subjectIsBar) continue;
+        .some((subject) => (subject.startsWith(".scripture-workspace-bar")
+          || subject.startsWith(".scripture-study-line")) && !subject.includes("::"));
+      if (!subjectIsFrameRow) continue;
       if (body === bar.slice(bar.indexOf("{") + 1)) continue;
+      if (body === line.slice(line.indexOf("{") + 1)) continue;
       assert.doesNotMatch(
         body,
         /(?:^|[\s;])(?:min-)?height\s*:/,
-        `${name} gives .scripture-workspace-bar a second height`,
+        `${name} gives a frame row a second height`,
       );
     }
   }
@@ -178,14 +230,23 @@ test("the top edge does not vary by mode, by width, or by atmosphere", () => {
   // the halves are discoverable from each other.
 });
 
-test("the drag band holds the page's inset and nothing else", () => {
-  // §05·2: "The drag band is 24 and nothing else." The 24 is now 10 — commit
-  // e8e2ee9 re-canonned the frame so the band IS the page's own inset rather
-  // than a number of its own — and the sentence survives the arithmetic
-  // unchanged, because what it forbids is contents, not a height. The two
-  // objects that used to be drawn in it — the group's hairline and the study
-  // siglum's own row — are retired, and nothing in the register may reserve
-  // height above the tab row again. These are the names both devices went by.
+test("the band holds the study line, and the register still draws nothing above its tabs", () => {
+  /* §05·2: "The drag band is 24 and nothing else."
+
+     RESTATED 2026-07-30, because the band has contents now and the sentence has
+     to say which contents it ever forbade. What §05·2 was ruling out is two
+     objects that the REGISTER drew into the lane above its own tabs: a group's
+     hairline, carried in segments by every member and trimmed at the run's end,
+     and the study siglum, floating in the band at a third x. Both were the
+     register measuring itself against a datum nobody owned, which is the fault
+     the whole section is about, and both stay retired.
+
+     The study line is not that. It is a sibling of the bar with its own stated
+     height, one of the two halves the frame's top edge is composed from, and it
+     is what the band was reserved for in the first place — the window's drag
+     region. Nothing in the register reaches into it, and the register still may
+     not reserve a pixel above its tabs. These are the names both retired
+     devices went by. */
   assert.doesNotMatch(styles, /scripture-workspace-group-rule/);
   assert.doesNotMatch(register, /scripture-workspace-group-rule \{/);
   assert.doesNotMatch(styles, /data-study-group-bracket/);
@@ -197,6 +258,26 @@ test("the drag band holds the page's inset and nothing else", () => {
   for (const [, body] of wraps) {
     assert.doesNotMatch(body, /padding-top\s*:\s*(?!0)/, "nothing may be reserved above the tab row");
   }
+
+  // The band is the window's, and the line hands it back to the window: the row
+  // drags, and every control in it opts out, or the band eats the press before
+  // the chip ever sees it.
+  const line = styles.slice(
+    styles.indexOf(".scripture-study-line {"),
+    styles.indexOf("}", styles.indexOf(".scripture-study-line {")),
+  );
+  assert.match(line, /-webkit-app-region: drag;/);
+  const noDrag = styles.slice(
+    styles.indexOf(".scripture-study-chip,\n.scripture-study-open,"),
+    styles.indexOf("}", styles.indexOf(".scripture-study-chip,\n.scripture-study-open,")),
+  );
+  assert.match(noDrag, /-webkit-app-region: no-drag;/,
+    "a chip inside the drag band must opt out or it cannot be pressed");
+  assert.match(
+    styles,
+    /\.scripture-study-line \.control-tooltip-anchor \{\s*-webkit-app-region: no-drag;/,
+    "the tooltip primitive wraps the study line's plus, so the wrapper opts out too",
+  );
 });
 
 test("no tooltip may open into the band", () => {
