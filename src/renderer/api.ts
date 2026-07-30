@@ -292,6 +292,32 @@ export interface AppSettings {
     verse?: number;
     verseOffset?: number;
   } | null;
+  /**
+   * Where the listening was left — the counterpart to `lastRead`, and until
+   * 2026-07-30 the one the player did not keep.
+   *
+   * Whole rather than a pair of ids, because the dock offers the episode BY
+   * NAME on a cold start and nothing may be fetched from a publisher before a
+   * reader presses play. Re-validated in the main process on every read and
+   * every write; see `normalizeLastHeard`.
+   */
+  lastHeard: {
+    sourceId: string;
+    recordId: string;
+    sourceName: string;
+    title: string;
+    officialUrl: string;
+    audioUrl: string;
+    kind: string;
+    passage: {
+      book: string;
+      chapter: number;
+      verse: number | null;
+      endVerse: number | null;
+      basis: "record" | "moment";
+    } | null;
+    positionSeconds: number;
+  } | null;
   /** Revisioned desktop workspace. Legacy settings remain Electron-only migration inputs. */
   studyWorkspace?: StudyWorkspaceStateV2 | null;
   studyWorkspaceRefusal?: "newer-version";

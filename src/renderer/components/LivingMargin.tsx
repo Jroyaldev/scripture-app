@@ -24,7 +24,6 @@ import {
   compareConnectionsCanonical,
 } from "../../core/annotations/connection-order.js";
 import type { PassageMoment } from "../../core/passage-index.js";
-import { proximityOf } from "../../core/passage-index.js";
 import { CONNECTION_ROUTE_SELECTED_STROKE } from "../utils/connectionGeometry.js";
 import type {
   ConnectionPaintAnchor,
@@ -49,7 +48,7 @@ import { passageTabOpenIntent } from "../utils/passageTabIntent.js";
 import { formatCanonicalRef } from "../utils/formatRef.js";
 import { LanguageWordsSection } from "./LanguageWordsSection.js";
 import { SurfaceState } from "./MarkingSurface.js";
-import { TransportPlayButton, playPodcastEpisode, usePodcastNowPlaying } from "./PodcastPlayer.js";
+import { TaughtHere } from "./TaughtHere.js";
 import { SourcesDisclosure, formatSourceCitation, type CitationSource } from "./SourcesDisclosure.js";
 import { useToast } from "./Toast.js";
 import { parsePeekRef, useVersePeek, type PeekTarget, type VersePeekTriggerProps } from "./VersePeek.js";
@@ -392,130 +391,6 @@ function resourcePassageLabel(bref: string): string {
   return end.verse && end.verse !== start.verse ? `${head}–${end.verse}` : head;
 }
 
-/**
- * Who has taught this chapter, and where in the episode.
- *
- * The inverse of the dock's own list, and the read a reader arrives with: not
- * "what does this episode cover" but "I am here, who has worked through it".
- *
- * Ordered by how long the discussion runs, and by nothing else. Two publishers
- * with opposite formats were measured, and the two obvious alternatives both
- * described the publisher rather than the passage — share of an episode depends
- * on how long the episode is, and what a show calls its "subject" depends on
- * how it makes episodes. Duration is the quantity that meant the same thing in
- * both: eleven minutes is eleven minutes whoever recorded it.
- *
- * The relation rides along as a label because a reader wants to know whether a
- * passage was worked through or glanced at — but it never decides an order.
- */
-function TaughtHereBlock({ moments, verse, onPlay }: {
-  moments: readonly PassageMoment[];
-  verse: number | null;
-  onPlay: (moment: PassageMoment) => void;
-}): React.ReactElement {
-  const [open, setOpen] = useState<Set<string>>(new Set());
-  if (moments.length === 0) return <></>;
-
-  const clock = (s: number): string =>
-    `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
-  const extent = (s: number): string =>
-    (s >= 60 ? `${Math.round(s / 60)} min` : `${Math.max(1, Math.round(s))}s`);
-
-  /* Three questions, three drawers, all shut.
-   *
-   * A chapter holds seven moments at the median and 427 at Genesis 1. Shown
-   * open, the long ones bury everything under them and the block stops being a
-   * margin note; shown as one list, the reader cannot tell which of four
-   * hundred bear on the line in front of them. Shut with a count, all of it
-   * fits in three rows and the reader opens the question they actually have.
-   *
-   * The chapter gets its own drawer rather than being folded into the
-   * surroundings, because an episode taking Genesis 1 as a unit is a different
-   * offer from one that lands on verse 3 — often the better one, and never the
-   * same one. */
-  const groups = [
-    {
-      key: "on",
-      label: verse == null ? "On this chapter" : "On this passage",
-      items: verse == null ? [] : moments.filter((m) => proximityOf(m, verse) === "on"),
-    },
-    {
-      key: "whole",
-      label: "The chapter as a whole",
-      items: moments.filter((m) => proximityOf(m, verse) === "whole"),
-    },
-    {
-      key: "around",
-      label: verse == null ? "Elsewhere in the chapter" : "Around it",
-      items: verse == null
-        ? moments.filter((m) => proximityOf(m, verse) !== "whole")
-        : moments.filter((m) => proximityOf(m, verse) === "chapter"),
-    },
-  ].filter((g) => g.items.length > 0);
-
-  const row = (m: PassageMoment): React.ReactElement => (
-    <li key={`${m.id}-${m.at}`}>
-      <button
-        className="taught-here-row"
-        onClick={() => onPlay(m)}
-        type="button"
-      >
-        <span className="taught-here-episode">{m.episode}</span>
-        <span className="taught-here-extent">{extent(m.seconds)}</span>
-        <span className="taught-here-meta">
-          <span className="taught-here-ref">{m.title}</span>
-          {m.sourceName} · {clock(m.at)}
-          {m.relation !== "subject" && ` · ${m.relation === "allusion" ? "alluded" : m.relation}`}
-        </span>
-      </button>
-    </li>
-  );
-
-  return (
-    <section className="taught-here" aria-labelledby="taught-here-title">
-      <header className="taught-here-masthead">
-        <span className="taught-here-kicker">From the transcripts</span>
-        <h3 id="taught-here-title">Taught here</h3>
-      </header>
-      {groups.map((group) => {
-        const isOpen = open.has(group.key);
-        return (
-          <div className="taught-here-group" key={group.key} data-open={isOpen}>
-            <button
-              aria-expanded={isOpen}
-              className="taught-here-toggle"
-              onClick={() => setOpen((prev) => {
-                const next = new Set(prev);
-                if (next.has(group.key)) next.delete(group.key); else next.add(group.key);
-                return next;
-              })}
-              type="button"
-            >
-              <svg aria-hidden="true" className="taught-here-chevron" viewBox="0 0 12 12">
-                <path d="M4.5 2.5 8 6l-3.5 3.5" />
-              </svg>
-              <span className="taught-here-label">{group.label}</span>
-              {/* The count is what makes a shut drawer worth reading: it says
-                  how much is behind it without spending a row saying so. */}
-              <span className="taught-here-count">{group.items.length}</span>
-            </button>
-            {isOpen && (
-              <ul className="taught-here-list">
-                {group.items.slice(0, 25).map(row)}
-                {group.items.length > 25 && (
-                  <li className="taught-here-tail">
-                    {group.items.length - 25} more, shortest last
-                  </li>
-                )}
-              </ul>
-            )}
-          </div>
-        );
-      })}
-    </section>
-  );
-}
-
 function TrustedResourcesBlock({
   resources,
   loading,
@@ -546,17 +421,12 @@ function TrustedResourcesBlock({
      the commentaries" is a glance, not a preference. */
   const [lensKind, setLensKind] = useState<string | null>(null);
 
-  /* The transport is not here. It used to be — one element for the whole group,
-     stopped on unmount — and unmount is every tab switch, every passage, every
-     time the panel closes, which made a 44-minute episode last as long as a
-     reader stayed on one card. The element lives above the whole app now and
-     the card only presses play; see components/PodcastPlayer. What this block
-     still owns is which episode is running, because that is what a play button
-     has to draw. */
-  const nowPlaying = usePodcastNowPlaying();
-  const runningId = nowPlaying.status === "idle" || nowPlaying.status === "failed"
-    ? null
-    : nowPlaying.episode?.id ?? null;
+  /* The transport is not here, and since 2026-07-30 neither is the offer to
+     start it. It used to be a play button on every row that had an audioUrl —
+     which was the same set of episodes the merged surface above already draws,
+     with the same identity key. One surface per chapter for episode audio; see
+     components/TaughtHere. This block is the link-only publisher index it was
+     first written to be. */
 
   const sources = useMemo(() => {
     const order: Array<{ id: string; name: string; count: number }> = [];
@@ -766,7 +636,6 @@ function TrustedResourcesBlock({
                   ].filter(Boolean).join(" · ");
                   const verb = resourceVerb(resource.record.kind);
                   const key = `${resource.source.id}:${resource.record.id}`;
-                  const running = runningId === key;
                   return (
                     <li className="trusted-resource-item" key={key}>
                       <p className="trusted-resource-item-kind">{resource.record.kind}</p>
@@ -777,33 +646,16 @@ function TrustedResourcesBlock({
                         <li className="trusted-resource-chip is-match">{resource.match.replaceAll("-", " ")}</li>
                       </ul>
                       <div className="trusted-resource-actions">
-                        {resource.record.audioUrl && (
-                          /* One transport family, at the card's own scale.
-                             This was a second design for the same verb twenty
-                             pixels from the dock's: a hairline circle against a
-                             filled pill, a seal ring against a brand ring, a
-                             hardcoded 150ms against the token, and a copy of
-                             the play triangle that never got the optical
-                             correction the dock documents at length. See
-                             TransportPlayButton and .transport-play. */
-                          <TransportPlayButton
-                            className="trusted-resource-play"
-                            label={`${running ? "Pause" : "Play"} ${resource.record.title}`}
-                            onPress={() => playPodcastEpisode({
-                              id: key,
-                              sourceId: resource.source.id,
-                              recordId: resource.record.id,
-                              sourceName: resource.source.name,
-                              title: resource.record.title,
-                              officialUrl: resource.record.officialUrl,
-                              audioUrl: resource.record.audioUrl as string,
-                              bref: resource.matchedBref,
-                              kind: resource.record.kind,
-                            })}
-                            paused={!running}
-                            pressed={running}
-                          />
-                        )}
+                        {/* No play here. Dated 2026-07-30: everything with
+                            audio in it is drawn once, on the merged surface
+                            above — see components/TaughtHere. This block used
+                            to draw the same twenty-five episodes a second time
+                            under a different masthead, in a different order,
+                            with a different brand policy and an identity key
+                            that was the same string as the other surface's, so
+                            pressing one paused the other. What is left here is
+                            what this block was always for: things a reader
+                            READS, on the publisher's own page. */}
                         <button
                           className="trusted-resource-act"
                           type="button"
@@ -3438,7 +3290,6 @@ export function LivingMargin({
      chapters, so asking per verse would return nothing for most verses and
      read to a reader as "nobody teaches this". */
   const [taughtHere, setTaughtHere] = useState<PassageMoment[]>([]);
-  const [trustedResourceTotal, setTrustedResourceTotal] = useState(0);
   const [trustedResourcesHidden, setTrustedResourcesHidden] = useState(0);
   /* Bumped when the reader changes a filter, so the effect refetches: the
      answer lives in the main process, not in this component. */
@@ -3816,6 +3667,21 @@ export function LivingMargin({
     });
     return () => { cancelled = true; };
   }, [book, chapter, focusVerse, trustedResourceFilterVersion]);
+
+  /* One surface per chapter for episode audio, and this is the cut that makes
+     it true. A record carrying an `audioUrl` is an episode — it is exactly the
+     set that used to draw a play button in the resource block — and it belongs
+     on the merged surface, where the transcript's answer for the same episode
+     absorbs it. Everything else is what the publisher index was always for:
+     things a reader opens and reads. */
+  const audioResources = useMemo(
+    () => trustedResources.filter((resource) => Boolean(resource.record.audioUrl)),
+    [trustedResources],
+  );
+  const linkResources = useMemo(
+    () => trustedResources.filter((resource) => !resource.record.audioUrl),
+    [trustedResources],
+  );
   const trustedResourceBref = pinnedRange
     ? `bref:v1/${book}.${chapter}.${pinnedRange.start}${pinnedRange.end === pinnedRange.start ? "" : `-${book}.${chapter}.${pinnedRange.end}`}`
     : nearVerse != null
@@ -3851,7 +3717,6 @@ export function LivingMargin({
           return;
         }
         setTrustedResources(result.value.resources);
-        setTrustedResourceTotal(result.value.total);
         setTrustedResourcesHidden(result.value.hiddenCount);
       });
     return () => { cancelled = true; };
@@ -4601,23 +4466,19 @@ export function LivingMargin({
               onOpenTab={activateTab}
               onOpenEntity={onOpenEntity}
             />
-            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} catalogue={trustedResourceCatalogue} onOpenSettings={onOpenResourceSettings} onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)} />
-            <TaughtHereBlock
+            {/* The chapter's one audio surface, above the link-only
+                index — a reader arriving at a chapter asks who has TAUGHT it
+                before they ask what has been WRITTEN about it, and until this
+                build the same episodes answered both questions twice. */}
+            <TaughtHere
               moments={taughtHere}
+              records={audioResources}
+              book={book}
+              displayBook={displayBook}
+              chapter={chapter}
               verse={focusVerse}
-              onPlay={(m) => playPodcastEpisode({
-                id: `${m.sourceId}:${m.id}`,
-                sourceId: m.sourceId,
-                recordId: m.id,
-                sourceName: m.sourceName,
-                title: m.episode,
-                officialUrl: m.officialUrl,
-                audioUrl: m.audioUrl,
-                bref: `bref:v1/${book}.${chapter}.1`,
-                kind: m.kind,
-                startAt: m.at,
-              })}
             />
+            <TrustedResourcesBlock resources={linkResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={linkResources.length} hiddenCount={trustedResourcesHidden} catalogue={trustedResourceCatalogue} onOpenSettings={onOpenResourceSettings} onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)} />
           </section>
 
           <section
@@ -4732,23 +4593,19 @@ export function LivingMargin({
               onOpenTab={activateTab}
               onOpenEntity={onOpenEntity}
             />
-            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} catalogue={trustedResourceCatalogue} onOpenSettings={onOpenResourceSettings} onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)} />
-            <TaughtHereBlock
+            {/* The chapter's one audio surface, above the link-only
+                index — a reader arriving at a chapter asks who has TAUGHT it
+                before they ask what has been WRITTEN about it, and until this
+                build the same episodes answered both questions twice. */}
+            <TaughtHere
               moments={taughtHere}
+              records={audioResources}
+              book={book}
+              displayBook={displayBook}
+              chapter={chapter}
               verse={focusVerse}
-              onPlay={(m) => playPodcastEpisode({
-                id: `${m.sourceId}:${m.id}`,
-                sourceId: m.sourceId,
-                recordId: m.id,
-                sourceName: m.sourceName,
-                title: m.episode,
-                officialUrl: m.officialUrl,
-                audioUrl: m.audioUrl,
-                bref: `bref:v1/${book}.${chapter}.1`,
-                kind: m.kind,
-                startAt: m.at,
-              })}
             />
+            <TrustedResourcesBlock resources={linkResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={linkResources.length} hiddenCount={trustedResourcesHidden} catalogue={trustedResourceCatalogue} onOpenSettings={onOpenResourceSettings} onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)} />
           </section>
 
           <section
@@ -4866,23 +4723,19 @@ export function LivingMargin({
               onOpenTab={activateTab}
               onOpenEntity={onOpenEntity}
             />
-            <TrustedResourcesBlock resources={trustedResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={trustedResourceTotal} hiddenCount={trustedResourcesHidden} catalogue={trustedResourceCatalogue} onOpenSettings={onOpenResourceSettings} onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)} />
-            <TaughtHereBlock
+            {/* The chapter's one audio surface, above the link-only
+                index — a reader arriving at a chapter asks who has TAUGHT it
+                before they ask what has been WRITTEN about it, and until this
+                build the same episodes answered both questions twice. */}
+            <TaughtHere
               moments={taughtHere}
+              records={audioResources}
+              book={book}
+              displayBook={displayBook}
+              chapter={chapter}
               verse={focusVerse}
-              onPlay={(m) => playPodcastEpisode({
-                id: `${m.sourceId}:${m.id}`,
-                sourceId: m.sourceId,
-                recordId: m.id,
-                sourceName: m.sourceName,
-                title: m.episode,
-                officialUrl: m.officialUrl,
-                audioUrl: m.audioUrl,
-                bref: `bref:v1/${book}.${chapter}.1`,
-                kind: m.kind,
-                startAt: m.at,
-              })}
             />
+            <TrustedResourcesBlock resources={linkResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={linkResources.length} hiddenCount={trustedResourcesHidden} catalogue={trustedResourceCatalogue} onOpenSettings={onOpenResourceSettings} onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)} />
           </section>
 
           <section

@@ -19420,11 +19420,29 @@ button.lang-phrase-diagram-node:focus-visible,
    pairs a 28px tail with a 27px head across a subtle hairline, and this group
    sat at 18px against a heavier rule, reading as a different kind of object
    than the sections above it. */
-/* Taught here. The same masthead grammar as the resource block below it —
-   kicker, rule, name — because they are two answers to one question and a
-   second visual language would read as a second kind of thing. What differs is
-   the row: this one leads with duration, since that is what a reader is
-   choosing on. */
+/* ══ Taught here — the chapter's one audio surface ══════════════════════════
+   Rewritten 2026-07-30, when the surface it styles absorbed the podcast rows
+   of the publisher index below it. See components/TaughtHere.tsx for what the
+   merge is and why; this file holds three decisions of its own.
+
+   IT KEEPS THE MARGIN'S PAPER. Every colour here is a token, so the surface
+   answers all four atmospheres. The one exception is the plate, which is the
+   publisher's own colour under their own approved artwork — the same object
+   the dock's masthead carries, at a colophon's size rather than a masthead's.
+   The play face takes the app's fitted gold rather than the publisher's
+   accent: twenty-five rows from eight publishers each glowing a different
+   colour is a colour chart, not a margin. See the --player-accent note where
+   the surfaces that declare it are listed.
+
+   IT COVERS ITS OWN STATES. The family this replaced had no :focus-visible
+   rule anywhere — two real <button>s taking the UA's default ring against a
+   pebble radius while every neighbour used the seal — no forced-colors block,
+   and no reduced-motion opt-out for a chevron that rotates 90°. All three are
+   here, and the QA tour walks them.
+
+   THE ROW HAS ONE GRAMMAR, whichever file the entry came from:
+     [play] Episode title ……………………………… 25 min
+            [plate] Romans 8:9–17 · 0:26 · worked through   */
 .taught-here {
   margin-top: 27px;
   border-top: 1px solid var(--border-subtle);
@@ -19451,23 +19469,63 @@ button.lang-phrase-diagram-node:focus-visible,
   letter-spacing: -0.025em;
 }
 
-.taught-here-list {
-  /* An open drawer takes its own scroll rather than pushing the resources
-     below it off the panel. */
-  max-height: 300px;
-  margin: 0;
-  padding: 0 0 6px;
-  overflow-y: auto;
-  list-style: none;
-  scrollbar-width: thin;
-  overscroll-behavior: contain;
+/* ── The walk ──────────────────────────────────────────────────────────────
+   One offer, above the bands, stating its own whole extent. It is set as a
+   row rather than as a button-shaped button because that is what it is: the
+   first entry on the surface, and the only one that is about the chapter
+   rather than about an episode. */
+.taught-here-walk {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin: 9px 0 2px;
+  padding: 8px 6px;
+  border: 0;
+  border-radius: var(--radius-pebble);
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast);
 }
 
-/* Three drawers, all shut. A chapter holds seven moments at the median and 427
-   at Genesis 1 — open, the long ones bury the margin; as one list, nobody can
-   tell which of four hundred bear on the line in front of them. Shut with a
-   count, the whole thing is three rows and the reader opens the question they
-   have. */
+.taught-here-walk:hover { background: var(--surface-hover); }
+
+.taught-here-walk:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.taught-here-walk-lines {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.taught-here-walk-title {
+  overflow: hidden;
+  font: var(--fw-medium) 0.8125rem/1.4 var(--font-reading);
+  letter-spacing: -0.006em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.taught-here-walk-meta {
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font: 0.6875rem/1.4 var(--font-ui);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Three bands, all shut. A chapter holds 18 moments at the median and 922 at
+   Genesis 1 — open, the long ones bury the margin; as one list nobody can tell
+   which of nine hundred bear on the line in front of them. Shut with a count,
+   the whole thing is three rows and the reader opens the question they have.
+   (Those two numbers were 7 and 427 when this was written and are measured
+   again here: the corpus has more than doubled under the surface.) */
 .taught-here-group + .taught-here-group { border-top: 1px solid var(--border-subtle); }
 
 .taught-here-toggle {
@@ -19485,6 +19543,13 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .taught-here-toggle:hover { color: var(--text-primary); }
 
+.taught-here-toggle:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  border-radius: var(--radius-pebble);
+  color: var(--text-primary);
+}
+
 .taught-here-chevron {
   flex: none;
   width: 11px;
@@ -19495,7 +19560,7 @@ button.lang-phrase-diagram-node:focus-visible,
   stroke-linecap: round;
   stroke-linejoin: round;
   opacity: 0.55;
-  transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform var(--transport-quick) var(--ease-transport);
 }
 
 .taught-here-group[data-open="true"] .taught-here-chevron { transform: rotate(90deg); }
@@ -19517,15 +19582,11 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .taught-here-group[data-open="true"] .taught-here-count { color: var(--text-secondary); }
 
-.taught-here-tail {
-  padding: 7px 6px 2px;
-  color: var(--text-tertiary);
-  font: 0.6875rem/1.4 var(--font-ui);
-}
-
 .taught-here-list {
-  /* An open drawer takes its own scroll rather than pushing the resources
-     below it off the panel. */
+  /* An open band takes its own scroll rather than pushing the index below it
+     off the panel. It is also what makes "show all" a real offer on Genesis 1:
+     nine hundred rows inside a 300px scroller is a list; nine hundred rows in
+     the document is a panel nobody can leave. */
   max-height: 300px;
   margin: 0;
   padding: 0 0 6px;
@@ -19535,47 +19596,19 @@ button.lang-phrase-diagram-node:focus-visible,
   overscroll-behavior: contain;
 }
 
-/* Two section headings, and only where both sections hold something. The
-   median chapter has seven moments and reads as one run; Genesis 1 has 427,
-   and there a reader needs to know which bear on the verse in front of them
-   before anything else is worth reading.
-   
-   An earlier version banded four ways and drew a heading above nearly every
-   row — stutter rather than structure. Two headings over hundreds of rows is
-   the opposite trade, and the count is what makes each one worth its line. */
-.taught-here-section {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  margin: 13px 0 2px;
-  padding: 0 6px 5px;
-  border-bottom: 1px solid var(--border-subtle);
-  color: var(--text-tertiary);
-  font: var(--fw-semibold) 0.5625rem/1.3 var(--font-ui);
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
-}
-
-.taught-here-section:first-of-type { margin-top: 6px; }
-
-/* The count is the point of the heading on a long chapter: it says how much
-   is behind it without spending a row saying so. */
-.taught-here-section span {
-  color: var(--text-secondary);
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0;
-}
-
+/* ── The row ───────────────────────────────────────────────────────────────
+   Two lines, three columns on the first. The transport's face leads because
+   the row's press is play; the extent closes the first line because eleven
+   minutes against forty seconds is the whole decision and a scanning eye
+   returns to the right edge. */
 .taught-here-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas: "episode extent" "meta meta";
-  align-items: baseline;
-  gap: 1px 12px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "play episode extent" ". meta meta";
+  align-items: center;
+  gap: 2px 9px;
   width: 100%;
-  padding: 9px 6px;
+  padding: 8px 6px;
   border: 0;
   border-radius: var(--radius-pebble);
   background: none;
@@ -19587,26 +19620,29 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .taught-here-row:hover { background: var(--surface-hover); }
 
-/* Distance shown as weight rather than as a second colour. What is on the
-   verse reads at full strength; what sits further off recedes without being
-   dimmed to the point of looking disabled — these are still real answers, just
-   less directly the one asked for. */
-/* One step down for everything past the hairline, rather than a four-rung
-   ladder nobody can read as ranking. Order carries the ranking; opacity only
-   says "these are further off". */
-.taught-here-row:hover { opacity: 1; }
+.taught-here-row:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
 
-/* Duration first and in the numeral face: it is the comparison being made, and
-   eleven minutes against forty seconds is the whole decision. */
-/* The offer, at the end of the line where a scanning eye returns to. Numeral
-   face so a column of them aligns and eleven minutes is visibly more than
-   forty seconds without anyone reading a word. */
-.taught-here-extent {
-  grid-area: extent;
-  color: var(--text-secondary);
-  font: var(--fw-medium) 0.6875rem/1.4 var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+/* The row's press IS the transport, so the face takes the row's own states.
+   See TransportPlayMark: one glyph, one pill, one crossfade for the whole app,
+   and this surface was the fourth that started audio with no transport
+   language on it at all. */
+.taught-here-play {
+  --transport-size: 22px;
+  grid-area: play;
+}
+
+.taught-here-row:hover .taught-here-play { filter: brightness(1.06); }
+.taught-here-row:active .taught-here-play { transform: scale(0.94); }
+
+/* The one currently in the dock is stated on the row that started it, so a
+   reader scanning the list can see where the voice came from. */
+.taught-here-row[data-running="true"] .taught-here-episode { color: var(--text-primary); }
+.taught-here-row[data-running="true"] {
+  background: var(--surface-hover);
+  box-shadow: inset 2px 0 0 var(--player-accent);
 }
 
 .taught-here-episode {
@@ -19618,23 +19654,116 @@ button.lang-phrase-diagram-node:focus-visible,
   white-space: nowrap;
 }
 
-.taught-here-meta {
-  grid-area: meta;
-  overflow: hidden;
-  color: var(--text-tertiary);
-  font: 0.6875rem/1.4 var(--font-ui);
-  text-overflow: ellipsis;
+/* Numeral face so a column of them aligns and eleven minutes is visibly more
+   than forty seconds without anyone reading a word. */
+.taught-here-extent {
+  grid-area: extent;
+  color: var(--text-secondary);
+  font: var(--fw-medium) 0.6875rem/1.4 var(--font-mono);
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-/* The reference does the work a band heading was doing. A reader on Romans 8:1
-   sees 8:1-4 and knows it is theirs; naming the band as well would explain
-   what the numbers already said. Set in the reading face and at full strength
-   so it reads as the answer rather than as filing. */
+.taught-here-meta {
+  grid-area: meta;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font: 0.6875rem/1.5 var(--font-ui);
+  white-space: nowrap;
+}
+
+/* ── The plate, at a colophon's size ───────────────────────────────────────
+   The same object as the dock's masthead plate and on the same terms: the
+   publisher's colour, carrying their approved mark or their name in their own
+   ink, and nothing else of theirs anywhere on this surface. It replaces the
+   grey name that used to sit in this line, which frees the line for the part
+   that differs between rows.
+
+   16px rather than 26px, and the mark scales with it — a printer's device
+   beside an entry rather than a masthead over a page. See
+   docs/trusted-resource-permissions, "The player's surface". */
+.taught-here-plate {
+  --resource-source: var(--study-gold);
+  --resource-ink: var(--bg-float);
+  --resource-mark: none;
+  --resource-mark-height: 18px;
+  --resource-mark-ratio: 4;
+  --player-mark-h: calc(var(--resource-mark-height) * 0.52);
+  display: inline-flex;
+  flex: 0 1 auto;
+  align-items: center;
+  min-width: 0;
+  max-width: 44%;
+  height: 16px;
+  padding: 0 5px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--resource-source);
+  color: var(--resource-ink);
+}
+
+.taught-here-mark {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  font: var(--fw-semibold) 0.5625rem/1 var(--font-ui);
+  letter-spacing: 0.05em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* The passage, in the reading face and at full strength: it is the answer
+   rather than the filing. A reader on Romans 8:1 who sees 8:1-4 knows it is
+   theirs without a band heading saying so. */
 .taught-here-ref {
-  margin-right: 7px;
+  flex: 0 1 auto;
+  overflow: hidden;
   color: var(--text-secondary);
-  font: var(--fw-medium) 0.6875rem/1.4 var(--font-reading);
+  font: var(--fw-medium) 0.6875rem/1.5 var(--font-reading);
+  text-overflow: ellipsis;
+}
+
+.taught-here-at {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.taught-here-ref::before,
+.taught-here-at::before,
+.taught-here-said::before {
+  margin-right: 6px;
+  content: "·";
+  opacity: 0.6;
+}
+
+/* Never a schema token. The four relations reached readers as `crossref` and
+   `mention` — 56% of the corpus labelled with a column name — and as an empty
+   span in the dock. src/core/relation-words.ts holds the words for both
+   surfaces so they cannot drift apart again. */
+.taught-here-said {
+  flex: 0 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── The density control ───────────────────────────────────────────────────
+   Genesis 1's 922 moments used to end at row 25 in a plain <li> reading "897
+   more, shortest last" — a sentence shaped like a disclosure with nothing
+   under it. The stylesheet already held a button's worth of rules for a
+   control that had been taken out; they are a control again. */
+.taught-here-more-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 4px;
 }
 
 .taught-here-more {
@@ -19655,14 +19784,78 @@ button.lang-phrase-diagram-node:focus-visible,
   color: var(--text-primary);
 }
 
-/* Expanded, the list gets its own scroll rather than pushing everything below
-   it off the panel — a chapter with sixty moments would otherwise bury the
-   resources underneath. */
-.taught-here[data-expanded="true"] .taught-here-list {
-  max-height: 320px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  overscroll-behavior: contain;
+.taught-here-more:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.taught-here-more.is-all {
+  flex: none;
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+/* ── The two footings ──────────────────────────────────────────────────────
+   One sentence, once, at the foot. docs/trusted-resource-permissions says the
+   distinction between a publisher who granted transcripts and one nobody has
+   asked "must stay visible"; until 2026-07-30 the only places it was visible
+   were a TypeScript literal and a test, while 48% of what this surface shows
+   came from the second kind. Set at the weight of a colophon rather than a
+   licence: it is a standing fact about the shelf, not a warning about a row. */
+.taught-here-footing {
+  margin: 10px 0 0;
+  padding: 8px 6px 0;
+  border-top: 1px solid var(--border-subtle);
+  color: var(--text-tertiary);
+  font: 0.625rem/1.5 var(--font-ui);
+  text-wrap: pretty;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .taught-here-chevron,
+  .taught-here-row,
+  .taught-here-walk,
+  .taught-here-toggle,
+  .taught-here-more { transition: none; }
+  .taught-here-row:active .taught-here-play { transform: none; }
+}
+
+@media (forced-colors: active) {
+  /* Hover was the ONLY thing distinguishing a pointed-at row, and
+     `background: var(--surface-hover)` flattens to Canvas here — so the row a
+     reader is on became indistinguishable from the eight around it. */
+  .taught-here-row:hover,
+  .taught-here-walk:hover,
+  .taught-here-toggle:hover { background: Highlight; color: HighlightText; }
+
+  .taught-here-row[data-running="true"] {
+    background: Canvas;
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+    box-shadow: none;
+  }
+
+  .taught-here-row:focus-visible,
+  .taught-here-walk:focus-visible,
+  .taught-here-toggle:focus-visible,
+  .taught-here-more:focus-visible { outline-color: Highlight; }
+
+  /* The masthead's 3px rule and the hairlines between bands both resolve to
+     CanvasText, which loses the distinction the weight was carrying. */
+  .taught-here-masthead { border-bottom-width: 2px; border-bottom-color: CanvasText; }
+  .taught-here-group + .taught-here-group { border-top-color: GrayText; }
+
+  /* The plate keeps the publisher's colour for the same reason the dock's
+     does — the marks are approved reverses and the artwork may not be
+     recoloured — and it is the only opt-out on this surface. */
+  .taught-here-plate { forced-color-adjust: none; }
+
+  .taught-here-count,
+  .taught-here-meta,
+  .taught-here-footing { color: CanvasText; }
 }
 
 .trusted-resources {
@@ -19759,7 +19952,16 @@ button.lang-phrase-diagram-node:focus-visible,
    and tests/trusted-resource-permissions, which hold that line. */
 .trusted-resource-card,
 .trusted-resource-imprint,
-.podcast-dock {
+.podcast-dock,
+/* Added 2026-07-30. Both need --player-accent for the transport face they
+   carry, and NEITHER declares --resource-source: the merged surface's rows and
+   the resume offer take the app's own gold, not the publisher's. Twenty-five
+   rows from eight publishers each glowing a different colour is a colour
+   chart, and a resume bar is the app remembering something rather than a
+   publisher announcing themselves. The publisher survives on the row where it
+   is approved to: inside the plate. */
+.taught-here-row,
+.podcast-resume {
   --resource-source: var(--study-gold);
   /* A surface colour and a 3px rail are not the same job. Most brands survive
      both; a near-black one does not, so the accent can be lifted away from the
@@ -19818,7 +20020,8 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint[data-source="working-preacher"],
 .resource-source[data-source="working-preacher"],
 .resource-matrix-row[data-source="working-preacher"],
-.podcast-dock[data-source="working-preacher"] {
+.podcast-dock[data-source="working-preacher"],
+.taught-here-plate[data-source="working-preacher"] {
   --resource-source: #9d2235;
   --resource-ink: #fbf1ea;
   --resource-ink-soft: rgb(251 241 234 / 0.78);
@@ -19834,7 +20037,8 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint[data-source="bibleproject"],
 .resource-source[data-source="bibleproject"],
 .resource-matrix-row[data-source="bibleproject"],
-.podcast-dock[data-source="bibleproject"] {
+.podcast-dock[data-source="bibleproject"],
+.taught-here-plate[data-source="bibleproject"] {
   --resource-source: #00b3e5;
   --resource-ink: #05303f;
   --resource-ink-soft: rgb(5 48 63 / 0.76);
@@ -19854,7 +20058,8 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint[data-source="enter-the-bible"],
 .resource-source[data-source="enter-the-bible"],
 .resource-matrix-row[data-source="enter-the-bible"],
-.podcast-dock[data-source="enter-the-bible"] {
+.podcast-dock[data-source="enter-the-bible"],
+.taught-here-plate[data-source="enter-the-bible"] {
   /* Their yellow is the plate, which is the ground their colour artwork was
      drawn for. It cannot also be the accent: fitted to a light atmosphere a
      0.87-lightness yellow lands on a muddy ochre that is nobody's brand. The
@@ -19881,7 +20086,8 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint[data-source="naked-bible"],
 .resource-source[data-source="naked-bible"],
 .resource-matrix-row[data-source="naked-bible"],
-.podcast-dock[data-source="naked-bible"] {
+.podcast-dock[data-source="naked-bible"],
+.taught-here-plate[data-source="naked-bible"] {
   /* Their gold, dated 2026-07-30. This was #6e7a80 — a grey lifted off a
      near-black surface so a 3px rail could hold against two grounds, for a rail
      that no longer exists. As the accent it made the loudest control on the
@@ -19916,7 +20122,8 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint[data-source="spoken-gospel"],
 .resource-source[data-source="spoken-gospel"],
 .resource-matrix-row[data-source="spoken-gospel"],
-.podcast-dock[data-source="spoken-gospel"] {
+.podcast-dock[data-source="spoken-gospel"],
+.taught-here-plate[data-source="spoken-gospel"] {
   --resource-source: #239948;
   --resource-ink: #faf0d7;
   --resource-ink-soft: rgb(250 240 215 / 0.78);
@@ -19952,7 +20159,8 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint[data-source="forty-minutes-ot"],
 .resource-source[data-source="forty-minutes-ot"],
 .resource-matrix-row[data-source="forty-minutes-ot"],
-.podcast-dock[data-source="forty-minutes-ot"] {
+.podcast-dock[data-source="forty-minutes-ot"],
+.taught-here-plate[data-source="forty-minutes-ot"] {
   --resource-source: #a8402a;
   --resource-ink: #f9ede6;
   --resource-ink-soft: rgb(249 237 230 / 0.76);
@@ -19968,7 +20176,8 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint[data-source="five-minutes-church-history"],
 .resource-source[data-source="five-minutes-church-history"],
 .resource-matrix-row[data-source="five-minutes-church-history"],
-.podcast-dock[data-source="five-minutes-church-history"] {
+.podcast-dock[data-source="five-minutes-church-history"],
+.taught-here-plate[data-source="five-minutes-church-history"] {
   --resource-source: #45696a;
   --resource-ink: #eef4f2;
   --resource-ink-soft: rgb(238 244 242 / 0.76);
@@ -19984,7 +20193,8 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint[data-source="ask-nt-wright"],
 .resource-source[data-source="ask-nt-wright"],
 .resource-matrix-row[data-source="ask-nt-wright"],
-.podcast-dock[data-source="ask-nt-wright"] {
+.podcast-dock[data-source="ask-nt-wright"],
+.taught-here-plate[data-source="ask-nt-wright"] {
   --resource-source: #0079a8;
   --resource-ink: #eaf6fb;
   --resource-ink-soft: rgb(234 246 251 / 0.78);
@@ -20000,7 +20210,8 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint[data-source="listeners-commentary"],
 .resource-source[data-source="listeners-commentary"],
 .resource-matrix-row[data-source="listeners-commentary"],
-.podcast-dock[data-source="listeners-commentary"] {
+.podcast-dock[data-source="listeners-commentary"],
+.taught-here-plate[data-source="listeners-commentary"] {
   --resource-accent: #26518c;
   --resource-source: #dfeaf8;
   --resource-ink: #0a2450;
@@ -20016,7 +20227,8 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint[data-source="radically-christian"],
 .resource-source[data-source="radically-christian"],
 .resource-matrix-row[data-source="radically-christian"],
-.podcast-dock[data-source="radically-christian"] {
+.podcast-dock[data-source="radically-christian"],
+.taught-here-plate[data-source="radically-christian"] {
   --resource-accent: #3f6fb0;
   --resource-source: #6d1409;
   --resource-ink: #f6e9e5;
@@ -20030,7 +20242,8 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint[data-source="the-gospel-coalition"],
 .resource-source[data-source="the-gospel-coalition"],
 .resource-matrix-row[data-source="the-gospel-coalition"],
-.podcast-dock[data-source="the-gospel-coalition"] {
+.podcast-dock[data-source="the-gospel-coalition"],
+.taught-here-plate[data-source="the-gospel-coalition"] {
   --resource-source: #79ae4a;
   --resource-ink: #1b2a0d;
   --resource-ink-soft: rgb(27 42 13 / 0.76);
@@ -20122,7 +20335,13 @@ button.lang-phrase-diagram-node:focus-visible,
 .podcast-dock[data-source="the-gospel-coalition"] .podcast-mast-mark,
 .podcast-dock[data-source="enter-the-bible"] .podcast-mast-mark,
 .podcast-dock[data-source="naked-bible"] .podcast-mast-mark,
-.podcast-dock[data-source="spoken-gospel"] .podcast-mast-mark {
+.podcast-dock[data-source="spoken-gospel"] .podcast-mast-mark,
+.taught-here-plate[data-source="working-preacher"] .taught-here-mark,
+.taught-here-plate[data-source="bibleproject"] .taught-here-mark,
+.taught-here-plate[data-source="the-gospel-coalition"] .taught-here-mark,
+.taught-here-plate[data-source="enter-the-bible"] .taught-here-mark,
+.taught-here-plate[data-source="naked-bible"] .taught-here-mark,
+.taught-here-plate[data-source="spoken-gospel"] .taught-here-mark {
   display: block;
   width: calc(var(--player-mark-h) * var(--resource-mark-ratio));
   height: var(--player-mark-h);
@@ -20198,6 +20417,8 @@ button.lang-phrase-diagram-node:focus-visible,
    The dock's plate takes it too, on the same terms and for the same reason: at
    plate size the emblem alone is 24px of artwork identifying nobody. */
 .podcast-dock[data-source="naked-bible"] .podcast-mast-plate::after,
+/* And at row scale, where an 8px emblem on its own identifies nobody at all. */
+.taught-here-plate[data-source="naked-bible"]::after,
 .trusted-resource-imprint[data-source="naked-bible"]::after,
 .trusted-resource-card.is-featured[data-source="naked-bible"] .trusted-resource-head::after {
   order: 1;
@@ -20218,6 +20439,14 @@ button.lang-phrase-diagram-node:focus-visible,
   font: var(--fw-semibold) 0.6875rem/1 var(--font-ui);
   letter-spacing: 0.055em;
 }
+.taught-here-plate[data-source="naked-bible"] { gap: 5px; }
+.taught-here-plate[data-source="naked-bible"]::after {
+  margin-right: 0;
+  font: var(--fw-semibold) 0.5625rem/1 var(--font-ui);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
 .podcast-dock[data-source="naked-bible"] .podcast-mast-plate::after {
   margin-right: 0;
   font: inherit;

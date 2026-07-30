@@ -26,7 +26,7 @@ import { ToastProvider, type ShowToast } from "./components/Toast.js";
 import { Popover } from "./components/Popover.js";
 import { WelcomeScreen } from "./components/WelcomeScreen.js";
 import { PericopeMark } from "./components/PericopeMark.js";
-import { PodcastPlayer } from "./components/PodcastPlayer.js";
+import { PodcastPlayer, offerPodcastHeard, registerHeardWriter } from "./components/PodcastPlayer.js";
 import { ShortcutsOverlay } from "./components/ShortcutsOverlay.js";
 import { WorkspaceDecisionDialog } from "./components/WorkspaceDecisionDialog.js";
 import type { ReadingPrefs } from "./components/ReadingComfort.js";
@@ -772,6 +772,47 @@ export function App(): React.JSX.Element {
         }
         if (res.value.readingSize) setReadingSize(res.value.readingSize);
         if (res.value.verseNumbers) setVerseNumbers(res.value.verseNumbers);
+        /* The listening the app was in the middle of, OFFERED rather than
+           resumed. Nothing is fetched to draw the offer — every word of it
+           came out of the settings store — and the publisher's server is not
+           touched until the reader presses it, which is the same boundary
+           every other play on this surface crosses. The writer is registered
+           in the same breath, because the store is App's to speak to and the
+           transport lives outside React entirely. */
+        const held = res.value.lastHeard;
+        offerPodcastHeard(held
+          ? {
+            episode: {
+              id: `${held.sourceId}:${held.recordId}`,
+              sourceId: held.sourceId,
+              recordId: held.recordId,
+              sourceName: held.sourceName,
+              title: held.title,
+              officialUrl: held.officialUrl,
+              audioUrl: held.audioUrl,
+              passage: held.passage,
+              kind: held.kind,
+            },
+            positionSeconds: held.positionSeconds,
+          }
+          : null);
+        registerHeardWriter((next) => {
+          void safeCall(() => window.api.settings.set({
+            lastHeard: next
+              ? {
+                sourceId: next.episode.sourceId,
+                recordId: next.episode.recordId,
+                sourceName: next.episode.sourceName,
+                title: next.episode.title,
+                officialUrl: next.episode.officialUrl,
+                audioUrl: next.episode.audioUrl,
+                kind: next.episode.kind,
+                passage: next.episode.passage,
+                positionSeconds: next.positionSeconds,
+              }
+              : null,
+          }));
+        });
       }
       // A setting changed while the IPC read was in flight has already run
       // its persist effect once and returned early. This state transition

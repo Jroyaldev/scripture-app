@@ -28,10 +28,19 @@
  * rank.
  */
 
-import { isTranscriptEnabledSource } from "./transcripts.js";
+import { isTranscriptEnabledSource, transcriptBasis } from "./transcripts.js";
+import type { TranscriptBasis } from "./transcripts.js";
 import type { ReferenceRelation } from "./references.js";
 
-export interface PassageMoment {
+/**
+ * A moment as the artifact stores it — everything that came off disk.
+ *
+ * Split from `PassageMoment` because the footing is NOT in the file and must
+ * never be read from one: an artifact is something anything can write, and a
+ * publisher's basis is a fact about a conversation we did or did not have.
+ * It is attached here, from `TRANSCRIPT_SOURCES`, on the way past.
+ */
+export interface StoredMoment {
   /** Record id of the episode. */
   id: string;
   /** The episode's own name. */
@@ -55,6 +64,25 @@ export interface PassageMoment {
   verses: string | null;
   /** The passage as the episode framed it — "Romans 8:1-11". */
   title: string;
+}
+
+/**
+ * A moment as a surface receives it: the stored facts, plus the footing the
+ * publisher is on.
+ *
+ * `basis` exists here because 48% of what this index surfaces comes from
+ * publishers nobody has asked yet, and until this build the only place that
+ * distinction was visible was a TypeScript literal and a test.
+ * `docs/trusted-resource-permissions.md` says "the distinction must stay
+ * visible"; a fact that never leaves the module it is declared in is not
+ * visible, so it travels with the moment to the surface that draws it.
+ *
+ * It is a label and nothing else. It does not gate — the gate is
+ * `isTranscriptEnabledSource`, and it treats both footings alike on purpose —
+ * and it does not rank.
+ */
+export interface PassageMoment extends StoredMoment {
+  basis: TranscriptBasis;
 }
 
 /**
@@ -86,7 +114,7 @@ export type Proximity = "on" | "chapter" | "whole";
  * How far a moment's range sits from the verse, in verses. Zero when it
  * contains it.
  */
-export function distanceFrom(moment: PassageMoment, verse: number | null): number {
+export function distanceFrom(moment: StoredMoment, verse: number | null): number {
   const span = verseSpan(moment.verses);
   if (!span || verse == null) return Number.POSITIVE_INFINITY;
   if (verse >= span.from && verse <= span.to) return 0;
@@ -107,7 +135,7 @@ export function distanceFrom(moment: PassageMoment, verse: number | null): numbe
  * not on the verse. It just cannot buy membership in a group whose name says
  * otherwise.
  */
-export function proximityOf(moment: PassageMoment, verse: number | null): Proximity {
+export function proximityOf(moment: StoredMoment, verse: number | null): Proximity {
   const span = verseSpan(moment.verses);
   /* No range means the episode took the chapter as a unit, which is a
      different offer from one that happens to land elsewhere in it — and often
@@ -118,7 +146,7 @@ export function proximityOf(moment: PassageMoment, verse: number | null): Proxim
   return distanceFrom(moment, verse) === 0 ? "on" : "chapter";
 }
 
-export function touchesVerse(moment: PassageMoment, verse: number | null): boolean {
+export function touchesVerse(moment: StoredMoment, verse: number | null): boolean {
   if (verse == null || !moment.verses) return true;
   for (const part of moment.verses.split(",")) {
     const [from, to] = part.split("-").map((n) => Number.parseInt(n.trim(), 10));
@@ -148,7 +176,7 @@ export type PassageIndexResult =
 
 const RELATIONS = new Set<string>(["subject", "crossref", "mention", "allusion"]);
 
-function isMoment(value: unknown): value is PassageMoment {
+function isMoment(value: unknown): value is StoredMoment {
   if (typeof value !== "object" || value === null) return false;
   const m = value as Record<string, unknown>;
   return typeof m["id"] === "string" && m["id"].length > 0
@@ -188,6 +216,12 @@ export function readPassageIndex(parsed: unknown): PassageIndexResult {
     const moments = (Array.isArray(e["moments"]) ? e["moments"] : [])
       .filter(isMoment)
       .filter((m) => isTranscriptEnabledSource(m.id))
+      /* The footing is attached here, from the map, rather than read from the
+         file — see PassageMoment. `isTranscriptEnabledSource` has already
+         passed, so the lookup cannot miss; the fallback exists so a future
+         source added to one list and not the other fails as a public feed
+         rather than as a grant. */
+      .map((m): PassageMoment => ({ ...m, basis: transcriptBasis(m.id) ?? "public-feed" }))
       /* Longest first, established here rather than trusted from the file. */
       .sort((a, b) => b.seconds - a.seconds);
     if (moments.length === 0) continue;

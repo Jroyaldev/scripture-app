@@ -266,6 +266,38 @@ interface AppSettingsSchema {
     verse?: number;
     verseOffset?: number;
   } | null;
+  /**
+   * Where the listening was left — the counterpart to `lastRead`, and until
+   * 2026-07-30 the one the player did not keep. A reader forty minutes into a
+   * two-hour episode who quit came back to silence with no way to find the
+   * place again.
+   *
+   * The whole identity is stored rather than a pair of ids, because a resume
+   * has to be able to OFFER the episode by name without asking a publisher's
+   * server anything: nothing may be fetched before a reader presses play, and
+   * a launch that had to go and look the episode up would break that on every
+   * cold start. Every field here is one the app already had in hand and every
+   * one is re-validated on the way back in — see `normalizeLastHeard`, which
+   * fails the whole record closed rather than resuming a half-remembered one.
+   */
+  lastHeard: {
+    sourceId: string;
+    recordId: string;
+    sourceName: string;
+    title: string;
+    officialUrl: string;
+    audioUrl: string;
+    kind: string;
+    /** The passage the launch carried, in the coordinates the canvas takes. */
+    passage: {
+      book: string;
+      chapter: number;
+      verse: number | null;
+      endVerse: number | null;
+      basis: "record" | "moment";
+    } | null;
+    positionSeconds: number;
+  } | null;
   /** Raw until validated so a future-version object can remain byte-for-byte untouched. */
   studyWorkspace?: unknown;
   researchSession: {
@@ -399,6 +431,72 @@ function normalizeLastRead(value: unknown): AppSettingsSchema["lastRead"] {
     chapter: candidate["chapter"] as number,
     packageId: candidate["packageId"],
     ...(hasEyeLine ? { verse: verse as number, verseOffset } : {}),
+  };
+}
+
+/**
+ * The remembered episode, re-checked on the way in and on the way out.
+ *
+ * Fails the whole record closed rather than repairing it. A half-remembered
+ * episode is a play button that leads somewhere unknown, and the two fields
+ * that matter most are the two a settings file could be edited to abuse: the
+ * URL, which is the only thing this app will ever hand to a media element, and
+ * the source id, which is what every permission decision keys on. `https://`
+ * is asserted here for the same reason the manifest loader asserts it — the
+ * grant is to fetch a publisher's own audio over TLS and nothing else.
+ *
+ * The host is deliberately NOT re-checked against `mediaHosts` here: that
+ * check belongs to the manifest, which this process does not have loaded at
+ * settings-read time, and re-implementing it from memory is how two versions
+ * of one rule start to disagree. What this guarantees is shape and scheme; a
+ * resumed episode is a press like any other and crosses the same boundary.
+ */
+function normalizeLastHeard(value: unknown): AppSettingsSchema["lastHeard"] {
+  if (!value || typeof value !== "object") return null;
+  const candidate = value as Record<string, unknown>;
+  const strings = ["sourceId", "recordId", "sourceName", "title", "officialUrl", "audioUrl", "kind"] as const;
+  for (const key of strings) {
+    if (typeof candidate[key] !== "string" || (candidate[key] as string).length === 0) return null;
+  }
+  if (!(candidate["audioUrl"] as string).startsWith("https://")) return null;
+  const position = candidate["positionSeconds"];
+  if (typeof position !== "number" || !Number.isFinite(position) || position < 0) return null;
+
+  let passage: NonNullable<AppSettingsSchema["lastHeard"]>["passage"] = null;
+  const raw = candidate["passage"];
+  if (raw && typeof raw === "object") {
+    const p = raw as Record<string, unknown>;
+    const verse = p["verse"];
+    const endVerse = p["endVerse"];
+    if (
+      typeof p["book"] === "string"
+      && /^[1-3A-Z]{3}$/.test(p["book"])
+      && Number.isInteger(p["chapter"])
+      && (p["chapter"] as number) >= 1
+      && (verse === null || (Number.isInteger(verse) && (verse as number) >= 1))
+      && (endVerse === null || (Number.isInteger(endVerse) && (endVerse as number) >= 1))
+      && (p["basis"] === "record" || p["basis"] === "moment")
+    ) {
+      passage = {
+        book: p["book"],
+        chapter: p["chapter"] as number,
+        verse: verse === null ? null : verse as number,
+        endVerse: endVerse === null ? null : endVerse as number,
+        basis: p["basis"],
+      };
+    }
+  }
+
+  return {
+    sourceId: candidate["sourceId"] as string,
+    recordId: candidate["recordId"] as string,
+    sourceName: candidate["sourceName"] as string,
+    title: candidate["title"] as string,
+    officialUrl: candidate["officialUrl"] as string,
+    audioUrl: candidate["audioUrl"] as string,
+    kind: candidate["kind"] as string,
+    passage,
+    positionSeconds: Math.floor(position),
   };
 }
 
@@ -547,6 +645,7 @@ const store = new Store<AppSettingsSchema>({
     hiddenResourceKinds: [],
     recentPassages: [],
     lastRead: null,
+    lastHeard: null,
     researchSession: null,
     researchWorkspace: null,
     keptContext: null,
@@ -3496,6 +3595,7 @@ function registerIpcHandlers(): void {
       material: normalizeMaterial(settled.material, settled.theme),
       markingSurface: normalizeMarkingSurface(settled.markingSurface),
       lastRead: normalizeLastRead(settled.lastRead),
+      lastHeard: normalizeLastHeard(settled.lastHeard),
       researchSession: normalizeResearchSession(settled.researchSession),
       researchWorkspace: normalizeResearchWorkspace(settled.researchWorkspace),
       keptContext: normalizeKeptContext(settled.keptContext),
@@ -3510,6 +3610,7 @@ function registerIpcHandlers(): void {
 
   ipcMain.handle("settings:set", (_event, partial: Partial<AppSettingsSchema>) => {
     const hasLastRead = Object.prototype.hasOwnProperty.call(partial, "lastRead");
+    const hasLastHeard = Object.prototype.hasOwnProperty.call(partial, "lastHeard");
     const hasResearchSession = Object.prototype.hasOwnProperty.call(partial, "researchSession");
     const hasResearchWorkspace = Object.prototype.hasOwnProperty.call(partial, "researchWorkspace");
     const hasKeptContext = Object.prototype.hasOwnProperty.call(partial, "keptContext");
@@ -3535,6 +3636,7 @@ function registerIpcHandlers(): void {
       ),
       markingSurface: normalizeMarkingSurface(partial.markingSurface ?? store.store.markingSurface),
       lastRead: normalizeLastRead(hasLastRead ? partial.lastRead : store.store.lastRead),
+      lastHeard: normalizeLastHeard(hasLastHeard ? partial.lastHeard : store.store.lastHeard),
       researchSession: normalizeResearchSession(
         hasResearchSession ? partial.researchSession : store.store.researchSession,
       ),

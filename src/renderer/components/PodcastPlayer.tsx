@@ -3,8 +3,11 @@ import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, useSyncEx
 import type { BookNameData } from "../api.js";
 import type { Transcript } from "../../core/transcripts.js";
 import { readingLines } from "../../core/transcripts.js";
-import type { PassageReference, ReferenceSet } from "../../core/references.js";
+import { verseSpan } from "../../core/passage-index.js";
+import type { PassageReference, ReferenceRelation, ReferenceSet } from "../../core/references.js";
 import { passingIn, subjectsOf } from "../../core/references.js";
+import { relationSaid, relationSpoken } from "../../core/relation-words.js";
+import { transcriptBasis } from "../../core/transcripts.js";
 import { safeCall } from "../utils/safeCall.js";
 import { useToast } from "./Toast.js";
 
@@ -53,6 +56,47 @@ export interface PodcastChapter {
   title: string;
 }
 
+/**
+ * The passage a launch is actually about — as coordinates, not as a bref.
+ *
+ * A bref cannot say the one thing this surface needs it to. `bref:v1/ROM.8.1`
+ * is written both for "Romans 8" and for "Romans 8:1", and the two are
+ * different instructions to the reading canvas: the first should leave the
+ * reader's own selection alone, and the second should replace it. Pressing the
+ * dock's passage chip used to throw a reader on 32:35 to 32:1 and destroy their
+ * selection precisely because the launch had flattened a chapter claim onto a
+ * verse. `verse: null` is the chapter, and the canvas is told nothing about
+ * verses when it is.
+ *
+ * `basis` is what the chip is allowed to SAY. A moment claim is "the passage
+ * playing here"; a record claim is "the passage this episode is filed under".
+ * The chip asserted the second about the first for every launch from the
+ * margin, which was false for all 41,426 of them.
+ */
+export interface PodcastPassage {
+  book: string;
+  chapter: number;
+  /** Null when the whole chapter is meant. */
+  verse: number | null;
+  /** Null when a single verse, or when `verse` is null. */
+  endVerse: number | null;
+  basis: "record" | "moment";
+}
+
+/**
+ * What the reader pressed, when they pressed a moment rather than a card.
+ *
+ * A moment used to evaporate on press: the passage, the relation and the
+ * length were all on the row and none of them survived into the dock, so an
+ * episode opened at "eleven minutes on Romans 8" arrived as an episode title
+ * and a clock. It is a thing, so it travels.
+ */
+export interface PodcastMomentClaim {
+  at: number;
+  seconds: number;
+  relation: ReferenceRelation;
+}
+
 /** What a card hands over on press. Every field is already printed on the card. */
 export interface PodcastEpisode {
   /** `${sourceId}:${recordId}` — the key the margin already draws its cards by. */
@@ -66,8 +110,8 @@ export interface PodcastEpisode {
   officialUrl: string;
   /** HTTPS on a declared media host; the manifest refused to load otherwise. */
   audioUrl: string;
-  /** The passage the publisher's own title named, as the ranking matched it. */
-  bref: string;
+  /** The passage this launch carries, or null when it carries none. */
+  passage: PodcastPassage | null;
   /** The record's own kind — podcast, sermon, video. Named on the card too. */
   kind: string;
   /** Optional, and currently never supplied — see PodcastChapter. */
@@ -81,6 +125,39 @@ export interface PodcastEpisode {
    * always did.
    */
   startAt?: number;
+  /** The moment the reader pressed, when they pressed one. */
+  moment?: PodcastMomentClaim;
+}
+
+/**
+ * `bref:v1/1SA.30.1-1SA.30.31` as coordinates a reader can be sent to.
+ *
+ * Only the record's own claim arrives as a bref — the moments carry their
+ * verse range as data. A bare `.1` with no range end is read as the CHAPTER,
+ * which is what the corpus writes it for: `brefFor` in
+ * scripts/install-references.ts emits exactly that shape when a reference has
+ * no verses, and the resource ranking matches whole chapters the same way.
+ * Reading it as "verse 1" is what sent readers to the top of the chapter.
+ */
+export function passageFromBref(bref: string, basis: PodcastPassage["basis"] = "record"): PodcastPassage | null {
+  const match = /^bref:v1\/([1-3A-Z]{3})\.(\d+)(?:\.(\d+))?(?:-([1-3A-Z]{3})\.(\d+)\.(\d+))?$/.exec(bref);
+  if (!match) return null;
+  const [, book, chapterText, verseText, endBook, , endVerseText] = match;
+  const verse = verseText === undefined ? null : Number(verseText);
+  // A range crossing into another book has no single chapter to name, so the
+  // claim is filed under where it starts — which is where it starts.
+  const sameBook = endBook === undefined || endBook === book;
+  const endVerse = verse == null || !sameBook || endVerseText === undefined
+    ? null
+    : Number(endVerseText);
+  return {
+    book: book!,
+    chapter: Number(chapterText),
+    // `.1` alone is the chapter. `.1-.31` is a range that happens to start at 1.
+    verse: verse === 1 && endVerse == null ? null : verse,
+    endVerse,
+    basis,
+  };
 }
 
 /**
@@ -155,6 +232,108 @@ function subscribeElapsed(watcher: () => void): () => void {
 /** Which episode is loaded and what it is doing. Safe to call from anywhere. */
 export function usePodcastNowPlaying(): PodcastNowPlaying {
   return useSyncExternalStore(subscribeNowPlaying, () => nowPlaying);
+}
+
+/* ── The walk ───────────────────────────────────────────────────────────────
+   A declared, finite, visible list of this chapter's own treatments, played in
+   an order the reader was told before they pressed anything.
+
+   It is not a playlist and it must never become one. There is no algorithm in
+   it, nothing is appended while it runs, and it ends. The rule is written once
+   here and stated on the control that starts it: the chapter's longest
+   treatments, longest first, each played for the length of the treatment and
+   no further. When the last span ends the walk is over and the dock is just a
+   dock again.
+
+   Each entry is bounded by `until` rather than by the end of the file, which
+   is the whole difference between a walk through a passage and twelve podcasts
+   queued back to back: a fourteen-minute exposition of Romans 8:9-17 inside a
+   ninety-minute episode is the thing the reader asked for, and the seventy-six
+   minutes around it are not. */
+export interface PodcastWalkStop {
+  episode: PodcastEpisode;
+  /** Seconds into the file where this treatment stops being the reason. */
+  until: number;
+  /** The passage, already labelled by the surface that knows book names. */
+  label: string;
+}
+
+export interface PodcastWalk {
+  /** What the walk is through — "Romans 8". Printed, never parsed. */
+  of: string;
+  stops: PodcastWalkStop[];
+  /** Which stop is running, or -1 once the walk has been left behind. */
+  at: number;
+}
+
+let walk: PodcastWalk | null = null;
+const walkWatchers = new Set<() => void>();
+
+function announceWalk(next: PodcastWalk | null): void {
+  walk = next;
+  for (const watcher of walkWatchers) watcher();
+}
+
+export function usePodcastWalk(): PodcastWalk | null {
+  return useSyncExternalStore(
+    (watcher) => { walkWatchers.add(watcher); return () => { walkWatchers.delete(watcher); }; },
+    () => walk,
+  );
+}
+
+/**
+ * True while a launch is the walk's own doing, so `playPodcastEpisode` can
+ * tell the walk moving on from the reader pressing something else. Anything
+ * the reader starts by hand ends the walk — an episode that keeps advancing
+ * after you chose something different is the behaviour this whole surface is
+ * built to refuse.
+ */
+let walking = false;
+
+function enterStop(index: number): void {
+  const held = walk;
+  const stop = held?.stops[index];
+  if (!held || !stop) return;
+  announceWalk({ ...held, at: index });
+  walking = true;
+  try { playPodcastEpisode(stop.episode); } finally { walking = false; }
+}
+
+/** Begin a declared walk. The reader has already been shown its whole extent. */
+export function startPodcastWalk(of: string, stops: PodcastWalkStop[]): void {
+  if (stops.length === 0) return;
+  announceWalk({ of, stops, at: -1 });
+  enterStop(0);
+}
+
+/** Leave the walk where it stands. The audio keeps playing; nothing advances. */
+export function leavePodcastWalk(): void {
+  if (walk) announceWalk(null);
+}
+
+export function stepPodcastWalk(by: 1 | -1): void {
+  const held = walk;
+  if (!held) return;
+  const next = held.at + by;
+  if (next < 0 || next >= held.stops.length) return;
+  enterStop(next);
+}
+
+/**
+ * The one place a walk advances, and it advances on the file running past the
+ * end of a span rather than on a timer.
+ *
+ * Called from the element's own timeupdate, which is the only authority on
+ * where the file is. A reader who scrubs back inside the span stays inside it;
+ * a reader who scrubs past the end has left the treatment, and the walk agrees
+ * with them rather than dragging them back.
+ */
+function walkPastEnd(at: number): void {
+  const held = walk;
+  const stop = held?.stops[held.at];
+  if (!held || !stop || at < stop.until) return;
+  if (held.at + 1 >= held.stops.length) { announceWalk(null); pausePodcast(); return; }
+  enterStop(held.at + 1);
 }
 
 /**
@@ -249,6 +428,11 @@ function applyPodcastRate(): void {
 export function playPodcastEpisode(episode: PodcastEpisode): void {
   const element = transport;
   if (!element) return;
+  /* A press the reader made themselves ends the walk. Nothing is worse on a
+     surface like this than a list that keeps advancing after you chose
+     something else — the reader would have to find and press stop to escape a
+     queue they had already left. */
+  if (!walking && walk) announceWalk(null);
   if (nowPlaying.episode?.id === episode.id) {
     if (episode.startAt == null) {
       togglePodcast();
@@ -345,16 +529,99 @@ export function setPodcastRate(rate: number): void {
  * Stop, and let go of the publisher's file. Closing the dock is the reader
  * saying they are done with it: the connection closes with the dock rather than
  * idling open on a server that is not ours.
+ *
+ * It also forgets where they were, and that is the same sentence. The player
+ * keeps a place for reading across a restart and now keeps one for listening
+ * too — but the reader closing the dock is the one act on this surface that
+ * says "done", so it is the one act that clears it. Quitting mid-episode
+ * remembers; pressing the cross does not.
  */
 export function stopPodcast(): void {
   pendingSeek = null;
+  if (walk) announceWalk(null);
   if (transport) {
     transport.pause();
     transport.removeAttribute("src");
     transport.load();
   }
+  forgetHeard();
   announceElapsed(0, 0);
   announceNowPlaying({ episode: null, status: "idle" });
+}
+
+/* ── Where the listening was left ───────────────────────────────────────────
+   The player has always kept the reader's place in the TEXT across a restart —
+   `lastRead` in the settings store, written on every chapter turn — and kept
+   nothing at all about the voice. A reader forty minutes into a two-hour
+   episode who quit the app came back to silence and no way to find the place
+   again except by scrubbing.
+
+   Held here rather than in the component for the same reason the transport is:
+   the dock unmounts with nothing, but it is not the thing that knows. And
+   written through one throttle, because a timeupdate fires four times a second
+   and a settings store is a file. */
+export interface PodcastHeard {
+  episode: PodcastEpisode;
+  positionSeconds: number;
+}
+
+let heard: PodcastHeard | null = null;
+const heardWatchers = new Set<() => void>();
+/** Set by the dock once, so this module owns no IPC of its own. */
+let writeHeard: ((next: PodcastHeard | null) => void) | null = null;
+let heardWrittenAt = 0;
+/** Every fifteen seconds of listening, which is a file write per quarter minute. */
+const HEARD_CADENCE_MS = 15_000;
+
+function announceHeard(next: PodcastHeard | null): void {
+  heard = next;
+  for (const watcher of heardWatchers) watcher();
+}
+
+export function usePodcastHeard(): PodcastHeard | null {
+  return useSyncExternalStore(
+    (watcher) => { heardWatchers.add(watcher); return () => { heardWatchers.delete(watcher); }; },
+    () => heard,
+  );
+}
+
+/** What the settings store had on launch, offered rather than resumed. */
+export function offerPodcastHeard(next: PodcastHeard | null): void {
+  if (nowPlaying.episode) return;
+  announceHeard(next);
+}
+
+export function registerHeardWriter(write: (next: PodcastHeard | null) => void): void {
+  writeHeard = write;
+}
+
+function rememberHeard(position: number, { force = false } = {}): void {
+  const episode = nowPlaying.episode;
+  if (!episode || !Number.isFinite(position)) return;
+  const now = performance.now();
+  if (!force && now - heardWrittenAt < HEARD_CADENCE_MS) return;
+  heardWrittenAt = now;
+  const next: PodcastHeard = { episode, positionSeconds: Math.max(0, Math.floor(position)) };
+  announceHeard(next);
+  writeHeard?.(next);
+}
+
+function forgetHeard(): void {
+  heardWrittenAt = 0;
+  announceHeard(null);
+  writeHeard?.(null);
+}
+
+/** Take up the offer. The passage claim and the position come back with it. */
+export function resumePodcastHeard(): void {
+  const held = heard;
+  if (!held) return;
+  playPodcastEpisode({ ...held.episode, startAt: held.positionSeconds });
+}
+
+/** Put the offer away. Nothing is fetched, nothing was fetched. */
+export function forgetPodcastHeard(): void {
+  forgetHeard();
 }
 
 function registerTransport(element: HTMLAudioElement | null): void {
@@ -389,35 +656,20 @@ export function formatClock(seconds: number): string {
     : `${minutes}:${String(rest).padStart(2, "0")}`;
 }
 
-interface EpisodePassage {
-  book: string;
-  chapter: number;
-  verse: number;
-  endChapter: number;
-  endVerse: number;
-}
-
 /**
- * `bref:v1/1SA.30.1-1SA.30.31` as coordinates a reader can be sent to. The
- * shape is the canonical one ScripturePage already reads, so the dock cannot
- * navigate somewhere the reading canvas would decline to go.
+ * The one passage label on this surface, so a chip, a heading and a reference
+ * row cannot disagree about what to call the same coordinates.
+ *
+ * It used to drop the verses — an episode opened at "Romans 8:9-17" was named
+ * "Romans 8" on the mast — which is the part of the claim a reader is actually
+ * choosing on. The en dash is the app's; the corpus writes a hyphen.
  */
-function readEpisodePassage(bref: string): EpisodePassage | null {
-  const match = /^bref:v1\/([1-3A-Z]{3})\.(\d+)\.(\d+)(?:-([1-3A-Z]{3})\.(\d+)\.(\d+))?$/.exec(bref);
-  if (!match) return null;
-  const [, book, chapterText, verseText, endBook, endChapterText, endVerseText] = match;
-  const chapter = Number(chapterText);
-  const verse = Number(verseText);
-  // A range that crosses into another book has no single chapter to name, so
-  // the episode is filed under where it starts — which is where it starts.
-  const spansBook = endBook !== undefined && endBook !== book;
-  return {
-    book: book!,
-    chapter,
-    verse,
-    endChapter: spansBook || endChapterText === undefined ? chapter : Number(endChapterText),
-    endVerse: spansBook || endVerseText === undefined ? verse : Number(endVerseText),
-  };
+function passageLabel(passage: PodcastPassage, bookNames: BookNameData): string {
+  const name = bookNames[passage.book]?.[0] ?? passage.book;
+  if (passage.verse == null) return `${name} ${passage.chapter}`;
+  return passage.endVerse != null && passage.endVerse > passage.verse
+    ? `${name} ${passage.chapter}:${passage.verse}–${passage.endVerse}`
+    : `${name} ${passage.chapter}:${passage.verse}`;
 }
 
 /**
@@ -426,20 +678,23 @@ function readEpisodePassage(bref: string): EpisodePassage | null {
  * spends the column on nine repetitions of the same word and truncates the part
  * that differs.
  */
-function chapterSpanLabel(passage: EpisodePassage): string {
-  if (passage.endChapter > passage.chapter) {
-    return `${passage.chapter}:${passage.verse}–${passage.endChapter}:${passage.endVerse}`;
-  }
-  return passage.endVerse > passage.verse
+function chapterSpanLabel(passage: PodcastPassage): string {
+  if (passage.verse == null) return String(passage.chapter);
+  return passage.endVerse != null && passage.endVerse > passage.verse
     ? `${passage.chapter}:${passage.verse}–${passage.endVerse}`
     : `${passage.chapter}:${passage.verse}`;
 }
 
-function episodePassageLabel(passage: EpisodePassage, bookNames: BookNameData): string {
-  const name = bookNames[passage.book]?.[0] ?? passage.book;
-  return passage.endChapter > passage.chapter
-    ? `${name} ${passage.chapter}–${passage.endChapter}`
-    : `${name} ${passage.chapter}`;
+/** A reference's own passage, as the coordinates the canvas takes. */
+export function passageOfReference(reference: PassageReference): PodcastPassage {
+  const span = verseSpan(reference.verses);
+  return {
+    book: reference.book,
+    chapter: reference.chapter,
+    verse: span ? span.from : null,
+    endVerse: span && span.to > span.from ? span.to : null,
+    basis: "moment",
+  };
 }
 
 /**
@@ -466,6 +721,19 @@ function episodePassageLabel(passage: EpisodePassage, bookNames: BookNameData): 
  * is a voice already in motion, and a hard swap on the loudest control of such
  * a surface reads as a fault in the audio — see --transport-quick at :root.
  */
+function TransportGlyphs(): React.JSX.Element {
+  return (
+    <>
+      <svg className="transport-glyph transport-glyph-play" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M8 4.53 20 12 8 19.47z" fill="currentColor" />
+      </svg>
+      <svg className="transport-glyph transport-glyph-pause" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M7.47 4.53h3.47v14.94H7.47zM13.07 4.53h3.47v14.94h-3.47z" fill="currentColor" />
+      </svg>
+    </>
+  );
+}
+
 export function TransportPlayButton({
   className,
   label,
@@ -488,13 +756,41 @@ export function TransportPlayButton({
       onClick={onPress}
       type="button"
     >
-      <svg className="transport-glyph transport-glyph-play" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M8 4.53 20 12 8 19.47z" fill="currentColor" />
-      </svg>
-      <svg className="transport-glyph transport-glyph-pause" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M7.47 4.53h3.47v14.94H7.47zM13.07 4.53h3.47v14.94h-3.47z" fill="currentColor" />
-      </svg>
+      <TransportGlyphs />
     </button>
+  );
+}
+
+/**
+ * The transport's face without its button, for a surface where the ROW is the
+ * control.
+ *
+ * The margin's moment rows are a list a reader scans and presses anywhere on —
+ * a 22px circle inside a 300px row would be a smaller target than the row it
+ * sits in, and two controls doing the same thing is two tab stops for one
+ * offer. So the row keeps its press and takes the transport's FACE: the same
+ * pill, the same optically-centred glyph, the same crossfade, and the states
+ * driven by the row's own hover and focus (see .taught-here-row .transport-play).
+ *
+ * Composed from the same parts rather than redrawn, which is the point. The
+ * card's copy of this triangle went uncorrected for two builds twenty pixels
+ * from the dock whose comment documents the correction at length.
+ */
+export function TransportPlayMark({
+  className,
+  paused,
+}: {
+  className?: string;
+  paused: boolean;
+}): React.JSX.Element {
+  return (
+    <span
+      aria-hidden="true"
+      className={className ? `transport-play ${className}` : "transport-play"}
+      data-glyph={paused ? "play" : "pause"}
+    >
+      <TransportGlyphs />
+    </span>
   );
 }
 
@@ -592,6 +888,9 @@ export function PodcastPlayer({
   const { showToast } = useToast();
   const { episode, status } = usePodcastNowPlaying();
   const { at, of } = useSyncExternalStore(subscribeElapsed, () => elapsed);
+  const walk = usePodcastWalk();
+  const walkActive = walk != null;
+  const heard = usePodcastHeard();
   /* Where the reader's thumb is, which is not yet where the file is. Committing
      on release rather than on every input keeps one seek per drag instead of
      sixty, and one range request on the publisher's server instead of sixty. */
@@ -612,6 +911,15 @@ export function PodcastPlayer({
   const listRef = useRef<HTMLUListElement>(null);
   const [mode, setMode] = useState<TranscriptMode>("following");
   const [query, setQuery] = useState("");
+  /* Which hit the arrows are standing on. Allowed to run past either end and
+     wrapped on read, so ‹ from the first goes to the last without a branch at
+     each press — the reference players all wrap, and a disabled arrow on a
+     seventeen-hit search is a control that stops working for no reason. */
+  const [hitAt, setHitAt] = useState(0);
+  /* Where the reader is, in the episode's own time, while they are browsing.
+     Null while following — the playhead IS where they are, and the clock in
+     the corner already says it. */
+  const [whereAt, setWhereAt] = useState<number | null>(null);
   /* One view at a time. Stacking the passage lists above the transcript let
      them take whatever height they wanted and gave a reader no way to put them
      away — on an episode with fifteen references the transcript was pushed off
@@ -764,15 +1072,29 @@ export function PodcastPlayer({
      filtered by A's word, and the Passages tab up on an episode that has no
      passages. Three states that outlived their subject, all of them arguing
      against themselves in the comment above. */
+  /* …with one exception, and it is the whole of Build 3's reason for being.
+     A launch from a CARD is an episode the reader has not been inside yet, so
+     it gives back the corner. A launch from a MOMENT is a reader who named a
+     place — "eleven minutes on Romans 8" — and the corner is precisely where
+     that place is not: it holds a title, a clock and no account of why the
+     playhead is eleven minutes in. The sheet is where the transcript and the
+     passage list live, so a moment launch opens it.
+
+     No focus moves either way. Nothing in the dock was pressed. */
   const episodeId = episode?.id;
+  const launchedAtMoment = episode?.moment != null;
   useEffect(() => {
-    setExpanded(false);
+    setExpanded(launchedAtMoment);
     setPeeking(false);
     setQuery("");
     setMode("following");
     setView("transcript");
     setNotice("");
     if (peekTimer.current !== null) window.clearTimeout(peekTimer.current);
+    // `launchedAtMoment` is a fact about THIS episode's arrival, read at the
+    // same render the id changed on. Depending on it as well would re-run the
+    // whole reset if the same episode were ever re-announced without one.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [episodeId]);
 
   /* Asked once per episode, not per open. A reader who opens and shuts the
@@ -817,7 +1139,11 @@ export function PodcastPlayer({
     if (!result.ok) showToast("That official resource link could not be opened.", undefined, undefined, { tone: "error" });
   };
 
-  const passage = episode ? readEpisodePassage(episode.bref) : null;
+  const passage = episode?.passage ?? null;
+  /* Which conversation this publisher's transcripts rest on. Read from the
+     one map that records it rather than from anything on the record, so a
+     hand-edited artifact cannot promote a feed to a grant. */
+  const footing = episode ? transcriptBasis(episode.recordId) : null;
   const position = scrubbingAt ?? at;
   const played = of > 0 ? Math.min(1, Math.max(0, position / of)) : 0;
   /* Dated 2026-07-30. This was `status !== "playing" && status !== "reaching"`,
@@ -846,7 +1172,6 @@ export function PodcastPlayer({
   useEffect(() => {
     if (lastSeekMark.current === seekMark) return;
     lastSeekMark.current = seekMark;
-    setQuery("");
     setMode("following");
   }, [seekMark]);
 
@@ -861,6 +1186,25 @@ export function PodcastPlayer({
      is beats us reading it out of a transcript. */
   const subjects: PassageReference[] = refs ? subjectsOf(refs) : [];
   const passing: PassageReference[] = refs ? passingIn(refs) : [];
+
+  /* The moment the reader pressed, and the publisher's own words behind it.
+     The margin row carries the passage, the relation and the length; the
+     evidence lives on the episode's reference set, and the two agree because
+     scripts/install-references.ts writes both out of the same row — same
+     chapter, same rounded second. Matched on that second with three seconds of
+     tolerance, so a rebuilt index that shifted a boundary still finds its
+     sentence rather than silently attaching the wrong one. */
+  const momentClaim = episode?.moment ?? null;
+  const momentReference = useMemo(() => {
+    if (!momentClaim || !refs) return null;
+    let best: PassageReference | null = null;
+    let gap = Number.POSITIVE_INFINITY;
+    for (const reference of refs.references) {
+      const distance = Math.abs(reference.at - momentClaim.at);
+      if (distance < gap) { best = reference; gap = distance; }
+    }
+    return gap <= 3 ? best : null;
+  }, [momentClaim, refs]);
 
   /* Choosing a place in the episode is a request to HEAR it, not to read about
      it. So the press does the whole errand: move the audio, put the transcript
@@ -882,7 +1226,18 @@ export function PodcastPlayer({
        happen, the moment the file says how long it is, so it counts. */
     if (seekPodcast(seconds) === "refused") return;
     if (hear) resumePodcast();
-    setQuery("");
+    /* Dated 2026-07-30 — the query SURVIVES a seek now, and Build 1's
+       invariant is amended to say so.
+
+       It used to be cleared here, and that was right when searching meant a
+       FILTER: the list held only the hits, so a reader who pressed one and
+       stayed inside the filter would be following an episode through a
+       four-line keyhole. The list is the whole transcript now and the hits are
+       marked in place, so there is no keyhole to leave — and clearing the box
+       destroyed the seventeen other places the phrase was said, which is the
+       reason the reader typed it. The MODE still returns to following, because
+       a seek is still "I want to be here"; what changes is that the marks stay
+       and stay navigable, which is the pattern every reference player uses. */
     setMode("following");
     if (show) setView("transcript");
     setNotice(following
@@ -899,7 +1254,6 @@ export function PodcastPlayer({
 
   const skipBy = (seconds: number): void => {
     if (skipPodcast(seconds) === "refused") return;
-    setQuery("");
     setMode("following");
     /* The element's own clock is the one that moved; this is the same number
        to within a tick, and it is the only one this closure can see. */
@@ -914,11 +1268,20 @@ export function PodcastPlayer({
     goTo(target, { hear: false, show: false });
   };
 
-  /* The one way the query changes, so the mode cannot drift away from it: a
-     box with words in it IS the searching state, and an empty box is not some
-     third thing that has to be reconciled afterwards. */
+  /* The one way the query changes, so the mode cannot drift away from it:
+     typing into the box IS entering the searching state, and emptying it
+     returns to the voice.
+
+     Amended 2026-07-30. The invariant used to run both ways — `searching` if
+     and only if the box has words in it — and that is no longer true, on
+     purpose. A seek made FROM a hit puts the machine back into following with
+     the box still full, because the marks are in the transcript itself now
+     rather than replacing it. So the box entering the searching state is still
+     one setter and cannot drift; leaving that state no longer requires
+     emptying it. */
   const askFor = (next: string): void => {
     setQuery(next);
+    setHitAt(0);
     setMode(next.trim() ? "searching" : "following");
   };
 
@@ -951,11 +1314,69 @@ export function PodcastPlayer({
      does not. The only scrolls that are not the reader's are ours, and those
      are announced in advance by the follow effect. */
   const onTranscriptScroll = (): void => {
+    markWhere();
     if (mode !== "following") return;
     if (performance.now() < selfScrollUntil.current) return;
     setMode("browsing");
     setNotice("Following paused.");
   };
+
+  /* ── Wayfinding, for the reader who has scrolled away ─────────────────────
+     A two-hour episode is 2,280 lines in a box that shows four, and once a
+     reader stops following there has been nothing on the surface saying where
+     in it they are standing. The clock in the corner is the PLAYHEAD's
+     position, which is exactly the thing they have left; the scrub rail is the
+     playhead too. So a reader who scrolled back to find something had no way
+     to tell whether they were four minutes behind the voice or fifty, and the
+     only way to find out was to give up and press Follow.
+
+     It is the episode's own clock rather than a second scrubber: a duplicate
+     rail here would be a second control for a job the first one does, and the
+     answer a browsing reader wants is not "how far through" but "when was
+     this said". So the time of the line at the top of the box, in the same
+     face as the corner's clock, beside the pill that goes back to now.
+
+     Measured off the DOM in a frame rather than tracked in state: a scroll
+     handler that reads geometry per event on a smooth-scrolling list is one
+     layout per frame anyway, and this way there is exactly one. */
+  const whereFrame = useRef(0);
+  const markWhere = (): void => {
+    if (whereFrame.current) return;
+    whereFrame.current = requestAnimationFrame(() => {
+      whereFrame.current = 0;
+      const box = listRef.current;
+      if (!box) return;
+      const top = box.getBoundingClientRect().top;
+      for (const element of box.querySelectorAll<HTMLElement>(".podcast-transcript-line")) {
+        if (element.getBoundingClientRect().bottom < top + 2) continue;
+        const at = Number(element.dataset["line"]);
+        const line = lines[at];
+        setWhereAt(line ? line.s : null);
+        return;
+      }
+    });
+  };
+  useEffect(() => () => { if (whereFrame.current) cancelAnimationFrame(whereFrame.current); }, []);
+
+  /* Stepping the hits IS working the search, so it puts the machine back into
+     searching — the list stops following the voice while a reader is walking
+     their own answer through it, which is the same rule a scroll obeys. */
+  const stepHit = (by: 1 | -1): void => {
+    if (matches === 0) return;
+    setHitAt((current) => current + by);
+    setMode("searching");
+  };
+
+  /* How far the reader has wandered, in the episode's own minutes, and which
+     way. Only drawn once they have actually gone somewhere: half a minute
+     either side is where the voice already is, and a pill reading "0:04 back"
+     would be noise on every scroll. */
+  const whereGap = ((): string | null => {
+    if (following || whereAt == null || !(of > 0)) return null;
+    const delta = whereAt - position;
+    if (Math.abs(delta) < 30) return null;
+    return `${formatClock(Math.abs(delta))} ${delta < 0 ? "back" : "ahead"}`;
+  })();
 
   /* The seek handlers, always the current ones.
 
@@ -966,9 +1387,91 @@ export function PodcastPlayer({
      what is SAID about it does not: whether a press resumed following is a
      fact about where the reader was standing when they pressed, and that has
      to be read now rather than remembered. */
-  const latest = useRef({ line: goToLine, skip: skipBy, seek: goTo });
+  /**
+   * Open a passage on the reading canvas, with the audio still running.
+   *
+   * This is the half of the loop that did not exist. The episode's references
+   * carry a canonical passage each — twelve at the median, sixty-four at the
+   * top — and every one of them was seek-only: the player could print
+   * "Romans 8:1-11" and had no way to show it to anybody.
+   *
+   * The reader's place is kept by the canvas rather than by this dock: `goTo`
+   * pushes the entry it is leaving onto the navigation history, so the way
+   * back is the same Alt+← and the same back arrow the rest of the app uses.
+   * What this end owes is a truthful target — a chapter claim arrives with
+   * `verse: null` and is sent as a chapter, which leaves whatever the reader
+   * had selected alone instead of collapsing it onto verse 1.
+   */
+  const navigateTo = (target: PodcastPassage): void => {
+    void onNavigate(
+      target.book,
+      target.chapter,
+      target.verse ?? undefined,
+      target.endVerse ?? undefined,
+    );
+  };
+
+  /**
+   * One row for the two passage lists, with the two things a reader can do
+   * with a passage on it.
+   *
+   * Hear it — the row itself, which has always been the whole of what this
+   * list could offer. Read it — the second control, which is the half of the
+   * loop that did not exist: 41,426 rows across the corpus name a passage and
+   * not one of them could open it.
+   *
+   * They are two controls rather than one row with a modifier because they are
+   * two different intentions and both are ordinary. The read control is the
+   * smaller of the two and sits at the end, because on a surface a reader
+   * opened to listen, listening is the sentence and reading is the aside.
+   */
+  const referenceRow = (r: PassageReference): React.JSX.Element => (
+    <li className="podcast-ref-row" key={`${r.relation}-${r.at}-${r.bref}`}>
+      <button
+        className="podcast-ref"
+        data-relation={r.relation}
+        onClick={() => goToMoment(r.at)}
+        type="button"
+      >
+        <span className="podcast-ref-time">{formatClock(r.at)}</span>
+        <span className="podcast-ref-title">{r.title}</span>
+        <span className="podcast-ref-extent">
+          {r.seconds >= 60 ? `${Math.round(r.seconds / 60)} min` : ""}
+        </span>
+        {/* The words behind the claim, shown rather than hidden under a hover.
+            A native title arrives after a second, in the system's own styling,
+            and cannot be reached at all by touch — and this is the line that
+            lets a reader dismiss a wrong reference at a glance, which is too
+            important to hide.
+
+            The relation leads it, in reader's words. The claim and its
+            evidence are one sentence — "brought in alongside · so Paul reaches
+            back to Deuteronomy here" — and splitting them put the kind of
+            claim in a column with the minutes. */}
+        <span className="podcast-ref-why">
+          <span className="podcast-ref-said">{relationSaid(r.relation)}</span>
+          {r.evidence}
+        </span>
+      </button>
+      <button
+        aria-label={`Read ${r.title} — opens the passage; the episode keeps playing`}
+        className="podcast-ref-read"
+        onClick={() => navigateTo(passageOfReference(r))}
+        type="button"
+      >
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <path
+            d="M4.6 5.4h4.9c1.1 0 2 .6 2.5 1.5.5-.9 1.4-1.5 2.5-1.5h4.9v12.1h-4.9c-1.1 0-2 .6-2.5 1.5-.5-.9-1.4-1.5-2.5-1.5H4.6zM12 6.9v11.6"
+            stroke="currentColor"
+          />
+        </svg>
+      </button>
+    </li>
+  );
+
+  const latest = useRef({ line: goToLine, skip: skipBy, seek: goTo, read: navigateTo });
   useEffect(() => {
-    latest.current = { line: goToLine, skip: skipBy, seek: goTo };
+    latest.current = { line: goToLine, skip: skipBy, seek: goTo, read: navigateTo };
   });
 
   const chapters: PodcastChapter[] = episode?.chapters ?? [];
@@ -977,6 +1480,16 @@ export function PodcastPlayer({
     -1,
   );
   const chapter = chapterIndex >= 0 ? chapters[chapterIndex] : undefined;
+
+  /* Deduplicated to the second: two references a heartbeat apart would draw
+     two marks a pixel apart on a two-hour rail, which is a smudge rather than
+     two places. */
+  const scrubTicks = useMemo(() => {
+    const source = chapters.length > 0
+      ? chapters.map((entry) => entry.start)
+      : (refs?.references ?? []).map((reference) => reference.at);
+    return [...new Set(source.map((second) => Math.round(second)))];
+  }, [chapters, refs]);
 
   /* The active line is found the same way the active chapter is: the last span
      that has started. Binary search would be tidier over 1,400 lines, but this
@@ -994,24 +1507,69 @@ export function PodcastPlayer({
     -1,
   );
 
-  /* Searching narrows to the lines that say it. Highlighting in place was the
-     alternative and it is worse here: a hit fourteen screens down is invisible,
-     and the reader would be scrolling a transcript looking for their own
-     search. Narrowing turns the panel into the answer. */
-  const found = useMemo(() => (needle
-    ? lines.map((line, index) => ({ line, index })).filter(({ line }) => line.t.toLowerCase().includes(needle))
-    : lines.map((line, index) => ({ line, index }))),
-  [lines, needle]);
-  const matches = found.length;
+  /* ── Where the passages are named, line by line ───────────────────────────
+     The reference set has been loaded, validated and sitting in this
+     component's own state since the episode started, and the transcript has
+     never once consulted it: a listener who heard "turn to Romans 8" saw plain
+     text whose only behaviour was to seek to itself.
 
-  /* No playhead the ramp could be measured from: a search answers a question
-     rather than tracking a voice, and before the first line has been spoken
-     there is nothing to be near. Either way every line sits at the same
-     readable weight instead of pretending to a distance from a voice that is
-     not in the list. */
+     A reference is a point in time; a line is a span of time. So a reference
+     belongs to the last line that had started when it was recorded — the same
+     rule the playhead uses to find the active line, applied to a different
+     clock reading. Both arrays are sorted, so this is one walk rather than a
+     scan per reference.
+
+     Line-level and no further. The word timings are in the payload — 24,995 of
+     them on the longest episode — and word-level marking is refused by
+     standing decision: a transcript with a chip on every proper noun stops
+     being something you read. */
+  const citedLines = useMemo(() => {
+    const byLine = new Map<number, PassageReference[]>();
+    if (!refs || lines.length === 0) return byLine;
+    let at = 0;
+    for (const reference of refs.references) {
+      while (at + 1 < lines.length && lines[at + 1]!.s <= reference.at) at += 1;
+      const held = byLine.get(at);
+      if (held) held.push(reference); else byLine.set(at, [reference]);
+    }
+    return byLine;
+  }, [lines, refs]);
+
+  /* ── Searching in place ───────────────────────────────────────────────────
+     Restated 2026-07-30, and the note it replaces was arguing the opposite:
+     "a hit fourteen screens down is invisible, and the reader would be
+     scrolling a transcript looking for their own search."
+
+     That is true of marking WITHOUT navigation, and marking without navigation
+     is not the pattern. Every reference player on the desk marks in place and
+     gives the reader a pair of arrows and a count — ‹ 3/17 › — which answers
+     the invisible-hit objection directly while keeping the thing the filter
+     destroyed: the surrounding sentences. A filtered list can tell you that
+     seventeen lines say "covenant" and cannot tell you that four of them are
+     in the same two minutes, which is usually the actual finding.
+
+     `highlight` has existed on this surface since the first draft and has
+     never been used for this; it was written for the filtered rows. */
+  const hits = useMemo(() => (needle
+    ? lines.reduce<number[]>((found, line, index) => {
+      if (line.t.toLowerCase().includes(needle)) found.push(index);
+      return found;
+    }, [])
+    : []),
+  [lines, needle]);
+  const matches = hits.length;
+  const hitIndex = matches === 0 ? -1 : ((hitAt % matches) + matches) % matches;
+  const hitLine = hitIndex < 0 ? -1 : hits[hitIndex]!;
+
+  /* No playhead the ramp could be measured from: a reader working a search is
+     reading the answer rather than tracking a voice, and before the first line
+     has been spoken there is nothing to be near. Either way every line sits at
+     the same readable weight instead of pretending to a distance from a voice
+     that is not in view. */
   const flatWeight = searching || lineIndex < 0;
 
-  /* Built once per episode and once per query, and never again.
+  /* Built once per episode, once per query and once per reference set, and
+     never again.
 
      It used to be keyed on the active line as well, which the comment here
      defended as a saving — 2,280 elements reconciled once a line instead of
@@ -1021,26 +1579,53 @@ export function PodcastPlayer({
      asks to read it. Both halves are fixed: the block below renders only while
      the sheet is open, and everything that is a function of the playhead has
      moved out of the tree and into the ladder effect, which touches seven
-     elements. */
-  const renderedLines = useMemo(() => found.map(({ line, index }) => (
-    <li key={`${line.s}-${index}`}>
-      <button
-        className="podcast-transcript-line"
-        data-line={index}
-        onClick={() => latest.current.line(line.s)}
-        /* Every line starts out of the tab order and exactly one is put back
-           into it by the roving effect below. Written as a static -1 here
-           rather than a computed 0/-1 so this list stays a function of its own
-           content: a tabindex that depended on the playhead would put all 2,280
-           elements back into the render, which is the thing Build 1 took them
-           out of. */
-        tabIndex={-1}
-        type="button"
-      >
-        {needle ? highlight(line.t, needle) : line.t}
-      </button>
-    </li>
-  )), [found, needle]);
+     elements. Which hit is CURRENT is written the same way, by the hit effect,
+     for the same reason. */
+  const renderedLines = useMemo(() => lines.map((line, index) => {
+    const cited = citedLines.get(index);
+    return (
+      <li key={`${line.s}-${index}`} data-cited={cited ? "true" : undefined}>
+        <button
+          className="podcast-transcript-line"
+          data-line={index}
+          onClick={() => latest.current.line(line.s)}
+          /* Every line starts out of the tab order and exactly one is put back
+             into it by the roving effect below. Written as a static -1 here
+             rather than a computed 0/-1 so this list stays a function of its own
+             content: a tabindex that depended on the playhead would put all 2,280
+             elements back into the render, which is the thing Build 1 took them
+             out of. */
+          tabIndex={-1}
+          type="button"
+        >
+          {needle ? highlight(line.t, needle) : line.t}
+        </button>
+        {/* Beside the line rather than inside it: a control inside a control
+            is not markup a browser or a screen reader has any way to resolve,
+            and the line's own press has to keep meaning "play from here". So
+            the passage gets its own smaller target, set under the line where
+            a marginal note goes. Pressing it opens the passage; the audio does
+            not move, because a reader following along who wants to SEE Romans
+            8 has not asked to stop hearing this. */}
+        {cited && (
+          <span className="podcast-transcript-cites">
+            {cited.map((reference) => (
+              <button
+                aria-label={`Read ${reference.title} — ${relationSpoken(reference.relation, reference.title)}`}
+                className="podcast-transcript-cite"
+                key={reference.bref}
+                onClick={() => latest.current.read(passageOfReference(reference))}
+                tabIndex={-1}
+                type="button"
+              >
+                {reference.title}
+              </button>
+            ))}
+          </span>
+        )}
+      </li>
+    );
+  }), [citedLines, lines, needle]);
 
   /* ── One tab stop for the whole transcript ────────────────────────────────
      A two-hour episode is 2,280 buttons, and every one of them was a tab stop:
@@ -1083,7 +1668,12 @@ export function PodcastPlayer({
     if (!["ArrowUp", "ArrowDown", "Home", "End"].includes(event.key)) return;
     const box = listRef.current;
     if (!box) return;
-    const lines = [...box.querySelectorAll<HTMLElement>(".podcast-transcript-line")];
+    /* The passage marks travel with the lines rather than forming a second
+       ladder. Each one sits directly after the line that names it, so the
+       arrows walk them in reading order and a keyboard reader meets a mark in
+       the same place a pointer reader sees it — as opposed to not at all,
+       which is what a -1 outside the roving set would have meant. */
+    const lines = [...box.querySelectorAll<HTMLElement>(".podcast-transcript-line, .podcast-transcript-cite")];
     if (lines.length === 0) return;
     const at = lines.indexOf(document.activeElement as HTMLElement);
     const next = event.key === "Home" ? 0
@@ -1138,6 +1728,33 @@ export function PodcastPlayer({
     }
   }, [expanded, flatWeight, lineIndex, renderedLines]);
 
+  /* Which of the marked lines the arrows are standing on, written the same way
+     the ramp is: onto the one element it shows on, rather than through the
+     list as a prop. Seventeen hits marked identically is a wall; one of them
+     carried is a place. */
+  const hitRef = useRef<HTMLElement | null>(null);
+  useLayoutEffect(() => {
+    hitRef.current?.removeAttribute("data-hit");
+    hitRef.current = null;
+    const box = listRef.current;
+    if (!box || !expanded || hitLine < 0) return;
+    const line = box.querySelector<HTMLElement>(`.podcast-transcript-line[data-line="${hitLine}"]`);
+    if (!line) return;
+    line.setAttribute("data-hit", "true");
+    hitRef.current = line;
+    if (mode !== "searching") return;
+    /* The reader asked to be taken here, so this scroll is ours and the
+       browsing guard must not read it as theirs. */
+    selfScrollUntil.current = performance.now() + 1_000;
+    line.scrollIntoView({
+      block: "center",
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+    });
+    // `mode` decides whether to travel, not whether to mark. Marking on every
+    // render keeps the current hit correct after a seek has left searching.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expanded, hitLine, renderedLines]);
+
   /* Following is the resting state and stays on until the reader moves the
      list themselves. Dragging someone back to the active line while they are
      reading ahead is the worst thing a transcript can do, so any scroll that
@@ -1189,15 +1806,6 @@ export function PodcastPlayer({
     setPodcastRate(PODCAST_RATES[(at + 1) % PODCAST_RATES.length] ?? 1);
   };
 
-  const navigateTo = (target: EpisodePassage): void => {
-    void onNavigate(
-      target.book,
-      target.chapter,
-      target.verse,
-      target.endChapter === target.chapter ? target.endVerse : undefined,
-    );
-  };
-
   /* What the sheet can show, which is not always what the reader last chose.
      `view` used to be the whole answer and the tab strip needed BOTH lists to
      draw at all, so the two disagreed in both directions: a reader who left
@@ -1243,14 +1851,14 @@ export function PodcastPlayer({
      typing. "No line says that" is on this channel too — it was only ever
      drawn, so a reader who could not see it was told nothing at all. */
   useEffect(() => {
-    if (!expanded || !searching) return undefined;
+    if (!expanded || needle.length === 0) return undefined;
     const timer = window.setTimeout(() => {
       setNotice(matches === 0
         ? "No line says that."
-        : `${matches} ${matches === 1 ? "line says" : "lines say"} that.`);
+        : `${matches} ${matches === 1 ? "line says" : "lines say"} that, marked in place.`);
     }, 700);
     return () => window.clearTimeout(timer);
-  }, [expanded, matches, needle, searching]);
+  }, [expanded, matches, needle]);
 
   /* The system's own transport.
 
@@ -1284,6 +1892,17 @@ export function PodcastPlayer({
       ["seekto", (details) => {
         if (details.seekTime != null) latest.current.seek(details.seekTime, { hear: false, show: false });
       }],
+      /* Registered only while a walk is running. An engine that is handed a
+         `nexttrack` handler draws the button whether or not there is a next
+         track, and a system control that does nothing is worse than one that
+         is not there. Outside a walk there is no next: this dock plays one
+         episode a reader chose and never queues another behind it. */
+      ...(walkActive
+        ? ([
+          ["previoustrack", () => stepPodcastWalk(-1)],
+          ["nexttrack", () => stepPodcastWalk(1)],
+        ] as [MediaSessionAction, MediaSessionActionHandler][])
+        : []),
     ];
     for (const [action, handler] of handlers) {
       /* An engine that does not know an action throws rather than ignoring it,
@@ -1295,7 +1914,7 @@ export function PodcastPlayer({
         try { session.setActionHandler(action, null); } catch { /* as above */ }
       }
     };
-  }, [episodeId, episodeSource, episodeTitle]);
+  }, [episodeId, episodeSource, episodeTitle, walkActive]);
 
   useEffect(() => {
     const session = navigator.mediaSession;
@@ -1324,7 +1943,7 @@ export function PodcastPlayer({
           applyPendingSeek();
           announceElapsed(event.currentTarget.currentTime, event.currentTarget.duration || 0);
         }}
-        onEnded={() => elementReports("paused")}
+        onEnded={() => { walkPastEnd(Number.POSITIVE_INFINITY); elementReports("paused"); }}
         onError={() => { if (nowPlaying.episode) announceNowPlaying({ episode: nowPlaying.episode, status: "failed" }); }}
         /* The held seek is spent BEFORE anything is announced. This used to
            announce a flat 0 and let the seek land afterwards, which is a frame
@@ -1335,12 +1954,23 @@ export function PodcastPlayer({
           applyPendingSeek();
           announceElapsed(event.currentTarget.currentTime, event.currentTarget.duration || 0);
         }}
-        onPause={() => elementReports("paused")}
+        /* A pause is a place worth keeping exactly, so the throttle is spent
+           here rather than waited out — a reader who pauses and quits within
+           fifteen seconds would otherwise come back to where they were a
+           quarter of a minute earlier. */
+        onPause={(event) => { rememberHeard(event.currentTarget.currentTime, { force: true }); elementReports("paused"); }}
         onPlaying={() => elementReports("playing")}
         /* The element is the authority on its own rate, so the dock reads it
            here instead of remembering what it asked for. */
         onRateChange={(event) => setRate(event.currentTarget.playbackRate)}
-        onTimeUpdate={(event) => announceElapsed(event.currentTarget.currentTime, event.currentTarget.duration || 0)}
+        onTimeUpdate={(event) => {
+          const time = event.currentTarget.currentTime;
+          announceElapsed(time, event.currentTarget.duration || 0);
+          if (!event.currentTarget.paused) {
+            rememberHeard(time);
+            walkPastEnd(time);
+          }
+        }}
         onWaiting={() => elementReports("reaching")}
         preload="none"
         ref={registerTransport}
@@ -1385,14 +2015,29 @@ export function PodcastPlayer({
               <span className="podcast-mast-mark podcast-mast-name">{episode.sourceName}</span>
             </span>
             <span className="podcast-mast-kind">{episode.kind}</span>
-            {passage && !expanded && (
+            {/* The one control on this dock that reaches the reading canvas,
+                and until 2026-07-30 it was hidden by `!expanded` — removed
+                from the DOM at exactly the moment the reader had the passage
+                list open and was most likely to want it.
+
+                It also said something false. Its accessible name claimed "the
+                passage this episode works through" while its bref was the
+                READER's own chapter at verse 1, put there by all three margin
+                call sites; for every one of the 41,426 launches from that
+                surface the sentence was untrue and the press destroyed the
+                reader's selection. The passage is now whatever the launch
+                actually carried, and the sentence says which of the two kinds
+                of claim that is. */}
+            {passage && (
               <button
-                aria-label={`Read ${episodePassageLabel(passage, bookNames)}, the passage this episode works through`}
+                aria-label={passage.basis === "moment"
+                  ? `Read ${passageLabel(passage, bookNames)} — the passage playing here`
+                  : `Read ${passageLabel(passage, bookNames)} — the passage this episode is filed under`}
                 className="podcast-mast-passage"
                 onClick={() => navigateTo(passage)}
                 type="button"
               >
-                {episodePassageLabel(passage, bookNames)}
+                {passageLabel(passage, bookNames)}
               </button>
             )}
             <button
@@ -1439,6 +2084,54 @@ export function PodcastPlayer({
               they must not be able to Tab into either. */}
           <div className="podcast-sheet" inert={!expanded} ref={sheetRef}>
             <div className="podcast-sheet-inner">
+              {/* ── The walk ──────────────────────────────────────────────
+                  Where the reader is inside a list they were shown the whole
+                  of before they started it. Its extent is fixed, its order was
+                  declared, and it ends: "3 of 12" is a promise that there is a
+                  twelfth and nothing after it.
+
+                  Leaving is one press and it leaves the audio playing, because
+                  a reader who steps out of the walk in the middle of a good
+                  exposition asked to stop ADVANCING, not to stop listening. */}
+              {walk && (
+                <div className="podcast-walk" role="group" aria-label={`Walking ${walk.of}`}>
+                  <button
+                    aria-label="The treatment before this one"
+                    className="podcast-walk-step"
+                    disabled={walk.at <= 0}
+                    onClick={() => stepPodcastWalk(-1)}
+                    type="button"
+                  >
+                    <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">
+                      <path d="M14.4 6.3 8.7 12l5.7 5.7" stroke="currentColor" />
+                    </svg>
+                  </button>
+                  <span className="podcast-walk-of">
+                    {`Walking ${walk.of}`}
+                    <span className="podcast-walk-place">{`${walk.at + 1} of ${walk.stops.length}`}</span>
+                  </span>
+                  <button
+                    aria-label="The next treatment"
+                    className="podcast-walk-step"
+                    disabled={walk.at + 1 >= walk.stops.length}
+                    onClick={() => stepPodcastWalk(1)}
+                    type="button"
+                  >
+                    <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">
+                      <path d="M9.6 6.3 15.3 12l-5.7 5.7" stroke="currentColor" />
+                    </svg>
+                  </button>
+                  <button
+                    aria-label="Stop walking the chapter — this episode keeps playing"
+                    className="podcast-walk-leave"
+                    onClick={leavePodcastWalk}
+                    type="button"
+                  >
+                    leave
+                  </button>
+                </div>
+              )}
+
               {/* The episode's own masthead. It had no rules at all until
                   2026-07-30 — see .podcast-episode-title — so this <h2> drew at
                   the UA's 24px bold and was the largest type in the study
@@ -1448,7 +2141,7 @@ export function PodcastPlayer({
               <div className="podcast-episode">
                 <h2 className="podcast-episode-title" tabIndex={-1}>{episode.title}</h2>
                 <p className="podcast-episode-meta">
-                  {passage ? `${episodePassageLabel(passage, bookNames)} · ` : ""}
+                  {passage ? `${passageLabel(passage, bookNames)} · ` : ""}
                   {of > 0 ? formatClock(of) : "length unknown until it loads"}
                 </p>
                 <button
@@ -1459,7 +2152,62 @@ export function PodcastPlayer({
                 >
                   {`Open at ${episode.sourceName}`}
                 </button>
+                {/* Which footing this publisher is on, said once and quietly,
+                    in the same register as the transcript's "auto" mark.
+
+                    docs/trusted-resource-permissions.md records that the
+                    distinction "must stay visible", and until this build the
+                    only places it was visible were a TypeScript literal and a
+                    test — while 48% of everything these surfaces show comes
+                    from publishers nobody has asked. It is one sentence at the
+                    foot of the episode's own block rather than a badge on
+                    every row, because it is a fact about the publisher and not
+                    about this episode, and because a legal notice repeated
+                    twenty-five times is chrome. */}
+                <p className="podcast-episode-footing" data-basis={footing ?? undefined}>
+                  {footing === "publisher-granted"
+                    ? `Transcript machine-read from the published audio, with ${episode.sourceName}'s permission.`
+                    : footing === "public-feed"
+                      ? `Transcript machine-read from ${episode.sourceName}'s public feed. We have not asked them yet.`
+                      : "Transcript machine-read from the published audio."}
+                </p>
               </div>
+
+              {/* ── The moment that started this ────────────────────────────
+                  A press in the margin used to be self-erasing: the passage,
+                  the relation and the length were all on the row the reader
+                  chose, and the dock that answered it held an episode title
+                  and a clock. "Eleven minutes on Romans 8" became "0:26" under
+                  a title about something else, and the reader had no way back
+                  to what they had just been told.
+
+                  It says the three things the row said, plus the one the row
+                  had no space for — the publisher's own sentence, which is why
+                  the entry exists at all and the only thing on this surface
+                  that lets a reader throw out a wrong reference at a glance.
+                  Pressing the passage opens it. */}
+              {momentClaim && passage && (
+                <div className="podcast-moment">
+                  <button
+                    aria-label={`Read ${passageLabel(passage, bookNames)} — the passage playing here`}
+                    className="podcast-moment-ref"
+                    onClick={() => navigateTo(passage)}
+                    type="button"
+                  >
+                    {passageLabel(passage, bookNames)}
+                  </button>
+                  <span className="podcast-moment-said">{relationSaid(momentClaim.relation)}</span>
+                  <span className="podcast-moment-extent">
+                    {momentClaim.seconds >= 60
+                      ? `${Math.round(momentClaim.seconds / 60)} min`
+                      : `${Math.max(1, Math.round(momentClaim.seconds))}s`}
+                    {` from ${formatClock(momentClaim.at)}`}
+                  </span>
+                  {momentReference?.evidence && (
+                    <p className="podcast-moment-why">{momentReference.evidence}</p>
+                  )}
+                </div>
+              )}
 
               {/* Two views, not two stacked panels. A reader is either choosing
                   a passage or following the words, and the sheet has no scroll
@@ -1521,57 +2269,21 @@ export function PodcastPlayer({
                 >
                 {subjects.length > 0 && (
                   <ul aria-label="Passages in this episode" className="podcast-refs">
-                    {subjects.map((r) => (
-                      <li key={`s-${r.at}-${r.bref}`}>
-                        <button
-                          className="podcast-ref"
-                          data-relation="subject"
-                          onClick={() => goToMoment(r.at)}
-                          type="button"
-                        >
-                          <span className="podcast-ref-time">{formatClock(r.at)}</span>
-                          <span className="podcast-ref-title">{r.title}</span>
-                          <span className="podcast-ref-extent">
-                            {r.seconds >= 60 ? `${Math.round(r.seconds / 60)} min` : ""}
-                          </span>
-                          {/* The words behind the claim, shown rather than
-                              hidden under a hover. A native title arrives after
-                              a second, in the system's own styling, and cannot
-                              be reached at all by touch — and this is the line
-                              that lets a reader dismiss a wrong reference at a
-                              glance, which is too important to hide. */}
-                          {r.evidence && <span className="podcast-ref-why">{r.evidence}</span>}
-                        </button>
-                      </li>
-                    ))}
+                    {subjects.map(referenceRow)}
                   </ul>
                 )}
-  
+
                 {/* Everything the episode touches without being about. Ordered by
                     time, because this list is read while listening rather than
-                    before. Allusions are marked: a passage nobody named aloud is
-                    the one entry here a reader could not have found themselves. */}
+                    before. Every row says which kind of touching it was: until
+                    2026-07-30 an allusion said "alluded" and a crossref and a
+                    mention said nothing at all, so 23,169 moments across the
+                    corpus were an empty span. */}
                 {passing.length > 0 && (
                   <div className="podcast-refs-passing">
                     <p className="podcast-refs-head">Also referenced</p>
                     <ul aria-label="Passages referenced in this episode" className="podcast-refs">
-                      {passing.map((r) => (
-                        <li key={`p-${r.at}-${r.bref}`}>
-                          <button
-                            className="podcast-ref"
-                            data-relation={r.relation}
-                            onClick={() => goToMoment(r.at)}
-                            type="button"
-                          >
-                            <span className="podcast-ref-time">{formatClock(r.at)}</span>
-                            <span className="podcast-ref-title">{r.title}</span>
-                            <span className="podcast-ref-extent">
-                              {r.relation === "allusion" ? "alluded" : ""}
-                            </span>
-                            {r.evidence && <span className="podcast-ref-why">{r.evidence}</span>}
-                          </button>
-                        </li>
-                      ))}
+                      {passing.map(referenceRow)}
                     </ul>
                   </div>
                 )}
@@ -1581,7 +2293,7 @@ export function PodcastPlayer({
               {chapters.length > 0 && (
                 <ul aria-label="Chapters" className="podcast-chapters">
                   {chapters.map((entry, index) => {
-                    const entryPassage = readEpisodePassage(entry.bref);
+                    const entryPassage = passageFromBref(entry.bref);
                     return (
                       <li key={entry.start}>
                         <button
@@ -1632,16 +2344,55 @@ export function PodcastPlayer({
                       type="search"
                       value={query}
                     />
-                    {searching && (
-                      <button
-                        aria-label={`${matches} ${matches === 1 ? "line" : "lines"} say that. Clear the search and follow along.`}
-                        className="podcast-transcript-clear"
-                        onClick={followAgain}
-                        title="Clear search and follow along"
-                        type="button"
-                      >
-                        {matches} · clear
-                      </button>
+                    {/* ‹ 3/17 › — the pattern every reference player uses, and
+                        the half that makes marking in place work at all. The
+                        count answers "is this word anywhere in two hours"; the
+                        arrows answer "show me the next one"; and the transcript
+                        underneath stays the transcript, so the sentence on
+                        either side of the hit is still there to read.
+
+                        Shown whenever the box has words in it, not only while
+                        the machine is in `searching` — a reader who pressed a
+                        hit is back in following with sixteen other places still
+                        marked, and taking their arrows away at that moment
+                        would be taking the answer away. */}
+                    {needle.length > 0 && (
+                      <span className="podcast-transcript-hits" role="group" aria-label="Search results">
+                        <button
+                          aria-label="Previous line that says that"
+                          className="podcast-transcript-step"
+                          disabled={matches === 0}
+                          onClick={() => stepHit(-1)}
+                          type="button"
+                        >
+                          <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true">
+                            <path d="M14.4 6.3 8.7 12l5.7 5.7" stroke="currentColor" />
+                          </svg>
+                        </button>
+                        <span className="podcast-transcript-count">
+                          {matches === 0 ? "0" : `${hitIndex + 1}/${matches}`}
+                        </span>
+                        <button
+                          aria-label="Next line that says that"
+                          className="podcast-transcript-step"
+                          disabled={matches === 0}
+                          onClick={() => stepHit(1)}
+                          type="button"
+                        >
+                          <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true">
+                            <path d="M9.6 6.3 15.3 12l-5.7 5.7" stroke="currentColor" />
+                          </svg>
+                        </button>
+                        <button
+                          aria-label="Clear the search and follow along"
+                          className="podcast-transcript-clear"
+                          onClick={followAgain}
+                          title="Clear search and follow along"
+                          type="button"
+                        >
+                          clear
+                        </button>
+                      </span>
                     )}
                     {/* Provenance without a byline. The model id was a
                         debugging artefact sitting where a reader looks; this
@@ -1649,8 +2400,14 @@ export function PodcastPlayer({
                         written — in the smallest form that still makes it,
                         and names us rather than a checkpoint, because who a
                         reader can hold responsible is the useful half. */}
-                    {!searching && (
-                      <span className="podcast-transcript-auto" title="Automatically transcribed by Pericope">
+                    {needle.length === 0 && (
+                      <span
+                        className="podcast-transcript-auto"
+                        data-basis={footing ?? undefined}
+                        title={footing === "public-feed"
+                          ? `Automatically transcribed by Pericope from ${episode.sourceName}'s public feed — not yet asked`
+                          : "Automatically transcribed by Pericope"}
+                      >
                         auto
                       </span>
                     )}
@@ -1669,8 +2426,19 @@ export function PodcastPlayer({
                         search too: `!searching` read as restraint and took the
                         only follow-state control off the surface at the exact
                         moment the reader was furthest from the playhead. */}
+                    {/* The way back to now, and — since 2026-07-30 — where
+                        "away" actually is. A reader who has scrolled in a 2h18m
+                        transcript was told nothing about their own position:
+                        the clock in the corner is the playhead's, which is the
+                        thing they left, and so is the rail. So the pill carries
+                        the distance it would travel. It is not a second
+                        scrubber; it is one number on the control that already
+                        means "go back", in the clock's own face. */}
                     {!following && (
                       <button
+                        aria-label={whereGap == null
+                          ? "Follow the episode again"
+                          : `Follow the episode again — you are ${whereGap} from the voice`}
                         className="podcast-transcript-follow"
                         onClick={followAgain}
                         type="button"
@@ -1679,6 +2447,7 @@ export function PodcastPlayer({
                           <path d="M12 5.1v12.3M6.9 12.6 12 17.7l5.1-5.1" />
                         </svg>
                         Follow
+                        {whereGap && <span className="podcast-transcript-where">{whereGap}</span>}
                       </button>
                     )}
 
@@ -1695,7 +2464,7 @@ export function PodcastPlayer({
                       {renderedLines}
                     </ul>
 
-                    {searching && matches === 0 && (
+                    {needle.length > 0 && matches === 0 && (
                       <p className="podcast-transcript-empty">No line says that.</p>
                     )}
                   </div>
@@ -1752,7 +2521,7 @@ export function PodcastPlayer({
                    span instead of repeating it. */
                 <p className="podcast-dock-now" title={chapter.title}>
                   {(() => {
-                    const span = readEpisodePassage(chapter.bref);
+                    const span = passageFromBref(chapter.bref);
                     return span ? <span className="podcast-dock-now-ref">{chapterSpanLabel(span)}</span> : null;
                   })()}
                   <span className="podcast-dock-now-title">{chapter.title}</span>
@@ -1764,6 +2533,17 @@ export function PodcastPlayer({
                    corner has to name what is playing because nothing else on
                    screen does; the sheet already has. Dated 2026-07-30. */
                 null
+              ) : momentClaim && passage ? (
+                /* Shut, and launched from a moment: the corner names the
+                   MOMENT rather than the episode. The episode's title is on
+                   the mast's own plate line and in the accessible name above;
+                   what a reader who pressed "eleven minutes on Romans 8:9-17"
+                   cannot otherwise recover is which eleven minutes, and that
+                   is the one thing this row has space for. */
+                <p className="podcast-dock-now" title={episode.title}>
+                  <span className="podcast-dock-now-ref">{chapterSpanLabel(passage)}</span>
+                  <span className="podcast-dock-now-title">{relationSaid(momentClaim.relation)}</span>
+                </p>
               ) : (
                 <p className="podcast-dock-title" title={episode.title}>{episode.title}</p>
               )}
@@ -1829,12 +2609,23 @@ export function PodcastPlayer({
                 styles/marking-actions.css, and an undefined animation-name
                 fails silently. */}
             {reaching && <span aria-hidden="true" className="podcast-rail-reaching" />}
-            {of > 0 && chapters.map((entry) => (
+            {/* The ticks, fed at last.
+                This mechanism has been coded and styled since the first draft
+                and drew nothing, because the only array it read was
+                `chapters` — which the type itself documents as "currently
+                never supplied" and which no call site has ever supplied. Two
+                hundred lines away sat the array it wanted: the episode's own
+                references, twelve at the median, each with a second on it.
+                A publisher's own chapters still win where they exist, for the
+                reason they always did; below that, these are the places this
+                episode goes. Quiet marks in the fitted accent, not labels —
+                the sheet's passage list is where they are named. */}
+            {of > 0 && scrubTicks.map((tick) => (
               <span
                 aria-hidden="true"
                 className="podcast-rail-tick"
-                key={entry.start}
-                style={{ left: `${Math.min(100, (entry.start / of) * 100)}%` }}
+                key={tick}
+                style={{ left: `${Math.min(100, (tick / of) * 100)}%` }}
               />
             ))}
             <input
@@ -1854,6 +2645,56 @@ export function PodcastPlayer({
               value={Math.floor(position)}
             />
           </div>
+        </section>
+      )}
+
+      {/* ── Where the listening was left ─────────────────────────────────────
+          The player has kept the reader's place in the TEXT across a restart
+          since the beginning — `lastRead`, written on every chapter turn — and
+          kept nothing at all about the voice. Forty minutes into a two-hour
+          episode, quit, and the way back was to remember which episode and
+          scrub for it.
+
+          It is an OFFER and not a resumption. Nothing is fetched to draw this:
+          the title, the publisher and the second came out of the settings
+          store, and the publisher's server is not touched until a reader
+          presses something — which is the boundary the whole surface is built
+          around, and it would be an odd place to break it, restoring audio
+          nobody had asked for on a launch nobody had pressed play on.
+
+          Generic treatment on purpose: the name in type, no plate, no
+          publisher colour. This is the app remembering something, not the
+          publisher announcing themselves on a launch screen. */}
+      {!episode && heard && (
+        <section
+          aria-label="Where you were listening"
+          className="podcast-resume"
+          data-floating-layer="player"
+        >
+          <button
+            className="podcast-resume-take"
+            onClick={resumePodcastHeard}
+            type="button"
+          >
+            <TransportPlayMark className="podcast-resume-mark" paused />
+            <span className="podcast-resume-lines">
+              <span className="podcast-resume-title">{heard.episode.title}</span>
+              <span className="podcast-resume-meta">
+                {`Resume · ${formatClock(heard.positionSeconds)}`}
+                <span className="podcast-resume-source">{heard.episode.sourceName}</span>
+              </span>
+            </span>
+          </button>
+          <button
+            aria-label="Forget where I was listening"
+            className="podcast-mast-icon podcast-resume-forget"
+            onClick={forgetPodcastHeard}
+            type="button"
+          >
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+              <path d="M6.6 6.6 17.4 17.4M17.4 6.6 6.6 17.4" stroke="currentColor" />
+            </svg>
+          </button>
         </section>
       )}
     </>
