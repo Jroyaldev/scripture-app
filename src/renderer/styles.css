@@ -386,6 +386,40 @@
      and the panel's closing fade — so the reservation is one number rather
      than a set of copies that drift apart. */
   --podcast-dock-h: 138px;
+
+  /* ── The study column's two residents ─────────────────────────────────────
+     Added 2026-07-30 with the column swap. The Living Margin and the player
+     are two residents of one column and exactly one of them is unfolded; these
+     three numbers are what they share, so neither can hold a geometry the
+     other disagrees with. See styles/player.css, "The column swap".
+
+     --player-column-top is the column's own top edge, and it is the one value
+     here that is a MEASUREMENT rather than a composition: `.scripture-body`
+     begins at --frame-top exactly (measured 54px against a 54px token in the
+     running app, at 1512 × 884), and the tour asserts it rather than trusting
+     this comment. It is written as the token it equals so that a frame move
+     carries the column with it.
+
+     --margin-fold-h is the folded tab: one line in the app's kicker voice and
+     an arrow. It is the height of the tab, not a minimum — a folded resident
+     that could grow is a column that could move under the other one.
+
+     --player-column-w is what the column becomes while the player owns it,
+     and it is a MEASURE decision. The transcript is reading-face body copy and
+     the app gives its own page 60–75 characters; a 380px column gives it 46.
+     The ceiling is set by what the reading page can spare: the page's text is
+     max-width bound, so widening this only spends the stage's own side air
+     until that air runs out, and at 520 there is still some left at 1512 with
+     the rail expanded. The floor is the margin's own width, so on a narrow
+     window nothing moves at all. */
+  --player-column-top: var(--frame-top);
+  --margin-fold-h: 36px;
+  --player-column-w: clamp(var(--margin-width), 32vw, 520px);
+  /* The compact band has no side column to take, so the open player takes a
+     share of the height instead — and the folded margin above it reserves the
+     same number, which is why it is a token and not two literals. */
+  --player-compact-h: min(68vh, 620px);
+
   --reading-max-width: 660px;
   --verse-gutter: 32px;
   /* The margin's tab row sticks below its header. One value drives the
@@ -5790,6 +5824,161 @@ html, body, #root {
      every pixel of the surplus was scrollable emptiness under the last card —
      the list appearing to continue past where it ends. */
   padding-bottom: var(--sp-xl);
+}
+
+/* ── The folded resident ────────────────────────────────────────────────────
+   Added 2026-07-30 with the column swap. The player and this panel are two
+   residents of one column and exactly one of them is unfolded; when the player
+   takes the column this folds to a single line naming what it still follows,
+   and it is the inverse of the folded player at the other end of the column —
+   a tab at the top with its arrow pointing down, a dock at the bottom with its
+   arrow pointing up.
+
+   FOLDED IS NOT CLOSED. The panel is not unmounted and not display:none'd: it
+   keeps its React state, its scroll position and its place in the column, and
+   it is `inert` + `visibility: hidden` so that nothing inside it can be
+   reached, read aloud, or seen while it is folded. A margin that had to be
+   rebuilt every time a reader listened to something would make the two
+   residents cost different amounts to visit, and they are supposed to be
+   peers. */
+.living-margin[data-folded="true"] {
+  align-self: flex-start;
+  width: var(--player-column-w);
+  max-width: none;
+  height: var(--margin-fold-h);
+  min-height: var(--margin-fold-h);
+  padding: 0;
+  overflow: hidden;
+}
+
+/* The reservation belongs to the collapsed dock, and a folded margin is never
+   above one: the player that folded it is the player that owns the rest of the
+   column. Without this the tab would hold 148px of empty canvas under itself. */
+.app-shell:has(.podcast-dock) .living-margin[data-folded="true"],
+.app-shell:has(.podcast-resume) .living-margin[data-folded="true"] {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.living-margin[data-folded="true"] .margin-workspace-panel {
+  visibility: hidden;
+}
+
+/* One line, and the arrow that unfolds it. The line is the app's kicker voice
+   — the same face, size and tracking the margin's own section kickers use —
+   because a folded surface should read as a label on a drawer rather than as a
+   heading that lost its section.
+
+   WHAT IT MAY SAY is a contract and not a layout note: the passage it is still
+   following, the state word, and one seal dot when the reader's own notes or
+   marks are on the verses in view. Never a count, never a preview, never a
+   digest of what is behind it. A folded thing that summarises itself is not
+   folded. */
+.margin-fold-tab {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  width: 100%;
+  height: var(--margin-fold-h);
+  padding: 0 var(--sp-lg) 0 var(--sp-xl);
+  border: 0;
+  background: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.margin-fold-tab:hover { background: var(--surface-hover); color: var(--text-primary); }
+
+/* Offset ZERO, not the tab row's -3. Rev 04 §4 bans the inset ring because an
+   inset ring lands on the element's own fill; this button has no fill, and it
+   is full-bleed inside a 36px box that clips — so an outside ring would be cut
+   on all four sides and an inset one would be a debt on a list that only
+   shrinks. On the edge it is, which is neither. */
+.margin-fold-tab:focus-visible {
+  outline: 2px solid var(--accent-seal);
+  outline-offset: 0;
+  border-radius: var(--radius-sm);
+}
+
+.margin-fold-line {
+  overflow: hidden;
+  font: var(--fw-semibold) 0.5625rem/1.2 var(--font-ui);
+  letter-spacing: 0.13em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* The one permitted extra. Seal is authorship everywhere in this app, so a dot
+   in it says "something of yours is on the verses in view" and says it without
+   a number — a count on a folded surface is the summary the fold exists to
+   refuse. */
+.margin-fold-seal {
+  flex: none;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent-seal);
+}
+
+.margin-fold-arrow {
+  flex: none;
+  margin-left: auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (forced-colors: active) {
+  .margin-fold-tab { color: CanvasText; }
+  .margin-fold-tab:hover { background: Highlight; color: HighlightText; }
+  .margin-fold-tab:focus-visible { outline-color: Highlight; }
+  .margin-fold-seal { background: Highlight; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .margin-fold-tab { transition: none; }
+}
+
+/* Five lenses in a 380px column leave no slack. Measured in the running app:
+   the row's content edge is 1478 and the last tab ends at 1478 exactly, with
+   one-digit counts on Notes and Connections — so a reader with twelve notes
+   pushes Words past the panel's edge. The GAP yields, and it yields only when
+   there are five, because at four the 18 is the drawing's own interval. */
+.margin-tabs:has(> :nth-child(5)) {
+  gap: 14px;
+}
+
+/* ── The compact band, where the column is a band ───────────────────────────
+   Below 979 the margin is not a column beside the page but a bounded pane
+   along the bottom of it, and the player spans the same width underneath. The
+   audit's ⊘ finding was that the two were both trying to hold that band: an
+   already-crushed pane, plus a reservation for a dock whose height had grown,
+   opened a strip of dead canvas between them.
+
+   Exclusivity is the answer here too, and it is the same answer as at 1512.
+   Folded, the margin is one line and the player takes the band; unfolded, the
+   player is a dock and the margin reserves it exactly as before. The two never
+   hold the band at once, so there is nothing to crush and no strip to open. */
+@media (max-width: 979px) {
+  .scripture-body > .living-margin[data-folded="true"] {
+    align-self: auto;
+    flex: 0 0 var(--margin-fold-h);
+    width: 100%;
+    max-height: var(--margin-fold-h);
+    padding: 0;
+  }
+
+  /* The open player's own share of the band, reserved by the resident above it
+     from the same token the player sizes itself from. */
+  .app-shell:has(.podcast-dock[data-expanded="true"]) .scripture-body > .living-margin[data-folded="true"] {
+    margin-bottom: calc(var(--player-compact-h) + var(--pane-gutter));
+  }
+
+  .margin-fold-tab { padding: 0 var(--sp-lg); }
 }
 
 .margin-connection-inspector {
@@ -19892,6 +20081,330 @@ button.lang-phrase-diagram-node:focus-visible,
   .taught-here-footing { color: CanvasText; }
 }
 
+/* ==========================================================================
+   THE RESOURCES ROOM · 2026-07-30
+   --------------------------------------------------------------------------
+   The study panel's fifth lens, and the home for every episode and publisher
+   this chapter has. See components/Resources for what moved here and why.
+
+   THE CARD IS THE WHOLE GRAMMAR. One geometry in two sizes, and a face that
+   carries four things and refuses a fifth: the publisher's identity, the
+   thing's own name, the passage, and how long it runs. The relation word, the
+   timestamp, the evidence quote, the byline, the date and every count are OFF
+   the face — what they carry is order, and order is silent.
+
+   Two sizes, not three. A tile is what most of a chapter is; the full-width
+   card is what the few genuine treatments are, so the weight of a chapter is
+   visible before a word of it is read. A third size would be a chart.
+
+   NEVER A RIBBON, NEVER A CAROUSEL. Nothing here scrolls sideways, nothing
+   auto-advances, and the room's own scroll is the panel's. A chapter with 922
+   moments in it draws 922 cards — `content-visibility` keeps the ones nobody
+   has reached cheap — because the alternative is a drawer, and a drawer in
+   front of 97% of the answer is what this room replaced.
+   ========================================================================== */
+
+.resources {
+  color: var(--text-primary);
+}
+
+/* The shelf sits above the room and narrows it. Its chips are the publisher
+   imprints the merge deleted — same object, same colours, same approved marks
+   — pressed as a filter rather than opened as a drawer. */
+.resource-shelf {
+  padding: 2px 0 var(--sp-md);
+}
+
+/* THE MARK'S HEIGHT, which the imprint never had. The shared mark rule sizes
+   artwork from --player-mark-h, and that token is declared by the dock's plate
+   and by the row's — never by the imprint. So `width: calc(var(--player-mark-h)
+   × ratio)` was invalid on every chip, the artwork collapsed to nothing, and
+   the name behind it is indented off-screen by the same rule: six colour chips
+   with no marks on them. Restored at the chip's own scale — a 30px chip, so a
+   mark of 18 leaves 6 of clear space top and bottom. */
+.resource-shelf .trusted-resource-imprint {
+  --player-mark-h: calc(var(--resource-mark-height) * 0.72);
+  /* A shelf is a row of marks, not a row of sentences. The five sources with
+     no approved artwork set their name in type here, and "40 Minutes in the
+     Old Testament" at full width is a chip that takes the whole shelf and
+     wraps it — so a name yields where a mark does not need to. */
+  max-width: 47%;
+  gap: 6px;
+}
+
+.resource-shelf .trusted-resource-imprint .trusted-resource-source {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The one narrowed to, said in the app's own way: pressed chips carry the seal
+   ring the tab strip carries, rather than a second idea of "chosen". */
+.resource-shelf .trusted-resource-imprint[aria-pressed="true"] {
+  box-shadow: 0 0 0 2px var(--bg-reading), 0 0 0 3.5px var(--resource-source);
+}
+
+.resource-room {
+  margin-top: var(--sp-sm);
+}
+
+.resource-grid {
+  display: grid;
+  /* Two columns at the margin's own width, and it stays two: an `auto-fill`
+     grid in a panel that can be 320–420px wide flickers between one column and
+     two as the reader drags the window, and a room that reflows under the
+     hand is not calm. */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.resource-card {
+  display: grid;
+  /* The room can be nine hundred cards long. This is what keeps that honest:
+     the ones outside the viewport are not laid out until they are near it, and
+     the intrinsic size stops the scrollbar from lying while they wait. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 104px;
+}
+
+/* The second size. It is the same card — same face, same four things, same
+   radius — spanning both columns, and it earns that by what the ordering
+   already worked out rather than by carrying an extra word. */
+.resource-card[data-weight="heavy"] {
+  grid-column: 1 / -1;
+  contain-intrinsic-size: auto 92px;
+}
+
+.resource-card-face {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  width: 100%;
+  height: 100%;
+  padding: 8px;
+  border: 1px solid var(--border-subtle);
+  /* Canon: 0.22 × the shorter dimension, rounded even, capped at 8 — a ~104px
+     tile takes the cap, and the plate inside it nests at 4. */
+  border-radius: var(--radius-md);
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.resource-card-face:hover {
+  border-color: var(--border-medium);
+  background: var(--surface-hover);
+}
+
+.resource-card-face:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* The one in the dock is named on the card that started it, so a reader
+   scanning the room can see where the voice came from. The mark is the app's
+   own seal edge, not a second fill. */
+.resource-card-face[data-running="true"] {
+  border-color: var(--border-medium);
+  background: var(--surface-hover);
+  box-shadow: inset 2px 0 0 var(--player-accent);
+}
+
+.resource-card-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+/* The transport's own face, at the room's scale. The card's press IS the
+   play, so this is a mark rather than a second control inside a control. */
+.resource-card-play {
+  --transport-size: 20px;
+  flex: none;
+}
+
+.resource-card-face:hover .resource-card-play { filter: brightness(1.06); }
+.resource-card-face:active .resource-card-play { transform: scale(0.94); }
+
+/* Something to read rather than hear. One glyph is the whole difference, and
+   it is the difference a press actually makes — everything else on the two
+   faces is identical, because they are the same kind of thing. */
+.resource-card-out {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 50%;
+  color: var(--text-tertiary);
+}
+
+/* The plate takes what is left of the head, because on a tile the publisher IS
+   the identity and there is nothing else on that line competing for it. The
+   row's own 42% cap belongs to a row with a title and an extent beside it. */
+.resource-card .resource-card-plate[data-source] {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.resource-card-plate .taught-here-mark {
+  font-size: 0.625rem;
+}
+
+/* The thing's own name. Two lines, because a title is long by nature and its
+   first forty characters identify it; `pretty` rather than `balance` because a
+   two-line clamp has no ragged block to balance. */
+.resource-card-title {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--text-primary);
+  font: var(--fw-medium) 0.75rem/1.4 var(--font-reading);
+  letter-spacing: -0.004em;
+  text-wrap: pretty;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.resource-card[data-weight="heavy"] .resource-card-title {
+  font-size: 0.8125rem;
+  -webkit-line-clamp: 2;
+}
+
+.resource-card-foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* The passage, in the reading face: it is the answer rather than the filing.
+   A reader on Romans 8:1 who sees 8:1–4 knows it is theirs without a band
+   heading saying so — which is the whole of what the bands were for. */
+.resource-card-ref {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font: var(--fw-medium) 0.6875rem/1.5 var(--font-reading);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Numeral face, so a column of them aligns and eleven minutes is visibly more
+   than forty seconds without anyone reading a word. */
+.resource-card-extent {
+  flex: none;
+  color: var(--text-tertiary);
+  font: 0.625rem/1.5 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ── The spine ─────────────────────────────────────────────────────────────
+   One of three discovery treatments (see components/Resources): the chapter
+   itself as the order, with cards hanging off the verse they speak to. The
+   rail is a hairline and the number is a running head — not a band, not a
+   drawer, and nothing is collapsed behind it. */
+.resource-room[data-discovery="spine"] {
+  display: grid;
+  gap: var(--sp-md);
+}
+
+.resource-stop {
+  position: relative;
+  padding-left: 28px;
+}
+
+.resource-stop::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  bottom: calc(-1 * var(--sp-md));
+  left: 9px;
+  width: 1px;
+  background: var(--border-subtle);
+}
+
+.resource-stop:last-child::before { bottom: 0; }
+
+.resource-stop-mark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: var(--text-tertiary);
+  font: var(--fw-medium) 0.625rem/1.6 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── The digest, and its door ──────────────────────────────────────────────
+   Overview's few best voices, on the room's own card, and one quiet way
+   through. The door names the room rather than a number: a count here is the
+   inventory language the room exists to stop. */
+.resources-digest {
+  margin-top: 27px;
+  border-top: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.resources-door {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--sp-sm);
+  padding: 5px 0;
+  border: 0;
+  background: none;
+  color: var(--text-tertiary);
+  font: var(--fw-medium) 0.6875rem/1.4 var(--font-ui);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.resources-door:hover { color: var(--text-primary); }
+
+.resources-door:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  border-radius: var(--radius-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .resource-card-face,
+  .resources-door { transition: none; }
+  .resource-card-face:active .resource-card-play { transform: none; }
+}
+
+@media (forced-colors: active) {
+  .resource-card-face {
+    border-color: CanvasText;
+  }
+  .resource-card-face:hover { background: Highlight; color: HighlightText; }
+  .resource-card-face:focus-visible { outline-color: Highlight; }
+  .resource-card-face[data-running="true"] {
+    background: Canvas;
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+    box-shadow: none;
+  }
+  .resource-card-title,
+  .resource-card-ref,
+  .resource-card-extent,
+  .resource-stop-mark,
+  .resources-door { color: CanvasText; }
+  .resource-card-out { border-color: CanvasText; color: CanvasText; }
+  .resource-stop::before { background: CanvasText; }
+  /* The plate keeps the publisher's colour for the same reason the dock's
+     does — the marks are approved reverses and the artwork may not be
+     recoloured — and it is the only opt-out in this room. */
+  .resource-card-plate { forced-color-adjust: none; }
+}
+
 .trusted-resources {
   margin-top: 27px;
   border-top: 1px solid var(--border-subtle);
@@ -19996,6 +20509,13 @@ button.lang-phrase-diagram-node:focus-visible,
    is approved to: inside the plate. */
 .taught-here-row,
 .taught-here-walk,
+/* And the room's cards, added with it 2026-07-30. Same argument, one room
+   later: a card carries the transport's own face, so it needs --player-accent
+   — and it must NOT take the publisher's colour for that face, because a grid
+   of tiles from eight publishers each glowing a different colour is the colour
+   chart this shelf was built to avoid. The publisher survives on the card
+   where it is approved to: inside the plate. */
+.resource-card-face,
 .podcast-resume {
   --resource-source: var(--study-gold);
   /* A surface colour and a 3px rail are not the same job. Most brands survive

@@ -234,6 +234,120 @@ export function usePodcastNowPlaying(): PodcastNowPlaying {
   return useSyncExternalStore(subscribeNowPlaying, () => nowPlaying);
 }
 
+/* ── Two residents of one column ────────────────────────────────────────────
+   THE COLUMN SWAP · decided 2026-07-30, and it supersedes Build 2's sheet
+   geometry (see the dated note on .podcast-sheet in styles/player.css).
+
+   Build 2's answer was an overlay: the sheet opened upward OVER the study
+   panel, out of the panel's own reservation, so that "nothing outside this
+   surface moves when it opens". That was honest about layout and dishonest
+   about attention — an open sheet covered most of the margin, so reading the
+   transcript and reading the passage list became sequential where they had
+   been simultaneous (the regression audit's R7), and two surfaces claimed one
+   column at once.
+
+   The column has two residents and exactly one of them is unfolded. Open the
+   player and the Living Margin folds to a single line naming what it still
+   follows; unfold the margin and the player folds back to its corner. Neither
+   is ever destroyed, neither is ever covered, and the gesture that switches
+   them is the same in both directions: the arrow on the folded one.
+
+   The state lives here rather than in the dock's own component for the same
+   reason the transport does — the margin has to read it, and the margin is not
+   inside this tree. One boolean, one truth, no way for the two residents to
+   both believe they are open. */
+let playerExpanded = false;
+const expandedWatchers = new Set<() => void>();
+
+function announceExpanded(next: boolean): void {
+  if (next === playerExpanded) return;
+  playerExpanded = next;
+  for (const watcher of expandedWatchers) watcher();
+}
+
+/** True while the player owns the column. The margin reads this to fold. */
+export function usePodcastExpanded(): boolean {
+  return useSyncExternalStore(
+    (watcher) => { expandedWatchers.add(watcher); return () => { expandedWatchers.delete(watcher); }; },
+    () => playerExpanded,
+  );
+}
+
+export function setPodcastExpanded(next: boolean): void {
+  announceExpanded(next);
+}
+
+/**
+ * Give the column back to the margin.
+ *
+ * Called by the folded margin's own tab — the arrow on the folded resident is
+ * the switch gesture, and there is exactly one of them per direction.
+ */
+export function foldPodcastPlayer(): void {
+  announceExpanded(false);
+}
+
+/* ── The gain ramp ──────────────────────────────────────────────────────────
+   No hard cuts. A file stopped at a waveform's midpoint clicks, and the click
+   is louder than the voice it interrupts; the same is true of a seek, of a
+   walk stepping from one treatment to the next, and of the first frame of a
+   file that starts at full level.
+
+   ~120ms, one step under --transport-quick, because this is the audio's own
+   tier: the transport tokens time what a reader SEES, and an ear resolves a
+   fade faster than an eye resolves a crossfade. Short enough to be inaudible
+   as a fade and long enough to have no edge in it.
+
+   It is `element.volume` on a rAF rather than a WebAudio GainNode, and that is
+   a decision rather than a convenience: a MediaElementAudioSourceNode over a
+   cross-origin file with no CORS headers is silenced by the engine, and these
+   files come from publishers' own servers under a media grant that says
+   nothing about CORS. A gain graph here would have muted the app. */
+const EASE_MS = 120;
+let easeFrame = 0;
+
+function endEase(): void {
+  if (easeFrame) cancelAnimationFrame(easeFrame);
+  easeFrame = 0;
+}
+
+/**
+ * Ride the level to `to`, then do `then`.
+ *
+ * Every caller is a transition the reader asked for, so the ramp never decides
+ * anything: if there is no element the errand still runs, immediately.
+ */
+function ease(to: number, then?: () => void): void {
+  const element = transport;
+  endEase();
+  if (!element) { then?.(); return; }
+  const from = element.volume;
+  /* Silence has no edge to soften. A paused element — or one that has not been
+     given a file yet — takes the level immediately and the errand runs in the
+     same tick, so nothing a reader pressed waits on a fade of nothing. */
+  if (element.paused || Math.abs(to - from) < 0.01) { element.volume = to; then?.(); return; }
+  const started = performance.now();
+  const step = (): void => {
+    const through = Math.min(1, (performance.now() - started) / EASE_MS);
+    /* Equal-power rather than linear: the ear hears loudness, not amplitude,
+       and a linear ramp of the same length has an audible dip in the middle. */
+    element.volume = Math.max(0, Math.min(1, from + (to - from) * Math.sin((through * Math.PI) / 2)));
+    if (through >= 1) { easeFrame = 0; then?.(); return; }
+    easeFrame = requestAnimationFrame(step);
+  };
+  easeFrame = requestAnimationFrame(step);
+}
+
+/** Take the level down for a seek and bring it back. One click's worth. */
+function easeThrough(move: () => void): void {
+  const element = transport;
+  if (!element) { move(); return; }
+  endEase();
+  element.volume = 0;
+  move();
+  ease(1);
+}
+
 /* ── The walk ───────────────────────────────────────────────────────────────
    A declared, finite, visible list of this chapter's own treatments, played in
    an order the reader was told before they pressed anything.
@@ -290,13 +404,34 @@ export function usePodcastWalk(): PodcastWalk | null {
  */
 let walking = false;
 
+/**
+ * Who changed the episode last — the reader, or the machine on their behalf.
+ *
+ * Held on the module rather than on the episode because it is a fact about the
+ * PRESS and not about the thing pressed: the same episode arriving from a card
+ * and from a walk's own advance is the same object and two different events.
+ */
+let launchedBy: "reader" | "walk" = "reader";
+
+/** Read once per episode change by the dock's reset effect. */
+export function podcastLaunchedBy(): "reader" | "walk" {
+  return launchedBy;
+}
+
 function enterStop(index: number): void {
   const held = walk;
   const stop = held?.stops[index];
   if (!held || !stop) return;
-  announceWalk({ ...held, at: index });
-  walking = true;
-  try { playPodcastEpisode(stop.episode); } finally { walking = false; }
+  /* A treatment ending and the next one beginning is the one boundary on this
+     surface where two different voices meet, so it is the one that most needs
+     the ramp: the file is cut mid-word by construction — the span ends where
+     the treatment ends, not where the speaker stops — and a hard cut there is
+     a click between two people talking. Down, then over, then up. */
+  ease(0, () => {
+    announceWalk({ ...held, at: index });
+    walking = true;
+    try { playPodcastEpisode(stop.episode); } finally { walking = false; }
+  });
 }
 
 /** Begin a declared walk. The reader has already been shown its whole extent. */
@@ -433,6 +568,17 @@ export function playPodcastEpisode(episode: PodcastEpisode): void {
      something else — the reader would have to find and press stop to escape a
      queue they had already left. */
   if (!walking && walk) announceWalk(null);
+  /* WHO CHANGED THE EPISODE. Read by the dock's reset effect, which throws
+     away the lens over an episode when a new one arrives — the query, the
+     mode, the view, and the open sheet itself.
+
+     That is right for a press: a reader who chose a different episode did not
+     bring their search with them. It is wrong for the walk, which changes the
+     episode without the reader touching anything: a walk advancing at the end
+     of a treatment used to wipe a search mid-read and SHUT the sheet under a
+     reader who was in it — silently, with no action of theirs to associate the
+     loss with. Machine-initiated launches leave the reader's lens alone. */
+  launchedBy = walking ? "walk" : "reader";
   if (nowPlaying.episode?.id === episode.id) {
     if (episode.startAt == null) {
       togglePodcast();
@@ -448,9 +594,16 @@ export function playPodcastEpisode(episode: PodcastEpisode): void {
   pendingSeek = episode.startAt != null && episode.startAt > 0 ? episode.startAt : null;
   element.src = episode.audioUrl;
   applyPodcastRate();
+  /* The first frame of a new file arrives at whatever level the last one was
+     left at, which after a walk's fade-out is zero — so the level is restored
+     UNDER the silence and ridden back up once the file is running. */
+  element.volume = 0;
   announceElapsed(episode.startAt ?? 0, 0);
   announceNowPlaying({ episode, status: "reaching" });
-  void element.play().catch(() => announceNowPlaying({ episode, status: "failed" }));
+  void element.play().then(() => ease(1)).catch(() => {
+    element.volume = 1;
+    announceNowPlaying({ episode, status: "failed" });
+  });
 }
 
 /** Start the file, if it is not already running. */
@@ -462,19 +615,40 @@ export function resumePodcast(): void {
   // against a finished element and leaves the reader pressing a dead button.
   if (element.ended && pendingSeek == null) element.currentTime = 0;
   announceNowPlaying({ episode, status: "reaching" });
-  void element.play().catch(() => announceNowPlaying({ episode, status: "failed" }));
+  /* Up from silence rather than in at full level: a voice that arrives with an
+     edge on it reads as a fault in the file. */
+  element.volume = 0;
+  void element.play().then(() => ease(1)).catch(() => {
+    element.volume = 1;
+    announceNowPlaying({ episode, status: "failed" });
+  });
 }
 
 /** Stop the file where it is, without letting go of it. */
 export function pausePodcast(): void {
-  if (transport && !transport.paused) transport.pause();
+  const element = transport;
+  if (!element || element.paused) return;
+  /* The pause lands after the ramp, not before it: pausing first and fading
+     afterwards is fading silence. The element's own `pause` event is what
+     writes the resume position, so the position kept is the one the reader
+     heard last rather than the one 120ms earlier.
+
+     The DOCK says paused now, though. A ramp is 120ms of audio and the glyph
+     is the answer to a press — waiting for the element's event would leave the
+     loudest control on the surface showing "playing" for a tenth of a second
+     after the reader stopped it, which reads as a control that missed. If a
+     resume arrives inside the ramp it cancels this errand outright (see
+     `endEase`), so the element never pauses and the state announced with it
+     wins in the ordinary way. */
+  if (nowPlaying.episode) announceNowPlaying({ episode: nowPlaying.episode, status: "paused" });
+  ease(0, () => { element.pause(); element.volume = 1; });
 }
 
 export function togglePodcast(): void {
   const element = transport;
   if (!element || !nowPlaying.episode) return;
   if (!element.paused) {
-    element.pause();
+    pausePodcast();
     return;
   }
   resumePodcast();
@@ -497,7 +671,11 @@ export function seekPodcast(seconds: number): PodcastSeek {
   }
   pendingSeek = null;
   const clamped = Math.min(target, element.duration);
-  element.currentTime = clamped;
+  /* A seek lands the playhead in the middle of a waveform, which is a
+     discontinuity in the signal — the click every player that does not do this
+     has. The level drops for the assignment and rides back up behind the first
+     syllable of the new place. */
+  easeThrough(() => { element.currentTime = clamped; });
   announceElapsed(clamped, element.duration);
   return "moved";
 }
@@ -539,11 +717,23 @@ export function setPodcastRate(rate: number): void {
 export function stopPodcast(): void {
   pendingSeek = null;
   if (walk) announceWalk(null);
-  if (transport) {
-    transport.pause();
-    transport.removeAttribute("src");
-    transport.load();
+  const element = transport;
+  if (element) {
+    /* Down before the file is let go. `removeAttribute("src")` + `load()` on a
+       running element is the hardest cut on this surface — the audio stops
+       between one sample and the next — and it is the one a reader hears most,
+       because closing the dock is a deliberate act they are listening to the
+       result of. */
+    ease(0, () => {
+      element.pause();
+      element.removeAttribute("src");
+      element.load();
+      element.volume = 1;
+    });
   }
+  /* The column comes back to the margin with the dock. Nothing is playing, so
+     there is no second resident to be unfolded. */
+  announceExpanded(false);
   forgetHeard();
   announceElapsed(0, 0);
   announceNowPlaying({ episode: null, status: "idle" });
@@ -958,8 +1148,14 @@ export function PodcastPlayer({
   /* Open is the reader asking for the whole episode rather than the corner of
      it. It is deliberately not remembered across episodes: pressing play on a
      new card should give back the corner, not whatever the last one was left
-     at. */
-  const [expanded, setExpanded] = useState(false);
+     at.
+
+     It lives on the module now rather than in this component — see the column
+     swap above. Open means the player owns the study column, which is a fact
+     the Living Margin has to know in order to fold, and the margin is not
+     inside this tree. */
+  const expanded = usePodcastExpanded();
+  const setExpanded = setPodcastExpanded;
   /* Read by the ResizeObserver below, which is not a render and cannot close
      over state. */
   const expandedRef = useRef(false);
@@ -1145,9 +1341,22 @@ export function PodcastPlayer({
      passage list live, so a moment launch opens it.
 
      No focus moves either way. Nothing in the dock was pressed. */
+  /* …and with one exception to the exception, dated 2026-07-30.
+
+     All of this is written about a reader who PRESSED something. The walk
+     changes the episode with nobody pressing anything — that is what a walk
+     is — and running the reset for it took a reader's search away mid-read,
+     put the view back, re-engaged following, and SHUT the sheet they were
+     reading in, at the end of a treatment, with no action of theirs to
+     associate any of it with. It is the one path on this surface where the
+     loss is silent, which makes it the worst one.
+
+     So a machine-initiated launch leaves the lens exactly as the reader left
+     it. The episode under it changes; what they were doing to it does not. */
   const episodeId = episode?.id;
   const launchedAtMoment = episode?.moment != null;
   useEffect(() => {
+    if (podcastLaunchedBy() === "walk") return;
     setExpanded(launchedAtMoment);
     setPeeking(false);
     setQuery("");
@@ -2121,9 +2330,18 @@ export function PodcastPlayer({
                 {passageLabel(passage, bookNames)}
               </button>
             )}
+            {/* The switch gesture, one per direction. Folded, this is the
+                arrow on the closed resident and it takes the study column —
+                the Living Margin folds to its own one-line tab as this opens,
+                because the column has two residents and exactly one of them is
+                unfolded. Open, it is the compact control on the open one, and
+                it hands the column back. The margin's tab is the mirror of
+                this button and calls the same machine. */}
             <button
               aria-expanded={expanded}
-              aria-label={expanded ? `Collapse the player` : `Show the whole of ${episode.title}`}
+              aria-label={expanded
+                ? "Fold the player — gives the column back to Study"
+                : `Show the whole of ${episode.title} — takes the study column`}
               className="podcast-mast-icon"
               onClick={toggleSheet}
               ref={toggleRef}
@@ -2245,11 +2463,19 @@ export function PodcastPlayer({
                     every row, because it is a fact about the publisher and not
                     about this episode, and because a legal notice repeated
                     twenty-five times is chrome. */}
+                {/* RESTATED 2026-07-30 in the reader's language. The
+                    public-feed form used to end "We have not asked them yet"
+                    — a fact about our outreach backlog, printed on a reading
+                    surface. The reader is owed the DISTINCTION, which is what
+                    the permissions doc requires and what this still carries:
+                    one form names a permission, the other names a public feed,
+                    and a reader can tell which of the two they are looking at
+                    without being told what is on our to-do list. */}
                 <p className="podcast-episode-footing" data-basis={footing ?? undefined}>
                   {footing === "publisher-granted"
-                    ? `Transcript machine-read from the published audio, with ${episode.sourceName}'s permission.`
+                    ? `Transcript machine-read from ${episode.sourceName}'s audio, with their permission.`
                     : footing === "public-feed"
-                      ? `Transcript machine-read from ${episode.sourceName}'s public feed. We have not asked them yet.`
+                      ? `Transcript machine-read from ${episode.sourceName}'s public feed.`
                       : "Transcript machine-read from the published audio."}
                 </p>
               </div>
@@ -2486,7 +2712,7 @@ export function PodcastPlayer({
                         className="podcast-transcript-auto"
                         data-basis={footing ?? undefined}
                         title={footing === "public-feed"
-                          ? `Automatically transcribed by Pericope from ${episode.sourceName}'s public feed — not yet asked`
+                          ? `Automatically transcribed by Pericope from ${episode.sourceName}'s public feed`
                           : "Automatically transcribed by Pericope"}
                       >
                         auto
@@ -2495,43 +2721,32 @@ export function PodcastPlayer({
                   </div>
 
                   <div className="podcast-transcript-stage">
-                    {/* Floats over the text rather than sitting in the header:
-                        it is an answer to "I have scrolled away", so it belongs
-                        where the scrolling happened and should not hold a row
-                        of chrome open for the whole time it is irrelevant.
+                    {/* IN ITS OWN LANE, since 2026-07-30. It floated over the
+                        list — the argument being that it answers "I have
+                        scrolled away", so it belongs where the scrolling
+                        happened and should not hold a row of chrome open for
+                        the whole time it is irrelevant.
 
-                        Before the list in the document though it is drawn over
-                        it — its position is absolute either way, and an offer a
-                        keyboard reader can only reach by tabbing through two
-                        thousand lines is not an offer. It stands during a
-                        search too: `!searching` read as restraint and took the
-                        only follow-state control off the surface at the exact
+                        The first half of that is still true and the second half
+                        was paid for by the words: a dark pill drawn over the
+                        transcript covers about half of whichever line it lands
+                        on, and it lands on a different line every time. The
+                        list's bottom padding had already been widened to 44px
+                        so the LAST line could be pressed, which is the same
+                        defect admitted one row at a time. So the lane is real
+                        and always there — nothing moves when the pill arrives,
+                        because the space was never the pill's to take — and the
+                        list ends where the lane begins.
+
+                        AFTER the list in the document now, which the lane also
+                        buys. It used to come first, because with 2,280 tab
+                        stops in the list an offer below them was unreachable;
+                        the list holds one roving stop, so the pill is one Tab
+                        past the words and the reading order finally matches
+                        what is on screen. It stands during a search too:
+                        `!searching` read as restraint and took the only
+                        follow-state control off the surface at the exact
                         moment the reader was furthest from the playhead. */}
-                    {/* The way back to now, and — since 2026-07-30 — where
-                        "away" actually is. A reader who has scrolled in a 2h18m
-                        transcript was told nothing about their own position:
-                        the clock in the corner is the playhead's, which is the
-                        thing they left, and so is the rail. So the pill carries
-                        the distance it would travel. It is not a second
-                        scrubber; it is one number on the control that already
-                        means "go back", in the clock's own face. */}
-                    {!following && (
-                      <button
-                        aria-label={whereGap == null
-                          ? "Follow the episode again"
-                          : `Follow the episode again — you are ${whereGap} from the voice`}
-                        className="podcast-transcript-follow"
-                        onClick={followAgain}
-                        type="button"
-                      >
-                        <svg aria-hidden="true" viewBox="0 0 24 24">
-                          <path d="M12 5.1v12.3M6.9 12.6 12 17.7l5.1-5.1" />
-                        </svg>
-                        Follow
-                        {whereGap && <span className="podcast-transcript-where">{whereGap}</span>}
-                      </button>
-                    )}
-
                     <ul
                       aria-label="Transcript"
                       className="podcast-transcript"
@@ -2544,6 +2759,33 @@ export function PodcastPlayer({
                     >
                       {renderedLines}
                     </ul>
+
+                    {/* The way back to now, and — since 2026-07-30 — where
+                        "away" actually is. A reader who has scrolled in a 2h18m
+                        transcript was told nothing about their own position:
+                        the clock in the corner is the playhead's, which is the
+                        thing they left, and so is the rail. So the pill carries
+                        the distance it would travel. It is not a second
+                        scrubber; it is one number on the control that already
+                        means "go back", in the clock's own face. */}
+                    <div className="podcast-transcript-lane">
+                      {!following && (
+                        <button
+                          aria-label={whereGap == null
+                            ? "Follow the episode again"
+                            : `Follow the episode again — you are ${whereGap} from the voice`}
+                          className="podcast-transcript-follow"
+                          onClick={followAgain}
+                          type="button"
+                        >
+                          <svg aria-hidden="true" viewBox="0 0 24 24">
+                            <path d="M12 5.1v12.3M6.9 12.6 12 17.7l5.1-5.1" />
+                          </svg>
+                          Follow
+                          {whereGap && <span className="podcast-transcript-where">{whereGap}</span>}
+                        </button>
+                      )}
+                    </div>
 
                     {needle.length > 0 && matches === 0 && (
                       <p className="podcast-transcript-empty">No line says that.</p>
@@ -2615,19 +2857,28 @@ export function PodcastPlayer({
                    screen does; the sheet already has. Dated 2026-07-30. */
                 null
               ) : momentClaim ? (
-                /* Shut, and launched from a moment: the corner leads with what
-                   KIND of moment it was, and keeps the episode's name.
+                /* Shut, and launched from a moment: the corner names the thing
+                   that is talking, and then says which of the four claims it
+                   is making.
 
-                   The passage is on the mast's own line one row up, so
-                   repeating it here would spend the corner's only line saying
-                   "30" twice — which is what the first draft did. What a
-                   reader cannot recover from anywhere else once the sheet is
-                   shut is which of the four claims this is: an episode working
-                   through Romans 8 and one that mentions it in passing are the
-                   same title, the same publisher and the same clock. */
+                   RESTATED 2026-07-30 — the two ranks are the other way round
+                   now. The argument for carrying the relation at all is sound
+                   and unchanged: which of the four claims this is cannot be
+                   recovered from anywhere else once the sheet is shut, because
+                   an episode working through Romans 8 and one that mentions it
+                   in passing are the same title, the same publisher and the
+                   same clock. The execution inverted it. `relationSaid()` took
+                   semibold serif at full ink and LED the line, while the
+                   episode's name — the only string that identifies the thing —
+                   was demoted to the secondary ramp and clipped, so the row
+                   whose whole job is to say what is playing read "worked
+                   through Naked Bible 479: 1 S…". A relation is a qualifier
+                   and had been given the weight of a subject. The title leads,
+                   at full ink, and the qualifier sits after it in the small UI
+                   face. */
                 <p className="podcast-dock-now" title={episode.title}>
-                  <span className="podcast-dock-now-ref">{relationSaid(momentClaim.relation)}</span>
                   <span className="podcast-dock-now-title">{episode.title}</span>
+                  <span className="podcast-dock-now-said">{relationSaid(momentClaim.relation)}</span>
                 </p>
               ) : (
                 <p className="podcast-dock-title" title={episode.title}>{episode.title}</p>
@@ -2646,8 +2897,33 @@ export function PodcastPlayer({
                    repeating it here was what pushed the sentence off the end
                    of its own line. The QA tour has asserted this fit since it
                    was written and never once reached the assertion. */
+                /* The way out, put back 2026-07-30. The sentence above has
+                   always been written around one — "the way out is the link
+                   that was always beside play" — and the link stopped being
+                   beside play two builds ago: the mast's third glyph became a
+                   sentence inside the sheet, and the sheet is shut in the one
+                   state that needs it. So the refusal states the failure and
+                   carries the route in the same breath, at the size of the
+                   clock it replaces. It is the publisher's own page, which is
+                   where the episode is if it is anywhere.
+
+                   Four letters and an arrow, not "Open at Naked Bible
+                   Podcast": the sentence beside it already wants 223px of a
+                   348px line, the publisher is named on the mast one row up,
+                   and the whole destination is in the accessible name, which
+                   is where a screen reader wants it anyway. Same chip idiom as
+                   `clear` and `leave`, and the row keeps the one height all
+                   three of its forms share. */
                 <p className="podcast-dock-refusal">
-                  Did not arrive. This needed the network.
+                  <span className="podcast-dock-refusal-said">Did not arrive. This needed the network.</span>
+                  <button
+                    aria-label={`Open ${episode.title} at ${episode.sourceName} — opens the official page`}
+                    className="podcast-dock-refusal-out"
+                    onClick={() => void openOfficial()}
+                    type="button"
+                  >
+                    open <span aria-hidden="true">↗</span>
+                  </button>
                 </p>
               ) : reaching ? (
                 /* The third form of this one row, added 2026-07-30. Reaching
@@ -2727,7 +3003,16 @@ export function PodcastPlayer({
               onPointerUp={commitScrub}
               step={1}
               type="range"
-              value={Math.floor(position)}
+              /* Dated 2026-07-30. This was a bare `Math.floor(position)`, and
+                 while the file is still loading `max` is the `Math.max(1, …)`
+                 above — so a resume at 6:19 handed a value of 379 to a range
+                 whose maximum was 1, and the engine clamped it to the end.
+                 Every resumed episode drew a FINISHED scrubber, thumb hard
+                 against the right edge, for the whole time it was reaching:
+                 the one moment the reader is being told to wait, told in the
+                 same frame that there is nothing left to hear. With no
+                 duration there is no position to draw, so it draws none. */
+              value={of > 0 ? Math.floor(position) : 0}
             />
           </div>
         </section>

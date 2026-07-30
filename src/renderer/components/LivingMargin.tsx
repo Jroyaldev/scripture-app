@@ -30,11 +30,7 @@ import type {
   ConnectionPaintProjection,
 } from "../utils/connectionPaint.js";
 import { safeCall } from "../utils/safeCall.js";
-import {
-  ResourceKindIcon,
-  ResourceLibraryMatrix,
-  type ResourceLibraryCatalogue,
-} from "./ResourceLibraryMatrix.js";
+import type { ResourceLibraryCatalogue } from "./ResourceLibraryMatrix.js";
 import {
   laurelInk,
   laurelMarkLabel,
@@ -48,9 +44,9 @@ import { passageTabOpenIntent } from "../utils/passageTabIntent.js";
 import { formatCanonicalRef } from "../utils/formatRef.js";
 import { LanguageWordsSection } from "./LanguageWordsSection.js";
 import { SurfaceState } from "./MarkingSurface.js";
-import { TaughtHere } from "./TaughtHere.js";
+import { Resources, ResourcesDigest } from "./Resources.js";
+import { foldPodcastPlayer, usePodcastExpanded } from "./PodcastPlayer.js";
 import { SourcesDisclosure, formatSourceCitation, type CitationSource } from "./SourcesDisclosure.js";
-import { useToast } from "./Toast.js";
 import { parsePeekRef, useVersePeek, type PeekTarget, type VersePeekTriggerProps } from "./VersePeek.js";
 import type { MarginWorkspace } from "../utils/marginWorkspace.js";
 import {
@@ -87,7 +83,7 @@ export function formatMarginSourceCitation(source: MarginCitationSource): string
 
 const MarginSourcesDisclosure = SourcesDisclosure;
 
-type MarginTab = "overview" | "connections" | "passage" | "notes";
+type MarginTab = "overview" | "resources" | "connections" | "passage" | "notes";
 
 export interface EntityResearchOpenOptions {
   /** Truncate the active entity tab's existing trail through this target. */
@@ -215,11 +211,18 @@ export function resolveMarginScrollRestoration(
   return null;
 }
 
-// Four lenses, named for what they hold rather than for how they relate to the
+// Five lenses, named for what they hold rather than for how they relate to the
 // passage. "Related" described a relationship; "Connections" names the thing
 // the reader actually authored, which is what they will look for.
+//
+// Resources joined them on 2026-07-30, second because it is the one a reader
+// arriving at a chapter reaches for first after the overview itself: who has
+// taught this. It is a lens rather than a block for the reason the other four
+// are — its answer is chapter-sized, and the block it used to be had to hide
+// almost all of it to fit under an insight and a cross-reference list.
 const MARGIN_TABS: Array<{ id: MarginTab; label: string; accessibleLabel: string }> = [
   { id: "overview", label: "Overview", accessibleLabel: "Overview" },
+  { id: "resources", label: "Resources", accessibleLabel: "Resources for this passage" },
   { id: "notes", label: "Notes", accessibleLabel: "My notes" },
   { id: "connections", label: "Connections", accessibleLabel: "Connections" },
   { id: "passage", label: "Words", accessibleLabel: "Words & structure" },
@@ -368,338 +371,19 @@ function MarginEmptyView({
   );
 }
 
-/** One verb per card, chosen by kind. Every verb leaves for the official page. */
-function resourceVerb(kind: string): string {
-  if (kind === "video") return "Watch";
-  if (kind === "podcast") return "Listen";
-  return "Read";
-}
+/* THE PUBLISHER INDEX left this file on 2026-07-30.
 
-/** `bref:v1/ROM.8.6-ROM.8.11` reads as `ROM 8:6–11` on a mono chip. */
-function resourcePassageLabel(bref: string): string {
-  const read = (part: string): { book: string; chapter: string; verse: string } => {
-    const [book = "", chapter = "", verse = ""] = part.split(".");
-    return { book, chapter, verse };
-  };
-  const parts = bref.replace("bref:v1/", "").split("-");
-  const start = read(parts[0] ?? "");
-  const head = `${start.book} ${start.chapter}${start.verse ? `:${start.verse}` : ""}`;
-  if (parts.length === 1) return head;
-  const end = read(parts[1] ?? "");
-  if (end.book !== start.book) return `${head}–${end.book} ${end.chapter}${end.verse ? `:${end.verse}` : ""}`;
-  if (end.chapter !== start.chapter) return `${head}–${end.chapter}${end.verse ? `:${end.verse}` : ""}`;
-  return end.verse && end.verse !== start.verse ? `${head}–${end.verse}` : head;
-}
+   `TrustedResourcesBlock` — the imprint shelf, the lens chips, the featured
+   cards and the library panel — stood here as the Overview tab's fourth block,
+   and its two helpers (`resourceVerb`, `resourcePassageLabel`) with it. It is
+   not deleted work: the shelf, the filter, the settings route and every
+   link-only resource are in components/Resources now, where the episodes are,
+   under one card geometry and one identity key.
 
-function TrustedResourcesBlock({
-  resources,
-  loading,
-  refusal,
-  total,
-  hiddenCount,
-  catalogue,
-  onOpenSettings,
-  onFiltersChanged,
-}: {
-  resources: readonly RankedTrustedResource[];
-  loading: boolean;
-  refusal: string | null;
-  total: number;
-  hiddenCount: number;
-  catalogue: ResourceLibraryCatalogue | null;
-  onOpenSettings?: (() => void) | undefined;
-  onFiltersChanged?: (() => void) | undefined;
-}): React.JSX.Element {
-  const { showToast } = useToast();
-  /* A chip is a publisher, not a record. Three chips used to mean three cards,
-     so a publisher with two good answers took two chips and looked like two
-     publishers. One chip each, and opening one shows everything that publisher
-     has for this passage — in the order the ranking already put them. */
-  const [openedSource, setOpenedSource] = useState<string | null>(null);
-  /* The lens: what the reader is looking at right now. Deliberately component
-     state and nothing more — it dies with the passage, because "just show me
-     the commentaries" is a glance, not a preference. */
-  const [lensKind, setLensKind] = useState<string | null>(null);
+   What went with it is the second masthead. "Published resources" and "Taught
+   here" were merged in the build before this one and were still two blocks in
+   one tab; they are one room. */
 
-  /* The transport is not here, and since 2026-07-30 neither is the offer to
-     start it. It used to be a play button on every row that had an audioUrl —
-     which was the same set of episodes the merged surface above already draws,
-     with the same identity key. One surface per chapter for episode audio; see
-     components/TaughtHere. This block is the link-only publisher index it was
-     first written to be. */
-
-  const sources = useMemo(() => {
-    const order: Array<{ id: string; name: string; count: number }> = [];
-    const seen = new Map<string, { id: string; name: string; count: number }>();
-    for (const resource of resources) {
-      const existing = seen.get(resource.source.id);
-      if (existing) { existing.count += 1; continue; }
-      const entry = { id: resource.source.id, name: resource.source.name, count: 1 };
-      seen.set(resource.source.id, entry);
-      order.push(entry);
-    }
-    return order;
-  }, [resources]);
-
-  const ALL = "*";
-  const FILTERS = "~filters";
-
-  /* Opening keeps the ranking's order — within a publisher and between them —
-     so what a reader sees first is still what the evidence put first. */
-  const lensKinds = useMemo(() => {
-    const chosen = openedSource === ALL
-      ? resources
-      : resources.filter((resource) => resource.source.id === openedSource);
-    const counts = new Map<string, number>();
-    for (const resource of chosen) counts.set(resource.record.kind, (counts.get(resource.record.kind) ?? 0) + 1);
-    return [...counts.entries()]
-      .map(([kind, count]) => ({ kind, count }))
-      .sort((left, right) => right.count - left.count || left.kind.localeCompare(right.kind));
-  }, [openedSource, resources]);
-
-  const groups = useMemo(() => {
-    const chosen = openedSource === ALL
-      ? resources
-      : resources.filter((resource) => resource.source.id === openedSource);
-    const opened = lensKind ? chosen.filter((resource) => resource.record.kind === lensKind) : chosen;
-    const order: Array<{ id: string; name: string; items: RankedTrustedResource[] }> = [];
-    const seen = new Map<string, { id: string; name: string; items: RankedTrustedResource[] }>();
-    for (const resource of opened) {
-      const existing = seen.get(resource.source.id);
-      if (existing) { existing.items.push(resource); continue; }
-      const entry = { id: resource.source.id, name: resource.source.name, items: [resource] };
-      seen.set(resource.source.id, entry);
-      order.push(entry);
-    }
-    return order;
-  }, [openedSource, resources, lensKind]);
-
-  const openResource = async (resource: RankedTrustedResource): Promise<void> => {
-    const result = await safeCall(() => window.api.trustedResources.openOfficial(
-      resource.source.id,
-      resource.record.id,
-      resource.record.officialUrl,
-    ));
-    if (!result.ok) showToast("That official resource link could not be opened.", undefined, undefined, { tone: "error" });
-  };
-  if (!loading && !refusal && resources.length === 0 && hiddenCount === 0) return <></>;
-  return (
-    <section className="trusted-resources" aria-labelledby="trusted-resources-title">
-      <header className="trusted-resources-masthead">
-        <span className="trusted-resources-kicker">Local publisher index</span>
-        <h3 id="trusted-resources-title">Published resources</h3>
-      </header>
-      {loading && <p className="trusted-resources-status" role="status">Checking local resource manifests…</p>}
-      {refusal && <p className="trusted-resources-status is-refusal" role="status">Published resources unavailable: {refusal}</p>}
-      {!loading && !refusal && resources.length > 0 && (
-        <div className="trusted-resource-drawer">
-          {/* Closed, the group is three imprints on the margin's own paper: the
-              colour is held to the size of a mark until a reader asks for one.
-              Opened, that source's card takes the full brand surface. */}
-          <div className="trusted-resource-imprints">
-            {sources.map((source) => (
-              <button
-                aria-controls="trusted-resource-panel"
-                aria-expanded={openedSource === source.id}
-                aria-label={`${source.name} — ${source.count} ${source.count === 1 ? "card" : "cards"} for this passage`}
-                className="trusted-resource-imprint"
-                data-source={source.id}
-                key={source.id}
-                onClick={() => setOpenedSource(openedSource === source.id ? null : source.id)}
-                type="button"
-              >
-                <span className="trusted-resource-source">{source.name}</span>
-                {source.count > 1 && <span className="trusted-resource-imprint-count">{source.count}</span>}
-              </button>
-            ))}
-            {/* All is a chip too, because it is the same kind of choice: it just
-                names every publisher at once. */}
-            {sources.length > 1 && (
-              <button
-                aria-controls="trusted-resource-panel"
-                aria-expanded={openedSource === ALL}
-                aria-label={`All ${total} cards for this passage`}
-                className="trusted-resource-imprint is-all"
-                key="all"
-                onClick={() => setOpenedSource(openedSource === ALL ? null : ALL)}
-                type="button"
-              >
-                <span className="trusted-resource-source">All</span>
-                <span className="trusted-resource-imprint-count">{total}</span>
-              </button>
-            )}
-            {/* The row raises the question of who these publishers are, and the
-                answer lives in settings — so the way there is a chip in the
-                same row rather than a hunt through a menu. */}
-            <button
-                aria-controls="trusted-resource-panel"
-                aria-expanded={openedSource === FILTERS}
-                aria-label={(catalogue?.mutes.length ?? 0) > 0
-                  ? `Your library — ${catalogue?.mutes.length} muted`
-                  : "Choose what your library offers"}
-                className="trusted-resource-imprint is-settings"
-                data-muted={(catalogue?.mutes.length ?? 0) > 0}
-                key="settings"
-                onClick={() => setOpenedSource(openedSource === FILTERS ? null : FILTERS)}
-                title={(catalogue?.mutes.length ?? 0) > 0
-                  ? `Your library — ${catalogue?.mutes.length} muted`
-                  : "Choose what your library offers"}
-                type="button"
-              >
-                <span className="trusted-resource-source" aria-hidden="true">
-                  {/* Sliders, not a cog: at 13px a cog's teeth close up into a
-                      sun. Three rows with a knob each also happens to be what
-                      the panel behind it actually is. */}
-                  <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
-                    <g fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.4">
-                      <path d="M2.2 4.2h11.6M2.2 8h11.6M2.2 11.8h11.6" />
-                      <circle cx="5.6" cy="4.2" r="1.6" fill="var(--bg-reading)" />
-                      <circle cx="10.4" cy="8" r="1.6" fill="var(--bg-reading)" />
-                      <circle cx="6.6" cy="11.8" r="1.6" fill="var(--bg-reading)" />
-                    </g>
-                  </svg>
-                </span>
-              </button>
-          </div>
-
-          <div className="trusted-resource-panel" id="trusted-resource-panel">
-          {openedSource === FILTERS && (
-            <div className="trusted-resource-library">
-              <p className="trusted-resource-library-lead">
-                Your library, everywhere — not just this passage.
-              </p>
-              <ResourceLibraryMatrix
-                catalogue={catalogue}
-                onChanged={() => onFiltersChanged?.()}
-                onFailed={(message) => showToast(message, undefined, undefined, { tone: "error" })}
-              />
-              {onOpenSettings && (
-                <button className="trusted-resource-library-more" onClick={onOpenSettings} type="button">
-                  Open in settings <span aria-hidden="true">→</span>
-                </button>
-              )}
-            </div>
-          )}
-
-          {openedSource !== null && openedSource !== FILTERS && lensKinds.length > 1 && (
-            /* Narrowing what is open, not what exists. It resets whenever the
-               reader opens something else, because a glance should not outlive
-               the glance. */
-            <div className="trusted-resource-lens" role="group" aria-label="Narrow what is shown">
-              <button
-                aria-pressed={lensKind === null}
-                className="trusted-resource-lens-chip"
-                onClick={() => setLensKind(null)}
-                type="button"
-              >
-                Everything
-              </button>
-              {lensKinds.map((kind) => (
-                <button
-                  aria-pressed={lensKind === kind.kind}
-                  className="trusted-resource-lens-chip"
-                  key={kind.kind}
-                  onClick={() => setLensKind(lensKind === kind.kind ? null : kind.kind)}
-                  type="button"
-                >
-                  <ResourceKindIcon kind={kind.kind} />
-                  {kind.kind}
-                  <span className="trusted-resource-lens-count">{kind.count}</span>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {groups.map((group) => (
-            <article
-              className="trusted-resource-card is-featured"
-              data-source={group.id}
-              key={group.id}
-            >
-              {/* The imprint is stated once for the group. Thirteen cards from
-                  one publisher repeated its mark thirteen times and turned a
-                  margin into a wall of one colour. */}
-              <header className="trusted-resource-head">
-                <span className="trusted-resource-source">{group.name}</span>
-                <span className="trusted-resource-kind">
-                  {group.items.length} {group.items.length === 1 ? "card" : "cards"}
-                </span>
-              </header>
-              <ul className="trusted-resource-items">
-                {group.items.map((resource) => {
-                  const metadata = resource.record.metadata;
-                  const byline = [
-                    metadata?.author,
-                    metadata?.publishedAt,
-                    metadata?.durationMinutes ? `${metadata.durationMinutes} min` : undefined,
-                    metadata?.series,
-                  ].filter(Boolean).join(" · ");
-                  const verb = resourceVerb(resource.record.kind);
-                  const key = `${resource.source.id}:${resource.record.id}`;
-                  return (
-                    <li className="trusted-resource-item" key={key}>
-                      <p className="trusted-resource-item-kind">{resource.record.kind}</p>
-                      <h4 className="trusted-resource-title">{resource.record.title}</h4>
-                      {byline && <p className="trusted-resource-meta">{byline}</p>}
-                      <ul className="trusted-resource-chips">
-                        <li className="trusted-resource-chip is-bref">{resourcePassageLabel(resource.matchedBref)}</li>
-                        <li className="trusted-resource-chip is-match">{resource.match.replaceAll("-", " ")}</li>
-                      </ul>
-                      <div className="trusted-resource-actions">
-                        {/* No play here. Dated 2026-07-30: everything with
-                            audio in it is drawn once, on the merged surface
-                            above — see components/TaughtHere. This block used
-                            to draw the same twenty-five episodes a second time
-                            under a different masthead, in a different order,
-                            with a different brand policy and an identity key
-                            that was the same string as the other surface's, so
-                            pressing one paused the other. What is left here is
-                            what this block was always for: things a reader
-                            READS, on the publisher's own page. */}
-                        <button
-                          className="trusted-resource-act"
-                          type="button"
-                          onClick={() => void openResource(resource)}
-                          aria-label={`${verb} ${resource.record.title} on ${resource.source.name} — opens the official page`}
-                        >
-                          {/* The publisher is named once, in the group's masthead
-                              above — the same reason the mark is stated there and
-                              not on every row. Repeating it inside the button set
-                              "Listen at The Listener's Bible Commentary" beside a
-                              play control on a 320px card, which no amount of
-                              wrapping saves; the button is `nowrap` because a verb
-                              broken across two lines is worse. The full
-                              destination stays in the accessible name, which is
-                              where a screen reader wants it anyway. */}
-                          {verb} <span aria-hidden="true">↗</span>
-                        </button>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            </article>
-          ))}
-
-          </div>
-
-          {hiddenCount > 0 && (
-            <div className="trusted-resource-more">
-              <span className="trusted-resource-more-hidden">
-                {hiddenCount} hidden by your settings
-              </span>
-            </div>
-          )}
-        </div>
-      )}
-      {!loading && !refusal && resources.length === 0 && hiddenCount > 0 && (
-        <p className="trusted-resources-status" role="status">
-          Every source that matches this passage is switched off in settings.
-        </p>
-      )}
-    </section>
-  );
-}
 
 function DeepNoteCard({
   title,
@@ -3254,6 +2938,10 @@ export function LivingMargin({
   connectionInspectorFocusRequest = 0,
 }: Props): React.JSX.Element {
   const displayBook = bookNames[book]?.[0] ?? book;
+  /* The other resident. One boolean decides which of the two is unfolded, it
+     lives on the player's module, and both surfaces read it — so the column
+     cannot end up with two open panels or none. */
+  const playerOwnsColumn = usePodcastExpanded();
   const [pinnedClaims, setPinnedClaims] = useState<Set<string>>(new Set());
   const [pendingClaimId, setPendingClaimId] = useState<string | null>(null);
   const [claimPinError, setClaimPinError] = useState<{ id: string; message: string } | null>(null);
@@ -4142,6 +3830,52 @@ export function LivingMargin({
     window.setTimeout(() => frameTitleRef.current?.focus(), 0);
   };
 
+  /* ── Folded, because the other resident is open ───────────────────────────
+     THE COLUMN SWAP · 2026-07-30. The study column holds two things — this
+     panel and the player — and exactly one of them is unfolded. When the
+     player takes the column this folds to a single line, and the line is the
+     inverse of the folded player at the other end: a tab at the top with its
+     arrow pointing down, a dock at the bottom with its arrow pointing up.
+
+     WHAT THE FOLD IS ALLOWED TO SAY, and this is a contract rather than a
+     layout note:
+
+       · what it is still following — the passage and the state word, in the
+         app's kicker voice, which is the same voice its own section kickers
+         use. It is a label on a drawer, not a heading that lost its section.
+       · one seal dot, and only when the reader's own notes or connections are
+         on the verses in view. Seal is authorship everywhere in this app, so
+         the dot says "something of yours is in here" without a number.
+       · nothing else. Never a count, never a preview, never a digest of what
+         is behind it. A folded thing that summarises itself is not folded.
+
+     The panel underneath is not unmounted and not display:none'd — it keeps
+     its React state and its scroll position, and it is `inert` so nothing
+     inside it can be reached or read aloud while it is folded. */
+  const folded = playerOwnsColumn;
+  const foldedState = connectionInspectorOpen
+    ? "connection"
+    : isPinned
+      ? "selected"
+      : isNear && ambientKept
+        ? "kept"
+        : "following";
+  const foldedMine = notesCount > 0 || connectionCount > 0;
+  const foldTab = folded ? (
+    <button
+      aria-label={`Open Study — ${contextReference}, ${foldedState}${foldedMine ? ", and some of your own work is here" : ""}`}
+      className="margin-fold-tab"
+      onClick={foldPodcastPlayer}
+      type="button"
+    >
+      <span className="margin-fold-line">{`${contextReference} · ${foldedState}`}</span>
+      {foldedMine && <span aria-hidden="true" className="margin-fold-seal" />}
+      <svg aria-hidden="true" className="margin-fold-arrow" viewBox="0 0 24 24" width="14" height="14">
+        <path d="M6.3 9.6 12 15.3l5.7-5.7" />
+      </svg>
+    </button>
+  ) : null;
+
   if (entityIntent && activeWorkspace === "research") {
     const originLabel = formatEntityResearchOrigin(entityIntent.origin, bookNames);
     const currentCanvasLabel = `${displayBook} ${chapter}${
@@ -4156,14 +3890,17 @@ export function LivingMargin({
         className="living-margin entity-research-margin"
         aria-label="Entity research"
         data-margin-mode="research"
+        data-folded={folded ? "true" : undefined}
         onScroll={scheduleWorkspaceScrollPublication}
         onPointerEnter={() => onMarginActiveChange?.(true)}
         onPointerLeave={handleMarginPointerLeave}
         onBlur={handleMarginBlur}
       >
+        {foldTab}
         <div
           id="margin-research-workspace"
           className="margin-workspace-panel"
+          inert={folded}
         >
         <header className="entity-research-frame">
           <div className="entity-research-nav">
@@ -4291,15 +4028,18 @@ export function LivingMargin({
       className="living-margin"
       aria-labelledby="living-margin-title"
       data-margin-mode={marginMode}
+      data-folded={folded ? "true" : undefined}
       data-compact-expanded={compactExpanded || undefined}
       onScroll={scheduleWorkspaceScrollPublication}
       onPointerEnter={() => onMarginActiveChange?.(true)}
       onPointerLeave={handleMarginPointerLeave}
       onBlur={handleMarginBlur}
     >
+      {foldTab}
       <div
         id="margin-study-workspace"
         className="margin-workspace-panel"
+        inert={folded}
       >
       <span className="sr-only" aria-live="polite">{scopeAnnouncement}</span>
       {/*
@@ -4466,19 +4206,54 @@ export function LivingMargin({
               onOpenTab={activateTab}
               onOpenEntity={onOpenEntity}
             />
-            {/* The chapter's one audio surface, above the link-only
-                index — a reader arriving at a chapter asks who has TAUGHT it
-                before they ask what has been WRITTEN about it, and until this
-                build the same episodes answered both questions twice. */}
-            <TaughtHere
+            {/* OVERVIEW BREATHES, 2026-07-30. The whole merged surface stood
+                here — a masthead, a walk, three shut drawers and a footing —
+                under an insight and a cross-reference list, and the publisher
+                index stood under that. Two mastheads and 922 moments' worth of
+                answer, in the tab that is also holding the reader's notes.
+
+                What is left is the best few voices, on the room's own card,
+                and one door. Everything else moved to the lens that can hold
+                it — see components/Resources. */}
+            <ResourcesDigest
               moments={taughtHere}
               records={audioResources}
               book={book}
               displayBook={displayBook}
               chapter={chapter}
               verse={focusVerse}
+              onOpen={() => activateTab("resources", true)}
             />
-            <TrustedResourcesBlock resources={linkResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={linkResources.length} hiddenCount={trustedResourcesHidden} catalogue={trustedResourceCatalogue} onOpenSettings={onOpenResourceSettings} onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)} />
+          </section>
+
+          {/* ── Resources ───────────────────────────────────────────────────
+              The home for every episode and publisher this chapter has: the
+              shelf, the walk, and the room. It is a lens rather than a block
+              because the answer is chapter-sized — 18 moments at the median
+              and 922 at Genesis 1 — and a lens is the only thing in this panel
+              that can hold that without hiding 97% of it behind a count. */}
+          <section
+            id="margin-resources-panel"
+            className="margin-tab-panel"
+            role="tabpanel"
+            aria-labelledby="margin-resources-tab"
+            hidden={activeTab !== "resources"}
+          >
+            <Resources
+              moments={taughtHere}
+              records={audioResources}
+              links={linkResources}
+              book={book}
+              displayBook={displayBook}
+              chapter={chapter}
+              verse={focusVerse}
+              loading={trustedResourcesLoading}
+              refusal={trustedResourcesRefusal}
+              hiddenCount={trustedResourcesHidden}
+              catalogue={trustedResourceCatalogue}
+              onOpenSettings={onOpenResourceSettings}
+              onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)}
+            />
           </section>
 
           <section
@@ -4593,19 +4368,54 @@ export function LivingMargin({
               onOpenTab={activateTab}
               onOpenEntity={onOpenEntity}
             />
-            {/* The chapter's one audio surface, above the link-only
-                index — a reader arriving at a chapter asks who has TAUGHT it
-                before they ask what has been WRITTEN about it, and until this
-                build the same episodes answered both questions twice. */}
-            <TaughtHere
+            {/* OVERVIEW BREATHES, 2026-07-30. The whole merged surface stood
+                here — a masthead, a walk, three shut drawers and a footing —
+                under an insight and a cross-reference list, and the publisher
+                index stood under that. Two mastheads and 922 moments' worth of
+                answer, in the tab that is also holding the reader's notes.
+
+                What is left is the best few voices, on the room's own card,
+                and one door. Everything else moved to the lens that can hold
+                it — see components/Resources. */}
+            <ResourcesDigest
               moments={taughtHere}
               records={audioResources}
               book={book}
               displayBook={displayBook}
               chapter={chapter}
               verse={focusVerse}
+              onOpen={() => activateTab("resources", true)}
             />
-            <TrustedResourcesBlock resources={linkResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={linkResources.length} hiddenCount={trustedResourcesHidden} catalogue={trustedResourceCatalogue} onOpenSettings={onOpenResourceSettings} onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)} />
+          </section>
+
+          {/* ── Resources ───────────────────────────────────────────────────
+              The home for every episode and publisher this chapter has: the
+              shelf, the walk, and the room. It is a lens rather than a block
+              because the answer is chapter-sized — 18 moments at the median
+              and 922 at Genesis 1 — and a lens is the only thing in this panel
+              that can hold that without hiding 97% of it behind a count. */}
+          <section
+            id="margin-resources-panel"
+            className="margin-tab-panel"
+            role="tabpanel"
+            aria-labelledby="margin-resources-tab"
+            hidden={activeTab !== "resources"}
+          >
+            <Resources
+              moments={taughtHere}
+              records={audioResources}
+              links={linkResources}
+              book={book}
+              displayBook={displayBook}
+              chapter={chapter}
+              verse={focusVerse}
+              loading={trustedResourcesLoading}
+              refusal={trustedResourcesRefusal}
+              hiddenCount={trustedResourcesHidden}
+              catalogue={trustedResourceCatalogue}
+              onOpenSettings={onOpenResourceSettings}
+              onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)}
+            />
           </section>
 
           <section
@@ -4723,19 +4533,54 @@ export function LivingMargin({
               onOpenTab={activateTab}
               onOpenEntity={onOpenEntity}
             />
-            {/* The chapter's one audio surface, above the link-only
-                index — a reader arriving at a chapter asks who has TAUGHT it
-                before they ask what has been WRITTEN about it, and until this
-                build the same episodes answered both questions twice. */}
-            <TaughtHere
+            {/* OVERVIEW BREATHES, 2026-07-30. The whole merged surface stood
+                here — a masthead, a walk, three shut drawers and a footing —
+                under an insight and a cross-reference list, and the publisher
+                index stood under that. Two mastheads and 922 moments' worth of
+                answer, in the tab that is also holding the reader's notes.
+
+                What is left is the best few voices, on the room's own card,
+                and one door. Everything else moved to the lens that can hold
+                it — see components/Resources. */}
+            <ResourcesDigest
               moments={taughtHere}
               records={audioResources}
               book={book}
               displayBook={displayBook}
               chapter={chapter}
               verse={focusVerse}
+              onOpen={() => activateTab("resources", true)}
             />
-            <TrustedResourcesBlock resources={linkResources} loading={trustedResourcesLoading} refusal={trustedResourcesRefusal} total={linkResources.length} hiddenCount={trustedResourcesHidden} catalogue={trustedResourceCatalogue} onOpenSettings={onOpenResourceSettings} onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)} />
+          </section>
+
+          {/* ── Resources ───────────────────────────────────────────────────
+              The home for every episode and publisher this chapter has: the
+              shelf, the walk, and the room. It is a lens rather than a block
+              because the answer is chapter-sized — 18 moments at the median
+              and 922 at Genesis 1 — and a lens is the only thing in this panel
+              that can hold that without hiding 97% of it behind a count. */}
+          <section
+            id="margin-resources-panel"
+            className="margin-tab-panel"
+            role="tabpanel"
+            aria-labelledby="margin-resources-tab"
+            hidden={activeTab !== "resources"}
+          >
+            <Resources
+              moments={taughtHere}
+              records={audioResources}
+              links={linkResources}
+              book={book}
+              displayBook={displayBook}
+              chapter={chapter}
+              verse={focusVerse}
+              loading={trustedResourcesLoading}
+              refusal={trustedResourcesRefusal}
+              hiddenCount={trustedResourcesHidden}
+              catalogue={trustedResourceCatalogue}
+              onOpenSettings={onOpenResourceSettings}
+              onFiltersChanged={() => setTrustedResourceFilterVersion((v) => v + 1)}
+            />
           </section>
 
           <section

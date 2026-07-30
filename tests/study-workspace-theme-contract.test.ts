@@ -297,11 +297,17 @@ test("forced colors, reduced motion, and desktop zoom keep the strip operable", 
   // this assertion was a copy of the whole-sheet one above it. Brace-match the
   // real blocks instead, state how many there are, and look for a hidden
   // register in any formatting rather than in one exact string.
+  // Four since 2026-07-30: the column swap added one of its own rather than
+  // reaching into the compact margin split, which is another hand's block this
+  // cycle. It holds the folded margin's geometry at compact width and nothing
+  // else. The count is stated so that a block appearing without a reason still
+  // fails here.
   const compactBlocks = mediaBlocks("@media (max-width: 979px)");
-  assert.equal(compactBlocks.length, 3,
-    "styles.css declares three max-width:979px blocks — the compact margin split, the "
-    + "narrow shell, and the dynamic-type refinement. A different count means the narrow "
-    + "shell moved and this scope must be re-anchored before it is trusted.");
+  assert.equal(compactBlocks.length, 4,
+    "styles.css declares four max-width:979px blocks — the compact margin split, the "
+    + "folded resident, the narrow shell, and the dynamic-type refinement. A different "
+    + "count means the narrow shell moved and this scope must be re-anchored before it "
+    + "is trusted.");
   for (const block of compactBlocks) {
     assert.doesNotMatch(block, /\.scripture-workspace-bar\b[^{}]*\{[^}]*display:\s*none/,
       "a compact-width block hides the register — H makes it the narrow shell's signature");

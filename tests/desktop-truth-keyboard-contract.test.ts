@@ -6,20 +6,28 @@ import test from "node:test";
 const root = resolve(import.meta.dirname, "..");
 const read = (path: string): string => readFileSync(resolve(root, path), "utf8");
 
-test("Living Margin exposes the settled four-lens vocabulary and truthful scope", () => {
+test("Living Margin exposes the settled five-lens vocabulary and truthful scope", () => {
   const margin = read("src/renderer/components/LivingMargin.tsx");
-  // Four lenses, in this order, each a single ordinary word. "Related" and
+  // Five lenses, in this order, each a single ordinary word. "Related" and
   // "My notes" were the visible labels of an earlier vocabulary; the lens rail
-  // now reads Overview / Notes / Connections / Words, and the longer phrases
-  // survive only where a screen reader needs the disambiguation.
-  assert.match(margin, /type MarginTab = "overview" \| "connections" \| "passage" \| "notes"/);
+  // reads Overview / Resources / Notes / Connections / Words, and the longer
+  // phrases survive only where a screen reader needs the disambiguation.
+  //
+  // RESTATED 2026-07-30 · this said four, and "no fifth lens". Resources is
+  // the fifth: the chapter's episode and publisher material had been a block
+  // at the foot of Overview, and a block cannot hold an answer that runs to
+  // 922 entries without hiding almost all of it. What the assertion protects
+  // is unchanged — one ordinary word per lens, no phrase where the others are
+  // words, and an order that runs from the app's summary through what the
+  // reader came for to what they wrote themselves.
+  assert.match(margin, /type MarginTab = "overview" \| "resources" \| "connections" \| "passage" \| "notes"/);
   assert.match(
     margin,
-    /const MARGIN_TABS[^=]*=\s*\[\s*\{ id: "overview", label: "Overview", accessibleLabel: "Overview" \},\s*\{ id: "notes", label: "Notes", accessibleLabel: "My notes" \},\s*\{ id: "connections", label: "Connections", accessibleLabel: "Connections" \},\s*\{ id: "passage", label: "Words", accessibleLabel: "Words & structure" \},\s*\]/,
+    /const MARGIN_TABS[^=]*=\s*\[\s*\{ id: "overview", label: "Overview", accessibleLabel: "Overview" \},\s*\{ id: "resources", label: "Resources", accessibleLabel: "Resources for this passage" \},\s*\{ id: "notes", label: "Notes", accessibleLabel: "My notes" \},\s*\{ id: "connections", label: "Connections", accessibleLabel: "Connections" \},\s*\{ id: "passage", label: "Words", accessibleLabel: "Words & structure" \},\s*\]/,
   );
-  // No fifth lens, and no label that is a phrase where the others are words.
+  // No sixth lens, and no label that is a phrase where the others are words.
   const tabTable = margin.slice(margin.indexOf("const MARGIN_TABS"), margin.indexOf("];", margin.indexOf("const MARGIN_TABS")));
-  assert.equal([...tabTable.matchAll(/\bid: "/g)].length, 4, "the margin carries exactly four lenses");
+  assert.equal([...tabTable.matchAll(/\bid: "/g)].length, 5, "the margin carries exactly five lenses");
   for (const label of [...tabTable.matchAll(/label: "([^"]+)"/g)].map((m) => m[1]!)) {
     assert.doesNotMatch(label, /\s/, `lens label "${label}" must be one word`);
   }

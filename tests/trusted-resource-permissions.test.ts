@@ -20,10 +20,9 @@ test("reviewed manifests and cards retain the common link-only permission bounda
     assert.doesNotMatch(manifest, /"(?:body|description|excerpt|artworkUrl|logoUrl|embedUrl|mediaUrl)"/);
   }
 
-  const margin = read("src/renderer/components/LivingMargin.tsx");
-  const start = margin.indexOf("function TrustedResourcesBlock");
-  const end = margin.indexOf("function DeepNoteCard", start);
-  const block = margin.slice(start, end);
+  /* Restated 2026-07-30: the publisher index became the Resources room, and the
+     boundary moved with the work rather than lapsing with the block. */
+  const block = read("src/renderer/components/Resources.tsx");
   assert.match(block, /openOfficial/);
   /* Audio is now permitted, for a source that declared where its media lives,
      played only when a reader presses play. Everything else the boundary
