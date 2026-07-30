@@ -160,8 +160,24 @@ test("the register's actions cluster is held in place by layout, not by a select
 
   // Shrinks for an overflowing strip; never grows past its tabs.
   assert.match(body(".scripture-workspace-viewport {"), /flex: 0 1 auto;/);
-  // The plus is what holds the toolbar out at the far edge.
-  assert.match(body(".scripture-workspace-open.is-inline {"), /margin: 0 auto 3px 4px;/);
+  // The plus's margin box is the strip's row and not a pixel more. This read
+  // `0 auto 3px 4px` until 2026-07-30: 28px of control plus 3px of margin is 31
+  // inside a 30px content box, and flex-end takes the overflow off the top, so
+  // the plus overhung every tab by a pixel into the window's drag band — the
+  // one band the register may not draw in.
+  //
+  // The comment that stood here said "the plus is what holds the toolbar out at
+  // the far edge". Measured in a real window on 2026-07-30, it does not: the
+  // Tooltip primitive wraps the plus in an inline-flex span sized to its
+  // content, so the auto end-margin has no free space to resolve against and
+  // comes out zero. The layout is left as it is — the study line rebuilds this
+  // band next — but the assertion is stated as what it can actually defend,
+  // which is the geometry of the control, not a consequence it does not have.
+  const inlineOpen = body(".scripture-workspace-open.is-inline {");
+  assert.match(inlineOpen, /margin: 0 auto 2px 4px;/);
+  assert.match(inlineOpen, /height: 28px;/);
+  const stripRow = Number.parseFloat(/--register-strip:\s*([\d.]+)px;/.exec(css)![1]!);
+  assert.equal(28 + 2, stripRow, "the plus's margin box must be the strip's row exactly");
   // And the toolbar still only ever shrinks.
   assert.match(body(".scripture-workspace-actions {"), /flex: 0 1 auto;/);
 

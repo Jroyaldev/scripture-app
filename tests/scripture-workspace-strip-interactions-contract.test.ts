@@ -28,6 +28,16 @@ function section(start: string, end: string): string {
   return source.slice(startIndex, endIndex);
 }
 
+/**
+ * This component records a retirement by quoting the code that was retired, so
+ * any "this is not here any more" check has to read statements only — otherwise
+ * it passes on the very note that proves the branch is gone, which is how a
+ * dead keyboard path went a day without being noticed.
+ */
+const statements = source
+  .replace(/\/\*[\s\S]*?\*\//g, "")
+  .replace(/^\s*\/\/.*$/gm, "");
+
 function view(book: string, chapter: number): PassageViewState {
   return {
     book,
@@ -116,14 +126,54 @@ test("recently-closed entries reopen by index while the button keeps the most re
 test("arrow keys move roving focus without committing a transition", () => {
   const keyboard = section("const handleTabKeyDown", "const deferMouseFocus");
   // Arrows/Home/End only move the roving focus stop.
-  assert.match(keyboard, /ArrowRight[\s\S]{0,600}setFocusedTabId\(next\)/);
-  assert.doesNotMatch(keyboard, /ArrowRight[\s\S]{0,600}handleSelectTab/);
-  // Enter/Space are the only commit path from the keyboard.
-  assert.match(keyboard, /event\.key === "Enter" \|\| event\.key === " "[\s\S]{0,120}handleSelectTab\(tabId/);
+  assert.match(keyboard, /ArrowRight[\s\S]{0,900}setFocusedTabId\(next\)/);
+  assert.doesNotMatch(keyboard, /ArrowRight[\s\S]{0,900}handleSelectTab/);
   // aria-selected reflects the active tab, never the roving focus.
   assert.match(source, /aria-selected=\{selected\}/);
   assert.match(source, /tabIndex=\{roving \? 0 : -1\}/);
   assert.match(source, /effectiveRovingTabId === tab\.id/);
+});
+
+test("Enter and Space reach the tab's one commit path, collapse and expand included", () => {
+  /* THIS REPLACES A CLAIM THAT WAS TRUE OF THE CODE AND FALSE OF THE PRODUCT,
+     2026-07-30. The line that stood here was
+
+       assert.match(keyboard,
+         /event\.key === "Enter" \|\| event\.key === " "[\s\S]{0,120}handleSelectTab\(tabId/)
+
+     under the comment "Enter/Space are the only commit path from the keyboard".
+     Both halves were accurate and together they hid a defect: that branch
+     called `preventDefault()` and then `handleSelectTab`, so it cancelled the
+     button's own synthesized click AND made the plain selection the only thing
+     a key could do. The tab's click handler has three outcomes — collapse the
+     study when the tab is already active, expand-then-select on a collapsed
+     study's proxy, select otherwise — and the keyboard could reach exactly one
+     of them. Enter on the tab you are already on did nothing at all, because
+     the select it routed to early-returns on the active tab.
+
+     The keydown handler no longer touches Enter or Space. A button activates on
+     both by itself, so the keyboard arrives at the same handler the pointer
+     does and the three outcomes are one set rather than two. The claim is
+     therefore stated as parity — the commit path is the tab's click handler and
+     both devices reach it — rather than as the shape of a branch. */
+  const keyboardStatements = (() => {
+    const start = statements.indexOf("const handleTabKeyDown");
+    return statements.slice(start, statements.indexOf("const deferMouseFocus", start));
+  })();
+  assert.ok(keyboardStatements.length > 0, "handleTabKeyDown must still exist");
+  assert.doesNotMatch(keyboardStatements, /event\.key === "Enter"|event\.key === " "|Spacebar/,
+    "intercepting Enter/Space cancels the click that carries collapse and expand");
+  // Delete/Backspace still belong to the keydown handler: no default action of
+  // the button's does what they do, so there is nothing to route through.
+  assert.match(keyboardStatements, /event\.key === "Delete" \|\| event\.key === "Backspace"/);
+
+  // And the click handler is where all three outcomes live, keyed on whether a
+  // keyboard sent the click so focus travels for it and not for the pointer.
+  const tablist = section('role="tablist"', "{/* The new-tab plus, against the last tab");
+  assert.match(tablist, /const byKeyboard = event\.detail === 0;/);
+  assert.match(tablist, /if \(collapsedProxy\) \{\s*await toggleGroup\(group\.id, false, byKeyboard \? trigger : undefined\);/);
+  assert.match(tablist, /if \(selected\) \{\s*await toggleGroup\(group\.id, true, byKeyboard \? trigger : undefined\);/);
+  assert.match(tablist, /await handleSelectTab\(tab\.id, \{ moveFocus: byKeyboard \}\);/);
 });
 
 test("a collapsed proxy ignores middle-click while tabs keep middle-click-close", () => {

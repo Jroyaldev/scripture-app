@@ -824,12 +824,27 @@ export function ScriptureWorkspaceTabs({
       else await handleCloseTab(tabId, { moveFocus: true });
       return;
     }
-    // APG manual activation: Enter/Space commit the focused tab's transition.
-    if (event.key === "Enter" || event.key === " " || event.key === "Spacebar") {
-      event.preventDefault();
-      await handleSelectTab(tabId, { moveFocus: true });
-      return;
-    }
+    // APG manual activation: Enter/Space commit the focused tab's transition —
+    // and they are deliberately NOT handled here. This used to read
+    //
+    //   if (event.key === "Enter" || event.key === " " || event.key === "Spacebar") {
+    //     event.preventDefault();
+    //     await handleSelectTab(tabId, { moveFocus: true });
+    //   }
+    //
+    // which is the same commit the tab's own onClick makes, minus the two
+    // branches in front of it: collapse the study when the tab is already the
+    // active one, and expand-then-select when it is a collapsed study's proxy.
+    // `preventDefault` cancelled the button's synthesized click, so the keyboard
+    // reached neither. Collapse and expand were pointer-only, and the strip's
+    // only collapse gesture had no keyboard equivalent at all.
+    //
+    // A button already activates on Enter and Space. Leaving that alone routes
+    // the keyboard through the one handler that knows all three cases, and the
+    // `event.detail === 0` test there — which had nothing to distinguish while
+    // this branch existed — is what tells it a keyboard sent the click, so
+    // focus travels for the keyboard and stays put for the pointer. One commit
+    // path, reached two ways.
     if (visibleTabIds.length === 0) return;
     const current = Math.max(0, visibleTabIds.indexOf(tabId));
     let index: number | null = null;
@@ -854,19 +869,28 @@ export function ScriptureWorkspaceTabs({
     onNewResearch();
   };
 
+  // Empty space only: a right-click that lands on a tab is that tab's own menu.
+  // The guard used to name `[data-study-group-tab]` as well — the kicker, which
+  // opened the group menu — and the kicker left the strip on 2026-07-29 without
+  // taking its selector with it.
   const handleViewportContextMenu = (event: React.MouseEvent<HTMLDivElement>): void => {
     if (event.target instanceof Element
-      && event.target.closest("[data-study-tab-id], [data-study-group-tab]")) return;
+      && event.target.closest("[data-study-tab-id]")) return;
     openContextMenu({ kind: "empty" }, event);
   };
 
   const totalTabs = Object.keys(workspace.tabsById).length;
   const atTabCapacity = totalTabs >= STUDY_WORKSPACE_TAB_LIMIT;
   const nearTabCapacity = totalTabs >= STUDY_WORKSPACE_TAB_LIMIT - CAPACITY_HINT_THRESHOLD;
+  // The cap this control meets is STUDY_WORKSPACE_TAB_LIMIT, so the copy says
+  // tabs. It said "studies" until 2026-07-30 — the wrong unit at the one moment
+  // the number matters, telling a reader with two studies and sixty-four tabs
+  // that all 64 of their studies were open and inviting them to close a study
+  // to fix it. A limit stated in the wrong unit is worse than an unstated one.
   const openTooltip = atTabCapacity
-    ? `All ${STUDY_WORKSPACE_TAB_LIMIT} studies open — close one to open another`
+    ? `All ${STUDY_WORKSPACE_TAB_LIMIT} tabs open — close one to open another`
     : nearTabCapacity
-      ? `${totalTabs} of ${STUDY_WORKSPACE_TAB_LIMIT} studies open`
+      ? `${totalTabs} of ${STUDY_WORKSPACE_TAB_LIMIT} tabs open`
       : "Open a new study tab";
   const contextGroupId = contextMenu && "groupId" in contextMenu.target
     ? contextMenu.target.groupId
@@ -880,18 +904,22 @@ export function ScriptureWorkspaceTabs({
   // computed from the tab's INDEX, never from scroll position — a shape that
   // changes as you scroll stops reading as an object.
   //
-  // Rev 05 §05·2 adds one condition, because it put a real object in front of
-  // the first tab. When the leading study is expanded its kicker takes the head
-  // of the strip, so the first TAB no longer starts at the strip's left edge and
-  // cannot supply the page's corner: squaring the corner anyway would leave the
-  // paper cut flat against a gap. The kicker is the only thing that can precede
-  // a tab, so the condition is exactly "no kicker in front of it", and the page
-  // keeps its 8px corner — which is what §05·6 draws in both polarities.
+  // Rev 05 §05·2 added a second condition and it is retired here, 2026-07-30,
+  // with the device it was written for. It read `&& !leadKickered`, where
+  // `leadKickered` was `!leadGroup.group.collapsed` — "is there a kicker in
+  // front of the first tab" — because the section had put a study's label at
+  // the head of the strip, and a first tab standing behind one does not reach
+  // the page's corner and may not square it.
+  //
+  // The kicker left the strip on 2026-07-29 and this guard did not go with it,
+  // so for the default state — one expanded study — `leadKickered` was true and
+  // flush-start could never fire. The first tab stopped squaring the page's
+  // corner and nobody could see why, because the expression named an object
+  // that was no longer rendered. Nothing precedes the first tab now, so the
+  // condition is the whole of what it always meant: the active tab is first.
   const registerTabIds = groups.flatMap(({ visibleTabs }) => visibleTabs.map((tab) => tab.id));
   const activeRegisterIndex = registerTabIds.indexOf(workspace.activeTabId);
-  const leadGroup = groups.find(({ visibleTabs }) => visibleTabs.length > 0) ?? null;
-  const leadKickered = leadGroup ? !leadGroup.group.collapsed : false;
-  const flushStart = activeRegisterIndex === 0 && !leadKickered;
+  const flushStart = activeRegisterIndex === 0;
 
   // There is deliberately no flush-END counterpart, and this is a ruling rather
   // than an omission. B·2 case 3 asked where the + PASSAGE affordance goes when
@@ -1026,6 +1054,22 @@ export function ScriptureWorkspaceTabs({
                   // reader put it for the pointer, which does not. Scrolling the
                   // tab into view is unconditional either way — that happens in
                   // `scheduleCommittedTabFocus` before the focus call it gates.
+                  //
+                  // This test had nothing to distinguish until 2026-07-30:
+                  // `handleTabKeyDown` was cancelling the synthesized click, so
+                  // every click that reached here came from a pointer and the
+                  // three branches below were pointer-only. The keydown handler
+                  // stopped intercepting Enter and Space, so this is now the one
+                  // commit path both devices arrive on — which is what makes
+                  // collapse and expand reachable from the keyboard at all.
+                  //
+                  // How the fold is announced: the study the reader collapsed
+                  // folds to one proxy, which IS the tab they pressed, so focus
+                  // does not move and the focused control's accessible name
+                  // changes under it — "Acts 19, Acts study" becomes "Acts
+                  // study, collapsed study with 3 tabs, opens Acts 19". That
+                  // name is the announcement, and it is the same fact the strip
+                  // shows a sighted reader. Nothing new is added to say it.
                   const byKeyboard = event.detail === 0;
                   if (suppressTabClickRef.current) {
                     suppressTabClickRef.current = false;
@@ -1179,6 +1223,13 @@ export function ScriptureWorkspaceTabs({
       </Tooltip>
 
       <div className="scripture-workspace-actions" role="toolbar" aria-label="Study tab controls">
+        {/* This element is rendered in every phase and hidden by the sheet, not
+            by the branch below. A live region has to exist before its content
+            changes or the change is never announced, and this one used to be
+            display:none between writes — created and destroyed with the very
+            text it was supposed to be reporting. At rest it holds nothing: the
+            settle is silent, so a write says one thing once, and success is the
+            absence of the failure line. */}
         <span
           className={`scripture-workspace-persistence is-${persistenceStatus.phase}`}
           data-study-persistence-status={persistenceStatus.phase}
@@ -1201,7 +1252,7 @@ export function ScriptureWorkspaceTabs({
                 Retry
               </button>
             </>
-          ) : <span className="sr-only">Tabs saved</span>}
+          ) : null}
         </span>
         {activeGroup && (
           <Tooltip label={`Manage ${activeGroup.label}`}>

@@ -53,6 +53,21 @@ function declarationsOf(token: string): Array<{ sheet: string; value: string }> 
   return found;
 }
 
+const px = (value: string): number => Number.parseFloat(value.replace("px", ""));
+
+/**
+ * The page's top edge, read from the sheets rather than written down here.
+ *
+ * Nothing in this file may state the number as a literal. It is composed from
+ * two declarations and it has moved twice — 54 while the canvas was 24, 40
+ * since the frame was re-canonned at a 10px inset — and both moves were
+ * deliberate. What may not move is the mirror in Tooltip.tsx, which drifted
+ * silently through the second one because this file pinned `= 54` as text
+ * instead of as arithmetic on the sheets.
+ */
+const FRAME_TOP = px(declarationsOf("--page-inset")[0]!.value)
+  + px(declarationsOf("--register-strip")[0]!.value);
+
 test("the page's top edge is 40, and it is composed rather than asserted", () => {
   // The number is never written down. It is 10px of canvas — the drag band —
   // over a 30px tab strip, and the sum is what the other two surfaces read.
@@ -71,10 +86,10 @@ test("the page's top edge is 40, and it is composed rather than asserted", () =>
   assert.equal(strip[0].value, "30px");
   assert.match(frame[0].value, /^calc\(var\(--page-inset\) \+ var\(--register-strip\)\)$/);
 
-  // And the sum is 54. Written as arithmetic on the two declared values so the
+  // And the sum is 40. Written as arithmetic on the two declared values so the
   // test fails when either half moves, rather than when someone edits a comment.
-  const px = (value: string): number => Number.parseFloat(value.replace("px", ""));
   assert.equal(px(inset[0].value) + px(strip[0].value), 40);
+  assert.equal(FRAME_TOP, 40);
 });
 
 test("the top edge does not vary by mode, by width, or by atmosphere", () => {
@@ -163,11 +178,14 @@ test("the top edge does not vary by mode, by width, or by atmosphere", () => {
   // the halves are discoverable from each other.
 });
 
-test("the drag band is 24 and nothing else", () => {
-  // §05·2: "The drag band is 24 and nothing else." The two objects that used to
-  // be drawn in it — the group's hairline and the study siglum's own row — are
-  // retired, and nothing in the register may reserve height above the tab row
-  // again. These are the names both devices went by.
+test("the drag band holds the page's inset and nothing else", () => {
+  // §05·2: "The drag band is 24 and nothing else." The 24 is now 10 — commit
+  // e8e2ee9 re-canonned the frame so the band IS the page's own inset rather
+  // than a number of its own — and the sentence survives the arithmetic
+  // unchanged, because what it forbids is contents, not a height. The two
+  // objects that used to be drawn in it — the group's hairline and the study
+  // siglum's own row — are retired, and nothing in the register may reserve
+  // height above the tab row again. These are the names both devices went by.
   assert.doesNotMatch(styles, /scripture-workspace-group-rule/);
   assert.doesNotMatch(register, /scripture-workspace-group-rule \{/);
   assert.doesNotMatch(styles, /data-study-group-bracket/);
@@ -186,7 +204,16 @@ test("no tooltip may open into the band", () => {
   // or not at all." The primitive mirrors the frame's top edge, and this is the
   // assertion that keeps the mirror honest — the CSS token is the authority, but
   // a placement rule cannot parse an unregistered custom property at runtime.
-  assert.match(tooltip, /const PAGE_TOP_EDGE = 54;/);
+  //
+  // This line used to read `assert.match(tooltip, /const PAGE_TOP_EDGE = 54;/)`,
+  // and on 2026-07-30 it was pinning a 14px lie: the frame had been re-canonned
+  // to 40 and the mirror was still on 54, so a contract written to catch exactly
+  // this drift was instead holding it in place. A literal cannot police a
+  // composed number. The expectation is now BUILT from the two declarations the
+  // sheets make, so the sheets remain the authority and the mirror is checked
+  // against them rather than against a copy of them made at some past date.
+  assert.match(tooltip, new RegExp(`const PAGE_TOP_EDGE = ${FRAME_TOP};`),
+    `Tooltip.tsx must mirror the frame's composed top edge (${FRAME_TOP})`);
   assert.match(tooltip, /export function tooltipPlacement\(/);
   // Below first, always; above is the one fallback and only inside the page.
   assert.match(tooltip, /if \(below \+ tooltipHeight <= viewportHeight - VIEWPORT_MARGIN\)/);
@@ -224,6 +251,21 @@ test("tooltipPlacement prefers below, falls back inside the page, and otherwise 
 
   // The boundary is the page's top edge itself, not the window's: a tooltip that
   // would end exactly on the edge is allowed, one pixel higher is not.
-  assert.deepEqual(tooltipPlacement(102, 132, 40, 140), { top: 54, side: "top" });
-  assert.equal(tooltipPlacement(101, 131, 40, 139), null);
+  //
+  // Stated relative to FRAME_TOP rather than as the four literals it used to be
+  // (102/132/140 and an expected top of 54). Those literals encoded the old edge
+  // and would have had to be recomputed by hand every time the frame moves,
+  // which is the same failure mode as the mirror above: a number copied out of
+  // the sheets and then left behind by them. A tooltip of height 40 clears the
+  // edge exactly when its anchor's top is edge + 40 + TOOLTIP_GAP.
+  assert.deepEqual(
+    tooltipPlacement(FRAME_TOP + 48, FRAME_TOP + 78, 40, FRAME_TOP + 86),
+    { top: FRAME_TOP, side: "top" },
+    "a tooltip that ends exactly on the page's top edge is allowed",
+  );
+  assert.equal(
+    tooltipPlacement(FRAME_TOP + 47, FRAME_TOP + 77, 40, FRAME_TOP + 85),
+    null,
+    "one pixel higher is not",
+  );
 });

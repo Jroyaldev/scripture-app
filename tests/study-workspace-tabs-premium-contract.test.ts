@@ -183,8 +183,14 @@ test("the Open control gauges the 64-tab capacity", () => {
   assert.match(componentSource, /const atTabCapacity = totalTabs >= STUDY_WORKSPACE_TAB_LIMIT/);
   assert.match(componentSource, /aria-disabled=\{atTabCapacity \|\| undefined\}/);
   assert.match(componentSource, /if \(!atTabCapacity\) onNewResearch\(\)/);
-  // The tooltip surfaces the count when within a few tabs of the cap.
-  assert.match(componentSource, /of \$\{STUDY_WORKSPACE_TAB_LIMIT\} studies open/);
+  // The tooltip surfaces the count when within a few tabs of the cap, and names
+  // the thing being counted. It read "studies open" until 2026-07-30, which was
+  // the wrong unit for this limit: STUDY_WORKSPACE_TAB_LIMIT counts tabs, the
+  // group cap is a different number entirely, and a reader with two studies was
+  // being told all 64 of them were open.
+  assert.match(componentSource, /of \$\{STUDY_WORKSPACE_TAB_LIMIT\} tabs open/);
+  assert.match(componentSource, /All \$\{STUDY_WORKSPACE_TAB_LIMIT\} tabs open/);
+  assert.doesNotMatch(componentStatements, /\$\{STUDY_WORKSPACE_TAB_LIMIT\} studies/);
 });
 
 test("All Tabs is searchable, grouped, and owns tab and group management", () => {
@@ -364,11 +370,21 @@ test("flush-END is retired: the actions never move and the last tab keeps its ri
   assert.doesNotMatch(registerSource, /\.scripture-workspace-actions \{[^}]*order: -1/);
 
   // Flush-START survives intact — it is the half of B·2 case 2 the ruling keeps.
-  // Rev 05 §05·2 qualifies it rather than retiring it: the group's kicker is a
-  // real object at the head of the strip, so a first tab standing behind one
-  // does not reach the page's corner and may not square it.
-  assert.match(componentSource, /const flushStart = activeRegisterIndex === 0 && !leadKickered/);
-  assert.match(componentSource, /const leadKickered = leadGroup \? !leadGroup\.group\.collapsed : false/);
+  //
+  // These two lines used to read:
+  //   assert.match(componentSource, /const flushStart = activeRegisterIndex === 0 && !leadKickered/);
+  //   assert.match(componentSource, /const leadKickered = leadGroup \? !leadGroup\.group\.collapsed : false/);
+  // — Rev 05 §05·2's qualification, which said a first tab standing behind the
+  // group's kicker does not reach the page's corner and may not square it. The
+  // kicker left the strip on 2026-07-29 and the qualification stayed, so
+  // `leadKickered` was true for every expanded study and flush-start was dead:
+  // the first tab never squared the page's corner again. Pinning the expression
+  // verbatim is what let a dead condition read as a live rule for a day, so it
+  // is restated as the behaviour rather than as the text — the rule fires when
+  // the active tab is first, and no retired object may re-enter the condition.
+  assert.match(componentSource, /const flushStart = activeRegisterIndex === 0;/);
+  assert.doesNotMatch(componentStatements, /leadKickered|leadGroup/,
+    "the kicker is gone; nothing in front of the first tab is left to guard against");
   assert.match(componentSource, /data-flush-start=\{flushStart \|\| undefined\}/);
 
   // Separate with interval, not with lines: the controls' keyline is gone.
@@ -536,7 +552,20 @@ test("the strip's right-hand cluster sits on the strip's row, not centred in the
   // No control may carry a height of its own again: a second height in the
   // cluster is a second datum, which is the fault the whole section is about.
   // 24px stays, because it is the pointer target rather than a shape.
-  const controls = /\.scripture-workspace-active-group,\s*\.scripture-workspace-open,\s*\.scripture-workspace-reopen,\s*\.scripture-workspace-overflow \{([^}]*)\}/
+  /* The family lost a member on 2026-07-30 and this selector had to be
+     re-canonned with it. It read
+       .scripture-workspace-active-group, .scripture-workspace-open,
+       .scripture-workspace-reopen, .scripture-workspace-overflow
+     and `.scripture-workspace-reopen` had no element behind it in any state:
+     the standalone reopen button left the strip when recovery moved into All
+     Tabs, and eight rules across this sheet went on styling it. Naming it here
+     is what kept them alive — the selector could not be tidied without editing
+     a passing test, which is the shape of a contract holding dead code in
+     place. The claim is unchanged: every control in the cluster is sized as one
+     family and none carries a height of its own. */
+  assert.doesNotMatch(stylesDeclarations, /scripture-workspace-reopen/,
+    "styling a control the strip does not render describes a product that does not exist");
+  const controls = /\.scripture-workspace-active-group,\s*\.scripture-workspace-open,\s*\.scripture-workspace-overflow \{([^}]*)\}/
     .exec(rail);
   assert.ok(controls, "the cluster's controls must still be sized as one family");
   assert.doesNotMatch(controls[1], /(?:^|[\s;])height\s*:/);
@@ -629,6 +658,53 @@ test("a derived tab wears the machine hue whether or not you are reading it", ()
     rail.indexOf('.scripture-workspace-tab[aria-selected="true"] .scripture-workspace-tab-mark'),
     -1,
     "selection must not reach the provenance glyph: the paper fill is the mark",
+  );
+});
+
+test("a save is announced and never drawn, and its live region is never removed", () => {
+  /* ADDED 2026-07-30, because the claim existed and nothing held it.
+     The commit that made saving visually silent said "the live region is why
+     this is clipped rather than display:none: a screen reader following the
+     workspace still hears Saving…" — while leaving
+     `.scripture-workspace-persistence:not(.is-saving):not(.is-failed) {
+     display: none }` in the sheet. So the region was torn out of the
+     accessibility tree between every write and rebuilt on the next one, which
+     is not a quieter announcement but no announcement: a live region has to be
+     in the tree BEFORE its content changes for the change to be spoken.
+
+     The claim is unchanged and now has a test. The region is always rendered
+     and always in the tree; the sheet hides it in every phase but failed; and
+     it is out of FLOW while hidden, which is the other half — a save that
+     reflows the strip is the twitch this whole treatment was drawn to stop. */
+  const status = section(componentSource, 'className="scripture-workspace-actions"', "{activeGroup &&");
+  assert.match(status, /role="status"/);
+  assert.match(status, /aria-live="polite"/);
+  // Rendered in every phase: the phase is a class on it, never a condition
+  // around it.
+  assert.match(status, /className=\{`scripture-workspace-persistence is-\$\{persistenceStatus\.phase\}`\}/);
+  assert.doesNotMatch(status, /persistenceStatus\.phase !== "idle" &&/);
+
+  // Hidden by the sheet, in every phase but failed, and out of flow while it is.
+  const hidden = section(stylesSource, ".scripture-workspace-persistence:not(.is-failed) {", "}");
+  assert.match(hidden, /position: absolute;/);
+  assert.match(hidden, /clip: rect\(0, 0, 0, 0\);/);
+  assert.match(hidden, /width: 1px;/);
+  assert.match(hidden, /height: 1px;/);
+
+  // And nothing anywhere may take it out of the tree again. Declarations only:
+  // the note above quotes the rule that was removed.
+  for (const [, body] of stylesDeclarations.matchAll(
+    /\.scripture-workspace-persistence(?![-\w])[^{}]*\{([^}]*)\}/g,
+  )) {
+    assert.doesNotMatch(body, /display\s*:\s*none/,
+      "a live region that is display:none between saves announces nothing at all");
+  }
+  assert.doesNotMatch(registerDeclarations, /\.scripture-workspace-persistence[^{}]*\{[^}]*display\s*:\s*none/);
+
+  // The failure line is the one phase that is drawn, and it is in flow.
+  assert.match(
+    registerSource,
+    /\.scripture-workspace-bar \.scripture-workspace-persistence\.is-failed \{[\s\S]{0,160}display: inline-flex;/,
   );
 });
 

@@ -1689,7 +1689,6 @@ html, body, #root {
 .scripture-workspace-tab-close,
 .scripture-workspace-active-group,
 .scripture-workspace-open,
-.scripture-workspace-reopen,
 .scripture-workspace-overflow,
 .scripture-workspace-persistence button,
 .scripture-workspace-group-popover button,
@@ -2039,10 +2038,17 @@ html, body, #root {
 /* One box, one height, and it is the pointer target rather than a shape: 24px
    is the floor a control may not go under, and it is also exactly what a single
    line of chrome type needs, so the two stop competing. The old `height: 28px`
-   was neither — it was 4px of nothing above and below the word. */
+   was neither — it was 4px of nothing above and below the word.
+
+   `.scripture-workspace-reopen` was a fourth member of this family and of seven
+   other rules in this sheet, and on 2026-07-30 none of them had a control to
+   style: the standalone reopen button left the strip when recovery moved inside
+   All Tabs, and only its CSS stayed. Styles for an element that is never
+   rendered are the worst kind of dead code, because they read as a description
+   of the product. Recovery is `[data-study-reopen-recent]` in the All Tabs
+   popover now, and it is styled with that popover's rows. */
 .scripture-workspace-active-group,
 .scripture-workspace-open,
-.scripture-workspace-reopen,
 .scripture-workspace-overflow {
   min-width: 24px;
   min-height: 24px;
@@ -2128,10 +2134,25 @@ html, body, #root {
   gap: 0;
   width: 28px;
   height: 28px;
-  /* The auto end-margin is what holds the toolbar out at the far edge now that
-     the viewport no longer grows. Without it the status and All Tabs would
-     follow the plus and cluster in the middle of an empty bar. */
-  margin: 0 auto 3px 4px;
+  /* The bottom margin was 3px until 2026-07-30, which made the plus's MARGIN
+     box 31px inside a 30px row: seated on flex-end, the extra pixel came off
+     the top, so the one control in the strip that is not a tab began a pixel
+     above every tab and reached into the drag band the register is not allowed
+     to draw in. 28 + 2 is the row exactly, measured in a real window.
+
+     THE END MARGIN IS INERT, and this note is here so the next hand does not
+     inherit the claim that was: "the auto end-margin is what holds the toolbar
+     out at the far edge now that the viewport no longer grows." It cannot. The
+     plus is wrapped by the Tooltip primitive's `.control-tooltip-anchor`, an
+     inline-flex span sized to its content, so the plus is a flex item of THAT
+     and not of the bar; auto margins resolve against free space, an intrinsi-
+     cally sized container has none, and the margin comes out as zero. Measured:
+     the anchor is 32px wide and the actions cluster starts at its right edge
+     with the rest of the bar empty beyond it. Left alone deliberately — moving
+     the cluster is a visible change to a band the study line is about to
+     rebuild — but recorded, because a comment describing a layout the browser
+     is not performing is worse than no comment. */
+  margin: 0 auto 2px 4px;
   padding: 0;
   border-radius: var(--radius-sm);
   color: var(--text-tertiary);
@@ -2172,18 +2193,15 @@ html, body, #root {
 
 .scripture-workspace-open > span:first-child { display: inline-flex; align-items: center; }
 .scripture-workspace-open > span:first-child .scripture-workspace-glyph { width: 14px; height: 14px; }
-.scripture-workspace-reopen,
 .scripture-workspace-overflow {
   display: grid;
   padding: 0;
   place-items: center;
 }
-.scripture-workspace-reopen { font-size: 14px; }
 .scripture-workspace-overflow { font: 600 9px/1 var(--font-ui); letter-spacing: 1px; }
 
 .scripture-workspace-active-group:hover,
 .scripture-workspace-open:hover,
-.scripture-workspace-reopen:hover,
 .scripture-workspace-overflow:hover {
   background: color-mix(in srgb, var(--text-primary) 5%, transparent);
   color: var(--text-primary);
@@ -2196,9 +2214,7 @@ html, body, #root {
   white-space: nowrap;
 }
 
-.scripture-workspace-persistence:not(.is-saving):not(.is-failed) { display: none; }
-
-/* SAVING IS NOT SHOWN AT ALL.
+/* SAVING IS NOT DRAWN, AND THE REGION THAT REPORTS IT IS NEVER REMOVED.
    It used to be a run of text inside the actions cluster, appearing on every
    write — so the cluster widened and narrowed and the whole strip reflowed
    around it. The workspace saves many times a minute while a reader is moving
@@ -2209,14 +2225,32 @@ html, body, #root {
    succeeds and that nobody asked about. Saving is the app's business, not the
    reader's. It is announced and not drawn.
 
-   The live region is why this is clipped rather than `display: none`: a screen
-   reader following the workspace still hears "Saving…", and a region that is
-   removed from the tree announces nothing at all.
+   CORRECTED 2026-07-30. The clip above was written to keep the live region in
+   the accessibility tree — "a region that is removed from the tree announces
+   nothing at all" — but it was scoped to `.is-saving`, and a second rule,
+   `:not(.is-saving):not(.is-failed) { display: none }`, took the region out of
+   the tree between every write and put it back on the next one. That is the
+   exact condition the clip exists to avoid, and it is worse than it sounds: a
+   live region has to be in the tree BEFORE its content changes for the change
+   to be announced at all, so a region born at the same instant as its text
+   announces nothing. The claim was made and was false.
+
+   So the hidden treatment is keyed on "not failed" rather than on "saving": the
+   region is in the tree at rest, in the tree while saving, out of flow in both,
+   and the only thing that changes is its text. `position: absolute` is what
+   makes the write cost zero layout — the strip cannot reflow around a box that
+   is not in its flow — which is the movement half of the original fix, kept.
+
+   The consequence, stated rather than discovered later: a screen reader now
+   hears "Saving…" on every write, which is what "announced and not drawn"
+   means when the app writes this often. At rest the region is empty, so the
+   settle is silent — a save says one thing, once, and success is the absence
+   of the failure line below.
 
    The FAILED state is untouched and stays visible, in flow. A write that did
    NOT succeed is the reader's business — it holds until it works or they
    retry, and it carries a reason and a button. */
-.scripture-workspace-persistence.is-saving {
+.scripture-workspace-persistence:not(.is-failed) {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -2246,7 +2280,6 @@ html, body, #root {
 .scripture-workspace-tab:focus-visible,
 .scripture-workspace-active-group:focus-visible,
 .scripture-workspace-open:focus-visible,
-.scripture-workspace-reopen:focus-visible,
 .scripture-workspace-overflow:focus-visible,
 .scripture-workspace-persistence button:focus-visible,
 .scripture-workspace-context-menu button:focus-visible,
@@ -2909,7 +2942,6 @@ html, body, #root {
   .scripture-workspace-tab,
   .scripture-workspace-active-group,
   .scripture-workspace-open,
-  .scripture-workspace-reopen,
   .scripture-workspace-overflow,
   .scripture-workspace-group-popover,
   .scripture-workspace-overflow-popover,
@@ -2941,7 +2973,6 @@ html, body, #root {
   .scripture-workspace-tab:focus-visible,
   .scripture-workspace-active-group:focus-visible,
   .scripture-workspace-open:focus-visible,
-  .scripture-workspace-reopen:focus-visible,
   .scripture-workspace-overflow:focus-visible,
   .scripture-workspace-group-popover button:focus-visible,
   .scripture-workspace-overflow-popover button:focus-visible,

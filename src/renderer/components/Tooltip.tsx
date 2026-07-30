@@ -23,20 +23,27 @@ const HOVER_DELAY_MS = 420;
  *
  * Rev 05 §05·2, third deletion: "The atmosphere tooltip currently lands on the
  * drag region and across the tab strip. Tooltips open BELOW their control,
- * inside the page, or not at all." The band above the page is 54px — 24px of
- * canvas that is the window's drag region and nothing else, over a 30px tab
- * strip — and the section's whole argument is that nothing may be drawn in it.
- * A tooltip that opens upward out of the header is the one thing in the app
- * that can put ink there without owning a pixel of layout.
+ * inside the page, or not at all." The band above the page is the window's drag
+ * region over the tab strip, and the section's whole argument is that nothing
+ * may be drawn in it. A tooltip that opens upward out of the header is the one
+ * thing in the app that can put ink there without owning a pixel of layout.
  *
  * The authority for the number is `--frame-top` in styles.css, composed there
  * as `--page-inset + --register-strip`. It is mirrored rather than read because
  * a custom property that is not registered with `@property` comes back from
- * getComputedStyle as its unresolved token stream ("calc(24px + 30px)"), and a
+ * getComputedStyle as its unresolved token stream ("calc(10px + 30px)"), and a
  * placement rule may not depend on parsing that.
- * tests/quire-frame-top-edge-contract.test.ts keeps the two in step.
+ *
+ * CORRECTED 2026-07-30. This read 54 while the frame's own composition read 40,
+ * so every tooltip that fell back upward cleared a floor 14px lower than the
+ * page it was supposed to stay inside. The 54 was right until commit e8e2ee9
+ * re-canonned the canvas from 24 to 10 and this mirror was not moved with it.
+ * A mirror only stays honest if something checks it, so
+ * tests/quire-frame-top-edge-contract.test.ts no longer pins a literal: it
+ * ADDS the two declared halves in styles.css and demands that sum here. Move
+ * either token and this line is the one edit the failure asks for.
  */
-const PAGE_TOP_EDGE = 54;
+const PAGE_TOP_EDGE = 40;
 
 interface Placement {
   top: number;
@@ -48,8 +55,9 @@ interface Placement {
  *
  * Below first, always — that is the rule, not a preference. Above is the single
  * fallback and it is allowed only while the whole tooltip stays inside the
- * page: the moment it would reach into the 54px band it is not drawn, because
- * the alternative is drawing it over the drag region and across the register.
+ * page: the moment it would reach into the frame's top band it is not drawn,
+ * because the alternative is drawing it over the drag region and across the
+ * register.
  */
 export function tooltipPlacement(
   anchorTop: number,

@@ -138,14 +138,24 @@ function createDriver(cdp) {
   return { evaluate, waitFor };
 }
 
-async function dispatchKey(cdp, key, code, virtualKeyCode, modifiers = 0) {
+/**
+ * A real key press, through the input pipeline rather than as a DOM event.
+ *
+ * `text` matters and is not decoration. A key whose default action runs on
+ * keypress — Enter activating a button is the case here — never reaches it from
+ * `rawKeyDown` alone, because CDP only synthesises the char event when the key
+ * carries text. Passing it makes this the same sequence a keyboard produces:
+ * keydown, keypress, the element's own activation, keyup.
+ */
+async function dispatchKey(cdp, key, code, virtualKeyCode, modifiers = 0, text) {
   await cdp.send("Input.dispatchKeyEvent", {
-    type: "rawKeyDown",
+    type: text === undefined ? "rawKeyDown" : "keyDown",
     key,
     code,
     modifiers,
     windowsVirtualKeyCode: virtualKeyCode,
     nativeVirtualKeyCode: virtualKeyCode,
+    ...(text === undefined ? {} : { text, unmodifiedText: text }),
   });
   await cdp.send("Input.dispatchKeyEvent", {
     type: "keyUp",
@@ -368,7 +378,11 @@ function normalMetricsExpression(themeId, hitTarget, keyboardFocusMetrics) {
     const mark = active.querySelector(".scripture-workspace-tab-mark");
     const close = active.querySelector(".scripture-workspace-tab-close");
     const groupControl = document.querySelector("[data-study-active-group-manage]");
-    const groupLabelOwner = document.querySelector("[data-study-group-tab]");
+    // The strip's own new-tab control. This used to be
+    // \`document.querySelector("[data-study-group-tab]")\` — the group kicker,
+    // which left the strip on 2026-07-29 — so the gate below was asserting the
+    // visibility of an element the app no longer renders and could not pass.
+    const openControl = document.querySelector("[data-study-open]");
     const barColor = parseColor(barStyle.backgroundColor);
     const activeBackground = parseColor(activeStyle.backgroundColor);
     const inactiveRect = inactive.getBoundingClientRect();
@@ -406,11 +420,29 @@ function normalMetricsExpression(themeId, hitTarget, keyboardFocusMetrics) {
     const typeVisible = mark instanceof HTMLElement
       && Number(getComputedStyle(mark).opacity) >= 0.9
       && mark.getBoundingClientRect().width > 0;
+    // The named study is reachable from the strip: one control, carrying the
+    // study's own name, big enough to press. It used to have to be the kicker
+    // among the tabs; the Manage control in the cluster is the whole of it now.
     const groupVisible = groupControl instanceof HTMLElement
       && groupControl.getBoundingClientRect().width >= 24
-      && groupLabelOwner instanceof HTMLElement
-      && groupLabelOwner.getBoundingClientRect().width >= 24
-      && (groupLabelOwner.textContent ?? "").trim().length > 0;
+      && (groupControl.textContent ?? "").trim().length > 0;
+    // And the control that makes a tab is in the strip rather than the toolbar,
+    // seated inside the tab row rather than overhanging it into the drag band.
+    // The margin box was 31px in a 30px row until 2026-07-30, which put its top
+    // edge a pixel above every tab — invisible to a source-reading test and
+    // exactly what a used-layout gate is for.
+    const openRect = openControl instanceof HTMLElement
+      ? openControl.getBoundingClientRect()
+      : null;
+    const tabTop = Math.min(active.getBoundingClientRect().top, inactiveRect.top);
+    const openInStrip = openControl instanceof HTMLElement
+      && openRect.width >= 24
+      && openRect.height >= 24
+      && openControl.closest("[data-study-workspace-bar]") === bar
+      && openControl.closest('[role="toolbar"]') === null
+      && openControl.closest('[role="tablist"]') === null
+      && openRect.top >= tabTop - 0.5
+      && openRect.bottom <= bar.getBoundingClientRect().bottom + 0.5;
     const activeBoxShadow = activeStyle.boxShadow.trim();
     const neutralHalo = activeBoxShadow === "none"
       || splitTopLevel(activeBoxShadow).every((shadow) => /(^|\\s)inset(\\s|$)/.test(shadow));
@@ -435,6 +467,7 @@ function normalMetricsExpression(themeId, hitTarget, keyboardFocusMetrics) {
       closeVisible,
       typeVisible,
       groupVisible,
+      openInStrip,
       neutralHalo,
       activeBoxShadow,
       focusRingWidth,
@@ -446,18 +479,37 @@ function normalMetricsExpression(themeId, hitTarget, keyboardFocusMetrics) {
 
 function assertNormalMetrics(theme, metrics, fixtureSignature) {
   assert.equal(metrics.fixtureSignature, fixtureSignature, `${theme.id}: fixture drifted between captures`);
-  assert.ok(metrics.backgroundAlpha >= 0.9, `${theme.id}: workspace material is not opaque/composited`);
+  /* THE REGISTER PAINTS NOTHING OF ITS OWN, re-canonned 2026-07-30.
+     This read `assert.ok(metrics.backgroundAlpha >= 0.9, "workspace material is
+     not opaque/composited")`, from when the strip was a material with the tabs
+     sitting on it. Rev 05 §05·2 made it canvas — "the register is a strip of
+     canvas the active page is pulled up through", `background: transparent`,
+     pinned in tests/study-workspace-tabs-premium-contract — so the alpha has
+     been 0 in every theme since, and this gate could not pass. It is inverted
+     rather than dropped: a fill here would put a third plane between the page
+     and the window, and the opacity claim it used to make now belongs to the
+     ACTIVE TAB, which is the piece of page and is asserted on the next line. */
+  assert.equal(metrics.backgroundAlpha, 0, `${theme.id}: the register paints a material of its own`);
   assert.ok(metrics.activeAlpha >= 0.9, `${theme.id}: active material alpha is below 0.9`);
   assert.equal(metrics.popoverAlpha, 1, `${theme.id}: All Tabs material is translucent`);
   assert.equal(metrics.popoverOpacity, 1, `${theme.id}: All Tabs capture did not reach settled opacity`);
   assert.equal(metrics.labelOpacity, 1, `${theme.id}: active label opacity is not 1`);
   assert.ok(metrics.railHeight >= 36 && metrics.railHeight <= 40, `${theme.id}: rail is ${metrics.railHeight}px`);
-  // The blur belongs to the material, not the atmosphere — that was the whole
-  // reason Glass and Candlelight stopped being themes.
-  const blurCorrect = theme.material === "translucent"
-    ? metrics.backdropFilter.includes("blur(") && !metrics.backdropFilter.includes("blur(0px)")
-    : metrics.backdropFilter === "none" || metrics.backdropFilter.includes("blur(0px)");
-  assert.equal(blurCorrect, true, `${theme.label}: unexpected blur ${metrics.backdropFilter}`);
+  /* The blur belongs to the material, not the atmosphere — that was the whole
+     reason Glass and Candlelight stopped being themes. It no longer belongs to
+     the REGISTER at all, and this is the same re-canon as the alpha above: a
+     backdrop-filter has nothing to filter through a strip with no fill, and it
+     would blur the page the active tab is continuous with. The line used to
+     require a blur on the two translucent rows and forbid it on the four solid
+     ones; measured on 2026-07-30 it is "none" in all six, which is the strip
+     being canvas rather than a material failing to arrive. The material axis
+     still earns its rows — six atmospheres of contrast, geometry and focus, and
+     six screenshots — but the register's answer to it is the same every time. */
+  assert.equal(
+    metrics.backdropFilter === "none" || metrics.backdropFilter.includes("blur(0px)"),
+    true,
+    `${theme.label}: the register filters the page behind it (${metrics.backdropFilter})`,
+  );
   assert.equal(metrics.actionLayerCount, 1, `${theme.id}: a second action layer is visible`);
   assert.equal(metrics.actionLayerAlpha, 0, `${theme.id}: action toolbar paints a second material`);
   assert.equal(metrics.hitTarget, true, `${theme.id}: active tab center is intercepted`);
@@ -467,6 +519,7 @@ function assertNormalMetrics(theme, metrics, fixtureSignature) {
   assert.equal(metrics.closeVisible, true, `${theme.id}: selected close target is not visible`);
   assert.equal(metrics.typeVisible, true, `${theme.id}: selected type mark is not visible`);
   assert.equal(metrics.groupVisible, true, `${theme.id}: named group affordance is not visible`);
+  assert.equal(metrics.openInStrip, true, `${theme.id}: the new-tab plus is not seated in the tab row`);
   assert.equal(metrics.neutralHalo, true, `${theme.id}: selected tab has a decorative outer halo (${metrics.activeBoxShadow})`);
   assert.ok(metrics.focusVisible && metrics.focusRingWidth >= 2, `${theme.id}: focus ring is below 2px`);
   assert.ok(metrics.focusContrast >= 3, `${theme.id}: focus contrast ${metrics.focusContrast}`);
@@ -577,7 +630,11 @@ try {
         outlineColor: style.outlineColor,
       };
     })()`);
-    if (theme.id === "light") {
+    // The clean tab state, once. Keyed on the ROW rather than on the id: two
+    // rows carry the id "light" — the solid atmosphere and the material the
+    // retired Glass id migrates to — so an id test captured this twice and the
+    // second write landed on the first.
+    if (theme.label === ATMOSPHERE_LABELS.light) {
       await driver.evaluate(`(async () => {
         await document.fonts.ready;
         await new Promise((resolvePromise) => requestAnimationFrame(() => requestAnimationFrame(resolvePromise)));
@@ -711,7 +768,16 @@ try {
     rovingBefore.activeId,
     "ArrowRight must move focus only — selection commits on Enter (manual activation)",
   );
-  await driver.evaluate(`document.activeElement?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }))`);
+  /* A REAL Enter, 2026-07-30. This dispatched a synthetic KeyboardEvent, which
+     worked only because the tab's keydown handler used to intercept Enter and
+     commit the selection itself. That interception was also what made collapse
+     and expand pointer-only — it cancelled the button's own activation, and the
+     click handler is where all three outcomes live — so it is gone, and the
+     keyboard now reaches the same handler the pointer does. An untrusted DOM
+     event has no default action to run, so the gate has to press the key rather
+     than describe it. This is the more faithful test either way: what it asserts
+     now is that a reader's Enter commits, not that one branch exists. */
+  await dispatchKey(cdp, "Enter", "Enter", 13, 0, "\r");
   await driver.waitFor(`document.querySelector('[role="tab"][aria-selected="true"]')?.getAttribute("data-study-tab-id") !== ${JSON.stringify(rovingBefore.activeId)}`);
 
   await driver.evaluate(`document.querySelector("[data-study-all-tabs]")?.click()`);
@@ -770,8 +836,24 @@ try {
     const focusRingWidth = Number.parseFloat(selectedStyle?.outlineWidth ?? "0") || 0;
     const systemSelection = selectedStyle?.forcedColorAdjust === "none"
       && selectedStyle.backgroundColor !== barStyle?.backgroundColor;
-    const systemKeyline = Number.parseFloat(barStyle?.borderBottomWidth ?? "0") >= 1
-      && barStyle?.borderBottomStyle !== "none";
+    /* The register's answer to forced colours is a FIELD, not a keyline.
+       This read
+         Number.parseFloat(barStyle?.borderBottomWidth ?? "0") >= 1
+           && barStyle?.borderBottomStyle !== "none"
+       and there has been no border under the strip since Rev 05 §05·2: a rule
+       there fights the fillet, which is the thing actually joining the tab to
+       the page, and the premium contract forbids one by name. Nothing else in
+       the register draws a line either — the actions cluster's border-left is
+       zeroed in register.css, "separate with interval, not with lines" — so the
+       old check could not pass and was asking for a device the design removed.
+       What has to be true in this mode is that the forced-colours rules REACH
+       the register at all: the bar takes the system's own field with
+       forced-color-adjust off, and the selected tab takes Highlight, which is
+       the line above. */
+    const barFill = barStyle?.backgroundColor ?? "";
+    const systemField = barStyle?.forcedColorAdjust === "none"
+      && barFill !== "transparent"
+      && barFill !== "rgba(0, 0, 0, 0)";
     const minimumTargetSize = targetChecks.every((target) => target.width >= 24 && target.height >= 24);
     const visibleTargetChecks = targetChecks.filter((target) => target.centerVisible);
     const hitTarget = visibleTargetChecks.length > 0
@@ -784,7 +866,7 @@ try {
       rovingTabCount,
       focusRingWidth,
       systemSelection,
-      systemKeyline,
+      systemField,
       minimumTargetSize,
       hitTarget,
       zeroDuration,
@@ -797,18 +879,29 @@ try {
   assert.equal(forcedMetrics.rovingTabCount, 1);
   assert.ok(forcedMetrics.focusRingWidth >= 2, `forced focus is ${forcedMetrics.focusRingWidth}px`);
   assert.equal(forcedMetrics.systemSelection, true, "forced colors did not expose system selection");
-  assert.equal(forcedMetrics.systemKeyline, true, "forced colors did not expose system keylines");
+  assert.equal(forcedMetrics.systemField, true, "forced colors did not reach the register's own field");
   assert.equal(forcedMetrics.minimumTargetSize, true, "a visible Study control is smaller than 24px");
   assert.equal(forcedMetrics.hitTarget, true, "a Study control center is intercepted");
   assert.equal(forcedMetrics.zeroDuration, true, "reduced motion left a Study transition or animation running");
 
   mkdirSync(OUTPUT_DIR, { recursive: true });
-  // One capture per row of the matrix. Writing an empty list would leave the
-  // PASS line below claiming captures that were never taken.
-  assert.equal(
-    pendingScreenshots.length,
-    THEMES.length,
-    `expected one capture per atmosphere/material row, got ${pendingScreenshots.length} of ${THEMES.length}`,
+  /* One capture per row of the matrix, plus the one named state capture.
+     Writing an empty list would leave the PASS line below claiming captures
+     that were never taken — that is what this is for, and it stands.
+
+     It compared `pendingScreenshots.length` against `THEMES.length` alone until
+     2026-07-30, which had not been reachable since the paper-tabs capture was
+     added: the matrix has two "light" rows (solid and translucent), so the
+     `theme.id === "light"` guard fired twice, one write overwrote the other,
+     and the tally read 8 against 6. Counting is what let a duplicate pass for
+     coverage, so the check is on the FILENAMES now — a row that captures twice
+     and a row that never captures are both visible in a sorted list, and
+     neither is visible in a total. */
+  const expectedCaptures = [...THEMES.map((theme) => theme.file), "paper-tabs.png"].sort();
+  assert.deepEqual(
+    pendingScreenshots.map((capture) => capture.file).sort(),
+    expectedCaptures,
+    "every atmosphere/material row must capture exactly once, plus the clean tab state",
   );
   for (const capture of pendingScreenshots) {
     writeFileSync(join(OUTPUT_DIR, capture.file), capture.bytes);

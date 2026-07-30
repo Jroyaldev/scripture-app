@@ -226,7 +226,18 @@ test("workspace-bar QA computes geometry, material, focus, and accessibility ass
     "managementControl",
     "focusRingWidth",
     "systemSelection",
-    "systemKeyline",
+    /* `systemKeyline` was here and is `systemField` as of 2026-07-30. The tour
+       required a border-bottom on the strip under forced colours, and Rev 05
+       §05·2 retired every line in the register — a rule under the strip fights
+       the fillet that joins the tab to the page — so the check was asking for a
+       device the design had removed and the gate could not pass. What it asks
+       for now is that forced colours REACH the register at all: the system's
+       own field, with forced-color-adjust off. */
+    "systemField",
+    /* The strip's own new-tab control, seated in the tab row. Added with the
+       check, because the plus overhung the row by a pixel into the drag band
+       for a day and no source-reading test could have seen it. */
+    "openInStrip",
     "minimumTargetSize",
     "centerVisible",
     "Escape",
