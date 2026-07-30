@@ -78,7 +78,14 @@ interface Raw {
   relation: string; named: boolean; confidence: string; evidence: string;
 }
 
-const rows = readFileSync(SOURCE, "utf-8").trim().split("\n").map((l) => JSON.parse(l) as Raw);
+/* Blank lines are skipped rather than parsed. An extraction pass whose episodes
+   all answered "no references here" writes a file holding one newline and
+   nothing else — legitimate, and until 2026-07-30 it crashed this on
+   `JSON.parse("")` before a single reference was installed. Concatenating
+   several publishers' files makes an empty one likelier still. */
+const rows = readFileSync(SOURCE, "utf-8").split("\n")
+  .filter((l) => l.trim().length > 0)
+  .map((l) => JSON.parse(l) as Raw);
 
 /* Enough of each episode for a moment to be pressed rather than merely read.
    Carried into the index at build time rather than looked up in the renderer:

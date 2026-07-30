@@ -244,12 +244,42 @@ indefinitely and the rest of the batch sat behind them until `pkill -f
 codex-darwin-arm64` released the workers by hand. A killed call costs one
 episode, which a re-run picks up.
 
-**Re-running resumes.** A second pass reads the output file, skips every episode
-already in it, and carries those references forward — so the normal shape of
-this step is: start it early against whatever has landed, run it again when the
-transcription finishes, and pay once per episode. `--restart` forces a full
-re-read. Resume is keyed on the episode, not on its references, so an episode
-that legitimately yielded nothing stays done rather than being retried forever.
+When the re-run is for one named episode rather than for whatever is left,
+`--only <recordId>` reads exactly that (repeatable, and it obeys resume — an
+episode already read stays read unless you also pass `--restart`):
+
+```bash
+node --import tsx scripts/extract-refs-codex.ts \
+  --source five-minutes-church-history --concurrency 1 \
+  --only five-minutes-church-history:podcast:272e0a41-eb9d-4419-b2fb-bb3d551cf3eb \
+  --out ~/Transcripts/codex-refs-five-minutes-church-history.jsonl
+```
+
+**Re-running resumes.** A second pass skips every episode already read and
+carries its references forward — so the normal shape of this step is: start it
+early against whatever has landed, run it again when the transcription
+finishes, and pay once per episode. `--restart` forces a full re-read.
+`--dry-run` reports what a resume would do (`N transcripts, N already read, N
+left to read`) without spending a call, which is the cheap way to confirm a
+source is finished.
+
+What "already read" means is a ledger beside the output —
+`codex-refs-<source>.read-log.json`, one record id per episode answered. It is
+deliberately **not** a `.jsonl`, so the `cat codex-refs-*.jsonl` in step 5
+cannot sweep it into the references; nothing but the extractor reads it. An
+answer of "no references here" is a reading and is recorded; a timeout, crash
+or quota refusal is not, and is retried next pass.
+
+**Corrected 2026-07-30.** This section previously claimed resume was keyed on
+the episode rather than on its references. It was not: `alreadyRead` was
+rebuilt from the record ids appearing in the output rows, and an episode that
+found nothing wrote no row and so left no trace of having been read. The
+sweep that day measured 3,521 transcripts against 3,208 episodes with a
+reference — 313 episodes re-read on every pass, about 309 wasted calls in the
+last one for 22 marginal references. Most are short-form church-history
+episodes that genuinely discuss no passage. Older output files carry no ledger,
+so the first pass after the fix seeds one from their rows; the episodes that
+had yielded nothing are read once more and then stay done.
 
 ---
 
