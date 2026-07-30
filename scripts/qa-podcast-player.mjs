@@ -1828,6 +1828,18 @@ for (const theme of ["dark", "porcelain", "onyx"]) {
      publisher's colour through all four, which is the one thing on it that
      must not follow the theme. */
   await screenshot(`${theme}-resources`, ".living-margin");
+  /* And the column swap in every atmosphere. Both residents are on paper the
+     reader chose — the folded tab, the open player, and the one seam between
+     them — so this is the picture that says whether the two forms still read
+     as one column when the polarity flips. */
+  await clickElement('.podcast-mast-icon[aria-expanded="false"]');
+  await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-expanded") === "true"`);
+  await evaluate(`document.activeElement instanceof HTMLElement && document.activeElement.blur()`);
+  await parkPointer();
+  await screenshot(`${theme}-column-open`);
+  await clickElement('.podcast-mast-icon[aria-expanded="true"]');
+  await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-expanded") === "false"`);
+  await parkPointer();
   if (theme === "dark") await screenshot("ink-dock-in-place");
 }
 
@@ -1893,6 +1905,16 @@ await screenshot("forced-colors-dock", ".podcast-dock");
    covered here from the beginning: the face's hairline, the running mark, the
    ↗ ring, and the plate's one documented opt-out. */
 await screenshot("forced-colors-resources", ".living-margin");
+/* The column in the reader's own two colours: the folded tab's kicker, its
+   seal dot where there is one, and the open player beside it. */
+await clickElement('.podcast-mast-icon[aria-expanded="false"]');
+await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-expanded") === "true"`);
+await evaluate(`document.activeElement instanceof HTMLElement && document.activeElement.blur()`);
+await parkPointer();
+await screenshot("forced-colors-column-open");
+await clickElement('.podcast-mast-icon[aria-expanded="true"]');
+await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-expanded") === "false"`);
+await parkPointer();
 const forcedRoom = await evaluate(`(() => {
   const face = document.querySelector(".resource-card-face");
   const plate = document.querySelector(".resource-card-plate");
