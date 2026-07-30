@@ -15,6 +15,7 @@ import {
   renameStudyWorkspaceGroup,
   selectStudyWorkspaceTab,
   STUDY_WORKSPACE_GROUP_LIMIT,
+  studyWorkspaceGroupCloseAvailability,
   studyWorkspaceOrdinalTabId,
   studyWorkspaceStripTabIds,
   type PassageViewState,
@@ -200,7 +201,26 @@ test("the line names studies, and the strip names none", () => {
   assert.match(line, /aria-keyshortcuts="F2"/);
   assert.match(line, /if \(event\.key !== "F2"\) return;/);
   assert.match(line, /namingNonceRef\.current === namingRequest\.nonce/);
-  assert.doesNotMatch(lineStatements, /Popover|role="dialog"/);
+  /* A POPOVER STANDS IN THIS FILE NOW, 2026-07-30, and the claim it was banned
+     for is untouched. This read
+
+       assert.doesNotMatch(lineStatements, /Popover|role="dialog"/);
+
+     which was the strongest available form of "a study is renamed where its
+     name is" while the line had exactly one surface. It has two: a chip's
+     context menu, in the strip's own idiom. The ban was always on the DIALOG —
+     a float that opens over the page to ask a study for four words, which is
+     what the retired Manage control did — and a menu asks for nothing. What
+     matters is that there is still ONE rename, and every gesture reaches it:
+     the double-click, F2, the naming request that follows a new study, and the
+     menu item all call `beginRename`, which turns the chip into its own field
+     in the row. Four gestures, one field, no dialog. */
+  assert.doesNotMatch(lineStatements, /role="dialog"/,
+    "nothing in the line opens a dialog; a study is named on its own chip");
+  assert.equal([...lineStatements.matchAll(/beginRename\(/g)].length, 4,
+    "one rename, reached by a double-click, F2, the naming request, and the menu");
+  assert.match(line, /data-study-chip-rename=""[\s\S]{0,320}beginRename\(group\.id, label\)/,
+    "the menu's Rename is the same field, not a second one");
 
   const chips = studyLineChips(twoStudies(), bookNames);
   assert.deepEqual(chips.map(({ label, tabCount, current }) => ({ label, tabCount, current })), [
@@ -268,7 +288,21 @@ test("a chip lands on the tab its study was last on", () => {
   );
 
   assert.match(line, /const landing = studyLineLandingTabId\(workspace, group\);/);
-  assert.match(line, /if \(landing && landing !== workspace\.activeTabId\) await onSelectTab\(landing\);/);
+  /* IT REPORTS WHETHER THE PAGE ARRIVED, 2026-07-30. This read
+
+       assert.match(line, /if \(landing && landing !== workspace\.activeTabId\) await onSelectTab\(landing\);/);
+
+     — the whole of what a chip asks for, and it still is: one selection, no
+     filter, nothing else. What changed is that `openStudy` now returns the
+     answer instead of discarding it. The chip's own press still ignores it,
+     because a refusal leaves the line where the page still is either way. The
+     caller that needs it is the menu's "New tab in this study": a tab is
+     opened into the study the page is IN, so a refused landing must not be
+     followed by opening one somewhere else. */
+  assert.match(line, /if \(landing && landing !== workspace\.activeTabId\) return await onSelectTab\(landing\);/);
+  assert.match(line, /const openStudy = useCallback\(async \(groupId: string\): Promise<boolean> =>/);
+  assert.match(line, /onClick=\{\(\) => \{ void openStudy\(chip\.groupId\); \}\}/,
+    "a chip press still discards the answer: a refusal changes nothing anywhere");
   /* A chip asks for ONE thing, and this is the whole of what it asks for.
      An `if (group.collapsed) await onExpandStudy(groupId)` stood in front of it
      for a few hours, because filtering to a folded study would have shown one
@@ -299,14 +333,25 @@ test("selection leads and the line follows, because there is nothing in between"
   assert.doesNotMatch(lineStatements, /onFilterChange|filterStudyId/,
     "the line holds no state about which study it is standing on");
   // The only state it keeps is about the reader's hands — which stop has focus,
-  // whether a chip is currently a field — and about the row's own overflow:
-  // which edges have chips scrolled past them (2026-07-30, both edges rather
-  // than the right alone, matching the strip's fade). None of it is about which
-  // study is current; that has no state to hold.
+  // whether a chip is currently a field, whether a chip has its menu open — and
+  // about the row's own overflow: which edges have chips scrolled past them
+  // (2026-07-30, both edges rather than the right alone, matching the strip's
+  // fade). None of it is about which study is current; that has no state to
+  // hold. `chipMenu` joined the list on 2026-07-30 with the chip's context
+  // menu, and it is the same kind of fact as `renameGroupId`: which chip the
+  // reader has a surface open on, not which study the strip is showing.
+  //
+  // The drop target is deliberately NOT here. A tab dragged over a chip is the
+  // strip's gesture — the strip owns the pointer, the tab and the mutation —
+  // so the line takes `dropTargetStudyId` as a prop and paints it. Holding it
+  // here would be the line keeping a fact about a drag it cannot commit.
   assert.deepEqual(
     [...lineStatements.matchAll(/const \[(\w+),/g)].map((match) => match[1]),
-    ["focusedKey", "focusIntent", "renameGroupId", "renameDraft", "scrollEdges"],
+    ["focusedKey", "focusIntent", "renameGroupId", "renameDraft", "scrollEdges", "chipMenu"],
   );
+  assert.match(line, /dropTargetStudyId: string \| null;/);
+  assert.doesNotMatch(lineStatements, /setDropTarget|dragState|onPointer(Down|Move|Up)/,
+    "the line paints a drop target; it never runs a drag");
   assert.match(line, /export function studyLineActiveStudyId\(/);
   assert.match(line, /return workspace\.tabsById\[workspace\.activeTabId\]\?\.groupId \?\? null;/);
   assert.match(strip, /const activeStudyId = workspace\.tabsById\[workspace\.activeTabId\]\?\.groupId \?\? null;/);
@@ -318,6 +363,112 @@ test("selection leads and the line follows, because there is nothing in between"
   const crossed = selectStudyWorkspaceTab(workspace, "john-3-kjv");
   assert.equal(studyLineActiveStudyId(crossed), "john-study");
   assert.deepEqual(studyLineChips(crossed, bookNames).map((chip) => chip.current), [false, true]);
+});
+
+test("a chip's menu is the strip's menu one row up, and every item is a mutation that already exists", () => {
+  /* THE THIRD AUTHORING GESTURE, 2026-07-30. A chip already IS a study's name,
+     its tabs and its life; the menu says so out loud rather than adding
+     anything to the model. Three items and not one more:
+
+       Rename            → `beginRename`, the field F2 opens, in place.
+       New tab in this study → the study is landed on first, then the palette.
+       Close study       → `closeStudyWorkspaceGroup`, which refuses the last
+                            study and asks before closing one holding several
+                            tabs. The menu adds no exception to either.
+
+     It is the strip's context menu in every particular that a reader or a
+     screen reader can tell apart: the same Popover on the same float under the
+     same class, a `role="menu"` of plain menuitems, `deferMouseFocus`'s
+     preventDefault on each, and the pointer as the anchor. A second menu idiom
+     in the same frame would be two ways of doing one thing. */
+  assert.match(line, /className="scripture-workspace-context-popover"/);
+  assert.match(line, /<div className="scripture-workspace-context-menu" role="menu" data-study-chip-menu="">/);
+  assert.match(line, /onContextMenu=\{\(event\) => \{[\s\S]{0,1200}?setChipMenu\(\{/);
+  /* NO `aria-haspopup`, and that is a decision rather than an omission — the
+     strip's tabs carry none for the same reason. A chip's primary activation
+     is a study; announcing a popup on it promises a key that does not exist,
+     because Enter switches studies and always will. Both devices reach the
+     menu anyway, through one handler: the platform fires `contextmenu` for the
+     Menu key and Shift+F10 on the focused element, so the chip the roving stop
+     is on opens its own menu with no second key path invented here. */
+  assert.doesNotMatch(lineStatements, /aria-haspopup/);
+  assert.match(line, /anchor: new DOMRect\(event\.clientX, event\.clientY, 0, 0\),/);
+  assert.equal([...line.matchAll(/role="menuitem"/g)].length, 3, "three items, and not one more");
+  for (const item of ["data-study-chip-rename", "data-study-chip-new-tab", "data-study-chip-close"]) {
+    assert.ok(line.includes(`${item}=""`), `missing menu item: ${item}`);
+  }
+  assert.match(line, />Rename</);
+  assert.match(line, />New tab in this study</);
+
+  /* CLOSE ROUTES THROUGH THE EXISTING MUTATION and wears its own refusal. The
+     model's availability selector already knows all three answers — the last
+     study cannot be closed at all, a study holding several tabs needs a
+     confirmation, one holding a single tab does not — so the item reads them
+     rather than re-deriving them, and the ellipsis on the copy is the same
+     signal the overview's per-study Close uses for the same reason. */
+  assert.match(line, /const closeAvailability = studyWorkspaceGroupCloseAvailability\(workspace, group\.id\);/);
+  assert.match(line, /disabled=\{closeAvailability === "unavailable"\}/);
+  assert.match(line, /closeAvailability === "decision" \? "Close study…" : "Close study"/);
+  assert.match(line, /await onCloseStudy\(group\.id\);/);
+
+  const sole = createStudyWorkspace(view("ACT", 19), { groupId: "only", passageTabId: "acts-19" });
+  assert.equal(studyWorkspaceGroupCloseAvailability(sole, "only"), "unavailable",
+    "the last study refuses to close, and the item is disabled rather than lying");
+  const pair = twoStudies();
+  assert.equal(studyWorkspaceGroupCloseAvailability(pair, "john-study"), "decision");
+
+  // A tab opens into the study the page is in, so the landing has to succeed
+  // before the palette is asked for one — a tab in a study the reader never
+  // reached is worse than no tab.
+  assert.match(line, /if \(await openStudy\(group\.id\)\) onNewTab\(\);/);
+
+  // A study that closes under an open menu takes the menu with it, the same
+  // rule the rename field has kept since the line was built.
+  assert.match(
+    line,
+    /if \(!chipMenu\) return;\s*if \(workspace\.groups\.some\(\(group\) => group\.id === chipMenu\.groupId\)\) return;\s*setChipMenu\(null\);/,
+  );
+});
+
+test("a chip is a live drop target in the register's own ink, and the strip is what says so", () => {
+  /* DRAG A TAB ONTO A STUDY and it moves there. The gesture spans two
+     components — the tab is the strip's, the chip is the line's — and this is
+     the seam, stated from the line's side.
+
+     The line paints and does not decide. `dropTargetStudyId` arrives as a prop,
+     the chip wears an attribute, and there is no pointer handler anywhere in
+     this file: the strip owns the pointer, the tab, and `onMoveTab`. That is
+     the same rule the whole line is built on — it never leads, it follows —
+     applied to a gesture instead of to a selection. */
+  assert.match(line, /data-study-drop-target=\{dropTargetStudyId === chip\.groupId \|\| undefined\}/);
+
+  /* THE INK IS THE STRIP'S OWN. The register already answers "where will this
+     land" with a 2px --text-secondary bar standing between two tabs; a chip
+     answers the same question with the same bar laid along its baseline. The
+     negative half is the point: no fill, no tint, no dashed outline, nothing
+     that pulses. A drop target that lights up is a browser announcing it is a
+     browser, and this row is the frame's quietest ink on purpose. */
+  const dropMark = styles.slice(
+    styles.indexOf('.scripture-study-chip[data-study-drop-target]::before {'),
+    styles.indexOf('}', styles.indexOf('.scripture-study-chip[data-study-drop-target]::before {')),
+  );
+  assert.match(dropMark, /height: 2px;/);
+  assert.match(dropMark, /background: var\(--text-secondary\);/);
+  assert.doesNotMatch(dropMark, /box-shadow|outline|animation|dashed/);
+  const stripDropMark = styles.slice(
+    styles.indexOf('.scripture-workspace-tab-wrap[data-study-drop="before"]::before,'),
+    styles.indexOf('}', styles.indexOf('.scripture-workspace-tab-wrap[data-study-drop="before"]::before,')),
+  );
+  assert.match(stripDropMark, /background: var\(--text-secondary\);/,
+    "the two rows answer the same question in the same ink");
+  // Forced colours flattens the hue away, so the bar is redrawn in the system's
+  // own ink — and in the selection's ink over the current study's Highlight
+  // fill, or the answer vanishes in the one mode that cannot afford to lose it.
+  assert.match(styles, /\.scripture-study-chip\[data-study-drop-target\]::before \{ background: CanvasText; \}/);
+  assert.match(
+    styles,
+    /\.scripture-study-chip\[aria-current="true"\]\[data-study-drop-target\]::before \{ background: HighlightText; \}/,
+  );
 });
 
 test("no renderer state about studies reaches a persisted field", () => {

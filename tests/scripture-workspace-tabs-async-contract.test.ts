@@ -33,6 +33,17 @@ test("workspace strip exposes one async intent boundary for every context mutati
   assert.match(source, /onSelect: \(tabId: string\) => Promise<boolean>/);
   assert.match(source, /onClose: \(tabId: string\) => Promise<boolean>/);
   assert.match(source, /onCloseGroup: \(groupId: string\) => Promise<boolean>/);
+  assert.match(source, /onPromoteTab: \(tabId: string\) => Promise<boolean>/);
+  /* ONE CALLBACK HERE IS DELIBERATELY VOID, 2026-07-30, and it is the only one.
+     `onTabDragOverStudy` reports which study chip a dragged tab is currently
+     over so the row above can paint it. Nothing is committed by hovering, so
+     there is no approval to wait for and no state to roll back — giving it the
+     intent boundary's shape would claim a decision it does not make. The DROP
+     is `onMoveTab`, which has the boundary like every other mutation. */
+  assert.match(source, /onTabDragOverStudy: \(groupId: string \| null\) => void;/);
+  const promote = section("const handlePromoteTab", "const handleReorderTab");
+  assert.match(promote, /await runApprovedIntent\([\s\S]{0,120}onPromoteTab\(tabId\)/);
+  assert.match(promote, /scheduleCommittedTabFocus\(tabId, true\)/);
   /* `onToggleGroup` was here and went on 2026-07-30 with the collapse gesture.
      Folding a study got its tabs out of the strip; the strip holds one study's
      tabs by construction now, so nothing in the register reads `collapsed` and

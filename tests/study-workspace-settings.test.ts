@@ -7,6 +7,38 @@ import {
   normalizeStudyWorkspace,
   type PersistedPassageViewState,
 } from "../src/electron/study-workspace-settings.js";
+import {
+  createStudyWorkspace,
+  openEntityWorkspaceTab,
+  openPassageWorkspaceTab,
+  promoteStudyWorkspaceTabToNewGroup,
+  renameStudyWorkspaceGroup,
+  type PassageViewState,
+} from "../src/renderer/utils/studyWorkspace.js";
+
+/**
+ * A renderer-side view, for the round-trip proofs at the foot of this file.
+ *
+ * The renderer's model and this validator have to stay shape-identical or every
+ * save fails, so the honest way to prove a new mutation is safe is to build the
+ * state with the real mutation and hand it to the real validator.
+ */
+function rendererView(book: string, chapter: number): PassageViewState {
+  return {
+    book,
+    chapter,
+    packageId: "bsb",
+    verse: 1,
+    verseOffset: 0,
+    scrollTop: 0,
+    margin: {
+      activeTab: "overview",
+      scope: null,
+      scrollTopByTab: {},
+      wordsFollowingReading: true,
+    },
+  };
+}
 
 function view(book = "ACT", chapter = 19, packageId = "bsb"): PersistedPassageViewState {
   return {
@@ -899,4 +931,62 @@ test("kept context is ignored when no valid explicit lastRead seeded the home", 
   assert.equal(home?.kind, "passage");
   if (home?.kind !== "passage") return;
   assert.equal(home.session.current.margin.scope, null);
+});
+
+test("a study promoted out of another round-trips the validator byte for byte", () => {
+  /* THE PROOF THAT THE NEW MUTATION CHANGED NO SHAPE, 2026-07-30.
+
+     `promoteStudyWorkspaceTabToNewGroup` was added to the renderer model so a
+     tab could found a study of its own, and it touches nothing here: no new
+     field, no new label kind, no new limit. The claim is not "we did not edit
+     this file" — it is that the state the mutation produces is a state this
+     validator accepts and hands back UNCHANGED, which is the only version of
+     the claim that matters. The save path is
+     `isStudyWorkspaceSnapshotAcknowledged`, a canonical-JSON deep equality
+     against whatever the main process wrote back, so a payload this validator
+     rewrites in any particular is a workspace that never saves again.
+
+     Three rewrites were live risks and each is exercised below: a group whose
+     `homePassageTabId` is not among its own tabs (rewritten to the group's
+     first passage), an entity whose `returnPassageTabId` names a passage in
+     another group (rewritten to null), and a group with no passage at all
+     (rejected outright). The mutation re-homes the source, carries research
+     with its passage, and refuses a study's last passage — so none of the
+     three can be produced. */
+  const initial = createStudyWorkspace(rendererView("ACT", 19), {
+    groupId: "study-1",
+    passageTabId: "acts-19",
+  });
+  const withJohn = openPassageWorkspaceTab(initial, {
+    id: "john-3",
+    sourceTabId: "acts-19",
+    view: rendererView("JHN", 3),
+  }).state;
+  const withPaul = openEntityWorkspaceTab(withJohn, {
+    id: "paul",
+    sourceTabId: "john-3",
+    entityId: "person:paul",
+    entityKind: "person",
+    nonce: 4,
+    origin: rendererView("JHN", 3),
+    returnPassageTabId: "john-3",
+  }).state;
+
+  // The home passage promoted, so the source re-homes and research travels.
+  const promoted = promoteStudyWorkspaceTabToNewGroup(withPaul, {
+    tabId: "john-3",
+    groupId: "study-2",
+  });
+  assert.equal(promoted.outcome, "opened");
+  const settled = renameStudyWorkspaceGroup(promoted.state, "study-2", "Sunday evening");
+
+  for (const [name, value] of [
+    ["a promoted study", promoted.state],
+    ["a promoted study the reader has named", settled],
+  ] as const) {
+    const round = normalizeStudyWorkspace(JSON.parse(JSON.stringify(value)));
+    assert.equal(round.ok, true, `${name} must be a workspace the validator accepts`);
+    assert.deepEqual(round.value, JSON.parse(JSON.stringify(value)),
+      `${name} must come back from the validator unchanged`);
+  }
 });

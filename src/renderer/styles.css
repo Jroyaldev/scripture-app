@@ -1837,6 +1837,33 @@ html, body, #root {
   color: var(--text-primary);
 }
 
+/* A CHIP THE POINTER IS OVER WITH A TAB IN HAND, in the register's own ink for
+   exactly this. The strip already answers "where will it land" with a 2px
+   --text-secondary bar between two tabs; a chip answers the same question with
+   the same bar, laid along its baseline instead of stood on end. Nothing else
+   changes but the label's ink, which lifts so the name being aimed at is
+   legible while the pointer is on it.
+
+   What it deliberately is not: a filled well, a dashed outline, a tint, or
+   anything that pulses. A drop target that lights up is a browser announcing
+   it is a browser, and this row is drawn in the frame's quietest ink on
+   purpose. The mark is also strictly transient — the strip clears it on drop
+   and on cancel — so it can never be mistaken for state. */
+.scripture-study-chip[data-study-drop-target] {
+  color: var(--text-primary);
+}
+
+.scripture-study-chip[data-study-drop-target]::before {
+  content: "";
+  position: absolute;
+  right: 4px;
+  bottom: 2px;
+  left: 4px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--text-secondary);
+}
+
 /* THE SEAL MARKS A NAME, and this is the assertion the premium contract left a
    place for. The kicker's 2 x 11 slate mark was Law 3's ink for something the
    app INFERRED, and retired with it. Every study is authored now, so a seal on
@@ -3227,6 +3254,13 @@ html, body, #root {
   .scripture-study-chip-seal { background: CanvasText; }
   .scripture-study-chip[aria-current="true"] .scripture-study-chip-seal { background: HighlightText; }
   .scripture-study-chip-label::after { visibility: hidden; }
+  /* The drop bar is a hue in the ordinary sheet and forced colours have none,
+     so it is redrawn in the system's ink — and in the selection's ink when the
+     target happens to be the study you are already in, or the bar disappears
+     into the Highlight fill and the answer to "where will it land" is lost in
+     the one mode that cannot afford to lose it. */
+  .scripture-study-chip[data-study-drop-target]::before { background: CanvasText; }
+  .scripture-study-chip[aria-current="true"][data-study-drop-target]::before { background: HighlightText; }
 
   .scripture-workspace-tab[aria-selected="true"] { background: Highlight; color: HighlightText; }
   .scripture-workspace-tab[aria-selected="true"]::after { background: HighlightText; }

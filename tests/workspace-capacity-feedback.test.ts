@@ -152,7 +152,10 @@ test("every capacity-producing desktop workspace action reports its outcome", ()
     ["const openEntityResearchAt", "const openEntityResearch ="],
     ["const branchEntityResearch", "const returnEntityOrigin"],
     ["const returnEntityOrigin", "const selectWorkspaceTab"],
-    ["const moveWorkspaceTab", "const reopenRecentWorkspaceItem"],
+    ["const moveWorkspaceTab", "const promoteWorkspaceTabToNewStudy"],
+    // A tab founding a study of its own meets the same 16-study cap the study
+    // line's + meets, and reports it in the same unit through the same lane.
+    ["const promoteWorkspaceTabToNewStudy", "const reopenRecentWorkspaceItem"],
     ["const reopenRecentWorkspaceItem", "const updateEntityResearchTrail"],
   ] as const) {
     assert.match(

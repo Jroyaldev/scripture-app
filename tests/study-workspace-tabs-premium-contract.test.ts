@@ -547,8 +547,24 @@ test("no dialog opens over the page to ask a study for its name", () => {
     "utf8",
   );
   assert.match(line, /className="scripture-study-rename"/);
-  assert.doesNotMatch(line, /Popover|role="dialog"/,
-    "a study is renamed where its name is, not in a float over the page");
+  /* 2026-07-30, the authoring gestures. This read
+
+       assert.doesNotMatch(line, /Popover|role="dialog"/,
+         "a study is renamed where its name is, not in a float over the page");
+
+     and the reason stands while the regex no longer can: the line grew a
+     chip context menu, in the strip's own idiom, holding Rename / New tab in
+     this study / Close study. A menu is not what this test was written
+     against. What it was written against is a float that OPENS OVER THE PAGE
+     TO ASK A STUDY FOR ITS NAME — the retired Manage control's dialog, whose
+     initial-focus decision was the defect above — and there is still no such
+     thing anywhere: the menu's Rename lands in `beginRename`, which turns the
+     chip into a field in the row, exactly where a double-click and F2 land.
+     So the claim is restated as the two facts that carry it. */
+  assert.doesNotMatch(line, /role="dialog"/,
+    "no float in the line asks a study for its name");
+  assert.match(line, /data-study-chip-rename=""[\s\S]{0,320}beginRename\(group\.id, label\)/,
+    "a study is renamed where its name is, from every gesture that offers it");
   assert.match(
     stylesSource,
     /\.scripture-study-rename input:focus-visible \{\s*outline: 2px solid var\(--study-gold\);/,

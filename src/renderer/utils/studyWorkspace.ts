@@ -789,6 +789,137 @@ export function moveStudyWorkspaceTab(
   };
 }
 
+/**
+ * May this tab found a study of its own?
+ *
+ * Three refusals, and each one is a shape the persisted model cannot hold
+ * rather than a policy:
+ *
+ *   · an ENTITY tab cannot found one. Every group must own a passage — the
+ *     validator reserves one per group and rejects a workspace without it —
+ *     so a study made of research alone is not expressible.
+ *   · a tab that is its study's ONLY passage cannot leave it. The study it
+ *     left would have none, which is the same refusal from the other side, and
+ *     the act would be a rename of the study you are already in rather than a
+ *     new one.
+ *   · sixteen studies is the cap, and it is reported in its own unit so the
+ *     caller can say so.
+ *
+ * `"unavailable"` is a disabled menu item; `"study-limit"` is the same cap the
+ * study line's + meets, and the caller reports it through the capacity lane.
+ */
+export function studyWorkspaceTabPromoteAvailability(
+  state: StudyWorkspaceStateV2,
+  tabId: string,
+): "direct" | "study-limit" | "unavailable" {
+  const tab = state.tabsById[tabId];
+  const group = tab
+    ? state.groups.find((candidate) => candidate.id === tab.groupId
+      && candidate.tabIds.includes(tab.id))
+    : undefined;
+  if (!tab || !group || tab.kind !== "passage") return "unavailable";
+  const remainingPassages = group.tabIds.filter((candidateId) => (
+    candidateId !== tab.id && state.tabsById[candidateId]?.kind === "passage"
+  )).length;
+  if (remainingPassages < 1) return "unavailable";
+  if (state.groups.length >= STUDY_WORKSPACE_GROUP_LIMIT) return "study-limit";
+  return "direct";
+}
+
+/**
+ * A NEW STUDY FROM AN EXISTING TAB — the tab LEAVES, it is not copied.
+ *
+ * `createStudyWorkspaceGroup` is the + control's path and it mints a fresh
+ * passage tab cloned from the view you are on, which is right for "start a
+ * study here" and wrong for "this tab is its own study": it costs a tab slot,
+ * and it leaves the original where it was so the reader ends up with two.
+ * There was no move-into-a-NEW-group anywhere in the model — `moveStudyWorkspaceTab`
+ * requires its target to already exist — and composing one out of create + move
+ * + close fires a confirmation dialog for the common case, spends a tab against
+ * the 64 cap, and leaves a placeholder in `recentlyClosed`. So this is a first
+ * class mutation, and it reuses `moveTabRecords`' bookkeeping rather than
+ * repeating it.
+ *
+ * RESEARCH TRAVELS WITH ITS PASSAGE, and that is a persistence requirement
+ * rather than a courtesy. An entity tab's `returnPassageTabId` must name a
+ * passage in its OWN group: the validator nulls a return link that points
+ * outside the group (`study-workspace-settings.ts`, canonical tabs), the save
+ * is a canonical-JSON round-trip equality check, and a rewritten payload fails
+ * every subsequent write. Leaving a passage's dependents behind would therefore
+ * not merely orphan them — it would stop the workspace saving. `move-branch`
+ * moves them for the same reason.
+ *
+ * THE SOURCE RE-HOMES rather than refusing. If the promoted tab was its study's
+ * home passage, the study it left takes the nearest remaining passage as its
+ * home — exactly what `removeTabsFromGroup` does when a home passage is closed,
+ * through the same helper. A group whose `homePassageTabId` is not among its
+ * own tabs is another payload the validator rewrites.
+ *
+ * SELECTION FOLLOWS THE TAB. The new study is activated on the tab that founded
+ * it, which is what makes the strip show it and what lets the caller open the
+ * naming invitation on the new chip — the same two steps the + takes.
+ */
+export function promoteStudyWorkspaceTabToNewGroup(
+  state: StudyWorkspaceStateV2,
+  input: { tabId: string; groupId: string },
+): WorkspaceMutationResult {
+  const tab = state.tabsById[input.tabId];
+  const sourceGroup = tab
+    ? state.groups.find((group) => group.id === tab.groupId && group.tabIds.includes(tab.id))
+    : undefined;
+  if (!tab || !sourceGroup || state.groups.some((group) => group.id === input.groupId)) {
+    return { state, outcome: "unchanged" };
+  }
+  const availability = studyWorkspaceTabPromoteAvailability(state, tab.id);
+  if (availability === "unavailable") return { state, outcome: "unchanged" };
+  if (availability === "study-limit") return { state, outcome: "group-limit" };
+  const dependents = dependentEntityTabIds(state, sourceGroup, tab.id);
+  const moving = [tab.id, ...dependents];
+  const homePassageTabId = sourceGroup.homePassageTabId === tab.id
+    ? nearestRemainingPassageId(
+        state,
+        sourceGroup,
+        new Set(moving),
+        sourceGroup.tabIds.indexOf(tab.id),
+      )
+    : sourceGroup.homePassageTabId;
+  if (!homePassageTabId) return { state, outcome: "unchanged" };
+  const rehomedSource: StudyWorkspaceGroup = { ...sourceGroup, homePassageTabId };
+  const born: StudyWorkspaceGroup = {
+    id: input.groupId,
+    homePassageTabId: tab.id,
+    tabIds: [],
+    lastActiveTabId: tab.id,
+    collapsed: false,
+    label: { kind: "automatic" },
+  };
+  const seeded: StudyWorkspaceStateV2 = {
+    ...state,
+    groups: [
+      ...state.groups.map((group) => (group.id === sourceGroup.id ? rehomedSource : group)),
+      born,
+    ],
+  };
+  const moved = moveTabRecords(seeded, moving, rehomedSource, born);
+  /* A STUDY BORN HERE IS BORN UNFROZEN when one tab founds it.
+     `moveTabRecords` freezes an automatic destination label, because a study
+     that GAINS a sibling should stop renaming itself every time its home tab
+     navigates. A study founded by a single passage has no sibling yet — it is
+     exactly the lone passage a live label is for — and the + control's new
+     study is born unfrozen for the same reason. When research travels with the
+     passage the study IS born with siblings, and the freeze already applied is
+     the right one. */
+  const settled = dependents.length === 0
+    ? {
+        ...moved,
+        groups: moved.groups.map((group) => (group.id === born.id
+          ? { ...group, label: { kind: "automatic" as const } }
+          : group)),
+      }
+    : moved;
+  return { state: activateStudyWorkspaceTab(settled, tab.id), outcome: "opened" };
+}
+
 function fallbackTabIdAfterRemoval(
   state: StudyWorkspaceStateV2,
   sourceGroup: StudyWorkspaceGroup,
