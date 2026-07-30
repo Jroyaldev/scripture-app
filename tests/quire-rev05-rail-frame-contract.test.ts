@@ -234,18 +234,25 @@ test("one vertical axis runs through every tile in the rail", () => {
   const rail = read(RAIL);
   assert.match(ruleBlocks(css, ".brand-row")[0]!, /gap: 8px;/);
   assert.match(ruleBlocks(css, ".nav-item")[0]!, /gap: 8px;/);
-  for (const selector of [
-    ".rail-held", ".rail-study-kicker", ".rail-study-list",
-    /* The study switcher, added 2026-07-29 when group heads left the tab strip.
-       It is the first thing in the rail that navigates — the study block beside
-       it is explicitly "not a second way to navigate", and that still holds for
-       the block. The switcher is a different object with a different job, and
-       it answers to the same column as everything else here. */
-    ".rail-studies-list",
-  ]) {
+  /* `.rail-studies-list` was added to this list on 2026-07-29 — the study
+     switcher, "the first thing in the rail that navigates" — and removed with
+     it on 2026-07-30. The column is unchanged and so is the claim about it;
+     what went is one more thing that had to answer to it. The switcher could
+     not tell two studies apart, which is a switcher's whole job, and switching
+     is the study line's now. */
+  for (const selector of [".rail-held", ".rail-study-kicker", ".rail-study-list"]) {
     assert.match(ruleBlocks(rail, selector)[0]!, /var\(--rail-label-x\)/,
       `${selector} left the rail's label column behind`);
   }
+  /* And the rail navigates nothing again. The study block's rule — "it may not
+     be a second way to navigate; nothing in here is a button, nothing has a
+     hover state" — was reversed for exactly one section for exactly one day,
+     and this is what puts it back: no rule in the rail's own sheet may style a
+     study row as pressable. Declarations only, since the note above quotes the
+     device that is gone. */
+  const railDeclarations = rail.replace(/\/\*[\s\S]*?\*\//g, "");
+  assert.doesNotMatch(railDeclarations, /\.rail-studies/,
+    "the rail reports what is open and does not switch between studies");
 });
 
 test("the active mark is on the right edge, its reserve is present at rest, and no row is a fill", () => {

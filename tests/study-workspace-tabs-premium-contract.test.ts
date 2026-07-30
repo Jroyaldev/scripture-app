@@ -288,11 +288,15 @@ test("the register is a strip of canvas the active page is pulled up through", (
   // bracket's hairline over the first member — and Rev 05 §05·2 retires it, so
   // the assertion is inverted rather than dropped: no pseudo-element of the
   // group label may draw a rule again.
-  /* The kicker's 9px mono went to the rail with the kicker. The rail sets a
-     study's name in the UI face at 12px, because a column has room for a name
-     to be read rather than glanced at — see .rail-studies-name. */
+  /* The kicker's 9px mono went to the rail with the kicker, and came back on
+     2026-07-30 when the rail's switcher was removed for not being able to tell
+     two studies apart. A study's name is set in the register again, and in the
+     register's own chrome type — but in the ACTIONS CLUSTER, on the control
+     that manages it, never among the tabs. The assertion below is about the
+     kicker's class name and is unchanged; only the sentence about where the
+     name went had to be corrected. */
   assert.doesNotMatch(rail, /\.scripture-workspace-group-tab\b/,
-    "no study label is drawn in the register any more");
+    "no study label is drawn among the tabs any more");
   assert.match(rail, /\.scripture-workspace-active-group small \{[\s\S]{0,260}font: 500 9px\/1 var\(--font-ui\);[\s\S]{0,80}font-variant-numeric: tabular-nums/);
   assert.match(rail, /min-width: 24px/);
   assert.match(rail, /min-height: 24px/);
@@ -461,25 +465,36 @@ test("the group is a kicker at the head of its members, separated by canvas and 
   assert.doesNotMatch(componentStatements, /scripture-workspace-group-rule/);
   assert.doesNotMatch(componentStatements, /data-study-group-bracket|data-study-group-end/);
 
-  /* THE GUARANTEE, RESTATED ON THE THIRD DEVICE.
+  /* THE GUARANTEE, AND WHERE IT NOW LANDS.
      "A group is NAMED, and its name costs the tab row nothing." The bracket
-     cost a 15px band above the row; the kicker cost a slot inside it; the rail
-     costs the row nothing at all, which is the strongest form this claim has
-     taken. So the assertion is now that the strip names no study — and that a
-     study is named somewhere, in the rail's switcher.
+     cost a 15px band above the row; the kicker cost a slot inside it; neither
+     is here, and the row pays nothing for a study's name.
+
+     These two lines used to read
+       assert.match(railSheet, /\.rail-studies-item \{/, "a study is named in the rail instead");
+       assert.match(railSheet, /\.rail-studies-count \{/, "and says how much is inside");
+     and they were true for one day. The rail's switcher is removed — it could
+     not tell two studies apart, which was its only job — so "in the rail
+     instead" is no longer where the guarantee lands, and asserting it would be
+     asserting a device that is gone.
+
+     Where it lands instead is stated below and both halves are in the strip,
+     outside the tab row: the actions cluster's Manage control carries the
+     current study's own name, and a folded study wears its name on the proxy
+     tab that stands for it. That is a smaller claim than the rail made — no
+     count on an unselected study, no way to name a study you are not in — and
+     it is the honest one until the study line arrives.
 
      The 176px cap went with the kicker and is not missed: it existed because an
      unbounded run of 9px caps across a horizontal strip was the defect the whole
-     family of devices was drawn to replace. A column has no such problem; the
-     rail ellipses at its own width. */
+     family of devices was drawn to replace. */
   assert.doesNotMatch(componentStatements, /scripture-workspace-group-tab|scripture-workspace-group-head/,
-    "no element in the strip stands for a study");
-  const railSheet = readFileSync(
-    resolve(import.meta.dirname, "../src/renderer/styles/rail.css"),
-    "utf8",
-  );
-  assert.match(railSheet, /\.rail-studies-item \{/, "a study is named in the rail instead");
-  assert.match(railSheet, /\.rail-studies-count \{/, "and says how much is inside");
+    "no element among the TABS stands for a study");
+  assert.match(componentSource, /className="scripture-workspace-active-group"/,
+    "a study is named by the control that manages it");
+  assert.match(componentSource, /aria-label=\{`Manage \$\{activeGroup\.label\}`\}/);
+  assert.match(componentSource, /const visibleLabel = collapsedProxy \? groupLabel : label/,
+    "and a folded study wears its own name on the proxy that stands for it");
 
   /* The slate mark went with the kicker it sat on. It was Law 2's mark at the
      smallest scale it appears — 2 x 11 — in Law 3's ink for something the app
@@ -602,9 +617,10 @@ test("no control in the register is left to the platform to draw", () => {
   const focusSelectors = rail.slice(focusStart, rail.indexOf("{", focusStart));
   for (const selector of [
     /* .scripture-workspace-group-tab:focus-visible was here and went with the
-       kicker. The rail's switcher is a focusable control too and carries its
-       own ring — .rail-studies-item:focus-visible, asserted in the rail's
-       contract, because it is the rail's control now and not the register's. */
+       kicker. A note followed it pointing at .rail-studies-item:focus-visible
+       as the ring the switcher carried in the rail's stead; the switcher was
+       removed on 2026-07-30 and the rail has no focusable control of its own
+       again. Every ring the register owes is in this list. */
     ".scripture-workspace-context-menu button:focus-visible",
     ".scripture-workspace-active-group:focus-visible",
     ".scripture-workspace-open:focus-visible",

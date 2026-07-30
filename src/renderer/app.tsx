@@ -1885,35 +1885,31 @@ export function App(): React.JSX.Element {
   });
   const studyBlockOverflow = studyBlockPassages.length - studyBlockLines.length;
 
-  /**
-   * Every study, so the rail can switch between them.
-   *
-   * The block above says what is IN the current study; this is the row of
-   * studies themselves, and together they are the switcher the register used to
-   * be. Group heads leave the tab strip because a label among the tabs spends
-   * horizontal space permanently on something a reader wants only when changing
-   * studies — and a rail is a column, so a study's whole name fits where a strip
-   * truncated it.
-   *
-   * Selecting a study lands on the tab it was last on rather than its first: a
-   * study you come back to should open where you left it.
-   */
-  const studySwitcher = studyWorkspace.groups
-    .map((group) => {
-      const tabs = orderedStudyWorkspaceTabs(studyWorkspace, group.id);
-      const holdsActive = tabs.some((tab) => tab.id === studyWorkspace.activeTabId);
-      const landing = holdsActive
-        ? tabs.find((tab) => tab.id === studyWorkspace.activeTabId)
-        : tabs[0];
-      return {
-        id: group.id,
-        label: group.label.kind === "custom" ? group.label.value : "This study",
-        count: tabs.filter((tab) => tab.kind === "passage").length,
-        current: holdsActive,
-        target: landing?.id ?? null,
-      };
-    })
-    .filter((entry) => entry.target !== null);
+  /* THE RAIL'S STUDY SWITCHER IS GONE, 2026-07-30, one day after it arrived.
+     It derived a row per study here and rendered a `.rail-studies` list below,
+     and it went whole rather than in patches because it carried five defects
+     and every one of them was the shape of the thing rather than a slip:
+
+     — Two studies read "This study" twice. The label fell back to that string
+       for any group without a custom name, and an automatic group is the
+       DEFAULT: starting a study from the canvas names it later, if at all. So
+       the switcher only rendered from two studies — the exact state in which
+       its rows were indistinguishable — while every other surface in the app
+       used the derived reference, "Acts 19".
+     — The current row was a dead button. It selected the tab already active,
+       which early-returns, under a pointer cursor and a hover fill.
+     — The others landed on `tabs[0]` while the comment three lines above
+       promised "the tab it was last on". `group.lastActiveTabId` is
+       maintained and was never read.
+     — Below 980px the rail is a 56px bottom bar and the switcher was not in
+       the list of things that go, so a vertical list of studies survived as a
+       flex sibling of the nav, taking width from five icons.
+     — It stacked a second 9px kicker on the study block's, and when the study
+       was named the two repeated each other verbatim.
+
+     The block below stays exactly as it was: it reports what is open in the
+     current study and is explicitly not a way to navigate. Switching studies
+     belongs to the study line, which lands next. */
 
   const commandActions: CommandPaletteAction[] = [
     {
@@ -2094,33 +2090,10 @@ export function App(): React.JSX.Element {
                     : "Writing a connection · navigation held"}
                 </p>
               )}
-              {/* The switcher. Only from two studies — with one there is nothing
-                  to switch between, and a list of one is a label pretending to
-                  be a choice. Each study carries its count so an unselected one
-                  says how much is inside; without that, switching is
-                  exploratory, and you click a study to find out whether the
-                  thing you wanted is in it. */}
-              {studySwitcher.length >= 2 && (
-                <section className="rail-studies" aria-label="Studies">
-                  <p className="rail-study-kicker">Studies</p>
-                  <ul className="rail-studies-list">
-                    {studySwitcher.map((study) => (
-                      <li key={study.id}>
-                        <button
-                          type="button"
-                          className={`rail-studies-item${study.current ? " is-current" : ""}`}
-                          aria-current={study.current || undefined}
-                          data-study-switch={study.id}
-                          onClick={() => { if (study.target) void selectWorkspaceTab(study.target); }}
-                        >
-                          <span className="rail-studies-name">{study.label}</span>
-                          <span className="rail-studies-count">{study.count}</span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              )}
+              {/* The `.rail-studies` switcher stood here for a day and is gone;
+                  the derivation it read carries the reasons. Nothing in the
+                  rail navigates now, which is the rule the block below has
+                  always been under. */}
               {studyBlockPassages.length >= 2 && (
                 <section className="rail-study" aria-label={studyBlockKicker}>
                   <p className="rail-study-kicker">{studyBlockKicker}</p>
