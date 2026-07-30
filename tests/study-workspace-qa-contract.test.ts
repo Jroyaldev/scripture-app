@@ -217,6 +217,17 @@ test("workspace-bar QA captures one identical fixture across four atmospheres an
     "study-line.png",
     "study-line-switched.png",
     "study-line-single.png",
+    /* Added 2026-07-30 with the waking pass: the tour starts a study from the
+       floor IN ONE SESSION and measures the first name again, instead of
+       comparing the resting name to the sixteen-study row across two reloads.
+       Two loads are two lines, and neither of them is a line waking.
+
+       The 1px flip that sent someone looking — the same chip reading 52 then 53
+       — was not sub-pixel layout across reloads. Each shape read was taken the
+       instant its chip existed, which is up to 4px into the chip's own 150ms
+       `translateX(-4px)` entrance; `loadShape` settles the animations now, and
+       that is what the `driver.settle()` inside it is for. */
+    "study-line-woken.png",
     "study-line-many.png",
     "study-line-narrow.png",
     "forced-colors.png",
