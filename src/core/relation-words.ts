@@ -48,6 +48,15 @@ export function relationSaid(relation: ReferenceRelation): string {
 }
 
 /**
+ * Every relation the schema has, with its word — so a fifth value added to
+ * `ReferenceRelation` cannot ship with nothing to say. TypeScript catches the
+ * missing key in `SAID`; this catches a key added here and nowhere a reader
+ * can see it.
+ */
+export const RELATION_WORDS_FIXTURE: ReadonlyArray<readonly [ReferenceRelation, string]> =
+  Object.entries(SAID) as ReadonlyArray<readonly [ReferenceRelation, string]>;
+
+/**
  * The whole claim, for an accessible name — where the row's visual grammar
  * (a dot-separated run) is not available and the sentence has to carry it.
  */

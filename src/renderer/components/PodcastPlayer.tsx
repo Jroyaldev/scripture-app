@@ -874,6 +874,61 @@ type TranscriptMode = "following" | "browsing" | "searching";
 const LADDER_REACH = 3;
 
 /**
+ * The plate, at the size the system's Now Playing panel wants it.
+ *
+ * The record carries no artwork, and going to find one would be a request to a
+ * publisher's server that nobody pressed anything to make — the boundary this
+ * whole surface is built around. So this fetches nothing. It draws the object
+ * the dock already draws: the publisher's own colour under their own approved
+ * mark, unmodified, which is the field that artwork is approved against. See
+ * docs/trusted-resource-permissions, "The player's surface" — the plate is one
+ * object at three sizes now, and the third is 512px because that is the size
+ * MediaSession asks for.
+ *
+ * Both inputs are read off the live dock rather than duplicated here: the
+ * colour from the plate's computed background, and the artwork from the mark's
+ * computed `background-image`, which is where styles.css substitutes the six
+ * approved paths. A source with no approved mark gets no artwork at all — the
+ * same rule as everywhere else on this surface, and a 512px rectangle of a
+ * publisher's colour identifies nobody.
+ *
+ * Everything in here can fail — a mark that has not decoded, a canvas an engine
+ * declines to read back — and none of it is worth a broken dock, so the whole
+ * thing is one try and a null.
+ */
+async function plateArtwork(dock: HTMLElement | null): Promise<MediaImage | null> {
+  try {
+    const mark = dock?.querySelector<HTMLElement>(".podcast-mast-mark");
+    const plate = mark?.parentElement;
+    if (!mark || !plate) return null;
+    const url = /^url\("?(.+?)"?\)$/.exec(getComputedStyle(mark).backgroundImage)?.[1];
+    if (!url) return null;
+    const artwork = new Image();
+    await new Promise<void>((resolve, reject) => {
+      artwork.onload = () => resolve();
+      artwork.onerror = () => reject(new Error("mark"));
+      artwork.src = url;
+    });
+    if (!artwork.naturalWidth) return null;
+    const canvas = document.createElement("canvas");
+    canvas.width = 512;
+    canvas.height = 512;
+    const paint = canvas.getContext("2d");
+    if (!paint) return null;
+    paint.fillStyle = getComputedStyle(plate).backgroundColor;
+    paint.fillRect(0, 0, 512, 512);
+    /* The mast's own clear space, kept: 68% leaves the widest lockup on the
+       shelf the same proportional margin a 26px plate leaves it at 4px. */
+    const width = 512 * 0.68;
+    const height = width * (artwork.naturalHeight / artwork.naturalWidth);
+    paint.drawImage(artwork, (512 - width) / 2, (512 - height) / 2, width, height);
+    return { src: canvas.toDataURL("image/png"), sizes: "512x512", type: "image/png" };
+  } catch {
+    return null;
+  }
+}
+
+/**
  * The dock, and the element it steers. Rendered by App so nothing a reader does
  * inside a passage can take it away; hidden until a reader presses play, which
  * is also the first moment anything is fetched.
@@ -886,11 +941,16 @@ export function PodcastPlayer({
   onNavigate: (book: string, chapter: number, verse?: number, endVerse?: number) => Promise<boolean>;
 }): React.JSX.Element {
   const { showToast } = useToast();
-  const { episode, status } = usePodcastNowPlaying();
+  const nowPlaying = usePodcastNowPlaying();
+  const { episode, status } = nowPlaying;
   const { at, of } = useSyncExternalStore(subscribeElapsed, () => elapsed);
   const walk = usePodcastWalk();
   const walkActive = walk != null;
   const heard = usePodcastHeard();
+  /* The offer stands only when nothing is playing: an episode in the dock IS
+     where the reader is, and two players in one corner is never what anyone
+     meant. */
+  const resumeShown = !nowPlaying.episode && heard != null;
   /* Where the reader's thumb is, which is not yet where the file is. Committing
      on release rather than on every input keeps one seek per drag instead of
      sixty, and one range request on the publisher's server instead of sixty. */
@@ -1040,7 +1100,11 @@ export function PodcastPlayer({
          leaving the last measured height behind as a floor nothing stands on. */
       shell.style.removeProperty("--podcast-dock-h");
     };
-  }, [episode?.id]);
+    /* The resume offer takes the same reservation, because it stands in the
+       same lane: without this it would sit ON the last rows of the study panel
+       on every cold start that has something to offer. One ref does for both —
+       only ever one of the two is in the tree. */
+  }, [episode?.id, resumeShown]);
 
   const armPeek = (next: boolean, pointerType: string): void => {
     /* A pointer that cannot hover has nothing to peek with. Touch fires enter
@@ -1869,10 +1933,13 @@ export function PodcastPlayer({
      runs — through the `latest` ref above, so the handlers can be registered
      once per episode instead of once per render.
 
-     No image is offered. The record carries none, and going to find one would
-     be a request to a publisher's server that nobody pressed anything to make
-     — which is the boundary this whole surface is built around. See
-     docs/trusted-resource-permissions. */
+     The image is the PLATE, drawn here rather than fetched. Amended
+     2026-07-30: no image was offered at all, on the grounds that the record
+     carries none and going to find one would be a request to a publisher's
+     server nobody pressed anything to make. That reasoning is unchanged and
+     this does not touch it — see plateArtwork above, which paints the
+     publisher's own colour under their own approved mark, from a file already
+     on this machine, and hands back null for any source without one. */
   const episodeTitle = episode?.title;
   const episodeSource = episode?.sourceName;
   useEffect(() => {
@@ -1883,6 +1950,19 @@ export function PodcastPlayer({
       return undefined;
     }
     session.metadata = new MediaMetadata({ title: episodeTitle, artist: episodeSource });
+    /* Painted after the metadata rather than with it: the plate is read off
+       the live dock, and on the first frame of a new episode the mark may not
+       have decoded yet. The title and the publisher are on the system's panel
+       immediately either way; the artwork arrives when it can, or never. */
+    let artworkLive = true;
+    void plateArtwork(dockBoxRef.current).then((artwork) => {
+      if (!artworkLive || !artwork || session.metadata?.title !== episodeTitle) return;
+      session.metadata = new MediaMetadata({
+        title: episodeTitle,
+        artist: episodeSource,
+        artwork: [artwork],
+      });
+    });
     const handlers: [MediaSessionAction, MediaSessionActionHandler][] = [
       ["play", () => resumePodcast()],
       ["pause", () => pausePodcast()],
@@ -1910,6 +1990,7 @@ export function PodcastPlayer({
       try { session.setActionHandler(action, handler); } catch { /* not on this engine */ }
     }
     return () => {
+      artworkLive = false;
       for (const [action] of handlers) {
         try { session.setActionHandler(action, null); } catch { /* as above */ }
       }
@@ -2533,16 +2614,20 @@ export function PodcastPlayer({
                    corner has to name what is playing because nothing else on
                    screen does; the sheet already has. Dated 2026-07-30. */
                 null
-              ) : momentClaim && passage ? (
-                /* Shut, and launched from a moment: the corner names the
-                   MOMENT rather than the episode. The episode's title is on
-                   the mast's own plate line and in the accessible name above;
-                   what a reader who pressed "eleven minutes on Romans 8:9-17"
-                   cannot otherwise recover is which eleven minutes, and that
-                   is the one thing this row has space for. */
+              ) : momentClaim ? (
+                /* Shut, and launched from a moment: the corner leads with what
+                   KIND of moment it was, and keeps the episode's name.
+
+                   The passage is on the mast's own line one row up, so
+                   repeating it here would spend the corner's only line saying
+                   "30" twice — which is what the first draft did. What a
+                   reader cannot recover from anywhere else once the sheet is
+                   shut is which of the four claims this is: an episode working
+                   through Romans 8 and one that mentions it in passing are the
+                   same title, the same publisher and the same clock. */
                 <p className="podcast-dock-now" title={episode.title}>
-                  <span className="podcast-dock-now-ref">{chapterSpanLabel(passage)}</span>
-                  <span className="podcast-dock-now-title">{relationSaid(momentClaim.relation)}</span>
+                  <span className="podcast-dock-now-ref">{relationSaid(momentClaim.relation)}</span>
+                  <span className="podcast-dock-now-title">{episode.title}</span>
                 </p>
               ) : (
                 <p className="podcast-dock-title" title={episode.title}>{episode.title}</p>
@@ -2665,11 +2750,12 @@ export function PodcastPlayer({
           Generic treatment on purpose: the name in type, no plate, no
           publisher colour. This is the app remembering something, not the
           publisher announcing themselves on a launch screen. */}
-      {!episode && heard && (
+      {resumeShown && heard && (
         <section
           aria-label="Where you were listening"
           className="podcast-resume"
           data-floating-layer="player"
+          ref={dockBoxRef}
         >
           <button
             className="podcast-resume-take"

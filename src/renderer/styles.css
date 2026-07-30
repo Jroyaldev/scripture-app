@@ -5738,7 +5738,12 @@ html, body, #root {
    beneath it has taken them away. Shortening the box instead gives the panel a
    real bottom edge — with its own radius and its own closing fade landing on
    it — and leaves the player standing below, one gutter clear. */
-.app-shell:has(.podcast-dock) .living-margin {
+/* The resume offer stands in the same lane and takes the same reservation —
+   added 2026-07-30 with it. Without this it lands ON the last rows of the
+   panel on every cold start that has something to offer, which is the one
+   thing the whole reservation exists to prevent. */
+.app-shell:has(.podcast-dock) .living-margin,
+.app-shell:has(.podcast-resume) .living-margin {
   /* The seam is the frame's own, not a separate 24. Every other gap in the
      shell is --pane-gutter now; this one kept spending --sp-xl, so the space
      between the panel and the player read as more than twice the space
@@ -8065,7 +8070,8 @@ html, body, #root {
    103 is the dock's own height and 14 the interval between two floating things.
    scripts/qa-podcast-player.mjs measures the live dock against both numbers, so
    they cannot drift away from the surface they describe in silence. */
-.app-shell:has(.podcast-dock) + .toast-container { --player-lane: calc(var(--podcast-dock-h) + var(--sp-xl)); }
+.app-shell:has(.podcast-dock) + .toast-container,
+.app-shell:has(.podcast-resume) + .toast-container { --player-lane: calc(var(--podcast-dock-h) + var(--sp-xl)); }
 
 .toast {
   --toast-tone: var(--text-tertiary);
@@ -19631,8 +19637,9 @@ button.lang-phrase-diagram-node:focus-visible,
    language on it at all. */
 .taught-here-play {
   --transport-size: 22px;
-  grid-area: play;
 }
+
+.taught-here-row .taught-here-play { grid-area: play; }
 
 .taught-here-row:hover .taught-here-play { filter: brightness(1.06); }
 .taught-here-row:active .taught-here-play { transform: scale(0.94); }
@@ -19664,57 +19671,56 @@ button.lang-phrase-diagram-node:focus-visible,
   white-space: nowrap;
 }
 
+/* ── The meta line WRAPS ───────────────────────────────────────────────────
+   Four facts want this line — who, which passage, when in the episode, and in
+   what way — and a 300px margin column cannot hold them on one row. The first
+   draft clipped each of them to its own ellipsis and produced
+   "40 MINUTES IN THE OL… · 1 Sa… · 1:39 · worked t…", which is four
+   truncations answering none of the four questions.
+
+   So it wraps, to two lines at most. This is a study margin: an entry that
+   takes a second line is what a margin entry does, and nothing here is a
+   column that has to align with the row above it. The episode title above
+   still clips to one line, because a title is long by nature and its first
+   forty characters identify it. */
 .taught-here-meta {
   grid-area: meta;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: 1px 6px;
   min-width: 0;
+  max-height: 3.1em;
   overflow: hidden;
   color: var(--text-tertiary);
   font: 0.6875rem/1.5 var(--font-ui);
-  white-space: nowrap;
 }
 
-/* ── The plate, at a colophon's size ───────────────────────────────────────
-   The same object as the dock's masthead plate and on the same terms: the
-   publisher's colour, carrying their approved mark or their name in their own
-   ink, and nothing else of theirs anywhere on this surface. It replaces the
-   grey name that used to sit in this line, which frees the line for the part
-   that differs between rows.
+/* ── The publisher ─────────────────────────────────────────────────────────
+   Two forms, and which one a source gets is the permission boundary's
+   decision rather than a design one. An approved mark gets the plate: the
+   publisher's own colour under their own artwork, at a colophon's size. A
+   source with no approved mark gets exactly what
+   docs/trusted-resource-permissions prescribes for it — "their name in type,
+   no mark" — and takes no colour at all.
 
-   16px rather than 26px, and the mark scales with it — a printer's device
-   beside an entry rather than a masthead over a page. See
-   docs/trusted-resource-permissions, "The player's surface". */
+   Which means at most six of the eleven shows on this shelf paint anything,
+   and the row stays a margin entry rather than a colour chart. The plate rule
+   itself lives with the marks, further down this file, because a relative
+   url() inside a custom property resolves against the stylesheet that
+   substitutes it. */
 .taught-here-plate {
-  --resource-source: var(--study-gold);
-  --resource-ink: var(--bg-float);
-  --resource-mark: none;
-  --resource-mark-height: 18px;
-  --resource-mark-ratio: 4;
-  --player-mark-h: calc(var(--resource-mark-height) * 0.52);
   display: inline-flex;
   flex: 0 1 auto;
   align-items: center;
   min-width: 0;
-  max-width: 44%;
-  height: 16px;
-  padding: 0 5px;
   overflow: hidden;
-  border-radius: 4px;
-  background: var(--resource-source);
-  color: var(--resource-ink);
 }
 
 .taught-here-mark {
-  flex: 0 1 auto;
-  min-width: 0;
-  max-width: 100%;
   overflow: hidden;
-  font: var(--fw-semibold) 0.5625rem/1 var(--font-ui);
-  letter-spacing: 0.05em;
+  font: var(--fw-medium) 0.6875rem/1.5 var(--font-ui);
   text-overflow: ellipsis;
-  text-transform: uppercase;
   white-space: nowrap;
 }
 
@@ -19722,25 +19728,23 @@ button.lang-phrase-diagram-node:focus-visible,
    rather than the filing. A reader on Romans 8:1 who sees 8:1-4 knows it is
    theirs without a band heading saying so. */
 .taught-here-ref {
-  flex: 0 1 auto;
-  overflow: hidden;
   color: var(--text-secondary);
   font: var(--fw-medium) 0.6875rem/1.5 var(--font-reading);
-  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .taught-here-at {
-  flex: none;
   font-family: var(--font-mono);
   font-size: 0.625rem;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .taught-here-ref::before,
 .taught-here-at::before,
 .taught-here-said::before {
   margin-right: 6px;
-  content: "·";
+  content: "\00b7";
   opacity: 0.6;
 }
 
@@ -19748,11 +19752,7 @@ button.lang-phrase-diagram-node:focus-visible,
    `mention` — 56% of the corpus labelled with a column name — and as an empty
    span in the dock. src/core/relation-words.ts holds the words for both
    surfaces so they cannot drift apart again. */
-.taught-here-said {
-  flex: 0 1 auto;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+.taught-here-said { white-space: nowrap; }
 
 /* ── The density control ───────────────────────────────────────────────────
    Genesis 1's 922 moments used to end at row 25 in a plain <li> reading "897
@@ -19961,6 +19961,7 @@ button.lang-phrase-diagram-node:focus-visible,
    publisher announcing themselves. The publisher survives on the row where it
    is approved to: inside the plate. */
 .taught-here-row,
+.taught-here-walk,
 .podcast-resume {
   --resource-source: var(--study-gold);
   /* A surface colour and a 3px rail are not the same job. Most brands survive
@@ -20347,6 +20348,27 @@ button.lang-phrase-diagram-node:focus-visible,
   height: var(--player-mark-h);
   background: var(--resource-mark) left center / contain no-repeat;
   text-indent: -200vw;
+}
+
+/* And the plate itself, at row scale, for exactly those six. A source with no
+   approved mark takes no plate: its name is set in type in the meta line, which
+   is the generic treatment docs/trusted-resource-permissions prescribes.
+
+   16px rather than the mast's 26px — a printer's device beside an entry rather
+   than a masthead over a page — and --player-mark-h steps down with it. */
+.taught-here-plate[data-source="working-preacher"],
+.taught-here-plate[data-source="bibleproject"],
+.taught-here-plate[data-source="the-gospel-coalition"],
+.taught-here-plate[data-source="enter-the-bible"],
+.taught-here-plate[data-source="naked-bible"],
+.taught-here-plate[data-source="spoken-gospel"] {
+  --player-mark-h: calc(var(--resource-mark-height) * 0.5);
+  height: 16px;
+  max-width: 42%;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: var(--resource-source);
+  color: var(--resource-ink);
 }
 
 .trusted-resource-kind {

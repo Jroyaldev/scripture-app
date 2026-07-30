@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import type { PassageMoment, Proximity } from "../../core/passage-index.js";
 import { proximityOf, verseSpan } from "../../core/passage-index.js";
 import type { ReferenceRelation } from "../../core/references.js";
-import { LISTED_SAID, relationSaid } from "../../core/relation-words.js";
+import { LISTED_SAID, relationSaid, relationSpoken } from "../../core/relation-words.js";
 import type { TranscriptBasis } from "../../core/transcripts.js";
 import type { RankedTrustedResource } from "../../core/resources/trusted-resources.js";
 import type { PodcastEpisode, PodcastPassage, PodcastWalkStop } from "./PodcastPlayer.js";
@@ -137,6 +137,16 @@ export function TaughtHere({
      wanted to read through is a fact about one visit. */
   const [open, setOpen] = useState<Set<string>>(new Set());
   const [shown, setShown] = useState<Record<string, number>>({});
+  /* …and it is the CHAPTER they die with, reset in render rather than in an
+     effect so no frame ever draws the last chapter's answer inside this one's
+     bands. A verse selection re-bands the same chapter's entries and leaves
+     them where the reader put them; a new chapter is a new question. */
+  const [scope, setScope] = useState(`${book}.${chapter}`);
+  if (scope !== `${book}.${chapter}`) {
+    setScope(`${book}.${chapter}`);
+    setOpen(new Set());
+    setShown({});
+  }
   const nowPlaying = usePodcastNowPlaying();
   const runningKey = nowPlaying.status === "idle" || nowPlaying.status === "failed"
     ? null
@@ -229,24 +239,25 @@ export function TaughtHere({
     items: [...band.items].sort((a, b) => (b.timed?.seconds ?? -1) - (a.timed?.seconds ?? -1)),
   })), [entries, verse]);
 
-  /* ── The walk, and its whole extent, worked out before it is offered ──── */
-  const walkStops = useMemo<PodcastWalkStop[]>(() => entries
-    .filter((entry) => entry.timed != null && entry.timed.seconds >= WALK_FLOOR_SECONDS)
-    .sort((a, b) => b.timed!.seconds - a.timed!.seconds)
-    .slice(0, WALK_STOPS)
-    .map((entry) => ({
-      episode: episodeOf(entry),
-      until: entry.timed!.at + entry.timed!.seconds,
-      label: entry.label,
-    })), [entries]);
-  const walkSeconds = useMemo(
-    () => entries
+  /* ── The walk, and its whole extent, worked out before it is offered ────
+     One pass, because the control has to state a count and a total that are
+     facts about the SAME list — two passes with the same filter written twice
+     is how a control ends up promising 47 minutes of twelve treatments it is
+     not going to play. */
+  const walk = useMemo(() => {
+    const stops = entries
       .filter((entry) => entry.timed != null && entry.timed.seconds >= WALK_FLOOR_SECONDS)
       .sort((a, b) => b.timed!.seconds - a.timed!.seconds)
-      .slice(0, WALK_STOPS)
-      .reduce((total, entry) => total + entry.timed!.seconds, 0),
-    [entries],
-  );
+      .slice(0, WALK_STOPS);
+    return {
+      stops: stops.map((entry): PodcastWalkStop => ({
+        episode: episodeOf(entry),
+        until: entry.timed!.at + entry.timed!.seconds,
+        label: entry.label,
+      })),
+      seconds: stops.reduce((total, entry) => total + entry.timed!.seconds, 0),
+    };
+  }, [entries]);
 
   /* ── The two footings, counted over what is actually on screen ────────── */
   const footing = useMemo(() => {
@@ -261,17 +272,31 @@ export function TaughtHere({
 
   if (entries.length === 0) return <></>;
 
-  const walkHours = Math.floor(walkSeconds / 3600);
-  const walkMinutes = Math.round((walkSeconds % 3600) / 60);
+  const walkStops = walk.stops;
+  const walkHours = Math.floor(walk.seconds / 3600);
+  const walkMinutes = Math.round((walk.seconds % 3600) / 60);
   const walkLength = walkHours > 0 ? `${walkHours}h ${walkMinutes}m` : `${walkMinutes}m`;
 
   const row = (entry: Entry): React.JSX.Element => {
     const isRunning = runningKey === entry.key;
     const said = entry.timed ? relationSaid(entry.timed.relation) : LISTED_SAID;
+    /* The row's own sentence, rather than its six spans read end to end.
+       Spoken, "Romans 8:9-17 · 0:26 · brought in alongside" is a list of
+       fragments; the relation vocabulary carries a spoken form for exactly
+       this, and the dot-separated run is the visual grammar's business.
+
+       `aria-pressed` is deliberately absent. The row is not a toggle: a press
+       on a row carrying a moment is a request to HEAR that moment, and
+       pressing the one already running seeks back to it rather than stopping
+       it — which is the whole of §7.1. So the running state is said in words
+       instead of announced as a stuck button. */
+    const spoken = entry.timed
+      ? `${relationSpoken(entry.timed.relation, entry.label)}, ${extentOf(entry.timed.seconds)} from ${clockOf(entry.timed.at)}`
+      : `${entry.label} is ${LISTED_SAID}`;
     return (
       <li key={entry.key}>
         <button
-          aria-pressed={isRunning}
+          aria-label={`${isRunning ? "Now playing. " : ""}Hear ${entry.episode}, ${entry.sourceName}. ${spoken}.`}
           className="taught-here-row"
           data-running={isRunning ? "true" : undefined}
           /* The whole row is the press, and the transport's face sits on it —
@@ -287,10 +312,14 @@ export function TaughtHere({
             {entry.timed ? extentOf(entry.timed.seconds) : entry.kind}
           </span>
           <span className="taught-here-meta">
-            {/* The publisher, in the one form the permissions boundary allows
-                off their own surface: their colour under their own approved
-                mark, or their name in it. See the plate at the dock's mast —
-                this is the same object at a colophon's size. */}
+            {/* The publisher. Which FORM this takes is the permission
+                boundary's decision rather than a design one, and it is made in
+                the stylesheet where the approved marks live: a source with an
+                approved mark gets the plate — their colour under their own
+                artwork, the dock's own object at a colophon's size — and every
+                other source gets its name in type and no colour at all, which
+                is what docs/trusted-resource-permissions already prescribes
+                for them. Six of eleven, so the column stays a margin. */}
             <span className="taught-here-plate" data-source={entry.sourceId}>
               <span className="taught-here-mark">{entry.sourceName}</span>
             </span>
@@ -428,7 +457,7 @@ export function TaughtHere({
             ? "Machine-read from published audio, with these publishers' permission."
             : footing.granted === 0
               ? `Machine-read from published audio. ${footing.unasked === 1 ? "This publisher has" : `These ${footing.unasked} publishers have`} not been asked yet.`
-              : `Machine-read from published audio. ${footing.granted} of these ${footing.granted + footing.unasked} publishers gave permission; ${footing.unasked} have not been asked yet.`}
+              : `Machine-read from published audio. ${footing.granted} of these ${footing.granted + footing.unasked} publishers gave permission; ${footing.unasked} ${footing.unasked === 1 ? "has" : "have"} not been asked yet.`}
         </p>
       )}
     </section>

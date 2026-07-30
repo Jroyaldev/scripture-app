@@ -36,6 +36,17 @@ Adding a source means two edits and they are held together by a test:
 That test exists because a capability shipping as though it had been granted is
 the failure worth making impossible, not the one worth remembering.
 
+The basis recorded beside the id — `publisher-granted` or `public-feed` —
+reaches a reader as of 2026-07-30. It travels on every moment as
+`PassageMoment.basis`, attached in `readPassageIndex` from the map rather than
+read from the artifact, and it is said once at the foot of the chapter's
+"Taught here" surface and once under the episode in the player's sheet. A new
+source on the second footing therefore changes a sentence a reader can see, not
+only a constant: *"3 of these 8 publishers gave permission; 5 have not been
+asked yet."* Nothing else about the treatment differs — the gate is binary and
+both footings pass it — which is the position `docs/trusted-resource-permissions`
+takes and now keeps in the product.
+
 The source also needs `mediaHosts` in its manifest and its audio host in the
 renderer's CSP (`src/renderer/index.html`) or nothing will play — those are the
 audio grant, which is separate and may predate the transcript grant.

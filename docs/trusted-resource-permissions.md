@@ -101,6 +101,48 @@ and that the fitted accent clears 4.5:1 against the ground it sits on. A rule
 that paints anything else on this surface in a publisher's colour is a
 regression, and that tour is what catches it.
 
+#### The plate at two sizes — amended 2026-07-30
+
+The chapter's episodes are now drawn on one margin surface
+(`src/renderer/components/TaughtHere.tsx`) rather than two, and its rows carry
+the same plate at a smaller size. This section is amended rather than extended:
+**the plate is one object at two sizes**, 26px at the dock's masthead and 16px
+on a margin row, and no fourth crossing is added.
+
+Three things follow, and they are narrower than the dock's terms rather than
+looser:
+
+1. **The plate appears on a row only where a mark is approved.** Six of the
+   eleven sources have one. The other five take exactly what the second-footing
+   section below already prescribes — "their name in type, no mark" — and their
+   rows carry no publisher colour at all. Twenty-five rows from eight
+   publishers each painting their own colour would be a colour chart rather
+   than a margin, and the rule that already governs marks happens to produce
+   the right restraint by itself.
+2. **The accent does not cross onto the row.** `--player-accent` is declared
+   for `.taught-here-row` at its DEFAULT value — the app's own gold — so the
+   transport face on every row is the app's, not the publisher's. The
+   publisher's accent stays where this section put it: the dock, which is one
+   episode the reader chose.
+3. **The name still stands in the accessibility tree** in both forms, as
+   above. On a row the plate replaces a grey publisher name that used to sit in
+   the meta line, so nothing is added to the row; something is exchanged.
+
+There is a **third size**, and it leaves the app's window: the artwork handed
+to the system's Now Playing panel is the plate at 512px, painted onto a canvas
+from the publisher's own colour and their own approved mark, both read off the
+live dock. Nothing is fetched to make it — the mark is a file already on this
+machine — and a source with no approved mark gets no artwork, which is the same
+rule stated once more. The alternative was a remote artwork URL, which is the
+request-nobody-pressed this document exists to refuse.
+
+`scripts/qa-podcast-player.mjs` asserts the row's transport face is the app's
+family at 22px, that the merged surface exists exactly once per chapter, that
+the publisher index below it starts no audio at all — which is what stops the
+two surfaces drifting back into two brand policies for the same episodes — and
+that the system artwork is a `data:` image rather than anything on a
+publisher's host.
+
 ## Shipping boundary
 
 The current resource cards may show:
@@ -367,6 +409,29 @@ What that position does **not** say, and what this file exists to keep saying:
   owed; an empty one is the condition for a public listing. A test requires
   every id to carry a basis, so a new source cannot arrive without stating which
   footing it is on.
+
+  **Made true in the product, 2026-07-30.** Until that build the sentence above
+  was aspirational: `transcriptBasis()` and `TRANSCRIPT_UNASKED_SOURCES` were
+  referenced from `tests/transcripts.test.ts` and from nothing in `src/`, while
+  48% of every moment these surfaces show came from a publisher nobody has
+  asked. The basis now travels with the data and reaches the reader in two
+  places, both quiet and both counted rather than assumed:
+
+  - `PassageMoment.basis`, attached in `readPassageIndex` from the map above
+    rather than read from the artifact — an artifact is a file anything can
+    write, and a publisher's footing is a fact about a conversation. The merged
+    margin surface states it once at its foot, counting the shows actually on
+    screen: *"Machine-read from published audio. 3 of these 8 publishers gave
+    permission; 5 have not been asked yet."*
+  - The player's sheet says it for the episode in hand, under the episode's own
+    masthead and beside the `auto` mark that already says no person wrote these
+    words: *"Transcript machine-read from Radically Christian's public feed. We
+    have not asked them yet."*
+
+  It is one sentence per surface, not a badge per row: the footing is a fact
+  about a publisher rather than about an episode, and a notice repeated
+  twenty-five times stops being read. `scripts/qa-podcast-player.mjs` asserts
+  both are present and that the wording matches the basis the map records.
 
 The gate treats both footings alike on purpose — the enforcement is about
 whether a source is enabled at all. What is not allowed to blur is the record of

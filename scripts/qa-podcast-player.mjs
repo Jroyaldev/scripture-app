@@ -144,7 +144,7 @@ async function screenshot(name, selector = null, { settle = 240 } = {}) {
   if (selector) {
     /* Brought into the viewport first. `captureBeyondViewport: false` means a
        clip outside the visible region is a rectangle of nothing — which is what
-       `paper-card-before-press` had been for as long as the card sat below the
+       the pre-press card capture had been for as long as it sat below the
        panel's fold: 5KB of empty canvas, committed as a picture of a card. */
     const moved = await evaluate(`(() => {
       const element = document.querySelector(${JSON.stringify(selector)});
@@ -210,6 +210,11 @@ function forgetCapture(name) {
   rmSync(`${OUT_DIR}/${name}.png`, { force: true });
 }
 
+/* Scoped by the caller, always. `.transport-play` stopped naming one element on
+   2026-07-30: the merged margin surface carries the same face on every row, so
+   a bare selector picks whichever of thirty is first in the tree — and on this
+   tour that is a margin row, whose press starts a different episode. Every
+   consumer here names the surface it means. */
 async function clickElement(selector) {
   // Scrolled into view before it is measured: a rect below the fold is still a
   // rect, and dispatching a click at it lands on whatever happens to be at
@@ -354,7 +359,13 @@ const DOCK_TRUTH = `(() => {
     // glyphs, not the text.
     publisher: dock.querySelector(".podcast-mast-name")?.textContent?.trim(),
     passage: dock.querySelector(".podcast-mast-passage")?.textContent?.trim() ?? null,
-    title: dock.querySelector(".podcast-dock-title")?.textContent?.trim(),
+    passageSays: dock.querySelector(".podcast-mast-passage")?.getAttribute("aria-label") ?? null,
+    /* Restated 2026-07-30: a launch from a MOMENT opens the sheet, so the
+       corner stops repeating a title the sheet is already showing. The
+       episode is named in one of the two places, never neither. */
+    expanded: dock.getAttribute("data-expanded"),
+    title: (dock.querySelector(".podcast-dock-title") ?? dock.querySelector(".podcast-episode-title"))?.textContent?.trim(),
+    now: dock.querySelector(".podcast-dock-now")?.textContent?.trim() ?? null,
     clock: [...dock.querySelectorAll(".podcast-dock-clock span")].map((node) => node.textContent?.trim()),
     played: getComputedStyle(dock).getPropertyValue("--podcast-played").trim(),
     audioTime: audio?.currentTime ?? null,
@@ -546,48 +557,103 @@ assert.equal(atRest.present, false, "the dock draws itself only once something i
 assert.equal(atRest.audioSrc, null, "audio must not be fetched before a reader presses play");
 console.log("at rest", atRest);
 
-await waitFor(`Boolean(document.querySelector('.trusted-resource-imprint[data-source="naked-bible"]'))`, 20_000);
-/* Scoped to the source that holds the media grant, and idempotent.
-   An imprint press is a TOGGLE on a shelf of eight publishers, and opening one
-   card closes another — which moves the whole row by the height of a featured
-   card while the press is being aimed. A coordinate press here was landing on
-   the neighbour, and everything below then read as a bug in the dock rather
-   than a bug in the aim. Coordinates are kept for the presses this tour is
-   ABOUT — the play button, a transcript hit — because those are the ones where
-   hit-testing is the thing under test. This one is setup, so it is asked for
-   by name. */
-await evaluate(`(() => {
-  const want = document.querySelector('.trusted-resource-imprint[data-source="naked-bible"]');
-  if (want?.getAttribute("aria-expanded") !== "true") want?.click();
-})()`);
-await waitFor(`document.querySelector('.trusted-resource-imprint[data-source="naked-bible"]')?.getAttribute("aria-expanded") === "true"`);
-await waitFor(`Boolean(document.querySelector('.trusted-resource-card[data-source="naked-bible"] .transport-play'))`);
-await sleep(420);
-await screenshot("paper-card-before-press", '.trusted-resource-card[data-source="naked-bible"]');
+await waitFor(`Boolean(document.querySelector(".taught-here"))`, 20_000);
 
-/* One transport language, measured on the two surfaces that draw it. The card's
-   play used to be a hairline circle in the publisher's ink with a seal ring and
-   a hardcoded 150ms, twenty pixels from a filled pill in the publisher's colour
-   with a brand ring and a token; and its glyph was a second copy of the play
-   triangle that never got the optical correction the dock documents at length. */
-const family = await evaluate(`(() => {
-  const card = document.querySelector('.trusted-resource-card[data-source="naked-bible"] .trusted-resource-play');
-  const style = card ? getComputedStyle(card) : null;
+/* ── One surface for this chapter's episode audio ──────────────────────────
+   Added 2026-07-30, with the build that merged them. Two blocks used to draw
+   the same episodes — 25 of 28 on the reference chapter — with two mastheads,
+   two orders, two brand policies and an identity key that was the same string
+   in both, which is why pressing a moment for an already-running episode had
+   to be special-cased in the machine. This is the gate that keeps them one.
+
+   Every band is opened first: the surface rests shut on purpose, and what is
+   being measured is the row grammar rather than the resting state. */
+await evaluate(`document.querySelectorAll(".taught-here-toggle").forEach((toggle) => {
+  if (toggle.getAttribute("aria-expanded") !== "true") toggle.click();
+})`);
+await waitFor(`document.querySelectorAll(".taught-here-row").length > 0`);
+await sleep(320);
+
+const merged = await evaluate(`(() => {
+  const surfaces = document.querySelectorAll(".taught-here");
+  const rows = [...document.querySelectorAll(".taught-here-row")];
   return {
-    card: Boolean(card),
-    isFamily: card?.classList.contains("transport-play") ?? null,
+    surfaces: surfaces.length,
+    rows: rows.length,
+    // The duplication, at the level it actually caused a defect: the identity
+    // key. Two surfaces keying the same episode is what made a press pause it.
+    keys: rows.length,
+    // Nothing in the publisher index starts audio any more. Every row that had
+    // an audioUrl moved onto the surface above it.
+    playInIndex: document.querySelectorAll(".trusted-resource-play").length,
+    // The relation, in reader's words, on every row that states one. A schema
+    // token or an empty span reaching this list is the regression.
+    said: [...new Set(rows.map((row) => row.querySelector(".taught-here-said")?.textContent?.trim() ?? ""))],
+    // The plate is the ONE publisher crossing on the row, and only where a
+    // mark is approved: everyone else takes their name in type.
+    plated: rows.filter((row) => {
+      const plate = row.querySelector(".taught-here-plate");
+      const mark = row.querySelector(".taught-here-mark");
+      return mark ? getComputedStyle(mark).backgroundImage !== "none" : false;
+    }).length,
+    footing: document.querySelector(".taught-here-footing")?.textContent?.trim() ?? null,
+    walk: document.querySelector(".taught-here-walk")?.getAttribute("aria-label") ?? null,
+    // Every row states its extent and, where the transcript found it, a second.
+    grammar: rows.every((row) => row.querySelector(".taught-here-episode")
+      && row.querySelector(".taught-here-extent")
+      && row.querySelector(".taught-here-ref")
+      && row.querySelector(".taught-here-said")
+      && row.querySelector(".transport-play")),
+  };
+})()`);
+assert.equal(merged.surfaces, 1, "a chapter has one surface for its episode audio");
+assert.ok(merged.rows > 0, "the merged surface drew no rows");
+assert.equal(merged.playInIndex, 0,
+  "the publisher index is starting audio again — that is the duplication coming back");
+assert.equal(merged.grammar, true, "a row is missing part of the one row grammar");
+const TOKENS = ["crossref", "mention", "allusion", "subject", ""];
+for (const said of merged.said) {
+  assert.ok(!TOKENS.includes(said),
+    `a relation reached the margin as a schema token or an empty span: ${JSON.stringify(said)}`);
+}
+assert.match(merged.footing ?? "", /Machine-read from published audio/,
+  "the two footings are not disclosed on the surface that shows them");
+assert.match(merged.walk ?? "", /^Listen through .+ — \d+ treatments, longest first, .+ in all$/,
+  "the walk must declare its whole extent before it is pressed");
+console.log("merged surface", merged);
+
+await sleep(200);
+await screenshot("paper-margin-merged", ".taught-here");
+
+/* One transport language, and this surface was the fourth that started audio
+   with no transport glyph on it at all. The row's own press IS the transport,
+   so it carries the FACE rather than a second button inside it — a 22px circle
+   inside a 300px row would be a smaller target than the row containing it, and
+   two controls for one offer is two tab stops to walk past. */
+const family = await evaluate(`(() => {
+  const row = [...document.querySelectorAll(".taught-here-row")]
+    .find((candidate) => candidate.querySelector('.taught-here-plate[data-source="naked-bible"]'));
+  const mark = row?.querySelector(".taught-here-play");
+  const style = mark ? getComputedStyle(mark) : null;
+  return {
+    row: Boolean(row),
+    isFamily: mark?.classList.contains("transport-play") ?? null,
     size: style ? Math.round(parseFloat(style.width)) : null,
     filled: style?.backgroundColor ?? null,
     round: style?.borderRadius ?? null,
-    glyphs: card?.querySelectorAll(".transport-glyph").length ?? null,
-    grid: [...(card?.querySelectorAll("svg") ?? [])].map((svg) => svg.getAttribute("viewBox")),
+    glyphs: mark?.querySelectorAll(".transport-glyph").length ?? null,
+    grid: [...(mark?.querySelectorAll("svg") ?? [])].map((svg) => svg.getAttribute("viewBox")),
+    // One tab stop for the offer, on the row itself.
+    stops: row ? row.querySelectorAll("button").length : null,
   };
 })()`);
-assert.equal(family.isFamily, true, "the card's play is not in the transport family");
-assert.equal(family.size, 28, "the card's play is the family at the card's own scale");
+assert.equal(family.row, true, "no Naked Bible row on the merged surface to press");
+assert.equal(family.isFamily, true, "the margin row's play is not in the transport family");
+assert.equal(family.size, 22, "the family at the margin row's own scale");
 assert.equal(family.glyphs, 2, "play and pause are both in the tree so one can cross into the other");
 assert.deepEqual([...new Set(family.grid)], ["0 0 24 24"], "one icon grid");
-assert.notEqual(family.filled, "rgba(0, 0, 0, 0)", "the family is filled, on both surfaces");
+assert.notEqual(family.filled, "rgba(0, 0, 0, 0)", "the family is filled, on every surface");
+assert.equal(family.stops, 0, "the row is the control; a second button inside it is a second tab stop");
 console.log("transport family", family);
 
 /* Cold, and only for the press. Chromium's disk cache turns the second run of
@@ -600,7 +666,19 @@ console.log("transport family", family);
    a stall the persistence assertions below correctly read as a stopped
    episode. */
 await cdp.send("Network.setCacheDisabled", { cacheDisabled: true });
-await clickElement('.trusted-resource-card[data-source="naked-bible"] .trusted-resource-play');
+/* The LONGEST Naked Bible treatment on this chapter, marked by name. The bare
+   `:has(...)` selector took whichever came first, which on this chapter is a
+   forty-eight-second mention forty-two minutes into a forty-four minute file —
+   a launch with no room after it for any of the seek assertions below, and not
+   what a reader arriving at a chapter is being offered first. */
+await evaluate(`(() => {
+  const rows = [...document.querySelectorAll('.taught-here-row')]
+    .filter((row) => row.querySelector('.taught-here-plate[data-source="naked-bible"]'))
+    .filter((row) => row.querySelector(".taught-here-said")?.textContent?.trim() === "worked through");
+  rows[0]?.setAttribute("data-qa-target", "press");
+  return rows.length;
+})()`);
+await clickElement('[data-qa-target="press"]');
 await waitFor(`Boolean(document.querySelector(".podcast-dock"))`);
 
 /* Reaching, which is a real state with a real network behind it and used to be
@@ -652,7 +730,27 @@ assert.equal(playing.source, "naked-bible");
 assert.equal(playing.layer, "player");
 assert.equal(playing.publisher, "Naked Bible Podcast");
 assert.match(playing.title ?? "", /^Naked Bible \d+:/);
-assert.equal(playing.passage, PASSAGE, "the dock names the passage the episode works through");
+/* A moment launch opens the sheet. Build 1 deferred this and the consequence
+   was that an episode opened at "eleven minutes on 1 Samuel 30:1-10" landed
+   collapsed, hiding the transcript and the passage list that justify the
+   jump behind a control nobody had a reason to press. */
+assert.equal(playing.expanded, "true", "a launch from a moment must open the sheet");
+/* Shut again for the geometry below, which is about the COLLAPSED dock — the
+   thing the study panel and the toast lane reserve. The sheet is an overlay
+   above that reservation and is measured on its own terms further down. */
+await clickElement('.podcast-mast-icon[aria-expanded="true"]');
+await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-expanded") === "false"`);
+await parkPointer();
+Object.assign(playing, await evaluate(DOCK_TRUTH));
+/* Restated 2026-07-30. The chip used to be asserted equal to the chapter the
+   READER was on, which is precisely the bug: all three margin call sites handed
+   over `bref:v1/${book}.${chapter}.1` under an accessible name claiming it was
+   "the passage this episode works through". It now names what is actually
+   playing — the moment's own verses — and says which kind of claim that is. */
+assert.match(playing.passage ?? "", new RegExp(`^${PASSAGE}(:\\d+(–\\d+)?)?$`),
+  `the dock's chip names ${playing.passage}, which is not this episode's moment`);
+assert.match(playing.passageSays ?? "", /— the passage playing here$/,
+  "the chip is claiming a title-level filing over a moment launch");
 assert.equal(playing.audioPreload, "none");
 assert.equal(playing.audioPaused, false);
 assert.equal(playing.elements, 1, "one element for the whole app");
@@ -688,6 +786,26 @@ assert.ok(playing.marginClearance <= 24,
   `the panel stops ${playing.marginClearance}px above the player, which is not a seam`);
 assert.ok(playing.marginFloor >= playing.rect.height - 4,
   `the panel's reservation is a guess rather than the dock's own height: ${playing.marginFloor} vs ${playing.rect.height}`);
+/* The system's Now Playing panel, and the one thing that must never appear on
+   it: a URL on a publisher's host. The artwork is the plate, painted from a
+   file already on this machine — see plateArtwork. */
+const system = await evaluate(`(() => {
+  const meta = navigator.mediaSession?.metadata;
+  const art = meta?.artwork?.[0] ?? null;
+  return {
+    title: meta?.title ?? null,
+    artist: meta?.artist ?? null,
+    art: art ? { scheme: art.src.slice(0, art.src.indexOf(":")), sizes: art.sizes, type: art.type } : null,
+  };
+})()`);
+assert.match(system.title ?? "", /^Naked Bible \d+:/, "the system panel does not name the episode");
+assert.equal(system.artist, "Naked Bible Podcast");
+if (system.art) {
+  assert.equal(system.art.scheme, "data",
+    "the system artwork points at a host; nothing may be fetched to draw it");
+  assert.equal(system.art.sizes, "512x512");
+}
+console.log("system", system);
 console.log("playing", playing);
 
 /* ── Whose surface this is ─────────────────────────────────────────────────
@@ -762,9 +880,70 @@ async function stillPlaying(what) {
 }
 
 await navigatePassage(ELSEWHERE);
+
+/* ── Density is a CONTROL, not a sentence ─────────────────────────────────
+   Measured on a dense chapter rather than the reference one: this is the
+   whole point of the band, and the reference chapter has eleven entries.
+   Genesis 1 holds 922 moments, and this drawer used to end at row 25 with an
+   inert <li> reading "897 more, shortest last" — a sentence shaped like a
+   disclosure in front of 97% of the answer, beside a stylesheet that still
+   carried a button's worth of rules for a control somebody had removed.
+
+   Two presses, because there are two intentions: another page, or all of it.
+   Both are asserted to actually reveal rows, which the sentence never did. */
+await waitFor(`document.querySelectorAll(".taught-here-group").length > 0`, 20_000);
+const density = await evaluate(`(() => {
+  const bands = [...document.querySelectorAll(".taught-here-group")];
+  const band = bands.sort((a, b) =>
+    Number(b.querySelector(".taught-here-count").textContent)
+    - Number(a.querySelector(".taught-here-count").textContent))[0];
+  if (!band) return null;
+  const held = Number(band.querySelector(".taught-here-count").textContent);
+  /* Every OTHER band shut first, so the probes below can name "the open one"
+     and mean this one. */
+  for (const other of bands) {
+    const toggle = other.querySelector(".taught-here-toggle");
+    const wanted = other === band;
+    if ((toggle.getAttribute("aria-expanded") === "true") !== wanted) toggle.click();
+  }
+  return { held };
+})()`);
+if (density && density.held > 25) {
+  await waitFor(`document.querySelectorAll(".taught-here-row").length > 0`);
+  const paged = await evaluate(`(() => {
+    const band = document.querySelector('.taught-here-group[data-open="true"]');
+    const first = band.querySelectorAll(".taught-here-row").length;
+    const more = band.querySelector(".taught-here-more");
+    const label = more?.textContent?.trim() ?? null;
+    const tag = more?.tagName ?? null;
+    const all = band.querySelector(".taught-here-more.is-all");
+    more?.click();
+    return { first, label, tag, hasAll: Boolean(all) };
+  })()`);
+  await sleep(200);
+  const after = await evaluate(`document.querySelector('.taught-here-group[data-open="true"]').querySelectorAll(".taught-here-row").length`);
+  assert.equal(paged.tag, "BUTTON", "the density control is inert text again");
+  assert.match(paged.label ?? "", /shortest last/, "a partial list must say what it is holding back");
+  assert.ok(after > paged.first, `"more" revealed nothing: ${paged.first} → ${after}`);
+  if (paged.hasAll) {
+    await evaluate(`document.querySelector(".taught-here-more.is-all")?.click()`);
+    await sleep(240);
+    const whole = await evaluate(`document.querySelector('.taught-here-group[data-open="true"]').querySelectorAll(".taught-here-row").length`);
+    assert.equal(whole, density.held, `"all" showed ${whole} of ${density.held}`);
+    console.log("density", { ...paged, after, whole });
+  } else {
+    console.log("density", { ...paged, after });
+  }
+  await evaluate(`document.querySelector('.taught-here-group[data-open="true"] .taught-here-toggle')?.click()`);
+} else {
+  console.log(`density: the densest band here holds ${density?.held ?? 0} (control not exercised)`);
+}
 await stillPlaying("a passage change");
-// The dock still names the episode's own passage, not the one now on screen.
-assert.equal((await evaluate(DOCK_TRUTH)).passage, PASSAGE);
+/* The dock still names the MOMENT's own passage, not the chapter now on
+   screen — and the reader is on Acts 19, so the two are unmistakably
+   different. Restated 2026-07-30: this asserted equality with the reference
+   chapter, which is exactly the untruth the chip used to tell. */
+assert.match((await evaluate(DOCK_TRUTH)).passage ?? "", new RegExp(`^${PASSAGE}(:\\d+(–\\d+)?)?$`));
 
 await evaluate(`document.querySelector(".living-margin").scrollTop = 400`);
 await sleep(400);
@@ -970,6 +1149,82 @@ assert.equal(transcriptAtRest.titleLines, "3", "an unclamped title grows the doc
 await screenshot("paper-dock-sheet", ".podcast-dock");
 console.log("sheet", transcriptAtRest);
 
+/* ── The sheet opened itself, and says why ─────────────────────────────────
+   An episode launched from a moment used to land COLLAPSED: a reader who
+   pressed "eleven minutes on 1 Samuel 30:1-10" got a title, a clock and no
+   account of why the playhead was eleven minutes in, with the transcript that
+   justifies it behind a control nobody had a reason to press. */
+const moment = await evaluate(`(() => {
+  const block = document.querySelector(".podcast-moment");
+  if (!block) return null;
+  return {
+    ref: block.querySelector(".podcast-moment-ref")?.textContent?.trim() ?? null,
+    said: block.querySelector(".podcast-moment-said")?.textContent?.trim() ?? null,
+    extent: block.querySelector(".podcast-moment-extent")?.textContent?.trim() ?? null,
+    why: block.querySelector(".podcast-moment-why")?.textContent?.trim() ?? null,
+    opens: Boolean(block.querySelector(".podcast-moment-ref")),
+  };
+})()`);
+assert.ok(moment, "a launch from a moment must name the moment it launched from");
+assert.match(moment.ref ?? "", new RegExp(`^${PASSAGE}`), `the moment names ${moment.ref}`);
+assert.ok(moment.said && !["crossref", "mention", "allusion", "subject"].includes(moment.said),
+  `the moment's relation is a schema token: ${JSON.stringify(moment.said)}`);
+assert.match(moment.extent ?? "", /from \d+:\d\d$/, "a moment is a place in a file and must say which");
+assert.equal(moment.opens, true, "the moment's passage must be openable");
+console.log("moment", moment);
+
+/* The footing, on the surface rather than in a literal. 48% of everything
+   these surfaces show comes from publishers nobody has asked; the permissions
+   doc says the distinction must stay visible, and until this build the only
+   places it was visible were a TypeScript constant and a test. */
+const footing = await evaluate(`(() => {
+  const line = document.querySelector(".podcast-episode-footing");
+  return line ? { basis: line.getAttribute("data-basis"), says: line.textContent.trim() } : null;
+})()`);
+assert.ok(footing, "the episode does not say which footing its transcript rests on");
+assert.ok(["publisher-granted", "public-feed"].includes(footing.basis ?? ""),
+  `unknown footing on the surface: ${footing.basis}`);
+assert.match(footing.says, footing.basis === "publisher-granted" ? /permission/ : /not asked/);
+console.log("footing", footing);
+
+/* The rail's ticks. The mechanism has been coded and styled since the first
+   draft and drew nothing, because the only array it read was `chapters` —
+   which the type documents as "currently never supplied" and which no call
+   site has ever supplied. It reads the episode's own references now. */
+const ticks = await evaluate(`(() => {
+  const rail = document.querySelector(".podcast-rail");
+  const marks = [...document.querySelectorAll(".podcast-rail-tick")];
+  const width = rail?.getBoundingClientRect().width ?? 0;
+  return {
+    count: marks.length,
+    refs: document.querySelectorAll(".podcast-ref-row").length,
+    inside: marks.every((mark) => {
+      const left = parseFloat(mark.style.left);
+      return Number.isFinite(left) && left >= 0 && left <= 100;
+    }),
+    width: Math.round(width),
+  };
+})()`);
+assert.ok(ticks.count > 0, "the rail's ticks are still fed by the array nobody supplies");
+assert.equal(ticks.inside, true, "a tick landed off the rail it marks");
+console.log("ticks", ticks);
+
+/* Where scripture is named, marked in the transcript and pressable. */
+const cites = await evaluate(`(() => {
+  const marks = [...document.querySelectorAll(".podcast-transcript-cite")];
+  return {
+    count: marks.length,
+    titles: marks.slice(0, 3).map((mark) => mark.textContent?.trim()),
+    /* Beside the line, never inside it: a control inside a control is markup
+       nothing can resolve, and the line's press keeps meaning play-from-here. */
+    nested: marks.filter((mark) => mark.closest(".podcast-transcript-line")).length,
+    lines: document.querySelectorAll('.podcast-transcript li[data-cited="true"]').length,
+  };
+})()`);
+assert.ok(cites.count > 0, "the transcript still never consults the reference set in its own state");
+assert.equal(cites.nested, 0, "a passage mark is nested inside a transcript line");
+console.log("cites", cites);
+
 /* The other half of a roving list: one stop is only an improvement if the
    arrows travel it. Pressed for real rather than dispatched at the element, so
    this is the same path a reader takes — and the stop has to MOVE with focus,
@@ -1011,6 +1266,88 @@ if (passagesTab) {
   await parkPointer();
   await screenshot("paper-dock-sheet-passages", ".podcast-dock");
   console.log("passages", passagesTab);
+
+  /* ── The half of the loop that did not exist ─────────────────────────────
+     Every row here names a passage — twelve at the median, sixty-four at the
+     top — and until 2026-07-30 not one of them could open it: the canonical
+     bref was loaded, validated, and used for nothing. Each row now carries a
+     second, smaller control, and the press opens the passage WITHOUT touching
+     the audio, because a reader following along who wants to see Romans 8 has
+     not asked to stop hearing this. */
+  const rows = await evaluate(`(() => {
+    const list = [...document.querySelectorAll(".podcast-ref-row")];
+    return {
+      rows: list.length,
+      reads: document.querySelectorAll(".podcast-ref-read").length,
+      /* Never an empty span. The crossref and mention relations printed
+         nothing at all here — 23,169 moments across the corpus with no
+         statement of what kind of reference they were. */
+      said: [...new Set(list.map((row) => row.querySelector(".podcast-ref-said")?.textContent?.trim() ?? ""))],
+      /* The evidence was argued for at length in the component and then given
+         a nowrap rule inside a minmax(0,1fr) column, against a corpus median
+         of 52 characters. */
+      whyClamp: getComputedStyle(list[0]?.querySelector(".podcast-ref-why")).webkitLineClamp,
+    };
+  })()`);
+  assert.equal(rows.reads, rows.rows, "every passage row can be heard; every one must also open");
+  for (const said of rows.said) {
+    assert.ok(said && !["crossref", "mention", "allusion", "subject"].includes(said),
+      `a relation reached the passage list as a token or an empty span: ${JSON.stringify(said)}`);
+  }
+  assert.equal(rows.whyClamp, "2", "the evidence line is back to one clipped line");
+  console.log("passage rows", rows);
+
+  const wasAt = await evaluate(`(() => {
+    const title = document.querySelector(".chapter-title");
+    return {
+      chapter: [title?.querySelector(".book-name")?.textContent, title?.querySelector(".chapter-number")?.textContent].filter(Boolean).join(" "),
+      time: document.querySelector("audio").currentTime,
+      paused: document.querySelector("audio").paused,
+    };
+  })()`);
+  /* A row naming somewhere ELSE, so the navigation is unmistakable: an
+     episode on 1 Samuel 30 reaching for Romans is exactly the crossref case
+     the whole relation vocabulary exists to name. */
+  const opened = await evaluate(`(() => {
+    const row = [...document.querySelectorAll(".podcast-ref-row")].find((candidate) => {
+      const title = candidate.querySelector(".podcast-ref-title")?.textContent ?? "";
+      return !title.startsWith(${JSON.stringify(PASSAGE.replace(/ \d+$/, ""))});
+    });
+    if (!row) return null;
+    const title = row.querySelector(".podcast-ref-title")?.textContent ?? null;
+    row.querySelector(".podcast-ref-read")?.click();
+    return { title };
+  })()`);
+  if (opened) {
+    await sleep(1_400);
+    const landed = await evaluate(`(() => {
+      const title = document.querySelector(".chapter-title");
+      return {
+        chapter: [title?.querySelector(".book-name")?.textContent, title?.querySelector(".chapter-number")?.textContent].filter(Boolean).join(" "),
+        time: document.querySelector("audio").currentTime,
+        paused: document.querySelector("audio").paused,
+        dock: Boolean(document.querySelector(".podcast-dock")),
+        back: Boolean([...document.querySelectorAll("button")].find((button) => button.getAttribute("aria-label") === "Back")),
+      };
+    })()`);
+    assert.notEqual(landed.chapter, wasAt.chapter,
+      `pressing read on ${opened.title} did not move the canvas`);
+    assert.equal(landed.paused, false, "opening a passage stopped the episode");
+    assert.equal(landed.dock, true, "the dock did not survive the navigation it started");
+    assert.equal(landed.back, true, "the reader's place must be in history to come back to");
+    /* And back, by the canvas's own control, so the loop closes. */
+    await evaluate(`[...document.querySelectorAll("button")].find((button) => button.getAttribute("aria-label") === "Back")?.click()`);
+    await sleep(1_600);
+    const returned = await evaluate(`(() => {
+      const title = document.querySelector(".chapter-title");
+      return [title?.querySelector(".book-name")?.textContent, title?.querySelector(".chapter-number")?.textContent].filter(Boolean).join(" ");
+    })()`);
+    assert.equal(returned, wasAt.chapter, `the way back landed on ${returned}`);
+    console.log("read it", opened.title, "→", landed.chapter, "→ back to", returned);
+  } else {
+    console.log("read it: this episode's references never leave its own book (path not exercised)");
+  }
+
   await evaluate(`[...document.querySelectorAll(".podcast-view-tab")].find((tab) => tab.textContent?.startsWith("Transcript"))?.click()`);
   await waitFor(`Boolean(document.querySelector(".podcast-transcript"))`);
 } else {
@@ -1043,20 +1380,33 @@ await evaluate(`(() => {
   input.dispatchEvent(new Event("input", { bubbles: true }));
 })()`);
 await waitFor(`document.querySelector(".podcast-transcript")?.getAttribute("data-transcript-mode") === "searching"`);
-await waitFor(`document.querySelectorAll(".podcast-transcript-line").length < ${transcriptAtRest.lines}`);
+await waitFor(`document.querySelectorAll(".podcast-transcript-line mark").length > 0`);
 
-const filtered = await evaluate(`(() => {
+/* ── Marked in place, with somewhere to go ─────────────────────────────────
+   Restated 2026-07-30. The search used to FILTER the list to its hits, and
+   this block asserted that the list got shorter. That answered "is this word
+   anywhere in two hours" and destroyed the thing a reader is usually after:
+   the sentences on either side, and whether four of the seventeen are in the
+   same two minutes. So the transcript stays whole, every hit is marked where
+   it sits, and ‹ 3/17 › is what makes a hit fourteen screens down reachable —
+   which is the objection the old note raised and the arrows answer. */
+const marked = await evaluate(`(() => {
   const mark = document.querySelector(".podcast-transcript-line mark");
   const style = mark ? getComputedStyle(mark) : null;
   return {
-    hits: document.querySelectorAll(".podcast-transcript-line").length,
+    lines: document.querySelectorAll(".podcast-transcript-line").length,
     marks: document.querySelectorAll(".podcast-transcript-line mark").length,
     markBackground: style?.backgroundColor ?? null,
     markInk: style?.color ?? null,
-    // The ladder is a claim about distance from a voice, and a filtered list is
-    // not a place a voice is. It used to flatten every hit to data-d="0", which
-    // is not "readable weight" but the ACTIVE-line treatment, so every hit was
-    // drawn as though it were the one playing.
+    // ‹ n/N › — the count and the two arrows that make it navigable.
+    count: document.querySelector(".podcast-transcript-count")?.textContent?.trim() ?? null,
+    steps: document.querySelectorAll(".podcast-transcript-step").length,
+    // Exactly one hit is the one the arrows are standing on.
+    current: document.querySelectorAll('.podcast-transcript-line[data-hit="true"]').length,
+    // The ladder is a claim about distance from a voice, and a reader working
+    // their own answer through the list is not tracking one. It used to
+    // flatten every hit to data-d="0", which is not "readable weight" but the
+    // ACTIVE-line treatment — every hit drawn as though it were playing.
     flat: document.querySelector(".podcast-transcript")?.getAttribute("data-flat") ?? null,
     ladder: document.querySelectorAll(".podcast-transcript-line[data-d]").length,
     // Present DURING a search, which is the moment the reader is furthest from
@@ -1064,17 +1414,32 @@ const filtered = await evaluate(`(() => {
     follow: Boolean(document.querySelector(".podcast-transcript-follow")),
   };
 })()`);
-assert.ok(filtered.hits > 0, `"${chosen.word}" matched nothing`);
-assert.ok(filtered.marks > 0, "a hit must mark the word it matched");
-assert.notEqual(filtered.markBackground, "rgba(0, 0, 0, 0)",
+assert.ok(marked.marks > 0, `"${chosen.word}" matched nothing`);
+assert.equal(marked.lines, transcriptAtRest.lines,
+  "the transcript is being filtered again — the marks belong in the whole of it");
+assert.notEqual(marked.markBackground, "rgba(0, 0, 0, 0)",
   "the search mark resolved to nothing — see --player-accent in styles.css");
-assert.notEqual(filtered.markBackground, filtered.markInk,
-  `the mark is the same colour as the text on it: ${filtered.markBackground}`);
-assert.equal(filtered.flat, "true", "a filtered list has no playhead to be near");
-assert.equal(filtered.ladder, 0, "no line in a filtered list is at a distance from the voice");
-assert.equal(filtered.follow, true, "the way back to the voice must survive a search");
+assert.notEqual(marked.markBackground, marked.markInk,
+  `the mark is the same colour as the text on it: ${marked.markBackground}`);
+assert.match(marked.count ?? "", /^\d+\/\d+$/, "a search with no count is a search with no answer");
+assert.equal(marked.steps, 2, "marks with no next and previous are marks nobody can reach");
+assert.equal(marked.current, 1, "exactly one hit is the one the arrows are standing on");
+assert.equal(marked.flat, "true", "a reader working a search is not tracking a voice");
+assert.equal(marked.ladder, 0, "no line is at a distance from a voice nobody is following");
+assert.equal(marked.follow, true, "the way back to the voice must survive a search");
 await screenshot("paper-dock-sheet-search", ".podcast-dock");
-console.log("filtered", filtered);
+console.log("marked", marked);
+
+/* The arrows travel, and the count follows them. */
+const stepped = await evaluate(`(() => {
+  const before = document.querySelector(".podcast-transcript-count")?.textContent?.trim();
+  [...document.querySelectorAll(".podcast-transcript-step")][1]?.click();
+  return { before };
+})()`);
+await sleep(320);
+const steppedTo = await evaluate(`document.querySelector(".podcast-transcript-count")?.textContent?.trim()`);
+assert.notEqual(steppedTo, stepped.before, `the next arrow did not move: still ${steppedTo}`);
+console.log("stepped", stepped.before, "→", steppedTo);
 
 /* The Follow pill and the last row. Build 1 measured this and left it: a
    container scrolled to its end put the final row exactly where the pill floats,
@@ -1138,13 +1503,21 @@ const afterHit = await evaluate(`(() => {
     query: document.querySelector(".podcast-transcript-search")?.value ?? null,
     mode: list?.getAttribute("data-transcript-mode") ?? null,
     lines: document.querySelectorAll(".podcast-transcript-line").length,
+    marks: document.querySelectorAll(".podcast-transcript-line mark").length,
   };
 })()`);
-assert.ok(afterHit.time - beforeHit > 60,
+assert.ok(Math.abs(afterHit.time - beforeHit) > 60,
   `pressing a hit moved the file ${(afterHit.time - beforeHit).toFixed(1)}s`);
-assert.equal(afterHit.query, "", "pressing a hit must leave the filter, not park the reader inside it");
+/* Restated 2026-07-30 with the invariant it depends on. This asserted the box
+   was EMPTIED, which was right while searching meant a filter: staying inside
+   one would have been following an episode through a four-line keyhole. There
+   is no keyhole now, and clearing the box would destroy the sixteen other
+   places the phrase was said — which is the reason the reader typed it. The
+   MODE still returns to following; the marks stay and stay navigable. */
+assert.equal(afterHit.query, chosen.word, "the marks must survive a seek made from one of them");
+assert.ok(afterHit.marks > 0, "pressing a hit took the other hits off the surface");
 assert.equal(afterHit.mode, "following", "pressing a hit must put the transcript back under the voice");
-assert.equal(afterHit.lines, transcriptAtRest.lines, "the whole transcript comes back around the hit");
+assert.equal(afterHit.lines, transcriptAtRest.lines, "the whole transcript stands around the hit");
 assert.equal(afterHit.paused, false, "a line pressed is a line asked to be heard");
 console.log("hit", afterHit, `moved ${(afterHit.time - beforeHit).toFixed(1)}s`);
 
@@ -1173,11 +1546,11 @@ await parkPointer();
 await screenshot("paper-dock-part-heard", ".podcast-dock");
 
 // Pause, then the other three appearances, then the material and the fallback.
-await clickElement(".transport-play");
+await clickElement(".podcast-dock .transport-play");
 await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-status") === "paused"`);
 await parkPointer();
 await screenshot("paper-dock-paused", ".podcast-dock");
-await clickElement(".transport-play");
+await clickElement(".podcast-dock .transport-play");
 await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-status") === "playing"`, 20_000);
 
 for (const theme of ["dark", "porcelain", "onyx"]) {
@@ -1188,6 +1561,12 @@ for (const theme of ["dark", "porcelain", "onyx"]) {
   assert.equal(themed.present, true, `${theme} took the dock away`);
   assert.equal(themed.audioPaused, false, `${theme} stopped the episode`);
   await screenshot(`${theme}-dock`, ".podcast-dock");
+  /* The merged surface in every atmosphere it can be read in. It is fully
+     tokenised except for the plate, so this is a picture of the app's own
+     paper answering the reader's choice — and the plate holding the
+     publisher's colour through all four, which is the one thing on it that
+     must not follow the theme. */
+  await screenshot(`${theme}-margin-merged`, ".taught-here");
   if (theme === "dark") await screenshot("ink-dock-in-place");
 }
 
@@ -1211,7 +1590,7 @@ for (const theme of ["light", "dark"]) {
   await evaluate(`document.querySelector(".podcast-dock")?.setAttribute("data-source", "qa-unregistered-source")`);
   await sleep(240);
   const fallback = await evaluate(`(() => {
-    const play = document.querySelector(".transport-play");
+    const play = document.querySelector(".podcast-dock .transport-play");
     const style = getComputedStyle(play);
     return { fill: style.backgroundColor, ink: style.color };
   })()`);
@@ -1247,6 +1626,11 @@ const forced = await evaluate(`(() => {
 })()`);
 assert.notEqual(forced.ground, forced.border, "the dock's forced ground and its hairline are the same colour");
 await screenshot("forced-colors-dock", ".podcast-dock");
+/* The taught-here family had NO forced-colors coverage at all: hover was the
+   only thing distinguishing a pointed-at row and it flattens to Canvas, the
+   masthead's 3px rule lost its distinction from the hairlines, and the two
+   real buttons on it had no focus rule anywhere in the stylesheet. */
+await screenshot("forced-colors-margin-merged", ".taught-here");
 console.log("forced colors", forced);
 await cdp.send("Emulation.setEmulatedMedia", { features: [] });
 await sleep(320);
