@@ -49,7 +49,7 @@ import { passageTabOpenIntent } from "../utils/passageTabIntent.js";
 import { formatCanonicalRef } from "../utils/formatRef.js";
 import { LanguageWordsSection } from "./LanguageWordsSection.js";
 import { SurfaceState } from "./MarkingSurface.js";
-import { playPodcastEpisode, usePodcastNowPlaying } from "./PodcastPlayer.js";
+import { TransportPlayButton, playPodcastEpisode, usePodcastNowPlaying } from "./PodcastPlayer.js";
 import { SourcesDisclosure, formatSourceCitation, type CitationSource } from "./SourcesDisclosure.js";
 import { useToast } from "./Toast.js";
 import { parsePeekRef, useVersePeek, type PeekTarget, type VersePeekTriggerProps } from "./VersePeek.js";
@@ -778,11 +778,18 @@ function TrustedResourcesBlock({
                       </ul>
                       <div className="trusted-resource-actions">
                         {resource.record.audioUrl && (
-                          <button
-                            aria-label={`${running ? "Pause" : "Play"} ${resource.record.title}`}
-                            aria-pressed={running}
+                          /* One transport family, at the card's own scale.
+                             This was a second design for the same verb twenty
+                             pixels from the dock's: a hairline circle against a
+                             filled pill, a seal ring against a brand ring, a
+                             hardcoded 150ms against the token, and a copy of
+                             the play triangle that never got the optical
+                             correction the dock documents at length. See
+                             TransportPlayButton and .transport-play. */
+                          <TransportPlayButton
                             className="trusted-resource-play"
-                            onClick={() => playPodcastEpisode({
+                            label={`${running ? "Pause" : "Play"} ${resource.record.title}`}
+                            onPress={() => playPodcastEpisode({
                               id: key,
                               sourceId: resource.source.id,
                               recordId: resource.record.id,
@@ -793,18 +800,9 @@ function TrustedResourcesBlock({
                               bref: resource.matchedBref,
                               kind: resource.record.kind,
                             })}
-                            type="button"
-                          >
-                            {running ? (
-                              <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
-                                <path d="M5 3h2.2v10H5zM8.8 3H11v10H8.8z" fill="currentColor" />
-                              </svg>
-                            ) : (
-                              <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
-                                <path d="M4.6 2.8 12.6 8l-8 5.2z" fill="currentColor" />
-                              </svg>
-                            )}
-                          </button>
+                            paused={!running}
+                            pressed={running}
+                          />
                         )}
                         <button
                           className="trusted-resource-act"

@@ -443,62 +443,107 @@ function episodePassageLabel(passage: EpisodePassage, bookNames: BookNameData): 
 }
 
 /**
+ * The app's one play affordance, drawn once and consumed by everything that
+ * starts audio: the dock's transport and the resource card's row today, and the
+ * TaughtHere margin rows when Build 3 merges that surface — they start audio
+ * with no transport glyph at all. A consumer sets `--transport-size` and passes
+ * a label; nothing else about it is theirs to decide.
+ *
  * Play is optically centred, not geometrically. A right-pointing triangle
  * carries its mass at the base, so centring its bounding box leaves it sitting
  * visibly left of the circle it is in. Its centroid — a third of the way from
- * base to apex — is what has to land on centre, which is +0.6 on this box.
- * Pause is symmetrical and needs no such correction; both bars are measured
- * about the same centre so the two states do not shift under the pointer.
+ * base to apex — is what has to land on centre: (8 + 8 + 20) / 3 = 12, which is
+ * this box's own centre. Pause is symmetrical about the same 12, so the two
+ * states do not shift under the pointer.
+ *
+ * The card's copy of this glyph never received that correction — `M4.6 2.8
+ * 12.6 8l-8 5.2z` on a 16-box puts the centroid at 7.27 against a centre of 8,
+ * so play and pause shifted 0.73px under the pointer twenty pixels from the
+ * dock whose comment claimed to have fixed exactly that. There is one glyph
+ * now, so it cannot happen again.
+ *
+ * Both paths are always in the tree and one of them is on. The state they mark
+ * is a voice already in motion, and a hard swap on the loudest control of such
+ * a surface reads as a fault in the audio — see --transport-quick at :root.
  */
-function PlayGlyph({ paused }: { paused: boolean }): React.JSX.Element {
-  return paused ? (
-    <svg viewBox="0 0 18 18" width="16" height="16" aria-hidden="true">
-      <path d="M6 3.4 15 9l-9 5.6z" fill="currentColor" />
-    </svg>
-  ) : (
-    <svg viewBox="0 0 18 18" width="16" height="16" aria-hidden="true">
-      <path d="M5.6 3.4h2.6v11.2H5.6zM9.8 3.4h2.6v11.2H9.8z" fill="currentColor" />
-    </svg>
+export function TransportPlayButton({
+  className,
+  label,
+  onPress,
+  paused,
+  pressed,
+}: {
+  className?: string;
+  label: string;
+  onPress: () => void;
+  paused: boolean;
+  pressed?: boolean;
+}): React.JSX.Element {
+  return (
+    <button
+      aria-label={label}
+      aria-pressed={pressed}
+      className={className ? `transport-play ${className}` : "transport-play"}
+      data-glyph={paused ? "play" : "pause"}
+      onClick={onPress}
+      type="button"
+    >
+      <svg className="transport-glyph transport-glyph-play" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M8 4.53 20 12 8 19.47z" fill="currentColor" />
+      </svg>
+      <svg className="transport-glyph transport-glyph-pause" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M7.47 4.53h3.47v14.94H7.47zM13.07 4.53h3.47v14.94h-3.47z" fill="currentColor" />
+      </svg>
+    </button>
   );
 }
 
 /**
- * An arrow bent round the interval it moves, with the interval inside it.
+ * An arrow bent round the interval it moves, with the interval beside it —
+ * which is to say, in the document rather than inside the glyph.
  *
- * Ring r 8.2 on a 24 box, stroke 1.5, broken by a 40° gap about vertical. The
- * head seats inward by (half − stroke/2), which puts its outer corner exactly
- * on the ring's outer edge: centred on the path it throws a barb past the
- * stroke, and set back off the path it exposes the stroke's round cap as a
- * spur. Seated, it can be large enough to read at 20px without doing either.
- * Forward is the same path mirrored, so the pair cannot drift apart.
+ * Ring r 8.2 on a 24 box, broken by a 40° gap about vertical. The head seats
+ * inward by (half − stroke/2), which puts its outer corner exactly on the
+ * ring's outer edge: centred on the path it throws a barb past the stroke, and
+ * set back off the path it exposes the stroke's round cap as a spur. Seated, it
+ * can be large enough to read at 20px without doing either. Forward is the same
+ * path mirrored, so the pair cannot drift apart.
+ *
+ * The number used to be a <text> element inside this SVG at `fontSize="9.4"` —
+ * the only place in the app that set type inside an icon. It was scaled by the
+ * viewBox rather than by the type scale, it was subject to font loading inside
+ * a glyph, and it could inherit nothing. It is the same number in the same
+ * face; it is a text node now, laid over the ring by the button's own grid.
+ * Stroke and cap come from the surface's one icon grammar — see
+ * styles/player.css, where a 24 grid at 1.25 with `non-scaling-stroke` replaces
+ * three grids, five rendered sizes and three stroke weights.
  */
-function SkipGlyph({ seconds }: { seconds: number }): React.JSX.Element {
-  const back = seconds < 0;
+function SkipGlyph({ back }: { back: boolean }): React.JSX.Element {
   return (
-    <svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
       <g transform={back ? undefined : "scale(-1 1) translate(-24 0)"}>
-        <path
-          d="M9.20 4.29A8.2 8.2 0 1 0 14.80 4.29"
-          fill="none"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeWidth="1.5"
-        />
+        <path d="M9.20 4.29A8.2 8.2 0 1 0 14.80 4.29" stroke="currentColor" />
         <path d="M5.47 7.51L8.94 3.59L10.65 8.29Z" fill="currentColor" />
       </g>
-      <text
-        x="12"
-        y="12.6"
-        dominantBaseline="central"
-        fill="currentColor"
-        fontFamily="var(--font-mono)"
-        fontSize="9.4"
-        fontWeight="500"
-        textAnchor="middle"
-      >
-        {Math.abs(seconds)}
-      </text>
     </svg>
+  );
+}
+
+/** Back or forward, with its interval. One geometry, mirrored, twice. */
+function SkipButton({
+  label,
+  onPress,
+  seconds,
+}: {
+  label: string;
+  onPress: () => void;
+  seconds: number;
+}): React.JSX.Element {
+  return (
+    <button aria-label={label} className="transport-skip" onClick={onPress} type="button">
+      <SkipGlyph back={seconds < 0} />
+      <span aria-hidden="true" className="transport-skip-count">{Math.abs(seconds)}</span>
+    </button>
   );
 }
 
@@ -556,6 +601,10 @@ export function PodcastPlayer({
      new card should give back the corner, not whatever the last one was left
      at. */
   const [expanded, setExpanded] = useState(false);
+  /* Read by the ResizeObserver below, which is not a render and cannot close
+     over state. */
+  const expandedRef = useRef(false);
+  expandedRef.current = expanded;
   /* undefined while unasked or in flight, null once we know there is none.
      The distinction matters: "no transcript" is a fact worth drawing, and
      "not looked yet" must not be drawn as that fact. */
@@ -614,18 +663,32 @@ export function PodcastPlayer({
   const dockBoxRef = useRef<HTMLElement>(null);
 
   /**
-   * Publish the dock's real height, so the study panel stops above it exactly.
+   * Publish the height the dock RESERVES, so the study panel stops above it
+   * exactly — and does not move again.
    *
    * `--podcast-dock-h` was a constant, 138px, and the dock has never been one
    * height: it grows for a chapter line, again while peeking, and to several
    * hundred pixels when the sheet is open. The panel was shortened by a guess,
-   * so the gap under it was right in one state and wrong in every other — too
-   * much air under the last card at rest, the last card hidden behind the sheet
-   * when it opened.
+   * so the gap under it was right in one state and wrong in every other.
    *
    * Measured with a ResizeObserver rather than from state, because the height
    * changes for reasons this component does not own — a long episode title
    * wrapping, a font finishing loading, the window narrowing.
+   *
+   * Dated 2026-07-30: it is the COLLAPSED height that is published, which is
+   * the whole box less the sheet. The measurement was right and the consequence
+   * was violent — the study panel reserves this number as its floor and the
+   * toast lane steps over it, so opening the sheet shortened the panel by
+   * several hundred pixels and relocated every toast, in one 300ms grid
+   * transition, mid-scroll, with nothing damping either.
+   *
+   * The alternative was to reserve the OPEN height always, which is several
+   * hundred pixels of empty panel for a sheet that is usually shut. So the
+   * reservation is made once, against the thing that is always there, and the
+   * sheet is an overlay above it: the dock is bottom-pinned, so it opens upward
+   * over the panel rather than through it. Nothing outside this surface moves
+   * when the sheet opens, which is what makes it a place rather than a
+   * disclosure.
    *
    * Written to the shell rather than to :root, so a second player could never
    * write over the first one's number.
@@ -635,11 +698,34 @@ export function PodcastPlayer({
     const shell = box?.closest<HTMLElement>(".app-shell");
     if (!box || !shell) return undefined;
     const publish = (): void => {
-      shell.style.setProperty("--podcast-dock-h", `${Math.round(box.getBoundingClientRect().height)}px`);
+      /* Measured only while the sheet is SHUT, rather than measured always and
+         corrected by subtracting the sheet. Two reasons, and the second is why
+         the guard reads the state rather than the sheet's height:
+
+         The whole box and the sheet are fractional rects, so `round(whole −
+         sheet)` lands on 143 in one state and 142 in the other, and the panel
+         below twitches by a pixel every time the sheet opens.
+
+         And the collapsed dock is genuinely a pixel shorter while the sheet is
+         open — the corner stops repeating a title the sheet is already showing,
+         which takes a line out of the lines column and changes what the body's
+         row height rounds from. Gated on the sheet's measured height, the first
+         frame after the toggle has the new body and a sheet still at zero, and
+         publishes the 142. Gated on the state, it cannot.
+
+         Holding the last shut measurement is also the honest statement of what
+         this number IS: what the dock reserves, which is what it takes up when
+         nobody is reading it. */
+      if (expandedRef.current) return;
+      shell.style.setProperty(
+        "--podcast-dock-h",
+        `${Math.round(box.getBoundingClientRect().height)}px`,
+      );
     };
     publish();
     const observer = new ResizeObserver(publish);
     observer.observe(box);
+    if (sheetRef.current) observer.observe(sheetRef.current);
     return () => {
       observer.disconnect();
       /* Back to the sheet's own value when the player leaves, rather than
@@ -734,7 +820,19 @@ export function PodcastPlayer({
   const passage = episode ? readEpisodePassage(episode.bref) : null;
   const position = scrubbingAt ?? at;
   const played = of > 0 ? Math.min(1, Math.max(0, position / of)) : 0;
-  const paused = status !== "playing" && status !== "reaching";
+  /* Dated 2026-07-30. This was `status !== "playing" && status !== "reaching"`,
+     so while the dock was still reaching for a file it had not received the
+     loudest control on the surface drew PAUSE — claiming the episode was
+     running — over a clock reading 0:00 / —:—. Reaching is not playing. The
+     glyph stays play, the press cancels, and what is actually happening is said
+     in words on the clock's own line. */
+  const paused = status !== "playing";
+  /* Reaching WITH nothing known about the file yet, which is the only version
+     of it a reader can be told anything useful about: a resume mid-episode
+     passes through `reaching` with a duration already in hand, and swapping the
+     clock out for a sentence there would be a flicker rather than a state. The
+     rail's travelling segment is gated on the same pair. */
+  const reaching = status === "reaching" && of <= 0;
   const following = mode === "following";
   const needle = query.trim().toLowerCase();
   const searching = mode === "searching";
@@ -930,12 +1028,75 @@ export function PodcastPlayer({
         className="podcast-transcript-line"
         data-line={index}
         onClick={() => latest.current.line(line.s)}
+        /* Every line starts out of the tab order and exactly one is put back
+           into it by the roving effect below. Written as a static -1 here
+           rather than a computed 0/-1 so this list stays a function of its own
+           content: a tabindex that depended on the playhead would put all 2,280
+           elements back into the render, which is the thing Build 1 took them
+           out of. */
+        tabIndex={-1}
         type="button"
       >
         {needle ? highlight(line.t, needle) : line.t}
       </button>
     </li>
   )), [found, needle]);
+
+  /* ── One tab stop for the whole transcript ────────────────────────────────
+     A two-hour episode is 2,280 buttons, and every one of them was a tab stop:
+     reaching the Follow pill, the search box or anything below the list by
+     keyboard meant 2,280 presses. This is the same roving pattern the tab strip
+     and the study line use — the list holds one stop, and the arrows travel it.
+
+     Written to the DOM by hand, for the same reason the depth ramp is: as a
+     prop it would make the list a function of the playhead again. The stop
+     rests on the line being spoken where there is one, so a reader who tabs in
+     arrives at the voice rather than at the top of an hour of transcript. */
+  const rovingRef = useRef<HTMLElement | null>(null);
+  const setRoving = (next: HTMLElement | null): void => {
+    if (rovingRef.current === next) return;
+    rovingRef.current?.setAttribute("tabindex", "-1");
+    next?.setAttribute("tabindex", "0");
+    rovingRef.current = next;
+  };
+
+  useLayoutEffect(() => {
+    const box = listRef.current;
+    if (!box) { rovingRef.current = null; return; }
+    /* Still in the list? A new query rebuilds every element, so the one holding
+       the stop is usually gone. */
+    if (rovingRef.current?.isConnected && box.contains(rovingRef.current)) return;
+    rovingRef.current = null;
+    const atVoice = lineIndex >= 0
+      ? box.querySelector<HTMLElement>(`.podcast-transcript-line[data-line="${lineIndex}"]`)
+      : null;
+    setRoving(atVoice ?? box.querySelector<HTMLElement>(".podcast-transcript-line"));
+  }, [expanded, lineIndex, renderedLines]);
+
+  /* Arrows travel, Home and End jump, and the stop follows focus. Focus is
+     moved without the browser's own scroll and then placed by hand, because
+     `.podcast-transcript` sets `scroll-behavior: smooth` and a focus scroll
+     would animate — under the pointer, at the moment the reader is trying to
+     land on a line. Landing on a line is a scroll the reader started, so
+     following stops, which is the intended answer. */
+  const onLineKeys = (event: React.KeyboardEvent<HTMLUListElement>): void => {
+    if (!["ArrowUp", "ArrowDown", "Home", "End"].includes(event.key)) return;
+    const box = listRef.current;
+    if (!box) return;
+    const lines = [...box.querySelectorAll<HTMLElement>(".podcast-transcript-line")];
+    if (lines.length === 0) return;
+    const at = lines.indexOf(document.activeElement as HTMLElement);
+    const next = event.key === "Home" ? 0
+      : event.key === "End" ? lines.length - 1
+        : event.key === "ArrowUp" ? Math.max(0, at - 1)
+          : Math.min(lines.length - 1, at < 0 ? 0 : at + 1);
+    const target = lines[next];
+    if (!target) return;
+    event.preventDefault();
+    setRoving(target);
+    target.focus({ preventScroll: true });
+    target.scrollIntoView({ block: "nearest", behavior: "instant" });
+  };
 
   /* The depth ramp, written onto the seven elements it can be seen on.
 
@@ -1213,10 +1374,16 @@ export function PodcastPlayer({
           <span className="sr-only" role="status" aria-live="polite">{notice}</span>
 
           <header className="podcast-mast">
-            {/* The publisher's approved mark replaces this name in CSS for the
-                sources whose marks have been cleared, and the name stays in the
-                accessibility tree either way. See player.css. */}
-            <span className="podcast-mast-source">{episode.sourceName}</span>
+            {/* The plate: the publisher's own colour at signature size,
+                carrying either their approved mark or their name. Both forms
+                are one object — see .podcast-mast-plate — and the mark's
+                artwork is substituted in styles.css, because a relative url()
+                inside a custom property resolves against the stylesheet that
+                substitutes it. The name is in the accessibility tree in both
+                forms; the mark rule indents the glyphs, not the text. */}
+            <span className="podcast-mast-plate">
+              <span className="podcast-mast-mark podcast-mast-name">{episode.sourceName}</span>
+            </span>
             <span className="podcast-mast-kind">{episode.kind}</span>
             {passage && !expanded && (
               <button
@@ -1236,37 +1403,31 @@ export function PodcastPlayer({
               ref={toggleRef}
               type="button"
             >
-              <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
+              {/* One grid, one stroke. Every glyph on this surface is drawn on
+                  a 24 box and takes its stroke from the icon grammar in
+                  styles/player.css, where `non-scaling-stroke` makes 1.25 mean
+                  1.25 RENDERED pixels at any size. It was three grids (16, 18,
+                  24), five rendered sizes and three stroke weights. */}
+              <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
                 <path
-                  d={expanded ? "M4.2 9.6 8 5.8l3.8 3.8" : "M4.2 6.4 8 10.2l3.8-3.8"}
-                  fill="none"
+                  d={expanded ? "M6.3 14.4 12 8.7l5.7 5.7" : "M6.3 9.6 12 15.3l5.7-5.7"}
                   stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeWidth="1.5"
                 />
               </svg>
             </button>
-            <button
-              aria-label={`Open ${episode.title} at ${episode.sourceName} — opens the official page`}
-              className="podcast-mast-icon"
-              onClick={() => void openOfficial()}
-              type="button"
-            >
-              <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
-                <g fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5">
-                  <path d="M6 3.4H3.4v9.2h9.2V10" />
-                  <path d="M9.4 3.4h3.2v3.2M12.6 3.4 7.4 8.6" />
-                </g>
-              </svg>
-            </button>
+            {/* The publisher's own page left this row on 2026-07-30, which is
+                what the comment at the head of .podcast-mast had claimed for
+                two commits while the glyph was still here. It is a sentence in
+                the sheet now — "Open at Naked Bible Podcast" — which is both
+                the thing it says and a fifth of the width it was spending. */}
             <button
               aria-label={`Stop ${episode.title} and close the player`}
               className="podcast-mast-icon"
               onClick={stopPodcast}
               type="button"
             >
-              <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
-                <path d="M4.4 4.4 11.6 11.6M11.6 4.4 4.4 11.6" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" />
+              <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                <path d="M6.6 6.6 17.4 17.4M17.4 6.6 6.6 17.4" stroke="currentColor" />
               </svg>
             </button>
           </header>
@@ -1278,12 +1439,26 @@ export function PodcastPlayer({
               they must not be able to Tab into either. */}
           <div className="podcast-sheet" inert={!expanded} ref={sheetRef}>
             <div className="podcast-sheet-inner">
+              {/* The episode's own masthead. It had no rules at all until
+                  2026-07-30 — see .podcast-episode-title — so this <h2> drew at
+                  the UA's 24px bold and was the largest type in the study
+                  column by accident. The publisher's own page is a sentence
+                  here rather than a third glyph on the mast's line, which is
+                  where the masthead's comment has always said it went. */}
               <div className="podcast-episode">
                 <h2 className="podcast-episode-title" tabIndex={-1}>{episode.title}</h2>
                 <p className="podcast-episode-meta">
                   {passage ? `${episodePassageLabel(passage, bookNames)} · ` : ""}
                   {of > 0 ? formatClock(of) : "length unknown until it loads"}
                 </p>
+                <button
+                  aria-label={`Open ${episode.title} at ${episode.sourceName} — opens the official page`}
+                  className="podcast-episode-official"
+                  onClick={() => void openOfficial()}
+                  type="button"
+                >
+                  {`Open at ${episode.sourceName}`}
+                </button>
               </div>
 
               {/* Two views, not two stacked panels. A reader is either choosing
@@ -1444,9 +1619,9 @@ export function PodcastPlayer({
                   role={tabbed ? "tabpanel" : undefined}
                 >
                   <div className="podcast-transcript-head">
-                    <svg aria-hidden="true" className="podcast-transcript-glass" viewBox="0 0 16 16">
-                      <circle cx="7.2" cy="7.2" r="4.4" />
-                      <path d="M10.5 10.5 13.4 13.4" />
+                    <svg aria-hidden="true" className="podcast-transcript-glass" viewBox="0 0 24 24">
+                      <circle cx="10.8" cy="10.8" r="6.6" />
+                      <path d="M15.75 15.75 20.1 20.1" />
                     </svg>
                     <input
                       aria-label="Search this transcript"
@@ -1500,8 +1675,8 @@ export function PodcastPlayer({
                         onClick={followAgain}
                         type="button"
                       >
-                        <svg aria-hidden="true" viewBox="0 0 16 16">
-                          <path d="M8 3.4v8.2M4.6 8.4 8 11.8l3.4-3.4" />
+                        <svg aria-hidden="true" viewBox="0 0 24 24">
+                          <path d="M12 5.1v12.3M6.9 12.6 12 17.7l5.1-5.1" />
                         </svg>
                         Follow
                       </button>
@@ -1512,6 +1687,7 @@ export function PodcastPlayer({
                       className="podcast-transcript"
                       data-flat={flatWeight ? "true" : undefined}
                       data-transcript-mode={mode}
+                      onKeyDown={onLineKeys}
                       onScroll={onTranscriptScroll}
                       onScrollEnd={() => { selfScrollUntil.current = 0; }}
                       ref={listRef}
@@ -1530,44 +1706,45 @@ export function PodcastPlayer({
                   facts that is. Both were computed with care — undefined while
                   unasked, null once we know there is none — and then drawn as
                   the same nothing, which left an open sheet holding a title, a
-                  length, and no account of itself. */}
+                  length, and no account of itself.
+
+                  Drawn as two states rather than as two sentences, dated
+                  2026-07-30: waiting is a state with a device (the same
+                  travelling segment the rail uses, laid flat) and knowing is a
+                  state with a sentence. A reader who is shown "Looking for a
+                  transcript…" as static text for four seconds and then the same
+                  weight of text saying there is none has been shown one thing
+                  twice. */}
               {expanded && !hasTranscript && !hasPassages && (
-                <p className="podcast-transcript-empty podcast-sheet-empty">
-                  {transcript === undefined || refs === undefined
-                    ? "Looking for a transcript…"
-                    : "No transcript for this episode."}
-                </p>
+                transcript === undefined || refs === undefined ? (
+                  <div className="podcast-sheet-reaching">
+                    <span aria-hidden="true" className="podcast-sheet-reaching-rule" />
+                    <p>Looking for a transcript…</p>
+                  </div>
+                ) : (
+                  <p className="podcast-transcript-empty podcast-sheet-empty">
+                    No transcript for this episode, and no passages found in it.
+                  </p>
+                )
               )}
             </div>
           </div>
 
           <div className="podcast-dock-body">
             <div className="podcast-transport" role="group" aria-label="Playback">
-              <button
-                aria-label="Back 15 seconds"
-                className="podcast-transport-skip"
-                onClick={() => skipBy(-15)}
-                type="button"
-              >
-                <SkipGlyph seconds={-15} />
-              </button>
-              <button
-                aria-label={`${paused ? "Play" : "Pause"} ${episode.title}`}
-                aria-pressed={!paused}
-                className="podcast-transport-play"
-                onClick={togglePodcast}
-                type="button"
-              >
-                <PlayGlyph paused={paused} />
-              </button>
-              <button
-                aria-label="Forward 30 seconds"
-                className="podcast-transport-skip"
-                onClick={() => skipBy(30)}
-                type="button"
-              >
-                <SkipGlyph seconds={30} />
-              </button>
+              <SkipButton label="Back 15 seconds" onPress={() => skipBy(-15)} seconds={-15} />
+              <TransportPlayButton
+                /* While reaching, the press is a cancellation rather than a
+                   toggle — the element is already un-paused and waiting on
+                   bytes — so it is named for what it does. */
+                label={reaching
+                  ? `Stop loading ${episode.title}`
+                  : `${paused ? "Play" : "Pause"} ${episode.title}`}
+                onPress={togglePodcast}
+                paused={paused}
+                pressed={!paused}
+              />
+              <SkipButton label="Forward 30 seconds" onPress={() => skipBy(30)} seconds={30} />
             </div>
             <div className="podcast-dock-lines">
               {expanded && chapter ? (
@@ -1580,6 +1757,13 @@ export function PodcastPlayer({
                   })()}
                   <span className="podcast-dock-now-title">{chapter.title}</span>
                 </p>
+              ) : expanded ? (
+                /* Nothing. Open and without chapters — which is every episode
+                   today — this line was drawing the episode's title a second
+                   time, six inches under the sheet's own heading of it. The
+                   corner has to name what is playing because nothing else on
+                   screen does; the sheet already has. Dated 2026-07-30. */
+                null
               ) : (
                 <p className="podcast-dock-title" title={episode.title}>{episode.title}</p>
               )}
@@ -1600,6 +1784,16 @@ export function PodcastPlayer({
                 <p className="podcast-dock-refusal">
                   Did not arrive. This needed the network.
                 </p>
+              ) : reaching ? (
+                /* The third form of this one row, added 2026-07-30. Reaching
+                   used to be drawn as `0:00  1×  —:—` under a pause glyph: a
+                   clock counting a file that had not arrived, beside a rate for
+                   a voice not yet speaking. It is the state a reader on someone
+                   else's server sees most often and it was the least designed
+                   one here. Now it says what is happening, in the publisher's
+                   name, on the clock's own line and at the clock's own height —
+                   so nothing about the dock moves when it resolves. */
+                <p className="podcast-dock-reaching">{`Reaching ${episode.sourceName}…`}</p>
               ) : (
                 <p className="podcast-dock-clock">
                   <span>{formatClock(position)}</span>
@@ -1620,10 +1814,21 @@ export function PodcastPlayer({
           </div>
 
           <div className="podcast-rail">
-            {/* One loading device in this app, and it is a segment travelling a
-                rule. The rail is already a rule, so it says "reaching the
-                publisher" without a second device appearing to say it. */}
-            {status === "reaching" && of <= 0 && <span aria-hidden="true" className="podcast-rail-reaching" />}
+            {/* The rule is drawn by the app and the input is only the hand on
+                it. A range element painting its own gradient track cannot
+                transition — a gradient stop moving is a background-image change
+                — and this fill is sampled from a clock four times a second, so
+                it stepped. As two boxes the played part is a width, and a width
+                can catch up. */}
+            {!reaching && <span aria-hidden="true" className="podcast-rail-track" />}
+            {!reaching && <span aria-hidden="true" className="podcast-rail-played" />}
+            {/* The loading device: a segment travelling a rule. The rail is
+                already a rule, so it says "reaching the publisher" without a
+                second device appearing to say it. Its keyframes are this
+                surface's own now — it used to animate one declared in
+                styles/marking-actions.css, and an undefined animation-name
+                fails silently. */}
+            {reaching && <span aria-hidden="true" className="podcast-rail-reaching" />}
             {of > 0 && chapters.map((entry) => (
               <span
                 aria-hidden="true"

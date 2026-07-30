@@ -11,13 +11,43 @@
  * What it proves, in order: the element is not fetched before the press; the
  * dock appears with the episode named; playback survives a passage change, a
  * closed panel, a view change and the command palette; the transport's own
- * controls move the file; and stopping releases it. The tour plays audio and
- * always stops it before leaving.
+ * controls move the file; the sheet's machine does the whole errand; and
+ * stopping releases it. The tour plays audio and always stops it before
+ * leaving.
+ *
+ * ── Restated 2026-07-30, with the build that made the app own the surface ────
+ *
+ * The tour was written for the PERMISSION boundary, which it still guards well,
+ * and was asked afterwards to stand in for visual truth, which it was never
+ * built to carry: it captured fourteen states of a collapsed corner and none of
+ * the extended form, and every capture it had ever committed predated the code
+ * that drew it. It now carries both jobs and says which is which.
+ *
+ * What is new, and why each of these is a gate rather than a picture:
+ *
+ *   · THE GROUND. The dock used to be painted `var(--resource-source)` — the
+ *     publisher's colour — which is ten palettes against four atmospheres and
+ *     forced colors, forty-four conditions nobody could check. The app owns it
+ *     now, and `ownership()` below walks every source against every atmosphere
+ *     IN THE RUNNING ENGINE and asserts the ground is the app's paper and never
+ *     the brand's.
+ *   · THE ACCENT. One brand colour still leaves the brand's surface, fitted to
+ *     ours by a lightness clamp (see --accent-fit-* in styles.css). The same
+ *     sweep measures its contrast against the app's paper, because the sweep is
+ *     the only thing standing between that clamp and a number nobody checked.
+ *   · THE SHEET IS A PLACE. Opening it must not move the study panel or the
+ *     toast lane, and must not push the masthead — where the close control
+ *     lives — off the top of a short window.
+ *   · THE DESIGNED STATES. Reaching, refusal, empty, the disc, the unbranded
+ *     fallback, forced colors, translucent, narrow. The disc in particular had
+ *     never been seen by anyone: the one capture of it in the audit shows the
+ *     dock at full size, because the tour had left focus inside the dock and
+ *     the rule excludes `:has(:focus-visible)`.
  */
 
 import assert from "node:assert/strict";
-import { mkdirSync, writeFileSync } from "node:fs";
-import { waitForState } from "./qa-support/app-vocabulary.mjs";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { ATMOSPHERES, waitForState } from "./qa-support/app-vocabulary.mjs";
 
 const CDP_HTTP = `http://localhost:${process.env.CDP_PORT ?? "9222"}/json/list`;
 const OUT_DIR = "docs/ui-audit/podcast-player";
@@ -26,6 +56,32 @@ const CAPTURE_SCREENSHOTS = !process.argv.includes("--no-screenshots");
 // end, so this chapter is guaranteed an episode with an audioUrl on it.
 const PASSAGE = "1 Samuel 30";
 const ELSEWHERE = "Acts 19";
+
+/* Every source with a palette block in styles.css, plus one that has none.
+   The last entry is not a typo: an unregistered feed is a real configuration —
+   the ingest pipeline exists precisely to add feeds — and it is the one the
+   fallback palette was broken on, drawing a white play glyph on a near-white
+   pill in two of the four atmospheres. */
+const SOURCES = [
+  "working-preacher",
+  "bibleproject",
+  "enter-the-bible",
+  "naked-bible",
+  "spoken-gospel",
+  "forty-minutes-ot",
+  "five-minutes-church-history",
+  "ask-nt-wright",
+  "listeners-commentary",
+  "radically-christian",
+  "the-gospel-coalition",
+  "qa-unregistered-source",
+];
+
+/* The floor the accent's fit has to clear. 4.5 rather than 3, because the
+   binding consumer is `.podcast-transcript-line mark` — 16px body copy sitting
+   on this colour — and Law 6 holds text to 4.5. The measured worst case across
+   these twelve sources and four atmospheres is BibleProject's cyan on Paper. */
+const ACCENT_FLOOR = 4.5;
 
 async function connect(url) {
   const ws = new WebSocket(url);
@@ -71,20 +127,62 @@ async function waitFor(expression, timeout = 8_000) {
   await waitForState(evaluate, sleep, expression, timeout);
 }
 
-async function screenshot(name, selector = null) {
+/**
+ * `settle` is how long the page is given to stop moving before the shutter.
+ *
+ * The default is a quarter second, which is right for every state that stays
+ * put. It is wrong for the two that do not: the dock reaching for a file it has
+ * not got, and the sheet with both fetches in flight. Measured 2026-07-30, a
+ * 240ms settle on the reaching capture produced a picture of the state AFTER
+ * it — metadata had landed, the clock had filled in, and the play glyph was
+ * caught mid-crossfade. A capture of the wrong state is worse than no capture,
+ * because it is filed under the right name.
+ */
+async function screenshot(name, selector = null, { settle = 240 } = {}) {
   if (!CAPTURE_SCREENSHOTS) return;
   let clip;
   if (selector) {
+    /* Brought into the viewport first. `captureBeyondViewport: false` means a
+       clip outside the visible region is a rectangle of nothing — which is what
+       `paper-card-before-press` had been for as long as the card sat below the
+       panel's fold: 5KB of empty canvas, committed as a picture of a card. */
+    const moved = await evaluate(`(() => {
+      const element = document.querySelector(${JSON.stringify(selector)});
+      if (!element) return false;
+      const rect = element.getBoundingClientRect();
+      if (rect.top >= 40 && rect.bottom <= window.innerHeight - 8) return false;
+      element.scrollIntoView({ block: "center", behavior: "instant" });
+      return true;
+    })()`);
+    // Paid only when something actually moved: for a time-critical capture the
+    // settle budget is the whole of the state being captured.
+    if (moved) await sleep(260);
+    /* The clip is in the page's UNZOOMED pixels, and this shell runs at a zoom.
+       Measured 2026-07-30, the first time this tour was ever run with captures
+       on against a real window: the window is 1512 device-independent pixels
+       wide and the viewport is 1656 CSS pixels, a factor of 0.913 — so a clip
+       written in CSS pixels landed ~57px right and ~40px down of the element it
+       named and ran a tenth too wide. Every clipped capture this tour produced
+       was a picture of the corner of its subject and the canvas beside it. The
+       factor is read off the window rather than assumed: it is the reader's
+       zoom, not ours. */
     clip = await evaluate(`(() => {
       const element = document.querySelector(${JSON.stringify(selector)});
       if (!element) return null;
+      const zoom = window.outerWidth / window.innerWidth;
       const rect = element.getBoundingClientRect();
-      return { x: rect.x - 26, y: rect.y - 26, width: rect.width + 52, height: rect.height + 52, scale: 2 };
+      return {
+        x: (rect.x - 26) * zoom,
+        y: (rect.y - 26) * zoom,
+        width: (rect.width + 52) * zoom,
+        height: (rect.height + 52) * zoom,
+        scale: 2,
+      };
     })()`);
     if (!clip) throw new Error(`Cannot capture missing element: ${selector}`);
   }
   await cdp.send("Page.bringToFront");
-  await sleep(240);
+  if (settle > 0) await sleep(settle);
   const response = await cdp.send("Page.captureScreenshot", {
     format: "png",
     captureBeyondViewport: false,
@@ -95,6 +193,21 @@ async function screenshot(name, selector = null) {
   const path = `${OUT_DIR}/${name}.png`;
   writeFileSync(path, Buffer.from(response.result.data, "base64"));
   console.log("saved", path);
+}
+
+/**
+ * A capture this run could not take must not be left behind by an earlier one.
+ *
+ * Two states here are caught rather than staged — the dock reaching for the
+ * file, and the sheet with both fetches still in flight — and a run that misses
+ * one leaves the previous run's picture on disk. That is precisely how this
+ * surface's audit went wrong the first time: fifteen captures of a dock that no
+ * longer existed, committed beside the code that replaced it. An empty slot is
+ * a true statement; a stale picture is a false one.
+ */
+function forgetCapture(name) {
+  if (!CAPTURE_SCREENSHOTS) return;
+  rmSync(`${OUT_DIR}/${name}.png`, { force: true });
 }
 
 async function clickElement(selector) {
@@ -141,6 +254,43 @@ async function setTheme(theme) {
   await sleep(260);
   await evaluate(`document.querySelectorAll(".toast-close").forEach((button) => button.click())`);
   await waitFor(`document.querySelectorAll(".toast").length === 0`);
+}
+
+/* The material is a class the shell puts on itself (app.tsx · shellClass) and
+   its only control lives in Settings, three surfaces away from anything this
+   tour touches. Applied here as the app applies it, to the element the app
+   applies it to, and taken off again — which is a fair capture of the material
+   and not a fair capture of the settings screen, and this tour is not about the
+   settings screen. */
+async function setMaterial(translucent) {
+  await evaluate(`document.querySelector(".app-shell")?.classList.toggle("material-translucent", ${translucent})`);
+  await sleep(280);
+}
+
+/**
+ * Put the PAGE at a CSS width, whatever the window will and will not do.
+ *
+ * Two things sit between a number and the viewport, and the tour has to know
+ * both: `minWidth: 900` in src/electron/main.ts is a floor on the window, and
+ * the shell runs at a zoom (measured here rather than assumed) that makes the
+ * viewport wider than the window by about a tenth. Between them, the narrowest
+ * page this app can be RESIZED to is 986 CSS pixels — on the far side of its own
+ * 979 breakpoint, so every rule in the compact band is unreachable by resizing.
+ * The device-metrics override goes under both, and the zoom still applies on top
+ * of it, which is why this converges instead of computing once.
+ */
+async function setViewportWidth(width) {
+  let device = Math.round(width * (await evaluate(`window.outerWidth / window.innerWidth`)));
+  for (let attempt = 0; attempt < 5; attempt++) {
+    await cdp.send("Emulation.setDeviceMetricsOverride", {
+      width: device, height: 0, deviceScaleFactor: 0, mobile: false,
+    });
+    await sleep(680);
+    const seen = await evaluate(`window.innerWidth`);
+    if (Math.abs(seen - width) <= 2) return seen;
+    device = Math.round(device * (width / seen));
+  }
+  return await evaluate(`window.innerWidth`);
 }
 
 async function setMargin(visible) {
@@ -198,7 +348,11 @@ const DOCK_TRUTH = `(() => {
     status: dock.getAttribute("data-status"),
     source: dock.getAttribute("data-source"),
     layer: dock.getAttribute("data-floating-layer"),
-    publisher: dock.querySelector(".podcast-mast-source")?.textContent?.trim(),
+    // Restated 2026-07-30: the name moved inside the plate, which is the one
+    // place a publisher's colour survives. It is still the name in the
+    // accessibility tree for a marked source — the mark rule indents the
+    // glyphs, not the text.
+    publisher: dock.querySelector(".podcast-mast-name")?.textContent?.trim(),
     passage: dock.querySelector(".podcast-mast-passage")?.textContent?.trim() ?? null,
     title: dock.querySelector(".podcast-dock-title")?.textContent?.trim(),
     clock: [...dock.querySelectorAll(".podcast-dock-clock span")].map((node) => node.textContent?.trim()),
@@ -215,12 +369,13 @@ const DOCK_TRUTH = `(() => {
     // 10 in e8e2ee9 and this tour went on asserting 24 for months, which is a
     // gate that could not pass being mistaken for a gate nobody had run.
     pageInset: Math.round(parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--page-inset")) || 0),
+    // What the dock RESERVES, which since 2026-07-30 is its collapsed height
+    // rather than its live one — the sheet is an overlay, so opening it must
+    // leave this number, the panel and the toast lane exactly where they were.
+    reserved: Math.round(parseFloat(getComputedStyle(document.querySelector(".app-shell")).getPropertyValue("--podcast-dock-h")) || 0),
     // What the panel gives up to the player, and what is actually left between
     // them. The reservation moved from padding to margin when the panel stopped
-    // growing a floor and started ENDING above the player — "extra padding only
-    // moves the end of the list; everything before the end still scrolls under
-    // the player" (styles.css) — and this went on reading paddingBottom, which
-    // is now the panel's own gutter and nothing to do with the dock.
+    // growing a floor and started ENDING above the player.
     marginFloor: (() => {
       const margin = document.querySelector(".living-margin");
       return margin ? Math.round(parseFloat(getComputedStyle(margin).marginBottom)) : null;
@@ -235,10 +390,102 @@ const DOCK_TRUTH = `(() => {
       const toasts = document.querySelector(".toast-container");
       return toasts ? Math.round(parseFloat(getComputedStyle(toasts).bottom)) : null;
     })(),
+    // The masthead's own top edge. A dock with no max-height could grow past
+    // the top of a short window, and the dock clips what it cannot hold — so
+    // the masthead, which is where the only control that stops the episode
+    // lives, would be the first thing to go.
+    mastTop: Math.round(dock.querySelector(".podcast-mast")?.getBoundingClientRect().top ?? 0),
     rect: (() => { const r = dock.getBoundingClientRect(); return { right: Math.round(window.innerWidth - r.right), bottom: Math.round(window.innerHeight - r.bottom), width: Math.round(r.width), height: Math.round(r.height) }; })(),
   };
 })()`;
 
+/**
+ * Whose surface this is, measured rather than asserted.
+ *
+ * Two questions, one probe, run over every source against the atmosphere the
+ * app happens to be in:
+ *
+ *   1. Is the dock's ground the APP's paper — --bg-float — in every case, and
+ *      never the publisher's colour? A single `background: var(--resource-source)`
+ *      returning to this rule is the regression this whole build exists to
+ *      prevent, and it would be invisible in any capture of one source.
+ *   2. Does the one brand colour that still leaves the brand's surface hold
+ *      against that paper? The fit is a lightness clamp in CSS; nothing but
+ *      this reads the number it actually produces.
+ *
+ * Colours are normalised through a canvas rather than parsed. A computed
+ * `oklch()` value serialises as `oklch(...)`, a `color-mix(in srgb, …)` as
+ * `rgb(...)`, and a hex as `rgb(...)` — one string parser for three formats is
+ * three chances to be wrong about a number the whole gate depends on. Canvas
+ * takes any CSS colour and gives back sRGB bytes.
+ */
+const OWNERSHIP = `((sources) => {
+  const dock = document.querySelector(".podcast-dock");
+  if (!dock) return null;
+  const was = dock.getAttribute("data-source");
+  const canvas = document.createElement("canvas");
+  const ink = canvas.getContext("2d");
+  const bytes = (value) => {
+    ink.clearRect(0, 0, 1, 1);
+    ink.fillStyle = "#000";
+    ink.fillStyle = value;
+    ink.fillRect(0, 0, 1, 1);
+    return [...ink.getImageData(0, 0, 1, 1).data].slice(0, 3).map((c) => c / 255);
+  };
+  const channel = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  const luminance = ([r, g, b]) => 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+  const contrast = (a, b) => {
+    const [x, y] = [luminance(a), luminance(b)];
+    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+  };
+  const probe = document.createElement("span");
+  probe.style.position = "absolute";
+  probe.style.pointerEvents = "none";
+  dock.append(probe);
+  const paper = bytes(getComputedStyle(document.querySelector(".app-shell")).getPropertyValue("--bg-float").trim());
+  const rows = [];
+  for (const source of sources) {
+    dock.setAttribute("data-source", source);
+    // color-mix coerces whatever the clamp produced into sRGB, which is the
+    // space every one of these numbers is about.
+    probe.style.backgroundColor = "color-mix(in srgb, var(--player-accent) 100%, transparent)";
+    const accent = bytes(getComputedStyle(probe).backgroundColor);
+    probe.style.backgroundColor = "var(--player-accent-ink)";
+    const accentInk = bytes(getComputedStyle(probe).backgroundColor);
+    probe.style.backgroundColor = "var(--resource-source)";
+    const brand = bytes(getComputedStyle(probe).backgroundColor);
+    const ground = bytes(getComputedStyle(dock).backgroundColor);
+    const plate = dock.querySelector(".podcast-mast-plate");
+    /* The plate's colour is the one thing on this surface that TRANSITIONS with
+       the episode — a new publisher's ground arriving in one frame under a mark
+       being replaced is the cut this build removed — so a read taken in the
+       same tick as the attribute change returns the old colour, part way
+       through. Finished rather than waited out: the value under test is where
+       the transition lands, not how long it takes. */
+    for (const animation of plate?.getAnimations() ?? []) animation.finish();
+    rows.push({
+      source,
+      // Rounded to a byte: the dock's ground and the app's floating paper have
+      // to be the same paint, and a sub-byte difference is a rounding artefact
+      // rather than a decision.
+      groundIsPaper: ground.every((c, at) => Math.abs(c - paper[at]) < 0.004),
+      groundIsBrand: ground.every((c, at) => Math.abs(c - brand[at]) < 0.004),
+      accentOnPaper: Number(contrast(accent, ground).toFixed(2)),
+      inkOnAccent: Number(contrast(accentInk, accent).toFixed(2)),
+      // The plate is the one place the brand's own colour survives, and it has
+      // to actually be the brand's colour or the signature is gone.
+      plateIsBrand: plate ? bytes(getComputedStyle(plate).backgroundColor).every((c, at) => Math.abs(c - brand[at]) < 0.004) : null,
+      plateShare: plate
+        ? Number((plate.getBoundingClientRect().width / dock.querySelector(".podcast-mast").getBoundingClientRect().width).toFixed(3))
+        : null,
+    });
+  }
+  probe.remove();
+  if (was === null) dock.removeAttribute("data-source"); else dock.setAttribute("data-source", was);
+  return rows;
+})(${JSON.stringify(SOURCES)})`;
+
+await cdp.send("Network.enable");
 await cdp.send("Page.reload", { ignoreCache: true });
 await waitFor(`Boolean(document.querySelector(".sidebar") && document.querySelector(".scripture-content"))`);
 await sleep(560);
@@ -253,6 +500,7 @@ const original = await evaluate(`(() => ({
   theme: document.querySelector(".app-shell")?.dataset.theme ?? "light",
   margin: Boolean(document.querySelector(".living-margin")),
   focus: document.querySelector("[data-instrument=focus]")?.getAttribute("aria-pressed") === "true",
+  material: document.querySelector(".app-shell")?.classList.contains("material-translucent") ?? false,
   passage: (() => {
     const title = document.querySelector(".chapter-title");
     return [title?.querySelector(".book-name")?.textContent, title?.querySelector(".chapter-number")?.textContent]
@@ -268,9 +516,27 @@ if (await evaluate(`window.innerWidth < 1_500`)) {
 await evaluate(`document.querySelector('[aria-label="Read (1)"]')?.click()`);
 await waitFor(`Boolean(document.querySelector(".scripture-content"))`);
 await setFocusMode(false);
+await setMaterial(false);
 await setMargin(true);
 await setTheme("light");
 await navigatePassage(PASSAGE);
+
+/* The ring, before anything else. `--focus-ring` was declared nowhere in the
+   bundle and appeared once as a consumer, so the transcript's ring fell through
+   to `currentColor` and worked by accident for as long as the text happened to
+   be visible. It is a token now, and this is the cheapest possible proof that
+   it resolves to a colour rather than to nothing. */
+const ring = await evaluate(`(() => {
+  const shell = getComputedStyle(document.querySelector(".app-shell"));
+  return {
+    ring: shell.getPropertyValue("--focus-ring").trim(),
+    width: shell.getPropertyValue("--focus-ring-width").trim(),
+    seal: shell.getPropertyValue("--accent-seal").trim(),
+  };
+})()`);
+assert.notEqual(ring.ring, "", "--focus-ring is still a phantom");
+assert.equal(ring.width, "2px");
+console.log("focus ring", ring);
 
 // Before the press. The element exists — it has to, or there would be nothing
 // to press play on — and it holds no source, which is the whole of what
@@ -281,14 +547,103 @@ assert.equal(atRest.audioSrc, null, "audio must not be fetched before a reader p
 console.log("at rest", atRest);
 
 await waitFor(`Boolean(document.querySelector('.trusted-resource-imprint[data-source="naked-bible"]'))`, 20_000);
-await clickElement('.trusted-resource-imprint[data-source="naked-bible"]');
-await waitFor(`Boolean(document.querySelector(".trusted-resource-play"))`);
-await screenshot("paper-card-before-press", ".trusted-resource-card");
+/* Scoped to the source that holds the media grant, and idempotent.
+   An imprint press is a TOGGLE on a shelf of eight publishers, and opening one
+   card closes another — which moves the whole row by the height of a featured
+   card while the press is being aimed. A coordinate press here was landing on
+   the neighbour, and everything below then read as a bug in the dock rather
+   than a bug in the aim. Coordinates are kept for the presses this tour is
+   ABOUT — the play button, a transcript hit — because those are the ones where
+   hit-testing is the thing under test. This one is setup, so it is asked for
+   by name. */
+await evaluate(`(() => {
+  const want = document.querySelector('.trusted-resource-imprint[data-source="naked-bible"]');
+  if (want?.getAttribute("aria-expanded") !== "true") want?.click();
+})()`);
+await waitFor(`document.querySelector('.trusted-resource-imprint[data-source="naked-bible"]')?.getAttribute("aria-expanded") === "true"`);
+await waitFor(`Boolean(document.querySelector('.trusted-resource-card[data-source="naked-bible"] .transport-play'))`);
+await sleep(420);
+await screenshot("paper-card-before-press", '.trusted-resource-card[data-source="naked-bible"]');
 
-await clickElement(".trusted-resource-play");
+/* One transport language, measured on the two surfaces that draw it. The card's
+   play used to be a hairline circle in the publisher's ink with a seal ring and
+   a hardcoded 150ms, twenty pixels from a filled pill in the publisher's colour
+   with a brand ring and a token; and its glyph was a second copy of the play
+   triangle that never got the optical correction the dock documents at length. */
+const family = await evaluate(`(() => {
+  const card = document.querySelector('.trusted-resource-card[data-source="naked-bible"] .trusted-resource-play');
+  const style = card ? getComputedStyle(card) : null;
+  return {
+    card: Boolean(card),
+    isFamily: card?.classList.contains("transport-play") ?? null,
+    size: style ? Math.round(parseFloat(style.width)) : null,
+    filled: style?.backgroundColor ?? null,
+    round: style?.borderRadius ?? null,
+    glyphs: card?.querySelectorAll(".transport-glyph").length ?? null,
+    grid: [...(card?.querySelectorAll("svg") ?? [])].map((svg) => svg.getAttribute("viewBox")),
+  };
+})()`);
+assert.equal(family.isFamily, true, "the card's play is not in the transport family");
+assert.equal(family.size, 28, "the card's play is the family at the card's own scale");
+assert.equal(family.glyphs, 2, "play and pause are both in the tree so one can cross into the other");
+assert.deepEqual([...new Set(family.grid)], ["0 0 24 24"], "one icon grid");
+assert.notEqual(family.filled, "rgba(0, 0, 0, 0)", "the family is filled, on both surfaces");
+console.log("transport family", family);
+
+/* Cold, and only for the press. Chromium's disk cache turns the second run of
+   this tour into a local read, which removes the only window in which the dock
+   is genuinely REACHING for anything — the state becomes uncatchable and its
+   capture goes stale, which is the exact failure this build exists to end.
+   Reaching is a fact about someone else's server and has to be measured against
+   one. Put back the moment the file is playing: a media element streams for
+   forty minutes after this, and an uncached range request every few seconds is
+   a stall the persistence assertions below correctly read as a stopped
+   episode. */
+await cdp.send("Network.setCacheDisabled", { cacheDisabled: true });
+await clickElement('.trusted-resource-card[data-source="naked-bible"] .trusted-resource-play');
 await waitFor(`Boolean(document.querySelector(".podcast-dock"))`);
+
+/* Reaching, which is a real state with a real network behind it and used to be
+   drawn as a lie: `paused` excluded "reaching", so the loudest control on the
+   surface drew PAUSE — claiming the file was running — over a clock reading
+   0:00 / —:—. Caught here rather than staged, because the publisher's server
+   genuinely takes seconds. */
+const reaching = await (async () => {
+  for (let look = 0; look < 60; look++) {
+    const seen = await evaluate(`(() => {
+      const dock = document.querySelector(".podcast-dock");
+      if (dock?.getAttribute("data-status") !== "reaching") return null;
+      if (!dock.querySelector(".podcast-dock-reaching")) return null;
+      return {
+        glyph: dock.querySelector(".transport-play")?.getAttribute("data-glyph") ?? null,
+        says: dock.querySelector(".podcast-dock-reaching")?.textContent?.trim() ?? null,
+        clock: Boolean(dock.querySelector(".podcast-dock-clock")),
+        travelling: Boolean(dock.querySelector(".podcast-rail-reaching")),
+        rule: Boolean(dock.querySelector(".podcast-rail-played")),
+      };
+    })()`);
+    if (seen) return seen;
+    if (await evaluate(`document.querySelector(".podcast-dock")?.getAttribute("data-status") === "playing"`)) return null;
+    await sleep(90);
+  }
+  return null;
+})();
+if (reaching) {
+  assert.equal(reaching.glyph, "play", "reaching is not playing, and must not draw a pause");
+  assert.equal(reaching.clock, false, "reaching must not draw a clock counting a file it has not got");
+  assert.equal(reaching.travelling, true, "the rail is the loading device");
+  assert.equal(reaching.rule, false, "there is no played part of a file that has not arrived");
+  assert.match(reaching.says, /^Reaching .+…$/);
+  await screenshot("paper-dock-reaching", ".podcast-dock", { settle: 0 });
+  console.log("reaching", reaching);
+} else {
+  forgetCapture("paper-dock-reaching");
+  console.log("reaching: the file arrived before the state could be caught (capture withdrawn)");
+}
+
 // The publisher's server, over the network, for a real 40-odd-minute file.
 await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-status") === "playing"`, 30_000);
+await cdp.send("Network.setCacheDisabled", { cacheDisabled: false });
 await waitFor(`(document.querySelector("audio")?.currentTime ?? 0) > 2`, 20_000);
 
 const playing = await evaluate(DOCK_TRUTH);
@@ -324,12 +679,9 @@ assert.ok(playing.toastLane >= playing.rect.bottom + playing.rect.height,
   `toasts would land on the player: ${playing.toastLane} vs ${playing.rect.bottom + playing.rect.height}`);
 /* Restated 2026-07-30: the panel does not reserve a floor, it STOPS. So what
    is asserted is the gap that is actually left — the panel's bottom edge above
-   the player's top edge, one frame gutter clear and no more. The old form read
-   paddingBottom against the dock's height and had never run: everything from
-   the publisher assertion down was unreachable while this tour was stale.
-   The tolerance is the ResizeObserver's: --podcast-dock-h is published on a
-   measured change, so it trails the dock's live height by a pixel or two after
-   the mast reflows. */
+   the player's top edge, one frame gutter clear and no more. The tolerance is
+   the ResizeObserver's: --podcast-dock-h is published on a measured change, so
+   it trails the dock's live height by a pixel or two after the mast reflows. */
 assert.ok(playing.marginClearance >= 0,
   `the panel overlaps the player by ${-playing.marginClearance}px`);
 assert.ok(playing.marginClearance <= 24,
@@ -337,6 +689,32 @@ assert.ok(playing.marginClearance <= 24,
 assert.ok(playing.marginFloor >= playing.rect.height - 4,
   `the panel's reservation is a guess rather than the dock's own height: ${playing.marginFloor} vs ${playing.rect.height}`);
 console.log("playing", playing);
+
+/* ── Whose surface this is ─────────────────────────────────────────────────
+   Twelve sources against every atmosphere, read out of the running engine.
+   Forty-eight conditions that used to be forty-four unverifiable ones. */
+for (const theme of ATMOSPHERES) {
+  await setTheme(theme);
+  const rows = await evaluate(OWNERSHIP);
+  assert.ok(rows, "the ownership probe found no dock");
+  for (const row of rows) {
+    assert.equal(row.groundIsPaper, true,
+      `${theme}/${row.source}: the dock's ground is not the app's floating paper`);
+    assert.equal(row.groundIsBrand && row.source !== "qa-unregistered-source", false,
+      `${theme}/${row.source}: the publisher is painting the ground again`);
+    assert.ok(row.accentOnPaper >= ACCENT_FLOOR,
+      `${theme}/${row.source}: the fitted accent is ${row.accentOnPaper}:1 on the app's paper`);
+    assert.ok(row.inkOnAccent >= ACCENT_FLOOR,
+      `${theme}/${row.source}: what sits on the accent is ${row.inkOnAccent}:1 against it`);
+    assert.equal(row.plateIsBrand, true,
+      `${theme}/${row.source}: the plate is not the publisher's own colour`);
+    assert.ok(row.plateShare <= 0.46,
+      `${theme}/${row.source}: the plate takes ${(row.plateShare * 100).toFixed(0)}% of the mast`);
+  }
+  const worst = rows.reduce((low, row) => Math.min(low, row.accentOnPaper), Infinity);
+  console.log(`ownership ${theme}: ${rows.length} sources, worst accent ${worst}:1`);
+}
+await setTheme("light");
 
 /* The pointer is still where it pressed play, which is under the dock — so
    every capture below would be a hover capture unless it is moved. The scrub's
@@ -411,9 +789,37 @@ await screenshot("paper-dock-notes-surface");
 await evaluate(`document.querySelector('[aria-label="Read (1)"]')?.click()`);
 await waitFor(`Boolean(document.querySelector(".scripture-content"))`);
 
+/* ── The disc ──────────────────────────────────────────────────────────────
+   Looked at for the first time. The minimised state is excluded by
+   `:not(:has(:focus-visible))`, and every previous run of this tour reached it
+   with focus still inside the dock from the click before — so the one capture
+   of the disc in the audit is a picture of the full-size card, and nobody had
+   ever seen the ~190 lines that draw it. Blur first, then park the pointer well
+   clear of the aim cone, then assert the size before capturing it. */
 await setFocusMode(true);
+await evaluate(`document.activeElement instanceof HTMLElement && document.activeElement.blur()`);
+await parkPointer();
 await stillPlaying("focus mode");
+const disc = await evaluate(`(() => {
+  const dock = document.querySelector(".podcast-dock");
+  const rect = dock.getBoundingClientRect();
+  const style = getComputedStyle(dock);
+  return {
+    width: Math.round(rect.width),
+    height: Math.round(rect.height),
+    round: style.borderRadius,
+    shadow: style.boxShadow,
+    stop: Boolean(dock.querySelector('[aria-label^="Stop"]')),
+    play: Boolean(dock.querySelector(".transport-play")),
+  };
+})()`);
+assert.equal(disc.width, 54, `the disc never minimised: ${JSON.stringify(disc)}`);
+assert.equal(disc.height, 54, JSON.stringify(disc));
+assert.notEqual(disc.shadow, "none", "the minimised player is the app's only floating surface with no shadow");
+assert.equal(disc.play, true, "the disc keeps the one control it exists for");
 await screenshot("paper-dock-focus-mode");
+await screenshot("paper-dock-disc", ".podcast-dock");
+console.log("disc", disc);
 await setFocusMode(false);
 
 // The transport's own controls, against the file rather than against the UI.
@@ -450,17 +856,36 @@ for (let press = 0; press < 5; press++) {
   await sleep(140);
   if (await evaluate(`Boolean(document.activeElement?.closest(".podcast-dock"))`)) break;
 }
-assert.equal(await evaluate(`document.activeElement?.className`), "podcast-transport-play",
-  "F6 never reached the dock");
+// Restated 2026-07-30: the class is the transport family's rather than this
+// surface's, so what is asserted is membership rather than a string.
+assert.equal(await evaluate(`document.activeElement?.classList.contains("transport-play")`), true,
+  "F6 never reached the dock's play");
 console.log("F6 reaches the dock");
 
-/* The sheet, which nothing above this line has ever opened. Fourteen captures
-   of a collapsed corner and none of the extended player: no transcript, no
-   search, no follow state. What is proved here is the machine rather than the
-   look — a hit is pressed, and the press has to do the WHOLE errand: move the
-   audio, leave the filter, and put the transcript back under the voice. */
+/* ── The sheet, which nothing above this line has ever opened ───────────────
+   What is proved here is the machine AND the look. The machine: a hit is
+   pressed, and the press has to do the WHOLE errand — move the audio, leave the
+   filter, and put the transcript back under the voice. The look: the sheet is a
+   PLACE, so opening it must move nothing outside itself. */
+const beforeSheet = await evaluate(DOCK_TRUTH);
 await clickElement('.podcast-mast-icon[aria-expanded="false"]');
 await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-expanded") === "true"`);
+
+/* Caught rather than staged. Two fetches are in flight the moment the sheet
+   opens, and while they are the sheet has to account for itself — both facts
+   were computed with care (`undefined` while unasked, `null` once we know there
+   is none) and then drawn as the same nothing. The transcript is a synchronous
+   read of up to 1.26MB on the main process, so the window is real but short;
+   the capture is best-effort and the exhaustiveness assertion below is not. */
+const waiting = await evaluate(`Boolean(document.querySelector(".podcast-sheet-reaching"))`);
+if (waiting) {
+  await screenshot("paper-dock-sheet-reaching", ".podcast-dock", { settle: 0 });
+  console.log("sheet: caught the reaching state");
+} else {
+  forgetCapture("paper-dock-sheet-reaching");
+  console.log("sheet: the transcript was already on disk and in hand (capture withdrawn)");
+}
+
 // Whatever the sheet settles on, so a missing transcript is reported as a
 // missing transcript rather than as a timeout on a selector.
 await waitFor(`Boolean(
@@ -469,6 +894,35 @@ await waitFor(`Boolean(
   || document.querySelector(".podcast-sheet-empty")
 )`, 20_000);
 const settled = await evaluate(`(document.querySelector(".podcast-sheet-empty") ?? document.querySelector(".podcast-views"))?.textContent?.trim() ?? "nothing"`);
+
+/* An open sheet is never allowed to be a title and a length and nothing else,
+   which is what it was for an episode with references but no transcript, and
+   for every episode for as long as its two fetches were in flight. */
+const accountedFor = await evaluate(`(() => {
+  const sheet = document.querySelector(".podcast-sheet-inner");
+  return Boolean(
+    sheet?.querySelector(".podcast-transcript-block")
+    || sheet?.querySelector(".podcast-refs-view")
+    || sheet?.querySelector(".podcast-sheet-reaching")
+    || sheet?.querySelector(".podcast-sheet-empty")
+  );
+})()`);
+assert.equal(accountedFor, true, "the open sheet accounts for itself in none of its four forms");
+
+/* The sheet is a place: it opens over the study panel, not through it. The
+   reservation is made once, against the collapsed dock, so none of these three
+   numbers may move when several hundred pixels of transcript appear. */
+const openSheet = await evaluate(DOCK_TRUTH);
+assert.equal(openSheet.reserved, beforeSheet.reserved,
+  `opening the sheet changed the dock's reservation: ${beforeSheet.reserved} → ${openSheet.reserved}`);
+assert.equal(openSheet.marginFloor, beforeSheet.marginFloor,
+  `opening the sheet re-laid out the study panel: ${beforeSheet.marginFloor} → ${openSheet.marginFloor}`);
+assert.equal(openSheet.toastLane, beforeSheet.toastLane,
+  `opening the sheet relocated the toast lane: ${beforeSheet.toastLane} → ${openSheet.toastLane}`);
+assert.ok(openSheet.rect.height > beforeSheet.rect.height + 100, "the sheet did not actually open");
+assert.ok(openSheet.mastTop >= 0,
+  `the sheet pushed the masthead — and the only control that stops the episode — off screen at ${openSheet.mastTop}`);
+console.log("sheet is a place", { before: beforeSheet.rect.height, open: openSheet.rect.height, reserved: openSheet.reserved });
 
 const transcriptAtRest = await evaluate(`(() => {
   const list = document.querySelector(".podcast-transcript");
@@ -481,6 +935,23 @@ const transcriptAtRest = await evaluate(`(() => {
     ladder: document.querySelectorAll(".podcast-transcript-line[data-d]").length,
     current: document.querySelectorAll('.podcast-transcript-line[aria-current="true"]').length,
     search: Boolean(document.querySelector(".podcast-transcript-search")),
+    // One tab stop for the whole list. Every line used to be one, so reaching
+    // the Follow pill or the search box by keyboard cost 2,280 presses.
+    stops: document.querySelectorAll('.podcast-transcript-line[tabindex="0"]').length,
+    // The episode's own masthead, which had no rules at all until this build:
+    // the UA's 1.5em bold made it the largest type in the study column.
+    titleSize: (() => {
+      const h = document.querySelector(".podcast-episode-title");
+      return h ? Math.round(parseFloat(getComputedStyle(h).fontSize)) : null;
+    })(),
+    titleFace: (() => {
+      const h = document.querySelector(".podcast-episode-title");
+      return h ? getComputedStyle(h).fontFamily.split(",")[0].replace(/['"]/g, "") : null;
+    })(),
+    titleLines: (() => {
+      const h = document.querySelector(".podcast-episode-title");
+      return h ? getComputedStyle(h).webkitLineClamp : null;
+    })(),
   };
 })()`);
 assert.ok(transcriptAtRest.lines > 20,
@@ -490,8 +961,62 @@ assert.equal(transcriptAtRest.mode, "following", "the transcript rests on follow
 assert.ok(transcriptAtRest.ladder <= 7, `the depth ramp reached ${transcriptAtRest.ladder} lines`);
 assert.equal(transcriptAtRest.current, 1, "exactly one line is the one being spoken");
 assert.equal(transcriptAtRest.search, true);
+assert.equal(transcriptAtRest.stops, 1,
+  `the transcript holds ${transcriptAtRest.stops} tab stops; a roving list holds one`);
+assert.ok(transcriptAtRest.titleSize <= 17,
+  `the episode title is ${transcriptAtRest.titleSize}px — larger than the study column's own masthead`);
+assert.equal(transcriptAtRest.titleFace, "Source Serif 4", "a title of a work is set in the reading face");
+assert.equal(transcriptAtRest.titleLines, "3", "an unclamped title grows the dock upward without limit");
 await screenshot("paper-dock-sheet", ".podcast-dock");
 console.log("sheet", transcriptAtRest);
+
+/* The other half of a roving list: one stop is only an improvement if the
+   arrows travel it. Pressed for real rather than dispatched at the element, so
+   this is the same path a reader takes — and the stop has to MOVE with focus,
+   or the next Tab out and back lands somewhere the reader has left. */
+await evaluate(`document.querySelector('.podcast-transcript-line[tabindex="0"]')?.focus()`);
+const roved = await (async () => {
+  const from = await evaluate(`document.activeElement?.getAttribute("data-line")`);
+  for (const key of ["ArrowDown", "ArrowDown", "End"]) {
+    await cdp.send("Input.dispatchKeyEvent", { type: "rawKeyDown", key, code: key, windowsVirtualKeyCode: key === "End" ? 35 : 40, nativeVirtualKeyCode: key === "End" ? 35 : 40 });
+    await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key, code: key, windowsVirtualKeyCode: key === "End" ? 35 : 40, nativeVirtualKeyCode: key === "End" ? 35 : 40 });
+    await sleep(120);
+  }
+  return {
+    from,
+    to: await evaluate(`document.activeElement?.getAttribute("data-line")`),
+    inList: await evaluate(`Boolean(document.activeElement?.closest(".podcast-transcript"))`),
+    stops: await evaluate(`document.querySelectorAll('.podcast-transcript-line[tabindex="0"]').length`),
+    onFocused: await evaluate(`document.activeElement?.getAttribute("tabindex")`),
+  };
+})();
+assert.equal(roved.inList, true, "the arrows walked focus out of the transcript");
+assert.notEqual(roved.to, roved.from, "the arrows did not move focus");
+assert.equal(roved.stops, 1, `the list holds ${roved.stops} tab stops after roving`);
+assert.equal(roved.onFocused, "0", "the tab stop did not follow focus");
+console.log("roving", roved);
+
+// The passage list, which no capture has ever held. Only reachable when the
+// episode has references — the strip is a choice, and with one list there is
+// nothing to choose.
+const passagesTab = await evaluate(`(() => {
+  const tabs = [...document.querySelectorAll(".podcast-view-tab")];
+  const passages = tabs.find((tab) => tab.textContent?.startsWith("Passages"));
+  if (!passages) return null;
+  passages.click();
+  return { count: passages.querySelector(".podcast-view-count")?.textContent ?? null };
+})()`);
+if (passagesTab) {
+  await waitFor(`Boolean(document.querySelector(".podcast-refs-view"))`);
+  await parkPointer();
+  await screenshot("paper-dock-sheet-passages", ".podcast-dock");
+  console.log("passages", passagesTab);
+  await evaluate(`[...document.querySelectorAll(".podcast-view-tab")].find((tab) => tab.textContent?.startsWith("Transcript"))?.click()`);
+  await waitFor(`Boolean(document.querySelector(".podcast-transcript"))`);
+} else {
+  forgetCapture("paper-dock-sheet-passages");
+  console.log("passages: this episode carries no references (capture withdrawn)");
+}
 
 // A word from four fifths of the way in, so the hit is unmistakably elsewhere
 // in the file and a seek to it cannot be confused with the playhead drifting.
@@ -542,7 +1067,7 @@ const filtered = await evaluate(`(() => {
 assert.ok(filtered.hits > 0, `"${chosen.word}" matched nothing`);
 assert.ok(filtered.marks > 0, "a hit must mark the word it matched");
 assert.notEqual(filtered.markBackground, "rgba(0, 0, 0, 0)",
-  "the search mark resolved to nothing — see --accent in player.css");
+  "the search mark resolved to nothing — see --player-accent in styles.css");
 assert.notEqual(filtered.markBackground, filtered.markInk,
   `the mark is the same colour as the text on it: ${filtered.markBackground}`);
 assert.equal(filtered.flat, "true", "a filtered list has no playhead to be near");
@@ -551,11 +1076,31 @@ assert.equal(filtered.follow, true, "the way back to the voice must survive a se
 await screenshot("paper-dock-sheet-search", ".podcast-dock");
 console.log("filtered", filtered);
 
-/* Deep into the hit list but never its last row. A container scrolled to its
-   end puts the final row at the bottom of the box, which is where the Follow
-   pill floats — so a coordinate click on the last hit lands on the pill, clears
-   the search, and looks exactly like a seek that did not happen. (Noted, not
-   fixed: where the pill sits is the look, and the look is not this build's.) */
+/* The Follow pill and the last row. Build 1 measured this and left it: a
+   container scrolled to its end put the final row exactly where the pill floats,
+   so a coordinate press on the last hit landed on the pill, cleared the search,
+   and read like a seek that never happened. The list reserves the pill's own
+   band at the bottom of its padding now, in both states, so nothing moves when
+   the pill appears and the last row can always be pressed. */
+const lastRow = await evaluate(`(() => {
+  const box = document.querySelector(".podcast-transcript");
+  const pill = document.querySelector(".podcast-transcript-follow");
+  if (!box || !pill) return null;
+  box.scrollTo({ top: box.scrollHeight, behavior: "instant" });
+  const rows = [...box.querySelectorAll(".podcast-transcript-line")];
+  const last = rows.at(-1)?.getBoundingClientRect();
+  const over = pill.getBoundingClientRect();
+  return last ? { gap: Math.round(over.top - last.bottom), rows: rows.length } : null;
+})()`);
+await sleep(200);
+if (lastRow) {
+  assert.ok(lastRow.gap >= 0,
+    `the Follow pill covers the last row by ${-lastRow.gap}px — a press on it lands on the pill`);
+  console.log("last row clears the pill by", lastRow.gap);
+}
+
+/* Deep into the hit list but never its last row — the pill is clear of it now,
+   and this stays off the extreme so the assertion is about the seek. */
 const pressed = await evaluate(`(() => {
   const hits = [...document.querySelectorAll(".podcast-transcript-line")];
   const at = Math.max(0, Math.min(hits.length - 2, Math.floor(hits.length * 0.6)));
@@ -627,11 +1172,12 @@ await evaluate(`document.activeElement instanceof HTMLElement && document.active
 await parkPointer();
 await screenshot("paper-dock-part-heard", ".podcast-dock");
 
-// Pause, then the other three appearances.
-await clickElement(".podcast-transport-play");
+// Pause, then the other three appearances, then the material and the fallback.
+await clickElement(".transport-play");
 await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-status") === "paused"`);
+await parkPointer();
 await screenshot("paper-dock-paused", ".podcast-dock");
-await clickElement(".podcast-transport-play");
+await clickElement(".transport-play");
 await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-status") === "playing"`, 20_000);
 
 for (const theme of ["dark", "porcelain", "onyx"]) {
@@ -644,7 +1190,96 @@ for (const theme of ["dark", "porcelain", "onyx"]) {
   await screenshot(`${theme}-dock`, ".podcast-dock");
   if (theme === "dark") await screenshot("ink-dock-in-place");
 }
+
+// The translucent material, over each polarity's ground. The dock is floating
+// paper and takes --bg-float, which is the plane the material thins.
+await setMaterial(true);
+await parkPointer();
+await screenshot("onyx-translucent-dock", ".podcast-dock");
 await setTheme("light");
+await parkPointer();
+await screenshot("paper-translucent-dock", ".podcast-dock");
+await setMaterial(false);
+
+/* The unbranded fallback. Every source on the shelf has a palette block, so
+   this configuration is one feed away and unreachable through the UI — but it
+   is the exact CSS path a new feed takes, and it is the one the old default
+   drew a white play glyph on a near-white pill in. Set by attribute, in the
+   two atmospheres it was broken in, and put back. */
+for (const theme of ["light", "dark"]) {
+  await setTheme(theme);
+  await evaluate(`document.querySelector(".podcast-dock")?.setAttribute("data-source", "qa-unregistered-source")`);
+  await sleep(240);
+  const fallback = await evaluate(`(() => {
+    const play = document.querySelector(".transport-play");
+    const style = getComputedStyle(play);
+    return { fill: style.backgroundColor, ink: style.color };
+  })()`);
+  assert.notEqual(fallback.fill, fallback.ink,
+    `${theme}: the unbranded play button is drawing its glyph in its own fill`);
+  await parkPointer();
+  await screenshot(`${theme === "light" ? "paper" : "ink"}-dock-unbranded`, ".podcast-dock");
+  await evaluate(`document.querySelector(".podcast-dock")?.setAttribute("data-source", "naked-bible")`);
+  await sleep(200);
+  console.log("unbranded", theme, fallback);
+}
+await setTheme("light");
+
+/* Forced colors. Emulated through CDP rather than through the OS, which is the
+   only way a tour can reach it — and the state where seven of this surface's
+   rules used to disappear, including which view tab is selected and the
+   transcript's blur ladder, because neither `filter` nor `opacity` is a forced
+   property. */
+await cdp.send("Emulation.setEmulatedMedia", {
+  features: [{ name: "forced-colors", value: "active" }],
+});
+await sleep(320);
+await parkPointer();
+const forced = await evaluate(`(() => {
+  const dock = document.querySelector(".podcast-dock");
+  const line = dock.querySelector(".podcast-transcript-line");
+  return {
+    ground: getComputedStyle(dock).backgroundColor,
+    border: getComputedStyle(dock).borderTopColor,
+    lineOpacity: line ? getComputedStyle(line).opacity : null,
+    lineFilter: line ? getComputedStyle(line).filter : null,
+  };
+})()`);
+assert.notEqual(forced.ground, forced.border, "the dock's forced ground and its hairline are the same colour");
+await screenshot("forced-colors-dock", ".podcast-dock");
+console.log("forced colors", forced);
+await cdp.send("Emulation.setEmulatedMedia", { features: [] });
+await sleep(320);
+
+/* The narrow range. 979 is the app's own compact breakpoint — where the study
+   panel becomes a full-width pane along the bottom — and the dock's only rule
+   used to be at 620, so across the whole band between them a fixed 380px card
+   sat on top of the pane it claims to be inscribed in. */
+const narrowAt = await setViewportWidth(900);
+assert.ok(narrowAt <= 979, `the viewport would not go below the breakpoint: ${narrowAt}`);
+const narrow = await evaluate(`(() => {
+  const dock = document.querySelector(".podcast-dock");
+  const margin = document.querySelector(".living-margin");
+  const rect = dock.getBoundingClientRect();
+  return {
+    width: Math.round(rect.width),
+    inner: window.innerWidth,
+    left: Math.round(rect.left),
+    right: Math.round(window.innerWidth - rect.right),
+    overlap: margin ? Math.round(margin.getBoundingClientRect().bottom - rect.top) : null,
+    plate: Math.round(dock.querySelector(".podcast-mast-plate")?.getBoundingClientRect().width ?? 0),
+  };
+})()`);
+assert.equal(narrow.left, narrow.right, "the dock is not centred on the frame's own inset");
+assert.ok(narrow.width > narrow.inner - 40, `the dock is still a 380px card at ${narrow.inner}px: ${narrow.width}`);
+if (narrow.overlap !== null) {
+  assert.ok(narrow.overlap <= 0, `the compact study pane runs ${narrow.overlap}px under the player`);
+}
+await parkPointer();
+await screenshot("paper-dock-narrow");
+console.log("narrow", narrow);
+await cdp.send("Emulation.clearDeviceMetricsOverride");
+await sleep(760);
 
 /* A file the reader cannot be given. This points the element at a host the
    renderer's own policy refuses — `media-src 'self' https://nakedbiblepodcast.com`
@@ -655,6 +1290,7 @@ await setTheme("light");
    The element fires `error` and then `pause`, in that order, and a dock that
    took the second event as its answer would report "paused" about an episode it
    never reached. That is what this guards. */
+const beforeRefusal = await evaluate(DOCK_TRUTH);
 await evaluate(`(() => {
   const element = document.querySelector("audio");
   element.src = "https://example.com/not-an-approved-media-host.mp3";
@@ -664,12 +1300,24 @@ await evaluate(`(() => {
 await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-status") === "failed"`);
 const refused = await evaluate(`(() => {
   const line = document.querySelector(".podcast-dock-refusal");
+  const shell = getComputedStyle(document.querySelector(".app-shell"));
+  const swatch = document.createElement("span");
+  swatch.style.color = "var(--error)";
+  document.querySelector(".podcast-dock").append(swatch);
+  const error = getComputedStyle(swatch).color;
+  swatch.remove();
   return {
     code: document.querySelector("audio").error?.code ?? null,
     refusal: line?.textContent?.trim() ?? null,
     // A truncated reason is not a reason. The sentence has to fit the line it
     // was given, in the language the app is set to, without an ellipsis.
     clipped: line ? line.scrollWidth > line.clientWidth : null,
+    // In the app's error ink. It used to be --resource-ink — the same colour as
+    // every other word on the surface — on a dock otherwise byte-identical to
+    // paused, so a failure cost ten pixels of body text and nothing else.
+    ink: line ? getComputedStyle(line).color : null,
+    error,
+    seal: shell.getPropertyValue("--error").trim(),
     clock: document.querySelector(".podcast-dock-clock"),
     height: Math.round(document.querySelector(".podcast-dock").getBoundingClientRect().height),
     stop: Boolean(document.querySelector('[aria-label^="Stop"]')),
@@ -681,18 +1329,15 @@ assert.equal(refused.code, 4, "the policy must refuse an unapproved media host")
 // tour was written and could not be reached until the tour above it was fixed.
 assert.match(refused.refusal ?? "", /^Did not arrive\. This needed the network\.$/);
 assert.equal(refused.clipped, false, `the refusal is cut off: "${refused.refusal}"`);
+assert.equal(refused.ink, refused.error, `the refusal is not in the app's error ink: ${refused.ink}`);
 assert.equal(refused.clock, null, "the refusal takes the clock's line rather than growing the dock");
-/* Restated 2026-07-30 with a measured tolerance and the reason for it. The
-   refusal takes the clock's line, and the clock's line is one pixel taller than
-   the refusal's: both are 10px/1.3 type, but .podcast-rate carries 1px of
-   vertical padding, so the flex row it sits in measures 15px where the bare
-   sentence measures 13. The dock therefore loses a pixel when it fails. That is
-   the rate pill's padding, which belongs to the build that owns the look — this
-   asserts the claim the sentence was making (the dock does not resize when it
-   fails) at the resolution the surface actually keeps it. Never ran before:
-   everything from the publisher assertion down was unreachable. */
-assert.ok(Math.abs(refused.height - playing.rect.height) <= 2,
-  `a failure changed the dock's height: ${playing.rect.height} → ${refused.height}`);
+/* Restated 2026-07-30, and the tolerance is gone. It was ±2, because the clock's
+   row measured 15px where the bare refusal sentence measured 13 — .podcast-rate
+   carries a pixel of vertical padding — so the dock lost a pixel when it failed.
+   The three forms of that row (clock, reaching, refusal) now share one declared
+   height, so the claim the sentence was always making is true exactly. */
+assert.equal(refused.height, beforeRefusal.rect.height,
+  `a failure changed the dock's height: ${beforeRefusal.rect.height} → ${refused.height}`);
 assert.equal(refused.stop, true, "a failed dock must still be closeable");
 await parkPointer();
 await screenshot("paper-dock-refused", ".podcast-dock");
@@ -710,6 +1355,7 @@ console.log("stopped", stopped);
 await navigatePassage(original.passage);
 await setMargin(original.margin);
 await setTheme(original.theme);
+await setMaterial(original.material);
 await setFocusMode(original.focus);
 await evaluate(`window.resizeTo(${JSON.stringify(originalBounds.width)}, ${JSON.stringify(originalBounds.height)}); window.moveTo(${JSON.stringify(originalBounds.left)}, ${JSON.stringify(originalBounds.top)})`);
 await sleep(420);

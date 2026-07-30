@@ -55,6 +55,52 @@ Because the official marks are the mono/white variants, the card surface under
 them stays the publisher's brand colour in all four appearances. A masthead
 that re-tinted per theme would put our chrome on their imprint.
 
+### The player's surface — added 2026-07-30
+
+The podcast dock used to take the same bargain as the featured card: the whole
+380px surface painted `--resource-source`, every piece of ink on it drawn from
+`--resource-ink`, in four atmospheres and forced colors. Forty-four conditions,
+none of them checked — and the evidence that it did not hold was already in the
+stylesheet. An unbranded source drew a `#fff` play glyph on an `#EDE8E0` pill in
+two of the four appearances; six independent alphas compounded past 2:1 on at
+least one show; the white-at-10% "light on the surface" was invisible on the two
+light brand grounds; and a pale-blue card cast a theme-aware black shadow onto
+Ink.
+
+**The app owns the player's ground.** The dock is painted from `--bg-float` —
+the app's own floating paper — with the app's own text tokens on it, in every
+atmosphere. Three things of the publisher's cross onto it, and no fourth may be
+added without amending this section:
+
+1. **The plate.** A 26px rounded rectangle at the head of the masthead, filled
+   `--resource-source`, carrying either the approved mark or the publisher's
+   name set in `--resource-ink`. This is the only place a publisher's colour
+   paints a surface in the player, and it exists for a permission reason before
+   an aesthetic one: six of the marks are approved REVERSES, drawn for a dark or
+   brand field, and a white mark on cream paper is not a quieter mark but no
+   mark. Recolouring the artwork to the app's ink is the modification this grant
+   forbids; Enter the Bible's is colour artwork besides, which a mask would
+   flatten to a silhouette. The plate is the field the artwork was approved
+   against, kept at the size of a signature rather than the size of a poster.
+   In forced colors the plate carries `forced-color-adjust: none` — the only
+   opt-out on this surface — for the same reason, and the stylesheet says so.
+2. **One accent**, `--resource-accent`, consumed in exactly three places: the
+   play pill, the rail's played fill, and the mark behind a transcript search
+   hit. Nowhere else, ever. It is lightness-clamped per atmosphere so it holds
+   against the app's paper (see `--accent-fit-*` at `:root`), because contrast
+   on our ground is our responsibility and not the publisher's. Hue and chroma
+   are untouched, so the colour stays theirs.
+3. **The name**, in the accessibility tree, whichever form the plate takes.
+
+Everything else on the dock — every hairline, every hover, every piece of text,
+and the ground itself — is the app's. `scripts/qa-podcast-player.mjs` walks all
+twelve palettes (eleven sources plus the unregistered fallback) against all four
+atmospheres in the running engine and asserts three things: that the dock's
+ground is the app's paper and never the brand's, that the plate IS the brand's,
+and that the fitted accent clears 4.5:1 against the ground it sits on. A rule
+that paints anything else on this surface in a publisher's colour is a
+regression, and that tour is what catches it.
+
 ## Shipping boundary
 
 The current resource cards may show:

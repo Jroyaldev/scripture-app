@@ -184,6 +184,16 @@ export const ATTRIBUTE_VOCABULARY = Object.freeze({
     source: "src/renderer/components/PodcastPlayer.tsx · TranscriptMode",
     values: ["following", "browsing", "searching"],
   },
+  // Which face the one play affordance is showing. Both glyphs are always in
+  // the tree — the state they mark is a voice already in motion, and a hard
+  // swap on the loudest control of such a surface reads as a fault in the audio
+  // — so this is what says which of them is on. Added 2026-07-30 with the
+  // transport family, and worth governing because "reaching" used to draw a
+  // pause over a file that had not arrived.
+  "data-glyph": {
+    source: "src/renderer/components/PodcastPlayer.tsx · TransportPlayButton",
+    values: ["play", "pause"],
+  },
   // Whether the dock is a corner or the whole episode. Load-bearing for more
   // than the look now: the transcript is drawn only while this is true.
   "data-expanded": {

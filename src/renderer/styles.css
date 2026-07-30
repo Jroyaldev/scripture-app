@@ -438,6 +438,79 @@
   --transition-normal: 180ms cubic-bezier(.32, .72, 0, 1);/* @kind other — pane, transform */
   --transition-slow: 0ms;                                  /* @kind other — anything else */
   --transition-instant: 0ms;                               /* @kind other — active fill, fillet, tie */
+
+  /* ── The transport tier · added 2026-07-30 ──────────────────────────────
+     A THIRD row in the table above, and the reason it is allowed to exist.
+
+     The two curves above are for things that ANSWER: a hover, a pane sliding,
+     a fill telling you where you are. They are short because the reader is
+     waiting at the end of them. Nothing else in this app moves, because
+     nothing else in this app is still running when the reader looks away.
+
+     The player is. It is the one surface whose subject is a thing already in
+     motion — a voice, mid-sentence — and four of its transitions are that
+     voice rather than a control answering: play crossfading to pause, a new
+     episode's ground and masthead arriving, the rail's fill catching up to a
+     clock it is sampled from four times a second, and the sheet opening onto
+     the words. A hard cut in any of those reads as a fault in the audio.
+
+     One curve for all of them, so the surface has one hand, and three
+     durations named for the tempo they carry rather than for a number. This
+     replaces five bespoke curves and eight bespoke durations that were
+     written into styles/player.css and nowhere else; the count is the
+     argument. Anything on this surface that is a CONTROL answering still
+     takes --transition-fast, and nothing outside the player may take these.
+
+     Loop durations are not here: a keyframed loading segment is not a
+     transition and has no reader waiting at the end of it. It is written at
+     its own keyframes, in the partial that owns them. */
+  --ease-transport: cubic-bezier(0.2, 0.8, 0.2, 1);         /* @kind other */
+  --transport-quick: 140ms;   /* @kind other — play↔pause, the rail catching up */
+  --transport-move: 240ms;    /* @kind other — the sheet, the dock, a new episode */
+  --transport-voice: 460ms;   /* @kind other — one spoken line: the depth ramp */
+
+  /* The ring, which was a phantom until 2026-07-30. `--focus-ring` appeared
+     exactly once in the bundle — as a CONSUMER, in styles/player.css — and was
+     declared nowhere, so the transcript's ring fell through to `currentColor`
+     and worked by accident. It is the seal, which is what every other
+     deliberate ring in the app already draws (the resource card, the imprint,
+     the source switch), and it is one token now so the next consumer cannot
+     invent a twelfth colour. Forced colors overrides it to Highlight. */
+  --focus-ring: var(--accent-seal);      /* @kind other */
+  --focus-ring-width: 2px;               /* @kind other */
+  --focus-ring-offset: 2px;              /* @kind other */
+
+  /* ── Fitting a publisher's accent to the app's own paper ────────────────
+     Added 2026-07-30 with the decision that the app owns the player's ground.
+
+     A brand hex is chosen against the brand's own surface. Ours is paper, in
+     four atmospheres, and a colour that reads on one of them need not read on
+     the others — BibleProject's cyan is 1.6:1 on Porcelain and Working
+     Preacher's crimson is 1.9:1 on Onyx. Rather than ten palettes re-picked
+     four times (forty numbers nobody can check), the accent is one input per
+     publisher and its LIGHTNESS is clamped to the atmosphere's polarity:
+     dark enough to hold against light paper, light enough to hold against
+     dark paper. Hue and chroma are untouched, so the colour stays the
+     publisher's.
+
+     The clamp is deliberately hard rather than adaptive, because that is what
+     makes the counter-ink a single line: on a light atmosphere the accent is
+     always darker than the paper, on a dark one always lighter, so the PAPER
+     is always the correct ink on it — see --player-accent-ink beside the
+     palette. One rule, four atmospheres, no branch.
+
+     Measured over all fourteen accents on the shelf × four atmospheres, the
+     worst pair is BibleProject's cyan on Paper at 4.91:1 — above the 4.5
+     floor that Law 6 holds text to, which is the binding case because the
+     transcript's search mark is 17px body text sitting on this colour.
+     scripts/qa-podcast-player.mjs walks all of them in the running engine and
+     asserts the floor, so these two numbers cannot drift away from the claim.
+
+     Values above the ceiling are what the ceiling exists for. 0.52 on a light
+     atmosphere is roughly the lightness of the seal itself; 0.74 on a dark one
+     is roughly the lightness of the ember. */
+  --accent-fit-floor: 0;      /* @kind other */
+  --accent-fit-ceiling: 0.52; /* @kind other */
   --material-blur: 0px;   /* @kind other */
   --material-saturate: 1; /* @kind other */
 
@@ -704,6 +777,13 @@
   --accent-seal: #C99A6E;       /* 6.82:1 on paper */
   --accent-seal-strong: #DDB289;/* 8.84:1 on paper */
   --accent-machine: #8FA3B8;    /* 6.63:1 on paper */
+  /* The dark polarity of the accent fit — see the :root note. The floor rises
+     and the ceiling comes off: on dark paper a publisher's accent has to be
+     LIGHTER than the ground, and it is the same one-sided clamp turned over.
+     Onyx carries .dark, so it inherits this and needs no block of its own;
+     Porcelain is a light atmosphere and keeps :root's pair. */
+  --accent-fit-floor: 0.74;
+  --accent-fit-ceiling: 1;
   /* Laurel's dark polarity, Rev 04 §4. Declared only; the licensed strings
      migrate onto it in a separate pass this block does not own. */
   --accent-laurel: #9DAA8A;     /* 7.00:1 on paper */
@@ -19653,8 +19733,12 @@ button.lang-phrase-diagram-node:focus-visible,
   transform: translateY(-1px);
 }
 
+/* Dated 2026-07-30: the inner ring named --surface-page, which is declared
+   nowhere in the bundle — one of two phantoms this pass resolved. The ring's
+   job is to hold a gap of the GROUND between the chip and its own outline, and
+   the ground under an imprint is the study panel's paper. Named. */
 .trusted-resource-imprint[aria-expanded="true"] {
-  box-shadow: 0 0 0 2px var(--surface-page, var(--bg-primary, transparent)), 0 0 0 3.5px var(--resource-source);
+  box-shadow: 0 0 0 2px var(--bg-reading), 0 0 0 3.5px var(--resource-source);
 }
 
 .trusted-resource-imprint:focus-visible {
@@ -19680,15 +19764,53 @@ button.lang-phrase-diagram-node:focus-visible,
   /* A surface colour and a 3px rail are not the same job. Most brands survive
      both; a near-black one does not, so the accent can be lifted away from the
      surface where it has to hold its own against two grounds. */
+  /* THE one colour a publisher hands the app that is used off the publisher's
+     own surface. Dated 2026-07-30: it was declared for a 3px rail on the
+     resource card — "a surface colour and a 3px rail are not the same job" —
+     and that rail is gone; `grep 'var(--resource-accent)'` returned no consumer
+     at all before this build. So the name is kept and the job is restated: this
+     is the accent, and --player-accent below is it fitted to our paper.
+     Defaults to the surface, which is right for most of the shelf; declared per
+     source only where the surface makes a bad accent (a near-black, a pale
+     tint, a yellow that fits to mud). */
   --resource-accent: var(--resource-source);
   --resource-mark: none;
   --resource-mark-height: 18px;
   --resource-mark-ratio: 4;
-  --resource-ink: var(--text-primary);
-  --resource-ink-soft: var(--text-tertiary);
-  --resource-line: var(--border-medium);
-  --resource-pill-bg: var(--text-primary);
-  --resource-pill-ink: var(--surface-page, #fff);
+  /* Dated 2026-07-30. These two were --text-primary and --text-tertiary, and
+     they are the ink laid ON the publisher's own colour — so on the fallback
+     nobody chose they were the theme's darkest ink over the theme's gold, and
+     the pair inverted with the atmosphere while the ground did not. Measured:
+     3.4:1 on Paper, and on Ink #EDE8E0 over #C99A6E at 1.9:1, which is where
+     the unbranded play button was drawn white on white.
+     The theme's PAPER is the fix, and it is a fix by construction rather than
+     by taste: every atmosphere picks its gold to hold against its own paper —
+     that is what the "4.64:1 on paper" note beside --study-gold means — so
+     paper on gold is the same number back, in all four. */
+  --resource-ink: var(--bg-float);
+  --resource-ink-soft: color-mix(in srgb, var(--bg-float) 76%, transparent);
+  --resource-line: color-mix(in srgb, var(--bg-float) 30%, transparent);
+  --resource-pill-bg: var(--bg-float);
+  --resource-pill-ink: var(--resource-source);
+
+  /* ── The accent, fitted to the app's paper ────────────────────────────────
+     Added 2026-07-30 with the decision that the app owns the player's ground.
+
+     --resource-accent is the ONE colour a publisher hands the app that gets
+     used off their own surface: the play pill, the rail's fill, and the mark
+     behind a search hit. Everywhere else on the dock the app's own ink and
+     paper hold. So it has to read against OUR grounds, not theirs, and the
+     clamp that makes it do so is the atmosphere's, not the brand's. See the
+     --accent-fit-* note at :root for the derivation and the measured floor.
+
+     The counter-ink is one line and no branch, which is the whole reason the
+     clamp is hard: on a light atmosphere the fitted accent is always darker
+     than paper and on a dark one always lighter, so paper is always what
+     reads on it. --bg-float rather than --bg-reading because this is the
+     FLOATING paper — the plane the dock itself is painted from. */
+  --player-accent: oklch(from var(--resource-accent)
+    clamp(var(--accent-fit-floor), l, var(--accent-fit-ceiling)) c h);
+  --player-accent-ink: var(--bg-float);
   min-width: 0;
 }
 
@@ -19733,6 +19855,12 @@ button.lang-phrase-diagram-node:focus-visible,
 .resource-source[data-source="enter-the-bible"],
 .resource-matrix-row[data-source="enter-the-bible"],
 .podcast-dock[data-source="enter-the-bible"] {
+  /* Their yellow is the plate, which is the ground their colour artwork was
+     drawn for. It cannot also be the accent: fitted to a light atmosphere a
+     0.87-lightness yellow lands on a muddy ochre that is nobody's brand. The
+     orange is their own second colour — it is already the pill here — and it
+     survives the fit as an orange. Added 2026-07-30 with the accent fit. */
+  --resource-accent: #fa4616;
   --resource-source: #fed141;
   --resource-ink: #1c1a12;
   --resource-ink-soft: rgb(28 26 18 / 0.72);
@@ -19754,7 +19882,14 @@ button.lang-phrase-diagram-node:focus-visible,
 .resource-source[data-source="naked-bible"],
 .resource-matrix-row[data-source="naked-bible"],
 .podcast-dock[data-source="naked-bible"] {
-  --resource-accent: #6e7a80;
+  /* Their gold, dated 2026-07-30. This was #6e7a80 — a grey lifted off a
+     near-black surface so a 3px rail could hold against two grounds, for a rail
+     that no longer exists. As the accent it made the loudest control on the
+     dock a grey disc, which reads as disabled and is nobody's identity. The
+     gold is the colour their own card already spends on its loudest control
+     (--resource-pill-bg below), so this is their choice restated rather than
+     ours invented. */
+  --resource-accent: #d9a441;
   --resource-source: #2f3437;
   --resource-ink: #e7eaea;
   --resource-ink-soft: rgb(231 234 234 / 0.74);
@@ -19960,16 +20095,37 @@ button.lang-phrase-diagram-node:focus-visible,
    above are written relative to this file, so they only land from this file:
    substituted from the partial they resolve a directory deeper, into
    styles/assets/brand/, and every mark comes back blank. This rule belongs to
-   the marks, and the marks live here. */
-.podcast-dock[data-source="working-preacher"] .podcast-mast-source,
-.podcast-dock[data-source="bibleproject"] .podcast-mast-source,
-.podcast-dock[data-source="the-gospel-coalition"] .podcast-mast-source,
-.podcast-dock[data-source="enter-the-bible"] .podcast-mast-source,
-.podcast-dock[data-source="naked-bible"] .podcast-mast-source,
-.podcast-dock[data-source="spoken-gospel"] .podcast-mast-source {
+   the marks, and the marks live here.
+
+   Dated 2026-07-30. The dock's ground is the app's paper now, in four
+   atmospheres, and six of these marks are approved REVERSES — artwork drawn to
+   sit on one specific dark or brand field. Two facts follow, and they are not
+   the same fact:
+
+     · Legally, the mark may not be recoloured. "The mark is the mono/white
+       official variant, which is why the surface may not change under it" is
+       already the rule three paragraphs up, and masking a supplied PNG to the
+       app's ink would be exactly the modification it forbids. Enter the Bible's
+       is colour artwork besides, and a mask would flatten it to a silhouette.
+     · Optically, a white mark on cream paper is not a quiet mark, it is no mark.
+
+   So the brand's ground survives at the only size where it is honest: a plate
+   the height of the mark plus its clear space, which is the publisher's colour
+   under the publisher's artwork and nothing else. That is a colophon — a
+   printer's device inked in the printer's own colour — rather than a paint
+   bucket. --resource-source paints it in styles/player.css; this rule only
+   puts the artwork in it, and the mark shrinks by `contain` rather than
+   clipping when the mast runs out of room. The name stays in the
+   accessibility tree; the indent moves the glyphs, not the text. */
+.podcast-dock[data-source="working-preacher"] .podcast-mast-mark,
+.podcast-dock[data-source="bibleproject"] .podcast-mast-mark,
+.podcast-dock[data-source="the-gospel-coalition"] .podcast-mast-mark,
+.podcast-dock[data-source="enter-the-bible"] .podcast-mast-mark,
+.podcast-dock[data-source="naked-bible"] .podcast-mast-mark,
+.podcast-dock[data-source="spoken-gospel"] .podcast-mast-mark {
   display: block;
-  height: var(--resource-mark-height);
-  aspect-ratio: var(--resource-mark-ratio);
+  width: calc(var(--player-mark-h) * var(--resource-mark-ratio));
+  height: var(--player-mark-h);
   background: var(--resource-mark) left center / contain no-repeat;
   text-indent: -200vw;
 }
@@ -20038,7 +20194,10 @@ button.lang-phrase-diagram-node:focus-visible,
 }
 
 /* An emblem with no wordmark needs its name beside it. Written here rather than
-   in the markup because which marks need a name is a fact about the artwork. */
+   in the markup because which marks need a name is a fact about the artwork.
+   The dock's plate takes it too, on the same terms and for the same reason: at
+   plate size the emblem alone is 24px of artwork identifying nobody. */
+.podcast-dock[data-source="naked-bible"] .podcast-mast-plate::after,
 .trusted-resource-imprint[data-source="naked-bible"]::after,
 .trusted-resource-card.is-featured[data-source="naked-bible"] .trusted-resource-head::after {
   order: 1;
@@ -20052,6 +20211,19 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .trusted-resource-imprint[data-source="naked-bible"] { gap: 9px; }
 .trusted-resource-card.is-featured[data-source="naked-bible"] .trusted-resource-head { gap: 9px; }
+/* At plate size the name is the mast's own small caps rather than a 13px
+   serif, so the plate stays one object instead of an emblem beside a title. */
+.podcast-dock[data-source="naked-bible"] .podcast-mast-plate {
+  gap: 7px;
+  font: var(--fw-semibold) 0.6875rem/1 var(--font-ui);
+  letter-spacing: 0.055em;
+}
+.podcast-dock[data-source="naked-bible"] .podcast-mast-plate::after {
+  margin-right: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: uppercase;
+}
 .trusted-resource-card.is-featured[data-source="naked-bible"] .trusted-resource-head::after { font-size: 0.9375rem; }
 .trusted-resource-card.is-featured[data-source="naked-bible"] .trusted-resource-source { order: 0; }
 .trusted-resource-card.is-featured[data-source="naked-bible"] .trusted-resource-kind { order: 2; }
@@ -20456,63 +20628,32 @@ button.lang-phrase-diagram-node:focus-visible,
 
 /* Play sits beside the outbound verb, not instead of it: the card still says
    where the episode lives, and pressing play is the reader choosing to fetch
-   from the publisher rather than the app deciding for them. */
+   from the publisher rather than the app deciding for them.
+
+   Dated 2026-07-30 — this is now one member of the transport family rather
+   than a second design for the same action. It was a 28px HAIRLINE circle in
+   --resource-ink with an --accent-seal ring and a hardcoded 150ms, twenty
+   pixels from a 38px FILLED pill in the publisher's colour with an
+   --resource-ink ring and --transition-fast — two play buttons for one verb,
+   in opposite treatments, seen by the same reader inside one second. Its glyph
+   was also a separate copy that never got the optical correction the dock
+   documents at length: `M4.6 2.8 12.6 8l-8 5.2z` on a 16-box puts the
+   triangle's centroid at 7.27 against a centre of 8, so play and pause shifted
+   0.73px under the pointer.
+
+   Both now compose .transport-play (styles/player.css) and both take the same
+   glyph component. All this rule keeps is the one thing that is a fact about
+   the CARD: its size, and the gap to the verb beside it. */
 .trusted-resource-play {
-  display: inline-grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
+  --transport-size: 28px;
   margin-right: 8px;
-  border: 1px solid var(--resource-line);
-  border-radius: 50%;
-  background: transparent;
-  color: var(--resource-ink);
-  cursor: pointer;
-  transition: background-color 150ms ease, border-color 150ms ease;
 }
 
-.trusted-resource-play:hover { background: var(--resource-line); }
-.trusted-resource-play[aria-pressed="true"] { border-color: var(--resource-ink); background: var(--resource-line); }
-.trusted-resource-play:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: 2px; }
-
-.trusted-resource-scrub {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 9px;
-  padding-top: 9px;
-}
-
-.trusted-resource-scrub-range {
-  width: 100%;
-  height: 3px;
-  margin: 0;
-  border-radius: 999px;
-  background: var(--resource-line);
-  appearance: none;
-  cursor: pointer;
-}
-
-.trusted-resource-scrub-range::-webkit-slider-thumb {
-  width: 11px;
-  height: 11px;
-  border: 0;
-  border-radius: 50%;
-  background: var(--resource-ink);
-  appearance: none;
-}
-
-.trusted-resource-scrub-range:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: 4px; }
-
-.trusted-resource-scrub-time {
-  color: var(--resource-ink-soft);
-  font: 0.625rem/1 var(--font-mono);
-  font-variant-numeric: tabular-nums;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .trusted-resource-play { transition: none; }
-}
+/* A fourth transport aesthetic, dead since it was written: no component ever
+   referenced .trusted-resource-scrub, -scrub-range or -scrub-time (~34 lines,
+   including an always-visible 11px thumb that argued the opposite of the
+   dock's "a rule that fills is a fact"). Removed 2026-07-30 with the decision
+   that this app has one transport language. */
 
 /* `min-width: 0` because a flex item's floor is its content, not zero — without
    it a long label pushes straight through the card's edge instead of being

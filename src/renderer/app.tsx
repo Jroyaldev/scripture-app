@@ -1738,7 +1738,14 @@ export function App(): React.JSX.Element {
       // pointer, and this is the app's existing way in — no new binding, and
       // nothing to learn that a reader does not already know.
       const player = document.querySelector<HTMLElement>(".podcast-dock");
-      addPane(player, player?.querySelector<HTMLElement>(".podcast-transport-play") ?? null);
+      // `.transport-play` since 2026-07-30: the dock's play became one member of
+      // the app's transport family rather than a control of its own. Scoped to
+      // the dock, so the card's copy of the same family cannot answer for it.
+      // Worth naming because `addPane` skips a pane whose target is null — a
+      // stale selector here does not throw, it silently drops the player out of
+      // the rotation, which is the only keyboard way into a surface that never
+      // dismisses.
+      addPane(player, player?.querySelector<HTMLElement>(".transport-play") ?? null);
       if (panes.length === 0) return;
 
       const active = document.activeElement instanceof HTMLElement ? document.activeElement : null;

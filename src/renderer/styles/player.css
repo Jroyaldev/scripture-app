@@ -1,22 +1,49 @@
-/* Owned partial — the podcast dock. Rules for this surface live here rather
-   than in styles.css. Anything that must CHANGE an existing rule in styles.css
-   belongs in styles.css and is written there: the toast lane, the panel's
-   bottom reservation, and the per-publisher palette the dock shares with the
-   resource cards are all in that file for exactly that reason.
+/* Owned partial — the podcast dock, and the transport family it heads. Rules
+   for this surface live here rather than in styles.css. Anything that must
+   CHANGE an existing rule in styles.css belongs in styles.css and is written
+   there: the toast lane, the panel's bottom reservation, the accent fit, and
+   the per-publisher palette the dock shares with the resource cards are all in
+   that file for exactly that reason.
 
    The dock is the app's only persistent floating surface. Everything else that
    floats is a decision waiting to be made and leaves when it is made; this one
    stays because the thing it represents — a voice, still talking — stays.
 
-   It carries the publisher's own colour, the way a featured resource card
-   does. styles.css has always listed .podcast-dock in every palette selector —
-   --resource-source, --resource-ink, --resource-line, --resource-pill-* and
-   --resource-mark were all resolving on this element already; only the hairline
-   imprint ever used one. This surface uses the rest. A reader who opened an
-   episode from a BibleProject card sees the same blue under the transport that
-   was under the card, and the mark on the masthead is the publisher's own
-   approved reverse — which is legible here precisely because the dock now has
-   the brand ground those marks were drawn for. */
+   ── Whose surface this is · restated 2026-07-30 ──────────────────────────────
+
+   It used to be the publisher's. `background: var(--resource-source)` painted
+   the whole 380px card in the brand's own colour, and every piece of ink on it
+   — twelve text classes, eleven hover alphas, four hairlines — was drawn from
+   --resource-ink over that colour. The argument was that a reader who opened an
+   episode from a BibleProject card should see the same blue under the transport.
+
+   That is ten palettes against four atmospheres and forced colors: forty-four
+   conditions, none of them checkable, and the evidence that it did not hold was
+   already in the file. The white-at-10% "light from the top-left" was invisible
+   on the two light brand grounds. The unbranded fallback drew a #fff play glyph
+   on an #EDE8E0 pill — an invisible play button — in two of the four
+   atmospheres. Six independent alphas compounded past 2:1 on at least one show.
+   And a #dfeaf8 pale-blue card cast a theme-aware black shadow onto Ink.
+
+   The app owns the ground now: the dock is painted from --bg-float, the app's
+   own floating paper, in every atmosphere, with the app's own ink on it and the
+   app's one elevated shadow under it. Contrast became our problem and is
+   therefore checked — the app's text tokens carry their own measured ratios,
+   and the one brand colour that still leaves the brand's surface is fitted to
+   ours (see --accent-fit-* at :root, and the QA tour that walks every source
+   against every atmosphere in the running engine).
+
+   The publisher is MORE present for losing the paint bucket, not less:
+
+     · The mark, on a plate of the publisher's own colour — the ground it was
+       drawn for, at the size a signature wants. A colophon, not a poster.
+     · The name, when there is no approved mark, set on the same plate at the
+       same optical weight, so the two forms are one object.
+     · One accent, consumed in exactly three places: the play pill, the rail's
+       fill, and the mark behind a search hit. Nowhere else, ever.
+
+   That last line is the contract. A future rule that paints anything else on
+   this surface in a publisher's colour is a regression, not an enhancement. */
 
 .podcast-dock {
   /* Above every instrument inside the shell, below every decision outside it:
@@ -34,22 +61,65 @@
   z-index: 200;
   display: grid;
   width: min(var(--margin-width), calc(100vw - 2 * var(--page-inset)));
-  padding: 0 16px;
-  /* The panel's column, the panel's radius, the frame's own bottom inset. The
-     study panel is shortened by exactly this height plus one gutter, so the two
-     are stacked pieces of one column rather than a card and a lid: the list
-     ENDS above the player instead of sliding beneath it. */
+
+  /* ── The one content edge ──────────────────────────────────────────────────
+     There were four: the box at 16, the masthead's right at 12, the rail at 9
+     by way of a -7px margin, and the body at 16. None of them was a token —
+     `grep -c -- "--sp-" player.css` returned 0 while the card family beside it
+     had been moved onto the 4px grid on purpose. Everything on this surface now
+     begins and ends at --sp-lg, and the only thing that crosses it is the
+     masthead's own hairline, which is a rule dividing the surface rather than
+     content sitting in it. */
+  padding: 0 var(--sp-lg);
+
+  /* Radius: the canon's floating-page value, and the family nests from it —
+     --radius-page 14 on the dock, --radius-md 8 on the blocks inside the sheet,
+     --radius-pebble 4 on rows and icon boxes, --radius-mark 2 on chips. It was
+     eight values, one of them derived; it is now the canon's own four plus the
+     one derivation the tray genuinely needs. */
   border-radius: var(--radius-page);
-  /* One highlight from the top-left, so a flat brand fill reads as a surface
-     with a light on it rather than a swatch. */
-  background:
-    radial-gradient(128% 88% at 14% 0%, rgb(255 255 255 / 0.10), transparent 62%),
-    var(--resource-source);
+
+  /* ── A place, not a growing card ───────────────────────────────────────────
+     The dock is bottom-pinned, so the sheet opens UPWARD, over the study panel
+     rather than through it. What used to happen instead: --podcast-dock-h was
+     published from the whole box, the study panel reserved that number as its
+     floor and the toast lane stepped over it, so opening the sheet shortened
+     the panel by several hundred pixels and relocated every toast, in one
+     300ms grid transition, mid-scroll. The measurement was right and the
+     consequence was violent. The reservation is now made ONCE, against the
+     collapsed dock — see PodcastPlayer's publish effect — and the sheet is an
+     overlay above it. Nothing outside this surface moves when it opens.
+
+     The cap is what makes that safe. With no max-height the sheet could grow
+     past the top of the window and `overflow: hidden` would clip the masthead —
+     and the masthead is where the close control lives, so a short window could
+     take away the only way to switch the episode off. */
+  max-height: calc(100vh - var(--frame-top) - 2 * var(--page-inset));
+
+  background: var(--bg-float);
+  /* Docked things take a hairline and floating things take the one shadow; this
+     is the app's only permanent floating surface, so it takes both — the
+     hairline because it sits over paper of nearly its own value. */
+  border: 1px solid var(--border-subtle);
   box-shadow: var(--shadow-elevated);
-  color: var(--resource-ink);
+  color: var(--text-primary);
   font-family: var(--font-ui);
   overflow: hidden;
-  animation: podcast-dock-in 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: podcast-dock-in var(--transport-move) var(--ease-transport);
+
+  /* Two steps of ink over paper, for every hover and every press on this
+     surface. It was eleven alphas between 8% and 24%, each dialled by eye on
+     one brand ground and then applied to ten. */
+  --player-hover: color-mix(in srgb, var(--text-primary) 7%, transparent);
+  --player-hover-strong: color-mix(in srgb, var(--text-primary) 12%, transparent);
+  --player-press: color-mix(in srgb, var(--text-primary) 18%, transparent);
+  /* The mark's height inside its plate. The palette's --resource-mark-height is
+     tuned per brand for optical WEIGHT against the resource card's 320px head
+     (see the Spoken Gospel note in styles.css); this keeps that tuning and
+     takes the whole set down one step for a 380px masthead, which leaves at
+     least 4px of clear space inside a 26px plate for the widest mark on the
+     shelf. */
+  --player-mark-h: calc(var(--resource-mark-height) * 0.8);
 }
 
 /* A shelved Dock owns the bottom band of the READING STAGE. That band is only
@@ -82,48 +152,96 @@
    the mark for a 380px line. */
 /* `min-width: 0` because this is a grid item, and a grid item's automatic
    minimum size is its min-content — the row would rather push through the dock
-   than let its longest child shrink. With a mark that never mattered: an image
-   at a fixed height is 161px wide whatever the publisher is called. With the
-   name in type it matters immediately, and "40 Minutes in the Old Testament"
-   drove the transport controls off the right edge. */
+   than let its longest child shrink. */
 .podcast-mast {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: var(--sp-sm);
   min-width: 0;
-  min-height: 30px;
-  margin: 0 -16px;
-  padding: 13px 12px 12px 16px;
-  border-bottom: 1px solid var(--resource-line);
+  margin: 0 calc(-1 * var(--sp-lg));
+  padding: var(--sp-md) var(--sp-lg);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
-/* The same floor again, for the same reason one level down. `overflow: hidden`
-   is what lets the ellipsis appear; `min-width: 0` is what lets the shrink
-   happen at all. */
-.podcast-mast-source {
+/* ── The plate ────────────────────────────────────────────────────────────
+   The publisher's colour, at signature size. See the mark rule in styles.css
+   for why the plate has to exist at all (an approved reverse may not be
+   recoloured, and a white mark on cream paper is not a quiet mark but no
+   mark), and for why the artwork can only be substituted from that file.
+
+   One object in both forms. It used to be two: an 18–22px image for the six
+   approved sources, or an 11px letterspaced label for the other five, in a row
+   whose gap and min-height had been tuned for the image — so the shelf read as
+   two different kinds of thing, and beside the mono `podcast` chip the label
+   form read as the first half of one label: "40 MINUTES IN THE OLD TESTAMENT
+   PODCAST". A plate of one height, one radius and one colour holds both, and
+   the chip beside it is now plainly a different object.
+
+   26px is the height, so the radius is the canon's own 0.22 × 26 ≈ 6. */
+.podcast-mast-plate {
+  display: inline-flex;
   flex: 0 1 auto;
+  align-items: center;
   min-width: 0;
+  height: 26px;
+  padding: 0 var(--sp-sm);
   overflow: hidden;
-  font: var(--fw-semibold) 0.6875rem/1.2 var(--font-ui);
+  /* ── The width budget ───────────────────────────────────────────────────
+     Stated once, here, because the masthead never had one: two correct
+     overflow fixes (`min-width: 0`, `overflow-x: clip`) had been standing in
+     for the composition question, and the designed outcome for the longest
+     name with no mark was "40 MINUTES IN THE OLD TES…".
+
+     Five things want this line: the plate, the kind chip, the passage chip and
+     three 24px icons. The order in which they yield is:
+
+       1. the passage chip ellipses, because it is a shortcut to something the
+          sheet also names and the reading canvas also holds;
+       2. the plate shrinks — and the mark shrinks WITH it, by `contain`, so
+          the artwork is never clipped and the name ellipses inside its own
+          colour rather than against the paper;
+       3. nothing else. The kind chip and the three icons are `flex: none`.
+
+     44% is where the widest mark on the shelf (Spoken Gospel's lockup, 7.671:1)
+     stops shrinking at 380px: 0.44 × 348 = 153, and the mark at 16.8px tall
+     wants 129 plus 16 of padding. */
+  max-width: 44%;
+  border-radius: var(--radius-sm);
+  background: var(--resource-source);
+  color: var(--resource-ink);
+  /* The one thing that changes when the episode does. The ground used to be
+     the whole card and changed from #239948 to #6d1409 in a single frame while
+     a title and a mark were replaced under it. */
+  transition:
+    background-color var(--transport-move) var(--ease-transport),
+    color var(--transport-move) var(--ease-transport);
+}
+
+/* The name form. Same plate, same height, same colour — only the contents
+   differ, and they differ the way a wordmark differs from an emblem. */
+.podcast-mast-name {
+  overflow: hidden;
+  font: var(--fw-semibold) 0.6875rem/1 var(--font-ui);
   letter-spacing: 0.055em;
   text-overflow: ellipsis;
   text-transform: uppercase;
   white-space: nowrap;
 }
 
-/* The rule that swaps this name for the publisher's approved mark is in
-   styles.css beside the cards' own, and has to be: a relative url() inside a
-   custom property resolves against the stylesheet that substitutes it, and the
-   brand paths are written relative to styles.css. Substituted from this
-   partial they would resolve a directory deeper and every mark would come back
-   blank. See docs/trusted-resource-permissions for which marks are approved. */
+/* The mark form. Sized in styles.css, where the artwork paths resolve; this
+   only holds the box it sits in. */
+.podcast-mast-mark {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}
 
 /* What kind of thing is talking — podcast, sermon, video. The margin's cards
    set it in the same face at the same size, and a mixed list of resources is
    exactly where that distinction is worth carrying onto the dock. */
 .podcast-mast-kind {
   flex: none;
-  color: var(--resource-ink-soft);
+  color: var(--text-tertiary);
   font: var(--fw-medium) 0.59375rem/1.2 var(--font-mono);
   letter-spacing: 0.13em;
   text-transform: uppercase;
@@ -131,13 +249,14 @@
 
 .podcast-mast-passage {
   flex: 0 1 auto;
+  min-width: 0;
   overflow: hidden;
   margin-right: auto;
   padding: 1px 0;
   border: 0;
   border-bottom: 1px solid transparent;
   background: none;
-  color: var(--resource-ink-soft);
+  color: var(--text-tertiary);
   font: var(--fw-medium) 0.75rem/1.2 var(--font-reading);
   letter-spacing: -0.005em;
   text-overflow: ellipsis;
@@ -147,9 +266,11 @@
 }
 
 .podcast-mast-passage:hover {
-  border-bottom-color: var(--resource-line);
-  color: var(--resource-ink);
+  border-bottom-color: var(--border-medium);
+  color: var(--text-primary);
 }
+
+.podcast-mast-passage:active { color: var(--text-secondary, var(--text-primary)); }
 
 /* With no passage to name, whatever precedes the icons takes the gap instead. */
 .podcast-mast > .podcast-mast-icon:first-of-type { margin-left: auto; }
@@ -165,19 +286,168 @@
   border: 0;
   border-radius: var(--radius-pebble);
   background: none;
-  color: var(--resource-ink-soft);
+  color: var(--text-tertiary);
   cursor: pointer;
   transition: background var(--transition-fast), color var(--transition-fast);
 }
 
 .podcast-mast-icon:hover {
-  background: color-mix(in srgb, var(--resource-ink) 14%, transparent);
-  color: var(--resource-ink);
+  background: var(--player-hover-strong);
+  color: var(--text-primary);
 }
 
+.podcast-mast-icon:active { background: var(--player-press); }
+
+/* The app's ring, on the app's surface. It used to be `--resource-ink` — the
+   publisher's, on a dock that rang in a different colour from the card that
+   opened it, twenty pixels away. --focus-ring was a phantom until this pass;
+   see the token note at :root. */
 .podcast-dock :focus-visible {
-  outline: 2px solid var(--resource-ink);
-  outline-offset: 2px;
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* ── One icon grammar ─────────────────────────────────────────────────────── */
+
+/* It was three grids (16, 18, 24), five rendered sizes and three stroke
+   weights, plus a live <text> node inside one of them. Everything stroked on
+   this surface is now drawn on a 24 grid at 1.25, and `non-scaling-stroke`
+   makes that 1.25 RENDERED pixels whatever size the glyph is drawn at — so one
+   number is one visual weight instead of one authored weight and three
+   different results. It is also the optically correct answer: a small glyph
+   wants a relatively heavier stroke than a large one, which is what a constant
+   rendered weight gives.
+
+   Filled glyphs (play, pause, the skip arrowhead) carry no stroke and take the
+   same 24 grid. */
+.podcast-dock svg,
+.transport-play svg,
+.transport-skip svg {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.25;
+}
+
+/* `vector-effect` is not an inherited property, so it has to be written on the
+   shapes rather than on the <svg> the way stroke-width and the caps can be. */
+.podcast-dock svg :where(path, circle, line, rect, polyline, polygon),
+.transport-play svg :where(path, circle, line, rect, polyline, polygon),
+.transport-skip svg :where(path, circle, line, rect, polyline, polygon) {
+  vector-effect: non-scaling-stroke;
+}
+
+.podcast-dock svg [fill="currentColor"],
+.transport-play svg [fill="currentColor"],
+.transport-skip svg [fill="currentColor"] { stroke: none; }
+
+/* ── The transport family ─────────────────────────────────────────────────── */
+
+/* One play affordance for the whole app: a filled disc in the publisher's
+   fitted accent with the app's paper as its glyph.
+
+   There were two, twenty pixels apart in the same column, seen by the same
+   reader inside one second: this filled 38px pill, and the resource card's
+   28px HAIRLINE circle in a different treatment with a different focus colour,
+   a different transition, and a copy of the play triangle that never received
+   the optical correction documented at length beside the original. There was
+   also a third, dead scrub aesthetic in the bundle (removed) and a fourth
+   surface that starts audio with no transport affordance at all — the
+   TaughtHere rows, which Build 3 merges and which should compose this.
+
+   Composed rather than inherited: a consumer sets --transport-size and the
+   family holds everything else. */
+.transport-play {
+  --transport-size: 38px;
+  display: inline-grid;
+  place-items: center;
+  width: var(--transport-size);
+  height: var(--transport-size);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--player-accent);
+  color: var(--player-accent-ink);
+  cursor: pointer;
+  /* The accent moves with the episode; the scale answers a press. Two tiers,
+     and they are genuinely two different kinds of event. */
+  transition:
+    background-color var(--transport-move) var(--ease-transport),
+    transform var(--transition-fast),
+    filter var(--transition-fast);
+}
+
+.transport-play:hover { transform: scale(1.05); filter: brightness(1.06); }
+.transport-play:active { transform: scale(0.96); }
+.transport-play:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.transport-play svg {
+  width: calc(var(--transport-size) * 0.42);
+  height: calc(var(--transport-size) * 0.42);
+}
+
+/* Play crossfading to pause rather than cutting. The two glyphs are stacked in
+   one cell and one of them is on; a hard swap on the loudest control of a
+   surface whose subject is already in motion reads as a fault in the audio.
+
+   Both paths are measured about the same centre so nothing shifts under the
+   pointer: the triangle is CENTROID-centred (a right-pointing triangle carries
+   its mass at the base, so centring its bounding box leaves it visibly left),
+   and the pause bars are symmetric about the same axis. */
+.transport-play svg { grid-area: 1 / 1; }
+
+.transport-glyph {
+  opacity: 0;
+  transition: opacity var(--transport-quick) var(--ease-transport);
+}
+
+.transport-play[data-glyph="play"] .transport-glyph-play,
+.transport-play[data-glyph="pause"] .transport-glyph-pause { opacity: 1; }
+
+.transport-skip {
+  --transport-size: 28px;
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: var(--transport-size);
+  height: var(--transport-size);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.transport-skip > * { grid-area: 1 / 1; }
+.transport-skip:hover { background: var(--player-hover); color: var(--text-primary); }
+.transport-skip:active { transform: scale(0.94); background: var(--player-press); }
+.transport-skip:disabled { color: var(--text-tertiary); cursor: default; opacity: 0.4; }
+.transport-skip:disabled:hover { background: none; }
+
+.transport-skip svg {
+  width: calc(var(--transport-size) * 0.78);
+  height: calc(var(--transport-size) * 0.78);
+}
+
+/* The interval, as type rather than as a <text> node inside an icon.
+   It was `fontFamily="var(--font-mono)" fontSize="9.4"` inside the SVG — the
+   only place in the app that sets type inside a glyph, subject to font loading,
+   scaled by the viewBox, and outside the type scale entirely. It is the same
+   number in the same face; it is simply a text node in the document now, so it
+   inherits, rounds and renders like every other number on this surface. */
+.transport-skip-count {
+  font: var(--fw-medium) 0.5rem/1 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  pointer-events: none;
 }
 
 /* ── The sheet ────────────────────────────────────────────────────────────── */
@@ -188,22 +458,41 @@
 .podcast-sheet {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: grid-template-rows var(--transport-move) var(--ease-transport);
 }
 
 .podcast-dock[data-expanded="true"] .podcast-sheet { grid-template-rows: 1fr; }
 
 /* The row opens the height; this settles the contents into it. Opacity leads
    slightly on the way in so the text arrives in a space that is already there
-   rather than being dragged open with it. */
+   rather than being dragged open with it.
+
+   And this is where the sheet becomes a place: its own cap, and its own scroll
+   inside it. Three children used to scroll independently under three different
+   mask treatments — chapters at 196, references at 300, the transcript at 340 —
+   inside a box with no height of its own at all. Two of those give their scroll
+   up: a reference list is read down the page, so it is content in this scroll.
+   The transcript keeps its own box, because it is not a list a reader travels
+   but a window onto a moving voice, and a centred playhead needs a fixed
+   viewport to be centred in. One scroll for reading, one for following. */
 .podcast-sheet-inner {
   min-height: 0;
-  overflow: hidden;
+  max-height: min(56vh, 520px);
+  overflow-y: auto;
+  /* Horizontal is CLIPPED, not merely unscrolled. `overflow-y: auto` alone
+     computes the other axis to `auto` too, so anything a pixel too wide turns
+     this into a horizontally scrollable box — and then any focus or
+     scroll-into-view slides the whole panel sideways. That is the wiggle,
+     which a long publisher name reintroduced years after a transform first
+     caused it. Neither cause is worth trusting not to return. */
+  overflow-x: clip;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
   opacity: 0;
   transform: translateY(-5px);
   transition:
-    opacity 190ms ease,
-    transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    opacity var(--transport-quick) var(--ease-transport),
+    transform var(--transport-move) var(--ease-transport);
 }
 
 .podcast-dock[data-expanded="true"] .podcast-sheet-inner {
@@ -212,63 +501,133 @@
   transition-delay: 60ms, 0ms;
 }
 
-.podcast-episode { padding: 16px 0 14px; }
+/* ── The episode ──────────────────────────────────────────────────────────── */
 
-.podcast-chapters {
-  max-height: 196px;
-  margin: 0 -8px 12px;
-  padding: 0;
-  overflow-y: auto;
-  /* Horizontal is CLIPPED, not merely unscrolled. `overflow-y: auto` alone
-     computes the other axis to `auto` too, so anything a pixel too wide turns
-     this into a horizontally scrollable box — and then any focus or
-     scroll-into-view slides the whole panel sideways. That is the wiggle,
-     which a long publisher name reintroduced years after a transform first
-     caused it. Neither cause is worth trusting not to return. */
-  overflow-x: clip;
-  border-top: 1px solid var(--resource-line);
-  list-style: none;
-  scrollbar-width: thin;
+/* Dated 2026-07-30. This block had NO RULES. `.podcast-episode-title` and
+   `.podcast-episode-meta` appeared in exactly one place in the whole bundle —
+   the forced-colors block below, where someone believed they were styled — so
+   the <h2> rendered at the UA's 1.5em bold: 24px of --font-ui, unclamped,
+   which made an episode title the largest type in the entire study column by
+   accident, in the wrong face, and let a long name wrap to four lines and drive
+   the dock's own height.
+
+   It is a title of a work, so it takes the reading face at the size the study
+   column's own masthead uses, and it is capped at three lines. `balance` rather
+   than `pretty` because at three lines or fewer the whole block is the ragged
+   edge. */
+.podcast-episode {
+  display: grid;
+  gap: var(--sp-xs);
+  padding: var(--sp-lg) 0 var(--sp-md);
 }
 
-.podcast-chapters > li:first-child .podcast-chapter { margin-top: 6px; }
+.podcast-episode-title {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font: var(--fw-semibold) 1rem/1.34 var(--font-reading);
+  letter-spacing: -0.008em;
+  text-wrap: balance;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.podcast-episode-meta {
+  margin: 0;
+  color: var(--text-tertiary);
+  font: 0.6875rem/1.4 var(--font-ui);
+}
+
+/* The publisher's own page, named as a sentence rather than as a third glyph
+   competing for the masthead's line. */
+.podcast-episode-official {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--border-medium);
+  background: none;
+  color: var(--text-tertiary);
+  font: var(--fw-medium) 0.6875rem/1.4 var(--font-ui);
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.podcast-episode-official:hover { border-bottom-color: var(--text-primary); color: var(--text-primary); }
+
+/* ── Chapters ─────────────────────────────────────────────────────────────── */
+
+/* Still the publisher's slot, and still never supplied — see PodcastChapter.
+   Kept because a publisher's own chapter marks beat anything read out of a
+   transcript, and drawn from the same tokens as everything else here so it
+   cannot rot into a second aesthetic while nobody is looking at it. */
+.podcast-chapters {
+  margin: 0;
+  padding: var(--sp-sm) 0 0;
+  border-top: 1px solid var(--border-subtle);
+  list-style: none;
+}
 
 .podcast-chapter {
   display: grid;
   grid-template-columns: 38px 62px minmax(0, 1fr);
   align-items: baseline;
-  gap: 9px;
+  gap: var(--sp-sm);
   width: 100%;
-  padding: 6px 8px;
+  padding: 6px var(--sp-sm);
   border: 0;
   border-radius: var(--radius-pebble);
   background: none;
-  color: var(--resource-ink-soft);
+  color: var(--text-tertiary);
   text-align: left;
   cursor: pointer;
   transition: background var(--transition-fast), color var(--transition-fast);
 }
 
-.podcast-chapter:hover {
-  background: color-mix(in srgb, var(--resource-ink) 11%, transparent);
-  color: var(--resource-ink);
-}
+.podcast-chapter:hover { background: var(--player-hover); color: var(--text-primary); }
+.podcast-chapter:active { background: var(--player-press); }
 
 .podcast-chapter-time {
   font: 0.625rem/1.4 var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
-/* The view switcher. Two words and a count, on a rail rather than as buttons:
-   it is a place indicator more than a control, and a pair of drawn buttons in
-   a 380px sheet reads as chrome competing with the words underneath. */
+.podcast-chapter-ref {
+  overflow: hidden;
+  font: var(--fw-medium) 0.75rem/1.35 var(--font-reading);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.podcast-chapter-title {
+  overflow: hidden;
+  font: 0.75rem/1.35 var(--font-ui);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Where the voice is. The app's own current-row treatment, not a brand pill:
+   the accent is spent on the transport and the rail, and a third consumer of
+   it inside the sheet is the paint bucket coming back one row at a time. */
+.podcast-chapter[aria-current="true"] {
+  background: var(--player-hover-strong);
+  color: var(--text-primary);
+}
+
+.podcast-chapter[aria-current="true"] .podcast-chapter-ref { font-weight: var(--fw-semibold); }
+
+/* ── The view switcher ────────────────────────────────────────────────────── */
+
+/* Two words and a count, on a rail rather than as buttons: it is a place
+   indicator more than a control, and a pair of drawn buttons in a 380px sheet
+   reads as chrome competing with the words underneath. */
 .podcast-views {
   display: flex;
   gap: 2px;
-  margin: 2px -4px 0;
+  margin: 0 0 var(--sp-xs);
   padding: 3px;
-  border-radius: var(--radius-pebble);
-  background: color-mix(in srgb, var(--resource-ink) 8%, transparent);
+  border-radius: var(--radius-md);
+  background: var(--player-hover);
 }
 
 .podcast-view-tab {
@@ -277,30 +636,34 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 5px 8px;
+  padding: 5px var(--sp-sm);
   border: 0;
-  border-radius: calc(var(--radius-pebble) - 2px);
+  /* The one derived radius the canon actually asks for: a tray at 8 with 3px of
+     padding holds a child at 5, and that is what makes the two curves read as
+     concentric rather than as two decisions. */
+  border-radius: calc(var(--radius-md) - 3px);
   background: none;
-  color: var(--resource-ink-soft);
+  color: var(--text-tertiary);
   font: var(--fw-medium) 0.6875rem/1 var(--font-ui);
   cursor: pointer;
   transition: background var(--transition-fast), color var(--transition-fast);
 }
 
 .podcast-view-tab[aria-selected="true"] {
-  background: color-mix(in srgb, var(--resource-ink) 15%, transparent);
-  color: var(--resource-ink);
+  background: var(--bg-float);
+  box-shadow: 0 0 0 1px var(--border-subtle);
+  color: var(--text-primary);
 }
 
-.podcast-view-tab:not([aria-selected="true"]):hover { color: var(--resource-ink); }
+.podcast-view-tab:not([aria-selected="true"]):hover { color: var(--text-primary); }
+.podcast-view-tab:not([aria-selected="true"]):active { background: var(--player-hover-strong); }
 
 .podcast-view-count {
   padding: 0 4px;
-  border-radius: 3px;
-  background: color-mix(in srgb, var(--resource-ink) 14%, transparent);
+  border-radius: var(--radius-mark);
+  background: var(--player-hover-strong);
   font: 0.5625rem/1.6 var(--font-mono);
   font-variant-numeric: tabular-nums;
-  opacity: 0.8;
 }
 
 /* Leaving a search. Says how many were found and how to stop looking in the
@@ -309,62 +672,50 @@
 .podcast-transcript-clear {
   padding: 2px 7px;
   border: 0;
-  border-radius: 3px;
-  background: color-mix(in srgb, var(--resource-ink) 12%, transparent);
-  color: var(--resource-ink);
+  border-radius: var(--radius-mark);
+  background: var(--player-hover-strong);
+  color: var(--text-primary);
   font: var(--fw-medium) 0.5625rem/1.6 var(--font-ui);
   letter-spacing: 0.03em;
   text-transform: uppercase;
   white-space: nowrap;
   cursor: pointer;
+  transition: background var(--transition-fast);
 }
 
-.podcast-transcript-clear:hover { background: color-mix(in srgb, var(--resource-ink) 20%, transparent); }
+.podcast-transcript-clear:hover { background: var(--player-press); }
+.podcast-transcript-clear:active { background: var(--player-press); }
 
-/* Passage references. Two lists, styled as one family: what the episode works
-   through, then what it touches in passing. The distinction is carried by
-   order and by weight rather than by two different designs, because they are
-   the same kind of object making two strengths of claim. */
+/* ── Passage references ───────────────────────────────────────────────────── */
+
+/* Two lists, styled as one family: what the episode works through, then what it
+   touches in passing. The distinction is carried by order and by weight rather
+   than by two different designs, because they are the same kind of object
+   making two strengths of claim. */
 .podcast-refs {
-  margin: 0 -8px;
+  margin: 0 calc(-1 * var(--sp-sm));
   padding: 0;
   list-style: none;
 }
 
-/* The view owns a fixed height and scrolls inside it, so a fifteen-reference
-   episode and a two-reference one open the sheet to the same size. Height that
-   depends on content is what let these push the transcript away. */
-.podcast-refs-view {
-  max-height: 300px;
-  overflow-y: auto;
-  /* Horizontal is CLIPPED, not merely unscrolled. `overflow-y: auto` alone
-     computes the other axis to `auto` too, so anything a pixel too wide turns
-     this into a horizontally scrollable box — and then any focus or
-     scroll-into-view slides the whole panel sideways. That is the wiggle,
-     which a long publisher name reintroduced years after a transform first
-     caused it. Neither cause is worth trusting not to return. */
-  overflow-x: clip;
-  scrollbar-width: none;
-  overscroll-behavior: contain;
-  mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
-}
-
-.podcast-refs-view::-webkit-scrollbar { width: 0; }
+/* Content in the sheet's own scroll now, with no height of its own and no mask.
+   It had 300px and a scroll and a fade, which is a second place to be inside a
+   surface that is already a place. */
+.podcast-refs-view { padding-bottom: var(--sp-sm); }
 
 .podcast-refs-passing {
-  margin-top: 4px;
-  border-top: 1px solid var(--resource-line);
+  margin-top: var(--sp-xs);
+  border-top: 1px solid var(--border-subtle);
   padding-top: 6px;
 }
 
 .podcast-refs-head {
   margin: 0;
-  padding: 2px 12px 4px;
-  color: var(--resource-ink-soft);
+  padding: 2px var(--sp-md) var(--sp-xs);
+  color: var(--text-tertiary);
   font: var(--fw-medium) 0.5625rem/1.5 var(--font-ui);
   letter-spacing: 0.07em;
   text-transform: uppercase;
-  opacity: 0.7;
 }
 
 .podcast-ref {
@@ -372,31 +723,37 @@
   grid-template-columns: 40px minmax(0, 1fr) auto;
   grid-template-areas: "time title extent" ".    why   why";
   align-items: baseline;
-  gap: 2px 9px;
+  gap: 2px var(--sp-sm);
   width: 100%;
-  padding: 5px 12px;
+  padding: 5px var(--sp-md);
   border: 0;
   border-radius: var(--radius-pebble);
   background: none;
-  color: var(--resource-ink);
+  color: var(--text-primary);
   text-align: left;
   cursor: pointer;
   transition: background var(--transition-fast);
 }
 
-.podcast-ref:hover {
-  background: color-mix(in srgb, var(--resource-ink) 10%, transparent);
-}
+.podcast-ref:hover { background: var(--player-hover); }
+.podcast-ref:active { background: var(--player-press); }
 
 /* A passage the episode merely touches sits back from one it works through.
-   Same list, quieter claim. */
-.podcast-ref:not([data-relation="subject"]) { color: var(--resource-ink-soft); }
+   Same list, quieter claim.
+
+   Dated 2026-07-30: this was --resource-ink-soft, which is a publisher's ink at
+   0.72–0.78 over their ground, and then four more independent alphas were
+   applied to the four spans inside the row — 0.62 on the evidence line, 0.65 on
+   the time, 0.75 on the extent, 0.7 on the head. Compounded, the evidence line
+   on one show measured about 2:1. Every one of them is now a named text token
+   whose contrast the theme already carries. */
+.podcast-ref:not([data-relation="subject"]) { color: var(--text-tertiary); }
 
 .podcast-ref-time {
   grid-area: time;
+  color: var(--text-tertiary);
   font: 0.625rem/1.5 var(--font-mono);
   font-variant-numeric: tabular-nums;
-  opacity: 0.65;
 }
 
 .podcast-ref-title {
@@ -407,20 +764,17 @@
   white-space: nowrap;
 }
 
-.podcast-ref[data-relation="subject"] .podcast-ref-title {
-  font-weight: var(--fw-medium);
-}
+.podcast-ref[data-relation="subject"] .podcast-ref-title { font-weight: var(--fw-medium); }
 
 /* Extent on the left-hand list, and the one word that matters on the right:
    "alluded" marks a passage nobody said aloud, which is the only entry here a
    reader could not have found by searching. */
 .podcast-ref-extent {
   grid-area: extent;
-  color: var(--resource-ink-soft);
+  color: var(--text-tertiary);
   font: 0.5625rem/1.6 var(--font-ui);
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  opacity: 0.75;
   white-space: nowrap;
 }
 
@@ -429,22 +783,17 @@
 .podcast-ref-why {
   grid-area: why;
   overflow: hidden;
-  color: var(--resource-ink-soft);
+  color: var(--text-tertiary);
   font: 0.6875rem/1.45 var(--font-reading);
   text-overflow: ellipsis;
   white-space: nowrap;
-  opacity: 0.62;
 }
 
-.podcast-ref:hover .podcast-ref-why { opacity: 0.85; }
+/* ── The transcript ───────────────────────────────────────────────────────── */
 
-/* Transcript. Taller than the chapter list because it is meant to be read
-   rather than scanned, and because the active line sits centred inside it — a
-   short box would hold the playhead at an edge, where a reader cannot see
-   what is coming next. */
 .podcast-transcript-block {
-  margin: 0 -8px;
-  border-top: 1px solid var(--resource-line);
+  margin: 0 calc(-1 * var(--sp-sm));
+  border-top: 1px solid var(--border-subtle);
 }
 
 .podcast-transcript-head {
@@ -452,18 +801,14 @@
   grid-template-columns: 16px minmax(0, 1fr) auto;
   align-items: center;
   gap: 7px;
-  padding: 9px 12px 5px;
+  padding: 9px var(--sp-md) 5px;
 }
 
 .podcast-transcript-glass {
   width: 13px;
   height: 13px;
-  fill: none;
   stroke: currentColor;
-  stroke-width: 1.4;
-  stroke-linecap: round;
-  color: var(--resource-ink-soft);
-  opacity: 0.55;
+  color: var(--text-tertiary);
 }
 
 /* No box. A field drawn as a field is chrome, and this row sits above the
@@ -474,16 +819,22 @@
   padding: 2px 0;
   border: 0;
   background: none;
-  color: var(--resource-ink);
+  color: var(--text-primary);
   font: 0.8125rem/1.4 var(--font-ui);
 }
 
-.podcast-transcript-search::placeholder {
-  color: var(--resource-ink-soft);
-  opacity: 0.6;
+.podcast-transcript-search::placeholder { color: var(--text-tertiary); }
+.podcast-transcript-search:focus { outline: none; }
+
+/* The row rings, not the bare field: an outline on a borderless input drawn
+   flush against a glass and a chip reads as a box that appeared from nowhere. */
+.podcast-transcript-head:focus-within {
+  border-radius: var(--radius-pebble);
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: -1px;
 }
 
-.podcast-transcript-search:focus { outline: none; }
+.podcast-transcript-search:focus-visible { outline: none; }
 
 .podcast-transcript-search::-webkit-search-cancel-button {
   -webkit-appearance: none;
@@ -498,15 +849,17 @@
   border-radius: 50%;
 }
 
+.podcast-transcript-search::-webkit-search-cancel-button:hover { opacity: 0.8; }
+
 /* The whole provenance claim, in four letters. The model id belongs in the
    title attribute and in the file, not permanently in a reader's eyeline —
    but something has to say these words were machined rather than written,
    because some of them are wrong. */
 .podcast-transcript-auto {
   padding: 1px 5px;
-  border-radius: 3px;
-  background: color-mix(in srgb, var(--resource-ink) 9%, transparent);
-  color: var(--resource-ink-soft);
+  border-radius: var(--radius-mark);
+  background: var(--player-hover);
+  color: var(--text-tertiary);
   font: var(--fw-medium) 0.5625rem/1.5 var(--font-ui);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -519,109 +872,26 @@
 
 .podcast-transcript-stage { position: relative; }
 
-/* Said in the same voice whether the answer is "no line matched" or "there is
-   no transcript at all": both are the sheet accounting for an emptiness, and
-   an open sheet with nothing in it is the one thing it must never be. */
-.podcast-transcript-empty {
-  margin: 0;
-  padding: 0 12px 18px;
-  color: var(--resource-ink-soft);
-  font: 0.8125rem/1.5 var(--font-reading);
-  opacity: 0.7;
-}
-
-.podcast-sheet-empty { padding-top: 4px; }
-
-/* One word, one line, and it cannot become two: a pill that wraps is a pill
-   that was the wrong size. */
-.podcast-transcript-follow {
-  position: absolute;
-  /* Stated, because DOM order no longer states it. The pill now comes BEFORE
-     the list in the document — a control a keyboard reader can only reach by
-     tabbing through two thousand lines is not an offer — and the lines carry
-     `filter`, which makes each blurred one a stacking context painted in the
-     same pass as a positioned element. In tree order that put the three lines
-     either side of the voice ON TOP of the pill, and a press on it landed on
-     the line underneath: measured, the pill obeyed the keyboard and swallowed
-     the pointer. One positive index puts it back above them for good. */
-  z-index: 1;
-  left: 50%;
-  bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 12px 5px 10px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--resource-ink);
-  color: var(--resource-source, var(--surface-page));
-  font: var(--fw-medium) 0.6875rem/1 var(--font-ui);
-  white-space: nowrap;
-  cursor: pointer;
-  transform: translateX(-50%);
-  box-shadow: 0 3px 12px -4px rgb(0 0 0 / 45%);
-  animation: podcast-follow-in 260ms cubic-bezier(0.2, 0.9, 0.3, 1);
-}
-
-.podcast-transcript-follow svg {
-  width: 11px;
-  height: 11px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.podcast-transcript-follow:hover { filter: brightness(1.12); }
-
-@keyframes podcast-follow-in {
-  from { opacity: 0; transform: translate(-50%, 7px); }
-  to { opacity: 1; transform: translate(-50%, 0); }
-}
-
-/* The publisher's own counter-colour, which is the one pair on this surface
-   guaranteed to read against the ground it sits on — it is what the play
-   button and the rail fill are drawn in, for exactly that reason.
-
-   Dated 2026-07-30. This was `color-mix(var(--accent, currentColor) 26%,
-   transparent)`, and `--accent` is defined nowhere in the renderer: it appears
-   once, here, as a consumer. So it fell through to currentColor, which is
-   --resource-ink, which is the colour of the text the mark sits behind — a
-   faint tint of the words, behind the words, and never once looked at against
-   a real search. The two other search surfaces in this app mark with
-   --study-gold and that token cannot come here: it is already the dock's
-   DEFAULT ground, so a gold mark would be invisible on an unbranded publisher
-   and muddy on a branded one. */
-.podcast-transcript-line mark {
-  border-radius: 2px;
-  background: var(--resource-pill-bg);
-  color: var(--resource-pill-ink);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .podcast-transcript-follow { animation: none; }
-}
-
 /* The list carries no clock. Timestamps were how we checked the alignment was
    real; they are not how anyone listens. A reader following along already knows
    where they are — the audio is telling them — so a column of numbers beside
    every line is noise competing with the words. The time survives as the seek
    target behind each line, which is the only thing it was ever needed for. */
 .podcast-transcript {
-  /* Roughly five lines. Fewer, larger lines are the point: this is read at a
-     glance while attention is on the passage, and a dense list invites
-     scanning at exactly the moment nobody should be scanning. */
-  max-height: 340px;
+  /* A window onto a voice, not a list. Roughly five lines, and the height
+     yields on a short screen rather than pushing the masthead off the top. */
+  max-height: clamp(160px, 38vh, 340px);
   margin: 0;
-  padding: 30px 0;
+  /* 30 above, and below the pill's own height plus its inset plus a gutter —
+     44 — so the LAST hit in a filtered list can be pressed. Scrolled to its
+     end, the final row used to sit exactly where the Follow pill floats, and a
+     coordinate press on it landed on the pill: the search cleared and it read
+     as a seek that never happened. Constant in both states, so nothing moves
+     when the pill appears. */
+  padding: 30px 0 44px;
+  scroll-padding-block-end: 44px;
   overflow-y: auto;
-  /* Horizontal is CLIPPED, not merely unscrolled. `overflow-y: auto` alone
-     computes the other axis to `auto` too, so anything a pixel too wide turns
-     this into a horizontally scrollable box — and then any focus or
-     scroll-into-view slides the whole panel sideways. That is the wiggle,
-     which a long publisher name reintroduced years after a transform first
-     caused it. Neither cause is worth trusting not to return. */
+  /* Horizontal is CLIPPED, not merely unscrolled — see .podcast-sheet-inner. */
   overflow-x: clip;
   list-style: none;
   scrollbar-width: none;
@@ -631,12 +901,13 @@
      A hard cut says "the list continues past here"; a fade says "you are in the
      middle of something", which is what following an episode actually is. The
      same gradient masks the fact that the active line is being scrolled to,
-     because the movement is hidden before it reaches an edge. */
+     because the movement is hidden before it reaches an edge. The bottom fade
+     matches the pill's reservation. */
   mask-image: linear-gradient(
     to bottom,
     transparent 0,
     #000 34px,
-    #000 calc(100% - 34px),
+    #000 calc(100% - 44px),
     transparent 100%
   );
 }
@@ -649,26 +920,31 @@
    gained horizontal overflow, the scrollbar appeared and vanished as the
    active line moved, and the whole box shifted a few pixels each time — the
    wiggle. Depth here is carried by focus and contrast, which cost no layout. */
+/* The measure, stated rather than left to happen. A 380px dock leaves a 324px
+   column, which at this size is about 46 characters — short of the 60–75 the
+   app gives the reading page, and it cannot be more without taking width from
+   the study panel the dock is inscribed in. What the app CAN give it, and now
+   does, is its own reading face at its own reading leading (--lh-reading, the
+   32px band's own ratio) instead of 17px at 1.5 chosen for this box alone. The
+   line is a little smaller and reads a good deal better. */
 .podcast-transcript-line {
   display: block;
   width: 100%;
-  padding: 9px 12px;
+  padding: var(--sp-sm) var(--sp-md);
   border: 0;
   border-radius: var(--radius-pebble);
   background: none;
-  color: var(--resource-ink);
-  /* Bigger than a list wants and about right for something read at a glance
-     from across a desk while your eyes are on the passage. */
-  font: 1.0625rem/1.5 var(--font-reading);
+  color: var(--text-primary);
+  font: 1rem/var(--lh-reading) var(--font-reading);
   letter-spacing: -0.006em;
   text-align: left;
   text-wrap: pretty;
   cursor: pointer;
   /* About as long as a short line takes to speak, so emphasis drifts with the
-     voice instead of snapping ahead of it. */
+     voice instead of snapping ahead of it. Named --transport-voice at :root. */
   transition:
-    opacity 460ms cubic-bezier(0.25, 0.9, 0.3, 1),
-    filter 460ms cubic-bezier(0.25, 0.9, 0.3, 1),
+    opacity var(--transport-voice) var(--ease-transport),
+    filter var(--transport-voice) var(--ease-transport),
     background var(--transition-fast);
 }
 
@@ -700,14 +976,7 @@
 
 /* Past the ramp's reach. The ramp is written onto three lines either side of
    the voice and the box shows fewer than four, so this is every line nobody is
-   looking at — and on a two-hour episode that is 2,274 of them.
-
-   Dated 2026-07-30: they no longer blur. Every one of them used to carry
-   data-d="3", which is a 1.9px blur, so a two-hour episode asked the compositor
-   for 2,274 filtered surfaces in order to shade a four-line window. The blur is
-   what makes a near line read as being just BEHIND the voice; a line twenty
-   minutes away is not behind it, it is elsewhere, and dimness alone says that
-   for a great deal less. */
+   looking at — and on a two-hour episode that is 2,274 of them. */
 .podcast-transcript-line:not([data-d]) { opacity: 0.22; }
 
 /* No voice in the list to be near — a search, or nothing playing yet. Said
@@ -723,121 +992,130 @@
 /* Pointing at a line brings it into focus wherever it sits, so a reader can
    read ahead without stopping the audio or losing the playhead. */
 .podcast-transcript-line:hover {
-  background: color-mix(in srgb, var(--resource-ink) 9%, transparent);
+  background: var(--player-hover);
   opacity: 0.92;
   filter: none;
 }
 
 .podcast-transcript-line[data-d="0"]:hover { background: none; }
+.podcast-transcript-line:active { background: var(--player-press); }
 
 .podcast-transcript-line:focus-visible {
   opacity: 1;
   filter: none;
-  outline: 2px solid var(--focus-ring, currentColor);
+  outline: var(--focus-ring-width) solid var(--focus-ring);
   outline-offset: -2px;
 }
 
-/* Blur and drift are the whole effect, so without them the live line has to be
-   marked by contrast and weight alone — which it still is.
+/* The publisher's accent, fitted to the app's paper — one of the three places
+   it is spent. See the --accent-fit-* note at :root for the derivation and the
+   measured floor; the binding case for that floor is this rule, because the
+   text sitting on the mark is 17px body copy and therefore owes 4.5:1.
 
-   `scroll-behavior` here covers the scrolls the reader starts: an arrow key or
-   a Page Down inside this box animates by the computed value, and this is what
-   stops it. It does NOT cover the autoscroll, which is what it was written for
-   and never did — an explicit behavior passed to scrollTo beats the computed
-   value by spec, and "auto" means "go and ask the computed value", so a
-   reduced-motion reader got the full smooth ride from a rule meant to spare
-   them it. That branch is made in PodcastPlayer now, and it says "instant". */
-@media (prefers-reduced-motion: reduce) {
-  .podcast-transcript { scroll-behavior: auto; }
-  .podcast-transcript-line {
-    transition: opacity 1ms linear;
-    filter: none !important;
-  }
-  .podcast-transcript-line[data-d="1"] { opacity: 0.55; }
-  .podcast-transcript-line[data-d="2"] { opacity: 0.4; }
-  .podcast-transcript-line[data-d="3"] { opacity: 0.32; }
-  .podcast-transcript-line:not([data-d]) { opacity: 0.32; }
+   Dated 2026-07-30. This was `color-mix(var(--accent, currentColor) 26%,
+   transparent)` — `--accent` was declared nowhere, so it fell through to the
+   colour of the text it sits behind. Build 1 pointed it at the publisher's
+   pill pair as a repair; the pill pair is a brand colour on a brand ground, and
+   this ground is ours. */
+.podcast-transcript-line mark {
+  border-radius: var(--radius-mark);
+  background: var(--player-accent);
+  color: var(--player-accent-ink);
 }
 
-.podcast-chapter-ref {
-  overflow: hidden;
-  font: var(--fw-medium) 0.75rem/1.35 var(--font-reading);
-  text-overflow: ellipsis;
+/* ── The offer back ───────────────────────────────────────────────────────── */
+
+/* One word, one line, and it cannot become two: a pill that wraps is a pill
+   that was the wrong size. Drawn in the app's own ink rather than a brand hex
+   floating over the app's paper — and it casts no shadow of its own, because
+   it is INSIDE the one surface that is already casting the app's one shadow. */
+.podcast-transcript-follow {
+  position: absolute;
+  /* Stated, because DOM order no longer states it. The pill comes BEFORE the
+     list in the document — a control a keyboard reader can only reach by
+     tabbing through two thousand lines is not an offer — and the lines carry
+     `filter`, which makes each blurred one a stacking context painted in the
+     same pass as a positioned element. In tree order that put the three lines
+     either side of the voice ON TOP of the pill, and a press on it landed on
+     the line underneath. One positive index puts it back above them for good. */
+  z-index: 1;
+  left: 50%;
+  bottom: var(--sp-sm);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px var(--sp-md) 5px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--text-primary);
+  color: var(--bg-float);
+  font: var(--fw-medium) 0.6875rem/1 var(--font-ui);
   white-space: nowrap;
+  cursor: pointer;
+  transform: translateX(-50%);
+  animation: podcast-follow-in var(--transport-move) var(--ease-transport);
+  transition: filter var(--transition-fast);
 }
 
-.podcast-chapter-title {
-  overflow: hidden;
-  font: 0.75rem/1.35 var(--font-ui);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.podcast-transcript-follow svg { width: 11px; height: 11px; stroke: currentColor; }
+.podcast-transcript-follow:hover { filter: brightness(1.3); }
+.podcast-transcript-follow:active { filter: brightness(1.5); }
+
+@keyframes podcast-follow-in {
+  from { opacity: 0; transform: translate(-50%, 7px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
 }
 
-/* Where the voice is, in the publisher's own pill colours — the same pair the
-   featured card uses for its own pills. */
-.podcast-chapter[aria-current="true"] {
-  color: var(--resource-pill-ink);
-  background: var(--resource-pill-bg);
+/* ── What the sheet says when it has nothing ──────────────────────────────── */
+
+/* Said in the same voice whether the answer is "no line matched" or "there is
+   no transcript at all": both are the sheet accounting for an emptiness, and
+   an open sheet with nothing in it is the one thing it must never be. */
+.podcast-transcript-empty {
+  margin: 0;
+  padding: 0 var(--sp-md) 18px;
+  color: var(--text-tertiary);
+  font: 0.8125rem/1.5 var(--font-reading);
 }
 
-.podcast-chapter[aria-current="true"] .podcast-chapter-ref { font-weight: var(--fw-semibold); }
+/* Not-yet-known is a different fact from known-to-be-absent, and the component
+   has always computed the difference — `undefined` while unasked, `null` once
+   we know there is none — and then drawn both as the same nothing. This is the
+   first of the two: the app's own loading device, a segment travelling a rule,
+   over the sentence that says what is being waited for. */
+.podcast-sheet-reaching {
+  display: grid;
+  gap: 10px;
+  padding: var(--sp-lg) var(--sp-md) var(--sp-xl);
+}
 
-/* ── Transport ────────────────────────────────────────────────────────────── */
+.podcast-sheet-reaching p {
+  margin: 0;
+  color: var(--text-tertiary);
+  font: 0.8125rem/1.5 var(--font-reading);
+}
+
+.podcast-sheet-empty { padding-top: var(--sp-xs); padding-bottom: var(--sp-xl); }
+
+/* ── Transport row ────────────────────────────────────────────────────────── */
 
 /* The transport and what it is steering, given room to be two things rather
-   than one dense block. 16 above and below puts the play button in the middle
-   of its own band instead of hard under the masthead rule. */
+   than one dense block. */
 .podcast-dock-body {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: 15px;
-  padding: 16px 0 15px;
+  gap: var(--sp-md);
+  padding: var(--sp-lg) 0;
 }
 
 .podcast-transport {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--sp-xs);
 }
 
-.podcast-transport-skip {
-  display: inline-grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: none;
-  color: var(--resource-ink-soft);
-  cursor: pointer;
-  transition: color var(--transition-fast), transform var(--transition-fast);
-}
-
-.podcast-transport-skip:hover { color: var(--resource-ink); }
-.podcast-transport-skip:active { transform: scale(0.94); }
-
-/* The one filled control on the surface. It is filled in every state rather
-   than only while running: on a brand ground a hairline circle is the quietest
-   thing there, and play is the loudest thing a reader wants. */
-.podcast-transport-play {
-  display: inline-grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  margin: 0 3px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: var(--resource-pill-bg);
-  color: var(--resource-pill-ink);
-  cursor: pointer;
-  transition: transform var(--transition-fast), filter var(--transition-fast);
-}
-
-.podcast-transport-play:hover { transform: scale(1.05); filter: brightness(1.05); }
-.podcast-transport-play:active { transform: scale(0.97); }
+.podcast-transport .transport-play { margin: 0 3px; }
 
 .podcast-dock-lines {
   display: grid;
@@ -852,7 +1130,7 @@
 .podcast-dock-title {
   overflow: hidden;
   margin: 0;
-  color: var(--resource-ink);
+  color: var(--text-primary);
   font: var(--fw-semibold) 0.8125rem/1.35 var(--font-ui);
   letter-spacing: -0.006em;
   text-overflow: ellipsis;
@@ -862,7 +1140,7 @@
 .podcast-dock-now {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: var(--sp-sm);
   overflow: hidden;
   margin: 0;
 }
@@ -875,70 +1153,130 @@
 
 .podcast-dock-now-title {
   overflow: hidden;
-  color: var(--resource-ink-soft);
+  color: var(--text-tertiary);
   font: 0.75rem/1.3 var(--font-ui);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.podcast-dock-clock {
+/* ── Three forms of one row ───────────────────────────────────────────────── */
+
+/* The clock, the reaching line and the refusal are one slot with three
+   contents, and they are given one height so that changing between them cannot
+   change the dock's.
+
+   Dated 2026-07-30. They used to be two undeclared heights: the clock's flex
+   row measured 15px because .podcast-rate carries a pixel of vertical padding,
+   and the bare refusal sentence measured 13 — so a failure shrank the dock by a
+   pixel, which the QA tour had to be given a tolerance for. 16 is the 4px grid
+   and clears the rate pill's box, so all three rows are now exactly equal and
+   the tolerance is gone. */
+.podcast-dock-clock,
+.podcast-dock-reaching,
+.podcast-dock-refusal {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  min-height: 16px;
+  overflow: hidden;
   margin: 0;
-  color: var(--resource-ink-soft);
   font: 0.625rem/1.3 var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
+.podcast-dock-clock {
+  justify-content: space-between;
+  color: var(--text-tertiary);
+}
+
 /* The half of the clock that is counting down rather than up. */
-.podcast-dock-clock-rest { opacity: 0.72; }
+.podcast-dock-clock-rest { color: var(--text-tertiary); opacity: 0.8; }
+
+/* Reaching, drawn rather than faked. The dock used to say this state with a
+   PAUSE glyph — `paused` was `status !== "playing" && status !== "reaching"`,
+   so the loudest control on the surface claimed the file was running before it
+   had arrived — over a clock reading `0:00 / —:—`. It is the state a reader on
+   a publisher's server sees most often and it was the least designed one here.
+   Now: the play glyph stays play, the rail carries the travelling segment, and
+   this line says what is happening in words. */
+.podcast-dock-reaching {
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  letter-spacing: 0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Name the thing, the reason, and whether it was ours to fix. In the app's
+   error ink — it was --resource-ink, the same colour as every other word on the
+   surface, on a dock otherwise byte-identical to `paused`, so a failure cost
+   ten pixels of body text and nothing else. */
+.podcast-dock-refusal {
+  color: var(--error);
+  font: var(--fw-medium) 0.625rem/1.3 var(--font-ui);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 .podcast-rate {
   padding: 1px 6px;
   border: 0;
   border-radius: var(--radius-mark);
   background: none;
-  color: var(--resource-ink-soft);
+  color: var(--text-tertiary);
   font: 0.625rem/1.3 var(--font-mono);
   font-variant-numeric: tabular-nums;
   cursor: pointer;
   transition: background var(--transition-fast), color var(--transition-fast);
 }
 
-.podcast-rate:hover {
-  background: color-mix(in srgb, var(--resource-ink) 14%, transparent);
-  color: var(--resource-ink);
-}
-
-/* On the clock's own line and at the clock's own size, because it is what the
-   clock has to say when there is nothing to count. One line, so a failure does
-   not change the height of a surface a reader is pointing at. */
-.podcast-dock-refusal {
-  overflow: hidden;
-  margin: 0;
-  color: var(--resource-ink);
-  font: var(--fw-medium) 0.625rem/1.3 var(--font-ui);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+.podcast-rate:hover { background: var(--player-hover-strong); color: var(--text-primary); }
+.podcast-rate:active { background: var(--player-press); }
 
 /* ── The rail ─────────────────────────────────────────────────────────────── */
 
-/* Along the dock's own bottom edge, because the played part of an episode is
-   the one fact worth stating at the width of the whole surface. It floats clear
-   of the corners rather than bleeding into them: the card's radius would slice
-   the fill at value 0 and again at value 1. The input carries a 12px hit band
-   over a 4px line, so the target is a thumb's worth even though what is drawn
-   is a rule. */
+/* Along the dock's own bottom band, on the same content edge as everything
+   else — it used to hang 7px outside it on both sides, which put the widest
+   element on the surface on an edge nothing else shared.
+
+   The rule is drawn by the app and the input is only the hand on it: a range
+   element painting its own gradient track cannot transition, because a gradient
+   stop moving is a background-image change. As two boxes the played part is a
+   width, and a width can catch up. */
 .podcast-rail {
   position: relative;
   height: 12px;
-  margin: 0 -7px 6px;
+  margin: 0 0 var(--sp-sm);
 }
 
-/* Chapter edges, drawn in the surface's own colour so they read as breaks in
-   the rail rather than as marks on it. Nothing new appears in order to say
+.podcast-rail-track,
+.podcast-rail-played {
+  position: absolute;
+  top: 4px;
+  height: 4px;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.podcast-rail-track {
+  right: 0;
+  left: 0;
+  background: color-mix(in srgb, var(--text-primary) 14%, transparent);
+}
+
+/* One of the three places a publisher's accent is spent. It is sampled from a
+   clock four times a second, so it catches up rather than stepping — linear,
+   because a constant rate is what a played rule IS. */
+.podcast-rail-played {
+  left: 0;
+  width: var(--podcast-played, 0%);
+  background: var(--player-accent);
+  transition: width var(--transport-quick) linear;
+}
+
+.podcast-dock[data-status="failed"] .podcast-rail-played { background: var(--error); }
+
+/* Chapter edges, drawn in the surface's own paper so they read as breaks in the
+   rail rather than as marks on it. Nothing new appears in order to say
    "structure". */
 .podcast-rail-tick {
   position: absolute;
@@ -946,7 +1284,7 @@
   top: 4px;
   width: 1px;
   height: 4px;
-  background: var(--resource-source);
+  background: var(--bg-float);
   pointer-events: none;
 }
 
@@ -962,27 +1300,27 @@
   cursor: pointer;
 }
 
+/* Transparent: the two boxes above are the rule. The height and the offset stay
+   because the thumb is positioned against this track, not against them. */
 .podcast-scrub::-webkit-slider-runnable-track {
   height: 4px;
   margin-top: 4px;
-  border-radius: 999px;
-  background: linear-gradient(
-    to right,
-    var(--resource-pill-bg) 0 var(--podcast-played, 0%),
-    color-mix(in srgb, var(--resource-ink) 24%, transparent) var(--podcast-played, 0%) 100%
-  );
+  background: none;
 }
 
 /* The head appears where a reader is about to use it and nowhere else: an
-   always-drawn knob on a rule is a widget, and a rule that fills is a fact. */
+   always-drawn knob on a rule is a widget, and a rule that fills is a fact.
+   `@media (hover: none)` is the other half of that sentence — with no pointer
+   to appear under, an invisible seek head is an unlabelled rule, so on touch it
+   is simply always there. */
 .podcast-scrub::-webkit-slider-thumb {
   width: 10px;
   height: 10px;
   margin-top: -3px;
   border: 0;
   border-radius: 50%;
-  background: var(--resource-pill-bg);
-  box-shadow: 0 0 0 2px var(--resource-source);
+  background: var(--player-accent);
+  box-shadow: 0 0 0 2px var(--bg-float);
   opacity: 0;
   appearance: none;
   transition: opacity var(--transition-fast);
@@ -992,15 +1330,27 @@
 .podcast-scrub:focus-visible::-webkit-slider-thumb,
 .podcast-scrub:active::-webkit-slider-thumb { opacity: 1; }
 
-.podcast-scrub:focus-visible { outline-offset: -1px; }
-.podcast-scrub:disabled { cursor: default; }
-
-.podcast-dock[data-status="reaching"] .podcast-scrub:disabled::-webkit-slider-runnable-track {
-  background: none;
+@media (hover: none) {
+  .podcast-scrub::-webkit-slider-thumb { opacity: 1; }
 }
 
-/* The app's one loading device: a segment travelling a rule. The rail is
-   already a rule, so nothing new appears in order to say "waiting". */
+.podcast-scrub:focus-visible { outline-offset: -1px; }
+
+/* A seek bar that cannot be dragged used to be visually identical to one that
+   can — the single `cursor: default` was the whole of the disabled vocabulary
+   on this surface. */
+.podcast-scrub:disabled { cursor: default; }
+.podcast-scrub:disabled::-webkit-slider-thumb { opacity: 0; }
+.podcast-dock:has(.podcast-scrub:disabled) .podcast-rail-track { opacity: 0.5; }
+
+/* The loading device: a segment travelling a rule. The rail is already a rule,
+   so nothing new appears in order to say "waiting".
+
+   Dated 2026-07-30 — the keyframes are this file's now. It animated
+   `seal-progress-travel`, which is defined in styles/marking-actions.css: an
+   undefined animation-name fails silently, so the player's only loading device
+   was one rename in an unrelated partial away from a static bar. The comment
+   beside it also called it "the app's one loading device" and there are five. */
 .podcast-rail-reaching {
   position: absolute;
   top: 4px;
@@ -1009,7 +1359,7 @@
   height: 4px;
   overflow: hidden;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--resource-ink) 24%, transparent);
+  background: color-mix(in srgb, var(--text-primary) 14%, transparent);
 }
 
 .podcast-rail-reaching::after {
@@ -1018,8 +1368,35 @@
   inset-block: 0;
   left: 0;
   width: 28%;
-  background: var(--resource-pill-bg);
-  animation: seal-progress-travel 1100ms linear infinite;
+  background: var(--player-accent);
+  animation: podcast-reaching-travel 1100ms linear infinite;
+}
+
+/* Not a transition and so not on the transport tier: nobody is waiting at the
+   end of a loop. 1100ms is one pass of a 28% segment, which is slow enough to
+   read as travelling rather than as flickering. */
+@keyframes podcast-reaching-travel {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(357%); }
+}
+
+/* The same device, laid flat, for the sheet waiting on two fetches. */
+.podcast-sheet-reaching-rule {
+  position: relative;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-primary) 12%, transparent);
+}
+
+.podcast-sheet-reaching-rule::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 28%;
+  background: var(--player-accent);
+  animation: podcast-reaching-travel 1100ms linear infinite;
 }
 
 /* ── Focus mode ───────────────────────────────────────────────────────────── */
@@ -1029,15 +1406,26 @@
    the dock is the only way to switch an episode off and a player nobody can
    find to stop is the one thing this surface must never become.
 
-   Minimised it is a disc: the publisher's colour, one control, and the played
-   part drawn as the ring around it. Size does the receding — a full-strength
-   colour at 54px reads as a considered small thing, where the same card faded
-   to 70% read as a broken large one. */
-/* The box and the things inside it have to leave and arrive together, so every
-   transition below is driven from one pair of variables. Both are zero: the
-   intent that decides when to flip — 160ms in, 130ms out — is held in the
-   component, because a state read off :hover can be flipped by the very
-   geometry it changes. These rules only carry the change once it is decided. */
+   Minimised it is a disc: the app's paper, one control, and the played part
+   drawn as the ring around it. Size does the receding.
+
+   Dated 2026-07-30 — looked at for the first time, and kept. The one capture of
+   this state in the audit was committed in the same commit that introduced the
+   rule and shows the dock at FULL size (the tour had left focus inside the
+   dock, which the selector excludes), so ~190 lines of the most elaborate thing
+   in this file had never been seen by anyone. What the look changed:
+
+     · It now casts the app's one shadow. It was the only floating surface in
+       the app with `box-shadow: none`, so a 54px disc of paper sat on paper
+       with nothing separating it — the receding was total.
+     · The ring is the app's hairline and the fitted accent, not a brand hex
+       over a brand fill, so it survives every atmosphere and is one more
+       consumer of the same three-place accent rather than a fourth idea.
+     · The play keeps its old bargain and drops its fill, for the old rule's own
+       reason restated: a filled pill inside a ringed circle is a donut. The
+       disc IS the button here — that is what the halo below is for — so the
+       glyph sits on the paper in the app's ink, and the one place the accent
+       appears on a minimised player is the part of the episode already heard. */
 .app-shell.focus-mode .podcast-dock {
   /* Zero on purpose. The intent pair lives in PodcastPlayer.tsx, which is what
      decides WHEN the state flips; these transitions only carry it once it has.
@@ -1046,11 +1434,11 @@
   --dock-close-delay: 0ms;
 
   transition:
-    width var(--transition-normal) var(--dock-open-delay),
-    height var(--transition-normal) var(--dock-open-delay),
-    border-radius var(--transition-normal) var(--dock-open-delay),
-    padding var(--transition-normal) var(--dock-open-delay),
-    box-shadow var(--transition-normal) var(--dock-open-delay);
+    width var(--transport-move) var(--ease-transport) var(--dock-open-delay),
+    height var(--transport-move) var(--ease-transport) var(--dock-open-delay),
+    border-radius var(--transport-move) var(--ease-transport) var(--dock-open-delay),
+    padding var(--transport-move) var(--ease-transport) var(--dock-open-delay),
+    box-shadow var(--transport-move) var(--ease-transport) var(--dock-open-delay);
 }
 
 /* The same open delay on the contents. Without it they begin unfolding at zero
@@ -1059,24 +1447,24 @@
    open air for the length of the delay. */
 .app-shell.focus-mode .podcast-dock :where(.podcast-mast, .podcast-rail) {
   transition:
-    max-height var(--transition-normal) var(--dock-open-delay),
-    margin var(--transition-normal) var(--dock-open-delay),
-    padding var(--transition-normal) var(--dock-open-delay),
-    border-width var(--transition-normal) var(--dock-open-delay),
-    opacity 140ms ease var(--dock-open-delay);
+    max-height var(--transport-move) var(--ease-transport) var(--dock-open-delay),
+    margin var(--transport-move) var(--ease-transport) var(--dock-open-delay),
+    padding var(--transport-move) var(--ease-transport) var(--dock-open-delay),
+    border-width var(--transport-move) var(--ease-transport) var(--dock-open-delay),
+    opacity var(--transport-quick) var(--ease-transport) var(--dock-open-delay);
 }
 
-.app-shell.focus-mode .podcast-dock :where(.podcast-dock-lines, .podcast-transport-skip) {
+.app-shell.focus-mode .podcast-dock :where(.podcast-dock-lines, .transport-skip) {
   transition:
-    max-width var(--transition-normal) var(--dock-open-delay),
-    margin var(--transition-normal) var(--dock-open-delay),
-    opacity 140ms ease var(--dock-open-delay);
+    max-width var(--transport-move) var(--ease-transport) var(--dock-open-delay),
+    margin var(--transport-move) var(--ease-transport) var(--dock-open-delay),
+    opacity var(--transport-quick) var(--ease-transport) var(--dock-open-delay);
 }
 
 .app-shell.focus-mode .podcast-dock :where(.podcast-dock-body, .podcast-transport) {
   transition:
-    gap var(--transition-normal) var(--dock-open-delay),
-    padding var(--transition-normal) var(--dock-open-delay);
+    gap var(--transport-move) var(--ease-transport) var(--dock-open-delay),
+    padding var(--transport-move) var(--ease-transport) var(--dock-open-delay);
 }
 
 /* One selector decides the whole minimised state, and three statuses are
@@ -1099,13 +1487,14 @@
   overflow: visible;
   border: 3px solid transparent;
   border-radius: 50%;
-  box-shadow: none;
-  /* Two paint boxes: the brand fill inside the border, the played ring on it. */
+  /* It still floats, so it still casts the one shadow. */
+  box-shadow: var(--shadow-elevated);
+  /* Two paint boxes: the app's paper inside the border, the played ring on it. */
   background:
-    linear-gradient(var(--resource-source), var(--resource-source)) padding-box,
+    linear-gradient(var(--bg-float), var(--bg-float)) padding-box,
     conic-gradient(
-      var(--resource-pill-bg) 0 var(--podcast-played, 0%),
-      color-mix(in srgb, var(--resource-ink) 22%, var(--resource-source)) var(--podcast-played, 0%) 100%
+      var(--player-accent) 0 var(--podcast-played, 0%),
+      color-mix(in srgb, var(--text-primary) 14%, var(--bg-float)) var(--podcast-played, 0%) 100%
     ) border-box;
 }
 
@@ -1113,14 +1502,12 @@
   .podcast-dock:not([data-peeking="true"]):not(:has(:focus-visible)):not([data-expanded="true"]):not([data-status="failed"]):not([data-status="reaching"])
   :where(.podcast-mast, .podcast-rail) {
   /* min-height beats max-height in the cascade, so the floor has to come off or
-     the masthead keeps its 30px and the disc cannot close. */
+     the masthead keeps its height and the disc cannot close. */
   transition-delay: var(--dock-close-delay);
   min-height: 0;
   max-height: 0;
   /* Zero the parts that survive a zero height: a transparent border still
-     occupies its width, and a margin is not inside max-height at all. Between
-     them the masthead's 1px rule and the rail's 6px margin were 7px of ghost
-     box inside a 48px circle. */
+     occupies its width, and a margin is not inside max-height at all. */
   margin-block: 0;
   padding-block: 0;
   border-bottom-width: 0;
@@ -1137,8 +1524,7 @@
 }
 
 /* The skips fold to zero width but the flex gaps between them do not, so the
-   play kept a 10px column to its left and sat off-centre in the disc by half
-   of it. */
+   play kept a column to its left and sat off-centre in the disc by half of it. */
 .app-shell.focus-mode
   .podcast-dock:not([data-peeking="true"]):not(:has(:focus-visible)):not([data-expanded="true"]):not([data-status="failed"]):not([data-status="reaching"])
   .podcast-transport {
@@ -1148,13 +1534,22 @@
 
 .app-shell.focus-mode
   .podcast-dock:not([data-peeking="true"]):not(:has(:focus-visible)):not([data-expanded="true"]):not([data-status="failed"]):not([data-status="reaching"])
-  :where(.podcast-dock-lines, .podcast-transport-skip) {
+  :where(.podcast-dock-lines, .transport-skip) {
   transition-delay: var(--dock-close-delay);
   max-width: 0;
   margin-inline: 0;
   opacity: 0;
   overflow: hidden;
   pointer-events: none;
+}
+
+.app-shell.focus-mode
+  .podcast-dock:not([data-peeking="true"]):not(:has(:focus-visible)):not([data-expanded="true"]):not([data-status="failed"]):not([data-status="reaching"])
+  .transport-play {
+  --transport-size: 44px;
+  margin: 0;
+  background: none;
+  color: var(--text-primary);
 }
 
 /* Fitts's law, the second half of it: a target's cost is its distance AND its
@@ -1176,12 +1571,12 @@
      DOWN AND RIGHT, out to the window's own edge. A corner is the cheapest
      target on a screen — two edges clamp the pointer, so it is effectively
      infinite in both axes and can be hit at full speed without overshooting.
-     This disc sits 24px inside that corner to stay in the panel's column, and
-     an inset target throws the whole advantage away: the pointer sails into
-     the gap and hits nothing. Running the hit area out to the corner keeps the
-     look and takes the property back. It cannot flicker, because there is no
-     way to enter that band except from inside the halo already — off-screen is
-     the only other direction.
+     This disc sits inside that corner to stay in the panel's column, and an
+     inset target throws the whole advantage away: the pointer sails into the
+     gap and hits nothing. Running the hit area out to the corner keeps the look
+     and takes the property back. It cannot flicker, because there is no way to
+     enter that band except from inside the halo already — off-screen is the
+     only other direction.
 
      UP AND LEFT, as a cone rather than a rectangle. This is Amazon's aim
      triangle, held still: the reason to widen a target on approach is to catch
@@ -1190,26 +1585,14 @@
      which along this edge is the traffic to and from the marking dock. The
      polygon keeps the full width up top, where approach genuinely comes from,
      and narrows to the disc's own left edge at the bottom, where the traffic
-     is. Directly-left-at-disc-height is exactly the case that was misfiring,
-     and it is the case this removes. */
+     is. */
   /* 46px of reach, not 30. The right and bottom are pinned to the window edge
      and cannot grow, so the whole increase falls on the two sides that can —
-     which makes the clipped hit area 12524px² against 10044px², a little under
-     a quarter more. The knee moves with it: 46 of the box's 124 is 37%, and it
-     has to stay on the disc's own left edge or the cone stops excluding the
-     lane it was drawn to exclude. */
+     which makes the clipped hit area 12524px² against 10044px². The knee moves
+     with it: 46 of the box's 124 is 37%, and it has to stay on the disc's own
+     left edge or the cone stops excluding the lane it was drawn to exclude. */
   inset: -46px calc(-1 * var(--page-inset)) calc(-1 * var(--page-inset)) -46px;
   clip-path: polygon(0 0, 100% 0, 100% 100%, 37% 100%);
-}
-
-/* On the disc the play is the disc's own face, so it drops its fill and takes
-   the surface's ink — a filled pill inside a filled circle is two circles. */
-.app-shell.focus-mode
-  .podcast-dock:not([data-peeking="true"]):not(:has(:focus-visible)):not([data-expanded="true"]):not([data-status="failed"]):not([data-status="reaching"])
-  .podcast-transport-play {
-  margin: 0;
-  background: none;
-  color: var(--resource-ink);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1217,24 +1600,57 @@
   .app-shell.focus-mode .podcast-dock,
   .app-shell.focus-mode .podcast-dock :where(
     .podcast-mast, .podcast-rail, .podcast-dock-lines,
-    .podcast-transport-skip, .podcast-dock-body, .podcast-transport
+    .transport-skip, .podcast-dock-body, .podcast-transport
   ) { transition: none; }
   .podcast-sheet-inner { transform: none; }
   .podcast-sheet,
   .podcast-sheet-inner,
+  .podcast-mast-plate,
   .podcast-mast-icon,
   .podcast-mast-passage,
   .podcast-chapter,
   .podcast-rate,
-  .podcast-transport-play,
-  .podcast-transport-skip,
+  .podcast-rail-played,
+  .transport-play,
+  .transport-glyph,
+  .transport-skip,
+  .podcast-transcript-follow,
   .podcast-scrub::-webkit-slider-thumb { transition: none; }
-  .podcast-transport-play:hover,
-  .podcast-transport-play:active,
-  .podcast-transport-skip:active { transform: none; }
-  .podcast-rail-reaching::after { animation: none; transform: translateX(0); }
+  .transport-play:hover,
+  .transport-play:active,
+  .transport-skip:active { transform: none; }
+  .podcast-transcript-follow { animation: none; }
+  .podcast-rail-reaching::after,
+  .podcast-sheet-reaching-rule::after { animation: none; transform: translateX(0); }
+  /* Blur and drift are the whole effect, so without them the live line has to
+     be marked by contrast and weight alone — which it still is.
+
+     `scroll-behavior` here covers the scrolls the reader starts: an arrow key
+     or a Page Down inside this box animates by the computed value, and this is
+     what stops it. It does NOT cover the autoscroll — an explicit behavior
+     passed to scrollTo beats the computed value by spec — and that branch is
+     made in PodcastPlayer, where it says "instant". */
+  .podcast-transcript { scroll-behavior: auto; }
+  .podcast-transcript-line {
+    transition: opacity 1ms linear;
+    filter: none !important;
+  }
+  .podcast-transcript-line[data-d="1"] { opacity: 0.55; }
+  .podcast-transcript-line[data-d="2"] { opacity: 0.4; }
+  .podcast-transcript-line[data-d="3"] { opacity: 0.32; }
+  .podcast-transcript-line:not([data-d]) { opacity: 0.32; }
 }
 
+/* ── Forced colors ────────────────────────────────────────────────────────── */
+
+/* Every state on this surface, not most of them. What was missing: which view
+   tab is selected (its only signal was a colour-mix background, so the strip
+   read as two identical words); every reference row and its four spans; the
+   refusal; the Follow pill's brand-hex fill over a Canvas ground; the rail's
+   ticks; the disc's conic ring; and — the one that mattered most — the
+   transcript's blur ladder, because `filter` and `opacity` are not forced
+   properties, so a high-contrast reader got body text at 22% and 1.9px of blur.
+   The reduced-motion block had flattened that for two years; this had not. */
 @media (forced-colors: active) {
   .podcast-dock {
     border: 1px solid CanvasText;
@@ -1243,43 +1659,127 @@
     color: CanvasText;
   }
   .podcast-mast { border-bottom-color: CanvasText; }
-  .podcast-mast-source,
+  /* The one opt-out on this surface, and the reason for it.
+
+     Six of these marks are approved REVERSES — white artwork drawn for a dark
+     field — and the plate is the field. Repainted `background: Canvas` the
+     plate is white on a light forced scheme, and a white mark on white is not
+     a quieter mark but no mark: the publisher disappears from their own
+     player, in exactly the appearance a reader with low vision is using. The
+     alternative is recolouring the artwork, which the permission this mark
+     ships under forbids.
+
+     `forced-color-adjust: none` is the property the spec provides for
+     precisely this case, and the pair it preserves is the publisher's own ink
+     on their own ground — the one pair on this surface that was contrast-tuned
+     by the people who own it. Everything else on the dock obeys the reader's
+     colours; this 26px rectangle does not, and says why. */
+  .podcast-mast-plate {
+    forced-color-adjust: none;
+    outline: 1px solid CanvasText;
+    outline-offset: 0;
+  }
+  /* .podcast-mast-name is deliberately absent: it lives inside the plate, and
+     the plate keeps the publisher's own pair. */
+  .podcast-mast-kind,
+  .podcast-mast-passage,
   .podcast-episode-title,
   .podcast-episode-meta,
+  .podcast-episode-official,
   .podcast-dock-title,
   .podcast-dock-now-ref,
   .podcast-dock-now-title,
   .podcast-dock-clock,
+  .podcast-dock-clock-rest,
+  .podcast-dock-reaching,
+  .podcast-transcript-empty,
+  .podcast-sheet-reaching p,
+  .podcast-refs-head,
+  .podcast-ref,
+  .podcast-ref-time,
+  .podcast-ref-title,
+  .podcast-ref-extent,
+  .podcast-ref-why,
+  .podcast-transcript-line,
   .podcast-chapter-time,
   .podcast-chapter-ref,
   .podcast-chapter-title { color: CanvasText; }
+  .podcast-dock-refusal { color: LinkText; }
   .podcast-mast-icon,
   .podcast-rate,
-  .podcast-transport-play,
-  .podcast-transport-skip {
+  .podcast-transcript-clear,
+  .podcast-view-tab,
+  .transport-play,
+  .transport-skip {
     border: 1px solid ButtonText;
-    background: Canvas;
+    background: ButtonFace;
     color: ButtonText;
   }
-  .podcast-chapter[aria-current="true"] { background: Highlight; color: HighlightText; }
-  .podcast-dock :focus-visible { outline-color: Highlight; }
-  .podcast-scrub::-webkit-slider-runnable-track {
-    background: linear-gradient(
-      to right,
-      Highlight 0 var(--podcast-played, 0%),
-      ButtonText var(--podcast-played, 0%) 100%
-    );
+  .podcast-view-tab[aria-selected="true"],
+  .podcast-chapter[aria-current="true"],
+  .podcast-transcript-follow {
+    background: Highlight;
+    color: HighlightText;
   }
-  .podcast-scrub::-webkit-slider-thumb { background: Highlight; }
+  .podcast-transcript-follow { border: 1px solid HighlightText; }
+  .podcast-view-count { background: transparent; color: inherit; }
+  .podcast-ref:hover,
+  .podcast-chapter:hover,
+  .podcast-transcript-line:hover { background: Highlight; color: HighlightText; }
+  /* The ladder off entirely. A reader in forced colors is the reader least able
+     to afford 1.9px of blur, and neither filter nor opacity is a forced
+     property, so nothing above would have taken it away. */
+  .podcast-transcript-line {
+    opacity: 1 !important;
+    filter: none !important;
+    text-shadow: none;
+  }
+  .podcast-transcript-line[aria-current="true"] {
+    outline: 1px solid CanvasText;
+    outline-offset: -1px;
+  }
+  .podcast-dock :focus-visible { outline-color: Highlight; }
+  .podcast-rail-track,
+  .podcast-rail-reaching,
+  .podcast-sheet-reaching-rule { background: ButtonText; }
+  .podcast-rail-played,
+  .podcast-rail-reaching::after,
+  .podcast-sheet-reaching-rule::after { background: Highlight; }
+  .podcast-rail-tick { background: Canvas; }
+  .podcast-scrub::-webkit-slider-thumb { background: Highlight; box-shadow: 0 0 0 2px Canvas; }
+  .podcast-transcript-line mark { background: Highlight; color: HighlightText; }
+  /* The disc's conic ring is a background-image, which forced-colors does not
+     touch, so the minimised player kept a brand-coloured ring on an otherwise
+     system-coloured surface. */
+  .app-shell.focus-mode .podcast-dock:not([data-peeking="true"]):not(:has(:focus-visible)):not([data-expanded="true"]):not([data-status="failed"]):not([data-status="reaching"]) {
+    border-color: Highlight;
+    background: Canvas;
+  }
 }
 
-/* Below the width where a 408px surface stops being a corner and starts being
-   the corner. The dock keeps every control and gives up its side inset. */
-@media (max-width: 620px) {
+/* ── The narrow range ─────────────────────────────────────────────────────── */
+
+/* 979 is the app's own compact breakpoint — where .living-margin stops being a
+   380px column beside the page and becomes a full-width pane along the bottom
+   of it. The dock's only rule used to be at 620, so across the whole 620–979
+   band a fixed 380px card sat ON TOP of the study pane it claims to be
+   inscribed in, in a column that no longer existed.
+
+   The claim is kept rather than dropped: the dock is still the study panel's
+   own footprint, and at this width the panel's footprint is the full width. So
+   the dock spans it, on the frame's own inset, and the panel — which reserves
+   `--podcast-dock-h + --pane-gutter` at every width — stops above it exactly as
+   it does at 1512. One rule replaces two, and 620 stops being a number that
+   belongs to nothing. */
+@media (max-width: 979px) {
   .podcast-dock {
-    right: 12px;
-    bottom: 12px;
-    left: 12px;
+    right: var(--page-inset);
+    bottom: var(--page-inset);
+    left: var(--page-inset);
     width: auto;
   }
+
+  /* With the room, the plate stops competing: a full-width mast has no width
+     budget to enforce. */
+  .podcast-mast-plate { max-width: 240px; }
 }
