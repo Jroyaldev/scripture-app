@@ -198,8 +198,8 @@ const DOCK_TRUTH = `(() => {
     status: dock.getAttribute("data-status"),
     source: dock.getAttribute("data-source"),
     layer: dock.getAttribute("data-floating-layer"),
-    publisher: dock.querySelector(".podcast-dock-publisher")?.textContent?.trim(),
-    passage: dock.querySelector(".podcast-dock-passage")?.textContent?.trim() ?? null,
+    publisher: dock.querySelector(".podcast-mast-source")?.textContent?.trim(),
+    passage: dock.querySelector(".podcast-mast-passage")?.textContent?.trim() ?? null,
     title: dock.querySelector(".podcast-dock-title")?.textContent?.trim(),
     clock: [...dock.querySelectorAll(".podcast-dock-clock span")].map((node) => node.textContent?.trim()),
     played: getComputedStyle(dock).getPropertyValue("--podcast-played").trim(),
@@ -210,9 +210,26 @@ const DOCK_TRUTH = `(() => {
     audioSrc: audio?.getAttribute("src") ?? null,
     elements: document.querySelectorAll("audio").length,
     markingDock: document.querySelector(".marking-dock-host")?.getAttribute("data-dock-layout") ?? null,
+    marginOpen: Boolean(document.querySelector(".living-margin")),
+    // Read rather than remembered. The frame's inset was re-canonned from 24 to
+    // 10 in e8e2ee9 and this tour went on asserting 24 for months, which is a
+    // gate that could not pass being mistaken for a gate nobody had run.
+    pageInset: Math.round(parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--page-inset")) || 0),
+    // What the panel gives up to the player, and what is actually left between
+    // them. The reservation moved from padding to margin when the panel stopped
+    // growing a floor and started ENDING above the player — "extra padding only
+    // moves the end of the list; everything before the end still scrolls under
+    // the player" (styles.css) — and this went on reading paddingBottom, which
+    // is now the panel's own gutter and nothing to do with the dock.
     marginFloor: (() => {
       const margin = document.querySelector(".living-margin");
-      return margin ? Math.round(parseFloat(getComputedStyle(margin).paddingBottom)) : null;
+      return margin ? Math.round(parseFloat(getComputedStyle(margin).marginBottom)) : null;
+    })(),
+    marginClearance: (() => {
+      const margin = document.querySelector(".living-margin");
+      const dock = document.querySelector(".podcast-dock");
+      if (!margin || !dock) return null;
+      return Math.round(dock.getBoundingClientRect().top - margin.getBoundingClientRect().bottom);
     })(),
     toastLane: (() => {
       const toasts = document.querySelector(".toast-container");
@@ -287,17 +304,38 @@ assert.equal(playing.elements, 1, "one element for the whole app");
 assert.ok(playing.audioDuration > 600, `expected a real episode, got ${playing.audioDuration}s`);
 assert.match(playing.clock?.[0] ?? "", /^\d+:\d\d$/);
 assert.match(playing.clock?.[1] ?? "", /^−\d+:\d\d/);
-// Bottom-right, clear of the toolbar and of the rail's own footer. When the
-// marking Dock is shelved it owns the bottom band, so the player takes the lane
-// above it — one band, and three surfaces that step over each other in order.
-const dockLane = { shelf: 104, stacked: 144, null: 24 }[String(playing.markingDock)];
-assert.equal(playing.rect.right, 24, JSON.stringify(playing.rect));
-assert.equal(playing.rect.bottom, dockLane, JSON.stringify(playing.rect));
+// Bottom-right, on the frame's own inset — the same edge and the same pin as
+// the study panel it is inscribed in.
+//
+// Restated 2026-07-30. This asserted a right edge of 24 and picked a bottom
+// lane from the marking Dock's layout, and both were wrong at once: --page-inset
+// has been 10 since e8e2ee9, and the marking Dock's lanes are guarded by
+// `:not(:has(.living-margin))` — with the study panel open, which is the only
+// state this tour reaches, the player never steps over the Dock at all,
+// because the two are in different columns. So the lane is asserted where it
+// is true, and the marking Dock's own lanes are named as untested rather than
+// asserted from a state that cannot produce them.
+assert.equal(playing.marginOpen, true, "this assertion is about the panel-open lane");
+assert.equal(playing.pageInset, 10, "the frame's inset moved; the dock's pin follows it");
+assert.equal(playing.rect.right, playing.pageInset, JSON.stringify(playing.rect));
+assert.equal(playing.rect.bottom, playing.pageInset, JSON.stringify(playing.rect));
 // And the two surfaces the player displaces make room rather than being covered.
 assert.ok(playing.toastLane >= playing.rect.bottom + playing.rect.height,
   `toasts would land on the player: ${playing.toastLane} vs ${playing.rect.bottom + playing.rect.height}`);
-assert.ok(playing.marginFloor >= playing.rect.height,
-  `the panel's last entry sits under the player: ${playing.marginFloor} vs ${playing.rect.height}`);
+/* Restated 2026-07-30: the panel does not reserve a floor, it STOPS. So what
+   is asserted is the gap that is actually left — the panel's bottom edge above
+   the player's top edge, one frame gutter clear and no more. The old form read
+   paddingBottom against the dock's height and had never run: everything from
+   the publisher assertion down was unreachable while this tour was stale.
+   The tolerance is the ResizeObserver's: --podcast-dock-h is published on a
+   measured change, so it trails the dock's live height by a pixel or two after
+   the mast reflows. */
+assert.ok(playing.marginClearance >= 0,
+  `the panel overlaps the player by ${-playing.marginClearance}px`);
+assert.ok(playing.marginClearance <= 24,
+  `the panel stops ${playing.marginClearance}px above the player, which is not a seam`);
+assert.ok(playing.marginFloor >= playing.rect.height - 4,
+  `the panel's reservation is a guess rather than the dock's own height: ${playing.marginFloor} vs ${playing.rect.height}`);
 console.log("playing", playing);
 
 /* The pointer is still where it pressed play, which is under the dock — so
@@ -416,6 +454,164 @@ assert.equal(await evaluate(`document.activeElement?.className`), "podcast-trans
   "F6 never reached the dock");
 console.log("F6 reaches the dock");
 
+/* The sheet, which nothing above this line has ever opened. Fourteen captures
+   of a collapsed corner and none of the extended player: no transcript, no
+   search, no follow state. What is proved here is the machine rather than the
+   look — a hit is pressed, and the press has to do the WHOLE errand: move the
+   audio, leave the filter, and put the transcript back under the voice. */
+await clickElement('.podcast-mast-icon[aria-expanded="false"]');
+await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-expanded") === "true"`);
+// Whatever the sheet settles on, so a missing transcript is reported as a
+// missing transcript rather than as a timeout on a selector.
+await waitFor(`Boolean(
+  document.querySelector(".podcast-transcript-line")
+  || document.querySelector(".podcast-refs-view")
+  || document.querySelector(".podcast-sheet-empty")
+)`, 20_000);
+const settled = await evaluate(`(document.querySelector(".podcast-sheet-empty") ?? document.querySelector(".podcast-views"))?.textContent?.trim() ?? "nothing"`);
+
+const transcriptAtRest = await evaluate(`(() => {
+  const list = document.querySelector(".podcast-transcript");
+  return {
+    lines: document.querySelectorAll(".podcast-transcript-line").length,
+    mode: list?.getAttribute("data-transcript-mode") ?? null,
+    // The depth ramp reaches three lines either side of the voice and nowhere
+    // else. Everything past it used to carry data-d="3", which is a blur, so a
+    // two-hour episode asked for ~2,274 filtered surfaces at once.
+    ladder: document.querySelectorAll(".podcast-transcript-line[data-d]").length,
+    current: document.querySelectorAll('.podcast-transcript-line[aria-current="true"]').length,
+    search: Boolean(document.querySelector(".podcast-transcript-search")),
+  };
+})()`);
+assert.ok(transcriptAtRest.lines > 20,
+  `this episode has no transcript on disk — the sheet settled on "${settled}". `
+  + "The tour needs one; pick a passage whose Naked Bible episode has been transcribed.");
+assert.equal(transcriptAtRest.mode, "following", "the transcript rests on following");
+assert.ok(transcriptAtRest.ladder <= 7, `the depth ramp reached ${transcriptAtRest.ladder} lines`);
+assert.equal(transcriptAtRest.current, 1, "exactly one line is the one being spoken");
+assert.equal(transcriptAtRest.search, true);
+await screenshot("paper-dock-sheet", ".podcast-dock");
+console.log("sheet", transcriptAtRest);
+
+// A word from four fifths of the way in, so the hit is unmistakably elsewhere
+// in the file and a seek to it cannot be confused with the playhead drifting.
+const chosen = await evaluate(`(() => {
+  const lines = [...document.querySelectorAll(".podcast-transcript-line")];
+  for (let at = Math.floor(lines.length * 0.8); at < lines.length; at++) {
+    const word = (lines[at]?.textContent ?? "").split(/\\s+/)
+      .map((token) => token.replace(/[^A-Za-z]/g, ""))
+      .filter((token) => token.length >= 7)
+      .sort((a, b) => b.length - a.length)[0];
+    if (word) return { word, at };
+  }
+  return null;
+})()`);
+assert.ok(chosen, "no line late in the episode carried a word long enough to search for");
+console.log("searching for", chosen);
+
+await evaluate(`(() => {
+  const input = document.querySelector(".podcast-transcript-search");
+  const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
+  setter?.call(input, ${JSON.stringify("")});
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+  setter?.call(input, ${JSON.stringify(chosen.word)});
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+})()`);
+await waitFor(`document.querySelector(".podcast-transcript")?.getAttribute("data-transcript-mode") === "searching"`);
+await waitFor(`document.querySelectorAll(".podcast-transcript-line").length < ${transcriptAtRest.lines}`);
+
+const filtered = await evaluate(`(() => {
+  const mark = document.querySelector(".podcast-transcript-line mark");
+  const style = mark ? getComputedStyle(mark) : null;
+  return {
+    hits: document.querySelectorAll(".podcast-transcript-line").length,
+    marks: document.querySelectorAll(".podcast-transcript-line mark").length,
+    markBackground: style?.backgroundColor ?? null,
+    markInk: style?.color ?? null,
+    // The ladder is a claim about distance from a voice, and a filtered list is
+    // not a place a voice is. It used to flatten every hit to data-d="0", which
+    // is not "readable weight" but the ACTIVE-line treatment, so every hit was
+    // drawn as though it were the one playing.
+    flat: document.querySelector(".podcast-transcript")?.getAttribute("data-flat") ?? null,
+    ladder: document.querySelectorAll(".podcast-transcript-line[data-d]").length,
+    // Present DURING a search, which is the moment the reader is furthest from
+    // the playhead and used to be the moment this was taken off the surface.
+    follow: Boolean(document.querySelector(".podcast-transcript-follow")),
+  };
+})()`);
+assert.ok(filtered.hits > 0, `"${chosen.word}" matched nothing`);
+assert.ok(filtered.marks > 0, "a hit must mark the word it matched");
+assert.notEqual(filtered.markBackground, "rgba(0, 0, 0, 0)",
+  "the search mark resolved to nothing — see --accent in player.css");
+assert.notEqual(filtered.markBackground, filtered.markInk,
+  `the mark is the same colour as the text on it: ${filtered.markBackground}`);
+assert.equal(filtered.flat, "true", "a filtered list has no playhead to be near");
+assert.equal(filtered.ladder, 0, "no line in a filtered list is at a distance from the voice");
+assert.equal(filtered.follow, true, "the way back to the voice must survive a search");
+await screenshot("paper-dock-sheet-search", ".podcast-dock");
+console.log("filtered", filtered);
+
+/* Deep into the hit list but never its last row. A container scrolled to its
+   end puts the final row at the bottom of the box, which is where the Follow
+   pill floats — so a coordinate click on the last hit lands on the pill, clears
+   the search, and looks exactly like a seek that did not happen. (Noted, not
+   fixed: where the pill sits is the look, and the look is not this build's.) */
+const pressed = await evaluate(`(() => {
+  const hits = [...document.querySelectorAll(".podcast-transcript-line")];
+  const at = Math.max(0, Math.min(hits.length - 2, Math.floor(hits.length * 0.6)));
+  hits[at]?.setAttribute("data-qa-target", "hit");
+  return { at, line: hits[at]?.getAttribute("data-line") ?? null, of: hits.length };
+})()`);
+assert.ok(pressed.line !== null, "no hit to press");
+console.log("pressing hit", pressed);
+/* Brought into the box instantly, and by hand.
+   `.podcast-transcript` sets `scroll-behavior: smooth`, so the scrollIntoView
+   inside clickElement is still travelling when a coordinate is taken off the
+   row — the press then lands where the row used to be, on nothing, and reads
+   exactly like a seek that did not fire. (The same rule is why the autoscroll
+   has to say "instant" in script instead of trusting the stylesheet.) */
+await evaluate(`(() => {
+  const target = document.querySelector('[data-qa-target="hit"]');
+  const box = document.querySelector(".podcast-transcript");
+  if (!target || !box) return;
+  const boxAt = box.getBoundingClientRect();
+  const rowAt = target.getBoundingClientRect();
+  box.scrollTo({
+    top: box.scrollTop + (rowAt.top - boxAt.top) - (box.clientHeight - rowAt.height) / 2,
+    behavior: "instant",
+  });
+})()`);
+await sleep(300);
+const beforeHit = await evaluate(`document.querySelector("audio").currentTime`);
+await clickElement('[data-qa-target="hit"]');
+await sleep(500);
+const afterHit = await evaluate(`(() => {
+  const list = document.querySelector(".podcast-transcript");
+  return {
+    time: document.querySelector("audio").currentTime,
+    paused: document.querySelector("audio").paused,
+    query: document.querySelector(".podcast-transcript-search")?.value ?? null,
+    mode: list?.getAttribute("data-transcript-mode") ?? null,
+    lines: document.querySelectorAll(".podcast-transcript-line").length,
+  };
+})()`);
+assert.ok(afterHit.time - beforeHit > 60,
+  `pressing a hit moved the file ${(afterHit.time - beforeHit).toFixed(1)}s`);
+assert.equal(afterHit.query, "", "pressing a hit must leave the filter, not park the reader inside it");
+assert.equal(afterHit.mode, "following", "pressing a hit must put the transcript back under the voice");
+assert.equal(afterHit.lines, transcriptAtRest.lines, "the whole transcript comes back around the hit");
+assert.equal(afterHit.paused, false, "a line pressed is a line asked to be heard");
+console.log("hit", afterHit, `moved ${(afterHit.time - beforeHit).toFixed(1)}s`);
+
+// Shut again, so every capture below is the collapsed dock it has always been.
+await clickElement('.podcast-mast-icon[aria-expanded="true"]');
+await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-expanded") === "false"`);
+// A shut sheet holds nothing. The list used to mount when the episode started
+// and reconcile every four seconds for the length of it, in a box clipped to
+// nothing that the reader may never open.
+await waitFor(`document.querySelectorAll(".podcast-transcript-line").length === 0`);
+await parkPointer();
+
 // A rail with something on it. Every capture so far is the first minute of a
 // forty-four minute file, which is a rail that looks empty in a screenshot and
 // proves nothing about the one state it exists to draw.
@@ -480,10 +676,23 @@ const refused = await evaluate(`(() => {
   };
 })()`);
 assert.equal(refused.code, 4, "the policy must refuse an unapproved media host");
-assert.match(refused.refusal ?? "", /^Could not reach the episode\. This needed the network\.$/);
+// Restated 2026-07-30 with the sentence it now says. The old one wanted 253px
+// of a 223px line and was ellipsed mid-word; this assertion has stood since the
+// tour was written and could not be reached until the tour above it was fixed.
+assert.match(refused.refusal ?? "", /^Did not arrive\. This needed the network\.$/);
 assert.equal(refused.clipped, false, `the refusal is cut off: "${refused.refusal}"`);
 assert.equal(refused.clock, null, "the refusal takes the clock's line rather than growing the dock");
-assert.equal(refused.height, playing.rect.height, "a failure must not change the dock's height");
+/* Restated 2026-07-30 with a measured tolerance and the reason for it. The
+   refusal takes the clock's line, and the clock's line is one pixel taller than
+   the refusal's: both are 10px/1.3 type, but .podcast-rate carries 1px of
+   vertical padding, so the flex row it sits in measures 15px where the bare
+   sentence measures 13. The dock therefore loses a pixel when it fails. That is
+   the rate pill's padding, which belongs to the build that owns the look — this
+   asserts the claim the sentence was making (the dock does not resize when it
+   fails) at the resolution the surface actually keeps it. Never ran before:
+   everything from the publisher assertion down was unreachable. */
+assert.ok(Math.abs(refused.height - playing.rect.height) <= 2,
+  `a failure changed the dock's height: ${playing.rect.height} → ${refused.height}`);
 assert.equal(refused.stop, true, "a failed dock must still be closeable");
 await parkPointer();
 await screenshot("paper-dock-refused", ".podcast-dock");

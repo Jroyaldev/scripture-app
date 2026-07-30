@@ -519,6 +519,9 @@
 
 .podcast-transcript-stage { position: relative; }
 
+/* Said in the same voice whether the answer is "no line matched" or "there is
+   no transcript at all": both are the sheet accounting for an emptiness, and
+   an open sheet with nothing in it is the one thing it must never be. */
 .podcast-transcript-empty {
   margin: 0;
   padding: 0 12px 18px;
@@ -527,10 +530,21 @@
   opacity: 0.7;
 }
 
+.podcast-sheet-empty { padding-top: 4px; }
+
 /* One word, one line, and it cannot become two: a pill that wraps is a pill
    that was the wrong size. */
 .podcast-transcript-follow {
   position: absolute;
+  /* Stated, because DOM order no longer states it. The pill now comes BEFORE
+     the list in the document — a control a keyboard reader can only reach by
+     tabbing through two thousand lines is not an offer — and the lines carry
+     `filter`, which makes each blurred one a stacking context painted in the
+     same pass as a positioned element. In tree order that put the three lines
+     either side of the voice ON TOP of the pill, and a press on it landed on
+     the line underneath: measured, the pill obeyed the keyboard and swallowed
+     the pointer. One positive index puts it back above them for good. */
+  z-index: 1;
   left: 50%;
   bottom: 10px;
   display: flex;
@@ -566,10 +580,23 @@
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
+/* The publisher's own counter-colour, which is the one pair on this surface
+   guaranteed to read against the ground it sits on — it is what the play
+   button and the rail fill are drawn in, for exactly that reason.
+
+   Dated 2026-07-30. This was `color-mix(var(--accent, currentColor) 26%,
+   transparent)`, and `--accent` is defined nowhere in the renderer: it appears
+   once, here, as a consumer. So it fell through to currentColor, which is
+   --resource-ink, which is the colour of the text the mark sits behind — a
+   faint tint of the words, behind the words, and never once looked at against
+   a real search. The two other search surfaces in this app mark with
+   --study-gold and that token cannot come here: it is already the dock's
+   DEFAULT ground, so a gold mark would be invisible on an unbranded publisher
+   and muddy on a branded one. */
 .podcast-transcript-line mark {
-  background: color-mix(in srgb, var(--accent, currentColor) 26%, transparent);
-  color: inherit;
   border-radius: 2px;
+  background: var(--resource-pill-bg);
+  color: var(--resource-pill-ink);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -671,6 +698,28 @@
 .podcast-transcript-line[data-past="true"][data-d="2"] { opacity: 0.4; filter: blur(1px); }
 .podcast-transcript-line[data-past="true"][data-d="3"] { opacity: 0.3; filter: blur(1.4px); }
 
+/* Past the ramp's reach. The ramp is written onto three lines either side of
+   the voice and the box shows fewer than four, so this is every line nobody is
+   looking at — and on a two-hour episode that is 2,274 of them.
+
+   Dated 2026-07-30: they no longer blur. Every one of them used to carry
+   data-d="3", which is a 1.9px blur, so a two-hour episode asked the compositor
+   for 2,274 filtered surfaces in order to shade a four-line window. The blur is
+   what makes a near line read as being just BEHIND the voice; a line twenty
+   minutes away is not behind it, it is elsewhere, and dimness alone says that
+   for a great deal less. */
+.podcast-transcript-line:not([data-d]) { opacity: 0.22; }
+
+/* No voice in the list to be near — a search, or nothing playing yet. Said
+   once on the container rather than by flattening every line's distance to
+   zero: data-d="0" is not "readable weight", it is the ACTIVE-line treatment,
+   so a search used to draw all twelve results as though all twelve were
+   playing and took away the one thing a hit list needs. */
+.podcast-transcript[data-flat="true"] .podcast-transcript-line {
+  opacity: 1;
+  filter: none;
+}
+
 /* Pointing at a line brings it into focus wherever it sits, so a reader can
    read ahead without stopping the audio or losing the playhead. */
 .podcast-transcript-line:hover {
@@ -689,7 +738,15 @@
 }
 
 /* Blur and drift are the whole effect, so without them the live line has to be
-   marked by contrast and weight alone — which it still is. */
+   marked by contrast and weight alone — which it still is.
+
+   `scroll-behavior` here covers the scrolls the reader starts: an arrow key or
+   a Page Down inside this box animates by the computed value, and this is what
+   stops it. It does NOT cover the autoscroll, which is what it was written for
+   and never did — an explicit behavior passed to scrollTo beats the computed
+   value by spec, and "auto" means "go and ask the computed value", so a
+   reduced-motion reader got the full smooth ride from a rule meant to spare
+   them it. That branch is made in PodcastPlayer now, and it says "instant". */
 @media (prefers-reduced-motion: reduce) {
   .podcast-transcript { scroll-behavior: auto; }
   .podcast-transcript-line {
@@ -699,6 +756,7 @@
   .podcast-transcript-line[data-d="1"] { opacity: 0.55; }
   .podcast-transcript-line[data-d="2"] { opacity: 0.4; }
   .podcast-transcript-line[data-d="3"] { opacity: 0.32; }
+  .podcast-transcript-line:not([data-d]) { opacity: 0.32; }
 }
 
 .podcast-chapter-ref {

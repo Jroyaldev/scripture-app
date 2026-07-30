@@ -1,5 +1,5 @@
 import type React from "react";
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { BookNameData } from "../api.js";
 import type { Transcript } from "../../core/transcripts.js";
 import { readingLines } from "../../core/transcripts.js";
@@ -158,63 +158,173 @@ export function usePodcastNowPlaying(): PodcastNowPlaying {
 }
 
 /**
- * Press play on an episode. The one element is re-pointed rather than joined by
- * a second: two voices at once is never what anyone meant, and a per-card
- * element would have made that the default.
+ * What became of a seek.
+ *
+ * The caller has to be able to tell these apart, because the one thing this
+ * surface must never do is draw a confident "we went there" over a press that
+ * went nowhere. `queued` is not a failure — the file simply has not said how
+ * long it is yet, and the moment is held until it does. `refused` is the only
+ * answer that means nothing will happen.
  */
-export function playPodcastEpisode(episode: PodcastEpisode): void {
-  if (!transport) return;
-  if (nowPlaying.episode?.id === episode.id) {
-    togglePodcast();
-    return;
-  }
-  transport.src = episode.audioUrl;
-  announceElapsed(episode.startAt ?? 0, 0);
-  announceNowPlaying({ episode, status: "reaching" });
-  /* Seeking has to wait for the element to know how long the file is — a
-     currentTime set against an unloaded source is discarded, and the episode
-     would open at the top having appeared to accept the instruction. */
-  if (episode.startAt && episode.startAt > 0) {
-    const element = transport;
-    const seekOnce = (): void => {
-      element.removeEventListener("loadedmetadata", seekOnce);
-      if (Number.isFinite(element.duration)) {
-        element.currentTime = Math.min(episode.startAt!, element.duration);
-      }
-    };
-    element.addEventListener("loadedmetadata", seekOnce);
-  }
-  void transport.play().catch(() => announceNowPlaying({ episode, status: "failed" }));
+export type PodcastSeek = "moved" | "queued" | "refused";
+
+/** A seek asked for before the element could take one. */
+let pendingSeek: number | null = null;
+
+/**
+ * How many times the playhead has been MOVED, as opposed to having run.
+ *
+ * The dock is not the only thing that can seek: a moment pressed in the margin
+ * for the episode already playing goes straight through `playPodcastEpisode`,
+ * and the system's own transport can arrive from outside React entirely. All
+ * of them are the same statement — "I want to be here" — and all of them have
+ * to put the transcript back under the voice, so the rule lives on the count
+ * rather than on each of the callers that could forget it.
+ */
+let seekMark = 0;
+const seekWatchers = new Set<() => void>();
+
+function subscribeSeek(watcher: () => void): () => void {
+  seekWatchers.add(watcher);
+  return () => { seekWatchers.delete(watcher); };
 }
 
-export function togglePodcast(): void {
-  const element = transport;
-  const episode = nowPlaying.episode;
-  if (!element || !episode) return;
-  if (!element.paused) {
-    element.pause();
-    return;
-  }
-  // An episode that reached its end restarts. A bare play() there resolves
-  // against a finished element and leaves the reader pressing a dead button.
-  if (element.ended) element.currentTime = 0;
-  announceNowPlaying({ episode, status: "reaching" });
-  void element.play().catch(() => announceNowPlaying({ episode, status: "failed" }));
+/** Rises once per press that moves the playhead. Never on a timeupdate. */
+export function usePodcastSeekMark(): number {
+  return useSyncExternalStore(subscribeSeek, () => seekMark);
 }
 
-/** Move to a second in the file, clamped to it. */
-export function seekPodcast(seconds: number): void {
+/**
+ * Spend a held seek, once the element knows how long the file is.
+ *
+ * With `preload="none"` there is a real window — the whole of "reaching" —
+ * where `duration` is NaN and a currentTime assignment is discarded by the
+ * element. Every press in that window used to be a silent no-op: no movement,
+ * no acknowledgement, and in `goToMoment`'s case a confident-looking "we went
+ * there" over a playhead still sitting at the top of the episode. They are
+ * held here instead and spent the moment they can be.
+ */
+function applyPendingSeek(): void {
   const element = transport;
-  if (!element || !Number.isFinite(element.duration)) return;
-  const target = Math.min(Math.max(0, seconds), element.duration);
+  if (pendingSeek == null || !element || !Number.isFinite(element.duration)) return;
+  const target = Math.min(pendingSeek, element.duration);
+  pendingSeek = null;
   element.currentTime = target;
   announceElapsed(target, element.duration);
 }
 
+/**
+ * The rate the reader chose, held here rather than only on the element.
+ *
+ * The element forgets: the media load algorithm resets `playbackRate` to
+ * `defaultPlaybackRate` on every new source, so a dock that remembered 1.5×
+ * across an episode change was reading 1.5× over a file playing at 1×. Setting
+ * both properties is what makes the reader's choice survive the next episode,
+ * and `preservesPitch` is set on the same pass — including at 1×, where it was
+ * previously never set at all.
+ */
+let podcastRate = 1;
+
+function applyPodcastRate(): void {
+  const element = transport;
+  if (!element) return;
+  element.preservesPitch = true;
+  element.defaultPlaybackRate = podcastRate;
+  element.playbackRate = podcastRate;
+}
+
+/**
+ * Press play on an episode. The one element is re-pointed rather than joined by
+ * a second: two voices at once is never what anyone meant, and a per-card
+ * element would have made that the default.
+ *
+ * A moment named with the episode is honoured even when that episode is
+ * already the one running. Both surfaces that press this key it identically —
+ * `${sourceId}:${recordId}` — so "eleven minutes on Romans 8", pressed while
+ * the same episode plays from its own card or from another chapter's list,
+ * fell through to the pause branch and stopped it. That is the opposite of the
+ * request. A press carrying a moment is a request to HEAR that moment; only a
+ * press with no moment on it is a toggle.
+ */
+export function playPodcastEpisode(episode: PodcastEpisode): void {
+  const element = transport;
+  if (!element) return;
+  if (nowPlaying.episode?.id === episode.id) {
+    if (episode.startAt == null) {
+      togglePodcast();
+      return;
+    }
+    seekPodcast(episode.startAt);
+    resumePodcast();
+    return;
+  }
+  /* Held rather than listened for: the same queue every other early seek on
+     this surface goes through, so there is one answer to "the file is not
+     ready yet" instead of two that can drift apart. */
+  pendingSeek = episode.startAt != null && episode.startAt > 0 ? episode.startAt : null;
+  element.src = episode.audioUrl;
+  applyPodcastRate();
+  announceElapsed(episode.startAt ?? 0, 0);
+  announceNowPlaying({ episode, status: "reaching" });
+  void element.play().catch(() => announceNowPlaying({ episode, status: "failed" }));
+}
+
+/** Start the file, if it is not already running. */
+export function resumePodcast(): void {
+  const element = transport;
+  const episode = nowPlaying.episode;
+  if (!element || !episode || !element.paused) return;
+  // An episode that reached its end restarts. A bare play() there resolves
+  // against a finished element and leaves the reader pressing a dead button.
+  if (element.ended && pendingSeek == null) element.currentTime = 0;
+  announceNowPlaying({ episode, status: "reaching" });
+  void element.play().catch(() => announceNowPlaying({ episode, status: "failed" }));
+}
+
+/** Stop the file where it is, without letting go of it. */
+export function pausePodcast(): void {
+  if (transport && !transport.paused) transport.pause();
+}
+
+export function togglePodcast(): void {
+  const element = transport;
+  if (!element || !nowPlaying.episode) return;
+  if (!element.paused) {
+    element.pause();
+    return;
+  }
+  resumePodcast();
+}
+
+/** Move to a second in the file, clamped to it. */
+export function seekPodcast(seconds: number): PodcastSeek {
+  const element = transport;
+  if (!element || !nowPlaying.episode) return "refused";
+  const target = Math.max(0, seconds);
+  seekMark += 1;
+  for (const watcher of seekWatchers) watcher();
+  if (!Number.isFinite(element.duration)) {
+    pendingSeek = target;
+    /* The clock says where the press is taking us rather than where we were.
+       A reader who asked for 42:17 and is shown 0:00 has been told the press
+       failed, and it has not. */
+    announceElapsed(target, 0);
+    return "queued";
+  }
+  pendingSeek = null;
+  const clamped = Math.min(target, element.duration);
+  element.currentTime = clamped;
+  announceElapsed(clamped, element.duration);
+  return "moved";
+}
+
 /** Back or forward by an interval, from wherever the file actually is. */
-export function skipPodcast(seconds: number): void {
-  if (!transport) return;
-  seekPodcast(transport.currentTime + seconds);
+export function skipPodcast(seconds: number): PodcastSeek {
+  const element = transport;
+  if (!element) return "refused";
+  /* A held seek is where the file is going, so two skips before the metadata
+     lands add up instead of both measuring from 0:00. */
+  return seekPodcast((pendingSeek ?? element.currentTime) + seconds);
 }
 
 /** The rates the dock cycles. 1 first, so one press always returns to normal. */
@@ -227,9 +337,8 @@ export const PODCAST_RATES = [1, 1.2, 1.5, 1.75, 2] as const;
  * silently.
  */
 export function setPodcastRate(rate: number): void {
-  if (!transport) return;
-  transport.preservesPitch = true;
-  transport.playbackRate = rate;
+  podcastRate = rate;
+  applyPodcastRate();
 }
 
 /**
@@ -238,6 +347,7 @@ export function setPodcastRate(rate: number): void {
  * idling open on a server that is not ours.
  */
 export function stopPodcast(): void {
+  pendingSeek = null;
   if (transport) {
     transport.pause();
     transport.removeAttribute("src");
@@ -393,6 +503,36 @@ function SkipGlyph({ seconds }: { seconds: number }): React.JSX.Element {
 }
 
 /**
+ * What the transcript is doing, as one state rather than a boolean with
+ * patches on it.
+ *
+ * `following` used to mean two things at once — "the list may move itself" and
+ * "the reader is at the playhead" — and those come apart the instant anyone
+ * searches. That is why the Follow pill's guard had to grow a `!searching`
+ * clause, and why the autoscroll effect never learned about searching at all:
+ * a filtered list yanked itself under the reader's cursor whenever the line
+ * being spoken happened to be one of the hits. One state cannot be in two of
+ * these at once, so neither can happen.
+ *
+ *   following  the list moves itself to the voice. The resting state, and
+ *              where every seek and every clearing of the box puts it back.
+ *   browsing   the reader moved the list themselves; it stays where they left
+ *              it, and offers itself back rather than resuming on its own.
+ *   searching  a filter is up. The list is the answer to a question, not the
+ *              episode, so nothing may scroll it but the reader.
+ */
+type TranscriptMode = "following" | "browsing" | "searching";
+
+/**
+ * How far either side of the voice the depth ramp is drawn.
+ *
+ * The box shows fewer than four lines, so three either side is already more
+ * than anyone can see it on — and it used to be a prop on every line, which
+ * made the entire list a function of the playhead. See the ladder effect.
+ */
+const LADDER_REACH = 3;
+
+/**
  * The dock, and the element it steers. Rendered by App so nothing a reader does
  * inside a passage can take it away; hidden until a reader presses play, which
  * is also the first moment anything is fetched.
@@ -420,19 +560,37 @@ export function PodcastPlayer({
      The distinction matters: "no transcript" is a fact worth drawing, and
      "not looked yet" must not be drawn as that fact. */
   const [transcript, setTranscript] = useState<Transcript | null | undefined>(undefined);
-  const activeLineRef = useRef<HTMLLIElement>(null);
-  const [following, setFollowing] = useState(true);
+  const listRef = useRef<HTMLUListElement>(null);
+  const [mode, setMode] = useState<TranscriptMode>("following");
   const [query, setQuery] = useState("");
   /* One view at a time. Stacking the passage lists above the transcript let
      them take whatever height they wanted and gave a reader no way to put them
      away — on an episode with fifteen references the transcript was pushed off
      the bottom of a sheet that has no scroll of its own. */
-  const [view, setView] = useState<"transcript" | "passages">("transcript");
+  const [wantedView, setView] = useState<"transcript" | "passages">("transcript");
   /* undefined while unasked, null once we know there are none. */
   const [refs, setRefs] = useState<ReferenceSet | null | undefined>(undefined);
-  const [rateIndex, setRateIndex] = useState(0);
+  /* Read off the element rather than chosen alongside it. The dock used to
+     hold an index into PODCAST_RATES and the element used to hold a rate, and
+     an episode change reset one of them — so the label said 1.5× about a file
+     playing at 1×. Now the label IS the element's rate: `ratechange` is the
+     only thing that writes it, and nothing else can make the two disagree. */
+  const [rate, setRate] = useState(1);
+  /* One quiet channel for the machine's own words: following stopping and
+     starting, where a press landed, how many lines said it. */
+  const [notice, setNotice] = useState("");
   const toggleRef = useRef<HTMLButtonElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
+  /* Until when a scroll on the transcript is ours rather than the reader's.
+     See the follow effect and onTranscriptScroll. */
+  const selfScrollUntil = useRef(0);
+  /* The list the follow effect last placed, so a fresh one can be placed
+     rather than animated across an hour of transcript. */
+  const scrolledList = useRef<HTMLUListElement | null>(null);
+  /* The handful of elements currently carrying the depth ramp, so the next
+     pass knows exactly what to take it back off. */
+  const ladderRef = useRef<HTMLElement[]>([]);
+  const panelBaseId = useId();
 
   /* Focus mode's peek, held here rather than read off :hover.
 
@@ -510,11 +668,24 @@ export function PodcastPlayer({
 
   /* A new episode gives back the corner. Open was the reader asking for THIS
      episode's whole self; the next card has not been asked anything yet. No
-     focus moves here — nothing was pressed. */
+     focus moves here — nothing was pressed.
+
+     The lens over the episode goes with it, for the same reason and by the
+     same argument. A query typed against episode A, the follow state A was
+     left in, and the view A was last read in are not facts about B — and
+     because the sheet is handed back closed, none of them was even visible:
+     a reader opened B and found a stranger's search in the box, B's transcript
+     filtered by A's word, and the Passages tab up on an episode that has no
+     passages. Three states that outlived their subject, all of them arguing
+     against themselves in the comment above. */
   const episodeId = episode?.id;
   useEffect(() => {
     setExpanded(false);
     setPeeking(false);
+    setQuery("");
+    setMode("following");
+    setView("transcript");
+    setNotice("");
     if (peekTimer.current !== null) window.clearTimeout(peekTimer.current);
   }, [episodeId]);
 
@@ -564,11 +735,22 @@ export function PodcastPlayer({
   const position = scrubbingAt ?? at;
   const played = of > 0 ? Math.min(1, Math.max(0, position / of)) : 0;
   const paused = status !== "playing" && status !== "reaching";
-  const commitScrub = (): void => {
-    if (scrubbingAt == null) return;
-    seekPodcast(scrubbingAt);
-    setScrubbingAt(null);
-  };
+  const following = mode === "following";
+  const needle = query.trim().toLowerCase();
+  const searching = mode === "searching";
+
+  /* Every seek re-engages following, wherever the seek came from — the dock's
+     own controls do it on the way past, and this catches the two that cannot:
+     a moment pressed in the margin for the episode already playing, and the
+     system's Now Playing scrubber. Same statement, same answer. */
+  const seekMark = usePodcastSeekMark();
+  const lastSeekMark = useRef(seekMark);
+  useEffect(() => {
+    if (lastSeekMark.current === seekMark) return;
+    lastSeekMark.current = seekMark;
+    setQuery("");
+    setMode("following");
+  }, [seekMark]);
 
   /* Two lists, because they are two different claims. What an episode works
      THROUGH is what a reader chooses an episode for; what it merely touches is
@@ -582,25 +764,115 @@ export function PodcastPlayer({
   const subjects: PassageReference[] = refs ? subjectsOf(refs) : [];
   const passing: PassageReference[] = refs ? passingIn(refs) : [];
 
-  /* Choosing a passage is a request to HEAR it, not to read about it. So the
-     press does the whole errand: move the audio, return to the transcript, and
-     start following again — landing a reader in the passage list they just
-     left, with the words scrolling somewhere behind it, would make them do the
-     last two steps themselves every time. */
-  const goToMoment = (seconds: number): void => {
-    seekPodcast(seconds);
+  /* Choosing a place in the episode is a request to HEAR it, not to read about
+     it. So the press does the whole errand: move the audio, put the transcript
+     back under the voice, and take away whatever lens was over it — landing a
+     reader in the passage list they just left, or inside the filter they just
+     chose from, with the words scrolling somewhere behind them, would make
+     them do the last two steps themselves every time.
+
+     That was written for passage rows and applied to passage rows alone. It is
+     the same request from a transcript line, a chapter row, a skip and a
+     scrub, so every seek on this dock is now this one function. The two things
+     that differ are named rather than assumed: `hear`, because a press on a
+     PLACE is a request for the voice and a press on the transport is not — a
+     reader stepping a paused episode forward asked to move, not to listen —
+     and `show`, because a row lives in the other view and a skip does not, so
+     only the row has a reason to bring the transcript back. */
+  const goTo = (seconds: number, { hear, show }: { hear: boolean; show: boolean }): void => {
+    /* Nothing is claimed over a seek that will not happen. `queued` will
+       happen, the moment the file says how long it is, so it counts. */
+    if (seekPodcast(seconds) === "refused") return;
+    if (hear) resumePodcast();
     setQuery("");
-    setFollowing(true);
-    setView("transcript");
+    setMode("following");
+    if (show) setView("transcript");
+    setNotice(following
+      ? `Jumped to ${formatClock(seconds)}.`
+      : `Jumped to ${formatClock(seconds)}, following again.`);
   };
 
-  /* The way out of a search. Clearing the box is not enough on its own — a
-     reader who searched, scrolled, and then cleared would be left parked
-     wherever they had wandered to, with the audio elsewhere. */
-  const clearSearch = (): void => {
+  const goToMoment = (seconds: number): void => goTo(seconds, { hear: true, show: true });
+  /* Already in the transcript, so there is nothing to come back to — but a
+     line pressed while the episode is paused starts it, because a reader who
+     points at a sentence is asking to hear that sentence and every reference
+     implementation on the desk answers a tap that way. */
+  const goToLine = (seconds: number): void => goTo(seconds, { hear: true, show: false });
+
+  const skipBy = (seconds: number): void => {
+    if (skipPodcast(seconds) === "refused") return;
     setQuery("");
-    setFollowing(true);
+    setMode("following");
+    /* The element's own clock is the one that moved; this is the same number
+       to within a tick, and it is the only one this closure can see. */
+    const landed = formatClock(Math.max(0, position + seconds));
+    setNotice(following ? `Jumped to ${landed}.` : `Jumped to ${landed}, following again.`);
   };
+
+  const commitScrub = (): void => {
+    if (scrubbingAt == null) return;
+    const target = scrubbingAt;
+    setScrubbingAt(null);
+    goTo(target, { hear: false, show: false });
+  };
+
+  /* The one way the query changes, so the mode cannot drift away from it: a
+     box with words in it IS the searching state, and an empty box is not some
+     third thing that has to be reconciled afterwards. */
+  const askFor = (next: string): void => {
+    setQuery(next);
+    setMode(next.trim() ? "searching" : "following");
+  };
+
+  /* The way back to the voice, from either place a reader can be standing.
+     Clearing the box is not enough on its own — a reader who searched,
+     scrolled, and then cleared would be left parked wherever they had wandered
+     to, with the audio elsewhere. */
+  const followAgain = (): void => {
+    const hadQuery = needle.length > 0;
+    setQuery("");
+    setMode("following");
+    setNotice(hadQuery
+      ? "Search cleared. Following the episode again."
+      : "Following the episode again.");
+  };
+
+  /* Every way the reader can move this list, in one event.
+
+     It used to be `onWheel` and `onTouchMove`, which is neither the whole set
+     nor a correct member of it. Wheel fires at the scroll extent where nothing
+     moves, and trackpad momentum keeps firing for a second after the fingers
+     lift, so idle wheeling silently ended following; touchmove fires on the
+     two-pixel drift of an ordinary tap, so on touch EVERY press of a line
+     stopped following a beat before it seeked. And between them they missed
+     keyboard scrolling, focus scrolling, and a screen reader's virtual cursor
+     walking the list — which is why an assistive-technology reader had no way
+     out of the autoscroll at all.
+
+     A scroll event is the one thing all of those have in common and the tap
+     does not. The only scrolls that are not the reader's are ours, and those
+     are announced in advance by the follow effect. */
+  const onTranscriptScroll = (): void => {
+    if (mode !== "following") return;
+    if (performance.now() < selfScrollUntil.current) return;
+    setMode("browsing");
+    setNotice("Following paused.");
+  };
+
+  /* The seek handlers, always the current ones.
+
+     Two callers hold onto them across renders: the transcript list, which is
+     memoized on its own content and so keeps whichever render built it, and
+     the system transport, whose handlers are registered once per episode. The
+     seek itself would survive being stale — the setters never change — but
+     what is SAID about it does not: whether a press resumed following is a
+     fact about where the reader was standing when they pressed, and that has
+     to be read now rather than remembered. */
+  const latest = useRef({ line: goToLine, skip: skipBy, seek: goTo });
+  useEffect(() => {
+    latest.current = { line: goToLine, skip: skipBy, seek: goTo };
+  });
+
   const chapters: PodcastChapter[] = episode?.chapters ?? [];
   const chapterIndex = chapters.reduce(
     (found, chapter, index) => (position >= chapter.start ? index : found),
@@ -624,60 +896,136 @@ export function PodcastPlayer({
     -1,
   );
 
-  /* Following is the default and stays on until the reader scrolls away from
-     the playhead themselves. Dragging someone back to the active line while
-     they are reading ahead is the worst thing a transcript can do, so any
-     manual scroll is taken as an instruction to stop. */
-  useEffect(() => {
-    if (!expanded || !following || lineIndex < 0) return;
-    activeLineRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
-  }, [lineIndex, following, expanded]);
-
-  /* Keyed on the active line rather than on the playhead. `position` ticks four
-     times a second and every line's state is a function of the index alone, so
-     rebuilding on position would reconcile ~1,400 elements several times a
-     second to produce an identical tree. Lines run about four seconds, so this
-     rebuilds roughly once per line instead. */
-  const needle = query.trim().toLowerCase();
-  const searching = needle.length > 0;
-
   /* Searching narrows to the lines that say it. Highlighting in place was the
      alternative and it is worse here: a hit fourteen screens down is invisible,
      and the reader would be scrolling a transcript looking for their own
      search. Narrowing turns the panel into the answer. */
-  const found = useMemo(() => lines
-    .map((line, index) => ({ line, index }))
-    .filter(({ line }) => !searching || line.t.toLowerCase().includes(needle)),
-  [lines, needle, searching]);
+  const found = useMemo(() => (needle
+    ? lines.map((line, index) => ({ line, index })).filter(({ line }) => line.t.toLowerCase().includes(needle))
+    : lines.map((line, index) => ({ line, index }))),
+  [lines, needle]);
   const matches = found.length;
 
+  /* No playhead the ramp could be measured from: a search answers a question
+     rather than tracking a voice, and before the first line has been spoken
+     there is nothing to be near. Either way every line sits at the same
+     readable weight instead of pretending to a distance from a voice that is
+     not in the list. */
+  const flatWeight = searching || lineIndex < 0;
+
+  /* Built once per episode and once per query, and never again.
+
+     It used to be keyed on the active line as well, which the comment here
+     defended as a saving — 2,280 elements reconciled once a line instead of
+     four times a second. It is a saving and it is still 2,280 elements every
+     four seconds for the length of an episode, in a sheet that is usually shut,
+     because the list mounts when the episode starts rather than when anyone
+     asks to read it. Both halves are fixed: the block below renders only while
+     the sheet is open, and everything that is a function of the playhead has
+     moved out of the tree and into the ladder effect, which touches seven
+     elements. */
   const renderedLines = useMemo(() => found.map(({ line, index }) => (
-    <li key={`${line.s}-${index}`} ref={index === lineIndex ? activeLineRef : undefined}>
+    <li key={`${line.s}-${index}`}>
       <button
-        aria-current={index === lineIndex}
         className="podcast-transcript-line"
-        /* How far from the voice, capped at three. Distance is computed here
-           rather than chained through CSS sibling selectors because it is one
-           subtraction against a value that changes once a line, and because a
-           selector chain deep enough to reach the third neighbour is a thing
-           nobody can later read. Nothing playing, or a search underway -> every
-           line sits at the same readable weight rather than pretending to a
-           playhead the reader is not currently following. */
-        data-d={lineIndex < 0 || searching ? 0 : Math.min(3, Math.abs(index - lineIndex))}
-        data-past={index < lineIndex}
-        onClick={() => seekPodcast(line.s)}
+        data-line={index}
+        onClick={() => latest.current.line(line.s)}
         type="button"
       >
-        {searching ? highlight(line.t, needle) : line.t}
+        {needle ? highlight(line.t, needle) : line.t}
       </button>
     </li>
-  )), [found, lineIndex, needle, searching]);
+  )), [found, needle]);
 
-  const rate = PODCAST_RATES[rateIndex] ?? 1;
+  /* The depth ramp, written onto the seven elements it can be seen on.
+
+     Distance from the voice is still one subtraction, and it is still computed
+     here rather than chained through CSS sibling selectors — but it is written
+     to the DOM by hand instead of being a prop, because as a prop it made the
+     whole list a function of the playhead. The ramp reaches three lines either
+     side; the box shows fewer than four; so three either side is everything
+     anyone can ever see it on, and the pass is: take it off whatever had it,
+     put it on whatever should.
+
+     Dated 2026-07-30 — what changed for a reader: lines further away than the
+     ramp reaches no longer blur. They used to all carry data-d="3", which is
+     `filter: blur(1.9px)`, so a two-hour episode drew ~2,274 blur surfaces to
+     shade a four-line window. Blur said "just behind the voice"; a line twenty
+     minutes from the voice is not behind it, it is elsewhere, and the
+     stylesheet now says that in one flat rule with no filter in it. */
+  useLayoutEffect(() => {
+    const lit = ladderRef.current;
+    for (const element of lit) {
+      element.removeAttribute("data-d");
+      element.removeAttribute("data-past");
+      element.removeAttribute("aria-current");
+    }
+    lit.length = 0;
+    const box = listRef.current;
+    if (!box || flatWeight) return;
+    for (let step = -LADDER_REACH; step <= LADDER_REACH; step += 1) {
+      const at = lineIndex + step;
+      if (at < 0) continue;
+      const line = box.querySelector<HTMLElement>(`.podcast-transcript-line[data-line="${at}"]`);
+      if (!line) continue;
+      line.setAttribute("data-d", String(Math.abs(step)));
+      /* Already spoken lines sit a little clearer than the ones still coming
+         at the same distance; scrolling back should meet text, not fog. */
+      line.setAttribute("data-past", String(step < 0));
+      if (step === 0) line.setAttribute("aria-current", "true");
+      lit.push(line);
+    }
+  }, [expanded, flatWeight, lineIndex, renderedLines]);
+
+  /* Following is the resting state and stays on until the reader moves the
+     list themselves. Dragging someone back to the active line while they are
+     reading ahead is the worst thing a transcript can do, so any scroll that
+     is not this one is taken as an instruction to stop.
+
+     Which is why this arms the guard before it moves anything, and only when
+     it is actually going to move something: an arm for a scroll that never
+     happens would deafen the list to the reader for a second out of every
+     four, forever. */
+  useEffect(() => {
+    if (!expanded || !following || lineIndex < 0) return;
+    const box = listRef.current;
+    const line = box?.querySelector<HTMLElement>(`.podcast-transcript-line[data-line="${lineIndex}"]`);
+    if (!box || !line) return;
+    const boxBox = box.getBoundingClientRect();
+    const lineBox = line.getBoundingClientRect();
+    const centred = box.scrollTop
+      + (lineBox.top - boxBox.top)
+      - (box.clientHeight - lineBox.height) / 2;
+    const target = Math.max(0, Math.min(centred, box.scrollHeight - box.clientHeight));
+    if (Math.abs(target - box.scrollTop) < 2) return;
+    /* A list that has just been mounted is not drifting from anywhere — it is
+       at the top of a two-hour episode and the voice is forty minutes down, so
+       animating there is a smear rather than a movement. The first placement
+       on a fresh list is a placement; every one after it is a drift. */
+    const placing = scrolledList.current !== box;
+    scrolledList.current = box;
+    selfScrollUntil.current = performance.now() + 1_000;
+    box.scrollTo({
+      top: target,
+      /* The stylesheet's reduced-motion opt-out cannot reach a behavior passed
+         here: an explicit "smooth" beats the computed scroll-behavior by spec,
+         and "auto" means "go and ask the computed value" — which is smooth. So
+         a vestibular-sensitive reader was given the full smooth autoscroll by
+         a rule written specifically to spare them it. The branch has to be
+         made in script, and the instant case has to say instant. */
+      behavior: placing || window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "instant"
+        : "smooth",
+    });
+  }, [expanded, following, lineIndex, renderedLines]);
+
+  /* A rate off the element is a double, so it is printed rather than trusted
+     to be one of ours; and a rate that is not one of ours cycles to the first,
+     which is 1 — one press always returns to normal. */
+  const rateLabel = Number(rate.toFixed(2));
   const cycleRate = (): void => {
-    const next = (rateIndex + 1) % PODCAST_RATES.length;
-    setRateIndex(next);
-    setPodcastRate(PODCAST_RATES[next] ?? 1);
+    const at = PODCAST_RATES.findIndex((value) => value === rateLabel);
+    setPodcastRate(PODCAST_RATES[(at + 1) % PODCAST_RATES.length] ?? 1);
   };
 
   const navigateTo = (target: EpisodePassage): void => {
@@ -689,15 +1037,148 @@ export function PodcastPlayer({
     );
   };
 
+  /* What the sheet can show, which is not always what the reader last chose.
+     `view` used to be the whole answer and the tab strip needed BOTH lists to
+     draw at all, so the two disagreed in both directions: a reader who left
+     Passages up and then played one of the ~9% of episodes with no references
+     got a sheet holding a title, a length and no control that could reach the
+     transcript; and an episode with references whose transcript would not load
+     showed no references either, because the strip that names them is drawn
+     from the transcript's line count. Neither view depends on the other's data
+     now, and a view cannot outlive the thing it names. */
+  const hasPassages = subjects.length + passing.length > 0;
+  const hasTranscript = lines.length > 0;
+  const view = wantedView === "passages" && hasPassages ? "passages"
+    : hasTranscript ? "transcript"
+      : hasPassages ? "passages"
+        : "transcript";
+  /* A strip is a choice. With one list there is nothing to choose, and with
+     none there is nothing to choose between. */
+  const tabbed = hasPassages && hasTranscript;
+  const transcriptTabId = `${panelBaseId}-transcript-tab`;
+  const passagesTabId = `${panelBaseId}-passages-tab`;
+  const panelId = `${panelBaseId}-panel`;
+  const tabStripRef = useRef<HTMLDivElement>(null);
+
+  /* Manual activation, deliberately. APG asks for automatic activation only
+     where the panel appears without noticeable latency, and the transcript
+     panel is two thousand elements — so the arrows move focus and the press
+     chooses, which is the pattern's own answer for an expensive panel. */
+  const onTabKeys = (event: React.KeyboardEvent<HTMLDivElement>): void => {
+    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+    const tabs = [...(tabStripRef.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]') ?? [])];
+    if (tabs.length === 0) return;
+    const at = tabs.indexOf(document.activeElement as HTMLButtonElement);
+    const next = event.key === "Home" ? 0
+      : event.key === "End" ? tabs.length - 1
+        : event.key === "ArrowLeft" ? (at <= 0 ? tabs.length - 1 : at - 1)
+          : (at + 1) % tabs.length;
+    event.preventDefault();
+    tabs[next]?.focus();
+  };
+
+  /* Held for a beat rather than said on every keystroke: a count announced
+     letter by letter is a screen reader reading numbers over the reader's own
+     typing. "No line says that" is on this channel too — it was only ever
+     drawn, so a reader who could not see it was told nothing at all. */
+  useEffect(() => {
+    if (!expanded || !searching) return undefined;
+    const timer = window.setTimeout(() => {
+      setNotice(matches === 0
+        ? "No line says that."
+        : `${matches} ${matches === 1 ? "line says" : "lines say"} that.`);
+    }, 700);
+    return () => window.clearTimeout(timer);
+  }, [expanded, matches, needle, searching]);
+
+  /* The system's own transport.
+
+     macOS Now Playing, the hardware media keys and everything that speaks to
+     them go through MediaSession, and without it the only way to pause 3,521
+     episodes' worth of audio is to find a 38px circle in the corner of one
+     window. The seek actions land on the same errand every seek on this dock
+     runs — through the `latest` ref above, so the handlers can be registered
+     once per episode instead of once per render.
+
+     No image is offered. The record carries none, and going to find one would
+     be a request to a publisher's server that nobody pressed anything to make
+     — which is the boundary this whole surface is built around. See
+     docs/trusted-resource-permissions. */
+  const episodeTitle = episode?.title;
+  const episodeSource = episode?.sourceName;
+  useEffect(() => {
+    const session = navigator.mediaSession;
+    if (!session) return undefined;
+    if (!episodeTitle) {
+      session.metadata = null;
+      return undefined;
+    }
+    session.metadata = new MediaMetadata({ title: episodeTitle, artist: episodeSource });
+    const handlers: [MediaSessionAction, MediaSessionActionHandler][] = [
+      ["play", () => resumePodcast()],
+      ["pause", () => pausePodcast()],
+      ["stop", () => stopPodcast()],
+      ["seekbackward", (details) => latest.current.skip(-(details.seekOffset ?? 15))],
+      ["seekforward", (details) => latest.current.skip(details.seekOffset ?? 30)],
+      ["seekto", (details) => {
+        if (details.seekTime != null) latest.current.seek(details.seekTime, { hear: false, show: false });
+      }],
+    ];
+    for (const [action, handler] of handlers) {
+      /* An engine that does not know an action throws rather than ignoring it,
+         and one unknown action must not cost the other five. */
+      try { session.setActionHandler(action, handler); } catch { /* not on this engine */ }
+    }
+    return () => {
+      for (const [action] of handlers) {
+        try { session.setActionHandler(action, null); } catch { /* as above */ }
+      }
+    };
+  }, [episodeId, episodeSource, episodeTitle]);
+
+  useEffect(() => {
+    const session = navigator.mediaSession;
+    if (!session) return;
+    session.playbackState = !episodeId ? "none" : status === "playing" ? "playing" : "paused";
+  }, [episodeId, status]);
+
+  /* Position, at walking pace. The element reports four times a second and the
+     system needs no such thing — it interpolates between whatever it was last
+     told, so once every five seconds and on every real change is both honest
+     and quiet. */
+  const positionStep = Math.floor(position / 5);
+  useEffect(() => {
+    const session = navigator.mediaSession;
+    if (typeof session?.setPositionState !== "function") return;
+    if (!episodeId || !(of > 0)) { session.setPositionState(); return; }
+    session.setPositionState({ duration: of, playbackRate: rate, position: Math.min(position, of) });
+    // `position` is deliberately absent: positionStep is the throttle.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [episodeId, of, positionStep, rate, status]);
+
   return (
     <>
       <audio
-        onDurationChange={(event) => announceElapsed(event.currentTarget.currentTime, event.currentTarget.duration || 0)}
+        onDurationChange={(event) => {
+          applyPendingSeek();
+          announceElapsed(event.currentTarget.currentTime, event.currentTarget.duration || 0);
+        }}
         onEnded={() => elementReports("paused")}
         onError={() => { if (nowPlaying.episode) announceNowPlaying({ episode: nowPlaying.episode, status: "failed" }); }}
-        onLoadedMetadata={(event) => announceElapsed(0, event.currentTarget.duration || 0)}
+        /* The held seek is spent BEFORE anything is announced. This used to
+           announce a flat 0 and let the seek land afterwards, which is a frame
+           of 0:00 and a moment of lineIndex 0 for an episode a reader opened
+           at eleven minutes in — the top of the file flashing past on the way
+           to the place they actually asked for. */
+        onLoadedMetadata={(event) => {
+          applyPendingSeek();
+          announceElapsed(event.currentTarget.currentTime, event.currentTarget.duration || 0);
+        }}
         onPause={() => elementReports("paused")}
         onPlaying={() => elementReports("playing")}
+        /* The element is the authority on its own rate, so the dock reads it
+           here instead of remembering what it asked for. */
+        onRateChange={(event) => setRate(event.currentTarget.playbackRate)}
         onTimeUpdate={(event) => announceElapsed(event.currentTarget.currentTime, event.currentTarget.duration || 0)}
         onWaiting={() => elementReports("reaching")}
         preload="none"
@@ -724,6 +1205,12 @@ export function PodcastPlayer({
               ? `${episode.title} could not be reached.`
               : `${status === "playing" ? "Playing" : status === "reaching" ? "Loading" : "Paused"}: ${episode.title}, ${episode.sourceName}.`}
           </span>
+
+          {/* The same pattern one surface down, for the machine rather than
+              the transport: following stopping and starting, where a press
+              landed, how many lines said it. One channel, throttled at each
+              source, so it can be left on. */}
+          <span className="sr-only" role="status" aria-live="polite">{notice}</span>
 
           <header className="podcast-mast">
             {/* The publisher's approved mark replaces this name in CSS for the
@@ -802,23 +1289,41 @@ export function PodcastPlayer({
               {/* Two views, not two stacked panels. A reader is either choosing
                   a passage or following the words, and the sheet has no scroll
                   of its own — so the lists took height the transcript needed
-                  and offered no way to give it back. */}
-              {(subjects.length + passing.length > 0) && lines.length > 0 && (
-                <div className="podcast-views" role="tablist">
+                  and offered no way to give it back.
+
+                  The pattern is finished rather than gestured at. It used to be
+                  role=tablist and role=tab with no panel, no aria-controls, no
+                  roving tabindex and no arrow keys — which is worse for a
+                  screen reader than two plain buttons would have been, because
+                  the roles promise a structure that is not there. */}
+              {tabbed && (
+                <div
+                  aria-label="What to show"
+                  className="podcast-views"
+                  onKeyDown={onTabKeys}
+                  ref={tabStripRef}
+                  role="tablist"
+                >
                   <button
+                    aria-controls={panelId}
                     aria-selected={view === "transcript"}
                     className="podcast-view-tab"
+                    id={transcriptTabId}
                     onClick={() => setView("transcript")}
                     role="tab"
+                    tabIndex={view === "transcript" ? 0 : -1}
                     type="button"
                   >
                     Transcript
                   </button>
                   <button
+                    aria-controls={panelId}
                     aria-selected={view === "passages"}
                     className="podcast-view-tab"
+                    id={passagesTabId}
                     onClick={() => setView("passages")}
                     role="tab"
+                    tabIndex={view === "passages" ? 0 : -1}
                     type="button"
                   >
                     Passages
@@ -833,8 +1338,13 @@ export function PodcastPlayer({
                   the twenty-minute passage answers that better than whichever
                   one happened to be first. */}
               {view === "passages" && (
-                <div className="podcast-refs-view">
-                {view === "passages" && subjects.length > 0 && (
+                <div
+                  aria-labelledby={tabbed ? passagesTabId : undefined}
+                  className="podcast-refs-view"
+                  id={tabbed ? panelId : undefined}
+                  role={tabbed ? "tabpanel" : undefined}
+                >
+                {subjects.length > 0 && (
                   <ul aria-label="Passages in this episode" className="podcast-refs">
                     {subjects.map((r) => (
                       <li key={`s-${r.at}-${r.bref}`}>
@@ -866,7 +1376,7 @@ export function PodcastPlayer({
                     time, because this list is read while listening rather than
                     before. Allusions are marked: a passage nobody named aloud is
                     the one entry here a reader could not have found themselves. */}
-                {view === "passages" && passing.length > 0 && (
+                {passing.length > 0 && (
                   <div className="podcast-refs-passing">
                     <p className="podcast-refs-head">Also referenced</p>
                     <ul aria-label="Passages referenced in this episode" className="podcast-refs">
@@ -902,7 +1412,7 @@ export function PodcastPlayer({
                         <button
                           aria-current={index === chapterIndex}
                           className="podcast-chapter"
-                          onClick={() => seekPodcast(entry.start)}
+                          onClick={() => goToMoment(entry.start)}
                           type="button"
                         >
                           <span className="podcast-chapter-time">{formatClock(entry.start)}</span>
@@ -919,9 +1429,20 @@ export function PodcastPlayer({
 
               {/* Machine transcript. The provenance line is not decoration: the
                   reader has to be able to tell at a glance that no person wrote
-                  this, because some of the words in it will be wrong. */}
-              {view === "transcript" && transcript && lines.length > 0 && (
-                <div className="podcast-transcript-block">
+                  this, because some of the words in it will be wrong.
+
+                  Drawn only while the sheet is open. It used to mount when the
+                  episode started — 2,280 buttons and ~4,560 nodes for a two-
+                  hour episode, into a sheet clipped to nothing — and then
+                  reconcile every four seconds for as long as the episode ran,
+                  whether or not anyone had ever asked to read it. */}
+              {expanded && view === "transcript" && hasTranscript && (
+                <div
+                  aria-labelledby={tabbed ? transcriptTabId : undefined}
+                  className="podcast-transcript-block"
+                  id={tabbed ? panelId : undefined}
+                  role={tabbed ? "tabpanel" : undefined}
+                >
                   <div className="podcast-transcript-head">
                     <svg aria-hidden="true" className="podcast-transcript-glass" viewBox="0 0 16 16">
                       <circle cx="7.2" cy="7.2" r="4.4" />
@@ -930,16 +1451,17 @@ export function PodcastPlayer({
                     <input
                       aria-label="Search this transcript"
                       className="podcast-transcript-search"
-                      onChange={(event) => setQuery(event.target.value)}
-                      onKeyDown={(event) => { if (event.key === "Escape") clearSearch(); }}
+                      onChange={(event) => askFor(event.target.value)}
+                      onKeyDown={(event) => { if (event.key === "Escape") followAgain(); }}
                       placeholder="Search transcript"
                       type="search"
                       value={query}
                     />
                     {searching && (
                       <button
+                        aria-label={`${matches} ${matches === 1 ? "line" : "lines"} say that. Clear the search and follow along.`}
                         className="podcast-transcript-clear"
-                        onClick={clearSearch}
+                        onClick={followAgain}
                         title="Clear search and follow along"
                         type="button"
                       >
@@ -960,27 +1482,22 @@ export function PodcastPlayer({
                   </div>
 
                   <div className="podcast-transcript-stage">
-                    <ul
-                      aria-label="Transcript"
-                      className="podcast-transcript"
-                      onWheel={() => setFollowing(false)}
-                      onTouchMove={() => setFollowing(false)}
-                    >
-                      {renderedLines}
-                    </ul>
-
-                    {searching && matches === 0 && (
-                      <p className="podcast-transcript-empty">No line says that.</p>
-                    )}
-
                     {/* Floats over the text rather than sitting in the header:
                         it is an answer to "I have scrolled away", so it belongs
                         where the scrolling happened and should not hold a row
-                        of chrome open for the whole time it is irrelevant. */}
-                    {!following && !searching && (
+                        of chrome open for the whole time it is irrelevant.
+
+                        Before the list in the document though it is drawn over
+                        it — its position is absolute either way, and an offer a
+                        keyboard reader can only reach by tabbing through two
+                        thousand lines is not an offer. It stands during a
+                        search too: `!searching` read as restraint and took the
+                        only follow-state control off the surface at the exact
+                        moment the reader was furthest from the playhead. */}
+                    {!following && (
                       <button
                         className="podcast-transcript-follow"
-                        onClick={() => setFollowing(true)}
+                        onClick={followAgain}
                         type="button"
                       >
                         <svg aria-hidden="true" viewBox="0 0 16 16">
@@ -989,8 +1506,37 @@ export function PodcastPlayer({
                         Follow
                       </button>
                     )}
+
+                    <ul
+                      aria-label="Transcript"
+                      className="podcast-transcript"
+                      data-flat={flatWeight ? "true" : undefined}
+                      data-transcript-mode={mode}
+                      onScroll={onTranscriptScroll}
+                      onScrollEnd={() => { selfScrollUntil.current = 0; }}
+                      ref={listRef}
+                    >
+                      {renderedLines}
+                    </ul>
+
+                    {searching && matches === 0 && (
+                      <p className="podcast-transcript-empty">No line says that.</p>
+                    )}
                   </div>
                 </div>
+              )}
+
+              {/* Neither list has anything, and the sheet says which of the two
+                  facts that is. Both were computed with care — undefined while
+                  unasked, null once we know there is none — and then drawn as
+                  the same nothing, which left an open sheet holding a title, a
+                  length, and no account of itself. */}
+              {expanded && !hasTranscript && !hasPassages && (
+                <p className="podcast-transcript-empty podcast-sheet-empty">
+                  {transcript === undefined || refs === undefined
+                    ? "Looking for a transcript…"
+                    : "No transcript for this episode."}
+                </p>
               )}
             </div>
           </div>
@@ -1000,7 +1546,7 @@ export function PodcastPlayer({
               <button
                 aria-label="Back 15 seconds"
                 className="podcast-transport-skip"
-                onClick={() => skipPodcast(-15)}
+                onClick={() => skipBy(-15)}
                 type="button"
               >
                 <SkipGlyph seconds={-15} />
@@ -1017,7 +1563,7 @@ export function PodcastPlayer({
               <button
                 aria-label="Forward 30 seconds"
                 className="podcast-transport-skip"
-                onClick={() => skipPodcast(30)}
+                onClick={() => skipBy(30)}
                 type="button"
               >
                 <SkipGlyph seconds={30} />
@@ -1042,20 +1588,28 @@ export function PodcastPlayer({
                    The thing is named on the line above and the publisher on the
                    line above that, so this states only what those two do not:
                    it did not arrive, and the reason is not on this machine. The
-                   way out is the link that was always beside play. */
+                   way out is the link that was always beside play.
+
+                   Shortened 2026-07-30, to the argument this comment already
+                   makes. "Could not reach the episode." wanted 253px of a
+                   223px line, so it was ellipsed mid-word — and a truncated
+                   reason is not a reason. The episode is named directly above;
+                   repeating it here was what pushed the sentence off the end
+                   of its own line. The QA tour has asserted this fit since it
+                   was written and never once reached the assertion. */
                 <p className="podcast-dock-refusal">
-                  Could not reach the episode. This needed the network.
+                  Did not arrive. This needed the network.
                 </p>
               ) : (
                 <p className="podcast-dock-clock">
                   <span>{formatClock(position)}</span>
                   <button
-                    aria-label={`Playback speed ${rate}×. Press to change.`}
+                    aria-label={`Playback speed ${rateLabel}×. Press to change.`}
                     className="podcast-rate"
                     onClick={cycleRate}
                     type="button"
                   >
-                    {rate}×
+                    {rateLabel}×
                   </button>
                   <span className="podcast-dock-clock-rest">
                     {of > 0 ? `−${formatClock(of - position)}` : "—:—"}

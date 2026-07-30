@@ -175,6 +175,21 @@ export const ATTRIBUTE_VOCABULARY = Object.freeze({
     source: "src/renderer/components/PodcastPlayer.tsx · PodcastStatus",
     values: ["idle", "reaching", "playing", "paused", "failed"],
   },
+  // What the transcript is doing, as one state rather than a boolean with
+  // patches on it. "following" is the resting state and every seek returns to
+  // it; "browsing" is the reader having moved the list themselves; "searching"
+  // is a filter being up, which is a different thing from having scrolled away
+  // and used to be conflated with it.
+  "data-transcript-mode": {
+    source: "src/renderer/components/PodcastPlayer.tsx · TranscriptMode",
+    values: ["following", "browsing", "searching"],
+  },
+  // Whether the dock is a corner or the whole episode. Load-bearing for more
+  // than the look now: the transcript is drawn only while this is true.
+  "data-expanded": {
+    source: "src/renderer/components/PodcastPlayer.tsx · the sheet toggle",
+    values: ["true", "false"],
+  },
   // How a floating surface names itself, so the "is a decision open?" probes in
   // app.tsx and ScripturePage.tsx can ask without a list of class names. The
   // player is deliberately outside the dialog/popover pair those probes read:
