@@ -144,7 +144,7 @@ export function StudyLine({
   const [focusIntent, setFocusIntent] = useState<{ key: string; nonce: number } | null>(null);
   const [renameGroupId, setRenameGroupId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
-  const [scrollableRight, setScrollableRight] = useState(false);
+  const [scrollEdges, setScrollEdges] = useState({ left: false, right: false });
   const chipsRef = useRef<HTMLDivElement>(null);
   const stopRefs = useRef<Map<string, HTMLElement>>(new Map());
   const renameInputRef = useRef<HTMLInputElement>(null);
@@ -179,7 +179,10 @@ export function StudyLine({
     const chipsRow = chipsRef.current;
     if (!chipsRow) return;
     const measure = (): void => {
-      setScrollableRight(chipsRow.scrollLeft + chipsRow.clientWidth < chipsRow.scrollWidth - 2);
+      setScrollEdges({
+        left: chipsRow.scrollLeft > 2,
+        right: chipsRow.scrollLeft + chipsRow.clientWidth < chipsRow.scrollWidth - 2,
+      });
     };
     measure();
     const observer = new ResizeObserver(measure);
@@ -284,14 +287,17 @@ export function StudyLine({
     }
   }, [onSelectTab, workspace]);
 
-  const commitRename = useCallback(async (groupId: string): Promise<void> => {
+  const commitRename = useCallback(async (groupId: string, refocus: boolean): Promise<void> => {
     // Escape unmounts the field, and an unmounting input can still blur; the ref
     // is what tells a real submit from that echo.
     if (renameGroupIdRef.current !== groupId) return;
     const trimmed = renameDraft.trim();
     endRename();
     if (trimmed) await onRenameStudy(groupId, trimmed);
-    focusStop(studyStop(groupId));
+    // Enter leaves focus nowhere when the field unmounts, so the chip takes it
+    // back. A blur means the reader has already pressed the thing they want
+    // focused — pulling focus back to the chip they just left would fight it.
+    if (refocus) focusStop(studyStop(groupId));
   }, [endRename, focusStop, onRenameStudy, renameDraft]);
 
   const handleLineKeyDown = (event: React.KeyboardEvent<HTMLDivElement>): void => {
@@ -339,7 +345,7 @@ export function StudyLine({
     >
       <div
         ref={chipsRef}
-        className={`scripture-study-line-chips${scrollableRight ? " is-scrollable-right" : ""}`}
+        className={`scripture-study-line-chips${scrollEdges.left ? " is-scrollable-left" : ""}${scrollEdges.right ? " is-scrollable-right" : ""}`}
       >
         {/* THERE IS NO "ALL" CHIP, and there is no all-studies view. It was
             built on 2026-07-30 and removed the same day: the strip holds one
@@ -355,7 +361,7 @@ export function StudyLine({
             key={chip.groupId}
             onSubmit={(event) => {
               event.preventDefault();
-              void commitRename(chip.groupId);
+              void commitRename(chip.groupId, true);
             }}
           >
             <input
@@ -366,7 +372,7 @@ export function StudyLine({
               autoComplete="off"
               aria-label={`Name this study — currently ${chip.label}`}
               onChange={(event) => setRenameDraft(event.currentTarget.value)}
-              onBlur={() => { void commitRename(chip.groupId); }}
+              onBlur={() => { void commitRename(chip.groupId, false); }}
               onKeyDown={(event) => {
                 if (event.key !== "Escape") return;
                 // Escape abandons the name and leaves the study as it was. An
@@ -403,7 +409,13 @@ export function StudyLine({
             aria-keyshortcuts="F2"
             tabIndex={rovingKey === studyStop(chip.groupId) ? 0 : -1}
             onFocus={() => setFocusedKey(studyStop(chip.groupId))}
-            onMouseDown={(event) => event.preventDefault()}
+            onMouseDown={(event) => {
+              // Keeping focus where it is stops the roving stop jumping on a
+              // press — right until a rename is open. Then the press must be
+              // allowed to take focus, so the field blurs and commits before
+              // this click lands anywhere.
+              if (renameGroupId === null) event.preventDefault();
+            }}
             onDoubleClick={() => beginRename(chip.groupId, chip.label)}
             onKeyDown={(event) => {
               if (event.key !== "F2") return;
@@ -441,7 +453,9 @@ export function StudyLine({
           aria-label="Start a new study"
           tabIndex={rovingKey === START_STOP ? 0 : -1}
           onFocus={() => setFocusedKey(START_STOP)}
-          onMouseDown={(event) => event.preventDefault()}
+          onMouseDown={(event) => {
+            if (renameGroupId === null) event.preventDefault();
+          }}
           onClick={() => { if (!atStudyCapacity) void onStartStudy(); }}
         >
           <span aria-hidden="true"><PlusGlyph /></span>

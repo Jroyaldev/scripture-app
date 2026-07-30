@@ -1645,10 +1645,12 @@ html, body, #root {
 
 /* ── THE STUDY LINE ────────────────────────────────────────────────────────
 
-   The frame's top row: an "All" chip, one chip per study, and the control that
-   starts one. It is the second line of the register in the sense Chrome's tab
-   groups are — the row that says which set of tabs the strip is showing — and
-   it is deliberately NOT a toolbar, a filter bar or a dashboard. It is chrome:
+   The frame's top row: one chip per study, and the control that starts one.
+   (No "All" chip — refused 2026-07-30; the strip holds one study's tabs, and
+   every tab in every study is one press away in the overview.) It is the
+   second line of the register in the sense Chrome's tab groups are — the row
+   that says which set of tabs the strip is showing — and it is deliberately
+   NOT a toolbar to the eye, a filter bar or a dashboard. It is chrome:
    quiet, structural, and load-bearing, because it is also the band the window
    is dragged by.
 
@@ -1699,9 +1701,19 @@ html, body, #root {
 
 .scripture-study-line-chips::-webkit-scrollbar { display: none; }
 
+.scripture-study-line-chips.is-scrollable-left {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 36px);
+  mask-image: linear-gradient(to right, transparent 0, #000 36px);
+}
+
 .scripture-study-line-chips.is-scrollable-right {
   -webkit-mask-image: linear-gradient(to left, transparent 0, #000 36px);
   mask-image: linear-gradient(to left, transparent 0, #000 36px);
+}
+
+.scripture-study-line-chips.is-scrollable-left.is-scrollable-right {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 36px, #000 calc(100% - 36px), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 36px, #000 calc(100% - 36px), transparent 100%);
 }
 
 /* Every control in the line is drawn by this sheet; nothing falls through to
@@ -1768,6 +1780,16 @@ html, body, #root {
    up instead of re-laying it out. */
 .scripture-study-line[data-study-line-state="resting"] .scripture-study-chip {
   color: var(--text-secondary);
+  /* At the floor a press has nothing to switch to, so the name does not offer
+     one: no pointer, no hover wash. It is still a control — the roving stop
+     reaches it and F2 or a double press renames — but a cursor promising a
+     click that changes nothing teaches the line cries wolf. */
+  cursor: default;
+}
+
+.scripture-study-line[data-study-line-state="resting"] .scripture-study-chip:hover {
+  background: transparent;
+  color: var(--text-secondary);
 }
 
 /* The label reserves the width its boldest state needs, in every state, so
@@ -1815,17 +1837,16 @@ html, body, #root {
   color: var(--text-primary);
 }
 
-/* THE SEAL RETURNS HERE, and this is the assertion the premium contract left a
+/* THE SEAL MARKS A NAME, and this is the assertion the premium contract left a
    place for. The kicker's 2 x 11 slate mark was Law 3's ink for something the
-   app INFERRED, and it was correct while a study was something the app
-   assembled out of what you happened to open. A study is authored now — the
-   only way one comes into being is a reader pressing the + on this line — so
-   the mark is seal, which is Law 3's ink for authorship, and it is honest.
-
-   It is provenance and not state: every study chip carries it at the same
-   strength, because every study was made the same way. "All" carries none — it
-   is not a study, it is the absence of a choice among them. What tells you
-   which study you are in is the label's ink, above. */
+   app INFERRED, and retired with it. Every study is authored now, so a seal on
+   every chip would distinguish nothing — a row of gold bars saying one thing
+   over and over. What it certifies (ruled 2026-07-30, the same day the All
+   chip was refused) is the act of NAMING: a study still wearing its derived
+   reference has been made but not yet claimed, and goes unmarked until it is.
+   The component gates the span on `named`; the study-line contract asserts the
+   rule. It is provenance and never state — which study you are in is told by
+   the label's ink, above. */
 .scripture-study-chip-seal {
   width: 2px;
   height: 10px;

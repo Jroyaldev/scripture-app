@@ -160,7 +160,10 @@ test("the study line is painted out of the same two planes, and states its own s
   assert.match(workspaceStyles, /animation: scripture-study-chip-in 150ms ease;/);
   assert.match(
     workspaceStyles,
-    /\.scripture-study-line\[data-study-line-state="resting"\] \.scripture-study-chip \{\s*color: var\(--text-secondary\);\s*\}/,
+    // 2026-07-30, hand pass: the resting rule states ink AND withholds the
+    // pointer — a floor-state press switches to nothing, so the name offers no
+    // click. It used to be `{ color }` alone.
+    /\.scripture-study-line\[data-study-line-state="resting"\] \.scripture-study-chip \{[^}]*color: var\(--text-secondary\);[^}]*cursor: default;\s*\}/,
   );
 
   /* And the narrow shell keeps it. The frame's top edge is invariant across

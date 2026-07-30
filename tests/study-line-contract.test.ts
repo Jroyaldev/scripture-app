@@ -298,11 +298,14 @@ test("selection leads and the line follows, because there is nothing in between"
     "the filter state and its follow effect are retired; the derivation replaces both");
   assert.doesNotMatch(lineStatements, /onFilterChange|filterStudyId/,
     "the line holds no state about which study it is standing on");
-  // The only state it keeps is about the reader's hands: which stop has focus,
-  // and whether a chip is currently a field.
+  // The only state it keeps is about the reader's hands — which stop has focus,
+  // whether a chip is currently a field — and about the row's own overflow:
+  // which edges have chips scrolled past them (2026-07-30, both edges rather
+  // than the right alone, matching the strip's fade). None of it is about which
+  // study is current; that has no state to hold.
   assert.deepEqual(
     [...lineStatements.matchAll(/const \[(\w+),/g)].map((match) => match[1]),
-    ["focusedKey", "focusIntent", "renameGroupId", "renameDraft", "scrollableRight"],
+    ["focusedKey", "focusIntent", "renameGroupId", "renameDraft", "scrollEdges"],
   );
   assert.match(line, /export function studyLineActiveStudyId\(/);
   assert.match(line, /return workspace\.tabsById\[workspace\.activeTabId\]\?\.groupId \?\? null;/);
@@ -445,9 +448,19 @@ test("the line rests until there is something to choose between", () => {
 
   assert.match(line, /data-study-line-state=\{restsMinimal \? "resting" : "chips"\}/);
   assert.match(line, /aria-current=\{\(!restsMinimal && chip\.current\) \|\| undefined\}/);
+  /* 2026-07-30, hand pass: the resting rule grew a second declaration. It used
+     to be ink alone — `{ color: var(--text-secondary); }` — but a resting name
+     kept the pointer cursor and the hover wash of the chip it becomes, offering
+     a click that switches to nothing. At the floor the name states no
+     affordance it does not have: no pointer, no wash, while staying a real
+     control for the roving stop and F2. */
   assert.match(
     styles,
-    /\.scripture-study-line\[data-study-line-state="resting"\] \.scripture-study-chip \{\s*color: var\(--text-secondary\);\s*\}/,
+    /\.scripture-study-line\[data-study-line-state="resting"\] \.scripture-study-chip \{[^}]*color: var\(--text-secondary\);[^}]*cursor: default;\s*\}/,
+  );
+  assert.match(
+    styles,
+    /\.scripture-study-line\[data-study-line-state="resting"\] \.scripture-study-chip:hover \{\s*background: transparent;\s*color: var\(--text-secondary\);\s*\}/,
   );
   // The band is the same height in both states, and neither half of the frame's
   // sum is restated for either — held in tests/quire-frame-top-edge-contract.
