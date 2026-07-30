@@ -381,8 +381,16 @@ async function worker(): Promise<void> {
       });
     }
     results.push(...kept);
+    /* The same trimming as the refusal line above, rather than the literal
+       "bibleproject:podcast:" this once stripped. With one publisher those were
+       the same thing; with eight, every other source kept its whole prefix and
+       was then cut to 32 characters — so 5 Minutes in Church History logged
+       676 episodes as "five-minutes-church-history:podc" and the run log could
+       not say which episode any line was about. That mattered on 2026-07-30:
+       the logs were the obvious place to look for which episodes had been read
+       when the ledger below did not yet exist, and they could not answer. */
     console.log(
-      `  ${recordId.replace("bibleproject:podcast:", "").slice(0, 32).padEnd(34)}`
+      `  ${recordId.replace(/^[a-z-]+:podcast:/, "").slice(0, 32).padEnd(34)}`
       + `${String(refs.length).padStart(3)} found, ${String(kept.length).padStart(3)} kept`
       + `  (dropped: book ${dropped.book}, time ${dropped.time}, evidence ${dropped.evidence})`,
     );
