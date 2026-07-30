@@ -1320,6 +1320,10 @@ try {
 
        · one study — "All" does not appear, because a choice between a thing and
          itself teaches that the choice does not matter;
+       · that same line waking, in the same session, when a second study is
+         started from it — the one shape that cannot be reached by loading a
+         fixture, because waking is something that happens to a line already on
+         screen;
        · sixteen, the model's group cap, with names long enough to need the row
          to scroll and the + to refuse;
        · the narrow shell at 900px, where the rail becomes a bottom bar and the
@@ -1344,6 +1348,21 @@ try {
     await cdp.send("Page.reload", { ignoreCache: true });
     await cdp.send("Page.bringToFront");
     await driver.waitFor(`document.querySelectorAll("[data-study-line-chip]").length === ${workspace.groups.length}`, 20_000);
+    /* AND THEN SETTLE, because a chip that exists is not a chip that has
+       arrived. Every chip enters on `scripture-study-chip-in`, 150ms of
+       `translateX(-4px)` — so a `getBoundingClientRect()` taken the instant the
+       gate above comes true reads the chip up to 4px LEFT of where it lives,
+       at whatever fraction of the entrance the round trip happened to land on.
+
+       That is what the first chip's position flaked on until 2026-07-30. The
+       shape reads each measured their own load mid-entrance, so the same
+       unmoved chip came back 52-point-something on one load and 53-point-
+       something on the next, the rounding fell either side, and the assertion
+       failed about twice in six runs in both directions. It was never sub-pixel
+       layout: it was an animation being measured while it ran. `settle()`
+       finishes it, which is the position the chip holds for the rest of its
+       life and the only one worth asserting on. */
+    await driver.settle();
   };
 
   await loadShape(shapeFixture(1, SHAPE_LABELS));
@@ -1354,7 +1373,7 @@ try {
       state: line.getAttribute("data-study-line-state"),
       current: chip.getAttribute("aria-current"),
       lineHeight: line.getBoundingClientRect().height,
-      chipLeft: Math.round(chip.getBoundingClientRect().left),
+      chipLeft: chip.getBoundingClientRect().left,
       startDisabled: Boolean(document.querySelector("[data-study-start][data-study-start-disabled]")),
       ink: getComputedStyle(chip).color,
       weight: getComputedStyle(chip).fontWeight,
@@ -1366,6 +1385,56 @@ try {
   assert.equal(floor.startDisabled, false, "one study is nowhere near the cap");
   await captureBand("study-line-single.png");
 
+  /* ── THE LINE WAKES, IN ONE SITTING ───────────────────────────────────────
+     A study is started from the floor and the first name is measured again,
+     WITHOUT reloading. That is the claim as the component states it — "chips
+     become chips when a second study is born; the line wakes up rather than
+     re-laying out" — and waking is something that happens to a line that is
+     already on screen. Two page loads cannot witness it: they witness two
+     lines that were never the same line.
+
+     Until 2026-07-30 this was asked across the two `loadShape` reloads below,
+     comparing the sixteen-study row's first chip against the resting name from
+     the previous load. Two things were wrong with that and only one of them was
+     the flake. The flake was the entrance animation — see `loadShape`, which
+     settles now — and it is fixed there, for every shape read.
+
+     The other was this comparison itself. Two loads produce two lines, and
+     nothing a reload can show you is a line WAKING; at best it is two lines
+     that agree. So the claim is put the way the component states it, to the
+     line that is on screen: start a study from the floor and look again. The
+     two reads then share a layout root and a font pass, so `left` is the same
+     float or the line really did move. There is no tolerance here and none is
+     wanted — a tolerance would only have hidden the animation. */
+  await driver.evaluate(`document.querySelector("[data-study-start]")?.click()`);
+  /* A new study opens its own chip's naming field — see `namingRequest` in
+     StudyLine.tsx — so the second chip is a form, not a chip, until the name is
+     settled. Escape abandons the name and leaves the derived reference
+     standing, which is the two-study line at rest and the state to measure. */
+  await driver.waitFor(`Boolean(document.activeElement?.closest("[data-study-line-rename]"))`);
+  await dispatchKey(cdp, "Escape", "Escape", 27);
+  await driver.waitFor(`!document.querySelector("[data-study-line-rename]")
+    && document.querySelectorAll("[data-study-line-chip]").length === 2`);
+  await driver.settle();
+  const woke = await driver.evaluate(`(() => {
+    const line = document.querySelector("[data-study-line]");
+    const chips = [...document.querySelectorAll("[data-study-line-chip]")];
+    return {
+      state: line.getAttribute("data-study-line-state"),
+      chips: chips.length,
+      current: chips.filter((chip) => chip.getAttribute("aria-current") === "true").length,
+      chipLeft: chips[0].getBoundingClientRect().left,
+      lineHeight: line.getBoundingClientRect().height,
+    };
+  })()`);
+  assert.equal(woke.chips, 2, "starting a study from the floor did not give the line a second chip");
+  assert.equal(woke.state, "chips", "a second study is a choice, so the resting line becomes chips");
+  assert.equal(woke.current, 1, "the study just started is the one the page is in, and it is the only current one");
+  assert.equal(woke.lineHeight, 24, "the band keeps its height when it wakes — the frame does not move");
+  assert.equal(woke.chipLeft, floor.chipLeft,
+    `the line wakes up rather than re-laying out — the first name moved from ${floor.chipLeft} to ${woke.chipLeft}`);
+  await captureBand("study-line-woken.png");
+
   await loadShape(shapeFixture(16, SHAPE_LABELS));
   const ceiling = await driver.evaluate(`(() => {
     const row = document.querySelector(".scripture-study-line-chips");
@@ -1375,7 +1444,6 @@ try {
       chips: chips.length,
       sealed: chips.filter((chip) => chip.querySelector(".scripture-study-chip-seal")).length,
       current: chips.filter((chip) => chip.getAttribute("aria-current") === "true").length,
-      chipLeft: Math.round(chips[0].getBoundingClientRect().left),
       scrolls: row.scrollWidth > row.clientWidth + 2,
       fades: row.classList.contains("is-scrollable-right"),
       startDisabled: Boolean(document.querySelector("[data-study-start][data-study-start-disabled]")),
@@ -1392,10 +1460,11 @@ try {
   // Half the shape fixture's studies carry a custom name and half keep the
   // reference the app derived. The seal marks the naming and nothing else.
   assert.equal(ceiling.sealed, 8, "the seal marks a named study, not every study");
-  // And the line woke up without moving: the first chip stands where the
-  // resting name stood.
-  assert.equal(ceiling.chipLeft, floor.chipLeft,
-    "the line wakes up rather than re-laying out — the first name does not move");
+  /* THE FIRST CHIP'S POSITION IS NOT ASKED HERE. It used to be — this row's
+     first chip against the resting name from the previous load — and that is
+     the comparison that flaked; it moved above on 2026-07-30, to the one
+     session where the line actually wakes. What sixteen studies is for is what
+     follows: a row that pans, a fade that says so, and a + that refuses. */
   assert.equal(ceiling.scrolls, true, "sixteen names do not fit; the row pans rather than squeezing them");
   assert.equal(ceiling.fades, true, "an overflowing row says so with the strip's own edge fade");
   assert.equal(ceiling.startDisabled, true, "at the cap the + stays in the row and stops responding");
@@ -1446,6 +1515,7 @@ try {
     "study-line.png",
     "study-line-switched.png",
     "study-line-single.png",
+    "study-line-woken.png",
     "study-line-many.png",
     "study-line-narrow.png",
     "forced-colors.png",
@@ -1458,7 +1528,7 @@ try {
   for (const capture of pendingScreenshots) {
     writeFileSync(join(OUTPUT_DIR, capture.file), capture.bytes);
   }
-  console.log(`PASS study workspace bar: ${THEMES.length} identical-fixture theme captures + clean tab state + study line (switch, one, sixteen, narrow) + forced-colors/reduced-motion`);
+  console.log(`PASS study workspace bar: ${THEMES.length} identical-fixture theme captures + clean tab state + study line (switch, one, waking, sixteen, narrow) + forced-colors/reduced-motion`);
 } catch (error) {
   throw new Error(`${error instanceof Error ? error.stack ?? error.message : String(error)}\nElectron log:\n${childLog}`);
 } finally {
