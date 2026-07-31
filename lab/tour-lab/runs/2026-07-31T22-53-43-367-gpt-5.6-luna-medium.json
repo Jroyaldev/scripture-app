@@ -1,0 +1,358 @@
+{
+  "runId": "2026-07-31T22-53-43-367-gpt-5.6-luna-medium",
+  "startedAt": "2026-07-31T22:53:43.367Z",
+  "promptId": "doctrinal-atonement",
+  "prompt": "Did God pour out wrath on Jesus at the cross? I want to hear the different ways teachers explain what the crucifixion accomplished, including where they disagree.",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Did God Pour Out Wrath on Jesus? A Tour of the Cross",
+    "intro": "This tour lets you hear the main fault lines rather than forcing the crucifixion into one formula. You’ll begin with the Bible’s many interwoven images, then hear a clear penal-substitution account, a critique that reframes and combines substitution with victory, and finally a fuller Christus Victor presentation. Listen for both agreement—Jesus dies for sinners—and disagreement about what “for” means and how divine wrath, justice, evil, and love fit together.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:two-men-named-jesus",
+        "startSec": 2457,
+        "endSec": 2698,
+        "why": "Start here for orientation. The speakers say the death of Jesus is where “all the threads come together,” naming sacrifice, victory, prophetic imagery, and Jesus suffering “the fate that he assigned us for our rebellion” so he can give life. This clip also explicitly warns that Christians reach “a lot of different conclusions” about atonement, making room for the disagreement you’re asking to hear.",
+        "episodeTitle": "Two Men Named Jesus",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/2d2b5ff7-d5a7-4f12-b496-d2e799ece9e0/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=2d2b5ff7-d5a7-4f12-b496-d2e799ece9e0",
+        "durationSec": 3582,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:bacb1fc2-com-e79bf8f7-6ab5-30f3-9e4f-46bbb41dd164",
+        "startSec": 1400,
+        "endSec": 1594,
+        "why": "Now hear the clearest affirmative answer to your question. The teacher identifies Jesus as “the ultimate day of atonement” and says that God’s “just repayment for sin” was “poured out on Jesus Himself,” satisfying wrath and fully dealing with sin’s penalty. He then explains how this gives believers a favorable verdict while preserving both God’s justice and mercy.",
+        "episodeTitle": "Romans 3:21-26",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/zhvgac/romans_321-368t8hu.mp3",
+        "durationSec": 1954,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:32b053a0-4d5c-11ee-8683-f1dd20c5e5ec",
+        "startSec": 1270,
+        "endSec": 1570,
+        "why": "This is the important challenge and qualification. N. T. Wright rejects the caricature in which “God needed to punish somebody” and Jesus simply gets hit instead, but he does not discard substitution or penal language. He argues that “the two work together”: Jesus wins victory over the powers by taking the sinner’s place, and says explicitly that this is “definitely substitutionary” and “definitely penal” within that larger story.",
+        "episodeTitle": "#185 Questions on Crucifixion and Atonement (Classic)",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR9770585049.mp3?updated=1749653873",
+        "durationSec": 2261,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "radically-christian:podcast:e9106bdd-https-radicallychristian-com-p-9457",
+        "startSec": 350,
+        "endSec": 610,
+        "why": "Finish with a distinct Christus Victor account and its biblical atmosphere. The speakers trace ransom and Christus Victor to early Christian interpretations, describe Jesus’ ministry as an “onslaught over spiritual evil,” and present the cross as Jesus waging war against “the kingdom of Satan” and the powers of darkness. It gives you the strongest contrast with a wrath-centered courtroom model, while still leaving open the question of how victory is accomplished through death.",
+        "episodeTitle": "Theories of Atonement – CrossTalk S4E10",
+        "sourceId": "radically-christian",
+        "source": "Radically Christian",
+        "audioUrl": "https://substackcdn.com/video_upload/post/148682238/4202feae-310f-48d3-8260-2bd297e7ec54/transcoded.mp3?post_id=148682238&relation=podcast&Expires=1785437879&Key-Pair-Id=APKAIVDA3NPSMPSPESQQ&Signature=E81CSoqx5J2xZCnTPRkPrWvRg17tmjM-2SKhycuZSAMk4XOl732-KwOVFWlcApEglSliBQA4R8rvfsVLBkCl5wLrSJeFJE8YFypZehk1S-ztVhFWUOaXbBbN9Ljnj9yk4CxD8CvqZvUeUpm0st083KKQu8uajFMmkOZhz7FeZXgC6Xmc9frzupTiWp9gV1U1qj14AnTiRqjJoBIVkwTkQzHh0KCRmLXCs0pKbEAEz-H7qAjGYKr0-w04CQCM2GTYNZ2q8WWm8SHYOfihsTvcGwCbh48uSLygBXDGvyuPHDZzeDCDWp8K5zjgnJbXnWNCyt8aDP-dX-e4oZzV77TM1Q__",
+        "durationSec": 2917,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips suggest that the real disagreement is not simply whether Jesus’ death saves, but which biblical picture should lead: punishment and satisfaction, victory over enslaving powers, sacrifice and representation, or a woven combination of them. The most direct “yes” to wrath being poured out on Jesus comes from the Listener’s Commentary; Wright resists a crude version while retaining penal substitution; the other teachers widen the frame. You can now return to the clips and decide which account best makes sense of the cross’s justice, love, and deliverance.",
+    "totalSeconds": 995
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 1745,
+      "promptTokens": 1584,
+      "completionTokens": 36,
+      "reasoningTokens": 20,
+      "cachedPromptTokens": 1537,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000042770000000000006
+    },
+    {
+      "i": 1,
+      "latencyMs": 2524,
+      "promptTokens": 1879,
+      "completionTokens": 176,
+      "reasoningTokens": 13,
+      "cachedPromptTokens": 1581,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00015858500000000001
+    },
+    {
+      "i": 2,
+      "latencyMs": 3240,
+      "promptTokens": 12186,
+      "completionTokens": 312,
+      "reasoningTokens": 48,
+      "cachedPromptTokens": 1876,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0014946350000000002
+    },
+    {
+      "i": 3,
+      "latencyMs": 4869,
+      "promptTokens": 17584,
+      "completionTokens": 277,
+      "reasoningTokens": 39,
+      "cachedPromptTokens": 12183,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0009630800000000002
+    },
+    {
+      "i": 4,
+      "latencyMs": 11014,
+      "promptTokens": 21894,
+      "completionTokens": 928,
+      "reasoningTokens": 170,
+      "cachedPromptTokens": 17581,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0012716600000000002
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "wrath poured out on Jesus cross",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 73,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "penal substitution punishment Jesus instead of us",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 48,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "cross victory powers ransom Christus Victor",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 35,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "atonement God did not punish Jesus wrath",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 78,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "what happened at the cross reconciliation sacrifice",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 54,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "radically-christian:podcast:e9106bdd-https-radicallychristian-com-p-9457",
+        "fromSec": 250,
+        "toSec": 2200
+      },
+      "ms": 3,
+      "summary": "29 skim lines, 250s–1750s of Theories of Atonement – CrossTalk S4E10"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:32b053a0-4d5c-11ee-8683-f1dd20c5e5ec",
+        "fromSec": 1100,
+        "toSec": 1900
+      },
+      "ms": 0,
+      "summary": "17 skim lines, 1100s–1900s of #185 Questions on Crucifixion and Atonement (Classic)"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:bacb1fc2-com-e79bf8f7-6ab5-30f3-9e4f-46bbb41dd164",
+        "fromSec": 1250,
+        "toSec": 1650
+      },
+      "ms": 3,
+      "summary": "9 skim lines, 1250s–1650s of Romans 3:21-26"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "cross reveals God's love not angry Father punishing Son",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 99,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "Jesus death sacrifice covenant kingdom cross meaning",
+        "sourceId": "bibleproject",
+        "limit": 8
+      },
+      "ms": 59,
+      "summary": "8 hits"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:bacb1fc2-com-e79bf8f7-6ab5-30f3-9e4f-46bbb41dd164",
+        "fromSec": 1400,
+        "toSec": 1630
+      },
+      "ms": 0,
+      "summary": "1400s–1630s of Romans 3:21-26"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:32b053a0-4d5c-11ee-8683-f1dd20c5e5ec",
+        "fromSec": 1270,
+        "toSec": 1570
+      },
+      "ms": 0,
+      "summary": "1270s–1570s of #185 Questions on Crucifixion and Atonement (Classic)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:e9106bdd-https-radicallychristian-com-p-9457",
+        "fromSec": 350,
+        "toSec": 830
+      },
+      "ms": 0,
+      "summary": "350s–650s of Theories of Atonement – CrossTalk S4E10"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:two-men-named-jesus",
+        "fromSec": 2410,
+        "toSec": 2700
+      },
+      "ms": 0,
+      "summary": "2410s–2700s of Two Men Named Jesus"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 5,
+    "toolCalls": 16,
+    "tapeSec": 1120,
+    "promptTokens": 55127,
+    "completionTokens": 1729,
+    "reasoningTokens": 290,
+    "cachedPromptTokens": 34758,
+    "wallMs": 23850,
+    "modelLatencyMs": 23392,
+    "toolMs": 453
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.003931,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T22:54:07.217Z"
+}

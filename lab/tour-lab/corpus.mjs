@@ -515,16 +515,28 @@ export function episodeSkim({ recordId, fromSec, toSec }) {
     to = from + MAX_SKIM_SECONDS;
     truncated = true;
   }
+  /* Each bucket keeps its LONGEST segment, not its first: sampled first
+     lines came back as conversational orphans ("Here we go.", "It's just
+     it's so complex.") half the time, and a map of orphans misleads. The
+     longest utterance in a stretch is where a speaker is developing a
+     point, which is the thing a skim exists to reveal. The line's timestamp
+     stays the segment's own. */
   const lines = [];
-  let bucketEnd = -Infinity;
+  let bucket = null; // { end, best }
+  const flush = () => {
+    if (bucket?.best) lines.push({ at: Math.round(bucket.best.s), text: clip(String(bucket.best.t), 110) });
+  };
   for (const s of tr.segments) {
     if (s.e < from) continue;
     if (s.s > to) break;
-    if (s.s >= bucketEnd) {
-      bucketEnd = s.s + SKIM_BUCKET_SECONDS;
-      lines.push({ at: Math.round(s.s), text: clip(String(s.t), 110) });
+    if (!bucket || s.s >= bucket.end) {
+      flush();
+      bucket = { end: s.s + SKIM_BUCKET_SECONDS, best: s };
+    } else if (String(s.t).length > String(bucket.best.t).length) {
+      bucket.best = s;
     }
   }
+  flush();
   return {
     recordId: tr.id,
     title: tr.title,

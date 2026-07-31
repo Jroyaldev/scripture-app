@@ -1,0 +1,381 @@
+{
+  "runId": "2026-07-31T22-51-24-740-gpt-5.6-luna-medium",
+  "startedAt": "2026-07-31T22:51:24.740Z",
+  "promptId": "pastoral-grief",
+  "prompt": "My mother died three weeks ago and I cannot pray. I don't want tidy answers — I want to hear people talk honestly about grief and where God is in it.",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "When Prayer Won’t Come: A Tour Through Grief",
+    "intro": "Your mother’s death is still very close, and this tour does not ask you to get past it or produce a faithful-sounding prayer. It begins with someone answering a grieving daughter who cannot pray, then stays with Jesus at a grave, makes room for lament and silence, and finally considers where God may be in the sorrow without pretending to explain it away.",
+    "steps": [
+      {
+        "recordId": "ask-nt-wright:podcast:f189e210-8df4-11ee-b97f-09218d3fce01",
+        "startSec": 80,
+        "endSec": 370,
+        "why": "Begin here because the question is almost exactly yours: a bereaved person says belief feels like “wishful thinking” and prayer like talking to herself. Wright answers that her grief is “not selfish and it is not unimportant,” then suggests entering the stories of Gethsemane, John 11, and the Psalms rather than forcing herself into tidy words. Most importantly, he says not to hurry past Mary and Martha’s cry, “If only you’d been here.”",
+        "episodeTitle": "#196 Pain and suffering Part 2 (Classic)",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR3879333769.mp3?updated=1749653312",
+        "durationSec": 1455,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "listeners-commentary:podcast:a1a084d1-com-06ada9f3-4c3f-3851-9ba5-35f817a4ee6f",
+        "startSec": 1320,
+        "endSec": 1515,
+        "why": "This gives you company at the grave before explanation. The commentator describes Mary’s heartbreak that Jesus “could have healed Lazarus, but he didn’t,” and emphasizes that Jesus is emotionally agitated by the wailing because “this isn’t the way it’s supposed to be.” The clip lingers over “Jesus wept,” not as a denial of resurrection, but as a response to death and the pain it causes.",
+        "episodeTitle": "John 11:1-54",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/rhu2ccvr4rgf5c54/john_111-54bhwxv.mp3",
+        "durationSec": 2212,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:8bbb1a44-cb2e-4ed4-b796-ca59c46978bf",
+        "startSec": 380,
+        "endSec": 675,
+        "why": "Stay here for an honest account of what lament sounds like: “answer us, hear us, do something,” followed by “How long, O Lord?” The speakers push back against the pressure to “microwave” grief and say that people need time to confront pain. They also describe lament as helpless dependence—not a failure to fix yourself—and connect the freedom to ask “where are you?” with confidence that God is not waiting to punish blunt honesty.",
+        "episodeTitle": "2 Samuel 1:17-2:4 (Episode 259)",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_min_ep_259.mp3?dest-id=245197",
+        "durationSec": 2389,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:aa93fe68-dfc1-11ee-8d8c-1b5a7e037e3d",
+        "startSec": 2820,
+        "endSec": 3005,
+        "why": "This is the tour’s gentlest way to think about silence. The speakers argue that God’s silence can “honor” suffering by letting it remain “true, as painful, as real,” rather than answering with an explanation that undercuts the lament. They go further, observing that Scripture includes the people’s “agonies, despairs, and questions,” and links those cries to Jesus as “a man of sorrows.”",
+        "episodeTitle": "Lamentations Overview: Mercy Every Morning",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG8477051140.mp3?updated=1710173642",
+        "durationSec": 3616,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:efa1c31b-com-675da7aa-6691-5371-9a69-ace341ca3888",
+        "startSec": 1045,
+        "endSec": 1285,
+        "why": "End with the question beneath “where is God?” Wright says that in Jesus we see the God who “has come with his own grief to share in” the world’s pain, and he connects Jesus’ tears with the Spirit groaning within grieving people. He also refuses to force every lament into a bright conclusion, noting that some Psalms “leave you in the dark,” while still calling that darkness a place where we encounter “the God of all compassion.”",
+        "episodeTitle": "#33 Tom on Coronavirus, self-isolating and praying through crisis",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR8934467240.mp3?updated=1736469733",
+        "durationSec": 2321,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "For now, not being able to pray does not have to become another accusation against yourself. If all you can do is listen, cry, or borrow a sentence such as “If you had been here,” these voices leave room for that. The tour does not resolve your mother’s death; it keeps you company in the place where grief, silence, and God are still painfully unresolved.",
+    "totalSeconds": 1205
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3269,
+      "promptTokens": 1585,
+      "completionTokens": 79,
+      "reasoningTokens": 63,
+      "cachedPromptTokens": 1537,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000068695
+    },
+    {
+      "i": 1,
+      "latencyMs": 2944,
+      "promptTokens": 1880,
+      "completionTokens": 185,
+      "reasoningTokens": 25,
+      "cachedPromptTokens": 1582,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00016399500000000003
+    },
+    {
+      "i": 2,
+      "latencyMs": 3308,
+      "promptTokens": 12049,
+      "completionTokens": 382,
+      "reasoningTokens": 54,
+      "cachedPromptTokens": 1877,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0015193950000000002
+    },
+    {
+      "i": 3,
+      "latencyMs": 2796,
+      "promptTokens": 14388,
+      "completionTokens": 321,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 12046,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000605735
+    },
+    {
+      "i": 4,
+      "latencyMs": 9259,
+      "promptTokens": 19591,
+      "completionTokens": 1032,
+      "reasoningTokens": 134,
+      "cachedPromptTokens": 14385,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0014137250000000002
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "grief when someone dies where is God",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 81,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "cannot pray lament silence God suffering",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 75,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "mother died mourning death loss",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 52,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "honest grief tears presence of God",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 44,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Jesus wept death Lazarus grief",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 42,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:f189e210-8df4-11ee-b97f-09218d3fce01",
+        "fromSec": 0,
+        "toSec": 700
+      },
+      "ms": 0,
+      "summary": "15 skim lines, 0s–700s of #196 Pain and suffering Part 2 (Classic)"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "spoken-gospel:podcast:aa93fe68-dfc1-11ee-8d8c-1b5a7e037e3d",
+        "fromSec": 2700,
+        "toSec": 3300
+      },
+      "ms": 6,
+      "summary": "13 skim lines, 2700s–3300s of Lamentations Overview: Mercy Every Morning"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:a1a084d1-com-06ada9f3-4c3f-3851-9ba5-35f817a4ee6f",
+        "fromSec": 1150,
+        "toSec": 1700
+      },
+      "ms": 0,
+      "summary": "12 skim lines, 1150s–1700s of John 11:1-54"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:efa1c31b-com-675da7aa-6691-5371-9a69-ace341ca3888",
+        "fromSec": 950,
+        "toSec": 1350
+      },
+      "ms": 0,
+      "summary": "8 skim lines, 950s–1350s of #33 Tom on Coronavirus, self-isolating and praying through crisis"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:8bbb1a44-cb2e-4ed4-b796-ca59c46978bf",
+        "fromSec": 400,
+        "toSec": 1000
+      },
+      "ms": 0,
+      "summary": "12 skim lines, 400s–1000s of 2 Samuel 1:17-2:4 (Episode 259)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:f189e210-8df4-11ee-b97f-09218d3fce01",
+        "fromSec": 80,
+        "toSec": 370
+      },
+      "ms": 0,
+      "summary": "80s–370s of #196 Pain and suffering Part 2 (Classic)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:aa93fe68-dfc1-11ee-8d8c-1b5a7e037e3d",
+        "fromSec": 2820,
+        "toSec": 3005
+      },
+      "ms": 0,
+      "summary": "2820s–3005s of Lamentations Overview: Mercy Every Morning"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:a1a084d1-com-06ada9f3-4c3f-3851-9ba5-35f817a4ee6f",
+        "fromSec": 1320,
+        "toSec": 1515
+      },
+      "ms": 0,
+      "summary": "1320s–1515s of John 11:1-54"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:efa1c31b-com-675da7aa-6691-5371-9a69-ace341ca3888",
+        "fromSec": 1045,
+        "toSec": 1285
+      },
+      "ms": 0,
+      "summary": "1045s–1285s of #33 Tom on Coronavirus, self-isolating and praying through crisis"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:8bbb1a44-cb2e-4ed4-b796-ca59c46978bf",
+        "fromSec": 380,
+        "toSec": 675
+      },
+      "ms": 0,
+      "summary": "380s–675s of 2 Samuel 1:17-2:4 (Episode 259)"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 5,
+    "toolCalls": 17,
+    "tapeSec": 1205,
+    "promptTokens": 49493,
+    "completionTokens": 1999,
+    "reasoningTokens": 276,
+    "cachedPromptTokens": 31427,
+    "wallMs": 21880,
+    "modelLatencyMs": 21576,
+    "toolMs": 301
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.003772,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T22:51:46.620Z"
+}

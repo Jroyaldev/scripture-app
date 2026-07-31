@@ -9,6 +9,8 @@
 // embed anyone's copyright.
 //
 // Read-only, same posture as corpus.mjs: nothing here writes.
+// (Unrelated caution recorded where cost work will look: run-record dollars
+// are whatever OpenRouter billed, promotions included — see pricing.json.)
 
 import fs from 'node:fs';
 import path from 'node:path';

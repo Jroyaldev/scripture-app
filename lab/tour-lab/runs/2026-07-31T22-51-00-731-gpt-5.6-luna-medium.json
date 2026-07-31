@@ -1,0 +1,439 @@
+{
+  "runId": "2026-07-31T22-51-00-731-gpt-5.6-luna-medium",
+  "startedAt": "2026-07-31T22:51:00.732Z",
+  "promptId": "doctrinal-resurrection-body",
+  "prompt": "If Jesus rose bodily, what happens to my body when I die? I want to understand what the New Testament actually claims about resurrection versus 'going to heaven'.",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Your Body, Resurrection, and the New Creation",
+    "intro": "This tour separates two ideas that are often blended together: what may be true for a believer immediately after death, and the New Testament’s final hope of resurrection. It begins with the vocabulary of resurrection, then follows Paul’s body-language and the Bible’s picture of heaven and earth finally reunited.",
+    "steps": [
+      {
+        "recordId": "ask-nt-wright:podcast:6a253c6-com-651c11dc-e7c9-3e9c-8d28-dfdec7d811d5",
+        "startSec": 670,
+        "endSec": 840,
+        "why": "Start here to establish the central distinction you are asking about. N. T. Wright says plainly that “resurrection is not about somebody going into a glorious angelic state” and that the word does not mean “going to heaven”; he then connects Jesus’ identifiable, wounded risen body with the question of what God will do with ours.",
+        "episodeTitle": "#164 Easter questions on the resurrection of Jesus",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR6878813537.mp3?updated=1749655811",
+        "durationSec": 2012,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:5c0c2da1-com-b64a4f2b-7912-37f8-814f-881acb5b8ead",
+        "startSec": 490,
+        "endSec": 564,
+        "why": "Now hear the important qualification about the time between death and resurrection. Wright says that a believer is “safe with Jesus,” describes the dead as “waiting for resurrection,” and treats paradise and the place Jesus prepares as an interim rest rather than the final destination. That keeps “with Christ now” from being confused with the New Testament’s ultimate bodily hope.",
+        "episodeTitle": "#136 Talking to kids about New Creation & responding to William Lane Craig",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR1804642062.mp3?updated=1749724438",
+        "durationSec": 1710,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "bibleproject:podcast:resurrection-way-life-part-4-acorns-fire",
+        "startSec": 954,
+        "endSec": 1153,
+        "why": "This gives you Paul’s answer to “what kind of body?” through the seed image: the body is “planted perishable” but “raised imperishable,” related to what was sown yet transformed. The speaker explicitly rejects the idea that the biblical future is to “float away as then a spirit,” and explains the contrast between present “flesh and blood” and an imperishable existence in God’s kingdom.",
+        "episodeTitle": "Acorns of Fire",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/e5d85dd4-a616-4860-846c-fc4d57e11252/episodes/c2774234-47e5-4281-a3bc-72c252ed1861/audio/128/default.mp3?awCollectionId=e5d85dd4-a616-4860-846c-fc4d57e11252&awEpisodeId=c2774234-47e5-4281-a3bc-72c252ed1861",
+        "durationSec": 2953,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:8380ffa3-com-b72975ac-389f-3ffa-84fb-478fb64f2873",
+        "startSec": 602,
+        "endSec": 846,
+        "why": "Finish by listening directly through the logic of 1 Corinthians 15:35–39. This exposition frames resurrection as central and guaranteed by Jesus’ resurrection, then walks through Paul’s seed and “different kinds of bodies” analogies. It helps you hear “spiritual body” as a body fitted for resurrection life, not as a denial of embodiment.",
+        "episodeTitle": "1 Corinthians 15:29-58",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/d8ngn3/1_corinthians_1529-589yhwk.mp3",
+        "durationSec": 2010,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips present the New Testament’s sequence as: death, being with Christ, and finally resurrection at Christ’s coming. The final hope is not escape from creation but God’s renewal of embodied life—“heaven and earth together,” as Wright puts it—following the pattern already begun in Jesus.",
+    "totalSeconds": 687
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2050,
+      "promptTokens": 1584,
+      "completionTokens": 42,
+      "reasoningTokens": 26,
+      "cachedPromptTokens": 0,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00022312500000000004
+    },
+    {
+      "i": 1,
+      "latencyMs": 2967,
+      "promptTokens": 1879,
+      "completionTokens": 245,
+      "reasoningTokens": 24,
+      "cachedPromptTokens": 1581,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00019998500000000002
+    },
+    {
+      "i": 2,
+      "latencyMs": 2698,
+      "promptTokens": 11455,
+      "completionTokens": 304,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 1876,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0013984600000000002
+    },
+    {
+      "i": 3,
+      "latencyMs": 3151,
+      "promptTokens": 13147,
+      "completionTokens": 376,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 11452,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0005519200000000001
+    },
+    {
+      "i": 4,
+      "latencyMs": 4077,
+      "promptTokens": 18945,
+      "completionTokens": 146,
+      "reasoningTokens": 73,
+      "cachedPromptTokens": 13144,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0009440900000000001
+    },
+    {
+      "i": 5,
+      "latencyMs": 8532,
+      "promptTokens": 19843,
+      "completionTokens": 810,
+      "reasoningTokens": 157,
+      "cachedPromptTokens": 18942,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0007879700000000001
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 53,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "resurrection body when we die heaven",
+        "sourceId": "ask-nt-wright",
+        "limit": 8
+      },
+      "ms": 61,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "bodily resurrection not going to heaven",
+        "sourceId": "bibleproject",
+        "limit": 8
+      },
+      "ms": 77,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "what happens after death resurrection body",
+        "sourceId": "radically-christian",
+        "limit": 8
+      },
+      "ms": 40,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "new heavens new earth resurrection body",
+        "sourceId": "spoken-gospel",
+        "limit": 8
+      },
+      "ms": 82,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "absent from the body present with the Lord resurrection",
+        "sourceId": "ask-nt-wright",
+        "limit": 8
+      },
+      "ms": 30,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "1 Corinthians 15 spiritual body resurrection",
+        "sourceId": "listeners-commentary",
+        "limit": 8
+      },
+      "ms": 76,
+      "summary": "8 hits"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:6a253c6-com-651c11dc-e7c9-3e9c-8d28-dfdec7d811d5",
+        "fromSec": 580,
+        "toSec": 1050
+      },
+      "ms": 4,
+      "summary": "10 skim lines, 580s–1050s of #164 Easter questions on the resurrection of Jesus"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:resurrection-way-life-part-4-acorns-fire",
+        "fromSec": 850,
+        "toSec": 1250
+      },
+      "ms": 4,
+      "summary": "8 skim lines, 850s–1250s of Acorns of Fire"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:8380ffa3-com-b72975ac-389f-3ffa-84fb-478fb64f2873",
+        "fromSec": 500,
+        "toSec": 1050
+      },
+      "ms": 0,
+      "summary": "12 skim lines, 500s–1050s of 1 Corinthians 15:29-58"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "radically-christian:podcast:f639e871-8df3?",
+        "fromSec": 2800,
+        "toSec": 3400
+      },
+      "ms": 1,
+      "summary": "error: unknown recordId \"radically-christian:podcast:f639e871-8df3?\""
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:5c0c2da1-com-b64a4f2b-7912-37f8-814f-881acb5b8ead",
+        "fromSec": 150,
+        "toSec": 700
+      },
+      "ms": 2,
+      "summary": "11 skim lines, 150s–700s of #136 Talking to kids about New Creation & responding to William Lane Craig"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:6a253c6-com-651c11dc-e7c9-3e9c-8d28-dfdec7d811d5",
+        "fromSec": 650,
+        "toSec": 850
+      },
+      "ms": 0,
+      "summary": "650s–850s of #164 Easter questions on the resurrection of Jesus"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:resurrection-way-life-part-4-acorns-fire",
+        "fromSec": 930,
+        "toSec": 1240
+      },
+      "ms": 0,
+      "summary": "930s–1230s of Acorns of Fire"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:8380ffa3-com-b72975ac-389f-3ffa-84fb-478fb64f2873",
+        "fromSec": 590,
+        "toSec": 1060
+      },
+      "ms": 0,
+      "summary": "590s–890s of 1 Corinthians 15:29-58"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:5c0c2da1-com-b64a4f2b-7912-37f8-814f-881acb5b8ead",
+        "fromSec": 190,
+        "toSec": 650
+      },
+      "ms": 0,
+      "summary": "190s–490s of #136 Talking to kids about New Creation & responding to William Lane Craig"
+    },
+    {
+      "at": 3,
+      "name": "read_passage",
+      "args": {
+        "book": "1 Corinthians",
+        "chapter": 15,
+        "fromVerse": 20,
+        "toVerse": 23
+      },
+      "ms": 2,
+      "summary": "1 Corinthians 15:20–23 (WEB)"
+    },
+    {
+      "at": 3,
+      "name": "read_passage",
+      "args": {
+        "book": "1 Corinthians",
+        "chapter": 15,
+        "fromVerse": 35,
+        "toVerse": 49
+      },
+      "ms": 0,
+      "summary": "1 Corinthians 15:35–49 (WEB)"
+    },
+    {
+      "at": 3,
+      "name": "read_passage",
+      "args": {
+        "book": "Philippians",
+        "chapter": 3,
+        "fromVerse": 20,
+        "toVerse": 21
+      },
+      "ms": 1,
+      "summary": "Philippians 3:20–21 (WEB)"
+    },
+    {
+      "at": 3,
+      "name": "read_passage",
+      "args": {
+        "book": "Revelation",
+        "chapter": 21,
+        "fromVerse": 1,
+        "toVerse": 5
+      },
+      "ms": 0,
+      "summary": "Revelation 21:1–5 (WEB)"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:5c0c2da1-com-b64a4f2b-7912-37f8-814f-881acb5b8ead",
+        "fromSec": 490,
+        "toSec": 660
+      },
+      "ms": 0,
+      "summary": "490s–660s of #136 Talking to kids about New Creation & responding to William Lane Craig"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 6,
+    "toolCalls": 22,
+    "tapeSec": 1270,
+    "promptTokens": 66853,
+    "completionTokens": 1923,
+    "reasoningTokens": 280,
+    "cachedPromptTokens": 46995,
+    "wallMs": 24004,
+    "modelLatencyMs": 23475,
+    "toolMs": 433
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.004106,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T22:51:24.736Z"
+}

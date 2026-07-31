@@ -1,0 +1,336 @@
+{
+  "runId": "2026-07-31T22-54-07-219-gpt-5.6-luna-medium",
+  "startedAt": "2026-07-31T22:54:07.219Z",
+  "promptId": "pastoral-doubt",
+  "prompt": "I'm losing my faith and I'm frightened of it. Is doubt a failure? I want to hear people who take doubt seriously rather than scolding it.",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "When Doubt Feels Like the End",
+    "intro": "This tour begins with someone who was genuinely afraid that suffering would make him abandon faith, then makes room for the Bible’s raw language of grief and confusion. From there, it listens for a gentler response to wavering, and ends with practical ways to pray when belief feels thin. None of these speakers treats doubt as something to silence with a slogan.",
+    "steps": [
+      {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "startSec": 331,
+        "endSec": 690,
+        "why": "Begin with Cameron Cole’s honest account of fearing that tragedy would expose him as “a sellout and a fraud,” followed by the death of his three-year-old son. He describes the surprising words that came first—“Jesus rose from the dead”—and explains how hope and trust coexisted with “an unbelievable amount of pain and sorrow.” This meets your fear without pretending it is unusual or easy.",
+        "episodeTitle": "Psalm 22: Lament Psalms (w/ Cameron Cole)",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG7303573431.mp3?updated=1686154567",
+        "durationSec": 2801,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:444302a2-d904-43b3-a21f-4c7fb0a30dd7",
+        "startSec": 1447,
+        "endSec": 1643,
+        "why": "Now let Job and Jeremiah widen the emotional permission. The teachers point out that Scripture does not read like “an instruction book” prescribing the correct response to suffering; it shows what faithful people actually say. Their central observation is especially important here: “lament rather than being a signal of the absence of faith is actually a sign that faith is very much present.”",
+        "episodeTitle": "Job 2:11-3:26 (Episode 387)",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_ep_387.mp3?dest-id=245197",
+        "durationSec": 2435,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:final-instructions-and-soaring-doxology",
+        "startSec": 2036,
+        "endSec": 2241,
+        "why": "This clip directly addresses the fear that doubt deserves scolding. Discussing Jude’s difficult textual variant—“rebuke those who are doubting” versus “have mercy on some who are doubting”—the speakers say that questions are important and describe wavering people as those trying to discern whom to trust. The practical posture they draw out is “be patient and show mercy,” not shame.",
+        "episodeTitle": "The Letter of Jude E6: Final Instructions and a Soaring Doxology",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/6a7451a1-26cf-4fa8-9199-4c212f7a23d9/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=6a7451a1-26cf-4fa8-9199-4c212f7a23d9",
+        "durationSec": 4137,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:f189e210-8df4-11ee-b97f-09218d3fce01",
+        "startSec": 124,
+        "endSec": 350,
+        "why": "End with a way to remain in contact with God when prayer feels fake. In response to someone who says “belief can seem like wishful thinking,” Wright first refuses to minimize grief, then recommends entering the Gospel stories and praying the Psalms—including Psalm 42, 43, and even Psalm 88 when things are bleak. His invitation is not to manufacture certainty, but to “spread out her sorrows before Jesus.”",
+        "episodeTitle": "#196 Pain and suffering Part 2 (Classic)",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR3879333769.mp3?updated=1749653312",
+        "durationSec": 1455,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "You do not have to solve your faith in one sitting. If a clip leaves you raw, pause there; if prayer feels impossible, you may be able to begin with the smallest honest sentence—or with someone safe enough to hear it. The voices here leave room for doubt, lament, mercy, and hope to occupy the same life.",
+    "totalSeconds": 986
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3571,
+      "promptTokens": 1582,
+      "completionTokens": 52,
+      "reasoningTokens": 36,
+      "cachedPromptTokens": 1537,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00005212000000000001
+    },
+    {
+      "i": 1,
+      "latencyMs": 3553,
+      "promptTokens": 1877,
+      "completionTokens": 254,
+      "reasoningTokens": 41,
+      "cachedPromptTokens": 1579,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00020536500000000002
+    },
+    {
+      "i": 2,
+      "latencyMs": 8277,
+      "promptTokens": 11569,
+      "completionTokens": 335,
+      "reasoningTokens": 41,
+      "cachedPromptTokens": 1874,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0014315400000000002
+    },
+    {
+      "i": 3,
+      "latencyMs": 7989,
+      "promptTokens": 17831,
+      "completionTokens": 386,
+      "reasoningTokens": 325,
+      "cachedPromptTokens": 11566,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0011303100000000003
+    },
+    {
+      "i": 4,
+      "latencyMs": 10662,
+      "promptTokens": 18729,
+      "completionTokens": 902,
+      "reasoningTokens": 231,
+      "cachedPromptTokens": 17828,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008320300000000001
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "doubt faith afraid losing faith",
+        "sourceId": "ask-nt-wright",
+        "limit": 8
+      },
+      "ms": 60,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "doubt unbelief believe help my unbelief",
+        "sourceId": "radically-christian",
+        "limit": 8
+      },
+      "ms": 49,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "deconstruction questions faith doubt",
+        "sourceId": "spoken-gospel",
+        "limit": 8
+      },
+      "ms": 75,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Thomas doubt resurrection touching wounds",
+        "sourceId": "bibleproject",
+        "limit": 8
+      },
+      "ms": 73,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "lament God silence faith questions",
+        "sourceId": "forty-minutes-ot",
+        "limit": 8
+      },
+      "ms": 42,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "doubt faith questions",
+        "sourceId": "listeners-commentary",
+        "limit": 8
+      },
+      "ms": 24,
+      "summary": "8 hits"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "fromSec": 200,
+        "toSec": 620
+      },
+      "ms": 7,
+      "summary": "200s–500s of Psalm 22: Lament Psalms (w/ Cameron Cole)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:final-instructions-and-soaring-doxology",
+        "fromSec": 1980,
+        "toSec": 2380
+      },
+      "ms": 0,
+      "summary": "1980s–2280s of The Letter of Jude E6: Final Instructions and a Soaring Doxology"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:444302a2-d904-43b3-a21f-4c7fb0a30dd7",
+        "fromSec": 1360,
+        "toSec": 1730
+      },
+      "ms": 0,
+      "summary": "1360s–1660s of Job 2:11-3:26 (Episode 387)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:330f109-com-adeb6142-7770-316d-a1b3-0b91155d865b",
+        "fromSec": 380,
+        "toSec": 650
+      },
+      "ms": 0,
+      "summary": "380s–650s of Jude 17-25"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:f189e210-8df4-11ee-b97f-09218d3fce01",
+        "fromSec": 50,
+        "toSec": 430
+      },
+      "ms": 3,
+      "summary": "50s–350s of #196 Pain and suffering Part 2 (Classic)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "fromSec": 500,
+        "toSec": 700
+      },
+      "ms": 0,
+      "summary": "500s–700s of Psalm 22: Lament Psalms (w/ Cameron Cole)"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 5,
+    "toolCalls": 14,
+    "tapeSec": 1670,
+    "promptTokens": 51588,
+    "completionTokens": 1929,
+    "reasoningTokens": 674,
+    "cachedPromptTokens": 34384,
+    "wallMs": 34388,
+    "modelLatencyMs": 34052,
+    "toolMs": 334
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.003651,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T22:54:41.607Z"
+}

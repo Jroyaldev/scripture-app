@@ -12,10 +12,10 @@
     },
     "gpt-5.6-luna": {
       "requestedSlug": "openai/gpt-5.6-luna",
-      "inputPerMTokensUsd": 1.25,
-      "outputPerMTokensUsd": 10.0,
-      "cachedInputPerMTokensUsd": 0.125,
-      "_note": "PLACEHOLDER — guessed from the GPT-5 flagship tier. When this model runs through an OpenRouter-style endpoint the provider's own reported cost supersedes this table anyway."
+      "inputPerMTokensUsd": 0.2,
+      "outputPerMTokensUsd": 1.2,
+      "cachedInputPerMTokensUsd": 0.02,
+      "_note": "LIST price, read off openrouter.ai/openai/gpt-5.6-luna 2026-07-31. CAUTION: OpenRouter is running a 50% promotion on this model as of that date (billing $0.10/$0.60), and the provider-accounted cost in every run record is the DISCOUNTED figure — double the luna-family dollars for any list-price comparison, and re-check the page before trusting either number."
     },
     "gpt-5.6-luna-high": {
       "requestedSlug": "openai/gpt-5.6-luna",
