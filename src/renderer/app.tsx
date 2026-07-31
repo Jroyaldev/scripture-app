@@ -1906,19 +1906,41 @@ export function App(): React.JSX.Element {
    */
   useEffect(() => {
     let settle: number | undefined;
+    let frozen = false;
+    const shell = (): HTMLElement | null => document.querySelector(".app-shell");
     const onResize = (): void => {
       document.documentElement.setAttribute("data-viewport-resizing", "");
+      /* Suppressing the transitions was not enough — reported again from a
+         real window, worst when shaken. The column's width is a live function
+         of the viewport, so every resize frame re-laid-out the column AND the
+         transcript inside it, and that churn is the jitter. So for the length
+         of the burst the column is FROZEN at its measured width — the page
+         absorbs the whole delta — and on settle the freeze lifts after the
+         transitions return, so the column takes its new width as one glide
+         instead of a step per frame of the drag. */
+      if (!frozen) {
+        const dock = document.querySelector<HTMLElement>('.podcast-dock[data-expanded="true"]');
+        const host = shell();
+        if (dock && host) {
+          host.style.setProperty("--player-column-w", `${dock.getBoundingClientRect().width}px`);
+          frozen = true;
+        }
+      }
       window.clearTimeout(settle);
-      settle = window.setTimeout(
-        () => document.documentElement.removeAttribute("data-viewport-resizing"),
-        120,
-      );
+      settle = window.setTimeout(() => {
+        document.documentElement.removeAttribute("data-viewport-resizing");
+        if (frozen) {
+          frozen = false;
+          requestAnimationFrame(() => shell()?.style.removeProperty("--player-column-w"));
+        }
+      }, 120);
     };
     window.addEventListener("resize", onResize, { passive: true });
     return () => {
       window.clearTimeout(settle);
       window.removeEventListener("resize", onResize);
       document.documentElement.removeAttribute("data-viewport-resizing");
+      shell()?.style.removeProperty("--player-column-w");
     };
   }, []);
 
