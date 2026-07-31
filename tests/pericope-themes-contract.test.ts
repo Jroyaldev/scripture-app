@@ -114,23 +114,25 @@ test("no atmosphere carries a bright amber, because the accent means authorship"
       `${scope}: seal ${seal} on ${paper} is ${contrastRatio(seal, paper).toFixed(2)}:1, needs 3:1`);
   }
 
-  // This assertion used to REQUIRE the opposite of what it now forbids: it
-  // pinned `.connection-kind-parallel { --connection-ink: var(--mark-parallel) }`
-  // and so froze a six-hue per-connection palette into the contract. D·2 names
-  // that as the overlay's fourth defect — "hue is doing structural work…
-  // two arbitrary hues become five, then the page has a legend it never shows"
-  // — and answers it with "Seal, and only ever seal… there is no
-  // per-connection palette, because only one connection is ever coloured at a
-  // time." It sat in a test about the seal being the app's one authorship
-  // colour, which is the very rule the palette was breaking.
+  // REWRITTEN 2026-07-30 by the connections revival — this assertion has now
+  // reversed twice, so its history is stated in full. It first pinned
+  // `.connection-kind-parallel { --connection-ink: var(--mark-parallel) }`
+  // (the Era-3 C0.5 table); Rev 04/D·2 then withdrew the palette ("hue is
+  // doing structural work… seal, and only ever seal") and this test forbade
+  // it. The reader has since ruled the Era-3 aesthetic the canon for
+  // connections, so the six-kind ink table returns — mixed against
+  // --text-primary per atmosphere so it stays in tune everywhere. Seal keeps
+  // every place where AUTHORSHIP is the message: links, the marking
+  // selection's stand-in wash, and the aggregate tick's attended fallback.
   for (const kind of ["parallel", "contrast", "echo", "mirror", "series", "hinge"]) {
-    assert.doesNotMatch(
+    assert.match(
       css,
-      new RegExp(`\\.connection-kind-${kind}\\s*\\{[^}]*--connection-ink`),
-      `a connection may not take a hue from its kind: seal is authorship, and ${kind} is not a person`,
+      new RegExp(`\\.connection-kind-${kind} \\{ --connection-ink: var\\(--mark-${kind}\\); \\}`),
+      `the ${kind} kind carries its own marking ink again (Era-3 revival)`,
     );
   }
-  assert.match(css, /\.connection-mark\.focused,[\s\S]{0,400}--connection-ink: var\(--study-gold\);/);
+  assert.match(css, /\[data-paint-state="selection"\] \{[\s\S]{0,80}--connection-ink: var\(--study-gold\)/,
+    "the live marking selection still wears the seal: that mark IS authorship");
 });
 
 test("the quiet ink clears AA in every atmosphere, under both of its names", () => {

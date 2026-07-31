@@ -1,5 +1,5 @@
 import type React from "react";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   type ConnectionKind,
   type ConnectionRecord,
@@ -22,7 +22,9 @@ import {
   type RouteStrandClaim,
 } from "../../core/annotations/route-engine.js";
 import {
+  CONNECTION_ROUTE_QUIET_STROKE,
   CONNECTION_ROUTE_SELECTED_STROKE,
+  CONNECTION_UNDERLINE_QUIET_STROKE,
   CONNECTION_UNDERLINE_SELECTED_STROKE,
   clearConnectionFontMetricCache,
   connectionInkSlackFor,
@@ -57,6 +59,9 @@ interface PaintedUnderline {
 
 interface PaintedEmphasis {
   path: string;
+  /** The same silhouette measured in the route overlay's frame, so the focus
+   * veil's mask holes land on the words exactly (revived 2026-07-30). */
+  routePath: string;
   bands: LineRect[];
   anchorIndex: number;
 }
@@ -449,11 +454,12 @@ function mergeUnderlineFragments(
 
 function emphasisPaintForFragments(
   fragments: readonly MeasuredAnchorFragment[],
+  coordinateFrame: "emphasis" | "route",
 ): { path: string; bands: LineRect[] } {
   const exactRects: LineRect[] = fragments
     .filter((fragment) => fragment.exact)
     .map((fragment) => {
-      const rect = fragment.emphasisRect;
+      const rect = coordinateFrame === "emphasis" ? fragment.emphasisRect : fragment.rawRect;
       return {
         x0: rect.left - EMPHASIS_PAD_X,
         y0: rect.top - EMPHASIS_PAD_Y,
@@ -473,6 +479,69 @@ function emphasisPaintForFragments(
   };
 }
 
+interface SharedEmphasisPaint {
+  key: string;
+  path: string;
+}
+
+/**
+ * Words two connections both claim take one gold band (revived 2026-07-30 from
+ * the Smart Shapes checkpoint, 64d0e5f). Rev 04 §5 had withdrawn this — "the
+ * count lives in the gutter tick stack" — and the count still does; the band
+ * returns because the reader ruled the Era-3 atmosphere the canon, and a
+ * shared phrase reading gold at rest is part of that atmosphere. The gutter
+ * count and this band now say the same fact in two registers.
+ */
+function sharedEmphasisPaint(painted: readonly PaintedConnection[]): SharedEmphasisPaint[] {
+  const shared: SharedEmphasisPaint[] = [];
+  for (let leftIndex = 0; leftIndex < painted.length; leftIndex++) {
+    const left = painted[leftIndex]!;
+    const leftBands = left.emphases.flatMap((emphasis) => emphasis.bands);
+    if (leftBands.length === 0) continue;
+    for (let rightIndex = leftIndex + 1; rightIndex < painted.length; rightIndex++) {
+      const right = painted[rightIndex]!;
+      const rightBands = right.emphases.flatMap((emphasis) => emphasis.bands);
+      const intersections: LineRect[] = [];
+      for (const leftBand of leftBands) {
+        for (const rightBand of rightBands) {
+          const x0 = Math.max(leftBand.x0, rightBand.x0);
+          const x1 = Math.min(leftBand.x1, rightBand.x1);
+          const y0 = Math.max(leftBand.y0, rightBand.y0);
+          const y1 = Math.min(leftBand.y1, rightBand.y1);
+          if (x1 - x0 > 1 && y1 - y0 > 2) intersections.push({ x0, y0, x1, y1 });
+        }
+      }
+      const bands = mergeHighlightLineRects(intersections, 2);
+      if (bands.length === 0) continue;
+      const runs: LineRect[][] = [];
+      for (const band of bands) {
+        const run = runs[runs.length - 1];
+        const previous = run?.[run.length - 1];
+        const sameLine = previous != null
+          && Math.abs((previous.y0 + previous.y1) / 2 - (band.y0 + band.y1) / 2) < 2.5;
+        const connected = previous != null && (
+          (!sameLine && band.y0 - previous.y1 < 8)
+          || (sameLine && band.x0 <= previous.x1 + 2)
+        );
+        if (!run || !connected) runs.push([{ ...band }]);
+        else run.push({ ...band });
+      }
+      runs.forEach((run, runIndex) => {
+        for (let index = 0; index < run.length - 1; index++) {
+          const seam = (run[index]!.y1 + run[index + 1]!.y0) / 2;
+          run[index]!.y1 = seam;
+          run[index + 1]!.y0 = seam;
+        }
+        shared.push({
+          key: `${left.connection.id}:${right.connection.id}:${runIndex}`,
+          path: buildHighlightPath(run, EMPHASIS_RADIUS, { junctionRadius: 1.5 }),
+        });
+      });
+    }
+  }
+  return [...new Map(shared.map((item) => [item.path, item])).values()];
+}
+
 /** One run of glyph ink carrying exactly one underline, and who owns it. */
 export interface MergedUnderline {
   key: string;
@@ -481,6 +550,10 @@ export interface MergedUnderline {
   left: number;
   right: number;
   attended: boolean;
+  /** The one relationship kind this run may carry as ink: the attended
+   * connection's kind on a seal run, a sole owner's kind on a quiet run, and
+   * null when several quiet owners share the ink (revived 2026-07-30). */
+  kind: string | null;
   memberIds: string[];
 }
 
@@ -495,15 +568,18 @@ interface UnderlineSpan {
  * underline; the count lives in the gutter tick stack — three ticks, then +n."
  *
  * Every member's underline is flattened onto one plane and cut wherever
- * membership changes, so each run of ink carries exactly one 1.5px stroke on
- * the one fixed centre datum. A run is seal when the attended connection is
- * among its owners and ink-faint otherwise; nothing is ever offset off the
- * datum to make room for a second line, and nothing dims to let a third read.
+ * membership changes, so each run of ink carries exactly one stroke on the
+ * one fixed centre datum; nothing is ever offset off the datum to make room
+ * for a second line. This flattening is Rev 04's real improvement over the
+ * Era-3 per-connection underlines (which overdrew on shared words and pushed
+ * companions 3px off the datum), and the revival keeps it.
  *
- * This replaces D·2b's level offset (each companion pushed 3px clear of the
- * attended line) and D·2's shared-overlap wash (a grey second fill under words
- * two connections both claimed). Rev 04 withdraws both: overlap is a count,
- * and a count belongs in the gutter.
+ * REVISED 2026-07-30, the connections revival: a run now also resolves the
+ * one kind whose ink it may carry — the attended connection's on a seal run,
+ * the sole owner's on a quiet run, none when several quiet owners share it —
+ * so the Era-3 hue table can ride the merged layer without ever painting two
+ * inks on one run. Seams accordingly fall wherever the resolved ink changes,
+ * not merely where seal meets faint.
  */
 export function mergeUnderlineLayer(
   painted: readonly {
@@ -511,6 +587,7 @@ export function mergeUnderlineLayer(
     underlines: readonly PaintedUnderline[];
   }[],
   attendedId: string | null,
+  kindById?: ReadonlyMap<string, string>,
 ): MergedUnderline[] {
   const lines: Array<{ centerY: number; spans: UnderlineSpan[] }> = [];
   for (const item of painted) {
@@ -533,27 +610,37 @@ export function mergeUnderlineLayer(
     // fixed set of connections and can be stroked exactly once.
     const cuts = [...new Set(line.spans.flatMap((span) => [span.left, span.right]))]
       .sort((left, right) => left - right);
-    const runs: Array<{ left: number; right: number; memberIds: string[]; attended: boolean }> = [];
+    const runs: Array<{
+      left: number;
+      right: number;
+      memberIds: string[];
+      attended: boolean;
+      kind: string | null;
+    }> = [];
     for (let index = 0; index < cuts.length - 1; index += 1) {
       const left = cuts[index]!;
       const right = cuts[index + 1]!;
       if (right - left <= 0.01) continue;
-      const memberIds = line.spans
+      const memberIds = [...new Set(line.spans
         .filter((span) => span.left <= left + 0.01 && span.right >= right - 0.01)
-        .map((span) => span.connectionId);
+        .map((span) => span.connectionId))];
       if (memberIds.length === 0) continue;
       const attended = attendedId != null && memberIds.includes(attendedId);
+      const kind = attended
+        ? kindById?.get(attendedId!) ?? null
+        : memberIds.length === 1 ? kindById?.get(memberIds[0]!) ?? null : null;
       const previous = runs[runs.length - 1];
       // Abutting runs that carry the same ink are one stroke, so a seam only
-      // ever falls where faint meets seal.
-      if (previous && previous.attended === attended && Math.abs(previous.right - left) <= 0.01) {
+      // ever falls where the resolved ink changes.
+      if (previous && previous.attended === attended && previous.kind === kind
+        && Math.abs(previous.right - left) <= 0.01) {
         previous.right = right;
         for (const memberId of memberIds) {
           if (!previous.memberIds.includes(memberId)) previous.memberIds.push(memberId);
         }
         continue;
       }
-      runs.push({ left, right, memberIds: [...new Set(memberIds)], attended });
+      runs.push({ left, right, memberIds, attended, kind });
     }
     for (const run of runs) {
       merged.push({
@@ -563,6 +650,7 @@ export function mergeUnderlineLayer(
         left: run.left,
         right: run.right,
         attended: run.attended,
+        kind: run.kind,
         memberIds: [...run.memberIds].sort(),
       });
     }
@@ -618,6 +706,7 @@ function sameEmphases(left: PaintedEmphasis[], right: PaintedEmphasis[]): boolea
     const candidate = right[index];
     return candidate != null
       && emphasis.path === candidate.path
+      && emphasis.routePath === candidate.routePath
       && emphasis.bands.length === candidate.bands.length
       && emphasis.bands.every((band, bandIndex) => {
         const next = candidate.bands[bandIndex];
@@ -826,6 +915,7 @@ export function ConnectionUnderlay({
     !focusMode && previewConnectionId != null && selectedConnectionId == null ? "preview" : null,
   );
   const [readyRouteId, setReadyRouteId] = useState<string | null>(null);
+  const [veilReady, setVeilReady] = useState(false);
   const [rovingTickId, setRovingTickId] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState("");
   const [coarsePointer, setCoarsePointer] = useState(false);
@@ -836,7 +926,11 @@ export function ConnectionUnderlay({
   const previewEnterTimerRef = useRef<number | null>(null);
   const previewLeaveTimerRef = useRef<number | null>(null);
   const focusFrameRef = useRef<number | null>(null);
+  const veilFrameRef = useRef<number | null>(null);
   const tickRefs = useRef(new Map<string, HTMLButtonElement>());
+  const rawMaskId = useId();
+  const focusMaskId = `connection-focus-${rawMaskId.replace(/:/g, "")}`;
+  const sharedMaskId = `connection-shared-${rawMaskId.replace(/:/g, "")}`;
   // Preview is an invitation, not a selection: it may wake the exact words
   // and tick, but only an explicitly selected id is allowed to bloom route
   // ink, contacts, a hit target, or the focus veil.
@@ -1124,9 +1218,11 @@ export function ConnectionUnderlay({
         mergeUnderlineFragments(anchor.measuredFragments, anchor.anchorIndex));
       const emphases = anchors
         .map((anchor) => {
-          const emphasisPaint = emphasisPaintForFragments(anchor.measuredFragments);
+          const emphasisPaint = emphasisPaintForFragments(anchor.measuredFragments, "emphasis");
+          const routePaint = emphasisPaintForFragments(anchor.measuredFragments, "route");
           return {
             path: emphasisPaint.path,
+            routePath: routePaint.path,
             bands: emphasisPaint.bands,
             anchorIndex: anchor.anchorIndex,
           };
@@ -1336,10 +1432,30 @@ export function ConnectionUnderlay({
     };
   }, [selectedConnectionId]);
 
+  const hasSelectedRoute = selectedConnectionId != null;
+  useEffect(() => {
+    if (veilFrameRef.current != null) window.cancelAnimationFrame(veilFrameRef.current);
+    if (!hasSelectedRoute) {
+      setVeilReady(false);
+      return undefined;
+    }
+    // A -> B changes the mask holes without pulsing the entire reading field
+    // off and on. Only the null -> selected transition fades the veil in.
+    veilFrameRef.current = window.requestAnimationFrame(() => {
+      veilFrameRef.current = null;
+      setVeilReady(true);
+    });
+    return () => {
+      if (veilFrameRef.current != null) window.cancelAnimationFrame(veilFrameRef.current);
+      veilFrameRef.current = null;
+    };
+  }, [hasSelectedRoute]);
+
   useEffect(() => () => {
     cancelPreviewTimer(previewEnterTimerRef);
     cancelPreviewTimer(previewLeaveTimerRef);
     if (focusFrameRef.current != null) window.cancelAnimationFrame(focusFrameRef.current);
+    if (veilFrameRef.current != null) window.cancelAnimationFrame(veilFrameRef.current);
   }, [cancelPreviewTimer]);
 
   const hasActiveConnections = paintRecords.some((connection) =>
@@ -1380,41 +1496,61 @@ export function ConnectionUnderlay({
   const effectiveRovingTickId = rovingTickId != null && tickControlKeys.includes(rovingTickId)
     ? rovingTickId
     : selectedTickControlKey ?? tickControlKeys[0] ?? null;
-  // One weight, in both states. Rev 04 §5 sets a resting member at 1.5px and
-  // attends it "at the same weight", so the quiet strokes D·2b needed have no
-  // consumer left; the constants stay in connectionGeometry.ts, which is not
-  // this study's file to edit, but nothing is fed from them.
+  // The Era-3 stroke ladder, re-fed (2026-07-30 revival): quiet ink rests at
+  // 1px on the underline and 1.25px on the route; attention takes both to
+  // 1.5px symmetrically about the fixed centre datum, so nothing moves. Rev 04
+  // had retired the quiet widths ("attention changes colour and nothing
+  // else"); the reader ruled the Era-3 atmosphere the canon, and the constants
+  // never left connectionGeometry.ts, so this is re-plumbing, not invention.
   const overlayStyle = {
+    "--connection-underline-quiet-width": `${CONNECTION_UNDERLINE_QUIET_STROKE}px`,
     "--connection-underline-selected-width": `${CONNECTION_UNDERLINE_SELECTED_STROKE}px`,
+    "--connection-route-quiet-width": `${CONNECTION_ROUTE_QUIET_STROKE}px`,
     "--connection-route-selected-width": `${CONNECTION_ROUTE_SELECTED_STROKE}px`,
   } as React.CSSProperties;
-  // One plane, one stroke per run of ink, both states. Rest and attend differ
-  // by ink alone, so the layer is built once and read by both.
-  const underlineLayer = mergeUnderlineLayer(
+  const focusItem = selectedConnectionId == null
+    ? null
+    : visiblePainted.find((item) =>
+      isDurablePaintRecord(item.connection) && item.connection.id === selectedConnectionId) ?? null;
+  const focusHasExactPaint = (focusItem?.emphases.length ?? 0) > 0;
+  const sharedPaint = sharedEmphasisPaint(
     visiblePainted.filter((item) => isDurablePaintRecord(item.connection)),
+  );
+  const durableKindById = new Map(visiblePainted
+    .filter((item) => isDurablePaintRecord(item.connection))
+    .map((item) => [item.connection.id, item.connection.kind.replace("link:", "")]));
+  // One plane, one stroke per run of ink. At rest a member's presence is the
+  // wash below the words (Era-3 C0.5, revived); the merged rule layer wakes
+  // with a selection — attended runs seal-weight in the attended kind's ink,
+  // a held companion's runs a quiet whisper — and every run stays on the one
+  // centre datum. The flattening (one stroke per run, cut at membership
+  // boundaries) is Rev 04's precision improvement and is deliberately kept.
+  const underlineLayer = selectedConnectionId == null ? [] : mergeUnderlineLayer(
+    visiblePainted.filter((item) => isDurablePaintRecord(item.connection)
+      && (item.connection.id === selectedConnectionId
+        || heldConnectionIds.includes(item.connection.id))),
     selectedConnectionId,
+    durableKindById,
   );
   return (
     <>
-      {/* Law 5, as Rev 04 states it: "Wash marks, rules relate. A wash says
-          *this text is marked*; a rule says *this text is connected to that
-          text*." A connection is a relation, so no durable connection may put
-          a wash on this plane in any of its states — that is what the 1.5px
-          underline on the plane below now does, at rest and attended alike.
-
-          What survives here is the two transient states that are not
-          relations at all: the phrase the reader is dragging out right now
-          (`authoring`) and the live marking selection standing in for a
-          connection that does not exist yet (`selection`). Both are a live
-          selection in the sense `::selection` is one — they mark text, they
-          do not relate it, and they vanish the moment the pointer settles.
+      {/* The presence plane, restored to its Era-3 form (2026-07-30 revival,
+          from the Smart Shapes checkpoint 64d0e5f). Rev 04's Law 5 had ruled
+          that a relation may not wash and stripped every durable state from
+          this plane; the reader ruled the Era-3 atmosphere the canon, so the
+          full paint-state ladder returns: dormant presence pigment, a held
+          companion's fainter field, the woken preview, the selected phrase —
+          and the two live-selection states that never left. `is-awake` is the
+          ladder's discipline: while one connection is attended, the dormant
+          field recedes to nothing so the page quiets itself around the one
+          thing the reader chose.
 
           The plane still measures for everyone: `emphases` bands are the
           connected-word hit test's geometry, and are computed whether or not
           anything is painted from them. */}
       <svg
         ref={emphasisRef}
-        className="connection-emphasis-underlay"
+        className={`connection-emphasis-underlay${visualFocusId ? " is-awake" : ""}`}
         width="100%"
         height="100%"
         viewBox={size.width > 0 && size.height > 0 ? `0 0 ${size.width} ${size.height}` : undefined}
@@ -1424,10 +1560,32 @@ export function ConnectionUnderlay({
         data-coordinate-frame="self"
         aria-hidden="true"
       >
-        {visiblePainted.filter((item) => !isDurablePaintRecord(item.connection)).map((item) => {
+        {sharedPaint.length > 0 && <defs>
+          <mask
+            id={sharedMaskId}
+            className="connection-shared-mask"
+            x="0"
+            y="0"
+            width={size.width}
+            height={size.height}
+            maskUnits="userSpaceOnUse"
+          >
+            <rect x="0" y="0" width={size.width} height={size.height} fill="white" />
+            {sharedPaint.map((shared) => <path key={shared.key} d={shared.path} fill="black" />)}
+          </mask>
+        </defs>}
+        {visiblePainted.map((item) => {
+          const focused = item.connection.id === selectedConnectionId;
+          const previewed = selectedConnectionId == null && item.connection.id === previewConnectionId;
+          const userHeld = heldConnectionIds.includes(item.connection.id);
+          const companion = userHeld && !focused;
           const authoring = item.connection.source === "authoring";
           const markingSelection = item.connection.source === "selection";
-          const paintState = markingSelection ? "selection" : "authoring";
+          const paintState = markingSelection ? "selection"
+            : authoring ? "authoring"
+              : focused ? (item.valid ? "selected" : "needs-space")
+                : previewed ? "preview"
+                  : companion ? "companion" : "dormant";
           return (
             <g
               key={item.connection.id}
@@ -1437,6 +1595,9 @@ export function ConnectionUnderlay({
               data-marking-selection-emphasis={markingSelection ? "" : undefined}
               data-paint-state={paintState}
               data-anchor-resolution={item.emphases.length > 0 ? "exact" : "passage"}
+              style={paintState === "dormant" && sharedPaint.length > 0
+                ? { mask: `url(#${sharedMaskId})` }
+                : undefined}
             >
               {item.emphases.map((emphasis) => <path
                 key={`e-${emphasis.anchorIndex}`}
@@ -1448,10 +1609,16 @@ export function ConnectionUnderlay({
             </g>
           );
         })}
+        {sharedPaint.map((shared) => <path
+          key={`shared-${shared.key}`}
+          className="connection-emphasis-shared"
+          d={shared.path}
+          data-shared-connection-emphasis=""
+        />)}
       </svg>
       <svg
         ref={overlayRef}
-        className={`connection-underlay${selectedConnectionId ? " is-awake" : ""}`}
+        className={`connection-underlay${selectedConnectionId ? " is-awake" : ""}${readyRouteId ? " route-ready" : ""}`}
         width="100%"
         height="100%"
         viewBox={size.width > 0 && size.height > 0 ? `0 0 ${size.width} ${size.height}` : undefined}
@@ -1462,19 +1629,64 @@ export function ConnectionUnderlay({
         data-coordinate-frame="self"
         aria-hidden="true"
       >
-        {/* Rev 04 §5: every member is a 1.5px underline at rest, and
-            "underlines never stack". One flattened layer, cut wherever
-            membership changes, so a phrase in three connections carries one
-            stroke rather than three at three offsets. Attending re-inks the
-            runs the attended connection owns; every other run stays ink-faint
-            and does not dim. */}
+        {/* The focus veil, revived 2026-07-30 from 64d0e5f. Rev 04 deleted it
+            as a plane violation; the reader ruled the Era-3 atmosphere the
+            canon, and the veil is its deepest breath: selecting a connection
+            lets the rest of the chapter recede behind translucent paper while
+            the attended words keep full ink through a luminance hole, and a
+            held companion keeps most of its ink through a grey one. The rect
+            fades in once per selection; A -> B re-cuts holes without pulsing
+            the page. */}
+        {selectedConnectionId && focusHasExactPaint && <defs>
+          <mask
+            id={focusMaskId}
+            className="connection-focus-mask"
+            x="0"
+            y="0"
+            width={size.width}
+            height={size.height}
+            maskUnits="userSpaceOnUse"
+          >
+            <rect x="0" y="0" width={size.width} height={size.height} fill="white" />
+            {visiblePainted
+              .filter((item) => heldConnectionIds.includes(item.connection.id) && item.connection.id !== selectedConnectionId)
+              .flatMap((item) => item.emphases.map((emphasis) => <path
+                key={`held-hole-${item.connection.id}-${emphasis.anchorIndex}`}
+                d={emphasis.routePath}
+                fill="rgb(164 164 164)"
+              />))}
+            {focusItem?.emphases.map((emphasis) => <path
+              key={`focus-hole-${emphasis.anchorIndex}`}
+              d={emphasis.routePath}
+              fill="black"
+            />)}
+          </mask>
+        </defs>}
+        {selectedConnectionId && focusHasExactPaint && <rect
+          className={`connection-focus-veil${veilReady ? " is-ready" : ""}`}
+          x="0"
+          y="0"
+          width={size.width}
+          height={size.height}
+          mask={`url(#${focusMaskId})`}
+          data-connection-focus-veil=""
+        />}
+        {/* "Underlines never stack" (Rev 04 §5, kept): one flattened layer,
+            cut wherever the resolved ink changes, so a phrase in three
+            connections carries one stroke rather than three at three offsets.
+            The layer wakes with a selection — Era-3's rest is the wash alone —
+            and each run carries the one ink it resolved: the attended kind's
+            seal-weight ink, a sole quiet owner's kind ink, or neutral faint
+            where quiet owners share. */}
         <g className="connection-underline-layer" data-connection-underline-layer="">
           {underlineLayer.map((underline) => <path
             key={underline.key}
-            className={`connection-underline${underline.attended ? " attended" : ""}`}
+            className={`connection-underline${underline.attended ? " attended" : ""}${underline.kind ? ` connection-kind-${underline.kind}` : ""}`}
             d={underline.path}
+            pathLength="1"
             data-anchor-underline=""
-            data-underline-ink={underline.attended ? "seal" : "faint"}
+            data-underline-ink={underline.attended ? "seal" : underline.kind ? "kind" : "faint"}
+            data-underline-kind={underline.kind ?? undefined}
             data-underline-members={underline.memberIds.length}
             data-underline-center={underline.centerY.toFixed(2)}
           />)}

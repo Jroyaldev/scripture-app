@@ -3903,8 +3903,30 @@ html, body, #root {
   --mdock-bottom-inset: 0px;
   --reading-inline-gutter: clamp(24px, 3.2vw, var(--page-gutter));
   /* Real routing air inside the reading canvas. It contracts with the page
-     gutter and remains clipped by this stage before Living Margin begins. */
-  --connection-loom-gutter: clamp(16px, calc(var(--reading-inline-gutter) - 8px), 40px);
+     gutter and remains clipped by this stage before Living Margin begins.
+     REVISED 2026-07-30 (connections revival): the old 16px floor overflowed
+     the stage horizontally once the measure consumed the full width (caught
+     at 640px by the revived paint gate) — the loom now also collapses toward
+     the actual slack beside the measure block, and a rail-less width is
+     already reported honestly by the engine as needs-space.
+     REVISED AGAIN 2026-07-30, later the same day (the connection-lines
+     revival). The first revision kept the old CEILING —
+     "clamp(16px, calc(var(--reading-inline-gutter) - 8px), 40px)" — which
+     resolves to a hard 16px at every width the quire draws (the inline
+     gutter is pinned at 24). Sixteen pixels cannot hold a rail: the engine
+     needs ~15px beyond the expanded ink before its own floor guards
+     (bounds ± 4px) even admit a candidate, so EVERY cross-line plan came
+     back needs-space while a centered measure sat beside ~166px of real
+     stage slack. The loom now claims the actual slack, capped at 88px so
+     the rail keeps hugging the ink rather than drifting toward the frame.
+     The 640px lesson stands: below the cap this IS the slack, it still
+     collapses to 0 with the measure, and a rail-less width still reports
+     needs-space honestly. */
+  --connection-loom-gutter: clamp(
+    0px,
+    calc((100cqw - var(--measure-block)) / 2),
+    88px
+  );
   /* The measure block: the 32px hanging gutter plus the measure, 692 at the
      shipped comfort. Declared here rather than in :root because the comfort
      setting rewrites --reading-max-width on .app-shell, and a custom property
@@ -4453,84 +4475,87 @@ html, body, #root {
 
 .connection-emphasis-underlay { z-index: 1; }
 .connection-underlay {
+  --connection-focus-veil-color: var(--bg-reading);
   z-index: 4;
 }
 
-/* Two inks on this whole layer, and no third.
+/* Six kinds, six inks — the Era-3 C0.5 table, revived 2026-07-30.
  *
- * D·2 lists "hue is doing structural work" as the fourth defect of the shipped
- * overlay: "green for one connection, terracotta for another, with nothing to
- * tell you why. Two arbitrary hues become five, then the page has a legend it
- * never shows." That is exactly what a `.connection-kind-*` → `--mark-*` table
- * builds, and it built it in six hues.
+ * DATED REVERSAL of Rev 04 §5. Rev 04 ruled "the kind is carried by the word
+ * and by nothing else" and reduced this layer to two inks (ink-faint at rest,
+ * seal attended); D·2 called per-kind hue "hue doing structural work". The
+ * reader has since ruled the Era-3 aesthetic (the Smart Shapes checkpoint,
+ * 64d0e5f) the canon for connections, and per-kind ink is a load-bearing part
+ * of that canon: a parallel reads slate, a contrast terracotta, before a
+ * single word is read. The legend problem Rev 04 feared is answered the way
+ * Era 3 answered it — the kind WORD still sits at the spine's head (Rev 04's
+ * own good addition, kept), so the hue never has to be looked up; it is
+ * confirmation, not code. Provenance is not spent: authorship still shows in
+ * the seal acts (ticks' attended fallback, selection wash, focus ring), and a
+ * drawn relationship is authored by construction.
  *
- * The study's answer is one sentence: "Seal, and only ever seal." A connection
- * is something the reader wrote, so it takes the authorship colour — the same
- * seal as their notes and the margin's note spine. Provenance is the law being
- * kept here: seal means a human did this, and a relationship a reader drew is
- * about as human as this app gets. A teal or a terracotta says nothing about
- * who made the mark, so it spends the one signal that does.
- *
- * "There is no per-connection palette, because only one connection is ever
- * coloured at a time. Everything else on the page rests in ink-faint. That
- * single rule removes the legend problem entirely." So: everything faint, the
- * one attended connection seal. Nothing to look up, because there is never
- * more than one coloured thing to look up.
- *
- * Relationship KIND is not lost — it moves to where D·2b puts it, in stroke
- * and terminal, "the way a stemma or a syntax diagram does it". D·2b is
- * explicit that hue may not be reclaimed for it: "hue is already committed:
- * seal means you wrote this, everywhere in the app. Spending it on type would
- * break that." The `.connection-kind-*` classes stay on the elements — they
- * are what a stroke/terminal treatment will hang off — they just no longer
- * carry colour. */
+ * The `--mark-*` tokens are the marking vocabulary's own, mixed against
+ * --text-primary per atmosphere, so the six inks stay in tune in the dark. */
 .connection-mark,
 .connection-emphasis-mark {
   --connection-ink: var(--text-tertiary);
   color: var(--connection-ink);
 }
 
-/* Attended, in all four ways a connection can be attended: the reader is
-   hovering or has selected it, they are drawing one right now, or the marking
-   selection is standing in for one that does not exist yet. A companion — held
-   but not attended — is deliberately absent from this list. It stays faint and
-   stays put, because "dimming a thing to emphasise another is how a page
-   starts flickering", and promoting one is the same move in reverse. */
-.connection-mark.focused,
-.connection-tick.focused,
-.connection-emphasis-mark[data-paint-state="selected"],
-.connection-emphasis-mark[data-paint-state="needs-space"],
-.connection-emphasis-mark[data-paint-state="authoring"] {
-  --connection-ink: var(--study-gold);
-}
+.connection-kind-parallel { --connection-ink: var(--mark-parallel); }
+.connection-kind-contrast { --connection-ink: var(--mark-contrast); }
+.connection-kind-echo { --connection-ink: var(--mark-echo); }
+.connection-kind-mirror { --connection-ink: var(--mark-mirror); }
+.connection-kind-series { --connection-ink: var(--mark-series); }
+.connection-kind-hinge { --connection-ink: var(--mark-hinge); }
 
-/* Law 5, as Rev 04 states it: "Wash marks, rules relate. A wash says *this
- * text is marked*; a rule says *this text is connected to that text*."
+/* The wash ladder — Era-3 C0.5 presence paint, revived 2026-07-30.
  *
- * A connection is a relation, so it may not wash — and this rule used to wash
- * behind every member span in every state it had: .09 dormant, .07 companion,
- * .12 preview, .16 selected, with a second grey one under any words two
- * connections both claimed. Rev 04 replaces the whole set with the 1.5px
- * underline below, which is a rule and therefore says the true thing.
+ * DATED REVERSAL of Rev 04's Law 5 ("wash marks, rules relate: a relation may
+ * not wash"). The reader ruled the Era-3 atmosphere the canon, and the ladder
+ * IS the atmosphere at rest: every member phrase sits in a merged pigment
+ * silhouette of its kind's ink — .09 dormant on paper, a .045 glyph overprint
+ * in the dark so the page never becomes fields — and the ladder breathes with
+ * attention: a held companion at .05, the woken preview at .12, the selected
+ * phrase at .16. While anything is attended (`is-awake`), the dormant field
+ * recedes to 0, which is Law 5's real concern answered in Era 3's own way:
+ * the page quiets itself around the one chosen thing.
  *
- * Two states survive, and neither of them is a relation:
- *
- *   authoring  — the phrase the reader is dragging out this moment
- *   selection  — the live marking selection, standing in for a connection
- *                that does not exist yet and may never
- *
- * Both are a live selection in the sense `::selection` is one. They mark text,
- * which is exactly what Law 5 says a wash is for; they name no second phrase,
- * so they relate nothing; and they are gone the moment the pointer settles.
- * The marking-selection contract binds both, and rightly. Nothing durable
- * paints here in any state. */
+ * The two live-selection states (authoring, marking selection) never left,
+ * and the marking-selection contract still binds them. */
 .connection-emphasis-wash {
   fill: currentColor;
-  fill-opacity: 0;
+  fill-opacity: .09;
   pointer-events: none;
-  transition: fill-opacity var(--transition-fast);
+  transition: fill-opacity 220ms ease;
 }
 
+/* Words two connections both claim take one gold band; the dormant washes
+   are knocked out beneath it so the gold reads clean, and the band recedes
+   with everything else when the page is awake. The gutter tick count states
+   the same overlap in its own register. */
+.connection-shared-mask { mask-type: luminance; }
+.connection-emphasis-shared {
+  fill: var(--study-gold);
+  fill-opacity: .14;
+  pointer-events: none;
+  transition: fill-opacity 220ms ease;
+}
+.connection-emphasis-underlay.is-awake .connection-emphasis-shared { fill-opacity: 0; }
+
+/* The dark atmospheres use a much lighter overprint in lieu of a broad wash;
+   it reads as a tint on glyphs without turning the reading page into fields. */
+.dark .connection-emphasis-mark[data-paint-state="dormant"] .connection-emphasis-wash {
+  fill-opacity: .045;
+}
+
+.connection-emphasis-underlay.is-awake
+  .connection-emphasis-mark[data-paint-state="dormant"]
+  .connection-emphasis-wash { fill-opacity: 0; }
+.connection-emphasis-mark[data-paint-state="companion"] .connection-emphasis-wash { fill-opacity: .05; }
+.connection-emphasis-mark[data-paint-state="preview"] .connection-emphasis-wash { fill-opacity: .12; }
+.connection-emphasis-mark[data-paint-state="selected"] .connection-emphasis-wash,
+.connection-emphasis-mark[data-paint-state="needs-space"] .connection-emphasis-wash { fill-opacity: .16; }
 .connection-emphasis-mark[data-paint-state="selection"] {
   --connection-ink: var(--study-gold);
 }
@@ -4553,23 +4578,27 @@ html, body, #root {
   from { fill-opacity: 0; }
 }
 
-/* The veil is gone, not held down.
+/* The focus veil, revived 2026-07-30.
  *
- * It was a full-page rect of paper at 56% with a hole cut for the attended
- * connection — which means selecting a connection washed the entire chapter,
- * scripture included, to make a 1px rule easier to find. Rev 04 §5 settles it
- * in six words: "Every other member stays ink-faint and does not dim."
- *
- * It was also a plane violation, and the most expensive kind. There are two
- * planes, paper and canvas; a translucent sheet of paper laid over paper is a
- * third, and this one covered the words. Attention on this canvas is made by
- * taking one thing to seal, never by pushing everything else back.
- *
- * The rule used to sit here neutralised with `fill: none`, because the rect
- * was still emitted by a component this sheet did not own. Rev 04 puts the
- * connection language and its component in one pair of hands, so the rect,
- * its mask, and its ready-state are deleted at the source and there is
- * nothing left here to hold down. */
+ * DATED REVERSAL of Rev 04 §5 ("every other member stays ink-faint and does
+ * not dim"), which deleted this rect at the source. The reader ruled the
+ * Era-3 atmosphere the canon, and the veil is its deepest breath: selecting a
+ * connection lets the chapter recede behind translucent reading paper while
+ * the attended words keep full ink through a luminance hole and a held
+ * companion keeps most of its ink through a grey one. Rev 04's plane critique
+ * is answered in the veil's own terms — the sheet is the reading page's own
+ * paper (`--bg-reading`), not a foreign scrim, and it exists only while the
+ * reader is inside one relationship, fading in once per selection and never
+ * pulsing on an A -> B change. */
+.connection-focus-mask { mask-type: luminance; }
+.connection-focus-veil {
+  fill: var(--connection-focus-veil-color);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+.connection-focus-veil.is-ready { opacity: .56; }
+.dark .connection-focus-veil.is-ready { opacity: .52; }
 
 .connection-underline,
 .connection-route,
@@ -4578,72 +4607,67 @@ html, body, #root {
   pointer-events: none;
 }
 
-/* The attend budget, from Rev 04 §5: "Attend fades in over 140ms. The route
-   never traces along its own path. Selection thickens the stroke symmetrically
-   about the fixed centre datum, so nothing moves."
+/* The 140ms attend token stays for the layers that fade (tick marks, the
+   kind word); the drawn strokes below take back their Era-3 choreography.
 
-   140ms is not one of the four `--transition-*` tokens (120 / 180 / 0 / 0), and
-   §9's duration scale is 120 / 140 / 180 with no fourth, so 140 is a real step
-   this sheet has not needed before. It is declared component-scoped rather than
-   promoted to `:root`: the connection layer is the only surface that attends,
-   and the atmosphere blocks are not this file's to widen.
-
-   `stroke-dashoffset` is what would draw these paths on, so it is deliberately
-   absent from every transition list here. It still does its job as the
-   show/hide gate the route-ready state flips — a geometry-is-measured gate,
-   not an animation — flipping in one frame. */
+   DATED REVERSAL of Rev 04 §5's "the route never traces along its own path"
+   (2026-07-30 revival): the draw-on IS the loom's signature act — the run
+   leaves the underline, turns its one soft corner, and arrives — and the
+   reader ruled that Era-3 form the canon. `prefers-reduced-motion` keeps the
+   instant-swap reading below. */
 .connection-underlay {
-  /* @quire guessed · 140ms attend fade, on the same easing as --transition-fast
-     because §5 gives a duration and no curve. */
   --connection-attend-fade: 140ms cubic-bezier(.2, 0, .2, 1);
 }
 
-/* At rest a member is a 1.5px underline in ink-faint, sitting against measured
-   glyph ink — and that is the whole of a connection at rest. Attending re-inks
-   it to seal at the same weight, so the one thing that changes is colour: the
-   stroke never thickens under attention, never moves off the centre datum, and
-   never offsets to let a second underline in beside it.
-   `stroke-linecap: butt` is what makes "underlines never stack" exact. The
-   layer cuts one flattened line into runs wherever membership changes, and a
-   round cap at every seam would bulge 0.75px into its neighbour; butt caps
-   abut, so a faint run meeting a seal run reads as one continuous rule that
-   changes colour. */
+/* At rest a member's presence is its wash; the rule layer wakes with a
+   selection. A woken quiet run is a 1px whisper at .62 in its kind's ink
+   (ink-faint where quiet owners share), sitting against measured glyph ink on
+   the fixed centre datum; the attended runs go to 1.5px at .96 — the stroke
+   widens symmetrically about the datum, so nothing moves — and draw on from
+   the underline over 300ms once the route is ready.
+   `stroke-linecap: butt` keeps "underlines never stack" exact (Rev 04's
+   improvement, kept): runs abut at seams, so ink changes without a bulge. */
 .connection-underline {
   fill: none;
-  /* @quire guessed · ink-faint #C8C2B8 (Rev 04 §4) has no token in this sheet
-     yet, and the atmosphere blocks belong to another hand this cycle.
-     `--ink-faint` is the name that table's row implies; the literal is the
-     fallback until it lands, and it is Paper's value, so the dark atmospheres
-     will read slightly bright until the token exists. */
-  stroke: var(--ink-faint, #C8C2B8);
-  stroke-width: var(--connection-underline-selected-width, 1.5px);
+  stroke: var(--connection-ink, var(--ink-faint, #C8C2B8));
+  stroke-width: var(--connection-underline-quiet-width, 1px);
   stroke-linecap: butt;
-  opacity: 1;
-  transition: stroke var(--connection-attend-fade);
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  opacity: .62;
+  transition: opacity 180ms ease, stroke-width 180ms ease, stroke 180ms ease,
+    stroke-dashoffset 300ms cubic-bezier(.3, .7, .3, 1);
 }
 
 .connection-underline.attended {
-  stroke: var(--study-gold);
+  stroke: var(--connection-ink, var(--study-gold));
+  stroke-width: var(--connection-underline-selected-width, 1.5px);
+  stroke-dashoffset: 1;
+  opacity: .96;
 }
+.connection-underlay.route-ready .connection-underline.attended { stroke-dashoffset: 0; }
 
 .connection-route {
   fill: none;
   stroke: currentColor;
-  stroke-width: var(--connection-route-selected-width, 1.5px);
+  stroke-width: var(--connection-route-quiet-width, 1.25px);
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
   opacity: 0;
-  transition: opacity var(--connection-attend-fade);
+  transition: stroke-dashoffset 340ms cubic-bezier(.22, .72, .2, 1) 40ms, opacity 180ms ease 40ms;
+}
+.connection-mark.focused .connection-route {
+  stroke-width: var(--connection-route-selected-width, 1.5px);
 }
 
-/* "The kind is the only word a route carries — one word in seal small caps at
-   the spine's head." One word, never abbreviated, never iconified, never
-   colour-coded — the kind is carried by the word and by nothing else, which is
-   why there is no `.connection-kind-*` hue anywhere on this layer. */
+/* "The kind is the only word a route carries — one word in small caps at the
+   spine's head." Rev 04's word, kept by the revival; only its ink moves — it
+   rides the mark's kind ink (currentColor) so the route and its name are one
+   colour, never gold-on-teal. */
 .connection-route-kind {
-  fill: var(--study-gold);
+  fill: currentColor;
   font-family: var(--font-ui);
   font-size: 0.625rem;
   font-variant-caps: all-small-caps;
@@ -4663,29 +4687,29 @@ html, body, #root {
   cursor: pointer;
 }
 
-/* The terminal at the end of the arm. D·2b describes what it does when the
-   thread is attended in one word — "its terminals fill" — so it arrives by
-   ink alone. It used to scale up from .72 on a 200ms delay, which is the
-   drawn-on line again in miniature: a shape growing into place, and geometry
-   moving in response to attention. Reserve forbids the second on its own. */
+/* The terminal at the end of the arm blooms into place — .72 scale to full on
+   a 90ms delay behind the route's own arrival (Era-3 contact choreography,
+   revived 2026-07-30 against Rev 04's ink-only arrival). */
 .connection-contact {
   fill: currentColor;
   stroke: none;
   opacity: 0;
-  transition: opacity var(--transition-fast);
+  transform: scale(.72);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: opacity 200ms ease 90ms, transform 200ms ease 90ms;
 }
 
-/* Exactly one route is ever drawn, so `.focused` is the only state this layer
-   has. The companion rule that used to sit here — a held-but-unattended
-   connection at a thinner stroke, offset 3px clear of the attended line — is
-   withdrawn with D·2b: Rev 04 says every other member "stays ink-faint and
-   does not dim", which is one ink and one weight, not a second tier. */
+/* Exactly one route is ever drawn — the attended one (Rev 04's discipline,
+   kept). A held companion's presence is its wash, its quiet runs on the
+   merged layer, and its grey veil hole; never a second centerline. */
 .connection-mark.route-ready .connection-route {
   stroke-dashoffset: 0;
-  opacity: 1;
+  opacity: .96;
 }
 .connection-mark.route-ready .connection-contact {
-  opacity: 1;
+  opacity: .9;
+  transform: scale(1);
 }
 
 .connection-tick-layer {
@@ -4739,11 +4763,13 @@ html, body, #root {
   transition: opacity var(--connection-attend-fade), background-color var(--connection-attend-fade);
 }
 
-/* "Three, one attended" is three identical marks with one of them in seal. The
-   attended mark takes ink and colour; it does not change length, because
-   reveals change opacity and ink, never geometry. */
+/* "Three, one attended" is three identical marks with one of them lit. The
+   attended mark takes the attended connection's kind ink (revived 2026-07-30)
+   — and seal in an aggregate lane, where the tick carries no kind of its own,
+   so gold keeps meaning "this one is yours, attended". It does not change
+   length, because reveals change opacity and ink, never geometry. */
 .connection-tick-dash.attended {
-  background: var(--study-gold);
+  background: var(--connection-ink, var(--study-gold));
   opacity: 1;
 }
 
@@ -5372,24 +5398,29 @@ html, body, #root {
   .connection-card-quote,
   .connection-card-remove,
   .connection-emphasis-wash,
+  .connection-emphasis-shared,
+  .connection-focus-veil,
   .connection-underline,
   .connection-route,
   .connection-route-kind,
   .connection-contact,
   .connection-tick,
   .connection-tick > span { animation: none !important; transition: none !important; }
-  /* With motion off the 140ms attend fade becomes an instant swap, which is
-     the correct reduced-motion reading of "attend fades in": the end state,
-     arrived at without travel. What is left here is the safety net — if a
-     transition is ever added back above, reduced motion must still not leave a
-     focused route stuck mid-draw at dashoffset 1. */
-  .connection-mark.focused .connection-route { stroke-dashoffset: 0; opacity: 1; }
+  /* With motion off, the revived Era-3 choreography — the route's 340ms
+     draw-on, the underline's 300ms extension, the contact's bloom — becomes
+     an instant arrival at each terminal state. The rules below are the safety
+     net: reduced motion must never leave a focused route stuck mid-draw at
+     dashoffset 1 or a contact frozen at .72 scale. */
+  .connection-mark.focused .connection-route { stroke-dashoffset: 0; opacity: .96; }
   .connection-mark.focused .connection-route-kind { opacity: 1; }
-  .connection-mark.focused .connection-contact { opacity: 1; }
+  .connection-mark.focused .connection-contact { opacity: .9; transform: scale(1); }
+  .connection-underlay .connection-underline.attended { stroke-dashoffset: 0; }
 }
 
 @media (forced-colors: active) {
-  .connection-emphasis-wash { display: none; }
+  .connection-emphasis-wash,
+  .connection-emphasis-shared,
+  .connection-focus-veil { display: none; }
   .connection-route,
   .connection-route-kind { color: Highlight; fill: Highlight; }
   .connection-underline { stroke: CanvasText; }

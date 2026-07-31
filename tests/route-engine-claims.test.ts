@@ -269,9 +269,13 @@ test("every route family emits finite normalized horizontal extents", () => {
     makeAnn("margin", marginFragments),
     { ...common, disableCradle: true, disableLocal: true, allowMiddle: false },
   );
-  assert.equal(margin.mode, "multipoint");
-  /* C0.5c: every group is one colinear run and one soft corner — the
-   * bottom group's corner turns up, but both are "level" exits */
+  /* DATED REVERSAL, 2026-07-30 (the connection-lines revival): this pin
+   * previously read "multipoint" — three anchors on two lines drew two
+   * level runs, two 6px corners, and a rail. Two GROUPS within bow span
+   * now draw the bow (one comb run threading both upper dots, one S to
+   * the lower run); the C0.5 corner-rail bracket remains the drawing for
+   * three or more groups. Claims and level exits are unchanged. */
+  assert.equal(margin.mode, "bow");
   assert.deepEqual(margin.diagnostics.exits, ["level", "level"]);
   assertFiniteClaims(margin, 2);
 });

@@ -67,16 +67,12 @@ const KNOWN_UNREACHABLE: ReadonlySet<string> = new Set([
   //   data-dock-action="erase"  — now [data-bar-action="remove"], and it shares
   //   data-dock-action="note"   — a slot with [data-bar-action="note"]: Remove
   //     replaces Note exactly when the selection already carries a wash.
-  //   data-paint-state="dormant" — a SAVED connection is a durable paint
-  //     record, and ConnectionUnderlay renders .connection-emphasis-mark only
-  //     for records that are not durable. A resting saved connection therefore
-  //     has no emphasis element at all; its presence is one margin tick. The
-  //     old gate read an attribute off a node that could never exist.
-  // ConnectionUnderlay emits selection / authoring / selected / needs-space.
-  // These three belong to a tour nobody has been able to run yet.
-  'qa-connection-paint.mjs :: data-paint-state="dormant"',
-  'qa-connection-paint.mjs :: data-paint-state="preview"',
-  'qa-connection-paint.mjs :: data-paint-state="companion"',
+  //
+  // qa-connection-paint.mjs's three quarantined gates (dormant / preview /
+  // companion paint states) healed on 2026-07-30: the connections revival
+  // restored the Era-3 wash ladder, so a resting durable connection is a
+  // painted presence again and the tour runs against the surface it was
+  // written for.
 ]);
 
 test("the QA vocabulary still describes the renderer", () => {

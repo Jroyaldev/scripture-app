@@ -176,89 +176,94 @@ test("no later rule overrides the gutter's hover and focus ink", () => {
     "a focused verse number goes to ink like a selected one; a later rule has taken it somewhere else");
 });
 
-test("a connection is seal or it is faint, and never a hue of its own", () => {
-  // The rationale used to be quoted from D·2, which Rev 04 §8 withdraws in its
-  // entirety; the ruling itself survives verbatim in Rev 04 §5, so only the
-  // citation moves. The six kinds are "never abbreviated, never iconified,
-  // never colour-coded, always set in the UI sans" — hue is already committed
-  // to provenance, and seal means a human did this.
+test("a connection wears its kind's ink, and the word at the spine confirms it", () => {
+  // REWRITTEN 2026-07-30 by the connections revival — a dated reversal of
+  // Rev 04 §5's two-ink ruling, which this test used to hold ("seal or faint,
+  // never a hue of its own"). The reader ruled the Era-3 C0.5 paint (64d0e5f)
+  // the canon for connections, and per-kind ink is load-bearing in it: a
+  // parallel reads slate and a contrast terracotta before a single word is
+  // read. The legend problem Rev 04 feared is answered Era 3's way — the kind
+  // WORD still sits at the spine's head, so the hue is confirmation, not code.
   const inks = new Set<string>();
   for (const [selector, body] of ruleBlocks()) {
-    if (!/\.connection-(?:mark|emphasis-mark|tick)\b/.test(selector)) continue;
+    if (!/^\.connection-kind-\w+$/.test(selector)) continue;
     for (const value of [...body.matchAll(/--connection-ink:\s*([^;]+);/g)]) inks.add(value[1]!.trim());
   }
-  assert.deepEqual([...inks].sort(), ["var(--study-gold)", "var(--text-tertiary)"],
-    "the mark and tick layer knows exactly two inks: ink-3 at rest, the seal when attended");
-  // Ink-faint is the underline's resting ink specifically, and not this
-  // layer's. §5 puts a resting member "in ink-faint #C8C2B8" where it sits
-  // against measured glyph ink; a gutter tick floats in air with nothing
-  // beside it, so Law 6 gives it the 3:1 floor for a wordless mark and
-  // #C8C2B8 (about 1.5:1 on paper) cannot carry it.
-  assert.match(css, /\.connection-underline \{[\s\S]{0,600}stroke: var\(--ink-faint, #C8C2B8\)/);
+  assert.deepEqual([...inks].sort(), [
+    "var(--mark-contrast)",
+    "var(--mark-echo)",
+    "var(--mark-hinge)",
+    "var(--mark-mirror)",
+    "var(--mark-parallel)",
+    "var(--mark-series)",
+  ], "the six kinds carry the six marking inks, one each, off the shared --mark-* table");
+  // The resting default is still ink-3, and the marking selection is still
+  // seal — provenance keeps its colour where provenance is the message.
+  assert.match(css, /\.connection-mark,\s*\.connection-emphasis-mark \{\s*--connection-ink: var\(--text-tertiary\);/);
+  assert.match(css, /\[data-paint-state="selection"\] \{[\s\S]{0,80}--connection-ink: var\(--study-gold\)/);
+  // A quiet run whose owners disagree falls back to ink-faint on the datum;
+  // a gutter tick still floats in open air and still owes Law 6's 3:1, so
+  // ink-faint stays off the tick layer.
+  assert.match(css, /\.connection-underline \{[\s\S]{0,700}stroke: var\(--connection-ink, var\(--ink-faint, #C8C2B8\)\)/);
   assert.doesNotMatch(css, /\.connection-tick[^{]*\{[^}]*var\(--ink-faint/,
     "a tick is a wordless mark in open air, and owes 3:1");
-  // Kind is carried by the word at the spine's head, never by colour.
-  assert.doesNotMatch(css, /\.connection-kind-\w+\s*\{[^}]*--connection-ink/);
 });
 
-test("the thread never dims the page to make itself findable", () => {
-  // The veil was a full-page sheet of paper at 56% with a hole cut for the
-  // attended connection: scripture washed out so a 1px rule would read. It is
-  // a plane violation too — translucent paper over paper is a third plane, and
-  // this one covered the words. Rev 04 §5 settles it: "Every other member
-  // stays ink-faint and does not dim."
-  //
-  // This test used to REQUIRE the veil rule to still be declared — "the veil
-  // rule is still declared, so it is still being held down" — and then check
-  // it was inert at `fill: none; opacity: 0`. That was the right test while
-  // the rect was emitted by a component this sheet did not own: a deleted rule
-  // would have let the rect paint again. Rev 04 puts the connection language
-  // and ConnectionUnderlay in one pair of hands, so the rect, its mask and its
-  // ready-state are deleted at the source and there is nothing left to hold
-  // down. Requiring the CSS gravestone now would forbid the actual fix.
-  assert.doesNotMatch(css, /connection-focus-veil|connection-focus-mask/,
-    "the veil is deleted, not neutralised");
-  assert.doesNotMatch(
-    readFileSync(join(repoRoot, "src/renderer/components/ConnectionUnderlay.tsx"), "utf8"),
-    /focus-veil|focusMaskId|veilReady/,
-    "no component still emits the rect the CSS used to hold down",
-  );
-  // Nothing else on this layer may dim a member to promote another, either.
-  assert.doesNotMatch(css, /\.connection-emphasis-underlay\.is-awake/,
-    "a woken connection does not push the others back");
+test("the veil dims the chapter only inside a selection, and in the page's own paper", () => {
+  // REWRITTEN 2026-07-30 by the connections revival — a dated reversal of
+  // Rev 04 §5, which deleted the focus veil at the source and which this test
+  // used to enforce ("the veil is deleted, not neutralised"). The reader
+  // ruled the Era-3 atmosphere (64d0e5f) the canon, and the veil is its
+  // deepest breath. What is pinned now is the discipline that makes it
+  // liveable: the sheet is the reading page's own paper, it reaches .56 (.52
+  // in the dark) only once a selection exists, the attended words keep full
+  // ink through a luminance hole, and nothing paints it at rest.
+  assert.match(css, /\.connection-focus-veil \{[\s\S]{0,240}fill: var\(--connection-focus-veil-color\)/,
+    "the veil is the reading page's own paper, not a foreign scrim");
+  assert.match(css, /\.connection-focus-veil \{[\s\S]{0,240}opacity: 0;/,
+    "unready, the veil does not paint");
+  assert.match(css, /\.connection-focus-veil\.is-ready \{ opacity: \.56; \}/);
+  assert.match(css, /\.dark \.connection-focus-veil\.is-ready \{ opacity: \.52; \}/);
+  const underlay = readFileSync(join(repoRoot, "src/renderer/components/ConnectionUnderlay.tsx"), "utf8");
+  assert.match(underlay, /selectedConnectionId && focusHasExactPaint && <rect/,
+    "the rect exists only under an explicit selection with exact paint");
+  assert.match(underlay, /className="connection-focus-mask"/,
+    "the holes are cut by a luminance mask, so the attended words keep full ink");
+  // And the wash plane recedes in the same breath: dormant fields go to 0
+  // while anything is attended.
+  assert.match(css, /\.connection-emphasis-underlay\.is-awake\s*\.connection-emphasis-mark\[data-paint-state="dormant"\]\s*\.connection-emphasis-wash \{ fill-opacity: 0; \}/);
 });
 
-test("the thread appears rather than drawing itself on, and holds still under a pointer", () => {
-  // Rev 04 §5: "Attend fades in over 140ms. The route never traces along its
-  // own path. Selection thickens the stroke symmetrically about the fixed
-  // centre datum, so nothing moves." stroke-dashoffset is the draw-on, so it
-  // may be set but never transitioned.
-  //
-  // The duration used to be pinned at 120ms, from D·2's motion table. Rev 04
-  // names 140 for attend specifically, and §9's scale is 120 / 140 / 180 with
-  // no fourth. 140 is not one of the four --transition-* tokens, and this
-  // sheet's token blocks belong to another study this cycle, so the connection
-  // layer declares it component-scoped and every attend transition reads it.
+test("the thread draws itself on from the underline, and holds still under a pointer", () => {
+  // REWRITTEN 2026-07-30 by the connections revival — a dated reversal of
+  // Rev 04 §5's "the route never traces along its own path", which this test
+  // used to enforce by banning every geometry transition. The reader ruled
+  // the Era-3 choreography (64d0e5f) the canon: the route draws on over 340ms
+  // on the C0.5 curve after a 40ms breath, the attended underline extends
+  // over 300ms, and the contact blooms .72 -> 1 on a 90ms delay behind the
+  // route's arrival. Reduced motion swaps every one of these for the instant
+  // terminal state, and that is pinned here too.
   const attendFade = css.match(/--connection-attend-fade:\s*([^;]+);/)?.[1] ?? "";
-  assert.match(attendFade, /^140ms\b/, "attend fades in over 140ms");
-  for (const rule of [".connection-underline", ".connection-route", ".connection-contact"]) {
-    const body = css.match(new RegExp(`\\${rule}\\s*\\{([^}]*)\\}`))?.[1];
-    assert.ok(body, `${rule} is declared`);
-    const transition = body.match(/transition:\s*([^;]+);/)?.[1] ?? "";
-    assert.doesNotMatch(transition, /stroke-dashoffset|transform|stroke-width/,
-      `${rule} animates its own geometry; only ink and opacity may move`);
-    for (const duration of transition.matchAll(/(\d+)ms/g)) {
-      assert.equal(duration[1], "140", `${rule} moves at ${duration[0]}, and attend moves in 140ms`);
-    }
-  }
-  // Both weights are 1.5px, so attention is a change of ink and nothing else.
-  // A resting underline that had to grow into its attended weight would be the
-  // drawn-on line again, one axis over.
+  assert.match(attendFade, /^140ms\b/, "the kind word and tick marks still fade on the 140ms token");
+  const route = css.match(/\.connection-route\s*\{([^}]*)\}/)?.[1] ?? "";
+  assert.match(route,
+    /transition: stroke-dashoffset 340ms cubic-bezier\(\.22, \.72, \.2, 1\) 40ms, opacity 180ms ease 40ms/,
+    "the route draws on over 340ms after a 40ms breath");
   const underline = css.match(/\.connection-underline\s*\{([^}]*)\}/)?.[1] ?? "";
-  assert.match(underline, /stroke-width: var\(--connection-underline-selected-width, 1\.5px\)/,
-    "a member is 1.5px at rest, the same weight it attends at");
-  // Reserve: "reveals change opacity and ink, never geometry." The tick used
-  // to grow 11px → 15px under the pointer.
+  assert.match(underline, /stroke-dashoffset 300ms cubic-bezier\(\.3, \.7, \.3, 1\)/,
+    "the attended underline extends over 300ms");
+  // (The first `.connection-contact` token in the sheet is the grouped
+  // vector-effect rule, so the bloom rule is matched by its own body.)
+  assert.match(css, /\.connection-contact \{[^}]*transition: opacity 200ms ease 90ms, transform 200ms ease 90ms/,
+    "the contact blooms behind the route's arrival");
+  assert.match(css,
+    /@media \(prefers-reduced-motion: reduce\) \{[^@]*\.connection-focus-veil,[^@]*\.connection-underline,[^@]*transition: none !important;/,
+    "reduced motion swaps the choreography for the instant terminal state");
+  // The datum half of the canon is untouched: strokes widen symmetrically
+  // about the fixed centre, so nothing moves sideways or downward.
+  assert.match(underline, /stroke-width: var\(--connection-underline-quiet-width, 1px\)/);
+  // Reserve survives where it was right: hover reveals still change opacity
+  // and ink, never geometry. The tick may not grow under the pointer.
   for (const [selector, body] of ruleBlocks()) {
     if (!/\.connection-tick[.:][^,]*(?:hover|focused)[^,]*\.connection-tick-dash/.test(selector)) continue;
     assert.doesNotMatch(body, /width|height|transform|padding|margin/,

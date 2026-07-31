@@ -616,6 +616,14 @@ let engine: LibraryEngine | null = null;
 let revisionStore: GitRevisionStore | null = null;
 let userMutationBroker: UserMutationBroker | null = null;
 let occurrenceAlignmentStore: OccurrenceAlignmentStore | null = null;
+/* Per-package exact-word stores (2026-07-30, the connection-lines revival).
+ * d3712ab shipped WEB/KJV/YLT occurrence alignments beside the BSB artifact,
+ * but this evidence path stayed hardcoded to "bsb", so every non-BSB capture
+ * and projection refused with artifact-missing — the reader's "work
+ * individually for all versions with precision" was structurally impossible.
+ * One store per installed package now; anything genuinely uninstalled still
+ * refuses honestly. The BSB store remains the engine's primary instance. */
+let occurrenceAlignmentStores: Map<string, OccurrenceAlignmentStore> | null = null;
 let backbone: BackboneData | null = null;
 let bookNames: BookNameMap | null = null;
 let crossRefData: CrossRefData | null = null;
@@ -780,6 +788,7 @@ interface EngineRuntime {
   revisionStore: GitRevisionStore;
   userMutationBroker: UserMutationBroker;
   occurrenceAlignmentStore: OccurrenceAlignmentStore;
+  occurrenceAlignmentStores: Map<string, OccurrenceAlignmentStore>;
   backbone: BackboneData;
   bookNames: BookNameMap;
   crossRefData: CrossRefData | null;
@@ -986,7 +995,8 @@ function trustedDevelopmentRendererUrl(): URL | null {
 }
 
 function currentRuntime(): EngineRuntime | null {
-  if (!engine || !revisionStore || !userMutationBroker || !occurrenceAlignmentStore || !backbone || !bookNames
+  if (!engine || !revisionStore || !userMutationBroker || !occurrenceAlignmentStore
+    || !occurrenceAlignmentStores || !backbone || !bookNames
     || !tokenPackages || !reverseIndexes || !syntaxTrees || !placeResearch) {
     return null;
   }
@@ -995,6 +1005,7 @@ function currentRuntime(): EngineRuntime | null {
     revisionStore,
     userMutationBroker,
     occurrenceAlignmentStore,
+    occurrenceAlignmentStores,
     backbone,
     bookNames,
     crossRefData,
@@ -1017,6 +1028,7 @@ function publishRuntime(runtime: EngineRuntime): void {
   revisionStore = runtime.revisionStore;
   userMutationBroker = runtime.userMutationBroker;
   occurrenceAlignmentStore = runtime.occurrenceAlignmentStore;
+  occurrenceAlignmentStores = runtime.occurrenceAlignmentStores;
   backbone = runtime.backbone;
   bookNames = runtime.bookNames;
   crossRefData = runtime.crossRefData;
@@ -1088,7 +1100,7 @@ function disposeSemanticRuntime(runtime: EngineRuntime, reason: string, closeSto
     }
   }
   if (closeStore) {
-    runtime.occurrenceAlignmentStore.close();
+    for (const store of runtime.occurrenceAlignmentStores.values()) store.close();
   }
   logLifecycle("semantic-runtime-stopped", { reason });
 }
@@ -1452,8 +1464,12 @@ function occurrenceEvidence(
 ):
   | { ok: true; value: OccurrenceAlignmentVerseEvidence[] }
   | { ok: false; error: { code: string; message: string } } {
-  const store = occurrenceAlignmentStore;
-  if (!store || packageId !== "bsb") {
+  /* Per-package lookup (2026-07-30): this line used to read
+   * `packageId !== "bsb"`, which refused every WEB/KJV/YLT capture and
+   * projection even though d3712ab had shipped their artifacts. A package
+   * without an installed artifact still refuses honestly, exactly here. */
+  const store = occurrenceAlignmentStores?.get(packageId) ?? null;
+  if (!store) {
     return {
       ok: false,
       error: {
@@ -2039,6 +2055,26 @@ function buildEngineRuntime(
     scriptureRoot: DATA_DIR,
     packageId: "bsb",
   });
+  /* One exact-word store per package whose alignment artifact is actually
+   * installed (2026-07-30). Discovery is by artifact presence, not by a
+   * hardcoded list, so a future translation package joins by shipping its
+   * artifacts and nothing else. */
+  const nextOccurrenceAlignmentStores = new Map<string, OccurrenceAlignmentStore>([
+    ["bsb", nextOccurrenceAlignmentStore],
+  ]);
+  try {
+    const packagesRoot = join(DATA_DIR, "packages");
+    for (const entry of readdirSync(packagesRoot, { withFileTypes: true })) {
+      if (!entry.isDirectory() || entry.name === "bsb") continue;
+      if (!existsSync(join(packagesRoot, entry.name, "occurrence-alignments-v1.jsonl"))) continue;
+      nextOccurrenceAlignmentStores.set(entry.name, new OccurrenceAlignmentStore({
+        scriptureRoot: DATA_DIR,
+        packageId: entry.name,
+      }));
+    }
+  } catch (error) {
+    logLifecycle("occurrence-store-discovery-failed", { error: diagnosticError(error) }, "warn");
+  }
   const nextEngine = new LibraryEngine(
     libraryPath,
     nextBackbone,
@@ -2187,6 +2223,7 @@ function buildEngineRuntime(
       revisionStore: nextRevisionStore,
       userMutationBroker: nextUserMutationBroker,
       occurrenceAlignmentStore: nextOccurrenceAlignmentStore,
+      occurrenceAlignmentStores: nextOccurrenceAlignmentStores,
       backbone: nextBackbone,
       bookNames: nextBookNames,
       crossRefData: nextCrossRefData,
@@ -2203,7 +2240,7 @@ function buildEngineRuntime(
       placeResearch: nextPlaceResearch,
     };
   } catch (error) {
-    nextOccurrenceAlignmentStore.close();
+    for (const store of nextOccurrenceAlignmentStores.values()) store.close();
     if (nextEmbeddingProvider instanceof RendererEmbeddingProvider) {
       nextEmbeddingProvider.dispose("Semantic runtime initialization failed");
     }
