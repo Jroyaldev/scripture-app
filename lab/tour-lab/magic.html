@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Listening</title>
+<link rel="stylesheet" href="magic.css" />
+</head>
+<body>
+<main id="main">
+
+  <!-- Scene 1 · the ask. A question put to a room, not a form put to a machine. -->
+  <section id="ask" class="scene on">
+    <h1 class="ask-line">What are you carrying into the text?</h1>
+    <div class="ask-field">
+      <input id="q" type="text" autocomplete="off" spellcheck="false"
+             aria-label="Bring a question, a passage, or a heaviness" />
+    </div>
+    <p class="ask-hint">a question · a passage · a word · a heaviness</p>
+    <div class="ask-examples" aria-label="examples">
+      <button class="eg">Walk me through Genesis 6:1–4</button>
+      <button class="eg">My mother died and I cannot pray</button>
+      <button class="eg">What does hesed actually mean?</button>
+    </div>
+  </section>
+
+  <!-- Scene 2 · the making. One quiet line at a time, in honest past-tense of
+       what the pipeline is actually doing. No bar, no percent, no spinner. -->
+  <section id="making" class="scene">
+    <p id="making-line" class="making-line"></p>
+    <div id="making-marks" class="making-marks" aria-hidden="true"></div>
+  </section>
+
+  <!-- Scene 3 · the tour. A made thing, laid out like a gift. -->
+  <section id="tour" class="scene">
+    <header class="tour-head">
+      <p class="tour-over">A listening tour · <span id="tour-length"></span></p>
+      <h2 id="tour-title"></h2>
+      <p id="tour-intro" class="prose"></p>
+    </header>
+    <ol id="steps" class="steps"></ol>
+    <p id="tour-closing" class="prose closing"></p>
+    <p class="again"><button id="again" class="quiet-link">Ask something else</button></p>
+  </section>
+
+</main>
+<audio id="player" preload="none"></audio>
+<script src="magic.js"></script>
+</body>
+</html>

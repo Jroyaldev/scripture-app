@@ -8,6 +8,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { buildIndex, indexExists, loadIndex, CACHE_DIR, ARTIFACTS_DIR } from './corpus.mjs';
+import { readPassage } from './scripture.mjs';
 import { MODELS, clientFor } from './model-client.mjs';
 import { runTour, listRuns, readRun, readLedger, loadPricing, CAVEATS, MAX_MODEL_CALLS, MAX_TOOL_CALLS } from './tour-agent.mjs';
 
@@ -137,6 +138,49 @@ const server = http.createServer(async (req, res) => {
       );
       emit('batch-done', { models: modelKeys });
       return res.end();
+    }
+
+    // ------------------------------------------------ the magic experiment
+    // /magic is a presentation experiment over the same pipeline: same
+    // corpus, same agent, same records — different manners.
+
+    if (p === '/magic') return serveStatic(req, res, '/magic.html');
+
+    if (p === '/api/passage') {
+      return sendJson(res, 200, readPassage({
+        book: url.searchParams.get('book') || '',
+        chapter: Number(url.searchParams.get('chapter')),
+        fromVerse: url.searchParams.get('from') ? Number(url.searchParams.get('from')) : null,
+        toVerse: url.searchParams.get('to') ? Number(url.searchParams.get('to')) : null,
+      }));
+    }
+
+    // One cheap model call turns each step's why into a docent's whisper —
+    // the line a knowledgeable friend murmurs as the clip starts. The why is
+    // the receipt; the whisper is its manner.
+    if (p === '/api/whispers' && req.method === 'POST') {
+      const body = await readBody(req);
+      const steps = Array.isArray(body.steps) ? body.steps.slice(0, 8) : [];
+      if (!steps.length) return sendJson(res, 400, { error: 'steps required' });
+      try {
+        const client = clientFor('gpt-5.6-luna-medium');
+        const reply = await client.chat({
+          maxTokens: 4000,
+          messages: [{
+            role: 'user',
+            content: `For each clip below, write ONE whisper: the single quiet line a knowledgeable friend leans over and says just as the clip begins. At most 12 words. Start with "Listen for", "Notice", or "Wait for". Point at something concrete the speaker actually says or does (draw it from the reason given). Plain words, no hype, no exclamation marks, never mention AI, tours, or clips.\n\n${steps.map((s, i) => `${i + 1}. [${s.source}] ${s.episodeTitle}\nreason: ${String(s.why || '').slice(0, 500)}`).join('\n\n')}\n\nAnswer with ONLY this JSON: {"whispers": ["...", ...]} — exactly ${steps.length} strings, in order.`,
+          }],
+        });
+        const m = String(reply.message.content || '').match(/\{[\s\S]*\}/);
+        const parsed = m ? JSON.parse(m[0]) : null;
+        const whispers = Array.isArray(parsed?.whispers)
+          ? parsed.whispers.slice(0, steps.length).map((w) => String(w).slice(0, 120))
+          : [];
+        return sendJson(res, 200, { whispers });
+      } catch (err) {
+        // The page degrades to no whisper, never to an error in the reader's face.
+        return sendJson(res, 200, { whispers: [], note: err?.message || String(err) });
+      }
     }
 
     if (p.startsWith('/api/')) return sendJson(res, 404, { error: 'no such endpoint' });

@@ -1,0 +1,212 @@
+/* The magic experiment's dress. Paper and ink, serif throughout, radius
+   canon ≤ 8, motion that settles rather than performs. Nothing on this page
+   says how it works. */
+
+:root {
+  --paper: #faf7f1;
+  --paper-2: #f3eee5;
+  --ink: #2a251d;
+  --ink-2: #6b6355;
+  --ink-3: #a49a87;
+  --hair: rgba(42, 37, 29, 0.14);
+  --gold: #8a6d1f;
+  --serif: "Iowan Old Style", "Palatino", "Georgia", serif;
+  --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #191712;
+    --paper-2: #211e17;
+    --ink: #e8e2d4;
+    --ink-2: #a79d8a;
+    --ink-3: #6e6656;
+    --hair: rgba(232, 226, 212, 0.14);
+    --gold: #c8a94e;
+  }
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+#main { max-width: 620px; margin: 0 auto; padding: 0 24px; }
+
+/* ------------------------------------------------------------- scenes */
+.scene { display: none; opacity: 0; transition: opacity 480ms var(--ease); }
+.scene.on { display: block; opacity: 1; }
+.scene.entering { display: block; }
+
+/* ------------------------------------------------------------- the ask */
+#ask { padding-top: 26vh; text-align: center; }
+.ask-line {
+  font-size: 27px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  margin-bottom: 40px;
+}
+.ask-field { border-bottom: 1px solid var(--hair); transition: border-color 300ms var(--ease); }
+.ask-field:focus-within { border-color: var(--ink-3); }
+#q {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 20px;
+  text-align: center;
+  padding: 10px 4px 14px;
+  caret-color: var(--gold);
+}
+.ask-hint {
+  margin-top: 14px;
+  color: var(--ink-3);
+  font-size: 14px;
+  font-style: italic;
+  letter-spacing: 0.02em;
+}
+.ask-examples { margin-top: 9vh; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.eg {
+  border: 0;
+  background: transparent;
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: color 200ms var(--ease), background 200ms var(--ease);
+}
+.eg:hover { color: var(--ink); background: var(--paper-2); }
+
+/* ---------------------------------------------------------- the making */
+#making { padding-top: 38vh; text-align: center; }
+.making-line {
+  font-style: italic;
+  font-size: 18px;
+  color: var(--ink-2);
+  min-height: 1.6em;
+  opacity: 0;
+  transition: opacity 420ms var(--ease);
+}
+.making-line.show { opacity: 1; }
+.making-marks { margin-top: 46px; display: flex; gap: 9px; justify-content: center; flex-wrap: wrap; }
+.mark {
+  width: 7px; height: 7px;
+  border-radius: 2px;
+  background: var(--ink-3);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 500ms var(--ease), transform 500ms var(--ease);
+}
+.mark.on { opacity: 0.75; transform: none; }
+
+/* ------------------------------------------------------------ the tour */
+#tour { padding: 9vh 0 12vh; }
+.tour-over {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 11.5px;
+  color: var(--ink-3);
+  margin-bottom: 14px;
+}
+#tour-title { font-size: 30px; font-weight: 600; line-height: 1.22; margin-bottom: 18px; }
+.prose { color: var(--ink-2); font-size: 17px; max-width: 58ch; }
+.closing { margin-top: 40px; }
+
+.steps { list-style: none; margin-top: 44px; display: flex; flex-direction: column; gap: 14px; }
+.step {
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+  padding: 18px 20px 16px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 560ms var(--ease), transform 560ms var(--ease),
+              border-color 300ms var(--ease), background 300ms var(--ease);
+}
+.step.in { opacity: 1; transform: none; }
+.step.playing { border-color: var(--gold); background: var(--paper-2); }
+
+.step-top { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+.step-source {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 11px;
+  color: var(--ink-2);
+}
+.step-mins { margin-left: auto; font-size: 12.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.step-title { font-size: 18.5px; font-weight: 600; line-height: 1.3; }
+
+.step-row { display: flex; align-items: center; gap: 14px; margin-top: 12px; }
+.play {
+  flex: none;
+  width: 36px; height: 36px;
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: border-color 200ms var(--ease), background 200ms var(--ease);
+}
+.play:hover { border-color: var(--ink-3); }
+.step.playing .play { border-color: var(--gold); }
+.play svg { display: block; }
+
+.whisper {
+  font-style: italic;
+  font-size: 15.5px;
+  color: var(--ink-2);
+  opacity: 0;
+  transition: opacity 700ms var(--ease);
+  cursor: pointer;
+  min-height: 1.2em;
+}
+.whisper.show { opacity: 1; }
+
+.verses {
+  margin: 14px 2px 2px;
+  padding: 10px 16px;
+  border-left: 2px solid var(--hair);
+  color: var(--ink-2);
+  font-size: 15px;
+  display: none;
+}
+.step.playing .verses.has { display: block; }
+.verses sup { font-size: 10px; color: var(--ink-3); margin-right: 4px; }
+
+.why {
+  display: none;
+  margin-top: 12px;
+  font-size: 15px;
+  color: var(--ink-2);
+  border-top: 1px solid var(--hair);
+  padding-top: 12px;
+}
+.why.open { display: block; }
+
+.again { margin-top: 56px; text-align: center; }
+.quiet-link {
+  border: 0;
+  background: transparent;
+  color: var(--ink-3);
+  font: inherit;
+  font-size: 14.5px;
+  font-style: italic;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: color 200ms var(--ease);
+}
+.quiet-link:hover { color: var(--ink); }
+
+/* Latecomers (drift shows) get one honest sentence, quietly. */
+.step-note { margin-top: 10px; font-size: 12.5px; color: var(--ink-3); font-style: italic; }

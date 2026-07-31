@@ -1,0 +1,580 @@
+{
+  "runId": "2026-07-31T23-14-26-718-gpt-5.6-luna",
+  "startedAt": "2026-07-31T23:14:26.718Z",
+  "promptId": "pastoral-doubt",
+  "prompt": "I'm losing my faith and I'm frightened of it. Is doubt a failure? I want to hear people who take doubt seriously rather than scolding it.",
+  "model": {
+    "key": "gpt-5.6-luna",
+    "label": "GPT-5.6 Luna",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "max",
+      "source": "TOUR_REASONING",
+      "envVar": "LUNA_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "When Faith Feels Fragile: Doubt, Lament, and a Way to Keep Talking",
+    "intro": "This tour starts by making room for the fear and confusion rather than trying to argue you out of them. It moves from lament and the prayer “I do believe; help my unbelief,” to a careful distinction between questioning and rejecting faith, then to the possibility that re-examining inherited beliefs can be part of maturing. It ends with Thomas, whose demand for evidence is met by Jesus rather than mocked.",
+    "steps": [
+      {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "startSec": 1490,
+        "endSec": 1841,
+        "why": "Begin here because the speakers explicitly let “doubts and our pain, our sorrow, and our confusion” coexist with proclaiming God’s promises. They call lament a way to “stay in the conversation,” and say that bringing these feelings to God is not spiritual failure. This gives your fear a place before anyone tries to define it.",
+        "episodeTitle": "Psalm 22: Lament Psalms (w/ Cameron Cole)",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG7303573431.mp3?updated=1686154567",
+        "durationSec": 2801,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "listeners-commentary:podcast:1021fa12-com-1051a66c-213d-3b7f-9cb6-be4eaede94cb",
+        "startSec": 1159,
+        "endSec": 1304,
+        "why": "The father’s words—“I do believe, help my unbelief”—are presented as “a great response and an incredible prayer,” not as a performance he must perfect. The clip lets you hear mixed belief addressed directly to Jesus, and follows that prayer with Jesus helping the boy.",
+        "episodeTitle": "Mark 9:2-29",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/b6masi/mark_92-2996qgm.mp3",
+        "durationSec": 1547,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:1702",
+        "startSec": 3030,
+        "endSec": 3272,
+        "why": "This is the tour’s clearest answer to “Is doubt a failure?” The host argues from Hebrews 3 that “having questions is not unbelief” and that “wondering what God is doing isn’t unbelief,” while warning listeners to stop basing their security on performance. He also distinguishes uncertainty from “refusing to believe” the gospel, rather than treating every question as rebellion.",
+        "episodeTitle": "Naked Bible 181: Hebrews 3",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2017/10/NakedBible181_Hebrews3.mp3",
+        "durationSec": 3898,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:8930c29f-com-ec2b55cb-7030-346f-9528-bddaa65d8b46",
+        "startSec": 457,
+        "endSec": 720,
+        "why": "Here Tom Wright responds to someone whose inherited faith is coming apart, and treats intellectual inquiry as part of growing up: “Jesus taught us to love God with our minds.” He urges the listener to sort out what is central from things churches may have “boosted up as though they were part of the faith,” so examining an inherited package need not be the same as abandoning Christ.",
+        "episodeTitle": "#131 Help! I’m on the brink of atheism... Deconstruction and suffering",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR6100001449.mp3?updated=1749725746",
+        "durationSec": 1357,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "startSec": 1260,
+        "endSec": 1504,
+        "why": "Close with Thomas, who asks for evidence because resurrection “isn’t something easy to believe.” The commentator says Jesus “graciously humors him,” returns a week later, shows him the wounds, and receives Thomas’s confession. Doubt is met here with patience, relationship, and evidence rather than ridicule.",
+        "episodeTitle": "John 20:1-31",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/z8yyjpv9fmtit6hd/john_201-3185o5y.mp3",
+        "durationSec": 1726,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "You do not have to manufacture certainty tonight or hide what is happening inside you. A small, honest next step may be enough: say what you fear, ask for help with your unbelief, and keep talking with a wise person who will not be afraid of your questions. If the fear becomes overwhelming, seek a trusted pastor, counselor, or mental-health professional alongside this listening.",
+    "totalSeconds": 1245
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2802,
+      "promptTokens": 1582,
+      "completionTokens": 105,
+      "reasoningTokens": 89,
+      "cachedPromptTokens": 1537,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00008392000000000001
+    },
+    {
+      "i": 1,
+      "latencyMs": 3727,
+      "promptTokens": 1877,
+      "completionTokens": 384,
+      "reasoningTokens": 153,
+      "cachedPromptTokens": 1579,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00028336500000000005
+    },
+    {
+      "i": 2,
+      "latencyMs": 9487,
+      "promptTokens": 17817,
+      "completionTokens": 935,
+      "reasoningTokens": 516,
+      "cachedPromptTokens": 1874,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0025725400000000003
+    },
+    {
+      "i": 3,
+      "latencyMs": 19162,
+      "promptTokens": 28366,
+      "completionTokens": 1729,
+      "reasoningTokens": 1267,
+      "cachedPromptTokens": 17814,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0025344650000000005
+    },
+    {
+      "i": 4,
+      "latencyMs": 39748,
+      "promptTokens": 37362,
+      "completionTokens": 3413,
+      "reasoningTokens": 2977,
+      "cachedPromptTokens": 28363,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0034562300000000007
+    },
+    {
+      "i": 5,
+      "latencyMs": 17203,
+      "promptTokens": 44371,
+      "completionTokens": 1425,
+      "reasoningTokens": 1382,
+      "cachedPromptTokens": 37359,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0021050150000000004
+    },
+    {
+      "i": 6,
+      "latencyMs": 57690,
+      "promptTokens": 44458,
+      "completionTokens": 6000,
+      "reasoningTokens": 5207,
+      "cachedPromptTokens": 44368,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0040548550000000004
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "doubt faith failure afraid losing faith",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 92,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "I believe help my unbelief",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 58,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Thomas doubt believe resurrection",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 39,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "questions certainty faith crisis",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 60,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "deconstruction faith doubt",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 51,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "why have you forsaken me lament faith",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 66,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "unbelief fear faith",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 51,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "doubting Christian",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 65,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:8930c29f-com-ec2b55cb-7030-346f-9528-bddaa65d8b46",
+        "fromSec": 0,
+        "toSec": 1357
+      },
+      "ms": 1,
+      "summary": "27 skim lines, 0s–1357s of #131 Help! I’m on the brink of atheism... Deconstruction and suffering"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "naked-bible:podcast:1702",
+        "fromSec": 2550,
+        "toSec": 3898
+      },
+      "ms": 0,
+      "summary": "28 skim lines, 2550s–3898s of Naked Bible 181: Hebrews 3"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:021613fd546a4797ab73919667c6f4e4",
+        "fromSec": 1500,
+        "toSec": 2429
+      },
+      "ms": 2,
+      "summary": "19 skim lines, 1500s–2429s of Episode 139 (Numbers 14:11-19)"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "fromSec": 950,
+        "toSec": 1726
+      },
+      "ms": 2,
+      "summary": "16 skim lines, 950s–1726s of John 20:1-31"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "fromSec": 1400,
+        "toSec": 2400
+      },
+      "ms": 2,
+      "summary": "21 skim lines, 1400s–2400s of Psalm 22: Lament Psalms (w/ Cameron Cole)"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:cba32913-com-114a9f10-791c-320d-9f1a-7914cb645f12",
+        "fromSec": 0,
+        "toSec": 1656
+      },
+      "ms": 1,
+      "summary": "30 skim lines, 0s–1500s of #52 ‘I wish I didn’t exist’. Pain and suffering Part 2"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "help my unbelief Mark nine",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 90,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "God welcomes honest questions prayer doubt",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 74,
+      "summary": "15 hits"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:8930c29f-com-ec2b55cb-7030-346f-9528-bddaa65d8b46",
+        "fromSec": 230,
+        "toSec": 530
+      },
+      "ms": 3,
+      "summary": "230s–530s of #131 Help! I’m on the brink of atheism... Deconstruction and suffering"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:8930c29f-com-ec2b55cb-7030-346f-9528-bddaa65d8b46",
+        "fromSec": 740,
+        "toSec": 930
+      },
+      "ms": 0,
+      "summary": "740s–930s of #131 Help! I’m on the brink of atheism... Deconstruction and suffering"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:1702",
+        "fromSec": 2730,
+        "toSec": 3030
+      },
+      "ms": 4,
+      "summary": "2730s–3030s of Naked Bible 181: Hebrews 3"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:1702",
+        "fromSec": 3030,
+        "toSec": 3330
+      },
+      "ms": 0,
+      "summary": "3030s–3330s of Naked Bible 181: Hebrews 3"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "fromSec": 1490,
+        "toSec": 1790
+      },
+      "ms": 0,
+      "summary": "1490s–1790s of Psalm 22: Lament Psalms (w/ Cameron Cole)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "fromSec": 1790,
+        "toSec": 2000
+      },
+      "ms": 0,
+      "summary": "1790s–2000s of Psalm 22: Lament Psalms (w/ Cameron Cole)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:1021fa12-com-1051a66c-213d-3b7f-9cb6-be4eaede94cb",
+        "fromSec": 1190,
+        "toSec": 1490
+      },
+      "ms": 2,
+      "summary": "1190s–1490s of Mark 9:2-29"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "fromSec": 1300,
+        "toSec": 1570
+      },
+      "ms": 1,
+      "summary": "1300s–1570s of John 20:1-31"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:8930c29f-com-ec2b55cb-7030-346f-9528-bddaa65d8b46",
+        "fromSec": 420,
+        "toSec": 720
+      },
+      "ms": 0,
+      "summary": "420s–720s of #131 Help! I’m on the brink of atheism... Deconstruction and suffering"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:1021fa12-com-1051a66c-213d-3b7f-9cb6-be4eaede94cb",
+        "fromSec": 1180,
+        "toSec": 1380
+      },
+      "ms": 0,
+      "summary": "1180s–1380s of Mark 9:2-29"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "fromSec": 1260,
+        "toSec": 1510
+      },
+      "ms": 0,
+      "summary": "1260s–1510s of John 20:1-31"
+    },
+    {
+      "at": 4,
+      "name": "episode_info",
+      "args": {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6"
+      },
+      "ms": 2,
+      "summary": "Psalm 22: Lament Psalms (w/ Cameron Cole) (2801s)"
+    },
+    {
+      "at": 4,
+      "name": "episode_info",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:8930c29f-com-ec2b55cb-7030-346f-9528-bddaa65d8b46"
+      },
+      "ms": 2,
+      "summary": "#131 Help! I’m on the brink of atheism... Deconstruction and suffering (1357s)"
+    },
+    {
+      "at": 4,
+      "name": "episode_info",
+      "args": {
+        "recordId": "listeners-commentary:podcast:1021fa12-com-1051a66c-213d-3b7f-9cb6-be4eaede94cb"
+      },
+      "ms": 1,
+      "summary": "Mark 9:2-29 (1547s)"
+    },
+    {
+      "at": 4,
+      "name": "episode_info",
+      "args": {
+        "recordId": "naked-bible:podcast:1702"
+      },
+      "ms": 1,
+      "summary": "Naked Bible 181: Hebrews 3 (3898s)"
+    },
+    {
+      "at": 4,
+      "name": "episode_info",
+      "args": {
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9"
+      },
+      "ms": 1,
+      "summary": "John 20:1-31 (1726s)"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 7,
+    "toolCalls": 35,
+    "tapeSec": 2920,
+    "promptTokens": 175833,
+    "completionTokens": 13991,
+    "reasoningTokens": 11591,
+    "cachedPromptTokens": 132894,
+    "wallMs": 150492,
+    "modelLatencyMs": 149819,
+    "toolMs": 672
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.01509,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 0.2,
+      "outputPerMTokensUsd": 1.2,
+      "cachedInputPerMTokensUsd": 0.02,
+      "_note": "LIST price, read off openrouter.ai/openai/gpt-5.6-luna 2026-07-31. CAUTION: OpenRouter is running a 50% promotion on this model as of that date (billing $0.10/$0.60), and the provider-accounted cost in every run record is the DISCOUNTED figure — double the luna-family dollars for any list-price comparison, and re-check the page before trusting either number."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T23:16:57.210Z"
+}
