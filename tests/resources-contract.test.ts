@@ -201,7 +201,12 @@ test("density is a room, not a drawer", () => {
     /shortest last|taught-here-more|setShown/,
     "the drawer is back in front of the answer");
   assert.doesNotMatch(room, /aria-expanded=\{isOpen\}|taught-here-toggle/, "the bands are back");
-  assert.match(room, /\{shown\.map\(\(entry\) =>/, "the room must draw everything it holds");
+  /* Restated 2026-07-30 for the run's index — `shown.map((entry, index) =>`.
+     What this holds is that the room draws `shown` ENTIRE: no slice, no page,
+     no cap between the reader and the answer. */
+  assert.match(room, /\{shown\.map\(\(entry, index\) =>/, "the room must draw everything it holds");
+  assert.doesNotMatch(code("src/renderer/components/Resources.tsx"), /shown\.slice\(/,
+    "the room is capping the answer again");
 
   /* Nine hundred cards is only honest if they are cheap until they are near
      the viewport, and if the scrollbar does not lie while they wait. */
@@ -235,6 +240,63 @@ test("the publisher shelf is back, with its colours, its marks and its filter", 
      coloured pill with the name indented off-screen behind it. */
   const styles = read("src/renderer/styles.css");
   assert.match(styles, /\.resource-shelf \.trusted-resource-imprint \{[^}]*--player-mark-h:/s);
+
+  /* ── THE PLATE LAW · added 2026-07-30 ─────────────────────────────────────
+     The chip is the dock's plate and takes the dock's own geometry. It was
+     30px with --radius-page (14 of a possible 15, so a full-round pill) on a
+     frame whose stated law is radius ≈ 0.22 × the shorter dimension, capped at
+     8 — which is why the identical brand colours read as premium on
+     .podcast-mast-plate and as a rack in the shelf. The colour was never the
+     defect; the geometry was. */
+  const imprint = styles.slice(
+    styles.indexOf(".trusted-resource-imprint {"),
+    styles.indexOf(".trusted-resource-imprint:hover"),
+  );
+  assert.match(imprint, /height: 26px/, "the shelf plate left the dock's own height");
+  assert.match(imprint, /border-radius: var\(--radius-sm\)/,
+    "the shelf plate is a pill again; 0.22 × 26 is 6, which is --radius-sm");
+  assert.doesNotMatch(imprint, /--radius-page/);
+  /* And the ink on that ground is DECLARED. Its absence is what set a
+     <button>'s initial black on five publishers' own colours. */
+  assert.match(imprint, /color: var\(--resource-ink\)/,
+    "the shelf plate paints a ground and lets the ink fall where it may");
+  /* No lift, no drop shadow. The app's hover language is ink and a ring. */
+  assert.doesNotMatch(styles.slice(
+    styles.indexOf(".trusted-resource-imprint:hover"),
+    styles.indexOf(".trusted-resource-imprint[aria-expanded"),
+  ), /transform|box-shadow/, "the shelf plates lift off the page under the cursor again");
+});
+
+test("a publisher announces itself once per run", () => {
+  /* NEW CONTRACT · 2026-07-30, from the taste pass. Three Spoken Gospel cards
+     in a row each carried the full Spoken Gospel wordmark, then four
+     BibleProject cards each carried theirs — so a column of tiles read as a
+     colour chart with titles in it, which is the note the reader sent back.
+
+     The plate does NOT leave the face and the brand does not go quiet: the
+     first card of a run carries the wordmark, and the cards under it carry the
+     same plate reduced to the publisher's own colour. Permission-wise the
+     reduced form is strictly narrower — the same approved colour, no artwork
+     at all — and the name is still spoken in full on every card. */
+  const room = read("src/renderer/components/Resources.tsx");
+  assert.match(room, /function runs\(list: readonly ResourceEntry\[\]\): boolean\[\]/);
+  assert.match(room, /list\[at - 1\]\?\.sourceId === entry\.sourceId/,
+    "a run is consecutive cards from one publisher, in the order as drawn");
+  /* Worked out on the list AS DRAWN, at all three call sites, so the spine's
+     stops each start a fresh run rather than inheriting one across a verse. */
+  assert.equal((room.match(/runs\(/g) ?? []).length - 1, 3,
+    "a card list is being drawn without its runs worked out");
+  assert.match(room, /\{!repeat && <span className="taught-here-mark">/,
+    "the repeat is still stamping the wordmark");
+
+  const styles = read("src/renderer/styles.css");
+  assert.match(styles, /\.resource-card \.resource-card-plate\[data-repeat="true"\] \{[^}]*width: 4px/s,
+    "the reduced plate is a swatch again rather than a rule");
+  /* The five unmarked sources have no artwork to withdraw and keep their name
+     on every card — that is docs/trusted-resource-permissions' own generic
+     treatment, and a permission decision rather than a design one. */
+  assert.doesNotMatch(room, /APPROVED_MARKS|MARKED_SOURCES/,
+    "the mark list is being duplicated out of the stylesheet into the component");
 });
 
 test("the two footings reach the surfaces that show them, in a reader's language", () => {
@@ -289,9 +351,27 @@ test("the walk is declared, finite, and never a radio", () => {
   const player = read("src/renderer/components/PodcastPlayer.tsx");
   const room = read("src/renderer/components/Resources.tsx");
 
-  /* Its whole extent is stated before it is pressed: how many, in what order,
-     and how long altogether. */
-  assert.match(room, /treatments, longest first, \$\{walkLength\} in all/);
+  /* Its whole extent is stated before it is pressed: how many, that they are
+     the fullest, how long altogether — and that it can be let go of.
+
+     RESTATED 2026-07-30 (taste pass). This asserted the literal string
+     "treatments, longest first, ${walkLength} in all", which held the FACTS in
+     place and also froze the sentence that carried them: "12 treatments ·
+     longest first · 5h 42m", three specifications in a colon chain with the
+     reader's own decision nowhere in it. The facts are what this gate is for,
+     so the facts are what it asserts — a count, an extent, and the one thing a
+     five-hour button owes a reader that the spec line never said. */
+  assert.match(room, /\$\{walkStops\.length\} fullest/,
+    "the walk must say how many treatments it is about to play");
+  assert.match(room, /about \$\{walkLength\}/,
+    "the walk must declare its whole extent before it is pressed");
+  assert.match(room, /Leave it whenever you like/,
+    "a five-hour offer must say it can be left");
+  /* Against the CODE rather than the file: the sentence this replaced is
+     quoted in the prose above it, which is exactly the comment this codebase
+     asks for. */
+  assert.doesNotMatch(code("src/renderer/components/Resources.tsx"), /treatments · longest first/,
+    "the inventory chain is back on the reading surface");
   assert.match(room, /const WALK_STOPS = \d+;/, "a walk with no ceiling is a station");
   assert.match(room, /\.slice\(0, WALK_STOPS\)/);
   assert.match(room, /walkStops\.length > 1 &&/,

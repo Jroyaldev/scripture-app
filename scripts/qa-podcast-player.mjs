@@ -671,6 +671,66 @@ const room = await evaluate(`(() => {
     }).length,
     filter: shelf.some((chip) => chip.hasAttribute("aria-pressed")),
     settings: Boolean(lens.querySelector(".resource-shelf .trusted-resource-imprint.is-settings")),
+    /* THE PLATE LAW, on the shelf · added 2026-07-30 with the taste pass. The
+       chips were 30px with a 14px corner — a full-round pill on a frame whose
+       radius law is 0.22 × the shorter dimension — which is why the same brand
+       colours read as premium on the dock's 26px plate and as a rack here. One
+       object, one law: 26 and 6, the same numbers .podcast-mast-plate takes. */
+    shelfPlate: [...new Set(shelf.map((chip) => {
+      const box = getComputedStyle(chip);
+      /* Concatenated rather than interpolated: this whole probe is a template
+         literal on the driver's side, so a nested one is evaluated in Node. */
+      return String(Math.round(parseFloat(box.height))) + "/" + box.borderTopLeftRadius;
+    }))],
+    /* AND THE INK ON IT. The chip declared a ground and no colour, so a
+       <button>'s initial ButtonText — flat black — was set on the publisher's
+       own colour: four of the five name-in-type plates measured under 4.5 and
+       one under 2. Measured here rather than asserted from the palette,
+       because the failure was the ABSENCE of a declaration. */
+    shelfInk: (() => {
+      const channel = (v) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+      const luminance = (colour) => {
+        const [r, g, b] = colour.match(/[\\d.]+/g).map(Number);
+        return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+      };
+      const against = (ink, ground) => {
+        const [high, low] = [luminance(ink), luminance(ground)].sort((a, b) => b - a);
+        return Math.round(((high + 0.05) / (low + 0.05)) * 100) / 100;
+      };
+      return shelf
+        .filter((chip) => {
+          /* Only the plates that draw a NAME. An approved mark is artwork with
+             its own indent, and its ink is never painted. */
+          const name = chip.querySelector(".trusted-resource-source");
+          const ground = getComputedStyle(chip).backgroundColor;
+          return name && getComputedStyle(name).backgroundImage === "none"
+            && ground !== "rgba(0, 0, 0, 0)";
+        })
+        .map((chip) => {
+          const box = getComputedStyle(chip);
+          const after = getComputedStyle(chip, "::after");
+          const ink = after.content !== "none" ? after.color : box.color;
+          return { source: chip.dataset.source, ratio: against(ink, box.backgroundColor) };
+        });
+    })(),
+    /* THE RUN · added 2026-07-30. A publisher announces itself once per run:
+       the first card of a run carries the wordmark, the cards under it carry
+       the same plate reduced to the publisher's colour. Asserted as the thing
+       that was wrong — the same artwork drawn on two consecutive cards. */
+    twiceRunning: (() => {
+      let last = null;
+      let seen = 0;
+      for (const card of cards) {
+        const plate = card.querySelector(".resource-card-plate");
+        const mark = plate?.querySelector(".taught-here-mark");
+        const drawn = mark ? getComputedStyle(mark).backgroundImage !== "none" : false;
+        const source = plate?.dataset.source ?? null;
+        if (drawn && source && source === last) seen += 1;
+        last = source;
+      }
+      return seen;
+    })(),
+    reduced: cards.filter((card) => card.querySelector('.resource-card-plate[data-repeat="true"]')).length,
     // The plate is the ONE publisher crossing on a card, and only where a mark
     // is approved: everyone else takes their name in type.
     plated: cards.filter((card) => {
@@ -700,14 +760,30 @@ assert.ok(room.shelfColoured >= room.shelfChips - 1,
 assert.ok(room.shelfMarked > 0, "no approved mark is drawn on the shelf");
 assert.equal(room.filter, true, "the shelf is a drawer again rather than a filter");
 assert.equal(room.settings, true, "the route into resource settings is missing from the shelf");
+assert.deepEqual(room.shelfPlate, ["26/6px"],
+  `the shelf left the plate law: ${room.shelfPlate.join(", ")} (want 26px tall, 6px corner)`);
+/* The reference chapter's shelf is short and may hold only approved marks; the
+   dense chapter below carries all eleven and is where the count is gated. */
+for (const plate of room.shelfInk) {
+  assert.ok(plate.ratio >= ACCENT_FLOOR,
+    `${plate.source} sets its name on its own ground at ${plate.ratio}:1`);
+}
+assert.equal(room.twiceRunning, 0,
+  "a publisher's wordmark is drawn twice running; the run announces itself once");
+assert.ok(room.reduced > 0, "no card carries the run's reduced plate");
 assert.ok(room.sizes.every((size) => ["heavy", "light"].includes(size)),
   `the card family grew a third size: ${room.sizes.join(", ")}`);
 assert.match(room.footing ?? "", /machine-read/i,
   "the two footings are not disclosed on the surface that shows them");
 assert.doesNotMatch(room.footing ?? "", /not been asked/i,
   "the reading surface is telling a reader what is on our outreach backlog");
-assert.match(room.walk ?? "", /^Listen through .+ — \d+ treatments, longest first, .+ in all$/,
-  "the walk must declare its whole extent before it is pressed");
+/* RESTATED 2026-07-30 (taste pass). The shape asserted here was
+   "— N treatments, longest first, X in all", which is the specification chain
+   the room's own voice replaced; what the gate is FOR is that the offer
+   declares itself before it is pressed, and it now declares one thing more —
+   that a five-hour walk can be left. Facts, not phrasing. */
+assert.match(room.walk ?? "", /^Listen through .+ — the \d+ fullest treatments, end to end, about .+\. Leave it whenever you like\.$/,
+  "the walk must declare its whole extent, and that it can be left, before it is pressed");
 console.log("the room", room);
 
 await sleep(200);
@@ -1032,6 +1108,51 @@ assert.ok(density.heavy <= Math.max(6, Math.round(density.cards * 0.02)),
 assert.match(density.firstSays ?? "", /worked through/,
   "the room opens on something other than a treatment of this chapter");
 console.log("density", density);
+
+/* ── THE SHELF, WHERE ALL ELEVEN ARE ON IT · added 2026-07-30 ───────────────
+   The reference chapter carries two or three publishers; Genesis 1 carries the
+   whole library, which is the only place the shelf's own composition and its
+   ink can be measured against every palette at once.
+
+   THE INK is the gate that matters. The chip declared a ground and no colour,
+   so a <button>'s initial ButtonText — flat black — was painted on five
+   publishers' own colours: Radically Christian measured 1.75:1 here. Measured
+   in the engine rather than read off the palette, because the failure was the
+   ABSENCE of a declaration and a palette audit would have found nothing. */
+const shelfInk = await evaluate(`(() => {
+  const lens = document.querySelector("#margin-resources-panel:not([hidden])");
+  const chips = [...lens.querySelectorAll(".resource-shelf .trusted-resource-imprint")];
+  const channel = (v) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+  const luminance = (colour) => {
+    const [r, g, b] = colour.match(/[\\d.]+/g).map(Number);
+    return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+  };
+  const against = (ink, ground) => {
+    const [high, low] = [luminance(ink), luminance(ground)].sort((a, b) => b - a);
+    return Math.round(((high + 0.05) / (low + 0.05)) * 100) / 100;
+  };
+  return chips
+    .filter((chip) => {
+      const name = chip.querySelector(".trusted-resource-source");
+      const ground = getComputedStyle(chip).backgroundColor;
+      return name && getComputedStyle(name).backgroundImage === "none"
+        && ground !== "rgba(0, 0, 0, 0)";
+    })
+    .map((chip) => {
+      const box = getComputedStyle(chip);
+      const after = getComputedStyle(chip, "::after");
+      const ink = after.content !== "none" ? after.color : box.color;
+      return { source: chip.dataset.source, ratio: against(ink, box.backgroundColor) };
+    });
+})()`);
+assert.ok(shelfInk.length >= 4,
+  `only ${shelfInk.length} name-in-type plates on the dense chapter's shelf; the ink gate is looking at nothing`);
+for (const plate of shelfInk) {
+  assert.ok(plate.ratio >= ACCENT_FLOOR,
+    `${plate.source} sets its name on its own ground at ${plate.ratio}:1`);
+}
+console.log("shelf ink", shelfInk);
+
 await screenshot("paper-resources-dense", ".living-margin");
 
 /* The three discovery treatments, from the same cards and the same ordering.

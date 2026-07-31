@@ -19706,10 +19706,12 @@ button.lang-phrase-diagram-node:focus-visible,
 .taught-here-walk {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
+  /* The offer is two lines with a mark beside them and the mark belongs to the
+     first, not to the middle of the block. */
+  align-items: start;
   gap: 10px;
   width: 100%;
-  margin: 9px 0 2px;
+  margin: 0 0 2px;
   padding: 8px 6px;
   border: 0;
   border-radius: var(--radius-pebble);
@@ -19729,8 +19731,9 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .taught-here-walk-lines {
   display: grid;
-  gap: 1px;
+  gap: 2px;
   min-width: 0;
+  padding-top: 1px;
 }
 
 .taught-here-walk-title {
@@ -19741,12 +19744,15 @@ button.lang-phrase-diagram-node:focus-visible,
   white-space: nowrap;
 }
 
+/* RESTATED 2026-07-30 with the sentence above it. This was one nowrap line
+   with an ellipsis on it, which is the right treatment for a specification
+   chain — "12 treatments · longest first · 5h 42m" — and the wrong one for a
+   sentence: the offer's last clause, the one that says a five-hour button can
+   be let go of, was the first thing an ellipsis would have taken. It wraps. */
 .taught-here-walk-meta {
-  overflow: hidden;
   color: var(--text-tertiary);
-  font: 0.6875rem/1.4 var(--font-ui);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font: 0.6875rem/1.45 var(--font-ui);
+  text-wrap: pretty;
 }
 
 /* Three bands, all shut. A chapter holds 18 moments at the median and 922 at
@@ -20108,11 +20114,55 @@ button.lang-phrase-diagram-node:focus-visible,
   color: var(--text-primary);
 }
 
-/* The shelf sits above the room and narrows it. Its chips are the publisher
-   imprints the merge deleted — same object, same colours, same approved marks
-   — pressed as a filter rather than opened as a drawer. */
+/* ── The shelf ─────────────────────────────────────────────────────────────
+   The publishers who have taught this chapter, in one glance, in their own
+   colours and under their own marks, pressed as a filter rather than opened as
+   a drawer.
+
+   RECOMPOSED 2026-07-30, and the defect was geometry rather than colour. The
+   chips were 30px tall with `--radius-page` on them — 14 of a possible 15, so
+   a full-round pill — laid in a wrapping flex row under a 47% cap. Eleven of
+   those produce a ragged two-wide stack of colour bars with a stray outlined
+   circle orphaned under it: the same brand colours that read as premium on the
+   dock's 26px plate read as a candy rack here, because the pill is foreign to
+   a frame whose own law is radius ≈ 0.22 × the shorter dimension.
+
+   So the chip IS the dock's plate, at the dock's own height and radius, and
+   the shelf is JUSTIFIED: every plate is as wide as the publisher it names,
+   and the plates on a row divide that row's whole width between them. Ragged
+   inside, flush at both edges — which is what a colophon strip does in print,
+   and what the 47% cap could never do, because a cap can only leave a void.
+
+   Two columns of equal cells were tried first and rejected. Half a 380px panel
+   is 165px, and "The Listener's Bible Commentary" and "40 Minutes in the Old
+   Testament" do not fit it at any size a plate may be — so a grid buys its
+   alignment by ellipsing five of the eleven publishers, which is the opposite
+   of the trust this shelf is for. A publisher is either legible or absent.
+
+   The block carries a kicker over it and closes on a rule. The colour is
+   untouched — there is more of it legible on screen than there was, and it is
+   laid out. */
+.resource-shelf-block {
+  margin: 2px 0 var(--sp-md);
+  padding-bottom: var(--sp-md);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* The room's own head. The lens had none — the tab strip was doing that work —
+   so eleven saturated plates arrived directly under a row of tabs with nothing
+   to say what they were. The app's kicker voice, the same one the margin's
+   section labels and the folded tab use. */
+.resource-shelf-kicker {
+  margin: 0 0 9px;
+  color: var(--text-tertiary);
+  font: var(--fw-semibold) 0.5625rem/1.2 var(--font-ui);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
 .resource-shelf {
-  padding: 2px 0 var(--sp-md);
+  gap: 5px;
+  padding: 0;
 }
 
 /* THE MARK'S HEIGHT, which the imprint never had. The shared mark rule sizes
@@ -20120,22 +20170,46 @@ button.lang-phrase-diagram-node:focus-visible,
    and by the row's — never by the imprint. So `width: calc(var(--player-mark-h)
    × ratio)` was invalid on every chip, the artwork collapsed to nothing, and
    the name behind it is indented off-screen by the same rule: six colour chips
-   with no marks on them. Restored at the chip's own scale — a 30px chip, so a
-   mark of 18 leaves 6 of clear space top and bottom. */
+   with no marks on them. Restored at the chip's own scale — a 26px plate, so a
+   mark of 16 leaves 5 of clear space top and bottom, which is the dock's own
+   proportion at the dock's own size. */
 .resource-shelf .trusted-resource-imprint {
-  --player-mark-h: calc(var(--resource-mark-height) * 0.72);
-  /* A shelf is a row of marks, not a row of sentences. The five sources with
-     no approved artwork set their name in type here, and "40 Minutes in the
-     Old Testament" at full width is a chip that takes the whole shelf and
-     wraps it — so a name yields where a mark does not need to. */
-  max-width: 47%;
+  --player-mark-h: calc(var(--resource-mark-height) * 0.66);
+  /* THE JUSTIFICATION. Each plate asks for the width its own publisher needs
+     and then takes an equal share of whatever the row has left, so every row
+     runs flush to both edges of the shelf. Nothing is truncated to achieve it:
+     growth only ever adds width. */
+  flex: 1 1 auto;
   gap: 6px;
+  min-width: 0;
+  max-width: none;
 }
 
+/* A name yields; a tally does not. The five sources with no approved artwork
+   set their name in type, and "40 Minutes in the Old Testament" is longer than
+   any cell — so it ellipses inside the publisher's own colour rather than
+   pushing the count out of its column. */
 .resource-shelf .trusted-resource-imprint .trusted-resource-source {
+  flex: 0 1 auto;
+  min-width: 0;
   overflow: hidden;
+  /* A shade under the imprint's 13px wordmark: at 165px of cell, 13px serif
+     put four of the five unmarked names into an ellipsis by the third word. */
+  font-size: 0.75rem;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Naked Bible's name is a pseudo-element beside its emblem (see the mark rules
+   below), and it holds `margin-right: auto` so the emblem and the name read as
+   one lockup on a row. In a grid cell the tally is what takes the free space,
+   so the lockup gives it back. */
+.resource-shelf .trusted-resource-imprint[data-source="naked-bible"]::after {
+  min-width: 0;
+  margin-right: 0;
+  overflow: hidden;
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
 }
 
 /* The one narrowed to, said in the app's own way: pressed chips carry the seal
@@ -20143,6 +20217,8 @@ button.lang-phrase-diagram-node:focus-visible,
 .resource-shelf .trusted-resource-imprint[aria-pressed="true"] {
   box-shadow: 0 0 0 2px var(--bg-reading), 0 0 0 3.5px var(--resource-source);
 }
+
+.resource-shelf-sliders { flex: none; }
 
 .resource-room {
   margin-top: var(--sp-sm);
@@ -20155,7 +20231,10 @@ button.lang-phrase-diagram-node:focus-visible,
      two as the reader drags the window, and a room that reflows under the
      hand is not calm. */
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
+  /* Raised from 6 with the taste pass. Every card carries a saturated plate in
+     its head, and at 6px of gutter a column of them read as one continuous
+     band of colour with hairlines through it. Air is what separates marks. */
+  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -20167,7 +20246,7 @@ button.lang-phrase-diagram-node:focus-visible,
      the ones outside the viewport are not laid out until they are near it, and
      the intrinsic size stops the scrollbar from lying while they wait. */
   content-visibility: auto;
-  contain-intrinsic-size: auto 104px;
+  contain-intrinsic-size: auto 112px;
 }
 
 /* The second size. It is the same card — same face, same four things, same
@@ -20175,18 +20254,28 @@ button.lang-phrase-diagram-node:focus-visible,
    already worked out rather than by carrying an extra word. */
 .resource-card[data-weight="heavy"] {
   grid-column: 1 / -1;
-  contain-intrinsic-size: auto 92px;
+  contain-intrinsic-size: auto 100px;
 }
 
 .resource-card-face {
   display: grid;
-  align-content: start;
-  gap: 7px;
+  /* Head, name, foot — and the foot is on the card's FLOOR rather than under
+     whatever the name happened to need. Added 2026-07-30: the face was
+     `align-content: start`, so two cards side by side with a one-line and a
+     two-line title put their passage and their extent on two different lines,
+     and a grid of them had no horizontal rhythm at all. The middle row takes
+     the slack; the passage and the extent align across every row. */
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 8px;
   width: 100%;
   height: 100%;
-  padding: 8px;
+  /* 10 rather than 8, with the taste pass. The face carries a brand plate, a
+     transport mark, a two-line title and a foot; at 8 the plate sat 8px from
+     the card's own edge and 8px from the title, so nothing on the face had a
+     margin wider than the gaps inside it. */
+  padding: 10px;
   border: 1px solid var(--border-subtle);
-  /* Canon: 0.22 × the shorter dimension, rounded even, capped at 8 — a ~104px
+  /* Canon: 0.22 × the shorter dimension, rounded even, capped at 8 — a ~112px
      tile takes the cap, and the plate inside it nests at 4. */
   border-radius: var(--radius-md);
   background: none;
@@ -20254,9 +20343,57 @@ button.lang-phrase-diagram-node:focus-visible,
   max-width: 100%;
 }
 
+/* The five sources with no approved mark set their NAME here — the generic
+   treatment docs/trusted-resource-permissions prescribes, on a plate that
+   carries no colour. RESTATED 2026-07-30: it was 10px of the same sentence-
+   case UI face the card's own foot uses, at full ink and at the card's whole
+   width, so "The Listener's Bible …" arrived as a second title above the
+   title. The imprint voice is small caps at label size, which is how the dock
+   sets a name inside its own plate and how the shelf's kicker speaks.
+
+   Safe for the six approved sources: their `.taught-here-mark` is the artwork
+   itself, indented off-screen behind a background image by the mark rule
+   further down this file, so an ink and a face on it change nothing. */
 .resource-card-plate .taught-here-mark {
-  font-size: 0.625rem;
+  color: var(--text-tertiary);
+  font: var(--fw-semibold) 0.5625rem/1 var(--font-ui);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
 }
+
+/* ── The run · 2026-07-30 ──────────────────────────────────────────────────
+   The second and third card of one publisher's run keep the plate and give up
+   the artwork: the same colour, the same 16px height, the same 4px corner,
+   reduced to its ground. See components/Resources for the argument — the
+   wordmark stamped four times down one column is what made the room shout, and
+   withdrawing it is what lets the colour stay.
+
+   A RULE RATHER THAN A SWATCH. The first draft made it 14px wide at the
+   plate's own 4px corner, which put a second rounded rectangle beside the
+   transport's disc and read as an unlabelled control — a coloured button
+   nobody could press. 4px at the marks' own 2px corner reads as what it is:
+   a printer's rule in the publisher's ink, struck at the exact x where the
+   imprint two cards above it starts, so a run threads down the column.
+
+   Specificity is deliberate. The per-source plate rules further down this file
+   set the padding and the corner, and they are later in source order, so this
+   has to out-rank rather than out-order them.
+
+   THE FIVE UNMARKED SOURCES ARE UNTOUCHED. They take no plate and no colour on
+   a card at all — that is docs/trusted-resource-permissions' generic treatment
+   and a permission decision rather than a design one — so their name in type
+   is already the quiet form, and it stays on every card. There is nothing to
+   withdraw. */
+.resource-card .resource-card-plate[data-repeat="true"] {
+  flex: none;
+  width: 4px;
+  padding: 0;
+  border-radius: var(--radius-mark);
+}
+
+/* Naked Bible's plate carries its name as a pseudo-element beside the emblem,
+   and a reduced plate has neither. */
+.resource-card .resource-card-plate[data-repeat="true"]::after { content: none; }
 
 /* The thing's own name. Two lines, because a title is long by nature and its
    first forty characters identify it; `pretty` rather than `balance` because a
@@ -20318,28 +20455,38 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .resource-stop {
   position: relative;
-  padding-left: 28px;
+  padding-left: 30px;
 }
 
+/* The rail runs behind the marks rather than beside them, so the column of
+   stops reads as one line down the chapter. It starts under the first mark and
+   carries through the gap into the next stop. */
 .resource-stop::before {
   content: "";
   position: absolute;
-  top: 3px;
+  top: 18px;
   bottom: calc(-1 * var(--sp-md));
-  left: 9px;
+  left: 8px;
   width: 1px;
   background: var(--border-subtle);
 }
 
 .resource-stop:last-child::before { bottom: 0; }
 
+/* The mark sits ON the rail in the panel's own paper, which is what makes it a
+   running head rather than a bullet: the rule passes behind it and the paper
+   opens a gap for it. */
 .resource-stop-mark {
   position: absolute;
   top: 0;
   left: 0;
-  color: var(--text-tertiary);
-  font: var(--fw-medium) 0.625rem/1.6 var(--font-mono);
+  padding: 1px 0 4px;
+  background: var(--bg-reading);
+  color: var(--text-secondary);
+  font: var(--fw-medium) 0.5625rem/1.4 var(--font-mono);
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 /* ── The digest, and its door ──────────────────────────────────────────────
@@ -20384,6 +20531,10 @@ button.lang-phrase-diagram-node:focus-visible,
   .resource-card-face {
     border-color: CanvasText;
   }
+  /* The shelf's own head and its closing rule, which a forced palette drops to
+     nothing otherwise. */
+  .resource-shelf-kicker { color: CanvasText; }
+  .resource-shelf-block { border-bottom-color: GrayText; }
   .resource-card-face:hover { background: Highlight; color: HighlightText; }
   .resource-card-face:focus-visible { outline-color: Highlight; }
   .resource-card-face[data-running="true"] {
@@ -20455,22 +20606,47 @@ button.lang-phrase-diagram-node:focus-visible,
 
 /* The imprint is the whole card reduced to the one thing that identifies it.
    It keeps the publisher's colour at full strength — a muted mark is a mark
-   read twice — and pays for it in area rather than in saturation. */
+   read twice — and pays for it in area rather than in saturation.
+
+   IT IS THE DOCK'S PLATE · 2026-07-30. 26px, so the radius is the canon's own
+   0.22 × 26 ≈ 6 — the same number, the same object and the same law as
+   .podcast-mast-plate, which is precisely why the identical brand colours read
+   as premium there and as a candy rack here at 30px and 14. Nothing about the
+   colour changed.
+
+   And it no longer lifts off the page. A hover that translates and drops a
+   shadow is a chip pretending to be a physical token; the app's own hover
+   language is ink and a ring, and eleven of these rising under a passing
+   cursor was the loudest motion on a reading surface. */
 .trusted-resource-imprint {
   display: inline-flex;
   align-items: center;
-  height: 30px;
-  padding: 0 11px;
+  height: 26px;
+  padding: 0 8px;
   border: 0;
-  border-radius: var(--radius-page);
+  border-radius: var(--radius-sm);
   background: var(--resource-source);
+  /* THE INK ON THAT GROUND, and it had never been declared. The chip painted
+     `--resource-source` and declared no colour at all, so a <button>'s own
+     initial ButtonText — flat black, not even the app's ink — was set on the
+     publisher's colour. Measured in the running engine before this line:
+     Radically Christian 1.75:1, 40 Minutes in the Old Testament 3.43:1,
+     5 Minutes in Church History 3.48:1, Ask N.T. Wright Anything 4.30:1. Four
+     of the five name-in-type plates failed Law 6's 4.5, and the fifth passed
+     only because its ground happens to be a pale blue.
+
+     Every source already declares the ink its own ground was chosen for — the
+     card's plate, the dock's plate and the featured card all use it — so the
+     shelf uses it too. After: 5.33, 5.42, 10.09, 12.50 and 4.88. The default
+     palette's ink is the theme's paper on the theme's gold, which holds in all
+     four atmospheres by construction (see --resource-ink at the fallback). */
+  color: var(--resource-ink);
   cursor: pointer;
-  transition: transform 150ms ease, box-shadow 150ms ease, filter 150ms ease;
+  transition: box-shadow 150ms ease, filter 150ms ease;
 }
 
 .trusted-resource-imprint:hover {
-  box-shadow: 0 4px 10px -5px rgb(0 0 0 / 0.45);
-  transform: translateY(-1px);
+  filter: brightness(1.06);
 }
 
 /* Dated 2026-07-30: the inner ring named --surface-page, which is declared
@@ -20751,7 +20927,15 @@ button.lang-phrase-diagram-node:focus-visible,
 .podcast-dock[data-source="ask-nt-wright"],
 .taught-here-plate[data-source="ask-nt-wright"] {
   --resource-source: #0079a8;
-  --resource-ink: #eaf6fb;
+  /* White rather than the pale blue sampled from their artwork. Dated
+     2026-07-30 with the shelf's ink fix: Premier's name has no approved mark,
+     so it is the only one of these palettes whose ink is drawn as TEXT at
+     reading weight, and #EAF6FB on #0079A8 measures 4.44:1 in the running
+     engine — under Law 6's 4.5 by a hair, on the one plate that cannot fall
+     back to artwork. Pure white on the same ground is 4.88:1, and a reversed
+     wordmark is white in their own usage anyway. The soft ink and the hairline
+     below stay sampled: neither carries body copy. */
+  --resource-ink: #ffffff;
   --resource-ink-soft: rgb(234 246 251 / 0.78);
   --resource-line: rgb(234 246 251 / 0.3);
   --resource-pill-bg: #d8183c;
@@ -21063,20 +21247,28 @@ button.lang-phrase-diagram-node:focus-visible,
 
 /* The count a publisher's chip carries when it has more than one answer, and
    the count on All. Set in mono so it reads as a tally rather than a word. */
+/* RESTATED 2026-07-30. The tally used to be a dark rounded pill inside the
+   chip — so every plate carried a second, darker blob, and eleven plates
+   carried eleven of them at eleven different distances from the right edge.
+   That is what stacked into "sore on the eyes": not the brand colours, the
+   forty small shapes laid on them.
+   In a grid of equal cells the tally needs no container at all. Pushed to the
+   cell's right edge in the publisher's own ink at three quarters strength, it
+   falls into a numeral column down each side of the shelf, which is the thing
+   a tabular face is for. */
 .trusted-resource-imprint-count {
   /* The lockup name is a pseudo-element at order 1, so an unordered count sits
      ahead of it and reads "4 Naked Bible". The tally goes last, always. */
   order: 2;
-  margin-left: 7px;
-  padding: 1px 5px;
-  border-radius: 5px;
-  background: rgb(0 0 0 / 0.16);
+  flex: none;
+  margin-left: auto;
+  padding-left: 8px;
+  background: none;
   color: inherit;
-  font: var(--fw-medium) 0.625rem/1.4 var(--font-mono);
+  font: var(--fw-medium) 0.625rem/1 var(--font-mono);
   font-variant-numeric: tabular-nums;
+  opacity: 0.74;
 }
-
-.trusted-resource-imprint.is-all .trusted-resource-imprint-count { background: rgb(0 0 0 / 0.1); }
 
 /* All is a chip of the same size and shape, in the margin's own ink rather than
    a publisher's colour — it belongs to the reader, not to a brand. */
@@ -21094,9 +21286,10 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint.is-all .trusted-resource-source {
   overflow: visible;
   color: inherit;
-  font: var(--fw-semibold) 0.8125rem/1 var(--font-ui);
-  letter-spacing: 0.01em;
+  font: var(--fw-semibold) 0.6875rem/1 var(--font-ui);
+  letter-spacing: 0.055em;
   text-indent: 0;
+  text-transform: uppercase;
 }
 
 .trusted-resource-imprint.is-all[aria-expanded="true"] {
@@ -21104,9 +21297,13 @@ button.lang-phrase-diagram-node:focus-visible,
   color: var(--text-primary);
 }
 
-/* Settings is the quietest chip in the row: same height and radius, no fill,
-   no count. It is a way out of the group rather than a way into it. */
+/* Settings is the quietest chip in the shelf: same height and radius, no fill,
+   no count. It is a way out of the group rather than a way into it — and it is
+   NAMED as of 2026-07-30, because an unlabelled outlined circle wrapped onto a
+   line of its own under eleven colour plates read as a stray control rather
+   than as the shelf's own last cell. */
 .trusted-resource-imprint.is-settings {
+  gap: 7px;
   padding: 0 9px;
   background: transparent;
   box-shadow: inset 0 0 0 1px var(--border-subtle);
@@ -21116,16 +21313,21 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint.is-settings:hover {
   box-shadow: inset 0 0 0 1px var(--border-medium);
   color: var(--text-secondary);
+  filter: none;
 }
 
 .trusted-resource-imprint.is-settings .trusted-resource-source {
   display: inline-flex;
   align-items: center;
-  overflow: visible;
+  overflow: hidden;
   height: auto;
   aspect-ratio: auto;
   background: none;
+  color: inherit;
+  font: var(--fw-semibold) 0.5625rem/1 var(--font-ui);
+  letter-spacing: 0.11em;
   text-indent: 0;
+  text-transform: uppercase;
 }
 
 /* The library panel opens where a card opens, and its rows carry their own
@@ -21522,7 +21724,9 @@ button.lang-phrase-diagram-node:focus-visible,
   .trusted-resource-card { border: 1px solid CanvasText; background: Canvas; color: CanvasText; }
   /* A forced palette drops the brand surface, and with it the only thing that
      told the chips apart — so the name comes back out of the indent. */
-  .trusted-resource-imprint { border: 1px solid ButtonText; background: ButtonFace; padding: 0 9px; }
+  /* The ink comes back to the system's too, now that the chip declares one:
+     `--resource-ink` is a brand colour and a forced palette must own it. */
+  .trusted-resource-imprint { border: 1px solid ButtonText; background: ButtonFace; color: ButtonText; padding: 0 9px; }
   .trusted-resource-imprint .trusted-resource-source {
     aspect-ratio: auto;
     height: auto;

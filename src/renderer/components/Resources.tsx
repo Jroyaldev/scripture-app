@@ -331,6 +331,20 @@ export function useDiscoveryShape(): DiscoveryShape {
   );
 }
 
+/**
+ * The runs, as a flag per card.
+ *
+ * A run is what the ordering already produced: consecutive cards from one
+ * publisher. Nothing is regrouped and nothing is reordered — this only asks,
+ * of each card, whether the card before it came from the same imprint, which
+ * is what decides whether the publisher's plate carries their mark or only
+ * their colour. Computed on the list AS DRAWN, so the spine's stops each start
+ * a fresh run: a publisher's first card under a new verse announces itself.
+ */
+function runs(list: readonly ResourceEntry[]): boolean[] {
+  return list.map((entry, at) => at > 0 && list[at - 1]?.sourceId === entry.sourceId);
+}
+
 /** What a press hands the transport. One shape, both kinds of audio entry. */
 function episodeOf(entry: ResourceEntry): PodcastEpisode {
   return {
@@ -370,16 +384,38 @@ function episodeOf(entry: ResourceEntry): PodcastEpisode {
  * a source with an approved mark gets the plate — their colour under their own
  * artwork — and every other source gets its name in type and no colour at all.
  * Six of eleven, so the room stays a margin rather than a colour chart.
+ *
+ * ── THE RUN · added 2026-07-30 with the taste pass ──────────────────────────
+ *
+ * The publisher is stated ONCE PER RUN. A chapter's material arrives in runs —
+ * three Spoken Gospel cards, then four BibleProject ones — and the first draft
+ * stamped the full wordmark on every card in every run, so a column of four
+ * shouted the same name four times and the room read as a colour chart with
+ * titles in it.
+ *
+ * The plate does not leave the face and the brand does not go quiet: the first
+ * card of a run carries the publisher's plate whole, and the cards that follow
+ * carry the SAME PLATE reduced to its ground — the publisher's own colour, at
+ * the plate's own height and radius, with the artwork withdrawn. So a run reads
+ * as one publisher's column of colour with one wordmark at its head, which is
+ * what a printed page does with a running imprint, and the identity is still
+ * spoken in full on every card's accessible name.
+ *
+ * Permission-wise this is strictly narrower than what came before: the reduced
+ * form paints the same approved colour and draws no artwork at all.
  */
 function ResourceCard({
   entry,
   heavy,
+  repeat,
   running,
   playing,
   onOpen,
 }: {
   entry: ResourceEntry;
   heavy: boolean;
+  /** True when the card above this one is the same publisher's. */
+  repeat: boolean;
   running: boolean;
   playing: boolean;
   onOpen: (entry: ResourceEntry) => void;
@@ -399,6 +435,7 @@ function ResourceCard({
         aria-label={spoken}
         className="resource-card-face"
         data-kind={entry.link ? "read" : "hear"}
+        data-repeat={repeat ? "true" : undefined}
         data-running={running ? "true" : undefined}
         onClick={() => onOpen(entry)}
         type="button"
@@ -411,8 +448,15 @@ function ResourceCard({
           ) : (
             <TransportPlayMark className="resource-card-play" paused={!(running && playing)} />
           )}
-          <span className="taught-here-plate resource-card-plate" data-source={entry.sourceId}>
-            <span className="taught-here-mark">{entry.sourceName}</span>
+          <span
+            className="taught-here-plate resource-card-plate"
+            data-repeat={repeat ? "true" : undefined}
+            data-source={entry.sourceId}
+          >
+            {/* Withdrawn on a repeat, so the run carries one wordmark and a
+                column of the publisher's own colour under it. The name is in
+                the face's accessible name either way. */}
+            {!repeat && <span className="taught-here-mark">{entry.sourceName}</span>}
           </span>
         </span>
         <span className="resource-card-title">{entry.episode}</span>
@@ -542,6 +586,11 @@ export function Resources({
     () => (only ? entries.filter((entry) => entry.sourceId === only) : entries),
     [entries, only],
   );
+  /* Which cards are the second and third of one publisher's run, worked out
+     once on the list as drawn — see `runs`. Narrowing to one publisher makes
+     the whole room a single run, which is right: the shelf's pressed chip is
+     already saying whose it is, so the plate states it once at the top. */
+  const repeats = useMemo(() => runs(shown), [shown]);
 
   /* ── The walk, and its whole extent, worked out before it is offered ──────
      One pass, because the control has to state a count and a total that are
@@ -584,6 +633,17 @@ export function Resources({
   const walkHours = Math.floor(walk.seconds / 3600);
   const walkMinutes = Math.round((walk.seconds % 3600) / 60);
   const walkLength = walkHours > 0 ? `${walkHours}h ${walkMinutes}m` : `${walkMinutes}m`;
+  /* ── What the walk offers, in the app's own voice ────────────────────────
+     RESTATED 2026-07-30. It read "12 treatments · longest first · 5h 42m" — an
+     inventory chain of three specifications with the reader's decision nowhere
+     in it. Everything true about that line is still here and the scale is not
+     softened: how many, that the fullest come first, and how long the whole
+     thing runs. What is added is the only fact a reader actually needs before
+     pressing a five-hour button, which the spec line never said — that they
+     are not committing to it. Said once, in one sentence, on the control that
+     starts it. */
+  const walkOffer = `The ${walkStops.length} fullest, end to end — about ${walkLength}. Leave it whenever you like.`;
+  const walkSpoken = `Listen through ${displayBook} ${chapter} — the ${walkStops.length} fullest treatments, end to end, about ${walkLength}. Leave it whenever you like.`;
 
   /* Heavy is the shape of the answer rather than a count of it: the cards that
      genuinely work through this passage take the full width and the rest are
@@ -621,59 +681,73 @@ export function Resources({
       <h3 className="sr-only" id="resources-title">{`Resources for ${displayBook} ${chapter}`}</h3>
 
       {/* ── The shelf ────────────────────────────────────────────────────────
-          Six publishers in one glance, in their own colours, with their own
-          marks — and the filter and the settings route that went missing with
-          the merge. A chip is a publisher, not a record: pressing one narrows
-          the room to their material and pressing it again gives the room
-          back. */}
+          Every publisher who has taught this chapter, in one glance, in their
+          own colours and with their own marks — and the filter and the settings
+          route that went missing with the merge. A chip is a publisher, not a
+          record: pressing one narrows the room to their material and pressing
+          it again gives the room back.
+
+          RECOMPOSED 2026-07-30. The chips were 30px full-round pills laid in a
+          wrapping flex row under a 47% cap, which produced a ragged two-wide
+          stack of eleven colour bars — a filter widget rather than a shelf, and
+          a radius foreign to a frame whose own law is 0.22 × the shorter side.
+          They are PLATES now, on the dock's own plate law, in a grid of two
+          equal columns: one height, one radius, one width, and the tallies in a
+          numeral column down the right of each. The colour is the same colour;
+          what changed is that it is laid out. */}
       {shelf.length > 0 && (
-        <div className="trusted-resource-imprints resource-shelf" role="group" aria-label="Publishers on this passage">
-          {shelf.map((chip) => (
+        <div className="resource-shelf-block">
+          <p className="resource-shelf-kicker">Publishers on this passage</p>
+          <div className="trusted-resource-imprints resource-shelf" role="group" aria-label="Publishers on this passage">
+            {shelf.map((chip) => (
+              <button
+                aria-label={`${chip.name} — ${chip.count} ${chip.count === 1 ? "item" : "items"} for this passage`}
+                aria-pressed={only === chip.id}
+                className="trusted-resource-imprint"
+                data-source={chip.id}
+                key={chip.id}
+                onClick={() => setOnly(only === chip.id ? null : chip.id)}
+                type="button"
+              >
+                <span className="trusted-resource-source">{chip.name}</span>
+                {chip.count > 1 && <span className="trusted-resource-imprint-count">{chip.count}</span>}
+              </button>
+            ))}
+            {only !== null && (
+              <button
+                aria-label={`All ${entries.length} for this passage`}
+                className="trusted-resource-imprint is-all"
+                onClick={() => setOnly(null)}
+                type="button"
+              >
+                <span className="trusted-resource-source">All</span>
+                <span className="trusted-resource-imprint-count">{entries.length}</span>
+              </button>
+            )}
+            {/* The shelf raises the question of who these publishers are, and
+                the answer lives in settings — so the way there is the shelf's
+                own closing cell rather than a hunt through a menu. It is the
+                one cell that carries no colour: it belongs to the reader.
+                Named in type as of 2026-07-30, because an unlabelled outlined
+                circle orphaned on a row of its own was the shelf's loosest
+                object and read as a stray control. */}
             <button
-              aria-label={`${chip.name} — ${chip.count} ${chip.count === 1 ? "item" : "items"} for this passage`}
-              aria-pressed={only === chip.id}
-              className="trusted-resource-imprint"
-              data-source={chip.id}
-              key={chip.id}
-              onClick={() => setOnly(only === chip.id ? null : chip.id)}
+              aria-expanded={library}
+              aria-label={(catalogue?.mutes.length ?? 0) > 0
+                ? `Your library — ${catalogue?.mutes.length} muted`
+                : "Choose what your library offers"}
+              className="trusted-resource-imprint is-settings"
+              data-muted={(catalogue?.mutes.length ?? 0) > 0}
+              onClick={() => setLibrary(!library)}
+              title={(catalogue?.mutes.length ?? 0) > 0
+                ? `Your library — ${catalogue?.mutes.length} muted`
+                : "Choose what your library offers"}
               type="button"
             >
-              <span className="trusted-resource-source">{chip.name}</span>
-              {chip.count > 1 && <span className="trusted-resource-imprint-count">{chip.count}</span>}
-            </button>
-          ))}
-          {only !== null && (
-            <button
-              aria-label={`All ${entries.length} for this passage`}
-              className="trusted-resource-imprint is-all"
-              onClick={() => setOnly(null)}
-              type="button"
-            >
-              <span className="trusted-resource-source">All</span>
-              <span className="trusted-resource-imprint-count">{entries.length}</span>
-            </button>
-          )}
-          {/* The shelf raises the question of who these publishers are, and the
-              answer lives in settings — so the way there is a chip in the same
-              row rather than a hunt through a menu. */}
-          <button
-            aria-expanded={library}
-            aria-label={(catalogue?.mutes.length ?? 0) > 0
-              ? `Your library — ${catalogue?.mutes.length} muted`
-              : "Choose what your library offers"}
-            className="trusted-resource-imprint is-settings"
-            data-muted={(catalogue?.mutes.length ?? 0) > 0}
-            onClick={() => setLibrary(!library)}
-            title={(catalogue?.mutes.length ?? 0) > 0
-              ? `Your library — ${catalogue?.mutes.length} muted`
-              : "Choose what your library offers"}
-            type="button"
-          >
-            <span className="trusted-resource-source" aria-hidden="true">
               {/* Sliders, not a cog: at 13px a cog's teeth close up into a sun.
                   Three rows with a knob each also happens to be what the panel
                   behind it actually is. */}
-              <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+              <svg className="resource-shelf-sliders" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
                 <g fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.4">
                   <path d="M2.2 4.2h11.6M2.2 8h11.6M2.2 11.8h11.6" />
                   <circle cx="5.6" cy="4.2" r="1.6" fill="var(--bg-reading)" />
@@ -681,8 +755,9 @@ export function Resources({
                   <circle cx="6.6" cy="11.8" r="1.6" fill="var(--bg-reading)" />
                 </g>
               </svg>
-            </span>
-          </button>
+              <span className="trusted-resource-source" aria-hidden="true">Your library</span>
+            </button>
+          </div>
         </div>
       )}
 
@@ -717,7 +792,7 @@ export function Resources({
           episode with extra words on the button. */}
       {walkStops.length > 1 && (
         <button
-          aria-label={`Listen through ${displayBook} ${chapter} — ${walkStops.length} treatments, longest first, ${walkLength} in all`}
+          aria-label={walkSpoken}
           className="taught-here-walk"
           onClick={() => startPodcastWalk(`${displayBook} ${chapter}`, walkStops)}
           type="button"
@@ -725,45 +800,52 @@ export function Resources({
           <TransportPlayMark className="taught-here-play" paused />
           <span className="taught-here-walk-lines">
             <span className="taught-here-walk-title">{`Listen through ${displayBook} ${chapter}`}</span>
-            <span className="taught-here-walk-meta">
-              {`${walkStops.length} treatments · longest first · ${walkLength}`}
-            </span>
+            <span className="taught-here-walk-meta">{walkOffer}</span>
           </span>
         </button>
       )}
 
       {shape === "spine" ? (
         <div className="resource-room" data-discovery="spine">
-          {stops.map(([at, cards]) => (
-            <div className="resource-stop" key={at}>
-              <span aria-hidden="true" className="resource-stop-mark">
-                {at === 0 ? "ch." : at}
-              </span>
-              <ul className="resource-grid">
-                {cards.map((entry) => (
-                  <ResourceCard
-                    entry={entry}
-                    heavy={false}
-                    key={entry.key}
-                    onOpen={open}
-                    playing={playing}
-                    running={runningKey === entry.key}
-                  />
-                ))}
-              </ul>
-            </div>
-          ))}
+          {stops.map(([at, cards]) => {
+            const repeats = runs(cards);
+            return (
+              <div className="resource-stop" key={at}>
+                {/* The spine's whole idea, said in two characters: this run of
+                    cards speaks to verse 7, and the one below it to verse 12.
+                    A bare numeral could have been anything — a count, an
+                    index, a rank — which is what the first draft drew. */}
+                <span aria-hidden="true" className="resource-stop-mark">
+                  {at === 0 ? "ch" : `v${at}`}
+                </span>
+                <ul className="resource-grid">
+                  {cards.map((entry, index) => (
+                    <ResourceCard
+                      entry={entry}
+                      heavy={false}
+                      key={entry.key}
+                      onOpen={open}
+                      playing={playing}
+                      repeat={repeats[index] ?? false}
+                      running={runningKey === entry.key}
+                    />
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
         </div>
       ) : (
         <div className="resource-room" data-discovery={shape}>
           <ul className="resource-grid">
-            {shown.map((entry) => (
+            {shown.map((entry, index) => (
               <ResourceCard
                 entry={entry}
                 heavy={isHeavy(entry)}
                 key={entry.key}
                 onOpen={open}
                 playing={playing}
+                repeat={repeats[index] ?? false}
                 running={runningKey === entry.key}
               />
             ))}
@@ -826,6 +908,8 @@ export function ResourcesDigest({
     () => resourceEntries({ moments, records, links: [], book, displayBook, chapter, verse }),
     [book, chapter, displayBook, moments, records, verse],
   );
+  const digest = entries.slice(0, DIGEST);
+  const digestRepeats = runs(digest);
   if (entries.length === 0) return <></>;
   return (
     <section className="resources-digest" aria-labelledby="resources-digest-title">
@@ -835,13 +919,14 @@ export function ResourcesDigest({
       </header>
       <div className="resource-room" data-discovery="digest">
         <ul className="resource-grid">
-          {entries.slice(0, DIGEST).map((entry) => (
+          {digest.map((entry, index) => (
             <ResourceCard
               entry={entry}
               heavy={false}
               key={entry.key}
               onOpen={(chosen) => playPodcastEpisode(episodeOf(chosen))}
               playing={playing}
+              repeat={digestRepeats[index] ?? false}
               running={runningKey === entry.key}
             />
           ))}
