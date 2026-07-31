@@ -1,0 +1,470 @@
+{
+  "runId": "2026-07-31T18-36-11-144-deepseek-v4-flash",
+  "startedAt": "2026-07-31T18:36:11.144Z",
+  "promptId": "doctrinal-resurrection-body",
+  "prompt": "If Jesus rose bodily, what happens to my body when I die? I want to understand what the New Testament actually claims about resurrection versus 'going to heaven'.",
+  "model": {
+    "key": "deepseek-v4-flash",
+    "label": "DeepSeek V4 Flash",
+    "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolvedSlug": "deepseek-v4-flash",
+    "resolution": {
+      "slug": "deepseek-v4-flash",
+      "requested": "deepseek/deepseek-v4-flash-0731",
+      "configured": "deepseek-v4-flash",
+      "endpointStyle": "direct",
+      "endpointHost": "api.deepseek.com",
+      "form": "bare",
+      "via": "models-list",
+      "exact": false,
+      "tried": [
+        "deepseek-v4-flash-0731",
+        "deepseek/deepseek-v4-flash-0731",
+        "deepseek-v4-flash",
+        "deepseek/deepseek-v4-flash"
+      ],
+      "note": "endpoint does not publish \"deepseek/deepseek-v4-flash-0731\"; fell back to \"deepseek-v4-flash\" (nearest configured/available model). Results are NOT from the exact requested build.",
+      "availableSample": [
+        "deepseek-v4-flash",
+        "deepseek-v4-pro"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "What Happens to My Body When I Die? Resurrection vs. Going to Heaven",
+    "intro": "You're asking the exact question that trips up most modern Christians, because the words we use have quietly changed meaning. This tour starts by clearing the air: \"resurrection\" in the New Testament never meant \"going to heaven.\" Then it walks you through what actually happens at death, what the in-between time is like, and finally what the New Testament claims your body becomes at the resurrection — anchored in Jesus' own risen body, which is the pattern for yours.",
+    "steps": [
+      {
+        "recordId": "ask-nt-wright:podcast:6a253c6-com-651c11dc-e7c9-3e9c-8d28-dfdec7d811d5",
+        "startSec": 660,
+        "endSec": 775,
+        "why": "N.T. Wright gives the semantic key that unlocks your whole question: \"They would not use the word resurrection. Resurrection is not about somebody going into a glorious angelic state... they simply aren't about going to heaven.\" He says plainly that when people today say \"I believe in the resurrection,\" they usually mean going to heaven when they die — \"That's simply not what the words mean.\" Then, in the same breath, he answers your other half: what Jesus' glorified body means for ours, noting the risen Jesus is \"recognized by the mark of the nails\" and that suffering borne out of love may \"be part of our glory.\"",
+        "episodeTitle": "#164 Easter questions on the resurrection of Jesus",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR6878813537.mp3?updated=1749655811",
+        "durationSec": 2012,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "bibleproject:podcast:heaven-earth-q-r",
+        "startSec": 560,
+        "endSec": 730,
+        "why": "BibleProject sets the biblical cosmology underneath everything: heaven is \"God's space\" and earth is \"human space,\" and the unique biblical claim is that \"God's on a mission to bring heaven and earth back together.\" This matters because it reframes the goal — not escape from earth to heaven, but their reunion. They then introduce the intermediate state honestly, naming it \"one of only three clear passages in the Bible that even talk about what happens right after death\": the thief's \"today you'll be with me in paradise,\" Paul's metaphor of sleep, and being \"with Jesus\" — \"that's all the information we have.\"",
+        "episodeTitle": "Heaven & Earth Question & Response",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/e377fa21-f15c-4ec8-b498-507f52e60c14/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=e377fa21-f15c-4ec8-b498-507f52e60c14",
+        "durationSec": 2671,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "radically-christian:podcast:1414c919-https-radicallychristian-com-p-9765",
+        "startSec": 1500,
+        "endSec": 1660,
+        "why": "This is the practical, pastoral heart of your question: what happens to my body, specifically? The speaker works through 2 Corinthians, where Paul says that at death your spirit is \"unclothed\" — \"you're a naked spirit\" — and then insists \"that's not our hope. Our hope is to be further clothed.\" Then the cremation question, which is really your body question in disguise: \"all cremation does in a practical sense is just speed up that process\" — God resurrects bodies in whatever state they're in. And the diagnosis of why we get this wrong: the idea that the physical world is bad and we should escape it \"reflects Platonism... Greek philosophy... even Gnosticism,\" not the Bible.",
+        "episodeTitle": "Questions About Death: Where Do We Go and Is Cremation Wrong?",
+        "sourceId": "radically-christian",
+        "source": "Radically Christian",
+        "audioUrl": "https://substackcdn.com/video_upload/post/148682215/e6894693-d7a0-42e7-80df-02ef93ae9763/transcoded.mp3?post_id=148682215&relation=podcast&Expires=1785438045&Key-Pair-Id=APKAIVDA3NPSMPSPESQQ&Signature=CpQevhv5~N2AdCx~Voixg2aUA8xq21EqJgLRAc95TzZVFKDUAskP3urLaVEYjuIFa2NkX4H0pZ4KWrMQ9lmdMoSr~ecA16rLHm-QxaPZMOYIJeWVuLyEqS9NURq~ZgmShx58br8qiKJIf28H6WFomjJ2EYt2B1BC1DlyOUnfx7WdpDOoLObySvxQJxPQuAmyFWdKBFCcwrWcaosWDcgcZWwdL4E6aXFGLpi-29dPcDQAQ5TtK1rrQKA71VnB2G071BcZ-WKIo3GZRC8ZkupGvoUmrnStuibm9SIzXgH2rXNaZ4UShfPuYFJbk469e-1Kk7iuN3whUjY5EGBuSMPXqA__",
+        "durationSec": 1825,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:901a0482-com-79e0bee1-9b9a-365b-8796-2f8d34debedf",
+        "startSec": 960,
+        "endSec": 1130,
+        "why": "This clip answers the \"versus going to heaven\" half head-on: \"Heaven's not the end of the world.\" Wright worries that the word heaven lets people \"sink back down into\" thinking that's all that matters, and he notes even the medieval tradition's retrievers today over-focus on the beatific vision, \"which is not highlighted in the New Testament at all.\" Then he gives the clearest picture of the intermediate state anywhere in this tour: the souls under the altar in Revelation 6 \"crying out, How long, O Lord,\" still longing for justice — \"they're not floating on clouds and playing harps.\"",
+        "episodeTitle": "#145 Should I use the word ’heaven’? Will we know everything in the new creation?",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR4942893507.mp3?updated=1749722680",
+        "durationSec": 1514,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:6027710dd56980db7f1aaf39484d371c",
+        "startSec": 2240,
+        "endSec": 2420,
+        "why": "After the intermediate state, this re-anchors the destination. The teachers insist resurrection belief is \"firmly embedded within the Torah itself,\" not a late Greek import, and then deliver the line that summarizes the whole tour: \"The Christian hope is not simply to go to heaven. The Christian hope is the resurrection of the body and the life everlasting.\" And the reason it's grounded in Easter: \"Jesus possesses a body forever. Jesus is flesh and blood forever. And so and so are we... We have a God with skin.\"",
+        "episodeTitle": "40 Minutes In The Old Testament: Episode 10",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_Min_10.mp3?dest-id=245197",
+        "durationSec": 2547,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:8380ffa3-com-b72975ac-389f-3ffa-84fb-478fb64f2873",
+        "startSec": 1290,
+        "endSec": 1470,
+        "why": "Now the actual exegesis of 1 Corinthians 15, the passage that makes the claim. The teacher walks the Adam/Christ contrast: \"By virtue of our birth, we entered into Adam... By virtue of our second birth... we will bear his image,\" concluding \"Our resurrection body will be like Jesus' resurrection body.\" Then the hard verse people misquote: \"flesh and blood cannot inherit the kingdom of God\" — the point being not that bodies are discarded but that \"that realm requires an imperishable body.\" The clip ends where Paul pivots: \"we will all be changed.\"",
+        "episodeTitle": "1 Corinthians 15:29-58",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/d8ngn3/1_corinthians_1529-589yhwk.mp3",
+        "durationSec": 2010,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:655dad0a-37e9-11ef-81a9-db3cdeacccae",
+        "startSec": 2380,
+        "endSec": 2560,
+        "why": "Spoken Gospel makes the seed analogy of 1 Corinthians 15 come alive: \"your body right now is not the final form of the thing that you'll be forever\" — what's sown perishable is \"raised in glory,\" and \"a spiritual body... Not a spirit. Not a spirit in a body. But a spiritual body.\" Then the most hopeful turn in the tour: resurrection is not only future. \"The resurrected one is living in me now... he's burying life in my body now\" — Genesis 1 \"has happened again\" in Jesus, and the same life is already at work in your body.",
+        "episodeTitle": "1 Corinthians Overview: A Wrong View of the Body",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG5794288256.mp3?updated=1719870604",
+        "durationSec": 2888,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "naked-bible:podcast:719",
+        "startSec": 1445,
+        "endSec": 1600,
+        "why": "Naked Bible closes with the most precise statement of what the resurrection body actually is: \"it's not a spiritual spirit, okay, it's a spiritual body\" — \"flesh made into something superior to normal flesh,\" \"flesh transcendent.\" And it lands on Philippians 3:21, the verse that most directly answers your title question: God \"will transform the body of our humiliation, that it may be conformed to his body of glory.\" We are to be \"made of that stuff that Jesus is made of.\"",
+        "episodeTitle": "Naked Bible 88: What is the “spiritual body” Paul talks about in 1 Cor 15?",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2016/02/NakedBible88_spiritualbody_1Cor15.mp3",
+        "durationSec": 2975,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "That's the shape of the New Testament claim: death is a real but temporary undressing, not the destination; \"heaven\" is a waiting room, not the finish line; and the finish line is the resurrection, when your body is raised and transformed into a body like Jesus' — flesh, but glorified, fit for a renewed heaven-and-earth. When you say \"I believe in the resurrection,\" you're not saying you hope to float away. You're saying you hope to be raised.",
+    "totalSeconds": 1310
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3053,
+      "promptTokens": 1757,
+      "completionTokens": 313,
+      "reasoningTokens": 173,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 1,
+      "latencyMs": 7783,
+      "promptTokens": 6492,
+      "completionTokens": 720,
+      "reasoningTokens": 419,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 2,
+      "latencyMs": 15358,
+      "promptTokens": 12955,
+      "completionTokens": 1702,
+      "reasoningTokens": 1288,
+      "cachedPromptTokens": 7168,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 3,
+      "latencyMs": 8521,
+      "promptTokens": 17509,
+      "completionTokens": 1041,
+      "reasoningTokens": 479,
+      "cachedPromptTokens": 14592,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 4,
+      "latencyMs": 46566,
+      "promptTokens": 22285,
+      "completionTokens": 4398,
+      "reasoningTokens": 4051,
+      "cachedPromptTokens": 18432,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 5,
+      "latencyMs": 51941,
+      "promptTokens": 28281,
+      "completionTokens": 6000,
+      "reasoningTokens": 6000,
+      "cachedPromptTokens": 26624,
+      "toolCalls": 0,
+      "finishReason": "length",
+      "providerCostUsd": null
+    },
+    {
+      "i": 6,
+      "latencyMs": 58851,
+      "promptTokens": 21900,
+      "completionTokens": 6000,
+      "reasoningTokens": 5173,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 1,
+      "finishReason": "length",
+      "providerCostUsd": null
+    },
+    {
+      "i": 7,
+      "latencyMs": 14612,
+      "promptTokens": 27981,
+      "completionTokens": 1830,
+      "reasoningTokens": 37,
+      "cachedPromptTokens": 21888,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "resurrection of the body not going to heaven",
+        "limit": 10
+      },
+      "ms": 68,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "what happens to my body when I die",
+        "limit": 10
+      },
+      "ms": 49,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "episode_info",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:6a253c6-com-651c11dc-e7c9-3e9c-8d28-dfdec7d811d5"
+      },
+      "ms": 2,
+      "summary": "#164 Easter questions on the resurrection of Jesus (2012s)"
+    },
+    {
+      "at": 1,
+      "name": "episode_info",
+      "args": {
+        "recordId": "naked-bible:podcast:719"
+      },
+      "ms": 0,
+      "summary": "Naked Bible 88: What is the “spiritual body” Paul talks about in 1 Cor 15? (2975s)"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "intermediate state with Christ asleep"
+      },
+      "ms": 79,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 8,
+        "query": "our bodies will be like his glorious body"
+      },
+      "ms": 48,
+      "summary": "8 hits"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:6a253c6-com-651c11dc-e7c9-3e9c-8d28-dfdec7d811d5",
+        "fromSec": 600,
+        "toSec": 780
+      },
+      "ms": 0,
+      "summary": "600s–780s of #164 Easter questions on the resurrection of Jesus"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:6027710dd56980db7f1aaf39484d371c",
+        "fromSec": 2240,
+        "toSec": 2420
+      },
+      "ms": 3,
+      "summary": "2240s–2420s of 40 Minutes In The Old Testament: Episode 10"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:1414c919-https-radicallychristian-com-p-9765",
+        "fromSec": 1500,
+        "toSec": 1680
+      },
+      "ms": 1,
+      "summary": "1500s–1680s of Questions About Death: Where Do We Go and Is Cremation Wrong?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:heaven-earth-q-r",
+        "fromSec": 560,
+        "toSec": 740
+      },
+      "ms": 0,
+      "summary": "560s–740s of Heaven & Earth Question & Response"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 780,
+        "recordId": "ask-nt-wright:podcast:6a253c6-com-651c11dc-e7c9-3e9c-8d28-dfdec7d811d5",
+        "toSec": 960
+      },
+      "ms": 0,
+      "summary": "780s–960s of #164 Easter questions on the resurrection of Jesus"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2380,
+        "recordId": "spoken-gospel:podcast:655dad0a-37e9-11ef-81a9-db3cdeacccae",
+        "toSec": 2560
+      },
+      "ms": 0,
+      "summary": "2380s–2560s of 1 Corinthians Overview: A Wrong View of the Body"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1250,
+        "recordId": "naked-bible:podcast:719",
+        "toSec": 1430
+      },
+      "ms": 0,
+      "summary": "1250s–1430s of Naked Bible 88: What is the “spiritual body” Paul talks about in 1 Cor 15?"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1290,
+        "recordId": "listeners-commentary:podcast:8380ffa3-com-b72975ac-389f-3ffa-84fb-478fb64f2873",
+        "toSec": 1470
+      },
+      "ms": 0,
+      "summary": "1290s–1470s of 1 Corinthians 15:29-58"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 960,
+        "recordId": "ask-nt-wright:podcast:901a0482-com-79e0bee1-9b9a-365b-8796-2f8d34debedf",
+        "toSec": 1130
+      },
+      "ms": 0,
+      "summary": "960s–1130s of #145 Should I use the word ’heaven’? Will we know everything in the new creation?"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 828,
+        "recordId": "ask-nt-wright:podcast:6a253c6-com-651c11dc-e7c9-3e9c-8d28-dfdec7d811d5",
+        "toSec": 880
+      },
+      "ms": 0,
+      "summary": "828s–880s of #164 Easter questions on the resurrection of Jesus"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1425,
+        "recordId": "naked-bible:podcast:719",
+        "toSec": 1600
+      },
+      "ms": 0,
+      "summary": "1425s–1600s of Naked Bible 88: What is the “spiritual body” Paul talks about in 1 Cor 15?"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1440,
+        "recordId": "listeners-commentary:podcast:8380ffa3-com-b72975ac-389f-3ffa-84fb-478fb64f2873",
+        "toSec": 1560
+      },
+      "ms": 0,
+      "summary": "1440s–1560s of 1 Corinthians 15:29-58"
+    }
+  ],
+  "rejections": [
+    {
+      "at": 6,
+      "errors": [
+        "title: required non-empty string",
+        "intro: required, at least 40 characters",
+        "closing: required, at least 30 characters",
+        "steps: required array"
+      ],
+      "submitted": {}
+    }
+  ],
+  "totals": {
+    "modelCalls": 8,
+    "toolCalls": 21,
+    "promptTokens": 139160,
+    "completionTokens": 22004,
+    "reasoningTokens": 17620,
+    "cachedPromptTokens": 93696,
+    "wallMs": 206938,
+    "modelLatencyMs": 206685,
+    "toolMs": 251
+  },
+  "cost": {
+    "source": "price-table",
+    "inputUsd": 0.015353,
+    "outputUsd": 0.009242,
+    "totalUsd": 0.024595,
+    "rateCard": {
+      "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+      "inputPerMTokensUsd": 0.28,
+      "outputPerMTokensUsd": 0.42,
+      "cachedInputPerMTokensUsd": 0.028,
+      "_note": "PLACEHOLDER — carried over from the DeepSeek V3-era flash tier. Verify at https://api-docs.deepseek.com/quick_start/pricing before quoting any of these numbers."
+    },
+    "note": "endpoint reported no cost field; cost = tokens x pricing.json (rates are UNVERIFIED placeholders)"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right."
+  ],
+  "finishedAt": "2026-07-31T18:39:38.082Z"
+}

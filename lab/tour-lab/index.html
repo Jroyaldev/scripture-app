@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tour Lab — tours from questions, not lengths</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="masthead">
+      <div>
+        <h1>Tour Lab</h1>
+        <p class="sub">
+          A question or a text goes in. A tool-using model reads around the podcast corpus and comes back
+          with an ordered set of clips it can justify. Benchmarked across two models, with the real cost of
+          each run.
+        </p>
+      </div>
+      <dl class="corpus" id="corpus-stats"></dl>
+    </header>
+
+    <section class="ask">
+      <label class="field">
+        <span>What do you want a tour of?</span>
+        <textarea id="prompt" rows="3" placeholder="A question, a grief, a text, a topic, a word…"></textarea>
+      </label>
+      <div class="ask-row">
+        <select id="fixtures" aria-label="Bench set">
+          <option value="">Bench set…</option>
+        </select>
+        <div class="spacer"></div>
+        <div id="run-buttons" class="run-buttons"></div>
+      </div>
+      <p class="hint" id="hint"></p>
+    </section>
+
+    <main id="panels" class="panels"></main>
+
+    <section class="history">
+      <div class="history-head">
+        <h2>Past runs</h2>
+        <span id="ledger-summary" class="ledger"></span>
+      </div>
+      <div id="history" class="history-list"></div>
+    </section>
+
+    <footer class="footer">
+      <h3>Read these before you trust a timestamp</h3>
+      <ul id="caveats"></ul>
+      <p class="fine">
+        Costs are tokens × <code>lab/tour-lab/pricing.json</code>, whose rates are unverified placeholders,
+        unless the endpoint reported its own accounted cost — each run says which. The corpus at
+        <code>~/ScriptureLibrary/.artifacts</code> is opened read-only; the lab only ever writes to
+        <code>lab/tour-lab/</code>.
+      </p>
+    </footer>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

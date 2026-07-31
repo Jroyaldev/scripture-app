@@ -1,0 +1,501 @@
+{
+  "runId": "2026-07-31T18-33-10-709-deepseek-v4-flash",
+  "startedAt": "2026-07-31T18:33:10.709Z",
+  "promptId": "pastoral-grief",
+  "prompt": "My mother died three weeks ago and I cannot pray. I don't want tidy answers — I want to hear people talk honestly about grief and where God is in it.",
+  "model": {
+    "key": "deepseek-v4-flash",
+    "label": "DeepSeek V4 Flash",
+    "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolvedSlug": "deepseek-v4-flash",
+    "resolution": {
+      "slug": "deepseek-v4-flash",
+      "requested": "deepseek/deepseek-v4-flash-0731",
+      "configured": "deepseek-v4-flash",
+      "endpointStyle": "direct",
+      "endpointHost": "api.deepseek.com",
+      "form": "bare",
+      "via": "models-list",
+      "exact": false,
+      "tried": [
+        "deepseek-v4-flash-0731",
+        "deepseek/deepseek-v4-flash-0731",
+        "deepseek-v4-flash",
+        "deepseek/deepseek-v4-flash"
+      ],
+      "note": "endpoint does not publish \"deepseek/deepseek-v4-flash-0731\"; fell back to \"deepseek-v4-flash\" (nearest configured/available model). Results are NOT from the exact requested build.",
+      "availableSample": [
+        "deepseek-v4-flash",
+        "deepseek-v4-pro"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "When You Can't Pray: Honest Voices on Grief and Where God Is",
+    "intro": "Three weeks in, the prayers feel like they're bouncing off the ceiling, and you said you don't want tidy answers. Good — nobody in this tour hands you one. Instead it's six conversations with people who have been flattened by loss and refused to pretend otherwise: a man who lost his wife, a father who buried his three-year-old, biblical scholars sitting inside the rawest chapters of Job and Psalm 22 and Lamentations. The tour moves from being told your grief is not selfish, to hearing that your inability to pray has a home in Scripture, to watching God's silence honored rather than explained away. Listen when you can. No one here will rush you.",
+    "steps": [
+      {
+        "recordId": "ask-nt-wright:podcast:f189e210-8df4-11ee-b97f-09218d3fce01",
+        "startSec": 88,
+        "endSec": 310,
+        "why": "This is almost exactly your situation spoken out loud. A caller named Joanna writes in three years after losing her father that she cannot pray: doubt makes prayer feel 'a silly exercise in just talking or thinking to myself,' and her grief feels 'selfish and unimportant.' NT Wright's reply is the permission you asked for: 'this is not selfish and it is not unimportant. God loves your broken heart as much as he loved your unbroken heart before.' He names that the only way into prayer may be inhabiting the Gethsemane and Bethany stories — 'Lord, if only you'd been here' — and sitting with the sorrow before the raising, and turning to the Psalms, 'Jesus' prayer book,' even the one that 'leaves you in the dark, but with the knowledge that somehow it's God's darkness.'",
+        "episodeTitle": "#196 Pain and suffering Part 2 (Classic)",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR3879333769.mp3?updated=1749653312",
+        "durationSec": 1455,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "radically-christian:podcast:a9baf6f-substack-post-151262658",
+        "startSec": 2043,
+        "endSec": 2220,
+        "why": "Jeff Jenkins is a minister who buried his wife Laura after her long illness, and he speaks here with the authority of someone still in the journey. 'Grief is not sinful,' he says — the first thing he wishes everyone understood. Then, 'no two griefs are the same,' and, 'nobody has a right to tell anybody else how to grieve.' This is the un-learning of every tidy thing well-meaning people have probably already said to you; he closes by releasing you from letting anyone 'make you feel bad because they try to tell you where you should be or how you should be grieving.'",
+        "episodeTitle": "Some Things I Wish Everyone Knew About Grief",
+        "sourceId": "radically-christian",
+        "source": "Radically Christian",
+        "audioUrl": "https://substackcdn.com/video_upload/post/151262658/96f24d4c-c85d-4c44-be4e-c5eb9605780e/transcoded.mp3?post_id=151262658&relation=podcast&Expires=1785437767&Key-Pair-Id=APKAIVDA3NPSMPSPESQQ&Signature=dgjzRqPzmoQPsEMSSMmExZhFh7Emn1byXf2jYT6tjJfQFCFY-MJhSeKje9oF9yQR6ly~pvN1A7E12joCs~tO2qo8wwrEp-87JE2tJillnoBH9tG2T~vqqrabTIR6AdgW9O1-HGJVcgv9OVpczgso6y2Ri5ZnF0ART0pnBzK28lyaFeUtw9Buzzt-BikeYnkKonRgv5N718fw0QNC5UqCh9kxvpTBaglQo3U3SDJEOOq41EdD9NctwYz~vIs77WEjNb2udS0EyLq5rnBeverhs6wtqKpOIBXOrYrLbQ8UGz~wbkysHH2ZxU3m9VS3b1MH74yAddxl3ocINNbGt5ua~g__",
+        "durationSec": 3241,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "startSec": 490,
+        "endSec": 615,
+        "why": "Cameron Cole spent years dreading the phone call that would make him lose his faith — the death of his son Cameron, who died at age three. When it came, 'it was very surprising what came out of my mouth. The first thing that I said was Jesus rose from the dead.' He describes the month after: 'I have no idea how a person could survive something like this if they didn't believe in this or know about this,' and how he wrote a confession of doctrines to read 'most days in that first year' to reorient himself. This is a man in the worst pain who found he was carried — and he says it without a single cliché.",
+        "episodeTitle": "Psalm 22: Lament Psalms (w/ Cameron Cole)",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG7303573431.mp3?updated=1686154567",
+        "durationSec": 2801,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:444302a2-d904-43b3-a21f-4c7fb0a30dd7",
+        "startSec": 1390,
+        "endSec": 1480,
+        "why": "From the study of Job chapter 3 — the chapter where a faithful man curses the day he was born — comes the theological backbone of the whole tour: the Bible 'does not read like an instruction book of here is the appropriate way to respond.' Instead it says 'this is what comes out of a faithful person's mouth,' and 'the faithful suffer, and it sounds like this.' The host lands it plainly: 'You don't lament to a God that you don't believe exists... lament rather than being a signal of the absence of faith is actually a sign that faith is very much present.' Your inability to pray with pretty words is not failure; it may be the truest prayer you have.",
+        "episodeTitle": "Job 2:11-3:26 (Episode 387)",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_ep_387.mp3?dest-id=245197",
+        "durationSec": 2435,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "startSec": 2080,
+        "endSec": 2220,
+        "why": "Back with Cameron Cole and his co-host in Psalm 22, the psalm Jesus gasped out on the cross. The point that answers 'where is God in my grief': 'Jesus is literally forsaken... God's people are never actually abandoned because Jesus was actually abandoned on the cross.' So when you cry 'be not far from me,' you are praying words God has already answered — 'Jesus was alone... so that he would never have to do that to us,' and 'never will I leave you, never will I forsake you' is true 'because Jesus was.' The lament you cannot finish is being finished for you.",
+        "episodeTitle": "Psalm 22: Lament Psalms (w/ Cameron Cole)",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG7303573431.mp3?updated=1686154567",
+        "durationSec": 2801,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "spoken-gospel:podcast:aa93fe68-dfc1-11ee-8d8c-1b5a7e037e3d",
+        "startSec": 2862,
+        "endSec": 2980,
+        "why": "The tour closes on God's silence — the hardest thing about the last three weeks. In Lamentations, unlike Job, God never shows up to answer. Why? Because 'God's silence isn't to show that he's uncaring... God's silence honors it by letting it stand as true, as painful, as real, and he doesn't try to sugarcoat it, undercut it, or explain it away.' His silence gives 'the greatest credence and pride of place to the suffering of his people,' and more: he put the lament in his own book, making the words of his suffering people 'his own words.' Your grief is not an interruption God is ignoring — it is something he is carrying in the canon.",
+        "episodeTitle": "Lamentations Overview: Mercy Every Morning",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG8477051140.mp3?updated=1710173642",
+        "durationSec": 3616,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "Three weeks is no time at all. The people you just heard would all tell you the same thing: don't perform a brave faith, and don't let anyone hand you a reason for your mother's death, because none was offered to you. What was offered instead — in Gethsemane, in the crying psalms, on the cross — is that God has already absorbed the forsakenness you're afraid of. When you can't pray, the words exist anyway, waiting in a book God calls his own. Come back to any of these episodes in a month, in a year; grief is a season, not a stage, and it cycles. In the meantime, let the lament be your prayer. It counts.",
+    "totalSeconds": 872
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3316,
+      "promptTokens": 1759,
+      "completionTokens": 329,
+      "reasoningTokens": 148,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 1,
+      "latencyMs": 9271,
+      "promptTokens": 8424,
+      "completionTokens": 877,
+      "reasoningTokens": 607,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 2,
+      "latencyMs": 12848,
+      "promptTokens": 15748,
+      "completionTokens": 1490,
+      "reasoningTokens": 1066,
+      "cachedPromptTokens": 9216,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 3,
+      "latencyMs": 14177,
+      "promptTokens": 20181,
+      "completionTokens": 1554,
+      "reasoningTokens": 1031,
+      "cachedPromptTokens": 17152,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 4,
+      "latencyMs": 24213,
+      "promptTokens": 25776,
+      "completionTokens": 2453,
+      "reasoningTokens": 2011,
+      "cachedPromptTokens": 21632,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 5,
+      "latencyMs": 45163,
+      "promptTokens": 31335,
+      "completionTokens": 4915,
+      "reasoningTokens": 4500,
+      "cachedPromptTokens": 28160,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 6,
+      "latencyMs": 52536,
+      "promptTokens": 38703,
+      "completionTokens": 6000,
+      "reasoningTokens": 6000,
+      "cachedPromptTokens": 36224,
+      "toolCalls": 0,
+      "finishReason": "length",
+      "providerCostUsd": null
+    },
+    {
+      "i": 7,
+      "latencyMs": 18463,
+      "promptTokens": 29369,
+      "completionTokens": 1720,
+      "reasoningTokens": 144,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 3,
+      "summary": "8 shows"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "grief losing a parent",
+        "limit": 10
+      },
+      "ms": 99,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "I can't pray",
+        "limit": 10
+      },
+      "ms": 69,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "mother died",
+        "limit": 10
+      },
+      "ms": 50,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "lament where is God in my suffering"
+      },
+      "ms": 99,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "God feels far away silence"
+      },
+      "ms": 54,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 8,
+        "query": "why have you forsaken me"
+      },
+      "ms": 50,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "episode_info",
+      "args": {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6"
+      },
+      "ms": 1,
+      "summary": "Psalm 22: Lament Psalms (w/ Cameron Cole) (2801s)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:f189e210-8df4-11ee-b97f-09218d3fce01",
+        "fromSec": 60,
+        "toSec": 240
+      },
+      "ms": 4,
+      "summary": "60s–240s of #196 Pain and suffering Part 2 (Classic)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "fromSec": 130,
+        "toSec": 360
+      },
+      "ms": 0,
+      "summary": "130s–310s of Psalm 22: Lament Psalms (w/ Cameron Cole)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:a9baf6f-substack-post-151262658",
+        "fromSec": 0,
+        "toSec": 180
+      },
+      "ms": 5,
+      "summary": "0s–180s of Some Things I Wish Everyone Knew About Grief"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:a9baf6f-substack-post-151262658",
+        "fromSec": 2100,
+        "toSec": 2340
+      },
+      "ms": 0,
+      "summary": "2100s–2280s of Some Things I Wish Everyone Knew About Grief"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 240,
+        "recordId": "ask-nt-wright:podcast:f189e210-8df4-11ee-b97f-09218d3fce01",
+        "toSec": 420
+      },
+      "ms": 0,
+      "summary": "240s–420s of #196 Pain and suffering Part 2 (Classic)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 310,
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "toSec": 640
+      },
+      "ms": 0,
+      "summary": "310s–490s of Psalm 22: Lament Psalms (w/ Cameron Cole)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1900,
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "toSec": 2240
+      },
+      "ms": 0,
+      "summary": "1900s–2080s of Psalm 22: Lament Psalms (w/ Cameron Cole)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2800,
+        "recordId": "spoken-gospel:podcast:aa93fe68-dfc1-11ee-8d8c-1b5a7e037e3d",
+        "toSec": 3120
+      },
+      "ms": 0,
+      "summary": "2800s–2980s of Lamentations Overview: Mercy Every Morning"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 340,
+        "recordId": "ask-nt-wright:podcast:63647d86-1082-11f0-9f26-97f717c8111f",
+        "toSec": 560
+      },
+      "ms": 6,
+      "summary": "340s–520s of God’s Love: Universal, Personal, or Both? NT Wright Answers"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 490,
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "toSec": 670
+      },
+      "ms": 0,
+      "summary": "490s–670s of Psalm 22: Lament Psalms (w/ Cameron Cole)"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2080,
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "toSec": 2400
+      },
+      "ms": 1,
+      "summary": "2080s–2260s of Psalm 22: Lament Psalms (w/ Cameron Cole)"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1280,
+        "recordId": "forty-minutes-ot:podcast:444302a2-d904-43b3-a21f-4c7fb0a30dd7",
+        "toSec": 1580
+      },
+      "ms": 0,
+      "summary": "1280s–1460s of Job 2:11-3:26 (Episode 387)"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 180,
+        "recordId": "radically-christian:podcast:a9baf6f-substack-post-151262658",
+        "toSec": 430
+      },
+      "ms": 0,
+      "summary": "180s–360s of Some Things I Wish Everyone Knew About Grief"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1980,
+        "recordId": "radically-christian:podcast:a9baf6f-substack-post-151262658",
+        "toSec": 2160
+      },
+      "ms": 0,
+      "summary": "1980s–2160s of Some Things I Wish Everyone Knew About Grief"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2280,
+        "recordId": "radically-christian:podcast:a9baf6f-substack-post-151262658",
+        "toSec": 2460
+      },
+      "ms": 0,
+      "summary": "2280s–2460s of Some Things I Wish Everyone Knew About Grief"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1460,
+        "recordId": "forty-minutes-ot:podcast:444302a2-d904-43b3-a21f-4c7fb0a30dd7",
+        "toSec": 1600
+      },
+      "ms": 0,
+      "summary": "1460s–1600s of Job 2:11-3:26 (Episode 387)"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 270,
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "toSec": 320
+      },
+      "ms": 0,
+      "summary": "270s–320s of Psalm 22: Lament Psalms (w/ Cameron Cole)"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 8,
+    "toolCalls": 26,
+    "promptTokens": 171295,
+    "completionTokens": 19338,
+    "reasoningTokens": 15507,
+    "cachedPromptTokens": 117376,
+    "wallMs": 180433,
+    "modelLatencyMs": 179987,
+    "toolMs": 441
+  },
+  "cost": {
+    "source": "price-table",
+    "inputUsd": 0.018384,
+    "outputUsd": 0.008122,
+    "totalUsd": 0.026506,
+    "rateCard": {
+      "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+      "inputPerMTokensUsd": 0.28,
+      "outputPerMTokensUsd": 0.42,
+      "cachedInputPerMTokensUsd": 0.028,
+      "_note": "PLACEHOLDER — carried over from the DeepSeek V3-era flash tier. Verify at https://api-docs.deepseek.com/quick_start/pricing before quoting any of these numbers."
+    },
+    "note": "endpoint reported no cost field; cost = tokens x pricing.json (rates are UNVERIFIED placeholders)"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right."
+  ],
+  "finishedAt": "2026-07-31T18:36:11.142Z"
+}

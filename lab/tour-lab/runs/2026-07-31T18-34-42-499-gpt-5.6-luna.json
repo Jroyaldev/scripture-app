@@ -1,0 +1,344 @@
+{
+  "runId": "2026-07-31T18-34-42-499-gpt-5.6-luna",
+  "startedAt": "2026-07-31T18:34:42.500Z",
+  "promptId": "text-genesis-6",
+  "prompt": "Walk me through Genesis 6:1-4. Who are the sons of God and the Nephilim, and why is this passage there right before the flood?",
+  "model": {
+    "key": "gpt-5.6-luna",
+    "label": "GPT-5.6 Luna",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Genesis 6:1–4: Sons of God, Nephilim, and the Flood",
+    "intro": "This tour starts by locating the strange little scene in Genesis’s widening story of sin, then lays out the main interpretations of “sons of God.” It slows down over what the text does—and does not—say about the Nephilim, and ends by showing why these verses function as the doorway into the flood rather than as a detached monster story.",
+    "steps": [
+      {
+        "recordId": "listeners-commentary:podcast:417c1f86-com-2f63c731-32e0-3416-a86c-8ce581c0de7f",
+        "startSec": 1080,
+        "endSec": 1260,
+        "why": "Begin here for a clear reading of the passage in its immediate context: humanity is multiplying, but Genesis has already shown death spreading through the human race. The speaker names three major readings—spiritual beings, human rulers, and a godly human line—and gives the controlling observation that the episode is “a further portrayal of the decay and depravity of the human race.”",
+        "episodeTitle": "Genesis 4:1-6:8",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/ba4rg9y6b4ksgv6v/genesis_41-6889j29.mp3",
+        "durationSec": 1767,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:genesis-1-11-q-r",
+        "startSec": 2160,
+        "endSec": 2340,
+        "why": "This clip gives the historical and textual caution you need before settling on an interpretation. It explains why “sons of God” can naturally suggest divine or spiritual beings, but then distinguishes Genesis from later elaboration in 1 Enoch: “the story doesn’t say the Nephilim are their offspring.” That keeps the biblical text separate from a famous interpretive tradition while acknowledging that Enoch was influential.",
+        "episodeTitle": "Genesis 1-11 Question & Response",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/e1d03584-54ec-43f1-a199-59f940b9f1b5/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=e1d03584-54ec-43f1-a199-59f940b9f1b5",
+        "durationSec": 2761,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:gods-spirit-flood-narrative",
+        "startSec": 900,
+        "endSec": 1080,
+        "why": "Now hear the strongest case for the spiritual-beings reading and for the passage’s larger literary force. The speakers connect the figures to ancient stories of divine-human hybrids and explain that Genesis reverses the usual celebration of such heroes: “the biblical story is saying that’s actually not a good thing.” They also identify the Nephilim as “mighty warriors” or “men of the name,” while noting their later biblical appearance.",
+        "episodeTitle": "God’s Spirit in the Flood Narrative",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/6fed2ba8-01ae-4fdb-8afe-9c7ab3232f32/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=6fed2ba8-01ae-4fdb-8afe-9c7ab3232f32",
+        "durationSec": 3585,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:417c1f86-com-2f63c731-32e0-3416-a86c-8ce581c0de7f",
+        "startSec": 1360,
+        "endSec": 1540,
+        "why": "Finish by answering why the passage sits immediately before the flood. The speaker observes that the Nephilim are called “men of renown” but argues the text does not explicitly call them the children of the union; then the narrative moves directly to God’s assessment that human wickedness is pervasive. The flood is therefore framed as God “taking responsibility” and bringing a corrupt world “back into line,” with Noah’s favor opening the next scene.",
+        "episodeTitle": "Genesis 4:1-6:8",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/ba4rg9y6b4ksgv6v/genesis_41-6889j29.mp3",
+        "durationSec": 1767,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "After these clips, you should be able to say both what Genesis 6:1–4 most likely evokes and where the text remains deliberately or genuinely difficult. The spiritual-beings reading has ancient support, the human-rulers and Sethite readings remain part of the interpretive history, and the passage’s clearest narrative job is to intensify the picture of rebellion, violence, and corruption that the flood will judge.",
+    "totalSeconds": 720
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2174,
+      "promptTokens": 1149,
+      "completionTokens": 161,
+      "reasoningTokens": 22,
+      "cachedPromptTokens": 0,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00024015000000000004
+    },
+    {
+      "i": 1,
+      "latencyMs": 3551,
+      "promptTokens": 12994,
+      "completionTokens": 325,
+      "reasoningTokens": 47,
+      "cachedPromptTokens": 1146,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0016873850000000002
+    },
+    {
+      "i": 2,
+      "latencyMs": 4982,
+      "promptTokens": 16707,
+      "completionTokens": 269,
+      "reasoningTokens": 40,
+      "cachedPromptTokens": 12991,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0007557350000000001
+    },
+    {
+      "i": 3,
+      "latencyMs": 5187,
+      "promptTokens": 19709,
+      "completionTokens": 414,
+      "reasoningTokens": 343,
+      "cachedPromptTokens": 16704,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0007909900000000001
+    },
+    {
+      "i": 4,
+      "latencyMs": 8398,
+      "promptTokens": 20481,
+      "completionTokens": 857,
+      "reasoningTokens": 145,
+      "cachedPromptTokens": 19706,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008080600000000001
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 6,
+        "verse": 1,
+        "limit": 40
+      },
+      "ms": 99,
+      "summary": "40 of 281 moments"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "sons of God daughters of men Nephilim",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 175,
+      "summary": "15 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Genesis six flood giants heavenly beings",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 129,
+      "summary": "15 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "before the flood sons of God Genesis 6",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 98,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:genesis-1-11-q-r",
+        "fromSec": 1980,
+        "toSec": 2520
+      },
+      "ms": 0,
+      "summary": "1980s–2160s of Genesis 1-11 Question & Response"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:gods-spirit-flood-narrative",
+        "fromSec": 900,
+        "toSec": 1450
+      },
+      "ms": 0,
+      "summary": "900s–1080s of God’s Spirit in the Flood Narrative"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:417c1f86-com-2f63c731-32e0-3416-a86c-8ce581c0de7f",
+        "fromSec": 1180,
+        "toSec": 1530
+      },
+      "ms": 2,
+      "summary": "1180s–1360s of Genesis 4:1-6:8"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:why-cant-jacob-and-esau-both-be-blessed",
+        "fromSec": 1280,
+        "toSec": 1600
+      },
+      "ms": 3,
+      "summary": "1280s–1460s of Genesis: Why Can’t Jacob and Esau Both be Blessed? Question and Response"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:168c311c-5d5c-11f0-8252-7f9ec715a664",
+        "fromSec": 1080,
+        "toSec": 1300
+      },
+      "ms": 3,
+      "summary": "1080s–1260s of Who were \"the sons of God\" in Genesis 6?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:genesis-1-11-q-r",
+        "fromSec": 2160,
+        "toSec": 2340
+      },
+      "ms": 0,
+      "summary": "2160s–2340s of Genesis 1-11 Question & Response"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:417c1f86-com-2f63c731-32e0-3416-a86c-8ce581c0de7f",
+        "fromSec": 1360,
+        "toSec": 1540
+      },
+      "ms": 0,
+      "summary": "1360s–1540s of Genesis 4:1-6:8"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:168c311c-5d5c-11f0-8252-7f9ec715a664",
+        "fromSec": 1260,
+        "toSec": 1440
+      },
+      "ms": 0,
+      "summary": "1260s–1440s of Who were \"the sons of God\" in Genesis 6?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:symptom-human-violence",
+        "fromSec": 2260,
+        "toSec": 2440
+      },
+      "ms": 0,
+      "summary": "2260s–2440s of The City E3: A Symptom of Human Violence"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:417c1f86-com-2f63c731-32e0-3416-a86c-8ce581c0de7f",
+        "fromSec": 1080,
+        "toSec": 1260
+      },
+      "ms": 0,
+      "summary": "1080s–1260s of Genesis 4:1-6:8"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 5,
+    "toolCalls": 15,
+    "promptTokens": 71040,
+    "completionTokens": 2026,
+    "reasoningTokens": 597,
+    "cachedPromptTokens": 50547,
+    "wallMs": 25009,
+    "modelLatencyMs": 24292,
+    "toolMs": 509
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.004282,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "PLACEHOLDER — guessed from the GPT-5 flagship tier. When this model runs through an OpenRouter-style endpoint the provider's own reported cost supersedes this table anyway."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right."
+  ],
+  "finishedAt": "2026-07-31T18:35:07.509Z"
+}

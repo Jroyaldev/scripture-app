@@ -89,7 +89,9 @@
     "qa:desktop": "node scripts/qa-desktop-regression.mjs",
     "verify:alignment-freshness": "node scripts/verify-alignment-freshness.mjs",
     "verify:alignment-conformance": "node scripts/verify-alignment-conformance.mjs",
-    "verify:alignment": "npm run verify:alignment-freshness && npm run verify:alignment-conformance"
+    "verify:alignment": "npm run verify:alignment-freshness && npm run verify:alignment-conformance",
+    "lab:tour": "node lab/tour-lab/server.mjs",
+    "lab:tour:run": "node lab/tour-lab/run-cli.mjs"
   },
   "main": "dist/electron/main.cjs",
   "bin": {
