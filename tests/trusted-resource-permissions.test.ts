@@ -29,7 +29,29 @@ const ALL_APPROVED_MARK_SOURCES = [...APPROVED_MARK_SOURCES, ...APPROVED_MARK_SO
  * artwork's treatment differs; what differs is which conversation is still
  * owed, and this constant is where the code says so.
  */
-const DEVICE_SOURCES_PUBLIC_FEED = ["five-minutes-church-history"];
+const DEVICE_SOURCES_PUBLIC_FEED = ["five-minutes-church-history", "forty-minutes-ot"];
+
+/**
+ * The public-feed footing, drawing a full MARK — 2026-07-31.
+ *
+ * Read the note above first: it is the same decision, one step further. These
+ * two now carry a lockup rather than a device because the maintainer supplied
+ * the artwork — The Listener's own black lockup, and for Ask N.T. Wright the
+ * horizontal ASK-bubble lockup that has been staged at
+ * pending/reconstructed/ since 25b4889.
+ *
+ * That one is OURS, not Premier's, and the inventory says so: it is a
+ * reconstruction we drew, kept out of this app until the maintainer asked for
+ * it by name. Premier's official vector stays staged beside it — a 200:120
+ * stack whose strapline falls under 2px at plate size — so the accuracy
+ * caveat lives in the inventory rather than in a silently-official-looking
+ * file.
+ *
+ * Held in its own list for exactly the reason the device list is: these two
+ * publishers have still not been asked.
+ */
+const MARK_SOURCES_PUBLIC_FEED = ["ask-nt-wright", "listeners-commentary"];
+const ALL_MARK_SOURCES = [...ALL_APPROVED_MARK_SOURCES, ...MARK_SOURCES_PUBLIC_FEED];
 
 test("reviewed manifests and cards retain the common link-only permission boundary", () => {
   for (const source of APPROVED_MARK_SOURCES) {
@@ -80,7 +102,11 @@ test("reviewed manifests and cards retain the common link-only permission bounda
 test("official marks ship only for approved sources, from bundled local assets", () => {
   const css = read("src/renderer/styles.css");
   const markRules = css.match(/--resource-mark:\s*url\("[^"]+"\)/g) ?? [];
-  assert.equal(markRules.length, ALL_APPROVED_MARK_SOURCES.length);
+  /* RESTATED 2026-07-31. It read `ALL_APPROVED_MARK_SOURCES.length` — six —
+     and the count is now eight because two public-feed sources carry supplied
+     artwork. The guard is unchanged in kind: a source may only inherit a mark
+     by naming itself, and the two footings stay in two lists. */
+  assert.equal(markRules.length, ALL_MARK_SOURCES.length);
 
   for (const rule of markRules) {
     const url = /url\("([^"]+)"\)/.exec(rule)?.[1] ?? "";
@@ -88,7 +114,7 @@ test("official marks ship only for approved sources, from bundled local assets",
     assert.ok(existsSync(resolve(root, "src/renderer", url)), `missing bundled mark: ${url}`);
   }
 
-  for (const source of ALL_APPROVED_MARK_SOURCES) {
+  for (const source of ALL_MARK_SOURCES) {
     const declaration = new RegExp(
       String.raw`\.trusted-resource-card\[data-source="${source}"\][^}]*--resource-mark:\s*url\(`,
     );

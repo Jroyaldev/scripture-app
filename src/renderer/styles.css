@@ -21143,17 +21143,35 @@ button.lang-phrase-diagram-node:focus-visible,
 .resource-card[data-source="forty-minutes-ot"],
 .podcast-dock[data-source="forty-minutes-ot"],
 .taught-here-plate[data-source="forty-minutes-ot"] {
-  /* #A8402A until 2026-07-30, sampled off 1517's tile. #A73D2D is the value in
-     1517's own logo file (1517.org/hubfs/1517-logo-email-500x500-2021-Feb.png),
-     which is also the file this device is. */
-  --resource-source: #a73d2d;
-  --resource-ink: #f9ede6;
-  --resource-ink-soft: rgb(249 237 230 / 0.76);
-  --resource-line: rgb(249 237 230 / 0.3);
-  --resource-pill-bg: #f9ede6;
-  /* Their brick darkened, by us, so a light pill can carry ink on it. Kept as
-     a re-pick with a stated reason rather than passed off as their value. */
-  --resource-pill-ink: #7d2c1b;
+  /* WHOSE COLOURS THESE ARE, stated carefully because the last two values here
+     were the wrong publisher's. #A8402A and then #A73D2D were 1517's — the
+     NETWORK's brick, off 1517's own logo file — not the show's. On 2026-07-31
+     the maintainer supplied the show's own logo kit and warned that its
+     presentation may carry 1517's colours too, so nothing here is claimed as a
+     published SHOW value on the strength of that kit.
+     What is indisputable is the artwork's own two inks, which are in the file:
+     #322221 and #776034. Those are used. The ground is OURS — a warm light
+     field so the kit's dark emblem can sit on something at all, chosen near
+     the artwork's own paper rather than sampled from an export's backdrop
+     (#AE9B70, which may well be 1517's). Replace it the moment the show
+     publishes a real value. */
+  --resource-source: #ece2d0;
+  --resource-mark-ratio: 1.051;
+  /* The emblem alone, not the full lockup: the kit's blackletter "MINUTES IN
+     THE OLD TESTAMENT" is unreadable under about 40px, and a wordmark nobody
+     can read is not a mark. Drawn as a DEVICE — beside the name rather than in
+     place of it — which is the same relation Ligonier's tree takes, and the
+     name still says the show in full. */
+  --resource-device: url("./assets/brand/forty-minutes-emblem.svg");
+  /* The ink turns over with the ground: cream was right on the brick and is
+     unreadable on a light field. #322221 is the artwork's own dark, and on the
+     ground above it measures better than 12:1. */
+  --resource-ink: #322221;
+  --resource-accent: #776034;
+  --resource-ink-soft: rgb(50 34 33 / 0.76);
+  --resource-line: rgb(50 34 33 / 0.3);
+  --resource-pill-bg: #322221;
+  --resource-pill-ink: #ece2d0;
 }
 
 /* 5 Minutes in Church History — Ligonier, whose device is the tree. Both
@@ -21215,6 +21233,15 @@ button.lang-phrase-diagram-node:focus-visible,
   --resource-ink: #ffffff;
   --resource-ink-soft: rgb(234 246 251 / 0.78);
   --resource-line: rgb(234 246 251 / 0.3);
+  /* THE BUBBLE. Drawn 2026-07-31 at the maintainer's request — they remembered
+     it and they were right: it has been in the tree since 25b4889, staged at
+     pending/reconstructed/ because WE drew it and Premier did not supply it.
+     That is an accuracy caveat, not a permission one, and it stays recorded as
+     ours in the inventory. Their official vector is staged beside it and stays
+     staged: it is a 200:120 stack whose strapline falls under 2px here, where
+     this lockup is horizontal and legible at every drawn size. */
+  --resource-mark: url("./assets/brand/ask-nt-wright-horizontal-white.png");
+  --resource-mark-ratio: 8.015;
   /* Their published red, same file, same pass: #D8183C was a sample and
      #E51F3F is the value Premier's own artwork carries. White on it is
      4.57:1, so the pill keeps its ink. */
@@ -21240,6 +21267,16 @@ button.lang-phrase-diagram-node:focus-visible,
      raises the lightness while leaving the hue and chroma theirs. */
   --resource-accent: #002558;
   --resource-source: #e9f3ff;
+  /* Their lockup, supplied by the maintainer 2026-07-31 — the halftone diamond
+     beside the wordmark, in the BLACK rendering rather than the reverse that
+     shares its canvas, because this is the one palette here whose ground is
+     already light. The reverse is staged at pending/reversed/ for any surface
+     that ever gives them a dark one. Note the artwork reads "The Listener's
+     Commentary" where the feed titles the show "The Listener's Bible
+     Commentary"; the feed's title still names the show in type, and this mark
+     is drawn as the publisher's own artwork rather than as that title. */
+  --resource-mark: url("./assets/brand/listeners-commentary-lockup-black.png");
+  --resource-mark-ratio: 4.39;
   --resource-ink: #002558;
   --resource-ink-soft: rgb(0 37 88 / 0.74);
   --resource-line: rgb(0 37 88 / 0.24);
